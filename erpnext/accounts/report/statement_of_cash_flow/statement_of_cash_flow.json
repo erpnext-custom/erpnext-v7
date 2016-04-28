@@ -1,0 +1,18 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2016-04-28 15:05:53.481855", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2016-04-28 15:05:53.481855", 
+ "modified_by": "Administrator", 
+ "module": "Accounts", 
+ "name": "Statement of Cash Flow", 
+ "owner": "Administrator", 
+ "ref_doctype": "GL Entry", 
+ "report_name": "Statement of Cash Flow", 
+ "report_type": "Script Report"
+}
