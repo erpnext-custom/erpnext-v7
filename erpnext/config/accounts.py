@@ -408,7 +408,7 @@ def get_data():
 			"items": [
 				{
 					"type": "report",
-					"name": "Statment of Trial Balance",
+					"name": "Statement of Trial Balance",
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				},
