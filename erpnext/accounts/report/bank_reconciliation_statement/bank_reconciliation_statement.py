@@ -39,18 +39,18 @@ def execute(filters=None):
 		+ amounts_not_reflected_in_system
 
 	data += [
-		get_balance_row(_("Bank Statement balance as per General Ledger"), balance_as_per_system, account_currency),
+		get_balance_row(_("Balance as per Cash Book"), balance_as_per_system, account_currency),
 		{},
 		{
-			"journal_entry": _("Outstanding Cheques and Deposits to clear"),
+			"journal_entry": _("Cheques issued but not encashed"),
 			"debit": total_debit,
 			"credit": total_credit,
 			"account_currency": account_currency
 		},
-		get_balance_row(_("Cheques and Deposits incorrectly cleared"), amounts_not_reflected_in_system, 
+		get_balance_row(_("Cheques desposited but not cleared"), amounts_not_reflected_in_system, 
 			account_currency),
 		{},
-		get_balance_row(_("Calculated Bank Statement balance"), bank_bal, account_currency)
+		get_balance_row(_("Balance as per Bank Statement"), bank_bal, account_currency)
 	]
 
 	return columns, data

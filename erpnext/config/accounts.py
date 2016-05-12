@@ -402,5 +402,47 @@ def get_data():
 					"youtube_id": "nQ1zZdPgdaQ"
 				}
 			]
+		},
+		{
+			"label": _("eMines Accounting Statements"),
+			"items": [
+				{
+					"type": "report",
+					"name": "Statment of Trial Balance",
+					"doctype": "GL Entry",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Statement of Cash Flow",
+					"doctype": "GL Entry",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Statement of Financial Position",
+					"doctype": "GL Entry",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Statement of Comprehensive Income",
+					"doctype": "GL Entry",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Statement of Changes in Equity",
+					"doctype": "GL Entry",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Property Plant & Equipment",
+					"doctype": "GL Entry",
+					"is_query_report": True,
+				}
+			]
+
 		}
 	]
