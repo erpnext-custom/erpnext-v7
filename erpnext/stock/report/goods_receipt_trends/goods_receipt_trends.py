@@ -1,9 +1,14 @@
-# Copyright (c) 2013, Frappe Technologies Pvt. Ltd. and contributors
-# For license information, please see license.txt
+# Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
+# License: GNU General Public License v3. See license.txt
 
 from __future__ import unicode_literals
 import frappe
+from erpnext.controllers.trends	import get_columns,get_data
 
 def execute(filters=None):
-	columns, data = [], []
-	return columns, data
+	if not filters: filters ={}
+	data = []
+	conditions = get_columns(filters, "Purchase Receipt")
+	data = get_data(filters, conditions)
+
+	return conditions["columns"], data  

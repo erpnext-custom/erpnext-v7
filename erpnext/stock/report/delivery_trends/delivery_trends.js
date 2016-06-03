@@ -1,8 +1,8 @@
-// Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
-// For license information, please see license.txt
+// Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
+// License: GNU General Public License v3. See license.txt
+
+frappe.require("assets/erpnext/js/sales_trends_filters.js");
 
 frappe.query_reports["Delivery Trends"] = {
-	"filters": [
-
-	]
-}
+	filters: get_filters()
+ }

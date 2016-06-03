@@ -1,8 +1,21 @@
-// Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
-// For license information, please see license.txt
+// Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
+// License: GNU General Public License v3. See license.txt
 
 frappe.query_reports["Material Balance History"] = {
 	"filters": [
-
+		{
+			"fieldname":"from_date",
+			"label": __("From Date"),
+			"fieldtype": "Date",
+			"width": "80",
+			"default": sys_defaults.year_start_date,
+		},
+		{
+			"fieldname":"to_date",
+			"label": __("To Date"),
+			"fieldtype": "Date",
+			"width": "80",
+			"default": frappe.datetime.get_today()
+		}
 	]
 }

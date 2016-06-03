@@ -219,13 +219,13 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Customer Addresses And Contacts",
+					"name": "Customer Contact Address Detail",
 					"doctype": "Contact"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Ordered Items To Be Delivered",
+					"name": "Finished Goods Delivery Overview",
 					"doctype": "Sales Order"
 				},
 				{
@@ -237,8 +237,9 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Item-wise Sales History",
-					"doctype": "Item"
+					"name": "Material-wise Sales History",
+					"doctype": "Item",
+					"label": "Materialwise Sales History"
 				},
 				{
 					"type": "report",

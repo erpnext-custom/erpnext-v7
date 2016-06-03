@@ -34,26 +34,29 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Stock Ledger",
+					"name": "Stock Ledger Report",
 					"doctype": "Stock Ledger Entry",
+					"Label": _("Stock Ledger")
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Stock Balance",
-					"doctype": "Stock Ledger Entry"
+					"name": "Stock Balance Report",
+					"doctype": "Stock Ledger Entry",
+					"label": _("Stock Balance")
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Stock Projected Qty",
+					"name": "Stock Projected Quantity",
 					"doctype": "Item",
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Stock Ageing",
+					"name": "Stock Ageing Report",
 					"doctype": "Item",
+					"label": _("Stock Ageing")
 				},
 
 			]
@@ -235,44 +238,46 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Ordered Items To Be Delivered",
+					"name": "Ordered Materials To Be Delivered",
 					"doctype": "Delivery Note"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Purchase Order Items To Be Received",
+					"name": "Purchase Order Materials To Be Received",
 					"doctype": "Purchase Receipt"
 				},
 				{
 					"type": "report",
-					"name": "Item Shortage Report",
+					"name": "Material Shortage Report",
 					"route": "Report/Bin/Item Shortage Report",
 					"doctype": "Purchase Receipt"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Requested Items To Be Transferred",
+					"name": "Requested Materials To Be Transferred",
 					"doctype": "Material Request"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Batch-Wise Balance History",
+					"name": "Material Balance History",
 					"doctype": "Batch"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Item Prices",
-					"doctype": "Price List"
+					"name": "Material Price Report",
+					"doctype": "Price List",
+					"label": _("Material Prices")
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Itemwise Recommended Reorder Level",
-					"doctype": "Item"
+					"name": "Itemwise Recommended Reorder Level Report",
+					"doctype": "Item",
+					"label": _("Materialwise Recommended Reorder Level"),
 				},
 			]
 		},

@@ -144,31 +144,31 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Items To Be Requested",
+					"name": "Materials To Be Requested",
 					"doctype": "Item"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Requested Items To Be Ordered",
+					"name": "PR Pending for PO",
 					"doctype": "Material Request"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Material Requests for which Supplier Quotations are not created",
+					"name": "Supplier Quoation pending for PR",
 					"doctype": "Material Request"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Item-wise Purchase History",
+					"name": "Material Purchase History",
 					"doctype": "Item"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Supplier Addresses and Contacts",
+					"name": "Vendor Addresses",
 					"doctype": "Supplier"
 				},
 			]

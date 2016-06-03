@@ -207,13 +207,13 @@ def based_wise_columns_query(based_on, trans):
 
 	# based_on_cols, based_on_select, based_on_group_by, addl_tables
 	if based_on == "Item":
-		based_on_details["based_on_cols"] = ["Item:Link/Item:120", "Item Name:Data:120"]
+		based_on_details["based_on_cols"] = ["Material Code:Link/Item:120", "Material Name:Data:120"]
 		based_on_details["based_on_select"] = "t2.item_code, t2.item_name,"
 		based_on_details["based_on_group_by"] = 't2.item_code'
 		based_on_details["addl_tables"] = ''
 
 	elif based_on == "Item Group":
-		based_on_details["based_on_cols"] = ["Item Group:Link/Item Group:120"]
+		based_on_details["based_on_cols"] = ["Material Group:Link/Item Group:120"]
 		based_on_details["based_on_select"] = "t2.item_group,"
 		based_on_details["based_on_group_by"] = 't2.item_group'
 		based_on_details["addl_tables"] = ''
