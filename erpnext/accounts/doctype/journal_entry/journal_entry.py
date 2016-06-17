@@ -1,6 +1,13 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
+#
+#		Version			Author			Date		Remarks
+# --------------- ----------------- ------------- ----------------------------------------------------------------
+#    20160617.1       Shiva          17-Jun-2016  The changes will allow the user to submit the Bank Payment voucher 
+#												   without needing to fillup cheque details. User can update the  
+#												   details lateron. But once entered, fields will become read-only
+
 from __future__ import unicode_literals
 import frappe, json
 from frappe.utils import cstr, flt, fmt_money, formatdate
@@ -23,7 +30,8 @@ class JournalEntry(AccountsController):
 		self.clearance_date = None
 
 		self.validate_party()
-		self.validate_cheque_info()
+		# Ver 20160617.1, following line is commented
+		#self.validate_cheque_info()
 		self.validate_entries_for_advance()
 		self.validate_multi_currency()
 		self.set_amounts_in_company_currency()

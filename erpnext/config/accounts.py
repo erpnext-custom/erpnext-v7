@@ -90,28 +90,40 @@ def get_data():
 			"items": [
 				{
 					"type": "report",
-					"name": "Trial Balance",
+					"name": "Statement of Trial Balance",
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				},
 				{
 					"type": "report",
-					"name": "Balance Sheet",
+					"name": "Statement of Financial Position",
 					"doctype": "GL Entry",
 					"is_query_report": True
 				},
 				{
 					"type": "report",
-					"name": "Cash Flow",
+					"name": "Statement of Cash Flow",
 					"doctype": "GL Entry",
 					"is_query_report": True
 				},
 				{
 					"type": "report",
-					"name": "Profit and Loss Statement",
+					"name": "Statement of Comprehensive Income",
 					"doctype": "GL Entry",
 					"is_query_report": True
 				},
+				{
+					"type": "report",
+					"name": "Statement of Changes in Equity",
+					"doctype": "GL Entry",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Property Plant & Equipment",
+					"doctype": "GL Entry",
+					"is_query_report": True,
+				}
 			]
 		},
 		{
@@ -403,46 +415,4 @@ def get_data():
 				}
 			]
 		},
-		{
-			"label": _("eMines Accounting Statements"),
-			"items": [
-				{
-					"type": "report",
-					"name": "Statement of Trial Balance",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Statement of Cash Flow",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Statement of Financial Position",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Statement of Comprehensive Income",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Statement of Changes in Equity",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Property Plant & Equipment",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				}
-			]
-
-		}
 	]
