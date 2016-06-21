@@ -1,14 +1,6 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
-//
-//		Version			Author			Date		Remarks
-// --------------- ----------------- ------------- ----------------------------------------------------------------
-//    20160617.1       Shiva          17-Jun-2016  The changes will allow the user to submit the Bank Payment voucher 
-//												   without needing to fillup cheque details. User can update the  
-//												   details lateron. But once entered, fields will become read-only
-
-
 frappe.provide("erpnext.accounts");
 frappe.provide("erpnext.journal_entry");
 frappe.require("assets/erpnext/js/utils.js");
@@ -282,6 +274,9 @@ cur_frm.cscript.voucher_type = function(doc, cdt, cdn) {
 		}		
 	}
 	
+	cur_frm.set_df_property("cheque_no", "reqd", doc.voucher_type=="Bank Entry");
+	cur_frm.set_df_property("cheque_date", "reqd", doc.voucher_type=="Bank Entry");
+
 	if(!doc.company) return;
 
 	var update_jv_details = function(doc, r) {
