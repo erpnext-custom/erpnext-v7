@@ -45,8 +45,8 @@ fixtures = ["Web Form"]
 website_generators = ["Item Group", "Item", "Sales Partner", "Job Opening"]
 
 website_context = {
-	"favicon": 	"/assets/erpnext/images/favicon.png",
-	"splash_image": "/assets/erpnext/images/splash.png"
+	"favicon": 	"/assets/erpnext/images/favicon.ico",
+	"splash_image": "/assets/erpnext/images/smcl_logo.gif"
 }
 
 website_route_rules = [

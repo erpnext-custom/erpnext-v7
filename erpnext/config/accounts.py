@@ -82,6 +82,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Item",
+					"label": "Materials",
 				},
 			]
 		},

@@ -19,3 +19,8 @@ frappe.listview_settings['Item'] = {
 };
 
 frappe.help.youtube_id["Item"] = "qXaEwld4_Ps";
+
+frappe.provide("frappe.ui");
+
+frappe.listview_settings['Item'] = {
+hide_name_column: true}
