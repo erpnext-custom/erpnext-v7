@@ -50,7 +50,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Items and Pricing"),
+			"label": _("Materials and Pricing"),
 			"items": [
 				{
 					"type": "doctype",
