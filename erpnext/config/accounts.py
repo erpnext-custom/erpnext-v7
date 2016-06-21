@@ -415,5 +415,5 @@ def get_data():
 					"youtube_id": "nQ1zZdPgdaQ"
 				}
 			]
-		},
+		}
 	]

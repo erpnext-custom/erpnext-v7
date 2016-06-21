@@ -1,13 +1,6 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
-#
-#		Version			Author			Date		Remarks
-# --------------- ----------------- ------------- ----------------------------------------------------------------
-#    20160617.1       Shiva          17-Jun-2016  The changes will allow the user to submit the Bank Payment voucher 
-#												   without needing to fillup cheque details. User can update the  
-#												   details lateron. But once entered, fields will become read-only
-
 from __future__ import unicode_literals
 import frappe, json
 from frappe.utils import cstr, flt, fmt_money, formatdate
