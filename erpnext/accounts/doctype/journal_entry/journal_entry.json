@@ -5,6 +5,7 @@
  "autoname": "YYYY.########", 
  "creation": "2013-03-25 10:53:52", 
  "custom": 0, 
+ "default_print_format": "Voucher Print", 
  "docstatus": 0, 
  "doctype": "DocType", 
  "fields": [
@@ -1131,7 +1132,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2016-06-21 14:26:27.408129", 
+ "modified": "2016-06-21 18:47:31.385043", 
  "modified_by": "siva@bt.bt", 
  "module": "Accounts", 
  "name": "Journal Entry", 
