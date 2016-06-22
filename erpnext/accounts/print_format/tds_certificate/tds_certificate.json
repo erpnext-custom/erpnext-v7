@@ -1,0 +1,18 @@
+{
+ "creation": "2016-06-22 09:42:04.165950", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "Journal Entry", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div style=\"text-align: center;\">TDS Certificate<br>Royal Government of Bhutan</div>\n\n<div>\n<p><label>Name of the WithHolding Agency: </label> </p>\n</div>", 
+ "idx": 0, 
+ "modified": "2016-06-22 10:03:09.960397", 
+ "modified_by": "kinleytshering@dhi.bt", 
+ "name": "TDS Certificate", 
+ "owner": "kinleytshering@dhi.bt", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes"
+}
