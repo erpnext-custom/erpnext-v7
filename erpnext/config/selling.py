@@ -147,11 +147,11 @@ def get_data():
 					"name": "Selling Settings",
 					"description": _("Default settings for selling transactions.")
 				},
-				{
-					"type": "doctype",
-					"name": "Campaign",
-					"description": _("Sales campaigns."),
-				},
+			#	{
+			#		"type": "doctype",
+			#		"name": "Campaign",
+			#		"description": _("Sales campaigns."),
+			#	},
 				{
 					"type": "doctype",
 					"name":"Terms and Conditions",
@@ -163,11 +163,11 @@ def get_data():
 					"name": "Sales Taxes and Charges Template",
 					"description": _("Tax template for selling transactions.")
 				},
-				{
-					"type": "doctype",
-					"name": "Industry Type",
-					"description": _("Track Leads by Industry Type.")
-				},
+			#	{
+			#		"type": "doctype",
+			#		"name": "Industry Type",
+			#		"description": _("Track Leads by Industry Type.")
+			#	},
 			]
 		},
 		{
@@ -186,13 +186,13 @@ def get_data():
 					"label": _("Sales Funnel"),
 					"icon": "icon-bar-chart",
 				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Customer Acquisition and Loyalty",
-					"doctype": "Customer",
-					"icon": "icon-bar-chart",
-				},
+			#	{
+			#		"type": "report",
+			#		"is_query_report": True,
+			#		"name": "Customer Acquisition and Loyalty",
+			#		"doctype": "Customer",
+			#		"icon": "icon-bar-chart",
+			#	},
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -211,12 +211,12 @@ def get_data():
 			"label": _("Other Reports"),
 			"icon": "icon-list",
 			"items": [
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Lead Details",
-					"doctype": "Lead"
-				},
+			#	{
+			#		"type": "report",
+			#		"is_query_report": True,
+			#		"name": "Lead Details",
+			#		"doctype": "Lead"
+			#	},
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -242,12 +242,12 @@ def get_data():
 					"doctype": "Item",
 					"label": "Materialwise Sales History"
 				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "BOM Search",
-					"doctype": "BOM"
-				},
+			#	{
+			#		"type": "report",
+			#		"is_query_report": True,
+			#		"name": "BOM Search",
+			#		"doctype": "BOM"
+			#	},
 				{
 					"type": "report",
 					"is_query_report": True,

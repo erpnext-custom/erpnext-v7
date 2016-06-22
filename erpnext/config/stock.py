@@ -84,7 +84,7 @@ def get_data():
 					"type": "page",
 					"name": "Sales Browser",
 					"icon": "icon-sitemap",
-					"label": _("Item Group"),
+					"label": _("Material Group"),
 					"link": "Sales Browser/Item Group",
 					"description": _("Tree of Item Groups."),
 					"doctype": "Item Group",
@@ -189,16 +189,16 @@ def get_data():
 					"label": _("Unit of Measure") + " (UOM)",
 					"description": _("e.g. Kg, Unit, Nos, m")
 				},
-				{
-					"type": "doctype",
-					"name": "Item Attribute",
-					"description": _("Attributes for Item Variants. e.g Size, Color etc."),
-				},
-				{
-					"type": "doctype",
-					"name": "Brand",
-					"description": _("Brand master.")
-				},
+			#	{
+			#		"type": "doctype",
+			#		"name": "Item Attribute",
+			#		"description": _("Attributes for Item Variants. e.g Size, Color etc."),
+			#	},
+			#	{
+			#		"type": "doctype",
+			#		"name": "Brand",
+			#		"description": _("Brand master.")
+			#	},
 			]
 		},
 		{
