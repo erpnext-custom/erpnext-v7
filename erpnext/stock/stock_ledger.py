@@ -334,7 +334,7 @@ class update_entries_after(object):
 
 	def raise_exceptions(self):
 		deficiency = min(e["diff"] for e in self.exceptions)
-		msg = _("Negative Stock Error ({6}) for Item {0} in Warehouse {1} on {2} {3} in {4} {5}").format(self.item_code,
+		msg = _("The Warehouse {1} does not have sufficient stock on {2}").format(self.item_code,
 			self.warehouse, self.exceptions[0]["posting_date"], self.exceptions[0]["posting_time"],
 			_(self.exceptions[0]["voucher_type"]), self.exceptions[0]["voucher_no"], deficiency)
 		if self.verbose:
