@@ -54,10 +54,26 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 					cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 				}
 
+				/*// sales invoice
+				if(flt(doc.per_billed, 2) < 100) {
+					cur_frm.add_custom_button(__('Invoice'), this.make_sales_invoice, __("Make"));
+				}
+
+				// material request
+				if(!doc.order_type || ["Sales", "Shopping Cart"].indexOf(doc.order_type)!==-1
+					&& flt(doc.per_delivered, 2) < 100) {
+						cur_frm.add_custom_button(__('Material Request'), this.make_material_request, __("Make"));
+				}*/
+
 				// make purchase order
 				if(flt(doc.per_delivered, 2) < 100 && allow_purchase) {
 					cur_frm.add_custom_button(__('Purchase Order'), cur_frm.cscript.make_purchase_order, __("Make"));
 				}
+
+				/*if(flt(doc.per_billed)==0) {
+					cur_frm.add_custom_button(__('Payment Request'), this.make_payment_request, __("Make"));
+					cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_bank_entry, __("Make"));
+				}*/
 
 				// maintenance
 				if(flt(doc.per_delivered, 2) < 100 && ["Sales", "Shopping Cart"].indexOf(doc.order_type)===-1) {
