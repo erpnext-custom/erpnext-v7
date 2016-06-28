@@ -34,20 +34,6 @@ erpnext.accounts.PurchaseInvoice = erpnext.buying.BuyingController.extend({
 			}
 
 			if(doc.docstatus===0) {
-				cur_frm.add_custom_button(__('Purchase Order'), function() {
-					frappe.model.map_current_doc({
-						method: "erpnext.buying.doctype.purchase_order.purchase_order.make_purchase_invoice",
-						source_doctype: "Purchase Order",
-						get_query_filters: {
-							supplier: cur_frm.doc.supplier || undefined,
-							docstatus: 1,
-							status: ["!=", "Closed"],
-							per_billed: ["<", 99.99],
-							company: cur_frm.doc.company
-						}
-					})
-				}, __("Get items from"));
-
 				cur_frm.add_custom_button(__('Purchase Receipt'), function() {
 					frappe.model.map_current_doc({
 						method: "erpnext.stock.doctype.purchase_receipt.purchase_receipt.make_purchase_invoice",

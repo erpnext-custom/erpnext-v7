@@ -108,23 +108,6 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 		}
 	},
 
-	sales_order_btn: function() {
-		this.$sales_order_btn = cur_frm.add_custom_button(__('Sales Order'),
-			function() {
-				frappe.model.map_current_doc({
-					method: "erpnext.selling.doctype.sales_order.sales_order.make_sales_invoice",
-					source_doctype: "Sales Order",
-					get_query_filters: {
-						docstatus: 1,
-						status: ["!=", "Closed"],
-						per_billed: ["<", 99.99],
-						customer: cur_frm.doc.customer || undefined,
-						company: cur_frm.doc.company
-					}
-				})
-			}, __("Get items from"));
-	},
-
 	delivery_note_btn: function() {
 		this.$delivery_note_btn = cur_frm.add_custom_button(__('Delivery Note'),
 			function() {

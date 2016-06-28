@@ -71,13 +71,13 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 				}
 			}
 
-			if(flt(doc.per_billed, 2) < 100)
+			/*if(flt(doc.per_billed, 2) < 100)
 				cur_frm.add_custom_button(__('Invoice'),
 					this.make_purchase_invoice, __("Make"));
 
 			if(flt(doc.per_billed)==0 && doc.status != "Delivered") {
 				cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_bank_entry, __("Make"));
-			}
+			}*/
 			cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 
 		}
