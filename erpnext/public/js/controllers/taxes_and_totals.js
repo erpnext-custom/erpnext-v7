@@ -504,15 +504,15 @@ erpnext.taxes_and_totals = erpnext.stock.StockController.extend({
 		// total_advance is only for non POS Invoice
 		if(this.frm.doc.is_return || this.frm.doc.docstatus > 0) return;
 		
-		frappe.model.round_floats_in(this.frm.doc, ["grand_total", "total_advance", "write_off_amount"]);
+		frappe.model.round_floats_in(this.frm.doc, ["grand_total", "total_advance", "write_off_amount", "tds_amount"]);
 		if(this.frm.doc.party_account_currency == this.frm.doc.currency) {	
 			var total_amount_to_pay = flt((this.frm.doc.grand_total - this.frm.doc.total_advance 
-				- this.frm.doc.write_off_amount), precision("grand_total"));
+				- this.frm.doc.tds_amount - this.frm.doc.write_off_amount), precision("grand_total"));
 		} else {
 			var total_amount_to_pay = flt(
 				(flt(this.frm.doc.grand_total*this.frm.doc.conversion_rate, precision("grand_total")) 
-					- this.frm.doc.total_advance - this.frm.doc.base_write_off_amount), 
-				precision("base_grand_total")
+					- flt(this.frm.doc.tds_amount*this.frm.doc.conversion_rate, precision("tds_amount"))
+				 	- this.frm.doc.total_advance - this.frm.doc.base_write_off_amount),precision("base_grand_total")
 			);
 		}
 		

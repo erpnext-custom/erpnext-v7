@@ -1,18 +1,18 @@
 {
- "add_total_row": 1, 
+ "add_total_row": 0, 
  "apply_user_permissions": 1, 
- "creation": "2016-06-21 16:28:47.891579", 
+ "creation": "2016-06-21 16:27:51.295703", 
  "disabled": 0, 
  "docstatus": 0, 
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-06-30 09:52:13.767389", 
+ "modified": "2016-06-30 09:52:05.969840", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
- "name": "TDS Challen", 
+ "name": "TDS Certificate", 
  "owner": "Administrator", 
  "ref_doctype": "Purchase Invoice", 
- "report_name": "TDS Challen", 
+ "report_name": "TDS Certificate", 
  "report_type": "Script Report"
 }

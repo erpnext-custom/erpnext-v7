@@ -37,7 +37,11 @@ class PurchaseInvoice(BuyingController):
 		if not self.is_opening:
 			self.is_opening = 'No'
 
+		if self.outstanding_amount:
+			outstanding_old = self.outstanding_amount;
+
 		super(PurchaseInvoice, self).validate()
+		self.outstanding_amount = outstanding_old;
 
 		if not self.is_return:
 			self.po_required()
@@ -261,7 +265,8 @@ class PurchaseInvoice(BuyingController):
 		# parent's gl entry
 		if self.grand_total:
 			# Didnot use base_grand_total to book rounding loss gle
-			grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
+			#grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
+			grand_total_in_company_currency = flt(self.outstanding_amount * self.conversion_rate,
 				self.precision("grand_total"))
 
 			gl_entries.append(
@@ -272,7 +277,8 @@ class PurchaseInvoice(BuyingController):
 					"against": self.against_expense_account,
 					"credit": grand_total_in_company_currency,
 					"credit_in_account_currency": grand_total_in_company_currency \
-						if self.party_account_currency==self.company_currency else self.grand_total,
+						if self.party_account_currency==self.company_currency else self.outstanding_amount,
+						#if self.party_account_currency==self.company_currency else self.grand_total,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
 				}, self.party_account_currency)
@@ -395,6 +401,24 @@ class PurchaseInvoice(BuyingController):
 					"credit_in_account_currency": self.base_write_off_amount \
 						if write_off_account_currency==self.company_currency else self.write_off_amount,
 					"cost_center": self.write_off_cost_center
+				})
+			)
+			
+		
+		# make tds gl entry (Kinley) customisation for tds incorporation 
+		if self.tds_account and flt(self.tds_amount):
+			tds_account_currency = get_account_currency(self.tds_account)
+
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": self.tds_account,
+					"against": self.supplier,
+					"party_type": "Supplier",
+					"party": self.supplier,
+					"credit": flt(self.tds_amount),
+					"credit_in_account_currency": self.tds_amount \
+						if tds_account_currency==self.company_currency else self.tds_amount,
+					"cost_center": self.tds_cost_center
 				})
 			)
 

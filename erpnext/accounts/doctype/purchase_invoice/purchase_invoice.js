@@ -106,6 +106,12 @@ erpnext.accounts.PurchaseInvoice = erpnext.buying.BuyingController.extend({
 		this.frm.refresh_fields();
 	},
 
+	tds_amount: function() {
+		this.set_in_company_currency(this.frm.doc, ["tds_amount"]);
+		this.calculate_outstanding_amount();
+		this.frm.refresh_fields();
+	},
+
 	allocated_amount: function() {
 		this.calculate_total_advance();
 		this.frm.refresh_fields();

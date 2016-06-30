@@ -12,3 +12,10 @@ def get_loss_tolerance():
     loss_tolerance = frappe.db.sql("select name,loss_tolerance from `tabLoss Tolerance` order by creation desc limit 1;");
     #msgprint(_("Fetching Loss Tolerance {0}").format(loss_tolerance))
     return (loss_tolerance);
+
+# Ver 20160627.1 by SSK, Fetching the latest	
+@frappe.whitelist()
+def get_parent_cost_center(temp):
+    parent_cc = frappe.db.sql("select name from `tabCost Center`;");
+    return (parent_cc);
+

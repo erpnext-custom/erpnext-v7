@@ -1,7 +1,7 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
-frappe.query_reports["TDS Challen"] = {
+frappe.query_reports["TDS Certificate"] = {
 	"filters": [
 		{
 			"fieldname": "fiscal_year",
@@ -36,10 +36,10 @@ frappe.query_reports["TDS Challen"] = {
 			"default": frappe.defaults.get_user_default("year_end_date"),
 		},
 		{
-			"fieldname": "tds_rate",
-			"label": __("TDS Rate"),
-			"fieldtype": "Select",
-			"options": "\n2\n3\n5\n10",
+			"fieldname": "vendor_name",
+			"label": __("Vendor Name"),
+			"fieldtype": "Link",
+			"options": "Supplier",
 																	},
 	],
 }

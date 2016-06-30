@@ -46,11 +46,23 @@ frappe.query_reports["Statement of Trial Balance"] = {
 			"default": frappe.defaults.get_user_default("year_end_date"),
 		},
 		//Custom filter to query based on "Cost Center"
+		// Ver 20160628.1 by SSK, field get_query is added
 		{
 			"fieldname": "cost_center",
 			"label": __("Cost Center"),
 			"fieldtype": "Link",
 			"options": "Cost Center",
+			//"get_query": "erpnext.accounts.accounts_custom_functions.get_parent_cost_center"
+			//"get_query": function(){
+			//	var result = erpnext.accounts.accounts_custom_functions.get_parent_cost_center();
+			//	console.log(result)
+			//	return{
+			//		"doctype": "Cost Center",
+			//		"filters": {
+			//			"name": result,
+			//		}
+			//	}
+			//},
 		},
 		{
 			"fieldname": "with_period_closing_entry",
