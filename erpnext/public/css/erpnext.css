@@ -117,6 +117,10 @@
 	display: none;
 }
 */
+#page-Form\2f RRCO\20 Receipt > div.page-head > div > div > div.col-md-7.col-sm-8.col-xs-6.page-title > h1 {
+	display: none!important;
+}
+
 #page-desktop {
 	background-size: 70% !important;
 	background-image: url("/files/smcl_logo_background.png");

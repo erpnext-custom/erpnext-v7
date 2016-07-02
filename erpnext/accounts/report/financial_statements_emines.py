@@ -7,6 +7,7 @@ import frappe
 from frappe import _
 from frappe.utils import (flt, getdate, get_first_day, get_last_day,
 	add_months, add_days, formatdate)
+from erpnext.accounts.accounts_custom_functions import get_child_cost_centers
 
 def get_period_list(fiscal_year, periodicity):
 	"""Get a list of dict {"from_date": from_date, "to_date": to_date, "key": key, "label": label}
@@ -283,7 +284,8 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 			},
 			as_dict=True)
 	else:
-		additional_conditions.append("and cost_center LIKE %(cost_center)s")
+		cost_centers = get_child_cost_centers(cost_center);
+		additional_conditions.append("and cost_center IN %(cost_center)s")
 		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`
 			where company=%(company)s
 			{additional_conditions}
@@ -292,7 +294,7 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 				where lft >= %(lft)s and rgt <= %(rgt)s)
 			order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
 			{
-				"cost_center": cost_center,
+				"cost_center": cost_centers,
 				"company": company,
 				"from_date": from_date,
 				"to_date": to_date,

@@ -1,7 +1,7 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
-frappe.query_reports["TDS Certificate"] = {
+frappe.query_reports["Cheque Register"] = {
 	"filters": [
 		{
 			"fieldname": "fiscal_year",
@@ -35,27 +35,5 @@ frappe.query_reports["TDS Certificate"] = {
 			"fieldtype": "Date",
 			"default": frappe.defaults.get_user_default("year_end_date"),
 		},
-		{
-			"fieldname": "vendor_name",
-			"label": __("Vendor Name"),
-			"fieldtype": "Link",
-			"options": "Supplier",
-			"on_change": function(query_report) {
-				var vendor = query_report.get_values().vendor_name;
-				if (!vendor) {
-					return;
-				}
-				frappe.model.with_doc("Supplier", vendor, function(r) {
-					var fy = frappe.model.get_doc("Supplier", vendor);
-					query_report.filters_by_name.vendor_tpn_no.set_input(fy.vendor_tpn_no);
-					query_report.trigger_refresh();
-				});
-			}
-		},
-		{
-			"fieldname": "vendor_tpn_no",
-			"label": __("Vendor TPN Number"),
-			"fieldtype": "Data",
-		}
 	],
 }

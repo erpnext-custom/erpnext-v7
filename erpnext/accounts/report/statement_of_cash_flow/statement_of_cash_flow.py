@@ -6,6 +6,7 @@ import frappe
 from frappe import _
 from erpnext.accounts.report.financial_statements_emines import (get_period_list, get_columns, get_data)
 from erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement import get_net_profit_loss
+from erpnext.accounts.accounts_custom_functions import get_child_cost_centers
 
 
 def execute(filters=None):
@@ -113,13 +114,14 @@ def get_account_type_based_data(cost_center, company, account_type, period_list,
 			""", (company, period["year_start_date"] if accumulated_values else period['from_date'],
 				period['to_date'], account_type))
 		else:
+			cost_centers = get_child_cost_centers(cost_center);
 			gl_sum = frappe.db.sql_list("""
 				select sum(credit) - sum(debit)
 				from `tabGL Entry`
-				where company=%s and cost_center = %s and posting_date >= %s and posting_date <= %s
+				where company=%s and cost_center IN %s and posting_date >= %s and posting_date <= %s
 					and voucher_type != 'Period Closing Voucher'
 					and account in ( SELECT name FROM tabAccount WHERE account_type = %s)
-			""", (company, cost_center, period["year_start_date"] if accumulated_values else period['from_date'],
+			""", (company, cost_centers, period["year_start_date"] if accumulated_values else period['from_date'],
 				period['to_date'], account_type))
 
 		if gl_sum and gl_sum[0]:

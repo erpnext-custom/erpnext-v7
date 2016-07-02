@@ -75,11 +75,11 @@ def get_data():
 			#		"name": "Product Bundle",
 			#		"description": _("Bundle items at time of sale."),
 			#	},
-			#	{
-			#		"type": "doctype",
-			#		"name": "Price List",
-			#		"description": _("Price List master.")
-			#	},
+				{
+					"type": "doctype",
+					"name": "Price List",
+					"description": _("Price List master.")
+				},
 				{
 					"type": "page",
 					"name": "Sales Browser",
@@ -89,12 +89,13 @@ def get_data():
 					"description": _("Tree of Item Groups."),
 					"doctype": "Item Group",
 				},
-			#	{
-			#		"type": "doctype",
-			#		"name": "Item Price",
-			#		"description": _("Multiple Item prices."),
-			#		"route": "Report/Item Price"
-			#	},
+				{
+					"type": "doctype",
+					"name": "Item Price",
+					"label": _("Material Price"),
+					"description": _("Multiple Item prices."),
+					"route": "Report/Item Price"
+				},
 			#	{
 			#		"type": "doctype",
 			#		"name": "Shipping Rule",

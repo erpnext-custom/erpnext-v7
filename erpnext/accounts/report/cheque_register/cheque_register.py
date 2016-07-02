@@ -18,18 +18,13 @@ def get_data(query):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		row = [d.posting_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, d.cheque_number, d.cheque_date, d.receipt_number, d.receipt_date]
+		row = [d.name, d.posting_date, d.cheque_no, d.cheque_date, d.total_amount, d.pay_to_recd_from]
 		data.append(row);
 	
 	return data
 
 def construct_query(filters=None):
-	query = "SELECT a.posting_date, a.tds_taxable_amount, a.tds_rate, a.tds_amount, b.cheque_number, b.cheque_date, b.receipt_number, b.receipt_date FROM `tabPurchase Invoice` AS a, `tabRRCO Receipt Entries` AS b WHERE a.name = b.purchase_invoice AND a.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'"
-	
-	if filters.vendor_name:
-		query = query + " AND a.supplier = \'" + filters.vendor_name + "\'";
-
-	query+=";";
+	query = "SELECT name, posting_date, cheque_no, cheque_date, total_amount, pay_to_recd_from FROM `tabJournal Entry` WHERE voucher_type = \"Bank Entry\" AND NOT isnull(cheque_no) AND posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\';";
 
 	return query;
 
@@ -67,56 +62,44 @@ def validate_filters(filters):
 		frappe.msgprint(_("To Date should be within the Fiscal Year. Assuming To Date = {0}")\
 			.format(formatdate(filters.year_end_date)))
 		filters.to_date = filters.year_end_date
-	
+
 
 def get_columns():
 	return [
 		{
-		  "fieldname": "Invoice Date",
-		  "label": "Invoice Date",
+		  "fieldname": "voucher_no",
+		  "label": "Voucher No",
+		  "fieldtype": "Data",
+		  "width": 150
+		},
+		{
+		  "fieldname": "voucher_date",
+		  "label": "Voucher Date",
 		  "fieldtype": "Date",
-		  "width": 100
-		},
-		{
-		  "fieldname": "tds_taxable_amount",
-		  "label": "Gross Amount",
-		  "fieldtype": "Currency",
-		  "width": 150
-		},
-		{
-		  "fieldname": "tds_rate",
-		  "label": "TDS Rate",
-		  "fieldtype": "Data",
-		  "width": 90
-		},
-		{
-		  "fieldname": "tds_amount",
-		  "label": "TDS Amount",
-		  "fieldtype": "Currency",
-		  "width": 150
-		},
-		{
-		  "fieldname": "cheque_number",
-		  "label": "Cheque Number",
-		  "fieldtype": "Data",
 		  "width": 120
+		},
+		{
+		  "fieldname": "cheque_no",
+		  "label": "Cheque No",
+		  "fieldtype": "Data",
+		  "width": 100
 		},
 		{
 		  "fieldname": "cheque_date",
 		  "label": "Cheque Date",
 		  "fieldtype": "Date",
-		  "width": 100
+		  "width": 120
 		},
 		{
-		  "fieldname": "receipt_number",
-		  "label": "Receipt Number",
+		  "fieldname": "amount",
+		  "label": "Amount",
+		  "fieldtype": "Currency",
+		  "width": 180
+		},
+		{
+		  "fieldname": "receipant",
+		  "label": "Receipant",
 		  "fieldtype": "Data",
-		  "width": 150
-		},
-		{
-		  "fieldname": "receipt_date",
-		  "label": "Receipt Date",
-		  "fieldtype": "Date",
-		  "width": 100
+		  "width": 230
 		},
 	]

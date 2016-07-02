@@ -67,22 +67,61 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Masters"),
+			"label": _("Taxes and Registers"),
 			"items": [
+		#		{
+		#			"type": "doctype",
+		#			"name": "Sales Taxes and Charges Template",
+		#			"description": _("Tax template for selling transactions.")
+		#		},
+		#		{
+		#			"type": "doctype",
+		#			"name": "Purchase Taxes and Charges Template",
+		#			"description": _("Tax template for buying transactions.")
+		#		},
+		#		{
+		#			"type": "doctype",
+		#			"name": "Tax Rule",
+		#			"description": _("Tax Rule for transactions.")
+		#		},
 				{
-					"type": "doctype",
-					"name": "Customer",
-					"description": _("Customer database.")
+					"type": "report",
+					"name": "Sales Register",
+					"doctype": "Sales Invoice",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "Purchase Register",
+					"doctype": "Purchase Invoice",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "Cheque Register",
+					"doctype": "Journal Entry",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "TDS Certificate",
+					"label": "Generate TDS Certificate",
+					"doctype": "Purchase Invoice",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "TDS Challen",
+					"label": "Generate TDS Challan",
+					"doctype": "Purchase Invoice",
+					"is_query_report": True
 				},
 				{
 					"type": "doctype",
-					"name": "Supplier",
-					"description": _("Supplier database.")
-				},
-				{
-					"type": "doctype",
-					"name": "Item",
-					"label": "Materials",
+					"name": "RRCO Receipt Tool",
+					"label": "RRCO Receipt Tool",
+					"description": "Enter RRCO Receipts in Bulk",
+					"hide_count": True
 				},
 			]
 		},
@@ -162,34 +201,22 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Taxes"),
+			"label": _("Masters"),
 			"items": [
-		#		{
-		#			"type": "doctype",
-		#			"name": "Sales Taxes and Charges Template",
-		#			"description": _("Tax template for selling transactions.")
-		#		},
-		#		{
-		#			"type": "doctype",
-		#			"name": "Purchase Taxes and Charges Template",
-		#			"description": _("Tax template for buying transactions.")
-		#		},
-		#		{
-		#			"type": "doctype",
-		#			"name": "Tax Rule",
-		#			"description": _("Tax Rule for transactions.")
-		#		},
 				{
-					"type": "report",
-					"name": "Sales Register",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
+					"type": "doctype",
+					"name": "Customer",
+					"description": _("Customer database.")
 				},
 				{
-					"type": "report",
-					"name": "Purchase Register",
-					"doctype": "Purchase Invoice",
-					"is_query_report": True
+					"type": "doctype",
+					"name": "Supplier",
+					"description": _("Supplier database.")
+				},
+				{
+					"type": "doctype",
+					"name": "Item",
+					"label": "Materials",
 				},
 			]
 		},
