@@ -56,7 +56,7 @@ class GLEntry(Document):
 			if not self.cost_center and self.voucher_type != 'Period Closing Voucher':
 				frappe.throw(_("Cost Center is required for 'Profit and Loss' account {0}").format(self.account))
 		elif self.cost_center:
-			self.cost_center = None
+			self.cost_center = self.cost_center; 
 
 	def check_pl_account(self):
 		if self.is_opening=='Yes' and \

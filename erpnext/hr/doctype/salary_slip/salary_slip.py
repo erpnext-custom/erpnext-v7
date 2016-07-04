@@ -35,6 +35,8 @@ class SalarySlip(TransactionBase):
 
 		set_employee_name(self)
 
+		msgprint(_("{0}").format(self.employee))
+		
 	def get_emp_and_leave_details(self):
 		if self.employee:
 			joining_date, relieving_date = frappe.db.get_value("Employee", self.employee,

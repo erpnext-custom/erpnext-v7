@@ -17,7 +17,10 @@ cur_frm.cscript.onload = function(doc,dt,dn){
 		if(!doc.fiscal_year) doc.fiscal_year = sys_defaults['fiscal_year'];
 		refresh_many(['month', 'fiscal_year']);
 	}
+	console.log("salary_slip.js is called...1")
 }
+
+console.log("salary_slip.js is called...2")
 
 // Get leave details
 //---------------------------------------------------------------------

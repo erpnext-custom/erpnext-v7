@@ -43,27 +43,6 @@ cur_frm.cscript.submit_salary_slip = function(doc, cdt, cdn) {
 	});
 }
 
-// Ver 20160702.1 by SSK, accounts_posting is added 
-cur_frm.cscript.accounts_posting = function(doc, cdt, cdn) {
-	cur_frm.cscript.display_activity_log("");
-
-	frappe.confirm(__("Do you really want to Submit all Salary Slip for month {0} and year {1}", [doc.month, doc.fiscal_year]), function() {
-		// clear all in locals
-		if(locals["Salary Slip"]) {
-			$.each(locals["Salary Slip"], function(name, d) {
-				frappe.model.remove_from_locals("Salary Slip", name);
-			});
-		}
-
-		var callback = function(r, rt){
-			if (r.message)
-				cur_frm.cscript.display_activity_log(r.message);
-		}
-
-		return $c('runserverobj', args={'method':'make_journal_entry1','docs':doc},callback);
-	});
-}
-
 cur_frm.cscript.make_bank_entry = function(doc,cdt,cdn){
     if(doc.company && doc.month && doc.fiscal_year){
     	cur_frm.cscript.make_jv(doc, cdt, cdn);

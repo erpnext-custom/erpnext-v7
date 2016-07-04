@@ -185,9 +185,46 @@ class ProcessPayroll(Document):
 				"credit_in_account_currency": amount
 			},
 		])
-
 		return journal_entry.as_dict()
-
+	
+        # Ver 20160702.1 make_journal_entry1 is added by SSK
+	def make_journal_entry1(self, salary_account = None):
+		amount = self.get_total_salary()
+		default_bank_account = frappe.db.get_value("Company", self.company,
+			"default_bank_account")
+		# Following line added by SSK
+		salary_account = 'Salary Payable - SMCL'
+		ss_list = []
+		ss = frappe.get_doc({
+			"doctype": "Journal Entry",
+                        "voucher_type": 'Bank Entry',
+			"fiscal_year": self.fiscal_year,
+                        "user_remark": _('Payment of salary for the month {0} and year {1}').format(self.month,
+			self.fiscal_year),
+                        "posting_date": nowdate(),                     
+			"company": self.company,
+                        "accounts": [
+                                {
+                                        "account": salary_account,
+                                        "debit_in_account_currency": amount,
+                                        "account_type": 'Payable',
+                                        "against_account": 'Bank of Bhutan Ltd - SMCL',
+                                        "cost_center": 'Dummy-CEO - SMCL',
+                                        "party_type": 'Employee',
+                                        "party": 'EMP/0011'
+                                },
+                                {
+                                        "account": default_bank_account,
+                                        "credit_in_account_currency": amount,
+                                        "account_type": 'Bank',
+                                        "against_account": 'EMP/0011',
+                                        "cost_center": 'Dummy-CEO - SMCL'
+                                },
+                        ]
+		})
+		ss.insert()
+		ss_list.append('Direct posting Journal Entry...')		
+		
 @frappe.whitelist()
 def get_month_details(year, month):
 	ysd = frappe.db.get_value("Fiscal Year", year, "year_start_date")
