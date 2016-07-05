@@ -4,7 +4,6 @@
 from __future__ import unicode_literals
 import frappe
 
-from frappe import msgprint
 from frappe.utils import cstr, flt, getdate
 from frappe.model.naming import make_autoname
 from frappe import _
@@ -24,9 +23,8 @@ class SalaryStructure(Document):
 		set_employee_name(self)
 
 	def get_employee_details(self):
-		msgprint(_("salary_strucure.py.get_employee_details"))
 		ret = {}
-		det = frappe.db.sql("""select employee_name, branch, designation, department, division, section
+		det = frappe.db.sql("""select employee_name, branch, designation, department
 			from `tabEmployee` where name = %s""", self.employee)
 		if det:
 			ret = {
@@ -34,8 +32,6 @@ class SalaryStructure(Document):
 				'branch': cstr(det[0][1]),
 				'designation': cstr(det[0][2]),
 				'department': cstr(det[0][3]),
-                                'division': cstr(det[0][4]),       #Ver 20160704.1 added by SSK
-                                'section': cstr(det[0][5]),        #Ver 20160704.1 added by SSK
 				'backup_employee': cstr(self.employee)
 			}
 		return ret
@@ -129,9 +125,3 @@ def make_salary_slip(source_name, target_doc=None):
 	}, target_doc, postprocess)
 
 	return doc
-
-# Ver20160705.1 added by SSK, Introducing auto tax calculation
-@frappe.whitelist()
-def get_salary_tax(employee):
-        result = frappe.db.sql("""select name from `tabEmployee` where employee = %s""", employee)
-        

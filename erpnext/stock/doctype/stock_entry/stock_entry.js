@@ -18,7 +18,14 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		};
 
 		this.frm.fields_dict.items.grid.get_field('item_code').get_query = function() {
-			return erpnext.queries.item({is_stock_item: 1});
+			if(me.frm.doc.initial_stock_templates) {
+				//var d = frappe.model.add_child(me.frm.doc, "Stock Entry Details", "items");
+				//this.frm.set_value("item_code","300000");
+				//this.frm.fields_dict.items.grid.get_field('item_name')
+			}
+			else {
+				return erpnext.queries.item({is_stock_item: 1});
+			}
 		};
 
 		this.frm.set_query("purchase_order", function() {
@@ -132,6 +139,12 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 
 	qty: function(doc, cdt, cdn) {
 		var d = locals[cdt][cdn];
+		if(doc.initial_stock_templates) {
+			msgprint(" THE " + d.item_code);
+			//frappe.db.sql
+			d.conversion_factor = erpnext.stock.get_item_details.get_conversion_factor(d.item_code, d.uom);
+			msgprint(d.conversion_factor + " THE");
+		}
 		d.transfer_qty = flt(d.qty) * flt(d.conversion_factor);
 		this.calculate_basic_amount(d);
 	},
@@ -246,6 +259,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	get_warehouse_details: function(doc, cdt, cdn) {
 		var me = this;
 		var d = locals[cdt][cdn];
+		if(!doc.initial_stock_templates) {
 		if(!d.bom_no) {
 			frappe.call({
 				method: "erpnext.stock.doctype.stock_entry.stock_entry.get_warehouse_details",
@@ -268,12 +282,15 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 				}
 			});
 		}
+		}//end check initial stock template
+		else {
+			me.calculate_basic_amount(d);
+		}
 	},
 
 	calculate_basic_amount: function(item) {
 		item.basic_amount = flt(flt(item.transfer_qty) * flt(item.basic_rate),
 			precision("basic_amount", item));
-
 		this.calculate_amount();
 	},
 
@@ -386,6 +403,7 @@ cur_frm.fields_dict['items'].grid.get_field('batch_no').get_query = function(doc
 
 cur_frm.cscript.item_code = function(doc, cdt, cdn) {
 	var d = locals[cdt][cdn];
+	if(!doc.initial_stock_templates) {
 	if(d.item_code) {
 		args = {
 			'item_code'			: d.item_code,
@@ -411,6 +429,7 @@ cur_frm.cscript.item_code = function(doc, cdt, cdn) {
 				}
 			}
 		});
+	}
 	}
 }
 

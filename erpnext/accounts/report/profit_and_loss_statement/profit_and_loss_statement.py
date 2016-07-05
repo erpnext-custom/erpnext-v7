@@ -31,7 +31,7 @@ def get_net_profit_loss(income, expense, period_list, company):
 	if income and expense:
 		total = 0
 		net_profit_loss = {
-			"account_name": "'" + _("Net Profit / Loss") + "'",
+			"account_name": "'" + _("Net Profit / Loss before tax") + "'",
 			"account": None,
 			"warn_if_negative": True,
 			"currency": frappe.db.get_value("Company", company, "default_currency")

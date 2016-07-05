@@ -35,7 +35,7 @@ class SalarySlip(TransactionBase):
 
 		set_employee_name(self)
 
-		#msgprint(_("{0}").format(self.employee))
+		msgprint(_("{0}").format(self.employee))
 		
 	def get_emp_and_leave_details(self):
 		if self.employee:
@@ -173,11 +173,7 @@ class SalarySlip(TransactionBase):
 
 	def calculate_earning_total(self):
 		self.gross_pay = flt(self.arrear_amount) + flt(self.leave_encashment_amount)
-		
 		for d in self.get("earnings"):
-                        #msgprint(_("Earing Type: {0} Amount: {1}").format(d.e_type,d.e_amount))
-                        if d.e_type == "Basic Pay":
-                                self.remove(d)
 			if cint(d.e_depends_on_lwp) == 1:
 				d.e_modified_amount = rounded((flt(d.e_amount) * flt(self.payment_days)
 					/ cint(self.total_days_in_month)), self.precision("e_modified_amount", "earnings"))
@@ -186,7 +182,6 @@ class SalarySlip(TransactionBase):
 			elif not d.e_modified_amount:
 				d.e_modified_amount = d.e_amount
 			self.gross_pay += flt(d.e_modified_amount)
-			
 
 	def calculate_ded_total(self):
 		self.total_deduction = 0
