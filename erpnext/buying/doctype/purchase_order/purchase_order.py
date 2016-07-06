@@ -40,7 +40,8 @@ class PurchaseOrder(BuyingController):
 		pc_obj = frappe.get_doc('Purchase Common')
 		pc_obj.validate_for_items(self)
 		self.check_for_closed_status(pc_obj)
-
+		
+		self.validate_budget()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", ["qty", "required_qty"])
 
@@ -49,6 +50,30 @@ class PurchaseOrder(BuyingController):
 		self.validate_minimum_order_qty()
 		self.create_raw_materials_supplied("supplied_items")
 		self.set_received_qty_for_drop_ship_items()
+
+	def validate_budget(self):
+		fiscal = frappe.utils.nowdate()[:4]
+		com = frappe.defaults.get_user_default("company")
+		pc_obj = frappe.get_doc('Purchase Common')
+		consumed_budget = pc_obj.get_budget_consumed(fiscal, com);
+		allocated_budget = pc_obj.get_budget_allocated(fiscal, com);
+		committed_budget = pc_obj.get_budget_committed(fiscal, com);
+		
+		available_budget = frappe._dict()
+		for cc_acc in allocated_budget:
+			key = str(cc_acc)
+			balance = flt(allocated_budget.get(key)) - flt(consumed_budget.get(key)) - flt(committed_budget.get(key));
+			available_budget[key] = balance;
+
+		itemwise_budget = frappe._dict();
+		for d in self.get("items"):
+			itemwise_budget.setdefault((d.cost_center + " " + d.budget_account), 0)
+			itemwise_budget[(d.cost_center + " " + d.budget_account)] += flt(d.amount)
+
+		for cost_acc, asking_budget in itemwise_budget.items():
+			if flt(asking_budget) > flt(available_budget.get(cost_acc)):
+				frappe.throw(_("Not enough budget in " + cost_acc));
+
 
 	def validate_with_previous_doc(self):
 		super(PurchaseOrder, self).validate_with_previous_doc({

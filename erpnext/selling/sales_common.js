@@ -43,8 +43,10 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 		}
 
 		if(this.frm.fields_dict.selling_price_list) {
+			var today = get_today();
 			this.frm.set_query("selling_price_list", function() {
-				return { filters: { selling: 1 } };
+				//Filter the price list based onvalidity date and selling
+				return { filters: { selling: 1, price_valid_from: ["<=",today], price_valid_to: [">=", today] } };
 			});
 		}
 
@@ -326,3 +328,7 @@ frappe.ui.form.on(cur_frm.doctype,"project", function(frm) {
 		})
 	}
 })
+
+function today_date() {
+   return frappe.utils.now().split(' ')[0]
+}

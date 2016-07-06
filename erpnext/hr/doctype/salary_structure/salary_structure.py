@@ -134,4 +134,5 @@ def make_salary_slip(source_name, target_doc=None):
 @frappe.whitelist()
 def get_salary_tax(employee):
         result = frappe.db.sql("""select name from `tabEmployee` where employee = %s""", employee)
-        
+        #msgprint(_("Result set: {0}").format(result))
+        return result     

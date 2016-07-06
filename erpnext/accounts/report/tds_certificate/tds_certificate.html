@@ -11,7 +11,7 @@
 	<h4 class="text-center">{%= dateutil.str_to_user(filters.from_date) %} to {%= dateutil.str_to_user(filters.to_date) %}</h3>
 {% } %}
 <div style="float: right;">
-	<strong>Date: </strong> {%= dateutil.str_to_user(dateutil.get_datetime_as_string()) %}
+	<strong>Date: </strong> {%= dateutil.str_to_user(dateutil.get_datetime_as_string().split(' ')[0]) %}
 </div>
 
 <table style="width: 100%;">

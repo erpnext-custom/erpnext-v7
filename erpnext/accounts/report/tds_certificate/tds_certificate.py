@@ -72,8 +72,8 @@ def validate_filters(filters):
 def get_columns():
 	return [
 		{
-		  "fieldname": "Invoice Date",
-		  "label": "Invoice Date",
+		  "fieldname": "invoice_date",
+		  "label": "Month & Date",
 		  "fieldtype": "Date",
 		  "width": 100
 		},

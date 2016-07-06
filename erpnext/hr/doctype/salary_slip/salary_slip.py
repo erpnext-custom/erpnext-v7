@@ -176,8 +176,8 @@ class SalarySlip(TransactionBase):
 		
 		for d in self.get("earnings"):
                         #msgprint(_("Earing Type: {0} Amount: {1}").format(d.e_type,d.e_amount))
-                        if d.e_type == "Basic Pay":
-                                self.remove(d)
+                        #if d.e_type == "Basic Pay":
+                        #        self.remove(d)
 			if cint(d.e_depends_on_lwp) == 1:
 				d.e_modified_amount = rounded((flt(d.e_amount) * flt(self.payment_days)
 					/ cint(self.total_days_in_month)), self.precision("e_modified_amount", "earnings"))

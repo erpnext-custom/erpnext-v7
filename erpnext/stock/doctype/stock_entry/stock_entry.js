@@ -140,10 +140,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	qty: function(doc, cdt, cdn) {
 		var d = locals[cdt][cdn];
 		if(doc.initial_stock_templates) {
-			msgprint(" THE " + d.item_code);
-			//frappe.db.sql
-			d.conversion_factor = erpnext.stock.get_item_details.get_conversion_factor(d.item_code, d.uom);
-			msgprint(d.conversion_factor + " THE");
+			d.conversion_factor = 1;
 		}
 		d.transfer_qty = flt(d.qty) * flt(d.conversion_factor);
 		this.calculate_basic_amount(d);

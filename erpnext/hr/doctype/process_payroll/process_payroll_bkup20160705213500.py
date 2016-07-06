@@ -34,7 +34,7 @@ class ProcessPayroll(Document):
 		self.check_mandatory()
 
 		cond = ''
-		for f in ['company', 'branch', 'department', 'designation', 'branch', 'department', 'division']:
+		for f in ['company', 'branch', 'department', 'designation']:
 			if self.get(f):
 				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 
@@ -170,21 +170,17 @@ class ProcessPayroll(Document):
                 from frappe.utils import money_in_words
 
                 items = []
-                cond = self.get_filter_condition()
-                
-                items.extend(frappe.db.sql("""select t1.branch, t1.department, t1.division,t2.cost_center,
-                        sum(t1.rounded_total) as total_amt
-                         from `tabSalary Slip` t1, `tabDivision` t2
-                        where t2.name = t1.division
-                          and t2.dpt_name = t1.department
-                          and t2.branch = t1.branch
-                          and t1.month = %s
-                          and t1.fiscal_year = %s
-                          and t1.docstatus = 0 
-                          %s
-                        group by t1.branch,t1.department,t1.division,t2.cost_center
-                """ % (self.month, self.fiscal_year, cond),as_dict=1))
-                msgprint(_("Items: {0}").format(items))
+                items.extend(frappe.db.sql("""select ss.branch,ss.department,ss.division,d.cost_center,
+                        sum(rounded_total) as total_amt
+                         from `tabSalary Slip` ss, `tabDivision` d
+                        where d.name = ss.division
+                          and d.dpt_name = ss.department
+                          and d.branch = ss.branch
+                          and ss.month = %s
+                          and ss.fiscal_year = %s
+                          and ss.docstatus = 1
+                        group by ss.branch,ss.department,ss.division,d.cost_center
+                """ % (self.month, self.fiscal_year),as_dict=1))
 
                 #
                 # GL Mapping
@@ -199,22 +195,42 @@ class ProcessPayroll(Document):
                         #
                         # Deductions
                         #
-                        query = """select dt.gl_head as account,
+                        query = """select (case
+                                                when sd.d_type = 'BNB Loan' then 'Financial Institution Loan - SMCL'
+                                                when sd.d_type = 'BOB Loan' then 'Financial Institution Loan - SMCL'
+                                                when sd.d_type = 'DPNB Loan' then 'Financial Institution Loan - SMCL'
+                                                when sd.d_type = 'NPPF Loan' then 'Financial Institution Loan - SMCL'
+                                                when sd.d_type = 'Other Loan' then 'Financial Institution Loan - SMCL'
+                                                when sd.d_type = 'Health Contribution' then 'Health Contribution - SMCL'
+                                                when sd.d_type = 'Salary Tax' then 'Salary Tax - SMCL'
+                                                when sd.d_type = 'PF' then 'Provident Fund - SMCL'
+                                                when sd.d_type = 'Group Insurance Scheme' then 'Group Insurance Scheme - SMCL'
+                                                when sd.d_type = 'Salary Advance Deductions' then 'Salary Advance Recovery - SMCL'
+                                           end) as account,
                                 sum(d_modified_amount) as credit_in_account_currency,
-                                'Salary Payable - SMCL' as against_account,
-                                '%s' as cost_center,
-                                0 as party_check
-                                from `tabSalary Slip Deduction` sd, `tabSalary Slip` ss, `tabDeduction Type` dt
+                                'Bank of Bhutan Ltd - SMCL' as against_account,
+                                '%s' as cost_center
+                                from `tabSalary Slip Deduction` sd, `tabSalary Slip` ss
                                where ss.name = sd.parent
                                  and sd.d_modified_amount > 0
-                                 and dt.name = sd.d_type
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
-                                 and ss.docstatus = 0
+                                 and ss.docstatus = 1
                                  and ss.branch = '%s'
                                  and ss.department = '%s'
                                  and ss.division = '%s'
-                               group by dt.gl_head
+                               group by (case
+                                                when sd.d_type = 'BNB Loan' then 'Financial Institution Loan - SMCL'
+                                                when sd.d_type = 'BOB Loan' then 'Financial Institution Loan - SMCL'
+                                                when sd.d_type = 'DPNB Loan' then 'Financial Institution Loan - SMCL'
+                                                when sd.d_type = 'NPPF Loan' then 'Financial Institution Loan - SMCL'
+                                                when sd.d_type = 'Other Loan' then 'Financial Institution Loan - SMCL'
+                                                when sd.d_type = 'Health Contribution' then 'Health Contribution - SMCL'
+                                                when sd.d_type = 'Salary Tax' then 'Salary Tax - SMCL'
+                                                when sd.d_type = 'PF' then 'Provident Fund - SMCL'
+                                                when sd.d_type = 'Group Insurance Scheme' then 'Group Insurance Scheme - SMCL'
+                                                when sd.d_type = 'Salary Advance Deductions' then 'Salary Advance Recovery - SMCL'
+                                           end)
                                 """ % (item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'])
                         deductions.extend(frappe.db.sql(query, as_dict=1))                        
                         accounts.extend(deductions)
@@ -226,22 +242,19 @@ class ProcessPayroll(Document):
                         #
                         # Earnings
                         #
-                        query = """select et.gl_head as account,
+                        query = """select 'Salary Payable - SMCL' as account,
                                 sum(e_modified_amount) as debit_in_account_currency,
-                                'Salary Payable - SMCL' as against_account,
-                                '%s' as cost_center,
-                                0 as party_check
-                                from `tabSalary Slip Earning` se, `tabSalary Slip` ss, `tabEarning Type` et
+                                'Bank of Bhutan Ltd - SMCL' as against_account,
+                                '%s' as cost_center
+                                from `tabSalary Slip Earning` se, `tabSalary Slip` ss
                                where ss.name = se.parent
                                  and se.e_modified_amount > 0
-                                 and et.name = se.e_type
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
-                                 and ss.docstatus = 0
+                                 and ss.docstatus = 1
                                  and ss.branch = '%s'
                                  and ss.department = '%s'
                                  and ss.division = '%s'
-                               group by et.gl_head
                                 """ % (item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'])
                         earnings.extend(frappe.db.sql(query, as_dict=1))
                         accounts.extend(earnings)
@@ -251,7 +264,9 @@ class ProcessPayroll(Document):
                                 tot_earnings += earning['debit_in_account_currency']
 
 
-                msgprint(_("Total Earnings: {0} \nTotal Deductions: {1} \nNetPay: {2}").format(tot_earnings,tot_deductions,(tot_earnings-tot_deductions)))
+                msgprint(_("Total Earnings: {0}").format(tot_earnings))
+                msgprint(_("Total Deductions: {0}").format(tot_deductions))
+                msgprint(_("Difference is :{0}").format(tot_earnings-tot_deductions))
 
                 # Bank Entry
                 default_bank_account = frappe.db.get_value("Company", self.company,
@@ -263,7 +278,7 @@ class ProcessPayroll(Document):
                                          "against_account": 'Bank',
                                          "cost_center": 'Dummy-CEO - SMCL'})
 
-                #msgprint(_("Accounts: {0}").format(accounts))
+                msgprint(_("Accounts: {0}").format(accounts))
                 ss_list = []
 		ss = frappe.get_doc({
 			"doctype": "Journal Entry",
