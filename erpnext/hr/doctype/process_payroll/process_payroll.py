@@ -167,8 +167,6 @@ class ProcessPayroll(Document):
         # Ver20160705.1 added by SSK, account rules
         #
         def get_account_rules(self):
-                from frappe.utils import money_in_words
-
                 items = []
                 cond = self.get_filter_condition()
                 
@@ -253,27 +251,94 @@ class ProcessPayroll(Document):
 
                 msgprint(_("Total Earnings: {0} \nTotal Deductions: {1} \nNetPay: {2}").format(tot_earnings,tot_deductions,(tot_earnings-tot_deductions)))
 
-                # Bank Entry
-                default_bank_account = frappe.db.get_value("Company", self.company,
-			"default_bank_account")
-                
                 if tot_deductions <= tot_earnings:
-                        accounts.append({"account": default_bank_account,
+                        accounts.append({"account": 'Salary Payable - SMCL',
                                          "credit_in_account_currency": (tot_earnings-tot_deductions),
                                          "against_account": 'Bank',
-                                         "cost_center": 'Dummy-CEO - SMCL'})
+                                         "cost_center": 'Dummy-CEO - SMCL',
+                                         "party_check": 0})
 
-                #msgprint(_("Accounts: {0}").format(accounts))
+                # Salary Posting
+                title = _('Salary for the month {0} and year {1}').format(self.month, self.fiscal_year)
+                user_remark = _('Payment of salary for the month {0} and year {1}').format(self.month, self.fiscal_year)
+                #self.post_journal_entry(title, user_remark, accounts, tot_earnings, tot_deductions)
+
+                # Remittance
+                bank = []
+                gis = []                
+                pf = []
+                loan = []
+                saving = []                
+                tax = []
+                health = []
+
+                tot_bank = 0
+                tot_gis = 0
+                tot_pf = 0
+                tot_loan = 0
+                tot_saving = 0
+                tot_tax = 0
+                tot_health = 0
+                
+                default_payable_account = 'Salary Payable - SMCL'       
+                default_bank_account = frappe.db.get_value("Company", self.company,"default_bank_account")
+                default_gis_account = frappe.db.get_value("Deduction Type", 'Group Insurance Scheme',"gl_head")
+                default_pf_account = frappe.db.get_value("Deduction Type", 'PF',"gl_head")
+                default_loan_account = frappe.db.get_value("Deduction Type", 'NPPF Loan',"gl_head")
+                default_saving_account = frappe.db.get_value("Deduction Type", 'RICB Scheme',"gl_head")
+                default_tax_account = frappe.db.get_value("Deduction Type", 'Salary Tax',"gl_head")
+                default_health_account = frappe.db.get_value("Deduction Type", 'Health Contribution',"gl_head")
+
+                msgprint(_("{0}").format(default_payable_account))
+                msgprint(_("{0}").format(default_bank_account))
+                msgprint(_("{0}").format(default_gis_account))
+                msgprint(_("{0}").format(default_pf_account))
+                msgprint(_("{0}").format(default_loan_account))
+                msgprint(_("{0}").format(default_saving_account))
+                msgprint(_("{0}").format(default_tax_account))
+                msgprint(_("{0}").format(default_health_account))
+                                
+                for list_item in accounts:
+                        #msgprint(_("{0}").format(list_item['account']))
+                        if default_payable_account == list_item['account']:
+                                bank.append(list_item)
+                                tot_bank += list_item['credit_in_account_currency']
+                        elif default_gis_account == list_item['account']:
+                                gis.append(list_item)
+                                tot_gis += list_item['credit_in_account_currency']
+                        elif default_pf_account == list_item['account']:
+                                pf.append(list_item)
+                                tot_pf += list_item['credit_in_account_currency']
+                        elif default_loan_account == list_item['account']:
+                                loan.append(list_item)
+                                tot_loan += list_item['credit_in_account_currency']
+                        elif default_saving_account == list_item['account']:
+                                saving.append(list_item)
+                                tot_saving += list_item['credit_in_account_currency']
+                        elif default_tax_account == list_item['account']:
+                                tax.append(list_item)
+                                tot_tax += list_item['credit_in_account_currency']
+                        elif default_health_account == list_item['account']:
+                                health.append(list_item)
+                                tot_health += list_item['credit_in_account_currency']
+                                
+                        #for k,v in list_item.iteritems():
+                        #        msgprint(_("{0}").format(k))
+                msgprint(_("{0}").format(gis))
+                msgprint(_("{0}").format(str(gis).replace('credit_in_account_currency','debit_in_account_currency')))
+                
+        # Ver 20160706.1 added by SSK
+        def post_journal_entry(self, title, user_remark, accounts, tot_earnings, tot_deductions):
+                from frappe.utils import money_in_words
                 ss_list = []
+
 		ss = frappe.get_doc({
 			"doctype": "Journal Entry",
                         "voucher_type": 'Bank Entry',
                         "naming_series": 'Bank Payment Voucher',
-                        "title": _('Salary for the month {0} and year {1}').format(self.month,
-			self.fiscal_year),
+                        "title": title,
 			"fiscal_year": self.fiscal_year,
-                        "user_remark": _('Payment of salary for the month {0} and year {1}').format(self.month,
-			self.fiscal_year),
+                        "user_remark": user_remark,
                         "posting_date": nowdate(),                     
 			"company": self.company,
                         "total_amount_in_words": money_in_words((tot_earnings-tot_deductions)),
@@ -283,9 +348,8 @@ class ProcessPayroll(Document):
 		if (tot_deductions or tot_earnings):
                         ss.insert()
                         #ss.submit()
-		ss_list.append('Direct posting Journal Entry...')		                
+		ss_list.append('Direct posting Journal Entry...')
                 
-
         def make_journal_entry1(self, salary_account = None):
                 self.get_account_rules()
 

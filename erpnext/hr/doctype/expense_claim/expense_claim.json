@@ -16,7 +16,7 @@
    "default": "EXP", 
    "fieldname": "naming_series", 
    "fieldtype": "Select", 
-   "hidden": 0, 
+   "hidden": 1, 
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
@@ -578,16 +578,16 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2016-07-05 20:29:31.874372", 
+ "modified": "2016-07-06 16:37:39.311378", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Expense Claim", 
  "owner": "harshada@webnotestech.com", 
  "permissions": [
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 1, 
    "email": 1, 
@@ -601,7 +601,7 @@
    "role": "Administrator", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }, 
   {

@@ -41,7 +41,7 @@ class PurchaseOrder(BuyingController):
 		pc_obj.validate_for_items(self)
 		self.check_for_closed_status(pc_obj)
 		
-		self.validate_budget()
+		#self.validate_budget()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", ["qty", "required_qty"])
 
