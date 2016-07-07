@@ -182,7 +182,7 @@ class ProcessPayroll(Document):
                           %s
                         group by t1.branch,t1.department,t1.division,t2.cost_center
                 """ % (self.month, self.fiscal_year, cond),as_dict=1))
-                msgprint(_("Items: {0}").format(items))
+                #msgprint(_("Items: {0}").format(items))
 
                 #
                 # GL Mapping
@@ -197,6 +197,7 @@ class ProcessPayroll(Document):
                 default_saving_account = frappe.db.get_value("Deduction Type", 'RICB Scheme',"gl_head")
                 default_tax_account = frappe.db.get_value("Deduction Type", 'Salary Tax',"gl_head")
                 default_health_account = frappe.db.get_value("Deduction Type", 'Health Contribution',"gl_head")
+                default_saladv_account = frappe.db.get_value("Deduction Type", 'Salary Advance Deductions',"gl_head")
 
                 for item in items:
                         deductions = []
@@ -222,9 +223,34 @@ class ProcessPayroll(Document):
                                  and ss.branch = '%s'
                                  and ss.department = '%s'
                                  and ss.division = '%s'
+                                 and dt.gl_head <> '%s'
                                group by dt.gl_head
-                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'])
-                        deductions.extend(frappe.db.sql(query, as_dict=1))                        
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], default_saladv_account)
+                        deductions.extend(frappe.db.sql(query, as_dict=1))
+
+                        # Salary Advance
+                        query2 = """select dt.gl_head as account,
+                                sum(d_modified_amount) as credit_in_account_currency,
+                                '%s' as against_account,
+                                '%s' as cost_center,
+                                0 as party_check,
+                                'Payable' as account_type,
+                                'Employee' as party_type,
+                                ss.employee as party
+                                from `tabSalary Slip Deduction` sd, `tabSalary Slip` ss, `tabDeduction Type` dt
+                               where ss.name = sd.parent
+                                 and sd.d_modified_amount > 0
+                                 and dt.name = sd.d_type
+                                 and ss.month = '%s'
+                                 and ss.fiscal_year = %s
+                                 and ss.docstatus = 0
+                                 and ss.branch = '%s'
+                                 and ss.department = '%s'
+                                 and ss.division = '%s'
+                                 and dt.gl_head = '%s'
+                               group by dt.gl_head, ss.employee
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], default_saladv_account)
+                        deductions.extend(frappe.db.sql(query2, as_dict=1))                        
                         accounts.extend(deductions)
 
                         # Total Deductions
@@ -267,7 +293,7 @@ class ProcessPayroll(Document):
                                                  "party_check": 0})
                                 
                                 
-                msgprint(_("Total Earnings: {0} \nTotal Deductions: {1} \nNetPay: {2}").format(tot_earnings,tot_deductions,(tot_earnings-tot_deductions)))
+                #msgprint(_("Total Earnings: {0} \nTotal Deductions: {1} \nNetPay: {2}").format(tot_earnings,tot_deductions,(tot_earnings-tot_deductions)))
 
                 #if tot_deductions <= tot_earnings:
                 #        accounts.append({"account": 'Salary Payable - SMCL',
@@ -275,11 +301,6 @@ class ProcessPayroll(Document):
                 #                         "against_account": 'Bank',
                 #                         "cost_center": 'Dummy-CEO - SMCL',
                 #                         "party_check": 0})
-
-                # Salary Posting
-                title = _('Salary for the month {0} and year {1}').format(self.month, self.fiscal_year)
-                user_remark = _('Payment of salary for the month {0} and year {1}').format(self.month, self.fiscal_year)
-                #self.post_journal_entry(title, user_remark, accounts, tot_earnings, tot_deductions)
 
                 # Remittance
                 bank = []
@@ -298,13 +319,13 @@ class ProcessPayroll(Document):
                 tot_tax = 0
                 tot_health = 0
                 
-                msgprint(_("{0}").format(default_payable_account))
-                msgprint(_("{0}").format(default_gis_account))
-                msgprint(_("{0}").format(default_pf_account))
-                msgprint(_("{0}").format(default_loan_account))
-                msgprint(_("{0}").format(default_saving_account))
-                msgprint(_("{0}").format(default_tax_account))
-                msgprint(_("{0}").format(default_health_account))
+                #msgprint(_("{0}").format(default_payable_account))
+                #msgprint(_("{0}").format(default_gis_account))
+                #msgprint(_("{0}").format(default_pf_account))
+                #msgprint(_("{0}").format(default_loan_account))
+                #msgprint(_("{0}").format(default_saving_account))
+                #msgprint(_("{0}").format(default_tax_account))
+                #msgprint(_("{0}").format(default_health_account))
                                 
                 for list_item in accounts:
                         #msgprint(_("{0}").format(list_item['account']))
@@ -353,13 +374,13 @@ class ProcessPayroll(Document):
 
                 if tot_bank:
                         # To Salary Payable
-                        title = _('Salary for the month {0} and year {1}').format(self.month, self.fiscal_year)
-                        user_remark = _('Payment of salary for the month {0} and year {1}').format(self.month, self.fiscal_year)
+                        title = _('Salary [{0}{1}] - To Payables').format(self.month, self.fiscal_year)
+                        user_remark = _('Salary [{0}{1}] - To Payables').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, accounts, 0, tot_earnings, tot_deductions)
 
                         # To Bank
-                        title = _('Salary for the month {0} and year {1}').format(self.month, self.fiscal_year)
-                        user_remark = _('Payment of salary for the month {0} and year {1}').format(self.month, self.fiscal_year)
+                        title = _('Salary [{0}{1}] - To Bank').format(self.month, self.fiscal_year)
+                        user_remark = _('Salary [{0}{1}] - To Bank').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, bank, 1, tot_bank, 0)
 
                 if tot_gis:
@@ -450,7 +471,7 @@ class ProcessPayroll(Document):
                         
         def make_journal_entry1(self, salary_account = None):
                 self.get_account_rules()
-
+                msgprint(_("Payslip posting to Accounts complete..."))
 	def make_journal_entry(self, salary_account = None):
 		amount = self.get_total_salary()
 		default_bank_account = frappe.db.get_value("Company", self.company,
