@@ -40,7 +40,7 @@ class PurchaseOrder(BuyingController):
 		pc_obj = frappe.get_doc('Purchase Common')
 		pc_obj.validate_for_items(self)
 		self.check_for_closed_status(pc_obj)
-		
+
 		#self.validate_budget()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", ["qty", "required_qty"])
@@ -58,7 +58,7 @@ class PurchaseOrder(BuyingController):
 		consumed_budget = pc_obj.get_budget_consumed(fiscal, com);
 		allocated_budget = pc_obj.get_budget_allocated(fiscal, com);
 		committed_budget = pc_obj.get_budget_committed(fiscal, com);
-		
+
 		available_budget = frappe._dict()
 		for cc_acc in allocated_budget:
 			key = str(cc_acc)
@@ -390,4 +390,3 @@ def update_status(status, name):
 	po = frappe.get_doc("Purchase Order", name)
 	po.update_status(status)
 	po.update_delivered_qty_in_sales_order()
-

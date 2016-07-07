@@ -82,10 +82,10 @@ class PurchaseCommon(BuyingController):
 
 	def check_for_closed_status(self, doctype, docname):
 		status = frappe.db.get_value(doctype, docname, "status")
-		
+
 		if status == "Closed":
 			frappe.throw(_("{0} {1} status is {2}").format(doctype, docname, status), frappe.InvalidStatusError)
-		
+
 	def check_docstatus(self, check, doctype, docname, detail_doctype = ''):
 		if check == 'Next':
 			submitted = frappe.db.sql("""select t1.name from `tab%s` t1,`tab%s` t2
@@ -99,7 +99,7 @@ class PurchaseCommon(BuyingController):
 				where docstatus = 1 and name = %s""" % (doctype, '%s'), docname)
 			if not submitted:
 				frappe.throw(_("{0} {1} is not submitted").format(doctype, submitted[0][0]))
-	
+
 	##
 	#Get the budget consumed in the financial year
 	##
@@ -110,7 +110,7 @@ class PurchaseCommon(BuyingController):
 				and bd.parent=gl.cost_center"""% ('%s','%s'),
 				(fiscal, com), as_dict=True);
 
-		con_details = frappe._dict() 
+		con_details = frappe._dict()
 		for d in consumed_budgets:
 			con_details.setdefault((d.cost_center + " " + d.account), 0)
 			con_details[(d.cost_center + " " + d.account)] += (flt(flt(d.debit) - flt(d.credit)))
@@ -127,9 +127,9 @@ class PurchaseCommon(BuyingController):
 	def get_budget_committed(self, fiscal, com):
 	        com_details = frappe._dict(frappe.db.sql("""
 		        SELECT concat(poi.cost_center,\" \", poi.budget_account) AS cc_acc, poi.amount
-			FROM `tabPurchase Order Item` AS poi 
+			FROM `tabPurchase Order Item` AS poi
 		        JOIN `tabBudget Detail` AS bd
-    	        	        ON poi.cost_center = bd.parent AND poi.budget_account = bd.account
+		        	        ON poi.cost_center = bd.parent AND poi.budget_account = bd.account
 		        JOIN `tabPurchase Order` AS po
 		                ON po.name = poi.parent
 			LEFT JOIN `tabPurchase Invoice Item` AS pii
@@ -139,4 +139,3 @@ class PurchaseCommon(BuyingController):
 		        WHERE (po.status IN ('To Receive and Bill', 'To Bill') OR pi.outstanding_amount > 0) AND bd.fiscal_year=%s""",fiscal))
 
 		return com_details
-
