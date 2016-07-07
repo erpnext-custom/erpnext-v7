@@ -203,6 +203,9 @@ def get_columns(filters, show_party_name):
 	return columns
 		
 def is_party_name_visible(filters):
+	if filters.get("party_type") == "Employee":
+		return True;
+
 	show_party_name = False
 	if filters.get("party_type") == "Customer":
 		party_naming_by = frappe.db.get_single_value("Selling Settings", "cust_master_name")

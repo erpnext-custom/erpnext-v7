@@ -163,6 +163,12 @@ def get_data():
 					"name": "Property Plant & Equipment",
 					"doctype": "GL Entry",
 					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Party Wise Ledger",
+					"doctype": "GL Entry",
+					"is_query_report": True,
 				}
 			]
 		},
@@ -372,12 +378,6 @@ def get_data():
 			"label": _("Other Reports"),
 			"icon": "icon-table",
 			"items": [
-				{
-					"type": "report",
-					"name": "Trial Balance for Party",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
 				{
 					"type": "report",
 					"name": "Payment Period Based On Invoice Date",

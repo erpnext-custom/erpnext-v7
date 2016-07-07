@@ -430,8 +430,8 @@ class ProcessPayroll(Document):
                 if bank_entry_req == 0:
                         ss = frappe.get_doc({
                                 "doctype": "Journal Entry",
-                                "voucher_type": 'Bank Entry',
-                                "naming_series": 'Bank Payment Voucher',
+                                "voucher_type": 'Journal Entry',
+                                "naming_series": 'Journal Voucher',
                                 "title": title,
                                 "fiscal_year": self.fiscal_year,
                                 "user_remark": user_remark,

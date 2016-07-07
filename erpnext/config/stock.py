@@ -70,6 +70,12 @@ def get_data():
 					"label": "Material",
 					"description": _("All Products or Services."),
 				},
+				{
+					"type": "doctype",
+					"name": "Initial Stock Templates",
+					"label": "Price Templates for Mining Goods",
+					"description": _("Price Templates for Mining Goods"),
+				},
 			#	{
 			#		"type": "doctype",
 			#		"name": "Product Bundle",

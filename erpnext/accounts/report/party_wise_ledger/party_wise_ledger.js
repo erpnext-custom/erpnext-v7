@@ -1,7 +1,7 @@
 // Copyright (c) 2013, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.query_reports["Trial Balance for Party"] = {
+frappe.query_reports["Party Wise Ledger"] = {
 	"filters": [
 		{
 			"fieldname": "company",

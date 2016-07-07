@@ -67,7 +67,7 @@ def get_budget_consumed_final(self, fiscal, com):
 		gl_consumed_budgets.setdefault((d.cost_center + " " + d.account), 0)
 		gl_consumed_budgets[(d.cost_center + " " + d.account)] += (flt(flt(d.debit) - flt(d.credit)))
 
-    in_budgets = frappe.db.sql("""
+    	in_budgets = frappe.db.sql("""
             select poi.cost_center, poi.budget_account, pii.amount
             from `tabPurchase Receipt Item` as pii
             JOIN `tabPurchase Order Item` as poi
