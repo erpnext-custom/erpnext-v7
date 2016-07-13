@@ -272,14 +272,6 @@ cur_frm.cscript.voucher_type = function(doc, cdt, cdn) {
 		else {
 			cur_frm.set_df_property("cheque_date", "reqd", doc.voucher_type=="Bank Entry");
 		}		
-		
-		// Ver 20160713.1 by SSK, field "Payee Name" is introducted
-		if(doc.pay_to_recd_from){
-			frappe.meta.get_docfield(doc.doctype, "pay_to_recd_from", this.frm.doc.name).read_only=0;
-		}
-		else {
-			cur_frm.set_df_property("pay_to_recd_from", "reqd", doc.voucher_type=="Bank Entry");
-		}				
 	}
 	
 	if(!doc.company) return;

@@ -378,12 +378,7 @@ class JournalEntry(AccountsController):
 			else:
 				total_amount = party_amount
 				currency = party_account_currency
-		# Ver 20160713.1 added by SSK
-		# Calculating Total Amounts for bank entryies even without party details
-                elif self.voucher_type == "Bank Entry":
-                        total_amount = bank_amount
-                        currency = bank_account_currency
-                        
+
 		self.set_total_amount(total_amount, currency)
 
 	def set_total_amount(self, amt, currency):
