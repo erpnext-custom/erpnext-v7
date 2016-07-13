@@ -18,13 +18,13 @@ def get_data(query):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		row = [d.name, d.posting_date, d.cheque_no, d.cheque_date, d.total_amount, d.pay_to_recd_from]
+		row = [d.name, d.posting_date, d.cheque_no, d.cheque_date, d.total_amount, d.cancelled_amount, d.pay_to_recd_from, d.cheque_status]
 		data.append(row);
-	
+
 	return data
 
 def construct_query(filters=None):
-	query = "SELECT name, posting_date, cheque_no, cheque_date, total_amount, pay_to_recd_from FROM `tabJournal Entry` WHERE voucher_type = \"Bank Entry\" AND NOT isnull(cheque_no) AND posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\';";
+	query = "SELECT name, posting_date, cheque_no, cheque_date, CASE docstatus WHEN 2 THEN 0 ELSE total_amount END AS total_amount, CASE docstatus WHEN 2 THEN total_amount ELSE 0 END AS cancelled_amount, pay_to_recd_from, CASE docstatus WHEN 2 THEN \"CANCELLED\" ELSE \"\" END AS cheque_status FROM `tabJournal Entry` WHERE voucher_type = \"Bank Entry\" AND NOT isnull(cheque_no) AND posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\';";
 
 	return query;
 
@@ -97,9 +97,21 @@ def get_columns():
 		  "width": 180
 		},
 		{
+		  "fieldname": "canaelled_amount",
+		  "label": "Cancelled Amount",
+		  "fieldtype": "Currency",
+		  "width": 180
+		},
+		{
 		  "fieldname": "receipant",
 		  "label": "Receipant",
 		  "fieldtype": "Data",
 		  "width": 230
+		},
+		{
+		  "fieldname": "cheque_status",
+		  "label": "Cheque Status",
+		  "fieldtype": "Data",
+		  "width": 100
 		},
 	]
