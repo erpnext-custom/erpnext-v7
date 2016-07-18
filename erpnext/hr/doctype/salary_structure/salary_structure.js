@@ -32,6 +32,12 @@ cur_frm.cscript.employee = function(doc, dt, dn){
 }
 
 cur_frm.cscript.modified_value = function(doc, cdt, cdn){
+	//++ Ver 20160714.1 Begins added by SSK
+	var item = frappe.get_doc(cdt, cdn);
+	console.log(item.e_type);
+
+	//-- Ver 20160714.1 Ends
+	
 	calculate_totals(doc, cdt, cdn);
 }
 
@@ -42,7 +48,7 @@ cur_frm.cscript.d_modified_amt = function(doc, cdt, cdn){
 var calculate_totals = function(doc, cdt, cdn) {
 	var tbl1 = doc.earnings || [];
 	var tbl2 = doc.deductions || [];
-
+	
 	var total_earn = 0; var total_ded = 0;
 	for(var i = 0; i < tbl1.length; i++){
 		total_earn += flt(tbl1[i].modified_value);
@@ -50,6 +56,15 @@ var calculate_totals = function(doc, cdt, cdn) {
 	for(var j = 0; j < tbl2.length; j++){
 		total_ded += flt(tbl2[j].d_modified_amt);
 	}
+	
+	//++ Ver 20160714.1 Begins added by SSK
+	
+	
+	//if (eligible_for_corporate_allowance){
+	//	
+	//}
+	
+	//-- Ver 20160714.1 Ends
 	doc.total_earning = total_earn;
 	doc.total_deduction = total_ded;
 	doc.net_pay = flt(total_earn) - flt(total_ded);
@@ -57,10 +72,25 @@ var calculate_totals = function(doc, cdt, cdn) {
 }
 
 cur_frm.cscript.validate = function(doc, cdt, cdn) {
+	console.log('cur_frm.cscript.validate');
 	calculate_totals(doc, cdt, cdn);
 	if(doc.employee && doc.is_active == "Yes") frappe.model.clear_doc("Employee", doc.employee);
 }
 
 cur_frm.fields_dict.employee.get_query = function(doc,cdt,cdn) {
 	return{ query: "erpnext.controllers.queries.employee_query" }
+}
+
+// Ver 20160714.1 by SSK
+//var calculate_ed = function(doc, cdt, cdn){
+//	
+//}
+
+cur_frm.cscript.eligible_for_corporate_allowance = function(doc, cdt, cdn){
+	console.log('Value Changed.');
+	console.log(doc.eligible_for_corporate_allowance);
+	console.log(doc.earnings.length);
+	console.log(doc.earnings);
+	console.log(doc.deductions.length);
+	console.log(doc.deductions);
 }

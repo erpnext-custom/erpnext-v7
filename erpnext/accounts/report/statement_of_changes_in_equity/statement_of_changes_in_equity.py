@@ -7,8 +7,7 @@ from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr
 from erpnext.accounts.report.financial_statements_emines \
 	import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
-
-value_fields = ("opening_debit", "opening_credit", "debit", "credit", "closing_debit", "closing_credit")
+from erpnext.accounts.utils import get_balance_on
 
 def execute(filters=None):
 	validate_filters(filters)
@@ -28,17 +27,39 @@ def validate_filters(filters):
 		filters.year_start_date = getdate(fiscal_year.year_start_date)
 		filters.year_end_date = getdate(fiscal_year.year_end_date)
 
+	if not filters.from_date:
 		filters.from_date = filters.year_start_date
+
+	if not filters.to_date:
+		filters.to_date = filters.year_end_date
+
+	filters.from_date = getdate(filters.from_date)
+	filters.to_date = getdate(filters.to_date)
+
+	if filters.from_date > filters.to_date:
+		frappe.throw(_("From Date cannot be greater than To Date"))
+
+	if (filters.from_date < filters.year_start_date) or (filters.from_date > filters.year_end_date):
+		frappe.msgprint(_("From Date should be within the Fiscal Year. Assuming From Date = {0}")\
+			.format(formatdate(filters.year_start_date)))
+
+		filters.from_date = filters.year_start_date
+
+	if (filters.to_date < filters.year_start_date) or (filters.to_date > filters.year_end_date):
+		frappe.msgprint(_("To Date should be within the Fiscal Year. Assuming To Date = {0}")\
+			.format(formatdate(filters.year_end_date)))
+		filters.to_date = filters.year_end_date
+
 
 def get_data(filters):
     data = [
-	['Balance as at 1 January 2015','34634','34634','34634','34634','34634'],
-	['Profit/Loss after Income tax','34634','34634','34634','34634','34634'],
-	['Share allotment aganist money recieved from DHI','34634','34634','34634','34634','34634'],
-    ['Dividend for the Financial Year','34634','34634','34634','34634','34634'],
-	['Transfer to Group Investment Reserve','34634','34634','34634','34634','34634'],
-    ['Other Comprehensive Income for the Year','34634','34634','34634','34634','34634'],
-	['Balance as at 31 December 2016','34634','34634','34634','34634','34634']
+	['Balance as at ' + str(frappe.utils.get_datetime(filters.from_date).strftime('%d %B, %Y')),"","","","","","","","","",""],
+	['Profit/Loss after Income tax',"","","","","",str(get_balance_on("Retain Earnings - SMCL")),"","","",""],
+	['Share allotment aganist money recieved from DHI',str(get_balance_on("Paid Up Capital - SMCL")/100)[1:],"100",str(get_balance_on("Paid Up Capital - SMCL"))[1:],"","","","","","",""],
+    ['Dividend for the Financial Year',"","","","","",str(get_balance_on("Proposed Dividend (Current Year) - SMCL")),"","","",""],
+	['Transfer to Group Investment Reserve',"","","","","","",str(get_balance_on("General Reserves - SMCL")),"","",""],
+    ['Other Comprehensive Income for the Year',"","","","","","","","","",""],
+	['Balance as at ' + str(frappe.utils.get_datetime(filters.to_date).strftime('%d %B, %Y')),"","","","","","","","","",""]
 	];
     return data
 #     	accounts = frappe.db.sql("""select name, parent_account, account_name, root_type, report_type, lft, rgt
@@ -77,35 +98,70 @@ def get_columns():
 			"width": 300
 		},
 		{
-			"fieldname": "opening_debit",
-			"label": _("Equity Share Capital"),
+			"fieldname": "no_of_shares",
+			"label": _("No. of Shares (issued and fully paid up)"),
+			"fieldtype": "Data",
+			"options": "Text",
+			"width": 150
+		},
+		{
+			"fieldname": "per_share_value",
+			"label": _("Par Value per Share"),
+			"fieldtype": "Data",
+			"options": "Text",
+			"width": 150
+		},
+		{
+			"fieldname": "total_value_share",
+			"label": _("Total Value of Shares"),
+			"fieldtype": "Data",
+			"options": "Text",
+			"width": 150
+		},
+		{
+			"fieldname": "security_premium",
+			"label": _("Security Premium"),
+			"fieldtype": "Data",
+			"options": "Text",
+			"width": 150
+		},
+		{
+			"fieldname": "securities_other_reserves",
+			"label": _("Securities & Other Reserves"),
 			"fieldtype": "Data",
 			"options": "Text",
 			"width": 160
 		},
 		{
-			"fieldname": "opening_credit",
-			"label": _("Revaluation Surplus"),
-			"fieldtype": "Data",
-			"options": "Text",
-			"width": 160
-		},
-		{
-			"fieldname": "debit",
+			"fieldname": "retained_earnings",
 			"label": _("Retained Earnings"),
 			"fieldtype": "Data",
 			"options": "Text",
 			"width": 160
 		},
 		{
-			"fieldname": "credit",
-			"label": _("General Reserves/GIR"),
+			"fieldname": "general_reserves",
+			"label": _("General Reserves"),
 			"fieldtype": "Data",
 			"options": "Text",
 			"width": 160
 		},
 		{
-			"fieldname": "closing_debit",
+			"fieldname": "total",
+			"label": _("Total"),
+			"fieldtype": "Data",
+			"options": "Text",
+			"width": 160
+		},
+		{
+			"fieldname": "non_controlling_interest",
+			"label": _("Non Controlling Interest"),
+			"fieldtype": "Data",
+			"options": "Text",
+			"width": 160
+		},
+		{
+			"fieldname": "total_equity",
 			"label": _("Total Equity"),
 			"fieldtype": "Data",
 			"options": "Text",

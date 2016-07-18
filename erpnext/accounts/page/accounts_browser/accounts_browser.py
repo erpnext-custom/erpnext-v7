@@ -50,6 +50,8 @@ def get_children():
 		for each in acc:
 			each["company_currency"] = company_currency
 			each["balance"] = flt(get_balance_on(each.get("value"), in_account_currency=False))
+			
+			#frappe.msgprint(str(each.get("value")) + " " + str(get_balance_on(each.get("value"))));
 
 			if each.account_currency != company_currency:
 				each["balance_in_account_currency"] = flt(get_balance_on(each.get("value")))

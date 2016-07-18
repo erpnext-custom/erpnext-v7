@@ -27,28 +27,26 @@ def get_child_cost_centers(current_cs=None):
 	cs_name = cs_par_name = "";
 
 	if current_cs:
-		#Get all cost centers
-		allcs = frappe.db.sql("SELECT name, parent_cost_center FROM `tabCost Center`", as_dict=True);
-		#get the current cost center name
-		query ="SELECT name, parent_cost_center FROM `tabCost Center` where name = \"" + current_cs + "\";";
-		current = frappe.db.sql(query, as_dict=True);
+	  #Get all cost centers
+	  allcs = frappe.db.sql("SELECT name, parent_cost_center FROM `tabCost Center`", as_dict=True);
+	  #get the current cost center name
+	  query ="SELECT name, parent_cost_center FROM `tabCost Center` where name = \"" + current_cs + "\";";
+	  current = frappe.db.sql(query, as_dict=True);
 
-		if(current):
-			for a in current:
-				cs_name = a['name'];
-				cs_par_name = a['parent_cost_center'];
+	  if(current):
+	    for a in current:
+		cs_name = a['name'];
+		cs_par_name = a['parent_cost_center'];
 
-			#loop through the cost centers to search for the child cost centers
-			for b in allcs:
-				if(b['parent_cost_center'] == cs_name):
-					allchilds.append(str(b['name']));
-					for c in allcs:
-						if(c['parent_cost_center'] == b['name']):
-							allchilds.append(str(c['name']));
+	    #loop through the cost centers to search for the child cost centers
+	    allchilds.append(cs_name);
+	    for b in allcs:
+		for c in allcs:
+		      if(c['parent_cost_center'] in allchilds):
+			 if(c['name'] not in allchilds):
+			    allchilds.append(c['name']);
 
-			#lastly add itself
-			allchilds.append(str(cs_name));
-
+	frappe.msgprint(len(allchilds))
 	return allchilds;
 
 
