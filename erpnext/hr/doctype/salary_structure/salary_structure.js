@@ -52,13 +52,13 @@ var calculate_totals = function(doc, cdt, cdn) {
 	var total_earn = 0; var total_ded = 0;
 	for(var i = 0; i < tbl1.length; i++){
 		total_earn += flt(tbl1[i].modified_value);
+		//doc.earnings[i].modified_value = 1000;
 	}
 	for(var j = 0; j < tbl2.length; j++){
 		total_ded += flt(tbl2[j].d_modified_amt);
 	}
 	
 	//++ Ver 20160714.1 Begins added by SSK
-	
 	
 	//if (eligible_for_corporate_allowance){
 	//	
@@ -81,16 +81,48 @@ cur_frm.fields_dict.employee.get_query = function(doc,cdt,cdn) {
 	return{ query: "erpnext.controllers.queries.employee_query" }
 }
 
-// Ver 20160714.1 by SSK
-//var calculate_ed = function(doc, cdt, cdn){
-//	
-//}
+//++ Ver 20160714.1 Begins added by SSK
 
 cur_frm.cscript.eligible_for_corporate_allowance = function(doc, cdt, cdn){
-	console.log('Value Changed.');
-	console.log(doc.eligible_for_corporate_allowance);
-	console.log(doc.earnings.length);
-	console.log(doc.earnings);
-	console.log(doc.deductions.length);
-	console.log(doc.deductions);
+	//console.log('Value Changed.');
+	//console.log(doc.eligible_for_corporate_allowance);
+	//console.log(doc.earnings.length);
+	//console.log(doc.earnings);
+	//console.log(doc.deductions.length);
+	//console.log(doc.deductions);
+	calculate_totals(doc, cdt, cdn);
 }
+
+cur_frm.cscript.eligibile_for_contract_allowance = function(doc, cdt, cdn){
+	calculate_totals(doc, cdt, cdn);
+}
+
+cur_frm.cscript.eligibile_for_comunication_allowance = function(doc, cdt, cdn){
+	calculate_totals(doc, cdt, cdn);
+}
+
+cur_frm.cscript.eligibile_for_psa = function(doc, cdt, cdn){
+	calculate_totals(doc, cdt, cdn);
+}
+
+cur_frm.cscript.eligibile_for_mpi = function(doc, cdt, cdn){
+	calculate_totals(doc, cdt, cdn);
+}
+
+cur_frm.cscript.eligible_for_officiating_allowance = function(doc, cdt, cdn){
+	calculate_totals(doc, cdt, cdn);
+}
+
+cur_frm.cscript.eligible_for_temporary_transfer_allowance = function(doc, cdt, cdn){
+	calculate_totals(doc, cdt, cdn);
+}
+
+cur_frm.cscript.eligible_for_fuel_allowances = function(doc, cdt, cdn){
+	calculate_totals(doc, cdt, cdn);
+}
+
+cur_frm.cscript.eligible_for_fuel_allowances = function(doc, cdt, cdn){
+	calculate_totals(doc, cdt, cdn);
+}
+
+//++ Ver 20160714.1 Ends

@@ -329,6 +329,7 @@ def make_purchase_receipt(source_name, target_doc=None):
 		}
 	}, target_doc, set_missing_values)
 
+	frappe.msgprint(target_doc)
 	return doc
 
 @frappe.whitelist()
