@@ -35,18 +35,47 @@ def get_child_cost_centers(current_cs=None):
 
 	  if(current):
 	    for a in current:
-		cs_name = a['name'];
-		cs_par_name = a['parent_cost_center'];
+    		cs_name = a['name'];
+    		cs_par_name = a['parent_cost_center'];
 
 	    #loop through the cost centers to search for the child cost centers
 	    allchilds.append(cs_name);
 	    for b in allcs:
-		for c in allcs:
-		      if(c['parent_cost_center'] in allchilds):
-			 if(c['name'] not in allchilds):
-			    allchilds.append(c['name']);
+    		for c in allcs:
+    		      if(c['parent_cost_center'] in allchilds):
+        			 if(c['name'] not in allchilds):
+        			    allchilds.append(c['name']);
 
-	frappe.msgprint(len(allchilds))
+	return allchilds;
+
+##
+#Return all the child accounts of the current accounts
+##
+def get_child_accounts(current_acc=None):
+	allchilds = allacc = [];
+	acc_name = acc_parent_name = "";
+
+	if current_acc:
+	  #Get all cost centers
+	  allacc = frappe.db.sql("SELECT name, parent_account FROM `tabAccount`", as_dict=True);
+	  #get the current cost center name
+	  query ="SELECT name, parent_account FROM `tabAccount` where name = \"" + current_acc + "\";";
+	  current = frappe.db.sql(query, as_dict=True);
+
+	  if(current):
+	    for a in current:
+    		acc_name = a['name'];
+    		acc_parent_name = a['parent_account'];
+
+	    #loop through the cost centers to search for the child cost centers
+	    allchilds.append(acc_name);
+
+	    for b in allacc:
+    		for c in allacc:
+    		      if(c['parent_account'] in allchilds):
+        			 if(c['name'] not in allchilds):
+        			    allchilds.append(c['name']);
+
 	return allchilds;
 
 

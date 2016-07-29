@@ -141,7 +141,7 @@ class update_entries_after(object):
 			"stock_value": self.stock_value
 		})
 		bin_doc.flags.via_stock_ledger_entry = True
-		
+
 		bin_doc.save(ignore_permissions=True)
 
 	def process_sle(self, sle):
@@ -211,7 +211,7 @@ class update_entries_after(object):
 		if incoming_rate < 0:
 			# wrong incoming rate
 			incoming_rate = self.valuation_rate
-			
+
 		stock_value_change = 0
 		if incoming_rate:
 			stock_value_change = actual_qty * incoming_rate
@@ -229,7 +229,7 @@ class update_entries_after(object):
 				# calculate new valuation rate only if stock value is positive
 				# else it remains the same as that of previous entry
 				self.valuation_rate = new_stock_value / new_stock_qty
-		
+
 	def get_moving_average_values(self, sle):
 		actual_qty = flt(sle.actual_qty)
 		new_stock_qty = flt(self.qty_after_transaction) + actual_qty
@@ -250,7 +250,7 @@ class update_entries_after(object):
 
 					self.valuation_rate = new_stock_value / new_stock_qty
 				else:
-					self.valuation_rate = self.outgoing_rate
+					self.valuation_rate = sle.outgoing_rate
 
 		else:
 			if flt(self.qty_after_transaction) >= 0 and sle.outgoing_rate:
@@ -303,7 +303,7 @@ class update_entries_after(object):
 						break
 				else:
 					index = 0
-					
+
 				# select first batch or the batch with same rate
 				batch = self.stock_queue[index]
 				if qty_to_pop >= batch[0]:
@@ -327,7 +327,7 @@ class update_entries_after(object):
 
 		if stock_qty:
 			self.valuation_rate = stock_value / flt(stock_qty)
-		
+
 		if not self.stock_queue:
 			self.stock_queue.append([0, sle.incoming_rate or sle.outgoing_rate or self.valuation_rate])
 
