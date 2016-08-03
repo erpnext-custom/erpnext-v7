@@ -343,11 +343,22 @@ class update_entries_after(object):
 
 	def raise_exceptions(self):
 		deficiency = min(e["diff"] for e in self.exceptions)
-		msg = _("The Warehouse {1} does not have sufficient stock on {2}").format(self.item_code,
-			self.warehouse, self.exceptions[0]["posting_date"], self.exceptions[0]["posting_time"],
-			_(self.exceptions[0]["voucher_type"]), self.exceptions[0]["voucher_no"], deficiency)
+
+		if ((self.exceptions[0]["voucher_type"], self.exceptions[0]["voucher_no"]) in
+			frappe.local.flags.currently_saving):
+
+			msg = _("{0} units of {1} needed in {2} to complete this transaction.").format(
+				abs(deficiency), frappe.get_desk_link('Item', self.item_code),
+				frappe.get_desk_link('Warehouse', self.warehouse))
+		else:
+			msg = _("{0} units of {1} needed in {2} on {3} {4} for {5} to complete this transaction.").format(
+				abs(deficiency), frappe.get_desk_link('Item', self.item_code),
+				frappe.get_desk_link('Warehouse', self.warehouse),
+				self.exceptions[0]["posting_date"], self.exceptions[0]["posting_time"],
+				frappe.get_desk_link(self.exceptions[0]["voucher_type"], self.exceptions[0]["voucher_no"]))
+
 		if self.verbose:
-			frappe.throw(msg, NegativeStockError)
+			frappe.throw(msg, NegativeStockError, title='Insufficent Stock')
 		else:
 			raise NegativeStockError, msg
 

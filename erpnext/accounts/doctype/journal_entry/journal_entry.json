@@ -2,12 +2,13 @@
  "allow_copy": 0, 
  "allow_import": 1, 
  "allow_rename": 0, 
- "autoname": "YYYY.########", 
+ "default_print_format": "Voucher Print", 
+ "autoname": "naming_series:", 
  "creation": "2013-03-25 10:53:52", 
  "custom": 0, 
- "default_print_format": "Voucher Print", 
  "docstatus": 0, 
  "doctype": "DocType", 
+ "document_type": "Document", 
  "fields": [
   {
    "allow_on_submit": 0, 
@@ -77,7 +78,7 @@
    "no_copy": 0, 
    "oldfieldname": "voucher_type", 
    "oldfieldtype": "Select", 
-   "options": "Journal Entry\nBank Entry\nCash Entry\nCredit Card Entry\nDebit Note\nCredit Note\nContra Entry\nExcise Entry\nWrite Off Entry\nOpening Entry", 
+   "options": "Journal Entry\nBank Entry\nCash Entry\nCredit Card Entry\nDebit Note\nCredit Note\nContra Entry\nExcise Entry\nWrite Off Entry\nOpening Entry\nDepreciation Entry", 
    "permlevel": 0, 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
@@ -241,7 +242,7 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 0, 
+   "reqd": 1, 
    "search_index": 0, 
    "set_only_once": 0, 
    "unique": 0
@@ -270,7 +271,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 1, 
+   "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
    "description": "", 
@@ -297,7 +298,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 1, 
+   "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "cheque_date", 
@@ -1124,7 +1125,7 @@
  "hide_heading": 0, 
  "hide_toolbar": 0, 
  "icon": "icon-file-text", 
- "idx": 1, 
+ "idx": 176, 
  "in_create": 0, 
  "in_dialog": 0, 
  "is_submittable": 1, 
@@ -1132,8 +1133,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2016-07-13 12:11:28.324898", 
- "modified_by": "siva@bt.bt", 
+ "modified": "2016-04-06 05:33:21.851581", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Journal Entry", 
  "owner": "Administrator", 
@@ -1204,5 +1205,6 @@
  "search_fields": "voucher_type,posting_date, due_date, cheque_no", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "title_field": "title"
+ "title_field": "title", 
+ "track_seen": 0
 }

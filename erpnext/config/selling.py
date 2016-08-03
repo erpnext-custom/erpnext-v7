@@ -28,13 +28,12 @@ def get_data():
 					"description": _("Customer database."),
 				},
 				{
-					"type": "page",
+					"type": "doctype",
 					"label": _("Customer Group"),
-					"name": "Sales Browser",
+					"name": "Customer Group",
 					"icon": "icon-sitemap",
-					"link": "Sales Browser/Customer Group",
+					"link": "Tree/Customer Group",
 					"description": _("Manage Customer Group Tree."),
-					"doctype": "Customer Group",
 				},
 				{
 					"type": "doctype",
@@ -69,13 +68,12 @@ def get_data():
 			#		"description": _("Price List master.")
 			#	},
 				{
-					"type": "page",
-					"name": "Sales Browser",
+					"type": "doctype",
+					"name": "Item Group",
 					"icon": "icon-sitemap",
 					"label": _("Material Group"),
-					"link": "Sales Browser/Item Group",
+					"link": "Tree/Item Group",
 					"description": _("Tree of Item Groups."),
-					"doctype": "Item Group",
 				},
 				{
 					"type": "doctype",

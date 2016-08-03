@@ -16,7 +16,6 @@ class CostCenter(NestedSet):
 
 	def validate(self):
 		self.validate_mandatory()
-		self.validate_accounts()
 
 	def validate_mandatory(self):
 		if self.cost_center_name != self.company and not self.parent_cost_center:
