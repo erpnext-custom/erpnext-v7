@@ -79,10 +79,8 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 					this.make_purchase_invoice, __("Make"));
 
 			if(flt(doc.per_billed)==0 && doc.status != "Delivered") {
-				cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_bank_entry, __("Make"));
-			}*/
 				cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_payment_entry, __("Make"));
-			}
+			}*/
 			cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 
 		}

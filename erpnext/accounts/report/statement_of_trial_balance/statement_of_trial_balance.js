@@ -1,9 +1,9 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
-frappe.require("assets/erpnext/js/financial_statements.js");
+frappe.require("assets/erpnext/js/financial_statements.js", function() {
 
-frappe.query_reports["Statement of Trial Balance"] = {
+   frappe.query_reports["Statement of Trial Balance"] = {
 	"filters": [
 		{
 			"fieldname": "company",
@@ -81,4 +81,5 @@ frappe.query_reports["Statement of Trial Balance"] = {
 	"name_field": "account",
 	"parent_field": "parent_account",
 	"initial_depth": 3
-}
+   }
+});
