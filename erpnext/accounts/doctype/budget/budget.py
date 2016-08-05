@@ -40,7 +40,7 @@ class Budget(Document):
 				elif account_details.company != self.company:
 					frappe.throw(_("Account {0} does not belongs to company {1}")
 						.format(d.account, self.company))
-				elif account_details.report_type != "Profit and Loss":
+				elif account_details.report_type != "Profit and Loss" and account_details.report_type != "Balance Sheet":
 					frappe.throw(_("Budget cannot be assigned against {0}, as it's not an Income or Expense account")
 						.format(d.account))
 

@@ -146,7 +146,6 @@ def get_data():
 			"color": "#2c3e50",
 			"icon": "icon-phone",
 			"icon": "octicon octicon-issue-opened",
-			"type": "module"
 			"type": "module",
 			"hidden": 1
 		},
