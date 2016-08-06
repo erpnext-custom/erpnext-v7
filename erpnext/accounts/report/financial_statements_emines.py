@@ -114,7 +114,7 @@ def get_data(cost_center, company, root_type, balance_must_be, period_list,
 	out = filter_out_zero_value_rows(out, parent_children_map)
 
 	if out:
-		add_total_row(out, balance_must_be, period_list, company_currency)
+		add_total_row(out, root_type, balance_must_be, period_list, company_currency)
 
 	return out
 
@@ -188,9 +188,9 @@ def filter_out_zero_value_rows(data, parent_children_map, show_zero_values=False
 
 	return data_with_value
 
-def add_total_row(out, balance_must_be, period_list, company_currency):
+def add_total_row(out, root_type, balance_must_be, period_list, company_currency):
 	total_row = {
-		"account_name": "'" + _("Total ({0})").format(balance_must_be) + "'",
+		"account_name": "'" + _("Total {0} ({1})").format(root_type, balance_must_be) + "'",
 		"account": None,
 		"currency": company_currency
 	}
