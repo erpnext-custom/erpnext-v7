@@ -27,7 +27,7 @@ def execute(filters=None):
 
 	chart = get_chart_data(filters, columns, income, expense, net_profit_loss)
 
-	return columns, data, None, graph_data
+	return columns, data, None, chart 
 
 def get_net_profit_loss(income, expense, period_list, company):
 	if income and expense:

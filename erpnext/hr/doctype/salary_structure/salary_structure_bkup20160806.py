@@ -24,7 +24,7 @@ class SalaryStructure(Document):
 		set_employee_name(self)
 
 	def get_employee_details(self):
-		#msgprint(_("salary_strucure.py.get_employee_details"))
+		msgprint(_("salary_strucure.py.get_employee_details"))
 		ret = {}
 		det = frappe.db.sql("""select employee_name, branch, designation, department, division, section
 			from `tabEmployee` where name = %s""", self.employee)
@@ -125,41 +125,9 @@ def make_salary_slip(source_name, target_doc=None):
 
 	return doc
 
-# Ver20160804.1 added by SSK, Introducing auto tax calculation
+# Ver20160705.1 added by SSK, Introducing auto tax calculation
 @frappe.whitelist()
-def get_salary_tax(gross_amt):
-        #msgprint(gross_amt);
-        result = frappe.db.sql("""select b.tax from
-                `tabSalary Tax` a, `tabSalary Tax Item` b
-                where now() between a.from_date and a.to_date
-                and b.parent = a.name
-                and %s between b.lower_limit and b.upper_limit
-                limit 1
-                """,gross_amt);
+def get_salary_tax(employee):
+        result = frappe.db.sql("""select name from `tabEmployee` where employee = %s""", employee)
         #msgprint(_("Result set: {0}").format(result))
-        return result     
-		
-#++ Ver 20160803.1 Begins, get_company_pf is added by SSK on 03/08/2016		
-@frappe.whitelist()
-def get_company_pf(fiscal_year):
-        result = frappe.db.sql("""
-                select employee_pf, employer_pf, health_contribution, retirement_age
-                from `tabFiscal Year`
-                where now() between year_start_date and year_end_date
-                limit 1
-                """);
-        return result
-
-# Ver20160804.1 added by SSK, For fetching gis
-@frappe.whitelist()
-def get_employee_gis(employee):
-        #msgprint(employee);
-        result = frappe.db.sql("""select a.gis
-                from `tabEmployee Sub-Group` a, `tabEmployee` b
-                where b.employee = %s
-                and b.employee_group = a.employee_group
-                and b.employee_subgroup = a.employee_subgroup
-                limit 1
-                """,employee);
-        #msgprint(result);
         return result     

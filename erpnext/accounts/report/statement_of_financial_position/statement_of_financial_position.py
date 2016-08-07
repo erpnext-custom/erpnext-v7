@@ -10,9 +10,9 @@ from erpnext.accounts.report.financial_statements_emines import (get_period_list
 def execute(filters=None):
 	period_list = get_period_list(filters.fiscal_year, filters.periodicity)
 
-	asset = get_data(filters.company, "Asset", "Debit", period_list, only_current_fiscal_year=False)
-	liability = get_data(filters.company, "Liability", "Credit", period_list, only_current_fiscal_year=False)
-	equity = get_data(filters.company, "Equity", "Credit", period_list, only_current_fiscal_year=False)
+	asset = get_data(filters.cost_center, filters.company, "Asset", "Debit", period_list, only_current_fiscal_year=False)
+	liability = get_data(filters.cost_center,filters.company, "Liability", "Credit", period_list, only_current_fiscal_year=False)
+	equity = get_data(filters.cost_center,filters.company, "Equity", "Credit", period_list, only_current_fiscal_year=False)
 
 	provisional_profit_loss = get_provisional_profit_loss(asset, liability, equity,
 		period_list, filters.company)
@@ -74,6 +74,7 @@ def check_opening_balance(asset, liability, equity):
 
 	if opening_balance:
 		return _("Previous Financial Year is not closed")
+
 
 def get_chart_data(columns, asset, liability, equity):
 	x_intervals = ['x'] + [d.get("label") for d in columns[2:]]
