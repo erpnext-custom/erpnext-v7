@@ -1032,7 +1032,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 1, 
    "collapsible": 0, 
    "depends_on": "eval:(doc.paid_from && doc.paid_to)", 
@@ -1082,7 +1082,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 1, 
    "collapsible": 0, 
    "depends_on": "eval:(doc.paid_from && doc.paid_to)", 

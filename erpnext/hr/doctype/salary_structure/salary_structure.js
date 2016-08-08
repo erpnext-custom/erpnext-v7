@@ -101,20 +101,23 @@ cur_frm.cscript.modified_value = function(doc, cdt, cdn){
 	//-- Ver 20160714.1 Ends
 
 	//++ Ver 20160804.1 Begins added by SSK
-	calculate_others(doc, cdt, cdn);
+	calculate_others(frm.doc);
 	//-- Ver 20160804.1 Ends
 
 	
 	calculate_totals(doc);
 }
+
+/* Commented by SSK on 20160807 as the same validations done via form.on process in version 7.0
 
 cur_frm.cscript.amount = function(doc, cdt, cdn){
 	//++ Ver 20160804.1 Begins added by SSK
-	calculate_others(doc, cdt, cdn);
+	calculate_others(frm.doc);
 	//-- Ver 20160804.1 Ends
 	
 	calculate_totals(doc);
 }
+*/
 
 var calculate_totals = function(doc) {
 	var tbl1 = doc.earnings || [];
@@ -149,20 +152,35 @@ cur_frm.fields_dict.employee.get_query = function(doc,cdt,cdn) {
 
 frappe.ui.form.on('Salary Detail', {
 	amount: function(frm) {
+		//++ Ver 20160804.1 Begins added by SSK
+		calculate_others(frm.doc);
+		//-- Ver 20160804.1 Ends		
 		calculate_totals(frm.doc);
 	},
 	
 	earnings_remove: function(frm) {
+		//++ Ver 20160804.1 Begins added by SSK
+		calculate_others(frm.doc);
+		//-- Ver 20160804.1 Ends
 		calculate_totals(frm.doc);
+		//++ Ver 20160804.1 Begins added by SSK		
+		cur_frm.refresh();
+		//-- Ver 20160804.1 Ends						
 	}, 
 	
 	deductions_remove: function(frm) {
+		//++ Ver 20160804.1 Begins added by SSK
+		calculate_others(frm.doc);
+		//-- Ver 20160804.1 Ends
 		calculate_totals(frm.doc);
+		//++ Ver 20160804.1 Begins added by SSK		
+		cur_frm.refresh();
+		//-- Ver 20160804.1 Ends						
 	}
 })
 
 //++ Ver 20160803.1 Begins, calculate_totals2 is added by SSK on 03/08/2016
-var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="None"){
+var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 	var e_tbl = doc.earnings || [];
 	var d_tbl = doc.deductions || [];
 	var corp_all_id = -1, cont_all_id = -1, comm_all_id = -1, psa_all_id = -1, mpi_all_id = -1,
@@ -176,43 +194,43 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 	
 	// Saving IndexValue and DocumentName from Earnings child table
 	for (var id in e_tbl){
-		if (e_tbl[id].e_type == "Corporate Allowance"){
+		if (e_tbl[id].salary_component == "Corporate Allowance"){
 			corp_all_id = id;
 			corp_all_dn = e_tbl[id].name;
 		}
-		else if (e_tbl[id].e_type == "Contract Allowance"){
+		else if (e_tbl[id].salary_component == "Contract Allowance"){
 			cont_all_id = id;
 			cont_all_dn = e_tbl[id].name;
 		}
-		else if (e_tbl[id].e_type == "Communication Allowance"){
+		else if (e_tbl[id].salary_component == "Communication Allowance"){
 			comm_all_id = id;
 			comm_all_dn = e_tbl[id].name;
 		}
-		else if (e_tbl[id].e_type == "PSA"){
+		else if (e_tbl[id].salary_component == "PSA"){
 			psa_all_id = id;
 			psa_all_dn = e_tbl[id].name;
 		}
-		else if (e_tbl[id].e_type == "MPI"){
+		else if (e_tbl[id].salary_component == "MPI"){
 			mpi_all_id = id;
 			mpi_all_dn = e_tbl[id].name;
 		}
-		else if (e_tbl[id].e_type == "Officiating Allowance"){
+		else if (e_tbl[id].salary_component == "Officiating Allowance"){
 			off_all_id = id;
 			off_all_dn = e_tbl[id].name;
 		}
-		else if (e_tbl[id].e_type == "Temporary Transfer Allowance"){
+		else if (e_tbl[id].salary_component == "Temporary Transfer Allowance"){
 			tran_all_id = id;
 			tran_all_dn = e_tbl[id].name;
 		}
-		else if (e_tbl[id].e_type == "Fuel Allowance"){
+		else if (e_tbl[id].salary_component == "Fuel Allowance"){
 			fuel_all_id = id;
 			fuel_all_dn = e_tbl[id].name;
 		}
-		else if (e_tbl[id].e_type == "Overtime Allowance"){
+		else if (e_tbl[id].salary_component == "Overtime Allowance"){
 			ot_all_id = id;
 			ot_all_dn = e_tbl[id].name;
 		}
-		else if (e_tbl[id].e_type == "Basic Pay"){
+		else if (e_tbl[id].salary_component == "Basic Pay"){
 			basic_all_id = id;
 			basic_all_dn = e_tbl[id].name;
 		}
@@ -236,8 +254,8 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.e_type = allowance_type;
-				new_child.amount = calc_amt;				
+				new_child.salary_component = allowance_type;
+				new_child.amount = calc_amt;	
 				cur_frm.refresh();
 			}
 		}
@@ -262,7 +280,7 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.e_type = allowance_type;
+				new_child.salary_component = allowance_type;
 				new_child.amount = calc_amt;				
 				cur_frm.refresh();
 			}
@@ -288,7 +306,7 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.e_type = allowance_type;
+				new_child.salary_component = allowance_type;
 				new_child.amount = calc_amt;				
 				cur_frm.refresh();
 			}
@@ -314,7 +332,7 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.e_type = allowance_type;
+				new_child.salary_component = allowance_type;
 				new_child.amount = calc_amt;				
 				cur_frm.refresh();
 			}
@@ -340,7 +358,7 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.e_type = allowance_type;
+				new_child.salary_component = allowance_type;
 				new_child.amount = calc_amt;				
 				cur_frm.refresh();
 			}
@@ -366,7 +384,7 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.e_type = allowance_type;
+				new_child.salary_component = allowance_type;
 				new_child.amount = calc_amt;				
 				cur_frm.refresh();
 			}
@@ -378,8 +396,6 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 	else if (allowance_type == "Temporary Transfer Allowance"){	
 		if (doc.eligible_for_temporary_transfer_allowance){
 			var calc_amt = 0;
-			console.log('tran_all_id: '+tran_all_id);
-			console.log('tran_all_dn: '+tran_all_dn);
 			if (amt_flag == "P"){
 				calc_amt = (e_tbl[basic_all_id].amount*doc.temporary_transfer_allowance*0.01);
 			}
@@ -389,13 +405,12 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 			
 			calc_amt = Math.round(calc_amt);
 			
-			console.log("temp tran calc_amt: "+calc_amt);
 			if (tran_all_id >= 0){
 				frappe.model.set_value("Salary Detail", tran_all_dn, "amount", calc_amt);				
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.e_type = allowance_type;
+				new_child.salary_component = allowance_type;
 				new_child.amount = calc_amt;				
 				cur_frm.refresh();
 			}
@@ -421,9 +436,9 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.e_type = allowance_type;
-				new_child.amount = calc_amt;				
-				cur_frm.refresh();
+				new_child.salary_component = allowance_type;
+				new_child.amount = calc_amt;		
+				cur_frm.refresh();				
 			}
 		}
 		else{
@@ -433,19 +448,19 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 	
 	// Calculating Deductions
 	for (var id in d_tbl){
-		if (d_tbl[id].d_type == "PF"){
+		if (d_tbl[id].salary_component == "PF"){
 			pf_ded_id = id;
 			pf_ded_dn = d_tbl[id].name;
 		}
-		else if(d_tbl[id].d_type == "Salary Tax"){
+		else if(d_tbl[id].salary_component == "Salary Tax"){
 			tds_ded_id = id;
 			tds_ded_dn = d_tbl[id].name;			
 		}
-		else if(d_tbl[id].d_type == "Health Contribution"){
+		else if(d_tbl[id].salary_component == "Health Contribution"){
 			health_ded_id = id;
 			health_ded_dn = d_tbl[id].name;			
 		}
-		else if(d_tbl[id].d_type == "Group Insurance Scheme"){
+		else if(d_tbl[id].salary_component == "Group Insurance Scheme"){
 			gis_ded_id = id;
 			gis_ded_dn = d_tbl[id].name;			
 		}		
@@ -457,9 +472,9 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 	} 
 	else{
 		var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-		new_child.d_type = "Group Insurance Scheme";
-		new_child.amount = calc_gis_amt;				
-		//cur_frm.refresh();
+		new_child.salary_component = "Group Insurance Scheme";
+		new_child.amount = calc_gis_amt;	
+		cur_frm.refresh();
 	}						
 	
 	// PF
@@ -470,13 +485,13 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 	} 
 	else{
 		var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-		new_child.d_type = "PF";
+		new_child.salary_component = "PF";
 		new_child.amount = calc_pf_amt;				
-		//cur_frm.refresh();
+		cur_frm.refresh();
 	}	
 	
 	// Health Contribution
-	calculate_totals(doc, cdt, cdn);
+	calculate_totals(doc);
 	var calc_health_amt = 0;
 	calc_health_amt = Math.round(doc.total_earning*health_contribution*0.01);
 	if (health_ded_id >= 0){
@@ -484,14 +499,14 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 	} 
 	else{
 		var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-		new_child.d_type = "Health Contribution";
+		new_child.salary_component = "Health Contribution";
 		new_child.amount = calc_health_amt;				
-		//cur_frm.refresh();
+		cur_frm.refresh();
 	}		
 	
 	// Salary Tax
 	var calc_tds_amt = 0;	
-	calculate_totals(doc, cdt, cdn);
+	calculate_totals(doc);
 	cur_frm.call({
 		method: "erpnext.hr.doctype.salary_structure.salary_structure.get_salary_tax",
 		args: {
@@ -505,81 +520,82 @@ var calculate_others = function(doc, cdt, cdn, allowance_type="None", amt_flag="
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-				new_child.d_type = "Salary Tax";
-				new_child.amount = calc_tds_amt;				
-				//cur_frm.refresh();
+				new_child.salary_component = "Salary Tax";
+				new_child.amount = calc_tds_amt;
+				cur_frm.refresh();
 			}					
 		}
 	});	
 	
-	cur_frm.refresh();
+	calculate_totals(doc);
+	//cur_frm.refresh();
 }
 //-- Ver 20160803.1 Ends
 
 //++ Ver 20160804.1 Begins added by SSK
 
-cur_frm.cscript.eligible_for_corporate_allowance = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Corporate Allowance", "P");
+cur_frm.cscript.eligible_for_corporate_allowance = function(frm){
+	calculate_others(frm, "Corporate Allowance", "P");
 }
 
-cur_frm.cscript.eligible_for_contract_allowance = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Contract Allowance", "P");
+cur_frm.cscript.eligible_for_contract_allowance = function(frm){
+	calculate_others(frm, "Contract Allowance", "P");
 }
 
-cur_frm.cscript.eligible_for_communication_allowance = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Communication Allowance", "A");
+cur_frm.cscript.eligible_for_communication_allowance = function(frm){
+	calculate_others(frm, "Communication Allowance", "A");
 }
 
-cur_frm.cscript.eligible_for_psa = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "PSA", "P");
+cur_frm.cscript.eligible_for_psa = function(frm){
+	calculate_others(frm, "PSA", "P");
 }
 
-cur_frm.cscript.eligible_for_mpi = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "MPI", "P");
+cur_frm.cscript.eligible_for_mpi = function(frm){
+	calculate_others(frm, "MPI", "P");
 }
 
-cur_frm.cscript.eligible_for_officiating_allowance = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Officiating Allowance", "P");
+cur_frm.cscript.eligible_for_officiating_allowance = function(frm){
+	calculate_others(frm, "Officiating Allowance", "P");
 }
 
-cur_frm.cscript.eligible_for_temporary_transfer_allowance = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Temporary Transfer Allowance", "P");
+cur_frm.cscript.eligible_for_temporary_transfer_allowance = function(frm){
+	calculate_others(frm, "Temporary Transfer Allowance", "P");
 }
 
-cur_frm.cscript.eligible_for_fuel_allowances = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Fuel Allowance", "A");
+cur_frm.cscript.eligible_for_fuel_allowances = function(frm){
+	calculate_others(frm, "Fuel Allowance", "A");
 }
 
 //
-cur_frm.cscript.ca = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Corporate Allowance", "P");
+cur_frm.cscript.ca = function(frm){
+	calculate_others(frm, "Corporate Allowance", "P");
 }
 
-cur_frm.cscript.contract_allowance = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Contract Allowance", "P");
+cur_frm.cscript.contract_allowance = function(frm){
+	calculate_others(frm, "Contract Allowance", "P");
 }
 
-cur_frm.cscript.communication_allowance = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Communication Allowance", "A");
+cur_frm.cscript.communication_allowance = function(frm){
+	calculate_others(frm, "Communication Allowance", "A");
 }
 
-cur_frm.cscript.psa = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "PSA", "P");
+cur_frm.cscript.psa = function(frm){
+	calculate_others(frm, "PSA", "P");
 }
 
-cur_frm.cscript.mpi = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "MPI", "P");
+cur_frm.cscript.mpi = function(frm){
+	calculate_others(frm, "MPI", "P");
 }
 
-cur_frm.cscript.officiating_allowance = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Officiating Allowance", "P");
+cur_frm.cscript.officiating_allowance = function(frm){
+	calculate_others(frm, "Officiating Allowance", "P");
 }
 
-cur_frm.cscript.temporary_transfer_allowance = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Temporary Transfer Allowance", "P");
+cur_frm.cscript.temporary_transfer_allowance = function(frm){
+	calculate_others(frm, "Temporary Transfer Allowance", "P");
 }
 
-cur_frm.cscript.fuel_allowances = function(doc, cdt, cdn){
-	calculate_others(doc, cdt, cdn, "Fuel Allowance", "A");
+cur_frm.cscript.fuel_allowances = function(frm){
+	calculate_others(frm, "Fuel Allowance", "A");
 }
 //++ Ver 20160804.1 Ends

@@ -1,5 +1,19 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  SSK		                   03/08/2016         Following functions introducted
+                                                                          i) get_employee_pf: fetching pf component
+1.0               SSK                              04/08/2016         Following functions introducted
+                                                                          i) get_employee_gis : fetching employee gis
+                                                                          ii)get_salary_tax : fetching tds
+1.0               SSK                              08/08/2016         Changes made to accommodate erpnext v7 changes
+                                                                          i) Displaying only Earnings on earnings side
+                                                                          ii) Displaying only Deductions on deductions side
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -48,7 +62,13 @@ class SalaryStructure(Document):
 		return ret
 
 	def make_table(self, doct_name, tab_fname, tab_name):
-		list1 = frappe.db.sql("select name from `tab%s` where docstatus != 2" % doct_name)
+                # Ver 1.0 by SSK on 08/08/2016, Following line is commented and the subsequent if condition is added
+                #list1 = frappe.db.sql("select name from `tab%s` where docstatus != 2" % doct_name)
+                if (tab_fname == 'earnings'):
+                        list1 = frappe.db.sql("select name from `tab%s` where `docstatus` != 2 and `type` = 'Earning' and `default` = 1" % doct_name)
+                else:
+                        list1 = frappe.db.sql("select name from `tab%s` where `docstatus` != 2 and `type` = 'Deduction' and `default` = 1 " % doct_name)
+                        
 		for li in list1:
 			child = self.append(tab_fname, {})
 			if(tab_fname == 'earnings'):
@@ -125,7 +145,7 @@ def make_salary_slip(source_name, target_doc=None):
 
 	return doc
 
-# Ver20160804.1 added by SSK, Introducing auto tax calculation
+# Ver 1.0 added by SSK on 04/08/2016, Fetching TDS component
 @frappe.whitelist()
 def get_salary_tax(gross_amt):
         #msgprint(gross_amt);
@@ -139,7 +159,7 @@ def get_salary_tax(gross_amt):
         #msgprint(_("Result set: {0}").format(result))
         return result     
 		
-#++ Ver 20160803.1 Begins, get_company_pf is added by SSK on 03/08/2016		
+# Ver 1.0 added by SSK on 03/08/2016, Fetching PF component
 @frappe.whitelist()
 def get_company_pf(fiscal_year):
         result = frappe.db.sql("""
@@ -150,7 +170,7 @@ def get_company_pf(fiscal_year):
                 """);
         return result
 
-# Ver20160804.1 added by SSK, For fetching gis
+# Ver 1.0 added by SSK on 04/08/2016, Fetching GIS component
 @frappe.whitelist()
 def get_employee_gis(employee):
         #msgprint(employee);

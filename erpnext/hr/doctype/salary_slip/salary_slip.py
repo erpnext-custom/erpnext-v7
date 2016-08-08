@@ -1,5 +1,12 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  SSK		                   08/08/2016         DocumentNaming standard is changed
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -17,7 +24,9 @@ from erpnext.utilities.transaction_base import TransactionBase
 
 class SalarySlip(TransactionBase):
 	def autoname(self):
-		self.name = make_autoname('Sal Slip/' +self.employee + '/.#####')
+                # Ver 1.0 by SSK on 08/08/2016, Following line is commented and the subsequent is added
+		#self.name = make_autoname('Sal Slip/' +self.employee + '/.#####')
+                self.name = make_autoname(self.employee + '/SSL' + self.fiscal_year + self.month + '/.#####')
 
 	def validate(self):
 		self.validate_dates()
