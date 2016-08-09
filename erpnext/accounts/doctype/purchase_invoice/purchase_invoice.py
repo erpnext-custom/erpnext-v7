@@ -538,19 +538,19 @@ class PurchaseInvoice(BuyingController):
 		if self.write_off_account and flt(self.write_off_amount):
 			write_off_account_currency = get_account_currency(self.write_off_account)
 
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": self.credit_to,
-					"party_type": "Supplier",
-					"party": self.supplier,
-					"against": self.write_off_account,
-					"debit": self.base_write_off_amount,
-					"debit_in_account_currency": self.base_write_off_amount \
-						if self.party_account_currency==self.company_currency else self.write_off_amount,
-					"against_voucher": self.return_against if cint(self.is_return) else self.name,
-					"against_voucher_type": self.doctype,
-				}, self.party_account_currency)
-			)
+		#	gl_entries.append(
+		#		self.get_gl_dict({
+		#			"account": self.credit_to,
+		#			"party_type": "Supplier",
+		#			"party": self.supplier,
+		#			"against": self.write_off_account,
+		#			"debit": self.base_write_off_amount,
+		#			"debit_in_account_currency": self.base_write_off_amount \
+		#				if self.party_account_currency==self.company_currency else self.write_off_amount,
+		#			"against_voucher": self.return_against if cint(self.is_return) else self.name,
+		#			"against_voucher_type": self.doctype,
+		#		}, self.party_account_currency)
+		#	)
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.write_off_account,
@@ -561,8 +561,7 @@ class PurchaseInvoice(BuyingController):
 					"cost_center": self.write_off_cost_center
 				})
 			)
-			
-		
+
 		# make tds gl entry (Kinley) customisation for tds incorporation 
 		if self.tds_account and flt(self.tds_amount):
 			tds_account_currency = get_account_currency(self.tds_account)
@@ -579,6 +578,7 @@ class PurchaseInvoice(BuyingController):
 					"cost_center": self.tds_cost_center
 				})
 			)
+		
 
 	def on_cancel(self):
 		self.check_for_closed_status()

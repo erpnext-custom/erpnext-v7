@@ -186,13 +186,13 @@ class ProcessPayroll(Document):
                 tot_deductions = 0
                 tot_earnings = 0
                 default_payable_account = 'Salary Payable - SMCL'       
-                default_gis_account = frappe.db.get_value("Salary Component", 'Group Insurance Scheme',"gl_head")
-                default_pf_account = frappe.db.get_value("Salary Component", 'PF',"gl_head")
-                default_loan_account = frappe.db.get_value("Salary Component", 'NPPF Loan',"gl_head")
-                default_saving_account = frappe.db.get_value("Salary Component", 'RICB Scheme',"gl_head")
-                default_tax_account = frappe.db.get_value("Salary Component", 'Salary Tax',"gl_head")
-                default_health_account = frappe.db.get_value("Salary Component", 'Health Contribution',"gl_head")
-                default_saladv_account = frappe.db.get_value("Salary Component", 'Salary Advance Deductions',"gl_head")
+                default_gis_account = frappe.db.get_value("Deduction Type", 'Group Insurance Scheme',"gl_head")
+                default_pf_account = frappe.db.get_value("Deduction Type", 'PF',"gl_head")
+                default_loan_account = frappe.db.get_value("Deduction Type", 'NPPF Loan',"gl_head")
+                default_saving_account = frappe.db.get_value("Deduction Type", 'RICB Scheme',"gl_head")
+                default_tax_account = frappe.db.get_value("Deduction Type", 'Salary Tax',"gl_head")
+                default_health_account = frappe.db.get_value("Deduction Type", 'Health Contribution',"gl_head")
+                default_saladv_account = frappe.db.get_value("Deduction Type", 'Salary Advance Deductions',"gl_head")
 
                 for item in items:
                         deductions = []
@@ -204,14 +204,14 @@ class ProcessPayroll(Document):
                         # Deductions
                         #
                         query = """select dt.gl_head as account,
-                                sum(amount) as credit_in_account_currency,
+                                sum(d_modified_amount) as credit_in_account_currency,
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check
-                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt
+                                from `tabSalary Slip Deduction` sd, `tabSalary Slip` ss, `tabDeduction Type` dt
                                where ss.name = sd.parent
-                                 and sd.amount > 0
-                                 and dt.name = sd.salary_component
+                                 and sd.d_modified_amount > 0
+                                 and dt.name = sd.d_type
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 0
@@ -219,24 +219,23 @@ class ProcessPayroll(Document):
                                  and ss.department = '%s'
                                  and ss.division = '%s'
                                  and dt.gl_head <> '%s'
-                                 and dt.type = 'Deduction'
                                group by dt.gl_head
                                 """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], default_saladv_account)
                         deductions.extend(frappe.db.sql(query, as_dict=1))
 
                         # Salary Advance
                         query2 = """select dt.gl_head as account,
-                                sum(amount) as credit_in_account_currency,
+                                sum(d_modified_amount) as credit_in_account_currency,
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check,
                                 'Payable' as account_type,
                                 'Employee' as party_type,
                                 ss.employee as party
-                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt
+                                from `tabSalary Slip Deduction` sd, `tabSalary Slip` ss, `tabDeduction Type` dt
                                where ss.name = sd.parent
-                                 and sd.amount > 0
-                                 and dt.name = sd.salary_component
+                                 and sd.d_modified_amount > 0
+                                 and dt.name = sd.d_type
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 0
@@ -244,7 +243,6 @@ class ProcessPayroll(Document):
                                  and ss.department = '%s'
                                  and ss.division = '%s'
                                  and dt.gl_head = '%s'
-                                 and dt.type = 'Deduction'
                                group by dt.gl_head, ss.employee
                                 """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], default_saladv_account)
                         deductions.extend(frappe.db.sql(query2, as_dict=1))                        
@@ -259,15 +257,14 @@ class ProcessPayroll(Document):
                         # Earnings
                         #
                         query = """select et.gl_head as account,
-                                sum(amount) as debit_in_account_currency,
+                                sum(e_modified_amount) as debit_in_account_currency,
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check
-                                from `tabSalary Detail` se, `tabSalary Slip` ss, `tabSalary Component` et
+                                from `tabSalary Slip Earning` se, `tabSalary Slip` ss, `tabEarning Type` et
                                where ss.name = se.parent
-                                 and se.amount > 0
-                                 and et.name = se.salary_component
-                                 and et.type = 'Earning'
+                                 and se.e_modified_amount > 0
+                                 and et.name = se.e_type
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 0

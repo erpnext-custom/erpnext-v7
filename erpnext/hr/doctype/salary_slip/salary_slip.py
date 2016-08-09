@@ -26,7 +26,7 @@ class SalarySlip(TransactionBase):
 	def autoname(self):
                 # Ver 1.0 by SSK on 08/08/2016, Following line is commented and the subsequent is added
 		#self.name = make_autoname('Sal Slip/' +self.employee + '/.#####')
-                self.name = make_autoname(self.employee + '/SSL' + self.fiscal_year + self.month + '/.#####')
+                self.name = make_autoname(self.employee + '/SSL/' + self.fiscal_year + self.month + '/.#####')
 
 	def validate(self):
 		self.validate_dates()
