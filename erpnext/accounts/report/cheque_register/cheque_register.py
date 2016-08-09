@@ -24,8 +24,7 @@ def get_data(query):
 	return data
 
 def construct_query(filters=None):
-	query = "SELECT name, posting_date, cheque_no, cheque_date, CASE docstatus WHEN 2 THEN 0 ELSE total_amount END AS total_amount, CASE docstatus WHEN 2 THEN total_amount ELSE 0 END AS cancelled_amount, pay_to_recd_from, CASE docstatus WHEN 2 THEN \"CANCELLED\" ELSE null END AS cheque_status FROM `tabJournal Entry` WHERE voucher_type = \"Bank Entry\" AND NOT isnull(cheque_no) AND posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\';";
-
+	query = "SELECT name, posting_date, cheque_no, cheque_date, CASE docstatus WHEN 2 THEN 0 ELSE total_amount END AS total_amount, CASE docstatus WHEN 2 THEN total_amount ELSE 0 END AS cancelled_amount, pay_to_recd_from, CASE docstatus WHEN 2 THEN \"CANCELLED\" ELSE null END AS cheque_status FROM `tabJournal Entry` WHERE naming_series IN ('Bank Payment Voucher') AND NOT isnull(cheque_no) AND posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' UNION ALL SELECT name, posting_date, reference_no AS cheque_no, reference_date AS cheque_date, CASE docstatus WHEN 2 THEN 0 ELSE (CASE WHEN base_paid_amount > 0 THEN base_paid_amount ELSE base_received_amount END) END AS total_amount, CASE docstatus WHEN 2 THEN (CASE WHEN base_paid_amount > 0 THEN base_paid_amount ELSE base_received_amount END) ELSE 0 END AS cancelled_amount, pay_to_recd_from, CASE docstatus WHEN 2 THEN 'CANCELLED' ELSE null END AS cheque_status FROM `tabPayment Entry` WHERE naming_series IN ('Bank Payment Voucher') AND NOT isnull(reference_no) AND posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\';";
 	return query;
 
 def validate_filters(filters):

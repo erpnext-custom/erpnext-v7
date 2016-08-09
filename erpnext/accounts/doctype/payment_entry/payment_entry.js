@@ -24,7 +24,7 @@ frappe.ui.form.on('Payment Entry', {
 				["Bank", "Cash"] : party_account_type;
 			Show both payables and receivable accounts
 			*/
-			var account_types = ["Payable","Receivable"]
+			var account_types = ["Payable","Receivable", "Bank", "Cash"]
 
 			return {
 				filters: {
@@ -41,7 +41,7 @@ frappe.ui.form.on('Payment Entry', {
 		
 			 * Show both payables and receivable accounts
 			 */
-			var account_types = ["Payable","Receivable"]
+			var account_types = ["Payable","Receivable", "Bank", "Cash"]
 
 			return {
 				filters: {

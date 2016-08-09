@@ -35,12 +35,18 @@ def execute(filters=None):
 		{},
 		{
 			"payment_entry": _("Cheques issued but not encashed"),
-			"debit": total_debit,
+			"debit": 0,
 			"credit": total_credit,
 			"account_currency": account_currency
 		},
-		get_balance_row(_("Cheques desposited but not cleared"), amounts_not_reflected_in_system, 
-			account_currency),
+		{
+			"payment_entry": _("Cheques deposited but not cleared"),
+			"debit": total_debit,
+			"credit": 0,
+			"account_currency": account_currency
+		},
+		#get_balance_row(_("Cheques desposited but not cleared"), amounts_not_reflected_in_system, 
+		#	account_currency),
 		{},
 		get_balance_row(_("Balance as per Bank Statement"), bank_bal, account_currency)
 	]

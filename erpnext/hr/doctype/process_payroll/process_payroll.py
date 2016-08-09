@@ -185,7 +185,8 @@ class ProcessPayroll(Document):
                 accounts = []
                 tot_deductions = 0
                 tot_earnings = 0
-                default_payable_account = 'Salary Payable - SMCL'       
+                default_payable_account = 'Salary Payable - SMCL'
+                default_gpf_account = 'GPF Contribution (Employer) - SMCL'
                 default_gis_account = frappe.db.get_value("Salary Component", 'Group Insurance Scheme',"gl_head")
                 default_pf_account = frappe.db.get_value("Salary Component", 'PF',"gl_head")
                 default_loan_account = frappe.db.get_value("Salary Component", 'NPPF Loan',"gl_head")
@@ -308,6 +309,7 @@ class ProcessPayroll(Document):
                 saving = []                
                 tax = []
                 health = []
+                temp = []
 
                 tot_bank = 0
                 tot_gis = 0
@@ -340,11 +342,19 @@ class ProcessPayroll(Document):
                                                  "party_check": 0})
                                 tot_gis += list_item['credit_in_account_currency']
                         elif default_pf_account == list_item['account']:
+                                # Employee PF
                                 pf.append({"account": list_item['account'],
                                                  "debit_in_account_currency": list_item['credit_in_account_currency'],
                                                  "cost_center": list_item['cost_center'],
                                                  "party_check": 0})
                                 tot_pf += list_item['credit_in_account_currency']
+
+                                # Employer PF
+                                pf.append({"account": default_gpf_account,
+                                                 "debit_in_account_currency": list_item['credit_in_account_currency'],
+                                                 "cost_center": list_item['cost_center'],
+                                                 "party_check": 0})
+                                tot_pf += list_item['credit_in_account_currency']                                
                         elif default_loan_account == list_item['account']:
                                 loan.append({"account": list_item['account'],
                                                  "debit_in_account_currency": list_item['credit_in_account_currency'],
@@ -362,12 +372,20 @@ class ProcessPayroll(Document):
                                                  "debit_in_account_currency": list_item['credit_in_account_currency'],
                                                  "cost_center": list_item['cost_center'],
                                                  "party_check": 0})
+                                temp.append({"account": list_item['account'],
+                                                 "debit_in_account_currency": list_item['credit_in_account_currency'],
+                                                 "cost_center": list_item['cost_center'],
+                                                 "party_check": 0})                                
                                 tot_tax += list_item['credit_in_account_currency']
                         elif default_health_account == list_item['account']:
                                 health.append({"account": list_item['account'],
                                                  "debit_in_account_currency": list_item['credit_in_account_currency'],
                                                  "cost_center": list_item['cost_center'],
                                                  "party_check": 0})
+                                temp.append({"account": list_item['account'],
+                                                 "debit_in_account_currency": list_item['credit_in_account_currency'],
+                                                 "cost_center": list_item['cost_center'],
+                                                 "party_check": 0})                                
                                 tot_health += list_item['credit_in_account_currency']
 
                 if tot_bank:
@@ -404,7 +422,7 @@ class ProcessPayroll(Document):
                         title = _('Salary [{0}{1}] - SAVINGS Remittance').format(self.month, self.fiscal_year)
                         user_remark = _('Salary [{0}{1}] - SAVINGS Remittance').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, saving, 1, tot_saving, 0)                        
-
+                '''
                 if tot_tax:
                         # TAX
                         title = _('Salary [{0}{1}] - TAX Remittance').format(self.month, self.fiscal_year)
@@ -418,6 +436,12 @@ class ProcessPayroll(Document):
                         self.post_journal_entry(title, user_remark, health, 1, tot_health, 0)                                                
                 #msgprint(_("{0}").format(gis))
                 #msgprint(_("{0}").format(str(gis).replace('credit_in_account_currency','debit_in_account_currency')))
+                '''
+                if (tot_tax or tot_health):
+                        # TAX & HEALTH
+                        title = _('Salary [{0}{1}] - TAX & HEALTH Remittance').format(self.month, self.fiscal_year)
+                        user_remark = _('Salary [{0}{1}] - TAX & HEALTH Remittance').format(self.month, self.fiscal_year)
+                        self.post_journal_entry(title, user_remark, temp, 1, (tot_tax+tot_health), 0)                                                                        
                 
         # Ver 20160706.1 added by SSK
         def post_journal_entry(self, title, user_remark, accounts, bank_entry_req, tot_earnings, tot_deductions):

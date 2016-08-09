@@ -1,12 +1,5 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SSK		                   08/08/2016         DocumentNaming standard is introduced
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
 
 from __future__ import unicode_literals
 import frappe, json
@@ -16,48 +9,10 @@ from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.utils import get_balance_on, get_account_currency
 from erpnext.setup.utils import get_company_currency
 from erpnext.accounts.party import get_party_account
-# Ver 1.0 by SSK on 09/08/2016, Following datetime, make_autoname imports are included
-import datetime
-from frappe.model.naming import make_autoname
 
 class JournalEntry(AccountsController):
 	def __init__(self, arg1, arg2=None):
 		super(JournalEntry, self).__init__(arg1, arg2)
-
-        # Ver 1.0 by SSK on 09/08/2016, autoname() method is added
-	def autoname(self):
-                series_seq = ''
-                now = datetime.datetime.now()
-                if self.voucher_type == 'Journal Entry':
-                        series_seq = 'JV'
-                elif self.voucher_type == 'Bank Entry':
-                        if self.naming_series == 'Bank Payment Voucher':
-                                series_seq = 'BP'
-                        elif self.naming_series == 'Bank Receipt Voucher':
-                                series_seq = 'BR'
-                        else:
-                                series_seq = 'BE'
-                elif self.voucher_type == 'Cash Entry':
-                        if self.naming_series == 'Cash Payment Voucher':
-                                series_seq = 'CP'
-                        elif self.naming_series == 'Cash Receipt Voucher':
-                                series_seq = 'CR'
-                        else:
-                                series_seq = 'CA'
-                elif self.voucher_type == 'Debit Note':
-                        series_seq = 'DN'
-                elif self.voucher_type == 'Credit Note':
-                        series_seq = 'CN'
-                elif self.voucher_type == 'Contra Entry':
-                        series_seq = 'CE'
-                elif self.voucher_type == 'Excise Entry':
-                        series_seq = 'EE'
-                elif self.voucher_type == 'Write Off Entry':
-                        series_seq = 'WE'
-                elif self.voucher_type == 'Opening Entry':
-                        series_seq = 'OP'
-                        
-                self.name = make_autoname(series_seq + now.year + now.month + '/.#####')
 
 	def get_feed(self):
 		return self.voucher_type
