@@ -209,32 +209,89 @@ frappe.ui.form.on("Expense Claim Detail","dsa_rate",function(frm, cdt, cdn){
 	});
 });
 
+frappe.ui.form.on("Expense Claim Detail", "expense_date", function(frm, cdt, cdn) {
+	var child = locals[cdt][cdn];
+	var from_date = new Date(child.expense_date);
+	var to_date = new Date(child.to_date);
+	
+	frappe.model.set_value(cdt, cdn, "no_of_days", ((Math.ceil(Math.abs(to_date.getTime()-from_date.getTime()))/(3600*24*1000))+1));
+	calculate_claim(cdt, cdn);	
+});
+
+frappe.ui.form.on("Expense Claim Detail", "to_date", function(frm, cdt, cdn) {
+	var child = locals[cdt][cdn];
+	var from_date = new Date(child.expense_date);
+	var to_date = new Date(child.to_date);
+	
+	frappe.model.set_value(cdt, cdn, "no_of_days", ((Math.ceil(Math.abs(to_date.getTime()-from_date.getTime()))/(3600*24*1000))+1));	
+	calculate_claim(cdt, cdn);	
+});
+
+
 frappe.ui.form.on("Expense Claim Detail", "dsa_rate_per_day", function(frm, cdt, cdn) {
 	calculate_claim(cdt, cdn);	
-	frappe.model.set_value(cdt, cdn, "claim_amount", 100);
 });
 
 frappe.ui.form.on("Expense Claim Detail", "currency", function(frm, cdt, cdn) {
 	calculate_claim(cdt, cdn);
-	frappe.model.set_value(cdt, cdn, "claim_amount", 200);
 });
 
 frappe.ui.form.on("Expense Claim Detail", "dsa_entitled", function(frm, cdt, cdn) {
 	calculate_claim(cdt, cdn);
-	console.log(cur_frm.doc);
-	console.log(cur_frm.doc.claim_amount);
-	console.log(cur_frm.doc.expenses);
-
 	//frappe.model.set_value(cdt, cdn, "claim_amount", frappe.utils.date_diff());
-	
-	//var child = locals[cdt][cdn];
-	//refresh_field("sanctioned_amount", child.name, child.parentfield);
-	//console.log(child.claim_amount);
-	//frappe.model.set_value(cdt, cdn, "claim_amount", 300);
 });
+
+frappe.ui.form.on("Expense Claim Detail", "exchange_rate", function(frm, cdt, cdn) {
+	calculate_claim(cdt, cdn);	
+});
+
+frappe.ui.form.on("Expense Claim Detail", "mileage", function(frm, cdt, cdn) {
+	calculate_claim(cdt, cdn);	
+});
+
+frappe.ui.form.on("Expense Claim Detail", "mileage_rate", function(frm, cdt, cdn) {
+	calculate_claim(cdt, cdn);	
+});
+
+frappe.ui.form.on("Expense Claim Detail", "other_expense_amount", function(frm, cdt, cdn) {
+	calculate_claim(cdt, cdn);	
+});
+
+frappe.ui.form.on("Expense Claim Detail", "other_expense_exchange_rate", function(frm, cdt, cdn) {
+	calculate_claim(cdt, cdn);	
+});
+
+frappe.ui.form.on("Expense Claim Detail", "advance_amount", function(frm, cdt, cdn) {
+	calculate_claim(cdt, cdn);	
+});
+
+frappe.ui.form.on("Expense Claim Detail", "advance_exchange_rate", function(frm, cdt, cdn) {
+	calculate_claim(cdt, cdn);	
+});
+
+
 
 function calculate_claim(cdt, cdn){
 	var child = locals[cdt][cdn];
+	var dsa=0, mileage=0, other=0, advance=0;
 	
-	frappe.model.set_value(cdt, cdn, "claim_amount", 5*child.dsa_rate_per_day*child.dsa_entitled*child.exchange_rate*0.01);
+	// DSA
+	dsa = child.no_of_days*child.dsa_rate_per_day*child.dsa_entitled*0.01;
+	frappe.model.set_value(cdt, cdn, "total_claim", dsa);
+	
+	// Mileage
+	mileage = child.mileage*child.mileage_rate;
+	frappe.model.set_value(cdt, cdn, "mileage_total_amount", mileage);
+	
+	// Advance
+	advance = child.advance_amount*child.advance_expense_exchange_rate;
+	frappe.model.set_value(cdt, cdn, "advance_total_amount", advance);	
+	
+	// Other Expense
+	other = child.other_expense_amount*other_expense_exchange_rate;
+	frappe.model.set_value(cdt, cdn, "other_expense_total_amount", advance);
+	
+	frappe.model.set_value(cdt, cdn, "claim_amount", (dsa*child.exchange_rate)+(mileage+other));
+	frappe.model.set_value(cdt, cdn, "sanctioned_amount", child.claim_amount);
+	//refresh_field("sanctioned_amount", child.name, child.parentfield);
 }

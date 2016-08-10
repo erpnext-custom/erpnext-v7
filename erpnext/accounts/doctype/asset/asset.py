@@ -11,8 +11,13 @@ from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import get_fixed
 from erpnext.accounts.doctype.asset.depreciation \
 	import get_disposal_account_and_cost_center, get_depreciation_accounts
 from erpnext.accounts.accounts_custom_functions import get_number_of_days
+from frappe.model.naming import make_autoname
 
 class Asset(Document):
+
+	def autoname(self):
+		self.name = make_autoname('ASSET.YYYY.MM.###')
+
 	def validate(self):
 		self.status = self.get_status()
 		self.validate_item()
@@ -24,8 +29,7 @@ class Asset(Document):
 		get_depreciation_accounts(self)
 
 	def on_submit(self):
-		self.make_asset_gl_entry;
-		frappe.throw(_("DID NOT SAVE"))
+		self.make_asset_gl_entry();
 		self.set_status()
 
 	def on_cancel(self):
@@ -193,27 +197,34 @@ class Asset(Document):
 
 	def make_asset_gl_entry(self):
 		if self.gross_purchase_amount:
-			gl_entry = []
-			# CREATE debit gl_entry to Asset Account
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": self.asset_account,
-					"debit_in_account_currency": self.gross_purchase_amount,
-					"cost_center": self.cost_center,
+			je = frappe.new_doc("Journal Entry")
+			je.update({
+				"voucher_type": "Journal Entry",
+				"company": self.company,
+				"remark": self.name + " (" + self.asset_name + ") Asset Issued",
+				"user_remark": self.name + " (" + self.asset_name + ") Asset Issued",
+				"posting_date": self.purchase_date
 				})
-			)
 
-			# CREATE credit gl_entry to Credit Account
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": self.credit_account,
-					"credit_in_account_currency": self.gross_purchase_amount,
-					"cost_center": self.cost_center,
+			#credit account update
+			je.append("accounts", {
+				"account": self.credit_account,
+				"credit_in_account_currency": self.gross_purchase_amount,
+				"reference_type": "Asset",
+				"reference_name": self.name,
+				"cost_center": self.cost_center
 				})
-			)
 
-		frappe.msgprint(str(gl_entries))
-
+			#debit account update
+			je.append("accounts", {
+				"account": self.asset_account,
+				"debit_in_account_currency": self.gross_purchase_amount,
+				"reference_type": "Asset",
+				"reference_name": self.name,
+				"cost_center": self.cost_center
+				})
+			je.insert();
+		
 @frappe.whitelist()
 def make_purchase_invoice(asset, item_code, gross_purchase_amount, company, posting_date):
 	pi = frappe.new_doc("Purchase Invoice")
