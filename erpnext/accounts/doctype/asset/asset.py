@@ -10,6 +10,7 @@ from frappe.model.document import Document
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import get_fixed_asset_account
 from erpnext.accounts.doctype.asset.depreciation \
 	import get_disposal_account_and_cost_center, get_depreciation_accounts
+from erpnext.accounts.accounts_custom_functions import get_number_of_days
 
 class Asset(Document):
 	def validate(self):
@@ -98,9 +99,17 @@ class Asset(Document):
 				for n in xrange(number_of_pending_depreciations):
 					schedule_date = add_months(self.next_depreciation_date,
 						n * cint(self.frequency_of_depreciation))
+					
+					last_schedule_date = add_months(self.next_depreciation_date,
+						(n - 1) * cint(self.frequency_of_depreciation))
 
-					depreciation_amount = self.get_depreciation_amount(value_after_depreciation)
-				
+					if n == 0:
+						num_of_days = get_number_of_days(self.purchase_date, schedule_date) + 1
+					else:
+						num_of_days = get_number_of_days(last_schedule_date, schedule_date)
+
+					depreciation_amount = self.get_depreciation_amount(value_after_depreciation, num_of_days)
+
 					accumulated_depreciation += flt(depreciation_amount)
 					value_after_depreciation -= flt(depreciation_amount)
 
@@ -110,11 +119,15 @@ class Asset(Document):
 						"accumulated_depreciation_amount": accumulated_depreciation
 					})
 
-	def get_depreciation_amount(self, depreciable_value):
+	def get_depreciation_amount(self, depreciable_value, num_days=1):
 		if self.depreciation_method == "Straight Line":
+			#depreciation_amount = (flt(self.value_after_depreciation) -
+			#	flt(self.expected_value_after_useful_life)) / (cint(self.total_number_of_depreciations) - 
+			#	cint(self.number_of_depreciations_booked))
+			
 			depreciation_amount = (flt(self.value_after_depreciation) -
-				flt(self.expected_value_after_useful_life)) / (cint(self.total_number_of_depreciations) - 
-				cint(self.number_of_depreciations_booked))
+				flt(self.expected_value_after_useful_life)) * num_days / (((cint(self.total_number_of_depreciations) - 
+				cint(self.number_of_depreciations_booked)) * 365 ) / 12 )
 		else:
 			factor = 200.0 /  self.total_number_of_depreciations
 			depreciation_amount = flt(depreciable_value * factor / 100, 0)

@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SSK		                   08/08/2016         DocumentNaming standard is introduced
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
+
 from __future__ import unicode_literals
 import frappe, json
 from frappe import _, scrub, ValidationError
@@ -20,11 +14,6 @@ from erpnext.setup.utils import get_exchange_rate
 from erpnext.accounts.general_ledger import make_gl_entries
 
 from erpnext.controllers.accounts_controller import AccountsController
-
-# Ver 1.0 by SSK on 09/08/2016, Following datetime, make_autoname imports are included
-import datetime
-from frappe.model.naming import make_autoname
-
 
 class InvalidPaymentEntry(ValidationError): pass
 
@@ -43,23 +32,6 @@ class PaymentEntry(AccountsController):
 			self.party_account_field = "paid_to"
 			self.party_account = self.paid_to
 			self.party_account_currency = self.paid_to_account_currency
-
-        # Ver 1.0 by SSK on 09/08/2016, autoname() method is added
-	def autoname(self):
-                series_seq = ""
-                now = datetime.datetime.now()
-                if self.naming_series == 'Bank Payment Voucher':
-                        series_seq = 'BP'
-                elif self.naming_series == 'Bank Receipt Voucher':
-                        series_seq = 'BR'
-                elif self.naming_series == 'Journal Voucher':
-                        series_seq = 'JV'
-                else:
-                        series_seq = 'PV'
-
-                series_seq += str(now.year) + str(now.month)
-                #msgprint(_("{0}").format(series_seq))
-                self.name = make_autoname(str(series_seq) + '.#####')
 							
 	def validate(self):
 		self.setup_party_account_field()

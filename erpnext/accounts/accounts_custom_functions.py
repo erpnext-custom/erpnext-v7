@@ -4,6 +4,18 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import msgprint, _
+from frappe.utils import date_diff, get_last_day
+
+##
+#Return number of days between two dates or zero 
+##
+def get_number_of_days(end_date=None, start_date=None):
+	if start_date and end_date:
+		num_of_days = date_diff(start_date, end_date)
+	else:
+		num_of_days = 0
+	
+	return num_of_days
 
 # Ver 20160627.1 by SSK, Fetching the latest
 
