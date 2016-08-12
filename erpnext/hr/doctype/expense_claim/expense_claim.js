@@ -1,6 +1,18 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  		  SSK		                        10/08/2016         Validations for DSA, Mileage, Advance, Other Expense
+																		     introducted.
+1.0		  		  SSK		                        11/08/2016         Following columns introducted
+                                                                          i) total_advance_amount
+																		 ii) net_claimed_amount
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
+
 frappe.provide("erpnext.hr");
 
 erpnext.hr.ExpenseClaimController = frappe.ui.form.Controller.extend({
@@ -11,10 +23,12 @@ erpnext.hr.ExpenseClaimController = frappe.ui.form.Controller.extend({
 			args: {
 				"docname": cur_frm.doc.name,
 			},
+			/*
 			callback: function(r) {
 				var doc = frappe.model.sync(r.message);
 				frappe.set_route('Form', 'Journal Entry', r.message.name);
 			}
+			*/
 		});
 	},
 	
@@ -127,17 +141,29 @@ cur_frm.cscript.validate = function(doc) {
 cur_frm.cscript.calculate_total = function(doc,cdt,cdn){
 	doc.total_claimed_amount = 0;
 	doc.total_sanctioned_amount = 0;
+	// Ver 1.0 Begins by SSK on 11/08/2016
+	doc.total_advance_amount = 0;
+	doc.net_claimed_amount = 0;
+	// Ver 1.0 Ends by SSK on 11/08/2016
 	$.each((doc.expenses || []), function(i, d) {
-		doc.total_claimed_amount += d.claim_amount;
+		doc.total_claimed_amount += (d.claim_amount ? d.claim_amount:0);
 		if(d.sanctioned_amount==null) {
-			d.sanctioned_amount = d.claim_amount;
+			d.sanctioned_amount = (d.claim_amount ? d.claim_amount:0);
 		}
 		doc.total_sanctioned_amount += d.sanctioned_amount;
+		// Ver 1.0 Begins by SSK on 11/08/2016, following code added
+		doc.total_advance_amount += (d.advance_total_amount ? d.advance_total_amount:0);
+		doc.net_claimed_amount += (d.claim_amount ? d.claim_amount:0) - (d.advance_total_amount ? d.advance_total_amount:0);
+		doc.total_sanctioned_amount -= (d.advance_total_amount ? d.advance_total_amount:0);
+		// Ver 1.0 Ends by SSK on 11/08/2016
 	});
 
 	refresh_field("total_claimed_amount");
 	refresh_field('total_sanctioned_amount');
-
+	// Ver 1.0 Begins by SSK on 11/08/2016, following code added
+	refresh_field('total_advance_amount');
+	refresh_field('net_claimed_amount');
+	// Ver 1.0 Ends by SSK on 11/08/2016
 }
 
 cur_frm.cscript.calculate_total_amount = function(doc,cdt,cdn){
@@ -249,7 +275,7 @@ frappe.ui.form.on("Expense Claim Detail", "mileage", function(frm, cdt, cdn) {
 	calculate_claim(cdt, cdn);	
 });
 
-frappe.ui.form.on("Expense Claim Detail", "mileage_rate", function(frm, cdt, cdn) {
+frappe.ui.form.on("Expense Claim Detail", "mileage_rate2", function(frm, cdt, cdn) {
 	calculate_claim(cdt, cdn);	
 });
 
@@ -263,12 +289,13 @@ frappe.ui.form.on("Expense Claim Detail", "other_expense_exchange_rate", functio
 
 frappe.ui.form.on("Expense Claim Detail", "advance_amount", function(frm, cdt, cdn) {
 	calculate_claim(cdt, cdn);	
+	cur_frm.cscript.calculate_total(frm.doc, cdt, cdn);
 });
 
 frappe.ui.form.on("Expense Claim Detail", "advance_exchange_rate", function(frm, cdt, cdn) {
 	calculate_claim(cdt, cdn);	
+	cur_frm.cscript.calculate_total(frm.doc, cdt, cdn);
 });
-
 
 
 function calculate_claim(cdt, cdn){
@@ -276,22 +303,23 @@ function calculate_claim(cdt, cdn){
 	var dsa=0, mileage=0, other=0, advance=0;
 	
 	// DSA
-	dsa = child.no_of_days*child.dsa_rate_per_day*child.dsa_entitled*0.01;
+	dsa = (child.no_of_days ? child.no_of_days:0)*(child.dsa_rate_per_day ? child.dsa_rate_per_day:0)*(child.dsa_entitled ? child.dsa_entitled:0)*0.01;
 	frappe.model.set_value(cdt, cdn, "total_claim", dsa);
 	
 	// Mileage
-	mileage = child.mileage*child.mileage_rate;
+	mileage = (child.mileage ? child.mileage:0)*(child.mileage_rate2 ? child.mileage_rate2:0);
 	frappe.model.set_value(cdt, cdn, "mileage_total_amount", mileage);
 	
 	// Advance
-	advance = child.advance_amount*child.advance_expense_exchange_rate;
-	frappe.model.set_value(cdt, cdn, "advance_total_amount", advance);	
+	advance = (child.advance_amount ? child.advance_amount:0)*(child.advance_exchange_rate ? child.advance_exchange_rate:0);
+	frappe.model.set_value(cdt, cdn, "advance_total_amount", advance);
 	
 	// Other Expense
-	other = child.other_expense_amount*other_expense_exchange_rate;
-	frappe.model.set_value(cdt, cdn, "other_expense_total_amount", advance);
+	other = (child.other_expense_amount ? child.other_expense_amount:0)*(child.other_expense_exchange_rate ? child.other_expense_exchange_rate:0);
+	frappe.model.set_value(cdt, cdn, "other_expense_total_amount", other);
 	
 	frappe.model.set_value(cdt, cdn, "claim_amount", (dsa*child.exchange_rate)+(mileage+other));
 	frappe.model.set_value(cdt, cdn, "sanctioned_amount", child.claim_amount);
-	//refresh_field("sanctioned_amount", child.name, child.parentfield);
+	refresh_field("claim_amount", child.name, child.parentfield);
+	refresh_field("sanctioned_amount", child.name, child.parentfield);
 }

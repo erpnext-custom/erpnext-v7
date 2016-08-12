@@ -10,7 +10,8 @@ from erpnext.accounts.report.trial_balance.trial_balance import validate_filters
 
 def execute(filters=None):
 	validate_filters(filters)
-	
+	check_accounts(filters)
+
 	show_party_name = is_party_name_visible(filters)
 	
 	columns = get_columns(filters, show_party_name)
@@ -109,11 +110,13 @@ def get_balances_within_period(filters):
 			and ifnull(party_type, '') = %(party_type)s and ifnull(party, '') != ''
 			and posting_date >= %(from_date)s and posting_date <= %(to_date)s 
 			and ifnull(is_opening, 'No') = 'No'
+			and account LIKE %(account)s
 		group by party""", {
 			"company": filters.company,
 			"from_date": filters.from_date,
 			"to_date": filters.to_date,
-			"party_type": filters.party_type
+			"party_type": filters.party_type,
+			"account": filters.accounts
 		}, as_dict=True)
 		
 	balances_within_period = frappe._dict()
@@ -216,3 +219,7 @@ def is_party_name_visible(filters):
 		show_party_name = True
 		
 	return show_party_name
+
+def check_accounts(filters):
+	if not filters.accounts:
+		filters.accounts = '%'

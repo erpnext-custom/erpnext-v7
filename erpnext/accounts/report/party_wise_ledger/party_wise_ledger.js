@@ -51,6 +51,12 @@ frappe.query_reports["Party Wise Ledger"] = {
 			"default": "Customer"
 		},
 		{
+			"fieldname":"accounts",
+			"label": __("Account"),
+			"fieldtype": "Link",
+			"options": "Account"
+		},
+		{
 			"fieldname": "show_zero_values",
 			"label": __("Show zero values"),
 			"fieldtype": "Check"

@@ -98,6 +98,7 @@ class Asset(Document):
 		if not self.get("schedules") and self.next_depreciation_date:
 			accumulated_depreciation = flt(self.opening_accumulated_depreciation)
 			value_after_depreciation = flt(self.value_after_depreciation)
+			current_value_income_tax = flt(self.value_after_depreciation) - flt(self.expected_value_after_useful_life)
 
 			number_of_pending_depreciations = cint(self.total_number_of_depreciations) - \
 				cint(self.number_of_depreciations_booked)
@@ -115,6 +116,7 @@ class Asset(Document):
 						num_of_days = get_number_of_days(last_schedule_date, schedule_date)
 
 					depreciation_amount = self.get_depreciation_amount(value_after_depreciation, num_of_days)
+					income_tax_amount = self.get_income_tax_depreciation_amount(current_value_income_tax, flt(self.asset_depreciation_percent), num_of_days)
 
 					accumulated_depreciation += flt(depreciation_amount)
 					value_after_depreciation -= flt(depreciation_amount)
@@ -122,18 +124,16 @@ class Asset(Document):
 					self.append("schedules", {
 						"schedule_date": schedule_date,
 						"depreciation_amount": depreciation_amount,
+						"depreciation_income_tax": income_tax_amount,
 						"accumulated_depreciation_amount": accumulated_depreciation
 					})
 
+
 	def get_depreciation_amount(self, depreciable_value, num_days=1):
 		if self.depreciation_method == "Straight Line":
-			#depreciation_amount = (flt(self.value_after_depreciation) -
-			#	flt(self.expected_value_after_useful_life)) / (cint(self.total_number_of_depreciations) -
-			#	cint(self.number_of_depreciations_booked))
-
 			depreciation_amount = (flt(self.value_after_depreciation) -
 				flt(self.expected_value_after_useful_life)) * num_days / (((cint(self.total_number_of_depreciations) -
-				cint(self.number_of_depreciations_booked)) * 365 ) / 12 )
+				cint(self.number_of_depreciations_booked)) * 365.25 ) / 12 )
 		else:
 			factor = 200.0 /  self.total_number_of_depreciations
 			depreciation_amount = flt(depreciable_value * factor / 100, 0)
@@ -195,6 +195,9 @@ class Asset(Document):
 
 		return status
 
+	def get_income_tax_depreciation_amount(self, depreciable_value, percent, num_days=1):
+		return (depreciable_value/(100 * 365.25)) * percent * num_days
+	
 	def make_asset_gl_entry(self):
 		if self.gross_purchase_amount:
 			je = frappe.new_doc("Journal Entry")

@@ -390,37 +390,37 @@ class ProcessPayroll(Document):
 
                 if tot_bank:
                         # To Salary Payable
-                        title = _('Salary [{0}{1}] - To Payables').format(self.month, self.fiscal_year)
-                        user_remark = _('Salary [{0}{1}] - To Payables').format(self.month, self.fiscal_year)
+                        title = _('Salary {0}{1} - To Payables').format(self.month, self.fiscal_year)
+                        user_remark = _('Salary {0}{1} - To Payables').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, accounts, 0, tot_earnings, tot_deductions)
 
                         # To Bank
-                        title = _('Salary [{0}{1}] - To Bank').format(self.month, self.fiscal_year)
-                        user_remark = _('Salary [{0}{1}] - To Bank').format(self.month, self.fiscal_year)
+                        title = _('Salary {0}{1} - To Bank').format(self.month, self.fiscal_year)
+                        user_remark = _('Salary {0}{1} - To Bank').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, bank, 1, tot_bank, 0)
 
                 if tot_gis:
                         # GIS
-                        title = _('Salary [{0}{1}] - GIS Remittance').format(self.month, self.fiscal_year)
-                        user_remark = _('Salary [{0}{1}] - GIS Remittance').format(self.month, self.fiscal_year)
+                        title = _('Salary {0}{1} - GIS Remittance').format(self.month, self.fiscal_year)
+                        user_remark = _('Salary {0}{1} - GIS Remittance').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, gis, 1, tot_gis, 0)                        
 
                 if tot_pf:
                         # PF
-                        title = _('Salary [{0}{1}] - PF Remittance').format(self.month, self.fiscal_year)
-                        user_remark = _('Salary [{0}{1}] - PF Remittance').format(self.month, self.fiscal_year)
+                        title = _('Salary {0}{1} - PF Remittance').format(self.month, self.fiscal_year)
+                        user_remark = _('Salary {0}{1} - PF Remittance').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, pf, 1, tot_pf, 0)                        
 
                 if tot_loan:
                         # LOAN
-                        title = _('Salary [{0}{1}] - LOAN Remittance').format(self.month, self.fiscal_year)
-                        user_remark = _('Salary [{0}{1}] - LOAN Remittance').format(self.month, self.fiscal_year)
+                        title = _('Salary {0}{1} - LOAN Remittance').format(self.month, self.fiscal_year)
+                        user_remark = _('Salary {0}{1} - LOAN Remittance').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, loan, 1, tot_loan, 0)                        
 
                 if tot_saving:
                         # SAVINGS
-                        title = _('Salary [{0}{1}] - SAVINGS Remittance').format(self.month, self.fiscal_year)
-                        user_remark = _('Salary [{0}{1}] - SAVINGS Remittance').format(self.month, self.fiscal_year)
+                        title = _('Salary {0}{1} - SAVINGS Remittance').format(self.month, self.fiscal_year)
+                        user_remark = _('Salary {0}{1} - SAVINGS Remittance').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, saving, 1, tot_saving, 0)                        
                 '''
                 if tot_tax:
@@ -439,8 +439,8 @@ class ProcessPayroll(Document):
                 '''
                 if (tot_tax or tot_health):
                         # TAX & HEALTH
-                        title = _('Salary [{0}{1}] - TAX & HEALTH Remittance').format(self.month, self.fiscal_year)
-                        user_remark = _('Salary [{0}{1}] - TAX & HEALTH Remittance').format(self.month, self.fiscal_year)
+                        title = _('Salary {0}{1} - TAX & HEALTH Remittance').format(self.month, self.fiscal_year)
+                        user_remark = _('Salary {0}{1} - TAX & HEALTH Remittance').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, temp, 1, (tot_tax+tot_health), 0)                                                                        
                 
         # Ver 20160706.1 added by SSK

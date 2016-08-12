@@ -1,12 +1,21 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
-
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  SSK		                   10/08/2016         Account Posting is modified
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import get_fullname, flt
 from frappe.model.document import Document
 from erpnext.hr.utils import set_employee_name
+from frappe import msgprint
+from frappe.utils import cint, flt, nowdate
+from frappe.utils import money_in_words
 
 class InvalidExpenseApproverError(frappe.ValidationError): pass
 
@@ -81,17 +90,38 @@ def make_bank_entry(docname):
 	expense_claim = frappe.get_doc("Expense Claim", docname)
 	default_bank_cash_account = get_default_bank_cash_account(expense_claim.company, "Bank")
 
+        # Ver 1.0 by SSK on 10/08/2016, fetching cost_center for the employee
+        #msgprint(expense_claim.employee)
+        cost_center = frappe.db.sql("""
+                        select t2.cost_center
+                        from `tabEmployee` t1, `tabDivision` t2
+                        where t2.name = t1.division
+                        and t2.dpt_name = t1.department
+                        and t2.branch = t1.branch
+                        and t1.name = '%s'
+                """ % (expense_claim.employee))
+
+        # Ver 1.0 Ends, by SSK on 10/08/2016
+
 	je = frappe.new_doc("Journal Entry")
 	je.voucher_type = 'Bank Entry'
+	je.naming_series = 'Bank Payment Voucher'
 	je.company = expense_claim.company
 	je.remark = 'Payment against Expense Claim: ' + docname;
+        je.posting_date = nowdate()
+        je.total_amount_in_words =  money_in_words(expense_claim.total_sanctioned_amount)
 
 	for expense in expense_claim.expenses:
 		je.append("accounts", {
 			"account": expense.default_account,
 			"debit_in_account_currency": expense.sanctioned_amount,
 			"reference_type": "Expense Claim",
-			"reference_name": expense_claim.name
+			"reference_name": expense_claim.name,
+                        "cost_center": "ABC",
+                        "party_type": "Employee",
+                        "party": expense_claim.employee,
+                        "cost_center": cost_center[0][0],
+                        "party_check": 0
 		})
 
 	je.append("accounts", {
@@ -101,10 +131,13 @@ def make_bank_entry(docname):
 		"reference_name": expense_claim.name,
 		"balance": default_bank_cash_account.balance,
 		"account_currency": default_bank_cash_account.account_currency,
-		"account_type": default_bank_cash_account.account_type
+		"account_type": default_bank_cash_account.account_type,
+                "cost_center": "Dummy-CEO - SMCL"
 	})
 
-	return je.as_dict()
+        je.insert()
+        msgprint(_("Expense Claim posting to Accounts complete..."))
+	#return je.as_dict()
 
 @frappe.whitelist()
 def get_expense_claim_account(expense_claim_type, company):

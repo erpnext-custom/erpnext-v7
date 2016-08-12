@@ -1,0 +1,118 @@
+{
+ "allow_copy": 0, 
+ "allow_import": 0, 
+ "allow_rename": 0, 
+ "beta": 0, 
+ "creation": "2016-08-11 20:23:43.673868", 
+ "custom": 0, 
+ "docstatus": 0, 
+ "doctype": "DocType", 
+ "document_type": "", 
+ "editable_grid": 1, 
+ "fields": [
+  {
+   "fieldname": "vehicle_no", 
+   "fieldtype": "Data", 
+   "in_list_view": 1, 
+   "label": "Vehicle Number", 
+   "reqd": 1
+  }, 
+  {
+   "fieldname": "sample_collected_on", 
+   "fieldtype": "Date", 
+   "in_list_view": 1, 
+   "label": "Sample Collected On"
+  }, 
+  {
+   "default": "0", 
+   "fieldname": "penalty_amount", 
+   "fieldtype": "Currency", 
+   "in_list_view": 1, 
+   "label": "Penalty Amount", 
+   "options": "Company:company:default_currency", 
+   "reqd": 1
+  }, 
+  {
+   "fieldname": "remarks_column", 
+   "fieldtype": "Column Break"
+  }, 
+  {
+   "fieldname": "remarks", 
+   "fieldtype": "Text", 
+   "in_list_view": 1, 
+   "label": "Remarks"
+  }, 
+  {
+   "fieldname": "ash_details_section", 
+   "fieldtype": "Section Break", 
+   "label": "Impurity Content Details"
+  }, 
+  {
+   "fieldname": "ash_content", 
+   "fieldtype": "Data", 
+   "label": "Ash Content"
+  }, 
+  {
+   "depends_on": "ash_content", 
+   "fieldname": "ash_uom", 
+   "fieldtype": "Link", 
+   "label": "Ash UoM", 
+   "options": "UOM"
+  }, 
+  {
+   "fieldname": "moisture_details_section", 
+   "fieldtype": "Column Break"
+  }, 
+  {
+   "fieldname": "moisture_content", 
+   "fieldtype": "Data", 
+   "label": "Moisture Content"
+  }, 
+  {
+   "depends_on": "moisture_content", 
+   "fieldname": "moisture_uom", 
+   "fieldtype": "Link", 
+   "label": "Moisture UoM", 
+   "options": "UOM"
+  }, 
+  {
+   "fieldname": "sulphur_details_ssection", 
+   "fieldtype": "Column Break"
+  }, 
+  {
+   "fieldname": "sulphur_content", 
+   "fieldtype": "Data", 
+   "label": "Sulphur Content"
+  }, 
+  {
+   "depends_on": "sulphur_content", 
+   "fieldname": "sulphur_uom", 
+   "fieldtype": "Link", 
+   "label": "Sulphur UoM", 
+   "options": "UOM"
+  }
+ ], 
+ "hide_heading": 0, 
+ "hide_toolbar": 0, 
+ "idx": 0, 
+ "image_view": 0, 
+ "in_create": 0, 
+ "in_dialog": 0, 
+ "is_submittable": 0, 
+ "issingle": 0, 
+ "istable": 1, 
+ "max_attachments": 0, 
+ "modified": "2016-08-11 21:06:34.423496", 
+ "modified_by": "Administrator", 
+ "module": "Selling", 
+ "name": "Mines Quality Record Details", 
+ "name_case": "", 
+ "owner": "Administrator", 
+ "permissions": [], 
+ "quick_entry": 1, 
+ "read_only": 0, 
+ "read_only_onload": 0, 
+ "sort_field": "modified", 
+ "sort_order": "DESC", 
+ "track_seen": 0
+}

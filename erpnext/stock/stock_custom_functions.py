@@ -18,8 +18,8 @@ def get_current_item_code(item_group):
 def getItemCode(item_group):
 	return {
 		"Consumable": 100000,
-		"Capital Inventory": 200000,
-		"Finished Goods": 300000,
+		"Fixed Asset": 200000,
+		"Mines Product": 300000,
 		"Services (miscellaneous)": 400000,
 		"Services (works)": 500000,
 	}.get(item_group, 000000)

@@ -18,7 +18,6 @@ def get_number_of_days(end_date=None, start_date=None):
 	return num_of_days
 
 # Ver 20160627.1 by SSK, Fetching the latest
-
 @frappe.whitelist()
 def get_loss_tolerance():
     loss_tolerance = frappe.db.sql("select name,loss_tolerance,loss_qty_flat from `tabLoss Tolerance` order by creation desc limit 1;");

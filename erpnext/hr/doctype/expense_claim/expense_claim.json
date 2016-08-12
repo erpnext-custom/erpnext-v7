@@ -211,7 +211,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2016-08-10 19:13:25.607460", 
+ "modified": "2016-08-12 10:43:13.832449", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Expense Claim", 
@@ -233,8 +233,8 @@
    "write": 1
   }, 
   {
-   "create": 1, 
-   "delete": 1, 
+   "amend": 1, 
+   "cancel": 1, 
    "email": 1, 
    "export": 1, 
    "print": 1, 
@@ -243,6 +243,43 @@
    "role": "Expense Approver", 
    "share": 1, 
    "submit": 1, 
+   "write": 1
+  }, 
+  {
+   "create": 1, 
+   "email": 1, 
+   "export": 1, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "Leave Approver", 
+   "share": 1, 
+   "write": 1
+  }, 
+  {
+   "create": 1, 
+   "delete": 1, 
+   "email": 1, 
+   "export": 1, 
+   "permlevel": 1, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "All", 
+   "share": 1, 
+   "write": 1
+  }, 
+  {
+   "create": 1, 
+   "delete": 1, 
+   "email": 1, 
+   "export": 1, 
+   "if_owner": 1, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "HR Manager", 
+   "share": 1, 
    "write": 1
   }, 
   {
