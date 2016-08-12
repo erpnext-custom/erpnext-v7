@@ -139,6 +139,7 @@ cur_frm.cscript.validate = function(doc) {
 }
 
 cur_frm.cscript.calculate_total = function(doc,cdt,cdn){
+	//console.log('calculate_total is called...');
 	doc.total_claimed_amount = 0;
 	doc.total_sanctioned_amount = 0;
 	// Ver 1.0 Begins by SSK on 11/08/2016
@@ -156,6 +157,11 @@ cur_frm.cscript.calculate_total = function(doc,cdt,cdn){
 		doc.net_claimed_amount += (d.claim_amount ? d.claim_amount:0) - (d.advance_total_amount ? d.advance_total_amount:0);
 		doc.total_sanctioned_amount -= (d.advance_total_amount ? d.advance_total_amount:0);
 		// Ver 1.0 Ends by SSK on 11/08/2016
+		//console.log('##########');
+		//console.log('doc.total_claimed_amount : '+doc.total_claimed_amount);
+		//console.log('doc.total_advance_amount : '+doc.total_advance_amount);
+		//console.log('doc.net_claimed_amount : '+doc.net_claimed_amount);
+		//console.log('doc.total_sanctioned_amount : '+doc.total_sanctioned_amount);
 	});
 
 	refresh_field("total_claimed_amount");

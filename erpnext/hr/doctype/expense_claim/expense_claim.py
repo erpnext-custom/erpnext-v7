@@ -5,6 +5,7 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   10/08/2016         Account Posting is modified
+1.0		  SSK		                   12/08/2016         Sanctioned Amount should be after advance deduction.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -50,9 +51,17 @@ class ExpenseClaim(Document):
 	def calculate_total_amount(self):
 		self.total_claimed_amount = 0
 		self.total_sanctioned_amount = 0
+		# Ver 1.0 Begins added by SSK on 12/08/2016, total_advance_amount is introducted
+		self.total_advance_amount = 0
+		
 		for d in self.get('expenses'):
-			self.total_claimed_amount += flt(d.claim_amount)
-			self.total_sanctioned_amount += flt(d.sanctioned_amount)
+			self.total_claimed_amount += flt(0 if d.claim_amount == None else d.claim_amount)
+			self.total_sanctioned_amount += flt(0 if d.sanctioned_amount == None else d.sanctioned_amount)
+			# Ver 1.0 Begins added by SSK on 12/08/2016, total_advance_amount is introducted
+			self.total_advance_amount += flt(0 if d.advance_total_amount == None else d.advance_total_amount)
+			
+                # Ver 1.0 Begins added by SSK on 12/08/2016, total_advance_amount is introducted
+		self.total_sanctioned_amount -=  self.total_advance_amount
 
 	def validate_expense_approver(self):
 		if self.exp_approver and "Expense Approver" not in frappe.get_roles(self.exp_approver):
@@ -117,12 +126,23 @@ def make_bank_entry(docname):
 			"debit_in_account_currency": expense.sanctioned_amount,
 			"reference_type": "Expense Claim",
 			"reference_name": expense_claim.name,
-                        "cost_center": "ABC",
                         "party_type": "Employee",
                         "party": expense_claim.employee,
                         "cost_center": cost_center[0][0],
                         "party_check": 0
 		})
+
+        if (0 if expense_claim.total_advance_amount == None else expense_claim.total_advance_amount) > 0:
+                je.append("accounts", {
+                        "account": "Advance to Employee - SMCL",
+                        "credit_in_account_currency": expense_claim.total_advance_amount,
+                        "reference_type": "Expense Claim",
+                        "reference_name": expense_claim.name,
+                        "party_type": "Employee",
+                        "party": expense_claim.employee,
+                        "cost_center": cost_center[0][0],
+                        "party_check": 0
+                })
 
 	je.append("accounts", {
 		"account": default_bank_cash_account.account,
@@ -136,7 +156,7 @@ def make_bank_entry(docname):
 	})
 
         je.insert()
-        msgprint(_("Expense Claim posting to Accounts complete..."))
+        msgprint(_("Posting to Accounts Successful..."))
 	#return je.as_dict()
 
 @frappe.whitelist()
