@@ -4,8 +4,37 @@ from frappe import _
 def get_data():
 	return [
 		{
-			"label": _("Billing"),
+			"label": _("Company"),
 			"items": [
+				{
+					"type": "doctype",
+					"name": "Company",
+					"description": _("Company (not Customer or Supplier) master.")
+				},
+				{
+					"type": "doctype",
+					"name": "Account",
+					"icon": "icon-sitemap",
+					"label": _("Chart of Accounts"),
+					"route": "Tree/Account",
+					"description": _("Tree of financial accounts."),
+				},
+			]
+		},
+
+		{
+			"label": _("Accounts"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Journal Entry",
+					"description": _("Accounting journal entries.")
+				},
+				{
+					"type": "doctype",
+					"name": "Payment Entry",
+					"description": _("Bank/Cash transactions against party or for internal transfer")
+				},
 				{
 					"type": "doctype",
 					"name": "Sales Invoice",
@@ -18,59 +47,49 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Payment Request",
-					"description": _("Payment Request")
-				},
-				{
-					"type": "doctype",
-					"name": "Payment Entry",
-					"description": _("Bank/Cash transactions against party or for internal transfer")
-				},
-				{
-					"type": "page",
-					"name": "pos",
-					"label": _("POS"),
-					"description": _("Point of Sale")
-				},
-				{
-					"type": "report",
-					"name": "Accounts Receivable",
-					"doctype": "Sales Invoice",	
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Accounts Payable",
-					"doctype": "Purchase Invoice",
-					"is_query_report": True
+					"name": "Period Closing Voucher",
+					"description": _("Close Balance Sheet and book Profit or Loss.")
 				},
 			]
-
 		},
+
 		{
-			"label": _("Company and Accounts"),
+			"label": _("Asset Management"),
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Company",
-					"description": _("Company (not Customer or Supplier) master.")
+					"name": "Asset",
 				},
 				{
 					"type": "doctype",
-					"name": "Journal Entry",
-					"description": _("Accounting journal entries.")
-				},
+					"name": "Asset Category",
+				}
 				{
-					"type": "doctype",
-					"name": "Account",
-					"icon": "icon-sitemap",
-					"label": _("Chart of Accounts"),
-					"route": "Tree/Account",
-					"description": _("Tree of financial accounts."),
+					"type": "report",
+					"name": "Asset Depreciation Ledger",
+					"doctype": "Asset",
+					"is_query_report": True,
 				},
 				{
 					"type": "report",
-					"name":"General Ledger",
+					"name": "Asset Depreciations and Balances",
+					"doctype": "Asset",
+					"is_query_report": True,
+				},
+				{
+					"type": "doctype",
+					"name": "Asset Movement",
+					"description": _("Transfer an asset from one warehouse to another")
+				},
+				{
+					"type": "report",
+					"name": "Asset Register",
+					"doctype": "Asset",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Property Plant & Equipment",
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				},
@@ -79,21 +98,6 @@ def get_data():
 		{
 			"label": _("Taxes and Registers"),
 			"items": [
-		#		{
-		#			"type": "doctype",
-		#			"name": "Sales Taxes and Charges Template",
-		#			"description": _("Tax template for selling transactions.")
-		#		},
-		#		{
-		#			"type": "doctype",
-		#			"name": "Purchase Taxes and Charges Template",
-		#			"description": _("Tax template for buying transactions.")
-		#		},
-		#		{
-		#			"type": "doctype",
-		#			"name": "Tax Rule",
-		#			"description": _("Tax Rule for transactions.")
-		#		},
 				{
 					"type": "report",
 					"name": "Sales Register",
@@ -132,14 +136,6 @@ def get_data():
 					"label": "RRCO Receipt Tool",
 					"description": "Enter RRCO Receipts in Bulk",
 					"hide_count": True
-				},
-				{
-					"type": "doctype",
-					"name": "Asset",
-				},
-				{
-					"type": "doctype",
-					"name": "Asset Category",
 				}
 			]
 		},
@@ -175,12 +171,29 @@ def get_data():
 					"name": "Statement of Changes in Equity",
 					"doctype": "GL Entry",
 					"is_query_report": True,
+				}
+			]
+		},
+		{
+			"label": _("General Reports"),
+			"items": [
+				{
+					"type": "report",
+					"name":"General Ledger",
+					"doctype": "GL Entry",
+					"is_query_report": True,
 				},
 				{
 					"type": "report",
-					"name": "Property Plant & Equipment",
-					"doctype": "GL Entry",
-					"is_query_report": True,
+					"name": "Accounts Receivable",
+					"doctype": "Sales Invoice",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "Accounts Payable",
+					"doctype": "Purchase Invoice",
+					"is_query_report": True
 				},
 				{
 					"type": "report",
@@ -191,41 +204,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Banking and Payments"),
-			"items": [
-		#		{
-		#			"type": "doctype",
-		#			"name": "Payment Tool",
-		#			"description": _("Create Payment Entries against Orders or Invoices.")
-		#		},
-				{
-					"type": "doctype",
-					"label": _("Update Bank Transaction Dates"),
-					"name": "Bank Reconciliation",
-					"description": _("Update bank payment dates with journals.")
-				},
-		#		{
-		#			"type": "doctype",
-		#			"label": _("Match Payments with Invoices"),
-		#			"name": "Payment Reconciliation",
-		#			"description": _("Match non-linked Invoices and Payments.")
-		#		},
-				{
-					"type": "report",
-					"name": "Bank Reconciliation Statement",
-					"is_query_report": True,
-					"doctype": "Journal Entry"
-				},
-				{
-					"type": "report",
-					"name": "Bank Clearance Summary",
-					"is_query_report": True,
-					"doctype": "Journal Entry"
-				},
-			]
-		},
-		{
-			"label": _("Masters"),
+			"label": _("Master Data"),
 			"items": [
 				{
 					"type": "doctype",
@@ -236,11 +215,6 @@ def get_data():
 					"type": "doctype",
 					"name": "Supplier",
 					"description": _("Supplier database.")
-				},
-				{
-					"type": "doctype",
-					"name": "Item",
-					"label": "Materials",
 				},
 			]
 		},
@@ -274,26 +248,6 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Tools"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Period Closing Voucher",
-					"description": _("Close Balance Sheet and book Profit or Loss.")
-				},
-				{
-					"type": "doctype",
-					"name": "Asset Movement",
-					"description": _("Transfer an asset from one warehouse to another")
-				},
-				{
-					"type": "doctype",
-					"name": "Cheque Print Template",
-					"description": _("Setup cheque dimensions for printing")
-				},
-			]
-		},
-		{
 			"label": _("Setup"),
 			"icon": "icon-cog",
 			"items": [
@@ -317,66 +271,13 @@ def get_data():
 					"name": "Currency Exchange",
 					"description": _("Currency exchange rate master.")
 				},
-		#		{
-		#			"type": "doctype",
-		#			"name": "Payment Gateway Account",
-		#			"description": _("Setup Gateway accounts.")
-		#		},
-		#		{
-		#			"type": "doctype",
-		#			"name": "POS Profile",
-		#			"label": _("Point-of-Sale Profile"),
-		#			"description": _("Rules to calculate shipping amount for a sale")
-		#		},
-		#		{
-		#			"type": "doctype",
-		#			"name":"Terms and Conditions",
-		#			"label": _("Terms and Conditions Template"),
-		#			"description": _("Template of terms or contract.")
-		#		},
 				{
 					"type": "doctype",
 					"name":"Mode of Payment",
 					"description": _("e.g. Bank, Cash, Credit Card")
 				},
-		#		{
-		#			"type": "doctype",
-		#			"name":"C-Form",
-		#			"description": _("C-Form records"),
-		#			"country": "India"
-		#		}
 			]
 		},
-		#{
-		#	"label": _("To Bill"),
-		#	"items": [
-		#		{
-		#			"type": "report",
-		#			"name": "Ordered Items To Be Billed",
-		#			"is_query_report": True,
-		#			"doctype": "Sales Invoice"
-		#		},
-		#		{
-		#			"type": "report",
-		#			"name": "Delivered Items To Be Billed",
-		#			"is_query_report": True,
-		#			"doctype": "Sales Invoice"
-		#		},
-		#		{
-		#			"type": "report",
-		#			"name": "Purchase Order Items To Be Billed",
-		#			"is_query_report": True,
-		#			"doctype": "Purchase Invoice"
-		#		},
-		#		{
-		#			"type": "report",
-		#			"name": "Received Items To Be Billed",
-		#			"is_query_report": True,
-		#			"doctype": "Purchase Invoice"
-		#		},
-		#	]
-
-		#},
 		{
 			"label": _("Analytics"),
 			"items": [
@@ -406,24 +307,6 @@ def get_data():
 			"items": [
 				{
 					"type": "report",
-					"name": "Asset Depreciation Ledger",
-					"doctype": "Asset",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Asset Depreciations and Balances",
-					"doctype": "Asset",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Trial Balance for Party",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
 					"name": "Payment Period Based On Invoice Date",
 					"is_query_report": True,
 					"doctype": "Journal Entry"
@@ -438,13 +321,15 @@ def get_data():
 					"type": "report",
 					"name": "Item-wise Sales Register",
 					"is_query_report": True,
-					"doctype": "Sales Invoice"
+					"doctype": "Sales Invoice",
+					"label":"Materialwise Sales Register"
 				},
 				{
 					"type": "report",
 					"name": "Item-wise Purchase Register",
 					"is_query_report": True,
-					"doctype": "Purchase Invoice"
+					"doctype": "Purchase Invoice",
+					"label":"Materialwise Purchase Register"
 				},
 				{
 					"type": "report",
@@ -466,25 +351,4 @@ def get_data():
 				},
 			]
 		},
-		{
-			"label": _("Help"),
-			"icon": "icon-facetime-video",
-			"items": [
-				{
-					"type": "help",
-					"label": _("Chart of Accounts"),
-					"youtube_id": "DyR-DST-PyA"
-				},
-				{
-					"type": "help",
-					"label": _("Opening Accounting Balance"),
-					"youtube_id": "kdgM20Q-q68"
-				},
-				{
-					"type": "help",
-					"label": _("Setting up Taxes"),
-					"youtube_id": "nQ1zZdPgdaQ"
-				}
-			]
-		}
 	]
