@@ -11,7 +11,8 @@ import frappe.defaults
 from frappe.model.mapper import get_mapped_doc
 from erpnext.controllers.selling_controller import SellingController
 from frappe.desk.notifications import clear_doctype_notifications
-
+from frappe.model.naming import make_autoname
+from erpnext.custom_autoname import get_auto_name
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -60,6 +61,9 @@ class DeliveryNote(SellingController):
 			'source_field': '-1 * qty',
 			'extra_cond': """ and exists (select name from `tabDelivery Note` where name=`tabDelivery Note Item`.parent and is_return=1)"""
 		}]
+
+	def autoname(self):
+		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
 	def before_print(self):
 		def toggle_print_hide(meta, fieldname):

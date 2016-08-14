@@ -11,7 +11,8 @@ from erpnext.controllers.buying_controller import BuyingController
 from erpnext.stock.doctype.item.item import get_last_purchase_details
 from erpnext.stock.stock_balance import update_bin_qty, get_ordered_qty
 from frappe.desk.notifications import clear_doctype_notifications
-
+from frappe.model.naming import make_autoname
+from erpnext.custom_autoname import get_auto_name
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -32,6 +33,9 @@ class PurchaseOrder(BuyingController):
 			'percent_join_field': 'material_request',
 			'overflow_type': 'order'
 		}]
+
+	def autoname(self):
+                self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
 	def validate(self):
 		super(PurchaseOrder, self).validate()

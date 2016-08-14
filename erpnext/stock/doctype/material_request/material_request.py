@@ -13,13 +13,17 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.stock.stock_balance import update_bin_qty, get_indented_qty
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.manufacturing.doctype.production_order.production_order import get_item_details
-
+from frappe.model.naming import make_autoname
+from erpnext.custom_autoname import get_auto_name
 
 # form_grid_templates = {
 # 	"items": "templates/form_grid/material_request_grid.html"
 # }
 
 class MaterialRequest(BuyingController):
+	def autoname(self):
+		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
+
 	def get_feed(self):
 		return _("{0}: {1}").format(self.status, self.material_request_type)
 
@@ -83,15 +87,15 @@ class MaterialRequest(BuyingController):
 		# Though the creation of Material Request from a Production Plan can be rethought to fix this
 
 	def set_title(self):
-		'''Set title as comma separated list of items'''
+	#	'''Set title as comma separated list of items'''
 		items = []
-		for d in self.items:
-			if d.item_code not in items:
-				items.append(d.item_code)
-			if(len(items)==4):
-				break
-
-		self.title = ', '.join(items)
+	#	for d in self.items:
+	#		if d.item_code not in items:
+	#			items.append(d.item_code)
+	#		if(len(items)==4):
+	#			break
+	#
+	#	self.title = ', '.join(items)
 
 	def on_submit(self):
 		frappe.db.set(self, 'status', 'Submitted')

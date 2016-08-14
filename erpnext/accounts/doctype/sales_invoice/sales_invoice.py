@@ -16,6 +16,8 @@ from erpnext.accounts.utils import get_account_currency
 from erpnext.stock.doctype.delivery_note.delivery_note import update_billed_amount_based_on_so
 from erpnext.accounts.doctype.asset.depreciation \
 	import get_disposal_account_and_cost_center, get_gl_entries_on_asset_disposal
+from frappe.model.naming import make_autoname
+from erpnext.custom_autoname import get_auto_name
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -39,6 +41,9 @@ class SalesInvoice(SellingController):
 			'keyword': 'Billed',
 			'overflow_type': 'billing'
 		}]
+
+	def autoname(self):
+		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
 	def set_indicator(self):
 		"""Set indicator for portal"""

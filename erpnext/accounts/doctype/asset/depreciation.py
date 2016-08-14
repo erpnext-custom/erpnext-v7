@@ -32,7 +32,8 @@ def make_depreciation_entry(asset_name, date=None):
 	fixed_asset_account, accumulated_depreciation_account, depreciation_expense_account = \
 		get_depreciation_accounts(asset)
 
-	depreciation_cost_center = frappe.db.get_value("Company", asset.company, "depreciation_cost_center")
+	#depreciation_cost_center = frappe.db.get_value("Company", asset.company, "depreciation_cost_center")
+	depreciation_cost_center = asset.cost_center
 
 	for d in asset.get("schedules"):
 		if not d.journal_entry and getdate(d.schedule_date) <= getdate(date):

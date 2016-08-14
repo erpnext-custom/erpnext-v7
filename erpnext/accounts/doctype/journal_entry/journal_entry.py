@@ -27,7 +27,6 @@ class JournalEntry(AccountsController):
         # Ver 1.0 by SSK on 09/08/2016, autoname() method is added
 	def autoname(self):
                 series_seq = ""
-                now = datetime.datetime.now()
                 if self.voucher_type == 'Journal Entry':
                         series_seq = 'JV'
                 elif self.voucher_type == 'Bank Entry':
@@ -57,9 +56,7 @@ class JournalEntry(AccountsController):
                 elif self.voucher_type == 'Opening Entry':
                         series_seq = 'OP'
 
-                series_seq += str(now.year) + str(now.month)
-                #msgprint(_("{0}").format(series_seq))
-                self.name = make_autoname(str(series_seq) + '.#####')
+                self.name = make_autoname(str(series_seq) + 'YYYY.MM.#####')
 
 	def get_feed(self):
 		return self.voucher_type

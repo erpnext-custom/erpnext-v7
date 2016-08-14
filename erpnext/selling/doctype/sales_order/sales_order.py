@@ -13,6 +13,8 @@ from frappe.desk.notifications import clear_doctype_notifications
 from erpnext.controllers.recurring_document import month_map, get_next_date
 
 from erpnext.controllers.selling_controller import SellingController
+from frappe.model.naming import make_autoname
+from erpnext.custom_autoname import get_auto_name
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -23,6 +25,9 @@ class WarehouseRequired(frappe.ValidationError): pass
 class SalesOrder(SellingController):
 	def __init__(self, arg1, arg2=None):
 		super(SalesOrder, self).__init__(arg1, arg2)
+	
+	def autoname(self):
+		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
 	def validate(self):
 		super(SalesOrder, self).validate()

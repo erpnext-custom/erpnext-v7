@@ -49,18 +49,6 @@ def get_data():
 					"route": "Tree/Account",
 					"description": _("Tree of financial accounts."),
 				},
-				{
-					"type": "doctype",
-					"name": "Customer",
-                                        "label": _("Customer Master"),
-					"description": _("Customer database.")
-				},
-				{
-					"type": "doctype",
-					"name": "Supplier",
-                                        "label": _("Supplier Master"),
-					"description": _("Supplier database.")
-				},                                
 			]
 		},
 		{
@@ -214,25 +202,17 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Banking and Payments"),
+			"label": _("Master Data"),
 			"items": [
-                                {
+				{
 					"type": "doctype",
-					"name": "Bank Reconciliation",
-                                        "label": _("Update Bank Transaction Dates"),
-					"description": _("Update bank payment dates with journals.")
+					"name": "Customer",
+					"description": _("Customer database.")
 				},
-                                {
-					"type": "report",
-					"name": "Bank Reconciliation Statement",
-                                        "is_query_report": True,
-					"doctype": "Journal Entry"
-				},
-                                {
-					"type": "report",
-					"name": "Bank Clearance Summary",
-                                        "is_query_report": True,
-					"doctype": "Journal Entry"
+				{
+					"type": "doctype",
+					"name": "Supplier",
+					"description": _("Supplier database.")
 				},
 			]
 		},

@@ -6,12 +6,17 @@ import frappe
 from frappe.model.mapper import get_mapped_doc
 
 from erpnext.controllers.buying_controller import BuyingController
+from frappe.model.naming import make_autoname
+from erpnext.custom_autoname import get_auto_name
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
 }
 
 class SupplierQuotation(BuyingController):
+	def autoname(self):
+		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
+
 	def validate(self):
 		super(SupplierQuotation, self).validate()
 

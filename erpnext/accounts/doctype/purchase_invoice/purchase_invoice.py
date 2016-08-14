@@ -15,6 +15,8 @@ from erpnext.stock.doctype.purchase_receipt.purchase_receipt import update_bille
 from erpnext.controllers.stock_controller import get_warehouse_account
 from erpnext.accounts.general_ledger import make_gl_entries, merge_similar_entries, delete_gl_entries
 from erpnext.accounts.doctype.gl_entry.gl_entry import update_outstanding_amt
+from frappe.model.naming import make_autoname
+from erpnext.custom_autoname import get_auto_name
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -35,16 +37,19 @@ class PurchaseInvoice(BuyingController):
 			'percent_join_field': 'purchase_order',
 			'overflow_type': 'billing'
 		}]
+	
+	def autoname(self):
+		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
 	def validate(self):
 		if not self.is_opening:
 			self.is_opening = 'No'
 
-		if self.outstanding_amount:
-			outstanding_old = self.outstanding_amount;
+		###if self.outstanding_amount:
+		#	outstanding_old = self.outstanding_amount;
 
 		super(PurchaseInvoice, self).validate()
-		self.outstanding_amount = outstanding_old;
+		###self.outstanding_amount = outstanding_old;
 
 		if not self.is_return:
 			self.po_required()
@@ -318,12 +323,14 @@ class PurchaseInvoice(BuyingController):
 		self.make_supplier_gl_entry(gl_entries)
 		self.make_item_gl_entries(gl_entries)
 		self.make_tax_gl_entries(gl_entries)
+		self.make_tds_gl_entry(gl_entries)
 
 		gl_entries = merge_similar_entries(gl_entries)
 
 		self.make_payment_gl_entries(gl_entries)
 
 		self.make_write_off_gl_entry(gl_entries)
+		
 
 		if gl_entries:
 			update_outstanding = "No" if (cint(self.is_paid) or self.write_off_account) else "Yes"
@@ -347,9 +354,9 @@ class PurchaseInvoice(BuyingController):
 	def make_supplier_gl_entry(self, gl_entries):
 		if self.grand_total:
 			# Didnot use base_grand_total to book rounding loss gle
-			#grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
-			grand_total_in_company_currency = flt(self.outstanding_amount * self.conversion_rate,
+			grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
 				self.precision("grand_total"))
+
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.credit_to,
@@ -358,8 +365,7 @@ class PurchaseInvoice(BuyingController):
 					"against": self.against_expense_account,
 					"credit": grand_total_in_company_currency,
 					"credit_in_account_currency": grand_total_in_company_currency \
-						if self.party_account_currency==self.company_currency else self.outstanding_amount,
-						#if self.party_account_currency==self.company_currency else self.grand_total,
+						if self.party_account_currency==self.company_currency else self.grand_total,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
 				}, self.party_account_currency)
@@ -550,19 +556,19 @@ class PurchaseInvoice(BuyingController):
 		if self.write_off_account and flt(self.write_off_amount):
 			write_off_account_currency = get_account_currency(self.write_off_account)
 
-		#	gl_entries.append(
-		#		self.get_gl_dict({
-		#			"account": self.credit_to,
-		#			"party_type": "Supplier",
-		#			"party": self.supplier,
-		#			"against": self.write_off_account,
-		#			"debit": self.base_write_off_amount,
-		#			"debit_in_account_currency": self.base_write_off_amount \
-		#				if self.party_account_currency==self.company_currency else self.write_off_amount,
-		#			"against_voucher": self.return_against if cint(self.is_return) else self.name,
-		#			"against_voucher_type": self.doctype,
-		#		}, self.party_account_currency)
-		#	)
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": self.credit_to,
+					"party_type": "Supplier",
+					"party": self.supplier,
+					"against": self.write_off_account,
+					"debit": self.base_write_off_amount,
+					"debit_in_account_currency": self.base_write_off_amount \
+						if self.party_account_currency==self.company_currency else self.write_off_amount,
+					"against_voucher": self.return_against if cint(self.is_return) else self.name,
+					"against_voucher_type": self.doctype,
+				}, self.party_account_currency)
+			)
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.write_off_account,
@@ -574,21 +580,39 @@ class PurchaseInvoice(BuyingController):
 				})
 			)
 
-		# make tds gl entry (Kinley) customisation for tds incorporation 
+	# make tds gl entry (Kinley) customisation for tds incorporation 
+	def make_tds_gl_entry(self, gl_entries):
 		if self.tds_account and flt(self.tds_amount):
 			tds_account_currency = get_account_currency(self.tds_account)
-
+			if(self.tds_amount):
+				self.tds_amount = round(flt(self.tds_amount), 2)
+			if(self.base_tds_amount):
+				self.base_tds_amount = round(flt(self.base_tds_amount), 2)
+			
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.tds_account,
 					"against": self.supplier,
 					"party_type": "Supplier",
 					"party": self.supplier,
-					"credit": flt(self.tds_amount),
-					"credit_in_account_currency": self.tds_amount \
+					"credit": flt(self.base_tds_amount),
+					"credit_in_account_currency": self.base_tds_amount \
 						if tds_account_currency==self.company_currency else self.tds_amount,
 					"cost_center": self.tds_cost_center
 				})
+			)
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": self.credit_to,
+					"party_type": "Supplier",
+					"party": self.supplier,
+					"against": self.tds_account,
+					"debit": self.base_tds_amount,
+					"debit_in_account_currency": self.base_tds_amount \
+						if tds_account_currency==self.company_currency else self.tds_amount,
+					"against_voucher": self.return_against if cint(self.is_return) else self.name,
+					"against_voucher_type": self.doctype,
+				}, tds_account_currency)
 			)
 		
 
