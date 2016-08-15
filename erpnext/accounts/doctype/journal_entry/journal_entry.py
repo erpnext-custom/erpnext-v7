@@ -55,8 +55,10 @@ class JournalEntry(AccountsController):
                         series_seq = 'WE'
                 elif self.voucher_type == 'Opening Entry':
                         series_seq = 'OP'
+                elif self.voucher_type == 'Depreciation Entry':
+                        series_seq = 'DE'
 
-                self.name = make_autoname(str(series_seq) + 'YYYY.MM.#####')
+                self.name = make_autoname(str(series_seq) + '.YYYY.MM.#####')
 
 	def get_feed(self):
 		return self.voucher_type

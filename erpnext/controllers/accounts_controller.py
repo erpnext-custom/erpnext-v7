@@ -283,11 +283,8 @@ class AccountsController(TransactionBase):
 
 		res = self.get_advance_entries()
 
-		frappe.msgprint("RES: " + str(res))
-
 		self.set("advances", [])
 		for d in res:
-			frappe.msgprint("ADV: " + str(d))
 			self.append("advances", {
 				"doctype": self.doctype + " Advance",
 				"reference_type": d.reference_type,
@@ -295,7 +292,8 @@ class AccountsController(TransactionBase):
 				"reference_row": d.reference_row,
 				"remarks": d.remarks,
 				"advance_amount": flt(d.amount),
-				"allocated_amount": flt(d.amount) if d.against_order else 0
+				"allocated_amount": flt(d.amount) if d.against_order else 0,
+				"advance_account": d.advance_account
 			})
 
 	def get_advance_entries(self, include_unallocated=True):
@@ -308,7 +306,6 @@ class AccountsController(TransactionBase):
 			order_doctype = "Sales Order"
 		else:
 			party_account = self.credit_to
-			party_account = "Advance to Vendor-Domestic - SMCL" 
 			party_type = "Supplier"
 			party = self.supplier
 			amount_field = "debit_in_account_currency"
@@ -318,15 +315,12 @@ class AccountsController(TransactionBase):
 		order_list = list(set([d.get(order_field)
 			for d in self.get("items") if d.get(order_field)]))
 
-		frappe.msgprint("LIST: " + str(order_list))
 		journal_entries = get_advance_journal_entries(party_type, party, party_account,
 			amount_field, order_doctype, order_list, include_unallocated)
 
-		frappe.msgprint("JE LIST: " + str(journal_entries))
 		payment_entries = get_advance_payment_entries(party_type, party, party_account,
 			order_doctype, order_list, include_unallocated)
 
-		frappe.msgprint("PE LIST: " + str(payment_entries))
 		res = journal_entries + payment_entries
 
 		return res
@@ -669,25 +663,23 @@ def get_advance_journal_entries(party_type, party, party_account, amount_field,
 			.format(order_doctype, order_condition))
 
 	reference_condition = " and (" + " or ".join(conditions) + ")" if conditions else ""
-	frappe.msgprint(str(reference_condition))
 	journal_entries = frappe.db.sql("""
 		select
 			"Journal Entry" as reference_type, t1.name as reference_name,
 			t1.remark as remarks, t2.{0} as amount, t2.name as reference_row,
-			t2.reference_name as against_order
+			t2.reference_name as against_order, t2.account as advance_account
 		from
 			`tabJournal Entry` t1, `tabJournal Entry Account` t2
 		where
-			t1.name = t2.parent and t2.account = %s
+			t1.name = t2.parent 
 			and t2.party_type = %s and t2.party = %s
 			and t2.is_advance = 'Yes' and t1.docstatus = 1
 			and {1} > 0
 			{2}
 		order by t1.posting_date""".format(amount_field, dr_or_cr, reference_condition),
-		[party_account, party_type, party] + order_list, as_dict=1)
-	frappe.msgprint("AMT: " + str(amount_field) + " DR-CR: " + str(dr_or_cr) + " REF: " + str(reference_condition))
+		[party_type, party] + order_list, as_dict=1)
+
 	return list(journal_entries)
-		#and (ifnull(t2.reference_name, '')='' {2})
 
 def get_advance_payment_entries(party_type, party, party_account,
 		order_doctype, order_list=None, include_unallocated=True, against_all_orders=False):
@@ -710,11 +702,11 @@ def get_advance_payment_entries(party_type, party, party_account,
 				t2.reference_name as against_order, t1.posting_date
 			from `tabPayment Entry` t1, `tabPayment Entry Reference` t2
 			where
-				t1.name = t2.parent and t1.{0} = %s and t1.payment_type = %s
+				t1.name = t2.parent and t1.payment_type = %s
 				and t1.party_type = %s and t1.party = %s and t1.docstatus = 1
-				and t2.reference_doctype = %s {1}
-		""".format(party_account_field, reference_condition),
-		[party_account, payment_type, party_type, party, order_doctype] + order_list, as_dict=1)
+				and t2.reference_doctype = %s {0}
+		""".format(reference_condition),
+		[payment_type, party_type, party, order_doctype] + order_list, as_dict=1)
 
 	if include_unallocated:
 		unallocated_payment_entries = frappe.db.sql("""
@@ -722,8 +714,8 @@ def get_advance_payment_entries(party_type, party, party_account,
 				remarks, unallocated_amount as amount
 				from `tabPayment Entry`
 				where
-					{0} = %s and party_type = %s and party = %s and payment_type = %s
+					party_type = %s and party = %s and payment_type = %s
 					and docstatus = 1 and unallocated_amount > 0
-			""".format(party_account_field), (party_account, party_type, party, payment_type), as_dict=1)
+			""".format(party_account_field), (party_type, party, payment_type), as_dict=1)
 
 	return list(payment_entries_against_order) + list(unallocated_payment_entries)

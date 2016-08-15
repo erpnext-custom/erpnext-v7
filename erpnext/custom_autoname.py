@@ -9,173 +9,173 @@ def get_auto_name(dn, naming_series):
 	series_seq = 'UNKO'
 	if dn.doctype == 'Purchase Order':
 		if naming_series == 'CONSUMABLE PO':
-                	series_seq = 'COPO'
+                	series_seq = 'POCO'
 		elif naming_series == 'FIXED ASSET PO':
-	                series_seq = 'FAPO'
+	                series_seq = 'POFA'
 	        elif naming_series == 'CONSUMABLE SERVICE PO':
-	                series_seq = 'CSPO'
+	                series_seq = 'POCS'
 		elif naming_series == 'WORKS PO':
-        	        series_seq = 'WOPO'
+        	        series_seq = 'POWO'
 		else:
 			series_seq = 'POPO'
 	
 	if dn.doctype == 'Sales Order':
         	if naming_series == 'Coal Sales Order':
-	                series_seq = 'COSO'
+	                series_seq = 'SOCO'
 		elif naming_series == 'Dolomite Sales Order':
-	                series_seq = 'DOSO'
+	                series_seq = 'SODO'
 	        elif naming_series == 'Gypsum Sales Order':
-	                series_seq = 'GPSO'
+	                series_seq = 'SOGP'
 		elif naming_series == 'Lime Stone Sales Order':
-	                series_seq = 'LSSO'
+	                series_seq = 'SOLS'
 		elif naming_series == 'Stone Sales Order':
-	                series_seq = 'STSO'
+	                series_seq = 'SOST'
 		elif naming_series == 'Bauxite Sales Order':
-	                series_seq = 'BASO'
+	                series_seq = 'SOBA'
 		elif naming_series == 'Quartzite Sales Order':
-	                series_seq = 'QZSO'
+	                series_seq = 'SOQZ'
 		else:
 			series_seq = 'SOSO'
 	
 	if dn.doctype == 'Purchase Invoice':
 		if naming_series == 'CONSUMABLE Invoice':
-                	series_seq = 'COPI'
+                	series_seq = 'PICO'
 		elif naming_series == 'FIXED ASSET Invoice':
-	                series_seq = 'FAPI'
+	                series_seq = 'PIFA'
 	        elif naming_series == 'CONSUMABLE SERVICE Invoice':
-	                series_seq = 'CSPI'
+	                series_seq = 'PICS'
 		elif naming_series == 'WORKS Invoice':
-        	        series_seq = 'WOPI'
+        	        series_seq = 'PIWO'
 		else:
 			series_seq = 'PIPI'
 
 	if dn.doctype == 'Sales Invoice':
         	if naming_series == 'Coal Invoice':
-	                series_seq = 'COSI'
+	                series_seq = 'SICO'
 		elif naming_series == 'Dolomite Invoice':
-	                series_seq = 'DOSI'
+	                series_seq = 'SIDO'
 	        elif naming_series == 'Gypsum Invoice':
-	                series_seq = 'GPSI'
+	                series_seq = 'SIGP'
 		elif naming_series == 'Lime Stone Invoice':
-	                series_seq = 'LSSI'
+	                series_seq = 'SILS'
 		elif naming_series == 'Stone Invoice':
-	                series_seq = 'STSI'
+	                series_seq = 'SIST'
 		elif naming_series == 'Bauxite Invoice':
-	                series_seq = 'BASI'
+	                series_seq = 'SIBA'
 		elif naming_series == 'Quartzite Invoice':
-	                series_seq = 'QZSI'
+	                series_seq = 'SIQZ'
 		elif naming_series == 'Credit Invoice':
-	                series_seq = 'CRSI'
+	                series_seq = 'SICR'
 		else:
 			series_seq = 'SISI'
 
 	if dn.doctype == 'Stock Entry':
         	if naming_series == 'Capital Inventory GR':
-	                series_seq = 'CIGRSE'
+	                series_seq = 'SECIGR'
 		elif naming_series == 'Consumable GR':
-	                series_seq = 'COGRSE'
+	                series_seq = 'SECOGR'
 	        elif naming_series == 'Capital Inventory GI':
-	                series_seq = 'CIGISE'
+	                series_seq = 'SECIGI'
 		elif naming_series == 'Consumable GI':
-	                series_seq = 'COGISE'
+	                series_seq = 'SECOGI'
 		elif naming_series == 'Inventory Transfer':
-	                series_seq = 'INTXSE'
+	                series_seq = 'SEINTX'
 		elif naming_series == 'Coal GR':
-	                series_seq = 'COGRSE'
+	                series_seq = 'SECOGR'
 		elif naming_series == 'Dolomite GR':
-	                series_seq = 'DOGRSE'
+	                series_seq = 'SEDOGR'
 		elif naming_series == 'Gypsum GR':
-	                series_seq = 'GPGRSE'
+	                series_seq = 'SEGPGR'
 		elif naming_series == 'Stone GR':
-	                series_seq = 'STGRSE'
+	                series_seq = 'SESTGR'
 		elif naming_series == 'Limestone GR':
-	                series_seq = 'LSGRSE'
+	                series_seq = 'SELSGR'
 		elif naming_series == 'Bauxite GR':
-	                series_seq = 'BAGRSE'
+	                series_seq = 'SEBAGR'
 		elif naming_series == 'Quartzite GR':
-	                series_seq = 'QZGRSE'
+	                series_seq = 'SEQZGR'
 		else:
 			series_seq = 'SESESE'
 
 	if dn.doctype == 'Delivery Note':
         	if naming_series == 'Coal Delivery':
-	                series_seq = 'CODN'
+	                series_seq = 'DNCO'
 		elif naming_series == 'Dolomite Delivery':
-	                series_seq = 'DODN'
+	                series_seq = 'DNDO'
 	        elif naming_series == 'Gypsum Delivery':
-	                series_seq = 'GPDN'
+	                series_seq = 'DNGP'
 		elif naming_series == 'Limestone Delivery':
-	                series_seq = 'LSDN'
+	                series_seq = 'DNLS'
 		elif naming_series == 'Stone Delivery':
-	                series_seq = 'STDN'
+	                series_seq = 'DNST'
 		elif naming_series == 'Bauxite Delivery':
-	                series_seq = 'BADN'
+	                series_seq = 'DNBA'
 		elif naming_series == 'Quartzite Delivery':
-	                series_seq = 'QZDN'
+	                series_seq = 'DNQZ'
 		elif naming_series == 'Return Delivery':
-	                series_seq = 'REDN'
+	                series_seq = 'DNRE'
 		else:
 			series_seq = 'DNDN'
 
 	if dn.doctype == 'Purchase Receipt':
 		if naming_series == 'CONSUMABLE GR':
-                	series_seq = 'COPR'
+                	series_seq = 'PRCO'
 		elif naming_series == 'FIXED ASSET GR':
-	                series_seq = 'FAPR'
+	                series_seq = 'PRFA'
 	        elif naming_series == 'CONSUMABLE SERVICE Entry':
-	                series_seq = 'CSPR'
+	                series_seq = 'PRCS'
 		elif naming_series == 'WORKS Service Entry':
-        	        series_seq = 'WOPR'
+        	        series_seq = 'PRWO'
 		elif naming_series == 'Goods Return/Rejection':
-        	        series_seq = 'GRPR'
+        	        series_seq = 'PRGR'
 		else:
 			series_seq = 'PRPR'
 
 	if dn.doctype == 'Material Request':
 		if naming_series == 'CONSUMABLE PR':
-                	series_seq = 'COMR'
+                	series_seq = 'MRCO'
 		elif naming_series == 'FIXED ASSET PR':
-	                series_seq = 'FAMR'
+	                series_seq = 'MRFA'
 	        elif naming_series == 'CONSUMABLE SERVICE PR':
-	                series_seq = 'CSMR'
+	                series_seq = 'MRCS'
 		elif naming_series == 'WORKS PR':
-        	        series_seq = 'WOMR'
+        	        series_seq = 'MRWO'
 		elif naming_series == 'MINES PRODUCT PR':
-        	        series_seq = 'MPMR'
+        	        series_seq = 'MRMP'
 		else:
 			series_seq = 'MRMR'
 
 	if dn.doctype == 'Supplier Quotation':
 		if naming_series == 'CONSUMABLE':
-                	series_seq = 'COQT'
+                	series_seq = 'QTCO'
 		elif naming_series == 'FIXED ASSET':
-	                series_seq = 'FAQT'
+	                series_seq = 'QTFA'
 	        elif naming_series == 'CONSUMABLE SERVICE':
-	                series_seq = 'CSQT'
+	                series_seq = 'QTCS'
 		elif naming_series == 'WORKS':
-        	        series_seq = 'WOQT'
+        	        series_seq = 'QTWO'
 		else:
 			series_seq = 'QTQT'
 	
 	if dn.doctype == 'Request for Quotation':
 		if naming_series == 'RFQ Consumable':
-                	series_seq = 'CORFQ'
+                	series_seq = 'RFQCO'
 		elif naming_series == 'RFQ Capital Inventory':
-	                series_seq = 'CIRFQ'
+	                series_seq = 'RFQCI'
 	        elif naming_series == 'RFQ Miscellaneous Services':
-	                series_seq = 'MSRFQ'
+	                series_seq = 'RFQMS'
 		elif naming_series == 'RFQ Works':
-        	        series_seq = 'WORFQ'
+        	        series_seq = 'RFQWO'
 		else:
-			series_seq = 'XXRFQ'
+			series_seq = 'RFQXX'
 	
 	if dn.doctype == 'Payment Entry':
                 if naming_series == 'Bank Payment Voucher':
-                        series_seq = 'BPPE'
+                        series_seq = 'PEBP'
                 elif naming_series == 'Bank Receipt Voucher':
-                        series_seq = 'BRPE'
+                        series_seq = 'PEBR'
                 elif naming_series == 'Journal Voucher':
-                        series_seq = 'JVPE'
+                        series_seq = 'PEJV'
                 else:
                         series_seq = 'PEPE'
 

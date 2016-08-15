@@ -599,7 +599,10 @@ frappe.ui.form.on('Payment Entry', {
 				
 			var total_deductions = frappe.utils.sum($.map(frm.doc.deductions || [],
 				function(d) { return flt(d.amount) }));
-
+			
+			// Ver 1.0 Begins added by SSK on 15/08/2016
+			console.log('party_amount: '+party_amount+' frm.doc.total_allocated_amount: '+frm.doc.total_allocated_amount);	
+				
 			if(frm.doc.total_allocated_amount < party_amount) {
 				if(frm.doc.payment_type == "Receive") {
 					unallocated_amount = party_amount - (frm.doc.total_allocated_amount - total_deductions);

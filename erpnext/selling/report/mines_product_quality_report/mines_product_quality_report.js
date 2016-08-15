@@ -20,6 +20,9 @@ frappe.query_reports["Mines Product Quality Report"] = {
 			"label": __("Transporter"),
 			"fieldtype": "Link",
 			"options": "Supplier",
+			"filters": {
+				"vendor_group": "Transporter"
+			}
 		},
 		{
 			"fieldname": "customer",

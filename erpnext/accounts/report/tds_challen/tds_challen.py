@@ -24,7 +24,7 @@ def get_data(query):
 	return data
 
 def construct_query(filters=None):
-	query = "SELECT s.vendor_tpn_no, s.name, p.bill_no, p.bill_date, p.tds_taxable_amount, p.tds_rate, p.tds_amount FROM `tabPurchase Invoice` as p, `tabSupplier` as s WHERE p.supplier = s.name AND p.tds_amount > 0 AND p.bill_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'";
+	query = "SELECT s.vendor_tpn_no, s.name, p.bill_no, p.bill_date, p.tds_taxable_amount, p.tds_rate, p.tds_amount FROM `tabPurchase Invoice` as p, `tabSupplier` as s WHERE p.docstatus not in (0, 2) and p.supplier = s.name AND p.tds_amount > 0 AND p.bill_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'";
 
 	if filters.tds_rate:
 		query = query + " AND p.tds_rate = " + filters.tds_rate + ";";

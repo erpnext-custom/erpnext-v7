@@ -6,6 +6,7 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   08/08/2016         DocumentNaming standard is introduced
+1.0               SSK                              15/08/2016         Introducing Loss Tolerance for Sales 
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -25,6 +26,7 @@ from erpnext.controllers.accounts_controller import AccountsController
 import datetime
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
+from frappe import msgprint
 
 class InvalidPaymentEntry(ValidationError): pass
 
@@ -616,6 +618,9 @@ def get_reference_details(reference_doctype, reference_name, party_account_curre
 @frappe.whitelist()
 def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=None):
 	doc = frappe.get_doc(dt, dn)
+
+	#for d in doc.get("items"):
+        #        msgprint(d.item_code)
 	
 	if dt in ("Sales Order", "Purchase Order") and flt(doc.per_billed, 2) > 0:
 		frappe.throw(_("Can only make payment against unbilled {0}").format(dt))
@@ -691,6 +696,34 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		"allocated_amount": outstanding_amount
 	})
 
+        # Ver 1.0 Begins by SSK on 15/08/2016, following deductions table is introducted
+        if dt == "Sales Invoice":
+                normal_loss_amt = 0
+                abnormal_loss_amt = 0
+                excess_amt = 0
+                
+                for d in doc.get("items"):
+                        normal_loss_amt += (d.normal_loss_amt if d.normal_loss_amt else 0)
+                        abnormal_loss_amt += (d.abnormal_loss_amt if d.abnormal_loss_amt else 0)
+                        excess_amt += (d.excess_amt if d.excess_amt else 0)
+
+                        if d.normal_loss_amt:
+                                pe.append("deductions", {
+                                        "account": "Normal Loss - SMCL",
+                                        "cost_center": d.cost_center,
+                                        "amount": d.normal_loss_amt
+                                })
+
+                        if d.abnormal_loss_amt:
+                                pe.append("deductions", {
+                                        "account": "Abnormal Loss - SMCL",
+                                        "cost_center": d.cost_center,
+                                        "amount": d.abnormal_loss_amt
+                                })
+                                
+                pe.paid_amount -= (normal_loss_amt+abnormal_loss_amt)
+        # Ver 1.0 Ends
+        
 	pe.setup_party_account_field()
 	pe.set_missing_values()
 	if party_account and bank:
