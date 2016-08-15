@@ -283,8 +283,11 @@ class AccountsController(TransactionBase):
 
 		res = self.get_advance_entries()
 
+		frappe.msgprint("RES: " + str(res))
+
 		self.set("advances", [])
 		for d in res:
+			frappe.msgprint("ADV: " + str(d))
 			self.append("advances", {
 				"doctype": self.doctype + " Advance",
 				"reference_type": d.reference_type,
@@ -305,6 +308,7 @@ class AccountsController(TransactionBase):
 			order_doctype = "Sales Order"
 		else:
 			party_account = self.credit_to
+			party_account = "Advance to Vendor-Domestic - SMCL" 
 			party_type = "Supplier"
 			party = self.supplier
 			amount_field = "debit_in_account_currency"
@@ -314,12 +318,15 @@ class AccountsController(TransactionBase):
 		order_list = list(set([d.get(order_field)
 			for d in self.get("items") if d.get(order_field)]))
 
+		frappe.msgprint("LIST: " + str(order_list))
 		journal_entries = get_advance_journal_entries(party_type, party, party_account,
 			amount_field, order_doctype, order_list, include_unallocated)
 
+		frappe.msgprint("JE LIST: " + str(journal_entries))
 		payment_entries = get_advance_payment_entries(party_type, party, party_account,
 			order_doctype, order_list, include_unallocated)
 
+		frappe.msgprint("PE LIST: " + str(payment_entries))
 		res = journal_entries + payment_entries
 
 		return res
@@ -653,8 +660,8 @@ def get_advance_journal_entries(party_type, party, party_account, amount_field,
 	dr_or_cr = "credit_in_account_currency" if party_type=="Customer" else "debit_in_account_currency"
 
 	conditions = []
-	if include_unallocated:
-		conditions.append("ifnull(t2.reference_name, '')=''")
+	#if include_unallocated:
+	#	conditions.append("ifnull(t2.reference_name, '')=''")
 
 	if order_list:
 		order_condition = ', '.join(['%s'] * len(order_list))
@@ -662,7 +669,7 @@ def get_advance_journal_entries(party_type, party, party_account, amount_field,
 			.format(order_doctype, order_condition))
 
 	reference_condition = " and (" + " or ".join(conditions) + ")" if conditions else ""
-
+	frappe.msgprint(str(reference_condition))
 	journal_entries = frappe.db.sql("""
 		select
 			"Journal Entry" as reference_type, t1.name as reference_name,
@@ -675,11 +682,12 @@ def get_advance_journal_entries(party_type, party, party_account, amount_field,
 			and t2.party_type = %s and t2.party = %s
 			and t2.is_advance = 'Yes' and t1.docstatus = 1
 			and {1} > 0
-			and (ifnull(t2.reference_name, '')='' {2})
+			{2}
 		order by t1.posting_date""".format(amount_field, dr_or_cr, reference_condition),
 		[party_account, party_type, party] + order_list, as_dict=1)
-
+	frappe.msgprint("AMT: " + str(amount_field) + " DR-CR: " + str(dr_or_cr) + " REF: " + str(reference_condition))
 	return list(journal_entries)
+		#and (ifnull(t2.reference_name, '')='' {2})
 
 def get_advance_payment_entries(party_type, party, party_account,
 		order_doctype, order_list=None, include_unallocated=True, against_all_orders=False):

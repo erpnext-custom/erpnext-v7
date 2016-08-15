@@ -377,7 +377,6 @@ def update_billed_amount_based_on_po(po_detail, update_modified=True):
 def make_purchase_invoice(source_name, target_doc=None):
 	from frappe.model.mapper import get_mapped_doc
 	invoiced_qty_map = get_invoiced_qty_map(source_name)
-	frappe.msgprint(source_name);
 
 	def set_missing_values(source, target):
 		if len(target.get("items")) == 0:
@@ -415,7 +414,6 @@ def make_purchase_invoice(source_name, target_doc=None):
 		}
 	}, target_doc, set_missing_values)
 	
-	frappe.msgprint(target_doc)
 	return doclist
 
 def get_invoiced_qty_map(purchase_receipt):
