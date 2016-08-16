@@ -629,7 +629,12 @@ frappe.ui.form.on('Payment Entry', {
 		}
 
 		// Ver 1.0 Begins added by SSK on 15/08/2016, following code is added
-		difference_amount = Math.abs(frm.doc.total_allocated_amount - party_amount);
+		if(frm.doc.payment_type == "Receive"){
+			difference_amount = frm.doc.total_allocated_amount - party_amount;
+		}
+		else{
+			difference_amount = party_amount - frm.doc.total_allocated_amount;
+		}
 		// Ver 1.0 Ends
 		
 		$.each(frm.doc.deductions || [], function(i, d) {

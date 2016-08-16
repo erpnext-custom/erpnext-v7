@@ -115,7 +115,7 @@ def round_off_debit_credit(gl_map):
 		entry.debit = flt(entry.debit, precision)
 		entry.credit = flt(entry.credit, precision)
 		debit_credit_diff += entry.debit - entry.credit
-
+                #msgprint(_("Debit Amount: {0} Credit Amount: {1}").format(flt(entry.debit, precision),flt(entry.credit, precision)))
 	debit_credit_diff = flt(debit_credit_diff, precision)
 	
 	if gl_map[0]["voucher_type"] == "Journal Entry":

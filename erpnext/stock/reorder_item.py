@@ -121,7 +121,7 @@ def create_material_request(material_requests):
 				mr.update({
 					"company": company,
 					"transaction_date": nowdate(),
-					"material_request_type": "Material Transfer" if request_type=="Transfer" else request_type
+					"material_request_type": "Material Transfer" if request_type=="Transfer" else request_type,
 				})
 
 				for d in items:
@@ -139,6 +139,11 @@ def create_material_request(material_requests):
 						"qty": d.reorder_qty,
 						"brand": item.brand,
 					})
+
+				mr.update({
+					"title":"Reorder for " + items[0].item_name + " and others",
+					"naming-series": "REORDER PR"
+				})
 
 				mr.insert()
 				mr.submit()

@@ -297,7 +297,10 @@ class PaymentEntry(AccountsController):
 			self.difference_amount = self.base_paid_amount - flt(self.base_received_amount)
                 '''
 		# Following line is added
-		self.difference_amount = abs(self.total_allocated_amount - self.paid_amount)
+		if self.payment_type == "Receive":
+                        self.difference_amount = self.total_allocated_amount - self.paid_amount
+                else:
+                        self.difference_amount = self.paid_amount - self.total_allocated_amount
 		# Ver 1.0 Ends
 		
 		for d in self.get("deductions"):

@@ -142,6 +142,8 @@ def get_auto_name(dn, naming_series):
         	        series_seq = 'MRWO'
 		elif naming_series == 'MINES PRODUCT PR':
         	        series_seq = 'MRMP'
+		elif naming_series == 'REORDER PR':
+        	        series_seq = 'MRRE'
 		else:
 			series_seq = 'MRMR'
 
