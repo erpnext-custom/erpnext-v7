@@ -265,26 +265,41 @@ class PaymentEntry(AccountsController):
 			party_amount = self.paid_amount if self.payment_type=="Receive" else self.received_amount
 			
 			total_deductions = sum([flt(d.amount) for d in self.get("deductions")])
-			
+
+
+                        # Ver 1.0 Begins added by SSK on 15/08/2016
+                        # Following code is commented
+			'''
 			if self.total_allocated_amount < party_amount:
 				if self.payment_type == "Receive":
 					self.unallocated_amount = party_amount - (self.total_allocated_amount - total_deductions)
 				else:
 					self.unallocated_amount = party_amount - (self.total_allocated_amount + total_deductions)
+			'''
+			# Following line is added
+			self.unallocated_amount = 0
+			# Ver 1.0 Ends
 				
 	def set_difference_amount(self):
 		base_unallocated_amount = flt(self.unallocated_amount) * (flt(self.source_exchange_rate) 
 			if self.payment_type=="Receive" else flt(self.target_exchange_rate))
 			
 		base_party_amount = flt(self.base_total_allocated_amount) + flt(base_unallocated_amount)
-		
+
+                # Ver 1.0 Begins added SSK on 15/08/2016
+                # Following code is commented
+		'''
 		if self.payment_type == "Receive":
 			self.difference_amount = base_party_amount - self.base_received_amount
 		elif self.payment_type == "Pay":
 			self.difference_amount = self.base_paid_amount - base_party_amount
 		else:
 			self.difference_amount = self.base_paid_amount - flt(self.base_received_amount)
-			
+                '''
+		# Following line is added
+		self.difference_amount = abs(self.total_allocated_amount - self.paid_amount)
+		# Ver 1.0 Ends
+		
 		for d in self.get("deductions"):
 			if d.amount:
 				self.difference_amount -= flt(d.amount)
@@ -671,7 +686,7 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		received_amount = abs(outstanding_amount)
 		if bank_amount:
 			paid_amount = bank_amount
-	
+
 	pe = frappe.new_doc("Payment Entry")
 	pe.payment_type = payment_type
 	pe.company = doc.company
@@ -720,8 +735,8 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
                                         "cost_center": d.cost_center,
                                         "amount": d.abnormal_loss_amt
                                 })
-                                
                 pe.paid_amount -= (normal_loss_amt+abnormal_loss_amt)
+                pe.received_amount = pe.paid_amount
         # Ver 1.0 Ends
         
 	pe.setup_party_account_field()

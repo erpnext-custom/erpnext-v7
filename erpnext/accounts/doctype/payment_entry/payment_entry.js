@@ -600,9 +600,8 @@ frappe.ui.form.on('Payment Entry', {
 			var total_deductions = frappe.utils.sum($.map(frm.doc.deductions || [],
 				function(d) { return flt(d.amount) }));
 			
-			// Ver 1.0 Begins added by SSK on 15/08/2016
-			console.log('party_amount: '+party_amount+' frm.doc.total_allocated_amount: '+frm.doc.total_allocated_amount);	
-				
+			// Ver 1.0 Begins added by SSK on 15/08/2016, following code is commented
+			/*
 			if(frm.doc.total_allocated_amount < party_amount) {
 				if(frm.doc.payment_type == "Receive") {
 					unallocated_amount = party_amount - (frm.doc.total_allocated_amount - total_deductions);
@@ -610,15 +609,17 @@ frappe.ui.form.on('Payment Entry', {
 					unallocated_amount = party_amount - (frm.doc.total_allocated_amount + total_deductions);
 				}
 			}
+			*/
+			// Ver 1.0 Ends
 		}
 		frm.set_value("unallocated_amount", unallocated_amount);
-
+		
 		var difference_amount = 0;
 		var base_unallocated_amount = flt(frm.doc.unallocated_amount) *
 			(frm.doc.payment_type=="Receive" ? frm.doc.source_exchange_rate : frm.doc.target_exchange_rate);
 
 		var base_party_amount = flt(frm.doc.base_total_allocated_amount) + base_unallocated_amount;
-
+	
 		if(frm.doc.payment_type == "Receive") {
 			difference_amount = base_party_amount - flt(frm.doc.base_received_amount);
 		} else if (frm.doc.payment_type == "Pay") {
@@ -627,6 +628,10 @@ frappe.ui.form.on('Payment Entry', {
 			difference_amount = flt(frm.doc.base_paid_amount) - flt(frm.doc.base_received_amount);
 		}
 
+		// Ver 1.0 Begins added by SSK on 15/08/2016, following code is added
+		difference_amount = Math.abs(frm.doc.total_allocated_amount - party_amount);
+		// Ver 1.0 Ends
+		
 		$.each(frm.doc.deductions || [], function(i, d) {
 			if(d.amount) difference_amount -= flt(d.amount);
 		})
