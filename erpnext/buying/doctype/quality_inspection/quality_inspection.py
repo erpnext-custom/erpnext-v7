@@ -3,11 +3,15 @@
 
 from __future__ import unicode_literals
 import frappe
-
+from frappe.model.naming import make_autoname
+from erpnext.custom_autoname import get_auto_name
 
 from frappe.model.document import Document
 
 class QualityInspection(Document):
+	def autoname(self):
+		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
+
 	def get_item_specification_details(self):
 		self.set('readings', [])
 		variant_of = frappe.db.get_value("Item", self.item_code, "variant_of")

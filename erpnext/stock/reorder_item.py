@@ -124,9 +124,12 @@ def create_material_request(material_requests):
 					"material_request_type": "Material Transfer" if request_type=="Transfer" else request_type,
 				})
 
+				title = ""
 				for d in items:
 					d = frappe._dict(d)
 					item = frappe.get_doc("Item", d.item_code)
+					title = item.item_name
+
 					mr.append("items", {
 						"doctype": "Material Request Item",
 						"item_code": d.item_code,
@@ -139,9 +142,9 @@ def create_material_request(material_requests):
 						"qty": d.reorder_qty,
 						"brand": item.brand,
 					})
-
+				
 				mr.update({
-					"title":"Reorder for " + items[0].item_name + " and others",
+					"title":"Reorder for " + title + " and others",
 					"naming-series": "REORDER PR"
 				})
 

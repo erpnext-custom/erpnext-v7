@@ -181,5 +181,14 @@ def get_auto_name(dn, naming_series):
                 else:
                         series_seq = 'PEPE'
 
+	if dn.doctype == 'Quality Inspection':
+		if naming_series == 'CAPITAL GOODS':
+                	series_seq = 'QICG'
+		elif naming_series == 'FINISHED GOODS':
+	                series_seq = 'QIFG'
+		elif naming_series == 'WORKS':
+        	        series_seq = 'QIWO'
+		else:
+			series_seq = 'QIQI'
 	
 	return str(series_seq) + ".YYYY.MM"

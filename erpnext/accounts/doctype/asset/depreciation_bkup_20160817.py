@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SSK		                   17/08/2016         Cost Center is added for Asset Scrapping
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
 
 from __future__ import unicode_literals
 import frappe
@@ -128,10 +121,7 @@ def scrap_asset(asset_name):
 		je.append("accounts", entry)
 
 	je.flags.ignore_permissions = True
-	# Ver 1.0 Begins by SSK on 17/08/2016, following line is commented and subsequent is added
-	#je.submit()
-	je.insert()
-	# Ver 1.0 Ends
+	je.submit()
 	
 	frappe.db.set_value("Asset", asset_name, "disposal_date", today())
 	frappe.db.set_value("Asset", asset_name, "journal_entry_for_scrap", je.name)
@@ -158,22 +148,18 @@ def get_gl_entries_on_asset_disposal(asset, selling_amount=0):
 	disposal_account, depreciation_cost_center = get_disposal_account_and_cost_center(asset.company)
 	accumulated_depr_amount = flt(asset.gross_purchase_amount) - flt(asset.value_after_depreciation)
 
-        # Ver 1.0 Begins by SSK, cost_center is added in the following block 
 	gl_entries = [
 		{
 			"account": fixed_asset_account,
 			"credit_in_account_currency": asset.gross_purchase_amount,
-			"credit": asset.gross_purchase_amount,
-                        "cost_center": asset.cost_center
+			"credit": asset.gross_purchase_amount
 		},
 		{
 			"account": accumulated_depr_account,
 			"debit_in_account_currency": accumulated_depr_amount,
-			"debit": accumulated_depr_amount,
-                        "cost_center": asset.cost_center
+			"debit": accumulated_depr_amount
 		}
 	]
-        # Ver 1.0 Ends
 
 	profit_amount = flt(selling_amount) - flt(asset.value_after_depreciation)
 	if flt(asset.value_after_depreciation) and profit_amount:

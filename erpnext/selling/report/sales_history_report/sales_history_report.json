@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-08-16 16:38:34.799201", 
+ "modified": "2016-08-17 10:07:53.051807", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Sales History Report", 
@@ -15,5 +15,5 @@
  "query": "select distinct t1.name as sales_no, t1.transaction_date as sales_date, t1.customer, t1.po_no, t1.po_date, t1.base_net_amount, t1.qty, t1.item_name, t1.item_code, t1.stock_uom, t1.warehouse, \nt2.invoice_no, t2.sales_invoice_date, t2.due_date, t2.write_off_amount, t2.write_off_description, t2.total_advance, t2.delivery_note, t2.delivery_date, t2.transporter_name, t2.delivered_qty, t2.accepted_qty, t2.amount, t2.normal_loss_amt, t2.remarks, t2.abnormal_loss_amt, t2.justification \nfrom\n(select so.name, so.transaction_date, so.customer, so.po_no, so.po_date, soi.base_net_amount, soi.qty, soi.item_name, soi.item_code, soi.stock_uom, soi.warehouse\nfrom `tabSales Order` as so, `tabSales Order Item` as soi\nwhere so.name = soi.parent and so.docstatus = 1) as t1\nright join\n(select si.name as invoice_no, si.sales_invoice_date, si.due_date, si.write_off_amount, si.write_off_description, si.total_advance, sii.delivery_note, (select posting_date from `tabDelivery Note` as dn where dn.name = sii.delivery_note) as delivery_date, (select transporter_name1 from `tabDelivery Note` as dn where dn.name = sii.delivery_note) as transporter_name, sii.delivered_qty, sii.accepted_qty, sii.amount, sii.normal_loss_amt, sii.remarks, sii.abnormal_loss_amt, sii.justification, sii.sales_order\nfrom `tabSales Invoice` as si, `tabSales Invoice Item` as sii\nwhere si.name = sii.parent and si.outstanding_amount = 0 and si.docstatus = 1) as t2\non\nt1.name = t2.sales_order\norder by sales_date asc;", 
  "ref_doctype": "Sales Order", 
  "report_name": "Sales History Report", 
- "report_type": "Query Report"
+ "report_type": "Script Report"
 }
