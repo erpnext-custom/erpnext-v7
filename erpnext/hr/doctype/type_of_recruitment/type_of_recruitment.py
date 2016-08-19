@@ -5,11 +5,6 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.model.naming import make_autoname
-from erpnext.custom_autoname import get_auto_name
 
-class ReappropriationDetails(Document):
+class TypeofRecruitment(Document):
 	pass
-
-	def autoname(self):
-		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")

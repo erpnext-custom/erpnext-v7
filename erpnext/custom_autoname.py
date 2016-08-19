@@ -191,4 +191,7 @@ def get_auto_name(dn, naming_series):
 		else:
 			series_seq = 'QIQI'
 	
+	if dn.doctype == 'Reappropriation Details':
+                series_seq = 'BURA'
+	
 	return str(series_seq) + ".YYYY.MM"
