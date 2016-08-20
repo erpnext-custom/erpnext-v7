@@ -47,8 +47,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-07-25 05:24:23.032319", 
- "modified_by": "Administrator", 
+ "modified": "2016-08-20 13:08:16.381886", 
+ "modified_by": "siva@bt.bt", 
  "module": "Schools", 
  "name": "Academic Term", 
  "name_case": "", 
@@ -56,7 +56,7 @@
  "permissions": [
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 1, 

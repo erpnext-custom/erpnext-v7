@@ -1,0 +1,18 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2016-08-20 15:11:46.526526", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2016-08-20 15:11:46.526526", 
+ "modified_by": "Administrator", 
+ "module": "Selling", 
+ "name": "Penalty Report", 
+ "owner": "Administrator", 
+ "ref_doctype": "Mines Quality Record", 
+ "report_name": "Penalty Report", 
+ "report_type": "Script Report"
+}
