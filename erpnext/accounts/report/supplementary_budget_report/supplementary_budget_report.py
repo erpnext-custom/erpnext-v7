@@ -48,31 +48,23 @@ def validate_filters(filters):
 		filters.to_date = filters.year_end_date
 
 def get_data(filters):
-	query = "select from_cost_center as from_cc, to_cost_center as to_cc, from_account as from_acc, to_account as to_acc, amount, appropriation_on as date from `tabReappropriation Details` where appropriation_on between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"
+	query = "select to_cc, to_acc, amount, posted_date as date from `tabSupplementary Details` where posted_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"
 
 	if filters.to_cc:
-		query+=" and to_cost_center = \'" + filters.to_cc  + "\'"
-
-	if filters.from_cc:
-		query+=" and from_cost_center = \'" + filters.from_cc  + "\'"
+		query+=" and to_cc = \'" + filters.to_cc  + "\'"
 
 	if filters.to_acc:
 		query+=" and to_account = \'" + filters.to_acc  + "\'"
 
-	if filters.from_acc:
-		query+=" and from_account = \'" + filters.from_acc  + "\'"
-
-	app_data = frappe.db.sql(query, as_dict=True)
+	sup_data = frappe.db.sql(query, as_dict=True)
 
 	data = []
 
-	if app_data:
-		for a in app_data:
+	if sup_data:
+		for a in sup_data:
 			row = {
 				"to_cc": a.to_cc,
 				"to_acc": a.to_acc,
-				"from_cc": a.from_cc,
-				"from_acc": a.from_acc,
 				"amount": a.amount,
 				"date": a.date,
 			}
@@ -89,20 +81,6 @@ def get_columns():
 			"width": 120
 		},
 		{
-			"fieldname": "from_cc",
-			"label": _("From Cost Center"),
-			"fieldtype": "Link",
-			"options": "Cost Center",
-			"width": 200
-		},
-		{
-			"fieldname": "from_acc",
-			"label": _("From Account"),
-			"fieldtype": "Link",
-			"options": "Account",
-			"width": 200
-		},
-		{
 			"fieldname": "to_cc",
 			"label": _("To Cost Center"),
 			"fieldtype": "Link",
@@ -114,7 +92,7 @@ def get_columns():
 			"label": _("To Account"),
 			"fieldtype": "Link",
 			"options": "Account",
-			"width": 200
+			"width": 230
 		},
 		{
 			"fieldname": "amount",

@@ -235,7 +235,12 @@ erpnext.asset.transfer_asset = function(frm) {
 						filters: [["Warehouse", "company", "in", ["", cstr(frm.doc.company)]]]
 					}
 				}, 
-				"reqd": 1 
+			},
+			{
+				"label": __("Custodian"), 
+				"fieldname": "target_custodian",
+				"fieldtype": "Link", 
+				"options": "Employee", 
 			},
 			{
 				"label": __("Date"), 
@@ -260,6 +265,8 @@ erpnext.asset.transfer_asset = function(frm) {
 					"transaction_date": args.transfer_date,
 					"source_warehouse": frm.doc.warehouse,
 					"target_warehouse": args.target_warehouse,
+		       			"source_custodian": frm.doc.issued_to,
+		       			"target_custodian": args.target_custodian,
 					"company": frm.doc.company
 				}
 			},

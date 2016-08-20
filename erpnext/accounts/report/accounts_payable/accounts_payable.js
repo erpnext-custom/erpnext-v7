@@ -52,6 +52,11 @@ frappe.query_reports["Accounts Payable"] = {
 			"fieldtype": "Int",
 			"default": "90",
 			"reqd": 1
-		}
+		},
+		{
+			"fieldname":"inter_company_supplier",
+			"label": __("DHI Inter Company"),
+			"fieldtype": "Check",
+		},
 	]
 }

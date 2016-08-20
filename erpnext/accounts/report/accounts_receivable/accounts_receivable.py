@@ -212,6 +212,12 @@ class ReceivablePayableReport(object):
 	def get_gl_entries(self, party_type):
 		if not hasattr(self, "gl_entries"):
 			conditions, values = self.prepare_conditions(party_type)
+			if self.filters.inter_company_customer:
+				cus_query = " and exists (select 1 from `tabCustomer` as c where c.inter_company = 1 and c.name = `tabGL Entry`.party)"
+			elif self.filters.inter_company_supplier:
+				cus_query = " and exists (select 1 from `tabSupplier` as c where c.inter_company = 1 and c.name = `tabGL Entry`.party)"
+			else:
+				cus_query = ""
 
 			if self.filters.get(scrub(party_type)):
 				select_fields = "debit_in_account_currency as debit, credit_in_account_currency as credit"
@@ -222,8 +228,9 @@ class ReceivablePayableReport(object):
 				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, remarks, {0}
 				from `tabGL Entry`
 				where docstatus < 2 and party_type=%s and (party is not null and party != '') {1}
+				{2}
 				order by posting_date, party"""
-				.format(select_fields, conditions), values, as_dict=True)
+				.format(select_fields, conditions, cus_query), values, as_dict=True)
 
 		return self.gl_entries
 

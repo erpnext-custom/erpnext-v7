@@ -10,7 +10,7 @@ from frappe.model.document import Document
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import get_fixed_asset_account
 from erpnext.accounts.doctype.asset.depreciation \
 	import get_disposal_account_and_cost_center, get_depreciation_accounts
-from erpnext.accounts.accounts_custom_functions import get_number_of_days
+from erpnext.accounts.accounts_custom_functions import get_number_of_days, calculate_depreciation_date
 from frappe.model.naming import make_autoname
 
 class Asset(Document):
@@ -267,14 +267,17 @@ def make_sales_invoice(asset, item_code, company):
 def transfer_asset(args):
 	import json
 	args = json.loads(args)
-	movement_entry = frappe.new_doc("Asset Movement")
-	movement_entry.update(args)
-	movement_entry.insert()
-	movement_entry.submit()
+	if not args.get("target_warehouse") and not args.get("target_custodian"):
+		frappe.msgprint("Fill either a target custodian or a warehouse")
+	else:
+		movement_entry = frappe.new_doc("Asset Movement")
+		movement_entry.update(args)
+		movement_entry.insert()
+		movement_entry.submit()
 
-	frappe.db.commit()
+		frappe.db.commit()
 
-	frappe.msgprint(_("Asset Movement record {0} created").format("<a href='#Form/Asset Movement/{0}'>{0}</a>".format(movement_entry.name)))
+		frappe.msgprint(_("Asset Movement record {0} created").format("<a href='#Form/Asset Movement/{0}'>{0}</a>".format(movement_entry.name)))
 
 @frappe.whitelist()
 def get_item_details(item_code):
@@ -291,3 +294,8 @@ def get_item_details(item_code):
 	})
 
 	return ret
+
+@frappe.whitelist()
+def get_next_depreciation_date():
+	return calculate_depreciation_date()
+

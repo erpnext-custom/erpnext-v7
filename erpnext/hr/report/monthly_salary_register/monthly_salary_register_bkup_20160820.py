@@ -1,12 +1,5 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SSK		                   03/08/2016         Taking care of Duplication of columns
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
 
 from __future__ import unicode_literals
 import frappe
@@ -24,9 +17,8 @@ def execute(filters=None):
 	
 	data = []
 	for ss in salary_slips:
-		row = [ss.employee, ss.employee_name, ss.company, ss.branch, ss.department,
-                         ss.division, ss.section, ss.designation, 
-			 ss.fiscal_year, ss.month, ss.leave_withut_pay, ss.payment_days]
+		row = [ss.employee, ss.employee_name, ss.branch, ss.department, ss.designation, 
+			ss.company, ss.month, ss.leave_withut_pay, ss.payment_days]
 			
 		for e in earning_types:
 			row.append(ss_earning_map.get(ss.name, {}).get(e))
@@ -44,25 +36,18 @@ def execute(filters=None):
 	
 def get_columns(salary_slips):
 	columns = [
-		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140", _("Company") + ":Link/Company:120",
-                _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120", _("Division") + ":Link/Division:120",
-                _("Section") + ":Link/Section:120", _("Designation") + ":Link/Designation:120",
-		_("Year") + "::80", _("Month") + "::80", _("Leave Without Pay") + ":Float:130", 
+		_("Employee") + ":Link/Employee:120", _("Employee Name") + "::140", _("Branch") + ":Link/Branch:120", 
+		_("Department") + ":Link/Department:120", _("Designation") + ":Link/Designation:120",
+		 _("Company") + ":Link/Company:120", _("Month") + "::80", _("Leave Without Pay") + ":Float:130", 
 		_("Payment Days") + ":Float:120"
 	]
 	
-	earning_types = frappe.db.sql_list("""select salary_component from `tabSalary Detail`
-		where amount != 0 and parent in (%s)
-		and parentfield = 'earnings'
-		group by salary_component
-		order by count(*) desc""" % 
+	earning_types = frappe.db.sql_list("""select distinct salary_component from `tabSalary Detail`
+		where amount != 0 and parent in (%s)""" % 
 		(', '.join(['%s']*len(salary_slips))), tuple([d.name for d in salary_slips]))
 		
-	ded_types = frappe.db.sql_list("""select salary_component from `tabSalary Detail`
-		where amount != 0 and parent in (%s)
-		and parentfield = 'deductions'
-		group by salary_component
-		order by count(*) desc""" % 
+	ded_types = frappe.db.sql_list("""select distinct salary_component from `tabSalary Detail`
+		where amount != 0 and parent in (%s)""" % 
 		(', '.join(['%s']*len(salary_slips))), tuple([d.name for d in salary_slips]))
 		
 	columns = columns + [(e + ":Currency:120") for e in earning_types] + \
@@ -99,8 +84,7 @@ def get_conditions(filters):
 	
 def get_ss_earning_map(salary_slips):
 	ss_earnings = frappe.db.sql("""select parent, salary_component, amount 
-		from `tabSalary Detail` where parent in (%s)
-		and parentfield = 'earnings' """ %
+		from `tabSalary Detail` where parent in (%s)""" %
 		(', '.join(['%s']*len(salary_slips))), tuple([d.name for d in salary_slips]), as_dict=1)
 	
 	ss_earning_map = {}
@@ -112,8 +96,7 @@ def get_ss_earning_map(salary_slips):
 
 def get_ss_ded_map(salary_slips):
 	ss_deductions = frappe.db.sql("""select parent, salary_component, amount 
-		from `tabSalary Detail` where parent in (%s)
-		and parentfield = 'deductions' """ %
+		from `tabSalary Detail` where parent in (%s)""" %
 		(', '.join(['%s']*len(salary_slips))), tuple([d.name for d in salary_slips]), as_dict=1)
 	
 	ss_ded_map = {}

@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import msgprint, _
-from frappe.utils import date_diff, get_last_day
+from frappe.utils import date_diff, get_last_day, nowdate
 
 ##
 #Return number of days between two dates or zero 
@@ -29,6 +29,10 @@ def get_loss_tolerance():
 def get_parent_cost_center(temp):
     parent_cc = frappe.db.sql("select name from `tabCost Center`;");
     return (parent_cc);
+
+#@frappe.whitelist()
+def calculate_depreciation_date():
+    return get_last_day(nowdate());
 
 ##
 #Return all the child cost centers of the current cost center
@@ -89,65 +93,6 @@ def get_child_accounts(current_acc=None):
 
 	return allchilds;
 
-
-##
-#Get the budget consumed in the financial year
-##
-def get_budget_consumed_final(self, fiscal, com):
-	gl_budgets = frappe.db.sql("""select gl.account, gl.debit, gl.credit,
-			gl.cost_center from `tabGL Entry` gl, `tabBudget Detail` bd
-			where gl.fiscal_year=%s and company=%s and bd.account=gl.account
-			and bd.parent=gl.cost_center"""% ('%s','%s'),
-			(fiscal if fiscal else get_fiscal_year(), com if com else get_company), as_dict=True);
-
-	gl_consumed_budgets = frappe._dict()
-	for d in gl_budgets:
-		gl_consumed_budgets.setdefault((d.cost_center + " " + d.account), 0)
-		gl_consumed_budgets[(d.cost_center + " " + d.account)] += (flt(flt(d.debit) - flt(d.credit)))
-
-    	in_budgets = frappe.db.sql("""
-            select poi.cost_center, poi.budget_account, pii.amount
-            from `tabPurchase Receipt Item` as pii
-            JOIN `tabPurchase Order Item` as poi
-	           ON pii.prevdoc_docname = poi.parent
-            JOIN `tabBudget Detail` as bd
-	           ON poi.cost_center = bd.parent AND poi.budget_account = bd.account
-            WHERE bd.fiscal_year = %S AND bd.company=%s
-            """%('%s','%s'), (fiscal if fiscal else get_fiscal_year(), com if com else get_company), as_dict=True)
-
-	invoice_consumed_budget = frappe._dict()
-	for d in in_budgets:
-		invoice_consumed_budget.setdefault((d.cost_center + " " + d.account), 0)
-		invoice_consumed_budget[(d.cost_center + " " + d.account)] += (flt(flt(d.debit) - flt(d.credit)))
-
-
-
-##
-#Get the budget allocated in the financial year
-##
-def get_budget_allocated_final(self, fiscal, com):
-	return frappe._dict(frappe.db.sql("select concat(parent,\" \",account) AS mcc_acc, budget_allocated from `tabBudget Detail` WHERE fiscal_year=\'" + str(fiscal if fiscal else get_fiscal_year()) + "\'"))
-
-##
-#Get commited budget details from purchase order
-##
-def get_budget_committed_final(self, fiscal, com):
-        com_details = frappe._dict(frappe.db.sql("""
-	    SELECT concat(poi.cost_center,\" \", poi.budget_account) AS cc_acc, poi.amount
-		FROM `tabPurchase Order Item` AS poi
-	    JOIN `tabBudget Detail` AS bd
-	        ON poi.cost_center = bd.parent AND poi.budget_account = bd.account
-	    JOIN `tabPurchase Order` AS po
-	        ON po.name = poi.parent
-		LEFT JOIN `tabPurchase Invoice Item` AS pii
-			ON pii.purchase_order = po.name
-		LEFT JOIN `tabPurchase Invoice` AS pi
-			ON pi.name = pii.parent
-	    WHERE (po.status IN ('To Receive and Bill', 'To Bill') OR pi.outstanding_amount > 0)
-                            AND bd.fiscal_year=%s""",fiscal if fiscal else get_fiscal_year()))
-
-	return com_details
-
 ##
 #Set default fiscal year
 ##
@@ -160,42 +105,3 @@ def get_fiscal_year(self):
 def get_company(self):
     return frappe.defaults.get_user_default("company")
 
-##
-#Get the budget consumed in the financial year
-##
-def get_budget_consumed(self, fiscal, com):
-	consumed_budgets = frappe.db.sql("""select gl.account, gl.debit, gl.credit,
-			gl.cost_center from `tabGL Entry` gl, `tabBudget Detail` bd
-			where gl.fiscal_year=%s and company=%s and bd.account=gl.account
-			and bd.parent=gl.cost_center"""% ('%s','%s'),
-			(fiscal, com), as_dict=True);
-
-	con_details = frappe._dict()
-	for d in consumed_budgets:
-		con_details.setdefault((d.cost_center + " " + d.account), 0)
-		con_details[(d.cost_center + " " + d.account)] += (flt(flt(d.debit) - flt(d.credit)))
-	return con_details;
-
-##
-#Get the budget allocated in the financial year
-#
-def get_budget_allocated(self, fiscal, com):
-	return frappe._dict(frappe.db.sql("select concat(parent,\" \",account) AS mcc_acc, budget_allocated from `tabBudget Detail` WHERE fiscal_year=\'" + str(fiscal) + "\'"))
-
-
-#Get commited budget details from purchase order
-def get_budget_committed(self, fiscal, com):
-        com_details = frappe._dict(frappe.db.sql("""
-	        SELECT concat(poi.cost_center,\" \", poi.budget_account) AS cc_acc, poi.amount
-		FROM `tabPurchase Order Item` AS poi
-	        JOIN `tabBudget Detail` AS bd
-	        	        ON poi.cost_center = bd.parent AND poi.budget_account = bd.account
-	        JOIN `tabPurchase Order` AS po
-	                ON po.name = poi.parent
-		LEFT JOIN `tabPurchase Invoice Item` AS pii
-			ON pii.purchase_order = po.name
-		LEFT JOIN `tabPurchase Invoice` AS pi
-			ON pi.name = pii.parent
-	        WHERE (po.status IN ('To Receive and Bill', 'To Bill') OR pi.outstanding_amount > 0) AND bd.fiscal_year=%s""",fiscal))
-
-	return com_details

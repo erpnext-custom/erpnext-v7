@@ -145,7 +145,7 @@ def create_material_request(material_requests):
 				
 				mr.update({
 					"title":"Reorder for " + title + " and others",
-					"naming-series": "REORDER PR"
+					"naming_series": "REORDER PR"
 				})
 
 				mr.insert()

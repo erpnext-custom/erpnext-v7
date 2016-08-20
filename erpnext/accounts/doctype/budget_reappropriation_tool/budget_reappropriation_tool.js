@@ -3,10 +3,6 @@
 
 frappe.ui.form.on('Budget Reappropriation Tool', {
 	refresh: function(frm) {
-
-	},
-
-	refresh: function(frm) {
 		frm.disable_save();
 	},
 

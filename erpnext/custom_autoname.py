@@ -1,11 +1,20 @@
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  SSK		                   20/08/2016         Naming Series for Leave Encashment is added.
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
+
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-
+from frappe import msgprint
 ##
 # Sets the initials of autoname for PO, PR, SO, SI, PI, etc
 ##
-def get_auto_name(dn, naming_series):
+def get_auto_name(dn, naming_series=None):
+        #msgprint(dn.doctype)
 	series_seq = 'UNKO'
 	if dn.doctype == 'Purchase Order':
 		if naming_series == 'CONSUMABLE PO':
@@ -193,5 +202,8 @@ def get_auto_name(dn, naming_series):
 	
 	if dn.doctype == 'Reappropriation Details':
                 series_seq = 'BURA'
-	
+
+        if dn.doctype == 'Leave Encashment':
+                series_seq = str(dn.employee)+"/LE/"
+                
 	return str(series_seq) + ".YYYY.MM"
