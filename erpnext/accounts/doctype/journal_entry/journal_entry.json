@@ -2,13 +2,15 @@
  "allow_copy": 0, 
  "allow_import": 1, 
  "allow_rename": 0, 
- "default_print_format": "Voucher Print", 
  "autoname": "naming_series:", 
+ "beta": 0, 
  "creation": "2013-03-25 10:53:52", 
  "custom": 0, 
+ "default_print_format": "Voucher Print", 
  "docstatus": 0, 
  "doctype": "DocType", 
  "document_type": "Document", 
+ "editable_grid": 0, 
  "fields": [
   {
    "allow_on_submit": 0, 
@@ -1126,6 +1128,7 @@
  "hide_toolbar": 0, 
  "icon": "icon-file-text", 
  "idx": 176, 
+ "image_view": 0, 
  "in_create": 0, 
  "in_dialog": 0, 
  "is_submittable": 1, 
@@ -1133,15 +1136,15 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2016-04-06 05:33:21.851581", 
- "modified_by": "Administrator", 
+ "modified": "2016-08-20 13:09:31.745061", 
+ "modified_by": "siva@bt.bt", 
  "module": "Accounts", 
  "name": "Journal Entry", 
  "owner": "Administrator", 
  "permissions": [
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
    "delete": 1, 
@@ -1200,6 +1203,7 @@
    "write": 0
   }
  ], 
+ "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 1, 
  "search_fields": "voucher_type,posting_date, due_date, cheque_no", 

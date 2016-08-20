@@ -10,8 +10,9 @@ from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
 from datetime import *
-from dateutil.relativedelta import *
+#from dateutil.relativedelta import *
 
+class OverlapError(frappe.ValidationError): pass
 
 class LeaveEncashment(Document):
         def autoname(self):
@@ -24,16 +25,37 @@ class LeaveEncashment(Document):
                 self.name = make_autoname(self.employee+"/LE/"+monthyear+"/.#####")
         
         def validate(self):
-                self.my_validates()
+                self.validate_leave_application()
                 msgprint(_("validate is triggered...!!!"))
-                #msgprint(self.balance_after)
 
         def on_submit(self):
                 msgprint(_("On-Submit is triggered...!!!"))
 
-        def my_validates(self):
-                msgprint(self.employee)
+        def get_leave_credits(self):
+                pass
 
+        def validate_leave_application(self):
+                from_date, to_date = self.get_current_year_dates()
+                ref_docs = ''
+                
+                encashed_list = frappe.db.sql("""
+                        select name from `tabLeave Encashment`
+                        where employee = %s and leave_type = %s and docstatus = 1
+                        and application_date between %s and %s
+                        """,(self.employee, self.leave_type, from_date, to_date), as_dict=1)
+
+                for row in encashed_list:
+                        ref_docs += '<br /><a href="#Form/Leave Encashment/{0}">{0}</a>'.format(row.name)
+               
+                if ref_docs:
+                        ref_docs = "<br />Reference: {0}".format(ref_docs)
+                        frappe.throw(_("Employee has already encashed for the current year."), OverlapError)
+
+        def get_current_year_dates(self):
+                from_date = date(date.today().year,1,1).strftime('%Y-%m-%d')
+                to_date = date(date.today().year,12,31).strftime('%Y-%m-%d')
+                return from_date, to_date
+                
 @frappe.whitelist()
 def get_employee_cost_center(division):
         #cost_center = frappe.db.get_value("Division", division, "cost_center")
