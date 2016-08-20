@@ -60,7 +60,7 @@ def get_data():
 					"name": "Supplier",
                                         "label": _("Supplier Master"),
 					"description": _("Supplier database.")
-				},                                
+				},
 			]
 		},
 		{
@@ -143,7 +143,6 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "RRCO Receipt Tool",
-					"label": "RRCO Receipt Tool",
 					"description": "Enter RRCO Receipts in Bulk",
 					"hide_count": True
 				}
@@ -216,22 +215,22 @@ def get_data():
 		{
 			"label": _("Banking and Payments"),
 			"items": [
-                                {
+                {
 					"type": "doctype",
 					"name": "Bank Reconciliation",
-                                        "label": _("Update Bank Transaction Dates"),
+                    "label": _("Update Bank Transaction Dates"),
 					"description": _("Update bank payment dates with journals.")
 				},
-                                {
+                {
 					"type": "report",
 					"name": "Bank Reconciliation Statement",
-                                        "is_query_report": True,
+                    "is_query_report": True,
 					"doctype": "Journal Entry"
 				},
-                                {
+                {
 					"type": "report",
 					"name": "Bank Clearance Summary",
-                                        "is_query_report": True,
+                    "is_query_report": True,
 					"doctype": "Journal Entry"
 				},
 			]
@@ -263,6 +262,18 @@ def get_data():
 					"name": "Monthly Distribution",
 					"description": _("Seasonality for setting budgets, targets etc.")
 				},
+				{
+					"type": "doctype",
+					"name": "Supplementary Budget Tool",
+					"description": "Supplementary Budget",
+					"hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "Budget Reappropriation Tool",
+					"description": "Budget Reappropriation",
+					"hide_count": True
+				}
 			]
 		},
 		{
@@ -367,6 +378,18 @@ def get_data():
 					"name": "Customer Credit Balance",
 					"doctype": "Customer"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Supplementary Budget Report",
+					"doctype": "Supplementary Details"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Budget Reappropriation Report",
+					"doctype": "Reappropriation Details"
+				}
 			]
 		},
 	]
