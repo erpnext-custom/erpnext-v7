@@ -1,12 +1,6 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SSK		                   20/08/2016         Introducing Leave Encashment Logic
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
+
 from __future__ import unicode_literals
 import frappe
 from frappe import _
@@ -16,10 +10,7 @@ from erpnext.hr.utils import set_employee_name
 from erpnext.hr.doctype.leave_block_list.leave_block_list import get_applicable_block_dates
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 from erpnext.hr.doctype.employee_leave_approver.employee_leave_approver import get_approver_list
-# Ver 1.0 Begins added by SSK on 20/08/2016, Following line is added
-#from datetime import date as mod_date
-from erpnext.hr.doctype.leave_encashment.leave_encashment import get_le_settings
-# Ver 1.0 Ends
+
 
 class LeaveDayBlockedError(frappe.ValidationError): pass
 class OverlapError(frappe.ValidationError): pass
@@ -108,13 +99,11 @@ class LeaveApplication(Document):
 	def validate_salary_processed_days(self):
 		last_processed_pay_slip = frappe.db.sql("""select start_date, end_date from `tabSalary Slip`
 						where docstatus != 2 and employee = %s and ((%s between start_date and end_date) or (%s between start_date and end_date)) order by modified desc limit 1""",(self.employee, self.to_date, self.from_date))
-                # Ver 1.0 Begins added by SSK, Following validation is commented
-                '''
+
 		if last_processed_pay_slip:
 			frappe.throw(_("Salary already processed for period between {0} and {1}, Leave application period cannot be between this date range.").
 					format(formatdate(last_processed_pay_slip[0][0]), formatdate(last_processed_pay_slip[0][1])))
-		'''
-                # Ver 1.0 Ends
+
 
 	def show_block_day_warning(self):
 		block_dates = get_applicable_block_dates(self.from_date, self.to_date,
@@ -298,37 +287,12 @@ def get_leave_balance_on(employee, leave_type, date, allocation_records=None,
 		allocation_records = get_leave_allocation_records(date, employee).get(employee, frappe._dict())
 
 	allocation = allocation_records.get(leave_type, frappe._dict())
-        #frappe.msgprint(_("Employee: {0} Leave Type{1} Total Leaves Allocated: {2}").format(employee,allocation.leave_type,flt(allocation.total_leaves_allocated)))
 
 	if consider_all_leaves_in_the_allocation_period:
 		date = allocation.to_date
 	leaves_taken = get_approved_leaves_for_period(employee, leave_type, allocation.from_date, date)
-	# Ver 1.0 Begins added by SSK on 20/08/2016, following line is added
-	leaves_encashed = get_leaves_encashed(employee, leave_type, date)
-	# Ver 1.0 Ends
 
-        le = get_le_settings()
-        if leave_type == 'Earned Leave' and \
-           flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken) - flt(leaves_encashed)) > flt(le.encashment_lapse):
-                return flt(le.encashment_lapse)
-        
-	return flt(allocation.total_leaves_allocated) - flt(leaves_taken) - flt(leaves_encashed)
-
-# Ver 1.0 Begins added by SSK on 20/08/2016, following function is added
-def get_leaves_encashed(employee=None, leave_type=None, from_date=None):
-        from datetime import date
-
-        from_date = getdate(date(getdate(from_date).year,1,1))
-        to_date = getdate(date(getdate(from_date).year,12,31))
-
-        leaves_encashed = frappe.db.sql("""
-                select sum(ifnull(encashed_days,0)) from `tabLeave Encashment`
-                where employee = %s and leave_type = %s and docstatus = 1
-                and application_date between %s and %s
-                """,(employee, leave_type, from_date, to_date))
-
-        return leaves_encashed[0][0] if leaves_encashed[0][0] else 0
-# Ver 1.0 Ends
+	return flt(allocation.total_leaves_allocated) - flt(leaves_taken)
 
 def get_approved_leaves_for_period(employee, leave_type, from_date, to_date):
 	leave_applications = frappe.db.sql("""
@@ -362,10 +326,7 @@ def get_approved_leaves_for_period(employee, leave_type, from_date, to_date):
 	return leave_days
 
 def get_leave_allocation_records(date, employee=None):
-        from datetime import date as mod_date
 	conditions = (" and employee='%s'" % employee) if employee else ""
-	from_date = date
-        from_date = getdate(mod_date(getdate(from_date).year,1,1))
 
 	leave_allocation_records = frappe.db.sql("""
 		select employee, leave_type, total_leaves_allocated, from_date, to_date
@@ -374,55 +335,12 @@ def get_leave_allocation_records(date, employee=None):
 
 	allocated_leaves = frappe._dict()
 	for d in leave_allocation_records:
-                # Ver 1.0 Begins added by SSK on 20/08/2016, Latest allocation record for Earned Leave is handled later
-                if d.leave_type != 'Earned Leave':
-                        allocated_leaves.setdefault(d.employee, frappe._dict()).setdefault(d.leave_type, frappe._dict({
-                                "from_date": d.from_date,
-                                "to_date": d.to_date,
-                                "total_leaves_allocated": d.total_leaves_allocated
-                        }))
-        
-        # Ver 1.0 Begins added by SSK on 20/08/2016, Earned Leave
-        if employee:
-                leave_allocation_records = frappe.db.sql("""
-                        select employee, leave_type, total_leaves_allocated, from_date, to_date
-                        from `tabLeave Allocation`
-                        where from_date between %s and %s
-                        and docstatus=1 and leave_type = 'Earned Leave'
-                        {0}
-                        order by to_date desc limit 1""".format(conditions), (from_date, date), as_dict=1)
+		allocated_leaves.setdefault(d.employee, frappe._dict()).setdefault(d.leave_type, frappe._dict({
+			"from_date": d.from_date,
+			"to_date": d.to_date,
+			"total_leaves_allocated": d.total_leaves_allocated
+		}))
 
-                for d in leave_allocation_records:
-                        if d.leave_type == 'Earned Leave':
-                                allocated_leaves.setdefault(d.employee, frappe._dict()).setdefault(d.leave_type, frappe._dict({
-                                        "from_date": d.from_date,
-                                        "to_date": d.to_date,
-                                        "total_leaves_allocated": d.total_leaves_allocated
-                                }))
-        else:
-                employee_list = frappe.db.sql("""
-                        select distinct employee
-                        from `tabLeave Allocation`
-                        where from_date between %s and %s
-                        and docstatus=1 and leave_type = 'Earned Leave'
-                        """, (from_date,date), as_dict=1)
-                for e in employee_list:
-                        leave_allocation_records = frappe.db.sql("""
-                                select employee, leave_type, total_leaves_allocated, from_date, to_date
-                                from `tabLeave Allocation`
-                                where employee = %s
-                                and from_date between %s and %s
-                                and docstatus=1 and leave_type = 'Earned Leave'
-                                order by to_date desc limit 1""", (e.employee, from_date, date), as_dict=1)
-                        
-                        for d in leave_allocation_records:
-                                if d.leave_type == 'Earned Leave':
-                                        allocated_leaves.setdefault(d.employee, frappe._dict()).setdefault(d.leave_type, frappe._dict({
-                                                "from_date": d.from_date,
-                                                "to_date": d.to_date,
-                                                "total_leaves_allocated": d.total_leaves_allocated
-                                        }))
-        # Ver 1.0 Ends
 	return allocated_leaves
 
 

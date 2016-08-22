@@ -42,12 +42,12 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 	refresh: function(doc) {
 		var me = this;
 		this._super();
-
+		/*
 		if(doc.docstatus==0) {
 			cur_frm.add_custom_button(__("Get Items from BOM"),
 				cur_frm.cscript.get_items_from_bom, "icon-sitemap", "btn-default");
 		}
-
+		*/
 		if(doc.docstatus == 1 && doc.status != 'Stopped') {
 			if(flt(doc.per_ordered, 2) < 100) {
 				// make
@@ -83,7 +83,7 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 
 			}
 		}
-
+		/*
 		if (this.frm.doc.docstatus===0) {
 			cur_frm.add_custom_button(__('Sales Order'),
 				function() {
@@ -99,7 +99,7 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 					})
 				}, __("Get items from"));
 		}
-
+		*/
 		if(doc.docstatus == 1 && doc.status == 'Stopped')
 			cur_frm.add_custom_button(__('Re-open'),
 				cur_frm.cscript['Unstop Material Request']);

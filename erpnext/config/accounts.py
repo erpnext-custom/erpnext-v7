@@ -273,6 +273,18 @@ def get_data():
 					"name": "Budget Reappropriation Tool",
 					"description": "Budget Reappropriation",
 					"hide_count": True
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Supplementary Budget Report",
+					"doctype": "Supplementary Details"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Budget Reappropriation Report",
+					"doctype": "Reappropriation Details"
 				}
 			]
 		},
@@ -377,18 +389,6 @@ def get_data():
 					"is_query_report": True,
 					"name": "Customer Credit Balance",
 					"doctype": "Customer"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Supplementary Budget Report",
-					"doctype": "Supplementary Details"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Budget Reappropriation Report",
-					"doctype": "Reappropriation Details"
 				}
 			]
 		},

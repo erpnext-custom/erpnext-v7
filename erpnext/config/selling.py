@@ -70,40 +70,14 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Materials and Pricing"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Item",
-					"label": "Materials",
-					"description": _("All Products or Services."),
-				},
-				{
-					"type": "doctype",
-					"name": "Item Group",
-					"icon": "icon-sitemap",
-					"label": _("Material Group"),
-					"link": "Tree/Item Group",
-					"description": _("Tree of Item Groups."),
-				},
-				{
-					"type": "doctype",
-					"name": "Material Price",
-					"description": _("Multiple Item prices."),
-					"route": "Report/Item Price"
-				},
-			]
-		},
-		{
 			"label": _("Selling Reports"),
 			"icon": "icon-list",
 			"items": [
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Finished Goods Delivery Overview",
-					"label": "Mines Product Delivery Overview",
-					"doctype": "Sales Order"
+					"name": "Mines Delivery Overview",
+					"doctype": "Delivery Note"
 				},
 				{
 					"type": "report",
@@ -152,15 +126,41 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Penalty Report",
-					"doctype": "Mines Quality Record"
+					"name": "Ordered Materials To Be Delivered",
+					"doctype": "Delivery Note"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Ordered Materials To Be Delivered",
-					"doctype": "Delivery Note"
+					"name": "Sales Penalty Report",
+					"doctype": "Sales Invoice"
 				}
 			]
-		}
+		},
+		{
+			"label": _("Materials and Pricing"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Item",
+					"label": "Materials",
+					"description": _("All Products or Services."),
+				},
+				{
+					"type": "doctype",
+					"name": "Item Group",
+					"icon": "icon-sitemap",
+					"label": _("Material Group"),
+					"link": "Tree/Item Group",
+					"description": _("Tree of Item Groups."),
+				},
+				{
+					"type": "doctype",
+					"name": "Material Price",
+					"description": _("Multiple Item prices."),
+					"route": "Report/Item Price"
+				},
+			]
+		},
+
 	]

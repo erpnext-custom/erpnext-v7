@@ -22,8 +22,7 @@ def validate_filters(filters):
 
 
 def get_data(filters):
-	
-	query = "select distinct t1.name as sales_no, t1.transaction_date as sales_date, t1.customer, t1.po_no, t1.po_date, t1.base_net_amount, t1.rate, t1.qty, t1.item_name, t1.item_code, t1.stock_uom, t1.warehouse, t2.invoice_no, t2.sales_invoice_date, t2.due_date, t2.write_off_amount, t2.write_off_description, t2.total_advance, t2.delivery_note, t2.delivery_date, t2.transporter_name, t2.delivered_qty, t2.accepted_qty, t2.amount, t2.normal_loss_amt, t2.remarks, t2.abnormal_loss_amt, t2.justification from (select so.name, so.transaction_date, so.customer, so.po_no, so.po_date, soi.base_net_amount, soi.rate, soi.qty, soi.item_name, soi.item_code, soi.stock_uom, soi.warehouse from `tabSales Order` as so, `tabSales Order Item` as soi where so.name = soi.parent and so.docstatus = 1) as t1 join (select si.name as invoice_no, si.sales_invoice_date, si.due_date, si.write_off_amount, si.write_off_description, si.total_advance, sii.delivery_note, (select posting_date from `tabDelivery Note` as dn where dn.name = sii.delivery_note) as delivery_date, (select transporter_name1 from `tabDelivery Note` as dn where dn.name = sii.delivery_note) as transporter_name, sii.delivered_qty, sii.accepted_qty, sii.amount, sii.normal_loss_amt, sii.remarks, sii.abnormal_loss_amt, sii.justification, sii.sales_order from `tabSales Invoice` as si, `tabSales Invoice Item` as sii where si.name = sii.parent and sales_invoice_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as t2 on t1.name = t2.sales_order"
+	query = "select t1.name as sales_no, t1.transaction_date as sales_date, t1.customer, t1.po_no, t1.po_date, t1.base_net_amount, t1.rate, t1.qty, t1.item_name, t1.item_code, t1.stock_uom, t1.warehouse, t1.delivery_note, t1.delivery_date,t2.invoice_no, t2.sales_invoice_date, t2.due_date, t2.write_off_amount, t2.write_off_description, t2.total_advance, t1.transporter_name, t1.delivered_qty, t2.accepted_qty, t2.amount, t2.normal_loss_amt, t2.remarks, t2.abnormal_loss_amt, t2.justification from (select so.name, so.transaction_date, so.customer, so.po_no, so.po_date, soi.base_net_amount, soi.rate, soi.qty, soi.item_name, soi.item_code, soi.stock_uom, soi.warehouse, dni.parent as delivery_note, dni.qty as delivered_qty, (select transporter_name1 from `tabDelivery Note` as dn where dn.name = dni.parent) as transporter_name, (select posting_date from `tabDelivery Note` as dn where dn.name = dni.parent) as delivery_date from (`tabSales Order` as so JOIN `tabSales Order Item` as soi on so.name = soi.parent and so.docstatus = 1) LEFT JOIN `tabDelivery Note Item` as dni on so.name = dni.against_sales_order) as t1 left join (select si.name as invoice_no, si.sales_invoice_date, si.due_date, si.write_off_amount, si.write_off_description, si.total_advance, sii.accepted_qty, sii.amount, sii.normal_loss_amt, sii.remarks, sii.abnormal_loss_amt, sii.justification, sii.delivery_note as delivery_note_no from `tabSales Invoice` as si, `tabSales Invoice Item` as sii where si.name = sii.parent and si.docstatus != 2 and sales_invoice_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as t2 on t1.delivery_note = t2.delivery_note_no"
 
 	if filters.customer:
 		query+=" where customer = \'" + filters.customer + "\'"
@@ -114,7 +113,7 @@ def get_columns():
 			"fieldname": "rate",
 			"label": _("Sales Price"),
 			"fieldtype": "Currency",
-			"width": 150
+			"width": 100
 		},
 		{
 			"fieldname": "base_net_amount",
@@ -138,7 +137,7 @@ def get_columns():
 			"fieldname": "stock_uom",
 			"label": _("UoM"),
 			"fieldtype": "Data",
-			"width": 90
+			"width": 70
 		},
 		{
 			"fieldname": "warehouse",

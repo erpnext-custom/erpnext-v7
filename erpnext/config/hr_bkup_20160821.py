@@ -13,9 +13,16 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Employee Attendance Tool",
+					"label": _("Employee Attendance Tool"),
+					"description":_("Mark Attendance for multiple employees"),
+					"hide_count": True
+				},
+				{
+					"type": "doctype",
 					"name": "Attendance",
 					"description": _("Attendance record."),
-				},                                
+				},
 				{
 					"type": "doctype",
 					"name": "Upload Attendance",
@@ -29,13 +36,13 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Job Opening",
-					"description": _("Opening for a Job."),
-				},                                
-				{
-					"type": "doctype",
 					"name": "Job Applicant",
 					"description": _("Applicant for a Job."),
+				},
+				{
+					"type": "doctype",
+					"name": "Job Opening",
+					"description": _("Opening for a Job."),
 				},
 				{
 					"type": "doctype",
@@ -54,9 +61,14 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Leave Block List",
-					"description": _("Block leave applications by department.")
-				},                                
+					"name":"Leave Type",
+					"description": _("Type of leaves like casual, sick etc."),
+				},
+				{
+					"type": "doctype",
+					"name": "Holiday List",
+					"description": _("Holiday master.")
+				},
 				{
 					"type": "doctype",
 					"name": "Leave Allocation",
@@ -64,24 +76,22 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name":"Leave Type",
-					"description": _("Type of leaves like casual, sick etc."),
-				},                                
+					"name": "Leave Control Panel",
+					"label": _("Leave Allocation Tool"),
+					"description":_("Allocate leaves for the year."),
+					"hide_count": True
+				},
 				{
 					"type": "doctype",
-					"name": "Holiday List",
-					"description": _("Holiday master.")
-				},                                
+					"name": "Leave Block List",
+					"description": _("Block leave applications by department.")
+				},
+
 			]
 		},
 		{
 			"label": _("Payroll"),
 			"items": [
-				{
-					"type": "doctype",
-					"name": "Salary Structure",
-					"description": _("Salary template master.")
-				},                                
 				{
 					"type": "doctype",
 					"name": "Salary Slip",
@@ -96,58 +106,31 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Salary Structure",
+					"description": _("Salary template master.")
+				},
+				{
+					"type": "doctype",
 					"name": "Salary Component",
 					"label": _("Salary Components"),
 					"description": _("Earnings, Deductions and other Salary components")
 				},
-                                {
-					"type": "doctype",
-					"name": "Monthly Deduction",
-					"label": _("Monthly Deductions"),
-					"description": _("Monthly Deductions like Loan, Advance deduction etc.,")
-				},
+
 			]
 		},
 		{
-			"label": _("Travel Claim & Leave Encashment"),
+			"label": _("Expense Claims"),
 			"items": [
 				{
 					"type": "doctype",
 					"name": "Expense Claim",
-                                        "label": _("Travel Expense Claim"),
 					"description": _("Claims for company expense."),
 				},
 				{
 					"type": "doctype",
-					"name": "Leave Encashment",
-					"description": _("Leave Encashment"),
-				},
-				{
-					"type": "doctype",
 					"name": "Expense Claim Type",
-                                        "label": _("Travel Expense Claim Types"),
 					"description": _("Types of Expense Claim.")
 				},
-				{
-					"type": "doctype",
-					"name": "Leave Encashment Settings",
-					"description": _("Leave Encashment Settings"),
-				},                                
-			]
-		},
-                {
-			"label": _("Training & Development"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Training And Development",
-					"description": _("Traning & Development Master."),
-				},
-				{
-					"type": "doctype",
-					"name": "Training Fees",
-					"description": _("Training Fees Master")
-				},                                                                
 			]
 		},
 		{
@@ -162,27 +145,15 @@ def get_data():
 					"type": "doctype",
 					"name": "Appraisal Template",
 					"description": _("Template for performance appraisals.")
-				},                                                                
+				},
 			]
 		},
+
 		{
 			"label": _("Tools"),
 			"icon": "icon-wrench",
 			"items": [
-                                {
-					"type": "doctype",
-					"name": "Employee Attendance Tool",
-					"label": _("Employee Attendance Tool"),
-					"description":_("Mark Attendance for multiple employees"),
-					"hide_count": True
-				},
-                                {
-					"type": "doctype",
-					"name": "Leave Control Panel",
-					"label": _("Leave Allocation Tool"),
-					"description":_("Allocate leaves for the year."),
-					"hide_count": True
-				},
+
 			]
 		},
 		{
@@ -194,31 +165,6 @@ def get_data():
 					"name": "HR Settings",
 					"description": _("Settings for HR Module")
 				},
-                                {
-					"type": "doctype",
-					"name": "Salary Tax",
-					"description": _("Salary Tax Master")
-				},
-				{
-					"type": "doctype",
-					"name": "Branch",
-					"description": _("Organization Branch Master.")
-				},
-				{
-					"type": "doctype",
-					"name": "Department",
-					"description": _("Organization Department master.")
-				},
-				{
-					"type": "doctype",
-					"name": "Division",
-					"description": _("Organization Division master.")
-				},
-				{
-					"type": "doctype",
-					"name": "Section",
-					"description": _("Organization Section master.")
-				},                                                                
 				{
 					"type": "doctype",
 					"name": "Employment Type",
@@ -226,43 +172,18 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Branch",
+					"description": _("Organization branch master.")
+				},
+				{
+					"type": "doctype",
+					"name": "Department",
+					"description": _("Organization unit (department) master.")
+				},
+				{
+					"type": "doctype",
 					"name": "Designation",
 					"description": _("Employee designation (e.g. CEO, Director etc.).")
-				},
-                                {
-					"type": "doctype",
-					"name": "Employee Group",
-					"description": _("Employee Group Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Employee Sub-Group",
-					"description": _("Employee Sub-Group/Grade Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Terms of Reference",
-					"description": _("Employee Sub-Group/Grade Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Dzongkhags",
-					"description": _("Dzongkhag Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Gewogs",
-					"description": _("Gewog Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Villages",
-					"description": _("Village Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Travel Authorization",
-					"description": _("Travel Authorization Master.")
 				},
 			]
 		},
@@ -333,11 +254,5 @@ def get_data():
 					"youtube_id": "apgE-f25Rm0"
 				},
 			]
-		},
-                {
-			"label": _("Documents"),
-			"icon": "icon-wrench",
-			"items": [
-			]
-		},
+		}
 	]

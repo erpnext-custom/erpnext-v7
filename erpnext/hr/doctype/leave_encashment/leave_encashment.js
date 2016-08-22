@@ -23,12 +23,13 @@ frappe.ui.form.on('Leave Encashment', {
 
 	employee: function(frm){
 		if (frm.doc.division) {
-			return frappe.call({
+			frappe.call({
 				method: "erpnext.hr.doctype.leave_encashment.leave_encashment.get_employee_cost_center",
 				args: {
 					division: frm.doc.division
 				},
 				callback: function(r){
+					frm.trigger("get_le_settings");
 					frm.trigger("get_leave_balance");
 					frm.set_value('cost_center',r.message);
 				}
@@ -59,6 +60,20 @@ frappe.ui.form.on('Leave Encashment', {
 				}
 			});
 		}
-	},	
+	},
+
+	get_le_settings: function(frm){
+		if(frm.doc.docstatus==0 && frm.doc.employee && frm.doc.leave_type && frm.doc.application_date) {
+			
+			return frappe.call({
+				method: "erpnext.hr.doctype.leave_encashment.leave_encashment.get_le_settings",
+				callback: function(r) {
+					if (r.message) {
+						frm.set_value('encashed_days', r.message.encashment_days);
+					}
+				}
+			});
+		}		
+	}
 	
 });

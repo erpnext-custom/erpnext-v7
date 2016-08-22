@@ -744,7 +744,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 		},
 		callback: function(r){
 			if (r.message){
-				calc_tds_amt = Math.round(r.message[0][0]);
+				calc_tds_amt = Math.round(r.message);
 			}
 			else{
 				calc_tds_amt = 0;

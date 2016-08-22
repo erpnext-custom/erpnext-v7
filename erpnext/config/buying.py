@@ -74,32 +74,6 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Materials and Pricing"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Item",
-					"label": "Materials",
-					"description": _("All Products or Services."),
-				},
-				{
-					"type": "doctype",
-					"name": "Item Group",
-					"icon": "icon-sitemap",
-					"label": _("Material Group"),
-					"link": "Tree/Item Group",
-					"description": _("Tree of Item Groups."),
-				},
-				{
-					"type": "doctype",
-					"name": "Item Price",
-					"label": "Material Price",
-					"description": _("Multiple Item prices."),
-					"route": "Report/Item Price"
-				}
-			]
-		},
-		{
 			"label": _("Buying - Reports"),
 			"icon": "icon-list",
 			"items": [
@@ -152,6 +126,38 @@ def get_data():
 					"name": "Purchase Receipt Trends",
 					"doctype": "Purchase Receipt"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Purchase Penalty Report",
+					"doctype": "Purchase Invoice"
+				},
 			]
 		},
+		{
+			"label": _("Materials and Pricing"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Item",
+					"label": "Materials",
+					"description": _("All Products or Services."),
+				},
+				{
+					"type": "doctype",
+					"name": "Item Group",
+					"icon": "icon-sitemap",
+					"label": _("Material Group"),
+					"link": "Tree/Item Group",
+					"description": _("Tree of Item Groups."),
+				},
+				{
+					"type": "doctype",
+					"name": "Item Price",
+					"label": "Material Price",
+					"description": _("Multiple Item prices."),
+					"route": "Report/Item Price"
+				}
+			]
+		}
 	]

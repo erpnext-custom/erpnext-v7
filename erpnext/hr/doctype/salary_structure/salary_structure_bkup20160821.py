@@ -148,29 +148,16 @@ def make_salary_slip(source_name, target_doc=None):
 # Ver 1.0 added by SSK on 04/08/2016, Fetching TDS component
 @frappe.whitelist()
 def get_salary_tax(gross_amt):
-        tax_amount = 0
-        max_limit = frappe.db.sql("""select max(b.upper_limit)
-                from `tabSalary Tax` a, `tabSalary Tax Item` b
+        #msgprint(gross_amt);
+        result = frappe.db.sql("""select b.tax from
+                `tabSalary Tax` a, `tabSalary Tax Item` b
                 where now() between a.from_date and a.to_date
                 and b.parent = a.name
-                """)
-
-        if flt(flt(gross_amt) if flt(gross_amt) else 0.00) > flt(flt(max_limit[0][0]) if flt(max_limit[0][0]) else 0.00):
-                tax_amount = flt((((flt(gross_amt) if flt(gross_amt) else 0.00)-83333.00)*0.25)+11875.00)
-        else:
-                result = frappe.db.sql("""select b.tax from
-                        `tabSalary Tax` a, `tabSalary Tax Item` b
-                        where now() between a.from_date and a.to_date
-                        and b.parent = a.name
-                        and %s between b.lower_limit and b.upper_limit
-                        limit 1
-                        """,gross_amt)
-                if result:
-                        tax_amount = flt(result[0][0])
-                else:
-                        tax_amount = 0
-        
-        return tax_amount
+                and %s between b.lower_limit and b.upper_limit
+                limit 1
+                """,gross_amt);
+        #msgprint(_("Result set: {0}").format(result))
+        return result     
 		
 # Ver 1.0 added by SSK on 03/08/2016, Fetching PF component
 @frappe.whitelist()
