@@ -1,12 +1,6 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SSK		                   03/08/2016         Remove Button is added.
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
+
 from __future__ import unicode_literals
 import frappe
 from frappe.utils import cint, flt, nowdate
@@ -83,8 +77,6 @@ class ProcessPayroll(Document):
 
 		return self.create_log(ss_list)
 
-        def remove_sal_slip(self):
-                frappe.msgprint(_("This functionality is under development."))
 
 	def create_log(self, ss_list):
 		log = "<p>" + _("No employee for the above selected criteria OR salary slip already created") + "</p>"
@@ -181,7 +173,7 @@ class ProcessPayroll(Document):
                           and t2.branch = t1.branch
                           and t1.month = %s
                           and t1.fiscal_year = %s
-                          and t1.docstatus = 1 
+                          and t1.docstatus = 0 
                           %s
                         group by t1.branch,t1.department,t1.division,t2.cost_center
                 """ % (self.month, self.fiscal_year, cond),as_dict=1))

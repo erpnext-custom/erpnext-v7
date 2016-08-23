@@ -258,6 +258,12 @@ def get_data():
 					"doctype": "Cost Center"
 				},
 				{
+					"type": "report",
+					"name": "Budget Consumption Report",
+					"is_query_report": True,
+					"doctype": "GL Entry"
+				},
+				{
 					"type":"doctype",
 					"name": "Monthly Distribution",
 					"description": _("Seasonality for setting budgets, targets etc.")

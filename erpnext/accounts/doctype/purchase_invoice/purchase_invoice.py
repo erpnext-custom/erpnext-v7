@@ -621,34 +621,32 @@ class PurchaseInvoice(BuyingController):
 		for a in self.get("advances"):
 		    if flt(a.allocated_amount) and a.advance_account:
 			advance_account_currency = get_account_currency(a.advance_account)
-			if(a.advance_amount):
-				a.advance_amount = round(flt(a.advance_amount), 2)
+			allocated_amount = round(flt(a.allocated_amount), 2)
 			
-				gl_entries.append(
-					self.get_gl_dict({
-						"account": a.advance_account,
-						"against": self.supplier,
-						"party_type": "Supplier",
-						"party": self.supplier,
-						"credit": flt(a.advance_amount),
-						"credit_in_account_currency": a.advance_amount \
-							if advance_account_currency==self.company_currency else a.advance_amount,
-						"cost_center": self.tds_cost_center
-					})
-				)
-				gl_entries.append(
-					self.get_gl_dict({
-						"account": self.credit_to,
-						"party_type": "Supplier",
-						"party": self.supplier,
-						"against": a.advance_account,
-						"debit": a.advance_amount,
-						"debit_in_account_currency": a.advance_amount \
-							if advance_account_currency==self.company_currency else a.advance_amount,
-						"against_voucher": self.return_against if cint(self.is_return) else self.name,
-						"against_voucher_type": self.doctype,
-					}, advance_account_currency)
-				)
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": a.advance_account,
+					"against": self.supplier,
+					"party_type": "Supplier",
+					"party": self.supplier,
+					"credit": allocated_amount,
+					"credit_in_account_currency": allocated_amount, 
+					"cost_center": self.advance_cost_center
+				})
+			)
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": self.credit_to,
+					"party_type": "Supplier",
+					"party": self.supplier,
+					"against": a.advance_account,
+					"debit": a.allocated_amount,
+					"debit_in_account_currency": a.allocated_amount,
+					"against_voucher": self.return_against if cint(self.is_return) else self.name,
+					"against_voucher_type": self.doctype,
+					"cost_center": self.advance_cost_center
+				}, advance_account_currency)
+			)
 
 	def on_cancel(self):
 		self.check_for_closed_status()

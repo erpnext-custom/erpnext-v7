@@ -512,6 +512,8 @@ class SalesInvoice(SellingController):
 		self.make_tax_gl_entries(gl_entries)
 
 		self.make_item_gl_entries(gl_entries)
+		
+		self.make_advance_gl_entry(gl_entries)
 
 		# merge gl entries before adding pos entries
 		gl_entries = merge_similar_entries(gl_entries)
@@ -664,7 +666,8 @@ class SalesInvoice(SellingController):
 					"credit_in_account_currency": self.base_write_off_amount \
 						if self.party_account_currency==self.company_currency else self.write_off_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
-					"against_voucher_type": self.doctype
+					"against_voucher_type": self.doctype,
+					"cost_center": self.write_off_cost_center
 				}, self.party_account_currency)
 			)
 			gl_entries.append(
@@ -674,9 +677,42 @@ class SalesInvoice(SellingController):
 					"debit": self.base_write_off_amount,
 					"debit_in_account_currency": self.base_write_off_amount \
 						if write_off_account_currency==self.company_currency else self.write_off_amount,
-					"cost_center": self.write_off_cost_center or default_cost_center
+					"cost_center": self.write_off_cost_center
 				}, write_off_account_currency)
 			)
+
+	##
+	# Make adjustments for the advance payments amde
+	##
+	def make_advance_gl_entry(self, gl_entries):
+		for a in self.get("advances"):
+		    if flt(a.allocated_amount) and a.advance_account:
+			advance_account_currency = get_account_currency(a.advance_account)
+			allocated_amount = round(flt(a.allocated_amount), 2)
+
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": self.debit_to,
+					"party_type": "Customer",
+					"party": self.customer,
+					"against": a.advance_account,
+					"credit": allocated_amount,
+					"credit_in_account_currency": allocated_amount, 
+					"against_voucher": self.return_against if cint(self.is_return) else self.name,
+					"against_voucher_type": self.doctype,
+					"cost_center": self.advance_cost_center
+				}, advance_account_currency)
+			)
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": self.advance_account,
+					"against": self.customer,
+					"debit": allocated_amount,
+					"debit_in_account_currency": allocated_amount,
+					"cost_center": self.advance_cost_center
+				}, advance_account_currency)
+			)
+
 
 	def update_billing_status_in_dn(self, update_modified=True):
 		updated_delivery_notes = []

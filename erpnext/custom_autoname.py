@@ -200,9 +200,6 @@ def get_auto_name(dn, naming_series=None):
 		else:
 			series_seq = 'QIQI'
 	
-	if dn.doctype == 'Reappropriation Details':
-                series_seq = 'BURA'
-
         if dn.doctype == 'Leave Encashment':
                 series_seq = str(dn.employee)+"/LE/"
                 

@@ -293,7 +293,8 @@ class AccountsController(TransactionBase):
 				"remarks": d.remarks,
 				"advance_amount": flt(d.amount),
 				"allocated_amount": flt(d.amount) if d.against_order else 0,
-				"advance_account": d.advance_account
+				"advance_account": d.advance_account,
+				"advance_cost_center": d.cost_center
 			})
 
 	def get_advance_entries(self, include_unallocated=True):
@@ -667,7 +668,7 @@ def get_advance_journal_entries(party_type, party, party_account, amount_field,
 		select
 			"Journal Entry" as reference_type, t1.name as reference_name,
 			t1.remark as remarks, t2.{0} as amount, t2.name as reference_row,
-			t2.reference_name as against_order, t2.account as advance_account
+			t2.reference_name as against_order, t2.account as advance_account, t2.cost_center
 		from
 			`tabJournal Entry` t1, `tabJournal Entry Account` t2
 		where

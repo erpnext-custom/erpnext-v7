@@ -174,6 +174,9 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 				this.get_outstanding('Journal Entry', d.reference_name, doc.company, d);
 			}
 		}
+		else {
+			msgprint("NONE SELECTED")
+		}
 	},
 
 	get_outstanding: function(doctype, docname, company, child) {

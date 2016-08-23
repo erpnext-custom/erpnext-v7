@@ -181,7 +181,7 @@ class ProcessPayroll(Document):
                           and t2.branch = t1.branch
                           and t1.month = %s
                           and t1.fiscal_year = %s
-                          and t1.docstatus = 1 
+                          and t1.docstatus = 0 
                           %s
                         group by t1.branch,t1.department,t1.division,t2.cost_center
                 """ % (self.month, self.fiscal_year, cond),as_dict=1))
