@@ -12,7 +12,6 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 1.0               SSK                              08/08/2016         Changes made to accommodate erpnext v7 changes
                                                                           i) Displaying only Earnings on earnings side
                                                                           ii) Displaying only Deductions on deductions side
-1.0               SSK                              23/08/2016         Introducing Monthly Salary Deductions
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -122,30 +121,13 @@ def make_salary_slip(source_name, target_doc=None):
 		# copy earnings and deductions table
 		for key in ('earnings', 'deductions'):
 			for d in source.get(key):
-                                if d.from_date and d.to_date:
-                                        if ((d.from_date <= target.start_date <= d.to_date) or (d.from_date <= target.end_date <= d.to_date)):
-                                                target.append(key, {
-                                                        'amount': d.amount,
-                                                        'default_amount': d.amount,
-                                                        'depends_on_lwp' : d.depends_on_lwp,
-                                                        'salary_component' : d.salary_component,
-                                                        'institution_name' : d.institution_name,
-                                                        'reference_type' : d.reference_type,
-                                                        'reference_number' : d.reference_number,
-                                                        'from_date' : d.from_date,
-                                                        'to_date' : d.to_date,
-                                                        'total_deductible_amount' : d.total_deductible_amount,
-                                                        'total_deducted_amount' : (d.total_deducted_amount+d.amount),
-                                                        'total_outstanding_amount' : d.total_deductible_amount-(d.total_deducted_amount+d.amount)
-                                                })
-                                else:
-                                        target.append(key, {
-                                                'amount': d.amount,
-                                                'default_amount': d.amount,
-                                                'depends_on_lwp' : d.depends_on_lwp,
-                                                'salary_component' : d.salary_component
-                                        })                                        
-                                        
+				target.append(key, {
+					'amount': d.amount,
+					'default_amount': d.amount,
+					'depends_on_lwp' : d.depends_on_lwp,
+					'salary_component' : d.salary_component
+				})
+
 		target.run_method("pull_emp_details")
 		target.run_method("get_leave_details")
 		target.run_method("calculate_net_pay")

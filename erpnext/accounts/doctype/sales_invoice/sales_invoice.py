@@ -113,7 +113,6 @@ class SalesInvoice(SellingController):
 		# because updating reserved qty in bin depends upon updated delivered qty in SO
 		if self.update_stock == 1:
 			self.update_stock_ledger()
-
 		# this sequence because outstanding may get -ve
 		self.make_gl_entries()
 
@@ -516,7 +515,7 @@ class SalesInvoice(SellingController):
 		self.make_item_gl_entries(gl_entries)
 		
 		self.make_advance_gl_entry(gl_entries)
-
+		
 		# merge gl entries before adding pos entries
 		gl_entries = merge_similar_entries(gl_entries)
 
@@ -546,6 +545,7 @@ class SalesInvoice(SellingController):
 					"against_voucher_type": self.doctype
 				}, self.party_account_currency)
 			)
+		
 
 	def make_tax_gl_entries(self, gl_entries):
 		for tax in self.get("taxes"):
@@ -588,11 +588,74 @@ class SalesInvoice(SellingController):
 							"cost_center": item.cost_center
 						}, account_currency)
 					)
+					
+					if item.normal_loss_amt:
+						normal_account = frappe.db.get_value('Company', self.company, 'normal_loss_account') 
+						account_currency = get_account_currency(normal_account)
+						gl_entries.append(
+							self.get_gl_dict({
+								"account": normal_account,
+								"against": self.customer,
+								"party_type": "Customer",
+								"party": self.customer,
+								"debit": item.normal_loss_amt,
+								"debit_in_account_currency": item.normal_loss_amt \
+									if account_currency==self.company_currency else (item.normal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
+								"cost_center": item.cost_center,
+							}, account_currency)
+						)
+					
+						gl_entries.append(
+							self.get_gl_dict({
+								"account": self.debit_to,
+								"against": self.against_income_account,
+								"party_type": "Customer",
+								"party": self.customer,
+								"credit": item.normal_loss_amt,
+								"credit_in_account_currency": item.normal_loss_amt \
+									if account_currency==self.company_currency else (item.normal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
+								#"cost_center": item.cost_center
+								"against_voucher": self.return_against if cint(self.is_return) else self.name,
+								"against_voucher_type": self.doctype
+							}, account_currency)
+						)
+
+					if item.abnormal_loss_amt:
+						abnormal_account = frappe.db.get_value('Company', self.company, 'abnormal_loss_account') 
+						account_currency = get_account_currency(abnormal_account)
+						gl_entries.append(
+							self.get_gl_dict({
+								"account": abnormal_account,
+								"against": self.customer,
+								"party_type": "Customer",
+								"party": self.customer,
+								"debit": item.abnormal_loss_amt,
+								"debit_in_account_currency": item.abnormal_loss_amt \
+									if account_currency==self.company_currency else (item.abnormal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
+								"cost_center": item.cost_center,
+							}, account_currency)
+						)
+					
+						gl_entries.append(
+							self.get_gl_dict({
+								"account": self.debit_to,
+								"against": self.against_income_account,
+								"party_type": "Customer",
+								"party": self.customer,
+								"credit": item.abnormal_loss_amt,
+								"credit_in_account_currency": item.abnormal_loss_amt \
+									if account_currency==self.company_currency else (item.abnormal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
+								#"cost_center": item.cost_center
+								"against_voucher": self.return_against if cint(self.is_return) else self.name,
+								"against_voucher_type": self.doctype
+							}, account_currency)
+						)
 
 		# expense account gl entries
 		if cint(frappe.defaults.get_global_default("auto_accounting_for_stock")) \
 				and cint(self.update_stock):
 			gl_entries += super(SalesInvoice, self).get_gl_entries()
+		
 
 	def make_pos_gl_entries(self, gl_entries):
 		if cint(self.is_pos) and self.paid_amount:
@@ -682,6 +745,7 @@ class SalesInvoice(SellingController):
 					"cost_center": self.write_off_cost_center
 				}, write_off_account_currency)
 			)
+		
 
 	##
 	# Make adjustments for the advance payments amde
@@ -702,18 +766,20 @@ class SalesInvoice(SellingController):
 					"credit_in_account_currency": allocated_amount, 
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
-					"cost_center": self.advance_cost_center
 				}, advance_account_currency)
 			)
 			gl_entries.append(
 				self.get_gl_dict({
-					"account": self.advance_account,
+					"account": a.advance_account,
+					"party_type": "Customer",
+					"party": self.customer,
 					"against": self.customer,
 					"debit": allocated_amount,
 					"debit_in_account_currency": allocated_amount,
-					"cost_center": self.advance_cost_center
+					"cost_center": a.advance_cost_center
 				}, advance_account_currency)
 			)
+		
 
 
 	def update_billing_status_in_dn(self, update_modified=True):

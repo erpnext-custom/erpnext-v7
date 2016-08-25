@@ -25,6 +25,9 @@ class calculate_taxes_and_totals(object):
 
 		if self.doc.doctype in ["Sales Invoice", "Purchase Invoice"]:
 			self.calculate_total_advance()
+		
+		if self.doc.doctype == "Sales Invoice":
+			self.calculate_total_losses()
 
 	def _calculate(self):
 		self.calculate_item_values()
@@ -416,6 +419,20 @@ class calculate_taxes_and_totals(object):
 			if self.doc.docstatus == 0:
 				self.calculate_outstanding_amount()
 
+	def calculate_total_losses(self):
+		if self.doc.docstatus < 2:
+			total_normal_amount = sum([flt(item.normal_loss_amt, item.precision("normal_loss_amt"))
+				for item in self.doc.get("items")])
+			total_abnormal_amount = sum([flt(item.abnormal_loss_amt, item.precision("abnormal_loss_amt"))
+				for item in self.doc.get("items")])
+
+			self.doc.total_normal_loss = flt(total_normal_amount, self.doc.precision("total_normal_loss"))
+			self.doc.total_abnormal_loss = flt(total_abnormal_amount, self.doc.precision("total_abnormal_loss"))
+
+			if self.doc.docstatus == 0:
+				self.calculate_outstanding_amount()
+
+
 	def calculate_outstanding_amount(self):
 		# NOTE:
 		# write_off_amount is only for POS Invoice
@@ -424,15 +441,28 @@ class calculate_taxes_and_totals(object):
 			return
 
 		self.doc.round_floats_in(self.doc, ["grand_total", "total_advance", "write_off_amount"])
+		
 		self._set_in_company_currency(self.doc, ['write_off_amount'])
 
-		if self.doc.party_account_currency == self.doc.currency:
-			total_amount_to_pay = flt(self.doc.grand_total  - self.doc.total_advance
-				- flt(self.doc.write_off_amount), self.doc.precision("grand_total"))
+		if self.doc.doctype == "Sales Invoice":
+			self.doc.round_floats_in(self.doc, ["total_normal_loss", "total_abnormal_loss"])
+			if self.doc.party_account_currency == self.doc.currency:
+				total_amount_to_pay = flt(self.doc.grand_total  - self.doc.total_advance 
+					- flt(self.doc.total_normal_loss) - flt(self.doc.total_abnormal_loss)
+					- flt(self.doc.write_off_amount), self.doc.precision("grand_total"))
+			else:
+				total_amount_to_pay = flt(flt(self.doc.grand_total *
+					self.doc.conversion_rate, self.doc.precision("grand_total")) - self.doc.total_advance
+						- flt(self.doc.total_normal_loss * self.doc.conversion_rate) - flt(self.doc.total_abnormal_loss * self.doc.conversion_rate)
+						- flt(self.doc.base_write_off_amount), self.doc.precision("grand_total"))
 		else:
-			total_amount_to_pay = flt(flt(self.doc.grand_total *
-				self.doc.conversion_rate, self.doc.precision("grand_total")) - self.doc.total_advance
-					- flt(self.doc.base_write_off_amount), self.doc.precision("grand_total"))
+			if self.doc.party_account_currency == self.doc.currency:
+				total_amount_to_pay = flt(self.doc.grand_total  - self.doc.total_advance 
+					- flt(self.doc.write_off_amount), self.doc.precision("grand_total"))
+			else:
+				total_amount_to_pay = flt(flt(self.doc.grand_total *
+					self.doc.conversion_rate, self.doc.precision("grand_total")) - self.doc.total_advance
+						- flt(self.doc.base_write_off_amount), self.doc.precision("grand_total"))
 
 		if self.doc.doctype == "Sales Invoice":
 			self.calculate_paid_amount()

@@ -28,12 +28,12 @@ def getItemCode(item_group):
 @frappe.whitelist()
 def get_template_list(doctype, txt, searchfield, start, page_len, filters): 
 	if filters['naming_series']:
-		query = "SELECT name, template_name FROM `tabInitial Stock Templates` WHERE \'" + str(frappe.utils.today()) +"\'  BETWEEN from_date AND to_date AND naming_series = \'" + filters['naming_series'] + "\'";
+		query = "SELECT name, template_name FROM `tabStock Price Template` WHERE \'" + str(frappe.utils.today()) +"\'  BETWEEN from_date AND to_date AND naming_series = \'" + filters['naming_series'] + "\' and docstatus = 1";
 		return frappe.db.sql(query);
 	
 
 #Get item values from "Initial Stock Templates" during stock entry
 @frappe.whitelist()
 def get_initial_values(name):
-	result = frappe.db.sql("SELECT a.item_code, a.item_name, a.uom, a.rate_currency, a.rate_amount, b.expense_account, b.selling_cost_center, b.stock_uom FROM `tabInitial Stock Templates` AS a, tabItem AS b WHERE a.item_name = b.item_name AND a.name = \'" + str(name) + "\'", as_dict=True);
+	result = frappe.db.sql("SELECT a.item_code, a.item_name, a.uom, a.rate_currency, a.rate_amount, b.expense_account, b.selling_cost_center, b.stock_uom FROM `tabStock Price Template` AS a, tabItem AS b WHERE a.item_name = b.item_name AND a.name = \'" + str(name) + "\'", as_dict=True);
 	return result;

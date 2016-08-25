@@ -64,7 +64,7 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Initial Stock Templates",
+					"name": "Stock Price Template",
 					"label": "Price Templates for Mines Products",
 					"description": _("Price Templates for Mines Products"),
 				},

@@ -713,35 +713,6 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		"outstanding_amount": outstanding_amount,
 		"allocated_amount": outstanding_amount
 	})
-
-        # Ver 1.0 Begins by SSK on 15/08/2016, following deductions table is introducted
-        if dt == "Sales Invoice":
-                normal_loss_amt = 0
-                abnormal_loss_amt = 0
-                excess_amt = 0
-                
-                for d in doc.get("items"):
-                        normal_loss_amt += (d.normal_loss_amt if d.normal_loss_amt else 0)
-                        abnormal_loss_amt += (d.abnormal_loss_amt if d.abnormal_loss_amt else 0)
-                        excess_amt += (d.excess_amt if d.excess_amt else 0)
-
-                        if d.normal_loss_amt:
-                                pe.append("deductions", {
-                                        "account": "Normal Loss - SMCL",
-                                        "cost_center": d.cost_center,
-                                        "amount": d.normal_loss_amt
-                                })
-
-                        if d.abnormal_loss_amt:
-                                pe.append("deductions", {
-                                        "account": "Abnormal Loss - SMCL",
-                                        "cost_center": d.cost_center,
-                                        "amount": d.abnormal_loss_amt
-                                })
-                pe.paid_amount -= (normal_loss_amt+abnormal_loss_amt)
-                pe.received_amount = pe.paid_amount
-        # Ver 1.0 Ends
-        
 	pe.setup_party_account_field()
 	pe.set_missing_values()
 	if party_account and bank:

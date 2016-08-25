@@ -631,7 +631,7 @@ class PurchaseInvoice(BuyingController):
 					"party": self.supplier,
 					"credit": allocated_amount,
 					"credit_in_account_currency": allocated_amount, 
-					"cost_center": self.advance_cost_center
+					"cost_center": a.advance_cost_center
 				})
 			)
 			gl_entries.append(
@@ -644,7 +644,7 @@ class PurchaseInvoice(BuyingController):
 					"debit_in_account_currency": a.allocated_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
-					"cost_center": self.advance_cost_center
+					"cost_center": a.advance_cost_center
 				}, advance_account_currency)
 			)
 

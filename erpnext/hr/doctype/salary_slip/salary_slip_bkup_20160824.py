@@ -5,8 +5,6 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   08/08/2016         DocumentNaming standard is changed
-1.0               SSK                              25/08/2016         Updating balances for monthly deductions in
-                                                                          Salary Structure on submit of salary slip.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -271,22 +269,6 @@ class SalarySlip(TransactionBase):
 		if(frappe.db.get_single_value("HR Settings", "email_salary_slip_to_employee")):
 			self.email_salary_slip()
 
-                # Ver 1.0 Begins by SSK on 25/08/2016, following block added
-
-                sst = frappe.get_doc("Salary Structure", self.salary_structure)
-                #for i in sst.deductions:
-                #        frappe.msgprint(_("deductions: {0}").format(i.amount))
-                
-                for ssl in self.deductions:
-                        if (ssl.from_date and ssl.to_date):
-                                for sst in sst.deductions:
-                                        if (ssl.reference_number == sst.reference_number) and \
-                                           (ssl.reference_type == sst.reference_type):
-                                                sst.total_deducted_amount += ssl.amount
-                                                sst.total_outstanding_amount = sst.total_deductible_amount-sst.total_deducted_amount
-                                                sst.save()
-
-                # Ver 1.0 Ends
 	def on_cancel(self):
 		self.update_status()
 

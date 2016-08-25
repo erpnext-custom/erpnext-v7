@@ -142,12 +142,7 @@ def get_data():
 					"type": "doctype",
 					"name": "Training And Development",
 					"description": _("Traning & Development Master."),
-				},
-				{
-					"type": "doctype",
-					"name": "Training Fees",
-					"description": _("Training Fees Master")
-				},                                                                
+				},                  
 			]
 		},
 		{
@@ -258,11 +253,6 @@ def get_data():
 					"type": "doctype",
 					"name": "Villages",
 					"description": _("Village Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Travel Authorization",
-					"description": _("Travel Authorization Master.")
 				},
 			]
 		},

@@ -28,35 +28,35 @@ class JournalEntry(AccountsController):
 	def autoname(self):
                 series_seq = ""
                 if self.voucher_type == 'Journal Entry':
-                        series_seq = 'JV'
+                        series_seq = 'JEJV'
                 elif self.voucher_type == 'Bank Entry':
                         if self.naming_series == 'Bank Payment Voucher':
-                                series_seq = 'BP'
+                                series_seq = 'JEBP'
                         elif self.naming_series == 'Bank Receipt Voucher':
-                                series_seq = 'BR'
+                                series_seq = 'JEBR'
                         else:
-                                series_seq = 'BE'
+                                series_seq = 'JEBE'
                 elif self.voucher_type == 'Cash Entry':
                         if self.naming_series == 'Cash Payment Voucher':
-                                series_seq = 'CP'
+                                series_seq = 'JECP'
                         elif self.naming_series == 'Cash Receipt Voucher':
-                                series_seq = 'CR'
+                                series_seq = 'JECR'
                         else:
-                                series_seq = 'CA'
+                                series_seq = 'JECA'
                 elif self.voucher_type == 'Debit Note':
-                        series_seq = 'DN'
+                        series_seq = 'JEDN'
                 elif self.voucher_type == 'Credit Note':
-                        series_seq = 'CN'
+                        series_seq = 'JECN'
                 elif self.voucher_type == 'Contra Entry':
-                        series_seq = 'CE'
+                        series_seq = 'JECE'
                 elif self.voucher_type == 'Excise Entry':
-                        series_seq = 'EE'
+                        series_seq = 'JEEE'
                 elif self.voucher_type == 'Write Off Entry':
-                        series_seq = 'WE'
+                        series_seq = 'JEWE'
                 elif self.voucher_type == 'Opening Entry':
-                        series_seq = 'OP'
+                        series_seq = 'JEOP'
                 elif self.voucher_type == 'Depreciation Entry':
-                        series_seq = 'DE'
+                        series_seq = 'JEDE'
 
                 self.name = make_autoname(str(series_seq) + '.YYYY.MM.#####')
 
@@ -118,6 +118,7 @@ class JournalEntry(AccountsController):
 	def validate_party(self):
 		for d in self.get("accounts"):
                         if d.party_check == 1:
+                                frappe.msgprint(_("Party Check: {0}").format(d.party_check))
                                 account_type = frappe.db.get_value("Account", d.account, "account_type")
                                 if account_type in ["Receivable", "Payable", "Expense Account", "Income Account"]:
                                         if not (d.party_type and d.party):
@@ -443,24 +444,45 @@ class JournalEntry(AccountsController):
 		gl_map = []
 		for d in self.get("accounts"):
 			if d.debit or d.credit:
-				gl_map.append(
-					self.get_gl_dict({
-						"account": d.account,
-						"party_type": d.party_type,
-						"party": d.party,
-						"against": d.against_account,
-						"debit": flt(d.debit, d.precision("debit")),
-						"credit": flt(d.credit, d.precision("credit")),
-						"account_currency": d.account_currency,
-						"debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
-						"credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
-						"against_voucher_type": d.reference_type,
-						"against_voucher": d.reference_name,
-						"remarks": self.remark,
-						"cost_center": d.cost_center,
-						"project": d.project
-					})
-				)
+                                if d.party_check:
+                                        gl_map.append(
+                                                self.get_gl_dict({
+                                                        "account": d.account,
+                                                        "party_type": d.party_type,
+                                                        "party": d.party,
+                                                        "against": d.against_account,
+                                                        "debit": flt(d.debit, d.precision("debit")),
+                                                        "credit": flt(d.credit, d.precision("credit")),
+                                                        "account_currency": d.account_currency,
+                                                        "debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
+                                                        "credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
+                                                        "against_voucher_type": d.reference_type,
+                                                        "against_voucher": d.reference_name,
+                                                        "remarks": self.remark,
+                                                        "cost_center": d.cost_center,
+                                                        "project": d.project
+                                                })
+                                        )
+                                else:
+                                        gl_map.append(
+                                                self.get_gl_dict({
+                                                        "account": d.account,
+                                                        "party_type": d.party_type,
+                                                        "party": d.party,
+                                                        "against": d.against_account,
+                                                        "debit": flt(d.debit, d.precision("debit")),
+                                                        "credit": flt(d.credit, d.precision("credit")),
+                                                        "account_currency": d.account_currency,
+                                                        "debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
+                                                        "credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
+                                                        "against_voucher_type": d.reference_type,
+                                                        "against_voucher": d.reference_name,
+                                                        "remarks": self.remark,
+                                                        "cost_center": d.cost_center,
+                                                        "project": d.project,
+                                                        "party_check": d.party_check
+                                                })
+                                        )                                        
 
 		if gl_map:
 			make_gl_entries(gl_map, cancel=cancel, adv_adj=adv_adj)

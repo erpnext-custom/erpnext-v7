@@ -24,6 +24,10 @@ frappe.ui.form.on("Salary Slip", {
 
 	refresh: function(frm) {
 		frm.trigger("toggle_fields")
+		frm.fields_dict['earnings'].grid.set_column_disp("default_amount", false);
+		frm.fields_dict['deductions'].grid.set_column_disp("default_amount", false);
+		frm.fields_dict['earnings'].grid.set_column_disp("section_break_5", false);
+		frm.fields_dict['deductions'].grid.set_column_disp("section_break_5", false);
 	},
 
 	salary_slip_based_on_timesheet: function(frm) {
@@ -60,10 +64,8 @@ cur_frm.cscript.onload = function(doc,dt,dn){
 		if(!doc.fiscal_year) doc.fiscal_year = sys_defaults['fiscal_year'];
 		refresh_many(['month', 'fiscal_year']);
 	}
-	console.log("salary_slip.js is called...1")
 }
 
-console.log("salary_slip.js is called...2")
 
 // Get leave details
 //---------------------------------------------------------------------

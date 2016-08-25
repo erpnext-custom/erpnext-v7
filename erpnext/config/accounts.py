@@ -127,6 +127,13 @@ def get_data():
 					"is_query_report": True
 				},
 				{
+					"type": "doctype",
+					"name": "Cheque Lot",
+					"label": "Create Cheque Lot",
+					"description": "Creation of Cheque Lot",
+					"hide_count": True
+				},
+				{
 					"type": "report",
 					"name": "TDS Certificate",
 					"label": "Generate TDS Certificate",

@@ -17,7 +17,9 @@ exclude_from_linked_with = True
 class GLEntry(Document):
 	def validate(self):
 		self.flags.ignore_submit_comment = True
-		self.check_mandatory()
+		#avoid party check for salary
+		if self.party_check:
+			self.check_mandatory()
 		self.pl_must_have_cost_center()
 		self.check_pl_account()
 		self.validate_cost_center()
@@ -157,7 +159,7 @@ def update_outstanding_amt(account, party_type, party, against_voucher_type, aga
 		where against_voucher_type=%s and against_voucher=%s
 		and account = %s {0}""".format(party_condition),
 		(against_voucher_type, against_voucher, account))[0][0] or 0.0)
-
+	
 	if against_voucher_type == 'Purchase Invoice':
 		bal = -bal
 	elif against_voucher_type == "Journal Entry":
@@ -181,8 +183,10 @@ def update_outstanding_amt(account, party_type, party, against_voucher_type, aga
 
 	# Update outstanding amt on against voucher
 	if against_voucher_type in ["Sales Invoice", "Purchase Invoice"]:
-		ref_doc = frappe.get_doc(against_voucher_type, against_voucher)
-		ref_doc.db_set('outstanding_amount', bal)
+		is_adv_account = frappe.db.get_value("Account", account, "is_an_advance_account")
+		if not is_adv_account:
+			ref_doc = frappe.get_doc(against_voucher_type, against_voucher)
+			ref_doc.db_set('outstanding_amount', bal)
 
 def validate_frozen_account(account, adv_adj=None):
 	frozen_account = frappe.db.get_value("Account", account, "freeze_account")

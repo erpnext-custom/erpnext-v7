@@ -38,7 +38,7 @@ class ProcessPayroll(Document):
 		self.check_mandatory()
 
 		cond = ''
-		for f in ['company', 'branch', 'department', 'designation', 'branch', 'department', 'division']:
+		for f in ['company', 'branch', 'department', 'designation', 'branch', 'department', 'division', 'employee']:
 			if self.get(f):
 				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 
@@ -172,7 +172,11 @@ class ProcessPayroll(Document):
         def get_account_rules(self):
                 items = []
                 cond = self.get_filter_condition()
-                
+                cond1 = ''
+		for f in ['company', 'branch', 'department', 'designation', 'division', 'employee']:
+			if self.get(f):
+				cond1 += " and ss." + f + " = '" + self.get(f).replace("'", "\'") + "'"
+		
                 items.extend(frappe.db.sql("""select t1.branch, t1.department, t1.division,t2.cost_center,
                         sum(t1.rounded_total) as total_amt
                          from `tabSalary Slip` t1, `tabDivision` t2
@@ -185,7 +189,6 @@ class ProcessPayroll(Document):
                           %s
                         group by t1.branch,t1.department,t1.division,t2.cost_center
                 """ % (self.month, self.fiscal_year, cond),as_dict=1))
-                #msgprint(_("Items: {0}").format(items))
 
                 #
                 # GL Mapping
@@ -202,6 +205,7 @@ class ProcessPayroll(Document):
                 default_tax_account = frappe.db.get_value("Salary Component", 'Salary Tax',"gl_head")
                 default_health_account = frappe.db.get_value("Salary Component", 'Health Contribution',"gl_head")
                 default_saladv_account = frappe.db.get_value("Salary Component", 'Salary Advance Deductions',"gl_head")
+
 
                 for item in items:
                         deductions = []
@@ -223,14 +227,15 @@ class ProcessPayroll(Document):
                                  and dt.name = sd.salary_component
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
-                                 and ss.docstatus = 0
+                                 and ss.docstatus = 1
                                  and ss.branch = '%s'
                                  and ss.department = '%s'
                                  and ss.division = '%s'
                                  and dt.gl_head <> '%s'
                                  and dt.type = 'Deduction'
+                                 %s
                                group by dt.gl_head
-                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], default_saladv_account)
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], default_saladv_account, cond1)
                         deductions.extend(frappe.db.sql(query, as_dict=1))
 
                         # Salary Advance
@@ -248,14 +253,15 @@ class ProcessPayroll(Document):
                                  and dt.name = sd.salary_component
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
-                                 and ss.docstatus = 0
+                                 and ss.docstatus = 1
                                  and ss.branch = '%s'
                                  and ss.department = '%s'
                                  and ss.division = '%s'
                                  and dt.gl_head = '%s'
                                  and dt.type = 'Deduction'
+                                 %s
                                group by dt.gl_head, ss.employee
-                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], default_saladv_account)
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], default_saladv_account, cond1)
                         deductions.extend(frappe.db.sql(query2, as_dict=1))                        
                         accounts.extend(deductions)
 
@@ -279,12 +285,13 @@ class ProcessPayroll(Document):
                                  and et.type = 'Earning'
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
-                                 and ss.docstatus = 0
+                                 and ss.docstatus = 1
                                  and ss.branch = '%s'
                                  and ss.department = '%s'
                                  and ss.division = '%s'
+                                 %s
                                group by et.gl_head
-                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'])
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], cond1)
                         earnings.extend(frappe.db.sql(query, as_dict=1))
                         accounts.extend(earnings)
 
@@ -298,7 +305,6 @@ class ProcessPayroll(Document):
                                                  "credit_in_account_currency": (item_earnings-item_deductions),
                                                  "cost_center": item['cost_center'],
                                                  "party_check": 0})
-                                
                                 
                 #msgprint(_("Total Earnings: {0} \nTotal Deductions: {1} \nNetPay: {2}").format(tot_earnings,tot_deductions,(tot_earnings-tot_deductions)))
 
@@ -478,7 +484,7 @@ class ProcessPayroll(Document):
                 else:
                         accounts.append({"account": default_bank_account,
                                         "credit_in_account_currency": (tot_earnings-tot_deductions),
-                                        "cost_center": 'Dummy-CEO - SMCL',
+                                        "cost_center": 'CHQR-CEO - SMCL',
                                         "party_check": 0})                        
                         
                         ss = frappe.get_doc({
