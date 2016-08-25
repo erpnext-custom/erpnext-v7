@@ -460,7 +460,8 @@ class JournalEntry(AccountsController):
                                                         "against_voucher": d.reference_name,
                                                         "remarks": self.remark,
                                                         "cost_center": d.cost_center,
-                                                        "project": d.project
+                                                        "project": d.project,
+                                                        "party_check": 1 
                                                 })
                                         )
                                 else:

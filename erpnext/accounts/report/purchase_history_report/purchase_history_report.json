@@ -1,0 +1,19 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2016-08-25 12:56:06.746374", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2016-08-25 12:57:06.304188", 
+ "modified_by": "Administrator", 
+ "module": "Accounts", 
+ "name": "Purchase History Report", 
+ "owner": "Administrator", 
+ "query": "select * from\n(select * from\n(select * from (select mr.name as mr_name, mr.title as mr_title, mr.transaction_date as mr_date, mr.status as mr_status, mri.qty as mr_qty, mri.warehouse as mr_warehouse, mri.cost_center as mr_cost_center\nfrom `tabMaterial Request` mr, `tabMaterial Request Item` mri\nwhere mr.name = mri.parent and mr.docstatus = 1) as tab_mr\nleft join\n(select sq.name as sq_name, sq.title as sq_title, sq.transaction_date as sq_date, sq.discount_amount as sq_discount, sqi.rate as sq_rate, sqi.amount as sq_amount, sqi.discount_percentage as sq_discount_percentage, sqi.material_request as sq_mr\nfrom `tabSupplier Quotation` sq, `tabSupplier Quotation Item` sqi\nwhere sq.name = sqi.parent and sq.docstatus = 1) as tab_sq\non tab_sq.sq_mr = tab_mr.mr_name) as tab_before_orders\nleft join\n(select po.name as po_name, po.title as po_title, po.transaction_date as po_date, po.status as po_status, po.supplier as vendor,\npoi.item_name, poi.item_code, poi.qty as po_qty, poi.rate as po_rate, poi.amount as po_amount, poi.discount_percentage as po_discount_percentage, poi.received_qty as po_received_qty, poi.returned_qty as po_returned_qty, poi.billed_amt as po_billed_amt, poi.material_request\nfrom `tabPurchase Order` po, `tabPurchase Order Item` poi\nwhere po.name = poi.parent and po.docstatus = 1) as tab_orders\non tab_orders.material_request = tab_before_orders.mr_name) as tab_final\n\nleft join\n\n(select * from\n(select (select qi.name from `tabQuality Inspection` qi where qi.purchase_receipt_no = pr.name) as pr_qi, (select qi.report_date from `tabQuality Inspection` qi where qi.purchase_receipt_no = pr.name) as pr_qi_date, pr.name as pr_name, pr.posting_date as pr_date, pr.actual_receipt_date, pr.transporter_name, pr.lr_no, pr.bill_no as pr_bill_no, pr.bill_date as pr_bill_date, pr.rejected_warehouse as pr_rejected_warehouse, pr.status as pr_status,\npri.received_qty as pr_received_qty, pri.rejected_qty as pr_rejected_qty, pri.qty as pr_qty, pri.rate as pr_rate, pri.amount as pr_amount, pri.purchase_order\nfrom `tabPurchase Receipt` pr, `tabPurchase Receipt Item` pri\nwhere pr.name = pri.parent and pr.docstatus = 1) as tab_receipt\nleft join\n(select pi.name as pi_name, pi.posting_date as pi_date, pi.bill_no as pi_bill_no, pi.bill_date as pi_bill_date, pi.tds_taxable_amount, pi.type as pi_tds_type, pi.tds_amount, pi.write_off_amount, pi.write_off_description, pi.outstanding_amount, \npii.qty as pi_qty, pii.amount as pi_amount, pii.purchase_receipt as pi_receipt\nfrom `tabPurchase Invoice` pi, `tabPurchase Invoice Item` pii\nwhere pi.name = pii.parent and pi.docstatus = 1) as tab_invoice\non tab_invoice.pi_receipt = tab_receipt.pr_name) as tab_after_orders\n\non tab_final.po_name = tab_after_orders.purchase_order\norder by mr_date desc", 
+ "ref_doctype": "Purchase Invoice", 
+ "report_name": "Purchase History Report", 
+ "report_type": "Query Report"
+}

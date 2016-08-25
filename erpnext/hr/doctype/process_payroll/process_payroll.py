@@ -38,7 +38,7 @@ class ProcessPayroll(Document):
 		self.check_mandatory()
 
 		cond = ''
-		for f in ['company', 'branch', 'department', 'designation', 'branch', 'department', 'division', 'employee']:
+		for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
 			if self.get(f):
 				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 
@@ -177,17 +177,18 @@ class ProcessPayroll(Document):
 			if self.get(f):
 				cond1 += " and ss." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 		
-                items.extend(frappe.db.sql("""select t1.branch, t1.department, t1.division,t2.cost_center,
+                items.extend(frappe.db.sql("""select t3.branch, t3.department, t3.division,t2.cost_center,
                         sum(t1.rounded_total) as total_amt
-                         from `tabSalary Slip` t1, `tabDivision` t2
-                        where t2.name = t1.division
-                          and t2.dpt_name = t1.department
-                          and t2.branch = t1.branch
+                         from `tabSalary Slip` t1, `tabDivision` t2, `tabEmployee` t3
+                        where t3.employee = t1.employee
+                          and t2.d_name = t3.division
+                          and t2.dpt_name = t3.department
+                          and t2.branch = t3.branch
                           and t1.month = %s
                           and t1.fiscal_year = %s
                           and t1.docstatus = 1 
                           %s
-                        group by t1.branch,t1.department,t1.division,t2.cost_center
+                        group by t3.branch,t3.department,t3.division,t2.cost_center
                 """ % (self.month, self.fiscal_year, cond),as_dict=1))
 
                 #
@@ -221,16 +222,17 @@ class ProcessPayroll(Document):
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check
-                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt
+                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e
                                where ss.name = sd.parent
                                  and sd.amount > 0
+                                 and e.employee = ss.employee
                                  and dt.name = sd.salary_component
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and ss.branch = '%s'
-                                 and ss.department = '%s'
-                                 and ss.division = '%s'
+                                 and e.branch = '%s'
+                                 and e.department = '%s'
+                                 and e.division = '%s'
                                  and dt.gl_head <> '%s'
                                  and dt.type = 'Deduction'
                                  %s
@@ -247,16 +249,17 @@ class ProcessPayroll(Document):
                                 'Payable' as account_type,
                                 'Employee' as party_type,
                                 ss.employee as party
-                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt
+                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e
                                where ss.name = sd.parent
                                  and sd.amount > 0
+                                 and e.employee = ss.employee
                                  and dt.name = sd.salary_component
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and ss.branch = '%s'
-                                 and ss.department = '%s'
-                                 and ss.division = '%s'
+                                 and e.branch = '%s'
+                                 and e.department = '%s'
+                                 and e.division = '%s'
                                  and dt.gl_head = '%s'
                                  and dt.type = 'Deduction'
                                  %s
@@ -278,17 +281,18 @@ class ProcessPayroll(Document):
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check
-                                from `tabSalary Detail` se, `tabSalary Slip` ss, `tabSalary Component` et
+                                from `tabSalary Detail` se, `tabSalary Slip` ss, `tabSalary Component` et, `tabEmployee` e
                                where ss.name = se.parent
                                  and se.amount > 0
+                                 and e.employee = ss.employee
                                  and et.name = se.salary_component
                                  and et.type = 'Earning'
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and ss.branch = '%s'
-                                 and ss.department = '%s'
-                                 and ss.division = '%s'
+                                 and e.branch = '%s'
+                                 and e.department = '%s'
+                                 and e.division = '%s'
                                  %s
                                group by et.gl_head
                                 """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], cond1)

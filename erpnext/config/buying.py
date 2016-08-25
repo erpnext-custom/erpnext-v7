@@ -104,9 +104,8 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Material Purchase History",
-					"label": "Purchase Order History",
-					"doctype": "Item"
+					"name": "Purchase History Report",
+					"doctype": "Purchase Order"
 				},
 				{
 					"type": "report",

@@ -36,7 +36,6 @@ def get_data(query):
 
 def construct_query(filters=None):
 	query = "select b.cost_center, ba.account, ba.budget_amount, ba.initial_budget,(select SUM(amount) from `tabReappropriation Details` rd where rd.from_cost_center = b.cost_center and rd.from_account = ba.account and rd.appropriation_on BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' ) as deducted,  (select SUM(amount) from `tabReappropriation Details` rd where rd.to_cost_center = b.cost_center and rd.to_account = ba.account and rd.appropriation_on BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' ) as added, (select SUM(amount) from `tabSupplementary Details` rd where rd.to_cc = b.cost_center and rd.to_acc = ba.account and rd.posted_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as supplement, (select (gl.debit - gl.credit) as consumed from `tabGL Entry` gl where gl.account = ba.account and gl.cost_center = b.cost_center and gl.docstatus = 1 and gl.posting_date  BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' ) as consumed from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and b.name = ba.parent and b.fiscal_year = " + str(filters.fiscal_year)
-	frappe.msgprint(query)
 	return query;
 
 def validate_filters(filters):

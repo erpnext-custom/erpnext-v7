@@ -94,7 +94,7 @@ class SalarySlip(TransactionBase):
 			and (from_date <= %s or from_date <= %s)
 			and (to_date is null or to_date >= %s or to_date >= %s) order by from_date desc limit 1""",
 			(self.employee, self.start_date, joining_date, self.end_date, relieving_date))
-
+                
 		if not struct:
 			self.salary_structure = None
 			frappe.throw(_("No active or default Salary Structure found for employee {0} for the given dates")
@@ -273,17 +273,16 @@ class SalarySlip(TransactionBase):
 
                 # Ver 1.0 Begins by SSK on 25/08/2016, following block added
 
-                sst = frappe.get_doc("Salary Structure", self.salary_structure)
-                #for i in sst.deductions:
-                #        frappe.msgprint(_("deductions: {0}").format(i.amount))
-                
+                #sst = frappe.get_doc("Salary Structure", self.salary_structure)
                 for ssl in self.deductions:
                         if (ssl.from_date and ssl.to_date):
+                                sst = frappe.get_doc("Salary Structure", self.salary_structure)
                                 for sst in sst.deductions:
                                         if (ssl.reference_number == sst.reference_number) and \
-                                           (ssl.reference_type == sst.reference_type):
+                                           (ssl.reference_type == sst.reference_type) and \
+                                           (ssl.salary_component == sst.salary_component):
                                                 sst.total_deducted_amount += ssl.amount
-                                                sst.total_outstanding_amount = sst.total_deductible_amount-sst.total_deducted_amount
+                                                sst.total_outstanding_amount = (sst.total_deductible_amount-sst.total_deducted_amount) if sst.total_deductible_amount else 0
                                                 sst.save()
 
                 # Ver 1.0 Ends

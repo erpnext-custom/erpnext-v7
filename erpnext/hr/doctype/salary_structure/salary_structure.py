@@ -13,6 +13,8 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                           i) Displaying only Earnings on earnings side
                                                                           ii) Displaying only Deductions on deductions side
 1.0               SSK                              23/08/2016         Introducing Monthly Salary Deductions
+1.0               SSK                              25/08/2016         Updating branch, department, division in salary slip
+                                                                        as per employee record as on processing date
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -119,6 +121,14 @@ class SalaryStructure(Document):
 @frappe.whitelist()
 def make_salary_slip(source_name, target_doc=None):
 	def postprocess(source, target):
+                # Ver 1.0 Begins added by SSK on 25/08/201, updating branch, department, division in salary slip
+                employee = frappe.get_doc("Employee",source.employee)
+                target.branch = employee.branch
+                target.department = employee.department
+                target.division = employee.division
+                target.designation = employee.designation
+                target.section = employee.section
+                # Ver 1.0 Ends
 		# copy earnings and deductions table
 		for key in ('earnings', 'deductions'):
 			for d in source.get(key):
@@ -136,7 +146,7 @@ def make_salary_slip(source_name, target_doc=None):
                                                         'to_date' : d.to_date,
                                                         'total_deductible_amount' : d.total_deductible_amount,
                                                         'total_deducted_amount' : (d.total_deducted_amount+d.amount),
-                                                        'total_outstanding_amount' : d.total_deductible_amount-(d.total_deducted_amount+d.amount)
+                                                        'total_outstanding_amount' : (d.total_deductible_amount-(d.total_deducted_amount+d.amount)) if d.total_deductible_amount else 0
                                                 })
                                 else:
                                         target.append(key, {
