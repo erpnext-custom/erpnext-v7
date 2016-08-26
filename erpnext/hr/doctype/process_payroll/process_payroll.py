@@ -218,7 +218,7 @@ class ProcessPayroll(Document):
                         # Deductions
                         #
                         query = """select dt.gl_head as account,
-                                sum(amount) as credit_in_account_currency,
+                                sum(ifnull(amount,0)) as credit_in_account_currency,
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check
@@ -242,7 +242,7 @@ class ProcessPayroll(Document):
 
                         # Salary Advance
                         query2 = """select dt.gl_head as account,
-                                sum(amount) as credit_in_account_currency,
+                                sum(ifnull(amount,0)) as credit_in_account_currency,
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check,
@@ -277,7 +277,7 @@ class ProcessPayroll(Document):
                         # Earnings
                         #
                         query = """select et.gl_head as account,
-                                sum(amount) as debit_in_account_currency,
+                                sum(ifnull(amount,0)) as debit_in_account_currency,
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check

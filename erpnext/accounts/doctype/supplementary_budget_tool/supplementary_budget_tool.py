@@ -38,7 +38,9 @@ def supplement(to_cc=None, to_acc=None, amount=None):
 		to_budget_account = frappe.get_doc("Budget Account", to_account[0].name)
 		supplement = flt(to_budget_account.supplementary_budget) + flt(amount)
 		total = flt(to_budget_account.budget_amount) + flt(amount)
-		do_reappropriate(supplement, total, to_budget_account.name, to_budget_account.parent)
+		to_budget_account.set_db("supplementary_budget", supplement)
+		to_budget_account.set_db("budget_amount", total)
+		#do_reappropriate(supplement, total, to_budget_account.name, to_budget_account.parent)
 	
 		#Add the reappropriation details for record 
 		supp_details = frappe.new_doc("Supplementary Details")

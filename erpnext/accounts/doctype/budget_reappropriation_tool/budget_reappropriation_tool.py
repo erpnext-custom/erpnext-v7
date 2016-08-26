@@ -60,13 +60,17 @@ def reappropriate(from_cc=None, to_cc=None, from_acc=None, to_acc=None, amount=N
 			from_budget_account = frappe.get_doc("Budget Account", from_account[0].name)
 			sent = flt(from_budget_account.budget_sent) + flt(amount)
 			total = flt(from_budget_account.budget_amount) - flt(amount)
-			do_reappropriate("from", sent, total, from_budget_account.name, from_budget_account.parent)
+			from_budget_account.set_db("budget_sent", sent)
+			from_budget_account.set_db("budget_amount", total)
+			#do_reappropriate("from", sent, total, from_budget_account.name, from_budget_account.parent)
 			
 			#Add in the To Account and Cost Center
 			to_budget_account = frappe.get_doc("Budget Account", to_account[0].name)
 			received = flt(to_budget_account.budget_received) + flt(amount)
 			total = flt(to_budget_account.budget_amount) + flt(amount)
-			do_reappropriate("to", received, total, to_budget_account.name, to_budget_account.parent)
+			to_budget_account.set_db("budget_received", received)
+			to_budget_account.set_db("budget_amount", total)
+			#do_reappropriate("to", received, total, to_budget_account.name, to_budget_account.parent)
 		
 			#Add the reappropriation details for record 
 			app_details = frappe.new_doc("Reappropriation Details")
