@@ -137,6 +137,7 @@ class PurchaseReceipt(BuyingController):
 		update_serial_nos_after_submit(self, "items")
 
 		self.make_gl_entries()
+		self.consume_budget()
 
 	def check_next_docstatus(self):
 		submit_rv = frappe.db.sql("""select t1.name
@@ -170,6 +171,17 @@ class PurchaseReceipt(BuyingController):
 		# because updating ordered qty in bin depends upon updated ordered qty in PO
 		self.update_stock_ledger()
 		self.make_gl_entries_on_cancel()
+
+	##
+	# Update sonsumed budget with the amount
+	##
+	def consume_budget(self):
+		for a in self.items:
+			idx = frappe.db.sql("select name from `tabConsumed Budget` where cost_center = %s and po_no = %s and item_code = %s", (a.cost_center, a.purchase_order, a.item_code), as_dict=True)
+			if idx:
+				ref_doc = frappe.get_doc("Consumed Budget", idx[0].name)
+				ref_doc.db_set("amount", a.amount)
+
 
 	def get_current_stock(self):
 		for d in self.get('supplied_items'):

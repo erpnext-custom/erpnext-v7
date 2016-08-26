@@ -194,6 +194,8 @@ class PurchaseOrder(BuyingController):
 		clear_doctype_notifications(self)
 
 	def on_submit(self):
+		self.check_budget_available()
+
 		if self.is_against_so():
 			self.update_status_updater()
 
@@ -207,6 +209,7 @@ class PurchaseOrder(BuyingController):
 			self.company, self.base_grand_total)
 
 		purchase_controller.update_last_purchase_rate(self, is_submit = 1)
+		self.consume_budget()
 
 	def on_cancel(self):
 		if self.is_against_so():
@@ -227,6 +230,7 @@ class PurchaseOrder(BuyingController):
 		self.update_ordered_qty()
 
 		pc_obj.update_last_purchase_rate(self, is_submit = 0)
+		self.cancel_budget_entry()
 
 	def on_update(self):
 		pass
@@ -263,6 +267,45 @@ class PurchaseOrder(BuyingController):
 		for item in self.items:
 			if item.delivered_by_supplier == 1:
 				item.received_qty = item.qty
+
+	##
+	# Update the COnsumed Budget for checking budget availability
+	##
+	def consume_budget(self):
+		for a in self.items:
+			bud_obj = frappe.get_doc({
+				"doctype": "Consumed Budget",
+				"account": a.budget_account,
+				"cost_center": a.cost_center,
+				"po_no": self.name,
+				"po_date": self.transaction_date,
+				"amount": a.amount,
+				"item_code": a.item_code,
+				"date": frappe.utils.nowdate()
+				})
+			bud_obj.submit()
+
+	##
+	# Check budget availability in the budget head
+	##
+	def check_budget_available(self):
+		for a in self.items:
+			budget_amount = frappe.db.sql("select ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (a.budget_account, a.cost_center, str(frappe.utils.nowdate())[0:4]), as_dict=True)
+			if budget_amount:
+				consumed = frappe.db.sql("select SUM(amount) as total from `tabConsumed Budget` where cost_center=%s and account=%s and date between %s and %s", (a.cost_center, a.budget_account, str(frappe.utils.nowdate())[0:4] + "-01-01", str(frappe.utils.nowdate())), as_dict=True)
+				if consumed:
+					if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(a.amount)):
+						frappe.throw("Not enough budget in " + str(a.budget_account) + " under " + str(a.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(a.amount) - flt(budget_amount[0].budget_amount))))
+		
+
+	##
+	# Cancel budget check entry
+	##
+	def cancel_budget_entry(self):
+		doc_id = frappe.db.get_value("Consumed Budget", {"po_no": self.name}, "name")
+		if doc_id:
+			ref_doc = frappe.get_doc("Consumed Budget", str(doc_id))
+			ref_doc.db_set("amount", 0)
 
 @frappe.whitelist()
 def close_or_unclose_purchase_orders(names, status):
@@ -318,7 +361,6 @@ def make_purchase_receipt(source_name, target_doc=None):
 		}
 	}, target_doc, set_missing_values)
 
-	frappe.msgprint(target_doc)
 	return doc
 
 @frappe.whitelist()

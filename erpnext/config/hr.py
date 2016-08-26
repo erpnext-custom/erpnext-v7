@@ -260,6 +260,47 @@ def get_data():
 			"label": _("Reports"),
 			"icon": "icon-list",
 			"items": [
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Monthly Salary Register",
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Loan Report",
+                                        "label": _("Loan Report"),
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "SSS Report",
+                                        "label": _("Salary Saving Scheme Report"),
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "PF Report",
+                                        "label": _("PF Report"),
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "GIS Report",
+                                        "label": _("GIS Report"),
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Tax and Health Report",
+                                        "label": _("Salary Tax & Health Contribution Report"),
+					"doctype": "Salary Slip"
+				},
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -282,12 +323,6 @@ def get_data():
 					"type": "report",
 					"name": "Employee Information",
 					"doctype": "Employee"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Monthly Salary Register",
-					"doctype": "Salary Slip"
 				},
 				{
 					"type": "report",

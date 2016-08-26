@@ -201,8 +201,8 @@ class ProcessPayroll(Document):
                 default_gpf_account = 'GPF Contribution (Employer) - SMCL'
                 default_gis_account = frappe.db.get_value("Salary Component", 'Group Insurance Scheme',"gl_head")
                 default_pf_account = frappe.db.get_value("Salary Component", 'PF',"gl_head")
-                default_loan_account = frappe.db.get_value("Salary Component", 'NPPF Loan',"gl_head")
-                default_saving_account = frappe.db.get_value("Salary Component", 'RICB Scheme',"gl_head")
+                default_loan_account = frappe.db.get_value("Salary Component", 'Financial Institution Loan',"gl_head")
+                default_saving_account = frappe.db.get_value("Salary Component", 'Salary Saving Scheme',"gl_head")
                 default_tax_account = frappe.db.get_value("Salary Component", 'Salary Tax',"gl_head")
                 default_health_account = frappe.db.get_value("Salary Component", 'Health Contribution',"gl_head")
                 default_saladv_account = frappe.db.get_value("Salary Component", 'Salary Advance Deductions',"gl_head")
