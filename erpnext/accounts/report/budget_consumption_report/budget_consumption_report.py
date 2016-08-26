@@ -20,14 +20,20 @@ def get_data(query):
 	
 	for d in datas:
 		adjustment = flt(d.added) - flt(d.deducted)
-		available = flt(d.initial_budget) + flt(adjustment) + flt(d.supplement) - flt(d.consumed)
+		consumed = flt(d.consumed)
+		committed = flt(d.committed)
+		if committed > 0:
+			committed-=consumed
+
+		available = flt(d.initial_budget) + flt(adjustment) + flt(d.supplement) - consumed - committed
 		row = {
 			"account": d.account, 
 			"cost_center": d.cost_center,
 			"initial": d.initial_budget,
 			"supplementary": d.supplement,
 			"adjustment": adjustment,
-			"consumed": d.consumed,
+			"committed": committed,
+			"consumed": consumed,
 			"available": available
 		}
 		data.append(row);
@@ -35,7 +41,7 @@ def get_data(query):
 	return data
 
 def construct_query(filters=None):
-	query = "select b.cost_center, ba.account, ba.budget_amount, ba.initial_budget,(select SUM(amount) from `tabReappropriation Details` rd where rd.from_cost_center = b.cost_center and rd.from_account = ba.account and rd.appropriation_on BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' ) as deducted,  (select SUM(amount) from `tabReappropriation Details` rd where rd.to_cost_center = b.cost_center and rd.to_account = ba.account and rd.appropriation_on BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' ) as added, (select SUM(amount) from `tabSupplementary Details` rd where rd.to_cc = b.cost_center and rd.to_acc = ba.account and rd.posted_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as supplement, (select SUM(gl.debit - gl.credit) as consumed from `tabGL Entry` gl where gl.account = ba.account and gl.cost_center = b.cost_center and gl.docstatus = 1 and gl.posting_date  BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' ) as consumed from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and b.name = ba.parent and b.fiscal_year = " + str(filters.fiscal_year)
+	query = "select b.cost_center, ba.account, ba.budget_amount, ba.initial_budget,(select SUM(amount) from `tabReappropriation Details` rd where rd.from_cost_center = b.cost_center and rd.from_account = ba.account and rd.appropriation_on BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' ) as deducted, (select SUM(amount) from `tabConsumed Budget` cb where cb.cost_center = b.cost_center and cb.account = ba.account and cb.date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' ) as committed, (select SUM(amount) from `tabReappropriation Details` rd where rd.to_cost_center = b.cost_center and rd.to_account = ba.account and rd.appropriation_on BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' ) as added, (select SUM(amount) from `tabSupplementary Details` rd where rd.to_cc = b.cost_center and rd.to_acc = ba.account and rd.posted_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as supplement, (select SUM(gl.debit - gl.credit) as consumed from `tabGL Entry` gl where gl.account = ba.account and gl.cost_center = b.cost_center and gl.docstatus = 1 and gl.posting_date  BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' ) as consumed from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and b.name = ba.parent and b.fiscal_year = " + str(filters.fiscal_year)
 	return query;
 
 def validate_filters(filters):
@@ -88,7 +94,7 @@ def get_columns():
 		  "label": "Cost Center",
 		  "fieldtype": "Link",
 		  "options": "Cost Center",
-		  "width": 200
+		  "width": 130
 		},
 		{
 		  "fieldname": "initial",
@@ -105,6 +111,12 @@ def get_columns():
 		{
 		  "fieldname": "adjustment",
 		  "label": "Budget Adjustment",
+		  "fieldtype": "Currency",
+		  "width": 130
+		},
+		{
+		  "fieldname": "committed",
+		  "label": "Committed Budget",
 		  "fieldtype": "Currency",
 		  "width": 130
 		},

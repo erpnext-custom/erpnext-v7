@@ -1,0 +1,84 @@
+# Copyright (c) 2013, Frappe Technologies Pvt. Ltd. and contributors
+# For license information, please see license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  SSK		26/08/2016                              Original Report
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
+
+from __future__ import unicode_literals
+import frappe
+from frappe.utils import flt, cstr
+from frappe import msgprint, _
+
+def execute(filters=None):
+	if not filters: filters = {}
+
+	data = get_data(filters)
+	columns = get_columns(data)
+	
+	return columns, data
+	
+def get_columns(data):
+	columns = [
+		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140",
+                _("Transaction No") + ":Link/Leave Encashment:140", _("Date") + "::140", 
+                _("TPN No") + ":Link/Leave Encashment:140",
+                _("Accounts Entry") + ":Link/Journal Entry:120",
+                _("Gross Amount") + ":Currency:140", _("Tax Amount") + ":Currency:140", _("Net Amount") + ":Currency:140",
+                _("Remarks") + "::140",
+                _("Balance Before") + "::80", _("Days Encashed") + "::80", _("Balance After") + "::80",
+                _("Company") + ":Link/Company:120", _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120",
+                _("Division") + ":Link/Division:120", _("Section") + ":Link/Section:120",
+	]
+	
+	return columns
+	
+def get_data(filters):
+	conditions, filters = get_conditions(filters)
+
+        data = frappe.db.sql("""
+                select t1.employee, t1.employee_name, t1.name as transcationno, min(t1.application_date) as transactiondt,
+                min(t3.tpn_number) as tpn_number, t2.parent voucherno,
+                sum(case when t2.account = 'Leave Encashment - SMCL' then ifnull(debit_in_account_currency,0) else 0 end) grossamount,
+                sum(case when t2.account = 'Salary Tax - SMCL' then ifnull(credit_in_account_currency,0) else 0 end) taxamount,
+                sum(case
+                        when t2.account = 'Leave Encashment - SMCL' then ifnull(debit_in_account_currency,0)
+                        when t2.account = 'Salary Tax - SMCL' then -1*ifnull(credit_in_account_currency,0)
+                        else 0 end) as netamount,
+                t1.remarks,
+                min(t1.balance_before) as balance_before, min(t1.encashed_days) as encashed_days, min(t1.balance_after) as balance_after,
+                t3.company, t1.branch, t1.department, t1.division, t1.section
+                from `tabLeave Encashment` t1, `tabEmployee` t3
+                left join `tabJournal Entry Account` t2
+                on t2.reference_type = 'Leave Encashment'
+                and t2.reference_name = t1.name
+                where t1.docstatus = 1 %s
+                and t3.employee = t1.employee
+                group by t1.employee, t1.employee_name, t1.name, t2.parent, t1.remarks
+                """ % (conditions,), filters)
+		
+	if not data:
+		msgprint(_("No Data Found for month: "), raise_exception=1)
+	
+	return data
+	
+def get_conditions(filters):
+	conditions = ""
+	"""
+	if filters.get("month"):
+		month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", 
+			"Dec"].index(filters["month"]) + 1
+		filters["month"] = month
+		conditions += " and t1.month = %(month)s"
+	
+	if filters.get("fiscal_year"): conditions += " and t1.fiscal_year = %(fiscal_year)s"
+	if filters.get("company"): conditions += " and t1.company = %(company)s"
+	"""
+	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"
+	if filters.get("from_date") and filters.get("to_date"): conditions += " and t1.application_date between %(from_date)s and %(to_date)s"
+	
+	return conditions, filters
+	

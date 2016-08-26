@@ -307,6 +307,13 @@ def get_data():
 					"name": "Employee Leave Balance",
 					"doctype": "Leave Application"
 				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Leave Encashment Report",
+                                        "label": _("Leave Encashment Report"),
+					"doctype": "Leave Encashment"
+				},
 				{
 					"type": "report",
 					"is_query_report": True,
