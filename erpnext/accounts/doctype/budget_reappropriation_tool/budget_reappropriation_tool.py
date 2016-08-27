@@ -36,17 +36,6 @@ def get_cc_acc_budget(cc, acc):
 				""", (str(nowdate())[0:4], cc, acc), as_dict=True)
 
 ##
-# Perform the actual reappropriation
-##
-def do_reappropriate(action, received, total, name, parent):
-	if action == 'from':
-		query = "update `tabBudget Account` set budget_sent = " + str(received) + ", budget_amount = " + str(total) + " where name = \'" + str(name) + "\' and parent = \'" + str(parent) + "\'"
-	if action == 'to':
-		query = "update `tabBudget Account` set budget_received = " + str(received) + ", budget_amount = " + str(total) + " where name = \'" + str(name) + "\' and parent = \'" + str(parent) + "\'"
-
-	frappe.db.sql(query, auto_commit=1)
-
-##
 # Method call from client to perform reappropriation
 ##
 @frappe.whitelist()
@@ -60,17 +49,15 @@ def reappropriate(from_cc=None, to_cc=None, from_acc=None, to_acc=None, amount=N
 			from_budget_account = frappe.get_doc("Budget Account", from_account[0].name)
 			sent = flt(from_budget_account.budget_sent) + flt(amount)
 			total = flt(from_budget_account.budget_amount) - flt(amount)
-			from_budget_account.set_db("budget_sent", sent)
-			from_budget_account.set_db("budget_amount", total)
-			#do_reappropriate("from", sent, total, from_budget_account.name, from_budget_account.parent)
+			from_budget_account.db_set("budget_sent", sent)
+			from_budget_account.db_set("budget_amount", total)
 			
 			#Add in the To Account and Cost Center
 			to_budget_account = frappe.get_doc("Budget Account", to_account[0].name)
 			received = flt(to_budget_account.budget_received) + flt(amount)
 			total = flt(to_budget_account.budget_amount) + flt(amount)
-			to_budget_account.set_db("budget_received", received)
-			to_budget_account.set_db("budget_amount", total)
-			#do_reappropriate("to", received, total, to_budget_account.name, to_budget_account.parent)
+			to_budget_account.db_set("budget_received", received)
+			to_budget_account.db_set("budget_amount", total)
 		
 			#Add the reappropriation details for record 
 			app_details = frappe.new_doc("Reappropriation Details")

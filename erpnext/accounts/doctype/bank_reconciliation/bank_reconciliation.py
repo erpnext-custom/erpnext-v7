@@ -59,6 +59,10 @@ class BankReconciliation(Document):
 		self.total_amount = 0.0
 
 		for d in entries:
+			clearing_date = frappe.db.get_value("BRS Entries", {"cheque_no": d.cheque_number, "amount": d.amount, "docstatus": 1}, "clearing_date")
+			if clearing_date:
+				d.clearance_date = clearing_date
+
 			row = self.append('payment_entries', {})
 			row.update(d)
 			self.total_amount += flt(d.amount)

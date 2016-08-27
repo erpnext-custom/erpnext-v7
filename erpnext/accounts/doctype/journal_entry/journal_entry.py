@@ -118,7 +118,6 @@ class JournalEntry(AccountsController):
 	def validate_party(self):
 		for d in self.get("accounts"):
                         if d.party_check == 1:
-                                frappe.msgprint(_("Party Check: {0}").format(d.party_check))
                                 account_type = frappe.db.get_value("Account", d.account, "account_type")
                                 if account_type in ["Receivable", "Payable", "Expense Account", "Income Account"]:
                                         if not (d.party_type and d.party):

@@ -14,13 +14,12 @@ class RRCOReceiptTool(Document):
 
 @frappe.whitelist()
 def get_invoices(start_date=None, end_date=None, tds_rate=2):
-	attendance_not_marked = []
-	attendance_marked = []
-	query = "select name, posting_date, bill_no FROM `tabPurchase Invoice` AS a WHERE outstanding_amount = 0 AND posting_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND tds_rate = " + str(tds_rate) + " AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"
+	invoices_not_marked = []
+	invoices_marked = []
+	query = "select name, posting_date, bill_no FROM `tabPurchase Invoice` AS a WHERE docstatus = 1 and outstanding_amount = 0 AND posting_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND tds_rate = " + str(tds_rate) + " AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"
 	invoice_list = frappe.db.sql(query, as_dict=True);
-
 	return {
-		"marked": attendance_marked,
+		"marked": invoices_marked,
 		"unmarked": invoice_list 
 	}
 
@@ -36,3 +35,20 @@ def mark_invoice(invoice_list=None, receipt_number=None, receipt_date=None, cheq
 		rrco.cheque_number = str(cheque_number)
 		rrco.cheque_date = str(cheque_date)
 		rrco.submit()
+
+@frappe.whitelist()
+def updateSalaryTDS(month=None, fiscal_year=None, receipt_number=None, receipt_date=None, cheque_number=None,cheque_date=None):
+	chk_value = frappe.db.get_value("RRCO Receipt Entries", {"fiscal_year": str(fiscal_year), "month": str(month)})
+	if chk_value:
+		frappe.throw("RRCO Receipt and date has been already assigned for the given month and fiscal year")
+	else:
+		rrco = frappe.new_doc("RRCO Receipt Entries")
+		rrco.fiscal_year = str(fiscal_year)
+		rrco.month = str(month)
+		rrco.receipt_date = str(receipt_date)
+		rrco.receipt_number = str(receipt_number)
+		rrco.cheque_number = str(cheque_number)
+		rrco.cheque_date = str(cheque_date)
+		rrco.submit()
+
+		return "DONE"

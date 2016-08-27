@@ -9,6 +9,31 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 		erpnext.rrco_receipt_tool.load_invoices(frm);
 	},
 
+	update_receipt_date: function(frm) {
+		if(frm.doc.month && frm.doc.fiscal_year && frm.doc.receipt_date && frm.doc.receipt_number && frm.doc.cheque_no && frm.doc.cheque_date) {
+			frappe.call({
+				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.updateSalaryTDS",
+				args: {
+					"month": frm.doc.month,
+					"fiscal_year": frm.doc.fiscal_year,
+					"receipt_number":frm.doc.receipt_number,
+					"receipt_date":frm.doc.receipt_date,
+					"cheque_number":frm.doc.cheque_no,
+					"cheque_date":frm.doc.cheque_date
+				},
+				callback: function(r) {
+					if(r.message == "DONE") {
+						msgprint("TDS Receipt details updated")
+						cur_frm.set_df_property("update_receipt_date", "read_only", 1)	
+					}
+				}
+			})
+		}
+		else {
+			msgprint("Fill all fields to proceed!")
+		}
+	},
+
 	"receipt_date": function(frm) {
 		erpnext.rrco_receipt_tool.load_invoices(frm);
 	},
@@ -41,7 +66,9 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 
 erpnext.rrco_receipt_tool = {
 	load_invoices: function(frm) {
-		if(frm.doc.receipt_date && frm.doc.receipt_number && frm.doc.cheque_no && frm.doc.cheque_date) {
+		console.log(frm.doc.purpose)
+		if(frm.doc.purpose == "Purchase Invoices") {
+		   if(frm.doc.receipt_date && frm.doc.receipt_number && frm.doc.cheque_no && frm.doc.cheque_date) {
 			frappe.call({
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.get_invoices",
 				args: {
@@ -76,6 +103,7 @@ erpnext.rrco_receipt_tool = {
 				}
 			});
 		}
+	   }
 	}
 }
 

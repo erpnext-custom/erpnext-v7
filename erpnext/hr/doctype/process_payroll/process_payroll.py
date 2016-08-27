@@ -178,7 +178,7 @@ class ProcessPayroll(Document):
 				cond1 += " and ss." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 		
                 items.extend(frappe.db.sql("""select t3.branch, t3.department, t3.division,t2.cost_center,
-                        sum(t1.rounded_total) as total_amt
+                        sum(ifnull(t1.rounded_total,0)) as total_amt
                          from `tabSalary Slip` t1, `tabDivision` t2, `tabEmployee` t3
                         where t3.employee = t1.employee
                           and t2.d_name = t3.division

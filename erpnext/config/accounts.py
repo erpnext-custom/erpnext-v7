@@ -260,20 +260,9 @@ def get_data():
 				},
 				{
 					"type": "report",
-					"name": "Budget Variance Report",
-					"is_query_report": True,
-					"doctype": "Cost Center"
-				},
-				{
-					"type": "report",
 					"name": "Budget Consumption Report",
 					"is_query_report": True,
 					"doctype": "GL Entry"
-				},
-				{
-					"type":"doctype",
-					"name": "Monthly Distribution",
-					"description": _("Seasonality for setting budgets, targets etc.")
 				},
 				{
 					"type": "doctype",

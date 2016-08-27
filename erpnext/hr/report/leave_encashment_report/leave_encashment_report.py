@@ -24,8 +24,8 @@ def execute(filters=None):
 def get_columns(data):
 	columns = [
 		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140",
-                _("Transaction No") + ":Link/Leave Encashment:140", _("Date") + "::140", 
-                _("TPN No") + ":Link/Leave Encashment:140",
+                _("Transaction No") + ":Link/Leave Encashment:140", _("Date") + "::80", 
+                _("TPN No") + ":Link/Leave Encashment:80",
                 _("Accounts Entry") + ":Link/Journal Entry:120",
                 _("Gross Amount") + ":Currency:140", _("Tax Amount") + ":Currency:140", _("Net Amount") + ":Currency:140",
                 _("Remarks") + "::140",
@@ -40,7 +40,7 @@ def get_data(filters):
 	conditions, filters = get_conditions(filters)
 
         data = frappe.db.sql("""
-                select t1.employee, t1.employee_name, t1.name as transcationno, min(t1.application_date) as transactiondt,
+                select t1.employee, t1.employee_name, t1.name, min(t1.application_date) as transactiondt,
                 min(t3.tpn_number) as tpn_number, t2.parent voucherno,
                 sum(case when t2.account = 'Leave Encashment - SMCL' then ifnull(debit_in_account_currency,0) else 0 end) grossamount,
                 sum(case when t2.account = 'Salary Tax - SMCL' then ifnull(credit_in_account_currency,0) else 0 end) taxamount,
@@ -51,12 +51,13 @@ def get_data(filters):
                 t1.remarks,
                 min(t1.balance_before) as balance_before, min(t1.encashed_days) as encashed_days, min(t1.balance_after) as balance_after,
                 t3.company, t1.branch, t1.department, t1.division, t1.section
-                from `tabLeave Encashment` t1, `tabEmployee` t3
+                from `tabLeave Encashment` t1
                 left join `tabJournal Entry Account` t2
-                on t2.reference_type = 'Leave Encashment'
-                and t2.reference_name = t1.name
+                on t2.reference_name = t1.name
+                and t2.reference_type = 'Leave Encashment'
+                left join `tabEmployee` t3
+                on t3.employee = t1.employee                
                 where t1.docstatus = 1 %s
-                and t3.employee = t1.employee
                 group by t1.employee, t1.employee_name, t1.name, t2.parent, t1.remarks
                 """ % (conditions,), filters)
 		
