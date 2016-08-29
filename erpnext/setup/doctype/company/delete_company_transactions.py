@@ -10,10 +10,6 @@ from frappe.desk.notifications import clear_notifications
 
 @frappe.whitelist()
 def delete_company_transactions(company_name):
-
-	for d in ["Mines Quality Record", "Stock Price Template", "Reappropriation Details", "Supplementary Details", "Cheque Lot", "BRS Entries", "RRCO Receipt Entries", "Training And Development", "Training Fees", "Leave Encashment", "Consumed Budget", "Mining Process", "Mines Quality Record Details"]:
-		delete_doc(d)
-
 	frappe.only_for("System Manager")
 	doc = frappe.get_doc("Company", company_name)
 
@@ -33,7 +29,7 @@ def delete_company_transactions(company_name):
 			"Purchase Taxes and Charges Template", "POS Profile", 'BOM'):
 				delete_for_doctype(doctype, company_name)
 	
-	for d in ["Mines Quality Record", "Stock Price Template", "Reappropriation Details", "Supplementary Details", "Cheque Lot", "BRS Entries", "RRCO Receipt Entries", "Training And Development", "Training Fees", "Leave Encashment", "Consumed Budget", "Mining Process", "Mines Quality Record Details"]:
+	for d in ["ToDo","Communication", "Quality Inspection", "Quality Inspection Reading", "Mines Quality Record", "Stock Price Template", "Reappropriation Details", "Supplementary Details", "Cheque Lot", "BRS Entries", "RRCO Receipt Entries", "Training And Development", "Training Fees", "Leave Encashment", "Consumed Budget", "Mining Process", "Mines Quality Record Details"]:
 		delete_doc(d)
 
 	# Clear notification counts
