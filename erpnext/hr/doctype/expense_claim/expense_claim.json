@@ -575,7 +575,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2016-08-22 12:19:25.950843", 
+ "modified": "2016-08-29 15:28:06.888756", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Expense Claim", 
@@ -662,11 +662,11 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 1, 
    "if_owner": 1, 
@@ -678,7 +678,7 @@
    "role": "HR Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }, 
   {

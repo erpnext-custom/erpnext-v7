@@ -9,6 +9,7 @@
  "docstatus": 0, 
  "doctype": "DocType", 
  "document_type": "Setup", 
+ "editable_grid": 0, 
  "fields": [
   {
    "allow_on_submit": 0, 
@@ -1199,7 +1200,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-07-07 12:49:01.596547", 
+ "modified": "2016-08-29 15:30:41.553134", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Salary Slip", 
@@ -1222,7 +1223,7 @@
    "role": "HR User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\",\"Company\",\"Department\",\"Designation\",\"Fiscal Year\",\"Salary Slip\"]", 
    "write": 1
   }, 
@@ -1231,7 +1232,7 @@
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 0, 
    "if_owner": 0, 

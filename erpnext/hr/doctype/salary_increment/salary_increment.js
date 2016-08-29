@@ -42,7 +42,9 @@ frappe.ui.form.on('Salary Increment', {
 				method: "erpnext.hr.doctype.salary_increment.salary_increment.get_employee_payscale",
 				args: {
 					employee: frm.doc.employee,
-					gradecd: frm.doc.employee_subgroup
+					gradecd: frm.doc.employee_subgroup,
+					fiscal_year: frm.doc.fiscal_year,
+					month: frm.doc.month
 				},
 				callback: function(r){
 					frm.set_value('payscale_minimum',r.message.minimum);

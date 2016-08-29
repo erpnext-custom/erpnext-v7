@@ -248,7 +248,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-29 11:24:39.670906", 
+ "modified": "2016-08-29 16:05:48.410840", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "RRCO Receipt Entries", 
@@ -312,7 +312,7 @@
    "role": "Accounts User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "write": 1
   }
  ], 

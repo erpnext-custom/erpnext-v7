@@ -171,7 +171,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-24 11:33:58.070321", 
+ "modified": "2016-08-29 15:25:18.468986", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Applicant Status", 
@@ -202,8 +202,8 @@
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 1, 
-   "delete": 1, 
+   "create": 0, 
+   "delete": 0, 
    "email": 1, 
    "export": 1, 
    "if_owner": 0, 
@@ -216,7 +216,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 1
+   "write": 0
   }
  ], 
  "quick_entry": 1, 

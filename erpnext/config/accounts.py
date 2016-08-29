@@ -222,22 +222,28 @@ def get_data():
 		{
 			"label": _("Banking and Payments"),
 			"items": [
-                {
+                		{
+					"type": "doctype",
+					"name": "Upload BRS Entries",
+                    			"label": _("Upload BRS Data"),
+					"description": _("Upload bank payment dates.")
+				},
+                		{
 					"type": "doctype",
 					"name": "Bank Reconciliation",
-                    "label": _("Update Bank Transaction Dates"),
+                    			"label": _("Update Bank Transaction Dates"),
 					"description": _("Update bank payment dates with journals.")
 				},
-                {
+                		{
 					"type": "report",
 					"name": "Bank Reconciliation Statement",
-                    "is_query_report": True,
+                			"is_query_report": True,
 					"doctype": "Journal Entry"
 				},
-                {
+                		{
 					"type": "report",
 					"name": "Bank Clearance Summary",
-                    "is_query_report": True,
+                    			"is_query_report": True,
 					"doctype": "Journal Entry"
 				},
 			]

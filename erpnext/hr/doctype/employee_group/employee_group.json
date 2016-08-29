@@ -47,7 +47,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-27 20:39:06.291750", 
+ "modified": "2016-08-29 15:26:57.383726", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee Group", 
@@ -112,7 +112,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 1
+   "write": 0
   }, 
   {
    "amend": 0, 
