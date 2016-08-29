@@ -231,14 +231,14 @@ frappe.ui.form.on('Salary Detail', {
 	earnings_remove: function(doc,dt,dn) {
 		calculate_earning_total(doc, dt, dn);
 		calculate_ded_total(doc, dt, dn);
-		calculate_others(doc, dt, dn);
+		calculate_others(cur_frm.doc, dt, dn);
 		calculate_net_pay(doc, dt, dn);
 	}, 
 	
 	deductions_remove: function(doc,dt,dn) {
 		calculate_earning_total(doc, dt, dn);
 		calculate_ded_total(doc, dt, dn);
-		calculate_others(doc, dt, dn);
+		calculate_others(cur_frm.doc, dt, dn);
 		calculate_net_pay(doc, dt, dn);
 	}
 })
@@ -383,8 +383,10 @@ var calculate_others = function(doc, dt, dn){
 	// Calculating Allowances
 	if (eligible_for_corporate_allowance==1){
 		var calc_amt = 0;
-		calc_amt = (e_tbl[basic_all_id].amount*ca*0.01);
-		calc_amt = Math.round(calc_amt);
+		if (basic_all_id >= 0){
+			calc_amt = (e_tbl[basic_all_id].amount*ca*0.01);
+			calc_amt = Math.round(calc_amt);
+		}
 		
 		if (corp_all_id >= 0){
 			if (calc_amt != e_tbl[corp_all_id].amount){
@@ -400,8 +402,10 @@ var calculate_others = function(doc, dt, dn){
 
 	if (eligible_for_contract_allowance==1){
 		var calc_amt = 0;
+		if (basic_all_id >= 0){
 			calc_amt = (e_tbl[basic_all_id].amount*contract_allowance*0.01);
-		calc_amt = Math.round(calc_amt);
+			calc_amt = Math.round(calc_amt);
+		}
 		
 		if (cont_all_id >= 0){
 			if (e_tbl[cont_all_id].amount != calc_amt){
@@ -418,7 +422,6 @@ var calculate_others = function(doc, dt, dn){
 	if (eligible_for_communication_allowance==1){
 		var calc_amt = 0;
 		calc_amt = communication_allowance;
-		
 		calc_amt = Math.round(calc_amt);
 		
 		if (comm_all_id >= 0){
@@ -434,8 +437,11 @@ var calculate_others = function(doc, dt, dn){
 	}	
 
 	if (eligible_for_psa==1){
-		calc_amt = (e_tbl[basic_all_id].amount*psa*0.01);
-		calc_amt = Math.round(calc_amt);
+		var calc_amt = 0;
+		if (basic_all_id >= 0){
+			calc_amt = (e_tbl[basic_all_id].amount*psa*0.01);
+			calc_amt = Math.round(calc_amt);
+		}
 		
 		if (psa_all_id >= 0){
 			if (e_tbl[psa_all_id].amount > calc_amt){
@@ -467,8 +473,10 @@ var calculate_others = function(doc, dt, dn){
 
 	if (eligible_for_officiating_allowance==1){
 		var calc_amt = 0;
-		calc_amt = (e_tbl[basic_all_id].amount*officiating_allowance*0.01);
-		calc_amt = Math.round(calc_amt);
+		if (basic_all_id >= 0){
+			calc_amt = (e_tbl[basic_all_id].amount*officiating_allowance*0.01);
+			calc_amt = Math.round(calc_amt);
+		}
 		
 		if (off_all_id >= 0){
 			if (e_tbl[off_all_id].amount != calc_amt){
@@ -502,7 +510,6 @@ var calculate_others = function(doc, dt, dn){
 	if (eligible_for_fuel_allowances==1){
 		var calc_amt = 0;
 		calc_amt = fuel_allowances;
-		
 		calc_amt = Math.round(calc_amt);
 		
 		if (fuel_all_id >= 0){
@@ -548,8 +555,10 @@ var calculate_others = function(doc, dt, dn){
 
 	// PF
 	var calc_pf_amt = 0;
-	calc_pf_amt = Math.round(e_tbl[basic_all_id].amount*employee_pf*0.01);
 	if (pf_ded_id >= 0){
+		if (basic_all_id >= 0){
+			calc_pf_amt = Math.round(e_tbl[basic_all_id].amount*employee_pf*0.01);
+		}
 		if(d_tbl[pf_ded_id].amount != calc_pf_amt){
 			console.log('++PF: pf_amt: '+calc_pf_amt+' d_tbl: '+d_tbl[pf_ded_id].amount);
 			frappe.model.set_value("Salary Detail", pf_ded_dn, "amount", calc_pf_amt);				
@@ -560,8 +569,8 @@ var calculate_others = function(doc, dt, dn){
 	//calculate_earning_total(doc, dt, dn);
 
 	var calc_health_amt = 0;
-	calc_health_amt = Math.round(doc.gross_pay*health_contribution*0.01);
 	if (health_ded_id >= 0){
+		calc_health_amt = Math.round(doc.gross_pay*health_contribution*0.01);
 		if (d_tbl[health_ded_id].amount != calc_health_amt){
 			console.log('++HEALTH: calc_amt: '+calc_health_amt+' d_tbl: '+d_tbl[health_ded_id].amount);
 			frappe.model.set_value("Salary Detail", health_ded_dn, "amount", calc_health_amt);				

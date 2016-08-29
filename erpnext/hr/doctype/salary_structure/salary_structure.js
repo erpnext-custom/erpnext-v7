@@ -140,12 +140,12 @@ var calculate_totals = function(doc) {
 	
 	doc.total_earning = total_earn;
 	doc.total_deduction = total_ded;
-	doc.net_pay = 0.0
+	doc.net_pay = 0.0;
 	if(doc.salary_slip_based_on_timesheet == 0){
 		doc.net_pay = flt(total_earn) - flt(total_ded);
 	}
 
-	refresh_many(['total_earning', 'total_deduction', 'net_pay']);
+	refresh_many(['total_earning', 'total_deduction', 'net_pay', 'amount']);
 }
 
 cur_frm.cscript.validate = function(doc, cdt, cdn) {
@@ -170,7 +170,7 @@ frappe.ui.form.on('Salary Detail', {
 			refresh_field("amount");
 		});
 		*/
-		cur_frm.refresh();
+		//cur_frm.refresh();
 	},
 	
 	earnings_remove: function(frm) {
@@ -179,7 +179,7 @@ frappe.ui.form.on('Salary Detail', {
 		//-- Ver 20160804.1 Ends
 		calculate_totals(frm.doc);
 		//++ Ver 20160804.1 Begins added by SSK		
-		cur_frm.refresh();
+		//cur_frm.refresh();
 		//-- Ver 20160804.1 Ends						
 	}, 
 	
@@ -189,7 +189,7 @@ frappe.ui.form.on('Salary Detail', {
 		//-- Ver 20160804.1 Ends
 		calculate_totals(frm.doc);
 		//++ Ver 20160804.1 Begins added by SSK		
-		cur_frm.refresh();
+		//cur_frm.refresh();
 		//-- Ver 20160804.1 Ends						
 	}
 })
@@ -206,10 +206,6 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 	var pf_ded_id = -1, pf_ded_dn, health_ded_id = -1, health_ded_dn, tds_ded_id = -1, tds_ded_dn,
 		gis_ded_id = -1, gis_ded_dn;
 	
-	//counter += 1;
-	//console.log('Iteration# '+counter);
-	
-	// Saving IndexValue and DocumentName from Earnings child table
 	for (var id in e_tbl){
 		if (e_tbl[id].salary_component == "Corporate Allowance"){
 			corp_all_id = id;
@@ -258,17 +254,21 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 		//console.log('Checkvalue: '+doc.eligible_for_corporate_allowance);
 		if (doc.eligible_for_corporate_allowance==1){
 			var calc_amt = 0;
-			//if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.ca*0.01);
-			//}
-			//else{
-			//	calc_amt = doc.ca;
-			//}
+			if (basic_all_id >= 0) {
+				//if (amt_flag == "P"){
+					calc_amt = (e_tbl[basic_all_id].amount*doc.ca*0.01);
+				//}
+				//else{
+				//	calc_amt = doc.ca;
+				//}
+			}
 			
 			calc_amt = Math.round(calc_amt);
 			
 			if (corp_all_id >= 0){
-				frappe.model.set_value("Salary Detail", corp_all_dn, "amount", calc_amt);				
+				if (e_tbl[corp_all_id].amount != calc_amt){
+					frappe.model.set_value("Salary Detail", corp_all_dn, "amount", calc_amt);				
+				}
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
@@ -277,24 +277,28 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 				//cur_frm.refresh();
 			}
 		}
-		else if (doc.eligible_for_corporate_allowance==0 && corp_all_id >= 0){
+		else if (doc.eligible_for_corporate_allowance==0 && corp_all_id >= 0 && e_tbl[corp_all_id].amount > 0){
 			frappe.model.set_value("Salary Detail", corp_all_dn, "amount", 0);
 		}
 	//}
 	//else if (allowance_type == "Contract Allowance"){
 		if (doc.eligible_for_contract_allowance==1){
 			var calc_amt = 0;
-			//if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.contract_allowance*0.01);
-			//}
-			//else{
-			//	calc_amt = doc.contract_allowance;
-			//}
+			if (basic_all_id >= 0) {
+				//if (amt_flag == "P"){
+					calc_amt = (e_tbl[basic_all_id].amount*doc.contract_allowance*0.01);
+				//}
+				//else{
+				//	calc_amt = doc.contract_allowance;
+				//}
+			}
 			
 			calc_amt = Math.round(calc_amt);
 			
 			if (cont_all_id >= 0){
-				frappe.model.set_value("Salary Detail", cont_all_dn, "amount", calc_amt);				
+				if (e_tbl[cont_all_id].amount != calc_amt){
+					frappe.model.set_value("Salary Detail", cont_all_dn, "amount", calc_amt);				
+				}
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
@@ -303,7 +307,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 				//cur_frm.refresh();
 			}
 		}
-		else if(doc.eligible_for_contract_allowance==0 && cont_all_id >=0){
+		else if(doc.eligible_for_contract_allowance==0 && cont_all_id >=0 && e_tbl[cont_all_id].amount > 0){
 			frappe.model.set_value("Salary Detail", cont_all_dn, "amount", 0);
 		}
 	//}
@@ -320,7 +324,9 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			calc_amt = Math.round(calc_amt);
 			
 			if (comm_all_id >= 0){
-				frappe.model.set_value("Salary Detail", comm_all_dn, "amount", calc_amt);				
+				if (e_tbl[comm_all_id].amount != calc_amt){
+					frappe.model.set_value("Salary Detail", comm_all_dn, "amount", calc_amt);				
+				}
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
@@ -329,24 +335,28 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 				//cur_frm.refresh();
 			}
 		}
-		else if(doc.eligible_for_communication_allowance==0 && comm_all_id >= 0){
+		else if(doc.eligible_for_communication_allowance==0 && comm_all_id >= 0 && e_tbl[comm_all_id].amount > 0){
 			frappe.model.set_value("Salary Detail", comm_all_dn, "amount", 0);
 		}	
 	//}
 	//else if (allowance_type == "PSA"){
 		if (doc.eligible_for_psa==1){
-			//var calc_amt = 0;
-			//if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.psa*0.01);
-			//}
-			//else{
-			//	calc_amt = doc.psa;
-			//}
+			if (basic_all_id >= 0) {
+				//var calc_amt = 0;
+				//if (amt_flag == "P"){
+					calc_amt = (e_tbl[basic_all_id].amount*doc.psa*0.01);
+				//}
+				//else{
+				//	calc_amt = doc.psa;
+				//}
+			}
 			
 			calc_amt = Math.round(calc_amt);
 			
 			if (psa_all_id >= 0){
-				frappe.model.set_value("Salary Detail", psa_all_dn, "amount", calc_amt);				
+				if (e_tbl[psa_all_id].amount != calc_amt){
+					frappe.model.set_value("Salary Detail", psa_all_dn, "amount", calc_amt);				
+				}
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
@@ -355,24 +365,28 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 				//cur_frm.refresh();
 			}
 		}
-		else if(doc.eligible_for_psa==0 && psa_all_id >= 0){
+		else if(doc.eligible_for_psa==0 && psa_all_id >= 0 && e_tbl[psa_all_id].amount > 0){
 			frappe.model.set_value("Salary Detail", psa_all_dn, "amount", 0);
 		}		
 	//}
 	//else if (allowance_type == "MPI"){
 		if (doc.eligible_for_mpi==1){
 			var calc_amt = 0;
-			//if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.mpi*0.01);
-			//}
-			//else{
-			//	calc_amt = doc.mpi;
-			//}
+			if (basic_all_id >= 0) {
+				//if (amt_flag == "P"){
+					calc_amt = (e_tbl[basic_all_id].amount*doc.mpi*0.01);
+				//}
+				//else{
+				//	calc_amt = doc.mpi;
+				//}
+			}
 			
 			calc_amt = Math.round(calc_amt);
 			
 			if (mpi_all_id >= 0){
-				frappe.model.set_value("Salary Detail", mpi_all_dn, "amount", calc_amt);				
+				if (e_tbl[mpi_all_id].amount != calc_amt){
+					frappe.model.set_value("Salary Detail", mpi_all_dn, "amount", calc_amt);				
+				}
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
@@ -381,24 +395,28 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 				//cur_frm.refresh();
 			}
 		}
-		else if(doc.eligible_for_mpi==0 && mpi_all_id >= 0){
+		else if(doc.eligible_for_mpi==0 && mpi_all_id >= 0 && e_tbl[mpi_all_id].amount > 0){
 			frappe.model.set_value("Salary Detail", mpi_all_dn, "amount", 0);
 		}			
 	//}
 	//else if (allowance_type == "Officiating Allowance"){
 		if (doc.eligible_for_officiating_allowance==1){
 			var calc_amt = 0;
-			//if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.officiating_allowance*0.01);
-			//}
-			//else{
-			//	calc_amt = doc.officiating_allowance;
-			//}
+			if (basic_all_id >= 0) {
+				//if (amt_flag == "P"){
+					calc_amt = (e_tbl[basic_all_id].amount*doc.officiating_allowance*0.01);
+				//}
+				//else{
+				//	calc_amt = doc.officiating_allowance;
+				//}
+			}
 			
 			calc_amt = Math.round(calc_amt);
 			
 			if (off_all_id >= 0){
-				frappe.model.set_value("Salary Detail", off_all_dn, "amount", calc_amt);				
+				if (e_tbl[off_all_id].amount != calc_amt){
+					frappe.model.set_value("Salary Detail", off_all_dn, "amount", calc_amt);				
+				}
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
@@ -407,24 +425,28 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 				//cur_frm.refresh();
 			}
 		}
-		else if(doc.eligible_for_officiating_allowance==0 && off_all_id >= 0){
+		else if(doc.eligible_for_officiating_allowance==0 && off_all_id >= 0 && e_tbl[off_all_id].amount > 0){
 			frappe.model.set_value("Salary Detail", off_all_dn, "amount", 0);
 		}				
 	//}
 	//else if (allowance_type == "Temporary Transfer Allowance"){	
 		if (doc.eligible_for_temporary_transfer_allowance==1){
 			var calc_amt = 0;
-			//if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.temporary_transfer_allowance*0.01);
-			//}
-			//else{
-			//	calc_amt = doc.temporary_transfer_allowance;
-			//}
+			if (basic_all_id >= 0) {
+				//if (amt_flag == "P"){
+					calc_amt = (e_tbl[basic_all_id].amount*doc.temporary_transfer_allowance*0.01);
+				//}
+				//else{
+				//	calc_amt = doc.temporary_transfer_allowance;
+				//}
+			}
 			
 			calc_amt = Math.round(calc_amt);
 			
 			if (tran_all_id >= 0){
-				frappe.model.set_value("Salary Detail", tran_all_dn, "amount", calc_amt);				
+				if (e_tbl[tran_all_id].amount != calc_amt){
+					frappe.model.set_value("Salary Detail", tran_all_dn, "amount", calc_amt);				
+				}
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
@@ -433,7 +455,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 				//cur_frm.refresh();
 			}
 		}
-		else if(doc.eligible_for_temporary_transfer_allowance==0 && tran_all_id >=0){
+		else if(doc.eligible_for_temporary_transfer_allowance==0 && tran_all_id >=0 && e_tbl[tran_all_id].amount > 0){
 			frappe.model.set_value("Salary Detail", tran_all_dn, "amount", 0);
 		}					
 	//}
@@ -450,7 +472,9 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			calc_amt = Math.round(calc_amt);
 			
 			if (fuel_all_id >= 0){
-				frappe.model.set_value("Salary Detail", fuel_all_dn, "amount", calc_amt);				
+				if (e_tbl[fuel_all_id].amount != calc_amt){
+					frappe.model.set_value("Salary Detail", fuel_all_dn, "amount", calc_amt);				
+				}
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
@@ -459,7 +483,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 				//cur_frm.refresh();				
 			}
 		}
-		else if(doc.eligible_for_fuel_allowances==0 && fuel_all_id >= 0){
+		else if(doc.eligible_for_fuel_allowances==0 && fuel_all_id >= 0 && e_tbl[fuel_all_id].amount > 0){
 			frappe.model.set_value("Salary Detail", fuel_all_dn, "amount", 0);
 		}						
 	//}	
@@ -698,26 +722,34 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 
 	// GIS
 	if (gis_ded_id >= 0){
-		frappe.model.set_value("Salary Detail", gis_ded_dn, "amount", calc_gis_amt);				
+		if (d_tbl[gis_ded_id].amount != calc_gis_amt){
+			frappe.model.set_value("Salary Detail", gis_ded_dn, "amount", calc_gis_amt);				
+		}
 	} 
 	else{
-		var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-		new_child.salary_component = "Group Insurance Scheme";
-		new_child.amount = calc_gis_amt;	
-		//cur_frm.refresh();
+		if (calc_gis_amt > 0){
+			var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
+			new_child.salary_component = "Group Insurance Scheme";
+			new_child.amount = calc_gis_amt;	
+			//cur_frm.refresh();
+		}
 	}						
 	
 	// PF
 	var calc_pf_amt = 0;
 	calc_pf_amt = Math.round(e_tbl[basic_all_id].amount*employee_pf*0.01);
 	if (pf_ded_id >= 0){
-		frappe.model.set_value("Salary Detail", pf_ded_dn, "amount", calc_pf_amt);				
+		if (d_tbl[pf_ded_id].amount != calc_pf_amt){
+			frappe.model.set_value("Salary Detail", pf_ded_dn, "amount", calc_pf_amt);				
+		}
 	} 
 	else{
-		var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-		new_child.salary_component = "PF";
-		new_child.amount = calc_pf_amt;				
-		//cur_frm.refresh();
+		if (calc_pf_amt > 0){
+			var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
+			new_child.salary_component = "PF";
+			new_child.amount = calc_pf_amt;				
+			//cur_frm.refresh();
+		}
 	}	
 	
 	// Health Contribution
@@ -725,13 +757,17 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 	var calc_health_amt = 0;
 	calc_health_amt = Math.round(doc.total_earning*health_contribution*0.01);
 	if (health_ded_id >= 0){
-		frappe.model.set_value("Salary Detail", health_ded_dn, "amount", calc_health_amt);				
+		if (d_tbl[health_ded_id].amount != calc_health_amt){
+			frappe.model.set_value("Salary Detail", health_ded_dn, "amount", calc_health_amt);				
+		}
 	} 
 	else{
-		var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-		new_child.salary_component = "Health Contribution";
-		new_child.amount = calc_health_amt;				
-		//cur_frm.refresh();
+		if (calc_health_amt > 0){
+			var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
+			new_child.salary_component = "Health Contribution";
+			new_child.amount = calc_health_amt;				
+			//cur_frm.refresh();
+		}
 	}		
 	
 	// Salary Tax
@@ -751,19 +787,22 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			}
 			
 			if (tds_ded_id >= 0){
-				frappe.model.set_value("Salary Detail", tds_ded_dn, "amount", calc_tds_amt);				
+				if (d_tbl[tds_ded_id].amount != calc_tds_amt){
+					frappe.model.set_value("Salary Detail", tds_ded_dn, "amount", calc_tds_amt);				
+				}
 			} 
 			else{
-				var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-				new_child.salary_component = "Salary Tax";
-				new_child.amount = calc_tds_amt;
-				//cur_frm.refresh();
+				if (calc_tds_amt > 0){
+					var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
+					new_child.salary_component = "Salary Tax";
+					new_child.amount = calc_tds_amt;
+					cur_frm.refresh();
+				}
 			}					
 		}
 	});	
 	
 	calculate_totals(doc);
-	//cur_frm.refresh();
 }
 //-- Ver 20160803.1 Ends
 

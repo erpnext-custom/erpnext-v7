@@ -55,13 +55,13 @@ class ExpenseClaim(Document):
 		self.total_advance_amount = 0
 		
 		for d in self.get('expenses'):
-			self.total_claimed_amount += flt(0 if d.claim_amount == None else d.claim_amount)
-			self.total_sanctioned_amount += flt(0 if d.sanctioned_amount == None else d.sanctioned_amount)
+			self.total_claimed_amount += flt(flt(d.claim_amount) if d.claim_amount else 0.00)
+			self.total_sanctioned_amount += flt(flt(d.sanctioned_amount) if d.sanctioned_amount  else 0.00)
 			# Ver 1.0 Begins added by SSK on 12/08/2016, total_advance_amount is introducted
-			self.total_advance_amount += flt(0 if d.advance_total_amount == None else d.advance_total_amount)
+			self.total_advance_amount += flt(flt(d.advance_total_amount) if d.advance_total_amount else 0.00)
 			
                 # Ver 1.0 Begins added by SSK on 12/08/2016, total_advance_amount is introducted
-		self.total_sanctioned_amount -=  self.total_advance_amount
+		self.total_sanctioned_amount -=  flt(self.total_advance_amount)
 
 	def validate_expense_approver(self):
 		if self.exp_approver and "Expense Approver" not in frappe.get_roles(self.exp_approver):
@@ -132,10 +132,10 @@ def make_bank_entry(docname):
                         "party_check": 0
 		})
 
-        if (0 if expense_claim.total_advance_amount == None else expense_claim.total_advance_amount) > 0:
+        if flt(expense_claim.total_advance_amount if expense_claim.total_advance_amount else 0.00) > 0.00:
                 je.append("accounts", {
                         "account": "Advance to Employee - SMCL",
-                        "credit_in_account_currency": expense_claim.total_advance_amount,
+                        "credit_in_account_currency": flt(expense_claim.total_advance_amount),
                         "reference_type": "Expense Claim",
                         "reference_name": expense_claim.name,
                         "party_type": "Employee",

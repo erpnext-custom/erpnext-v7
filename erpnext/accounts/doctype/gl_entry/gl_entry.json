@@ -8,6 +8,7 @@
  "custom": 0, 
  "docstatus": 0, 
  "doctype": "DocType", 
+ "editable_grid": 0, 
  "fields": [
   {
    "allow_on_submit": 0, 
@@ -598,13 +599,14 @@
  "hide_toolbar": 0, 
  "icon": "icon-list", 
  "idx": 1, 
+ "image_view": 0, 
  "in_create": 1, 
  "in_dialog": 0, 
  "is_submittable": 0, 
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-05-26 16:22:03.094536", 
+ "modified": "2016-08-27 14:15:56.628114", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "GL Entry", 

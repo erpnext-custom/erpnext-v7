@@ -7,6 +7,7 @@
  "custom": 0, 
  "docstatus": 0, 
  "doctype": "DocType", 
+ "editable_grid": 0, 
  "fields": [
   {
    "allow_on_submit": 0, 
@@ -244,7 +245,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2016-06-28 13:11:09.396353", 
+ "modified": "2016-08-27 14:15:40.786007", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Bank Reconciliation", 
@@ -275,6 +276,5 @@
  "read_only": 1, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
- "track_seen": 0, 
- "version": 0
+ "track_seen": 0
 }

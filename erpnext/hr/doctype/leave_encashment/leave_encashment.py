@@ -80,7 +80,15 @@ class LeaveEncashment(Document):
                         select name from `tabSalary Structure`
                         where employee = %s
                         and is_active = 'Yes'
+                        and now() between ifnull(from_date,'0000-00-00') and ifnull(to_date,'2050-12-31')
+                        order by ifnull(from_date,'0000-00-00') desc limit 1
                 """,(self.employee))
+
+                if salary_struc_list:
+                        return salary_struc_list[0][0]
+                else:
+                        frappe.throw(_("No Active Salary Structure found for the employee."))
+                        
                 return salary_struc_list[0][0]
         
         def post_accounts_entry(self):

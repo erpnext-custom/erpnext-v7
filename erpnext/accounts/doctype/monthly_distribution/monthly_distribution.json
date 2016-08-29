@@ -9,6 +9,7 @@
  "description": "**Monthly Distribution** helps you distribute the Budget/Target across months if you have seasonality in your business.", 
  "docstatus": 0, 
  "doctype": "DocType", 
+ "editable_grid": 0, 
  "fields": [
   {
    "allow_on_submit": 0, 
@@ -96,13 +97,14 @@
  "hide_toolbar": 0, 
  "icon": "icon-bar-chart", 
  "idx": 1, 
+ "image_view": 0, 
  "in_create": 0, 
  "in_dialog": 0, 
  "is_submittable": 0, 
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-05-16 16:35:20.349194", 
+ "modified": "2016-08-27 14:16:00.033420", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Monthly Distribution", 

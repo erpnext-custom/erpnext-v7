@@ -52,3 +52,37 @@ def updateSalaryTDS(month=None, fiscal_year=None, receipt_number=None, receipt_d
 		rrco.submit()
 
 		return "DONE"
+
+@frappe.whitelist()
+def updateBonus(purpose=None, fiscal_year=None, receipt_number=None, receipt_date=None, cheque_number=None,cheque_date=None):
+	chk_value = frappe.db.get_value("RRCO Receipt Entries", {"fiscal_year": str(fiscal_year), "purpose": str(purpose)})
+	if chk_value:
+		frappe.throw("RRCO Receipt and date has been already assigned for the given fiscal year for Annual Bonus")
+	else:
+		rrco = frappe.new_doc("RRCO Receipt Entries")
+		rrco.purpose = str(purpose)
+		rrco.fiscal_year = str(fiscal_year)
+		rrco.receipt_date = str(receipt_date)
+		rrco.receipt_number = str(receipt_number)
+		rrco.cheque_number = str(cheque_number)
+		rrco.cheque_date = str(cheque_date)
+		rrco.submit()
+
+		return "DONE"
+
+@frappe.whitelist()
+def updatePBVA(purpose=None, fiscal_year=None, receipt_number=None, receipt_date=None, cheque_number=None,cheque_date=None):
+	chk_value = frappe.db.get_value("RRCO Receipt Entries", {"fiscal_year": str(fiscal_year), "purpose": str(purpose)})
+	if chk_value:
+		frappe.throw("RRCO Receipt and date has been already assigned for the given fiscal year for PBVA")
+	else:
+		rrco = frappe.new_doc("RRCO Receipt Entries")
+		rrco.purpose = str(purpose)
+		rrco.fiscal_year = str(fiscal_year)
+		rrco.receipt_date = str(receipt_date)
+		rrco.receipt_number = str(receipt_number)
+		rrco.cheque_number = str(cheque_number)
+		rrco.cheque_date = str(cheque_date)
+		rrco.submit()
+
+		return "DONE"

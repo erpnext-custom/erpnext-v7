@@ -97,7 +97,7 @@ class SalarySlip(TransactionBase):
                 
 		if not struct:
 			self.salary_structure = None
-			frappe.throw(_("No active or default Salary Structure found for employee {0} for the given dates")
+			frappe.throw(_('No active or default Salary Structure found for employee <a href="#Form/Employee/{0}">{0}</a> for the given dates')
 				.format(self.employee), title=_('Salary Structure Missing'))
 
 		return struct and struct[0][0] or ''

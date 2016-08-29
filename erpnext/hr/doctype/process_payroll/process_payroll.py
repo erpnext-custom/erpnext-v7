@@ -84,7 +84,32 @@ class ProcessPayroll(Document):
 		return self.create_log(ss_list)
 
         def remove_sal_slip(self):
-                frappe.msgprint(_("This functionality is under development."))
+		cond = ''
+		for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
+			if self.get(f):
+				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
+                
+                ss_list = frappe.db.sql_list("""
+                                select t1.name from `tabSalary Slip` as t1
+                                where t1.fiscal_year = '%s'
+                                and t1.month = '%s'
+                                and t1.docstatus = 0
+                                %s
+                                """ % (self.fiscal_year, self.month, cond))
+                                
+                if ss_list:
+                        frappe.delete_doc("Salary Slip", frappe.db.sql_list("""
+                                select t1.name from `tabSalary Slip` as t1
+                                where t1.fiscal_year = '%s'
+                                and t1.month = '%s'
+                                and t1.docstatus = 0
+                                %s
+                                """ % (self.fiscal_year, self.month, cond)), for_reload=True)
+                        frappe.msgprint(_("Un-submitted Salary Slip(s) for the Month:{0} and Year:{1} removed successfully.")\
+                                        .format(self.month, self.fiscal_year))
+                else:
+                        frappe.msgprint(_("No Un-submitted Salary Slip(s) Found."))
+                
 
 	def create_log(self, ss_list):
 		log = "<p>" + _("No employee for the above selected criteria OR salary slip already created") + "</p>"

@@ -15,8 +15,6 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 1.0               SSK                              23/08/2016         Introducing Monthly Salary Deductions
 1.0               SSK                              25/08/2016         Updating branch, department, division in salary slip
                                                                         as per employee record as on processing date
-1.0               SSK                              27/08/2016         Salary Structure Overlap rectification
-1.0               SSK                              28/08/2016         Added employee_subgroup to Salary Slip
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -43,6 +41,7 @@ class SalaryStructure(Document):
 		set_employee_name(self)
 
 	def get_employee_details(self):
+		#msgprint(_("salary_strucure.py.get_employee_details"))
 		ret = {}
 		det = frappe.db.sql("""select employee_name, branch, designation, department, division, section
 			from `tabEmployee` where name = %s""", self.employee)
@@ -90,9 +89,9 @@ class SalaryStructure(Document):
 		existing = frappe.db.sql("""select name from `tabSalary Structure`
 			where employee = %(employee)s and
 			(
-				(%(from_date)s >= ifnull(from_date,'0000-00-00') and %(from_date)s <= ifnull(to_date,'2199-12-31')) or
-				(%(to_date)s >= ifnull(from_date,'0000-00-00') and %(to_date)s <= ifnull(to_date,'2199-12-31')) or
-				(%(from_date)s <= ifnull(from_date,'0000-00-00') and %(to_date)s >= ifnull(to_date,'2199-12-31')))
+				(%(from_date)s > from_date and %(from_date)s < to_date) or
+				(%(to_date)s > from_date and %(to_date)s < to_date) or
+				(%(from_date)s <= from_date and %(to_date)s >= to_date))
 			and name!=%(name)s
 			and docstatus < 2""",
 			{
@@ -129,7 +128,6 @@ def make_salary_slip(source_name, target_doc=None):
                 target.division = employee.division
                 target.designation = employee.designation
                 target.section = employee.section
-                target.employee_subgroup = employee.employee_subgroup # Ver 1.0 Begins, added by SSK on 28/08/2016
                 # Ver 1.0 Ends
 		# copy earnings and deductions table
 		for key in ('earnings', 'deductions'):

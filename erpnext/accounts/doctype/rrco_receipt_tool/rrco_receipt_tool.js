@@ -34,6 +34,56 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 		}
 	},
 
+	update_bonus: function(frm) {
+		if(frm.doc.purpose && frm.doc.bonus_and_pbva_fy && frm.doc.receipt_date && frm.doc.receipt_number && frm.doc.cheque_no && frm.doc.cheque_date) {
+			frappe.call({
+				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.updateBonus",
+				args: {
+					"purpose": frm.doc.purpose,
+					"fiscal_year": frm.doc.bonus_and_pbva_fy,
+					"receipt_number":frm.doc.receipt_number,
+					"receipt_date":frm.doc.receipt_date,
+					"cheque_number":frm.doc.cheque_no,
+					"cheque_date":frm.doc.cheque_date
+				},
+				callback: function(r) {
+					if(r.message == "DONE") {
+						msgprint("TDS Receipt details updated")
+						cur_frm.set_df_property("update_bonus", "read_only", 1)	
+					}
+				}
+			})
+		}
+		else {
+			msgprint("Fill all fields to proceed!")
+		}
+	},
+
+	update_pbva: function(frm) {
+		if(frm.doc.purpose && frm.doc.bonus_and_pbva_fy && frm.doc.receipt_date && frm.doc.receipt_number && frm.doc.cheque_no && frm.doc.cheque_date) {
+			frappe.call({
+				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.updatePBVA",
+				args: {
+					"month": frm.doc.purpose,
+					"fiscal_year": frm.doc.bonus_and_pbva_fy,
+					"receipt_number":frm.doc.receipt_number,
+					"receipt_date":frm.doc.receipt_date,
+					"cheque_number":frm.doc.cheque_no,
+					"cheque_date":frm.doc.cheque_date
+				},
+				callback: function(r) {
+					if(r.message == "DONE") {
+						msgprint("TDS Receipt details updated")
+						cur_frm.set_df_property("update_pbva", "read_only", 1)	
+					}
+				}
+			})
+		}
+		else {
+			msgprint("Fill all fields to proceed!")
+		}
+	},
+
 	"receipt_date": function(frm) {
 		erpnext.rrco_receipt_tool.load_invoices(frm);
 	},

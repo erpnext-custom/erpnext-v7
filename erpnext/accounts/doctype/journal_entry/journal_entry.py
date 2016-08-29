@@ -5,6 +5,7 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   08/08/2016         DocumentNaming standard is introduced
+1.0		  SSK		                   29/08/2016         Validations for expense claim changed
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -565,13 +566,32 @@ class JournalEntry(AccountsController):
 				frappe.db.set_value("Expense Claim", d.reference_name , "total_amount_reimbursed", amt)
 
 	def validate_expense_claim(self):
+                entry_balance = 0.00
+                sanctiond_amount = 0.00
+                reimbursed_amount = 0.00
+                expense_check = 0
+                pending_amount = 0.00
+                
 		for d in self.accounts:
 			if d.reference_type=="Expense Claim":
+                                expense_check = 1
 				sanctioned_amount, reimbursed_amount = frappe.db.get_value("Expense Claim",
 					d.reference_name, ("total_sanctioned_amount", "total_amount_reimbursed"))
 				pending_amount = flt(sanctioned_amount) - flt(reimbursed_amount)
-				if d.debit > pending_amount:
-					frappe.throw(_("Row No {0}: Amount cannot be greater than Pending Amount against Expense Claim {1}. Pending Amount is {2}".format(d.idx, d.reference_name, pending_amount)))
+				
+				# Ver 1.0 Begins, added by SSK on 29/08/2016, Following condition is commented and the subsequent code is added
+				#if d.debit > pending_amount:
+				#	frappe.throw(_("Row No {0}: Amount cannot be greater than Pending Amount against Expense Claim {1}. Pending Amount is {2}".format(d.idx, d.reference_name, pending_amount)))
+                                # Ver 1.0 Ends
+                                
+                                if d.debit:
+                                        entry_balance = flt(entry_balance) + flt(d.debit)
+                                elif d.credit and d.account == 'Advance to Employee - SMCL':
+                                        entry_balance = flt(entry_balance) - flt(d.credit)
+
+                if expense_check:
+                        if entry_balance > pending_amount:
+                                frappe.throw(_("Amount cannot be greater than Pending Amount {0}.".format(pending_amount)))
 
 	def validate_credit_debit_note(self):
 		if self.stock_entry:

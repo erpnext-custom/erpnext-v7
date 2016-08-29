@@ -87,6 +87,11 @@ def get_data():
 					"name": "Salary Slip",
 					"description": _("Monthly salary statement."),
 				},
+                                {
+					"type": "doctype",
+					"name": "Salary Increment",
+					"description": _("Annual Salary Increments"),
+				},
 				{
 					"type": "doctype",
 					"name": "Process Payroll",
@@ -94,18 +99,19 @@ def get_data():
 					"description":_("Generate Salary Slips"),
 					"hide_count": True
 				},
+                                {
+					"type": "doctype",
+					"name": "Process Increment",
+					"label": _("Process Increments"),
+					"description":_("Generate Salary Increments"),
+					"hide_count": True
+				},
 				{
 					"type": "doctype",
 					"name": "Salary Component",
 					"label": _("Salary Components"),
 					"description": _("Earnings, Deductions and other Salary components")
-				},
-                                {
-					"type": "doctype",
-					"name": "Monthly Deduction",
-					"label": _("Monthly Deductions"),
-					"description": _("Monthly Deductions like Loan, Advance deduction etc.,")
-				},
+				}
 			]
 		},
 		{
