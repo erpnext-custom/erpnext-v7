@@ -71,17 +71,17 @@ erpnext.financial_statements = {
 	"initial_depth": 3,
 	onload: function(report) {
 		// dropdown for links to other financial statements
-		report.page.add_inner_button(__("Balance Sheet"), function() {
+		report.page.add_inner_button(__("Financial Position"), function() {
 			var filters = report.get_values();
-			frappe.set_route('query-report', 'Balance Sheet', {company: filters.company});
+			frappe.set_route('query-report', 'Statement of Financial Position', {company: filters.company});
 		}, 'Financial Statements');
-		report.page.add_inner_button(__("Profit and Loss"), function() {
+		report.page.add_inner_button(__("Comprehensive Income"), function() {
 			var filters = report.get_values();
-			frappe.set_route('query-report', 'Profit and Loss Statement', {company: filters.company});
+			frappe.set_route('query-report', 'Statement of Comprehensive Income', {company: filters.company});
 		}, 'Financial Statements');
 		report.page.add_inner_button(__("Cash Flow Statement"), function() {
 			var filters = report.get_values();
-			frappe.set_route('query-report', 'Cash Flow', {company: filters.company});
+			frappe.set_route('query-report', 'Statement of Cash Flow', {company: filters.company});
 		}, 'Financial Statements');
 	}
 };
