@@ -122,8 +122,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-29 15:26:34.561348", 
- "modified_by": "Administrator", 
+ "modified": "2016-08-30 12:15:55.944086", 
+ "modified_by": "jampa.ict@drukgreen.com", 
  "module": "HR", 
  "name": "Division", 
  "name_case": "", 
@@ -207,7 +207,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 0
+   "write": 1
   }, 
   {
    "amend": 0, 

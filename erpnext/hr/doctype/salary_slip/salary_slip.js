@@ -5,6 +5,7 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  		 SSK		                        26/08/2016         Auto calculations when amount in child changed
+1.0				 SSK								30/08/2016		   Modified Auto-calculations
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
@@ -22,40 +23,6 @@ var eligible_for_corporate_allowance = 0, eligible_for_contract_allowance = 0, e
 	
 var ca = 0, contract_allowance = 0, communication_allowance = 0, psa = 0, mpi = 0, officiating_allowance = 0,
 	temporary_transfer_allowance = 0, fuel_allowances = 0;
-
-cur_frm.call({
-	method: "frappe.client.get_value",
-	args: {
-		"doctype": "Salary Structure",
-		"fieldname": ["eligible_for_corporate_allowance","ca","eligible_for_contract_allowance","contract_allowance",
-						"eligible_for_communication_allowance","communication_allowance","eligible_for_psa",
-						"psa","eligible_for_mpi","mpi","eligible_for_officiating_allowance","officiating_allowance",
-						"eligible_for_temporary_transfer_allowance","temporary_transfer_allowance","eligible_for_fuel_allowances",
-						"fuel_allowances"],
-		"filters": {
-			"name": cur_frm.doc.salary_structure
-		}
-	},
-	callback: function(r){
-		eligible_for_corporate_allowance = r.message.eligible_for_corporate_allowance; 
-		eligible_for_contract_allowance = r.message.eligible_for_contract_allowance;
-		eligible_for_communication_allowance = r.message.eligible_for_communication_allowance;
-		eligible_for_psa = r.message.eligible_for_psa;
-		eligible_for_mpi = r.message.eligible_for_mpi;
-		eligible_for_officiating_allowance = r.message.eligible_for_officiating_allowance;
-		eligible_for_temporary_transfer_allowance = r.message.eligible_for_temporary_transfer_allowance;
-		eligible_for_fuel_allowances = r.message.eligible_for_fuel_allowances;
-		ca = r.message.ca;
-		contract_allowance = r.message.contract_allowance;
-		communication_allowance = r.message.communication_allowance;
-		psa = r.message.psa;
-		mpi = r.message.mpi;
-		officiating_allowance = r.message.officiating_allowance;
-		temporary_transfer_allowance = r.message.temporary_transfer_allowance;
-		fuel_allowances = r.message.fuel_allowances;
-	}
-});
-
 //-- Ver 1.0 Ends
 
 frappe.ui.form.on("Salary Slip", {
@@ -75,7 +42,7 @@ frappe.ui.form.on("Salary Slip", {
 			frm.set_value('letter_head', company.default_letter_head);
 		}
 	},
-
+	
 	refresh: function(frm) {
 		frm.trigger("toggle_fields")
 		frm.fields_dict['earnings'].grid.set_column_disp("default_amount", false);
@@ -166,23 +133,70 @@ cur_frm.cscript.fiscal_year = function(doc,dt,dn){
 cur_frm.cscript.month = cur_frm.cscript.salary_slip_based_on_timesheet = cur_frm.cscript.fiscal_year;
 cur_frm.cscript.start_date = cur_frm.cscript.end_date = cur_frm.cscript.fiscal_year;
 
+cur_frm.cscript.salary_structure = function(doc,dt,dn){
+	// Fetching Allowance Details
+	console.log('salary_structuresss: '+cur_frm.doc.salary_structure);
+	if(cur_frm.doc.salary_structure) {
+		cur_frm.call({
+			method: "frappe.client.get_value",
+			args: {
+				"doctype": "Salary Structure",
+				"fieldname": ["eligible_for_corporate_allowance","ca","eligible_for_contract_allowance","contract_allowance",
+								"eligible_for_communication_allowance","communication_allowance","eligible_for_psa",
+								"psa","eligible_for_mpi","mpi","eligible_for_officiating_allowance","officiating_allowance",
+								"eligible_for_temporary_transfer_allowance","temporary_transfer_allowance","eligible_for_fuel_allowances",
+								"fuel_allowances"],
+				"filters": {
+					"name": cur_frm.doc.salary_structure
+				}
+			},
+			callback: function(r){
+				eligible_for_corporate_allowance = r.message.eligible_for_corporate_allowance; 
+				eligible_for_contract_allowance = r.message.eligible_for_contract_allowance;
+				eligible_for_communication_allowance = r.message.eligible_for_communication_allowance;
+				eligible_for_psa = r.message.eligible_for_psa;
+				eligible_for_mpi = r.message.eligible_for_mpi;
+				eligible_for_officiating_allowance = r.message.eligible_for_officiating_allowance;
+				eligible_for_temporary_transfer_allowance = r.message.eligible_for_temporary_transfer_allowance;
+				eligible_for_fuel_allowances = r.message.eligible_for_fuel_allowances;
+				ca = r.message.ca;
+				contract_allowance = r.message.contract_allowance;
+				communication_allowance = r.message.communication_allowance;
+				psa = r.message.psa;
+				mpi = r.message.mpi;
+				officiating_allowance = r.message.officiating_allowance;
+				temporary_transfer_allowance = r.message.temporary_transfer_allowance;
+				fuel_allowances = r.message.fuel_allowances;
+			}
+		});
+	}	
+}
+
 cur_frm.cscript.employee = function(doc,dt,dn){
 	doc.salary_structure = ''
 	cur_frm.cscript.fiscal_year(doc, dt, dn)
 	// GIS
 	if (doc.employee){
+		console.log(doc.employee);
 		cur_frm.call({
 			method: "erpnext.hr.doctype.salary_structure.salary_structure.get_employee_gis",
 			args: {
-				"employee": doc.employee,
+				"employee": doc.employee
 			},
 			callback: function(r){	
 				if (r.message){
+					console.log('gis');
+					console.log(r.message[0][0]);
 					calc_gis_amt = Math.round(r.message[0][0]);
+					console.log('inside employee: '+calc_gis_amt);
 				}
 			}
 		});	
-	}	
+	}
+
+	console.log('on_employee: '+calc_gis_amt);
+	cur_frm.cscript.fiscal_year(doc, dt, dn);
+	console.log('salary_component1: '+doc.salary_component);
 }
 
 cur_frm.cscript.leave_without_pay = function(doc,dt,dn){
@@ -325,7 +339,6 @@ cur_frm.fields_dict.employee.get_query = function(doc,cdt,cdn) {
 
 //++ Ver 20160803.1 Begins, calculate_totals2 is added by SSK on 27/08/2016
 var calculate_others = function(doc, dt, dn){
-	console.log('.....');
 	var e_tbl = doc.earnings || [];
 	var d_tbl = doc.deductions || [];
 	var corp_all_id = -1, cont_all_id = -1, comm_all_id = -1, psa_all_id = -1, mpi_all_id = -1,

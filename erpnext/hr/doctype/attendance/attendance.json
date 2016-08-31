@@ -287,8 +287,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-29 15:25:46.560115", 
- "modified_by": "Administrator", 
+ "modified": "2016-08-30 14:55:09.072409", 
+ "modified_by": "jampa.ict@drukgreen.com", 
  "module": "HR", 
  "name": "Attendance", 
  "owner": "ashwini@webnotestech.com", 
@@ -314,9 +314,9 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 

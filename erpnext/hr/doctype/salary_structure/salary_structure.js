@@ -810,34 +810,42 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 
 cur_frm.cscript.eligible_for_corporate_allowance = function(frm){
 	calculate_others(frm, "Corporate Allowance", "P");
+	cur_frm.refresh();
 }
 
 cur_frm.cscript.eligible_for_contract_allowance = function(frm){
 	calculate_others(frm, "Contract Allowance", "P");
+	cur_frm.refresh();
 }
 
 cur_frm.cscript.eligible_for_communication_allowance = function(frm){
 	calculate_others(frm, "Communication Allowance", "A");
+	cur_frm.refresh();
 }
 
 cur_frm.cscript.eligible_for_psa = function(frm){
 	calculate_others(frm, "PSA", "P");
+	cur_frm.refresh();
 }
 
 cur_frm.cscript.eligible_for_mpi = function(frm){
 	calculate_others(frm, "MPI", "P");
+	cur_frm.refresh();
 }
 
 cur_frm.cscript.eligible_for_officiating_allowance = function(frm){
 	calculate_others(frm, "Officiating Allowance", "P");
+	cur_frm.refresh();
 }
 
 cur_frm.cscript.eligible_for_temporary_transfer_allowance = function(frm){
 	calculate_others(frm, "Temporary Transfer Allowance", "P");
+	cur_frm.refresh();
 }
 
 cur_frm.cscript.eligible_for_fuel_allowances = function(frm){
 	calculate_others(frm, "Fuel Allowance", "A");
+	cur_frm.refresh();
 }
 
 //

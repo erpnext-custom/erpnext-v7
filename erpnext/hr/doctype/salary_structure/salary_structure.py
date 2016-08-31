@@ -17,6 +17,8 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                         as per employee record as on processing date
 1.0               SSK                              27/08/2016         Salary Structure Overlap rectification
 1.0               SSK                              28/08/2016         Added employee_subgroup to Salary Slip
+1.0               SSK                              29/08/2016         Added method calculate_totals for use in
+                                                                        Salary Increment
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -118,6 +120,89 @@ class SalaryStructure(Document):
 		joining_date = getdate(frappe.db.get_value("Employee", self.employee, "date_of_joining"))
 		if getdate(self.from_date) < joining_date:
 			frappe.throw(_("From Date in Salary Structure cannot be lesser than Employee Joining Date."))
+
+	def calculate_totals(self, employee, new_basic):
+                basic_pay = 0.00
+                gross_pay = 0.00
+                deductions = 0.00
+                net_pay = 0.00
+
+                for e in self.earnings:
+                        if e.salary_component == 'Basic Pay':
+                                e.amount = flt(new_basic)
+                                basic_pay += flt(new_basic)
+
+                gross_pay = flt(basic_pay)
+
+                #
+                # Calculating Earnings
+                #
+                for e in self.earnings:
+                        calc_amt = 0.00
+                        if e.salary_component == 'Basic Pay':
+                                pass
+                        elif self.eligible_for_corporate_allowance and e.salary_component == 'Corporate Allowance':
+                                calc_amt = round(basic_pay*flt(self.ca)*0.01)
+                                gross_pay += calc_amt
+                                e.amount = calc_amt
+                        elif self.eligible_for_contract_allowance and e.salary_component == 'Contract Allowance':
+                                calc_amt = round(basic_pay*flt(self.contract_allowance)*0.01)
+                                gross_pay += calc_amt
+                                e.amount = calc_amt
+                        elif self.eligible_for_communication_allowance and e.salary_component == 'Communication Allowance':
+                                calc_amt = round(flt(self.communication_allowance))			
+                                gross_pay += calc_amt
+                                e.amount = calc_amt
+                        elif self.eligible_for_psa and e.salary_component == 'PSA':
+                                calc_amt = round(basic_pay*flt(self.psa)*0.01)
+                                gross_pay += calc_amt
+                                e.amount = calc_amt
+                        elif self.eligible_for_mpi and e.salary_component == 'MPI':
+                                calc_amt = round(basic_pay*flt(self.mpi)*0.01)
+                                gross_pay += calc_amt
+                                e.amount = calc_amt
+                        elif self.eligible_for_officiating_allowance and e.salary_component == 'Officiating Allowance':
+                                calc_amt = round(basic_pay*flt(self.officiating_allowance)*0.01)
+                                gross_pay += calc_amt
+                                e.amount = calc_amt
+                        elif self.eligible_for_temporary_transfer_allowance and e.salary_component == 'Temporary Transfer Allowance':
+                                calc_amt = (basic_pay*flt(self.temporary_transfer_allowance)*0.01)
+                                gross_pay += calc_amt
+                                e.amount = calc_amt
+                        elif self.eligible_for_fuel_allowances and e.salary_component == 'Fuel Allowance':
+                                calc_amt = round(flt(self.fuel_allowances))
+                                gross_pay += calc_amt
+                                e.amount = calc_amt
+                        else:
+                                gross_pay += e.amount
+
+                #
+                # Calculating Deductions
+                #
+                company_det = get_company_pf('2016')
+                frappe.msgprint(company_det)
+                for d in self.deductions:
+                        if d.salary_component == 'Group Insurance Scheme':
+                                calc_gis_amt = flt(get_employee_gis(self.employee))
+                                d.amount = calc_gis_amt
+                                deductions += calc_gis_amt
+                        elif d.salary_component == 'PF':
+                                calc_pf_amt = 0;
+                                calc_pf_amt = round(basic_pay*company_det.employee_pf*0.01);
+                                d.amount = calc_pf_amt
+                                deductions += calc_pf_amt
+                        elif d.salary_component == 'Health Contribution':
+                                calc_health_amt = 0;
+                                calc_health_amt = round(gross_pay*company_det.health_contribution*0.01);
+                                d.amount = calc_health_amt
+                                deductions += calc_health_amt
+                        elif d.salary_component == 'Salary Tax':
+                                calc_tds_amt = 0;
+                                calc_tds_amt = get_salary_tax(gross_pay-calc_pf_amt-calc_gis_amt)
+                                d.amount = calc_tds_amt
+                                deductions += calc_tds_amt
+                        else:
+                                deductions += d.amount
 
 @frappe.whitelist()
 def make_salary_slip(source_name, target_doc=None):
