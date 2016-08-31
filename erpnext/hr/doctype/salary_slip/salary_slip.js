@@ -13,18 +13,6 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 cur_frm.add_fetch('employee', 'company', 'company');
 cur_frm.add_fetch('time_sheet', 'total_hours', 'working_hours');
 
-//++ Ver 1.0 Begins, added by SSK on 26/08/2016
-var employee_pf, employer_pf=0, health_contribution=0, retirement_age=0, calc_gis_amt=0;
-var counter=0;
-
-var eligible_for_corporate_allowance = 0, eligible_for_contract_allowance = 0, eligible_for_communication_allowance = 0,
-	eligible_for_psa = 0, eligible_for_mpi = 0, eligible_for_officiating_allowance = 0, 
-	eligible_for_temporary_transfer_allowance = 0, eligible_for_fuel_allowances = 0;
-	
-var ca = 0, contract_allowance = 0, communication_allowance = 0, psa = 0, mpi = 0, officiating_allowance = 0,
-	temporary_transfer_allowance = 0, fuel_allowances = 0;
-//-- Ver 1.0 Ends
-
 frappe.ui.form.on("Salary Slip", {
 	setup: function(frm) {
 		frm.fields_dict["timesheets"].grid.get_field("time_sheet").get_query = function(){
@@ -85,38 +73,6 @@ cur_frm.cscript.onload = function(doc,dt,dn){
 		if(!doc.fiscal_year) doc.fiscal_year = sys_defaults['fiscal_year'];
 		refresh_many(['month', 'fiscal_year']);
 	}
-	
-	//++ Ver 1.0 Begins, added by SSK on 26/08/2016
-	cur_frm.call({
-		method: "erpnext.hr.doctype.salary_structure.salary_structure.get_company_pf",
-		args: {
-			fiscal_year: "",
-		},
-		callback: function(r){
-			if (r.message){
-				employee_pf = r.message[0][0];
-				employer_pf = r.message[0][1];
-				health_contribution = r.message[0][2];
-				retirement_age = r.message[0][3];
-			}
-		}
-	});	
-	
-	// GIS
-	if (doc.employee){
-		cur_frm.call({
-			method: "erpnext.hr.doctype.salary_structure.salary_structure.get_employee_gis",
-			args: {
-				"employee": doc.employee,
-			},
-			callback: function(r){	
-				if (r.message){
-					calc_gis_amt = Math.round(r.message[0][0]);
-				}
-			}
-		});	
-	}
-	//-- Ver 1.0 Ends	
 }
 
 
@@ -133,69 +89,9 @@ cur_frm.cscript.fiscal_year = function(doc,dt,dn){
 cur_frm.cscript.month = cur_frm.cscript.salary_slip_based_on_timesheet = cur_frm.cscript.fiscal_year;
 cur_frm.cscript.start_date = cur_frm.cscript.end_date = cur_frm.cscript.fiscal_year;
 
-cur_frm.cscript.salary_structure = function(doc,dt,dn){
-	// Fetching Allowance Details
-	console.log('salary_structuresss: '+cur_frm.doc.salary_structure);
-	if(cur_frm.doc.salary_structure) {
-		cur_frm.call({
-			method: "frappe.client.get_value",
-			args: {
-				"doctype": "Salary Structure",
-				"fieldname": ["eligible_for_corporate_allowance","ca","eligible_for_contract_allowance","contract_allowance",
-								"eligible_for_communication_allowance","communication_allowance","eligible_for_psa",
-								"psa","eligible_for_mpi","mpi","eligible_for_officiating_allowance","officiating_allowance",
-								"eligible_for_temporary_transfer_allowance","temporary_transfer_allowance","eligible_for_fuel_allowances",
-								"fuel_allowances"],
-				"filters": {
-					"name": cur_frm.doc.salary_structure
-				}
-			},
-			callback: function(r){
-				eligible_for_corporate_allowance = r.message.eligible_for_corporate_allowance; 
-				eligible_for_contract_allowance = r.message.eligible_for_contract_allowance;
-				eligible_for_communication_allowance = r.message.eligible_for_communication_allowance;
-				eligible_for_psa = r.message.eligible_for_psa;
-				eligible_for_mpi = r.message.eligible_for_mpi;
-				eligible_for_officiating_allowance = r.message.eligible_for_officiating_allowance;
-				eligible_for_temporary_transfer_allowance = r.message.eligible_for_temporary_transfer_allowance;
-				eligible_for_fuel_allowances = r.message.eligible_for_fuel_allowances;
-				ca = r.message.ca;
-				contract_allowance = r.message.contract_allowance;
-				communication_allowance = r.message.communication_allowance;
-				psa = r.message.psa;
-				mpi = r.message.mpi;
-				officiating_allowance = r.message.officiating_allowance;
-				temporary_transfer_allowance = r.message.temporary_transfer_allowance;
-				fuel_allowances = r.message.fuel_allowances;
-			}
-		});
-	}	
-}
-
 cur_frm.cscript.employee = function(doc,dt,dn){
 	doc.salary_structure = ''
 	cur_frm.cscript.fiscal_year(doc, dt, dn)
-	// GIS
-	if (doc.employee){
-		console.log(doc.employee);
-		cur_frm.call({
-			method: "erpnext.hr.doctype.salary_structure.salary_structure.get_employee_gis",
-			args: {
-				"employee": doc.employee
-			},
-			callback: function(r){	
-				if (r.message){
-					console.log('gis');
-					console.log(r.message[0][0]);
-					calc_gis_amt = Math.round(r.message[0][0]);
-					console.log('inside employee: '+calc_gis_amt);
-				}
-			}
-		});	
-	}
-
-	console.log('on_employee: '+calc_gis_amt);
-	console.log(doc);
 }
 
 cur_frm.cscript.leave_without_pay = function(doc,dt,dn){
@@ -333,9 +229,6 @@ cur_frm.fields_dict.employee.get_query = function(doc,cdt,cdn) {
 }
 
 
-// Ver 1.0 Begins, added by SSK on 27/08/2016
-// Ver 1.0 Ends
-
 //++ Ver 20160803.1 Begins, calculate_totals2 is added by SSK on 27/08/2016
 var calculate_others = function(doc, dt, dn){
 	var e_tbl = doc.earnings || [];
@@ -347,6 +240,91 @@ var calculate_others = function(doc, dt, dn){
 		basic_all_id = -1, basic_all_dn;
 	var pf_ded_id = -1, pf_ded_dn, health_ded_id = -1, health_ded_dn, tds_ded_id = -1, tds_ded_dn,
 		gis_ded_id = -1, gis_ded_dn;
+	var employee_pf, employer_pf=0, health_contribution=0, retirement_age=0, calc_gis_amt=0;
+	var eligible_for_corporate_allowance = 0, eligible_for_contract_allowance = 0, eligible_for_communication_allowance = 0,
+		eligible_for_psa = 0, eligible_for_mpi = 0, eligible_for_officiating_allowance = 0, 
+		eligible_for_temporary_transfer_allowance = 0, eligible_for_fuel_allowances = 0;
+	var ca = 0, contract_allowance = 0, communication_allowance = 0, psa = 0, mpi = 0, officiating_allowance = 0,
+		temporary_transfer_allowance = 0, fuel_allowances = 0;
+	
+	
+	console.log(doc.employee);
+	console.log(doc.salary_structure);
+	
+	/*
+	if(doc.salary_structure) {
+		cur_frm.call({
+			method: "frappe.client.get_value",
+			args: {
+				"doctype": "Salary Structure",
+				"fieldname": ["eligible_for_corporate_allowance","ca","eligible_for_contract_allowance","contract_allowance",
+								"eligible_for_communication_allowance","communication_allowance","eligible_for_psa",
+								"psa","eligible_for_mpi","mpi","eligible_for_officiating_allowance","officiating_allowance",
+								"eligible_for_temporary_transfer_allowance","temporary_transfer_allowance","eligible_for_fuel_allowances",
+								"fuel_allowances"],
+				"filters": {
+					"name": doc.salary_structure
+				}
+			},
+			callback: function(r){
+				eligible_for_corporate_allowance = r.message.eligible_for_corporate_allowance; 
+				eligible_for_contract_allowance = r.message.eligible_for_contract_allowance;
+				eligible_for_communication_allowance = r.message.eligible_for_communication_allowance;
+				eligible_for_psa = r.message.eligible_for_psa;
+				eligible_for_mpi = r.message.eligible_for_mpi;
+				eligible_for_officiating_allowance = r.message.eligible_for_officiating_allowance;
+				eligible_for_temporary_transfer_allowance = r.message.eligible_for_temporary_transfer_allowance;
+				eligible_for_fuel_allowances = r.message.eligible_for_fuel_allowances;
+				ca = r.message.ca;
+				contract_allowance = r.message.contract_allowance;
+				communication_allowance = r.message.communication_allowance;
+				psa = r.message.psa;
+				mpi = r.message.mpi;
+				officiating_allowance = r.message.officiating_allowance;
+				temporary_transfer_allowance = r.message.temporary_transfer_allowance;
+				fuel_allowances = r.message.fuel_allowances;
+				
+				console.log('Inside: '+eligible_for_corporate_allowance);
+			}
+		});
+	}
+	
+	console.log('Outside: '+eligible_for_corporate_allowance);
+	
+	
+	// GIS
+	if (doc.employee){
+		cur_frm.call({
+			method: "erpnext.hr.doctype.salary_structure.salary_structure.get_employee_gis",
+			args: {
+				"employee": doc.employee
+			},
+			callback: function(r){	
+				if (r.message){
+					console.log('gis');
+					console.log(r.message[0][0]);
+					calc_gis_amt = Math.round(r.message[0][0]);
+					console.log('inside employee: '+calc_gis_amt);
+				}
+			}
+		});	
+	}
+	
+	// PF
+	cur_frm.call({
+		method: "erpnext.hr.doctype.salary_structure.salary_structure.get_company_pf",
+		args: {
+			fiscal_year: "",
+		},
+		callback: function(r){
+			if (r.message){
+				employee_pf = r.message[0][0];
+				employer_pf = r.message[0][1];
+				health_contribution = r.message[0][2];
+				retirement_age = r.message[0][3];
+			}
+		}
+	});	
 	
 	// Saving IndexValue and DocumentName from Earnings child table
 	for (var id in e_tbl){
@@ -612,5 +590,6 @@ var calculate_others = function(doc, dt, dn){
 			}
 		}
 	});	
+	*/
 }
 // Ver 1.0 Ends

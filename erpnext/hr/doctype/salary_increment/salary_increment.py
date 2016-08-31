@@ -16,7 +16,7 @@ from erpnext.hr.doctype.salary_structure.salary_structure import get_company_pf,
 
 class SalaryIncrement(Document):
         def autoname(self):
-		self.name = make_autoname(self.employee + '/.INC/.' + self.fiscal_year+self.month+ '/.#####')
+		self.name = make_autoname(str(self.employee) + '/.INC/.' + str(self.fiscal_year)+str(self.month)+ '/.#####')
 		
         def validate(self):
                 self.validate_dates()
@@ -36,9 +36,11 @@ class SalaryIncrement(Document):
 		if int(self.fiscal_year) < int(cur_year):
 			frappe.throw(_("Salary Increment Cannot be run for past years."))
 
+                '''
 		if int(self.month) != int(cur_month):
 			frappe.throw(_("Salary Increment Can only be run for the current month."))
-
+                '''
+                
 	def validate_increment(self):
 		inc_list = frappe.db.sql("""
 		select name
