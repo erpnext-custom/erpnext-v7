@@ -1,7 +1,8 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
+ "autoname": "field:s_name", 
  "beta": 0, 
  "creation": "2016-06-17 12:53:47.189735", 
  "custom": 0, 
@@ -125,7 +126,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-29 15:31:23.787081", 
+ "modified": "2016-08-31 00:33:49.771064", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Section", 
@@ -238,5 +239,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "title_field": "s_name", 
  "track_seen": 0
 }

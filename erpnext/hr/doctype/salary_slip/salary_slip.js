@@ -195,8 +195,7 @@ cur_frm.cscript.employee = function(doc,dt,dn){
 	}
 
 	console.log('on_employee: '+calc_gis_amt);
-	cur_frm.cscript.fiscal_year(doc, dt, dn);
-	console.log('salary_component1: '+doc.salary_component);
+	console.log(doc);
 }
 
 cur_frm.cscript.leave_without_pay = function(doc,dt,dn){
