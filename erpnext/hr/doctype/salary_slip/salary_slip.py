@@ -307,3 +307,4 @@ class SalarySlip(TransactionBase):
 				timesheet.flags.ignore_validate_update_after_submit = True
 				timesheet.set_status()
 				timesheet.save()
+
