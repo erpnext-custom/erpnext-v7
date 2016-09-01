@@ -17,15 +17,15 @@ def get_data(query):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		row = [d.name, d.asset_name, d.purchase_date, d.gross_purchase_amount]
+		row = [d.name, d.asset_name, d.purchase_date, d.gross_purchase_amount, d.status]
 		data.append(row);
 
 	return data
 
 def construct_query(filters=None):
-	query ="SELECT name, asset_name, purchase_date, gross_purchase_amount FROM `tabAsset`"
+	query ="SELECT name, asset_name, purchase_date, gross_purchase_amount, status FROM `tabAsset` WHERE docstatus = 1 and status in ('Submitted','Partially Depreciated')"
 	if filters.employee:
-		query += " WHERE issued_to = \'" + str(filters.employee) + "\'"
+		query += " and issued_to = \'" + str(filters.employee) + "\'"
 	
 	return query;
 
@@ -54,6 +54,12 @@ def get_columns():
 		  "fieldname": "gross_purchase_amount",
 		  "label": "Price",
 		  "fieldtype": "Currency",
+		  "width": 150
+		},
+		{
+		  "fieldname": "status",
+		  "label": "Asset Status",
+		  "fieldtype": "Data",
 		  "width": 150
 		}
 	]
