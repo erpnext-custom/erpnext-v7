@@ -95,8 +95,10 @@ class Asset(Document):
 
 	def make_depreciation_schedule(self):
 		self.schedules = []
+		done = ""
 		if not self.get("schedules") and self.next_depreciation_date:
 			accumulated_depreciation = flt(self.opening_accumulated_depreciation)
+			income_accumulated_depreciation = flt(self.income_tax_opening_depreciation_amount)
 			value_after_depreciation = flt(self.value_after_depreciation)
 			current_value_income_tax = flt(self.value_after_depreciation) - flt(self.expected_value_after_useful_life)
 
@@ -120,20 +122,30 @@ class Asset(Document):
 
 					accumulated_depreciation += flt(depreciation_amount)
 					value_after_depreciation -= flt(depreciation_amount)
-
-					self.append("schedules", {
-						"schedule_date": schedule_date,
-						"depreciation_amount": depreciation_amount,
-						"depreciation_income_tax": income_tax_amount,
-						"accumulated_depreciation_amount": accumulated_depreciation
-					})
-
+					income_accumulated_depreciation += income_tax_amount
+					
+					if accumulated_depreciation < self.gross_purchase_amount:
+						self.append("schedules", {
+							"schedule_date": schedule_date,
+							"depreciation_amount": depreciation_amount,
+							"depreciation_income_tax": income_tax_amount,
+							"accumulated_depreciation_amount": accumulated_depreciation,
+							"accumulated_depreciation_income_tax": income_accumulated_depreciation
+						})
+					else:
+						self.append("schedules", {
+							"schedule_date": schedule_date,
+							"depreciation_amount": flt(self.gross_purchase_amount) - flt(accumulated_depreciation) + flt(self.expected_value_after_useful_life) + flt(depreciation_amount),
+							"depreciation_income_tax": income_tax_amount,
+							"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life),
+							"accumulated_depreciation_income_tax": income_accumulated_depreciation
+						})
+						break
+					
 
 	def get_depreciation_amount(self, depreciable_value, num_days=1):
 		if self.depreciation_method == "Straight Line":
-			depreciation_amount = (flt(self.value_after_depreciation) -
-				flt(self.expected_value_after_useful_life)) * num_days / (((cint(self.total_number_of_depreciations) -
-				cint(self.number_of_depreciations_booked)) * 365.25 ) / 12 )
+			depreciation_amount = (flt(self.gross_purchase_amount) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25)
 		else:
 			factor = 200.0 /  self.total_number_of_depreciations
 			depreciation_amount = flt(depreciable_value * factor / 100, 0)
@@ -196,7 +208,7 @@ class Asset(Document):
 		return status
 
 	def get_income_tax_depreciation_amount(self, depreciable_value, percent, num_days=1):
-		return (depreciable_value/(100 * 365.25)) * percent * num_days
+		return (flt(self.gross_purchase_amount)/(100 * 365.25)) * percent * num_days
 	
 	def make_asset_gl_entry(self):
 		if self.gross_purchase_amount:

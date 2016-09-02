@@ -125,7 +125,7 @@ def get_columns():
 		},
 		{
 			"fieldname": "date_of_issue",
-			"label": _("Issue Date"),
+			"label": _("Dep Start Date"),
 			"fieldtype": "Date",
 			"width": 120
 		},

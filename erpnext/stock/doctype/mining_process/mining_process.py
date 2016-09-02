@@ -8,3 +8,9 @@ from frappe.model.document import Document
 
 class MiningProcess(Document):
 	pass
+
+@frappe.whitelist()
+def get_item_details(item_code): 
+	if item_code:
+            return frappe.db.sql("select item_name, stock_uom from `tabItem` where item_code = " + str(item_code), as_dict=True)
+

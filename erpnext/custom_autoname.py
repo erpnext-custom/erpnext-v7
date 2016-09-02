@@ -30,7 +30,7 @@ def get_auto_name(dn, naming_series=None):
 	
 	if dn.doctype == 'Sales Order':
         	if naming_series == 'Coal Sales Order':
-	                series_seq = 'SOCO'
+	                series_seq = 'SOCL'
 		elif naming_series == 'Dolomite Sales Order':
 	                series_seq = 'SODO'
 	        elif naming_series == 'Gypsum Sales Order':
@@ -60,7 +60,7 @@ def get_auto_name(dn, naming_series=None):
 
 	if dn.doctype == 'Sales Invoice':
         	if naming_series == 'Coal Invoice':
-	                series_seq = 'SICO'
+	                series_seq = 'SICL'
 		elif naming_series == 'Dolomite Invoice':
 	                series_seq = 'SIDO'
 	        elif naming_series == 'Gypsum Invoice':
@@ -80,35 +80,35 @@ def get_auto_name(dn, naming_series=None):
 
 	if dn.doctype == 'Stock Entry':
         	if naming_series == 'Capital Inventory GR':
-	                series_seq = 'SECIGR'
+	                series_seq = 'SEGRCI'
 		elif naming_series == 'Consumable GR':
-	                series_seq = 'SECOGR'
+	                series_seq = 'SEGRCO'
 	        elif naming_series == 'Capital Inventory GI':
-	                series_seq = 'SECIGI'
+	                series_seq = 'SEGICI'
 		elif naming_series == 'Consumable GI':
-	                series_seq = 'SECOGI'
+	                series_seq = 'SEGICO'
 		elif naming_series == 'Inventory Transfer':
-	                series_seq = 'SEINTX'
+	                series_seq = 'SETXIN'
 		elif naming_series == 'Coal GR':
-	                series_seq = 'SECOGR'
+	                series_seq = 'SEGRCL'
 		elif naming_series == 'Dolomite GR':
-	                series_seq = 'SEDOGR'
+	                series_seq = 'SEGRDO'
 		elif naming_series == 'Gypsum GR':
-	                series_seq = 'SEGPGR'
+	                series_seq = 'SEGRGP'
 		elif naming_series == 'Stone GR':
-	                series_seq = 'SESTGR'
+	                series_seq = 'SEGRST'
 		elif naming_series == 'Limestone GR':
-	                series_seq = 'SELSGR'
+	                series_seq = 'SEGRLS'
 		elif naming_series == 'Bauxite GR':
-	                series_seq = 'SEBAGR'
+	                series_seq = 'SEGRBA'
 		elif naming_series == 'Quartzite GR':
-	                series_seq = 'SEQZGR'
+	                series_seq = 'SEGRQZ'
 		else:
 			series_seq = 'SESESE'
 
 	if dn.doctype == 'Delivery Note':
         	if naming_series == 'Coal Delivery':
-	                series_seq = 'DNCO'
+	                series_seq = 'DNCL'
 		elif naming_series == 'Dolomite Delivery':
 	                series_seq = 'DNDO'
 	        elif naming_series == 'Gypsum Delivery':

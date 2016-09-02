@@ -63,25 +63,29 @@ def validate_expense_against_budget(args):
 				and exists(select name from `tabCost Center` where lft<=%s and rgt>=%s and name=b.cost_center)
 		""", (args.fiscal_year, args.account, cc_lft, cc_rgt), as_dict=True)
 
-		for budget in budget_records:
-			if budget.budget_amount:
-				yearly_action = budget.action_if_annual_budget_exceeded
-				monthly_action = budget.action_if_accumulated_monthly_budget_exceeded
+		if budget_records:
+			for budget in budget_records:
+				if budget.budget_amount:
+					yearly_action = budget.action_if_annual_budget_exceeded
+					monthly_action = budget.action_if_accumulated_monthly_budget_exceeded
 
-				if monthly_action in ["Stop", "Warn"]:
-					budget_amount = get_accumulated_monthly_budget(budget.monthly_distribution,
-						args.posting_date, args.fiscal_year, budget.budget_amount)
+					if monthly_action in ["Stop", "Warn"]:
+						budget_amount = get_accumulated_monthly_budget(budget.monthly_distribution,
+							args.posting_date, args.fiscal_year, budget.budget_amount)
 
-					args["month_end_date"] = get_last_day(args.posting_date)
-						
-					compare_expense_with_budget(args, budget.cost_center,
-						budget_amount, _("Accumulated Monthly"), monthly_action)
-
-				if yearly_action in ("Stop", "Warn") and monthly_action != "Stop" \
-					and yearly_action != monthly_action:
+						args["month_end_date"] = get_last_day(args.posting_date)
+							
 						compare_expense_with_budget(args, budget.cost_center,
-							flt(budget.budget_amount), _("Annual"), yearly_action)
+							budget_amount, _("Accumulated Monthly"), monthly_action)
 
+					if yearly_action in ("Stop", "Warn") and monthly_action != "Stop" \
+						and yearly_action != monthly_action:
+							compare_expense_with_budget(args, budget.cost_center,
+								flt(budget.budget_amount), _("Annual"), yearly_action)
+		else:
+			#Budget Check if there is no budget booking under the budget head
+			frappe.throw("There is no budget in " + args.account + " under " + args.cost_center)
+	
 def compare_expense_with_budget(args, cost_center, budget_amount, action_for, action):
 	actual_expense = get_actual_expense(args, cost_center)
 	if actual_expense > budget_amount:

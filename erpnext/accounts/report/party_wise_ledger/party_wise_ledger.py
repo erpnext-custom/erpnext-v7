@@ -89,10 +89,12 @@ def get_opening_balances(filters):
 		where company=%(company)s 
 			and ifnull(party_type, '') = %(party_type)s and ifnull(party, '') != ''
 			and (posting_date < %(from_date)s or ifnull(is_opening, 'No') = 'Yes')
+			and account LIKE %(account)s
 		group by party""", {
 			"company": filters.company,
 			"from_date": filters.from_date,
-			"party_type": filters.party_type
+			"party_type": filters.party_type,
+			"account": filters.accounts
 		}, as_dict=True)
 		
 	opening = frappe._dict()
