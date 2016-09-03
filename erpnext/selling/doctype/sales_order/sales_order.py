@@ -399,6 +399,9 @@ def make_delivery_note(source_name, target_doc=None):
 		target.base_amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.base_rate)
 		target.amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.rate)
 		target.qty = flt(source.qty) - flt(source.delivered_qty)
+		expense_account = frappe.db.get_value("Item", source.item_code, "expense_account")
+                if expense_account:
+                        target.expense_account = expense_account
 
 	target_doc = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {

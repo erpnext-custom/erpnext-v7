@@ -78,7 +78,6 @@ cur_frm.cscript.onload = function(doc,cdt,cdn) {
 			query: "erpnext.hr.doctype.expense_claim.expense_claim.get_expense_approver"
 		};
 	});
-	
 }
 
 cur_frm.cscript.onload = function(frm,cdt,cdn) {
@@ -94,13 +93,19 @@ frappe.ui.form.on("Expense Claim","expenses_on_form_rendered", function(frm, gri
 	
 	if (!local_status || local_status == 'Travel Request Draft'){
 		enable_disable(false,true,false);
+		grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = true;
+		grid_row.grid_form.fields_dict.sanctioned_amount.refresh()
 	}
 	else if (local_status == 'Travel Claim Draft'){
 		if (!in_list(user_roles, "Expense Approver")) {
 			enable_disable(true,false,false);
+			grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = true;
+			grid_row.grid_form.fields_dict.sanctioned_amount.refresh()
 		}
 		else{
 			enable_disable(false,false,true);
+			grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = false;
+			grid_row.grid_form.fields_dict.sanctioned_amount.refresh()
 		}
 	}
 	else if (local_status == 'Travel Claim Approved by Supervisor'){
@@ -109,6 +114,8 @@ frappe.ui.form.on("Expense Claim","expenses_on_form_rendered", function(frm, gri
 		}
 		else{
 			enable_disable(false,false,false);
+			grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = false;
+			grid_row.grid_form.fields_dict.sanctioned_amount.refresh()
 		}
 	}
 	
@@ -146,7 +153,10 @@ frappe.ui.form.on("Expense Claim","expenses_on_form_rendered", function(frm, gri
 		//grid_row.grid_form.fields_dict.advance_total_amount.df.read_only = read_status;
 		grid_row.grid_form.fields_dict.description.df.read_only = read_status;
 		//grid_row.grid_form.fields_dict.claim_amount.df.read_only = read_status;
-		grid_row.grid_form.fields_dict.sanctioned_amount.df.read_only = read_status;
+		//grid_row.grid_form.fields_dict.sanctioned_amount.df.read_only = read_status;
+		if (local_status == 'Travel Claim Approved by Supervisor' && !in_list(user_roles, "HR User")){
+			grid_row.grid_form.fields_dict.sanctioned_amount.df.read_only = true;
+		}
 		
 		// Hide
 		grid_row.grid_form.fields_dict.dsa_rate_per_day.df.hidden = hide_status;
@@ -169,7 +179,7 @@ frappe.ui.form.on("Expense Claim","expenses_on_form_rendered", function(frm, gri
 		grid_row.grid_form.fields_dict.advance_total_amount.df.hidden = hide_status;
 		grid_row.grid_form.fields_dict.description.df.hidden = hide_status;
 		grid_row.grid_form.fields_dict.claim_amount.df.hidden = hide_status;
-		grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = hide_status;
+		//grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = hide_status;
 		
 		// Refresh
 		grid_row.grid_form.fields_dict.dsa_rate_per_day.refresh()
@@ -216,6 +226,13 @@ cur_frm.cscript.clear_sanctioned = function(doc) {
 cur_frm.cscript.refresh = function(doc,cdt,cdn){
 	cur_frm.cscript.set_help(doc);
 	cur_frm.toggle_enable("posting_date", !doc.posting_date);
+	if (!local_status || local_status == 'Travel Request Draft'){
+		cur_frm.fields_dict['expenses'].grid.set_column_disp("other_expenses", false);
+		cur_frm.fields_dict['expenses'].grid.set_column_disp("travel_advance", false);
+		cur_frm.fields_dict['expenses'].grid.set_column_disp("section_break_4", false);
+		cur_frm.fields_dict['expenses'].grid.set_column_disp("section_break_6", false);
+	}
+	
 	if(!doc.__islocal) {
 		cur_frm.toggle_enable("exp_approver", doc.approval_status=="Draft");
 		//cur_frm.toggle_enable("approval_status", (doc.exp_approver==user && doc.docstatus==0));

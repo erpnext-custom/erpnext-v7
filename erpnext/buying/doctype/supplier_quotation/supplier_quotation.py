@@ -84,6 +84,8 @@ def make_purchase_order(source_name, target_doc=None):
 				["uom", "stock_uom"],
 				["uom", "uom"],
 				["material_request", "material_request"],
+				["budget_account", "budget_account"],
+				["cost_center", "cost_center"],
 				["material_request_item", "material_request_item"]
 			],
 			"postprocess": update_item

@@ -230,5 +230,6 @@ body[data-route="pos"] .modal-dialog {
 	background-image: url("/files/smcl_logo_background.png");
 	background-repeat: no-repeat !important;
 	background-position: center !important;
+	background-color: #2b4d80 !important;
 }
 

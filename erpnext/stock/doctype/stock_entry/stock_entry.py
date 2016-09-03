@@ -463,6 +463,7 @@ class StockEntry(StockController):
 			'description'		  	: item.description,
 			'image'					: item.image,
 			'item_name' 		  	: item.item_name,
+			'item_group' 		  	: item.item_group,
 			'expense_account'		: args.get("expense_account"),
 			'cost_center'			: get_default_cost_center(args, item),
 			'qty'					: 0,

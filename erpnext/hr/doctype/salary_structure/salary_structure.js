@@ -721,54 +721,71 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 	}
 
 	// GIS
-	if (gis_ded_id >= 0){
-		if (d_tbl[gis_ded_id].amount != calc_gis_amt){
-			frappe.model.set_value("Salary Detail", gis_ded_dn, "amount", calc_gis_amt);				
-		}
-	} 
-	else{
-		if (calc_gis_amt > 0){
-			var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-			new_child.salary_component = "Group Insurance Scheme";
-			new_child.amount = calc_gis_amt;	
-			//cur_frm.refresh();
-		}
-	}						
-	
+	var calc_gis_amt2 = 0;
+	if (doc.eligible_for_gis){
+		calc_gis_amt2 = calc_gis_amt;
+		if (gis_ded_id >= 0){
+			if (d_tbl[gis_ded_id].amount != calc_gis_amt2){
+				frappe.model.set_value("Salary Detail", gis_ded_dn, "amount", calc_gis_amt2);				
+			}
+		} 
+		else{
+			if (calc_gis_amt > 0){
+				var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
+				new_child.salary_component = "Group Insurance Scheme";
+				new_child.amount = calc_gis_amt2;	
+				//cur_frm.refresh();
+			}
+		}						
+	}
+	else if(doc.eligible_for_gis==0 && gis_ded_id >= 0 && d_tbl[gis_ded_id].amount > 0){
+			frappe.model.set_value("Salary Detail", gis_ded_dn, "amount", 0);
+	}
+		
 	// PF
 	var calc_pf_amt = 0;
-	calc_pf_amt = Math.round(e_tbl[basic_all_id].amount*employee_pf*0.01);
-	if (pf_ded_id >= 0){
-		if (d_tbl[pf_ded_id].amount != calc_pf_amt){
-			frappe.model.set_value("Salary Detail", pf_ded_dn, "amount", calc_pf_amt);				
-		}
-	} 
-	else{
-		if (calc_pf_amt > 0){
-			var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-			new_child.salary_component = "PF";
-			new_child.amount = calc_pf_amt;				
-			//cur_frm.refresh();
-		}
-	}	
+	if (doc.eligible_for_pf){
+		calc_pf_amt = Math.round(e_tbl[basic_all_id].amount*employee_pf*0.01);
+		if (pf_ded_id >= 0){
+			if (d_tbl[pf_ded_id].amount != calc_pf_amt){
+				frappe.model.set_value("Salary Detail", pf_ded_dn, "amount", calc_pf_amt);				
+			}
+		} 
+		else{
+			if (calc_pf_amt > 0){
+				var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
+				new_child.salary_component = "PF";
+				new_child.amount = calc_pf_amt;				
+				//cur_frm.refresh();
+			}
+		}	
+	}
+	else if(doc.eligible_for_pf==0 && pf_ded_id >= 0 && d_tbl[pf_ded_id].amount > 0){
+			frappe.model.set_value("Salary Detail", pf_ded_dn, "amount", 0);
+	}
 	
 	// Health Contribution
 	calculate_totals(doc);
 	var calc_health_amt = 0;
-	calc_health_amt = Math.round(doc.total_earning*health_contribution*0.01);
-	if (health_ded_id >= 0){
-		if (d_tbl[health_ded_id].amount != calc_health_amt){
-			frappe.model.set_value("Salary Detail", health_ded_dn, "amount", calc_health_amt);				
-		}
-	} 
-	else{
-		if (calc_health_amt > 0){
-			var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-			new_child.salary_component = "Health Contribution";
-			new_child.amount = calc_health_amt;				
-			//cur_frm.refresh();
-		}
-	}		
+	if (doc.eligible_for_health_contribution){
+		calc_health_amt = Math.round(doc.total_earning*health_contribution*0.01);
+		if (health_ded_id >= 0){
+			if (d_tbl[health_ded_id].amount != calc_health_amt){
+				frappe.model.set_value("Salary Detail", health_ded_dn, "amount", calc_health_amt);				
+			}
+		} 
+		else{
+			if (calc_health_amt > 0){
+				var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
+				new_child.salary_component = "Health Contribution";
+				new_child.amount = calc_health_amt;				
+				//cur_frm.refresh();
+			}
+		}		
+	}
+	else if(doc.eligible_for_health_contribution==0 && health_ded_id >= 0 && d_tbl[health_ded_id].amount > 0){
+			frappe.model.set_value("Salary Detail", health_ded_dn, "amount", 0);
+	}
 	
 	// Salary Tax
 	var calc_tds_amt = 0;	
@@ -776,7 +793,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 	cur_frm.call({
 		method: "erpnext.hr.doctype.salary_structure.salary_structure.get_salary_tax",
 		args: {
-			"gross_amt": (doc.total_earning-calc_pf_amt-calc_gis_amt),
+			"gross_amt": (doc.total_earning-calc_pf_amt-calc_gis_amt2),
 		},
 		callback: function(r){
 			if (r.message){
@@ -848,6 +865,20 @@ cur_frm.cscript.eligible_for_fuel_allowances = function(frm){
 	cur_frm.refresh();
 }
 
+cur_frm.cscript.eligible_for_gis = function(frm){
+	calculate_others(frm, "GIS", "A");
+	cur_frm.refresh();
+}
+
+cur_frm.cscript.eligible_for_pf = function(frm){
+	calculate_others(frm, "GIS", "A");
+	cur_frm.refresh();
+}
+
+cur_frm.cscript.eligible_for_health_contribution = function(frm){
+	calculate_others(frm, "GIS", "A");
+	cur_frm.refresh();
+}
 //
 cur_frm.cscript.ca = function(frm){
 	calculate_others(frm, "Corporate Allowance", "P");
@@ -880,4 +911,5 @@ cur_frm.cscript.temporary_transfer_allowance = function(frm){
 cur_frm.cscript.fuel_allowances = function(frm){
 	calculate_others(frm, "Fuel Allowance", "A");
 }
+
 //++ Ver 20160804.1 Ends

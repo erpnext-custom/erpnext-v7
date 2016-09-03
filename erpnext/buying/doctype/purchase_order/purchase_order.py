@@ -422,3 +422,11 @@ def update_status(status, name):
 	po = frappe.get_doc("Purchase Order", name)
 	po.update_status(status)
 	po.update_delivered_qty_in_sales_order()
+
+@frappe.whitelist()
+def get_budget_account(item_code):
+	acc = ""
+	if item_code:
+		acc = frappe.db.get_value("Item", item_code, "expense_account")
+
+	return acc

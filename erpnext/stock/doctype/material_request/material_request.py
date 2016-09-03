@@ -220,6 +220,8 @@ def make_purchase_order(source_name, target_doc=None):
 				["name", "material_request_item"],
 				["parent", "material_request"],
 				["uom", "stock_uom"],
+				["budget_account", "budget_account"],
+                                ["cost_center", "cost_center"],
 				["uom", "uom"]
 			],
 			"postprocess": update_item,
@@ -244,6 +246,8 @@ def make_request_for_quotation(source_name, target_doc=None):
 			"field_map": [
 				["name", "material_request_item"],
 				["parent", "material_request"],
+				["budget_account", "budget_account"],
+                                ["cost_center", "cost_center"],
 				["uom", "uom"]
 			]
 		}
@@ -280,6 +284,8 @@ def make_purchase_order_based_on_supplier(source_name, target_doc=None):
 					["name", "material_request_item"],
 					["parent", "material_request"],
 					["uom", "stock_uom"],
+					["budget_account", "budget_account"],
+                                	["cost_center", "cost_center"],
 					["uom", "uom"]
 				],
 				"postprocess": update_item,
@@ -324,6 +330,8 @@ def make_supplier_quotation(source_name, target_doc=None):
 			"doctype": "Supplier Quotation Item",
 			"field_map": {
 				"name": "material_request_item",
+				"budget_account": "budget_account",
+                                "cost_center": "cost_center",
 				"parent": "material_request"
 			}
 		}
@@ -363,6 +371,8 @@ def make_stock_entry(source_name, target_doc=None):
 				"name": "material_request_item",
 				"parent": "material_request",
 				"uom": "stock_uom",
+				"cost_center": "cost_center",
+				"budget_account": "expense_account"
 			},
 			"postprocess": update_item,
 			"condition": lambda doc: doc.ordered_qty < doc.qty

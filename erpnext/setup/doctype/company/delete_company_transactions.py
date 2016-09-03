@@ -32,6 +32,9 @@ def delete_company_transactions(company_name):
 	for d in ["ToDo","Communication", "Quality Inspection", "Quality Inspection Reading", "Mines Quality Record", "Stock Price Template", "Reappropriation Details", "Supplementary Details", "Cheque Lot", "BRS Entries", "RRCO Receipt Entries", "Training And Development", "Training Fees", "Leave Encashment", "Consumed Budget", "Mining Process", "Mines Quality Record Details"]:
 		delete_doc(d)
 
+	for d in frappe.db.sql_list("""select parent from tabDocField where fieldtype='Link' and options IN ('ToDo','Communication', 'Quality Inspection', 'Quality Inspection Reading', 'Mines Quality Record', 'Stock Price Template', 'Reappropriation Details', 'Supplementary Details', 'Cheque Lot', 'BRS Entries', 'RRCO Receipt Entries', 'Training And Development', 'Training Fees', 'Leave Encashment', 'Consumed Budget', 'Mining Process', 'Mines Quality Record Details')"""):
+		delete_doc(d)
+
 	# Clear notification counts
 	clear_notifications()
 

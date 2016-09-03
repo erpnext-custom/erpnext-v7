@@ -93,6 +93,19 @@ def get_expense_approver(doctype, txt, searchfield, start, page_len, filters):
 	""", ("%" + txt + "%"))
 
 @frappe.whitelist()
+def get_expense_approver_mod(employee):
+	return frappe.db.sql("""
+		select u.name, concat(u.first_name, ' ', u.last_name)
+		from tabUser u, tabUserRole r, tabEmployee e1, tabEmployee e2
+		where u.name = r.parent and r.role = 'Expense Approver' 
+		and u.enabled  = 1
+		and e1.employee = '%s'
+		and e1.reports_to = e2.employee
+		and u.name = e2.user_id
+	""" % (employee))
+
+
+@frappe.whitelist()
 def make_bank_entry(docname):
 	from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_bank_cash_account
 
@@ -113,6 +126,7 @@ def make_bank_entry(docname):
         # Ver 1.0 Ends, by SSK on 10/08/2016
 
 	je = frappe.new_doc("Journal Entry")
+	je.title = 'Travel Claims - ('+str(expense_claim.employee)+')'+str(expense_claim.employee_name)
 	je.voucher_type = 'Bank Entry'
 	je.naming_series = 'Bank Payment Voucher'
 	je.company = expense_claim.company
