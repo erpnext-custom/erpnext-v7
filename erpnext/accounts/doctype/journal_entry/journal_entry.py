@@ -121,7 +121,7 @@ class JournalEntry(AccountsController):
                         if d.party_check == 1:
                                 account_type = frappe.db.get_value("Account", d.account, "account_type")
                                 if account_type in ["Receivable", "Payable", "Expense Account", "Income Account"]:
-                                        if not (d.party_type and d.party):
+                                        if not (d.party_type and d.party) and account_type in ["Receivable", "Payable"]:
                                                 frappe.throw(_("Row {0}: Party Type and Party is required for Receivable / Payable account {1}").format(d.idx, d.account))
                                 elif d.party_type and d.party:
                                         frappe.throw(_("Row {0}: Party Type and Party is only applicable against Receivable / Payable account").format(d.idx))

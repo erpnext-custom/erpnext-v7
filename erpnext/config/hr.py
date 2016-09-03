@@ -115,12 +115,12 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Travel Claim & Leave Encashment"),
+			"label": _("Travel & Leave Encashment"),
 			"items": [
 				{
 					"type": "doctype",
 					"name": "Expense Claim",
-                                        "label": _("Travel Expense Claim"),
+                                        "label": _("Travel Request/Expense Claim"),
 					"description": _("Claims for company expense."),
 				},
 				{
@@ -345,5 +345,37 @@ def get_data():
 				},
 
 			]
-		}
+		},
+		{
+			"label": _("Help"),
+			"icon": "icon-facetime-video",
+			"items": [
+				{
+					"type": "help",
+					"label": _("Setting up Employees"),
+					"youtube_id": "USfIUdZlUhw"
+				},
+				{
+					"type": "help",
+					"label": _("Leave Management"),
+					"youtube_id": "fc0p_AXebc8"
+				},
+				{
+					"type": "help",
+					"label": _("Expense Claims"),
+					"youtube_id": "5SZHJF--ZFY"
+				},
+				{
+					"type": "help",
+					"label": _("Processing Payroll"),
+					"youtube_id": "apgE-f25Rm0"
+				},
+			]
+		},
+                {
+			"label": _("Documents"),
+			"icon": "icon-wrench",
+			"items": [
+			]
+		},
 	]

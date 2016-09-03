@@ -10,9 +10,10 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 1.0		  		  SSK		                        11/08/2016         Following columns introducted
                                                                           i) total_advance_amount
 																		 ii) net_claimed_amount
+1.0		  		  SSK		                        02/09/2016         Travel Authorization workflow introduced
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
-
+var local_status = '';
 frappe.provide("erpnext.hr");
 
 erpnext.hr.ExpenseClaimController = frappe.ui.form.Controller.extend({
@@ -77,7 +78,130 @@ cur_frm.cscript.onload = function(doc,cdt,cdn) {
 			query: "erpnext.hr.doctype.expense_claim.expense_claim.get_expense_approver"
 		};
 	});
+	
 }
+
+cur_frm.cscript.onload = function(frm,cdt,cdn) {
+	local_status = frm.workflow_state;
+}
+
+frappe.ui.form.on("Expense Claim","expenses_on_form_rendered", function(frm, grid_row, cdt, cdn) {
+	var grid_row = cur_frm.open_grid_row();
+	
+	if (!grid_row.grid_form.fields_dict.currency.value || grid_row.grid_form.fields_dict.currency.value == 'BTN'){
+		grid_row.grid_form.fields_dict.currency.set_value('BTN-Nu');
+	}
+	
+	if (!local_status || local_status == 'Travel Request Draft'){
+		enable_disable(false,true,false);
+	}
+	else if (local_status == 'Travel Claim Draft'){
+		if (!in_list(user_roles, "Expense Approver")) {
+			enable_disable(true,false,false);
+		}
+		else{
+			enable_disable(false,false,true);
+		}
+	}
+	else if (local_status == 'Travel Claim Approved by Supervisor'){
+		if (!in_list(user_roles, "HR User")) {
+			enable_disable(true,false,true);
+		}
+		else{
+			enable_disable(false,false,false);
+		}
+	}
+	
+	function enable_disable(req_status, hide_status, read_status){
+		// Required 
+		grid_row.grid_form.fields_dict.dsa_rate_per_day.df.reqd = req_status;
+		//grid_row.grid_form.fields_dict.expense_type.df.reqd = req_status;
+		
+		// Read-Only
+		grid_row.grid_form.fields_dict.dsa_rate_per_day.df.read_only = read_status;
+		//grid_row.grid_form.fields_dict.expense_type.df.read_only = read_status;
+		//grid_row.grid_form.fields_dict.total_claim.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.expense_date.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.country_from.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.place_from.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.to_date.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.country_to.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.place_to.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.expense_type.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.modes_of_travel.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.currency.df.read_only = read_status;
+		//grid_row.grid_form.fields_dict.exchange_rate.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.dsa_entitled.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.other_expense_amount.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.mileage.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.other_expense_currency.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.mileage_currency.df.read_only = read_status;
+		//grid_row.grid_form.fields_dict.other_expense_exchange_rate.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.mileage_rate2.df.read_only = read_status;
+		//grid_row.grid_form.fields_dict.other_expense_total_amount.df.read_only = read_status;
+		//grid_row.grid_form.fields_dict.mileage_total_amount.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.advance_amount.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.advance_currency.df.read_only = read_status;
+		//grid_row.grid_form.fields_dict.advance_exchange_rate.df.read_only = read_status;
+		//grid_row.grid_form.fields_dict.advance_total_amount.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.description.df.read_only = read_status;
+		//grid_row.grid_form.fields_dict.claim_amount.df.read_only = read_status;
+		grid_row.grid_form.fields_dict.sanctioned_amount.df.read_only = read_status;
+		
+		// Hide
+		grid_row.grid_form.fields_dict.dsa_rate_per_day.df.hidden = hide_status;
+		//grid_row.grid_form.fields_dict.expense_type.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.total_claim.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.currency.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.exchange_rate.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.dsa_entitled.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.other_expense_amount.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.mileage.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.other_expense_currency.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.mileage_currency.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.other_expense_exchange_rate.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.mileage_rate2.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.other_expense_total_amount.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.mileage_total_amount.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.advance_amount.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.advance_currency.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.advance_exchange_rate.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.advance_total_amount.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.description.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.claim_amount.df.hidden = hide_status;
+		grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = hide_status;
+		
+		// Refresh
+		grid_row.grid_form.fields_dict.dsa_rate_per_day.refresh()
+		grid_row.grid_form.fields_dict.expense_date.refresh()
+		grid_row.grid_form.fields_dict.country_from.refresh()
+		grid_row.grid_form.fields_dict.place_from.refresh()
+		grid_row.grid_form.fields_dict.to_date.refresh()
+		grid_row.grid_form.fields_dict.country_to.refresh()
+		grid_row.grid_form.fields_dict.place_to.refresh()
+		grid_row.grid_form.fields_dict.expense_type.refresh()
+		grid_row.grid_form.fields_dict.modes_of_travel.refresh()
+		grid_row.grid_form.fields_dict.total_claim.refresh()
+		grid_row.grid_form.fields_dict.currency.refresh()
+		//grid_row.grid_form.fields_dict.exchange_rate.refresh()
+		grid_row.grid_form.fields_dict.dsa_entitled.refresh()
+		grid_row.grid_form.fields_dict.other_expense_amount.refresh()
+		grid_row.grid_form.fields_dict.mileage.refresh()
+		grid_row.grid_form.fields_dict.other_expense_currency.refresh()
+		grid_row.grid_form.fields_dict.mileage_currency.refresh()
+		//grid_row.grid_form.fields_dict.other_expense_exchange_rate.refresh()
+		grid_row.grid_form.fields_dict.mileage_rate2.refresh()
+		//grid_row.grid_form.fields_dict.other_expense_total_amount.refresh()
+		//grid_row.grid_form.fields_dict.mileage_total_amount.refresh()
+		grid_row.grid_form.fields_dict.advance_amount.refresh()
+		grid_row.grid_form.fields_dict.advance_currency.refresh()
+		//grid_row.grid_form.fields_dict.advance_exchange_rate.refresh()
+		//grid_row.grid_form.fields_dict.advance_total_amount.refresh()
+		grid_row.grid_form.fields_dict.description.refresh()
+		grid_row.grid_form.fields_dict.claim_amount.refresh()
+		grid_row.grid_form.fields_dict.sanctioned_amount.refresh()
+	}
+})
 
 cur_frm.cscript.clear_sanctioned = function(doc) {
 	var val = doc.expenses || [];
@@ -91,14 +215,17 @@ cur_frm.cscript.clear_sanctioned = function(doc) {
 
 cur_frm.cscript.refresh = function(doc,cdt,cdn){
 	cur_frm.cscript.set_help(doc);
-
+	cur_frm.toggle_enable("posting_date", !doc.posting_date);
 	if(!doc.__islocal) {
 		cur_frm.toggle_enable("exp_approver", doc.approval_status=="Draft");
-		cur_frm.toggle_enable("approval_status", (doc.exp_approver==user && doc.docstatus==0));
+		//cur_frm.toggle_enable("approval_status", (doc.exp_approver==user && doc.docstatus==0));
+		cur_frm.toggle_enable("approval_status", (doc.exp_approver==user && doc.approval_status=="Draft"));
 
+		/*
 		if (doc.docstatus==0 && doc.exp_approver==user && doc.approval_status=="Approved")
 			 cur_frm.savesubmit();
-
+		*/
+		 
 		if (doc.docstatus===1 && doc.approval_status=="Approved") {
 			if (cint(doc.total_amount_reimbursed) < cint(doc.total_sanctioned_amount) && frappe.model.can_create("Journal Entry")) {
 				cur_frm.add_custom_button(__("Bank Entry"), cur_frm.cscript.make_bank_entry, __("Make"));
@@ -247,7 +374,9 @@ frappe.ui.form.on("Expense Claim Detail", "expense_date", function(frm, cdt, cdn
 	var to_date = new Date(child.to_date);
 	
 	frappe.model.set_value(cdt, cdn, "no_of_days", ((Math.ceil(Math.abs(to_date.getTime()-from_date.getTime()))/(3600*24*1000))+1));
-	calculate_claim(cdt, cdn);	
+	if (local_status == 'Travel Claim Draft' || local_status == 'Travel Claim Approved by Supervisor'){
+		calculate_claim(cdt, cdn);	
+	}
 });
 
 frappe.ui.form.on("Expense Claim Detail", "to_date", function(frm, cdt, cdn) {
@@ -256,7 +385,9 @@ frappe.ui.form.on("Expense Claim Detail", "to_date", function(frm, cdt, cdn) {
 	var to_date = new Date(child.to_date);
 	
 	frappe.model.set_value(cdt, cdn, "no_of_days", ((Math.ceil(Math.abs(to_date.getTime()-from_date.getTime()))/(3600*24*1000))+1));	
-	calculate_claim(cdt, cdn);	
+	if (local_status == 'Travel Claim Draft' || local_status == 'Travel Claim Approved by Supervisor'){
+		calculate_claim(cdt, cdn);	
+	}
 });
 
 

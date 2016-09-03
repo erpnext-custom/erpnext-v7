@@ -17,10 +17,11 @@ def execute(filters=None):
 def get_data(query):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
-	
+	ini = su = cm = co = ad = av = 0
 	for d in datas:
 		adjustment = flt(d.added) - flt(d.deducted)
 		consumed = flt(d.consumed)
+		supplement = flt(d.supplement)
 		committed = flt(d.committed)
 		if committed > 0:
 			committed-=consumed
@@ -29,14 +30,32 @@ def get_data(query):
 		row = {
 			"account": d.account, 
 			"cost_center": d.cost_center,
-			"initial": d.initial_budget,
-			"supplementary": d.supplement,
+			"initial": flt(d.initial_budget),
+			"supplementary": supplement,
 			"adjustment": adjustment,
 			"committed": committed,
 			"consumed": consumed,
 			"available": available
 		}
 		data.append(row);
+		ini+=flt(d.initial_budget)
+		su+=supplement
+		cm+=committed
+		co+=consumed
+		ad+=adjustment
+		av+=available
+
+	row = {
+		"account": "Total",
+		"cost_center": "",
+		"initial": ini,
+		"supplementary": su,
+		"adjustment": ad,
+		"committed": cm,
+		"consumed": co,
+		"available": av
+	}
+	data.append(row)
 
 	return data
 
