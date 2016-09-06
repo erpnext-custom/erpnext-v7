@@ -1136,7 +1136,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2016-09-03 10:22:33.339436", 
+ "modified": "2016-09-06 11:05:31.848640", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Journal Entry", 
@@ -1160,6 +1160,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Company\"]", 
    "write": 1
   }, 
   {

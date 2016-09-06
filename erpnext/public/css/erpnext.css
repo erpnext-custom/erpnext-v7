@@ -233,3 +233,7 @@ body[data-route="pos"] .modal-dialog {
 	background-color: #2b4d80 !important;
 }
 
+.form-attachments {
+//	display: none !important;
+}
+

@@ -484,7 +484,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-09-03 10:17:31.074817", 
+ "modified": "2016-09-06 11:08:56.518575", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Account", 
@@ -492,7 +492,7 @@
  "permissions": [
   {
    "amend": 0, 
-   "apply_user_permissions": 1, 
+   "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
