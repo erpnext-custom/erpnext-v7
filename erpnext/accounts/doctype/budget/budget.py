@@ -82,6 +82,8 @@ def validate_expense_against_budget(args):
 						and yearly_action != monthly_action:
 							compare_expense_with_budget(args, budget.cost_center,
 								flt(budget.budget_amount), _("Annual"), yearly_action)
+		elif args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of good Manufacture - SMCL']:
+			pass
 		else:
 			#Budget Check if there is no budget booking under the budget head
 			frappe.throw("There is no budget in " + args.account + " under " + args.cost_center)
