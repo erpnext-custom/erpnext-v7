@@ -379,7 +379,10 @@ cur_frm.cscript.expense_date = function(frm, cdt, cdn){
 		}
 	}
 	
-	if (frm.expense_date < frm.posting_date){
+	if (local_status != 'Travel Request Date' && !frm.expense_date){
+		msgprint(__("Expense Claim Date should be a valid date"));
+	}
+	else if (frm.expense_date < frm.posting_date){
 		msgprint(__("Expense Claim Date cannot be before travel request date."));
 	}
 	else if (frm.expense_date < max_date){

@@ -80,13 +80,13 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "PR Pending for PO",
+					"name": "Material Request Pending for Purchase Order",
 					"doctype": "Material Request"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Supplier Quoation pending for PR",
+					"name": "Material Request Pending for Supplier Quotation",
 					"doctype": "Material Request"
 				},
 				{

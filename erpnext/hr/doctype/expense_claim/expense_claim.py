@@ -6,6 +6,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   10/08/2016         Account Posting is modified
 1.0		  SSK		                   12/08/2016         Sanctioned Amount should be after advance deduction.
+1.0               SSK                              07/09/2016         Validations for Expense Claim Date added
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -31,6 +32,7 @@ class ExpenseClaim(Document):
 		self.calculate_total_amount()
 		set_employee_name(self)
 		self.set_expense_account()
+		self.validate_dates()
 		if self.task and not self.project:
 			self.project = frappe.db.get_value("Task", self.task, "project")
 
@@ -47,6 +49,26 @@ class ExpenseClaim(Document):
 			self.update_task()
 		elif self.project:
 			frappe.get_doc("Project", self.project).update_project()
+
+        # Ver 1.0 Begins, added by SSK on 07/09/2016
+        def validate_dates(self):
+                max_date = ""
+                
+                for row in self.get('expenses'):
+                        if max_date:
+                                pass
+                        else:
+                                max_date = row.to_date
+
+                        if row.to_date > max_date:
+                                max_date = row.to_date
+
+                if self.workflow_state != 'Travel Request Draft' and self.expense_date == "":
+                        frappe.throw(_("Expense Claim Date should be a valid date."))
+                elif self.expense_date and self.expense_date < self.posting_date:
+                        frappe.throw(_("Expense Claim Date cannot be before travel request date."))
+                elif self.expense_date and self.expense_date < max_date:
+                        frappe.throw(_("Expense Claim Date should be on or after {0}".format(max_date)))
 
 	def calculate_total_amount(self):
 		self.total_claimed_amount = 0

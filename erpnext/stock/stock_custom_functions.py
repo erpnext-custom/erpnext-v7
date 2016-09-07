@@ -28,7 +28,7 @@ def getItemCode(item_group):
 @frappe.whitelist()
 def get_template_list(doctype, txt, searchfield, start, page_len, filters): 
 	if filters['naming_series']:
-		query = "SELECT name, template_name FROM `tabStock Price Template` WHERE \'" + str(frappe.utils.today()) +"\'  BETWEEN from_date AND to_date AND naming_series = \'" + filters['naming_series'] + "\' and docstatus = 1";
+		query = "SELECT name, template_name FROM `tabStock Price Template` WHERE \'" + filters['posting_date'] +"\'  BETWEEN from_date AND to_date AND naming_series = \'" + filters['naming_series'] + "\' and docstatus = 1";
 		return frappe.db.sql(query);
 	
 
