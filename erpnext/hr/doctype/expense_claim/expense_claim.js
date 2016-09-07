@@ -11,6 +11,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                           i) total_advance_amount
 																		 ii) net_claimed_amount
 1.0		  		  SSK		                        02/09/2016         Travel Authorization workflow introduced
+1.0               SSK                               07/09/2016         Travel Claim Date field is added
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 var local_status = '';
@@ -57,11 +58,14 @@ cur_frm.add_fetch('employee', 'company', 'company');
 cur_frm.add_fetch('employee','employee_name','employee_name');
 
 cur_frm.cscript.onload = function(doc,cdt,cdn) {
+	console.log('onload is triggered.');
+	
 	if(!doc.approval_status)
 		cur_frm.set_value("approval_status", "Draft")
 
 	if (doc.__islocal) {
 		cur_frm.set_value("posting_date", dateutil.get_today());
+		
 		if(doc.amended_from)
 			cur_frm.set_value("approval_status", "Draft");
 		cur_frm.cscript.clear_sanctioned(doc);
@@ -82,6 +86,12 @@ cur_frm.cscript.onload = function(doc,cdt,cdn) {
 
 cur_frm.cscript.onload = function(frm,cdt,cdn) {
 	local_status = frm.workflow_state;
+	// Ver 1.0 Begins, added by SSK on 07/09/2016
+	// Following code is added
+	if (local_status == 'Travel Claim Draft' && !frm.expense_date){
+		cur_frm.set_value("expense_date", dateutil.get_today());
+	}
+	// Ver 1.0 Ends	
 }
 
 frappe.ui.form.on("Expense Claim","expenses_on_form_rendered", function(frm, grid_row, cdt, cdn) {
@@ -226,6 +236,7 @@ cur_frm.cscript.clear_sanctioned = function(doc) {
 cur_frm.cscript.refresh = function(doc,cdt,cdn){
 	cur_frm.cscript.set_help(doc);
 	cur_frm.toggle_enable("posting_date", !doc.posting_date);
+	cur_frm.toggle_enable("expense_date", (local_status == 'Travel Claim Draft'));
 	if (!local_status || local_status == 'Travel Request Draft'){
 		cur_frm.fields_dict['expenses'].grid.set_column_disp("other_expenses", false);
 		cur_frm.fields_dict['expenses'].grid.set_column_disp("travel_advance", false);
@@ -351,6 +362,31 @@ erpnext.expense_claim = {
 frappe.ui.form.on("Expense Claim", "employee_name", function(frm) {
 	erpnext.expense_claim.set_title(frm);
 });
+
+// Ver 1.0 Begins, added by SSK on 07/09/2016
+// Following code is added
+cur_frm.cscript.expense_date = function(frm, cdt, cdn){
+	var val = frm.expenses || [];
+	var max_date;
+	
+	for(var i = 0; i<val.length; i++){
+		if (!max_date){
+			max_date = val[i].to_date;
+		}
+		
+		if (val[i].to_date > max_date) {
+			max_date = val[i].to_date;
+		}
+	}
+	
+	if (frm.expense_date < frm.posting_date){
+		msgprint(__("Expense Claim Date cannot be before travel request date."));
+	}
+	else if (frm.expense_date < max_date){
+		msgprint(__("Expense Claim Date should be on or after "+max_date));
+	}
+}
+// Ver 1.0 Ends
 
 frappe.ui.form.on("Expense Claim", "task", function(frm) {
 	erpnext.expense_claim.set_title(frm);

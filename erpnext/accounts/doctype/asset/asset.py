@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, add_months, cint, nowdate, getdate
+from frappe.utils import flt, add_months, cint, nowdate, getdate, get_last_day
 from frappe.model.document import Document
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import get_fixed_asset_account
 from erpnext.accounts.doctype.asset.depreciation \
@@ -106,8 +106,8 @@ class Asset(Document):
 				cint(self.number_of_depreciations_booked)
 			if number_of_pending_depreciations:
 				for n in xrange(number_of_pending_depreciations):
-					schedule_date = add_months(self.next_depreciation_date,
-						n * cint(self.frequency_of_depreciation))
+					schedule_date = get_last_day(add_months(self.next_depreciation_date,
+						n * cint(self.frequency_of_depreciation)))
 
 					last_schedule_date = add_months(self.next_depreciation_date,
 						(n - 1) * cint(self.frequency_of_depreciation))
