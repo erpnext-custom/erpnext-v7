@@ -67,6 +67,11 @@ def get_data():
 					"label": _("Sales Terms and Conditions Template"),
 					"description": _("Template of terms or contract.")
 				},
+				{
+					"type": "doctype",
+					"name": "Loss Tolerance",
+					"description": _("Loss Tolerance Setting"),
+				}
 			]
 		},
 		{

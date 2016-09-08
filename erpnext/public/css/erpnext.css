@@ -233,7 +233,18 @@ body[data-route="pos"] .modal-dialog {
 	background-color: #2b4d80 !important;
 }
 
+@media all {
+   div .printedby {
+       position: fixed;
+       bottom: 0;
+       text-align: right;
+       font-size: xx-small;
+       width: 100% !important;
+   }
+}
+
 .form-attachments {
 //	display: none !important;
 }
+
 

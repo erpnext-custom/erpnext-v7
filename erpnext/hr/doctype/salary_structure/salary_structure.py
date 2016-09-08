@@ -208,6 +208,7 @@ class SalaryStructure(Document):
 def make_salary_slip(source_name, target_doc=None):
 	def postprocess(source, target):
                 # Ver 1.0 Begins added by SSK on 25/08/201, updating branch, department, division in salary slip
+                gross_amt = 0.00
                 employee = frappe.get_doc("Employee",source.employee)
                 target.branch = employee.branch
                 target.department = employee.department
@@ -242,6 +243,23 @@ def make_salary_slip(source_name, target_doc=None):
                                                 'depends_on_lwp' : d.depends_on_lwp,
                                                 'salary_component' : d.salary_component
                                         })                                        
+
+                for e in target.get('earnings'):
+                        gross_amt += flt(e.amount)
+
+                gross_amt += flt(target.arrear_amount) + flt(target.leave_encashment_amount)
+
+                for d in target.get('deductions'):
+                        if d.salary_component in ('PF','Group Insurance Scheme'):
+                                gross_amt -= flt(d.amount)
+
+                for d in target.get('deductions'):
+                        if d.salary_component == 'Salary Tax':
+                                #frappe.msgprint(_("Gross Amount: {0}").format(flt(gross_amt)))
+                                tax_amt = get_salary_tax(flt(gross_amt))
+                                #frappe.msgprint(_("Tax: {0}").format(tax_amt))
+                                d.amount = flt(tax_amt)
+
                                         
 		target.run_method("pull_emp_details")
 		target.run_method("get_leave_details")

@@ -343,7 +343,45 @@ def get_data():
 					"name": "Monthly Attendance Sheet",
 					"doctype": "Attendance"
 				},
-
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Salary Tax Report",
+                                        "label": "RRCO Tax Slab Details",
+					"doctype": "Salary Tax"
+				},
+			]
+		},
+		{
+			"label": _("Help"),
+			"icon": "icon-facetime-video",
+			"items": [
+				{
+					"type": "help",
+					"label": _("Setting up Employees"),
+					"youtube_id": "USfIUdZlUhw"
+				},
+				{
+					"type": "help",
+					"label": _("Leave Management"),
+					"youtube_id": "fc0p_AXebc8"
+				},
+				{
+					"type": "help",
+					"label": _("Expense Claims"),
+					"youtube_id": "5SZHJF--ZFY"
+				},
+				{
+					"type": "help",
+					"label": _("Processing Payroll"),
+					"youtube_id": "apgE-f25Rm0"
+				},
+			]
+		},
+                {
+			"label": _("Documents"),
+			"icon": "icon-wrench",
+			"items": [
 			]
 		},
 	]
