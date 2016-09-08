@@ -153,7 +153,8 @@ def make_bank_entry(docname):
 	je.naming_series = 'Bank Payment Voucher'
 	je.company = expense_claim.company
 	je.remark = 'Payment against Expense Claim: ' + docname;
-        je.posting_date = nowdate()
+        #je.posting_date = nowdate()
+	je.posting_date = expense_claim.expense_date
         je.total_amount_in_words =  money_in_words(expense_claim.total_sanctioned_amount)
 
 	for expense in expense_claim.expenses:

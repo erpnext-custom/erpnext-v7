@@ -140,5 +140,6 @@ def get_actual_expense(args, cost_center):
 			and gle.fiscal_year=%(fiscal_year)s
 			and gle.company=%(company)s
 			and gle.docstatus=1
+			and gle.is_opening != 'Yes'
 			{condition}
 	""".format(condition=condition), (args))[0][0])
