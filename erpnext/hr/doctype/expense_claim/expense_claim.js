@@ -466,9 +466,9 @@ frappe.ui.form.on("Expense Claim Detail", "expense_date", function(frm, cdt, cdn
 	var to_date = new Date(child.to_date);
 	
 	frappe.model.set_value(cdt, cdn, "no_of_days", ((Math.ceil(Math.abs(to_date.getTime()-from_date.getTime()))/(3600*24*1000))+1));
-	if (local_status == 'Travel Claim Draft' || local_status == 'Travel Claim Approved by Supervisor'){
-		calculate_claim(cdt, cdn);	
-	}
+	//if (local_status == 'Travel Claim Draft' || local_status == 'Travel Claim Approved by Supervisor'){
+	calculate_claim(cdt, cdn);	
+	//}
 });
 
 frappe.ui.form.on("Expense Claim Detail", "to_date", function(frm, cdt, cdn) {
@@ -477,9 +477,9 @@ frappe.ui.form.on("Expense Claim Detail", "to_date", function(frm, cdt, cdn) {
 	var to_date = new Date(child.to_date);
 	
 	frappe.model.set_value(cdt, cdn, "no_of_days", ((Math.ceil(Math.abs(to_date.getTime()-from_date.getTime()))/(3600*24*1000))+1));	
-	if (local_status == 'Travel Claim Draft' || local_status == 'Travel Claim Approved by Supervisor'){
-		calculate_claim(cdt, cdn);	
-	}
+	//if (local_status == 'Travel Claim Draft' || local_status == 'Travel Claim Approved by Supervisor'){
+	calculate_claim(cdt, cdn);	
+	//}
 });
 
 

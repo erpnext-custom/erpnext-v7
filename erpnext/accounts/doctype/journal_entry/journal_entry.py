@@ -585,7 +585,10 @@ class JournalEntry(AccountsController):
                                 # Ver 1.0 Ends
                                 
                                 if d.debit:
-                                        entry_balance = flt(entry_balance) + flt(d.debit)
+                                        if d.account == 'Employee Payable - SMCL':
+                                                entry_balance = flt(entry_balance) + 0
+                                        else:
+                                                entry_balance = flt(entry_balance) + flt(d.debit)
                                 elif d.credit and d.account == 'Advance to Employee - SMCL':
                                         entry_balance = flt(entry_balance) - flt(d.credit)
 
