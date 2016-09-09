@@ -296,7 +296,8 @@ class PurchaseOrder(BuyingController):
 				if consumed:
 					if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(a.amount)):
 						frappe.throw("Not enough budget in " + str(a.budget_account) + " under " + str(a.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(a.amount) - flt(budget_amount[0].budget_amount))))
-		
+			else:
+				frappe.throw("There is no budget in " + a.budget_account + " under " + a.cost_center)
 
 	##
 	# Cancel budget check entry

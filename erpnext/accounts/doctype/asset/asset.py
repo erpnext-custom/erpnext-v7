@@ -145,14 +145,9 @@ class Asset(Document):
 
 	def get_depreciation_amount(self, depreciable_value, num_days=1):
 		if self.depreciation_method == "Straight Line":
-			depreciation_amount = (flt(self.gross_purchase_amount) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25)
+			depreciation_amount = ((flt(self.gross_purchase_amount) - flt(self.residual_value)) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25)
 		else:
-			factor = 200.0 /  self.total_number_of_depreciations
-			depreciation_amount = flt(depreciable_value * factor / 100, 0)
-
-			value_after_depreciation = flt(depreciable_value) - depreciation_amount
-			if value_after_depreciation < flt(self.expected_value_after_useful_life):
-				depreciation_amount = flt(depreciable_value) - flt(self.expected_value_after_useful_life)
+			depreciation_amount = 0.0
 
 		return depreciation_amount
 

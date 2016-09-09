@@ -104,12 +104,14 @@ frappe.ui.form.on("Expense Claim","expenses_on_form_rendered", function(frm, gri
 	if (!local_status || local_status == 'Travel Request Draft'){
 		if (in_list(user_roles, "HR User")) {
 			enable_disable(false,false,false);
+			grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = false;
+			grid_row.grid_form.fields_dict.sanctioned_amount.refresh()
 		}
 		else{
 			enable_disable(false,true,false);
+			grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = false;
+			grid_row.grid_form.fields_dict.sanctioned_amount.refresh()
 		}
-		grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = true;
-		grid_row.grid_form.fields_dict.sanctioned_amount.refresh()
 	}
 	else if (local_status == 'Travel Claim Draft'){
 		if (!in_list(user_roles, "Expense Approver")) {
@@ -120,6 +122,8 @@ frappe.ui.form.on("Expense Claim","expenses_on_form_rendered", function(frm, gri
 		else{
 			if (in_list(user_roles, "HR User")) {
 				enable_disable(false,false,false);
+				grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = false;
+				grid_row.grid_form.fields_dict.sanctioned_amount.refresh()
 			}
 			else{
 				enable_disable(false,false,true);
@@ -129,13 +133,18 @@ frappe.ui.form.on("Expense Claim","expenses_on_form_rendered", function(frm, gri
 		}
 	}
 	else if (local_status == 'Travel Claim Approved by Supervisor'){
-		if (!in_list(user_roles, "HR User")) {
-			enable_disable(true,false,true);
+		if (in_list(user_roles, "HR User")) {
+			enable_disable(false,false,false);
 			grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = false;
 			grid_row.grid_form.fields_dict.sanctioned_amount.refresh()			
 		}
+		else if (in_list(user_roles, "Expense Approver")){
+			enable_disable(false,false,true);
+			grid_row.grid_form.fields_dict.sanctioned_amount.df.hidden = true;
+			grid_row.grid_form.fields_dict.sanctioned_amount.refresh()			
+		}
 		else{
-			enable_disable(false,false,false);
+			enable_disable(true,false,true);
 		}
 	}
 	else if (local_status == 'Travel Claim Approved by HR'){
@@ -252,11 +261,23 @@ cur_frm.cscript.refresh = function(doc,cdt,cdn){
 	cur_frm.cscript.set_help(doc);
 	cur_frm.toggle_enable("posting_date", !doc.posting_date);
 	cur_frm.toggle_enable("expense_date", (local_status == 'Travel Claim Draft' || in_list(user_roles, "HR User")));
+	
+	if (local_status == 'Travel Claim Draft' && !doc.expense_date){
+		cur_frm.set_value("expense_date", dateutil.get_today());
+	}
+	
 	if (!local_status || local_status == 'Travel Request Draft'){
 		cur_frm.fields_dict['expenses'].grid.set_column_disp("other_expenses", false);
 		cur_frm.fields_dict['expenses'].grid.set_column_disp("travel_advance", false);
 		cur_frm.fields_dict['expenses'].grid.set_column_disp("section_break_4", false);
 		cur_frm.fields_dict['expenses'].grid.set_column_disp("section_break_6", false);
+	}
+	
+	if (in_list(user_roles, "HR User")){
+		cur_frm.fields_dict['expenses'].grid.set_column_disp("other_expenses", true);
+		cur_frm.fields_dict['expenses'].grid.set_column_disp("travel_advance", true);
+		cur_frm.fields_dict['expenses'].grid.set_column_disp("section_break_4", true);
+		cur_frm.fields_dict['expenses'].grid.set_column_disp("section_break_6", true);
 	}
 	
 	if(!doc.__islocal) {
@@ -394,7 +415,7 @@ cur_frm.cscript.expense_date = function(frm, cdt, cdn){
 		}
 	}
 	
-	if (local_status && local_status != 'Travel Request Draft' && !frm.expense_date){
+	if (local_status && local_status == 'Travel Claim Draft' && !frm.expense_date){
 		msgprint(__("Expense Claim Date should be a valid date"));
 	}
 	else if (frm.expense_date < frm.posting_date){

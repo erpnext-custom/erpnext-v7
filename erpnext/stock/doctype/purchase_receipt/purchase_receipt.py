@@ -450,3 +450,11 @@ def make_purchase_return(source_name, target_doc=None):
 def update_purchase_receipt_status(docname, status):
 	pr = frappe.get_doc("Purchase Receipt", docname)
 	pr.update_status(status)
+
+@frappe.whitelist()
+def get_item_group(item_code):
+	grp = ""
+	if item_code:
+		grp = frappe.db.get_value("Item", item_code, "item_group")
+
+	return grp

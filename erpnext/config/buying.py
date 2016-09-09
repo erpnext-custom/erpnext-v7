@@ -35,6 +35,11 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Quality Inspection",
+					"description": _("Quality Inspection"),
+				},
+				{
+					"type": "doctype",
 					"name": "Purchase Invoice",
 					"description": _("Bills raised by Suppliers.")
 				}

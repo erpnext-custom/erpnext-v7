@@ -111,6 +111,12 @@ def get_data():
 					"name": "Salary Component",
 					"label": _("Salary Components"),
 					"description": _("Earnings, Deductions and other Salary components")
+				},
+                                {
+					"type": "doctype",
+					"name": "Production Incentives",
+					"label": _("MPI Target Setup"),
+					"description": _("MPI Target Setup")
 				}
 			]
 		},
