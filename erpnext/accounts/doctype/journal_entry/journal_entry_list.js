@@ -8,5 +8,6 @@ frappe.listview_settings['Journal Entry'] = {
 		} else {
 			return [__(doc.voucher_type), "blue", "voucher_type,=," + doc.voucher_type]
 		}
-	}
+	},
+	filters:[["posting_date", "<=", "2016-02-29"], ["posting_date", ">=","2016-02-01"]]
 };

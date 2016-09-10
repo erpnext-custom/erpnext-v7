@@ -84,8 +84,9 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 
 	for entry in gl_map:
 		make_entry(entry, adv_adj, update_outstanding)
-		# check against budget
-		validate_expense_against_budget(entry)
+		# check against budget only if not se
+		if entry.voucher_type != 'Stock Entry':
+			validate_expense_against_budget(entry)
 
 def make_entry(args, adv_adj, update_outstanding):
 	args.update({"doctype": "GL Entry"})
@@ -94,6 +95,20 @@ def make_entry(args, adv_adj, update_outstanding):
 	gle.insert()
 	gle.run_method("on_update_with_args", adv_adj, update_outstanding)
 	gle.submit()
+	
+	#commit the budget too
+	acc_type = frappe.db.get_value("Account", args.account, "account_type")
+	if acc_type == "Expense Account" or acc_type == "Fixed Asset":
+		bud_obj = frappe.get_doc({
+			"doctype": "Consumed Budget",
+			"account": args.account,
+			"cost_center": args.cost_center,
+			"po_no": args.voucher_no,
+			"po_date": args.posting_date,
+			"amount": flt(args.debit_in_account_currency) - flt(args.credit_in_account_currency),
+			"date": frappe.utils.nowdate()
+		})
+		bud_obj.submit()
 
 def validate_account_for_auto_accounting_for_stock(gl_map):
 	if cint(frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_stock")) \
@@ -182,8 +197,17 @@ def delete_gl_entries(gl_entries=None, voucher_type=None, voucher_no=None,
 	for entry in gl_entries:
 		validate_frozen_account(entry["account"], adv_adj)
 		validate_balance_type(entry["account"], adv_adj)
-		validate_expense_against_budget(entry)
+		if entry.voucher_type != 'Stock Entry':
+			validate_expense_against_budget(entry)
 		
 		if entry.get("against_voucher") and update_outstanding == 'Yes':
 			update_outstanding_amt(entry["account"], entry.get("party_type"), entry.get("party"), entry.get("against_voucher_type"),
 				entry.get("against_voucher"), on_cancel=True)
+	
+		#reset the committed budget too
+		acc_type = frappe.db.get_value("Account", entry["account"], "account_type")
+		if acc_type == "Expense Account" or acc_type == "Fixed Asset":
+			doc_id = frappe.db.get_value("Consumed Budget", {"po_no": entry["voucher_no"]}, "name")
+			if doc_id:
+				ref_doc = frappe.get_doc("Consumed Budget", str(doc_id))
+				ref_doc.db_set("amount", 0)
