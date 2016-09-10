@@ -272,7 +272,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
+				new_child.salary_component = "Corporate Allowance";
 				new_child.amount = calc_amt;	
 				//cur_frm.refresh();
 			}
@@ -302,7 +302,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
+				new_child.salary_component = "Contract Allowance";
 				new_child.amount = calc_amt;				
 				//cur_frm.refresh();
 			}
@@ -330,7 +330,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
+				new_child.salary_component = "Communication Allowance";
 				new_child.amount = calc_amt;				
 				//cur_frm.refresh();
 			}
@@ -360,7 +360,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
+				new_child.salary_component = "PSA";
 				new_child.amount = calc_amt;				
 				//cur_frm.refresh();
 			}
@@ -390,7 +390,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
+				new_child.salary_component = "MPI";
 				new_child.amount = calc_amt;				
 				//cur_frm.refresh();
 			}
@@ -420,7 +420,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
+				new_child.salary_component = "Officiating Allowance";
 				new_child.amount = calc_amt;				
 				//cur_frm.refresh();
 			}
@@ -450,7 +450,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
+				new_child.salary_component = "Temporary Transfer Allowance";
 				new_child.amount = calc_amt;				
 				//cur_frm.refresh();
 			}
@@ -478,7 +478,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			} 
 			else{
 				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
+				new_child.salary_component = "Fuel Allowance";
 				new_child.amount = calc_amt;		
 				//cur_frm.refresh();				
 			}
