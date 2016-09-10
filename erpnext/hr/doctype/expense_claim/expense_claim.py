@@ -7,6 +7,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 1.0		  SSK		                   10/08/2016         Account Posting is modified
 1.0		  SSK		                   12/08/2016         Sanctioned Amount should be after advance deduction.
 1.0               SSK                              07/09/2016         Validations for Expense Claim Date added
+1.0               SSK                              09/09/2016         Voucher construction is modified
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -148,7 +149,7 @@ def make_bank_entry(docname):
         # Ver 1.0 Ends, by SSK on 10/08/2016
 
 	je = frappe.new_doc("Journal Entry")
-	je.title = 'Travel Claims - ('+str(expense_claim.employee)+')'+str(expense_claim.employee_name)
+	je.title = 'Travel Claims - '+str(expense_claim.employee)+' '+str(expense_claim.employee_name)
 	je.voucher_type = 'Bank Entry'
 	je.naming_series = 'Bank Payment Voucher'
 	je.company = expense_claim.company
@@ -157,6 +158,9 @@ def make_bank_entry(docname):
 	je.posting_date = expense_claim.expense_date
         je.total_amount_in_words =  money_in_words(expense_claim.total_sanctioned_amount)
 
+        # Ver 1.0 Begins, added by SSK on 09/09/2016
+        # Following code is commented and the equivalet is passed
+        '''
 	for expense in expense_claim.expenses:
 		je.append("accounts", {
 			"account": expense.default_account,
@@ -168,6 +172,28 @@ def make_bank_entry(docname):
                         "cost_center": cost_center[0][0],
                         "party_check": 0
 		})
+        '''
+
+        default_accounts = frappe.db.sql("""
+                                select default_account, sum(ifnull(sanctioned_amount,0)) sanctioned_amount,
+                                sum(ifnull(advance_total_amount,0)) advance_amount
+                                from `tabExpense Claim Detail`
+                                where parent = '%s'
+                                group by default_account
+                                """ % (expense_claim.name), as_dict=True)
+
+        for da in default_accounts:
+                if flt(da.sanctioned_amount if da.sanctioned_amount else 0.00) > 0.00:
+                        je.append("accounts", {
+                                "account": da.default_account,
+                                "debit_in_account_currency": da.sanctioned_amount,
+                                "reference_type": "Expense Claim",
+                                "reference_name": expense_claim.name,
+                                "cost_center": cost_center[0][0],
+                                "party_check": 0
+                        })
+                
+        # Ver 1.0 Ends
 
         if flt(expense_claim.total_advance_amount if expense_claim.total_advance_amount else 0.00) > 0.00:
                 je.append("accounts", {
@@ -181,18 +207,42 @@ def make_bank_entry(docname):
                         "party_check": 0
                 })
 
-	je.append("accounts", {
-		"account": default_bank_cash_account.account,
-		"credit_in_account_currency": expense_claim.total_sanctioned_amount,
-		"reference_type": "Expense Claim",
-		"reference_name": expense_claim.name,
-		"balance": default_bank_cash_account.balance,
-		"account_currency": default_bank_cash_account.account_currency,
-		"account_type": default_bank_cash_account.account_type,
-                "cost_center": "Dummy-CEO - SMCL"
-	})
+        if flt(expense_claim.total_sanctioned_amount if expense_claim.total_sanctioned_amount else 0.00) > 0.00:
+                je.append("accounts", {
+                        "account": "Employee Payable - SMCL",
+                        "debit_in_account_currency": expense_claim.total_sanctioned_amount,
+                        "reference_type": "Expense Claim",
+                        "reference_name": expense_claim.name,
+                        "party_type": "Employee",
+                        "party": expense_claim.employee,
+                        "cost_center": cost_center[0][0],
+                        "party_check": 0
+                })
 
-        je.insert()
+                je.append("accounts", {
+                        "account": "Employee Payable - SMCL",
+                        "credit_in_account_currency": expense_claim.total_sanctioned_amount,
+                        "reference_type": "Expense Claim",
+                        "reference_name": expense_claim.name,
+                        "party_type": "Employee",
+                        "party": expense_claim.employee,
+                        "cost_center": cost_center[0][0],
+                        "party_check": 0
+                })
+                
+                je.append("accounts", {
+                        "account": default_bank_cash_account.account,
+                        "credit_in_account_currency": expense_claim.total_sanctioned_amount,
+                        "reference_type": "Expense Claim",
+                        "reference_name": expense_claim.name,
+                        "balance": default_bank_cash_account.balance,
+                        "account_currency": default_bank_cash_account.account_currency,
+                        "account_type": default_bank_cash_account.account_type,
+                        "cost_center": "Corporate Head Office - SMCL"
+                })
+
+                je.insert()
+                
         msgprint(_("Posting to Accounts Successful..."))
 	#return je.as_dict()
 

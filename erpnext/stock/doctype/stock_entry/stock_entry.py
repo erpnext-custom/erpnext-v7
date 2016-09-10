@@ -447,7 +447,7 @@ class StockEntry(StockController):
 
 	def get_item_details(self, args=None, for_update=False):
 		item = frappe.db.sql("""select stock_uom, description, image, item_name,
-			expense_account, buying_cost_center, item_group from `tabItem`
+			expense_account, buying_cost_center, item_group, expense_account from `tabItem`
 			where name = %s
 				and disabled=0
 				and (end_of_life is null or end_of_life='0000-00-00' or end_of_life > %s)""",
@@ -459,17 +459,17 @@ class StockEntry(StockController):
 
 		ret = {
 			'uom'			      	: item.stock_uom,
-			'stock_uom'			  	: item.stock_uom,
+			'stock_uom'			: item.stock_uom,
 			'description'		  	: item.description,
-			'image'					: item.image,
+			'image'				: item.image,
 			'item_name' 		  	: item.item_name,
 			'item_group' 		  	: item.item_group,
-			'expense_account'		: args.get("expense_account"),
+			'expense_account'		: item.expense_account,
 			'cost_center'			: get_default_cost_center(args, item),
-			'qty'					: 0,
+			'qty'				: 0,
 			'transfer_qty'			: 0,
 			'conversion_factor'		: 1,
-			'batch_no'				: '',
+			'batch_no'			: '',
 			'actual_qty'			: 0,
 			'basic_rate'			: 0
 		}
@@ -478,7 +478,7 @@ class StockEntry(StockController):
 				company = frappe.db.get_value(d[0], ret.get(d[1]), "company")
 				if not ret[d[1]] or (company and self.company != company):
 					ret[d[1]] = frappe.db.get_value("Company", self.company, d[2]) if d[2] else None
-
+		
 		# update uom
 		if args.get("uom") and for_update:
 			ret.update(self.get_uom_details(args))
