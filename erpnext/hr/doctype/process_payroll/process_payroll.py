@@ -206,7 +206,7 @@ class ProcessPayroll(Document):
 			if self.get(f):
 				cond1 += " and ss." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 		
-                items.extend(frappe.db.sql("""select t3.branch, t3.department, t3.division,t2.cost_center,
+                items.extend(frappe.db.sql("""select t2.cost_center,
                         sum(ifnull(t1.rounded_total,0)) as total_amt
                          from `tabSalary Slip` t1, `tabDivision` t2, `tabEmployee` t3
                         where t3.employee = t1.employee
@@ -217,7 +217,7 @@ class ProcessPayroll(Document):
                           and t1.fiscal_year = %s
                           and t1.docstatus = 1 
                           %s
-                        group by t3.branch,t3.department,t3.division,t2.cost_center
+                        group by t2.cost_center
                 """ % (self.month, self.fiscal_year, cond),as_dict=1))
 
                 #
@@ -251,7 +251,8 @@ class ProcessPayroll(Document):
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check
-                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e
+                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e,
+                                 `tabDivision` d
                                where ss.name = sd.parent
                                  and sd.amount > 0
                                  and e.employee = ss.employee
@@ -259,14 +260,15 @@ class ProcessPayroll(Document):
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and e.branch = '%s'
-                                 and e.department = '%s'
-                                 and e.division = '%s'
+                                 and e.branch = d.branch
+                                 and e.department = d.dpt_name
+                                 and e.division = d.d_name
+                                 and d.cost_center = '%s'
                                  and dt.gl_head <> '%s'
                                  and dt.type = 'Deduction'
                                  %s
                                group by dt.gl_head
-                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], default_saladv_account, cond1)
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['cost_center'], default_saladv_account, cond1)
                         deductions.extend(frappe.db.sql(query, as_dict=1))
 
                         # Salary Advance
@@ -278,7 +280,8 @@ class ProcessPayroll(Document):
                                 'Payable' as account_type,
                                 'Employee' as party_type,
                                 ss.employee as party
-                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e
+                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e,
+                                 `tabDivision` d
                                where ss.name = sd.parent
                                  and sd.amount > 0
                                  and e.employee = ss.employee
@@ -286,14 +289,15 @@ class ProcessPayroll(Document):
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and e.branch = '%s'
-                                 and e.department = '%s'
-                                 and e.division = '%s'
+                                 and e.branch = d.branch
+                                 and e.department = d.dpt_name
+                                 and e.division = d.d_name
+                                 and d.cost_center = '%s'
                                  and dt.gl_head = '%s'
                                  and dt.type = 'Deduction'
                                  %s
                                group by dt.gl_head, ss.employee
-                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], default_saladv_account, cond1)
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['cost_center'], default_saladv_account, cond1)
                         deductions.extend(frappe.db.sql(query2, as_dict=1))                        
                         accounts.extend(deductions)
 
@@ -310,7 +314,8 @@ class ProcessPayroll(Document):
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check
-                                from `tabSalary Detail` se, `tabSalary Slip` ss, `tabSalary Component` et, `tabEmployee` e
+                                from `tabSalary Detail` se, `tabSalary Slip` ss, `tabSalary Component` et, `tabEmployee` e,
+                                `tabDivision` d
                                where ss.name = se.parent
                                  and se.amount > 0
                                  and e.employee = ss.employee
@@ -319,12 +324,13 @@ class ProcessPayroll(Document):
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and e.branch = '%s'
-                                 and e.department = '%s'
-                                 and e.division = '%s'
+                                 and e.branch = d.branch
+                                 and e.department = d.dpt_name
+                                 and e.division = d.d_name
+                                 and d.cost_center = '%s'
                                  %s
                                group by et.gl_head
-                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['branch'], item['department'], item['division'], cond1)
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['cost_center'], cond1)
                         earnings.extend(frappe.db.sql(query, as_dict=1))
                         accounts.extend(earnings)
 

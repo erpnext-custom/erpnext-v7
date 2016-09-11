@@ -136,6 +136,12 @@ def get_data():
 					"name": "Purchase Penalty Report",
 					"doctype": "Purchase Invoice"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Asset Issue Report",
+					"doctype": "Asset Issue Details"
+				},
 			]
 		},
 		{
@@ -161,6 +167,11 @@ def get_data():
 					"label": "Material Price",
 					"description": _("Multiple Item prices."),
 					"route": "Report/Item Price"
+				},
+				{
+					"type": "doctype",
+					"name": "Asset Issue Details",
+					"description": _("Record to whom the assets are issued"),
 				}
 			]
 		}
