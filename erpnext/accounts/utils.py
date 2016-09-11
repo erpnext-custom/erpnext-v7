@@ -327,7 +327,7 @@ def update_reference_in_payment_entry(d, payment_entry):
 def unlink_ref_doc_from_payment_entries(ref_type, ref_no):
 	remove_ref_doc_link_from_jv(ref_type, ref_no)
 	remove_ref_doc_link_from_pe(ref_type, ref_no)
-	
+
 	frappe.db.sql("""update `tabGL Entry`
 		set against_voucher_type=null, against_voucher=null,
 		modified=%s, modified_by=%s
@@ -340,11 +340,20 @@ def remove_ref_doc_link_from_jv(ref_type, ref_no):
 		where reference_type=%s and reference_name=%s and docstatus < 2""", (ref_type, ref_no))
 
 	if linked_jv:
-		frappe.db.sql("""update `tabJournal Entry Account`
-			set reference_type=null, reference_name = null,
-			modified=%s, modified_by=%s
-			where reference_type=%s and reference_name=%s
-			and docstatus < 2""", (now(), frappe.session.user, ref_type, ref_no))
+		if ref_type == 'Sales Invoice':
+			sales_order = frappe.db.sql("""select sales_order from `tabSales Invoice Item` where parent = %s""", (ref_no), as_dict=True)
+			if sales_order:
+				frappe.db.sql("""update `tabJournal Entry Account`
+					set reference_type='Sales Order', reference_name = %s,
+					modified=%s, modified_by=%s
+					where reference_type=%s and reference_name=%s
+					and docstatus < 2""", (str(sales_order[0].sales_order), now(), frappe.session.user, ref_type, ref_no))
+		else:
+			frappe.db.sql("""update `tabJournal Entry Account`
+				set reference_type=null, reference_name = null,
+				modified=%s, modified_by=%s
+				where reference_type=%s and reference_name=%s
+				and docstatus < 2""", (now(), frappe.session.user, ref_type, ref_no))
 
 		frappe.msgprint(_("Journal Entries {0} are un-linked".format("\n".join(linked_jv))))
 		
