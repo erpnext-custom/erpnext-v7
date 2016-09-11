@@ -370,7 +370,7 @@ class AccountsController(TransactionBase):
 					'voucher_detail_no' : d.reference_row,
 					'against_voucher_type' : self.doctype,
 					'against_voucher'  : self.name,
-					'account' : party_account,
+					'account' : d.advance_account,
 					'party_type': party_type,
 					'party': party,
 					'is_advance' : 'Yes',
