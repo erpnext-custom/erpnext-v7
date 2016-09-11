@@ -662,6 +662,41 @@ class SalesInvoice(SellingController):
 							}, account_currency)
 						)
 
+					if item.excess_qty:
+						excess_account = item.income_account
+						excess_amount = flt(item.excess_qty) * flt(item.rate)
+						remark = "Excess Amount due to weight difference by " + str(item.excess_qty) + "MT",
+						account_currency = get_account_currency(excess_account)
+						gl_entries.append(
+							self.get_gl_dict({
+								"account": excess_account,
+								"against": self.customer,
+								"party_type": "Customer",
+								"party": self.customer,
+								"credit": excess_amount,
+								"credit_in_account_currency": excess_amount \
+									if account_currency==self.company_currency else (excess_amount * self.conversion_rate, self.precision("grand_total")) ,
+								"cost_center": item.cost_center,
+								"remark": remark,
+								"remarks": remark,
+							}, account_currency)
+						)
+					
+						gl_entries.append(
+							self.get_gl_dict({
+								"account": self.debit_to,
+								"party_type": "Customer",
+								"party": self.customer,
+								"debit": excess_amount,
+								"debit_in_account_currency": excess_amount \
+									if account_currency==self.company_currency else (excess_amount * self.conversion_rate, self.precision("grand_total")) ,
+								"against_voucher": self.return_against if cint(self.is_return) else self.name,
+								"against_voucher_type": self.doctype,
+								"remark": remark,
+								"remarks": remark,
+							}, account_currency)
+						)
+
 		# expense account gl entries
 		if cint(frappe.defaults.get_global_default("auto_accounting_for_stock")) \
 				and cint(self.update_stock):
@@ -727,7 +762,7 @@ class SalesInvoice(SellingController):
 		
 	def make_write_off_gl_entry(self, gl_entries):
 		# write off entries, applicable if only pos
-		if self.write_off_account and self.write_off_amount:
+		if self.write_off_account and self.write_off_amount and self.write_off_amount > 0:
 			write_off_account_currency = get_account_currency(self.write_off_account)
 			default_cost_center = frappe.db.get_value('Company', self.company, 'cost_center')
 
