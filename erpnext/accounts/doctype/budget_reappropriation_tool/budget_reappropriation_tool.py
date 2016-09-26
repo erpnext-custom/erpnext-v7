@@ -32,7 +32,7 @@ def budget_check(from_cc=None, from_acc=None, amount=None):
 def get_cc_acc_budget(cc, acc):
 	return frappe.db.sql("""select ba.name, ba.parent, ba.budget_amount
 				from `tabBudget` b, `tabBudget Account` ba
-				where b.name=ba.parent and b.fiscal_year=%s and b.cost_center = %s and ba.account = %s
+				where b.name=ba.parent and b.fiscal_year=%s and b.cost_center = %s and ba.account = %s and b.docstatus = 1
 				""", (str(nowdate())[0:4], cc, acc), as_dict=True)
 
 ##
@@ -43,7 +43,7 @@ def reappropriate(from_cc=None, to_cc=None, from_acc=None, to_acc=None, amount=N
 	if(budget_check(from_cc, from_acc, amount)):
 		to_account = get_cc_acc_budget(to_cc, to_acc)
 		from_account = get_cc_acc_budget(from_cc, from_acc)
-		
+
 		if to_account and from_account:
 			#Deduct in the From Account and Cost Center
 			from_budget_account = frappe.get_doc("Budget Account", from_account[0].name)

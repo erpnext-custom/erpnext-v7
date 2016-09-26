@@ -291,11 +291,16 @@ cur_frm.cscript.refresh = function(doc,cdt,cdn){
 		*/
 		 
 		if (doc.docstatus===1 && doc.approval_status=="Approved") {
+			// Ver 1.0 Begins, added by SSK on 12/09/2016
+			// Following code is commented
+			
 			if (cint(doc.total_amount_reimbursed) < cint(doc.total_sanctioned_amount) && frappe.model.can_create("Journal Entry")) {
 				cur_frm.add_custom_button(__("Bank Entry"), cur_frm.cscript.make_bank_entry, __("Make"));
 				cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 			}
-
+			
+			// Ver 1.0 Ends
+			
 			if (cint(doc.total_amount_reimbursed) > 0 && frappe.model.can_read("Journal Entry")) {
 				cur_frm.add_custom_button(__('Bank Entries'), function() {
 					frappe.route_options = {

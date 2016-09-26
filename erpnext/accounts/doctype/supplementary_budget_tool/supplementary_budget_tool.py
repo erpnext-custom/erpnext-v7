@@ -16,7 +16,7 @@ class SupplementaryBudgetTool(Document):
 def get_cc_acc_budget(cc, acc):
 	return frappe.db.sql("""select ba.name, ba.parent, ba.budget_amount
 				from `tabBudget` b, `tabBudget Account` ba
-				where b.name=ba.parent and b.fiscal_year=%s and b.cost_center = %s and ba.account = %s
+				where b.name=ba.parent and b.fiscal_year=%s and b.cost_center = %s and ba.account = %s and b.docstatus = 1
 				""", (str(nowdate())[0:4], cc, acc), as_dict=True)
 
 ##

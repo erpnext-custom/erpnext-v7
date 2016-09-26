@@ -6,8 +6,7 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   08/08/2016         DocumentNaming standard is introduced
-1.0               SSK                              15/08/2016         Introducing Loss Tolerance for Sales
-1.0               SSK                              22/09/2016         get_default_bank_cash_sales_account is introduced.
+1.0               SSK                              15/08/2016         Introducing Loss Tolerance for Sales 
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -17,7 +16,7 @@ from frappe.utils import flt, comma_or, nowdate
 from erpnext.accounts.utils import get_outstanding_invoices, get_account_currency, get_balance_on
 from erpnext.accounts.party import get_party_account
 from erpnext.accounts.doctype.journal_entry.journal_entry \
-	import get_average_exchange_rate, get_default_bank_cash_account, get_default_bank_cash_sales_account
+	import get_average_exchange_rate, get_default_bank_cash_account
 from erpnext.setup.utils import get_exchange_rate
 from erpnext.accounts.general_ledger import make_gl_entries
 
@@ -676,13 +675,8 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		outstanding_amount = grand_total - flt(doc.advance_paid)
 
 	# bank or cash
-	if dt =="Sales Invoice":
-                bank = get_default_bank_cash_sales_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
-                        account=bank_account)
-	else:
-                bank = get_default_bank_cash_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
-                        account=bank_account)
-
+	bank = get_default_bank_cash_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
+		account=bank_account)
 	
 	paid_amount = received_amount = 0
 	if party_account_currency == bank.account_currency:

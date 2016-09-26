@@ -142,28 +142,6 @@ class LeaveEncashment(Document):
                 })
 
                 je.append("accounts", {
-                        "account": "Sundry Creditors - Employee - SMCL",
-                        "debit_in_account_currency": flt(basic_pay),
-                        "reference_type": "Leave Encashment",
-                        "reference_name": self.name,
-                        "party_type": "Employee",
-                        "party": self.employee,
-                        "cost_center": self.cost_center,
-                        "party_check": 0
-                })
-
-                je.append("accounts", {
-                        "account": "Sundry Creditors - Employee - SMCL",
-                        "credit_in_account_currency": flt(basic_pay),
-                        "reference_type": "Leave Encashment",
-                        "reference_name": self.name,
-                        "party_type": "Employee",
-                        "party": self.employee,
-                        "cost_center": self.cost_center,
-                        "party_check": 0
-                })
-
-                je.append("accounts", {
                         "account": default_bank_cash_account.account,
                         "credit_in_account_currency": (flt(basic_pay)-flt(salary_tax)),
                         "reference_type": "Leave Encashment",

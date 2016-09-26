@@ -144,6 +144,9 @@ class Employee(Document):
 
 	def validate_employee_leave_approver(self):
 		for l in self.get("leave_approvers")[:]:
+			if l.leave_approver:
+				frappe.permissions.add_user_permission("User", self.user_id, l.leave_approver)
+
 			if "Leave Approver" not in frappe.get_roles(l.leave_approver):
 				frappe.get_doc("User", l.leave_approver).add_roles("Leave Approver")
 

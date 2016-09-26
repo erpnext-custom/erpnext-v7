@@ -40,6 +40,11 @@ class ExpenseClaim(Document):
 	def on_submit(self):
 		if self.approval_status=="Draft":
 			frappe.throw(_("""Approval Status must be 'Approved' or 'Rejected'"""))
+
+
+		#if self.approval_status=="Approved":
+                #        make_bank_entry(self.name)
+                        
 		self.update_task_and_project()
 
 	def on_cancel(self):
@@ -197,7 +202,7 @@ def make_bank_entry(docname):
 
         if flt(expense_claim.total_advance_amount if expense_claim.total_advance_amount else 0.00) > 0.00:
                 je.append("accounts", {
-                        "account": "Advance to Employee - SMCL",
+                        "account": "Advance to Employee-Travel - SMCL",
                         "credit_in_account_currency": flt(expense_claim.total_advance_amount),
                         "reference_type": "Expense Claim",
                         "reference_name": expense_claim.name,
@@ -209,7 +214,7 @@ def make_bank_entry(docname):
 
         if flt(expense_claim.total_sanctioned_amount if expense_claim.total_sanctioned_amount else 0.00) > 0.00:
                 je.append("accounts", {
-                        "account": "Employee Payable - SMCL",
+                        "account": "Sundry Creditors - Employee - SMCL",
                         "debit_in_account_currency": expense_claim.total_sanctioned_amount,
                         "reference_type": "Expense Claim",
                         "reference_name": expense_claim.name,
@@ -220,7 +225,7 @@ def make_bank_entry(docname):
                 })
 
                 je.append("accounts", {
-                        "account": "Employee Payable - SMCL",
+                        "account": "Sundry Creditors - Employee - SMCL",
                         "credit_in_account_currency": expense_claim.total_sanctioned_amount,
                         "reference_type": "Expense Claim",
                         "reference_name": expense_claim.name,

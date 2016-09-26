@@ -216,6 +216,7 @@ def make_salary_slip(source_name, target_doc=None):
                 target.designation = employee.designation
                 target.section = employee.section
                 target.employee_subgroup = employee.employee_subgroup # Ver 1.0 Begins, added by SSK on 28/08/2016
+                #frappe.msgprint(_("StartDate: {0} EndDate: {1}").format(target.start_date,target.end_date))
                 # Ver 1.0 Ends
 		# copy earnings and deductions table
 		for key in ('earnings', 'deductions'):

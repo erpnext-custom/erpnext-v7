@@ -653,45 +653,6 @@ def get_default_bank_cash_account(company, account_type=None, mode_of_payment=No
 		})
 	else: return frappe._dict()
 
-# Ver 1.0 Begins, by SSK on 22/09/2016
-# Following function is introduced
-
-@frappe.whitelist()
-def get_default_bank_cash_sales_account(company, account_type=None, mode_of_payment=None, account=None):
-	from erpnext.accounts.doctype.sales_invoice.sales_invoice import get_bank_cash_account
-	if mode_of_payment:
-		account = get_bank_cash_account(mode_of_payment, company).get("account")
-
-	if not account:
-		if account_type=="Bank":
-			account = frappe.db.get_value("Company", company, "default_bank_sales_account")
-			if not account:
-                                account = frappe.db.get_value("Company", company, "default_bank_account")
-                                if not account:
-                                        account = frappe.db.get_value("Account",
-                                                        {"company": company, "account_type": "Bank", "is_group": 0})
-
-		elif account_type=="Cash":
-			account = frappe.db.get_value("Company", company, "default_cash_sales_account")
-			if not account:
-                                account = frappe.db.get_value("Company", company, "default_cash_account")
-                                if not account:
-                                        account = frappe.db.get_value("Account",
-                                                        {"company": company, "account_type": "Cash", "is_group": 0})
-
-	if account:
-		account_details = frappe.db.get_value("Account", account,
-			["account_currency", "account_type"], as_dict=1)
-			
-		return frappe._dict({
-			"account": account,
-			"balance": get_balance_on(account),
-			"account_currency": account_details.account_currency,
-			"account_type": account_details.account_type
-		})
-	else: return frappe._dict()
-
-
 @frappe.whitelist()
 def get_payment_entry_against_order(dt, dn, amount=None, debit_in_account_currency=None, journal_entry=False, bank_account=None):
 	ref_doc = frappe.get_doc(dt, dn)
