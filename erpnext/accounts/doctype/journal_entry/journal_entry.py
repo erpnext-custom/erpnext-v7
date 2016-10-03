@@ -594,6 +594,7 @@ class JournalEntry(AccountsController):
 
                 if expense_check:
                         if entry_balance > pending_amount:
+				#frappe.msgprint(str(entry_balance))
                                 frappe.throw(_("Amount cannot be greater than Pending Amount {0}.".format(pending_amount)))
 
 	def validate_credit_debit_note(self):
