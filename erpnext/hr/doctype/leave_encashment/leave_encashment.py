@@ -124,8 +124,8 @@ class LeaveEncashment(Document):
                         "debit_in_account_currency": flt(basic_pay),
                         "reference_type": "Leave Encashment",
                         "reference_name": self.name,
-                        "party_type": "Employee",
-                        "party": self.employee,
+                        #"party_type": "Employee",
+                        #"party": self.employee,
                         "cost_center": self.cost_center,
                         "party_check": 0
                 })
@@ -135,8 +135,8 @@ class LeaveEncashment(Document):
                         "credit_in_account_currency": flt(salary_tax),
                         "reference_type": "Leave Encashment",
                         "reference_name": self.name,
-                        "party_type": "Employee",
-                        "party": self.employee,
+                        #"party_type": "Employee",
+                        #"party": self.employee,
                         "cost_center": self.cost_center,
                         "party_check": 0
                 })
