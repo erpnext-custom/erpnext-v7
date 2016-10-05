@@ -425,9 +425,12 @@ class calculate_taxes_and_totals(object):
 				for item in self.doc.get("items")])
 			total_abnormal_amount = sum([flt(item.abnormal_loss_amt, item.precision("abnormal_loss_amt"))
 				for item in self.doc.get("items")])
+			total_excess_amount = sum([flt(item.excess_amt, item.precision("excess_amt"))
+				for item in self.doc.get("items")])
 
 			self.doc.total_normal_loss = flt(total_normal_amount, self.doc.precision("total_normal_loss"))
 			self.doc.total_abnormal_loss = flt(total_abnormal_amount, self.doc.precision("total_abnormal_loss"))
+			self.doc.total_excess_amount = flt(total_excess_amount, self.doc.precision("excess_amt"))
 
 			if self.doc.docstatus == 0:
 				self.calculate_outstanding_amount()
@@ -447,15 +450,15 @@ class calculate_taxes_and_totals(object):
 		self._set_in_company_currency(self.doc, ['write_off_amount'])
 
 		if self.doc.doctype == "Sales Invoice":
-			self.doc.round_floats_in(self.doc, ["total_normal_loss", "total_abnormal_loss"])
+			self.doc.round_floats_in(self.doc, ["total_normal_loss", "total_abnormal_loss", "total_excess_amount"])
 			if self.doc.party_account_currency == self.doc.currency:
 				total_amount_to_pay = flt(self.doc.grand_total  - self.doc.total_advance 
-					- flt(self.doc.total_normal_loss) - flt(self.doc.total_abnormal_loss)
+					- flt(self.doc.total_normal_loss) - flt(self.doc.total_abnormal_loss) + flt(self.doc.total_excess_amount)
 					- flt(self.doc.write_off_amount), self.doc.precision("grand_total"))
 			else:
 				total_amount_to_pay = flt(flt(self.doc.grand_total *
 					self.doc.conversion_rate, self.doc.precision("grand_total")) - self.doc.total_advance
-						- flt(self.doc.total_normal_loss * self.doc.conversion_rate) - flt(self.doc.total_abnormal_loss * self.doc.conversion_rate)
+						- flt(self.doc.total_normal_loss * self.doc.conversion_rate) - flt(self.doc.total_abnormal_loss * self.doc.conversion_rate) + flt(self.doc.total_excess_amount * self.doc.conversion_rate)
 						- flt(self.doc.base_write_off_amount), self.doc.precision("grand_total"))
 		else:
 			if self.doc.party_account_currency == self.doc.currency:

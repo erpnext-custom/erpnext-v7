@@ -585,7 +585,7 @@ class JournalEntry(AccountsController):
                                 # Ver 1.0 Ends
                                 
                                 if d.debit:
-                                        if d.account == 'Employee Payable - SMCL':
+                                        if d.account == 'Sundry Creditors - Employee - SMCL':
                                                 entry_balance = flt(entry_balance) + 0
                                         else:
                                                 entry_balance = flt(entry_balance) + flt(d.debit)

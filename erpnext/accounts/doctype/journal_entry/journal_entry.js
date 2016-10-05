@@ -40,6 +40,17 @@ frappe.ui.form.on("Journal Entry", {
 
 		// hide /unhide fields based on currency
 		erpnext.journal_entry.toggle_fields_based_on_currency(frm);
+		//Hide cancel button if is bank reconcilled
+		if(frm.doc.clearance_date) {
+			$(document).ready(function(){
+				$(".btn-sm").css("display", "none");
+			});
+		}
+		else {
+			$(document).ready(function(){
+				$(".btn-sm").css("display", "inline");
+			});
+		}
 	},
 
 	multi_currency: function(frm) {

@@ -84,6 +84,8 @@ def validate_expense_against_budget(args):
 								flt(budget.budget_amount), _("Annual"), yearly_action)
 		elif args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Good Manufacture - SMCL']:
 			pass
+		elif str(frappe.db.get_value("Account", args.account, "parent_account")) == "Depreciation & Amortisation - SMCL":
+			pass
 		else:
 			#Budget Check if there is no budget booking under the budget head
 			frappe.throw("There is no budget in " + args.account + " under " + args.cost_center)
