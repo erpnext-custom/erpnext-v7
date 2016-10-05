@@ -430,7 +430,7 @@ class calculate_taxes_and_totals(object):
 
 			self.doc.total_normal_loss = flt(total_normal_amount, self.doc.precision("total_normal_loss"))
 			self.doc.total_abnormal_loss = flt(total_abnormal_amount, self.doc.precision("total_abnormal_loss"))
-			self.doc.total_excess_amount = flt(total_excess_amount, self.doc.precision("excess_amt"))
+			self.doc.total_excess_amount = flt(total_excess_amount, self.doc.precision("total_excess_amount"))
 
 			if self.doc.docstatus == 0:
 				self.calculate_outstanding_amount()
