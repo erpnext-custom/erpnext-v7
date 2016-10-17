@@ -22,7 +22,7 @@ def validate_filters(filters):
 
 
 def get_data(filters):
-	query = "select t1.name as sales_no, t1.transaction_date as sales_date, t1.customer, t1.po_no, t1.po_date, t1.base_net_amount, t1.rate, t1.qty, t1.item_name, t1.item_code, t1.stock_uom, t1.warehouse, t1.delivery_note, t1.delivery_date,t2.invoice_no, t2.sales_invoice_date, t2.due_date, t2.write_off_amount, t2.write_off_description, t2.total_advance, t1.transporter_name, t1.delivered_qty, t2.accepted_qty, t2.amount, t2.normal_loss_amt, t2.remarks, t2.abnormal_loss_amt, t2.justification from (select so.name, so.transaction_date, so.customer, so.po_no, so.po_date, soi.base_net_amount, soi.rate, soi.qty, soi.item_name, soi.item_code, soi.stock_uom, soi.warehouse, dni.parent as delivery_note, dni.qty as delivered_qty, (select transporter_name1 from `tabDelivery Note` as dn where dn.name = dni.parent) as transporter_name, (select posting_date from `tabDelivery Note` as dn where dn.name = dni.parent) as delivery_date from (`tabSales Order` as so JOIN `tabSales Order Item` as soi on so.name = soi.parent and so.docstatus = 1) LEFT JOIN `tabDelivery Note Item` as dni on so.name = dni.against_sales_order) as t1 left join (select si.name as invoice_no, si.sales_invoice_date, si.due_date, si.write_off_amount, si.write_off_description, si.total_advance, sii.accepted_qty, sii.amount, sii.normal_loss_amt, sii.remarks, sii.abnormal_loss_amt, sii.justification, sii.delivery_note as delivery_note_no from `tabSales Invoice` as si, `tabSales Invoice Item` as sii where si.name = sii.parent and si.docstatus != 2 and sales_invoice_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as t2 on t1.delivery_note = t2.delivery_note_no"
+	query = "select t1.name as sales_no, t1.transaction_date as sales_date, t1.customer, t1.po_no, t1.po_date, t1.base_net_amount, t1.rate, t1.qty, t1.item_name, t1.item_code, t1.stock_uom, t1.warehouse, t1.delivery_note, t1.delivery_date,t2.invoice_no, t2.sales_invoice_date, t2.due_date, t2.write_off_amount, t2.write_off_description, t2.total_advance, t1.transporter_name, t1.delivered_qty, t2.accepted_qty, t2.amount, t2.normal_loss_amt, t2.remarks, t2.abnormal_loss_amt, t2.justification, t2.excess_amt, t2.excess_qty from (select so.name, so.transaction_date, so.customer, so.po_no, so.po_date, soi.base_net_amount, soi.rate, soi.qty, soi.item_name, soi.item_code, soi.stock_uom, soi.warehouse, dni.parent as delivery_note, dni.qty as delivered_qty, (select transporter_name1 from `tabDelivery Note` as dn where dn.name = dni.parent) as transporter_name, (select posting_date from `tabDelivery Note` as dn where dn.name = dni.parent) as delivery_date from (`tabSales Order` as so JOIN `tabSales Order Item` as soi on so.name = soi.parent and so.docstatus = 1) LEFT JOIN `tabDelivery Note Item` as dni on so.name = dni.against_sales_order) as t1 left join (select si.name as invoice_no, si.sales_invoice_date, si.due_date, si.write_off_amount, si.write_off_description, si.total_advance, sii.accepted_qty, sii.amount, sii.normal_loss_amt, sii.remarks, sii.abnormal_loss_amt, sii.justification, sii.excess_amt, sii.excess_qty, sii.delivery_note as delivery_note_no from `tabSales Invoice` as si, `tabSales Invoice Item` as sii where si.name = sii.parent and si.docstatus = 1 and sales_invoice_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as t2 on t1.delivery_note = t2.delivery_note_no"
 
 	if filters.customer:
 		query+=" where customer = \'" + filters.customer + "\'"
@@ -32,6 +32,7 @@ def get_data(filters):
 	sales_data = frappe.db.sql(query, as_dict=True)
 	
 	data = []
+	total = 0
 
 	if sales_data:
 		for a in sales_data:
@@ -63,10 +64,16 @@ def get_data(filters):
 				"normal_loss_amt": a.normal_loss_amt,
 				"remarks": a.remarks,
 				"abnormal_loss_amt": a.abnormal_loss_amt,
+				"excess_amt": a.excess_amt,
+				"excess_qty": a.excess_qty,
+				"total_bill_amt": flt(a.amount) + flt(a.excess_amt),
 				"justification": a.justification
 			}
 			data.append(row)
+			total = flt(total) + flt(a.amount) + flt(a.excess_amt)
 	
+		row = {"sales_no": "Total", "total_bill_amt":  total}
+		data.append(row)
 	return data
 
 def get_columns():
@@ -218,6 +225,24 @@ def get_columns():
 			"label": _("Abnormal Loss Remark"),
 			"fieldtype": "Data",
 			"width": 150
+		},
+		{
+			"fieldname": "excess_qty",
+			"label": _("Excess Qty"),
+			"fieldtype": "Data",
+			"width": 100
+		},
+		{
+			"fieldname": "excess_amt",
+			"label": _("Excess Amount"),
+			"fieldtype": "Currency",
+			"width": 130
+		},
+		{
+			"fieldname": "total_bill_amt",
+			"label": _("Total Bill Amount"),
+			"fieldtype": "Currency",
+			"width": 130
 		},
 		{
 			"fieldname": "transporter_name",
