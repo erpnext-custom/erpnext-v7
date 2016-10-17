@@ -589,7 +589,7 @@ class JournalEntry(AccountsController):
                                                 entry_balance = flt(entry_balance) + 0
                                         else:
                                                 entry_balance = flt(entry_balance) + flt(d.debit)
-                                elif d.credit and d.account == 'Advance to Employee - SMCL':
+                                elif d.credit and d.account == 'Advance to Employee-Travel - SMCL':
                                         entry_balance = flt(entry_balance) - flt(d.credit)
 
                 if expense_check:
