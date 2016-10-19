@@ -60,6 +60,11 @@ frappe.query_reports["Party Wise Ledger"] = {
 			"fieldname": "show_zero_values",
 			"label": __("Show zero values"),
 			"fieldtype": "Check"
+		},
+		{
+			"fieldname":"inter_company",
+			"label": __("DHI Inter Company?"),
+			"fieldtype": "Check",
 		}
 	]
 }

@@ -23,7 +23,13 @@ def get_data(filters, show_party_name):
 	#party_name_field = "customer_name" if filters.get("party_type")=="Customer" else "supplier_name"
 	#Party type to be shown in the report Kinley Tsheirng
 	party_name_field = "customer_name" if filters.get("party_type")=="Customer" else "supplier_name" if filters.get("party_type")=="Supplier" else "employee_name"
-	parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
+	if not filters.get("inter_company"):
+		parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
+	elif filters.get("party_type") == "Employee":
+		parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
+	else:
+		parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], filters = {"inter_company": 1}, order_by="name")
+	
 	company_currency = frappe.db.get_value("Company", filters.company, "default_currency")
 	opening_balances = get_opening_balances(filters)
 	balances_within_period = get_balances_within_period(filters)
