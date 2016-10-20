@@ -82,7 +82,7 @@ def validate_expense_against_budget(args):
 						and yearly_action != monthly_action:
 							compare_expense_with_budget(args, budget.cost_center,
 								flt(budget.budget_amount), _("Annual"), yearly_action)
-		elif args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Good Manufacture - SMCL']:
+		elif args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Good Manufacture - SMCL', 'Stripping Cost Amortization - SMCL']:
 			pass
 		elif str(frappe.db.get_value("Account", args.account, "parent_account")) == "Depreciation & Amortisation - SMCL":
 			pass
