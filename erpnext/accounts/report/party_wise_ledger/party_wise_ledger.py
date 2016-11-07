@@ -1,6 +1,14 @@
 # Copyright (c) 2013, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
-
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  SSK		                   31/10/2016         Party Entries agains Sale of Mines,
+                                                                      Normal/Abnormal Loss entries are excluded aswel
+                                                                      as requested by Hap Dorji
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 from __future__ import unicode_literals
 import frappe
 from frappe import _
@@ -89,13 +97,25 @@ def get_data(filters, show_party_name):
 	return data
 	
 def get_opening_balances(filters):
+        # Ver 1.0 by SSK on 31/10/2016 Begins, Following condition is added
+        '''
+        and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL')
+        and not exists(select 1 from `tabAccount` as ac
+                        where ac.name = ge.account
+                        and ac.parent_account = 'Sale of mines product - SMCL')
+        '''
+        
 	gle = frappe.db.sql("""
 		select party, sum(debit) as opening_debit, sum(credit) as opening_credit 
-		from `tabGL Entry`
+		from `tabGL Entry` as ge
 		where company=%(company)s 
-			and ifnull(party_type, '') = %(party_type)s and ifnull(party, '') != ''
-			and (posting_date < %(from_date)s or ifnull(is_opening, 'No') = 'Yes')
-			and account LIKE %(account)s
+		and ifnull(party_type, '') = %(party_type)s and ifnull(party, '') != ''
+		and (posting_date < %(from_date)s or ifnull(is_opening, 'No') = 'Yes')
+		and account LIKE %(account)s
+		and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL')
+		and not exists(select 1 from `tabAccount` as ac
+                                where ac.name = ge.account
+                                and ac.parent_account = 'Sale of mines product - SMCL')
 		group by party""", {
 			"company": filters.company,
 			"from_date": filters.from_date,
@@ -111,14 +131,26 @@ def get_opening_balances(filters):
 	return opening
 	
 def get_balances_within_period(filters):
+        # Ver 1.0 by SSK on 31/10/2016 Begins, Following condition is added
+        '''
+        and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL')
+        and not exists(select 1 from `tabAccount` as ac
+                        where ac.name = ge.account
+                        and ac.parent_account = 'Sale of mines product - SMCL')
+        '''
+        
 	gle = frappe.db.sql("""
 		select party, sum(debit) as debit, sum(credit) as credit 
-		from `tabGL Entry`
+		from `tabGL Entry` as ge
 		where company=%(company)s 
-			and ifnull(party_type, '') = %(party_type)s and ifnull(party, '') != ''
-			and posting_date >= %(from_date)s and posting_date <= %(to_date)s 
-			and ifnull(is_opening, 'No') = 'No'
-			and account LIKE %(account)s
+		and ifnull(party_type, '') = %(party_type)s and ifnull(party, '') != ''
+		and posting_date >= %(from_date)s and posting_date <= %(to_date)s 
+		and ifnull(is_opening, 'No') = 'No'
+		and account LIKE %(account)s
+                and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL')
+                and not exists(select 1 from `tabAccount` as ac
+                                where ac.name = ge.account
+                                and ac.parent_account = 'Sale of mines product - SMCL')		
 		group by party""", {
 			"company": filters.company,
 			"from_date": filters.from_date,

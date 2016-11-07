@@ -1,5 +1,15 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd.
 # License: GNU General Public License v3. See license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  SSK		                   21/10/2016         Following GL heads are exempted as requested
+                                                                      by Hap Dorji
+                                                                          i) Abnormal Loss - SMCL
+                                                                          ii) Normal Loss - SMCL
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -13,7 +23,7 @@ class ReceivablePayableReport(object):
 		self.age_as_on = getdate(nowdate()) \
 			if self.filters.report_date > getdate(nowdate()) \
 			else self.filters.report_date
-
+                
 	def run(self, args):
 		party_naming_by = frappe.db.get_value(args.get("naming_by")[0], None, args.get("naming_by")[1])
 		columns = self.get_columns(party_naming_by, args)
@@ -212,6 +222,12 @@ class ReceivablePayableReport(object):
 	def get_gl_entries(self, party_type):
 		if not hasattr(self, "gl_entries"):
 			conditions, values = self.prepare_conditions(party_type)
+			
+			# Ver 1.0 Begins by SSK on 21/10/2016, Following variable is introducted
+                        exempt_gls = ["Abnormal Loss - SMCL","Normal Loss - SMCL"]
+                        exempt_gls = " and account not in ('{0}','{1}')".format(*exempt_gls)
+                        # Ver 1.0 Ends
+                        
 			if self.filters.inter_company_customer:
 				cus_query = " and exists (select 1 from `tabCustomer` as c where c.inter_company = 1 and c.name = `tabGL Entry`.party)"
 			elif self.filters.inter_company_supplier:
@@ -224,13 +240,28 @@ class ReceivablePayableReport(object):
 			else:
 				select_fields = "debit, credit"
 
-			self.gl_entries = frappe.db.sql("""select name, posting_date, account, party_type, party,
+                        # Ver 1.0 Begins by SSK on 21/10/2016, Following code commented and the subsequet is added
+                        '''
+                        self.gl_entries = frappe.db.sql("""select name, posting_date, account, party_type, party,
 				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, remarks, {0}
 				from `tabGL Entry`
 				where docstatus < 2 and party_type=%s and (party is not null and party != '') {1}
 				{2}
 				order by posting_date, party"""
 				.format(select_fields, conditions, cus_query), values, as_dict=True)
+                        '''
+
+			self.gl_entries = frappe.db.sql("""select posting_date, party_type, party,
+				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks, {0}
+				from `tabGL Entry`
+				where docstatus < 2 and party_type=%s and (party is not null and party != '') {1}
+				{2}
+				{3}
+				and against_voucher_type is not null
+				group by posting_date, party_type, party, voucher_type, voucher_no,
+				against_voucher_type, against_voucher, account_currency
+				order by posting_date, party"""
+				.format(select_fields, conditions, cus_query, exempt_gls), values, as_dict=True)
 
 		return self.gl_entries
 

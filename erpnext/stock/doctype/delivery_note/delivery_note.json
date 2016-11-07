@@ -2803,7 +2803,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2016-09-12 14:51:02.860625", 
+ "modified": "2016-11-03 10:45:36.566205", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Delivery Note", 
@@ -2874,7 +2874,7 @@
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 0, 
    "if_owner": 0, 
@@ -2926,7 +2926,7 @@
    "role": "Sales User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }, 
   {

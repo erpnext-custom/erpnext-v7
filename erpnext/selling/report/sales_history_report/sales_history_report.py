@@ -32,10 +32,11 @@ def get_data(filters):
 	sales_data = frappe.db.sql(query, as_dict=True)
 	
 	data = []
-	total = total_billed = nor_amt = ab_amt = ex_amt = ad_amt = 0
+	total = total_billed = nor_amt = ab_amt = ex_amt = ad_amt = to_bill = 0
 
 	if sales_data:
 		for a in sales_data:
+			to_bill = flt(a.amount) + flt(a.excess_amt) - flt(a.normal_loss_amt) - flt(a.abnormal_loss_amt)
 			row = {
 				"transporter_name": a.transporter_name,
 				"sales_no": a.sales_no,
@@ -66,11 +67,11 @@ def get_data(filters):
 				"abnormal_loss_amt": a.abnormal_loss_amt,
 				"excess_amt": a.excess_amt,
 				"excess_qty": a.excess_qty,
-				"total_bill_amt": flt(a.amount) + flt(a.excess_amt),
+				"total_bill_amt": to_bill,
 				"justification": a.justification
 			}
 			data.append(row)
-			total = flt(total) + flt(a.amount) + flt(a.excess_amt)
+			total = flt(total) + flt(to_bill) 
 			total_billed = total_billed + flt(a.amount)
 			nor_amt+=flt(a.normal_loss_amt)
 			ab_amt+=flt(a.abnormal_loss_amt)
