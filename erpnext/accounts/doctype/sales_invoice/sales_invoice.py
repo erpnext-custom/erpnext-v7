@@ -607,8 +607,8 @@ class SalesInvoice(SellingController):
 							self.get_gl_dict({
 								"account": normal_account,
 								"against": self.customer,
-								"party_type": "Customer",
-								"party": self.customer,
+								#"party_type": "Customer",
+								#"party": self.customer,
 								"debit": item.normal_loss_amt,
 								"debit_in_account_currency": item.normal_loss_amt \
 									if account_currency==self.company_currency else (item.normal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
@@ -638,8 +638,8 @@ class SalesInvoice(SellingController):
 							self.get_gl_dict({
 								"account": abnormal_account,
 								"against": self.customer,
-								"party_type": "Customer",
-								"party": self.customer,
+								#"party_type": "Customer",
+								#"party": self.customer,
 								"debit": item.abnormal_loss_amt,
 								"debit_in_account_currency": item.abnormal_loss_amt \
 									if account_currency==self.company_currency else (item.abnormal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
@@ -671,8 +671,8 @@ class SalesInvoice(SellingController):
 							self.get_gl_dict({
 								"account": excess_account,
 								"against": self.customer,
-								"party_type": "Customer",
-								"party": self.customer,
+								#"party_type": "Customer",
+								#"party": self.customer,
 								"credit": excess_amount,
 								"credit_in_account_currency": excess_amount \
 									if account_currency==self.company_currency else (excess_amount * self.conversion_rate, self.precision("grand_total")) ,

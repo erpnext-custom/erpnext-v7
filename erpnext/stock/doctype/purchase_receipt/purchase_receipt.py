@@ -403,7 +403,7 @@ def make_purchase_invoice(source_name, target_doc=None):
 		target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0)
 		cat = frappe.db.get_value("Item", source_doc.item_code, "item_group")
 		if cat == 'Fixed Asset':
-			target_doc.expense_account = "Stock Assets - SMCL"
+			target_doc.expense_account = "Stock-Assets - SMCL"
 
 	doclist = get_mapped_doc("Purchase Receipt", source_name,	{
 		"Purchase Receipt": {

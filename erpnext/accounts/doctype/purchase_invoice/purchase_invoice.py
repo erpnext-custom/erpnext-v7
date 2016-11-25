@@ -570,16 +570,31 @@ class PurchaseInvoice(BuyingController):
 					"against_voucher_type": self.doctype,
 				}, self.party_account_currency)
 			)
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": self.write_off_account,
-					"against": self.supplier,
-					"credit": flt(self.base_write_off_amount),
-					"credit_in_account_currency": self.base_write_off_amount \
-						if write_off_account_currency==self.company_currency else self.write_off_amount,
-					"cost_center": self.write_off_cost_center
-				})
-			)
+			if self.write_off_account == "Retention Money - SMCL":
+				gl_entries.append(
+					self.get_gl_dict({
+						"account": self.write_off_account,
+						"against": self.supplier,
+						"party_type": "Supplier",
+						"party": self.supplier,
+						"credit": flt(self.base_write_off_amount),
+						"credit_in_account_currency": self.base_write_off_amount \
+							if write_off_account_currency==self.company_currency else self.write_off_amount,
+						"cost_center": self.write_off_cost_center,
+						"remarks": "Retention amount deducted from Bill"
+					})
+				)
+			else:
+				gl_entries.append(
+					self.get_gl_dict({
+						"account": self.write_off_account,
+						"against": self.supplier,
+						"credit": flt(self.base_write_off_amount),
+						"credit_in_account_currency": self.base_write_off_amount \
+							if write_off_account_currency==self.company_currency else self.write_off_amount,
+						"cost_center": self.write_off_cost_center
+					})
+				)	
 
 	# make tds gl entry (Kinley) customisation for tds incorporation 
 	def make_tds_gl_entry(self, gl_entries):
