@@ -114,7 +114,7 @@ class AccountsController(TransactionBase):
 			if not self.due_date:
 				frappe.throw(_("Due Date is mandatory"))
 
-			validate_due_date(self.posting_date, self.due_date, "Customer", self.customer, self.company)
+			validate_due_date(self.sales_invoice_date, self.due_date, "Customer", self.customer, self.company)
 		elif self.doctype == "Purchase Invoice":
 			validate_due_date(self.posting_date, self.due_date, "Supplier", self.supplier, self.company)
 

@@ -17,6 +17,8 @@ def execute(filters=None):
 
 	customer_list = get_details(filters)
 
+	frappe.msgprint(str(customer_list))
+	
 	for d in customer_list:
 		row = []
 		outstanding_amt = get_customer_outstanding(d.name, filters.get("company"))
@@ -30,7 +32,7 @@ def execute(filters=None):
 
 		if credit_limit:
 			data.append(row)
-
+		frappe.msgprint(str(data))
 	return columns, data
 
 def get_columns(customer_naming_type):

@@ -440,25 +440,56 @@ class PaymentEntry(AccountsController):
 				
 	def add_bank_gl_entries(self, gl_entries):
 		if self.payment_type in ("Pay", "Internal Transfer"):
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": self.paid_from,
-					"account_currency": self.paid_from_account_currency,
-					"against": self.party if self.payment_type=="Pay" else self.paid_to,
-					"credit_in_account_currency": self.paid_amount,
-					"credit": self.base_paid_amount
-				})
-			)
+			if frappe.get_value("Account", self.paid_from, "report_type") == "Profit and Loss":	
+				if self.pl_cost_center:
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": self.paid_from,
+							"account_currency": self.paid_from_account_currency,
+							"against": self.party if self.payment_type=="Pay" else self.paid_to,
+							"debit_in_account_currency": self.paid_amount,
+							"debit": self.base_paid_amount,
+							"cost_center": self.pl_cost_center
+						})
+					)
+				else:
+					frappe.throw("Please select a Cost Center under 'Cost Center (If Applicable)' field")
+			else:
+				gl_entries.append(
+					self.get_gl_dict({
+						"account": self.paid_from,
+						"account_currency": self.paid_from_account_currency,
+						"against": self.party if self.payment_type=="Pay" else self.paid_to,
+						"credit_in_account_currency": self.paid_amount,
+						"credit": self.base_paid_amount
+					})
+				)
+
 		if self.payment_type in ("Receive", "Internal Transfer"):
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": self.paid_to,
-					"account_currency": self.paid_to_account_currency,
-					"against": self.party if self.payment_type=="Receive" else self.paid_from,
-					"debit_in_account_currency": self.received_amount,
-					"debit": self.base_received_amount
-				})
-			)
+			if frappe.get_value("Account", self.paid_to, "report_type") == "Profit and Loss":	
+				if self.pl_cost_center:
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": self.paid_to,
+							"account_currency": self.paid_to_account_currency,
+							"against": self.party if self.payment_type=="Receive" else self.paid_from,
+							"debit_in_account_currency": self.received_amount,
+							"debit": self.base_received_amount,
+							"cost_center": self.pl_cost_center
+						})
+					)
+				else:
+					frappe.throw("Please select a Cost Center under 'Cost Center (If Applicable)' field")
+			else:
+				gl_entries.append(
+					self.get_gl_dict({
+						"account": self.paid_to,
+						"account_currency": self.paid_to_account_currency,
+						"against": self.party if self.payment_type=="Receive" else self.paid_from,
+						"debit_in_account_currency": self.received_amount,
+						"debit": self.base_received_amount
+					})
+				)
 			
 	def add_deductions_gl_entries(self, gl_entries):
 		for d in self.get("deductions"):

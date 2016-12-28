@@ -398,12 +398,37 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 		if (this.frm.doc.posting_date) {
 			this.frm.posting_date = this.frm.doc.posting_date;
 
-			if ((this.frm.doc.doctype == "Sales Invoice" && this.frm.doc.customer) ||
+			if ((this.frm.doc.doctype == "Sales Invoices_Forget This" && this.frm.doc.customer) ||
 				(this.frm.doc.doctype == "Purchase Invoice" && this.frm.doc.supplier)) {
 				return frappe.call({
 					method: "erpnext.accounts.party.get_due_date",
 					args: {
 						"posting_date": me.frm.doc.posting_date,
+						"party_type": me.frm.doc.doctype == "Sales Invoice" ? "Customer" : "Supplier",
+						"party": me.frm.doc.doctype == "Sales Invoice" ? me.frm.doc.customer : me.frm.doc.supplier,
+						"company": me.frm.doc.company
+					},
+					callback: function(r, rt) {
+						if(r.message) {
+							me.frm.set_value("due_date", r.message);
+						}
+					}
+				})
+			}
+		}
+	},
+
+	sales_invoice_date: function() {
+		var me = this;
+		if (this.frm.doc.sales_invoice_date) {
+			this.frm.sales_invoice_date = this.frm.doc.sales_invoice_date;
+
+			if ((this.frm.doc.doctype == "Sales Invoice" && this.frm.doc.customer) ||
+				(this.frm.doc.doctype == "Purchase Invoice" && this.frm.doc.supplier)) {
+				return frappe.call({
+					method: "erpnext.accounts.party.get_due_date",
+					args: {
+						"posting_date": me.frm.doc.sales_invoice_date,
 						"party_type": me.frm.doc.doctype == "Sales Invoice" ? "Customer" : "Supplier",
 						"party": me.frm.doc.doctype == "Sales Invoice" ? me.frm.doc.customer : me.frm.doc.supplier,
 						"company": me.frm.doc.company

@@ -37,16 +37,17 @@ class LeaveApplication(Document):
 		else:
 			self.previous_doc = None
 
-		set_employee_name(self)
+		if self.status == "Approved":
+			set_employee_name(self)
 
-		self.validate_dates()
-		self.validate_balance_leaves()
-		self.validate_leave_overlap()
-		self.validate_max_days()
-		self.show_block_day_warning()
-		self.validate_block_days()
-		self.validate_salary_processed_days()
-		self.validate_leave_approver()
+			self.validate_dates()
+			self.validate_balance_leaves()
+			self.validate_leave_overlap()
+			self.validate_max_days()
+			self.show_block_day_warning()
+			self.validate_block_days()
+			self.validate_salary_processed_days()
+			self.validate_leave_approver()
 
 	def on_update(self):
 		if (not self.previous_doc and self.leave_approver) or (self.previous_doc and \
@@ -60,12 +61,13 @@ class LeaveApplication(Document):
 
 	def on_submit(self):
 		if self.status != "Approved":
-			frappe.throw(_("Only Leave Applications with status 'Approved' can be submitted"))
+			pass #frappe.throw(_("Only Leave Applications with status 'Approved' can be submitted"))
 
-		self.validate_back_dated_application()
+		if self.status == "Approved":
+			self.validate_back_dated_application()
 
-		# notify leave applier about approval
-		self.notify_employee(self.status)
+			# notify leave applier about approval
+			self.notify_employee(self.status)
 
 	def on_cancel(self):
 		# notify leave applier about cancellation

@@ -34,5 +34,21 @@ frappe.ui.form.on('Budget Reappropriation Tool', {
 		else {
 			msgprint("Fill all fields before submitting")
 		}
-	}
+	},
+
+	/*test: function(frm) {
+			frappe.call({
+				method: "erpnext.accounts.doctype.budget_reappropriation_tool.budget_reappropriation_tool.change",
+				args: {
+				},
+				callback: function(r) {
+					if(r.message == "DONE") {
+						msgprint("An amount of Nu. " + frm.doc.amount + " has been reappropriated")
+					}
+					else {
+						msgprint(r.message)
+					}
+				}
+	})
+	}*/
 });

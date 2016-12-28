@@ -609,8 +609,8 @@ class PurchaseInvoice(BuyingController):
 				self.get_gl_dict({
 					"account": self.tds_account,
 					"against": self.supplier,
-					"party_type": "Supplier",
-					"party": self.supplier,
+					#"party_type": "Supplier",
+					#"party": self.supplier,
 					"credit": flt(self.base_tds_amount),
 					"credit_in_account_currency": self.base_tds_amount \
 						if tds_account_currency==self.company_currency else self.tds_amount,
@@ -620,8 +620,8 @@ class PurchaseInvoice(BuyingController):
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.credit_to,
-					"party_type": "Supplier",
-					"party": self.supplier,
+					#"party_type": "Supplier",
+					#"party": self.supplier,
 					"against": self.tds_account,
 					"debit": self.base_tds_amount,
 					"debit_in_account_currency": self.base_tds_amount \

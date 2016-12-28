@@ -82,3 +82,14 @@ def reappropriate(from_cc=None, to_cc=None, from_acc=None, to_acc=None, amount=N
 	else:
 		return "You don't have enough budget in " + str(from_acc) + " under " + str(from_cc)
 
+
+"""##
+i@frappe.whitelist()
+def change():
+	doclist = frappe.get_all("Sales Invoice", fields={'name', 'posting_date', 'sales_invoice_date'})
+	for doc in doclist:
+		to_budget_account = frappe.get_doc("Sales Invoice", doc.name)
+		to_budget_account.db_set("sales_invoice_date", doc.posting_date)
+		to_budget_account.db_set("posting_date", doc.sales_invoice_date)
+	frappe.msgprint("DONE")
+"""
