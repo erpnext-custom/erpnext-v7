@@ -30,7 +30,7 @@ def construct_query(filters=None):
 		query = query + " AND a.supplier = \'" + filters.vendor_name + "\'";
 
 	query+=";";
-
+	
 	return query;
 
 def validate_filters(filters):
