@@ -10,15 +10,26 @@ class AssetModifierTool(Document):
 	pass
 
 ##
-# Method call from client to perform reappropriation
+# Method call from client to perform asset value addition
 ##
 @frappe.whitelist()
 def change_value(asset=None, value=None):
 	if(asset and value):
-		asset_obj = = frappe.get_doc("Asset", asset)
+		asset_obj = frappe.get_doc("Asset", asset)
 
 		if asset_obj:
-			frappe.throw(str(asset_obj.name) + " " + str(asset_obj.gross_purchase_amount) + " " + str(asset_obj.asset_account) + " " + str(asset_obj.schedules)  )
+			#Make GL Entries for additional values and update gross_amount (rate)
+			#TODO
+			frappe.msgprint(str(asset_obj.name) + " " + str(asset_obj.gross_purchase_amount) + " " + str(asset_obj.asset_account) )
+			
+			#Get dep. schedules which had not yet happened
+			schedules = frappe.db.get_all("Depreciation Schedule", filters = {"parent": asset_obj.name, "journal_entry": ""},fields={"name", "schedule_date", "depreciation_amount", "journal_entry"})
+			for i in schedules:
+				#Add additional values to the depreciation schedules
+				#TODO
+				frappe.msgprint(str(float(value) / len(schedules)) + " " + str(i.schedule_date) + " " + str(i.depreciation_amount) + " " + str(i.name))
+
+			frappe.throw("DONE")
 			#Deduct in the From Account and Cost Center
 			"""from_budget_account = frappe.get_doc("Budget Account", from_account[0].name)
 			sent = flt(from_budget_account.budget_sent) + flt(amount)
