@@ -13,18 +13,21 @@ class SupplementaryBudgetTool(Document):
 ##
 # Get budget details from CC and Account
 ##
-def get_cc_acc_budget(cc, acc):
-	return frappe.db.sql("""select ba.name, ba.parent, ba.budget_amount
+def get_cc_acc_budget(cc, acc, fiscal_year):
+	if frappe.db.get_value("Fiscal Year", fiscal_year, "closed"):
+		frappe.throw("Fiscal Year " + fiscal_year + " has already been closed")
+	else:
+		return frappe.db.sql("""select ba.name, ba.parent, ba.budget_amount
 				from `tabBudget` b, `tabBudget Account` ba
 				where b.name=ba.parent and b.fiscal_year=%s and b.cost_center = %s and ba.account = %s and b.docstatus = 1
-				""", (str(nowdate())[0:4], cc, acc), as_dict=True)
+				""", (fiscal_year, cc, acc), as_dict=True)
 
 ##
 # Method call from client to perform budget supplement
 ##
 @frappe.whitelist()
-def supplement(to_cc=None, to_acc=None, amount=None):
-	to_account = get_cc_acc_budget(to_cc, to_acc)	
+def supplement(to_cc=None, to_acc=None, amount=None, fiscal_year=None):
+	to_account = get_cc_acc_budget(to_cc, to_acc, fiscal_year)	
 	if to_account:
 		#Add in the To Account and Cost Center
 		to_budget_account = frappe.get_doc("Budget Account", to_account[0].name)

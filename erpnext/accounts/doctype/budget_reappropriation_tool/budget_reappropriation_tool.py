@@ -13,9 +13,9 @@ class BudgetReappropriationTool(Document):
 ##
 # Check the budget amount in the from cost center and account
 ##
-def budget_check(from_cc=None, from_acc=None, amount=None):
+def budget_check(from_cc=None, from_acc=None, amount=None, fiscal_year=None):
 	#Get cost center & target details
-	budget = get_cc_acc_budget(from_cc, from_acc)
+	budget = get_cc_acc_budget(from_cc, from_acc, fiscal_year)
 
 	if budget:
 		for a in budget:
@@ -29,20 +29,23 @@ def budget_check(from_cc=None, from_acc=None, amount=None):
 ##
 # Get budget details from CC and Account
 ##
-def get_cc_acc_budget(cc, acc):
-	return frappe.db.sql("""select ba.name, ba.parent, ba.budget_amount
+def get_cc_acc_budget(cc, acc, fiscal_year):
+	if frappe.db.get_value("Fiscal Year", fiscal_year, "closed"):
+		frappe.throw("Fiscal Year " + fiscal_year + " has already been closed")
+	else:
+		return frappe.db.sql("""select ba.name, ba.parent, ba.budget_amount
 				from `tabBudget` b, `tabBudget Account` ba
 				where b.name=ba.parent and b.fiscal_year=%s and b.cost_center = %s and ba.account = %s and b.docstatus = 1
-				""", (str(nowdate())[0:4], cc, acc), as_dict=True)
+				""", (fiscal_year, cc, acc), as_dict=True)
 
 ##
 # Method call from client to perform reappropriation
 ##
 @frappe.whitelist()
-def reappropriate(from_cc=None, to_cc=None, from_acc=None, to_acc=None, amount=None):
-	if(budget_check(from_cc, from_acc, amount)):
-		to_account = get_cc_acc_budget(to_cc, to_acc)
-		from_account = get_cc_acc_budget(from_cc, from_acc)
+def reappropriate(from_cc=None, to_cc=None, from_acc=None, to_acc=None, amount=None, fiscal_year=None):
+	if(budget_check(from_cc, from_acc, amount, fiscal_year)):
+		to_account = get_cc_acc_budget(to_cc, to_acc, fiscal_year)
+		from_account = get_cc_acc_budget(from_cc, from_acc, fiscal_year)
 
 		if to_account and from_account:
 			#Deduct in the From Account and Cost Center
@@ -80,8 +83,7 @@ def reappropriate(from_cc=None, to_cc=None, from_acc=None, to_acc=None, amount=N
 			return "Sorry, something happened. Please try again"
 
 	else:
-		return "You don't have enough budget in " + str(from_acc) + " under " + str(from_cc)
-
+			return "You don't have enough budget in " + str(from_acc) + " under " + str(from_cc)
 
 """##
 i@frappe.whitelist()

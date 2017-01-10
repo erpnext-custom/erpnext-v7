@@ -620,8 +620,8 @@ class PurchaseInvoice(BuyingController):
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.credit_to,
-					#"party_type": "Supplier",
-					#"party": self.supplier,
+					"party_type": "Supplier",
+					"party": self.supplier,
 					"against": self.tds_account,
 					"debit": self.base_tds_amount,
 					"debit_in_account_currency": self.base_tds_amount \

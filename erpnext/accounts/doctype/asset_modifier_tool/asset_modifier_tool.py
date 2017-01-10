@@ -5,57 +5,127 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from erpnext.accounts.accounts_custom_functions import get_number_of_days
+from frappe.utils import nowdate, flt
 
 class AssetModifierTool(Document):
 	pass
 
 ##
+# Make GL Entry for the additional cost
+##
+def make_gl_entry(asset_account, credit_account, value, asset, start_date):
+	je = frappe.new_doc("Journal Entry")
+	je.update({
+		"voucher_type": "Journal Entry",
+		"company": asset.company,
+		"remark": "Value (" + str(value) +" ) added to " + asset.name + " (" + asset.asset_name + ") ",
+		"user_remark": "Value (" + str(value) +" ) added to " + asset.name + " (" + asset.asset_name + ") ",
+		"posting_date": start_date
+		})
+
+	#credit account update
+	je.append("accounts", {
+		"account": credit_account,
+		"credit_in_account_currency": flt(value),
+		"reference_type": "Asset",
+		"reference_name": asset.name,
+		"cost_center": asset.cost_center
+		})
+
+	#debit account update
+	je.append("accounts", {
+		"account": asset_account,
+		"debit_in_account_currency": flt(value),
+		"reference_type": "Asset",
+		"reference_name": asset.name,
+		"cost_center": asset.cost_center
+		})
+	je.submit();
+
+##
+# Update the depreciation values for schedules
+##
+def update_value(sch_name, dep_amount, accu_dep, income, accu_income):
+	sch = frappe.get_doc("Depreciation Schedule", sch_name)
+	sch.db_set("depreciation_amount",dep_amount)
+	sch.db_set("accumulated_depreciation_amount", accu_dep)
+	sch.db_set("depreciation_income_tax", income)
+	sch.db_set("accumulated_depreciation_income_tax", accu_income)
+
+##
+# Update JVs if already depreciated
+##
+def update_jv(jv_name, dep_amount):
+	jv = frappe.get_doc("Journal Entry", jv_name)
+	##CHange the total debit and credit
+	jv.db_set("total_debit", flt(dep_amount))
+	jv.db_set("total_credit", flt(dep_amount))
+	##Change credit/debit_in_account_currency
+	for acc in jv.accounts:
+		jv_acc = frappe.get_doc("Journal Entry Account", acc.name)
+		if acc.credit_in_account_currency > 0:
+			#Set credit value
+			jv_acc.db_set("credit_in_account_currency", flt(dep_amount))
+		else:
+			#Set debit value
+			jv_acc.db_set("debit_in_account_currency", flt(dep_amount))
+
+##
 # Method call from client to perform asset value addition
 ##
 @frappe.whitelist()
-def change_value(asset=None, value=None):
+def change_value(asset=None, value=None, start_date=None, credit_account=None, asset_account=None):
 	if(asset and value):
 		asset_obj = frappe.get_doc("Asset", asset)
-
-		if asset_obj:
+		if asset_obj and asset_obj.docstatus == 1:
 			#Make GL Entries for additional values and update gross_amount (rate)
-			#TODO
-			frappe.msgprint(str(asset_obj.name) + " " + str(asset_obj.gross_purchase_amount) + " " + str(asset_obj.asset_account) )
+			asset_obj.db_set("gross_purchase_amount", flt(flt(asset_obj.gross_purchase_amount) + flt(value)))
+			make_gl_entry(asset_account, credit_account, value, asset_obj, start_date)
 			
 			#Get dep. schedules which had not yet happened
-			schedules = frappe.db.get_all("Depreciation Schedule", filters = {"parent": asset_obj.name, "journal_entry": ""},fields={"name", "schedule_date", "depreciation_amount", "journal_entry"})
+			schedules = frappe.db.get_all("Depreciation Schedule", order_by="schedule_date", filters = {"parent": asset_obj.name, "schedule_date": [">=", start_date]},fields={"name", "schedule_date", "journal_entry", "depreciation_amount", "accumulated_depreciation_amount", "depreciation_income_tax","accumulated_depreciation_income_tax"})
+			##Get total number of dep days for the asset
+			total_days = get_number_of_days(start_date, schedules[-1]['schedule_date'])
+			##Assign the last dep schedule date for num of days calc
+			last_sch_date = start_date
 			for i in schedules:
 				#Add additional values to the depreciation schedules
-				#TODO
-				frappe.msgprint(str(float(value) / len(schedules)) + " " + str(i.schedule_date) + " " + str(i.depreciation_amount) + " " + str(i.name))
-
-			frappe.throw("DONE")
-			#Deduct in the From Account and Cost Center
-			"""from_budget_account = frappe.get_doc("Budget Account", from_account[0].name)
-			sent = flt(from_budget_account.budget_sent) + flt(amount)
-			total = flt(from_budget_account.budget_amount) - flt(amount)
-			from_budget_account.db_set("budget_sent", sent)
-			from_budget_account.db_set("budget_amount", total)
-
-			#Add in the To Account and Cost Center
-			to_budget_account = frappe.get_doc("Budget Account", to_account[0].name)
-			received = flt(to_budget_account.budget_received) + flt(amount)
-			total = flt(to_budget_account.budget_amount) + flt(amount)
-			to_budget_account.db_set("budget_received", received)
-			to_budget_account.db_set("budget_amount", total)
-
+				#Calc num of days for each dep schedule
+				num_days = get_number_of_days(last_sch_date, i.schedule_date)
+				#Calc num of days till current schedule
+				num_till_days = get_number_of_days(start_date, i.schedule_date)
+				##Updated dep amount
+				dep_amount = flt(i.depreciation_amount) + (flt(value) * num_days / total_days)
+				##Updated accu dep amount
+				accu_dep = flt(i.accumulated_depreciation_amount) + (flt(value) * num_till_days / total_days)
+				#Income amount
+				income = flt(i.depreciation_income_tax) + (flt(value)/(100 * 365.25)) * flt(asset_obj.asset_depreciation_percent) * num_days
+				#Accumulated Income amount
+				accu_income = flt(i.accumulated_depreciation_income_tax) + (flt(value)/(100 * 365.25)) * flt(asset_obj.asset_depreciation_percent) * num_till_days
+				
+				update_value(i.name, dep_amount, accu_dep, income, accu_income)
+				
+				if i.journal_entry:
+					update_jv(i.journal_entry, dep_amount)
+				
+				##Update last dep schedule date
+				last_sch_date = i.schedule_date
+			
 			#Add the reappropriation details for record
-			app_details = frappe.new_doc("Reappropriation Details")
-			app_details.from_cost_center = from_cc
-			app_details.to_cost_center = to_cc
-			app_details.from_account = from_acc
-			app_details.to_account = to_acc
-			app_details.amount = amount
-			app_details.appropriation_on = nowdate()
-			app_details.submit() """
+			app_details = frappe.new_doc("Asset Modification Entries")
+			app_details.asset = asset
+			app_details.value = value
+			app_details.credit_account = credit_account
+			app_details.asset_account = asset_account
+			app_details.addition_date = start_date
+			app_details.posted_on = nowdate()
+			app_details.submit() 
 
 			return "DONE"
 
+		elif asset_obj.docstatus == 2:
+			frappe.throw("Cannot add value to CANCELLED assets")	
 		else:
 			return "Invalid asset code"
 

@@ -7,13 +7,14 @@ frappe.ui.form.on('Supplementary Budget Tool', {
 	},
 
 	post_budget: function(frm) {
-		if(frm.doc.to_cc && frm.doc.to_acc && frm.doc.amount && frm.doc.amount > 0) { 
+		if(frm.doc.to_cc && frm.doc.to_acc && frm.doc.amount && frm.doc.amount > 0 && frm.doc.fiscal_year) { 
 			frappe.call({
 				method: "erpnext.accounts.doctype.supplementary_budget_tool.supplementary_budget_tool.supplement",
 				args: {
 					"to_cc": frm.doc.to_cc,
 					"to_acc": frm.doc.to_acc,
-					"amount": frm.doc.amount
+					"amount": frm.doc.amount,
+					"fiscal_year": frm.doc.fiscal_year
 				},
 				callback: function(r) {
 					if(r.message == "DONE") {

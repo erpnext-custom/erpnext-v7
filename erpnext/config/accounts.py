@@ -72,6 +72,13 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Asset Modifier Tool",
+					"description": "Asset Addition Tool",
+					"label": "Asset Addition Tool",
+					"hide_count": True
+				},
+				{
+					"type": "doctype",
 					"name": "Asset Category",
 				},
 				{

@@ -7,7 +7,7 @@ frappe.ui.form.on('Budget Reappropriation Tool', {
 	},
 
 	reappropriate_button: function(frm) {
-		if(frm.doc.from_cost_center && frm.doc.to_cost_center && frm.doc.from_account && frm.doc.to_account && frm.doc.amount && frm.doc.amount > 0) { 
+		if(frm.doc.from_cost_center && frm.doc.to_cost_center && frm.doc.from_account && frm.doc.to_account && frm.doc.amount && frm.doc.amount > 0 && frm.doc.fiscal_year) { 
 			frappe.call({
 				method: "erpnext.accounts.doctype.budget_reappropriation_tool.budget_reappropriation_tool.reappropriate",
 				args: {
@@ -15,7 +15,8 @@ frappe.ui.form.on('Budget Reappropriation Tool', {
 					"to_cc": frm.doc.to_cost_center,
 					"from_acc": frm.doc.from_account,
 					"to_acc": frm.doc.to_account,
-					"amount": frm.doc.amount
+					"amount": frm.doc.amount,
+					"fiscal_year": frm.doc.fiscal_year
 				},
 				callback: function(r) {
 					if(r.message == "DONE") {

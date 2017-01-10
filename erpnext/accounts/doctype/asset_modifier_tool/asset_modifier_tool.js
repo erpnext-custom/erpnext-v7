@@ -7,12 +7,15 @@ frappe.ui.form.on('Asset Modifier Tool', {
 	},
 
 	update_asset_value: function(frm) {
-		if(frm.doc.asset && frm.doc.value > 0) {
+		if(frm.doc.asset && frm.doc.value > 0 && frm.doc.addition_date && frm.doc.credit_account && frm.doc.asset_account) {
 			frappe.call({
 				method: "erpnext.accounts.doctype.asset_modifier_tool.asset_modifier_tool.change_value",
 				args: {
 					"asset": frm.doc.asset,
-					"value": frm.doc.value
+					"value": frm.doc.value,
+					"start_date": frm.doc.addition_date,
+					"credit_account": frm.doc.credit_account,
+					"asset_account": frm.doc.asset_account
 				},
 				callback: function(r) {
 					if(r.message == "DONE") {
@@ -34,3 +37,7 @@ frappe.ui.form.on('Asset Modifier Tool', {
 	},
 
 });
+
+//Set Asset and Credit Account from asset_name
+cur_frm.add_fetch("asset", "asset_account", "asset_account");
+cur_frm.add_fetch("asset", "credit_account", "credit_account");
