@@ -76,7 +76,7 @@ def update_jv(jv_name, dep_amount):
 ##
 @frappe.whitelist()
 def change_value(asset=None, value=None, start_date=None, credit_account=None, asset_account=None):
-	if(asset and value):
+	if(asset and value and start_date <= nowdate()):
 		asset_obj = frappe.get_doc("Asset", asset)
 		if asset_obj and asset_obj.docstatus == 1:
 			#Make GL Entries for additional values and update gross_amount (rate)
@@ -125,7 +125,7 @@ def change_value(asset=None, value=None, start_date=None, credit_account=None, a
 			return "DONE"
 
 		elif asset_obj.docstatus == 2:
-			frappe.throw("Cannot add value to CANCELLED assets")	
+			 return "Cannot add value to CANCELLED assets"
 		else:
 			return "Invalid asset code"
 
@@ -134,5 +134,9 @@ def change_value(asset=None, value=None, start_date=None, credit_account=None, a
 
 	elif not value:
 		return "Invalid asset value"
+	
+	elif start_date > nowdate():
+		return "Effective Date cannot be greater than Today"
+	
 	else:
 		return "Sorry, something happened. Please try again"
