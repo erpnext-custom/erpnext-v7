@@ -86,8 +86,8 @@ class Asset(Document):
 			if cint(self.number_of_depreciations_booked) > cint(self.total_number_of_depreciations):
 				frappe.throw(_("Number of Depreciations Booked cannot be greater than Total Number of Depreciations"))
 
-		if self.next_depreciation_date and getdate(self.next_depreciation_date) < getdate(nowdate()):
-			frappe.throw(_("Next Depreciation Date must be on or after today"))
+		#if self.next_depreciation_date and getdate(self.next_depreciation_date) < getdate(nowdate()):
+		#	frappe.throw(_("Next Depreciation Date must be on or after today"))
 
 		if (flt(self.value_after_depreciation) > flt(self.expected_value_after_useful_life)
 			and not self.next_depreciation_date):
@@ -233,7 +233,7 @@ class Asset(Document):
 				"reference_name": self.name,
 				"cost_center": self.cost_center
 				})
-			je.insert();
+			je.submit();
 		
 @frappe.whitelist()
 def make_purchase_invoice(asset, item_code, gross_purchase_amount, company, posting_date):

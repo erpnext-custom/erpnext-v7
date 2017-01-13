@@ -70,6 +70,18 @@ def update_jv(jv_name, dep_amount):
 		else:
 			#Set debit value
 			jv_acc.db_set("debit_in_account_currency", flt(dep_amount))
+	
+	##Get the list of GL Entries related to the above journal entry
+	gl_list = frappe.db.sql("select name from `tabGL Entry` where voucher_no = %s", jv_name, as_dict=True)
+	
+	for gl in gl_list:
+		gl_obj = frappe.get_doc("GL Entry", gl.name)
+		if gl_obj.debit_in_account_currency > 0:
+			gl_obj.db_set("debit_in_account_currency", flt(dep_amount))
+			gl_obj.db_set("debit", flt(dep_amount))
+		else:
+			gl_obj.db_set("credit_in_account_currency", flt(dep_amount))
+			gl_obj.db_set("credit", flt(dep_amount))
 
 ##
 # Method call from client to perform asset value addition
@@ -80,6 +92,7 @@ def change_value(asset=None, value=None, start_date=None, credit_account=None, a
 		asset_obj = frappe.get_doc("Asset", asset)
 		if asset_obj and asset_obj.docstatus == 1:
 			#Make GL Entries for additional values and update gross_amount (rate)
+			asset_obj.db_set("additional_value", flt(asset_obj.additional_value) + flt(value))
 			asset_obj.db_set("gross_purchase_amount", flt(flt(asset_obj.gross_purchase_amount) + flt(value)))
 			make_gl_entry(asset_account, credit_account, value, asset_obj, start_date)
 			
