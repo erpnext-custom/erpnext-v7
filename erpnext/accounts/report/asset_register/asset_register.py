@@ -48,7 +48,7 @@ def validate_filters(filters):
 		filters.to_date = filters.year_end_date
 
 def get_data(filters):
-	query = "select asset_quantity_, name, asset_name, asset_category, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, (select sum(depreciation_amount) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\') as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\') as depreciation_income_tax from tabAsset as ass where docstatus = 1"
+	query = "select opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, (select sum(depreciation_amount) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\') as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\') as depreciation_income_tax from tabAsset as ass where docstatus = 1"
 
 	if filters.cost_center:
 		query+=" and ass.cost_center = \'" + filters.cost_center + "\'"
@@ -62,7 +62,7 @@ def get_data(filters):
 
 	if asset_data:
 		for a in asset_data:
-			net_useful_life = flt(a.gross_purchase_amount) - flt(a.depreciation_amount)
+			net_useful_life = flt(a.gross_purchase_amount) - flt(a.depreciation_amount) - flt(a.opening_accumulated_depreciation)
 			net_income_tax = flt(a.gross_purchase_amount) - flt(a.depreciation_income_tax)
 			row = {
 				"asset_code": a.name,
@@ -74,6 +74,7 @@ def get_data(filters):
 				"qty": a.asset_quantity_,
 				"amount": a.gross_purchase_amount,
 				"dep_useful_life": a.depreciation_amount,
+				"opening": a.opening_accumulated_depreciation,
 				"dep_income_tax": a.depreciation_income_tax,
 				"net_useful_life": net_useful_life,
 				"net_income_tax": net_income_tax,
@@ -149,14 +150,20 @@ def get_columns():
 			"width": 120
 		},
 		{
-			"fieldname": "dep_income_tax",
-			"label": _("Income Tax"),
+			"fieldname": "opening",
+			"label": _("Opening Depreciation"),
 			"fieldtype": "Currency",
 			"width": 120
 		},
 		{
 			"fieldname": "net_useful_life",
 			"label": _("Net Useful Life"),
+			"fieldtype": "Currency",
+			"width": 120
+		},
+		{
+			"fieldname": "dep_income_tax",
+			"label": _("Income Tax"),
 			"fieldtype": "Currency",
 			"width": 120
 		},
