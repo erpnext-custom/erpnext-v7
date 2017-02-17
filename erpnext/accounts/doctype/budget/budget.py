@@ -88,7 +88,7 @@ def validate_expense_against_budget(args):
 			pass
 		else:
 			#Budget Check if there is no budget booking under the budget head
-			frappe.throw("There is no budget in " + args.account + " under " + args.cost_center)
+			frappe.throw("There is no budget in " + args.account + " under " + args.cost_center + " for " + str(args.fiscal_year))
 	
 def compare_expense_with_budget(args, cost_center, budget_amount, action_for, action):
 	actual_expense = get_actual_expense(args, cost_center)

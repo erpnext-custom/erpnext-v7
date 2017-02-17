@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate, formatdate, cstr
+from frappe.utils import flt, getdate, formatdate, cstr, rounded
 
 def execute(filters=None):
 	validate_filters(filters)
@@ -48,7 +48,8 @@ def validate_filters(filters):
 		filters.to_date = filters.year_end_date
 
 def get_data(filters):
-	query = "select opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, (select sum(depreciation_amount) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\') as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\') as depreciation_income_tax from tabAsset as ass where docstatus = 1"
+	#query = "select opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, (select sum(depreciation_amount) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + " and ds.docstatus = 1\') as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + " and ds.docstatus = 1\') as depreciation_income_tax from tabAsset as ass where ass.docstatus = 1 and ass.status != 'Scrapped'"
+	query = "select opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + " and gl.docstatus = 1\') as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + " and ds.docstatus = 1\') as depreciation_income_tax from tabAsset as ass where ass.docstatus = 1 and ass.status != 'Scrapped'"
 
 	if filters.cost_center:
 		query+=" and ass.cost_center = \'" + filters.cost_center + "\'"
@@ -61,8 +62,11 @@ def get_data(filters):
 	data = []
 
 	if asset_data:
+		total_useful = 0.00
 		for a in asset_data:
-			net_useful_life = flt(a.gross_purchase_amount) - flt(a.depreciation_amount) - flt(a.opening_accumulated_depreciation)
+			useful_life = flt(a.depreciation_amount)  - flt(a.gross_purchase_amount) 
+			total_useful += flt(useful_life, 3)
+			net_useful_life = flt(a.depreciation_amount) - (useful_life * 2) - flt(a.opening_accumulated_depreciation)  
 			net_income_tax = flt(a.gross_purchase_amount) - flt(a.depreciation_income_tax)
 			row = {
 				"asset_code": a.name,
@@ -73,7 +77,7 @@ def get_data(filters):
 				"date_of_issue": a.purchase_date,
 				"qty": a.asset_quantity_,
 				"amount": a.gross_purchase_amount,
-				"dep_useful_life": a.depreciation_amount,
+				"dep_useful_life": flt(useful_life, 3),
 				"opening": a.opening_accumulated_depreciation,
 				"dep_income_tax": a.depreciation_income_tax,
 				"net_useful_life": net_useful_life,
@@ -81,6 +85,8 @@ def get_data(filters):
 				"presystem_issue_date": a.presystem_issue_date
 			}
 			data.append(row)
+		row = {"dep_useful_life": flt(total_useful, 3)}
+		data.append(row)
 	
 	return data
 
@@ -139,7 +145,7 @@ def get_columns():
 		},
 		{
 			"fieldname": "amount",
-			"label": _("Amount"),
+			"label": _("Gross Amount"),
 			"fieldtype": "Currency",
 			"width": 120
 		},

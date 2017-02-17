@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate, formatdate, cstr
+from frappe.utils import flt, getdate, formatdate, cstr, rounded
 from erpnext.accounts.report.financial_statements_emines \
 	import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
 
@@ -145,8 +145,8 @@ def calculate_values(accounts, gl_entries_by_account, opening_balances, filters)
 
 		for entry in gl_entries_by_account.get(d.name, []):
 			if cstr(entry.is_opening) != "Yes":
-				d["debit"] += flt(entry.debit)
-				d["credit"] += flt(entry.credit)
+				d["debit"] += flt(entry.debit, 3)
+				d["credit"] += flt(entry.credit, 3)
 
 		total_row["debit"] += d["debit"]
 		total_row["credit"] += d["credit"]

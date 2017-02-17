@@ -269,16 +269,17 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 	additional_conditions = []
 
 	if ignore_closing_entries:
-		additional_conditions.append("and ifnull(voucher_type, '')!='Period Closing Voucher'")
+		additional_conditions.append(" and ifnull(voucher_type, '')!='Period Closing Voucher' ")
 
-	if from_date:
-		additional_conditions.append("and posting_date >= %(from_date)s")
+	if from_date and to_date:
+		#additional_conditions.append("and posting_date >= %(from_date)s")
+			#and posting_date <= %(to_date)s
+		additional_conditions.append(" and posting_date BETWEEN %(from_date)s AND %(to_date)s and docstatus = 1 ")
 
 	if not cost_center:
 		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`
 			where company=%(company)s
 			{additional_conditions}
-			and posting_date <= %(to_date)s
 			and account in (select name from `tabAccount`
 				where lft >= %(lft)s and rgt <= %(rgt)s)
 			order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
@@ -296,7 +297,6 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`
 			where company=%(company)s
 			{additional_conditions}
-			and posting_date <= %(to_date)s
 			and account in (select name from `tabAccount`
 				where lft >= %(lft)s and rgt <= %(rgt)s)
 			order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),

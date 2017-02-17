@@ -18,14 +18,14 @@ def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, (filters.from_date, filters.to_date), as_dict=True);
 	for d in datas:
-		row = [d.item_code, d.item_name, d.qty, d.issued_to, d.issued_date, d.amount]
+		row = [d.item_code, d.item_name, d.qty, d.custodian, d.issued_date, d.amount]
 		data.append(row);
 	return data
 
 def construct_query(filters=None):
-	query = """select item_code, item_name, qty, issued_to, issued_date, amount from `tabAsset Issue Details`
-	where docstatus = 1 and issued_date between %s and %s
-	order by issued_date asc
+	query = """select id.item_code, id.item_name, id.qty, (select e.employee_name from tabEmployee as e where e.name = id.issued_to) as custodian, id.issued_date, id.amount from `tabAsset Issue Details` as id
+	where id.docstatus = 1 and id.issued_date between %s and %s
+	order by id.issued_date asc
 	"""
 	return query;
 

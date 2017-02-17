@@ -129,8 +129,8 @@ def scrap_asset(asset_name):
 
 	je.flags.ignore_permissions = True
 	# Ver 1.0 Begins by SSK on 17/08/2016, following line is commented and subsequent is added
-	#je.submit()
-	je.insert()
+	je.submit()
+	#je.insert()
 	# Ver 1.0 Ends
 	
 	frappe.db.set_value("Asset", asset_name, "disposal_date", today())

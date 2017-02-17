@@ -121,7 +121,7 @@ def get_gl_entries(filters):
 			voucher_type, voucher_no, cost_center, project,
 			remarks, against, is_opening {select_fields}
 		from `tabGL Entry`
-		where company=%(company)s {conditions}
+		where docstatus = 1 and company=%(company)s {conditions}
 		{group_by_condition}
 		order by posting_date, account"""\
 		.format(select_fields=select_fields, conditions=get_conditions(filters),
