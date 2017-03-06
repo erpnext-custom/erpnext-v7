@@ -101,7 +101,7 @@ def make_entry(args, adv_adj, update_outstanding):
 		acc_type = frappe.db.get_value("Account", args.account, "account_type")
 		if acc_type == "Expense Account" or acc_type == "Fixed Asset":
 			bud_obj = frappe.get_doc({
-				"doctype": "Consumed Budget",
+				"doctype": "Committed Budget",
 				"account": args.account,
 				"cost_center": args.cost_center,
 				"po_no": args.voucher_no,
@@ -208,7 +208,7 @@ def delete_gl_entries(gl_entries=None, voucher_type=None, voucher_no=None,
 		#reset the committed budget too
 		acc_type = frappe.db.get_value("Account", entry["account"], "account_type")
 		if acc_type == "Expense Account" or acc_type == "Fixed Asset":
-			doc_id = frappe.db.get_value("Consumed Budget", {"po_no": entry["voucher_no"]}, "name")
+			doc_id = frappe.db.get_value("Committed Budget", {"po_no": entry["voucher_no"]}, "name")
 			if doc_id:
-				ref_doc = frappe.get_doc("Consumed Budget", str(doc_id))
+				ref_doc = frappe.get_doc("Committed Budget", str(doc_id))
 				ref_doc.db_set("amount", 0)

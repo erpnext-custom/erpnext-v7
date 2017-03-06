@@ -177,9 +177,9 @@ class PurchaseReceipt(BuyingController):
 	##
 	def consume_budget(self):
 		for a in self.items:
-			idx = frappe.db.sql("select name from `tabConsumed Budget` where cost_center = %s and po_no = %s and item_code = %s", (a.cost_center, a.purchase_order, a.item_code), as_dict=True)
+			idx = frappe.db.sql("select name from `tabCommitted Budget` where cost_center = %s and po_no = %s and item_code = %s", (a.cost_center, a.purchase_order, a.item_code), as_dict=True)
 			if idx:
-				ref_doc = frappe.get_doc("Consumed Budget", idx[0].name)
+				ref_doc = frappe.get_doc("Committed Budget", idx[0].name)
 				ref_doc.db_set("amount", a.amount)
 
 

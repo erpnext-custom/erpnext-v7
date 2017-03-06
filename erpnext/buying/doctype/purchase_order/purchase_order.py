@@ -274,7 +274,7 @@ class PurchaseOrder(BuyingController):
 	def consume_budget(self):
 		for a in self.items:
 			bud_obj = frappe.get_doc({
-				"doctype": "Consumed Budget",
+				"doctype": "Committed Budget",
 				"account": a.budget_account,
 				"cost_center": a.cost_center,
 				"po_no": self.name,
@@ -292,7 +292,7 @@ class PurchaseOrder(BuyingController):
 		for a in self.items:
 			budget_amount = frappe.db.sql("select ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (a.budget_account, a.cost_center, str(self.transaction_date)[0:4]), as_dict=True)
 			if budget_amount:
-				consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabConsumed Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s and exists (SELECT 1 FROM `tabPurchase Order` po WHERE po.name = cb.po_no AND po.docstatus = 1 UNION SELECT 1 FROM `tabJournal Entry` je WHERE je.name = cb.po_no AND je.docstatus = 1)", (a.cost_center, a.budget_account, str(self.transaction_date)[0:4] + "-01-01", str(self.transaction_date)[0:4] + "-12-31"), as_dict=True)
+				consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s and exists (SELECT 1 FROM `tabPurchase Order` po WHERE po.name = cb.po_no AND po.docstatus = 1 UNION SELECT 1 FROM `tabJournal Entry` je WHERE je.name = cb.po_no AND je.docstatus = 1)", (a.cost_center, a.budget_account, str(self.transaction_date)[0:4] + "-01-01", str(self.transaction_date)[0:4] + "-12-31"), as_dict=True)
 				if consumed:
 					if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(a.amount)):
 						frappe.throw("Not enough budget in " + str(a.budget_account) + " under " + str(a.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(a.amount) - flt(budget_amount[0].budget_amount))))
@@ -303,9 +303,9 @@ class PurchaseOrder(BuyingController):
 	# Cancel budget check entry
 	##
 	def cancel_budget_entry(self):
-		doc_id = frappe.db.get_value("Consumed Budget", {"po_no": self.name}, "name")
+		doc_id = frappe.db.get_value("Committed Budget", {"po_no": self.name}, "name")
 		if doc_id:
-			ref_doc = frappe.get_doc("Consumed Budget", str(doc_id))
+			ref_doc = frappe.get_doc("Committed Budget", str(doc_id))
 			ref_doc.db_set("amount", 0)
 
 @frappe.whitelist()
