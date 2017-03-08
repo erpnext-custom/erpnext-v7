@@ -237,10 +237,10 @@ class Asset(Document):
 			je.submit();
 		
 	def delete_asset_gl_entries(self):
-		gl_list = frappe.db.sql(""" select distinct je.name from `tabJournal Entry Account` as jea, `tabJournal Entry` as je where je.voucher_type = 'Journal Entry' and je.name = jea.parent and jea.reference_name = %s """, self.name, as_dict=True)
+		gl_list = frappe.db.sql(""" select distinct je.name as journal_entry from `tabJournal Entry Account` as jea, `tabJournal Entry` as je where je.voucher_type = 'Journal Entry' and je.name = jea.parent and jea.reference_name = %s """, self.name, as_dict=True)
 		if gl_list:
 			for gl in gl_list:
-				frappe.get_doc("Journal Entry", gl).cancel()
+				frappe.get_doc("Journal Entry", gl.journal_entry).cancel()
 
 @frappe.whitelist()
 def make_purchase_invoice(asset, item_code, gross_purchase_amount, company, posting_date):

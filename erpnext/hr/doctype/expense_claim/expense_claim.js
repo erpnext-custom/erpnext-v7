@@ -57,6 +57,19 @@ $.extend(cur_frm.cscript, new erpnext.hr.ExpenseClaimController({frm: cur_frm}))
 cur_frm.add_fetch('employee', 'company', 'company');
 cur_frm.add_fetch('employee','employee_name','employee_name');
 
+frappe.ui.form.on("Expense Claim", {
+	onload: function(frm) {
+		frm.set_query("exp_approver", function() {
+			return {
+				query: "erpnext.hr.doctype.expense_claim.expense_claim.get_expense_approver",
+				filters: {
+					employee: frm.doc.employee
+				}
+			};
+		});
+	}
+});
+
 cur_frm.cscript.onload = function(doc,cdt,cdn) {
 	console.log('onload is triggered.');
 	
@@ -70,7 +83,7 @@ cur_frm.cscript.onload = function(doc,cdt,cdn) {
 			cur_frm.set_value("approval_status", "Draft");
 		cur_frm.cscript.clear_sanctioned(doc);
 	}
-
+	
 	cur_frm.fields_dict.employee.get_query = function(doc,cdt,cdn) {
 		return{
 			query: "erpnext.controllers.queries.employee_query"
@@ -79,7 +92,10 @@ cur_frm.cscript.onload = function(doc,cdt,cdn) {
 
 	cur_frm.set_query("exp_approver", function() {
 		return {
-			query: "erpnext.hr.doctype.expense_claim.expense_claim.get_expense_approver"
+			query: "erpnext.hr.doctype.expense_claim.expense_claim.get_expense_approver",
+			filters: {
+				employee: frm.doc.employee
+			}
 		};
 	});
 }

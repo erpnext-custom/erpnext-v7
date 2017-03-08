@@ -273,15 +273,16 @@ def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 
 	employee_user = frappe.get_value("Employee", filters.get("employee"), "user_id")
 
-	approvers_list = frappe.db.sql("""select user.name, user.first_name, user.last_name from
-		tabUser user, `tabEmployee Leave Approver` approver where
-		approver.parent = %s
-		and user.name like %s
-		and approver.leave_approver=user.name""", (filters.get("employee"), "%" + txt + "%"))
+	approver = frappe.get_value("Employee", filters.get("employee"), "reports_to")
+	approver_id = frappe.get_value("Employee", approver, "user_id")
 
-	if not approvers_list:
-		approvers_list = get_approver_list(employee_user)
-	return approvers_list
+	lists = frappe.db.sql("""select user.name, user.first_name, user.last_name from
+			         tabUser user where
+				 user.name = %s""", approver_id)
+	if lists:
+		return lists
+	else:
+		frappe.throw("Set \'Reports To\' field for employee " + str(filters.get("employee")))
 
 @frappe.whitelist()
 def get_number_of_leave_days(employee, leave_type, from_date, to_date, half_day=None):

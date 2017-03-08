@@ -113,12 +113,24 @@ class ExpenseClaim(Document):
 		
 @frappe.whitelist()
 def get_expense_approver(doctype, txt, searchfield, start, page_len, filters):
-	return frappe.db.sql("""
+	if not filters.get("employee"):
+		frappe.throw(_("Please select Employee Record first."))
+
+	approver = frappe.get_value("Employee", filters.get("employee"), "reports_to")
+	approver_id = frappe.get_value("Employee", approver, "user_id")
+	
+	lists = frappe.db.sql("""
 		select u.name, concat(u.first_name, ' ', u.last_name)
-		from tabUser u, tabUserRole r
-		where u.name = r.parent and r.role = 'Expense Approver' 
-		and u.enabled = 1 and u.name like %s
-	""", ("%" + txt + "%"))
+		from tabUser u where
+		u.enabled = 1 and u.name = %s
+	""", approver_id)
+
+	if lists:
+		return lists
+	else:
+		frappe.throw("Set \'Reports To \' field for employee " + str(filters.get("employee")))
+		#and u.enabled = 1 and u.name like %s
+	#""", ("%" + txt + "%"))
 
 @frappe.whitelist()
 def get_expense_approver_mod(employee):

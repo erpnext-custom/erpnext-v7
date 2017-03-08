@@ -198,8 +198,6 @@ def delete_gl_entries(gl_entries=None, voucher_type=None, voucher_no=None,
 	for entry in gl_entries:
 		validate_frozen_account(entry["account"], adv_adj)
 		validate_balance_type(entry["account"], adv_adj)
-		if entry.voucher_type != 'Stock Entry':
-			validate_expense_against_budget(entry)
 		
 		if entry.get("against_voucher") and update_outstanding == 'Yes':
 			update_outstanding_amt(entry["account"], entry.get("party_type"), entry.get("party"), entry.get("against_voucher_type"),
