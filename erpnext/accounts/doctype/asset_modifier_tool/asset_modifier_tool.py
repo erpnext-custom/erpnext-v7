@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from erpnext.accounts.accounts_custom_functions import get_number_of_days
+from erpnext.accounts.accounts_custom_functions import update_jv
 from frappe.utils import nowdate, flt
 
 class AssetModifierTool(Document):
@@ -52,36 +53,6 @@ def update_value(sch_name, dep_amount, accu_dep, income, accu_income):
 	sch.db_set("accumulated_depreciation_amount", accu_dep)
 	sch.db_set("depreciation_income_tax", income)
 	sch.db_set("accumulated_depreciation_income_tax", accu_income)
-
-##
-# Update JVs if already depreciated
-##
-def update_jv(jv_name, dep_amount):
-	jv = frappe.get_doc("Journal Entry", jv_name)
-	##CHange the total debit and credit
-	jv.db_set("total_debit", flt(dep_amount))
-	jv.db_set("total_credit", flt(dep_amount))
-	##Change credit/debit_in_account_currency
-	for acc in jv.accounts:
-		jv_acc = frappe.get_doc("Journal Entry Account", acc.name)
-		if acc.credit_in_account_currency > 0:
-			#Set credit value
-			jv_acc.db_set("credit_in_account_currency", flt(dep_amount))
-		else:
-			#Set debit value
-			jv_acc.db_set("debit_in_account_currency", flt(dep_amount))
-	
-	##Get the list of GL Entries related to the above journal entry
-	gl_list = frappe.db.sql("select name from `tabGL Entry` where voucher_no = %s", jv_name, as_dict=True)
-	
-	for gl in gl_list:
-		gl_obj = frappe.get_doc("GL Entry", gl.name)
-		if gl_obj.debit_in_account_currency > 0:
-			gl_obj.db_set("debit_in_account_currency", flt(dep_amount))
-			gl_obj.db_set("debit", flt(dep_amount))
-		else:
-			gl_obj.db_set("credit_in_account_currency", flt(dep_amount))
-			gl_obj.db_set("credit", flt(dep_amount))
 
 ##
 # Method call from client to perform asset value addition

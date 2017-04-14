@@ -13,6 +13,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, today, getdate
+from erpnext.accounts.accounts_custom_functions import update_jv
 
 def post_depreciation_entries(date=None):
 	if not date:
@@ -36,6 +37,10 @@ def make_depreciation_entry(asset_name, date=None):
 		date = today()
 
 	asset = frappe.get_doc("Asset", asset_name)
+	
+	if asset.status == "Scrapped":
+		frappe.throw("Can not make depreciation for scrapped assets")
+
 	fixed_asset_account, accumulated_depreciation_account, depreciation_expense_account = \
 		get_depreciation_accounts(asset)
 
@@ -106,7 +111,7 @@ def get_depreciation_accounts(asset):
 	return fixed_asset_account, accumulated_depreciation_account, depreciation_expense_account
 
 @frappe.whitelist()
-def scrap_asset(asset_name):
+def scrap_asset(asset_name, scrap_date):
 	asset = frappe.get_doc("Asset", asset_name)
 
 	if asset.docstatus != 1:
@@ -114,9 +119,20 @@ def scrap_asset(asset_name):
 	elif asset.status in ("Cancelled", "Sold", "Scrapped"):
 		frappe.throw(_("Asset {0} cannot be scrapped, as it is already {1}").format(asset.name, asset.status))
 
+	#Update already depreciated entries to zero
+	schedules = frappe.db.sql("select name, journal_entry, depreciation_amount from `tabDepreciation Schedule` where parent = %s and schedule_date between %s and %s",( asset_name, scrap_date, today()), as_dict=True)
+	total_amount = 0.00;
+	for i in schedules:
+		total_amount += flt(i.depreciation_amount)
+		update_jv(i.journal_entry, 0.00)
+		frappe.db.set_value("Depreciation Schedule", i.name, "journal_entry", "")
+
+	asset.value_after_depreciation = flt(asset.value_after_depreciation) + flt(total_amount)
+	frappe.db.set_value("Asset", asset_name, "value_after_depreciation", asset.value_after_depreciation)
+	
 	je = frappe.new_doc("Journal Entry")
 	je.voucher_type = "Journal Entry"
-	je.posting_date = today()
+	je.posting_date = scrap_date 
 	je.company = asset.company
 	je.remark = "Scrap Entry for asset {0}".format(asset_name)
 
@@ -128,15 +144,12 @@ def scrap_asset(asset_name):
 		je.append("accounts", entry)
 
 	je.flags.ignore_permissions = True
-	# Ver 1.0 Begins by SSK on 17/08/2016, following line is commented and subsequent is added
-	je.submit()
-	#je.insert()
-	# Ver 1.0 Ends
+	je.insert()
 	
-	frappe.db.set_value("Asset", asset_name, "disposal_date", today())
+	frappe.db.set_value("Asset", asset_name, "disposal_date", scrap_date)
 	frappe.db.set_value("Asset", asset_name, "journal_entry_for_scrap", je.name)
 	asset.set_status("Scrapped")
-	
+
 	frappe.msgprint(_("Asset scrapped via Journal Entry {0}").format(je.name))
 
 @frappe.whitelist()

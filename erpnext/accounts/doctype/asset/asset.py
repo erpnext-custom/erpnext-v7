@@ -237,7 +237,7 @@ class Asset(Document):
 			je.submit();
 		
 	def delete_asset_gl_entries(self):
-		gl_list = frappe.db.sql(""" select distinct je.name as journal_entry from `tabJournal Entry Account` as jea, `tabJournal Entry` as je where je.voucher_type = 'Journal Entry' and je.name = jea.parent and jea.reference_name = %s """, self.name, as_dict=True)
+		gl_list = frappe.db.sql(""" select distinct je.name as journal_entry from `tabJournal Entry Account` as jea, `tabJournal Entry` as je where je.voucher_type = 'Journal Entry' and je.name = jea.parent and jea.reference_name = %s and je.docstatus = 1""", self.name, as_dict=True)
 		if gl_list:
 			for gl in gl_list:
 				frappe.get_doc("Journal Entry", gl.journal_entry).cancel()
@@ -312,4 +312,5 @@ def get_item_details(item_code):
 @frappe.whitelist()
 def get_next_depreciation_date():
 	return calculate_depreciation_date()
+
 

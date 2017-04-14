@@ -127,7 +127,6 @@ def calculate_values(accounts_by_name, gl_entries_by_account, period_list, accum
 				if entry.posting_date <= period.to_date:
 					if accumulated_values or entry.posting_date >= period.from_date:
 						d[period.key] = d.get(period.key, 0.0) + flt(entry.debit) - flt(entry.credit)
-
 			if entry.posting_date < period_list[0].year_start_date:
 				d["opening_balance"] = d.get("opening_balance", 0.0) + flt(entry.debit) - flt(entry.credit)
 
@@ -271,14 +270,15 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 	if ignore_closing_entries:
 		additional_conditions.append(" and ifnull(voucher_type, '')!='Period Closing Voucher' ")
 
+	#if from_date:
+	#	additional_conditions.append("and posting_date >= %(from_date)s")
+	
 	if from_date and to_date:
-		#additional_conditions.append("and posting_date >= %(from_date)s")
-			#and posting_date <= %(to_date)s
 		additional_conditions.append(" and posting_date BETWEEN %(from_date)s AND %(to_date)s and docstatus = 1 ")
 
 	if not cost_center:
 		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`
-			where company=%(company)s
+			where company=%(company)s 
 			{additional_conditions}
 			and account in (select name from `tabAccount`
 				where lft >= %(lft)s and rgt <= %(rgt)s)

@@ -85,7 +85,7 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 	for entry in gl_map:
 		make_entry(entry, adv_adj, update_outstanding)
 		# check against budget only if not se
-		if entry.voucher_type != 'Stock Entry':
+		if entry.voucher_type != 'Stock Entry' and entry.voucher_type != 'Period Closing Voucher':
 			validate_expense_against_budget(entry)
 
 def make_entry(args, adv_adj, update_outstanding):

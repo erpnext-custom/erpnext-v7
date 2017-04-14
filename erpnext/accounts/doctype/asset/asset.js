@@ -49,9 +49,11 @@ frappe.ui.form.on('Asset', {
 				});
 				
 			} else if (frm.doc.status=='Scrapped') {
+				/*
 				frm.add_custom_button("Restore Asset", function() {
 					erpnext.asset.restore_asset(frm);
 				});
+				*/
 			}
 			
 			frm.trigger("show_graph");
@@ -194,20 +196,6 @@ erpnext.asset.make_sales_invoice = function(frm) {
 	})
 }
 
-erpnext.asset.scrap_asset = function(frm) {
-	frappe.confirm(__("Do you really want to scrap this asset?"), function () {
-		frappe.call({
-			args: {
-				"asset_name": frm.doc.name
-			},
-			method: "erpnext.accounts.doctype.asset.depreciation.scrap_asset",
-			callback: function(r) {
-				cur_frm.reload_doc();
-			}
-		})
-	})
-}
-
 erpnext.asset.restore_asset = function(frm) {
 	frappe.confirm(__("Do you really want to restore this scrapped asset?"), function () {
 		frappe.call({
@@ -241,7 +229,7 @@ erpnext.asset.transfer_asset = function(frm) {
 				}, 
 			},
 			{
-				"label": __("Custodian"), 
+				"label": __("Target Custodian"), 
 				"fieldname": "target_custodian",
 				"fieldtype": "Link", 
 				"options": "Employee", 
@@ -282,3 +270,36 @@ erpnext.asset.transfer_asset = function(frm) {
 	});
 	dialog.show();
 }
+
+erpnext.asset.scrap_asset = function(frm) {
+	var dialog = new frappe.ui.Dialog({
+		title: __("Scrap Asset"),
+		fields: [
+			{
+				"label": __("Scrap Date"), 
+				"fieldname": "scrap_date",
+				"fieldtype": "Date", 
+				"reqd": 1,
+				"default": frappe.datetime.nowdate()
+			}
+		]
+	});
+
+	dialog.set_primary_action(__("Scrap"), function() {
+		args = dialog.get_values();
+		if(!args) return;
+		dialog.hide();
+		return frappe.call({
+			method: "erpnext.accounts.doctype.asset.depreciation.scrap_asset",
+			args: {
+				"asset_name": frm.doc.name,
+		       		"scrap_date": args.scrap_date
+			},
+			callback: function(r) {
+				cur_frm.reload_doc();
+			}
+		})
+	});
+	dialog.show();
+}
+

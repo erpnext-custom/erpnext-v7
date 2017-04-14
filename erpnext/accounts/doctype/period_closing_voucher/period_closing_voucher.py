@@ -83,6 +83,7 @@ class PeriodClosingVoucher(AccountsController):
 
 	def get_pl_balances(self):
 		"""Get balance for pl accounts"""
+		frappe.msgprint(str(self.get("year_start_date")))
 		return frappe.db.sql("""
 			select
 				t1.account, t1.cost_center, t2.account_currency,
@@ -91,6 +92,6 @@ class PeriodClosingVoucher(AccountsController):
 			from `tabGL Entry` t1, `tabAccount` t2
 			where t1.account = t2.name and t2.report_type = 'Profit and Loss'
 			and t2.docstatus < 2 and t2.company = %s
-			and t1.posting_date between %s and %s
+			and t1.posting_date between %s and %s and t1.docstatus = 1
 			group by t1.account, t1.cost_center
 		""", (self.company, self.get("year_start_date"), self.posting_date), as_dict=1)

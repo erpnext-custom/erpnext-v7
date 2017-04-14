@@ -48,8 +48,7 @@ def validate_filters(filters):
 		filters.to_date = filters.year_end_date
 
 def get_data(filters):
-	#query = "select opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, (select sum(depreciation_amount) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + " and ds.docstatus = 1\') as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + " and ds.docstatus = 1\') as depreciation_income_tax from tabAsset as ass where ass.docstatus = 1 and ass.status != 'Scrapped'"
-	query = "select opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + " and gl.docstatus = 1\') as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + " and ds.docstatus = 1\') as depreciation_income_tax from tabAsset as ass where ass.docstatus = 1 and ass.status != 'Scrapped'"
+	query = "select opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, value_after_depreciation, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date < \'" + str(filters.from_date) + "\' and gl.docstatus = 1) as opening_amount, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\' and gl.docstatus = 1) as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date <= \'" + str(filters.to_date) + "\' and ds.docstatus = 1) as depreciation_income_tax from tabAsset as ass where ass.docstatus = 1 and ass.status != 'Scrapped'"
 
 	if filters.cost_center:
 		query+=" and ass.cost_center = \'" + filters.cost_center + "\'"
@@ -62,12 +61,33 @@ def get_data(filters):
 	data = []
 
 	if asset_data:
-		total_useful = 0.00
+		total_actual_dep = 0.00;
+		total_net = 0.00;
+		total_opening = 0.00;
+		total_net_income = 0.00;
+		total_income = 0.00;
+
 		for a in asset_data:
-			useful_life = flt(a.depreciation_amount)  - flt(a.gross_purchase_amount) 
-			total_useful += flt(useful_life, 3)
-			net_useful_life = flt(a.depreciation_amount) - (useful_life * 2) - flt(a.opening_accumulated_depreciation)  
+			if flt(a.depreciation_amount) >= flt(a.gross_purchase_amount):
+				actual_dep =  flt(a.depreciation_amount) - flt(a.gross_purchase_amount) 
+			else:
+				actual_dep =  flt(a.depreciation_amount)
+
+			if flt(a.opening_amount) >= flt(a.gross_purchase_amount):
+				opening = flt(a.opening_amount) - flt(a.gross_purchase_amount) + flt(a.opening_accumulated_depreciation)
+			else:
+				opening = flt(a.opening_amount) + flt(a.opening_accumulated_depreciation)
+			
+			net_useful_life = flt(a.gross_purchase_amount) - flt(actual_dep) - flt(opening)  
+
 			net_income_tax = flt(a.gross_purchase_amount) - flt(a.depreciation_income_tax)
+			
+			total_net += flt(net_useful_life, 3)
+			total_actual_dep += flt(actual_dep, 3)
+			total_income += flt(a.depreciation_income_tax, 3)
+			total_net_income += flt(net_income_tax, 3)
+			total_opening += flt(opening, 3)
+			
 			row = {
 				"asset_code": a.name,
 				"asset_name": a.asset_name,
@@ -77,15 +97,15 @@ def get_data(filters):
 				"date_of_issue": a.purchase_date,
 				"qty": a.asset_quantity_,
 				"amount": a.gross_purchase_amount,
-				"dep_useful_life": flt(useful_life, 3),
-				"opening": a.opening_accumulated_depreciation,
+				"actual_depreciation": flt(actual_dep, 3),
+				"opening": flt(opening, 3),
 				"dep_income_tax": a.depreciation_income_tax,
 				"net_useful_life": net_useful_life,
 				"net_income_tax": net_income_tax,
 				"presystem_issue_date": a.presystem_issue_date
 			}
 			data.append(row)
-		row = {"dep_useful_life": flt(total_useful, 3)}
+		row = {"actual_depreciation": flt(total_actual_dep, 3), "net_useful_life": flt(total_net, 3), "opening": total_opening, "net_income_tax": total_net_income, "dep_income_tax": total_income}
 		data.append(row)
 	
 	return data
@@ -150,8 +170,8 @@ def get_columns():
 			"width": 120
 		},
 		{
-			"fieldname": "dep_useful_life",
-			"label": _("Useful Life"),
+			"fieldname": "actual_depreciation",
+			"label": _("Depreciation Amount"),
 			"fieldtype": "Currency",
 			"width": 120
 		},
@@ -163,7 +183,7 @@ def get_columns():
 		},
 		{
 			"fieldname": "net_useful_life",
-			"label": _("Net Useful Life"),
+			"label": _("Useful Life"),
 			"fieldtype": "Currency",
 			"width": 120
 		},
