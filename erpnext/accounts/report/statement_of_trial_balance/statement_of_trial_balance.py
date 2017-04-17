@@ -99,7 +99,7 @@ def get_rootwise_opening_balances(filters, report_type):
 			account, sum(debit) as opening_debit, sum(credit) as opening_credit
 		from `tabGL Entry`
 		where
-			company=%(company)s
+			company=%(company)s 
 			{additional_conditions}
 			and (posting_date < %(from_date)s or ifnull(is_opening, 'No') = 'Yes')
 			and account in (select name from `tabAccount` where report_type=%(report_type)s)

@@ -356,6 +356,13 @@ def get_data():
                                         "label": "RRCO Tax Slab Details",
 					"doctype": "Salary Tax"
 				},
+				{
+					"type": "report",
+					"name": "Employee TDS Certificate",
+					"label": "Generate TDS Certificate",
+					"doctype": "Salary Slip",
+					"is_query_report": True
+				},
 			]
 		},
 	]

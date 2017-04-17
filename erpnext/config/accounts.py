@@ -31,6 +31,12 @@ def get_data():
 					"name": "Period Closing Voucher",
 					"description": _("Close Balance Sheet and book Profit or Loss.")
 				},
+				{
+					"type": "doctype",
+					"name": "Transfer CoGM",
+					"label": "Transfer COGM Balance",
+					"description": _("TRansfer COGM Balance between fiscal years")
+				},
 			]
 		},
 		{
