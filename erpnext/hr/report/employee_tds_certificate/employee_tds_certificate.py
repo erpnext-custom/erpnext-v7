@@ -10,17 +10,22 @@ def execute(filters=None):
 	validate_filters(filters);
 	columns = get_columns();
 	queries = construct_query(filters);
-	data = get_data(queries);
+	data = get_data(queries, filters);
 
 	return columns, data
 
-def get_data(query):
+def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
 		row = [get_month(d.month), "Salary", d.basic_pay, flt(d.gross_pay) - flt(d.basic_pay), d.gross_pay, d.gross_pay, d.nppf,d.gis, flt(d.gross_pay) - flt(d.nppf) - flt(d.gis), d.tds, d.health, d.receipt_number, d.receipt_date]
 		data.append(row);
-	
+
+	if filters.employee:
+		leave_encash = frappe.db.sql("select name from `tabLeave Encashment` where employee = %s and docstatus = 1 and application_date between \'" + filters.fiscal_year + "-01-01\' and \'" + filters.fiscal_year + "-12-31\'", filters.employee) 
+		frappe.msgprint(str(leave_encash))
+		#datas = frappe.db.sql("""select distinct parent from `tabJournal Entry Account` where reference_name IN (select name from `tabLeave Encashment` where employee = %s and docstatus = 1 and application_date between '%s-01-01' and '%s-12-31')""", (filters.employee))
+		#frappe.msgprint(str(datas))
 	return data
 
 def construct_query(filters=None):

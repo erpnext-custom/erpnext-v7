@@ -69,7 +69,7 @@ class StockController(AccountsController):
 						warehouse_with_no_account.append(sle.warehouse)
 
 		if warehouse_with_no_account:
-			msgprint(_("No accounting entries for the following warehouses") + ": \n" +
+			frappe.throw(_("No accounting entries for the following warehouses") + ": \n" +
 				"\n".join(warehouse_with_no_account))
 
 		return process_gl_map(gl_list)
