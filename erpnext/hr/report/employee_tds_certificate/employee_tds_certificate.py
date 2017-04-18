@@ -22,10 +22,14 @@ def get_data(query, filters=None):
 		data.append(row);
 
 	if filters.employee:
-		leave_encash = frappe.db.sql("select name from `tabLeave Encashment` where employee = %s and docstatus = 1 and application_date between \'" + filters.fiscal_year + "-01-01\' and \'" + filters.fiscal_year + "-12-31\'", filters.employee) 
-		frappe.msgprint(str(leave_encash))
-		#datas = frappe.db.sql("""select distinct parent from `tabJournal Entry Account` where reference_name IN (select name from `tabLeave Encashment` where employee = %s and docstatus = 1 and application_date between '%s-01-01' and '%s-12-31')""", (filters.employee))
-		#frappe.msgprint(str(datas))
+		leave_encash = frappe.db.sql("select name from `tabLeave Encashment` where employee = %s and docstatus = 1 and application_date between \'" + filters.fiscal_year + "-01-01\' and \'" + filters.fiscal_year + "-12-31\'", filters.employee, as_dict=True) 
+		if leave_encash:
+			encash_data = frappe.db.sql("select posting_date, debit, (select credit from `tabGL Entry` where account = 'Salary Tax - SMCL' and against_voucher = %(reference)s) as tax from `tabGL Entry` where account = 'Leave Encashment - SMCL' and against_voucher = %(reference)s", {'reference':str(leave_encash[0]['name'])}, as_dict=True)
+			if encash_data:
+				for a in encash_data:
+					row = [get_month(str(a.posting_date)[5:7]), "Leave Encashment", a.debit, "", a.debit, a.debit, "","", a.debit, a.tax, "", "",""]
+					data.append(row)
+
 	return data
 
 def construct_query(filters=None):

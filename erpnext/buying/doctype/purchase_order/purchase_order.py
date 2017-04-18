@@ -209,7 +209,7 @@ class PurchaseOrder(BuyingController):
 			self.company, self.base_grand_total)
 
 		purchase_controller.update_last_purchase_rate(self, is_submit = 1)
-		self.consume_budget()
+		self.commit_budget()
 
 	def on_cancel(self):
 		if self.is_against_so():
@@ -269,9 +269,9 @@ class PurchaseOrder(BuyingController):
 				item.received_qty = item.qty
 
 	##
-	# Update the COnsumed Budget for checking budget availability
+	# Update the Committedd Budget for checking budget availability
 	##
-	def consume_budget(self):
+	def commit_budget(self):
 		for a in self.items:
 			bud_obj = frappe.get_doc({
 				"doctype": "Committed Budget",
@@ -292,7 +292,7 @@ class PurchaseOrder(BuyingController):
 		for a in self.items:
 			budget_amount = frappe.db.sql("select ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (a.budget_account, a.cost_center, str(self.transaction_date)[0:4]), as_dict=True)
 			if budget_amount:
-				consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s and exists (SELECT 1 FROM `tabPurchase Order` po WHERE po.name = cb.po_no AND po.docstatus = 1 UNION SELECT 1 FROM `tabJournal Entry` je WHERE je.name = cb.po_no AND je.docstatus = 1)", (a.cost_center, a.budget_account, str(self.transaction_date)[0:4] + "-01-01", str(self.transaction_date)[0:4] + "-12-31"), as_dict=True)
+				consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (a.cost_center, a.budget_account, str(self.transaction_date)[0:4] + "-01-01", str(self.transaction_date)[0:4] + "-12-31"), as_dict=True)
 				if consumed:
 					if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(a.amount)):
 						frappe.throw("Not enough budget in " + str(a.budget_account) + " under " + str(a.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(a.amount) - flt(budget_amount[0].budget_amount))))
@@ -303,10 +303,7 @@ class PurchaseOrder(BuyingController):
 	# Cancel budget check entry
 	##
 	def cancel_budget_entry(self):
-		doc_id = frappe.db.get_value("Committed Budget", {"po_no": self.name}, "name")
-		if doc_id:
-			ref_doc = frappe.get_doc("Committed Budget", str(doc_id))
-			ref_doc.db_set("amount", 0)
+		frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
 
 @frappe.whitelist()
 def close_or_unclose_purchase_orders(names, status):

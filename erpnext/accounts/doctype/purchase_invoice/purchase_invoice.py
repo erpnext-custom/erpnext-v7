@@ -294,6 +294,7 @@ class PurchaseInvoice(BuyingController):
 
 		self.update_project()
 		self.update_fixed_asset()
+		self.consume_budget()
 
 	def update_fixed_asset(self):
 		for d in self.get("items"):
@@ -684,6 +685,7 @@ class PurchaseInvoice(BuyingController):
 		self.make_gl_entries_on_cancel()
 		self.update_project()
 		self.update_fixed_asset()
+		self.cancel_consumed()
 
 	def update_project(self):
 		project_list = []
@@ -744,6 +746,25 @@ class PurchaseInvoice(BuyingController):
 
 	def on_recurring(self, reference_doc):
 		self.due_date = None
+
+	def consume_budget(self):
+		for item in self.get("items"):
+			expense, cost_center = frappe.db.get_value("Purchase Order Item", {"item_code": item.item_code, "parent": item.purchase_order, "docstatus": 1}, ["budget_account", "cost_center"])
+			if expense:
+				account_type = frappe.db.get_value("Account", expense, "account_type")
+				if account_type in ("Fixed Asset", "Expense Account"):
+					consume = frappe.get_doc({
+						"doctype": "Consumed Budget",
+						"account": expense,
+						"cost_center": cost_center,
+						"po_no": self.name,
+						"po_date": self.posting_date,
+						"amount": item.amount,
+						"item_code": item.item_code,
+						"date": frappe.utils.nowdate()})
+					consume.submit()
+	def cancel_consumed(self):
+		frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 
 @frappe.whitelist()
 def make_debit_note(source_name, target_doc=None):
