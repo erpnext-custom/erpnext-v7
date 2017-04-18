@@ -52,7 +52,11 @@ class Budget(Document):
 def validate_expense_against_budget(args):
 	args = frappe._dict(args)
 	if frappe.db.get_value("Account", {"name": args.account, "root_type": "Expense"}) or frappe.db.get_value("Account", {"name": args.account, "root_type": "Asset", "account_type": "Fixed Asset"}):
-		if args.reference_type != "Asset":
+		frappe.msgprint(str(args))
+		if args.against_voucher_type == "Asset":
+			frappe.msgprint("INSIDE")
+			pass
+		else:
 			cc_lft, cc_rgt = frappe.db.get_value("Cost Center", args.cost_center, ["lft", "rgt"])
 
 			budget_records = frappe.db.sql("""
@@ -83,13 +87,13 @@ def validate_expense_against_budget(args):
 							and yearly_action != monthly_action:
 								compare_expense_with_budget(args, budget.cost_center,
 									flt(budget.budget_amount), _("Annual"), yearly_action)
-		elif args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Good Manufacture - SMCL', 'Stripping Cost Amortization - SMCL']:
-			pass
-		elif str(frappe.db.get_value("Account", args.account, "parent_account")) == "Depreciation & Amortisation - SMCL":
-			pass
-		else:
-			#Budget Check if there is no budget booking under the budget head
-			frappe.throw("There is no budget in " + args.account + " under " + args.cost_center + " for " + str(args.fiscal_year))
+	elif args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Good Manufacture - SMCL', 'Stripping Cost Amortization - SMCL']:
+		pass
+	elif str(frappe.db.get_value("Account", args.account, "parent_account")) == "Depreciation & Amortisation - SMCL":
+		pass
+	else:
+		#Budget Check if there is no budget booking under the budget head
+		frappe.throw("There is no budget in " + args.account + " under " + args.cost_center + " for " + str(args.fiscal_year))
 	
 def compare_expense_with_budget(args, cost_center, budget_amount, action_for, action):
 	actual_expense = get_actual_expense(args, cost_center)
