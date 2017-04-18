@@ -85,7 +85,7 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 	for entry in gl_map:
 		make_entry(entry, adv_adj, update_outstanding)
 		# check against budget only if not se
-		if entry.voucher_type != 'Stock Entry' and entry.voucher_type != 'Period Closing Voucher':
+		if entry.voucher_type not in ['Stock Entry', 'Period Closing Voucher']:
 			validate_expense_against_budget(entry)
 
 def make_entry(args, adv_adj, update_outstanding):
@@ -97,7 +97,7 @@ def make_entry(args, adv_adj, update_outstanding):
 	gle.submit()
 	
 	#commit the budget too
-	if args.voucher_type == 'Journal Entry':
+	if args.voucher_type == 'Journal Entry' and args.against_voucher_type != 'Asset':
 		acc_type = frappe.db.get_value("Account", args.account, "account_type")
 		if acc_type == "Expense Account" or acc_type == "Fixed Asset":
 			#Commit Budget

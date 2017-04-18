@@ -6,11 +6,22 @@ from frappe.utils import flt
 
 
 
+def budget():
+	deleteExisting()
+	commitBudget();
+	consumeBudget();
+	adjustBudgetJE()
+
+def deleteExisting():
+	print("Deleting existing data")
+	frappe.db.sql("delete from `tabCommitted Budget`")
+	frappe.db.sql("delete from `tabConsumed Budget`")
+
 ##
 # Commit Budget
 ##
 def commitBudget():
-	frappe.db.sql("delete from `tabCommitted Budget`")
+	print("Committing budgets from PO")
 	orders = frappe.db.sql("select name from `tabPurchase Order` where docstatus = 1", as_dict=True)
 	for a in orders:
 		order = frappe.get_doc("Purchase Order", a['name'])
@@ -32,15 +43,27 @@ def commitBudget():
 ##
 # Commit Budget
 ##
-def commitBudgetJE():
-	entries = frappe.db.sql("select name from `tabGL Entry` where voucher_type='Journal Entry'", as_dict=True)
+def adjustBudgetJE():
+	print("Committing and consuming from JE")
+	entries = frappe.db.sql("select name from `tabGL Entry` where voucher_type='Journal Entry' and (against_voucher_type != 'Asset' or against_voucher_type is null)", as_dict=True)
 	for a in entries:
 		gl = frappe.get_doc("GL Entry", a['name'])
 		account_type = frappe.db.get_value("Account", gl.account, "account_type")
 		
 		if account_type in ("Fixed Asset", "Expense Account"):
-			consume = frappe.get_doc({
+			commit = frappe.get_doc({
 					"doctype": "Committed Budget",
+					"account": gl.account,
+					"cost_center": gl.cost_center,
+					"po_no": gl.voucher_no,
+					"po_date": gl.posting_date,
+					"amount": gl.debit - gl.credit,
+					"item_code": "",
+					"date": frappe.utils.nowdate()})
+			commit.submit()
+			
+			consume = frappe.get_doc({
+					"doctype": "Consumed Budget",
 					"account": gl.account,
 					"cost_center": gl.cost_center,
 					"po_no": gl.voucher_no,
@@ -53,31 +76,11 @@ def commitBudgetJE():
 ##
 # Commit Budget
 ##
-def consumeBudgetJE():
-	entries = frappe.db.sql("select name from `tabGL Entry` where voucher_type='Journal Entry'", as_dict=True)
-	for a in entries:
-		gl = frappe.get_doc("GL Entry", a['name'])
-		account_type = frappe.db.get_value("Account", gl.account, "account_type")
-		
-		if account_type in ("Fixed Asset", "Expense Account"):
-			consume = frappe.get_doc({
-					"doctype": "Consumed Budget",
-					"account": gl.account,
-					"cost_center": gl.cost_center,
-					"po_no": gl.voucher_no,
-					"po_date": gl.posting_date,
-					"amount": gl.debit - gl.credit,
-					"item_code": "",
-					"date": frappe.utils.nowdate()})
-			consume.submit()
-##
-# Commit Budget
-##
 def consumeBudget():
+	print("Consuming budgets from PI")
 	invoices = frappe.db.sql("select name from `tabPurchase Invoice` where docstatus = 1", as_dict=True)
 	for a in invoices:
 		invoice = frappe.get_doc("Purchase Invoice", a['name'])
-		print(str(invoice.name))
 		for item in invoice.get("items"):
 			expense, cost_center = frappe.db.get_value("Purchase Order Item", {"item_code": item.item_code, "parent": item.purchase_order, "docstatus": 1}, ["budget_account", "cost_center"])
 			if expense:

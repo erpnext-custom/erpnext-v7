@@ -51,49 +51,46 @@ class Budget(Document):
 
 def validate_expense_against_budget(args):
 	args = frappe._dict(args)
-	if frappe.db.get_value("Account", {"name": args.account, "root_type": "Expense"}) or frappe.db.get_value("Account", {"name": args.account, "root_type": "Asset", "account_type": "Fixed Asset"}):
-		frappe.msgprint(str(args))
-		if args.against_voucher_type == "Asset":
-			frappe.msgprint("INSIDE")
+	if args.against_voucher_type == 'Asset':
+		pass
+	elif frappe.db.get_value("Account", {"name": args.account, "root_type": "Expense"}) or frappe.db.get_value("Account", {"name": args.account, "root_type": "Asset", "account_type": "Fixed Asset"}):
+		cc_lft, cc_rgt = frappe.db.get_value("Cost Center", args.cost_center, ["lft", "rgt"])
+
+		budget_records = frappe.db.sql("""
+			select ba.budget_amount, b.monthly_distribution, b.cost_center,
+				b.action_if_annual_budget_exceeded, b.action_if_accumulated_monthly_budget_exceeded
+			from `tabBudget` b, `tabBudget Account` ba
+			where
+				b.name=ba.parent and b.fiscal_year=%s and ba.account=%s and b.docstatus=1
+				and exists(select name from `tabCost Center` where lft<=%s and rgt>=%s and name=b.cost_center)
+		""", (args.fiscal_year, args.account, cc_lft, cc_rgt), as_dict=True)
+
+		if budget_records:
+			for budget in budget_records:
+				if budget.budget_amount:
+					yearly_action = budget.action_if_annual_budget_exceeded
+					monthly_action = budget.action_if_accumulated_monthly_budget_exceeded
+
+					if monthly_action in ["Stop", "Warn"]:
+						budget_amount = get_accumulated_monthly_budget(budget.monthly_distribution,
+							args.posting_date, args.fiscal_year, budget.budget_amount)
+
+						args["month_end_date"] = get_last_day(args.posting_date)
+							
+						compare_expense_with_budget(args, budget.cost_center,
+							budget_amount, _("Accumulated Monthly"), monthly_action)
+
+					if yearly_action in ("Stop", "Warn") and monthly_action != "Stop" \
+						and yearly_action != monthly_action:
+							compare_expense_with_budget(args, budget.cost_center,
+								flt(budget.budget_amount), _("Annual"), yearly_action)
+		elif args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Good Manufacture - SMCL', 'Stripping Cost Amortization - SMCL']:
+			pass
+		elif str(frappe.db.get_value("Account", args.account, "parent_account")) == "Depreciation & Amortisation - SMCL":
 			pass
 		else:
-			cc_lft, cc_rgt = frappe.db.get_value("Cost Center", args.cost_center, ["lft", "rgt"])
-
-			budget_records = frappe.db.sql("""
-				select ba.budget_amount, b.monthly_distribution, b.cost_center,
-					b.action_if_annual_budget_exceeded, b.action_if_accumulated_monthly_budget_exceeded
-				from `tabBudget` b, `tabBudget Account` ba
-				where
-					b.name=ba.parent and b.fiscal_year=%s and ba.account=%s and b.docstatus=1
-					and exists(select name from `tabCost Center` where lft<=%s and rgt>=%s and name=b.cost_center)
-			""", (args.fiscal_year, args.account, cc_lft, cc_rgt), as_dict=True)
-
-			if budget_records:
-				for budget in budget_records:
-					if budget.budget_amount:
-						yearly_action = budget.action_if_annual_budget_exceeded
-						monthly_action = budget.action_if_accumulated_monthly_budget_exceeded
-
-						if monthly_action in ["Stop", "Warn"]:
-							budget_amount = get_accumulated_monthly_budget(budget.monthly_distribution,
-								args.posting_date, args.fiscal_year, budget.budget_amount)
-
-							args["month_end_date"] = get_last_day(args.posting_date)
-								
-							compare_expense_with_budget(args, budget.cost_center,
-								budget_amount, _("Accumulated Monthly"), monthly_action)
-
-						if yearly_action in ("Stop", "Warn") and monthly_action != "Stop" \
-							and yearly_action != monthly_action:
-								compare_expense_with_budget(args, budget.cost_center,
-									flt(budget.budget_amount), _("Annual"), yearly_action)
-	elif args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Good Manufacture - SMCL', 'Stripping Cost Amortization - SMCL']:
-		pass
-	elif str(frappe.db.get_value("Account", args.account, "parent_account")) == "Depreciation & Amortisation - SMCL":
-		pass
-	else:
-		#Budget Check if there is no budget booking under the budget head
-		frappe.throw("There is no budget in " + args.account + " under " + args.cost_center + " for " + str(args.fiscal_year))
+			#Budget Check if there is no budget booking under the budget head
+			frappe.throw("There is no budget in " + args.account + " under " + args.cost_center + " for " + str(args.fiscal_year))
 	
 def compare_expense_with_budget(args, cost_center, budget_amount, action_for, action):
 	actual_expense = get_actual_expense(args, cost_center)
