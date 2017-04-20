@@ -753,12 +753,13 @@ class PurchaseInvoice(BuyingController):
 			if expense:
 				account_type = frappe.db.get_value("Account", expense, "account_type")
 				if account_type in ("Fixed Asset", "Expense Account"):
+					po_date = frappe.db.get_value("Purchase Order", item.purchase_order, "transaction_date")
 					consume = frappe.get_doc({
 						"doctype": "Consumed Budget",
 						"account": expense,
 						"cost_center": cost_center,
 						"po_no": self.name,
-						"po_date": self.posting_date,
+						"po_date": po_date,
 						"amount": item.amount,
 						"item_code": item.item_code,
 						"date": frappe.utils.nowdate()})

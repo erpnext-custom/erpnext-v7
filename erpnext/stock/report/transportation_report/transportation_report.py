@@ -22,7 +22,7 @@ def validate_filters(filters):
 
 
 def get_data(filters):
-	query = "select distinct dn.transporter_name1, dn.lr_no, dn.lr_date, dn.customer, dn.name, dn.posting_date, dni.item_code, dni.item_name, sii.delivered_qty, sii.accepted_qty, (ifnull(sii.delivered_qty, 0) - ifnull(sii.accepted_qty,0)) as difference_qty, sii.abnormal_loss, sii.normal_loss, sii.abnormal_loss_amt, sii.normal_loss_amt, case when sii.loss_method = 'Quantity in Flat' then sii.loss_qty_flat else concat(sii.loss_tolerance, '%') end as loss_tolerance, sii.parent as sales_invoice, (select si.posting_date from `tabSales Invoice` as si where si.name = sii.parent) as si_date, sii.loss_method, sii.remarks, sii.justification from `tabDelivery Note` as dn LEFT JOIN `tabDelivery Note Item` as dni on dni.parent = dn.name LEFT JOIN `tabSales Invoice Item` as sii on sii.delivery_note = dn.name where dn.status = \'Completed\' and sii.docstatus = 1 and  dn.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'"
+	query = "select distinct dn.transporter_name1, dn.lr_no, dn.lr_date, dn.customer, dn.name, dn.posting_date, dni.item_code, dni.item_name, sii.delivered_qty, sii.accepted_qty, (ifnull(sii.delivered_qty, 0) - ifnull(sii.accepted_qty,0)) as difference_qty, sii.abnormal_loss, sii.normal_loss, sii.abnormal_loss_amt, sii.normal_loss_amt, case when sii.loss_method = 'Quantity in Flat' then sii.loss_qty_flat else concat(sii.loss_tolerance, '%') end as loss_tolerance, sii.parent as sales_invoice, (select si.posting_date from `tabSales Invoice` as si where si.name = sii.parent) as si_date, (select si.sales_invoice_date from `tabSales Invoice` as si where si.name = sii.parent) as ref_date, sii.loss_method, sii.remarks, sii.justification from `tabDelivery Note` as dn LEFT JOIN `tabDelivery Note Item` as dni on dni.parent = dn.name LEFT JOIN `tabSales Invoice Item` as sii on sii.delivery_note = dn.name where dn.status = \'Completed\' and sii.docstatus = 1 and  dn.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'"
 
 	if filters.transporter:
 		query+=" and dn.transporter_name1 = \'" + filters.transporter + "\'"
@@ -46,6 +46,7 @@ def get_data(filters):
 				"dn_date": a.posting_date,
 				"sales_invoice": a.sales_invoice,
 				"si_date": a.si_date,
+				"ref_date": a.ref_date,
 				"delivered_qty": a.delivered_qty,
 				"accepted_qty": a.accepted_qty,
 				"difference_qty": a.difference_qty,
@@ -80,6 +81,12 @@ def get_columns():
 		{
 			"fieldname": "dispatch_date",
 			"label": _("Vehicle Dispatch Date"),
+			"fieldtype": "Date",
+			"width": 100
+		},
+		{
+			"fieldname": "ref_date",
+			"label": _("Reference Date"),
 			"fieldtype": "Date",
 			"width": 100
 		},

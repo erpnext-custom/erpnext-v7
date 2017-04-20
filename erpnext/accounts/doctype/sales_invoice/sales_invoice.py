@@ -925,6 +925,13 @@ def make_sales_return(source_name, target_doc=None):
 	from erpnext.controllers.sales_and_purchase_return import make_return_doc
 	return make_return_doc("Sales Invoice", source_name, target_doc)
 
+@frappe.whitelist()
+def get_invoice_details(invoice, item_code):
+	dn = frappe.db.get_value("Sales Invoice Item", {"parent": invoice, "item_code": item_code}, "delivery_note")
+	vn, date = frappe.db.get_value("Delivery Note", dn, ["lr_no","posting_date"])
+
+	return [dn, vn, date]
+
 def set_account_for_mode_of_payment(self):
 	for data in self.payments:
 		if not data.account:

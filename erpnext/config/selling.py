@@ -32,6 +32,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Mines Quality Record",
 					"description": _("Mines Quality Record Details")
+				},
+				{
+					"type": "doctype",
+					"name": "Consolidated Invoice",
+					"description": _("Consolidated Invoices Details")
 				}
 			]
 		},
