@@ -142,6 +142,12 @@ def get_data():
 					"name": "Asset Issue Report",
 					"doctype": "Asset Issue Details"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Asset Balance Report",
+					"doctype": "Asset Received Entries"
+				},
 			]
 		},
 		{

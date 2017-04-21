@@ -138,6 +138,7 @@ class PurchaseReceipt(BuyingController):
 
 		self.make_gl_entries()
 		self.consume_budget()
+		self.update_asset()
 
 	def check_next_docstatus(self):
 		submit_rv = frappe.db.sql("""select t1.name
@@ -171,6 +172,7 @@ class PurchaseReceipt(BuyingController):
 		# because updating ordered qty in bin depends upon updated ordered qty in PO
 		self.update_stock_ledger()
 		self.make_gl_entries_on_cancel()
+		self.delete_asset()
 
 	##
 	# Update sonsumed budget with the amount
@@ -181,6 +183,26 @@ class PurchaseReceipt(BuyingController):
 			if idx:
 				ref_doc = frappe.get_doc("Committed Budget", idx[0].name)
 				ref_doc.db_set("amount", a.amount)
+
+	##
+	# Update asset entries if asset
+	##
+	def update_asset(self):
+		for a in self.items:
+			item_group = frappe.db.get_value("Item", a.item_code, "item_group")
+			if item_group and item_group == "Fixed Asset":
+				ae = frappe.new_doc("Asset Received Entries")
+				ae.item_code = a.item_code
+				ae.qty = a.qty
+				ae.received_date = self.posting_date
+				ae.ref_doc = self.name
+				ae.submit()
+
+	##
+	#  Delete asset entries
+	##
+	def delete_asset(self):
+		frappe.db.sql("delete from `tabAsset Received Entries` where ref_doc = %s", self.name)
 
 
 	def get_current_stock(self):

@@ -5,7 +5,21 @@ from frappe import msgprint
 from frappe.utils import flt
 
 
+#Create asset received entries for asset balance
+def createAssetEntries():
+	frappe.db.sql("delete from `tabAsset Received Entries`")
+	receipts = frappe.db.sql("select pr.posting_date, pr.name, pri.item_code, pri.qty from `tabPurchase Receipt` pr,  `tabPurchase Receipt Item` pri  where pr.docstatus = 1 and pri.docstatus = 1 and pri.parent = pr.name", as_dict=True)
+	for a in receipts:
+		item_group = frappe.db.get_value("Item", a.item_code, "item_group")
+		if item_group and item_group == "Fixed Asset":
+			ae = frappe.new_doc("Asset Received Entries")
+			ae.item_code = a.item_code
+			ae.qty = a.qty
+			ae.received_date = a.posting_date
+			ae.ref_doc = a.name
+			ae.submit()
 
+# create consumed and committed budget
 def budget():
 	deleteExisting()
 	commitBudget();

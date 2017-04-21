@@ -99,12 +99,6 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Customer Credit Balance",
-					"doctype": "Customer"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
 					"name": "Quotation Trends",
 					"label": "Sales Quotation Trends",
 					"doctype": "Quotation"
