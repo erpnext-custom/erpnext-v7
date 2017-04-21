@@ -22,6 +22,13 @@ def get_data():
 					"description":_("Upload attendance from a .csv file"),
 					"hide_count": True
 				},
+                                {
+					"type": "doctype",
+					"name": "Employee Attendance Tool",
+					"label": _("Employee Attendance Tool"),
+					"description":_("Mark Attendance for multiple employees"),
+					"hide_count": True
+				},
 			]
 		},
 		{
@@ -59,11 +66,6 @@ def get_data():
 				},                                
 				{
 					"type": "doctype",
-					"name": "Leave Allocation",
-					"description": _("Allocate leaves for a period.")
-				},
-				{
-					"type": "doctype",
 					"name":"Leave Type",
 					"description": _("Type of leaves like casual, sick etc."),
 				},                                
@@ -72,6 +74,18 @@ def get_data():
 					"name": "Holiday List",
 					"description": _("Holiday master.")
 				},                                
+				{
+					"type": "doctype",
+					"name": "Leave Allocation",
+					"description": _("Allocate leaves for a period.")
+				},
+                                {
+					"type": "doctype",
+					"name": "Leave Control Panel",
+					"label": _("Leave Allocation Tool"),
+					"description":_("Allocate leaves for the year."),
+					"hide_count": True
+				},
 			]
 		},
 		{
@@ -117,7 +131,14 @@ def get_data():
 					"name": "Production Incentives",
 					"label": _("MPI Target Setup"),
 					"description": _("MPI Target Setup")
-				}
+				},
+				{
+					"type": "report",
+					"name": "Employee TDS Certificate",
+					"label": "Generate TDS Certificate",
+					"doctype": "Salary Slip",
+					"is_query_report": True
+				},
 			]
 		},
 		{
@@ -155,41 +176,6 @@ def get_data():
 					"name": "Training And Development",
 					"description": _("Traning & Development Master."),
 				},                  
-			]
-		},
-		{
-			"label": _("Appraisals"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Appraisal",
-					"description": _("Performance appraisal."),
-				},
-				{
-					"type": "doctype",
-					"name": "Appraisal Template",
-					"description": _("Template for performance appraisals.")
-				},                                                                
-			]
-		},
-		{
-			"label": _("Tools"),
-			"icon": "icon-wrench",
-			"items": [
-                                {
-					"type": "doctype",
-					"name": "Employee Attendance Tool",
-					"label": _("Employee Attendance Tool"),
-					"description":_("Mark Attendance for multiple employees"),
-					"hide_count": True
-				},
-                                {
-					"type": "doctype",
-					"name": "Leave Control Panel",
-					"label": _("Leave Allocation Tool"),
-					"description":_("Allocate leaves for the year."),
-					"hide_count": True
-				},
 			]
 		},
 		{
@@ -329,12 +315,6 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Employee Birthday",
-					"doctype": "Employee"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
 					"name": "Employees working on a holiday",
 					"doctype": "Employee"
 				},
@@ -355,13 +335,6 @@ def get_data():
 					"name": "Salary Tax Report",
                                         "label": "RRCO Tax Slab Details",
 					"doctype": "Salary Tax"
-				},
-				{
-					"type": "report",
-					"name": "Employee TDS Certificate",
-					"label": "Generate TDS Certificate",
-					"doctype": "Salary Slip",
-					"is_query_report": True
 				},
 			]
 		},

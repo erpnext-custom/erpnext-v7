@@ -762,6 +762,7 @@ class PurchaseInvoice(BuyingController):
 						"po_date": po_date,
 						"amount": item.amount,
 						"item_code": item.item_code,
+						"com_ref": item.purchase_order,
 						"date": frappe.utils.nowdate()})
 					consume.submit()
 	def cancel_consumed(self):

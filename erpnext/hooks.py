@@ -176,7 +176,13 @@ scheduler_events = {
 		"erpnext.hr.doctype.employee.employee.send_birthday_reminders",
 		"erpnext.projects.doctype.task.task.set_tasks_as_overdue",
 		"erpnext.accounts.doctype.asset.depreciation.post_depreciation_entries"
-	]
+	],
+	"monthly": [
+		"erpnext.hr.hr_custom_functions.post_earned_leaves"
+	],
+	"yearly": [
+		"erpnext.hr.hr_custom_functions.post_casual_leaves"
+	],
 }
 
 default_mail_footer = """<div style="text-align: center;">

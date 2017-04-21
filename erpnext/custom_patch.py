@@ -2,9 +2,30 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe import msgprint
-from frappe.utils import flt
+from frappe.utils import flt, cint
+from frappe.utils.data import get_first_day, get_last_day, add_years
 
 
+##
+# Post earned leave on the first day of every month
+##
+def post_earned_leaves():
+	date = add_years(frappe.utils.nowdate(), 1)
+	start = get_first_day(date);
+	end = get_last_day(date);
+	
+	employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular employees\', \'Contract\')", as_dict=True)
+	for e in employees:
+		la = frappe.new_doc("Leave Allocation")
+		la.employee = e.name
+		la.employee_name = e.employee_name
+		la.leave_type = "Casual Leave"
+		la.from_date = str(start)
+		la.to_date = str(end)
+		la.carry_forward = cint(0)
+		la.new_leaves_allocated = flt(10)
+		la.submit()
+		
 #Create asset received entries for asset balance
 def createAssetEntries():
 	frappe.db.sql("delete from `tabAsset Received Entries`")
@@ -84,6 +105,7 @@ def adjustBudgetJE():
 					"po_date": gl.posting_date,
 					"amount": gl.debit - gl.credit,
 					"item_code": "",
+					"com_ref": gl.voucher_no,
 					"date": frappe.utils.nowdate()})
 			consume.submit()
 
@@ -109,6 +131,7 @@ def consumeBudget():
 						"po_date": po_date,
 						"amount": item.amount,
 						"item_code": item.item_code,
+						"com_ref": item.purchase_order,
 						"date": frappe.utils.nowdate()})
 					consume.submit()
 	

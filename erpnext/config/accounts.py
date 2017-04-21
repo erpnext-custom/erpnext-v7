@@ -312,6 +312,12 @@ def get_data():
 					"is_query_report": True,
 					"name": "Budget Reappropriation Report",
 					"doctype": "Reappropriation Details"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Committed Budget Report",
+					"doctype": "Committed Budget"
 				}
 			]
 		},
