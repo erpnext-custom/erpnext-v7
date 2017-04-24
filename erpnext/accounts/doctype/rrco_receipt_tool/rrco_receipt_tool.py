@@ -16,7 +16,12 @@ class RRCOReceiptTool(Document):
 def get_invoices(start_date=None, end_date=None, tds_rate=2):
 	invoices_not_marked = []
 	invoices_marked = []
-	query = "select name, posting_date, bill_no FROM `tabPurchase Invoice` AS a WHERE docstatus = 1 AND posting_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND tds_rate = " + str(tds_rate) + " AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"
+	query = ""
+	if tds_rate == '1234567890':
+		query = "select name, application_date as posting_date, concat(employee_name, \" (\",  name, \")\") bill_no FROM `tabLeave Encashment` AS a WHERE a.docstatus = 1 AND a.application_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"
+	else:
+		query = "select name, posting_date, bill_no FROM `tabPurchase Invoice` AS a WHERE docstatus = 1 AND posting_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND tds_rate = " + str(tds_rate) + " AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"
+	
 	invoice_list = frappe.db.sql(query, as_dict=True);
 	return {
 		"marked": invoices_marked,

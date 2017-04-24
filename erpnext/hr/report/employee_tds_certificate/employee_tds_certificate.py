@@ -21,14 +21,13 @@ def get_data(query, filters=None):
 		row = [get_month(d.month), "Salary", d.basic_pay, flt(d.gross_pay) - flt(d.basic_pay), d.gross_pay, d.gross_pay, d.nppf,d.gis, flt(d.gross_pay) - flt(d.nppf) - flt(d.gis), d.tds, d.health, d.receipt_number, d.receipt_date]
 		data.append(row);
 
+	#Leave Encashment 
 	if filters.employee:
-		leave_encash = frappe.db.sql("select name from `tabLeave Encashment` where employee = %s and docstatus = 1 and application_date between \'" + filters.fiscal_year + "-01-01\' and \'" + filters.fiscal_year + "-12-31\'", filters.employee, as_dict=True) 
-		if leave_encash:
-			encash_data = frappe.db.sql("select posting_date, debit, (select credit from `tabGL Entry` where account = 'Salary Tax - SMCL' and against_voucher = %(reference)s) as tax from `tabGL Entry` where account = 'Leave Encashment - SMCL' and against_voucher = %(reference)s", {'reference':str(leave_encash[0]['name'])}, as_dict=True)
-			if encash_data:
-				for a in encash_data:
-					row = [get_month(str(a.posting_date)[5:7]), "Leave Encashment", a.debit, "", a.debit, a.debit, "","", a.debit, a.tax, "", "",""]
-					data.append(row)
+		encash_data = frappe.db.sql("select a.application_date as date, a.encashment_amount, a.tax_amount, r.receipt_number, r.receipt_date from `tabLeave Encashment` a, `tabRRCO Receipt Entries` r where a.name = r.purchase_invoice and a.employee = %s and a.docstatus = 1 and a.application_date between \'" + filters.fiscal_year + "-01-01\' and \'" + filters.fiscal_year + "-12-31\'", filters.employee, as_dict=True) 
+		if encash_data:
+			for a in encash_data:
+				row = [get_month(str(a.date)[5:7]), "Leave Encashment", a.encashment_amount, "", a.encashment_amount, a.encashment_amount, "","", a.encashment_amount, a.tax_amount, "", a.receipt_number, a.receipt_date]
+				data.append(row)
 
 	return data
 

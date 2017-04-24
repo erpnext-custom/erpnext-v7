@@ -134,11 +134,3 @@ def validate_carry_forward(leave_type):
 	if not frappe.db.get_value("Leave Type", leave_type, "is_carry_forward"):
 		frappe.throw(_("Leave Type {0} cannot be carry-forwarded").format(leave_type))
 
-##
-# Post earned leave on the first day of every month
-##
-def post_earned_leaves():
-	date = frappe.utils.nowdate()
-	start = frappe.datetime.month_start(date);
-	end = frappe.datetime.month_end(date);
-	print (start + "  :::: " + end)

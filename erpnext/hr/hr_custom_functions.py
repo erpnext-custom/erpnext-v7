@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt, cint
-from frappe.utils.data import get_first_day, get_last_day
+from frappe.utils.data import get_first_day, get_last_day, add_days
 
 
 ##
@@ -31,7 +31,7 @@ def post_casual_leaves():
 # Post earned leave on the first day of every month
 ##
 def post_earned_leaves():
-	date = frappe.utils.nowdate()
+	date = add_days(frappe.utils.nowdate(), -5)
 	start = get_first_day(date);
 	end = get_last_day(date);
 	

@@ -11,8 +11,6 @@ def get_notification_config():
 			"Task": {"status": "Overdue"},
 			"Project": {"status": "Open"},
 			"Item": {"total_projected_qty": ("<", 0)},
-			"Customer": {"status": "Open"},
-			"Supplier": {"status": "Open"},
 			"Lead": {"status": "Open"},
 			"Contact": {"status": "Open"},
 			"Opportunity": {"status": "Open"},
@@ -43,6 +41,9 @@ def get_notification_config():
 			"Purchase Receipt": {"docstatus": 0},
 			"Production Order": { "status": ("in", ("Draft", "Not Started", "In Process")) },
 			"BOM": {"docstatus": 0},
-			"Timesheet": {"status": "Draft"}
+			"Timesheet": {"status": "Draft"},
+			"Travel Authorization": {"docstatus": 0},
+			"Travel Claim": {"docstatus": 0},
+			"Leave Encashment": {"docstatus": 0}
 		}
 	}

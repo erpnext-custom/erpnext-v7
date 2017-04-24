@@ -137,7 +137,7 @@ class PurchaseReceipt(BuyingController):
 		update_serial_nos_after_submit(self, "items")
 
 		self.make_gl_entries()
-		self.consume_budget()
+		#self.consume_budget()
 		self.update_asset()
 
 	def check_next_docstatus(self):

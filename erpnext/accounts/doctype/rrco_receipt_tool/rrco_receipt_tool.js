@@ -117,14 +117,20 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 erpnext.rrco_receipt_tool = {
 	load_invoices: function(frm) {
 		console.log(frm.doc.purpose)
-		if(frm.doc.purpose == "Purchase Invoices") {
+		if(frm.doc.purpose == "Purchase Invoices" || frm.doc.purpose == "Leave Encashment") {
+		   var tds_rate = frm.doc.tds_rate
+		   console.log(tds_rate)
+		   if(frm.doc.purpose == "Leave Encashment") {
+			tds_rate = '1234567890'
+		   }
+
 		   if(frm.doc.receipt_date && frm.doc.receipt_number && frm.doc.cheque_no && frm.doc.cheque_date) {
 			frappe.call({
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.get_invoices",
 				args: {
 				   "start_date":frm.doc.start_date,
 				   "end_date":frm.doc.end_date,
-				   "tds_rate": frm.doc.tds_rate
+				   "tds_rate": tds_rate
 				},
 				callback: function(r) {
 					if(r.message['unmarked'].length > 0) {

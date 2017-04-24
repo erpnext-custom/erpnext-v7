@@ -138,11 +138,6 @@ class SalaryIncrement(Document):
                                                 calc_pf_amt = round(new_basic*company_det[0][0]*0.01);
                                                 d.db_set('amount',calc_pf_amt,update_modified = True)
                                                 deductions += calc_pf_amt
-                                        elif d.salary_component == 'Health Contribution':
-                                                calc_health_amt = 0;
-                                                calc_health_amt = round(new_basic*company_det[0][2]*0.01);
-                                                d.db_set('amount',calc_health_amt,update_modified = True)
-                                                deductions += calc_health_amt
                                         elif d.salary_component == 'Salary Tax':
                                                 calc_tds_amt = 0;
                                         else:
@@ -156,6 +151,12 @@ class SalaryIncrement(Document):
                                                         calc_tds_amt = get_salary_tax(gross_pay-calc_pf_amt-calc_gis_amt)
                                                         d.db_set('amount',calc_tds_amt,update_modified = True)
                                                         deductions += calc_tds_amt
+                                        	
+						if d.salary_component == 'Health Contribution':
+							calc_health_amt = 0;
+                                                	calc_health_amt = round(gross_pay*company_det[0][2]*0.01);
+                                                	d.db_set('amount',calc_health_amt,update_modified = True)
+                                                	deductions += calc_health_amt
 
                                 sst.db_set('total_earning',flt(gross_pay),update_modified = True)
                                 sst.db_set('total_deduction',flt(deductions),update_modified = True)

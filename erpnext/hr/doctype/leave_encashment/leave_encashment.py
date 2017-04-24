@@ -32,11 +32,20 @@ class LeaveEncashment(Document):
                 self.validate_balances()
                 
         def on_submit(self):
-                if self.docstatus == 1:
-                        self.post_accounts_entry()
+		self.post_accounts_entry()
 
-        def get_leave_credits(self):
+	def before_cancel(self):
+		self.check_gl_entry()
+	
+	def get_leave_credits(self):
                 pass
+	
+	def check_gl_entry(self):
+		if self.encash_journal:
+			docstat = frappe.db.get_value("Journal Entry", self.encash_journal, "docstatus")
+			if docstat == 1:
+				frappe.throw("You cannot cancel this document without cancelling the journal entry")
+
 
         def validate_leave_application(self):
                 from_date, to_date = self.get_current_year_dates()
@@ -111,12 +120,13 @@ class LeaveEncashment(Document):
                 salary_tax = flt(salary_tax) if salary_tax else 0.00                
                 
                 je = frappe.new_doc("Journal Entry")
-                je.title = 'Leave Encashment - '+str(employee.employee_name)
+		je.flags.ignore_permissions = 1 
+		je.title = 'Leave Encashment - '+str(employee.employee_name)
                 je.voucher_type = 'Bank Entry'
                 je.naming_series = 'Bank Payment Voucher'
                 je.company = employee.company
                 je.remark = 'Payment against Leave Encashment: ' + self.name;
-                je.posting_date = nowdate()
+                je.posting_date = self.application_date
                 je.total_amount_in_words =  money_in_words(flt(basic_pay)-flt(salary_tax))
 
                 je.append("accounts", {
@@ -174,7 +184,10 @@ class LeaveEncashment(Document):
                         "cost_center": self.cost_center
                 })
                 je.insert()
-                self.accounts_ref = '<a style="color: green" href="#Form/Journal Entry/{0}">{0}</a>'.format(je.name)
+
+		self.db_set("encash_journal", je.name)
+		self.db_set("encashmed_amount", flt(basic_pay))
+		self.db_set("tax_amount", flt(salary_tax))
                 
 @frappe.whitelist()
 def get_employee_cost_center(division):

@@ -295,6 +295,7 @@ class PurchaseInvoice(BuyingController):
 		self.update_project()
 		self.update_fixed_asset()
 		self.consume_budget()
+		self.update_rrco_receipt()
 
 	def update_fixed_asset(self):
 		for d in self.get("items"):
@@ -765,8 +766,18 @@ class PurchaseInvoice(BuyingController):
 						"com_ref": item.purchase_order,
 						"date": frappe.utils.nowdate()})
 					consume.submit()
+	
+	#Cancel the consumed budget
 	def cancel_consumed(self):
 		frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
+
+	#Update rrco receipt entry if submitted
+	def update_rrco_receipt(self):
+		if self.amended_from:
+			rrco = frappe.db.get_value("RRCO Receipt Entries", {"purchase_invoice": self.amended_from}, "name")
+			if rrco:
+				obj = frappe.get_doc("RRCO Receipt Entries", rrco)
+				obj.db_set("purchase_invoice", self.name)
 
 @frappe.whitelist()
 def make_debit_note(source_name, target_doc=None):

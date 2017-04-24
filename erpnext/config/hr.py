@@ -152,14 +152,20 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Leave Encashment",
-					"description": _("Leave Encashment"),
+					"name": "Travel Authorization",
+                                        "label": _("Travel Authorization"),
+					"description": _("Get Travel Authorization"),
 				},
 				{
 					"type": "doctype",
-					"name": "Expense Claim Type",
-                                        "label": _("Travel Expense Claim Types"),
-					"description": _("Types of Expense Claim.")
+					"name": "Travel Claim",
+                                        "label": _("Travel Claim"),
+					"description": _("Claims for travels"),
+				},
+				{
+					"type": "doctype",
+					"name": "Leave Encashment",
+					"description": _("Leave Encashment"),
 				},
 				{
 					"type": "doctype",

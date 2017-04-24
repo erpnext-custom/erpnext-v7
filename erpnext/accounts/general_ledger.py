@@ -108,7 +108,6 @@ def make_entry(args, adv_adj, update_outstanding):
 				"po_no": args.voucher_no,
 				"po_date": args.posting_date,
 				"amount": flt(args.debit_in_account_currency) - flt(args.credit_in_account_currency),
-				"com_ref": args.voucher_no,
 				"date": frappe.utils.nowdate()
 			})
 			bud_obj.submit()
@@ -121,6 +120,7 @@ def make_entry(args, adv_adj, update_outstanding):
 				"po_no": args.voucher_no,
 				"po_date": args.posting_date,
 				"amount": flt(args.debit_in_account_currency) - flt(args.credit_in_account_currency),
+				"com_ref": args.voucher_no,
 				"date": frappe.utils.nowdate()
 			})
 			con_obj.submit()

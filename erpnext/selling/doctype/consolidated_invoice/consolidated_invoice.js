@@ -3,7 +3,9 @@
 
 frappe.ui.form.on('Consolidated Invoice', {
 	refresh: function(frm) {
-		frm.set_value("posting_date", get_today())
+		if(!frm.doc.posting_date) {
+			frm.set_value("posting_date", get_today())
+		}
 	},
 	to_date: function(frm) {
 		if(frm.doc.from_date && frm.doc.from_date < frm.doc.to_date) {
