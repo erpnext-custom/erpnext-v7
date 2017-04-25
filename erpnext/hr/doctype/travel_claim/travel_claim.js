@@ -19,7 +19,10 @@ frappe.ui.form.on('Travel Claim', {
 		}
 	},
 	"total_claim_amount": function(frm) {
-		frm.set_value("balance_amount", frm.doc.total_claim_amount - frm.doc.advance_amount)
+		frm.set_value("balance_amount", frm.doc.total_claim_amount + frm.doc.extra_claim_amount - frm.doc.advance_amount)
+	},
+	"extra_claim_amount": function(frm) {
+		frm.set_value("balance_amount", frm.doc.total_claim_amount + frm.doc.extra_claim_amount - frm.doc.advance_amount)
 	}
 });
 

@@ -168,6 +168,8 @@ class TravelClaim(Document):
 	##
 	def check_status(self):
 		if self.supervisor_approval == 1 and self.hr_approval == 1 and self.claim_status is None:
+			pass
+		else:
 			frappe.throw("Both Supervisor and HR has to approve to submit the travel claim")
 	
 	##
