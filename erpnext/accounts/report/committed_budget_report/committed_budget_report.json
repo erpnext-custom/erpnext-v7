@@ -7,13 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-04-21 18:18:29.505215", 
+ "modified": "2017-04-27 11:16:08.492461", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Committed Budget Report", 
  "owner": "Administrator", 
- "query": "SELECT distinct\n\tcom.account as \"Account:Link/Account:250\", \n\tcom.cost_center as \"Cost Center:Link/Cost Center:250\", \n\tcom.po_no as \"Purchase Order:Link/Purchase Order:200\", \n\tcom.po_date as \"Commit Date:Date:100\",\n\tcom.amount as \"Amount:Currency:150\"\nFROM `tabCommitted Budget` com \nWHERE docstatus = 1 and not exists (select 1 from `tabConsumed Budget` cb where cb.account = com.account and cb.cost_center = com.cost_center and cb.com_ref = com.po_no and cb.item_code = com.item_code);", 
+ "query": "", 
  "ref_doctype": "Committed Budget", 
  "report_name": "Committed Budget Report", 
- "report_type": "Query Report"
+ "report_type": "Script Report"
 }
