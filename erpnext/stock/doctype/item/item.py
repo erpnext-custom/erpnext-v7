@@ -798,10 +798,15 @@ def check_stock_uom_with_bin(item, stock_uom):
 def sync_item_code():
 	items = frappe.db.sql("select name, item_code from tabItem where name != item_code", as_dict=True)
 	for item in items:
+		#Purchase Cycle
 		frappe.db.sql("update tabItem set name = %s where item_code = %s", (item.item_code, item.name))
 		frappe.db.sql("update `tabPurchase Order Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
 		frappe.db.sql("update `tabPurchase Receipt Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
 		frappe.db.sql("update `tabPurchase Invoice Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
+		#Sales cycle
 		frappe.db.sql("update `tabSales Invoice Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
 		frappe.db.sql("update `tabSales Order Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
 		frappe.db.sql("update `tabDelivery Note Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
+		#stock entry
+		frappe.db.sql("update `tabMaterial Request Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
+		frappe.db.sql("update `tabStock Entry Detail` set item_code = %s where item_code = %s", (item.item_code, item.name))
