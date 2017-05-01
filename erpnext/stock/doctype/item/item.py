@@ -794,3 +794,14 @@ def check_stock_uom_with_bin(item, stock_uom):
 	if not matched:
 		frappe.throw(_("Default Unit of Measure for Item {0} cannot be changed directly because you have already made some transaction(s) with another UOM. You will need to create a new Item to use a different Default UOM.").format(item))
 
+@frappe.whitelist()
+def sync_item_code():
+	items = frappe.db.sql("select name, item_code from tabItem where name != item_code", as_dict=True)
+	for item in items:
+		frappe.db.sql("update tabItem set name = %s where item_code = %s", (item.item_code, item.name))
+		frappe.db.sql("update `tabPurchase Order Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
+		frappe.db.sql("update `tabPurchase Receipt Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
+		frappe.db.sql("update `tabPurchase Invoice Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
+		frappe.db.sql("update `tabSales Invoice Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
+		frappe.db.sql("update `tabSales Order Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
+		frappe.db.sql("update `tabDelivery Note Item` set item_code = %s where item_code = %s", (item.item_code, item.name))

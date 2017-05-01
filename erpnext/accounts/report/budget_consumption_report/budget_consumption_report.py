@@ -23,10 +23,9 @@ def get_data(query):
 		consumed = flt(d.consumed)
 		supplement = flt(d.supplement)
 		committed = flt(d.committed)
-		#frappe.msgprint("B: " + str(committed))
-		if committed > 0:
+		if committed != 0:
 			committed-=consumed
-		#frappe.msgprint("A: " + str(committed))
+		
 		available = flt(d.initial_budget) + flt(adjustment) + flt(d.supplement) - consumed - committed
 		row = {
 			"account": d.account, 
