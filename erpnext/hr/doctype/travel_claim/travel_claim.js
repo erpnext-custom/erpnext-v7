@@ -3,6 +3,20 @@
 
 frappe.ui.form.on('Travel Claim', {
 	refresh: function(frm) {
+		if(frm.doc.docstatus == 1) {
+			cur_frm.set_df_property("hr_approval", "hidden", 0)
+			cur_frm.set_df_property("supervisor_approval", "hidden", 0)
+
+			if(frappe.model.can_read("Journal Entry")) {
+				cur_frm.add_custom_button('Bank Entries', function() {
+					frappe.route_options = {
+						"Journal Entry Account.reference_type": frm.doc.doctype,
+						"Journal Entry Account.reference_name": frm.doc.name,
+					};
+					frappe.set_route("List", "Journal Entry");
+				}, __("View"));
+			}
+		}
 	},
 	onload: function(frm) {
 		cur_frm.set_df_property("supervisor_approval", "hidden", 1)
@@ -17,6 +31,21 @@ frappe.ui.form.on('Travel Claim', {
 			cur_frm.set_df_property("hr_approval", "hidden", 0)
 			cur_frm.set_df_property("claim_status", "hidden", 0)
 		}
+
+		if(frm.doc.docstatus == 1) {
+			cur_frm.set_df_property("hr_approval", "hidden", 0)
+			cur_frm.set_df_property("supervisor_approval", "hidden", 0)
+
+			//if(frappe.model.can_read("Journal Entry")) {
+				cur_frm.add_custom_button('Bank Entries', function() {
+					frappe.route_options = {
+						"Journal Entry Account.reference_type": frm.doc.doctype,
+						"Journal Entry Account.reference_name": frm.doc.name,
+					};
+					frappe.set_route("List", "Journal Entry");
+				});
+			//}
+		}
 	},
 	"total_claim_amount": function(frm) {
 		frm.set_value("balance_amount", frm.doc.total_claim_amount + frm.doc.extra_claim_amount - frm.doc.advance_amount)
@@ -28,6 +57,7 @@ frappe.ui.form.on('Travel Claim', {
 
 frappe.ui.form.on("Travel Claim Item", {
 	"form_render": function(frm, cdt, cdn) {
+		if (frm.doc.__islocal) {
 		var item = frappe.get_doc(cdt, cdn)
 		if (item.halt == 0) {
 			var df = frappe.meta.get_docfield("Travel Claim Item","distance", cur_frm.doc.name);
@@ -38,7 +68,7 @@ frappe.ui.form.on("Travel Claim Item", {
 		if(item.currency != "BTN") {
 			frappe.model.set_value(cdt, cdn, "amount", format_currency(flt(item.amount), item.currency))
 		}
-		
+		}
 	},
 	"currency": function(frm, cdt, cdn) {
 		do_update(frm, cdt, cdn)

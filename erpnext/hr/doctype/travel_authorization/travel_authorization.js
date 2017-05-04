@@ -22,6 +22,10 @@ frappe.ui.form.on('Travel Authorization', {
 				})
 			});
 		}
+
+		if(frm.doc.docstatus == 1) {
+			frm.toggle_display("document_status", 1);
+		}
 	},
 	onload: function(frm) {
 		if (!frm.doc.posting_date) {
