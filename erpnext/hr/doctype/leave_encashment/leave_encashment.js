@@ -12,12 +12,15 @@ frappe.ui.form.on('Leave Encashment', {
 	},
 	
 	refresh: function(frm) {
-		if (frm.is_new()){
-			console.log('New Record.');
-		}
-		else{
-			console.log('Old Record.');
-		}
+			if(frm.doc.docstatus == 1 && frappe.model.can_read("Journal Entry")) {
+				cur_frm.add_custom_button('Bank Entries', function() {
+					frappe.route_options = {
+						"Journal Entry Account.reference_type": frm.doc.doctype,
+						"Journal Entry Account.reference_name": frm.doc.name,
+					};
+					frappe.set_route("List", "Journal Entry");
+				}, __("View"));
+			}
 	},
 	
 

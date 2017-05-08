@@ -186,7 +186,7 @@ class LeaveEncashment(Document):
                 je.insert()
 
 		self.db_set("encash_journal", je.name)
-		self.db_set("encashmed_amount", flt(basic_pay))
+		self.db_set("encashment_amount", flt(basic_pay))
 		self.db_set("tax_amount", flt(salary_tax))
                 
 @frappe.whitelist()
