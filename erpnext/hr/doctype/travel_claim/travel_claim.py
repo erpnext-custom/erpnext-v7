@@ -88,14 +88,16 @@ class TravelClaim(Document):
 		je.naming_series = 'Bank Payment Voucher'
 		je.remark = 'Claim payment against : ' + self.name;
 		je.posting_date = self.posting_date
+
+		total_amt = flt(self.total_claim_amount) + flt(self.extra_claim_amount)
 	
 		je.append("accounts", {
 				"account": gl_account,
 				"reference_type": "Travel Claim",
 				"reference_name": self.name,
 				"cost_center": cost_center,
-				"debit_in_account_currency": flt(self.total_claim_amount),
-				"debit": flt(self.total_claim_amount),
+				"debit_in_account_currency": flt(total_amt),
+				"debit": flt(total_amt),
 			})
 		
 		je.append("accounts", {
@@ -105,8 +107,8 @@ class TravelClaim(Document):
 				"reference_type": "Travel Claim",
 				"reference_name": self.name,
 				"cost_center": cost_center,
-				"debit_in_account_currency": flt(self.total_claim_amount),
-				"debit": flt(self.total_claim_amount),
+				"debit_in_account_currency": flt(total_amt),
+				"debit": flt(total_amt),
 			})
 		
 		je.append("accounts", {
@@ -116,8 +118,8 @@ class TravelClaim(Document):
 				"reference_type": "Travel Claim",
 				"reference_name": self.name,
 				"cost_center": cost_center,
-				"credit_in_account_currency": flt(self.total_claim_amount),
-				"credit": flt(self.total_claim_amount),
+				"credit_in_account_currency": flt(total_amt),
+				"credit": flt(total_amt),
 			})
 		
 		advance_amt = flt(self.advance_amount)
@@ -152,7 +154,7 @@ class TravelClaim(Document):
 			})
 
 		je.insert()
-		
+	
 		#Set a reference to the claim journal entry
 		self.db_set("claim_journal", je.name)
 	

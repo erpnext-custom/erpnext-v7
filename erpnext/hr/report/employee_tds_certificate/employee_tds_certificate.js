@@ -15,6 +15,12 @@ frappe.query_reports["Employee TDS Certificate"] = {
 			"label": __("Employee"),
 			"fieldtype": "Link",
 			"options": "Employee"
+		},
+		{
+			"fieldname":"test",
+			"fieldtype":"Data",
+			"label": __("TEST"),
+			"style": "display: none;"
 		}
 	]
 }

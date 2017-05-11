@@ -53,6 +53,7 @@ function get_invoices(from_date, to_date, item_code, customer, cost_center) {
 		callback: function(r) {
 			if(r.message) {
 				var total_amount = 0;
+				cur_frm.clear_table("items");
 				r.message.forEach(function(invoice) {
 				        var row = frappe.model.add_child(cur_frm.doc, "Consolidated Invoice Item", "items");
 					row.invoice_no = invoice['name']

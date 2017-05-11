@@ -12,9 +12,10 @@ def execute(filters=None):
 	queries = construct_query(filters);
 	data = get_data(queries, filters);
 
-	return columns, data
+	return columns, data, filters
 
 def get_data(query, filters=None):
+	frappe.msgprint(str(filters.year_start) + " ENDDDDDD")
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
@@ -54,9 +55,9 @@ def validate_filters(filters):
 	if not filters.fiscal_year:
 		frappe.throw(_("Fiscal Year {0} is required").format(filters.fiscal_year))
 
-	fiscal_year = frappe.db.get_value("Fiscal Year", filters.fiscal_year, ["year_start_date", "year_end_date"], as_dict=True)
-	if not fiscal_year:
-		frappe.throw(_("Fiscal Year {0} does not exist").format(filters.fiscal_year))
+	start, end = frappe.db.get_value("Fiscal Year", filters.fiscal_year, ["year_start_date", "year_end_date"])
+	filters.year_start = start
+	filters.year_end = end
 
 def get_columns():
 	return [

@@ -142,14 +142,8 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Travel & Leave Encashment"),
+			"label": _("Expense Claims"),
 			"items": [
-				{
-					"type": "doctype",
-					"name": "Expense Claim",
-                                        "label": _("Travel Request/Expense Claim"),
-					"description": _("Claims for company expense."),
-				},
 				{
 					"type": "doctype",
 					"name": "Travel Authorization",
@@ -169,9 +163,21 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Leave Travel Concession",
+                                        "label": _("Process LTC"),
+					"description": _("LTC process"),
+				},
+				{
+					"type": "doctype",
 					"name": "Leave Encashment Settings",
 					"description": _("Leave Encashment Settings"),
 				},                                
+				{
+					"type": "doctype",
+					"name": "Expense Claim",
+                                        "label": _("Travel Request/Expense Claim"),
+					"description": _("Claims for company expense."),
+				},
 			]
 		},
                 {

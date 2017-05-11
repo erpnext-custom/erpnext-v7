@@ -201,3 +201,4 @@ bot_parsers = [
 ]
 
 get_site_info = 'erpnext.utilities.get_site_info'
+
