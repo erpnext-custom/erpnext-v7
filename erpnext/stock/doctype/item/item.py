@@ -799,7 +799,7 @@ def sync_item_code():
 	items = frappe.db.sql("select name, item_code from tabItem where name != item_code", as_dict=True)
 	for item in items:
 		#Purchase Cycle
-		frappe.db.sql("update tabItem set name = %s where item_code = %s", (item.item_code, item.name))
+		frappe.db.sql("update tabItem set name = %s where name = %s", (item.item_code, item.name))
 		frappe.db.sql("update `tabPurchase Order Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
 		frappe.db.sql("update `tabPurchase Receipt Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
 		frappe.db.sql("update `tabPurchase Invoice Item` set item_code = %s where item_code = %s", (item.item_code, item.name))

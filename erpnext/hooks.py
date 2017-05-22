@@ -166,7 +166,8 @@ doc_events = {
 
 scheduler_events = {
 	"hourly": [
-		"erpnext.controllers.recurring_document.create_recurring_documents"
+		"erpnext.controllers.recurring_document.create_recurring_documents",
+		"erpnext.stock.doctype.item.item.sync_item_code"
 	],
 	"daily": [
 		"erpnext.stock.reorder_item.reorder_item",
@@ -176,7 +177,6 @@ scheduler_events = {
 		"erpnext.hr.doctype.employee.employee.send_birthday_reminders",
 		"erpnext.projects.doctype.task.task.set_tasks_as_overdue",
 		"erpnext.accounts.doctype.asset.depreciation.post_depreciation_entries",
-		"erpnext.stock.doctype.item.item.sync_item_code"
 	],
 	"monthly": [
 		"erpnext.hr.hr_custom_functions.post_earned_leaves"

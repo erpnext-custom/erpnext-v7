@@ -54,3 +54,11 @@ function process_ltc(branch) {
 		}
 	})
 }
+
+frappe.ui.form.on("LTC Details", "amount", function(frm, cdt, cdn) {
+	var total = 0;
+	frm.doc.items.forEach(function(d) {
+		total += d.amount
+	})
+	cur_frm.set_value("total_amount", total)
+})
