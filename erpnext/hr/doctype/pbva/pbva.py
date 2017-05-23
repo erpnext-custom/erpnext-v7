@@ -7,7 +7,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import flt
 
-class LeaveTravelConcession(Document):
+class PBVA(Document):
 	def validate(self):
 		pass
 
@@ -51,7 +51,7 @@ class LeaveTravelConcession(Document):
 			})
 		
 		je.append("accounts", {
-				"account": "TDS - SMCL",
+				"account": "Salary Tax - SMCL",
 				"reference_type": "PBVA",
 				"reference_name": self.name,
 				"cost_center": "Corporate Head Office - SMCL",
@@ -78,3 +78,11 @@ def get_pbva_details(branch=None):
 		query += " and b.branch = \'" + str(branch) + "\'";
 	query += " order by b.branch"
 	return frappe.db.sql(query, as_dict=True)
+
+@frappe.whitelist()
+def get_pbva_percent(employee):
+	group = frappe.db.get_value("Employee", employee, "employee_group")
+	if group in ("Chief Executive Officer", "Executive"):
+		return "above"
+	else:
+		return "below"

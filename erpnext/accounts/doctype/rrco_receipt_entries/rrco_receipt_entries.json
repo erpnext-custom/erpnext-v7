@@ -248,7 +248,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-04-23 21:46:41.574207", 
+ "modified": "2017-05-23 17:29:42.788799", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "RRCO Receipt Entries", 
@@ -256,9 +256,9 @@
  "owner": "Administrator", 
  "permissions": [
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 1, 
    "email": 1, 

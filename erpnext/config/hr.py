@@ -126,12 +126,6 @@ def get_data():
 					"label": _("Salary Components"),
 					"description": _("Earnings, Deductions and other Salary components")
 				},
-                                {
-					"type": "doctype",
-					"name": "Production Incentives",
-					"label": _("MPI Target Setup"),
-					"description": _("MPI Target Setup")
-				},
 				{
 					"type": "report",
 					"name": "Employee TDS Certificate",
@@ -169,14 +163,14 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Leave Encashment Settings",
-					"description": _("Leave Encashment Settings"),
-				},                                
+					"name": "PBVA",
+                                        "label": _("Process PBVA"),
+					"description": _("PBVA process"),
+				},
 				{
 					"type": "doctype",
 					"name": "Expense Claim",
-                                        "label": _("Travel Request/Expense Claim"),
-					"description": _("Claims for company expense."),
+                                        "label": _("Expense Claim"),
 				},
 			]
 		},
@@ -199,70 +193,16 @@ def get_data():
 					"name": "HR Settings",
 					"description": _("Settings for HR Module")
 				},
-                                {
-					"type": "doctype",
-					"name": "Salary Tax",
-					"description": _("Salary Tax Master")
-				},
 				{
 					"type": "doctype",
-					"name": "Branch",
-					"description": _("Organization Branch Master.")
-				},
-				{
-					"type": "doctype",
-					"name": "Department",
-					"description": _("Organization Department master.")
-				},
-				{
-					"type": "doctype",
-					"name": "Division",
-					"description": _("Organization Division master.")
-				},
-				{
-					"type": "doctype",
-					"name": "Section",
-					"description": _("Organization Section master.")
-				},                                                                
-				{
-					"type": "doctype",
-					"name": "Employment Type",
-					"description": _("Types of employment (permanent, contract, intern etc.).")
-				},
-				{
-					"type": "doctype",
-					"name": "Designation",
-					"description": _("Employee designation (e.g. CEO, Director etc.).")
-				},
+					"name": "Leave Encashment Settings",
+					"description": _("Leave Encashment Settings"),
+				},                                
                                 {
 					"type": "doctype",
-					"name": "Employee Group",
-					"description": _("Employee Group Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Employee Sub-Group",
-					"description": _("Employee Sub-Group/Grade Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Terms of Reference",
-					"description": _("Employee Sub-Group/Grade Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Dzongkhags",
-					"description": _("Dzongkhag Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Gewogs",
-					"description": _("Gewog Master.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Villages",
-					"description": _("Village Master.")
+					"name": "Production Incentives",
+					"label": _("MPI Target Setting"),
+					"description": _("MPI Target Setup")
 				},
 			]
 		},

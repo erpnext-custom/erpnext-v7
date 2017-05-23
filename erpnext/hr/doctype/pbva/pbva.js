@@ -20,11 +20,11 @@ frappe.ui.form.on('PBVA', {
 		}
 	},
 	"get_pbva": function(frm) {
-		process_pbva(frm.doc.branch);
+		process_pbva(frm.doc.branch, frm);
 	}
 });
 
-function process_pbva(branch) {
+function process_pbva(branch, frm) {
 	frappe.call({
 		method: "erpnext.hr.doctype.pbva.pbva.get_pbva_details",
 		args: {"branch": branch},
@@ -40,7 +40,13 @@ function process_pbva(branch) {
 					row.employee_name = pbva['employee_name']
 					row.branch = pbva['branch']
 					row.basic_pay = pbva['amount']
-					row.percent = 10
+					frappe.msgprint(calculate_pbva_percent(row.employee))
+					if (calculate_pbva_percent(row.employee) == "above") {
+						row.percent = frm.doc.above
+					}
+					else {
+						row.percent = frm.doc.below
+					}
 					row.amount = flt(row.basic_pay) * (flt(row.percent) / 100) * flt(row.months)
 					row.tax_amount = calculate_tax(flt(row.amount))
 					row.balance_amount = flt(row.amount) - flt(row.tax_amount)
@@ -96,4 +102,19 @@ function calculate_tax(gross_amt) {
 		}
 	})
 	return tds_amount;
+}
+
+function calculate_pbva_percent(employee) {
+	var percent = "";
+	cur_frm.call({
+		method: "erpnext.hr.doctype.pbva.pbva.get_pbva_percent",
+		args: { "employee": employee, },
+		async: false,
+		callback: function(r) {
+			if(r.message) {
+				percent = String(r.message);
+			}
+		}
+	})
+	return percent;
 }

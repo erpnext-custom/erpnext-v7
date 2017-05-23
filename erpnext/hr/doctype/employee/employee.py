@@ -125,9 +125,13 @@ class Employee(Document):
 	def validate_status(self):
 		if self.status == 'Left' and not self.relieving_date:
 			throw(_("Please enter relieving date."))
-		else:
-			ss = frappe.get_doc("Salary Structure", frappe.db.get_value("Salary Structure", {"employee": self.name, "is_active":"Yes"}, "name"))
-			ss.db_set("is_active", "No")
+		
+		if self.status == 'Left' and self.relieving_date:
+			name = frappe.db.get_value("Salary Structure", {"employee": self.name, "is_active":"Yes"}, "name")
+			if name:
+				ss = frappe.get_doc("Salary Structure", name, "name")
+				if ss:
+					ss.db_set("is_active", "No")
 
 
 	def validate_for_enabled_user_id(self):

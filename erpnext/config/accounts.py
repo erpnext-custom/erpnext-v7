@@ -28,6 +28,11 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Direct Payment",
+					"description": _("Direct Payment")
+				},
+				{
+					"type": "doctype",
 					"name": "Period Closing Voucher",
 					"description": _("Close Balance Sheet and book Profit or Loss.")
 				},
