@@ -71,6 +71,10 @@ frappe.ui.form.on('Salary Structure', {
 	toggle_fields: function(frm) {
 		frm.toggle_display(['salary_component', 'hour_rate'], frm.doc.salary_slip_based_on_timesheet);
 		frm.toggle_reqd(['salary_component', 'hour_rate'], frm.doc.salary_slip_based_on_timesheet);
+	},
+	"lumpsum_temp_transfer_amount": function(frm) {
+		calculate_others(frm.doc);
+		calculate_totals(frm.doc);
 	}
 })
 
@@ -442,6 +446,9 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			}
 			
 			calc_amt = Math.round(calc_amt);
+			if(doc.lumpsum_temp_transfer_amount > 0) {
+				calc_amt = doc.lumpsum_temp_transfer_amount
+			}
 			
 			if (tran_all_id >= 0){
 				if (e_tbl[tran_all_id].amount != calc_amt){
