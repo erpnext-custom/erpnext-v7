@@ -40,7 +40,6 @@ function process_pbva(branch, frm) {
 					row.employee_name = pbva['employee_name']
 					row.branch = pbva['branch']
 					row.basic_pay = pbva['amount']
-					frappe.msgprint(calculate_pbva_percent(row.employee))
 					if (calculate_pbva_percent(row.employee) == "above") {
 						row.percent = frm.doc.above
 					}
