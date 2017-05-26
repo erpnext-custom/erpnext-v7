@@ -180,7 +180,7 @@ class ProcessPayroll(Document):
 		return log
 
 	def format_as_links(self, ss_list):
-		return ['<a href="#Form/Salary Slip/{0}">{0}</a>'.format(s) for s in ss_list]
+		return ['<a href="#Form/Salary Slip/{0}">{1}</a>'.format(s, frappe.db.get_value("Salary Slip", s, "employee_name")) for s in ss_list]
 
 
 	def get_total_salary(self):
