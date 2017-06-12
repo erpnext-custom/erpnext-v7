@@ -22,7 +22,7 @@ def validate_filters(filters):
 
 
 def get_data(filters):
-	query = "select t1.name as sales_no, t1.transaction_date as sales_date, t1.customer, t1.po_no, t1.po_date, t1.base_net_amount, t1.rate, t1.qty, t1.item_name, t1.item_code, t1.stock_uom, t1.warehouse, t1.delivery_note, t1.delivery_date,t2.invoice_no, t2.ref_date, t2.posting_date, t2.due_date, t2.write_off_amount, t2.write_off_description, t2.total_advance, t1.transporter_name, t1.delivered_qty, t2.accepted_qty, t2.amount, t2.normal_loss_amt, t2.remarks, t2.abnormal_loss_amt, t2.justification, t2.excess_amt, t2.excess_qty from (select so.name, so.transaction_date, so.customer, so.po_no, so.po_date, soi.base_net_amount, soi.rate, soi.qty, soi.item_name, soi.item_code, soi.stock_uom, soi.warehouse, dni.parent as delivery_note, dni.qty as delivered_qty, (select transporter_name1 from `tabDelivery Note` as dn where dn.name = dni.parent) as transporter_name, (select posting_date from `tabDelivery Note` as dn where dn.name = dni.parent) as delivery_date from (`tabSales Order` as so JOIN `tabSales Order Item` as soi on so.name = soi.parent and so.docstatus = 1) LEFT JOIN `tabDelivery Note Item` as dni on so.name = dni.against_sales_order and dni.docstatus = 1) as t1 left join (select si.name as invoice_no, si.sales_invoice_date as ref_date, si.posting_date, si.due_date, si.write_off_amount, si.write_off_description, si.total_advance, sii.accepted_qty, sii.amount, sii.normal_loss_amt, sii.remarks, sii.abnormal_loss_amt, sii.justification, sii.excess_amt, sii.excess_qty, sii.delivery_note as delivery_note_no from `tabSales Invoice` as si, `tabSales Invoice Item` as sii where si.name = sii.parent and si.docstatus = 1) as t2 on t1.delivery_note = t2.delivery_note_no"
+	query = "select t1.name as sales_no, t1.transaction_date as sales_date, t1.customer, t1.po_no, t1.po_date, t1.base_net_amount, t1.rate, t1.qty, t1.item_name, t1.item_code, t1.stock_uom, t1.warehouse, t1.delivery_note, t1.delivery_date,t2.invoice_no, t2.ref_date, t2.posting_date, t2.due_date, t2.write_off_amount, t2.write_off_description, t2.total_advance, t1.transporter_name, t2.delivered_qty, t2.accepted_qty, t2.amount, t2.normal_loss_amt, t2.remarks, t2.abnormal_loss_amt, t2.justification, t2.excess_amt, t2.excess_qty from (select so.name, so.transaction_date, so.customer, so.po_no, so.po_date, soi.base_net_amount, soi.rate, soi.qty, soi.item_name, soi.item_code, soi.stock_uom, soi.warehouse, dni.parent as delivery_note, (select transporter_name1 from `tabDelivery Note` as dn where dn.name = dni.parent) as transporter_name, (select posting_date from `tabDelivery Note` as dn where dn.name = dni.parent) as delivery_date from (`tabSales Order` as so JOIN `tabSales Order Item` as soi on so.name = soi.parent and so.docstatus = 1) LEFT JOIN `tabDelivery Note Item` as dni on so.name = dni.against_sales_order and dni.docstatus = 1) as t1 left join (select si.name as invoice_no, si.sales_invoice_date as ref_date, si.posting_date, si.due_date, si.write_off_amount, si.write_off_description, si.total_advance, sii.accepted_qty, sii.delivered_qty, sii.amount, sii.normal_loss_amt, sii.remarks, sii.abnormal_loss_amt, sii.justification, sii.excess_amt, sii.excess_qty, sii.delivery_note as delivery_note_no from `tabSales Invoice` as si, `tabSales Invoice Item` as sii where si.name = sii.parent and si.docstatus = 1) as t2 on t1.delivery_note = t2.delivery_note_no"
 
 	if filters.from_date and filters.to_date:
 		query+=" where t2.posting_date BETWEEN  \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'"
@@ -35,15 +35,20 @@ def get_data(filters):
 	sales_data = frappe.db.sql(query, as_dict=True)
 	
 	data = []
-	total = total_billed = nor_amt = ab_amt = ex_amt = ad_amt = to_bill = normal_total  = 0
+	total = total_billed = nor_amt = ab_amt = ex_amt = ad_amt = to_bill = normal_total  = abnormal_total = 0
 
 	if sales_data:
 		for a in sales_data:
 			normal_qty = 0;
+			abnormal_qty = 0;
 			to_bill = flt(a.amount) + flt(a.excess_amt) - flt(a.normal_loss_amt) - flt(a.abnormal_loss_amt)
-			if flt(a.excess_qty == 0):
+			if flt(a.normal_loss_amt > 0):
 				normal_qty = flt(a.delivered_qty) - flt(a.accepted_qty)
 				normal_total += flt(normal_qty)
+			
+			if flt(a.abnormal_loss_amt > 0):
+				abnormal_qty = flt(a.delivered_qty) - flt(a.accepted_qty)
+				abnormal_total += flt(abnormal_qty)
 
 			row = {
 				"transporter_name": a.transporter_name,
@@ -77,6 +82,7 @@ def get_data(filters):
 				"excess_amt": a.excess_amt,
 				"excess_qty": a.excess_qty,
 				"normal_qty": flt(normal_qty, 2),
+				"abnormal_qty": flt(abnormal_qty, 2),
 				"total_bill_amt": to_bill,
 				"justification": a.justification
 			}
@@ -88,7 +94,7 @@ def get_data(filters):
 			ex_amt+=flt(a.excess_amt)
 			ad_amt+=flt(a.total_advance)
 	
-		row = {"normal_qty": flt(normal_total), "sales_no": "Total", "total_bill_amt":  total, "total_advance": ad_amt, "amount": total_billed, "normal_loss_amt": nor_amt, "abnormal_loss_amt": ab_amt, "excess_amt": ex_amt}
+		row = {"normal_qty": flt(normal_total), "abnormal_qty": flt(abnormal_total), "sales_no": "Total", "total_bill_amt":  total, "total_advance": ad_amt, "amount": total_billed, "normal_loss_amt": nor_amt, "abnormal_loss_amt": ab_amt, "excess_amt": ex_amt}
 		data.append(row)
 	return data
 
@@ -241,6 +247,12 @@ def get_columns():
 			"label": _("Normal Loss Remark"),
 			"fieldtype": "Data",
 			"width": 150
+		},
+		{
+			"fieldname": "abnormal_qty",
+			"label": _("ANL Qty"),
+			"fieldtype": "Data",
+			"width": 100
 		},
 		{
 			"fieldname": "abnormal_loss_amt",

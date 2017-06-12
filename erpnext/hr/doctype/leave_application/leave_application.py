@@ -77,7 +77,7 @@ class LeaveApplication(Document):
 		if self.from_date and self.to_date and (getdate(self.to_date) < getdate(self.from_date)):
 			frappe.throw(_("To date cannot be before from date"))
 
-		if not is_lwp(self.leave_type):
+		if is_lwp(self.leave_type):
 			self.validate_dates_acorss_allocation()
 			self.validate_back_dated_application()
 
@@ -95,8 +95,8 @@ class LeaveApplication(Document):
 		if not (allocation_based_on_from_date or allocation_based_on_to_date):
 			frappe.throw(_("Application period cannot be outside leave allocation period"))
 
-		elif allocation_based_on_from_date != allocation_based_on_to_date:
-			frappe.throw(_("Application period cannot be across two alocation records"))
+		#elif allocation_based_on_from_date != allocation_based_on_to_date:
+		#	frappe.throw(_("Application period cannot be across two alocation records"))
 
 	def validate_back_dated_application(self):
 		future_allocation = frappe.db.sql("""select name, from_date from `tabLeave Allocation`

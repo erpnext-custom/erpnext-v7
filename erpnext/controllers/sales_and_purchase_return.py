@@ -175,6 +175,12 @@ def make_return_doc(doctype, source_name, target_doc=None):
 			target_doc.po_detail = source_doc.po_detail
 			target_doc.pr_detail = source_doc.pr_detail
 		elif doctype == "Delivery Note":
+			'''returned_qty = frappe.db.sql("select b.qty, b.item_code from `tabDelivery Note` a, `tabDelivery Note Item` b  where a.name = b.parent and a.is_return = 1 and a.return_against = " + source_parent + " and a.docstatus = 1;", as_dict=True)
+			if returned_qty:
+				for a in returned_qty:
+					if a.item_code == source_doc.item_code:
+						target_doc.qty = -1 * (source_doc.qty + a.qty)
+			'''	
 			target_doc.against_sales_order = source_doc.against_sales_order
 			target_doc.against_sales_invoice = source_doc.against_sales_invoice
 			target_doc.so_detail = source_doc.so_detail

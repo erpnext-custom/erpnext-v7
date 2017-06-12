@@ -368,7 +368,14 @@ def make_sales_invoice(source_name, target_doc=None):
 		target.run_method("calculate_taxes_and_totals")
 
 	def update_item(source_doc, target_doc, source_parent):
-		target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0)
+		#target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0)
+		returned_qty = frappe.db.sql("select b.qty, b.item_code from `tabDelivery Note` a, `tabDelivery Note Item` b  where a.name = b.parent and a.is_return = 1 and a.return_against = \'" + str(source_parent.name) + "\' and a.docstatus = 1;", as_dict=True)
+		if returned_qty:
+			for a in returned_qty:
+				if a.item_code == source_doc.item_code:
+					target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0) + a.qty
+		else:
+			target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0)
 
 	doc = get_mapped_doc("Delivery Note", source_name, 	{
 		"Delivery Note": {
