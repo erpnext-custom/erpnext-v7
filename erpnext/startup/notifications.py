@@ -42,8 +42,14 @@ def get_notification_config():
 			"Production Order": { "status": ("in", ("Draft", "Not Started", "In Process")) },
 			"BOM": {"docstatus": 0},
 			"Timesheet": {"status": "Draft"},
-			"Travel Authorization": {"docstatus": 0},
-			"Travel Claim": {"docstatus": 0},
+			"Travel Authorization": {
+				"docstatus": 0,
+				"document_status": ("not in", ("Rejected"))
+			},
+			"Travel Claim": {
+				"docstatus": 0,
+				"claim_status": ("not in", ("Rejected by HR", "Rejected by Supervisor"))
+			},
 			"Leave Encashment": {"docstatus": 0}
 		}
 	}
