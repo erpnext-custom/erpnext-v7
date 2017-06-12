@@ -203,8 +203,8 @@ class LeaveApplication(Document):
 
 	def validate_leave_approver(self):
 		employee = frappe.get_doc("Employee", self.employee)
-		leave_approvers = [l.leave_approver for l in employee.get("leave_approvers")]
-
+		leave_approvers = [frappe.db.get_value("Employee", employee.reports_to, "user_id")]
+		
 		if len(leave_approvers) and self.leave_approver not in leave_approvers:
 			frappe.throw(_("Leave approver must be one of {0}")
 				.format(comma_or(leave_approvers)), InvalidLeaveApproverError)
