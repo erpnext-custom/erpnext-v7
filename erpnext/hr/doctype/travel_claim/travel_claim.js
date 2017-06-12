@@ -94,7 +94,7 @@ frappe.ui.form.on("Travel Claim Item", {
 function do_update(frm, cdt, cdn) {
 	//var item = frappe.get_doc(cdt, cdn)
 	var item = locals[cdt][cdn]
-	var amount = flt(item.dsa * item.no_days + item.mileage_rate * item.distance)
+	var amount = flt(item.dsa + item.mileage_rate * item.distance)
 	if (item.halt == 1) {
 		amount = flt(item.dsa * item.no_days)
 	}

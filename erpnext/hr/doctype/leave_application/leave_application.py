@@ -64,8 +64,7 @@ class LeaveApplication(Document):
 			frappe.throw(_("Only Leave Applications with status 'Approved' or 'Rejected' can be submitted"))
 
 		if self.status == "Approved":
-			self.validate_back_dated_application()
-
+			#self.validate_back_dated_application()
 			# notify leave applier about approval
 			self.notify_employee(self.status)
 
@@ -95,8 +94,8 @@ class LeaveApplication(Document):
 		if not (allocation_based_on_from_date or allocation_based_on_to_date):
 			frappe.throw(_("Application period cannot be outside leave allocation period"))
 
-		#elif allocation_based_on_from_date != allocation_based_on_to_date:
-		#	frappe.throw(_("Application period cannot be across two alocation records"))
+		elif allocation_based_on_from_date != allocation_based_on_to_date:
+			frappe.throw(_("Application period cannot be across two alocation records"))
 
 	def validate_back_dated_application(self):
 		future_allocation = frappe.db.sql("""select name, from_date from `tabLeave Allocation`
