@@ -20,6 +20,7 @@ from erpnext.hr.doctype.employee_leave_approver.employee_leave_approver import g
 #from datetime import date as mod_date
 from erpnext.hr.doctype.leave_encashment.leave_encashment import get_le_settings
 # Ver 1.0 Ends
+from erpnext.custom_utils import get_year_start_date, get_year_end_date
 
 class LeaveDayBlockedError(frappe.ValidationError): pass
 class OverlapError(frappe.ValidationError): pass
@@ -32,6 +33,7 @@ class LeaveApplication(Document):
 		return _("{0}: From {0} of type {1}").format(self.status, self.employee_name, self.leave_type)
 
 	def validate(self):
+		self.validate_fiscal_year()
 		if not getattr(self, "__islocal", None) and frappe.db.exists(self.doctype, self.name):
 			self.previous_doc = frappe.db.get_value(self.doctype, self.name, "*", as_dict=True)
 		else:
@@ -50,6 +52,7 @@ class LeaveApplication(Document):
 			self.validate_leave_approver()
 
 	def on_update(self):
+		self.validate_fiscal_year()
 		if (not self.previous_doc and self.leave_approver) or (self.previous_doc and \
 				self.status == "Open" and self.previous_doc.leave_approver != self.leave_approver):
 			# notify leave approver about creation
@@ -60,6 +63,7 @@ class LeaveApplication(Document):
 			self.notify_employee(self.status)
 
 	def on_submit(self):
+		self.validate_fiscal_year()
 		if self.status == "Open":
 			frappe.throw(_("Only Leave Applications with status 'Approved' or 'Rejected' can be submitted"))
 
@@ -265,6 +269,10 @@ class LeaveApplication(Document):
 		post(**{"txt": args.message, "contact": args.message_to, "subject": args.subject,
 			"notify": cint(self.follow_via_email)})
 
+	def validate_fiscal_year(self):
+		if str(self.from_date)[0:4] != str(self.to_date)[0:4]:
+			frappe.throw("Leave Application cannot overlap fiscal years")
+
 @frappe.whitelist()
 def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 	if not filters.get("employee"):
@@ -304,7 +312,7 @@ def get_leave_balance_on(employee, leave_type, date, allocation_records=None,
 
 	if consider_all_leaves_in_the_allocation_period:
 		date = allocation.to_date
-	leaves_taken = get_approved_leaves_for_period(employee, leave_type, allocation.from_date, date)
+	leaves_taken = get_approved_leaves_for_period(employee, leave_type, get_year_start_date(str(date)), date)
 	# Ver 1.0 Begins added by SSK on 20/08/2016, following line is added
 	leaves_encashed = get_leaves_encashed(employee, leave_type, date)
 	# Ver 1.0 Ends
