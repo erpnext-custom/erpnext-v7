@@ -506,3 +506,62 @@ frappe.ui.form.on('Landed Cost Taxes and Charges', {
 		frm.cscript.calculate_amount();
 	}
 })
+
+//custom Scripts
+//Set select option for "Initial Stock Templates"
+cur_frm.fields_dict['initial_stock_templates'].get_query = function(doc, dt, dn) {
+  return {
+     query: "erpnext.stock.stock_custom_functions.get_template_list",
+     filters: { naming_series: doc.naming_series, posting_date: doc.posting_date },
+     searchfield: "template_name"
+  };
+}
+
+//Auto add items based on the values created in the "Initial Stock Template" Setting
+cur_frm.cscript.initial_stock_templates = function(doc) {
+    cur_frm.call({
+        method: "erpnext.stock.stock_custom_functions.get_initial_values",
+        args: {
+             name: doc.initial_stock_templates
+        },
+        callback: function(r) {
+           if(r.message)  {
+                cur_frm.clear_table("items");
+                var new_row = frappe.model.add_child(cur_frm.doc, "Stock Entry Detail", "items");
+                new_row.item_code = r.message[0]['item_code'];
+                new_row.item_name = r.message[0]['item_name'];
+                new_row.uom = r.message[0]['uom'];
+                new_row.stock_uom = r.message[0]['stock_uom'];
+                new_row.qty = 0;
+                new_row.basic_rate = r.message[0]['rate_amount'];
+                new_row.expense_account = r.message[0]['expense_account'];
+                new_row.cost_center = r.message[0]['selling_cost_center'];
+                new_row.t_warehouse = doc.to_warehouse;
+                refresh_field("items");
+            }
+        }
+   });
+       //Set item table read only
+       cur_frm.set_df_property("items", "read_only",1);
+       frappe.meta.get_docfield("Stock Entry Detail", "basic_rate", cur_frm.doc.name).read_only = 1;
+       frappe.meta.get_docfield("Stock Entry Detail", "item_code", cur_frm.doc.name).read_only = 1;
+       frappe.meta.get_docfield("Stock Entry Detail", "uom", cur_frm.doc.name).read_only = 1;
+       refresh_field("items");
+}
+
+frappe.ui.form.on("Stock Entry", "purpose", function(frm){
+      if (cur_frm.fields_dict.purpose.value == 'Material Issue'){
+         console.log(cur_frm.fields_dict.purpose.value)
+         cur_frm.fields_dict.naming_series.df.options = "Consumable GI\nCapital Inventory GI";
+      }
+      if (cur_frm.fields_dict.purpose.value == 'Material Receipt'){
+         console.log(cur_frm.fields_dict.purpose.value)
+         cur_frm.fields_dict.naming_series.df.options = "Consumable GR\nCapital Inventory GR\nCoal GR\nDolomite GR\nGypsum GR\nStone GR\nLimestone GR\nBauxite GR\nQuartzite GR";
+      }
+      if (cur_frm.fields_dict.purpose.value == 'Material Transfer'){
+         cur_frm.fields_dict.naming_series.df.options = "Inventory Transfer";
+         console.log(cur_frm.fields_dict.purpose.value)
+      }
+      frm.set_df_property("naming_series", "reqd", true)
+      refresh_field('naming_series');
+});

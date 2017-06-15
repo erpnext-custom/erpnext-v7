@@ -276,7 +276,7 @@ cur_frm.cscript.select_print_heading = function(doc,cdt,cdn){
 }
 
 cur_frm.cscript.voucher_type = function(doc, cdt, cdn) {
-	
+
 	// Ver 20160617.1 by SSK on 17/06/2016, following two lines commented and the subsequent if condition added
 	//cur_frm.set_df_property("cheque_no", "reqd", doc.voucher_type=="Bank Entry");
 	//cur_frm.set_df_property("cheque_date", "reqd", doc.voucher_type=="Bank Entry");
@@ -289,23 +289,23 @@ cur_frm.cscript.voucher_type = function(doc, cdt, cdn) {
 		else {
 			cur_frm.set_df_property("cheque_no", "reqd", doc.voucher_type=="Bank Entry");
 		}
-		
+
 		if(doc.cheque_date){
 			frappe.meta.get_docfield(doc.doctype, "cheque_date", this.frm.doc.name).read_only=1;
 		}
 		else {
 			cur_frm.set_df_property("cheque_date", "reqd", doc.voucher_type=="Bank Entry");
-		}		
-		
+		}
+
 		// Ver 20160713.1 by SSK, field "Payee Name" is introducted
 		if(doc.pay_to_recd_from){
 			frappe.meta.get_docfield(doc.doctype, "pay_to_recd_from", this.frm.doc.name).read_only=0;
 		}
 		else {
 			cur_frm.set_df_property("pay_to_recd_from", "reqd", doc.voucher_type=="Bank Entry");
-		}				
+		}
 	}
-	
+
 	if(!doc.company) return;
 
 	var update_jv_details = function(doc, r) {
@@ -565,3 +565,34 @@ $.extend(erpnext.journal_entry, {
 		return { filters: filters };
 	}
 });
+
+
+//custom Scripts
+frappe.ui.form.on("Journal Entry", "onload", function(frm){
+    cur_frm.set_query("select_cheque_lot", function(){
+        return {
+            "filters": [
+                ["status", "!=", "Used"],
+                ["docstatus", "=", "1"]
+            ]
+        }
+    });
+});
+
+frappe.ui.form.on("Journal Entry", "select_cheque_lot", function(frm) {
+     if(frm.doc.select_cheque_lot) {
+frappe.call({
+    method: "erpnext.accounts.doctype.cheque_lot.cheque_lot.get_cheque_no_and_date",
+    args: {
+        'name': frm.doc.select_cheque_lot
+        },
+    callback: function(r){
+           if (r.message) {
+               cur_frm.set_value("cheque_no", r.message[0].reference_no);
+               cur_frm.set_value("cheque_date", r.message[1].reference_date);
+           }
+       }
+});
+
+     }
+})

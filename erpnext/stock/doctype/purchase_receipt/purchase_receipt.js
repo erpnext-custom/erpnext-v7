@@ -38,7 +38,7 @@ frappe.ui.form.on("Purchase Receipt", {
 				filters: [
                                                 ["Warehouse", "company", "in", ["", cstr(frm.doc.company)]],
                                                 ["Warehouse", "is_group", "=", 0]
-                                        ]				
+                                        ]
 			}
 		})
 	}
@@ -222,3 +222,44 @@ frappe.ui.form.on("Purchase Receipt", "is_subcontracted", function(frm) {
 	}
 	frm.toggle_reqd("supplier_warehouse", frm.doc.is_subcontracted==="Yes");
 });
+
+frappe.ui.form.on("Purchase Receipt","items_on_form_rendered", function(frm, grid_row, cdt, cdn) {
+	var grid_row = cur_frm.open_grid_row();
+        frappe.call({
+            method: "erpnext.stock.doctype.purchase_receipt.purchase_receipt.get_item_group",
+            args: {
+                "item_code": grid_row.grid_form.fields_dict.item_code.value
+            },
+            callback: function(r)  {
+                if(r.message && r.message == 'Services (works)') {
+                      grid_row.grid_form.fields_dict.rate.df.read_only = false
+                      grid_row.grid_form.fields_dict.rate.refresh()
+                }
+                else {
+                      grid_row.grid_form.fields_dict.rate.df.read_only = true
+                      grid_row.grid_form.fields_dict.rate.refresh()
+                }
+            }
+        })
+})
+
+//custom Scripts
+frappe.ui.form.on("Purchase Receipt","items_on_form_rendered", function(frm, grid_row, cdt, cdn) {
+	var grid_row = cur_frm.open_grid_row();
+        frappe.call({
+            method: "erpnext.stock.doctype.purchase_receipt.purchase_receipt.get_item_group",
+            args: {
+                "item_code": grid_row.grid_form.fields_dict.item_code.value
+            },
+            callback: function(r)  {
+                if(r.message && r.message == 'Services (works)') {
+                      grid_row.grid_form.fields_dict.rate.df.read_only = false
+                      grid_row.grid_form.fields_dict.rate.refresh()
+                }
+                else {
+                      grid_row.grid_form.fields_dict.rate.df.read_only = true
+                      grid_row.grid_form.fields_dict.rate.refresh()
+                }
+            }
+        })
+})

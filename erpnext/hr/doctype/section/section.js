@@ -6,3 +6,15 @@ frappe.ui.form.on('Section', {
 
 	}
 });
+
+cur_frm.fields_dict['d_name'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"dpt_name": doc.dpt_name}
+       }
+}
+
+cur_frm.fields_dict['s_name'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"d_name": doc.d_name}
+       }
+}

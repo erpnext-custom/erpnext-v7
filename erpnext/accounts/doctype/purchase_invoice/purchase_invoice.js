@@ -371,3 +371,55 @@ frappe.ui.form.on("Purchase Invoice", {
 		frm.toggle_reqd("supplier_warehouse", frm.doc.is_subcontracted==="Yes");
 	}
 })
+
+
+//custom Scripts
+cur_frm.cscript.type = function(doc) {
+    //Set the initial value for tds rate
+    switch(doc.type) {
+      case "Domestic Vendor":
+         cur_frm.set_value("tds_rate", 2);
+         cur_frm.set_value("tds_account", "TDS-2% - SMCL");
+         break;
+      case "International Vendor":
+         cur_frm.set_value("tds_rate", 3);
+         cur_frm.set_value("tds_account", "TDS-3% - SMCL");
+         break;
+      case "Rent and Consultancy":
+         cur_frm.set_value("tds_rate", 5);
+         cur_frm.set_value("tds_account", "TDS-5% - SMCL");
+         break;
+      case "Dividend":
+         cur_frm.set_value("tds_rate", 10);
+         cur_frm.set_value("tds_account", "TDS on dividend - SMCL");
+         break;
+      default:
+    }
+
+    if(!doc.tds_taxable_amount) {
+        //Set the initial value for tds calculation
+        cur_frm.set_value("tds_taxable_amount", doc.net_total);
+    }
+
+    if(!doc.tds_amount) {
+        //Set the initial value for tds amount
+        cur_frm.set_value("tds_amount", (doc.tds_rate/100 ) * doc.tds_taxable_amount);
+    }
+    doUpdates(doc);
+};
+
+cur_frm.cscript.tds_taxable_amount = function(doc) {
+    doUpdates(doc);
+};
+
+//Do necessary updates
+function doUpdates(doc) {
+    //Set cost_center from product
+    cur_frm.set_value("tds_cost_center", "CHQR-FAD - SMCL");
+    //Set the value for tds amount
+    msgprint(doc.party_account_currency);
+    cur_frm.set_value("tds_amount", (doc.tds_rate/100 ) * doc.tds_taxable_amount);
+    if(doc.party_account_currency != cur_frm.doc.currency) {
+         cur_frm.set_value("base_tds_amount", (doc.tds_rate/100 ) * doc.tds_taxable_amount * doc.conversion_rate);
+    }
+}

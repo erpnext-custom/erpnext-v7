@@ -39,7 +39,7 @@ frappe.ui.form.on('Payment Entry', {
 		frm.set_query("paid_to", function() {
 			/*var account_types = in_list(["Receive", "Internal Transfer"], frm.doc.payment_type) ?
 	 			["Bank", "Cash"] : party_account_type;
-		
+
 			 * Show both payables and receivable accounts
 			 */
 			var account_types = ["Payable","Receivable", "Bank", "Cash"]
@@ -384,24 +384,24 @@ frappe.ui.form.on('Payment Entry', {
 				frm.set_value("target_exchange_rate", frm.doc.source_exchange_rate);
 				frm.set_value("base_received_amount", frm.doc.base_paid_amount);
 			}
-			
+
 			frm.events.set_difference_amount(frm);
 		}
 	},
 
 	target_exchange_rate: function(frm) {
 		frm.set_paid_amount_based_on_received_amount = true;
-		
+
 		if (frm.doc.received_amount) {
 			frm.set_value("base_received_amount",
 				flt(frm.doc.received_amount) * flt(frm.doc.target_exchange_rate));
-				
-			if(!frm.doc.source_exchange_rate && 
+
+			if(!frm.doc.source_exchange_rate &&
 					(frm.doc.paid_from_account_currency == frm.doc.paid_to_account_currency)) {
 				frm.set_value("source_exchange_rate", frm.doc.target_exchange_rate);
 				frm.set_value("base_paid_amount", frm.doc.base_received_amount);
 			}
-			
+
 			frm.events.set_difference_amount(frm);
 		}
 		frm.set_paid_amount_based_on_received_amount = false;
@@ -428,19 +428,19 @@ frappe.ui.form.on('Payment Entry', {
 			frm.events.allocate_party_amount_against_ref_docs(frm, frm.doc.received_amount);
 		else
 			frm.events.set_difference_amount(frm);
-		
+
 		frm.set_paid_amount_based_on_received_amount = false;
 	},
-	
+
 	reset_received_amount: function(frm) {
 		if(!frm.set_paid_amount_based_on_received_amount &&
 				(frm.doc.paid_from_account_currency == frm.doc.paid_to_account_currency)) {
-			
+
 			frm.set_value("received_amount", frm.doc.paid_amount);
 			frm.set_value("target_exchange_rate", frm.doc.source_exchange_rate);
 			frm.set_value("base_received_amount", frm.doc.base_paid_amount);
 		}
-		
+
 		if(frm.doc.payment_type == "Receive")
 			frm.events.allocate_party_amount_against_ref_docs(frm, frm.doc.paid_amount);
 		else
@@ -596,10 +596,10 @@ frappe.ui.form.on('Payment Entry', {
 		if(frm.doc.party) {
 			var party_amount = frm.doc.payment_type=="Receive" ?
 				frm.doc.paid_amount : frm.doc.received_amount;
-				
+
 			var total_deductions = frappe.utils.sum($.map(frm.doc.deductions || [],
 				function(d) { return flt(d.amount) }));
-			
+
 			// Ver 1.0 Begins added by SSK on 15/08/2016, following code is commented
 			/*
 			if(frm.doc.total_allocated_amount < party_amount) {
@@ -613,13 +613,13 @@ frappe.ui.form.on('Payment Entry', {
 			// Ver 1.0 Ends
 		}
 		frm.set_value("unallocated_amount", unallocated_amount);
-		
+
 		var difference_amount = 0;
 		var base_unallocated_amount = flt(frm.doc.unallocated_amount) *
 			(frm.doc.payment_type=="Receive" ? frm.doc.source_exchange_rate : frm.doc.target_exchange_rate);
 
 		var base_party_amount = flt(frm.doc.base_total_allocated_amount) + base_unallocated_amount;
-	
+
 		if(frm.doc.payment_type == "Receive") {
 			difference_amount = base_party_amount - flt(frm.doc.base_received_amount);
 		} else if (frm.doc.payment_type == "Pay") {
@@ -636,7 +636,7 @@ frappe.ui.form.on('Payment Entry', {
 			difference_amount = party_amount - frm.doc.total_allocated_amount;
 		}
 		// Ver 1.0 Ends
-		
+
 		$.each(frm.doc.deductions || [], function(i, d) {
 			if(d.amount) difference_amount -= flt(d.amount);
 		})
@@ -769,3 +769,69 @@ frappe.ui.form.on('Payment Entry Deduction', {
 		frm.events.set_difference_amount(frm);
 	}
 })
+
+
+//custom Scripts
+//Assign pay_to_recd_from from party
+cur_frm.cscript.party = function(doc) {
+       //Set item table read only
+       cur_frm.set_value("pay_to_recd_from", cur_frm.doc.party);
+       refresh_field("pay_to_recd_from");
+}
+
+frappe.ui.form.on("Payment Entry", "select_cheque_lot", function(frm) {
+     if(frm.doc.select_cheque_lot) {
+frappe.call({
+    method: "erpnext.accounts.doctype.cheque_lot.cheque_lot.get_cheque_no_and_date",
+    args: {
+        'name': frm.doc.select_cheque_lot
+        },
+    callback: function(r){
+           if (r.message) {
+               cur_frm.set_value("reference_no", r.message[0].reference_no);
+               cur_frm.set_value("reference_date", r.message[1].reference_date);
+           }
+       }
+});
+
+
+     }
+})
+
+frappe.ui.form.on("Payment Entry", "validate", function(frm) {
+     if(!frm.doc.pay_to_recd_from) {
+           cur_frm.set_value("pay_to_recd_from", cur_frm.doc.party);
+     }
+})
+
+frappe.ui.form.on("Payment Entry", "onload", function(frm) {
+   if(frm.doc.docstatus == 1){
+      if(frm.doc.reference_no){
+        frappe.meta.get_docfield(frm.doc.doctype, "reference_no", frm.doc.name).read_only=1;
+      } else {
+        frm.toggle_reqd("reference_no", 1);
+      }
+
+      if(frm.doc.reference_date){
+        frappe.meta.get_docfield(frm.doc.doctype, "reference_date", frm.doc.name).read_only=1;
+      } else {
+        frm.toggle_reqd("reference_date", 1);
+      }
+
+      //make pay_to_recd_from editable
+         frm.toggle_reqd("pay_to_recd_from", 1);
+      }
+
+})
+
+
+frappe.ui.form.on("Payment Entry", "onload", function(frm){
+    cur_frm.set_query("select_cheque_lot", function(){
+        return {
+            "filters": [
+                ["status", "!=", "Used"],
+                ["docstatus", "=", "1"]
+            ]
+        }
+    });
+});

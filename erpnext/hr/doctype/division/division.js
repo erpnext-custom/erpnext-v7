@@ -5,10 +5,14 @@ frappe.ui.form.on('Division', {
 	refresh: function(frm) {
 
 	},
-	
+
 	branch: function(frm){
-		console.log(frm);
 	}
 });
 
 
+cur_frm.fields_dict['dpt_name'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"branch1": doc.branch}
+       }
+}

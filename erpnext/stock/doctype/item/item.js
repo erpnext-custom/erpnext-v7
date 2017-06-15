@@ -88,13 +88,13 @@ frappe.ui.form.on("Item", {
 	image: function(frm) {
 		refresh_field("image_view");
 	},
-	
+
 	is_fixed_asset: function(frm) {
 		if (frm.doc.is_fixed_asset) {
 			frm.set_value("is_stock_item", 0);
 		}
 	},
-	
+
 	page_name: frappe.utils.warn_page_name_change,
 
 	item_code: function(frm) {
@@ -192,15 +192,15 @@ $.extend(erpnext.item, {
 
 		frm.fields_dict.reorder_levels.grid.get_field("warehouse").get_query = function(doc, cdt, cdn) {
 			var d = locals[cdt][cdn];
-			
+
 			var filters = {
 				"is_group": 0
 			}
-			
+
 			if (d.parent_warehouse) {
 				filters.extend({"parent_warehouse": d.warehouse_group})
 			}
-			
+
 			return {
 				filters: filters
 			}
@@ -366,3 +366,32 @@ cur_frm.add_fetch('attribute', 'from_range', 'from_range');
 cur_frm.add_fetch('attribute', 'to_range', 'to_range');
 cur_frm.add_fetch('attribute', 'increment', 'increment');
 cur_frm.add_fetch('tax_type', 'tax_rate', 'tax_rate');
+
+//custom Scripts
+//Auto populate material code
+cur_frm.cscript.item_group = function(doc) {
+    cur_frm.call({
+        method: "erpnext.stock.stock_custom_functions.get_current_item_code",
+        args: {
+             item_group: doc.item_group
+        },
+        callback: function(r) {
+             cur_frm.set_value("item_code", r.message.toString());
+        }
+   });
+   if (doc.item_group != 'All Item Groups') {
+     cur_frm.fields_dict['expense_account'].get_query = function(doc) {
+        return {
+               "filters": {
+                       "item_group": doc.item_group
+                }
+        }
+     }
+     refresh_field("expense_account");
+   }
+}
+
+//function to assess item_code ranges
+function inBetween(x, min, max) {
+  return !(x >= min && x <= max);
+}

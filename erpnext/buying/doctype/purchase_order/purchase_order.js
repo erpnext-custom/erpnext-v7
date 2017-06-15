@@ -274,3 +274,19 @@ frappe.ui.form.on("Purchase Order", "is_subcontracted", function(frm) {
 		erpnext.buying.get_default_bom(frm);
 	}
 });
+
+//custom Scripts
+frappe.ui.form.on("Purchase Order Item", "item_code", function(frm, cdt, cdn) {
+   var item = frappe.get_doc(cdt, cdn);
+   frappe.call({
+        method: "erpnext.buying.doctype.purchase_order.purchase_order.get_budget_account",
+        args: {
+            "item_code": item.item_code
+        },
+        callback: function(r)  {
+             if(r.message) {
+                   frappe.model.set_value(cdt, cdn, "budget_account", r.message)
+             }
+        }
+   })
+})

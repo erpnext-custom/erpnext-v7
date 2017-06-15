@@ -6,3 +6,9 @@ frappe.ui.form.on('Dzongkhags', {
 
 	}
 });
+
+cur_frm.fields_dict['dzongkhag'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"country_name": doc.country_name}
+       }
+}

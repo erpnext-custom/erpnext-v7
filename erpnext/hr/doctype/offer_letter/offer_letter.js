@@ -28,3 +28,14 @@ erpnext.offer_letter.make_employee = function(frm) {
 		frm: frm
 	});
 };
+
+// Ver 20160701.1 by SSK, Original Version
+
+// Terms and Conditions population
+frappe.ui.form.on("Offer Letter", {
+	hr_terms: function(frm) {
+		frappe.model.get_value("Terms of Reference", frm.doc.hr_terms, "hr_terms", function(value) {
+			frm.set_value("hr_terms_desc", value.hr_terms);
+		});
+	}
+});

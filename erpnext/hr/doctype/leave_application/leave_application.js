@@ -113,3 +113,50 @@ frappe.ui.form.on("Leave Application", {
 	},
 
 });
+
+//custom Scripts
+frappe.ui.form.on("Leave Application", "before_save", function(frm) {
+    if (!frm.doc.employee_name && frm.doc.employee) {
+        frappe.call({
+            'method': 'frappe.client.get',
+            'args': {
+                  'doctype': 'Employee',
+                  'filters': {
+                       'name': frm.doc.employee
+                  },
+                  'fields':['employee_name', 'name']
+             },
+             callback: function(r){
+                  if (r.message) {
+                     cur_frm.set_value("employee_name", r.message.employee_name);
+                     cur_frm.set_value("employee", r.message.name);
+                     refresh_field('employee_name');
+                     refresh_field('employee');
+                  }
+             }
+          });
+    }
+});
+
+frappe.ui.form.on("Leave Application", "onload", function(frm) {
+    if (!frm.doc.employee_name && frm.doc.employee) {
+        frappe.call({
+            'method': 'frappe.client.get',
+            'args': {
+                  'doctype': 'Employee',
+                  'filters': {
+                       'name': frm.doc.employee
+                  },
+                  'fields':['employee_name', 'name']
+             },
+             callback: function(r){
+                  if (r.message) {
+                     cur_frm.set_value("employee_name", r.message.employee_name);
+                     cur_frm.set_value("employee", r.message.name);
+                     refresh_field('employee_name');
+                     refresh_field('employee');
+                  }
+             }
+          });
+    }
+});

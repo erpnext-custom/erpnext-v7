@@ -50,3 +50,37 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 	}
 });
 cur_frm.cscript = new erpnext.hr.EmployeeController({frm: cur_frm});
+
+//Custom Scripts
+// Ver 20160703.1 Added by SSK
+cur_frm.fields_dict['department'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"branch1": doc.branch}
+       }
+}
+
+cur_frm.fields_dict['division'].get_query = function(doc, dt, dn) {
+       return {
+               //filters:{"dpt_name": doc.department} // Ver20160703.1 commented by SSK
+               filters:{"dpt_name": doc.department, "branch": doc.branch} //Ver20160703.1 Added by SSK
+       }
+}
+
+cur_frm.fields_dict['section'].get_query = function(doc, dt, dn) {
+       return {
+               //filters:{"d_name": doc.division} //Ver20160703.1 commented by SSK
+               filters:{"d_name": doc.division, "dpt_name": doc.department, "branch": doc.branch} //Ver20160703.1 added by SSK
+       }
+}
+
+cur_frm.fields_dict['employee_subgroup'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"employee_group": doc.employee_group}
+       }
+}
+
+cur_frm.fields_dict['designation'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"employee_subgroup": doc.employee_subgroup}
+       }
+}

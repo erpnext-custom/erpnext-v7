@@ -484,3 +484,159 @@ frappe.ui.form.on('Sales Invoice Timesheet', {
 })
 
 cur_frm.add_fetch("time_sheet", "total_billing_amount", "billing_amount");
+
+//custom Scripts
+// Ver 20160629.1 by SSK, ORIGINAL VERSION
+
+// Function for validating Loss Tolerance
+function validate_loss_tolerance(frm, cdt, cdn){
+     var item = frappe.get_doc(cdt, cdn)
+     var real_qty = (item.delivered_qty >= item.accepted_qty)?item.delivered_qty:item.accepted_qty;
+
+     if (item.delivered_qty > 0)
+     {
+          if (item.accepted_qty >= 0 && item.accepted_qty <= item.delivered_qty)
+          {
+                var loss_qty = item.delivered_qty - item.accepted_qty, normal_loss = 0, abnormal_loss = 0;
+
+				if (item.loss_method == "Quantity in %")
+				{
+					if ((loss_qty/item.delivered_qty)*100 <= item.loss_tolerance)
+					{
+						 normal_loss = loss_qty;
+					}
+					else
+					{
+						 normal_loss = (item.delivered_qty*item.loss_tolerance)/100;
+						 abnormal_loss = loss_qty-normal_loss
+					}
+				}
+				else if (item.loss_method == "Quantity in Flat")
+				{
+					if (loss_qty <= item.loss_qty_flat)
+					{
+						 normal_loss = loss_qty;
+					}
+					else
+					{
+						 normal_loss = item.loss_qty_flat;
+						 abnormal_loss = loss_qty-normal_loss
+					}
+				}
+                frappe.model.set_value(cdt, cdn, "normal_loss", normal_loss);
+                frappe.model.set_value(cdt, cdn, "normal_loss_amt", normal_loss*item.rate);
+                frappe.model.set_value(cdt, cdn, "abnormal_loss", abnormal_loss);
+                frappe.model.set_value(cdt, cdn, "abnormal_loss_amt", abnormal_loss*item.rate);
+                frappe.model.set_value(cdt, cdn, "excess_qty", 0);
+                frappe.model.set_value(cdt, cdn, "excess_amt", 0);
+                // Ver 1.0 Begins added by SSK on 15/08/2016 following line is commented
+                // Billed Quantity should not change irrespective of loss
+                //frappe.model.set_value(cdt, cdn, "qty", item.accepted_qty);
+          }
+          else if(item.accepted_qty > item.delivered_qty)
+          {
+                var excess_qty=item.accepted_qty-item.delivered_qty;
+                frappe.model.set_value(cdt, cdn, "normal_loss", 0);
+                frappe.model.set_value(cdt, cdn, "abnormal_loss", 0);
+                frappe.model.set_value(cdt, cdn, "normal_loss_amt", 0);
+                frappe.model.set_value(cdt, cdn, "abnormal_loss_amt", 0);
+                // Ver 1.0 Begins added by SSK on 15/08/2016 following line is commented
+                // Billed Quantity should not change irrespective of loss
+                //frappe.model.set_value(cdt, cdn, "qty", item.accepted_qty);
+                frappe.model.set_value(cdt, cdn, "excess_qty", excess_qty);
+                frappe.model.set_value(cdt, cdn, "excess_amt", excess_qty*item.rate);
+          }
+          else
+          {
+               msgprint(__("Accepted Quantity should be between 1 and "+item.delivered_qty));
+               // Allowing the user to input more accpted qty than delivered qty as per request
+               frappe.model.set_value(cdt, cdn, "accepted_qty", item.delivered_qty);
+               frappe.model.set_value(cdt, cdn, "normal_loss", 0);
+               frappe.model.set_value(cdt, cdn, "abnormal_loss", 0);
+               frappe.model.set_value(cdt, cdn, "normal_loss_amt", 0);
+               frappe.model.set_value(cdt, cdn, "abnormal_loss_amt", 0);
+               frappe.model.set_value(cdt, cdn, "excess_qty", 0);
+               frappe.model.set_value(cdt, cdn, "excess_amt", 0);
+               frappe.model.set_value(cdt, cdn, "qty", item.accepted_qty);
+          }
+
+     }
+}
+
+// Validate on value change for Accepted_Qty
+frappe.ui.form.on("Sales Invoice Item","accepted_qty",function(frm, cdt, cdn){
+     if (cur_frm.doc.docstatus == 0)
+     {
+          validate_loss_tolerance(frm, cdt, cdn);
+     }
+});
+
+// Validate on value change for Name_Tolerance
+frappe.ui.form.on("Sales Invoice Item","name_tolerance",function(frm, cdt, cdn){
+     if (cur_frm.doc.docstatus == 0)
+     {
+          validate_loss_tolerance(frm, cdt, cdn);
+     }
+});
+
+// Validate on Tolerange method value change
+frappe.ui.form.on("Sales Invoice Item","loss_method",function(frm, cdt, cdn){
+     if (cur_frm.doc.docstatus == 0)
+     {
+          validate_loss_tolerance(frm, cdt, cdn);
+     }
+});
+
+frappe.ui.form.on("Sales Invoice","items_on_form_rendered", function(frm, grid_row) {
+    console.log('On load is called...');
+    cur_frm.call({
+        method: "erpnext.accounts.accounts_custom_functions.get_loss_tolerance",
+        callback: function(r) {
+             var grid_row = cur_frm.open_grid_row();
+             if (grid_row.grid_form.fields_dict.name_tolerance.value)
+             {
+                  console.log("Record Already Set")
+             }
+             else
+             {
+                  if (cur_frm.doc.docstatus == 0)
+                  {
+                       grid_row.grid_form.fields_dict.name_tolerance.set_value(r.message[0][0]);
+                       grid_row.grid_form.fields_dict.loss_tolerance.set_value(r.message[0][1]);
+					   grid_row.grid_form.fields_dict.loss_qty_flat.set_value(r.message[0][2]);
+					   grid_row.grid_form.fields_dict.loss_method.set_value("Quantity in %");
+                  }
+             }
+
+             // Setting default quantity for accepted quantity
+             if (cur_frm.doc.docstatus == 0)
+             {
+                  if (grid_row.grid_form.fields_dict.accepted_qty.value > 0)
+                  {
+                       console.log("Accepted Qty is already set")
+                  }
+                  else
+                  {
+                       if (grid_row.grid_form.fields_dict.accepted_qty.value == 0)
+                       {
+                            var actual_qty = grid_row.grid_form.fields_dict.qty.value;
+                            console.log("Quantity"+actual_qty)
+                            grid_row.grid_form.fields_dict.accepted_qty.set_value(actual_qty);
+                            grid_row.grid_form.fields_dict.normal_loss.set_value(0);
+                            grid_row.grid_form.fields_dict.abnormal_loss.set_value(0);
+                            grid_row.grid_form.fields_dict.normal_loss_amt.set_value(0);
+                            grid_row.grid_form.fields_dict.abnormal_loss_amt.set_value(0);
+                       }
+                  }
+                  if(grid_row.grid_form.fields_dict.delivered_qty.value > 0)
+                  {
+                       console.log("Delivered Qty is already set.")
+                  }
+                  else
+                  {
+                       grid_row.grid_form.fields_dict.delivered_qty.set_value(grid_row.grid_form.fields_dict.qty.value);
+                  }
+             }
+        }
+   })
+})

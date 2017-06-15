@@ -43,7 +43,7 @@ cur_frm.cscript.submit_salary_slip = function(doc, cdt, cdn) {
 	});
 }
 
-// Ver 20160702.1 by SSK, accounts_posting is added 
+// Ver 20160702.1 by SSK, accounts_posting is added
 cur_frm.cscript.accounts_posting = function(doc, cdt, cdn) {
 	cur_frm.cscript.display_activity_log("");
 
@@ -84,3 +84,19 @@ frappe.ui.form.on("Process Payroll", {
 		frm.disable_save();
 	}
 })
+
+
+//custom Scripts
+//Ver20160705.1 Original version Added by SSK
+
+cur_frm.fields_dict['department'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"branch1": doc.branch}
+       }
+}
+
+cur_frm.fields_dict['division'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"dpt_name": doc.department, "branch": doc.branch}
+       }
+}

@@ -28,3 +28,10 @@ frappe.ui.form.on("Job Applicant", {
 
 	}
 });
+
+//custom Scripts
+cur_frm.fields_dict['job_title'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"parent": doc.reference_no}
+       }
+}
