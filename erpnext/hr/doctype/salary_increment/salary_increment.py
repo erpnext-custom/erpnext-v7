@@ -166,7 +166,7 @@ class SalaryIncrement(Document):
 
 @frappe.whitelist()
 def get_employee_payscale(employee, gradecd, fiscal_year, month):
-        payscale = frappe.db.get_value("Employee Sub-Group", filters=gradecd, \
+        payscale = frappe.db.get_value("Employee Grade", filters=gradecd, \
                                        fieldname = ["minimum","maximum","increment"], as_dict = True)
         sal_struc_name = get_salary_structure(employee)
         
@@ -184,7 +184,7 @@ def get_employee_payscale(employee, gradecd, fiscal_year, month):
                 payscale["old_basic"] = flt(old_basic if old_basic else 0.00)
                 payscale["new_basic"] = new_basic
         else:
-                frappe.throw(_('Pay Scale not defined for grade: <a style="color: green" href="#Form/Employee Sub-Group/{0}">{0}</a>').format(gradecd))
+                frappe.throw(_('Pay Scale not defined for grade: <a style="color: green" href="#Form/Employee Grade/{0}">{0}</a>').format(gradecd))
         
         return payscale
 

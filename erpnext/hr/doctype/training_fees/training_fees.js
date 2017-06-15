@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Employee Sub-Group', {
+frappe.ui.form.on('Training Fees', {
 	refresh: function(frm) {
 
 	}

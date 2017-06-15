@@ -322,7 +322,7 @@ def get_company_pf(fiscal_year):
 def get_employee_gis(employee):
         #msgprint(employee);
         result = frappe.db.sql("""select a.gis
-                from `tabEmployee Sub-Group` a, `tabEmployee` b
+                from `tabEmployee Grade` a, `tabEmployee` b
                 where b.employee = %s
                 and b.employee_group = a.employee_group
                 and b.employee_subgroup = a.employee_subgroup
