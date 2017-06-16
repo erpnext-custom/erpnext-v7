@@ -9,13 +9,13 @@ frappe.listview_settings['Travel Claim'] = {
 		if(doc.docstatus==0) {
 			//if(doc.claim_status == "Rejected by Supervisor" || doc.claim_status == "Rejected by HR") {
 			if(doc.claim_status != "") {
-				return ["Claim Rejected", "red", "claim_status,!=,''"];
+				return ["Claim Rejected", "red", "claim_status,like,Rejected"];
 			}
 			else if(doc.supervisor_approval==1) {
-				return ["Supervisor Approved", "blue", "supervisor_approval,=,1"];
+				return ["Supervisor Approved", "blue", "supervisor_approval,=,Yes|docstatus,=,0|claim_status,not like,Rejected"];
 			}
 			else {
-				return ["Claim Draft", "orange", "docstatus,=,0"];
+				return ["Claim Draft", "orange", "docstatus,=,0|claim_status,not like,Rejected|supervisor_approval,!=,Yes"];
 			}
 		}
 

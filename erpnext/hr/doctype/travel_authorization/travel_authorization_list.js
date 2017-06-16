@@ -11,7 +11,7 @@ frappe.listview_settings['Travel Authorization'] = {
 				return ["Authorization Rejected", "red", "document_status,=,Rejected"];
 			}
 			else {
-				return ["Authorization Draft", "orange", "docstatus,=,0"];
+				return ["Authorization Draft", "orange", "docstatus,=,0|document_status,not like,Rejected"];
 			}
 		}
 
