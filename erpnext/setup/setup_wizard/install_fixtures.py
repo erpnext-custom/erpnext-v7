@@ -16,27 +16,18 @@ def install(country=None):
 		# item group
 		{'doctype': 'Item Group', 'item_group_name': _('All Item Groups'),
 			'is_group': 1, 'parent_item_group': ''},
-		{'doctype': 'Item Group', 'item_group_name': _('Products'),
-			'is_group': 0, 'parent_item_group': _('All Item Groups'), "show_in_website": 1 },
-		{'doctype': 'Item Group', 'item_group_name': _('Raw Material'),
-			'is_group': 0, 'parent_item_group': _('All Item Groups') },
-		{'doctype': 'Item Group', 'item_group_name': _('Services'),
-			'is_group': 0, 'parent_item_group': _('All Item Groups') },
-		{'doctype': 'Item Group', 'item_group_name': _('Sub Assemblies'),
-			'is_group': 0, 'parent_item_group': _('All Item Groups') },
 		{'doctype': 'Item Group', 'item_group_name': _('Consumable'),
+			'is_group': 0, 'parent_item_group': _('All Item Groups') },
+		{'doctype': 'Item Group', 'item_group_name': _('Fixed Asset'),
+			'is_group': 0, 'parent_item_group': _('All Item Groups') },
+		{'doctype': 'Item Group', 'item_group_name': _('Services (miscellaneous)'),
+			'is_group': 0, 'parent_item_group': _('All Item Groups') },
+		{'doctype': 'Item Group', 'item_group_name': _('Services (works)'),
 			'is_group': 0, 'parent_item_group': _('All Item Groups') },
 
 		# salary component
-		{'doctype': 'Salary Component', 'salary_component': _('Income Tax'), 'description': _('Income Tax')},
-		{'doctype': 'Salary Component', 'salary_component': _('Basic'), 'description': _('Basic')},
-		
-		# expense claim type
-		{'doctype': 'Expense Claim Type', 'name': _('Calls'), 'expense_type': _('Calls')},
-		{'doctype': 'Expense Claim Type', 'name': _('Food'), 'expense_type': _('Food')},
-		{'doctype': 'Expense Claim Type', 'name': _('Medical'), 'expense_type': _('Medical')},
-		{'doctype': 'Expense Claim Type', 'name': _('Others'), 'expense_type': _('Others')},
-		{'doctype': 'Expense Claim Type', 'name': _('Travel'), 'expense_type': _('Travel')},
+		{'doctype': 'Salary Component', 'salary_component': _('Basic Pay'), 'description': _('Basic Pay'), 'type':_('Earning')},
+		{'doctype': 'Salary Component', 'salary_component': _('Salary Tax'), 'description': _('Salary Tax'), 'type':_('Deduction')},
 
 		# leave type
 		{'doctype': 'Leave Type', 'leave_type_name': _('Casual Leave'), 'name': _('Casual Leave'),
@@ -51,65 +42,44 @@ def install(country=None):
 			'is_encash': 0, 'is_carry_forward': 0, 'is_lwp':1, 'include_holiday': 1},
 
 		# Employment Type
-		{'doctype': 'Employment Type', 'employee_type_name': _('Full-time')},
-		{'doctype': 'Employment Type', 'employee_type_name': _('Part-time')},
+		{'doctype': 'Employment Type', 'employee_type_name': _('Regular')},
+		{'doctype': 'Employment Type', 'employee_type_name': _('Temporary')},
 		{'doctype': 'Employment Type', 'employee_type_name': _('Probation')},
 		{'doctype': 'Employment Type', 'employee_type_name': _('Contract')},
-		{'doctype': 'Employment Type', 'employee_type_name': _('Commission')},
-		{'doctype': 'Employment Type', 'employee_type_name': _('Piecework')},
+		{'doctype': 'Employment Type', 'employee_type_name': _('Secondment or Deputation')},
+		{'doctype': 'Employment Type', 'employee_type_name': _('Consolidated Contract')},
 		{'doctype': 'Employment Type', 'employee_type_name': _('Intern')},
-		{'doctype': 'Employment Type', 'employee_type_name': _('Apprentice')},
+
+		#Branch
+		{'doctype': 'Branch', 'branch': _('Corporate Office'), 'address': _('Thimphu, Bhutan')},
 
 		# Department
-		{'doctype': 'Department', 'department_name': _('Accounts')},
-		{'doctype': 'Department', 'department_name': _('Marketing')},
-		{'doctype': 'Department', 'department_name': _('Sales')},
-		{'doctype': 'Department', 'department_name': _('Purchase')},
-		{'doctype': 'Department', 'department_name': _('Operations')},
-		{'doctype': 'Department', 'department_name': _('Production')},
-		{'doctype': 'Department', 'department_name': _('Dispatch')},
-		{'doctype': 'Department', 'department_name': _('Customer Service')},
-		{'doctype': 'Department', 'department_name': _('Human Resources')},
-		{'doctype': 'Department', 'department_name': _('Management')},
-		{'doctype': 'Department', 'department_name': _('Quality Management')},
-		{'doctype': 'Department', 'department_name': _('Research & Development')},
-		{'doctype': 'Department', 'department_name': _('Legal')},
+		{'doctype': 'Department', 'department_name': _('Office of the Chief Executive Officer'), 'branch': _('Corporate Office')},
+
+		# Employee Group
+		{'doctype': 'Employee Group', 'employee_group': _('Chief Executive Officer')},
+
+		# Employee Grade
+		{'doctype': 'Employee Grade', 'employee_group': _('Chief Executive Officer'), , 'employee_subgroup': _('Chief Executive Officer'), 'gis': 0, 'minimum': 0, 'increment': 2, 'maximum': 10 },
 
 		# Designation
-		{'doctype': 'Designation', 'designation_name': _('CEO')},
-		{'doctype': 'Designation', 'designation_name': _('Manager')},
-		{'doctype': 'Designation', 'designation_name': _('Analyst')},
-		{'doctype': 'Designation', 'designation_name': _('Engineer')},
-		{'doctype': 'Designation', 'designation_name': _('Accountant')},
-		{'doctype': 'Designation', 'designation_name': _('Secretary')},
-		{'doctype': 'Designation', 'designation_name': _('Associate')},
-		{'doctype': 'Designation', 'designation_name': _('Administrative Officer')},
-		{'doctype': 'Designation', 'designation_name': _('Business Development Manager')},
-		{'doctype': 'Designation', 'designation_name': _('HR Manager')},
-		{'doctype': 'Designation', 'designation_name': _('Project Manager')},
-		{'doctype': 'Designation', 'designation_name': _('Head of Marketing and Sales')},
-		{'doctype': 'Designation', 'designation_name': _('Software Developer')},
-		{'doctype': 'Designation', 'designation_name': _('Designer')},
-		{'doctype': 'Designation', 'designation_name': _('Researcher')},
+		{'doctype': 'Designation', 'employee_group': _('Chief Executive Officer'), , 'employee_subgroup': _('Chief Executive Officer'), 'designation_name': _('Chief Executive Officer')},
 
 		# territory
 		{'doctype': 'Territory', 'territory_name': _('All Territories'), 'is_group': 1, 'name': _('All Territories'), 'parent_territory': ''},
 
 		# customer group
 		{'doctype': 'Customer Group', 'customer_group_name': _('All Customer Groups'), 'is_group': 1, 	'name': _('All Customer Groups'), 'parent_customer_group': ''},
+		{'doctype': 'Customer Group', 'customer_group_name': _('Civil Society Organisation Agency (CSOA)'), 'is_group': 0, 'parent_customer_group': _('All Customer Groups')},
+		{'doctype': 'Customer Group', 'customer_group_name': _('Corporate Agency'), 'is_group': 0, 'parent_customer_group': _('All Customer Groups')},
+		{'doctype': 'Customer Group', 'customer_group_name': _('Government Organisation'), 'is_group': 0, 'parent_customer_group': _('All Customer Groups')},
 		{'doctype': 'Customer Group', 'customer_group_name': _('Individual'), 'is_group': 0, 'parent_customer_group': _('All Customer Groups')},
-		{'doctype': 'Customer Group', 'customer_group_name': _('Commercial'), 'is_group': 0, 'parent_customer_group': _('All Customer Groups')},
-		{'doctype': 'Customer Group', 'customer_group_name': _('Non Profit'), 'is_group': 0, 'parent_customer_group': _('All Customer Groups')},
-		{'doctype': 'Customer Group', 'customer_group_name': _('Government'), 'is_group': 0, 'parent_customer_group': _('All Customer Groups')},
+		{'doctype': 'Customer Group', 'customer_group_name': _('Non government Organisation'), 'is_group': 0, 'parent_customer_group': _('All Customer Groups')},
+		{'doctype': 'Customer Group', 'customer_group_name': _('Private Agency'), 'is_group': 0, 'parent_customer_group': _('All Customer Groups')},
 
 		# supplier type
-		{'doctype': 'Supplier Type', 'supplier_type': _('Services')},
-		{'doctype': 'Supplier Type', 'supplier_type': _('Local')},
-		{'doctype': 'Supplier Type', 'supplier_type': _('Raw Material')},
-		{'doctype': 'Supplier Type', 'supplier_type': _('Electrical')},
-		{'doctype': 'Supplier Type', 'supplier_type': _('Hardware')},
-		{'doctype': 'Supplier Type', 'supplier_type': _('Pharmaceutical')},
-		{'doctype': 'Supplier Type', 'supplier_type': _('Distributor')},
+		{'doctype': 'Supplier Type', 'supplier_type': _('International')},
+		{'doctype': 'Supplier Type', 'supplier_type': _('Domestic')},
 
 		# Sales Person
 		{'doctype': 'Sales Person', 'sales_person_name': _('Sales Team'), 'is_group': 1, "parent_sales_person": ""},
@@ -182,9 +152,6 @@ def install(country=None):
 
 		{'doctype': "Print Heading", 'print_heading': _("Credit Note")},
 		{'doctype': "Print Heading", 'print_heading': _("Debit Note")},
-
-		{"doctype": "Salary Component", "salary_component": _("Basic")},
-		{"doctype": "Salary Component", "salary_component": _("Income Tax")},
 	]
 
 	from erpnext.setup.setup_wizard.industry_type import get_industry_types
@@ -210,4 +177,3 @@ def install(country=None):
 				pass
 			else:
 				raise
-
