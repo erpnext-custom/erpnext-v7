@@ -56,7 +56,7 @@ def install(country=None):
 		{'doctype': 'Branch', 'branch': _('Corporate Office'), 'address': _('Thimphu, Bhutan')},
 
 		# Department
-		{'doctype': 'Department', 'department_name': _('Office of the Chief Executive Officer'), 'branch': _('Corporate Office')},
+		{'doctype': 'Department', 'department_name': _('Office of the Chief Executive Officer'), 'branch1': _('Corporate Office')},
 
 		# Employee Group
 		{'doctype': 'Employee Group', 'employee_group': _('Chief Executive Officer')},
