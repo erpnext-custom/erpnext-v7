@@ -24,6 +24,8 @@ def install(country=None):
 			'is_group': 0, 'parent_item_group': _('All Item Groups') },
 		{'doctype': 'Item Group', 'item_group_name': _('Services (works)'),
 			'is_group': 0, 'parent_item_group': _('All Item Groups') },
+		{'doctype': 'Item Group', 'item_group_name': _('Products'),
+			'is_group': 0, 'parent_item_group': _('All Item Groups') },
 
 		# salary component
 		{'doctype': 'Salary Component', 'salary_component': _('Basic Pay'), 'description': _('Basic Pay'), 'type':_('Earning')},
