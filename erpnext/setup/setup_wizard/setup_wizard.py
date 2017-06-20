@@ -365,7 +365,7 @@ def create_customers(args):
 					"doctype":"Customer",
 					"customer_name": customer,
 					"customer_type": "Company",
-					"customer_group": _("Commercial"),
+					"customer_group": _("Corporate Agency"),
 					"territory": args.get("country"),
 					"company": args.get("company_name").strip()
 				}).insert()
@@ -548,5 +548,3 @@ def create_room(args):
 			room.room_name = args.get("room_" + str(i))
 			room.seating_capacity = args.get("room_capacity_" + str(i))
 			room.save()
-
-

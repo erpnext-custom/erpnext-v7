@@ -19,7 +19,6 @@ function load_erpnext_slides() {
 						{"label": __("Education"), "value": "Education"},
 						{"label": __("Manufacturing"), "value": "Manufacturing"},
 						{"label": __("Retail"), "value": "Retail"},
-						{"label": __("Construction"), "value": "Construction"},
 						{"label": __("Services"), "value": "Services"}
 					], reqd:1},
 			],
