@@ -56,16 +56,16 @@ def install(country=None):
 		{'doctype': 'Branch', 'branch': _('Corporate Office'), 'address': _('Thimphu, Bhutan')},
 
 		# Department
-		{'doctype': 'Department', 'department_name': _('Office of the Chief Executive Officer'), 'branch1': _('Corporate Office')},
+		#{'doctype': 'Department', 'department_name': _('Office of the Chief Executive Officer'), 'branch1': _('Corporate Office')},
 
 		# Employee Group
-		{'doctype': 'Employee Group', 'employee_group': _('Chief Executive Officer')},
+		#{'doctype': 'Employee Group', 'employee_group': _('Chief Executive Officer')},
 
 		# Employee Grade
-		{'doctype': 'Employee Grade', 'employee_group': _('Chief Executive Officer'), 'employee_subgroup': _('Chief Executive Officer'), 'gis': 0, 'minimum': 0, 'increment': 2, 'maximum': 10 },
+		#{'doctype': 'Employee Grade', 'employee_group': _('Chief Executive Officer'), 'employee_subgroup': _('Chief Executive Officer'), 'gis': 0, 'minimum': 0, 'increment': 2, 'maximum': 10 },
 
 		# Designation
-		{'doctype': 'Designation', 'employee_group': _('Chief Executive Officer'), 'employee_subgroup': _('Chief Executive Officer'), 'designation_name': _('Chief Executive Officer')},
+		#{'doctype': 'Designation', 'employee_group': _('Chief Executive Officer'), 'employee_subgroup': _('Chief Executive Officer'), 'designation_name': _('Chief Executive Officer')},
 
 		# territory
 		{'doctype': 'Territory', 'territory_name': _('All Territories'), 'is_group': 1, 'name': _('All Territories'), 'parent_territory': ''},
