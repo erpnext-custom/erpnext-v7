@@ -384,9 +384,11 @@ def create_suppliers(args):
 				doc = frappe.get_doc({
 					"doctype":"Supplier",
 					"supplier_name": supplier,
-					"supplier_type": _("Local"),
+					"supplier_type": _("Domestic"),
 					"company": args.get("company_name").strip()
-				}).insert()
+				})
+				doc.flags.ignore_mandatory = True
+				doc.insert()
 
 				if args.get("supplier_contact_" + str(i)):
 					create_contact(args.get("supplier_contact_" + str(i)),
