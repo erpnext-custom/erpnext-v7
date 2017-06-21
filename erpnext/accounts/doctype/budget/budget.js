@@ -10,7 +10,7 @@ frappe.ui.form.on('Budget', {
 				}
 			}
 		})
-		
+
 		frm.set_query("account", "accounts", function() {
 			return {
 				filters: {
@@ -20,7 +20,7 @@ frappe.ui.form.on('Budget', {
 				}
 			}
 		})
-		
+
 		frm.set_query("monthly_distribution", function() {
 			return {
 				filters: {
@@ -30,3 +30,85 @@ frappe.ui.form.on('Budget', {
 		})
 	}
 });
+
+//Custom Scripts
+//Calculate when initial budget changes
+frappe.ui.form.on("Budget Account", "initial_budget", function(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+});
+
+//Calculate when supplementary budget changes
+frappe.ui.form.on("Budget Account", "supplementary_budget", function(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+});
+
+//Calculate when re-appropiation budget received budget changes
+frappe.ui.form.on("Budget Account", "budget_received", function(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+});
+
+//Calculate when re-appropiation budget sent budget changes
+frappe.ui.form.on("Budget Account", "budget_sent", function(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+});
+
+//recalculate during validate
+frappe.ui.form.on("Budget Account", "validate", function(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+});
+
+//Function to calculate available budget (budget_amount)
+function calculate_budget_amount(child) {
+    return (child.initial_budget + (child.supplementary_budget || 0) + (child.budget_received || 0)  - (child.budget_sent || 0) )
+}
+
+//custom Scripts
+//Calculate when initial budget changes
+frappe.ui.form.on("Budget Account", "initial_budget", function(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+});
+
+//Calculate when supplementary budget changes
+frappe.ui.form.on("Budget Account", "supplementary_budget", function(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+});
+
+//Calculate when re-appropiation budget received budget changes
+frappe.ui.form.on("Budget Account", "budget_received", function(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+});
+
+//Calculate when re-appropiation budget sent budget changes
+frappe.ui.form.on("Budget Account", "budget_sent", function(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+});
+
+//recalculate during validate
+frappe.ui.form.on("Budget Account", "validate", function(frm, cdt, cdn) {
+    var child = locals[cdt][cdn];
+
+    frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+});
+
+//Function to calculate available budget (budget_amount)
+function calculate_budget_amount(child) {
+    return (child.initial_budget + (child.supplementary_budget || 0) + (child.budget_received || 0)  - (child.budget_sent || 0) )
+}
