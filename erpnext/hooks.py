@@ -43,7 +43,7 @@ email_append_to = ["Job Applicant", "Opportunity", "Issue"]
 
 calendars = ["Task", "Production Order", "Leave Application", "Sales Order", "Holiday List"]
 
-fixtures = ["Web Form", "Custom Field"]
+fixtures = ["Web Form", "Custom Field", "Property Setter"]
 
 website_generators = ["Item Group", "Item", "Sales Partner", "Job Opening"]
 
