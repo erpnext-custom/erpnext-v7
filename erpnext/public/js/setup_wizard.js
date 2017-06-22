@@ -291,8 +291,8 @@ function load_erpnext_slides() {
 						{fieldtype:"Data", fieldname:"item_" + i, label:__("Item") + " " + i,
 							placeholder:__("A Product or Service")},
 						{fieldtype:"Select", label:__("Group"), fieldname:"item_group_" + i,
-							options:[__("Products"), __("Services"),
-								__("Raw Material"), __("Consumable"), __("Sub Assemblies")],
+							options:[__("Consumable"), __("Fixed Asset"),
+								__("Services (miscellaneous)"), __("Services (works)"), __("Products")],
 							"default": __("Products")},
 						{fieldtype:"Select", fieldname:"item_uom_" + i, label:__("UOM"),
 							options:[__("Unit"), __("Nos"), __("Box"), __("Pair"), __("Kg"), __("Set"),
@@ -310,9 +310,9 @@ function load_erpnext_slides() {
 				// dummy data
 				slide.fields.push({fieldtype: "Section Break"});
 				slide.fields.push({fieldtype: "Check", fieldname: "add_sample_data",
-					label: __("Add a few sample records"), "default": 1});
+					label: __("Add a few sample records"), "default": 0});
 				slide.fields.push({fieldtype: "Check", fieldname: "setup_website",
-					label: __("Setup a simple website for my organization"), "default": 1});
+					label: __("Setup a simple website for my organization"), "default": 0});
 			},
 			css_class: "two-column"
 		},

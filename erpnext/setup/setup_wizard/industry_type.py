@@ -17,6 +17,7 @@ def get_industry_types():
 		_('Computer'),
 		_('Consulting'),
 		_('Consumer Products'),
+		_('Construction'),
 		_('Cosmetics'),
 		_('Defense'),
 		_('Department Stores'),
