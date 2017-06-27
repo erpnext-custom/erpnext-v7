@@ -750,7 +750,7 @@ class PurchaseInvoice(BuyingController):
 
 	def consume_budget(self):
 		for item in self.get("items"):
-			expense, cost_center = frappe.db.get_value("Purchase Order Item", {"item_code": item.item_code, "parent": item.purchase_order, "docstatus": 1}, ["budget_account", "cost_center"])
+			expense, cost_center = frappe.db.get_value("Purchase Order Item", {"item_code": item.item_code, "cost_center": item.cost_center, "parent": item.purchase_order, "docstatus": 1}, ["budget_account", "cost_center"])
 			if expense:
 				account_type = frappe.db.get_value("Account", expense, "account_type")
 				if account_type in ("Fixed Asset", "Expense Account"):
@@ -758,7 +758,7 @@ class PurchaseInvoice(BuyingController):
 					consume = frappe.get_doc({
 						"doctype": "Consumed Budget",
 						"account": expense,
-						"cost_center": cost_center,
+						"cost_center": item.cost_center,
 						"po_no": self.name,
 						"po_date": po_date,
 						"amount": item.amount,
