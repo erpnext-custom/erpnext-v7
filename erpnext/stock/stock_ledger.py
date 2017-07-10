@@ -194,7 +194,6 @@ class update_entries_after(object):
 			will not consider cancelled entries
 		"""
 		diff = self.qty_after_transaction + flt(sle.actual_qty)
-
 		if diff < 0 and abs(diff) > 0.0001:
 			# negative stock!
 			exc = sle.copy().update({"diff": diff})
