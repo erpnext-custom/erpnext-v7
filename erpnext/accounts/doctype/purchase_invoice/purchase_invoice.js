@@ -307,7 +307,8 @@ cur_frm.fields_dict["items"].grid.get_field("cost_center").get_query = function(
 	return {
 		filters: {
 			'company': doc.company,
-			'is_group': 0
+			'is_group': 0,
+			'is_disabled': 0,
 		}
 
 	}

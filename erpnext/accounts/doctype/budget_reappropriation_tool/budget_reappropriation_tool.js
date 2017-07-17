@@ -53,3 +53,25 @@ frappe.ui.form.on('Budget Reappropriation Tool', {
 	})
 	}*/
 });
+
+//cost center
+//-----------------------
+cur_frm.fields_dict.to_cost_center.get_query = function(doc) {
+	return{
+		filters:{
+			'is_group': 0,
+			'is_disabled': 0,
+		}
+	}
+}
+
+//cost center
+//-----------------------
+cur_frm.fields_dict.from_cost_center.get_query = function(doc) {
+	return{
+		filters:{
+			'is_group': 0,
+			'is_disabled': 0,
+		}
+	}
+}

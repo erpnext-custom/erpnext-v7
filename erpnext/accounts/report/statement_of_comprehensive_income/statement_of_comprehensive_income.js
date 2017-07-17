@@ -11,6 +11,7 @@ frappe.query_reports["Statement of Comprehensive Income"]["filters"].push(
 		"label": __("Cost Center"),
 		"fieldtype": "Link",
 		"options": "Cost Center",
+		"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1']]}}
 	},
 	{
 		"fieldname": "accumulated_values",

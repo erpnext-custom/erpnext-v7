@@ -290,3 +290,14 @@ frappe.ui.form.on("Purchase Order Item", "item_code", function(frm, cdt, cdn) {
         }
    })
 })
+
+//cost Center
+cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc) {
+	return {
+		filters: {
+			'company': doc.company,
+			"is_group": 0,
+			"is_disabled": 0,
+		}
+	}
+}

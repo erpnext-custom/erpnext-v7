@@ -35,3 +35,14 @@ frappe.ui.form.on('Supplementary Budget Tool', {
 		}
 	}
 });
+
+//cost center
+//-----------------------
+cur_frm.fields_dict.to_cc.get_query = function(doc) {
+	return{
+		filters:{
+			'is_group': 0,
+			'is_disabled': 0,
+		}
+	}
+}

@@ -46,3 +46,13 @@ function calculate_tds(frm) {
 	}
 }
 
+// PL cost center
+//-----------------------
+cur_frm.fields_dict.cost_center.get_query = function(doc) {
+	return{
+		filters:{
+			'is_group': 0,
+			'is_disabled': 0,
+		}
+	}
+}

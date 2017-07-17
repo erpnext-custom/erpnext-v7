@@ -6,7 +6,8 @@ frappe.ui.form.on('Budget', {
 		frm.set_query("cost_center", function() {
 			return {
 				filters: {
-					company: frm.doc.company
+					company: frm.doc.company,
+					is_disabled: 0,
 				}
 			}
 		})

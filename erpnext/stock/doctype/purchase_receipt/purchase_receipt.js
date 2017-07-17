@@ -263,3 +263,14 @@ frappe.ui.form.on("Purchase Receipt","items_on_form_rendered", function(frm, gri
             }
         })
 })
+
+//cost Center
+cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc) {
+	return {
+		filters: {
+			'company': doc.company,
+			"is_group": 0,
+			"is_disabled": 0,
+		}
+	}
+}

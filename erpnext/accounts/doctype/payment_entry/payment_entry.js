@@ -66,6 +66,7 @@ frappe.ui.form.on('Payment Entry', {
 			return {
 				filters: {
 					"is_group": 0,
+					"is_disabled": 0,
 					"company": frm.doc.company
 				}
 			}
@@ -835,3 +836,15 @@ frappe.ui.form.on("Payment Entry", "onload", function(frm){
         }
     });
 });
+
+
+// PL cost center
+//-----------------------
+cur_frm.fields_dict.pl_cost_center.get_query = function(doc) {
+	return{
+		filters:{
+			'is_group': 0,
+			'is_disabled': 0,
+		}
+	}
+}

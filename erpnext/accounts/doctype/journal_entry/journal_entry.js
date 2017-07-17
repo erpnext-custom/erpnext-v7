@@ -93,7 +93,8 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 			return {
 				filters: {
 					company: me.frm.doc.company,
-					is_group: 0
+					is_group: 0,
+					is_disabled: 0,
 				}
 			};
 		});

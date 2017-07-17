@@ -251,7 +251,8 @@ if (sys_defaults.auto_accounting_for_stock) {
 
 			filters: {
 				'company': doc.company,
-				"is_group": 0
+				"is_group": 0,
+				"is_disabled": 0,
 			}
 		}
 	}

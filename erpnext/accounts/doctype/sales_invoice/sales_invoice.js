@@ -349,6 +349,7 @@ cur_frm.fields_dict.write_off_cost_center.get_query = function(doc) {
 	return{
 		filters:{
 			'is_group': 0,
+			'is_disabled': 0,
 			'company': doc.company
 		}
 	}
@@ -392,7 +393,8 @@ cur_frm.fields_dict["items"].grid.get_field("cost_center").get_query = function(
 	return {
 		filters: {
 			'company': doc.company,
-			"is_group": 0
+			"is_group": 0,
+			"is_disabled": 0,
 		}
 	}
 }
