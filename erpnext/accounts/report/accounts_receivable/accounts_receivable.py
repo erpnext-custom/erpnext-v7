@@ -104,49 +104,49 @@ class ReceivablePayableReport(object):
 		for gle in self.get_entries_till(self.filters.report_date, args.get("party_type")):
 			if self.is_receivable_or_payable(gle, dr_or_cr, future_vouchers):
 				outstanding_amount = self.get_outstanding_amount(gle, self.filters.report_date, dr_or_cr)
-				if abs(outstanding_amount) > 0.1/10**currency_precision:
+				#if outstanding_amount: #abs(outstanding_amount) > 0.1/10**currency_precision:
 
-					row = [gle.posting_date, gle.party]
+				row = [gle.posting_date, gle.party]
 
-					# customer / supplier name
-					if party_naming_by == "Naming Series":
-						row += [self.get_party_name(gle.party_type, gle.party)]
+				# customer / supplier name
+				if party_naming_by == "Naming Series":
+					row += [self.get_party_name(gle.party_type, gle.party)]
 
-					# get due date
-					due_date = voucher_details.get(gle.voucher_no, {}).get("due_date", "")
+				# get due date
+				due_date = voucher_details.get(gle.voucher_no, {}).get("due_date", "")
 
-					row += [gle.voucher_type, gle.voucher_no, due_date]
+				row += [gle.voucher_type, gle.voucher_no, due_date]
 
-					# get supplier bill details
-					if args.get("party_type") == "Supplier":
-						row += [
-							voucher_details.get(gle.voucher_no, {}).get("bill_no", ""),
-							voucher_details.get(gle.voucher_no, {}).get("bill_date", "")
-						]
+				# get supplier bill details
+				if args.get("party_type") == "Supplier":
+					row += [
+						voucher_details.get(gle.voucher_no, {}).get("bill_no", ""),
+						voucher_details.get(gle.voucher_no, {}).get("bill_date", "")
+					]
 
-					# invoiced and paid amounts
-					invoiced_amount = gle.get(dr_or_cr) if (gle.get(dr_or_cr) > 0) else 0
-					paid_amt = invoiced_amount - outstanding_amount
-					row += [invoiced_amount, paid_amt, outstanding_amount]
+				# invoiced and paid amounts
+				invoiced_amount = gle.get(dr_or_cr) if (gle.get(dr_or_cr) > 0) else 0
+				paid_amt = invoiced_amount - outstanding_amount
+				row += [invoiced_amount, paid_amt, outstanding_amount]
 
-					# ageing data
-					entry_date = due_date if self.filters.ageing_based_on == "Due Date" else gle.posting_date
-					row += get_ageing_data(cint(self.filters.range1), cint(self.filters.range2),
-						cint(self.filters.range3), self.age_as_on, entry_date, outstanding_amount)
+				# ageing data
+				entry_date = due_date if self.filters.ageing_based_on == "Due Date" else gle.posting_date
+				row += get_ageing_data(cint(self.filters.range1), cint(self.filters.range2),
+					cint(self.filters.range3), self.age_as_on, entry_date, outstanding_amount)
 
-					if self.filters.get(scrub(args.get("party_type"))):
-						row.append(gle.account_currency)
-					else:
-						row.append(company_currency)
+				if self.filters.get(scrub(args.get("party_type"))):
+					row.append(gle.account_currency)
+				else:
+					row.append(company_currency)
 
-					# customer territory / supplier type
-					if args.get("party_type") == "Customer":
-						row += [self.get_territory(gle.party)]
-					if args.get("party_type") == "Supplier":
-						row += [self.get_supplier_type(gle.party)]
+				# customer territory / supplier type
+				if args.get("party_type") == "Customer":
+					row += [self.get_territory(gle.party)]
+				if args.get("party_type") == "Supplier":
+					row += [self.get_supplier_type(gle.party)]
 
-					row.append(gle.remarks)
-					data.append(row)
+				row.append(gle.remarks)
+				data.append(row)
 
 		return data
 
@@ -177,11 +177,18 @@ class ReceivablePayableReport(object):
 
 	def get_outstanding_amount(self, gle, report_date, dr_or_cr):
 		payment_amount = 0.0
+		out_amt = 0;
 		for e in self.get_gl_entries_for(gle.party, gle.party_type, gle.voucher_type, gle.voucher_no):
 			if getdate(e.posting_date) <= report_date and e.name!=gle.name:
 				payment_amount += (flt(e.credit if gle.party_type == "Customer" else e.debit) - flt(e.get(dr_or_cr)))
-
-		return flt(gle.get(dr_or_cr)) - flt(gle.credit if gle.party_type == "Customer" else gle.debit) - payment_amount
+		if gle.voucher_type == "Sales Invoice":
+			out_amt = frappe.db.get_value("Sales Invoice", gle.voucher_no, "outstanding_amount")
+		elif gle.voucher_type == "Purchase Invoice":
+			out_amt = frappe.db.get_value("Purchase Invoice", gle.voucher_no, "outstanding_amount")
+		else:
+			pass
+		
+		return flt(out_amt)
 
 	def get_party_name(self, party_type, party_name):
 		return self.get_party_map(party_type).get(party_name, {}).get("customer_name" if party_type == "Customer" else "supplier_name") or ""

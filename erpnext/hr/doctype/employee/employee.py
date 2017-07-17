@@ -129,7 +129,7 @@ class Employee(Document):
 		if self.status == 'Left' and self.relieving_date:
 			name = frappe.db.get_value("Salary Structure", {"employee": self.name, "is_active":"Yes"}, "name")
 			if name:
-				ss = frappe.get_doc("Salary Structure", name, "name")
+				ss = frappe.get_doc("Salary Structure", name)
 				if ss:
 					ss.db_set("is_active", "No")
 

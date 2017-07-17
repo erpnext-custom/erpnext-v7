@@ -88,6 +88,35 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 		if entry.voucher_type not in ['Stock Entry', 'Period Closing Voucher']:
 			validate_expense_against_budget(entry)
 
+			#commit the budget too
+			if entry.voucher_type == 'Journal Entry' and entry.against_voucher_type != 'Asset':
+				acc_type = frappe.db.get_value("Account", entry.account, "account_type")
+				if acc_type == "Expense Account" or acc_type == "Fixed Asset":
+					#Commit Budget
+					bud_obj = frappe.get_doc({
+						"doctype": "Committed Budget",
+						"account": entry.account,
+						"cost_center": entry.cost_center,
+						"po_no": entry.voucher_no,
+						"po_date": entry.posting_date,
+						"amount": flt(entry.debit_in_account_currency) - flt(entry.credit_in_account_currency),
+						"date": frappe.utils.nowdate()
+					})
+					bud_obj.submit()
+				
+					#Consume Budget
+					con_obj = frappe.get_doc({
+						"doctype": "Consumed Budget",
+						"account": entry.account,
+						"cost_center": entry.cost_center,
+						"po_no": entry.voucher_no,
+						"po_date": entry.posting_date,
+						"amount": flt(entry.debit_in_account_currency) - flt(entry.credit_in_account_currency),
+						"com_ref": entry.voucher_no,
+						"date": frappe.utils.nowdate()
+					})
+					con_obj.submit()
+
 def make_entry(args, adv_adj, update_outstanding):
 	args.update({"doctype": "GL Entry"})
 	gle = frappe.get_doc(args)
@@ -96,34 +125,6 @@ def make_entry(args, adv_adj, update_outstanding):
 	gle.run_method("on_update_with_args", adv_adj, update_outstanding)
 	gle.submit()
 	
-	#commit the budget too
-	if args.voucher_type == 'Journal Entry' and args.against_voucher_type != 'Asset':
-		acc_type = frappe.db.get_value("Account", args.account, "account_type")
-		if acc_type == "Expense Account" or acc_type == "Fixed Asset":
-			#Commit Budget
-			bud_obj = frappe.get_doc({
-				"doctype": "Committed Budget",
-				"account": args.account,
-				"cost_center": args.cost_center,
-				"po_no": args.voucher_no,
-				"po_date": args.posting_date,
-				"amount": flt(args.debit_in_account_currency) - flt(args.credit_in_account_currency),
-				"date": frappe.utils.nowdate()
-			})
-			bud_obj.submit()
-		
-			#Consume Budget
-			con_obj = frappe.get_doc({
-				"doctype": "Consumed Budget",
-				"account": args.account,
-				"cost_center": args.cost_center,
-				"po_no": args.voucher_no,
-				"po_date": args.posting_date,
-				"amount": flt(args.debit_in_account_currency) - flt(args.credit_in_account_currency),
-				"com_ref": args.voucher_no,
-				"date": frappe.utils.nowdate()
-			})
-			con_obj.submit()
 
 def validate_account_for_auto_accounting_for_stock(gl_map):
 	if cint(frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_stock")) \

@@ -30,7 +30,7 @@ def post_casual_leaves():
 # Post earned leave on the first day of every month
 ##
 def post_earned_leaves():
-	date = add_days(frappe.utils.nowdate(), -5)
+	date = add_days(frappe.utils.nowdate(), -20)
 	start = get_first_day(date);
 	end = get_last_day(date);
 	
