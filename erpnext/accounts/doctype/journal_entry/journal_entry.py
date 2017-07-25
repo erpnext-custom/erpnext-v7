@@ -58,6 +58,10 @@ class JournalEntry(AccountsController):
                         series_seq = 'JEOP'
                 elif self.voucher_type == 'Depreciation Entry':
                         series_seq = 'JEDE'
+                elif self.voucher_type == 'Maintenance Invoice':
+                        series_seq = 'JEMA'
+                elif self.voucher_type == 'Hire Invoice':
+                        series_seq = 'JEHI'
 
                 self.name = make_autoname(str(series_seq) + '.YYYY.MM.#####')
 

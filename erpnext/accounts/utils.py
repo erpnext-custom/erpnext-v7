@@ -175,8 +175,8 @@ def reconcile_against_document(args):
 		Cancel JV, Update aginst document, split if required and resubmit jv
 	"""
 	for d in args:
-		
-		check_if_advance_entry_modified(d)			
+		if d.against_voucher_type != "Hire Charge Invoice":	
+			check_if_advance_entry_modified(d)			
 		validate_allocated_amount(d)
 		
 		# cancel advance entry

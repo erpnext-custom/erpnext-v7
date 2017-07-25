@@ -32,26 +32,6 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Recruitment"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Job Opening",
-					"description": _("Opening for a Job."),
-				},                                
-				{
-					"type": "doctype",
-					"name": "Job Applicant",
-					"description": _("Applicant for a Job."),
-				},
-				{
-					"type": "doctype",
-					"name": "Offer Letter",
-					"description": _("Offer candidate a Job."),
-				},
-			]
-		},
-		{
 			"label": _("Leaves and Holiday"),
 			"items": [
 				{
@@ -207,7 +187,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Reports"),
+			"label": _("Salary Reports"),
 			"icon": "icon-list",
 			"items": [
                                 {
@@ -251,6 +231,12 @@ def get_data():
                                         "label": _("Salary Tax & Health Contribution Report"),
 					"doctype": "Salary Slip"
 				},
+			]
+		},
+		{
+			"label": _("Other Reports"),
+			"icon": "icon-list",
+			"items": [
 				{
 					"type": "report",
 					"is_query_report": True,

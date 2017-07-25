@@ -44,8 +44,18 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Equipment Model",
-					"description": _("Equipment Model Details"),
+					"name": "Equipment Hiring Form",
+					"description": _("Equipment Hiring Form"),
+				},
+				{
+					"type": "doctype",
+					"name": "Vehicle Logbook",
+					"description": _("Vehicle Logbook"),
+				},
+				{
+					"type": "doctype",
+					"name": "Hire Charge Invoice",
+					"description": _("Hire Charge Invoice"),
 				},
 			]
 		},
@@ -57,6 +67,17 @@ def get_data():
 					"type": "doctype",
 					"name": "Equipment Model",
 					"description": _("Equipment Model Details"),
+				},
+			]
+		},
+		{
+			"label": _("Settings"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Maintenance Settings",
+					"description": _("Maintenance Settings"),
 				},
 			]
 		},

@@ -20,8 +20,18 @@ frappe.ui.form.on('Break Down Report', {
 	}
 });
 
-cur_frm.add_fetch("customer", "external_or_cdcl", "client");
+cur_frm.add_fetch("customer", "customer_group", "client");
 cur_frm.add_fetch("equipment", "equipment_model", "equipment_model");
 cur_frm.add_fetch("equipment", "equipment_type", "equipment_type");
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number");
+
+frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
+    cur_frm.set_query("equipment", function() {
+        return {
+            "filters": {
+                "branch": frm.doc.branch
+            }
+        };
+    });
+});
 
