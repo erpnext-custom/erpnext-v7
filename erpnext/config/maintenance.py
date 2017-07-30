@@ -36,6 +36,11 @@ def get_data():
 					"name": "Equipment Model",
 					"description": _("Equipment Model Details"),
 				},
+				{
+					"type": "doctype",
+					"name": "Equipment Accessories",
+					"description": _("Equipment Accessories Details"),
+				},
 			]
 		},
 		{

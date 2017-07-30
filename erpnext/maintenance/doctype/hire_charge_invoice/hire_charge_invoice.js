@@ -102,6 +102,7 @@ function calculate_advance_total(frm) {
 function get_vehicle_logs(form) {
 	frappe.call({
 		method: "erpnext.maintenance.doctype.hire_charge_invoice.hire_charge_invoice.get_vehicle_logs",
+		async: false,
 		args: {
 			"form": form,
 		},
@@ -124,6 +125,35 @@ function get_vehicle_logs(form) {
 					refresh_field("items");
 
 					total_invoice_amount += (row.amount_idle + row.amount_work)
+					
+					frappe.call({
+						method: "erpnext.maintenance.doctype.hire_charge_invoice.hire_charge_invoice.get_vehicle_accessories",
+						async: false,
+						args: {
+							"form": form,
+							"equipment": logbook['equipment']
+						},
+						callback: function(r) {
+							if(r.message) {
+								r.message.forEach(function(access) {
+									var row = frappe.model.add_child(cur_frm.doc, "Hire Invoice Details", "items");
+									row.vehicle_logbook = logbook['name']
+									row.equipment_number = access['name']
+									row.total_work_hours = logbook['total_work_time']
+									row.total_idle_hours = logbook['total_idle_time']
+									row.work_rate = access['work']
+									row.idle_rate = access['idle']
+									row.amount_idle = logbook['total_idle_time'] * access['idle']
+									row.amount_work = logbook['total_work_time'] * access['work']
+									row.number_of_days = logbook['no_of_days']
+									row.total_amount = (row.amount_idle + row.amount_work)
+									refresh_field("items");
+
+									total_invoice_amount += (row.amount_idle + row.amount_work)
+								})
+							}
+						}
+					});
 				});
 
 				cur_frm.set_value("total_invoice_amount", total_invoice_amount)

@@ -65,13 +65,35 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Help"),
+			"label": _("Muster Roll Management"),
 			"icon": "icon-facetime-video",
 			"items": [
 				{
-					"type": "help",
-					"label": _("Managing Projects"),
-					"youtube_id": "egxIGwtoKI4"
+					"type": "doctype",
+					"name": "Muster Roll Employee",
+					"description": _("Muster Roll Employee Data"),
+				},
+				{
+					"type": "doctype",
+					"name": "Muster Roll Attendance",
+					"description": _("Muster Roll Attendance Toll"),
+				},
+				{
+					"type": "doctype",
+					"name": "MR Attendance",
+					"description": _("Muster Roll Attendance"),
+				},
+				{
+					"type": "doctype",
+					"name": "Muster Roll Overtime Tool",
+					"label": "Muster Roll Overtime Tool",
+					"description": _("Muster Roll Overtime Tool"),
+				},
+				{
+					"type": "doctype",
+					"name": "Project Muster Roll Tool",
+					"label": "Assign Muster Roll To Projects",
+					"description": _("Project Muster Roll Tool"),
 				},
 			]
 		},

@@ -25,8 +25,24 @@ frappe.ui.form.on('Equipment Hiring Form', {
 		if(frm.doc.docstatus != 1 && frm.doc.private == "Private") {
 			frm.set_value("advance_amount", frm.doc.total_hiring_amount)
 		}
-	}
+	},
 });
+
+/*cur_frm.fields_dict['customer'].get_query = function(frm) {
+	if(cur_frm.doc.private == "Private") {
+	console.log("INSIDE")
+		return {
+			filters: [["Customer", "customer_group", "like", "Internal"]]
+			//filters:[['customer_group', '=', 'Private Agency'], ['customer_group', '=', 'Individual']]
+		}
+	}
+	else {
+	console.log("OUTSIDE")
+		return {
+			filters:[['customer_group', '!=', 'Private Agency'], ['customer_group', '!=', 'Individual']]
+		}
+	}
+}*/
 
 cur_frm.add_fetch("customer", "location", "address")
 cur_frm.add_fetch("customer", "telephone_and_fax", "contact_number")
@@ -60,6 +76,21 @@ frappe.ui.form.on("Hiring Approval Details", {
 	"rate": function(frm, cdt, cdn) {
 		calculate_amount(frm, cdt, cdn)
 	},
+	"rate1": function(frm, cdt, cdn) {
+		calculate_amount(frm, cdt, cdn)
+	},
+	"rate2": function(frm, cdt, cdn) {
+		calculate_amount(frm, cdt, cdn)
+	},
+	"rate3": function(frm, cdt, cdn) {
+		calculate_amount(frm, cdt, cdn)
+	},
+	"rate4": function(frm, cdt, cdn) {
+		calculate_amount(frm, cdt, cdn)
+	},
+	"rate5": function(frm, cdt, cdn) {
+		calculate_amount(frm, cdt, cdn)
+	},
 	"total_hours": function(frm, cdt, cdn) {
 		calculate_amount(frm, cdt, cdn)
 	},
@@ -83,7 +114,23 @@ function calculate_total(frm) {
 function calculate_amount(frm, cdt, cdn) {
 	var item = locals[cdt][cdn]
 	if(item.rate && item.total_hours) {
-		frappe.model.set_value(cdt, cdn,"grand_total", item.rate * item.total_hours)
+		grand_amount = item.rate * item.total_hours
+		if(item.rate1) {
+			grand_amount += item.rate1 * item.total_hours
+		}
+		if(item.rate2) {
+			grand_amount += item.rate2 * item.total_hours
+		}
+		if(item.rate3) {
+			grand_amount += item.rate3 * item.total_hours
+		}
+		if(item.rate4) {
+			grand_amount += item.rate4 * item.total_hours
+		}
+		if(item.rate5) {
+			grand_amount += item.rate5 * item.total_hours
+		}
+		frappe.model.set_value(cdt, cdn,"grand_total", grand_amount)
 	}
 	cur_frm.refresh_field("grand_total")
 	
@@ -96,4 +143,14 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 			filters:[['branch', "=", frm.doc.branch], ['equipment_hire_form','=','']]
 		}
 	}
+   
+	// cur_frm.set_query("custo,mer", function() {
+	cur_frm.fields_dict['customer'].get_query = function(doc, dt, dn) {
+        	return {
+            		filters: {
+				"disabled": 1,
+            		}
+        	};
+    	};
 });
+

@@ -134,10 +134,29 @@ class HireChargeInvoice(Document):
 @frappe.whitelist()
 def get_vehicle_logs(form):
 	if form:
-		return frappe.db.sql("select a.name, a.equipment_number, a.total_work_time, a.total_idle_time, a.work_rate, a.idle_rate, (select count(1) from `tabVehicle Log` b where b.parent = a.name) as no_of_days from `tabVehicle Logbook` a where a.docstatus = 1 and a.invoice_created = 0 and a.ehf_name = \'" + str(form) + "\'", as_dict=True)
+		return frappe.db.sql("select a.name, a.equipment, a.equipment_number, a.total_work_time, a.total_idle_time, a.work_rate, a.idle_rate, (select count(1) from `tabVehicle Log` b where b.parent = a.name) as no_of_days from `tabVehicle Logbook` a where a.docstatus = 1 and a.invoice_created = 0 and a.ehf_name = \'" + str(form) + "\'", as_dict=True)
 	else:
 		frappe.throw("Select Equipment Hiring Form first!")
 
+@frappe.whitelist()
+def get_vehicle_accessories(form, equipment):
+	if form and equipment:
+		data = frappe.db.sql("select accessory1, accessory2, accessory3, accessory4, accessory5, rate1, rate2, rate3, rate4, rate5, irate1, irate2, irate3, irate4, irate5 from `tabHiring Approval Details` where parent = \'" + str(form) + "\' and equipment = \'" + str(equipment) + "\'", as_dict=True)
+		accessories = []
+		for a in data:
+			if a.accessory1:
+				accessories.append({"name": a.accessory1, "work": a.rate1, "idle": a.irate1})	
+			if a.accessory2:
+				accessories.append({"name": a.accessory2, "work": a.rate2, "idle": a.irate2})	
+			if a.accessory3:
+				accessories.append({"name": a.accessory3, "work": a.rate3, "idle": a.irate3})	
+			if a.accessory4:
+				accessories.append({"name": a.accessory4, "work": a.rate4, "idle": a.irate4})	
+			if a.accessory5:
+				accessories.append({"name": a.accessory5, "work": a.rate5, "idle": a.irate5})	
+		return accessories
+	else:
+		frappe.throw("Select Equipment Hiring Form first!")
 #Get advances
 @frappe.whitelist()
 def get_advances(hire_name):
