@@ -65,13 +65,20 @@ def get_data():
 			]
 		},
 		{
-			"label": _("HSD Transaction"),
+			"label": _("POL Transaction"),
 			"icon": "icon-star",
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Equipment Model",
-					"description": _("Equipment Model Details"),
+					"name": "POL",
+					"label": "Receive POL",
+					"description": _("Receive POL"),
+				},
+				{
+					"type": "doctype",
+					"name": "POL Issue Report",
+					"label": "POL Issue Report",
+					"description": _("POL Issue Report"),
 				},
 			]
 		},
