@@ -61,7 +61,7 @@ function calculate_balance(frm) {
 }
 
 cur_frm.add_fetch("ehf_name","customer","customer")
-cur_frm.add_fetch("ehf_name","advance_amount","advance_amount")
+//cur_frm.add_fetch("ehf_name","advance_amount","advance_amount")
 
 
 frappe.ui.form.on("Hire Charge Invoice", "refresh", function(frm) {

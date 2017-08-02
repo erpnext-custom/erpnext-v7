@@ -12,7 +12,7 @@ frappe.ui.form.on('Job Card', {
 			}, __("View"));
 		}
 	
-		if (frm.doc.jv && frappe.model.can_write("Journal Entry")) {
+		if (!frm.doc.payment_jv && frm.doc.jv && frappe.model.can_write("Journal Entry")) {
 			cur_frm.toggle_display("receive_payment", 1)
 		}
 		else {
@@ -58,3 +58,32 @@ function calculate_datetime(frm, cdt, cdn) {
 	}
 	cur_frm.refresh_field("total_time")
 }
+
+//Job Card Mechanic Details
+frappe.ui.form.on("Mechanic Assigned", {
+	"start_time": function(frm, cdt, cdn) {
+		calculate_time(frm, cdt, cdn)
+	},
+	"end_time": function(frm, cdt, cdn) {
+		calculate_time(frm, cdt, cdn)
+	}
+})
+
+function calculate_time(frm, cdt, cdn) {
+	var item = locals[cdt][cdn]
+	if(item.start_time && item.end_time && item.end_time >= item.start_time) {
+		frappe.model.set_value(cdt, cdn,"total_time", frappe.datetime.get_hour_diff(item.end_time, item.start_time))
+	}
+	cur_frm.refresh_field("total_time")
+}
+
+frappe.ui.form.on("Job Card", "refresh", function(frm) {
+    cur_frm.set_query("stock_entry", function() {
+        return {
+            "filters": {
+		"docstatus": 1,
+		"purpose": "Material Issue"
+            }
+        };
+    });
+})

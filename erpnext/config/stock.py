@@ -26,11 +26,6 @@ def get_data():
 					"name": "Purchase Receipt",
 					"description": _("Goods received from Suppliers."),
 				},
-				{
-					"type": "doctype",
-					"name": "Mining Process",
-					"description": _("Capturing the expenses task related to Mines"),
-				},
 			]
 		},
 		{

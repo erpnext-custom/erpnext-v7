@@ -28,16 +28,6 @@ def get_data():
 					"name": "Sales Invoice",
 					"description": _("Bills raised to Customers.")
 				},
-				{
-					"type": "doctype",
-					"name": "Mines Quality Record",
-					"description": _("Mines Quality Record Details")
-				},
-				{
-					"type": "doctype",
-					"name": "Consolidated Invoice",
-					"description": _("Consolidated Invoices Details")
-				}
 			]
 		},
 		{
@@ -86,12 +76,6 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Mines Delivery Overview",
-					"doctype": "Delivery Note"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
 					"name": "Material-wise Sales History",
 					"doctype": "Item",
 					"label": "Materialwise Sales History"
@@ -118,27 +102,9 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Transportation Report",
-					"doctype": "Delivery Note"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Mines Product Quality Report",
-					"doctype": "Mines Quality Record"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
 					"name": "Ordered Materials To Be Delivered",
 					"doctype": "Delivery Note"
 				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Sales Penalty Report",
-					"doctype": "Sales Invoice"
-				}
 			]
 		},
 		{

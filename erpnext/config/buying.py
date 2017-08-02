@@ -62,16 +62,6 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Contact",
-					"description": _("All Contacts."),
-				},
-				{
-					"type": "doctype",
-					"name": "Address",
-					"description": _("All Addresses."),
-				},
-				{
-					"type": "doctype",
 					"name":"Terms and Conditions",
 					"label": _("Purchase Terms and Conditions Template"),
 					"description": _("Template of terms or contract.")
@@ -103,12 +93,6 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Vendor Addresses",
-					"doctype": "Supplier"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
 					"name": "Purchase History Report",
 					"doctype": "Purchase Order"
 				},
@@ -129,12 +113,6 @@ def get_data():
 					"is_query_report": True,
 					"name": "Purchase Receipt Trends",
 					"doctype": "Purchase Receipt"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Purchase Penalty Report",
-					"doctype": "Purchase Invoice"
 				},
 				{
 					"type": "report",

@@ -121,8 +121,10 @@ class TravelAuthorization(Document):
 	def sendmail(self, to_email, subject, message):
 		email = frappe.db.get_value("Employee", to_email, "user_id")
 		if email:
-			frappe.sendmail(recipients=email, sender=None, subject=subject, message=message)
-
+			try:
+				frappe.sendmail(recipients=email, sender=None, subject=subject, message=message)
+			except:
+				pass
 
 @frappe.whitelist()
 def make_travel_claim(source_name, target_doc=None): 

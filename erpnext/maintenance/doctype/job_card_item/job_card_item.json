@@ -9,7 +9,7 @@
  "docstatus": 0, 
  "doctype": "DocType", 
  "document_type": "", 
- "editable_grid": 1, 
+ "editable_grid": 0, 
  "fields": [
   {
    "allow_on_submit": 0, 
@@ -65,7 +65,7 @@
    "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
-   "depends_on": "eval:doc.which == \"Services\"", 
+   "depends_on": "", 
    "fieldname": "job_name", 
    "fieldtype": "Data", 
    "hidden": 0, 
@@ -344,7 +344,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2017-07-21 04:31:19.923122", 
+ "modified": "2017-08-01 11:21:01.128329", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Job Card Item", 
