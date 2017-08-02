@@ -27,44 +27,6 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Time Tracking"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Timesheet",
-					"description": _("Timesheet for tasks."),
-				},
-				{
-					"type": "doctype",
-					"name": "Activity Type",
-					"description": _("Types of activities for Time Logs"),
-				},
-				{
-					"type": "doctype",
-					"name": "Activity Cost",
-					"description": _("Cost of various activities"),
-				},
-			]
-		},
-		{
-			"label": _("Reports"),
-			"icon": "icon-list",
-			"items": [
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Daily Timesheet Summary",
-					"doctype": "Timesheet"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Project wise Stock Tracking",
-					"doctype": "Project"
-				},
-			]
-		},
-		{
 			"label": _("Muster Roll Management"),
 			"icon": "icon-facetime-video",
 			"items": [
@@ -94,6 +56,18 @@ def get_data():
 					"name": "Project Muster Roll Tool",
 					"label": "Assign Muster Roll To Projects",
 					"description": _("Project Muster Roll Tool"),
+				},
+			]
+		},
+		{
+			"label": _("Reports"),
+			"icon": "icon-list",
+			"items": [
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Project wise Stock Tracking",
+					"doctype": "Project"
 				},
 			]
 		},

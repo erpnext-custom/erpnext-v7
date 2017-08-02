@@ -49,7 +49,7 @@ website_generators = ["Item Group", "Item", "Sales Partner", "Job Opening"]
 
 website_context = {
 	"favicon": 	"/assets/erpnext/images/favicon.ico",
-	"splash_image": "/assets/erpnext/images/smcl_logo.gif"
+	"splash_image": ""
 }
 
 website_route_rules = [

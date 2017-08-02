@@ -149,8 +149,9 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Expense Claim",
-                                        "label": _("Expense Claim"),
+					"name": "Overtime Application",
+                                        "label": _("Overtime Application"),
+					"description": _("Overtime Application"),
 				},
 			]
 		},
@@ -249,12 +250,6 @@ def get_data():
 					"name": "Leave Encashment Report",
                                         "label": _("Leave Encashment Report"),
 					"doctype": "Leave Encashment"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Employees working on a holiday",
-					"doctype": "Employee"
 				},
 				{
 					"type": "report",

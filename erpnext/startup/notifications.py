@@ -51,7 +51,7 @@ def get_notification_config():
 				"claim_status": ("not in", ("Rejected by HR", "Rejected by Supervisor"))
 			},
 			"Leave Encashment": {"docstatus": 0},
-			"Break Down Report": {"docstatus": 0, "job_card": ("<", 0)},
-			"Job Card": {"docstatus": 0, "assigned_to": ("<", 0)},
+			"Break Down Report": {"docstatus": 0},
+			"Job Card": {"docstatus": 0},
 		}
 	}

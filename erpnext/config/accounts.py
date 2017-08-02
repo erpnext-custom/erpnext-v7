@@ -36,12 +36,6 @@ def get_data():
 					"name": "Period Closing Voucher",
 					"description": _("Close Balance Sheet and book Profit or Loss.")
 				},
-				{
-					"type": "doctype",
-					"name": "Transfer CoGM",
-					"label": "Transfer COGM Balance",
-					"description": _("TRansfer COGM Balance between fiscal years")
-				},
 			]
 		},
 		{
@@ -332,11 +326,6 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Accounts Settings",
-					"description": _("Default settings for accounting transactions.")
-				},
-				{
-					"type": "doctype",
 					"name": "Fiscal Year",
 					"description": _("Financial / accounting year.")
 				},
@@ -354,6 +343,27 @@ def get_data():
 					"type": "doctype",
 					"name":"Mode of Payment",
 					"description": _("e.g. Bank, Cash, Credit Card")
+				},
+			]
+		},
+		{
+			"label": _("Account Settings"),
+			"icon": "icon-cog",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Accounts Settings",
+					"description": _("Default settings for accounting transactions.")
+				},
+				{
+					"type": "doctype",
+					"name": "HR Accounts Settings",
+					"description": _("Account Settings for HR Accounting")
+				},
+				{
+					"type": "doctype",
+					"name": "Maintenance Accounts Settings",
+					"description": _("Account Settings for Maintenance Accounting")
 				},
 			]
 		},
@@ -392,12 +402,6 @@ def get_data():
 				},
 				{
 					"type": "report",
-					"name": "Sales Partners Commission",
-					"is_query_report": True,
-					"doctype": "Sales Invoice"
-				},
-				{
-					"type": "report",
 					"name": "Item-wise Sales Register",
 					"is_query_report": True,
 					"doctype": "Sales Invoice",
@@ -422,12 +426,6 @@ def get_data():
 					"doctype": "Purchase Invoice",
 					"is_query_report": True
 				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Customer Credit Balance",
-					"doctype": "Customer"
-				}
 			]
 		},
 	]
