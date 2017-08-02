@@ -197,7 +197,7 @@ def get_employee_cost_center(division):
 
 @frappe.whitelist()                        
 def get_le_settings(*arg, **kwargs):
-        le = frappe.db.get_value("Leave Encashment Settings", filters = None, \
+        le = frappe.db.get_value("HR Accounts Settings", filters = None, \
                         fieldname = ["encashment_days","encashment_min","encashment_lapse","expense_account","tax_account"], as_dict = True)
         
         return le
