@@ -42,7 +42,7 @@ class EquipmentHiringForm(Document):
 	# make necessary journal entry
 	##
 	def post_journal_entry(self):
-		advance_account = frappe.db.get_single_value("Maintenance Settings", "default_advance_account")
+		advance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_advance_account")
 		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 		revenue_bank = frappe.db.get_value("Branch", self.branch, "revenue_bank_account")
 		if not cost_center:

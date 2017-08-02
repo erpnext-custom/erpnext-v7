@@ -71,9 +71,9 @@ class HireChargeInvoice(Document):
 	# make necessary journal entry
 	##
 	def post_journal_entry(self):
-		receivable_account = frappe.db.get_single_value("Maintenance Settings", "default_receivable_account")
-		advance_account = frappe.db.get_single_value("Maintenance Settings", "default_advance_account")
-		hire_account = frappe.db.get_single_value("Maintenance Settings", "hire_revenue_account")
+		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
+		advance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_advance_account")
+		hire_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_account")
 		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 		if not cost_center:
 			frappe.throw("No Cost Center has been assigned against " + str(self.branch))
@@ -126,7 +126,7 @@ class HireChargeInvoice(Document):
 			self.db_set("invoice_jv", je.name)
 
 		else:
-			frappe.throw("Define Default Accounts in Maintenance Settings")	
+			frappe.throw("Define Default Accounts in Maintenance Accounts Settings")	
 
 	def readjust_advance(self):
 		frappe.db.sql("update `tabJournal Entry Account` set reference_type=%s,reference_name=%s where reference_type=%s and reference_name=%s and docstatus = 1", ("Equipment Hiring Form", self.ehf_name, "Hire Charge Invoice", self.name))
@@ -171,7 +171,7 @@ def make_bank_entry(frm=None):
 		invoice = frappe.get_doc("Hire Charge Invoice", frm)
 		cost_center = frappe.db.get_value("Branch", invoice.branch, "cost_center")
 		revenue_bank_account = frappe.db.get_value("Branch", invoice.branch, "revenue_bank_account")
-		receivable_account = frappe.db.get_single_value("Maintenance Settings", "default_receivable_account")
+		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
 		if not revenue_bank_account:
 			frappe.throw("Setup Default Revenue Bank Account for your Branch")
 		if not receivable_account:

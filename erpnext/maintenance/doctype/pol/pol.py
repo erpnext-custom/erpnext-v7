@@ -27,7 +27,7 @@ class POL(Document):
 	# make necessary journal entry
 	##
 	def post_journal_entry(self):
-		pol_account = frappe.db.get_single_value("Maintenance Settings", "default_pol_expense_account")
+		pol_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_pol_expense_account")
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
 		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 		if not cost_center:

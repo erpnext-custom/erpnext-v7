@@ -40,10 +40,10 @@ class JobCard(Document):
 		self.db_set('jv', "")
 
 	def get_default_settings(self):
-		goods_account = frappe.db.get_single_value("Maintenance Settings", "default_goods_account")
-		services_account = frappe.db.get_single_value("Maintenance Settings", "default_services_account")
-		receivable_account = frappe.db.get_single_value("Maintenance Settings", "default_receivable_account")
-		maintenance_account = frappe.db.get_single_value("Maintenance Settings", "maintenance_expense_account")
+		goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
+		services_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_services_account")
+		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
+		maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
 
 		return goods_account, services_account, receivable_account, maintenance_account
 
@@ -114,7 +114,7 @@ class JobCard(Document):
 			
 			self.db_set("jv", je.name)
 		else:
-			frappe.throw("Setup Default Goods, Services and Receivable Accounts in Maintenance Settings")
+			frappe.throw("Setup Default Goods, Services and Receivable Accounts in Maintenance Accounts Settings")
 
 	##
 	# Update the job card reference on Break Down Report
@@ -129,7 +129,7 @@ def make_bank_entry(frm=None):
 		job = frappe.get_doc("Job Card", frm)
 		cost_center = frappe.db.get_value("Branch", job.branch, "cost_center")
 		revenue_bank_account = frappe.db.get_value("Branch", job.branch, "revenue_bank_account")
-		receivable_account = frappe.db.get_single_value("Maintenance Settings", "default_receivable_account")
+		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
 		if not revenue_bank_account:
 			frappe.throw("Setup Default Revenue Bank Account for your Branch")
 		if not receivable_account:
