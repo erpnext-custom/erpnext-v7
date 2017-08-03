@@ -28,7 +28,7 @@ class EquipmentHiringForm(Document):
 
 	def before_cancel(self):		
 		cl_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
-		if cl_status == 1:
+		if cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this job card first!")
 		
 		self.db_set("advance_journal", '')

@@ -55,8 +55,8 @@ class LeaveTravelConcession(Document):
 		self.db_set("journal_entry", je.name)
 
 	def on_cancel(self):
-		jv = frappe.db.sql("select name, docstatus from `tabJournal Entry` where name = %s and docstatus = 1", self.journal_entry)
-		if jv:
+		jv = frappe.db.get_value("Journal Entry", self.journal_entry, "docstatus")
+		if jv != 2:
 			frappe.throw("Can not cancel LTC without canceling the corresponding journal entry " + str(self.journal_entry))
 		else:
 			self.db_set("journal_entry", "")

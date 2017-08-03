@@ -41,7 +41,7 @@ class TravelClaim(Document):
 
 	def before_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.claim_journal, "docstatus")
-		if cl_status == 1:
+		if cl_status != 2:
 			frappe.throw("You need to cancel the claim journal entry first!")
 		
 		ta = frappe.get_doc("Travel Authorization", self.ta)
@@ -55,31 +55,33 @@ class TravelClaim(Document):
 	# make necessary journal entry
 	##
 	def post_journal_entry(self):
-		cost_center = frappe.db.get_value("Division", self.division, "cost_center")
-		if not self.division:
-			frappe.throw("Employee has not been assigned a division")
+		cost_center = frappe.db.get_value("Employee", self.employee, "cost_center")
 		if not cost_center:
-			frappe.throw("No Cost Center has been assigned against " + str(self.division))
+			frappe.throw("Setup Cost Center for employee in Employee Information")
+		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+		if not expense_bank_account:
+			frappe.throw("Setup Default Expense Bank Account for your Branch")
 		
 		gl_account = ""	
 		if self.travel_type == "Travel":
 			if self.place_type == "In-Country":
-				gl_account =  "Travel-Local - SMCL"
+				gl_account =  "travel_incountry_account"
 			else:
-				gl_account = "Travel-Foreign - SMCL"
+				gl_account = "travel_outcountry_account"
 		elif self.travel_type == "Training":
 			if self.place_type == "In-Country":
-				gl_account = "Training-Incountry - SMCL"
+				gl_account = "training_incountry_account"
 			else:
-				gl_account = "Training-Excountry - SMCL"
+				gl_account = "training_outcountry_account"
 		else:
 			if self.place_type == "In-Country":
-				gl_account = "In-Country Seminars / Workshops/Meeting - SMCL"
+				gl_account = "meeting_and_seminars_in_account"
 			else:
-				gl_account = "Out-Country Seminars / Workshops/Meeting - SMCL"
+				gl_account = "meeting_and_seminars_out_account"
 		
-		if gl_account == "":
-			frappe.throw("Incorrect GL Account. Kindly check your travel purpose and submit again")
+		expense_account = frappe.db.get_single_value("HR Accounts Settings", gl_account)
+		if not expense_account:
+			frappe.throw("Setup Travel/Training Accounts in HR Accounts Settings")
 
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
@@ -92,45 +94,26 @@ class TravelClaim(Document):
 		total_amt = flt(self.total_claim_amount) + flt(self.extra_claim_amount)
 	
 		je.append("accounts", {
-				"account": gl_account,
+				"account": expense_account,
 				"reference_type": "Travel Claim",
 				"reference_name": self.name,
 				"cost_center": cost_center,
 				"debit_in_account_currency": flt(total_amt),
 				"debit": flt(total_amt),
-			})
-		
-		je.append("accounts", {
-				"account": "Sundry Creditors - Employee - SMCL",
-				"party_type": "Employee",
-				"party": self.employee,
-				"reference_type": "Travel Claim",
-				"reference_name": self.name,
-				"cost_center": cost_center,
-				"debit_in_account_currency": flt(total_amt),
-				"debit": flt(total_amt),
-			})
-		
-		je.append("accounts", {
-				"account": "Sundry Creditors - Employee - SMCL",
-				"party_type": "Employee",
-				"party": self.employee,
-				"reference_type": "Travel Claim",
-				"reference_name": self.name,
-				"cost_center": cost_center,
-				"credit_in_account_currency": flt(total_amt),
-				"credit": flt(total_amt),
 			})
 		
 		advance_amt = flt(self.advance_amount)
 		bank_amt = flt(self.balance_amount)
 
 		if (self.advance_amount) > 0:
+			advance_account = frappe.db.get_single_value("HR Accounts Settings", "employee_advance_travel")
+			if not advance_account:
+				frappe.throw("Setup Advance to Employee (Travel) in HR Accounts Settings")
 			if flt(self.balance_amount) < 0:
 				advance_amt = flt(total_claim_amount)
 
 			je.append("accounts", {
-				"account": "Advance to Employee-Travel - SMCL",
+				"account": advance_account,
 				"party_type": "Employee",
 				"party": self.employee,
 				"reference_type": "Travel Claim",
@@ -145,7 +128,7 @@ class TravelClaim(Document):
 			bank_amt = flt(total_claim_amount)
 		
 		je.append("accounts", {
-				"account": "Bank of Bhutan Ltd - 100891887 - SMCL",
+				"account": expense_bank_account,
 				"reference_type": "Travel Claim",
 				"reference_name": self.name,
 				"cost_center": cost_center,
