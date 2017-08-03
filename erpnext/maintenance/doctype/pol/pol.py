@@ -29,9 +29,6 @@ class POL(Document):
 	def post_journal_entry(self):
 		pol_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_pol_expense_account")
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
-		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
-		if not cost_center:
-			frappe.throw("No Cost Center has been assigned against " + str(self.branch))
 
 		if expense_bank_account and pol_account:
 			je = frappe.new_doc("Journal Entry")
@@ -44,14 +41,14 @@ class POL(Document):
 
 			je.append("accounts", {
 					"account": pol_account,
-					"cost_center": cost_center,
+					"cost_center": self.cost_center,
 					"debit_in_account_currency": flt(self.total_amount),
 					"debit": flt(self.total_amount),
 				})
 
 			je.append("accounts", {
 					"account": expense_bank_account,
-					"cost_center": cost_center,
+					"cost_center": self.cost_center,
 					"credit_in_account_currency": flt(self.total_amount),
 					"credit": flt(self.total_amount),
 				})
@@ -65,6 +62,7 @@ class POL(Document):
 		con = frappe.new_doc("Consumed POL")	
 		con.equipment = self.equipment
 		con.pol_type = self.pol_type
+		con.branch = self.branch
 		con.date = self.date
 		con.qty = self.qty
 		con.submit()

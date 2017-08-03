@@ -36,11 +36,12 @@ def get_employees(date, project=None):
 
 
 @frappe.whitelist()
-def mark_employee_attendance(employee_list, status, date, company=None):
+def mark_employee_attendance(employee_list, status, date, project, company=None):
 	employee_list = json.loads(employee_list)
 	for employee in employee_list:
 		attendance = frappe.new_doc("MR Attendance")
 		attendance.muster_roll_employee = employee['name']
 		attendance.date = date
+		attendance.project = project
 		attendance.status = status
 		attendance.submit()

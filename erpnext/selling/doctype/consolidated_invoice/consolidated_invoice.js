@@ -66,7 +66,6 @@ function get_invoices(from_date, to_date, item_code, customer, cost_center) {
 
 					total_amount += invoice['outstanding_amount']
 					total_qty += invoice['accepted_qty']
-					msgprint("QTY: " + invoice['accepted_qty'])
 				});
 
 				cur_frm.set_value("total_amount", total_amount)

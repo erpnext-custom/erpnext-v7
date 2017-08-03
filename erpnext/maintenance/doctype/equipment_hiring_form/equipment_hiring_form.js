@@ -44,6 +44,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
 	}
 }*/
 
+cur_frm.add_fetch("cost_center", "branch", "branch")
 cur_frm.add_fetch("customer", "location", "address")
 cur_frm.add_fetch("customer", "telephone_and_fax", "contact_number")
 

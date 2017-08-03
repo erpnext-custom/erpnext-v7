@@ -7,4 +7,20 @@ import frappe
 from frappe.model.document import Document
 
 class POLIssueReport(Document):
-	pass
+	def validate(self):
+		if not items:
+			frappe.throw("Should have a POL Issue Details to Submit")
+
+	def on_submit(self):
+		self.consume_pol()
+
+	def consume_pol(self):
+		for a in self.items:
+			con = frappe.new_doc("Consumed POL")	
+			con.equipment = a.equipment
+			con.branch = a.branch
+			con.pol_type = a.pol_type
+			con.date = self.date
+			con.qty = self.qty
+			con.submit()
+

@@ -60,9 +60,6 @@ class JobCard(Document):
 	##
 	def post_journal_entry(self):
 		goods_account, services_account, receivable_account, maintenance_account = self.get_default_settings()
-		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
-		if not cost_center:
-			frappe.throw("No Cost Center has been assigned against " + str(self.branch))
 
 		if goods_account and services_account and receivable_account:
 			je = frappe.new_doc("Journal Entry")
@@ -84,7 +81,7 @@ class JobCard(Document):
 							"account": account_name,
 							"reference_type": "Job Card",
 							"reference_name": self.name,
-							"cost_center": cost_center,
+							"cost_center": self.cost_center,
 							"credit_in_account_currency": flt(amount),
 							"credit": flt(amount),
 						})
@@ -94,7 +91,7 @@ class JobCard(Document):
 						"account": maintenance_account,
 						"reference_type": "Job Card",
 						"reference_name": self.name,
-						"cost_center": cost_center,
+						"cost_center": self.cost_center,
 						"debit_in_account_currency": flt(self.total_amount),
 						"debit": flt(self.total_amount),
 					})
@@ -106,7 +103,7 @@ class JobCard(Document):
 						"party": self.customer,
 						"reference_type": "Job Card",
 						"reference_name": self.name,
-						"cost_center": cost_center,
+						"cost_center": self.cost_center,
 						"debit_in_account_currency": flt(self.total_amount),
 						"debit": flt(self.total_amount),
 					})
@@ -127,7 +124,6 @@ class JobCard(Document):
 def make_bank_entry(frm=None):
 	if frm:
 		job = frappe.get_doc("Job Card", frm)
-		cost_center = frappe.db.get_value("Branch", job.branch, "cost_center")
 		revenue_bank_account = frappe.db.get_value("Branch", job.branch, "revenue_bank_account")
 		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
 		if not revenue_bank_account:
@@ -146,7 +142,7 @@ def make_bank_entry(frm=None):
 
 		je.append("accounts", {
 				"account": revenue_bank_account,
-				"cost_center": cost_center,
+				"cost_center": self.cost_center,
 				"debit_in_account_currency": flt(total_amount),
 				"debit": flt(total_amount),
 			})
@@ -157,7 +153,7 @@ def make_bank_entry(frm=None):
 				"party": job.customer,
 				"reference_type": "Job Card",
 				"reference_name": job.name,
-				"cost_center": cost_center,
+				"cost_center": self.cost_center,
 				"credit_in_account_currency": flt(total_amount),
 				"credit": flt(total_amount),
 			})

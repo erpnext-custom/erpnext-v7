@@ -20,6 +20,7 @@ frappe.ui.form.on('Break Down Report', {
 	}
 });
 
+cur_frm.add_fetch("cost_center", "branch", "branch");
 cur_frm.add_fetch("customer", "customer_group", "client");
 cur_frm.add_fetch("equipment", "equipment_model", "equipment_model");
 cur_frm.add_fetch("equipment", "equipment_type", "equipment_type");

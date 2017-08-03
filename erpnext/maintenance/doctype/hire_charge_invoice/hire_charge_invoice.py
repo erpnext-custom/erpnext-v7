@@ -74,9 +74,6 @@ class HireChargeInvoice(Document):
 		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
 		advance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_advance_account")
 		hire_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_account")
-		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
-		if not cost_center:
-			frappe.throw("No Cost Center has been assigned against " + str(self.branch))
 
 		if hire_account and advance_account and receivable_account:
 			je = frappe.new_doc("Journal Entry")
@@ -92,7 +89,7 @@ class HireChargeInvoice(Document):
 						"account": hire_account,
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
-						"cost_center": cost_center,
+						"cost_center": self.cost_center,
 						"credit_in_account_currency": flt(self.total_invoice_amount),
 						"credit": flt(self.total_invoice_amount),
 					})
@@ -104,7 +101,7 @@ class HireChargeInvoice(Document):
 						"party": self.customer,
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
-						"cost_center": cost_center,
+						"cost_center": self.cost_center,
 						"debit_in_account_currency": flt(self.advance_amount),
 						"debit": flt(self.advance_amount),
 					})
@@ -116,7 +113,7 @@ class HireChargeInvoice(Document):
 						"party": self.customer,
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
-						"cost_center": cost_center,
+						"cost_center": self.cost_center,
 						"debit_in_account_currency": flt(self.balance_amount),
 						"debit": flt(self.balance_amount),
 					})
@@ -169,7 +166,6 @@ def get_advances(hire_name):
 def make_bank_entry(frm=None):
 	if frm:
 		invoice = frappe.get_doc("Hire Charge Invoice", frm)
-		cost_center = frappe.db.get_value("Branch", invoice.branch, "cost_center")
 		revenue_bank_account = frappe.db.get_value("Branch", invoice.branch, "revenue_bank_account")
 		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
 		if not revenue_bank_account:
@@ -192,14 +188,14 @@ def make_bank_entry(frm=None):
 				"party": invoice.customer,
 				"reference_type": "Hire Charge Invoice",
 				"reference_name": invoice.name,
-				"cost_center": cost_center,
+				"cost_center": self.cost_center,
 				"credit_in_account_currency": flt(total_amount),
 				"credit": flt(total_amount),
 			})
 
 		je.append("accounts", {
 				"account": revenue_bank_account,
-				"cost_center": cost_center,
+				"cost_center": self.cost_center,
 				"debit_in_account_currency": flt(total_amount),
 				"debit": flt(total_amount),
 			})
