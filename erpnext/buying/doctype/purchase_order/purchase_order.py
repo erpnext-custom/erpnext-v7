@@ -378,6 +378,7 @@ def make_stock_entry(purchase_order, item_code):
 	purchase_order = frappe.get_doc("Purchase Order", purchase_order)
 
 	stock_entry = frappe.new_doc("Stock Entry")
+	stock_entry.branch = purchase_order.branch
 	stock_entry.purpose = "Subcontract"
 	stock_entry.purchase_order = purchase_order.name
 	stock_entry.supplier = purchase_order.supplier

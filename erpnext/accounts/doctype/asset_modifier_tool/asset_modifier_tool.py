@@ -22,7 +22,8 @@ def make_gl_entry(asset_account, credit_account, value, asset, start_date):
 		"company": asset.company,
 		"remark": "Value (" + str(value) +" ) added to " + asset.name + " (" + asset.asset_name + ") ",
 		"user_remark": "Value (" + str(value) +" ) added to " + asset.name + " (" + asset.asset_name + ") ",
-		"posting_date": start_date
+		"posting_date": start_date,
+		"branch": asset.branch
 		})
 
 	#credit account update

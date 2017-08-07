@@ -1,5 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
+cur_frm.add_fetch("project", "branch", "branch")
+cur_frm.add_fetch("project", "cost_center", "cost_center")
 
 frappe.ui.form.on('Process MR Payment', {
 	onload: function(frm) {
@@ -8,6 +10,9 @@ frappe.ui.form.on('Process MR Payment', {
 		}
 		if(!frm.doc.to_date) {
 			frm.set_value("to_date", frappe.datetime.month_end(get_today()))	
+		}
+		if(!frm.doc.posting_date) {
+			frm.set_value("posting_date", get_today())	
 		}
 	},
 	load_records: function(frm) {
@@ -32,6 +37,8 @@ function get_records(from_date, to_date, project) {
 		callback: function(r) {
 			if(r.message) {
 				var total_overall_amount = 0;
+				var ot_amount = 0; 
+				var wages_amount = 0;
 				cur_frm.clear_table("items");
 				r.message.forEach(function(mr) {
 					if(mr['number_of_days'] > 0 || mr['number_of_hours'] > 0) {
@@ -49,11 +56,17 @@ function get_records(from_date, to_date, project) {
 						refresh_field("items");
 
 						total_overall_amount += row.total_amount 
+						ot_amount += row.total_ot_amount
+						wages_amount += row.total_wage
 					}
 				});
 
 				cur_frm.set_value("total_overall_amount", total_overall_amount)
+				cur_frm.set_value("wages_amount", wages_amount)
+				cur_frm.set_value("ot_amount", ot_amount)
 				cur_frm.refresh_field("total_overall_amount")
+				cur_frm.refresh_field("wages_amount")
+				cur_frm.refresh_field("ot_amount")
 				cur_frm.refresh_field("items");
 			}
 		}

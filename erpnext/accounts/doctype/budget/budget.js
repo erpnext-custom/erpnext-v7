@@ -113,3 +113,14 @@ frappe.ui.form.on("Budget Account", "validate", function(frm, cdt, cdn) {
 function calculate_budget_amount(child) {
     return (child.initial_budget + (child.supplementary_budget || 0) + (child.budget_received || 0)  - (child.budget_sent || 0) )
 }
+
+frappe.ui.form.on("Budget", "refresh", function(frm) {
+    cur_frm.set_query("cost_center", function() {
+        return {
+            "filters": {
+                "is_group": 0,
+		"is_disabled": 0
+            }
+        };
+    });
+});

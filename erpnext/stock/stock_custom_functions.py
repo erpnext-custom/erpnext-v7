@@ -19,9 +19,9 @@ def getItemCode(item_group):
 	return {
 		"Consumable": 100000,
 		"Fixed Asset": 200000,
-		"Mines Product": 300000,
-		"Services (miscellaneous)": 400000,
-		"Services (works)": 500000,
+		"Trading Goods": 300000,
+		"Services Miscellaneous": 400000,
+		"Services Works": 500000,
 	}.get(item_group, 000000)
 
 #select stock entry templates based on dates

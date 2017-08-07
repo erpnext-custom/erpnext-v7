@@ -1,5 +1,6 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
+cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on("Project", {
 	setup: function(frm) {

@@ -53,6 +53,7 @@ class EquipmentHiringForm(Document):
 			je.naming_series = 'Bank Receipt Voucher'
 			je.remark = 'Advance payment against : ' + self.name;
 			je.posting_date = frappe.utils.nowdate()
+			je.branch = self.branch
 
 			je.append("accounts", {
 					"account": advance_account,

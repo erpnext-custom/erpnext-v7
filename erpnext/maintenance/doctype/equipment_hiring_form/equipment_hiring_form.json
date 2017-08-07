@@ -6,6 +6,7 @@
  "beta": 0, 
  "creation": "2017-07-21 05:24:02.199872", 
  "custom": 0, 
+ "default_print_format": "Equipment Hiring Form", 
  "docstatus": 0, 
  "doctype": "DocType", 
  "document_type": "", 
@@ -698,7 +699,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-08-03 14:47:53.375730", 
+ "modified": "2017-08-07 15:40:52.173442", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Hiring Form", 
@@ -706,11 +707,11 @@
  "owner": "Administrator", 
  "permissions": [
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 1, 
    "if_owner": 0, 
@@ -722,7 +723,7 @@
    "role": "Fleet User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }, 
   {

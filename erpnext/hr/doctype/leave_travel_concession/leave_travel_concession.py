@@ -14,7 +14,7 @@ class LeaveTravelConcession(Document):
 	def on_submit(self):
 		cc_amount = {}
 		for a in self.items:
-			cc = frappe.db.get_value("Division", frappe.db.get_value("Employee", a.employee, "division"), "cost_center")
+			cc = frappe.db.get_value("Employee", a.employee, "cost_center")
 			if cc_amount.has_key(cc):
 				cc_amount[cc] = cc_amount[cc] + a.amount
 			else:
@@ -30,10 +30,19 @@ class LeaveTravelConcession(Document):
 		je.naming_series = 'Bank Payment Voucher'
 		je.remark = 'LTC payment against : ' + self.name;
 		je.posting_date = self.posting_date
+		je.branch = self.branch
+
+		ltc_account = frappe.db.get_single_value("HR Accounts Settings", "ltc_account")
+		if not ltc_account:
+			frappe.throw("Setup LTC Account in HR Accounts Settings")
+
+		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+		if not expense_bank_account:
+			frappe.throw("Setup Expense Bank Account in Branch")
 
 		for key in cc_amount.keys():
 			je.append("accounts", {
-					"account": "Leave Travel Concession - SMCL",
+					"account": ltc_account,
 					"reference_type": "Leave Travel Concession",
 					"reference_name": self.name,
 					"cost_center": key,
@@ -41,14 +50,14 @@ class LeaveTravelConcession(Document):
 					"debit": flt(cc_amount[key]),
 				})
 		
-		je.append("accounts", {
-				"account": "Bank of Bhutan Ltd - 100891887 - SMCL",
-				"reference_type": "Leave Travel Concession",
-				"reference_name": self.name,
-				"cost_center": "Corporate Head Office - SMCL",
-				"credit_in_account_currency": flt(self.total_amount),
-				"credit": flt(self.total_amount),
-			})
+			je.append("accounts", {
+					"account": expense_bank_account,
+					"reference_type": "Leave Travel Concession",
+					"reference_name": self.name,
+					"cost_center": key,
+					"credit_in_account_currency": flt(cc_amount[key]),
+					"credit": flt(cc_amount[key]),
+				})
 
 		je.insert()
 

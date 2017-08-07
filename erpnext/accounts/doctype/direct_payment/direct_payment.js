@@ -1,8 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-cur_frm.add_fetch("branch", "expense_bank_account", "credit_account")
-cur_frm.add_fetch("branch", "cost_center", "cost_center")
+cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on('Direct Payment', {
 	refresh: function(frm) {
@@ -27,6 +26,26 @@ frappe.ui.form.on('Direct Payment', {
 	},
 	"tds_percent": function(frm) {
 		calculate_tds(frm);
+	},
+	"branch": function(frm) {
+		frappe.call({
+			method: "frappe.client.get_value",
+			args: {
+				doctype: "Branch", 
+				fieldname:"expense_bank_account",
+				filters: {
+					name: frm.doc.branch
+				}
+			},
+			callback: function(r) {
+				if(r.message.expense_bank_account) {
+					cur_frm.set_value("credit_account", r.message.expense_bank_account)
+				}
+				else {
+					frappe.throw("Setup an Expense Bank Account in the Branch")
+				}
+			}
+		})
 	}
 });
 

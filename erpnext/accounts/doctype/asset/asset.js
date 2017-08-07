@@ -171,7 +171,8 @@ erpnext.asset.make_purchase_invoice = function(frm) {
 			"item_code": frm.doc.item_code,
 			"gross_purchase_amount": frm.doc.gross_purchase_amount,
 			"company": frm.doc.company,
-			"posting_date": frm.doc.purchase_date
+			"posting_date": frm.doc.purchase_date,
+			"branch": frm.doc.branch
 		},
 		method: "erpnext.accounts.doctype.asset.asset.make_purchase_invoice",
 		callback: function(r) {
@@ -186,7 +187,8 @@ erpnext.asset.make_sales_invoice = function(frm) {
 		args: {
 			"asset": frm.doc.name,
 			"item_code": frm.doc.item_code,
-			"company": frm.doc.company
+			"company": frm.doc.company,
+			"branch": frm.doc.branch
 		},
 		method: "erpnext.accounts.doctype.asset.asset.make_sales_invoice",
 		callback: function(r) {
@@ -306,6 +308,8 @@ erpnext.asset.scrap_asset = function(frm) {
 //custom Scripts
 //Set Asset Name from Item Code
 cur_frm.add_fetch("item_code", "item_name", "asset_name");
+cur_frm.add_fetch("issued_to", "cost_center", "cost_center");
+cur_frm.add_fetch("issued_to", "branch", "branch");
 
 //Set next depreciation date as the last day of the month
 cur_frm.cscript.onload = function(doc) {
@@ -364,42 +368,6 @@ frappe.call({
 });
 
 };
-
-//Set Depreciation rate based on asset category
-cur_frm.cscript.issued_to = function(doc) {
-frappe.call({
-    'method': 'frappe.client.get',
-    'args': {
-        'doctype': 'Employee',
-        'filters': {
-            'name': doc.issued_to
-          },
-        'fields':['division']
-        },
-       callback: function(r){
-           if (r.message) {
-
-frappe.call({
-    'method': 'frappe.client.get',
-    'args': {
-        'doctype': 'Division',
-        'filters': {
-            'd_name': r.message.division
-          },
-        'fields':['cost_center']
-        },
-       callback: function(r){
-           if (r.message) {
-               msgprint(r.message.division)
-               cur_frm.set_value("cost_center", r.message.cost_center)
-           }
-       }
-});
-
-           }
-       }
-});
-}
 
 // gross amount calculation
 frappe.ui.form.on("Asset", "asset_rate", function(frm) {

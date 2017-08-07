@@ -141,13 +141,13 @@ $.extend(erpnext.item, {
 
 		frm.fields_dict['buying_cost_center'].get_query = function(doc) {
 			return {
-				filters: { "is_group": 0 }
+				filters: { "is_group": 0, "is_disabled": 0 }
 			}
 		}
 
 		frm.fields_dict['selling_cost_center'].get_query = function(doc) {
 			return {
-				filters: { "is_group": 0 }
+				filters: { "is_group": 0, "is_disabled": 0 }
 			}
 		}
 

@@ -38,6 +38,7 @@ class POL(Document):
 			je.naming_series = 'Bank Payment Voucher'
 			je.remark = 'Payment against : ' + self.name;
 			je.posting_date = self.date
+			je.branch = self.branch
 
 			je.append("accounts", {
 					"account": pol_account,

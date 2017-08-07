@@ -14,6 +14,7 @@ class MusterRollAttendance(Document):
 
 @frappe.whitelist()
 def get_employees(date, project=None):
+	frappe.msgprint("d")
 	attendance_not_marked = []
 	attendance_marked = []
 	employee_list = frappe.get_list("Muster Roll Employee", fields=["name", "person_name"], filters={

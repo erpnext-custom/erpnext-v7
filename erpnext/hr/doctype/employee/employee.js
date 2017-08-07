@@ -64,14 +64,14 @@ cur_frm.add_fetch("cost_center", "branch", "branch")
 cur_frm.fields_dict['division'].get_query = function(doc, dt, dn) {
        return {
                //filters:{"dpt_name": doc.department} // Ver20160703.1 commented by SSK
-               filters:{"dpt_name": doc.department, "branch": doc.branch} //Ver20160703.1 Added by SSK
+               filters:{"dpt_name": doc.department} //Ver20160703.1 Added by SSK
        }
 }
 
 cur_frm.fields_dict['section'].get_query = function(doc, dt, dn) {
        return {
                //filters:{"d_name": doc.division} //Ver20160703.1 commented by SSK
-               filters:{"d_name": doc.division, "dpt_name": doc.department, "branch": doc.branch} //Ver20160703.1 added by SSK
+               filters:{"d_name": doc.division, "dpt_name": doc.department} //Ver20160703.1 added by SSK
        }
 }
 

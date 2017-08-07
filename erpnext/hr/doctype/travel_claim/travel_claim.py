@@ -90,6 +90,7 @@ class TravelClaim(Document):
 		je.naming_series = 'Bank Payment Voucher'
 		je.remark = 'Claim payment against : ' + self.name;
 		je.posting_date = self.posting_date
+		je.branch = self.branch
 
 		total_amt = flt(self.total_claim_amount) + flt(self.extra_claim_amount)
 	

@@ -22,6 +22,7 @@ class DirectPayment(Document):
 		je.naming_series = 'Bank Payment Voucher'
 		je.remark = 'Direct payment against : ' + self.name;
 		je.posting_date = self.posting_date
+		je.branch = self.branch
 
 		je.append("accounts", {
 				"account": self.budget_account,

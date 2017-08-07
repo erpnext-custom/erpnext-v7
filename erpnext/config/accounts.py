@@ -365,6 +365,11 @@ def get_data():
 					"name": "Maintenance Accounts Settings",
 					"description": _("Account Settings for Maintenance Accounting")
 				},
+				{
+					"type": "doctype",
+					"name": "Projects Accounts Settings",
+					"description": _("Account Settings for Projects Accounting")
+				},
 			]
 		},
 		{

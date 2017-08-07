@@ -83,7 +83,8 @@ class HireChargeInvoice(Document):
 			je.naming_series = 'Hire Invoice'
 			je.remark = 'Payment against : ' + self.name;
 			je.posting_date = self.posting_date
-
+			je.branch = self.branch
+			
 			if self.total_invoice_amount > 0:
 				je.append("accounts", {
 						"account": hire_account,
@@ -181,6 +182,7 @@ def make_bank_entry(frm=None):
 		je.remark = 'Payment Received against : ' + invoice.name;
 		je.posting_date = invoice.posting_date
 		total_amount = invoice.total_invoice_amount
+		je.branch = self.branch
 
 		je.append("accounts", {
 				"account": receivable_account,

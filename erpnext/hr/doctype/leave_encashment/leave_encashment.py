@@ -138,6 +138,7 @@ class LeaveEncashment(Document):
                 je.voucher_type = 'Bank Entry'
                 je.naming_series = 'Bank Payment Voucher'
                 je.company = employee.company
+		je.branch = self.branch
                 je.remark = 'Payment against Leave Encashment: ' + self.name;
                 je.posting_date = self.application_date
                 je.total_amount_in_words =  money_in_words(flt(basic_pay)-flt(salary_tax))

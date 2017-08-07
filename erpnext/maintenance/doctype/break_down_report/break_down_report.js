@@ -34,5 +34,13 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
             }
         };
     });
+    cur_frm.set_query("cost_center", function() {
+        return {
+            "filters": {
+		"is_group": 0,
+		"is_disabled": 0
+            }
+        };
+    });
 });
 

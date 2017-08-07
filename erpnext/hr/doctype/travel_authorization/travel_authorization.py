@@ -60,7 +60,8 @@ class TravelAuthorization(Document):
 				je.naming_series = 'Bank Payment Voucher'
 				je.remark = 'Advance Payment against Travel Authorization: ' + self.name;
 				je.posting_date = self.posting_date
-				
+				je.branch = self.branch
+	
 				je.append("accounts", {
 					"account": advance_account,
 					"party_type": "Employee",

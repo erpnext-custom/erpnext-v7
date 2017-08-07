@@ -62,6 +62,20 @@ def get_data():
 					"name": "Process MR Payment",
 					"description": _("Process Payments for Project Muster Roll"),
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "MR Attendance Sheet",
+					"description": _("MR Attendance Sheet"),
+					"doctype": "MR Attendance"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "MR Overtime Register",
+					"description": _("MR Attendance Sheet"),
+					"doctype": "Overtime Entry"
+				},
 			]
 		},
 		{

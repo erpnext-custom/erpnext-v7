@@ -56,6 +56,7 @@ class OvertimeApplication(Document):
 		je.remark = 'Payment Paid against : ' + self.name;
 		je.posting_date = self.posting_date
 		total_amount = self.total_amount
+		je.branch = self.branch
 
 		je.append("accounts", {
 				"account": expense_bank_account,

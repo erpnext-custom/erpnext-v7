@@ -69,6 +69,7 @@ class JobCard(Document):
 			je.naming_series = 'Maintenance Invoice'
 			je.remark = 'Payment against : ' + self.name;
 			je.posting_date = self.posting_date
+			je.branch = self.branch
 
 			for a in ["Services", "Goods"]:
 				account_name = goods_account
@@ -134,12 +135,13 @@ def make_bank_entry(frm=None):
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
 		je.title = "Payment for Job Card (" + job.name + ")"
-		je.voucher_type = 'Maintenance Invoice'
-		je.naming_series = 'Maintenance Invoice'
+		je.voucher_type = 'Bank Entry'
+		je.naming_series = 'Bank Receipt Voucher'
 		je.remark = 'Payment Received against : ' + job.name;
 		je.posting_date = job.posting_date
 		total_amount = job.total_amount
-
+		je.branch = self.branch
+	
 		je.append("accounts", {
 				"account": revenue_bank_account,
 				"cost_center": self.cost_center,

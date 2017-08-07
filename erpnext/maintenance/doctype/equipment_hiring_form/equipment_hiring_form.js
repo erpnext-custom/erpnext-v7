@@ -144,14 +144,5 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 			filters:[['branch', "=", frm.doc.branch], ['equipment_hire_form','=','']]
 		}
 	}
-   
-	// cur_frm.set_query("custo,mer", function() {
-	cur_frm.fields_dict['customer'].get_query = function(doc, dt, dn) {
-        	return {
-            		filters: {
-				"disabled": 1,
-            		}
-        	};
-    	};
 });
 

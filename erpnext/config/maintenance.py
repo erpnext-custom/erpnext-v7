@@ -41,6 +41,11 @@ def get_data():
 					"name": "Equipment Accessories",
 					"description": _("Equipment Accessories Details"),
 				},
+				{
+					"type": "doctype",
+					"name": "POL Type",
+					"description": _("POL Types"),
+				},
 			]
 		},
 		{
