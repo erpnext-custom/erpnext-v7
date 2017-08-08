@@ -377,24 +377,30 @@ frappe.ui.form.on("Purchase Invoice", {
 //custom Scripts
 cur_frm.cscript.type = function(doc) {
     //Set the initial value for tds rate
+    if(doc.type) {
+	cur_frm.toggle_reqd("tds_cost_center", doc.type)
+    }
+
+    var percent = 0;
     switch(doc.type) {
       case "Domestic Vendor":
          cur_frm.set_value("tds_rate", 2);
-         cur_frm.set_value("tds_account", "TDS-2% - SMCL");
+         percent = 2  
          break;
       case "International Vendor":
          cur_frm.set_value("tds_rate", 3);
-         cur_frm.set_value("tds_account", "TDS-3% - SMCL");
+         percent = 3  
          break;
       case "Rent and Consultancy":
          cur_frm.set_value("tds_rate", 5);
-         cur_frm.set_value("tds_account", "TDS-5% - SMCL");
+         percent = 5 
          break;
       case "Dividend":
          cur_frm.set_value("tds_rate", 10);
-         cur_frm.set_value("tds_account", "TDS on dividend - SMCL");
+         percent = 10  
          break;
       default:
+	percent = 0 
     }
 
     if(!doc.tds_taxable_amount) {
@@ -407,6 +413,18 @@ cur_frm.cscript.type = function(doc) {
         cur_frm.set_value("tds_amount", (doc.tds_rate/100 ) * doc.tds_taxable_amount);
     }
     doUpdates(doc);
+
+    if(percent > 0) {
+	frappe.call({
+		method: "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.get_tds_accounts",
+		args: {
+			"percent": percent	
+		},
+		callback: function(r) {
+			cur_frm.set_value("tds_account", r.message);
+		}
+	})
+    }
 };
 
 cur_frm.cscript.tds_taxable_amount = function(doc) {
@@ -415,10 +433,7 @@ cur_frm.cscript.tds_taxable_amount = function(doc) {
 
 //Do necessary updates
 function doUpdates(doc) {
-    //Set cost_center from product
-    cur_frm.set_value("tds_cost_center", "CHQR-FAD - SMCL");
     //Set the value for tds amount
-    msgprint(doc.party_account_currency);
     cur_frm.set_value("tds_amount", (doc.tds_rate/100 ) * doc.tds_taxable_amount);
     if(doc.party_account_currency != cur_frm.doc.currency) {
          cur_frm.set_value("base_tds_amount", (doc.tds_rate/100 ) * doc.tds_taxable_amount * doc.conversion_rate);

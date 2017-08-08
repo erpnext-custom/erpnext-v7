@@ -24,7 +24,11 @@ class Employee(Document):
 			throw(_("Please setup Employee Naming System in Human Resource > HR Settings"))
 		else:
 			if naming_method == 'Naming Series':
-				self.name = make_autoname(self.naming_series + '.####')
+				x = make_autoname(self.naming_series + '.###')
+				y = make_autoname("MM.#")
+				eid = x[:6] + y[:2] + x[6:9]
+				self.name = eid
+				self.yearid = x
 			elif naming_method == 'Employee Number':
 				self.name = self.employee_number
 

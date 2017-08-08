@@ -182,7 +182,7 @@ def make_bank_entry(frm=None):
 		je.remark = 'Payment Received against : ' + invoice.name;
 		je.posting_date = invoice.posting_date
 		total_amount = invoice.total_invoice_amount
-		je.branch = self.branch
+		je.branch = invoice.branch
 
 		je.append("accounts", {
 				"account": receivable_account,
@@ -190,14 +190,14 @@ def make_bank_entry(frm=None):
 				"party": invoice.customer,
 				"reference_type": "Hire Charge Invoice",
 				"reference_name": invoice.name,
-				"cost_center": self.cost_center,
+				"cost_center": invoice.cost_center,
 				"credit_in_account_currency": flt(total_amount),
 				"credit": flt(total_amount),
 			})
 
 		je.append("accounts", {
 				"account": revenue_bank_account,
-				"cost_center": self.cost_center,
+				"cost_center": invoice.cost_center,
 				"debit_in_account_currency": flt(total_amount),
 				"debit": flt(total_amount),
 			})

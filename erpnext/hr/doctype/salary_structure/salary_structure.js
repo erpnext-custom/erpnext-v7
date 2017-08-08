@@ -817,10 +817,18 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 			} 
 			else{
 				if (calc_tds_amt > 0){
-					var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
-					new_child.salary_component = "Salary Tax";
-					new_child.amount = calc_tds_amt;
-					cur_frm.refresh();
+					var tax_done = 0
+					cur_frm.doc.deductions.forEach(function(d) { 
+						if(d.salary_component = "Salary Tax") {
+							tax_done = 1
+						}
+					})
+					if (tax_done == 0) {
+						var new_child = frappe.model.add_child(doc, "Salary Detail","deductions");
+						new_child.salary_component = "Salary Tax";
+						new_child.amount = calc_tds_amt;
+						cur_frm.refresh();
+					}
 				}
 			}					
 		}
