@@ -140,11 +140,11 @@ def make_bank_entry(frm=None):
 		je.remark = 'Payment Received against : ' + job.name;
 		je.posting_date = job.posting_date
 		total_amount = job.total_amount
-		je.branch = self.branch
+		je.branch = job.branch
 	
 		je.append("accounts", {
 				"account": revenue_bank_account,
-				"cost_center": self.cost_center,
+				"cost_center": job.cost_center,
 				"debit_in_account_currency": flt(total_amount),
 				"debit": flt(total_amount),
 			})
@@ -155,7 +155,7 @@ def make_bank_entry(frm=None):
 				"party": job.customer,
 				"reference_type": "Job Card",
 				"reference_name": job.name,
-				"cost_center": self.cost_center,
+				"cost_center": job.cost_center,
 				"credit_in_account_currency": flt(total_amount),
 				"credit": flt(total_amount),
 			})

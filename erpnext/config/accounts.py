@@ -370,6 +370,11 @@ def get_data():
 					"name": "Projects Accounts Settings",
 					"description": _("Account Settings for Projects Accounting")
 				},
+				{
+					"type": "doctype",
+					"name": "Sales Accounts Settings",
+					"description": _("Account Settings for Sales Accounting")
+				},
 			]
 		},
 		{

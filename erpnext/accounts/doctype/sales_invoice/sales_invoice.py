@@ -602,7 +602,9 @@ class SalesInvoice(SellingController):
 					)
 					
 					if item.normal_loss_amt:
-						normal_account = frappe.db.get_value('Company', self.company, 'normal_loss_account') 
+						normal_account = frappe.db.get_single_value("Sales Accounts Settings", "normal_loss_account")
+						if not normal_account:
+							frappe.throw("Setup Normal Loss Account in Sales Accounts Settings")
 						account_currency = get_account_currency(normal_account)
 						gl_entries.append(
 							self.get_gl_dict({
@@ -633,7 +635,9 @@ class SalesInvoice(SellingController):
 						)
 
 					if item.abnormal_loss_amt:
-						abnormal_account = frappe.db.get_value('Company', self.company, 'abnormal_loss_account') 
+						abnormal_account = frappe.db.get_single_value("Sales Accounts Settings", "abnormal_loss_account")
+						if not abnormal_account:
+							frappe.throw("Setup Abnormal Loss Account in Sales Accounts Settings")
 						account_currency = get_account_currency(abnormal_account)
 						gl_entries.append(
 							self.get_gl_dict({

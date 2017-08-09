@@ -108,3 +108,13 @@ frappe.ui.form.on("Project Task", {
 	},
 });
 
+frappe.ui.form.on("Project", "refresh", function(frm) {
+    cur_frm.set_query("cost_center", function() {
+        return {
+            "filters": {
+		"is_group": 0,
+		"is_disabled": 0
+            }
+        };
+    });
+})

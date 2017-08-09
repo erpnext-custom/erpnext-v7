@@ -47,9 +47,9 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Muster Roll Overtime Tool",
-					"label": "Muster Roll Overtime Tool",
-					"description": _("Muster Roll Overtime Tool"),
+					"name": "Project Overtime Tool",
+					"label": "Project Overtime Tool",
+					"description": _("Overtime Tool for MR and GEP"),
 				},
 				{
 					"type": "doctype",

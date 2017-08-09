@@ -2,6 +2,8 @@
 // For license information, please see license.txt
 
 cur_frm.add_fetch("cost_center", "branch", "branch")
+cur_frm.add_fetch("project", "cost_center", "cost_center")
+cur_frm.add_fetch("project", "branch", "branch")
 
 frappe.ui.form.on('GEP Employee', {
 	onload: function(frm) {

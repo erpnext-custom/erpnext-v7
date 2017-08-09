@@ -22,6 +22,7 @@ def getItemCode(item_group):
 		"Trading Goods": 300000,
 		"Services Miscellaneous": 400000,
 		"Services Works": 500000,
+		"Mines and Asphelt": 600000
 	}.get(item_group, 000000)
 
 #select stock entry templates based on dates
@@ -29,6 +30,7 @@ def getItemCode(item_group):
 def get_template_list(doctype, txt, searchfield, start, page_len, filters): 
 	if filters['naming_series']:
 		query = "SELECT name, template_name FROM `tabStock Price Template` WHERE \'" + filters['posting_date'] +"\'  BETWEEN from_date AND to_date AND naming_series = \'" + filters['naming_series'] + "\' and docstatus = 1";
+		frappe.msgprint(str(query))
 		return frappe.db.sql(query);
 	
 

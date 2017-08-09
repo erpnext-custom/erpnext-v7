@@ -5,8 +5,21 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.utils import flt
 
 class ProcessMRPayment(Document):
+	def validate(self):
+		if self.items:
+			total_ot = total_wage = 0
+			for a in self.items:
+				total_ot += flt(a.total_ot_amount)
+				total_wage += flt(a.total_wage)
+			total = total_ot + total_wage
+			self.wages_amount = total_wage
+			self.ot_amount = total_ot
+			self.total_overall_amount = total
+			
+
 	def on_submit(self):
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
 		if not expense_bank_account:

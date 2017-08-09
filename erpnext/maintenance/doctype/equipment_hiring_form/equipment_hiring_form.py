@@ -9,10 +9,8 @@ from frappe.utils import cstr, flt, fmt_money, formatdate
 
 class EquipmentHiringForm(Document):
 	def validate(self):
-		for a in self.approved_items:
-			for b in self.approved_items:
-				if a.equipment == b.equipment and a.idx != b.idx:
-					frappe.throw("Duplicate entries for equipments in row " + str(a.idx) + " and " + str(b.idx))
+		self.check_duplicate()
+		self.calculate_totals()
 
 	def before_submit(self):
 		if self.private == "Private" and self.advance_amount <= 0:
@@ -32,6 +30,22 @@ class EquipmentHiringForm(Document):
 			frappe.throw("You need to cancel the journal entry related to this job card first!")
 		
 		self.db_set("advance_journal", '')
+
+	def check_duplicate(self):
+		for a in self.approved_items:
+			for b in self.approved_items:
+				if a.equipment == b.equipment and a.idx != b.idx:
+					frappe.throw("Duplicate entries for equipments in row " + str(a.idx) + " and " + str(b.idx))
+
+	def calculate_totals(self):
+		if self.approved_items:
+			total = 0
+			for a in self.approved_items:
+				total += flt(a.grand_total)
+			self.total_hiring_amount = total
+			if self.private == "Private":
+				self.advance_amount = total
+		
 
 	def assign_hire_form_to_equipment(self):
 		for a in self.approved_items:

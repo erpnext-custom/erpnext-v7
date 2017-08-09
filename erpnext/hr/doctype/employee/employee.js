@@ -23,7 +23,7 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 
 	refresh: function() {
 		var me = this;
-		erpnext.toggle_naming_series();
+		//erpnext.toggle_naming_series();
 	},
 
 	date_of_birth: function() {
@@ -93,5 +93,17 @@ cur_frm.fields_dict['cost_center'].get_query = function(doc, dt, dn) {
 			"is_group": 0,
 			"is_disabled": 0
 		}
+       }
+}
+
+cur_frm.fields_dict['gewog'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"dzongkhag": doc.dzongkhag}
+       }
+}
+
+cur_frm.fields_dict['village'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"gewog": doc.gewog}
        }
 }

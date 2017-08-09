@@ -831,7 +831,8 @@ frappe.ui.form.on("Payment Entry", "onload", function(frm){
         return {
             "filters": [
                 ["status", "!=", "Used"],
-                ["docstatus", "=", "1"]
+                ["docstatus", "=", "1"],
+                ["branch", "=", frm.doc.branch]
             ]
         }
     });

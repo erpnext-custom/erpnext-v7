@@ -1,4 +1,4 @@
-frappe.ui.form.on("Muster Roll Overtime Tool", {
+frappe.ui.form.on("Project Overtime Tool", {
 	refresh: function(frm) {
 		frm.disable_save();
 	},
@@ -8,28 +8,33 @@ frappe.ui.form.on("Muster Roll Overtime Tool", {
 	},
 
 	number_of_hours: function(frm) {
-		erpnext.muster_roll_overtime_tool.load_employees(frm);
+		erpnext.project_overtime_tool.load_employees(frm);
 	},
 
 	project: function(frm) {
-		erpnext.muster_roll_overtime_tool.load_employees(frm);
+		erpnext.project_overtime_tool.load_employees(frm);
 	},
 
 	date: function(frm) {
-		erpnext.muster_roll_overtime_tool.load_employees(frm);
+		erpnext.project_overtime_tool.load_employees(frm);
+	},
+
+	employee_type: function(frm) {
+		erpnext.project_overtime_tool.load_employees(frm);
 	},
 });
 
 
-erpnext.muster_roll_overtime_tool = {
+erpnext.project_overtime_tool = {
 	load_employees: function(frm) {
-		if(frm.doc.project && frm.doc.date && frm.doc.number_of_hours) {
+		if(frm.doc.employee_type && frm.doc.project && frm.doc.date && frm.doc.number_of_hours) {
 			frappe.call({
-				method: "erpnext.projects.doctype.muster_roll_overtime_tool.muster_roll_overtime_tool.get_employees",
+				method: "erpnext.projects.doctype.project_overtime_tool.project_overtime_tool.get_employees",
 				args: {
 					project: frm.doc.project,
 					date: frm.doc.date,
 					number_of_hours: frm.doc.number_of_hours,
+					employee_type: frm.doc.employee_type,
 				},
 				callback: function(r) {
 					if(r.message['unmarked'].length > 0) {
@@ -148,17 +153,18 @@ erpnext.EmployeeSelector = Class.extend({
 				});
 				if(frm.doc.number_of_hours > 0) {
 					frappe.call({
-						method: "erpnext.projects.doctype.muster_roll_overtime_tool.muster_roll_overtime_tool.allocate_overtime",
+						method: "erpnext.projects.doctype.project_overtime_tool.project_overtime_tool.allocate_overtime",
 						args:{
 							"employee_list":employee_present,
 							"project":frm.doc.project,
 							"date": frm.doc.date,
 							"purpose": frm.doc.purpose,
 							"number_of_hours": frm.doc.number_of_hours,
+							"employee_type": frm.doc.employee_type,
 						},
 
 						callback: function(r) {
-							erpnext.muster_roll_overtime_tool.load_employees(frm);
+							erpnext.project_overtime_tool.load_employees(frm);
 
 						}
 					});
