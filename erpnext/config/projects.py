@@ -47,15 +47,34 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Muster Roll Overtime Tool",
-					"label": "Muster Roll Overtime Tool",
-					"description": _("Muster Roll Overtime Tool"),
+					"name": "Project Overtime Tool",
+					"label": "Project Overtime Tool",
+					"description": _("Overtime Tool for MR and GEP"),
 				},
 				{
 					"type": "doctype",
 					"name": "Project Muster Roll Tool",
 					"label": "Assign Muster Roll To Projects",
 					"description": _("Project Muster Roll Tool"),
+				},
+				{
+					"type": "doctype",
+					"name": "Process MR Payment",
+					"description": _("Process Payments for Project Muster Roll"),
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "MR Attendance Sheet",
+					"description": _("MR Attendance Sheet"),
+					"doctype": "MR Attendance"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "MR Overtime Register",
+					"description": _("MR Attendance Sheet"),
+					"doctype": "Overtime Entry"
 				},
 			]
 		},

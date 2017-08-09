@@ -9,10 +9,8 @@ from frappe.utils import cstr, flt, fmt_money, formatdate
 
 class EquipmentHiringForm(Document):
 	def validate(self):
-		for a in self.approved_items:
-			for b in self.approved_items:
-				if a.equipment == b.equipment and a.idx != b.idx:
-					frappe.throw("Duplicate entries for equipments in row " + str(a.idx) + " and " + str(b.idx))
+		self.check_duplicate()
+		self.calculate_totals()
 
 	def before_submit(self):
 		if self.private == "Private" and self.advance_amount <= 0:
@@ -28,10 +26,26 @@ class EquipmentHiringForm(Document):
 
 	def before_cancel(self):		
 		cl_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
-		if cl_status == 1:
+		if cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this job card first!")
 		
 		self.db_set("advance_journal", '')
+
+	def check_duplicate(self):
+		for a in self.approved_items:
+			for b in self.approved_items:
+				if a.equipment == b.equipment and a.idx != b.idx:
+					frappe.throw("Duplicate entries for equipments in row " + str(a.idx) + " and " + str(b.idx))
+
+	def calculate_totals(self):
+		if self.approved_items:
+			total = 0
+			for a in self.approved_items:
+				total += flt(a.grand_total)
+			self.total_hiring_amount = total
+			if self.private == "Private":
+				self.advance_amount = total
+		
 
 	def assign_hire_form_to_equipment(self):
 		for a in self.approved_items:
@@ -42,11 +56,8 @@ class EquipmentHiringForm(Document):
 	# make necessary journal entry
 	##
 	def post_journal_entry(self):
-		advance_account = frappe.db.get_single_value("Maintenance Settings", "default_advance_account")
-		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
+		advance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_advance_account")
 		revenue_bank = frappe.db.get_value("Branch", self.branch, "revenue_bank_account")
-		if not cost_center:
-			frappe.throw("No Cost Center has been assigned against " + str(self.branch))
 
 		if revenue_bank and advance_account:
 			je = frappe.new_doc("Journal Entry")
@@ -56,6 +67,7 @@ class EquipmentHiringForm(Document):
 			je.naming_series = 'Bank Receipt Voucher'
 			je.remark = 'Advance payment against : ' + self.name;
 			je.posting_date = frappe.utils.nowdate()
+			je.branch = self.branch
 
 			je.append("accounts", {
 					"account": advance_account,
@@ -63,7 +75,7 @@ class EquipmentHiringForm(Document):
 					"party": self.customer,
 					"reference_type": "Equipment Hiring Form",
 					"reference_name": self.name,
-					"cost_center": cost_center,
+					"cost_center": self.cost_center,
 					"credit_in_account_currency": flt(self.advance_amount),
 					"credit": flt(self.advance_amount),
 					"is_advance": 'Yes'
@@ -71,7 +83,7 @@ class EquipmentHiringForm(Document):
 
 			je.append("accounts", {
 					"account": revenue_bank,
-					"cost_center": cost_center,
+					"cost_center": self.cost_center,
 					"debit_in_account_currency": flt(self.advance_amount),
 					"debit": flt(self.advance_amount),
 				})

@@ -23,7 +23,7 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 
 	refresh: function() {
 		var me = this;
-		erpnext.toggle_naming_series();
+		//erpnext.toggle_naming_series();
 	},
 
 	date_of_birth: function() {
@@ -53,23 +53,25 @@ cur_frm.cscript = new erpnext.hr.EmployeeController({frm: cur_frm});
 
 //Custom Scripts
 // Ver 20160703.1 Added by SSK
-cur_frm.fields_dict['department'].get_query = function(doc, dt, dn) {
+/*cur_frm.fields_dict['department'].get_query = function(doc, dt, dn) {
        return {
                filters:{"branch1": doc.branch}
        }
-}
+}*/
+
+cur_frm.add_fetch("cost_center", "branch", "branch")
 
 cur_frm.fields_dict['division'].get_query = function(doc, dt, dn) {
        return {
                //filters:{"dpt_name": doc.department} // Ver20160703.1 commented by SSK
-               filters:{"dpt_name": doc.department, "branch": doc.branch} //Ver20160703.1 Added by SSK
+               filters:{"dpt_name": doc.department} //Ver20160703.1 Added by SSK
        }
 }
 
 cur_frm.fields_dict['section'].get_query = function(doc, dt, dn) {
        return {
                //filters:{"d_name": doc.division} //Ver20160703.1 commented by SSK
-               filters:{"d_name": doc.division, "dpt_name": doc.department, "branch": doc.branch} //Ver20160703.1 added by SSK
+               filters:{"d_name": doc.division, "dpt_name": doc.department} //Ver20160703.1 added by SSK
        }
 }
 
@@ -82,5 +84,26 @@ cur_frm.fields_dict['employee_subgroup'].get_query = function(doc, dt, dn) {
 cur_frm.fields_dict['designation'].get_query = function(doc, dt, dn) {
        return {
                filters:{"employee_subgroup": doc.employee_subgroup}
+       }
+}
+
+cur_frm.fields_dict['cost_center'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{
+			"is_group": 0,
+			"is_disabled": 0
+		}
+       }
+}
+
+cur_frm.fields_dict['gewog'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"dzongkhag": doc.dzongkhag}
+       }
+}
+
+cur_frm.fields_dict['village'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"gewog": doc.gewog}
        }
 }

@@ -48,16 +48,6 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Contact",
-					"description": _("All Contacts."),
-				},
-				{
-					"type": "doctype",
-					"name": "Address",
-					"description": _("All Addresses."),
-				},
-				{
-					"type": "doctype",
 					"name":"Terms and Conditions",
 					"label": _("Sales Terms and Conditions Template"),
 					"description": _("Template of terms or contract.")

@@ -2,21 +2,20 @@
 	if (report.columns.length > 10) {
 		frappe.throw(__("Too many columns. Export the report and print it using a spreadsheet application."));
 	}
-%}
-{% include "customdocs/common_print.html" %}
+%} 
 
 <h2 class="text-center">{%= __(report.report_name) %}</h2>
-<h4 class="text-center">Royal Government of Bhutan</h3>
+<h4 class="text-center">Royal Government of Bhutan</h4>
 {% if (filters.from_date) { %}
-	<h4 class="text-center">{%= dateutil.str_to_user(filters.from_date) %} to {%= dateutil.str_to_user(filters.to_date) %}</h3>
+	<h4 class="text-center">{%= dateutil.str_to_user(filters.from_date) %} to {%= dateutil.str_to_user(filters.to_date) %}</h4>
 {% } %}
 <div style="float: right;">
-	<strong>Date: </strong> {%= dateutil.str_to_user(dateutil.get_datetime_as_string().split(' ')[0]) %}
+	<strong>Date: </strong>{%= dateutil.str_to_user(dateutil.get_datetime_as_string().split(' ')[0]) %}
 </div>
 
 <table style="width: 100%;">
 	<tr>
-		<td width="250px">Widthholding Agency:</td><td><strong>State Mining Corporation Ltd.</strong></td>
+		<td width="250px">Widthholding Agency:</td><td><strong>Construction Development Corporation Ltd.</strong></td>
 		<td width="250px">Agency TPN Code: </td><td><strong>SAC00307</strong></td>
 	</tr>
 	<tr>
@@ -37,7 +36,7 @@
 	<tbody>
 		{% for(var j=0, k=data.length; j<k; j++) { %}
 			{%
-				var row = data[j];
+				var row = data[j]
 			%}
 			<tr>
 				{% for(var i=1, l=report.columns.length; i<l; i++) { %}

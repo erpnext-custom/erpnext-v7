@@ -53,6 +53,7 @@ def make_depreciation_entry(asset_name, date=None):
 			je.voucher_type = "Depreciation Entry"
 			je.posting_date = d.schedule_date
 			je.company = asset.company
+			je.branch = asset.branch
 			je.remark = "Depreciation Entry against {0} worth {1}".format(asset_name, d.depreciation_amount)
 
 			je.append("accounts", {
@@ -134,6 +135,7 @@ def scrap_asset(asset_name, scrap_date):
 	je.voucher_type = "Journal Entry"
 	je.posting_date = scrap_date 
 	je.company = asset.company
+	je.branch = asset.branch
 	je.remark = "Scrap Entry for asset {0}".format(asset_name)
 
 	for entry in get_gl_entries_on_asset_disposal(asset):

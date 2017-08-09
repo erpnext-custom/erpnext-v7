@@ -20,11 +20,11 @@ class HireChargeInvoice(Document):
 
 	def on_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.invoice_jv, "docstatus")
-		if cl_status == 1:
+		if cl_status != 2:
 			frappe.throw("You need to cancel the journal entry ("+ str(self.invoice_jv) + ")related to this invoice first!")
 		if self.payment_jv:
 			cl_status = frappe.db.get_value("Journal Entry", self.payment_jv, "docstatus")
-			if cl_status == 1:
+			if cl_status != 2:
 				frappe.throw("You need to cancel the journal entry ("+ str(self.payment_jv) + ")related to this invoice first!")
 		self.readjust_advance()
 		self.update_vlogs(0)
@@ -71,12 +71,9 @@ class HireChargeInvoice(Document):
 	# make necessary journal entry
 	##
 	def post_journal_entry(self):
-		receivable_account = frappe.db.get_single_value("Maintenance Settings", "default_receivable_account")
-		advance_account = frappe.db.get_single_value("Maintenance Settings", "default_advance_account")
-		hire_account = frappe.db.get_single_value("Maintenance Settings", "hire_revenue_account")
-		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
-		if not cost_center:
-			frappe.throw("No Cost Center has been assigned against " + str(self.branch))
+		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
+		advance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_advance_account")
+		hire_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_account")
 
 		if hire_account and advance_account and receivable_account:
 			je = frappe.new_doc("Journal Entry")
@@ -86,13 +83,14 @@ class HireChargeInvoice(Document):
 			je.naming_series = 'Hire Invoice'
 			je.remark = 'Payment against : ' + self.name;
 			je.posting_date = self.posting_date
-
+			je.branch = self.branch
+			
 			if self.total_invoice_amount > 0:
 				je.append("accounts", {
 						"account": hire_account,
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
-						"cost_center": cost_center,
+						"cost_center": self.cost_center,
 						"credit_in_account_currency": flt(self.total_invoice_amount),
 						"credit": flt(self.total_invoice_amount),
 					})
@@ -104,7 +102,7 @@ class HireChargeInvoice(Document):
 						"party": self.customer,
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
-						"cost_center": cost_center,
+						"cost_center": self.cost_center,
 						"debit_in_account_currency": flt(self.advance_amount),
 						"debit": flt(self.advance_amount),
 					})
@@ -116,7 +114,7 @@ class HireChargeInvoice(Document):
 						"party": self.customer,
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
-						"cost_center": cost_center,
+						"cost_center": self.cost_center,
 						"debit_in_account_currency": flt(self.balance_amount),
 						"debit": flt(self.balance_amount),
 					})
@@ -126,7 +124,7 @@ class HireChargeInvoice(Document):
 			self.db_set("invoice_jv", je.name)
 
 		else:
-			frappe.throw("Define Default Accounts in Maintenance Settings")	
+			frappe.throw("Define Default Accounts in Maintenance Accounts Settings")	
 
 	def readjust_advance(self):
 		frappe.db.sql("update `tabJournal Entry Account` set reference_type=%s,reference_name=%s where reference_type=%s and reference_name=%s and docstatus = 1", ("Equipment Hiring Form", self.ehf_name, "Hire Charge Invoice", self.name))
@@ -169,9 +167,8 @@ def get_advances(hire_name):
 def make_bank_entry(frm=None):
 	if frm:
 		invoice = frappe.get_doc("Hire Charge Invoice", frm)
-		cost_center = frappe.db.get_value("Branch", invoice.branch, "cost_center")
 		revenue_bank_account = frappe.db.get_value("Branch", invoice.branch, "revenue_bank_account")
-		receivable_account = frappe.db.get_single_value("Maintenance Settings", "default_receivable_account")
+		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
 		if not revenue_bank_account:
 			frappe.throw("Setup Default Revenue Bank Account for your Branch")
 		if not receivable_account:
@@ -185,6 +182,7 @@ def make_bank_entry(frm=None):
 		je.remark = 'Payment Received against : ' + invoice.name;
 		je.posting_date = invoice.posting_date
 		total_amount = invoice.total_invoice_amount
+		je.branch = invoice.branch
 
 		je.append("accounts", {
 				"account": receivable_account,
@@ -192,14 +190,14 @@ def make_bank_entry(frm=None):
 				"party": invoice.customer,
 				"reference_type": "Hire Charge Invoice",
 				"reference_name": invoice.name,
-				"cost_center": cost_center,
+				"cost_center": invoice.cost_center,
 				"credit_in_account_currency": flt(total_amount),
 				"credit": flt(total_amount),
 			})
 
 		je.append("accounts", {
 				"account": revenue_bank_account,
-				"cost_center": cost_center,
+				"cost_center": invoice.cost_center,
 				"debit_in_account_currency": flt(total_amount),
 				"debit": flt(total_amount),
 			})

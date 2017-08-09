@@ -24,7 +24,11 @@ class Employee(Document):
 			throw(_("Please setup Employee Naming System in Human Resource > HR Settings"))
 		else:
 			if naming_method == 'Naming Series':
-				self.name = make_autoname(self.naming_series + '.####')
+				x = make_autoname(self.naming_series + '.###')
+				y = make_autoname("MM.#")
+				eid = x[:6] + y[:2] + x[6:9]
+				self.name = eid
+				self.yearid = x
 			elif naming_method == 'Employee Number':
 				self.name = self.employee_number
 
@@ -243,13 +247,13 @@ def get_employees_who_are_born_today():
 		and status = 'Active'""", {"date": today()}, as_dict=True)
 
 def get_holiday_list_for_employee(employee, raise_exception=True):
-	holiday_list, company = frappe.db.get_value("Employee", employee, ["holiday_list", "company"])
-
+	branch, company = frappe.db.get_value("Employee", employee, ["branch", "company"])
+	holiday_list = frappe.db.get_value("Branch", branch, "holiday_list")
 	if not holiday_list:
 		holiday_list = frappe.db.get_value("Company", company, "default_holiday_list")
 
 	if not holiday_list and raise_exception:
-		frappe.throw(_('Please set a default Holiday List for Employee {0} or Company {1}').format(employee, company))
+		frappe.throw(_('Please set a default Holiday List for Branch {0} or Company {1}').format(branch, company))
 
 	return holiday_list
 

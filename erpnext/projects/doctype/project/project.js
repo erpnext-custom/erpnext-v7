@@ -1,5 +1,6 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
+cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on("Project", {
 	setup: function(frm) {
@@ -107,3 +108,13 @@ frappe.ui.form.on("Project Task", {
 	},
 });
 
+frappe.ui.form.on("Project", "refresh", function(frm) {
+    cur_frm.set_query("cost_center", function() {
+        return {
+            "filters": {
+		"is_group": 0,
+		"is_disabled": 0
+            }
+        };
+    });
+})

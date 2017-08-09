@@ -14,7 +14,7 @@ def post_casual_leaves():
 	date = add_days(frappe.utils.nowdate(), 10)
 	start = get_year_start_date(date);
 	end = get_year_end_date(date);
-	employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular employees\', \'Contract\')", as_dict=True)
+	employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular\', \'Contract\')", as_dict=True)
 	for e in employees:
 		la = frappe.new_doc("Leave Allocation")
 		la.employee = e.name
@@ -34,7 +34,7 @@ def post_earned_leaves():
 	start = get_first_day(date);
 	end = get_last_day(date);
 	
-	employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular employees\', \'Contract\')", as_dict=True)
+	employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular\', \'Contract\')", as_dict=True)
 	for e in employees:
 		la = frappe.new_doc("Leave Allocation")
 		la.employee = e.name

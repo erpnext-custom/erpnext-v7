@@ -13,6 +13,9 @@ from frappe.model.mapper import get_mapped_doc
 class TravelAuthorization(Document):
 
 	def validate(self):
+		if not self.branch:
+			frappe.throw("Setup Branch in Emplpoyee Information and try again")
+
 		self.validate_travel_dates()
 		if frappe.session.user != self.supervisor:
 			if self.document_status == "Rejected":
@@ -31,7 +34,7 @@ class TravelAuthorization(Document):
 	def before_cancel(self):
 		if self.advance_journal:
 			jv_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
-			if jv_status == 1:
+			if jv_status != 2:
 				frappe.throw("You need to cancel the advance journal entry first!")
 	
 	##
@@ -40,11 +43,16 @@ class TravelAuthorization(Document):
 	def check_advance(self):
 		if self.need_advance:
 			if self.currency and flt(self.advance_amount_nu) > 0:
-				cost_center = frappe.db.get_value("Division", self.division, "cost_center")
-				if not self.division:
-					frappe.throw("Employee has not been assigned a division")
+				cost_center = frappe.db.get_value("Employee", self.employee, "cost_center")
+				advance_account = frappe.db.get_single_value("HR Accounts Settings", "employee_advance_travel")
+				expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
 				if not cost_center:
-					frappe.throw("No Cost Center has been assigned against " + str(self.division))
+					frappe.throw("Setup Cost Center for employee in Employee Information")
+				if not expense_bank_account:
+					frappe.throw("Setup Default Expense Bank Account for your Branch")
+				if not advance_account:
+					frappe.throw("Setup Advance to Employee (Travel) in HR Accounts Settings")
+
 				je = frappe.new_doc("Journal Entry")
 				je.flags.ignore_permissions = 1 
 				je.title = "TA Advance (" + self.employee_name + "  " + self.name + ")"
@@ -52,9 +60,10 @@ class TravelAuthorization(Document):
 				je.naming_series = 'Bank Payment Voucher'
 				je.remark = 'Advance Payment against Travel Authorization: ' + self.name;
 				je.posting_date = self.posting_date
-				
+				je.branch = self.branch
+	
 				je.append("accounts", {
-					"account": "Advance to Employee-Travel - SMCL",
+					"account": advance_account,
 					"party_type": "Employee",
 					"party": self.employee,
 					"reference_type": "Travel Authorization",

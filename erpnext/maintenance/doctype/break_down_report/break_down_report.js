@@ -20,6 +20,7 @@ frappe.ui.form.on('Break Down Report', {
 	}
 });
 
+cur_frm.add_fetch("cost_center", "branch", "branch");
 cur_frm.add_fetch("customer", "customer_group", "client");
 cur_frm.add_fetch("equipment", "equipment_model", "equipment_model");
 cur_frm.add_fetch("equipment", "equipment_type", "equipment_type");
@@ -30,6 +31,14 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
         return {
             "filters": {
                 "branch": frm.doc.branch
+            }
+        };
+    });
+    cur_frm.set_query("cost_center", function() {
+        return {
+            "filters": {
+		"is_group": 0,
+		"is_disabled": 0
             }
         };
     });

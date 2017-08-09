@@ -6,3 +6,14 @@ frappe.ui.form.on('HR Accounts Settings', {
 
 	}
 });
+
+
+
+cur_frm.fields_dict['leave_encashment_account'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{
+			"is_group": 0,
+			"freeze_account": 0
+		}
+       }
+}

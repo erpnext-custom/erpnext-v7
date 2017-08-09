@@ -6,13 +6,6 @@ frappe.ui.form.on('Branch', {
 
 	},
 	onload: function(frm) {
-		frm.set_query("cost_center", function() {
-			return {
-				filters: {
-					company: frm.doc.company,
-					is_disabled: 0,
-				}
-			}
-		})
 	}
 });
+

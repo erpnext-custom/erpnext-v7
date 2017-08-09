@@ -51,7 +51,10 @@ class Budget(Document):
 
 def validate_expense_against_budget(args):
 	args = frappe._dict(args)
+	action = frappe.db.sql("select action_if_annual_budget_exceeded as action from tabBudget where cost_center=%s and fiscal_year = %s and docstatus = 1", (args.cost_center, args.fiscal_year), as_dict=True)
 	if args.against_voucher_type == 'Asset':
+		pass
+	elif action and action[0].action == 'Ignore':
 		pass
 	elif frappe.db.get_value("Account", {"name": args.account, "root_type": "Expense"}) or frappe.db.get_value("Account", {"name": args.account, "root_type": "Asset", "account_type": "Fixed Asset"}):
 		if args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Good Manufacture - SMCL', 'Stripping Cost Amortization - SMCL']:
@@ -124,3 +127,4 @@ def get_actual_expense(args, cost_center):
 			and gle.is_opening != 'Yes'
 			{condition}
 	""".format(condition=condition), (args))[0][0])
+

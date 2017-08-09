@@ -574,7 +574,8 @@ frappe.ui.form.on("Journal Entry", "onload", function(frm){
         return {
             "filters": [
                 ["status", "!=", "Used"],
-                ["docstatus", "=", "1"]
+                ["docstatus", "=", "1"],
+		["branch", "=", frm.doc.branch]
             ]
         }
     });

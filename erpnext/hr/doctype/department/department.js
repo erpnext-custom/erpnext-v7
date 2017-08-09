@@ -3,6 +3,14 @@
 
 frappe.ui.form.on('Department', {
 	refresh: function(frm) {
-
 	}
 });
+
+cur_frm.fields_dict.cost_center.get_query = function(doc) {
+	return{
+		filters:{
+			'is_group': 0,
+			'is_disabled': 0,
+		}
+	}
+}

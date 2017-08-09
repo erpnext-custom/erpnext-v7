@@ -147,6 +147,7 @@ erpnext.EmployeeSelector = Class.extend({
 						"employee_list":employee_present,
 						"status":"Present",
 						"date":frm.doc.date,
+						"project":frm.doc.project,
 					},
 
 					callback: function(r) {
@@ -171,6 +172,7 @@ erpnext.EmployeeSelector = Class.extend({
 						"employee_list":employee_absent,
 						"status":"Absent",
 						"date":frm.doc.date,
+						"project":frm.doc.project,
 					},
 
 					callback: function(r) {

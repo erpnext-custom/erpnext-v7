@@ -800,3 +800,16 @@ def get_fixed_asset_account(asset, account=None):
 			filters={"parent": asset_category, "company_name": company}, fieldname="fixed_asset_account")
 
 	return account
+
+@frappe.whitelist()
+def get_tds_accounts(percent):
+	if cint(percent) == 2:
+		return frappe.db.get_single_value("Accounts Settings", "tds_2_account")
+	elif cint(percent) == 3:
+		return frappe.db.get_single_value("Accounts Settings", "tds_3_account")
+	elif cint(percent) == 5:
+		return frappe.db.get_single_value("Accounts Settings", "tds_5_account")
+	elif cint(percent) == 10:
+		return frappe.db.get_single_value("Accounts Settings", "tds_10_account")
+	else:
+		frappe.throw("Setup TDS Account under Accounts Settings")

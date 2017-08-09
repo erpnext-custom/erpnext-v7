@@ -44,6 +44,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
 	}
 }*/
 
+cur_frm.add_fetch("cost_center", "branch", "branch")
 cur_frm.add_fetch("customer", "location", "address")
 cur_frm.add_fetch("customer", "telephone_and_fax", "contact_number")
 
@@ -143,14 +144,5 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 			filters:[['branch', "=", frm.doc.branch], ['equipment_hire_form','=','']]
 		}
 	}
-   
-	// cur_frm.set_query("custo,mer", function() {
-	cur_frm.fields_dict['customer'].get_query = function(doc, dt, dn) {
-        	return {
-            		filters: {
-				"disabled": 1,
-            		}
-        	};
-    	};
 });
 

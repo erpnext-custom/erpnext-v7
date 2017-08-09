@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 import unittest
 
-# test_records = frappe.get_test_records('PVBA Structure')
+# test_records = frappe.get_test_records('GEP Employee')
 
-class TestPVBAStructure(unittest.TestCase):
+class TestGEPEmployee(unittest.TestCase):
 	pass

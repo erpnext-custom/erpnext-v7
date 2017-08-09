@@ -13,6 +13,11 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "GEP Employee",
+					"description": _("GEP Employee records."),
+				},
+				{
+					"type": "doctype",
 					"name": "Attendance",
 					"description": _("Attendance record."),
 				},                                

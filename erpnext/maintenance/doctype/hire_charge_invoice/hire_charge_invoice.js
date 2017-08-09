@@ -61,6 +61,7 @@ function calculate_balance(frm) {
 }
 
 cur_frm.add_fetch("ehf_name","customer","customer")
+cur_frm.add_fetch("cost_center","branch","branch")
 //cur_frm.add_fetch("ehf_name","advance_amount","advance_amount")
 
 

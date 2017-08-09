@@ -247,4 +247,7 @@ body[data-route="pos"] .modal-dialog {
 //	display: none !important;
 }
 
+#page-desktop [data-name = 'Explore'] {
+    Display: none;
+}
 

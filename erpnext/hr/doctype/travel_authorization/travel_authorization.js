@@ -6,6 +6,8 @@ cur_frm.add_fetch("employee", "employee_subgroup", "grade")
 cur_frm.add_fetch("employee", "designation", "designation")
 cur_frm.add_fetch("employee", "department", "department")
 cur_frm.add_fetch("employee", "division", "division")
+cur_frm.add_fetch("employee", "branch", "branch")
+cur_frm.add_fetch("employee", "cost_center", "cost_center")
 
 frappe.ui.form.on('Travel Authorization', {
 	refresh: function(frm) {

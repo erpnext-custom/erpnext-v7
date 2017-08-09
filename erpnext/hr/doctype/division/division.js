@@ -11,8 +11,17 @@ frappe.ui.form.on('Division', {
 });
 
 
-cur_frm.fields_dict['dpt_name'].get_query = function(doc, dt, dn) {
+/*cur_frm.fields_dict['dpt_name'].get_query = function(doc, dt, dn) {
        return {
                filters:{"branch1": doc.branch}
        }
+}*/
+
+cur_frm.fields_dict.cost_center.get_query = function(doc) {
+	return{
+		filters:{
+			'is_group': 0,
+			'is_disabled': 0,
+		}
+	}
 }

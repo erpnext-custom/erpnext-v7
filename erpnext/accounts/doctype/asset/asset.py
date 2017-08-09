@@ -214,7 +214,8 @@ class Asset(Document):
 				"company": self.company,
 				"remark": self.name + " (" + self.asset_name + ") Asset Issued",
 				"user_remark": self.name + " (" + self.asset_name + ") Asset Issued",
-				"posting_date": self.purchase_date
+				"posting_date": self.purchase_date,
+				"branch": self.branch
 				})
 
 			#credit account update
@@ -243,11 +244,12 @@ class Asset(Document):
 				frappe.get_doc("Journal Entry", gl.journal_entry).cancel()
 
 @frappe.whitelist()
-def make_purchase_invoice(asset, item_code, gross_purchase_amount, company, posting_date):
+def make_purchase_invoice(asset, item_code, gross_purchase_amount, company, posting_date, branch):
 	pi = frappe.new_doc("Purchase Invoice")
 	pi.company = company
 	pi.currency = frappe.db.get_value("Company", company, "default_currency")
 	pi.posting_date = posting_date
+	pi.branch = branch
 	pi.append("items", {
 		"item_code": item_code,
 		"is_fixed_asset": 1,
@@ -261,11 +263,12 @@ def make_purchase_invoice(asset, item_code, gross_purchase_amount, company, post
 	return pi
 
 @frappe.whitelist()
-def make_sales_invoice(asset, item_code, company):
+def make_sales_invoice(asset, item_code, company, branch):
 	si = frappe.new_doc("Sales Invoice")
 	si.company = company
 	si.currency = frappe.db.get_value("Company", company, "default_currency")
 	disposal_account, depreciation_cost_center = get_disposal_account_and_cost_center(company)
+	si.branch = branch
 	si.append("items", {
 		"item_code": item_code,
 		"is_fixed_asset": 1,
