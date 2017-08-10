@@ -6,8 +6,5 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 
-class GEPEmployee(Document):
-	def validate(self):
-		if self.status == "Left":
-			self.cost_center = ''
-			self.branch = ''
+class AttendanceOthers(Document):
+	pass

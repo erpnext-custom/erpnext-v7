@@ -17,6 +17,7 @@ class HireChargeInvoice(Document):
 		self.update_advance_amount();
 		self.update_vlogs(1)
 		self.post_journal_entry()
+		self.check_close()
 
 	def on_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.invoice_jv, "docstatus")
@@ -28,6 +29,7 @@ class HireChargeInvoice(Document):
 				frappe.throw("You need to cancel the journal entry ("+ str(self.payment_jv) + ")related to this invoice first!")
 		self.readjust_advance()
 		self.update_vlogs(0)
+		self.check_close(1)
 		self.db_set("invoice_jv", "")
 		self.db_set("payment_jv", "")
 
@@ -128,7 +130,15 @@ class HireChargeInvoice(Document):
 
 	def readjust_advance(self):
 		frappe.db.sql("update `tabJournal Entry Account` set reference_type=%s,reference_name=%s where reference_type=%s and reference_name=%s and docstatus = 1", ("Equipment Hiring Form", self.ehf_name, "Hire Charge Invoice", self.name))
-		
+
+	def check_close(self, cancel=0):
+		if self.close:
+			hire = frappe.get_doc("Equipment Hiring Form", self.ehf_name)
+			if cancel:
+				hire.db_set("payment_completed", 0)
+			else:
+				hire.db_set("payment_completed", 1)
+
 @frappe.whitelist()
 def get_vehicle_logs(form):
 	if form:

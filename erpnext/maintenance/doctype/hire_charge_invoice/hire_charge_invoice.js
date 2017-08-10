@@ -55,7 +55,12 @@ frappe.ui.form.on('Hire Charge Invoice', {
 
 function calculate_balance(frm) {
 	if (frm.doc.total_invoice_amount) {
-		frm.set_value("balance_amount", frm.doc.total_invoice_amount - frm.doc.advance_amount)
+		if(frm.doc.advance_amount) {
+			frm.set_value("balance_amount", frm.doc.total_invoice_amount - frm.doc.advance_amount)
+		}
+		else {
+			frm.set_value("balance_amount", frm.doc.total_invoice_amount)
+		}
 		frm.refresh_field("balance_amount")
 	}	
 }
@@ -158,6 +163,7 @@ function get_vehicle_logs(form) {
 				});
 
 				cur_frm.set_value("total_invoice_amount", total_invoice_amount)
+				cur_frm.refresh_field("total_invoice_amount")
 				cur_frm.refresh()
 			}
 			else {

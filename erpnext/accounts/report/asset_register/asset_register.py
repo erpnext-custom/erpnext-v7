@@ -102,7 +102,7 @@ def get_data(filters):
 				"dep_income_tax": a.depreciation_income_tax,
 				"net_useful_life": net_useful_life,
 				"net_income_tax": net_income_tax,
-				"old_asset_name": a.old_asset_name,
+				"old_asset_code": a.old_asset_code,
 				"presystem_issue_date": a.presystem_issue_date
 			}
 			data.append(row)
@@ -147,8 +147,8 @@ def get_columns():
 			"width": 130
 		},
 		{
-			"fieldname": "old_asset_name",
-			"label": _("Old Asset Name"),
+			"fieldname": "old_asset_code",
+			"label": _("Old Asset Code"),
 			"fieldtype": "Data",
 			"width": 120
 		},

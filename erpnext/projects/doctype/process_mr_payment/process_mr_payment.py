@@ -24,16 +24,26 @@ class ProcessMRPayment(Document):
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
 		if not expense_bank_account:
 			frappe.throw("Setup Default Expense Bank Account for your Branch")
-		ot_account = frappe.db.get_single_value("Projects Accounts Settings", "mr_overtime_account")
-		if not ot_account:
-			frappe.throw("Setup MR Overtime Account in Projects Accounts Settings")
-		wage_account = frappe.db.get_single_value("Projects Accounts Settings", "mr_wages_account")
-		if not revenue_bank_account:
-			frappe.throw("Setup MR Wages Account in Projects Accounts Settings")
+		if self.employee_type == "Muster Roll Employee":
+			ot_account = frappe.db.get_single_value("Projects Accounts Settings", "mr_overtime_account")
+			if not ot_account:
+				frappe.throw("Setup MR Overtime Account in Projects Accounts Settings")
+			wage_account = frappe.db.get_single_value("Projects Accounts Settings", "mr_wages_account")
+			if not revenue_bank_account:
+				frappe.throw("Setup MR Wages Account in Projects Accounts Settings")
+		elif self.employee_type == "GEP Employee":
+			ot_account = frappe.db.get_single_value("Projects Accounts Settings", "gep_overtime_account")
+			if not ot_account:
+				frappe.throw("Setup GEP Overtime Account in Projects Accounts Settings")
+			wage_account = frappe.db.get_single_value("Projects Accounts Settings", "gep_wages_account")
+			if not revenue_bank_account:
+				frappe.throw("Setup GEP Wages Account in Projects Accounts Settings")
+		else:
+			frappe.throw("Invalid Employee Type")
 
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
-		je.title = "Payment for MR (" + self.project + ")"
+		je.title = "Payment for " + self.employee_type  + " (" + self.project + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
 		je.remark = 'Payment against : ' + self.name;
@@ -67,5 +77,15 @@ class ProcessMRPayment(Document):
 		je.insert()
 
 @frappe.whitelist()
-def get_records(from_date, to_date, project):
-	return frappe.db.sql("select a.name, a.person_name, a.id_card, a.rate_per_day, a.rate_per_hour, (select sum(1) from `tabMR Attendance` b where b.muster_roll_employee = a.name and b.date between %s and %s and b.project = %s and b.status = 'Present' and b.docstatus = 1) as number_of_days, (select sum(c.number_of_hours) from `tabOvertime Entry` c where c.number = a.name and c.date between %s and %s and c.project = %s and c.docstatus = 1) as number_of_hours from `tabMuster Roll Employee` a where a.project = %s order by a.person_name", (str(from_date), str(to_date), str(project), str(from_date), str(to_date), str(project), str(project)), as_dict=True)
+def get_records(employee_type, from_date, to_date, cost_center, branch):
+	if employee_type == "Muster Roll Employee":
+		data = frappe.db.sql("select 'Muster Roll Employee' as type, a.name, a.person_name, a.id_card, a.rate_per_day, a.rate_per_hour, (select sum(1) from `tabAttendance Others` b where b.employee = a.name and b.date between %s and %s and b.cost_center = %s and b.branch = %s and b.status = 'Present' and b.docstatus = 1) as number_of_days, (select sum(c.number_of_hours) from `tabOvertime Entry` c where c.number = a.name and c.date between %s and %s and c.cost_center = %s and c.branch = %s and c.docstatus = 1) as number_of_hours from `tabMuster Roll Employee` a where a.cost_center = %s order by a.person_name", (str(from_date), str(to_date), str(cost_center), str(branch), str(from_date), str(to_date), str(cost_center), str(branch), str(cost_center)), as_dict=True)
+	elif employee_type == "GEP Employee":
+		data = frappe.db.sql("select 'GEP Employee' as type, a.name, a.person_name, a.id_card, a.rate_per_day, a.rate_per_hour, (select sum(1) from `tabAttendance Others` b where b.employee = a.name and b.date between %s and %s and b.cost_center = %s and b.branch = %s and b.status = 'Present' and b.docstatus = 1) as number_of_days, (select sum(c.number_of_hours) from `tabOvertime Entry` c where c.number = a.name and c.date between %s and %s and c.cost_center = %s and c.branch = %s and c.docstatus = 1) as number_of_hours from `tabGEP Employee` a where a.cost_center = %s order by a.person_name", (str(from_date), str(to_date), str(cost_center), str(branch), str(from_date), str(to_date), str(cost_center), str(branch), str(cost_center)), as_dict=True)
+	else:
+		frappe.throw("Invalid Employee Type")
+
+	if data:
+		return data
+	else:
+		frappe.msgprint("No data found!")

@@ -76,4 +76,4 @@ class AssetMovement(Document):
 				order by transaction_date asc limit 1""", (self.asset, self.company))[0][0]
 		
 		frappe.db.set_value("Asset", self.asset, "issued_to", custodian)
-		frappe.db.set_value("Asset", self.asset, "cost_center", frappe.db.get_value("Division", frappe.db.get_value("Employee", custodian, "division"), "cost_center"))
+		frappe.db.set_value("Asset", self.asset, "cost_center", frappe.db.get_value("Employee", custodian, "cost_center"))

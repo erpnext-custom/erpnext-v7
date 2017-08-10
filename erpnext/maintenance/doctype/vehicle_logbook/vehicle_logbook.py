@@ -5,11 +5,15 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.utils import flt
 
 class VehicleLogbook(Document):
 	def validate(self):
 		self.check_duplicate()
 		self.calculate_totals()
+
+	def on_submit(self):
+		self.update_hire()
 
 	def check_duplicate(self):		
 		for a in self.vlogs:
@@ -25,3 +29,7 @@ class VehicleLogbook(Document):
 			self.total_work_time = total_w
 			self.total_idle_time = total_i
 
+	def update_hire(self):
+		if self.ehf_name:
+			doc = frappe.get_doc("Equipment Hiring Form", self.ehf_name)
+			doc.db_set("hiring_status", 1)

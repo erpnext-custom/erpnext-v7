@@ -8,11 +8,15 @@ from frappe.utils import flt
 from erpnext.accounts.report.financial_statements_emines import (get_period_list, get_columns, get_data)
 
 def execute(filters=None):
+	if filters.show_zero_values:
+		show_zero = 1
+	else:
+		show_zero = 0
 	period_list = get_period_list(filters.fiscal_year, filters.periodicity)
 
-	asset = get_data(filters.cost_center, filters.company, "Asset", "Debit", period_list, only_current_fiscal_year=False)
-	liability = get_data(filters.cost_center,filters.company, "Liability", "Credit", period_list, only_current_fiscal_year=False)
-	equity = get_data(filters.cost_center,filters.company, "Equity", "Credit", period_list, only_current_fiscal_year=False)
+	asset = get_data(filters.cost_center, filters.company, "Asset", "Debit", period_list, only_current_fiscal_year=False, show_zero_values=show_zero)
+	liability = get_data(filters.cost_center,filters.company, "Liability", "Credit", period_list, only_current_fiscal_year=False, show_zero_values=show_zero)
+	equity = get_data(filters.cost_center,filters.company, "Equity", "Credit", period_list, only_current_fiscal_year=False, show_zero_values=show_zero)
 
 	provisional_profit_loss = get_provisional_profit_loss(asset, liability, equity,
 		period_list, filters.company)

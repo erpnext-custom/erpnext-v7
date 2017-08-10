@@ -37,18 +37,14 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Muster Roll Attendance",
-					"description": _("Muster Roll Attendance Toll"),
-				},
-				{
-					"type": "doctype",
-					"name": "MR Attendance",
-					"description": _("Muster Roll Attendance"),
+					"name": "Attendance Tool Others",
+					"label": "Attendance Tool for GEP & MR",
+					"description": _("Attendance Tool for Others"),
 				},
 				{
 					"type": "doctype",
 					"name": "Project Overtime Tool",
-					"label": "Project Overtime Tool",
+					"label": "Overtime Tool for GEP & MR",
 					"description": _("Overtime Tool for MR and GEP"),
 				},
 				{
@@ -65,15 +61,17 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "MR Attendance Sheet",
-					"description": _("MR Attendance Sheet"),
-					"doctype": "MR Attendance"
+					"name": "Attendance Register",
+					"label": "Attendance Register for GEP & MR",
+					"description": _("Attendance Sheet"),
+					"doctype": "Attendance Others"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "MR Overtime Register",
-					"description": _("MR Attendance Sheet"),
+					"name": "Overtime Register",
+					"label": "Overtime Register for GEP & MR",
+					"description": _("Overtime Register"),
 					"doctype": "Overtime Entry"
 				},
 			]
