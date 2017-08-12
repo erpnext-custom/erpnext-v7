@@ -1,0 +1,18 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2017-08-12 12:52:44.187324", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2017-08-12 12:52:44.187324", 
+ "modified_by": "Administrator", 
+ "module": "Maintenance", 
+ "name": "Job Card Imprest Report", 
+ "owner": "Administrator", 
+ "ref_doctype": "Job Card", 
+ "report_name": "Job Card Imprest Report ", 
+ "report_type": "Script Report"
+}

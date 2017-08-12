@@ -42,6 +42,7 @@ class Project(Document):
 			from `tabTimesheet Detail` where project=%s and docstatus < 2 group by activity_type
 			order by total_hours desc''', self.name, as_dict=True))
 
+
 	def __setup__(self):
 		self.onload()
 
@@ -61,6 +62,7 @@ class Project(Document):
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
         # Follwoing code added by SSK on 2017/08/11
 	def load_activity_tasks(self):
+                #frappe.msgprint(_("load_activity_task is called from onload"))
 		"""Load `activity_tasks` from the database"""
 		self.activity_tasks = []
 		for task in self.get_activity_tasks():
@@ -71,6 +73,9 @@ class Project(Document):
 				"start_date": task.exp_start_date,
 				"end_date": task.exp_end_date,
 				"description": task.description,
+                                "work_quantity": task.work_quantity,
+                                "target_uom": task.target_uom,
+                                "target_quantity": task.target_quantity,
 				"task_id": task.name
 			})
 
@@ -141,6 +146,7 @@ class Project(Document):
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
         # Following function is created
 	def sync_activity_tasks(self):
+                #frappe.msgprint(_("sync_activity_tasks is called...."))
 		"""sync tasks and remove table"""
 		if self.flags.dont_sync_tasks: return
 
@@ -155,6 +161,9 @@ class Project(Document):
 			task.update({
                                 "activity": t.activity,
 				"subject": t.task,
+                                "work_quantity": t.work_quantity,
+                                "target_uom": t.target_uom,
+                                "target_quantity": t.target_quantity,
 				"status": t.status,
 				"exp_start_date": t.start_date,
 				"exp_end_date": t.end_date,

@@ -205,6 +205,12 @@ def get_data():
 					"name": "Statement of Changes in Equity",
 					"doctype": "GL Entry",
 					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Comparative Statement",
+					"doctype": "GL Entry",
+					"is_query_report": True,
 				}
 			]
 		},

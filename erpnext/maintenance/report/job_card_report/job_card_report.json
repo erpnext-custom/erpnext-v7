@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-11 18:47:36.107543", 
+ "modified": "2017-08-12 12:50:55.062156", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Job Card Report", 
@@ -15,5 +15,5 @@
  "query": "select jc.name, jci.job, jci.job_name, jci.amount from `tabJob Card` as jc,`tabJob Card Item` as jci  where jci.parent = jc.name and jc.docstatus = 1 and imprest = 1 and posting_date between filters.to_date and from_date;", 
  "ref_doctype": "Job Card", 
  "report_name": "Job Card Report", 
- "report_type": "Query Report"
+ "report_type": "Script Report"
 }

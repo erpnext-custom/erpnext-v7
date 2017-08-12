@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "EQUIP.YYYY.####", 
  "beta": 0, 
@@ -596,7 +596,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-08-11 11:49:51.839851", 
+ "modified": "2017-08-12 16:59:35.596103", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment", 
@@ -644,7 +644,7 @@
    "write": 1
   }
  ], 
- "quick_entry": 1, 
+ "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
  "search_fields": "equipment_number", 
