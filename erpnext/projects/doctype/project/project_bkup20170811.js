@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  		  SHIV		     11/08/2017         					Default "Project Tasks" is replaced by custom
+1.0		  SSK		             11/08/2017         					Default "Project Tasks" is replaced by custom
 																			"Activity Tasks"
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
@@ -12,9 +12,6 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on("Project", {
-	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-	// Following code is commented by SHIV on 2017/08/11
-	/*
 	setup: function(frm) {
 		frm.get_field('tasks').grid.editable_fields = [
 			{fieldname: 'title', columns: 3},
@@ -24,22 +21,6 @@ frappe.ui.form.on("Project", {
 		];
 
 	},
-	*/
-	
-	// Follwoing code is added by SHIV on 2017/08/11
-	setup: function(frm) {
-		frm.get_field('activity_tasks').grid.editable_fields = [
-			{fieldname: 'activity', columns: 2},
-			{fieldname: 'task', columns: 2},
-			{fieldname: 'status', columns: 1},
-			{fieldname: 'start_date', columns: 2},
-			{fieldname: 'end_date', columns: 2},
-			{fieldname: 'work_quantity', columns: 1}
-		];
-
-	},	
-	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-	
 	onload: function(frm) {
 		var so = frappe.meta.get_docfield("Project", "sales_order");
 		so.get_route_options_for_new_doc = function(field) {

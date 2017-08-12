@@ -1,13 +1,5 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SHIV		                    2017/08/11         Default "Project Tasks" is replaced by custom
-                                                                         "Activity Tasks"
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
 
 from __future__ import unicode_literals
 import frappe
@@ -23,20 +15,9 @@ class Project(Document):
 
 	def onload(self):
 		"""Load project tasks for quick view"""
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-		# Following code commented by SHIV on 2017/08/11
-		'''
 		if not self.get('__unsaved') and not self.get("tasks"):
 			self.load_tasks()
-		'''
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-                # Following code added by SHIV on 2017/08/11
-		if not self.get('__unsaved') and not self.get("activity_tasks"):
-			self.load_activity_tasks()			
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-                
 		self.set_onload('activity_summary', frappe.db.sql('''select activity_type,
 			sum(hours) as total_hours
 			from `tabTimesheet Detail` where project=%s and docstatus < 2 group by activity_type
@@ -58,46 +39,13 @@ class Project(Document):
 				"task_id": task.name
 			})
 
-        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-        # Follwoing code added by SSK on 2017/08/11
-	def load_activity_tasks(self):
-		"""Load `activity_tasks` from the database"""
-		self.activity_tasks = []
-		for task in self.get_activity_tasks():
-			self.append("activity_tasks", {
-                                "activity": task.activity,
-				"task": task.subject,
-				"status": task.status,
-				"start_date": task.exp_start_date,
-				"end_date": task.exp_end_date,
-				"description": task.description,
-				"task_id": task.name
-			})
-
-	def get_activity_tasks(self):
-		return frappe.get_all("Task", "*", {"project": self.name}, order_by="exp_start_date asc")
-	
-        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-			
 	def get_tasks(self):
 		return frappe.get_all("Task", "*", {"project": self.name}, order_by="exp_start_date asc")
 
 	def validate(self):
 		self.validate_dates()
-
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-		# Follwoing 2 lines are commented by SHIV on 2017/08/11
-		'''
 		self.sync_tasks()
 		self.tasks = []
-		'''
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-		# Following 2 Lines added by SHIV on 2017/08/11
-		self.sync_activity_tasks()
-		self.activity_tasks = []
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		self.send_welcome_email()
 
 	def validate_dates(self):
@@ -137,44 +85,7 @@ class Project(Document):
 
 		self.update_percent_complete()
 		self.update_costing()
-		
-        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-        # Following function is created
-	def sync_activity_tasks(self):
-		"""sync tasks and remove table"""
-		if self.flags.dont_sync_tasks: return
 
-		task_names = []
-		for t in self.activity_tasks:
-			if t.task_id:
-				task = frappe.get_doc("Task", t.task_id)
-			else:
-				task = frappe.new_doc("Task")
-				task.project = self.name
-
-			task.update({
-                                "activity": t.activity,
-				"subject": t.task,
-				"status": t.status,
-				"exp_start_date": t.start_date,
-				"exp_end_date": t.end_date,
-				"description": t.description,
-			})
-
-			task.flags.ignore_links = True
-			task.flags.from_project = True
-			task.flags.ignore_feed = True
-			task.save(ignore_permissions = True)
-			task_names.append(task.name)
-
-		# delete
-		for t in frappe.get_all("Task", ["name"], {"project": self.name, "name": ("not in", task_names)}):
-			frappe.delete_doc("Task", t.name)
-
-		self.update_percent_complete()
-		self.update_costing()
-        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-		
 	def update_project(self):
 		self.update_percent_complete()
 		self.update_costing()
@@ -243,16 +154,8 @@ class Project(Document):
 				user.welcome_email_sent=1
 
 	def on_update(self):
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-                # Following 2 lines commented by SHIV on 2017/08/11
-                '''
 		self.load_tasks()
 		self.sync_tasks()
-                '''
-		# Following 2 lines added by SHIV on 2017/08/11
-		self.load_activity_tasks()
-		self.sync_activity_tasks()		
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 def get_timeline_data(doctype, name):
 	'''Return timeline for attendance'''

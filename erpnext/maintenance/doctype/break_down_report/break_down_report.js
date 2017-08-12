@@ -17,6 +17,10 @@ frappe.ui.form.on('Break Down Report', {
 		if (!frm.doc.date) {
 			frm.set_value("date", get_today());
 		}
+	},
+	owned_by: function(frm) {
+		cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'CDCL')
+		cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'CDCL')
 	}
 });
 
@@ -25,6 +29,8 @@ cur_frm.add_fetch("customer", "customer_group", "client");
 cur_frm.add_fetch("equipment", "equipment_model", "equipment_model");
 cur_frm.add_fetch("equipment", "equipment_type", "equipment_type");
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number");
+
+cur_frm.add_fetch("customer_cost_center", "branch", "customer_branch");
 
 frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
     cur_frm.set_query("equipment", function() {

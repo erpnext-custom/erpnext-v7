@@ -36,6 +36,9 @@ frappe.ui.form.on('Job Card', {
 		cur_frm.refresh_field("paid")
 		cur_frm.refresh_field("receive_payment")
 		cur_frm.refresh()
+	},
+	"get_items": function(frm) {
+		get_entries_from_min(frm.doc.stock_entry)
 	}
 });
 
@@ -48,6 +51,28 @@ frappe.ui.form.on("Job Card Item", {
 	},
 	"end_time": function(frm, cdt, cdn) {
 		calculate_datetime(frm, cdt, cdn)
+	},
+	"job": function(frm, cdt, cdn) {
+		var item = locals[cdt][cdn]
+		
+		if(item.job) {
+			frappe.call({
+				method: "frappe.client.get_value",
+				args: {
+					doctype: item.which,
+					fieldname: ["item_name", "cost"],
+					filters: {
+						name: item.job
+					}
+				},
+				callback: function(r) {
+					frappe.model.set_value(cdt, cdn, "job_name", r.message.item_name)
+					frappe.model.set_value(cdt, cdn, "amount", r.message.cost)
+					cur_frm.refresh_field("job_name")
+					cur_frm.refresh_field("amount")
+				}
+			})
+		}
 	}
 })
 
@@ -82,9 +107,33 @@ frappe.ui.form.on("Job Card", "refresh", function(frm) {
         return {
             "filters": {
 		"docstatus": 1,
-		"purpose": "Material Issue"
+		"purpose": "Material Issue",
+		"job_card": frm.doc.name
             }
         };
     });
 })
 
+	
+function get_entries_from_min(form) {
+	frappe.call({
+		method: "erpnext.maintenance.doctype.job_card.job_card.get_min_items",
+		async: false,
+		args: {
+			"name": form,
+		},
+		callback: function(r) {
+			if(r.message) {
+				var total_amount = 0;
+				r.message.forEach(function(logbook) {
+				        var row = frappe.model.add_child(cur_frm.doc, "Job Card Item", "items");
+					row.which = "Item"
+					row.job = logbook['item_code']
+					row.job_name = logbook['item_name']
+					row.amount = logbook['amount']
+				})
+				cur_frm.refresh_field("items")
+			}
+		}
+	})
+}

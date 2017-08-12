@@ -12,7 +12,7 @@ frappe.ui.form.on('Hire Charge Invoice', {
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
 		}
-		if (!frm.doc.payment_jv && frm.doc.invoice_jv && frappe.model.can_write("Journal Entry")) {
+		if (frm.doc.owned_by != "CDCL" && !frm.doc.payment_jv && frm.doc.invoice_jv && frappe.model.can_write("Journal Entry")) {
 			cur_frm.toggle_display("receive_payment", 1)
 		}
 		else {
@@ -66,6 +66,7 @@ function calculate_balance(frm) {
 }
 
 cur_frm.add_fetch("ehf_name","customer","customer")
+cur_frm.add_fetch("ehf_name","private","owned_by")
 cur_frm.add_fetch("cost_center","branch","branch")
 //cur_frm.add_fetch("ehf_name","advance_amount","advance_amount")
 

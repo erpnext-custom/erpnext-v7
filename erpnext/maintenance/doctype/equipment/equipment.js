@@ -15,3 +15,19 @@ frappe.ui.form.on('Equipment', {
 	}
 });
 
+frappe.ui.form.on("Equipment", "refresh", function(frm) {
+    cur_frm.set_query("equipment_model", function() {
+        return {
+            "filters": {
+		"equipment_type": frm.doc.equipment_type
+            }
+        };
+    });
+    cur_frm.set_query("equipment_type", function() {
+        return {
+            "filters": {
+		"equipment_category": frm.doc.equipment_category
+            }
+        };
+    });
+})

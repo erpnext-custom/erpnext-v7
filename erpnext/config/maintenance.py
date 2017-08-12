@@ -28,6 +28,11 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Equipment Category",
+					"description": _("Equipment Category Details"),
+				},
+				{
+					"type": "doctype",
 					"name": "Equipment Type",
 					"description": _("Equipment Type Details"),
 				},
@@ -45,6 +50,11 @@ def get_data():
 					"type": "doctype",
 					"name": "POL Type",
 					"description": _("POL Types"),
+				},
+				{
+					"type": "doctype",
+					"name": "Service",
+					"description": _("Services"),
 				},
 			]
 		},

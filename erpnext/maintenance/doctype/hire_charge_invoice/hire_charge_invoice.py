@@ -74,19 +74,70 @@ class HireChargeInvoice(Document):
 	##
 	def post_journal_entry(self):
 		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
+		if not receivable_account:
+			frappe.throw("Setup Reveivable Account in Maintenance Accounts Settings")
 		advance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_advance_account")
+		if not advance_account:
+			frappe.throw("Setup Advance Account in Maintenance Accounts Settings")
 		hire_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_account")
+		if not hire_account:
+			frappe.throw("Setup Hire Account in Maintenance Accounts Settings")
+		ic_account = frappe.db.get_single_value("Maintenance Accounts Settings", "intra_company_account")
+		if not ic_account:
+			frappe.throw("Setup Intra-Company Account in Maintenance Accounts Settings")
+		hr_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_internal_account")
+		if not hr_account:
+			frappe.throw("Setup Hire Revenue Internal Account in Maintenance Accounts Settings")
+		hea_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_expense_account")
+		if not hea_account:
+			frappe.throw("Setup Hire Expense Internal Account in Maintenance Accounts Settings")
 
-		if hire_account and advance_account and receivable_account:
-			je = frappe.new_doc("Journal Entry")
-			je.flags.ignore_permissions = 1 
-			je.title = "Hire Charge Invoice (" + self.name + ")"
-			je.voucher_type = 'Hire Invoice'
-			je.naming_series = 'Hire Invoice'
-			je.remark = 'Payment against : ' + self.name;
-			je.posting_date = self.posting_date
-			je.branch = self.branch
-			
+		je = frappe.new_doc("Journal Entry")
+		je.flags.ignore_permissions = 1 
+		je.title = "Hire Charge Invoice (" + self.name + ")"
+		je.voucher_type = 'Hire Invoice'
+		je.naming_series = 'Hire Invoice'
+		je.remark = 'Payment against : ' + self.name;
+		je.posting_date = self.posting_date
+		je.branch = self.branch
+
+		if self.owned_by == "CDCL":
+			customer_cost_center = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "customer_cost_center")
+			je.append("accounts", {
+					"account": hea_account,
+					"reference_type": "Hire Charge Invoice",
+					"reference_name": self.name,
+					"cost_center": customer_cost_center,
+					"debit_in_account_currency": flt(self.total_invoice_amount),
+					"debit": flt(self.total_invoice_amount),
+				})
+			je.append("accounts", {
+					"account": ic_account,
+					"reference_type": "Hire Charge Invoice",
+					"reference_name": self.name,
+					"cost_center": customer_cost_center,
+					"credit_in_account_currency": flt(self.total_invoice_amount),
+					"credit": flt(self.total_invoice_amount),
+				})
+			je.append("accounts", {
+					"account": ic_account,
+					"reference_type": "Hire Charge Invoice",
+					"reference_name": self.name,
+					"cost_center": self.cost_center,
+					"debit_in_account_currency": flt(self.total_invoice_amount),
+					"debit": flt(self.total_invoice_amount),
+				})
+			je.append("accounts", {
+					"account": hr_account,
+					"reference_type": "Hire Charge Invoice",
+					"reference_name": self.name,
+					"cost_center": self.cost_center,
+					"credit_in_account_currency": flt(self.total_invoice_amount),
+					"credit": flt(self.total_invoice_amount),
+				})
+			je.insert()
+
+		else:		
 			if self.total_invoice_amount > 0:
 				je.append("accounts", {
 						"account": hire_account,
@@ -123,10 +174,8 @@ class HireChargeInvoice(Document):
 
 			je.submit()
 			
-			self.db_set("invoice_jv", je.name)
+		self.db_set("invoice_jv", je.name)
 
-		else:
-			frappe.throw("Define Default Accounts in Maintenance Accounts Settings")	
 
 	def readjust_advance(self):
 		frappe.db.sql("update `tabJournal Entry Account` set reference_type=%s,reference_name=%s where reference_type=%s and reference_name=%s and docstatus = 1", ("Equipment Hiring Form", self.ehf_name, "Hire Charge Invoice", self.name))

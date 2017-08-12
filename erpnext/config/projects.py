@@ -56,6 +56,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Process MR Payment",
+					"label": "Process Payment for GEP & MR",
 					"description": _("Process Payments for Project Muster Roll"),
 				},
 				{

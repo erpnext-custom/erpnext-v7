@@ -7,7 +7,7 @@ frappe.listview_settings['Equipment Hiring Form'] = {
 	has_indicator_for_draft: 1,
 	get_indicator: function(doc) {
 		if(doc.docstatus==0) {
-				return ["Hire Request Submitted", "grey", "docstatus,=,0"];
+				return ["Hiring Requested", "grey", "docstatus,=,0"];
 		}
 
 		if(doc.docstatus == 1) {
@@ -18,7 +18,7 @@ frappe.listview_settings['Equipment Hiring Form'] = {
 				return ["Logbook Submitted", "orange", "docstatus,=,1|hiring_status,>,0|payment_completed,=,0"];
 			}
 			else if(doc.payment_completed) {
-				return ["Payment Completed", "green", "docstatus,=,1|payment_completed,>,0"];
+				return ["Closed", "green", "docstatus,=,1|payment_completed,>,0"];
 			}
 			else {
 			}

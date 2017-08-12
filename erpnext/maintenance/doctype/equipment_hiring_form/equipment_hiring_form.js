@@ -26,6 +26,10 @@ frappe.ui.form.on('Equipment Hiring Form', {
 			frm.set_value("advance_amount", frm.doc.total_hiring_amount)
 		}
 	},
+	"private": function(frm) {
+		cur_frm.toggle_reqd("customer_cost_center", frm.doc.private == 'CDCL')
+		cur_frm.toggle_reqd("customer_branch", frm.doc.private == 'CDCL')
+	}
 });
 
 /*cur_frm.fields_dict['customer'].get_query = function(frm) {
@@ -48,6 +52,7 @@ cur_frm.add_fetch("cost_center", "branch", "branch")
 cur_frm.add_fetch("customer", "location", "address")
 cur_frm.add_fetch("customer", "telephone_and_fax", "contact_number")
 
+cur_frm.add_fetch("customer_cost_center", "branch", "customer_branch")
 //Hiring Request Details
 frappe.ui.form.on("Hiring Request Details", {
 	"from_date": function(frm, cdt, cdn) {
