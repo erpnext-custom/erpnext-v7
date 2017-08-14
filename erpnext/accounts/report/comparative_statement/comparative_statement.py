@@ -22,7 +22,7 @@ def get_data(filters):
 	if filters.report == "Comprehensive Income":
 		accounts = frappe.db.sql("""select name, account_code, parent_account, account_name, root_type, report_type, lft, rgt from `tabAccount` where company=%s and root_type in ('Expense', 'Income') order by lft""", filters.company, as_dict=True)
 	if filters.report == "Financial Position":
-		accounts = frappe.db.sql("""select name, account_code, parent_account, account_name, root_type, report_type, lft, rgt from `tabAccount` where company=%s and root_type in ('Asset', 'Liability') order by lft""", filters.company, as_dict=True)
+		accounts = frappe.db.sql("""select name, account_code, parent_account, account_name, root_type, report_type, lft, rgt from `tabAccount` where company=%s and root_type in ('Asset', 'Liability', 'Equity') order by lft""", filters.company, as_dict=True)
 
 	if not accounts:
 		return None
@@ -62,7 +62,8 @@ def calculate_values(accounts, reporting_gls, comparing_gls, filters):
 		"comparing": 0.0,
 		"variance": 0.0
 	}
-
+	
+	rep_income = rep_expense = com_income = com_expense = 0
 	for d in accounts:
 		d.update(init.copy())
 
@@ -71,39 +72,39 @@ def calculate_values(accounts, reporting_gls, comparing_gls, filters):
 			if cstr(entry.is_opening) != "Yes":
 				if d.root_type == "Expense":
 					d["reporting"] += (flt(entry.debit, 3) - flt(entry.credit, 3))
+					rep_expense += (flt(entry.debit, 3) - flt(entry.credit, 3))
 				if d.root_type == "Income":
 					d["reporting"] += (flt(entry.credit, 3) - flt(entry.debit, 3))
+					rep_income += (flt(entry.credit, 3) - flt(entry.debit, 3))
 				if d.root_type == "Asset":
 					d["reporting"] += (flt(entry.debit, 3) - flt(entry.credit, 3))
 				if d.root_type == "Liability":
 					d["reporting"] += (flt(entry.credit, 3) - flt(entry.debit, 3))
+				if d.root_type == "Equity":
+					d["reporting"] += (flt(entry.credit, 3) - flt(entry.debit, 3))
 
-		total_row["reporting"] += d["reporting"]
-
+		total_row["reporting"] = str(rep_income - rep_expense)
 		#data for comparing period
 		for entry in comparing_gls.get(d.name, []):
 			if cstr(entry.is_opening) != "Yes":
 				if d.root_type == "Expense":
 					d["comparing"] += (flt(entry.debit, 3) - flt(entry.credit, 3))
+					com_expense += (flt(entry.debit, 3) - flt(entry.credit, 3))
 				if d.root_type == "Income":
 					d["comparing"] += (flt(entry.credit, 3) - flt(entry.debit, 3))
+					com_income += (flt(entry.credit, 3) - flt(entry.debit, 3))
 				if d.root_type == "Asset":
-					d["reporting"] += (flt(entry.debit, 3) - flt(entry.credit, 3))
+					d["comparing"] += (flt(entry.debit, 3) - flt(entry.credit, 3))
 				if d.root_type == "Liability":
-					d["reporting"] += (flt(entry.credit, 3) - flt(entry.debit, 3))
+					d["comparing"] += (flt(entry.credit, 3) - flt(entry.debit, 3))
+				if d.root_type == "Equity":
+					d["comparing"] += (flt(entry.credit, 3) - flt(entry.debit, 3))
 
-		total_row["comparing"] += d["comparing"]
+		total_row["comparing"] = str(com_income - com_expense)
 
 		d["variance"] = flt(d["reporting"]) - flt(d["comparing"])
-
-		if not d["comparing"] and not d["reporting"]:
-			d["variance_percent"] = "100"
-		elif not d["comparing"]:
-			d["variance_percent"] = (d["variance"]/d["variance"]) * 100
-		else:
-			d["variance_percent"] = (d["variance"]/d["comparing"]) * 100
-
-		total_row["variance"] += d["variance"]
+		d["variance_percent"] = "-"
+	        total_row["variance"] = flt(total_row["reporting"]) - flt(total_row["comparing"])
 
 	if filters.report == "Financial Position":
 		total_row = {}
@@ -132,6 +133,13 @@ def prepare_data(accounts, filters, total_row, parent_children_map):
 				has_value = True
 
 		row["has_value"] = has_value
+		
+		if not d["comparing"] and not d["reporting"]:
+			row["variance_percent"] = "100"
+		elif not d["comparing"]:
+			row["variance_percent"] = str(rounded((flt(d["variance"])/flt(d["variance"])) * 100, 2))
+		else:
+			row["variance_percent"] = str(rounded((flt(d["variance"])/flt(d["comparing"])) * 100, 2))
 		data.append(row)
 
 	data.extend([{},total_row])
