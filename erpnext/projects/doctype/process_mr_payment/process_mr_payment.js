@@ -2,6 +2,7 @@
 // For license information, please see license.txt
 cur_frm.add_fetch("project", "branch", "branch")
 cur_frm.add_fetch("project", "cost_center", "cost_center")
+cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on('Process MR Payment', {
 	onload: function(frm) {
@@ -15,9 +16,14 @@ frappe.ui.form.on('Process MR Payment', {
 			frm.set_value("posting_date", get_today())	
 		}
 	},
+
+	project: function(frm) {
+		cur_frm.set_df_property("cost_center", "read_only", frm.doc.project ? 1 : 0) 
+	},
+
 	load_records: function(frm) {
-		if(frm.doc.from_date && frm.doc.from_date < frm.doc.to_date) {
-			get_records(frm.doc.from_date, frm.doc.to_date, frm.doc.project)
+		if(frm.doc.from_date && frm.doc.cost_center && frm.doc.employee_type && frm.doc.from_date < frm.doc.to_date) {
+			get_records(frm.doc.employee_type, frm.doc.from_date, frm.doc.to_date, frm.doc.cost_center, frm.doc.branch)
 		}
 		else if(frm.doc.from_date && frm.doc.from_date > frm.doc.to_date) {
 			msgprint("To Date should be smaller than From Date")
@@ -26,13 +32,15 @@ frappe.ui.form.on('Process MR Payment', {
 	}
 });
 
-function get_records(from_date, to_date, project) {
+function get_records(employee_type, from_date, to_date, cost_center, branch) {
 	frappe.call({
 		method: "erpnext.projects.doctype.process_mr_payment.process_mr_payment.get_records",
 		args: {
 			"from_date": from_date,
 			"to_date": to_date,
-			"project": project,
+			"cost_center": cost_center,
+			"branch": branch,
+			"employee_type": employee_type
 		},
 		callback: function(r) {
 			if(r.message) {
@@ -43,7 +51,8 @@ function get_records(from_date, to_date, project) {
 				r.message.forEach(function(mr) {
 					if(mr['number_of_days'] > 0 || mr['number_of_hours'] > 0) {
 						var row = frappe.model.add_child(cur_frm.doc, "MR Payment Item", "items");
-						row.mr_employee = mr['name']
+						row.employee_type = mr['type']
+						row.employee = mr['name']
 						row.person_name = mr['person_name']
 						row.id_card = mr['id_card']
 						row.number_of_days = mr['number_of_days']

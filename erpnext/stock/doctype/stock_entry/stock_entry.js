@@ -549,6 +549,17 @@ cur_frm.cscript.initial_stock_templates = function(doc) {
        refresh_field("items");
 }
 
+frappe.ui.form.on("Stock Entry", "refresh", function(frm) {
+    cur_frm.set_query("job_card", function() {
+        return {
+            "filters": {
+		"docstatus": 0,
+		"branch": frm.doc.branch
+            }
+        };
+    });
+})
+
 frappe.ui.form.on("Stock Entry", "purpose", function(frm){
       if (cur_frm.fields_dict.purpose.value == 'Material Issue'){
          console.log(cur_frm.fields_dict.purpose.value)

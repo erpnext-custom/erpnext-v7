@@ -1,4 +1,8 @@
-frappe.ui.form.on("Muster Roll Attendance", {
+cur_frm.add_fetch("cost_center", "branch", "branch")
+cur_frm.add_fetch("project", "cost_center", "cost_center")
+cur_frm.add_fetch("project", "branch", "branch")
+
+frappe.ui.form.on("Attendance Tool Others", {
 	refresh: function(frm) {
 		frm.disable_save();
 	},
@@ -8,23 +12,38 @@ frappe.ui.form.on("Muster Roll Attendance", {
 	},
 
 	date: function(frm) {
-		erpnext.muster_roll_attendance.load_employees(frm);
+		erpnext.attendance_tool_others.load_employees(frm);
 	},
 
 	project: function(frm) {
-		erpnext.muster_roll_attendance.load_employees(frm);
+		erpnext.attendance_tool_others.load_employees(frm);
+		cur_frm.set_df_property("cost_center", "read_only", frm.doc.project ? 1 : 0) 
+	},
+
+	cost_center: function(frm) {
+		erpnext.attendance_tool_others.load_employees(frm);
+	},
+
+	branch: function(frm) {
+		erpnext.attendance_tool_others.load_employees(frm);
+	},
+
+	employee_type: function(frm) {
+		erpnext.attendance_tool_others.load_employees(frm);
 	},
 });
 
 
-erpnext.muster_roll_attendance = {
+erpnext.attendance_tool_others = {
 	load_employees: function(frm) {
-		if(frm.doc.date && frm.doc.project) {
+		if(frm.doc.date && frm.doc.cost_center && frm.doc.branch && frm.doc.employee_type) {
 			frappe.call({
-				method: "erpnext.projects.doctype.muster_roll_attendance.muster_roll_attendance.get_employees",
+				method: "erpnext.hr.doctype.attendance_tool_others.attendance_tool_others.get_employees",
 				args: {
 					date: frm.doc.date,
-					project: frm.doc.project
+					cost_center: frm.doc.cost_center,
+					branch: frm.doc.branch,
+					employee_type: frm.doc.employee_type
 				},
 				callback: function(r) {
 					if(r.message['unmarked'].length > 0) {
@@ -142,16 +161,18 @@ erpnext.EmployeeSelector = Class.extend({
 					}
 				});
 				frappe.call({
-					method: "erpnext.projects.doctype.muster_roll_attendance.muster_roll_attendance.mark_employee_attendance",
+					method: "erpnext.hr.doctype.attendance_tool_others.attendance_tool_others.mark_employee_attendance",
 					args:{
 						"employee_list":employee_present,
 						"status":"Present",
-						"date":frm.doc.date,
-						"project":frm.doc.project,
+						"date": frm.doc.date,
+						"cost_center": frm.doc.cost_center,
+						"branch": frm.doc.branch,
+						"employee_type": frm.doc.employee_type
 					},
 
 					callback: function(r) {
-						erpnext.muster_roll_attendance.load_employees(frm);
+						erpnext.attendance_tool_others.load_employees(frm);
 
 					}
 				});
@@ -166,18 +187,21 @@ erpnext.EmployeeSelector = Class.extend({
 						employee_absent.push(employee[i]);
 					}
 				});
+				console.log("INSIDE")
 				frappe.call({
-					method: "erpnext.projects.doctype.muster_roll_attendance.muster_roll_attendance.mark_employee_attendance",
+					method: "erpnext.hr.doctype.attendance_tool_others.attendance_tool_others.mark_employee_attendance",
 					args:{
-						"employee_list":employee_absent,
+						"employee_list": employee_absent,
 						"status":"Absent",
-						"date":frm.doc.date,
-						"project":frm.doc.project,
+						"date": frm.doc.date,
+						"cost_center": frm.doc.cost_center,
+						"branch": frm.doc.branch,
+						"employee_type": frm.doc.employee_type
 					},
 
 					callback: function(r) {
-						erpnext.muster_roll_attendance.load_employees(frm);
-
+						erpnext.attendance_tool_others.load_employees(frm);
+						console.log("INSIDE CALLBACK")
 					}
 				});
 			});

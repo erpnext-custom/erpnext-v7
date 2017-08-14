@@ -216,7 +216,7 @@ erpnext.asset.transfer_asset = function(frm) {
 	var dialog = new frappe.ui.Dialog({
 		title: __("Transfer Asset"),
 		fields: [
-			{
+			/*{
 				"label": __("Target Warehouse"),
 				"fieldname": "target_warehouse",
 				"fieldtype": "Link",
@@ -229,7 +229,7 @@ erpnext.asset.transfer_asset = function(frm) {
                                         	]
 					}
 				},
-			},
+			}, */
 			{
 				"label": __("Target Custodian"),
 				"fieldname": "target_custodian",

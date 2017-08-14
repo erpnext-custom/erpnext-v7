@@ -12,7 +12,7 @@ frappe.ui.form.on('Hire Charge Invoice', {
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
 		}
-		if (!frm.doc.payment_jv && frm.doc.invoice_jv && frappe.model.can_write("Journal Entry")) {
+		if (frm.doc.owned_by != "CDCL" && !frm.doc.payment_jv && frm.doc.invoice_jv && frappe.model.can_write("Journal Entry")) {
 			cur_frm.toggle_display("receive_payment", 1)
 		}
 		else {
@@ -55,12 +55,18 @@ frappe.ui.form.on('Hire Charge Invoice', {
 
 function calculate_balance(frm) {
 	if (frm.doc.total_invoice_amount) {
-		frm.set_value("balance_amount", frm.doc.total_invoice_amount - frm.doc.advance_amount)
+		if(frm.doc.advance_amount) {
+			frm.set_value("balance_amount", frm.doc.total_invoice_amount - frm.doc.advance_amount)
+		}
+		else {
+			frm.set_value("balance_amount", frm.doc.total_invoice_amount)
+		}
 		frm.refresh_field("balance_amount")
 	}	
 }
 
 cur_frm.add_fetch("ehf_name","customer","customer")
+cur_frm.add_fetch("ehf_name","private","owned_by")
 cur_frm.add_fetch("cost_center","branch","branch")
 //cur_frm.add_fetch("ehf_name","advance_amount","advance_amount")
 
@@ -158,6 +164,7 @@ function get_vehicle_logs(form) {
 				});
 
 				cur_frm.set_value("total_invoice_amount", total_invoice_amount)
+				cur_frm.refresh_field("total_invoice_amount")
 				cur_frm.refresh()
 			}
 			else {

@@ -266,14 +266,18 @@ class PurchaseOrder(BuyingController):
 	##
 	def check_budget_available(self):
 		for a in self.items:
-			budget_amount = frappe.db.sql("select ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (a.budget_account, a.cost_center, str(self.transaction_date)[0:4]), as_dict=True)
-			if budget_amount:
-				consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (a.cost_center, a.budget_account, str(self.transaction_date)[0:4] + "-01-01", str(self.transaction_date)[0:4] + "-12-31"), as_dict=True)
-				if consumed:
-					if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(a.amount)):
-						frappe.throw("Not enough budget in " + str(a.budget_account) + " under " + str(a.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(a.amount) - flt(budget_amount[0].budget_amount))))
+			action = frappe.db.sql("select action_if_annual_budget_exceeded as action from tabBudget where docstatus = 1 and cost_center = \'" + str(a.cost_center) + "\' and fiscal_year = " + str(self.transaction_date)[0:4] + " ", as_dict=True)
+			if action and action[0].action == "Ignore":
+				pass
 			else:
-				frappe.throw("There is no budget in " + str(a.budget_account) + " under " + str(a.cost_center))
+				budget_amount = frappe.db.sql("select ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (a.budget_account, a.cost_center, str(self.transaction_date)[0:4]), as_dict=True)
+				if budget_amount:
+					consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (a.cost_center, a.budget_account, str(self.transaction_date)[0:4] + "-01-01", str(self.transaction_date)[0:4] + "-12-31"), as_dict=True)
+					if consumed:
+						if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(a.amount)):
+							frappe.throw("Not enough budget in " + str(a.budget_account) + " under " + str(a.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(a.amount) - flt(budget_amount[0].budget_amount))))
+				else:
+					frappe.throw("There is no budget in " + str(a.budget_account) + " under " + str(a.cost_center))
 
 	##
 	# Cancel budget check entry

@@ -1,7 +1,7 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
-frappe.query_reports["MR Overtime Register"] = {
+frappe.query_reports["Attendance Register"] = {
 	"filters": [
 		{
 			"fieldname":"month",
@@ -18,23 +18,25 @@ frappe.query_reports["MR Overtime Register"] = {
 			"reqd": 1
 		},
 		{
-			"fieldname":"employee",
-			"label": __("MR Employee"),
-			"fieldtype": "Link",
-			"options": "Muster Roll Employee"
+			"fieldname":"employee_type",
+			"label": __("Employee Type"),
+			"fieldtype": "Select",
+			"options": ['Muster Roll Employee', 'GEP Employee'],
+			"reqd": 1
 		},
 		{
-			"fieldname":"project",
-			"label": __("Project"),
+			"fieldname":"cost_center",
+			"label": __("Cost Center"),
 			"fieldtype": "Link",
-			"options": "Project",
-			"reqd": 1
+			"options": "Cost Center",
+			"reqd": 1,
+			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1'], ['Cost Center', 'is_group', '!=', '1']]}}
 		}
 	],
 
 	"onload": function(me) {
 		return  frappe.call({
-			method: "erpnext.projects.report.mr_overtime_register.mr_overtime_register.get_years",
+			method: "erpnext.hr.report.attendance_register.attendance_register.get_years",
 			callback: function(r) {
 				var year_filter = me.filters_by_name.year;
 				year_filter.df.options = r.message;

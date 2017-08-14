@@ -1,3 +1,7 @@
+cur_frm.add_fetch("cost_center", "branch", "branch")
+cur_frm.add_fetch("project", "cost_center", "cost_center")
+cur_frm.add_fetch("project", "branch", "branch")
+
 frappe.ui.form.on("Project Overtime Tool", {
 	refresh: function(frm) {
 		frm.disable_save();
@@ -13,6 +17,7 @@ frappe.ui.form.on("Project Overtime Tool", {
 
 	project: function(frm) {
 		erpnext.project_overtime_tool.load_employees(frm);
+		cur_frm.set_df_property("cost_center", "read_only", frm.doc.project ? 1 : 0) 
 	},
 
 	date: function(frm) {
@@ -22,19 +27,28 @@ frappe.ui.form.on("Project Overtime Tool", {
 	employee_type: function(frm) {
 		erpnext.project_overtime_tool.load_employees(frm);
 	},
+
+	cost_center: function(frm) {
+		erpnext.project_overtime_tool.load_employees(frm);
+	},
+
+	branch: function(frm) {
+		erpnext.project_overtime_tool.load_employees(frm);
+	},
 });
 
 
 erpnext.project_overtime_tool = {
 	load_employees: function(frm) {
-		if(frm.doc.employee_type && frm.doc.project && frm.doc.date && frm.doc.number_of_hours) {
+		if(frm.doc.employee_type && frm.doc.cost_center && frm.doc.branch && frm.doc.date && frm.doc.number_of_hours) {
 			frappe.call({
 				method: "erpnext.projects.doctype.project_overtime_tool.project_overtime_tool.get_employees",
 				args: {
-					project: frm.doc.project,
 					date: frm.doc.date,
 					number_of_hours: frm.doc.number_of_hours,
 					employee_type: frm.doc.employee_type,
+					cost_center: frm.doc.cost_center,
+					branch: frm.doc.branch
 				},
 				callback: function(r) {
 					if(r.message['unmarked'].length > 0) {
@@ -156,11 +170,12 @@ erpnext.EmployeeSelector = Class.extend({
 						method: "erpnext.projects.doctype.project_overtime_tool.project_overtime_tool.allocate_overtime",
 						args:{
 							"employee_list":employee_present,
-							"project":frm.doc.project,
 							"date": frm.doc.date,
 							"purpose": frm.doc.purpose,
 							"number_of_hours": frm.doc.number_of_hours,
 							"employee_type": frm.doc.employee_type,
+							"cost_center": frm.doc.cost_center,
+							"branch": frm.doc.branch
 						},
 
 						callback: function(r) {

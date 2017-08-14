@@ -7,4 +7,7 @@ import frappe
 from frappe.model.document import Document
 
 class GEPEmployee(Document):
-	pass
+	def validate(self):
+		if self.status == "Left":
+			self.cost_center = ''
+			self.branch = ''

@@ -17,5 +17,11 @@ frappe.query_reports["Statement of Comprehensive Income"]["filters"].push(
 		"fieldname": "accumulated_values",
 		"label": __("Accumulated Values"),
 		"fieldtype": "Check",
-	});
+	},
+	{
+		"fieldname": "show_zero_values",
+		"label": __("Show zero values"),
+		"fieldtype": "Check"
+	},
+	);
 });

@@ -1,8 +1,20 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  		  SHIV		     11/08/2017         					Default "Project Tasks" is replaced by custom
+																			"Activity Tasks"
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
+
 cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on("Project", {
+	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+	// Following code is commented by SHIV on 2017/08/11
+	/*
 	setup: function(frm) {
 		frm.get_field('tasks').grid.editable_fields = [
 			{fieldname: 'title', columns: 3},
@@ -12,6 +24,22 @@ frappe.ui.form.on("Project", {
 		];
 
 	},
+	*/
+	
+	// Follwoing code is added by SHIV on 2017/08/11
+	setup: function(frm) {
+		frm.get_field('activity_tasks').grid.editable_fields = [
+			{fieldname: 'activity', columns: 2},
+			{fieldname: 'task', columns: 2},
+			{fieldname: 'status', columns: 1},
+			{fieldname: 'start_date', columns: 2},
+			{fieldname: 'end_date', columns: 2},
+			{fieldname: 'work_quantity', columns: 1}
+		];
+
+	},	
+	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+	
 	onload: function(frm) {
 		var so = frappe.meta.get_docfield("Project", "sales_order");
 		so.get_route_options_for_new_doc = function(field) {
@@ -107,6 +135,23 @@ frappe.ui.form.on("Project Task", {
 		frm.trigger('tasks_refresh');
 	},
 });
+
+// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+// Following block of code added by SHIV on 11/08/2017
+frappe.ui.form.on("Activity Tasks", {
+	edit_task: function(frm, doctype, name) {
+		var doc = frappe.get_doc(doctype, name);
+		if(doc.task_id) {
+			frappe.set_route("Form", "Task", doc.task_id);
+		} else {
+			msgprint(__("Save the document first."));
+		}
+	},
+	status: function(frm, doctype, name) {
+		frm.trigger('tasks_refresh');
+	},
+});
+// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 frappe.ui.form.on("Project", "refresh", function(frm) {
     cur_frm.set_query("cost_center", function() {

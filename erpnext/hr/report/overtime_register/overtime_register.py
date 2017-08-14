@@ -13,7 +13,7 @@ def execute(filters=None):
 	conditions, filters = get_conditions(filters)
 	columns = get_columns(filters)
 	att_map = get_attendance_list(conditions, filters)
-	emp_map = get_employee_details()
+	emp_map = get_employee_details(filters.employee_type)
 
 	data = []
 	for emp in sorted(att_map):
@@ -69,17 +69,22 @@ def get_conditions(filters):
 
 	filters["total_days_in_month"] = monthrange(cint(filters.year), filters.month)[1]
 
-	conditions = " and month(date) = %(month)s and year(date) = %(year)s"
-
-	if filters.get("employee"): conditions += " and number = %(employee)s"
+	conditions = " and month(date) = %(month)s and year(date) = %(year)s and cost_center = \'" + str(filters.cost_center) + "\' "
 
 	return conditions, filters
 
-def get_employee_details():
+def get_employee_details(employee_type):
 	emp_map = frappe._dict()
-	for d in frappe.db.sql("""select name, person_name, id_card
-		from `tabMuster Roll Employee`""", as_dict=1):
-		emp_map.setdefault(d.name, d)
+	if employee_type == "Muster Roll Employee":
+		for d in frappe.db.sql("""select name, person_name, id_card
+			from `tabMuster Roll Employee`""", as_dict=1):
+			emp_map.setdefault(d.name, d)
+	elif employee_type == "GEP Employee":
+		for d in frappe.db.sql("""select name, person_name, id_card
+			from `tabGEP Employee`""", as_dict=1):
+			emp_map.setdefault(d.name, d)
+	else:
+		frappe.throw("Select a Employee Type")
 
 	return emp_map
 

@@ -425,7 +425,10 @@ def make_purchase_invoice(source_name, target_doc=None):
 		target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0)
 		cat = frappe.db.get_value("Item", source_doc.item_code, "item_group")
 		if cat == 'Fixed Asset':
-			target_doc.expense_account = "Stock-Assets - SMCL"
+			expense_account = source_parent.get_company_default("stock_asset_received_but_not_billed")
+			if not expense_account:
+				frappe.throw("Setup Stock Asset Received But Not Billed in Company Setting")
+			target_doc.expense_account = expense_account
 
 	doclist = get_mapped_doc("Purchase Receipt", source_name,	{
 		"Purchase Receipt": {

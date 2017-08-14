@@ -52,7 +52,7 @@ def validate_filters(filters):
 		filters.to_date = filters.year_end_date
 
 def get_data(filters):
-	accounts = frappe.db.sql("""select name, parent_account, account_name, root_type, report_type, lft, rgt
+	accounts = frappe.db.sql("""select name, account_code, parent_account, account_name, root_type, report_type, lft, rgt
 		from `tabAccount` where company=%s order by lft""", filters.company, as_dict=True)
 
 	if not accounts:
@@ -165,6 +165,7 @@ def prepare_data(accounts, filters, total_row, parent_children_map):
 	for d in accounts:
 		has_value = False
 		row = {
+			"account_code": d.account_code,
 			"account_name": d.account_name,
 			"account": d.name,
 			"parent_account": d.parent_account,
@@ -197,6 +198,12 @@ def get_columns():
 			"fieldtype": "Link",
 			"options": "Account",
 			"width": 300
+		},
+		{
+			"fieldname": "account_code",
+			"label": _("Account Code"),
+			"fieldtype": "Data",
+			"width": 100
 		},
 		{
 			"fieldname": "opening_debit",
