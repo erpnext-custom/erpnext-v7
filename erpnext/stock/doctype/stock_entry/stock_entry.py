@@ -58,6 +58,7 @@ class StockEntry(StockController):
 
 	def on_submit(self):
 		self.update_stock_ledger()
+		self.update_consumable_register()
 
 		from erpnext.stock.doctype.serial_no.serial_no import update_serial_nos_after_submit
 		update_serial_nos_after_submit(self, "items")
@@ -753,6 +754,19 @@ class StockEntry(StockController):
 					if expiry_date:
 						if getdate(self.posting_date) > getdate(expiry_date):
 							frappe.throw(_("Batch {0} of Item {1} has expired.").format(item.batch_no, item.item_code))
+
+	def update_consumable_register(self):
+		if self.purpose == "Material Issue":
+			for a in self.items:
+				if frappe.db.get_value("Item", a.item_code, "maintain_in_register"):
+					doc = frappe.new_doc("Consumable Register Entry")
+					doc.branch = self.branch
+					doc.item_code = a.item_code
+					doc.date = self.posting_date
+					doc.issued_to = a.issued_to
+					doc.ref_doc = self.name
+					doc.qty = a.qty
+					doc.insert()
 
 @frappe.whitelist()
 def get_production_order_details(production_order):

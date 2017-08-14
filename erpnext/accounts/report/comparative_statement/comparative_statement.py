@@ -36,7 +36,7 @@ def get_data(filters):
 	open_reporting_gls = {}
 	comparing_gls = {}
 	open_comparing_gls = {}
-	ignore_closing_entries = filters.ignore_closing_entries
+	ignore_closing_entries = True
 
 	if filters.report == "Financial Position":
 		ignore_closing_entries = False

@@ -58,11 +58,20 @@ def _reorder_item():
 
 			company = warehouse_company.get(warehouse) or default_company
 
-			material_requests[material_request_type].setdefault(company, []).append({
+			"""material_requests[material_request_type].setdefault(company, []).append({
 				"item_code": item_code,
 				"warehouse": warehouse,
-				"reorder_qty": reorder_qty
-			})
+				"reorder_qty": reorder_qty,
+				"branch": frappe.db.get_value("Warehouse", warehouse, "branch")
+			}) """
+			branch = frappe.db.get_value("Warehouse", warehouse, "branch")
+			if not branch:
+				frappe.throw("Setup Branch for Warehouses")
+			material_requests[material_request_type].setdefault(branch, []).append({
+				"item_code": item_code,
+				"warehouse": warehouse,
+				"reorder_qty": reorder_qty,
+			}) 
 
 	for item_code in items_to_consider:
 		item = frappe.get_doc("Item", item_code)
@@ -76,7 +85,7 @@ def _reorder_item():
 					d.warehouse_reorder_qty, d.material_request_type, warehouse_group=d.warehouse_group)
 
 	if material_requests:
-		return create_material_request(material_requests)
+		return create_material_request(material_requests, default_company)
 
 def get_item_warehouse_projected_qty(items_to_consider):
 	item_warehouse_projected_qty = {}
@@ -98,7 +107,7 @@ def get_item_warehouse_projected_qty(items_to_consider):
 				
 	return item_warehouse_projected_qty
 
-def create_material_request(material_requests):
+def create_material_request(material_requests, company):
 	"""	Create indent on reaching reorder level	"""
 	mr_list = []
 	exceptions_list = []
@@ -111,15 +120,16 @@ def create_material_request(material_requests):
 			exceptions_list.append(frappe.get_traceback())
 
 	for request_type in material_requests:
-		for company in material_requests[request_type]:
+		for branch in material_requests[request_type]:
 			try:
-				items = material_requests[request_type][company]
+				items = material_requests[request_type][branch]
 				if not items:
 					continue
 
 				mr = frappe.new_doc("Material Request")
 				mr.update({
 					"company": company,
+					"branch": branch,
 					"transaction_date": nowdate(),
 					"material_request_type": "Material Transfer" if request_type=="Transfer" else request_type,
 				})
@@ -141,6 +151,7 @@ def create_material_request(material_requests):
 						"item_group": item.item_group,
 						"qty": d.reorder_qty,
 						"brand": item.brand,
+						"budget_account": item.expense_account
 					})
 				
 				mr.update({
@@ -149,7 +160,7 @@ def create_material_request(material_requests):
 				})
 
 				mr.insert()
-				mr.submit()
+				#mr.submit()
 				mr_list.append(mr)
 
 			except:
@@ -161,10 +172,10 @@ def create_material_request(material_requests):
 				'reorder_email_notify'))
 
 		if(frappe.local.reorder_email_notify):
-			send_email_notification(mr_list)
+			pass #send_email_notification(mr_list)
 
 	if exceptions_list:
-		notify_errors(exceptions_list)
+		pass #notify_errors(exceptions_list)
 
 	return mr_list
 
@@ -180,9 +191,12 @@ def send_email_notification(mr_list):
 	msg = frappe.render_template("templates/emails/reorder_item.html", {
 		"mr_list": mr_list
 	})
-
-	frappe.sendmail(recipients=email_list,
-		subject=_('Auto Material Requests Generated'), message = msg)
+	
+	try:
+		frappe.sendmail(recipients=email_list,
+			subject=_('Auto Material Requests Generated'), message = msg)
+	except:
+		pass
 
 def notify_errors(exceptions_list):
 	subject = "[Important] [ERPNext] Auto Reorder Errors"

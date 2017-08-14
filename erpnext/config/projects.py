@@ -87,6 +87,12 @@ def get_data():
 					"name": "Project wise Stock Tracking",
 					"doctype": "Project"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Items Register",
+					"doctype": "Consumable Register Entry"
+				},
 			]
 		},
 	]
