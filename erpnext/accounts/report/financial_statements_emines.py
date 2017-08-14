@@ -264,7 +264,7 @@ def sort_root_accounts(roots):
 	roots.sort(compare_roots)
 
 def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft, root_rgt, gl_entries_by_account,
-		ignore_closing_entries=False):
+		ignore_closing_entries=False, open_date=None):
 	"""Returns a dict like { "account": [gl entries], ... }"""
 	additional_conditions = []
 
@@ -275,7 +275,11 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 	#	additional_conditions.append("and posting_date >= %(from_date)s")
 	
 	if from_date and to_date:
-		additional_conditions.append(" and posting_date BETWEEN %(from_date)s AND %(to_date)s and docstatus = 1 ")
+		if open_date:
+			#Getting openning balance
+			additional_conditions.append(" and posting_date < \'" + str(open_date) + "\' and docstatus = 1 ")
+		else:
+			additional_conditions.append(" and posting_date BETWEEN %(from_date)s AND %(to_date)s and docstatus = 1 ")
 
 	if not cost_center:
 		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`

@@ -36,15 +36,21 @@ def get_data(filters):
 	open_reporting_gls = {}
 	comparing_gls = {}
 	open_comparing_gls = {}
+	ignore_closing_entries = filters.ignore_closing_entries
 
-	open_reporting_gls = set_gl_entries_by_account(filters.cost_center, filters.company, '1900-01-01',
-		filters.rep_to_date, min_lft, max_rgt, open_reporting_gls, ignore_closing_entries=not flt(filters.with_period_closing_entry))
+	if filters.report == "Financial Position":
+		ignore_closing_entries = False
+		open_reporting_gls = set_gl_entries_by_account(filters.cost_center, filters.company, '1900-01-01',
+			filters.rep_to_date, min_lft, max_rgt, open_reporting_gls, ignore_closing_entries, open_date=filters.rep_from_date)
+		open_comparing_gls = set_gl_entries_by_account(filters.cost_center, filters.company, '1900-01-01',
+			filters.com_to_date, min_lft, max_rgt, open_comparing_gls, ignore_closing_entries, open_date=filters.com_from_date)
+	else:
+		ignore_closing_entries = True
+
 	reporting_gls = set_gl_entries_by_account(filters.cost_center, filters.company, filters.rep_from_date,
-		filters.rep_to_date, min_lft, max_rgt, reporting_gls, ignore_closing_entries=not flt(filters.with_period_closing_entry))
-	open_comparing_gls = set_gl_entries_by_account(filters.cost_center, filters.company, '1900-01-01',
-		filters.com_to_date, min_lft, max_rgt, open_comparing_gls, ignore_closing_entries=not flt(filters.with_period_closing_entry))
+		filters.rep_to_date, min_lft, max_rgt, reporting_gls, ignore_closing_entries)
 	comparing_gls = set_gl_entries_by_account(filters.cost_center, filters.company, filters.com_from_date,
-		filters.com_to_date, min_lft, max_rgt, comparing_gls, ignore_closing_entries=not flt(filters.with_period_closing_entry))
+		filters.com_to_date, min_lft, max_rgt, comparing_gls, ignore_closing_entries)
 	total_row = calculate_values(accounts, reporting_gls, comparing_gls, open_reporting_gls, open_comparing_gls, filters)
 	accumulate_values_into_parents(accounts, accounts_by_name)
 
@@ -74,30 +80,30 @@ def calculate_values(accounts, reporting_gls, comparing_gls, open_reporting_gls,
 		d.update(init.copy())
 
 		open_rep = open_com = 0
+		if filters.report == "Financial Position":
+			#opening data for reporting period
+			for entry in open_reporting_gls.get(d.name, []):
+			##	if cstr(entry.is_opening) != "Yes":
+					if d.root_type == "Asset":
+						open_rep += (flt(entry.debit, 3) - flt(entry.credit, 3))
+					if d.root_type == "Liability":
+						open_rep += (flt(entry.credit, 3) - flt(entry.debit, 3))
+					if d.root_type == "Equity":
+						open_rep += (flt(entry.credit, 3) - flt(entry.debit, 3))
 
-		#opening data for reporting period
-		for entry in open_reporting_gls.get(d.name, []):
-			if cstr(entry.is_opening) != "Yes":
-				if d.root_type == "Asset":
-					open_rep += (flt(entry.debit, 3) - flt(entry.credit, 3))
-				if d.root_type == "Liability":
-					open_rep += (flt(entry.credit, 3) - flt(entry.debit, 3))
-				if d.root_type == "Equity":
-					open_rep += (flt(entry.credit, 3) - flt(entry.debit, 3))
-
-		#opening data for reporting period
-		for entry in open_comparing_gls.get(d.name, []):
-			if cstr(entry.is_opening) != "Yes":
-				if d.root_type == "Asset":
-					open_com += (flt(entry.debit, 3) - flt(entry.credit, 3))
-				if d.root_type == "Liability":
-					open_com += (flt(entry.credit, 3) - flt(entry.debit, 3))
-				if d.root_type == "Equity":
-					open_com += (flt(entry.credit, 3) - flt(entry.debit, 3))
+			#opening data for comparing period
+			for entry in open_comparing_gls.get(d.name, []):
+			##	if cstr(entry.is_opening) != "Yes":
+					if d.root_type == "Asset":
+						open_com += (flt(entry.debit, 3) - flt(entry.credit, 3))
+					if d.root_type == "Liability":
+						open_com += (flt(entry.credit, 3) - flt(entry.debit, 3))
+					if d.root_type == "Equity":
+						open_com += (flt(entry.credit, 3) - flt(entry.debit, 3))
 
 		#data for reporting period
 		for entry in reporting_gls.get(d.name, []):
-			if cstr(entry.is_opening) != "Yes":
+		##	if cstr(entry.is_opening) != "Yes":
 				if d.root_type == "Expense":
 					d["reporting"] += (flt(entry.debit, 3) - flt(entry.credit, 3))
 					rep_expense += (flt(entry.debit, 3) - flt(entry.credit, 3))
@@ -116,7 +122,7 @@ def calculate_values(accounts, reporting_gls, comparing_gls, open_reporting_gls,
 
 		#data for comparing period
 		for entry in comparing_gls.get(d.name, []):
-			if cstr(entry.is_opening) != "Yes":
+		##	if cstr(entry.is_opening) != "Yes":
 				if d.root_type == "Expense":
 					d["comparing"] += (flt(entry.debit, 3) - flt(entry.credit, 3))
 					com_expense += (flt(entry.debit, 3) - flt(entry.credit, 3))
@@ -200,10 +206,14 @@ def validate_filters(filters):
 			to_month = "0" + str(to_month)
 		if from_month in [1,2,3,4,5,6,7,8,9]:
 			from_month = "0" + str(from_month)
+		if from_month in [1,2,3,4,5,6,7,8,9]:
+			from_month = "0" + str(from_month)
 		filters.rep_to_date = str(filters.rep_fy) + "-" + str(to_month) + "-" + str(rep_last_day)
 		filters.rep_from_date = str(filters.rep_fy) + "-" + str(from_month) + "-01"
+
 		filters.com_to_date = str(filters.com_fy) + "-" + str(to_month) + "-" + str(com_last_day)
 		filters.com_from_date = str(filters.com_fy) + "-" + str(from_month) + "-01"
+	
 	return filters
 
 def get_columns():
