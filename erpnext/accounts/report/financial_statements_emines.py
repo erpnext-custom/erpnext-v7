@@ -89,7 +89,7 @@ def get_label(periodicity, from_date, to_date):
 	return label
 
 def get_data(cost_center, company, root_type, balance_must_be, period_list,
-		accumulated_values=1, only_current_fiscal_year=True, ignore_closing_entries=False, show_zero_values=0):
+		accumulated_values=1, only_current_fiscal_year=True, ignore_closing_entries=False):
 	accounts = get_accounts(company, root_type)
 	if not accounts:
 		return None
@@ -111,7 +111,7 @@ def get_data(cost_center, company, root_type, balance_must_be, period_list,
 	calculate_values(accounts_by_name, gl_entries_by_account, period_list, accumulated_values)
 	accumulate_values_into_parents(accounts, accounts_by_name, period_list, accumulated_values)
 	out = prepare_data(accounts, balance_must_be, period_list, company_currency)
-	out = filter_out_zero_value_rows(out, parent_children_map, show_zero_values)
+	out = filter_out_zero_value_rows(out, parent_children_map)
 
 	if out:
 		add_total_row(out, root_type, balance_must_be, period_list, company_currency)
@@ -137,7 +137,7 @@ def accumulate_values_into_parents(accounts, accounts_by_name, period_list, accu
 			for period in period_list:
 				accounts_by_name[d.parent_account][period.key] = \
 					accounts_by_name[d.parent_account].get(period.key, 0.0) + d.get(period.key, 0.0)
-			
+
 			accounts_by_name[d.parent_account]["opening_balance"] = \
 				accounts_by_name[d.parent_account].get("opening_balance", 0.0) + d.get("opening_balance", 0.0)
 
@@ -151,7 +151,6 @@ def prepare_data(accounts, balance_must_be, period_list, company_currency):
 		has_value = False
 		total = 0
 		row = frappe._dict({
-			"account_code": d.account_code,
 			"account_name": d.account_name,
 			"account": d.name,
 			"parent_account": d.parent_account,
@@ -221,7 +220,7 @@ def add_total_row(out, root_type, balance_must_be, period_list, company_currency
 		out.append({})
 
 def get_accounts(company, root_type):
-	return frappe.db.sql("""select account_code, name, parent_account, lft, rgt, root_type, report_type, account_name from `tabAccount`
+	return frappe.db.sql("""select name, parent_account, lft, rgt, root_type, report_type, account_name from `tabAccount`
 		where company=%s and root_type=%s order by lft""", (company, root_type), as_dict=True)
 
 def filter_accounts(accounts, depth=10):
@@ -265,7 +264,7 @@ def sort_root_accounts(roots):
 	roots.sort(compare_roots)
 
 def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft, root_rgt, gl_entries_by_account,
-		ignore_closing_entries=False):
+		ignore_closing_entries=False, open_date=None):
 	"""Returns a dict like { "account": [gl entries], ... }"""
 	additional_conditions = []
 
@@ -274,13 +273,17 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 
 	#if from_date:
 	#	additional_conditions.append("and posting_date >= %(from_date)s")
-	
+
 	if from_date and to_date:
-		additional_conditions.append(" and posting_date BETWEEN %(from_date)s AND %(to_date)s and docstatus = 1 ")
+		if open_date:
+			#Getting openning balance
+			additional_conditions.append(" and posting_date < \'" + str(open_date) + "\' and docstatus = 1 ")
+		else:
+			additional_conditions.append(" and posting_date BETWEEN %(from_date)s AND %(to_date)s and docstatus = 1 ")
 
 	if not cost_center:
 		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`
-			where company=%(company)s 
+			where company=%(company)s
 			{additional_conditions}
 			and account in (select name from `tabAccount`
 				where lft >= %(lft)s and rgt <= %(rgt)s)
@@ -324,12 +327,6 @@ def get_columns(periodicity, period_list, accumulated_values=1, company=None):
 		"fieldtype": "Link",
 		"options": "Account",
 		"width": 300
-	},
-	{
-		"fieldname": "account_code",
-		"label": _("Account Code"),
-		"fieldtype": "data",
-		"width": 100
 	}]
 	if company:
 		columns.append({
