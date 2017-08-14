@@ -9,7 +9,7 @@ from calendar import monthrange, isleap
 from erpnext.accounts.report.financial_statements_emines \
 	import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
 
-value_fields = ("reporting", "comparing", "variance", "variance_percent")
+value_fields = ("reporting", "comparing", "variance")
 
 def execute(filters=None):
 	filters = validate_filters(filters)
@@ -21,10 +21,8 @@ def execute(filters=None):
 def get_data(filters):
 	if filters.report == "Comprehensive Income":
 		accounts = frappe.db.sql("""select name, account_code, parent_account, account_name, root_type, report_type, lft, rgt from `tabAccount` where company=%s and root_type in ('Expense', 'Income') order by lft""", filters.company, as_dict=True)
-	elif filters.report == "Financial Position":
+	if filters.report == "Financial Position":
 		accounts = frappe.db.sql("""select name, account_code, parent_account, account_name, root_type, report_type, lft, rgt from `tabAccount` where company=%s and root_type in ('Asset', 'Liability') order by lft""", filters.company, as_dict=True)
-	else:
-		accounts = None
 
 	if not accounts:
 		return None
@@ -99,7 +97,7 @@ def calculate_values(accounts, reporting_gls, comparing_gls, filters):
 		d["variance"] = flt(d["reporting"]) - flt(d["comparing"])
 
 		if not d["comparing"] and not d["reporting"]:
-			d["variance_percent"] = 100
+			d["variance_percent"] = "100"
 		elif not d["comparing"]:
 			d["variance_percent"] = (d["variance"]/d["variance"]) * 100
 		else:
@@ -107,8 +105,8 @@ def calculate_values(accounts, reporting_gls, comparing_gls, filters):
 		
 		total_row["variance"] += d["variance"]
 
-	#if filters.report == "Financial Position":
-	#	total_row = {}
+	if filters.report == "Financial Position":
+		total_row = {}
 	return total_row
 
 def prepare_data(accounts, filters, total_row, parent_children_map):
@@ -121,6 +119,9 @@ def prepare_data(accounts, filters, total_row, parent_children_map):
 			"account": d.name,
 			"parent_account": d.parent_account,
 			"indent": d.indent,
+			"variance_percent": d.variance_percent,
+			"from_date": filters.rep_from_date,
+			"to_date": filters.rep_to_date
 		}
 
 		for key in value_fields:
@@ -141,8 +142,7 @@ def accumulate_values_into_parents(accounts, accounts_by_name):
 	for d in reversed(accounts):
 		if d.parent_account:
 			for key in value_fields:
-				if key != "variance_percent":
-					accounts_by_name[d.parent_account][key] += d[key]
+				accounts_by_name[d.parent_account][key] += d[key]
 
 def validate_filters(filters):
 	if filters.rep_fy < filters.com_fy:
@@ -161,10 +161,10 @@ def validate_filters(filters):
 			to_month = "0" + str(to_month)
 		if from_month in [1,2,3,4,5,6,7,8,9]:
 			from_month = "0" + str(from_month)
-		filters.rep_to_date = filters.rep_fy + "-" + str(to_month) + "-" + str(rep_last_day) 
-		filters.com_to_date = filters.com_fy + "-" + str(to_month) + "-" + str(com_last_day)
-		filters.rep_from_date = filters.rep_fy + "-" + str(from_month) + "-01"
-		filters.com_from_date = filters.com_fy + "-" + str(from_month) + "-01"
+		filters.rep_to_date = str(filters.rep_fy) + "-" + str(to_month) + "-" + str(rep_last_day) 
+		filters.rep_from_date = str(filters.rep_fy) + "-" + str(from_month) + "-01"
+		filters.com_to_date = str(filters.com_fy) + "-" + str(to_month) + "-" + str(com_last_day)
+		filters.com_from_date = str(filters.com_fy) + "-" + str(from_month) + "-01"
 	return filters
 
 def get_columns():

@@ -59,41 +59,8 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 				"fieldtype": "Link",
 				"options": "Cost Center",
 			},
-
 		],
-		"formatter": function(row, cell, value, columnDef, dataContext, default_formatter) {
-			if (columnDef.df.fieldname=="account") {
-				value = dataContext.account_name;
-
-				columnDef.df.link_onclick =
-					"open_general_ledger(" + JSON.stringify(dataContext) + ")";
-				columnDef.df.is_tree = true;
-			}
-
-			value = default_formatter(row, cell, value, columnDef, dataContext);
-
-			if (!dataContext.parent_account) {
-				var $value = $(value).css("font-weight", "bold");
-				if (dataContext.warn_if_negative && dataContext[columnDef.df.fieldname] < 0) {
-					$value.addClass("text-danger");
-				}
-
-				value = $value.wrap("<p></p>").parent().html();
-			}
-
-			return value;
-		},
-		"open_general_ledger": function(data) {
-			if (!data.account) return;
-
-			frappe.route_options = {
-				"account": data.account,
-				"company": frappe.query_report.filters_by_name.company.get_value(),
-				"from_date": data.from_date || data.year_start_date,
-				"to_date": data.to_date || data.year_end_date
-			};
-			frappe.set_route("query-report", "General Ledger");
-		},
+		"formatter": erpnext.financial_statements.formatter,
 		"tree": true,
 		"name_field": "account",
 		"parent_field": "parent_account",
