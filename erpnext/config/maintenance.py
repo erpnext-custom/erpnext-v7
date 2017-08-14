@@ -113,9 +113,10 @@ def get_data():
 			"icon": "icon-star",
 			"items": [
 				{
-					"type": "doctype",
-					"name": "Equipment Model",
-					"description": _("Equipment Model Details"),
+					"type": "report",
+					"is_query_report": True,
+					"name": "Job Card Imprest Report",
+					"doctype": "Job Card"
 				},
 			]
 		},
