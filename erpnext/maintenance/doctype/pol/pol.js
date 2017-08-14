@@ -20,6 +20,10 @@ frappe.ui.form.on('POL', {
 	"discount_amount": function(frm) {
 		calculate_total(frm)
 	},
+
+	"is_disabled": function(frm) {
+		cur_frm.toggle_reqd("disabled_date", frm.doc.is_disabled)
+	}
 });
 
 function calculate_total(frm) {
@@ -31,3 +35,13 @@ function calculate_total(frm) {
 		frm.set_value("total_amount", (frm.doc.qty * frm.doc.rate) - frm.doc.discount_amount)
 	}
 }	
+
+frappe.ui.form.on("POL", "refresh", function(frm) {
+    cur_frm.set_query("equipment", function() {
+        return {
+            "filters": {
+		"branch": frm.doc.branch
+            }
+        };
+    });
+})
