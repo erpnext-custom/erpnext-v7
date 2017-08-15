@@ -7,13 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-12 12:50:55.062156", 
+ "modified": "2017-08-15 17:15:04.627550", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Job Card Report", 
  "owner": "tashi.dorji775@bt.bt", 
- "query": "select jc.name, jci.job, jci.job_name, jci.amount from `tabJob Card` as jc,`tabJob Card Item` as jci  where jci.parent = jc.name and jc.docstatus = 1 and imprest = 1 and posting_date between filters.to_date and from_date;", 
- "ref_doctype": "Job Card", 
+ "query": "select equipment_number,\ncase when rate_type = 'With Fuel'\nthen (select modified)\nend as a\nfrom `tabHiring Approval Details`", 
+ "ref_doctype": "Hiring Approval Details", 
  "report_name": "Job Card Report", 
- "report_type": "Script Report"
+ "report_type": "Query Report"
 }

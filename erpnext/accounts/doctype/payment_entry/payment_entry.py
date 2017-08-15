@@ -447,8 +447,8 @@ class PaymentEntry(AccountsController):
 							"account": self.paid_from,
 							"account_currency": self.paid_from_account_currency,
 							"against": self.party if self.payment_type=="Pay" else self.paid_to,
-							"debit_in_account_currency": self.paid_amount,
-							"debit": self.base_paid_amount,
+							"credit_in_account_currency": self.paid_amount,
+							"credit": self.base_paid_amount,
 							"cost_center": self.pl_cost_center
 						})
 					)

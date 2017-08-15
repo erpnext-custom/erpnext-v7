@@ -49,16 +49,16 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Project Muster Roll Tool",
-					"label": "Assign Muster Roll To Projects",
-					"description": _("Project Muster Roll Tool"),
-				},
-				{
-					"type": "doctype",
 					"name": "Process MR Payment",
 					"label": "Process Payment for GEP & MR",
 					"description": _("Process Payments for Project Muster Roll"),
 				},
+			]
+		},
+		{
+			"label": _("Project Tools"),
+			"icon": "icon-list",
+			"items": [
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -74,6 +74,18 @@ def get_data():
 					"label": "Overtime Register for GEP & MR",
 					"description": _("Overtime Register"),
 					"doctype": "Overtime Entry"
+				},
+				{
+					"type": "doctype",
+					"name": "Project Sales",
+					"label": "Project Sales",
+					"description": _("Process Sales of Project Items"),
+				},
+				{
+					"type": "doctype",
+					"name": "Project Muster Roll Tool",
+					"label": "Assign Muster Roll To Projects",
+					"description": _("Project Muster Roll Tool"),
 				},
 			]
 		},

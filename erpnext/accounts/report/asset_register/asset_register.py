@@ -48,7 +48,7 @@ def validate_filters(filters):
 		filters.to_date = filters.year_end_date
 
 def get_data(filters):
-	query = "select opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, old_asset_code, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, value_after_depreciation, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date < \'" + str(filters.from_date) + "\' and gl.docstatus = 1) as opening_amount, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\' and gl.docstatus = 1) as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date <= \'" + str(filters.to_date) + "\' and ds.docstatus = 1) as depreciation_income_tax from tabAsset as ass where ass.docstatus = 1 and ass.status != 'Scrapped'"
+	query = "select opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, equipment_number, old_asset_code, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, value_after_depreciation, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date < \'" + str(filters.from_date) + "\' and gl.docstatus = 1) as opening_amount, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\' and gl.docstatus = 1) as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date <= \'" + str(filters.to_date) + "\' and ds.docstatus = 1) as depreciation_income_tax from tabAsset as ass where ass.docstatus = 1 and ass.status != 'Scrapped'"
 
 	if filters.cost_center:
 		query+=" and ass.cost_center = \'" + filters.cost_center + "\'"
@@ -103,7 +103,8 @@ def get_data(filters):
 				"net_useful_life": net_useful_life,
 				"net_income_tax": net_income_tax,
 				"old_asset_code": a.old_asset_code,
-				"presystem_issue_date": a.presystem_issue_date
+				"presystem_issue_date": a.presystem_issue_date,
+				"equipment_number": a.equipment_number
 			}
 			data.append(row)
 		row = {"actual_depreciation": flt(total_actual_dep, 3), "net_useful_life": flt(total_net, 3), "opening": total_opening, "net_income_tax": total_net_income, "dep_income_tax": total_income}
@@ -145,18 +146,6 @@ def get_columns():
 			"fieldtype": "Link",
 			"options": "Cost Center",
 			"width": 130
-		},
-		{
-			"fieldname": "old_asset_code",
-			"label": _("Old Asset Code"),
-			"fieldtype": "Data",
-			"width": 120
-		},
-		{
-			"fieldname": "presystem_issue_date",
-			"label": _("Original Issue Date"),
-			"fieldtype": "Date",
-			"width": 120
 		},
 		{
 			"fieldname": "date_of_issue",
@@ -205,6 +194,25 @@ def get_columns():
 			"label": _("Net Income Tax"),
 			"fieldtype": "Currency",
 			"width": 120
-		}
+		},
+		{
+			"fieldname": "old_asset_code",
+			"label": _("Old Asset Code"),
+			"fieldtype": "Data",
+			"width": 120
+		},
+		{
+			"fieldname": "presystem_issue_date",
+			"label": _("Original Issue Date"),
+			"fieldtype": "Date",
+			"width": 120
+		},
+		{
+			"fieldname": "equipment_number",
+			"label": _("Equipment Number"),
+			"fieldtype": "Link",
+			"options": "Equipment",
+			"width": 120
+		},
 	]
 

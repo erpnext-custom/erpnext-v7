@@ -1,4 +1,11 @@
 from frappe import _
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  SHIV		                    2017/08/15         Introducting BOQ
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 data = {
 	'heatmap': True,
@@ -7,7 +14,8 @@ data = {
 	'transactions': [
 		{
 			'label': _('Project'),
-			'items': ['Task', 'Timesheet', 'Expense Claim', 'Issue']
+			#'items': ['Task', 'Timesheet', 'Expense Claim', 'Issue']
+                        'items': ['Task', 'Timesheet', 'Issue']
 		},
 		{
 			'label': _('Material'),
