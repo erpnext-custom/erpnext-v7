@@ -5,11 +5,7 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SHIV		                    2017/08/15         'Project Name', 'Tasks' are moved to parent doctype
-                                                                        'Timesheet' in order to provide more flexibility
-                                                                        in recording time logs against a single task.
-                                                                        However same fields from child doctype 'Timesheet Details'
-                                                                        are hidden and populated automatically.
+1.0		  SHIV		                    2017/08/11         
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -30,10 +26,6 @@ class OverProductionLoggedError(frappe.ValidationError): pass
 
 class Timesheet(Document):
 	def validate(self):
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-                # Following method introduced by SHIV on 2017/08/15
-                self.set_child_defaults()
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		self.set_status()
 		self.validate_dates()
 		self.validate_time_logs()
@@ -91,17 +83,6 @@ class Timesheet(Document):
 		self.update_production_order(self.name)
 		self.update_task_and_project()
 
-        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-        # Following method introduced by SHIV on 2017/08/15
-        def set_child_defaults(self):
-                for data in self.time_logs:
-                        if not data.project or data.project <> self.project:
-                                data.project = self.project
-
-                        if not data.task or data.task <> self.task:
-                                data.task = self.task
-        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-        
 	def validate_mandatory_fields(self):
 		if self.production_order:
 			production_order = frappe.get_doc("Production Order", self.production_order)

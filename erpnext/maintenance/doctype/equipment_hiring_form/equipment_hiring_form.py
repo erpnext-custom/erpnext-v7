@@ -93,4 +93,4 @@ class EquipmentHiringForm(Document):
 @frappe.whitelist()
 def get_rates(form, equipment):
 	if form and equipment:
-		return frappe.db.sql("select rate, idle_rate from `tabHiring Approval Details` where docstatus = 1 and parent = \'" + str(form) + "\' and equipment = \'" + str(equipment) + "\'", as_dict=True)
+		return frappe.db.sql("select rate_type, rate, idle_rate from `tabHiring Approval Details` where docstatus = 1 and parent = \'" + str(form) + "\' and equipment = \'" + str(equipment) + "\'", as_dict=True)

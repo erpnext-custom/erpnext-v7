@@ -1,9 +1,21 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  		  SHIV		     2017/08/15         					Project Name & Task are added at 'Timesheet' level
+																			inorder to provide flexibility in task based
+																			progress logging.
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
 cur_frm.add_fetch('employee', 'employee_name', 'employee_name');
 
 frappe.ui.form.on("Timesheet", {
 	setup: function(frm) {
+		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		// Following code is commented by SHIV on 2017/08/11		
+		/*
 		frm.get_field('time_logs').grid.editable_fields = [
 			{fieldname: 'billable', columns: 1},
 			{fieldname: 'project', columns: 3},
@@ -11,7 +23,26 @@ frappe.ui.form.on("Timesheet", {
 			{fieldname: 'from_time', columns: 3},
 			{fieldname: 'hours', columns: 1}
 		];
+		*/
 
+		// Follwoing code is added by SHIV on 2017/08/11
+		frm.get_field('time_logs').grid.editable_fields = [
+			{fieldname: 'billable', columns: 1},
+			{fieldname: 'activity_type', columns: 2},
+			{fieldname: 'from_time', columns: 3},
+			{fieldname: 'to_time', columns: 3},
+			{fieldname: 'hours', columns: 1}
+		];
+		
+		frm.fields_dict.task.get_query = function() {
+			return {
+				filters:{
+					'project': frm.doc.project
+				}
+			}
+		}
+		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		
 		frm.fields_dict.employee.get_query = function() {
 			return {
 				filters:{

@@ -27,7 +27,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Muster Roll Management"),
+			"label": _("Manpower Management"),
 			"icon": "icon-facetime-video",
 			"items": [
 				{

@@ -19,8 +19,10 @@ frappe.ui.form.on('Vehicle Logbook', {
 				args: {"form": frm.doc.ehf_name, "equipment": frm.doc.equipment},
 				callback: function(r) {
 					if(r.message) {
+						cur_frm.set_value("rate_type", r.message[0].rate_type)
 						cur_frm.set_value("work_rate", r.message[0].rate)
 						cur_frm.set_value("idle_rate", r.message[0].idle_rate)
+						cur_frm.refresh_field("rate_type")
 						cur_frm.refresh_field("work_rate")
 						cur_frm.refresh_field("idle_rate")
 					}

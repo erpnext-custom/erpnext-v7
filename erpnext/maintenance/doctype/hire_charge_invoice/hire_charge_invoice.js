@@ -123,6 +123,8 @@ function get_vehicle_logs(form) {
 					row.equipment_number = logbook['equipment_number']
 					row.total_work_hours = logbook['total_work_time']
 					row.total_idle_hours = logbook['total_idle_time']
+					row.equipment = logbook['equipment']
+					row.rate_type = logbook['rate_type']
 					row.work_rate = logbook['work_rate']
 					row.idle_rate = logbook['idle_rate']
 					row.amount_idle = logbook['total_idle_time'] * logbook['idle_rate']
@@ -146,6 +148,8 @@ function get_vehicle_logs(form) {
 									var row = frappe.model.add_child(cur_frm.doc, "Hire Invoice Details", "items");
 									row.vehicle_logbook = logbook['name']
 									row.equipment_number = access['name']
+									row.equipment = logbook['equipment']
+									row.rate_type = logbook['rate_type']
 									row.total_work_hours = logbook['total_work_time']
 									row.total_idle_hours = logbook['total_idle_time']
 									row.work_rate = access['work']
