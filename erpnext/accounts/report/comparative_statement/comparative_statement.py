@@ -174,9 +174,9 @@ def prepare_data(accounts, filters, total_row, parent_children_map):
 		if not d["comparing"] and not d["reporting"]:
                         row["variance_percent"] = "100"
                 elif not d["comparing"]:
-                        row["variance_percent"] = str(rounded((flt(d["variance"])/flt(d["variance"])) * 100, 2))
+                        row["variance_percent"] = str(rounded((flt(d["variance"])/flt(d["variance"])) * 100, 2)) 
                 else:
-                        row["variance_percent"] = str(rounded((flt(d["variance"])/flt(d["comparing"])) * 100, 2))
+                        row["variance_percent"] = str(rounded((flt(d["variance"])/flt(d["comparing"])) * 100, 2)) 
 		data.append(row)
 
 	data.extend([{},total_row])
