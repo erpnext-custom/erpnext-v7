@@ -41,7 +41,7 @@ def get_accounts(filters):
 			"dep_addition": dep.debit,
 			"dep_adjustment": dep.credit,
 			"dep_total": d_total,
-			"net_block": flt(g_open) + flt(d_total) 
+			"net_block": flt(g_total) - flt(d_total) 
 		}
 		data.append(row)
 
@@ -88,6 +88,7 @@ def get_values(account, to_date, from_date, cost_center=None, opening=False, cwi
 	if cost_center:
 		query += " and cost_center = \'" + str(cost_center) + "\'"
 
+	query += " and voucher_type != 'Period Closing Voucher' "
 	value = frappe.db.sql(query, as_dict=True)
 
 	return value
