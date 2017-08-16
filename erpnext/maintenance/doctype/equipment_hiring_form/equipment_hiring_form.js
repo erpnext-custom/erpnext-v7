@@ -149,5 +149,31 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 			filters:[['branch', "=", frm.doc.branch], ['equipment_hire_form','=','']]
 		}
 	}
+	cur_frm.set_query("customer", function() {
+		if(frm.doc.private == "CDCL") {
+			return {
+			    "filters": {
+				"disabled": 0,
+				"customer_group": "Internal"
+			    }
+			};
+		}
+		else if(frm.doc.private == "Private") {
+			return {
+			    "filters": {
+				"disabled": 0,
+				"customer_group": "Domestic"
+			    }
+			};
+		}
+		else {
+			return {
+			    "filters": {
+				"disabled": 0,
+				"customer_group": [["!=","Internal"], ["!=", "Domestic"]]
+			    }
+			};
+		}
+	});
 });
 

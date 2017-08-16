@@ -10,7 +10,21 @@ cur_frm.add_fetch("item_code", "expense_account", "expense_account")
 
 frappe.ui.form.on('Project Sales', {
 	refresh: function(frm) {
+		if (frm.doc.jv && frappe.model.can_read("Journal Entry")) {
+			cur_frm.add_custom_button(__('Bank Entries'), function() {
+				frappe.route_options = {
+					"Journal Entry Account.reference_type": me.frm.doc.doctype,
+					"Journal Entry Account.reference_name": me.frm.doc.name,
+				};
+				frappe.set_route("List", "Journal Entry");
+			}, __("View"));
+		}
+	},
 
+	onload: function(frm) {
+		if(!frm.doc.posting_date) {
+			cur_frm.set_value("posting_date", get_today())
+		}
 	}
 });
 

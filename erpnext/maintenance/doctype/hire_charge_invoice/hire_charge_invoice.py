@@ -188,6 +188,7 @@ class HireChargeInvoice(Document):
 			else:
 				hire.db_set("payment_completed", 1)
 
+
 @frappe.whitelist()
 def get_vehicle_logs(form):
 	if form:

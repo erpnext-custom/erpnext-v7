@@ -1,7 +1,10 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-
+cur_frm.add_fetch("account", "account_code", "account_code")
 frappe.ui.form.on('Budget', {
+	setup: function(frm) {
+		frm.get_docfield("accounts").allow_bulk_edit = 1;
+	},
 	onload: function(frm) {
 		frm.set_query("cost_center", function() {
 			return {
@@ -29,6 +32,17 @@ frappe.ui.form.on('Budget', {
 				}
 			}
 		})
+	},
+	get_accounts: function(frm) {
+		//load_accounts(frm.doc.company)
+		return frappe.call({
+			method: "get_accounts",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.refresh_field("accounts");
+				frm.refresh_fields();
+			}
+		});
 	}
 });
 
@@ -124,3 +138,6 @@ frappe.ui.form.on("Budget", "refresh", function(frm) {
         };
     });
 });
+
+
+

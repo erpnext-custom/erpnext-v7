@@ -28,10 +28,11 @@ frappe.ui.form.on("Timesheet", {
 		// Follwoing code is added by SHIV on 2017/08/11
 		frm.get_field('time_logs').grid.editable_fields = [
 			{fieldname: 'billable', columns: 1},
-			{fieldname: 'activity_type', columns: 2},
-			{fieldname: 'from_time', columns: 3},
-			{fieldname: 'to_time', columns: 3},
-			{fieldname: 'hours', columns: 1}
+			{fieldname: 'from_time', columns: 2},
+			{fieldname: 'to_time', columns: 2},
+			{fieldname: 'hours', columns: 1},
+			{fieldname: 'percent_complete', columns: 2},
+			{fieldname: 'target_quantity_complete', columns: 2},
 		];
 		
 		frm.fields_dict.task.get_query = function() {

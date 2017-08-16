@@ -244,3 +244,12 @@ cur_frm.cscript.on_submit = function(doc, cdt, cdn) {
 	}
 };
 
+frappe.ui.form.on("Sales Order", "refresh", function(frm) {
+    cur_frm.set_query("customer", function() {
+        return {
+            "filters": {
+                "disabled": 0
+            }
+        };
+    });
+})

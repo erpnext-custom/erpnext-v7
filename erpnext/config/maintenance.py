@@ -109,7 +109,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Reports"),
+			"label": _("Maintenance Reports"),
 			"icon": "icon-star",
 			"items": [
 				{
@@ -117,6 +117,30 @@ def get_data():
 					"is_query_report": True,
 					"name": "Job Card Imprest Report",
 					"doctype": "Job Card"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Work Progress Report",
+					"doctype": "Job Card"
+				},
+			]
+		},
+		{
+			"label": _("Fleet Reports"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Equipment Hire Report",
+					"doctype": "Hire Charge Invoice"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "POL Consumption Report",
+					"doctype": "Consumed POL"
 				},
 			]
 		},

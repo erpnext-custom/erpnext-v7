@@ -1,5 +1,13 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  SHIV		                   2017/08/16         "percent_complete", "target_quantity_complete"
+                                                                        created.
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe, json
@@ -60,6 +68,7 @@ class Task(Document):
 			sum(billing_amount) as total_billing_amount, sum(costing_amount) as total_costing_amount,
 			sum(hours) as time from `tabTimesheet Detail` where task = %s and docstatus=1"""
 			,self.name, as_dict=1)[0]
+                
 		if self.status == "Open":
 			self.status = "Working"
 		self.total_costing_amount= tl.total_costing_amount

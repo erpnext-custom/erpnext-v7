@@ -11,69 +11,51 @@ def execute(filters=None):
 	return columns, data
 def get_columns():
 	return [
+		("Equipment") + ":Link/Equipment:120",
 		("Equipment Type") + ":data:120",
 		("Equipment No")+":data:100",
-		("Equipment name")+":Link/Equipment Hiring Form:150",
-		("Hour with Fuel")+":data:100",
-		("Rate with Fuel")+":data:100",
-		("Amount with Fuel")+":data:150",
-		("Idle Hour With Fuel")+ ":data:150",
-        ("Idle Work Rate with Fuel")+":data:170",
-		("Idle Amount with fuel") + ":data:170",
-		("Hour without Fuel")+":data:150",
-		("Rate without Fuel")+":data:150",
-		("Amount without Fuel")+":data:150",
-		("Idle Hour without Fuel")+ ":data:170",
-        ("Idle Work Rate without Fuel")+":data:180",
-		("Idle Amount without fuel") + ":data:170",
+		("Hire Form Name")+":Link/Equipment Hiring Form:150",
+		("Hour W Fuel")+":data:100",
+		("Rate W Fuel")+":data:100",
+		("Amount W Fuel")+":data:150",
+		("Hour W/O Fuel")+":data:100",
+		("Rate W/O Fuel")+":data:100",
+		("Amount W/O Fuel")+":data:150",
+		("Idle Hour")+ ":data:150",
+       	("Idle Rate")+":data:170",
+		("Idle Amount") + ":data:170",
 		("Total Hire Charge")+":data:130"
 	]
 
 def get_data(filters):
-	query ="""select (select equipment_type from tabEquipment a where a.name = hid.equipment) as equipemds, e.equipment_type, hid.equipment_number, ehf.name,
-	CASE had.rate_type
-	WHEN 'With Fuel' THEN (select hid.total_work_hours)
+	query ="""select hid.equipment, (select equipment_type FROM tabEquipment e WHERE e.name = hid.equipment), hid.equipment_number, hci.ehf_name,
+	CASE hid.rate_type
+	WHEN 'With Fuel' THEN (select sum(hid.total_work_hours))
 	END,
-	CASE had.rate_type
+	CASE hid.rate_type
 	WHEN 'With Fuel' THEN (select hid.work_rate)
 	END,
-	CASE had.rate_type
-	WHEN 'With Fuel' THEN (select hid.amount_work)
+	CASE hid.rate_type
+	WHEN 'With Fuel' THEN (select sum(hid.amount_work))
 	END,
-	CASE had.rate_type
-	WHEN 'With Fuel' THEN(select hid.total_idle_hours)
+	CASE hid.rate_type
+	WHEN 'Without Fuel' THEN (select sum(hid.total_work_hours))
 	END,
-	CASE had.rate_type
-	WHEN 'With Fuel' THEN(select hid.idle_rate)
-	END,
-	CASE had.rate_type
-	WHEN 'With Fuel' THEN(select hid.amount_idle)
-	END,
-	CASE had.rate_type
-	WHEN 'Without Fuel' THEN (select hid.total_work_hours)
-	END,
-	CASE had.rate_type
+	CASE hid.rate_type
 	WHEN 'Without Fuel' THEN (select hid.work_rate)
 	END,
-	CASE had.rate_type
-	WHEN 'Without Fuel' THEN (select hid.amount_work)
+	CASE hid.rate_type
+	WHEN 'Without Fuel' THEN (select sum(hid.amount_work))
 	END,
-	CASE had.rate_type
-	WHEN 'Without Fuel' THEN(select hid.total_idle_hours)
-	END,
-	CASE had.rate_type
-	WHEN 'Without Fuel' THEN(select hid.idle_rate)
-	END,
-	CASE had.rate_type
-	WHEN 'Without Fuel' THEN(select hid.amount_idle)
-	END, hid.total_amount FROM  tabEquipment AS e, `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci,`tabEquipment Hiring Form` AS ehf,`tabHiring Approval Details` as had WHERE hid.parent = hci.name AND hci.ehf_name = ehf.name AND e.equipment_hire_form =ehf.name AND had.parent = ehf.name AND ehf.docstatus = 1"""
+	sum(hid.total_idle_hours), hid.idle_rate, sum(hid.amount_idle), sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci WHERE hid.parent = hci.name AND hci.docstatus = 1"""
 
 	if filters.get("branch"):
-		query += " and ehf.branch = \'" + str(filters.branch) + "\'"
+		query += " and hci.branch = \'" + str(filters.branch) + "\'"
 
 	if filters.get("from_date") and filters.get("to_date"):
 		query += " and hci.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 
 	if filters.get("customer"):
 		query += " and hci.customer = \'" + str(filters.customer) + "\'"
+	query += " group by hid.equipment, hci.ehf_name"
 	return frappe.db.sql(query)

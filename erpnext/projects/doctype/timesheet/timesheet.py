@@ -44,12 +44,48 @@ class Timesheet(Document):
 		self.total_hours = 0.0
 		self.total_billing_amount = 0.0
 		self.total_costing_amount = 0.0
-
+		
+		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# Following variables added by SHIV on 2017/08/16
+		self.work_percent_complete = 0.0
+		self.target_quantity_complete = 0.0
+                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+                
 		for d in self.get("time_logs"):
 			self.total_hours += flt(d.hours)
+			
+			# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+			# Following code added by SHIV on 2017/08/16
+			self.work_percent_complete += flt(d.percent_complete)
+			self.target_quantity_complete += flt(d.target_quantity_complete)
+			# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+			
 			if d.billable: 
 				self.total_billing_amount += flt(d.billing_amount)
 				self.total_costing_amount += flt(d.costing_amount)
+
+                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+                # Following code added by SHIV on 2017/08/16
+                # Updating Task
+		base_task = frappe.get_doc("Task", self.task)
+		base_task.db_set('percent_complete',self.work_percent_complete)
+		base_task.db_set('target_quantity_complete',self.target_quantity_complete)
+
+		# Updating Project
+		tl = frappe.db.sql("""
+                        select ts.project, ts.task, ts.work_quantity,
+                                sum(ifnull(ts.work_percent_complete,0)) as work_percent_complete,
+                                sum(ifnull(ts.target_quantity_complete,0)) as target_quantity_complete
+                        from `tabTimesheet` as ts
+                        where ts.project = %s
+                        group by ts.project, ts.task, ts.work_quantity
+			""", self.project, as_dict=1)
+
+                frappe.msgprint(_("{0}").format(tl))
+                #base_project = frappe.get_doc("Project",self.project)
+                #base_project.db_set('tot_wq_percent_complete',)
+
+		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++				
 
 	def set_status(self):
 		self.status = {
@@ -81,7 +117,7 @@ class Timesheet(Document):
 
 	def before_cancel(self):
 		self.set_status()
-
+                
 	def on_cancel(self):
 		self.update_production_order(None)
 		self.update_task_and_project()

@@ -40,6 +40,7 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
             }
         };
     });
+
     cur_frm.set_query("cost_center", function() {
         return {
             "filters": {
@@ -47,6 +48,25 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
 		"is_disabled": 0
             }
         };
+    });
+
+    cur_frm.set_query("customer", function() {
+	if(frm.doc.owned_by == "Own" || frm.doc.owned_by == "CDCL") {
+		return {
+		    "filters": {
+			"disabled": 0,
+			"customer_group": "Internal"
+		    }
+		};
+	}
+	else {
+		return {
+		    "filters": {
+			"disabled": 0,
+			"customer_group": ["!=","Internal"]
+		    }
+		};
+	}
     });
 });
 

@@ -137,7 +137,7 @@ class PurchaseReceipt(BuyingController):
 		update_serial_nos_after_submit(self, "items")
 
 		self.make_gl_entries()
-		#self.consume_budget()
+		self.consume_budget()
 		self.update_asset()
 
 	def check_next_docstatus(self):
@@ -182,7 +182,11 @@ class PurchaseReceipt(BuyingController):
 			idx = frappe.db.sql("select name from `tabCommitted Budget` where cost_center = %s and po_no = %s and item_code = %s", (a.cost_center, a.purchase_order, a.item_code), as_dict=True)
 			if idx:
 				ref_doc = frappe.get_doc("Committed Budget", idx[0].name)
-				ref_doc.db_set("amount", a.amount)
+				if a.net_amount:
+					amount = a.net_amount
+				else:
+					amount = a.amount
+				ref_doc.db_set("amount", amount)
 
 	##
 	# Update asset entries if asset

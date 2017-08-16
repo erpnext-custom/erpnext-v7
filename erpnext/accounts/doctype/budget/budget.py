@@ -19,6 +19,7 @@ class Budget(Document):
 	def validate(self):
 		self.validate_duplicate()
 		self.validate_accounts()
+		self.calculate_budget()
 
 	def validate_duplicate(self):
 		existing_budget = frappe.db.get_value("Budget", {"cost_center": self.cost_center,
@@ -48,6 +49,24 @@ class Budget(Document):
 					frappe.throw(_("Account {0} has been entered multiple times").format(d.account))
 				else:
 					account_list.append(d.account)
+
+	#Populate Budget Accounts with Expense and Fixed Asset Accounts
+	def get_accounts(self):
+		query = "select name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes')"
+		entries = frappe.db.sql(query, as_dict=True)
+		self.set('accounts', [])
+
+		for d in entries:
+			d.initial_budget = 0
+			row = self.append('accounts', {})
+			row.update(d)
+
+	#calculate budgets
+	def calculate_budget(self):
+		if self.accounts:
+			for acc in self.accounts:
+				acc.budget_amount = flt(acc.initial_budget) + flt(acc.supplementary_budget) + flt(acc.budget_received) - flt(acc.budget_sent)
+				acc.db_set("budget_amount", acc.budget_amount)
 
 def validate_expense_against_budget(args):
 	args = frappe._dict(args)
@@ -127,4 +146,6 @@ def get_actual_expense(args, cost_center):
 			and gle.is_opening != 'Yes'
 			{condition}
 	""".format(condition=condition), (args))[0][0])
+
+
 

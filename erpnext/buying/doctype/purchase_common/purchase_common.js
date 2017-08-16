@@ -252,10 +252,11 @@ erpnext.buying.BuyingController = erpnext.TransactionController.extend({
 
 	tc_name: function() {
 		this.get_terms();
-	}
+	},
+
 });
 
-cur_frm.add_fetch('project', 'cost_center', 'cost_center');
+//cur_frm.add_fetch('project', 'cost_center', 'cost_center');
 
 erpnext.buying.get_default_bom = function(frm) {
 	$.each(frm.doc["items"] || [], function(i, d) {

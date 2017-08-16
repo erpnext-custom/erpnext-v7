@@ -74,8 +74,10 @@ class Project(Document):
 				"end_date": task.exp_end_date,
 				"description": task.description,
                                 "work_quantity": task.work_quantity,
+                                "percent_complete": task.percent_complete,
                                 "target_uom": task.target_uom,
                                 "target_quantity": task.target_quantity,
+                                "target_quantity_complete": task.target_quantity_complete,
 				"task_id": task.name
 			})
 
@@ -168,6 +170,8 @@ class Project(Document):
 				"exp_start_date": t.start_date,
 				"exp_end_date": t.end_date,
 				"description": t.description,
+                                "percent_complete": t.percent_complete,
+                                "target_quantity_complete": t.target_quantity_complete
 			})
 
 			task.flags.ignore_links = True
@@ -191,13 +195,32 @@ class Project(Document):
 		self.save(ignore_permissions = True)
 
 	def update_percent_complete(self):
+                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+                # Following code commented by SHIV on 2017/08/16
+                '''
 		total = frappe.db.sql("""select count(*) from tabTask where project=%s""", self.name)[0][0]
 		if total:
 			completed = frappe.db.sql("""select count(*) from tabTask where
 				project=%s and status in ('Closed', 'Cancelled')""", self.name)[0][0]
 
 			self.percent_complete = flt(flt(completed) / total * 100, 2)
+                '''
 
+                # Following code added by SHIV on 2017/08/16
+		total = frappe.db.sql("""select count(*) as counts,
+                        sum(work_quantity) as tot_work_quantity
+                        from tabTask where project=%s""", self.name, as_dict=1)[0]
+
+		if total.counts:
+			completed = frappe.db.sql("""select count(*) from tabTask where
+				project=%s and status in ('Closed', 'Cancelled')""", self.name)[0][0]
+
+			self.percent_complete = flt(flt(completed) / total.counts * 100, 2)
+
+                if total.tot_work_quantity:
+                        self.tot_wq_percent = flt(total.tot_work_quantity,2)
+                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+                        
 	def update_costing(self):
 		from_time_sheet = frappe.db.sql("""select
 			sum(costing_amount) as costing_amount,

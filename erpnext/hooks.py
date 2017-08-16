@@ -128,9 +128,9 @@ dump_report_map = "erpnext.startup.report_data_map.data_map"
 
 before_tests = "erpnext.setup.utils.before_tests"
 
-standard_queries = {
+"""standard_queries = {
 	"Customer": "erpnext.selling.doctype.customer.customer.get_customer_list"
-}
+}"""
 
 doc_events = {
 	"Stock Entry": {
