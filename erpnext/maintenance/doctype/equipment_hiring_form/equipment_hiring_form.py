@@ -20,6 +20,7 @@ class EquipmentHiringForm(Document):
 			frappe.throw("Cannot submit hiring form without Approved Items")
 
 	def on_submit(self):
+		self.check_equipment_free()
 		self.assign_hire_form_to_equipment()
 		if self.advance_amount > 0:
 			self.post_journal_entry()
@@ -49,9 +50,21 @@ class EquipmentHiringForm(Document):
 
 	def assign_hire_form_to_equipment(self):
 		for a in self.approved_items:
-			equipment = frappe.get_doc("Equipment", a.equipment)   
-			equipment.db_set("equipment_hire_form", self.name)
+			doc = frappe.new_doc("Equipment Reservation Entry")
+			doc.flags.ignore_permissions = 1 
+			doc.equipment = a.equipment
+			doc.ehf_name = self.name
+			doc.place = a.place
+			doc.from_date = a.from_date
+			doc.to_date = a.to_date
+			doc.submit()
 
+	def check_equipment_free(self):
+		for a in self.approved_items:
+			result = frappe.db.sql("select ehf_name from `tabEquipment Reservation Entry` where equipment = \'" + str(a.equipment) + "\' and docstatus = 1 and (\'" + str(a.from_date) + "\' between from_date and to_date OR \'" + str(a.to_date) + "\' between from_date and to_date)", as_dict=True)
+			if result:
+				frappe.throw("The equipment " + str(a.equipment) + " is already in use from by " + str(result[0].ehf_name))
+		
 	##
 	# make necessary journal entry
 	##

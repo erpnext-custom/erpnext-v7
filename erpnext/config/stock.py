@@ -52,6 +52,12 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Item Sub Group",
+					"label": _("Material Sub Group"),
+					"description": _("Item Sub Groups."),
+				},
+				{
+					"type": "doctype",
 					"name": "Item Price",
 					"label": _("Material Price"),
 					"description": _("Multiple Item prices."),
@@ -110,12 +116,6 @@ def get_data():
 					"name": "Stock Ageing Report",
 					"doctype": "Item",
 					"label": _("Stock Ageing")
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Material Balance History",
-					"doctype": "Batch"
 				},
 				{
 					"type": "report",

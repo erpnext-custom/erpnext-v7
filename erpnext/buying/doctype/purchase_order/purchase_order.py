@@ -249,10 +249,10 @@ class PurchaseOrder(BuyingController):
 	##
 	def commit_budget(self):
 		for a in self.items:
-			if a.net_amount:
-				amount = a.net_amount
+			if a.base_net_amount:
+				amount = a.base_net_amount
 			else:
-				amount = a.amount
+				amount = a.base_amount
 
 			bud_obj = frappe.get_doc({
 				"doctype": "Committed Budget",

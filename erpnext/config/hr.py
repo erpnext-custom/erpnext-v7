@@ -154,6 +154,12 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Bonus",
+                                        "label": _("Process Bonus"),
+					"description": _("Bonus Process"),
+				},
+				{
+					"type": "doctype",
 					"name": "Overtime Application",
                                         "label": _("Overtime Application"),
 					"description": _("Overtime Application"),

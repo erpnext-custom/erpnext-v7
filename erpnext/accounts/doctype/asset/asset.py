@@ -204,7 +204,7 @@ class Asset(Document):
 		return status
 
 	def get_income_tax_depreciation_amount(self, depreciable_value, percent, num_days=1):
-		return (flt(self.gross_purchase_amount)/(100 * 365.25)) * percent * num_days
+		return ((flt(self.gross_purchase_amount) - flt(self.residual_value))/(100 * 365.25)) * percent * num_days
 	
 	def make_asset_gl_entry(self):
 		if self.gross_purchase_amount:

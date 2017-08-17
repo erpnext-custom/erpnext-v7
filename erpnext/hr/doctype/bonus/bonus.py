@@ -8,7 +8,7 @@ from frappe.model.document import Document
 from frappe.utils import flt
 from erpnext.hr.doctype.salary_structure.salary_structure import get_salary_tax
 
-class PBVA(Document):
+class Bonus(Document):
 	def validate(self):
 		self.calculate_values()
 
@@ -40,21 +40,32 @@ class PBVA(Document):
 		else:
 			frappe.throw("Cannot save without employee details")
 
+	#Populate Bonus details 
+	def get_employees(self):
+		query = "select b.employee, b.employee_name, b.branch, a.amount as basic_pay from `tabSalary Detail` a, `tabSalary Structure` b where a.parent = b.name and a.salary_component = 'Basic Pay' and b.is_active = 'Yes' and b.eligible_for_annual_bonus = 1 and b.branch = \'" + str(self.branch) + "\'"
+		entries = frappe.db.sql(query, as_dict=True)
+		self.set('items', [])
+
+		for d in entries:
+			d.amount = 0
+			row = self.append('items', {})
+			row.update(d)
+
 	def post_journal_entry(self, cc_amount):
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
-		je.title = "PBVA for " + self.branch + "(" + self.name + ")"
+		je.title = "Annual Bonus for " + self.branch + "(" + self.name + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
-		je.remark = 'PBVA payment against : ' + self.name;
+		je.remark = 'Bonus payment against : ' + self.name;
 		je.posting_date = self.posting_date
 		je.branch = self.branch
 
-		pbva_account = frappe.db.get_single_value("HR Accounts Settings", "pbva_account")
+		bonus_account = frappe.db.get_single_value("HR Accounts Settings", "bonus_account")
 		tax_account = frappe.db.get_single_value("HR Accounts Settings", "salary_tax_account")
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
-		if not pbva_account:
-			frappe.throw("Setup PBVA Account in HR Accounts Settings")
+		if not bonus_account:
+			frappe.throw("Setup Bonus Account in HR Accounts Settings")
 		if not tax_account:
 			frappe.throw("Setup Salary Tax Account in HR Accounts Settings")
 		if not expense_bank_account:
@@ -62,8 +73,8 @@ class PBVA(Document):
 		
 		for key in cc_amount.keys():
 			je.append("accounts", {
-					"account": pbva_account,
-					"reference_type": "PBVA",
+					"account": bonus_account,
+					"reference_type": "Bonus",
 					"reference_name": self.name,
 					"cost_center": key,
 					"debit_in_account_currency": flt(cc_amount[key]['amount']),
@@ -91,23 +102,8 @@ class PBVA(Document):
 	def on_cancel(self):
 		jv = frappe.db.get_value("Journal Entry", self.journal_entry, "docstatus")
 		if jv != 2:
-			frappe.throw("Can not cancel PBVA without canceling the corresponding journal entry " + str(self.journal_entry))
+			frappe.throw("Can not cancel Bonus Entry without canceling the corresponding journal entry " + str(self.journal_entry))
 		else:
 			self.db_set("journal_entry", "")
 
 
-@frappe.whitelist()
-def get_pbva_details(branch=None):
-	query = "select b.employee, b.employee_name, b.branch, a.amount from `tabSalary Detail` a, `tabSalary Structure` b where a.parent = b.name and a.salary_component = 'Basic Pay' and b.is_active = 'Yes' and b.eligible_for_pbva = 1 "
-	if branch:
-		query += " and b.branch = \'" + str(branch) + "\'";
-	query += " order by b.branch"
-	return frappe.db.sql(query, as_dict=True)
-
-@frappe.whitelist()
-def get_pbva_percent(employee):
-	group = frappe.db.get_value("Employee", employee, "employee_group")
-	if group in ("Chief Executive Officer", "Executive"):
-		return "above"
-	else:
-		return "below"

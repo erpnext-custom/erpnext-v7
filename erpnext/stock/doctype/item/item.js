@@ -395,3 +395,13 @@ cur_frm.cscript.item_group = function(doc) {
 function inBetween(x, min, max) {
   return !(x >= min && x <= max);
 }
+
+frappe.ui.form.on("Item", "refresh", function(frm) {
+    cur_frm.set_query("item_sub_group", function() {
+        return {
+            "filters": {
+		"item_group": frm.doc.item_group,
+            }
+        };
+    });
+})

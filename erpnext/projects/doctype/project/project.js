@@ -150,6 +150,9 @@ frappe.ui.form.on("Activity Tasks", {
 	status: function(frm, doctype, name) {
 		frm.trigger('tasks_refresh');
 	},
+	work_quantity: function(frm, doctype, name){
+		calculate_work_quantity(frm);
+	},
 });
 // +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
@@ -163,3 +166,20 @@ frappe.ui.form.on("Project", "refresh", function(frm) {
         };
     });
 })
+
+
+// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+// Following function created by SHIV on 2017/08/17
+var calculate_work_quantity = function(frm){
+	var at = frm.doc.activity_tasks || [];
+	total_work_quantity = 0;
+	
+	for(var i=0; i<at.length; i++){
+		if (at[i].work_quantity){
+			total_work_quantity += at[i].work_quantity || 0;
+		}
+	}
+	cur_frm.set_value("tot_wq_percent",total_work_quantity);
+	
+}
+// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++

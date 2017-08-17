@@ -81,6 +81,22 @@ frappe.ui.form.on("Timesheet", {
 					"icon-file-alt");
 			}
 		}
+
+		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		if(frappe.model.can_read("Project")) {
+			frm.add_custom_button(__("Project"), function() {
+				frappe.route_options = {"name": frm.doc.project}
+				frappe.set_route("Form", "Project", frm.doc.project);
+			}, __("View"), true);
+		}
+		
+		if(frappe.model.can_read("Task")) {
+			frm.add_custom_button(__("Task"), function() {
+				frappe.route_options = {"name": frm.doc.task}
+				frappe.set_route("Form", "Task", frm.doc.task);
+			}, __("View"), true);
+		}
+		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++		
 	},
 
 	make_invoice: function(frm) {
@@ -98,7 +114,15 @@ frappe.ui.form.on("Timesheet", {
 	},
 })
 
-frappe.ui.form.on("Timesheet Detail", {
+frappe.ui.form.on("Timesheet Detail", {	
+	percent_complete: function(frm){
+		calculate_time_and_amount(frm);
+	},
+
+	target_quantity_complete: function(frm){
+		calculate_time_and_amount(frm);
+	},
+	
 	time_logs_remove: function(frm) {
 		calculate_time_and_amount(frm);
 	},
@@ -181,15 +205,35 @@ var calculate_time_and_amount = function(frm) {
 	total_hr = 0;
 	total_billing_amount = 0;
 	total_costing_amount = 0;
+	
+	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+	// Following code added by SHIV on 2017/08/17
+	total_work_percent_complete    = 0;
+	total_target_quantity_complete = 0;
+	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+	
 	for(var i=0; i<tl.length; i++) {
-		if (tl[i].hours) {
-			total_hr += tl[i].hours;
+		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		// Following condition commented and modified one added below by SHIV on 2017/08/17
+		//if (tl[i].hours) {
+		if (tl[i].hours || tl[i].percent_complete || tl[i].target_quantity_complete) {
+		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++	
+			total_hr += tl[i].hours || 0;
 			total_billing_amount += tl[i].billing_amount;
 			total_costing_amount += tl[i].costing_amount;
+			
+			total_work_percent_complete    += tl[i].percent_complete || 0;
+			total_target_quantity_complete += tl[i].target_quantity_complete || 0;
 		}
 	}
 
 	cur_frm.set_value("total_hours", total_hr);
 	cur_frm.set_value("total_billing_amount", total_billing_amount);
 	cur_frm.set_value("total_costing_amount", total_costing_amount);
+	
+	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+	// Following code added by SHIV on 2017/08/17
+	cur_frm.set_value("work_percent_complete", total_work_percent_complete);
+	cur_frm.set_value("target_quantity_complete", total_target_quantity_complete);
+	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 }

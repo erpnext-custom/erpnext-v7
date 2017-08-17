@@ -69,8 +69,10 @@ function calculate_datetime(frm, cdt, cdn) {
 		days = frappe.datetime.get_day_diff(item.to_date, item.from_date) + 1
 		hours = days * 8
 		frappe.model.set_value(cdt, cdn,"number_of_hours", hours)
+		frappe.model.set_value(cdt, cdn,"total_hours", hours)
 		frappe.model.set_value(cdt, cdn,"number_of_days", days)
 	}
+	cur_frm.refresh_field("total_hours")
 	cur_frm.refresh_field("number_of_hours")
 	cur_frm.refresh_field("number_of_days")
 }
@@ -79,6 +81,12 @@ function calculate_datetime(frm, cdt, cdn) {
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
 
 frappe.ui.form.on("Hiring Approval Details", {
+	"from_date": function(frm, cdt, cdn) {
+		calculate_datetime(frm, cdt, cdn)
+	},
+	"to_date": function(frm, cdt, cdn) {
+		calculate_datetime(frm, cdt, cdn)
+	},
 	"rate": function(frm, cdt, cdn) {
 		calculate_amount(frm, cdt, cdn)
 	},
@@ -146,7 +154,7 @@ function calculate_amount(frm, cdt, cdn) {
 frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 	frm.fields_dict['approved_items'].grid.get_field('equipment').get_query = function(doc, cdt, cdn) {
 		return {
-			filters:[['branch', "=", frm.doc.branch], ['equipment_hire_form','=','']]
+			filters:[['branch', "=", frm.doc.branch]]
 		}
 	}
 	cur_frm.set_query("customer", function() {

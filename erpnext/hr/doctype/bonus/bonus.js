@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('PBVA', {
+frappe.ui.form.on('Bonus', {
 	setup: function(frm) {
 		frm.get_docfield("items").allow_bulk_edit = 1;
 	},
@@ -22,9 +22,17 @@ frappe.ui.form.on('PBVA', {
 			}
 		}
 	},
-	"get_pbva": function(frm) {
+	"get_employees": function(frm) {
 		if(frm.doc.branch) {
-			process_pbva(frm.doc.branch, frm);
+			//load_accounts(frm.doc.company)
+			return frappe.call({
+				method: "get_employees",
+				doc: frm.doc,
+				callback: function(r, rt) {
+					frm.refresh_field("items");
+					frm.refresh_fields();
+				}
+			});
 		}
 		else {
 			msgprint("Select Branch First")
@@ -32,46 +40,7 @@ frappe.ui.form.on('PBVA', {
 	}
 });
 
-function process_pbva(branch, frm) {
-	frappe.call({
-		method: "erpnext.hr.doctype.pbva.pbva.get_pbva_details",
-		args: {"branch": branch},
-		callback: function(r) {
-			if(r.message) {
-				var total_amount = 0;
-				var total_tax = 0;
-				cur_frm.clear_table("items");
-
-				r.message.forEach(function(pbva) {
-				        var row = frappe.model.add_child(cur_frm.doc, "PBVA Details", "items");
-					row.employee = pbva['employee']
-					row.employee_name = pbva['employee_name']
-					row.branch = pbva['branch']
-					row.basic_pay = pbva['amount']
-					/*if (calculate_pbva_percent(row.employee) == "above") {
-						row.percent = frm.doc.above
-					}
-					else {
-						row.percent = frm.doc.below
-					} 
-					row.amount = flt(row.basic_pay) * (flt(row.percent) / 100) * flt(row.months)*/
-					row.amount = 0 
-					row.tax_amount = calculate_tax(flt(row.amount))
-					row.balance_amount = flt(row.amount) - flt(row.tax_amount)
-					refresh_field("items");
-
-					total_tax += row.tax_amount
-					total_amount += row.amount
-				});
-
-				cur_frm.set_value("total_amount", total_amount)
-				cur_frm.set_value("tax_amount", total_tax)
-			}
-		}
-	})
-}
-
-frappe.ui.form.on("PBVA Details", { 
+frappe.ui.form.on("Bonus Details", { 
 	/*"percent": function(frm, cdt, cdn) {
 		calculate_total(frm,cdt,cdn)
 	},
@@ -115,17 +84,4 @@ function calculate_tax(gross_amt) {
 	return tds_amount;
 }
 
-function calculate_pbva_percent(employee) {
-	var percent = "";
-	cur_frm.call({
-		method: "erpnext.hr.doctype.pbva.pbva.get_pbva_percent",
-		args: { "employee": employee, },
-		async: false,
-		callback: function(r) {
-			if(r.message) {
-				percent = String(r.message);
-			}
-		}
-	})
-	return percent;
-}
+

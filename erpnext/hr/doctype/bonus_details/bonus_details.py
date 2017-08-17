@@ -6,11 +6,5 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 
-class Equipment(Document):
-	def validate(self):
-		if self.asset_code:
-			doc = frappe.get_doc("Asset", self.asset_code)
-			doc.db_set("equipment_number", self.name)
-
-		if not self.equipment_number:
-			self.equipment_number = self.name
+class BonusDetails(Document):
+	pass

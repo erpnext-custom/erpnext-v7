@@ -1,6 +1,12 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
-
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  		 SHIV            2017/08/17         					View -> Project option added
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
 frappe.provide("erpnext.projects");
 
 cur_frm.add_fetch("project", "company", "company");
@@ -16,19 +22,34 @@ frappe.ui.form.on("Task", {
 
 
 		if(!doc.__islocal) {
+			// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+			// Follwoing view option added by SHIV on 2017/08/17
+			if(frappe.model.can_read("Project")) {
+				frm.add_custom_button(__("Project"), function() {
+					frappe.route_options = {"name": doc.project}
+					frappe.set_route("Form", "Project", doc.project);
+				}, __("View"), true);
+			}			
+			// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 			if(frappe.model.can_read("Timesheet")) {
 				frm.add_custom_button(__("Timesheet"), function() {
 					frappe.route_options = {"project": doc.project, "task": doc.name}
 					frappe.set_route("List", "Timesheet");
 				}, __("View"), true);
 			}
+			
+			// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+			// Following button is removed by SHIV on 2017/08/17
+			/*
 			if(frappe.model.can_read("Expense Claim")) {
 				frm.add_custom_button(__("Expense Claims"), function() {
 					frappe.route_options = {"project": doc.project, "task": doc.name}
 					frappe.set_route("List", "Expense Claim");
 				}, __("View"), true);
 			}
-
+			*/
+			// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+			
 			if(frm.perm[0].write) {
 				if(frm.doc.status!=="Closed" && frm.doc.status!=="Cancelled") {
 					frm.add_custom_button(__("Close"), function() {

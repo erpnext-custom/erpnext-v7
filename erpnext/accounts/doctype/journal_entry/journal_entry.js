@@ -423,6 +423,22 @@ frappe.ui.form.on("Journal Entry Account", {
 		}
 
 		erpnext.journal_entry.set_debit_credit_in_company_currency(frm, cdt, cdn);
+	},
+
+	"account_currency": function(frm, cdt, cdn) {
+		if(frm.doc.multi_currency) {
+			item = locals[cdt][cdn]
+			frappe.call({
+				method: "erpnext.hr.doctype.travel_authorization.travel_authorization.get_exchange_rate",
+				args: {
+					from_currency: item.account_currency,
+					to_currency: "BTN"
+				},
+				callback: function(r) {
+					frappe.model.set_value(cdt, cdn, "exchange_rate", r.message)
+				}
+			})
+		}		
 	}
 })
 
@@ -583,18 +599,18 @@ frappe.ui.form.on("Journal Entry", "onload", function(frm){
 
 frappe.ui.form.on("Journal Entry", "select_cheque_lot", function(frm) {
      if(frm.doc.select_cheque_lot) {
-frappe.call({
-    method: "erpnext.accounts.doctype.cheque_lot.cheque_lot.get_cheque_no_and_date",
-    args: {
-        'name': frm.doc.select_cheque_lot
-        },
-    callback: function(r){
-           if (r.message) {
-               cur_frm.set_value("cheque_no", r.message[0].reference_no);
-               cur_frm.set_value("cheque_date", r.message[1].reference_date);
-           }
-       }
-});
+	frappe.call({
+	    method: "erpnext.accounts.doctype.cheque_lot.cheque_lot.get_cheque_no_and_date",
+	    args: {
+		'name': frm.doc.select_cheque_lot
+		},
+	    callback: function(r){
+		   if (r.message) {
+		       cur_frm.set_value("cheque_no", r.message[0].reference_no);
+		       cur_frm.set_value("cheque_date", r.message[1].reference_date);
+		   }
+	       }
+	});
 
      }
 })

@@ -32,7 +32,7 @@ class Timesheet(Document):
 	def validate(self):
                 # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
                 # Following method introduced by SHIV on 2017/08/15
-                self.set_child_defaults()
+                self.set_defaults()
                 # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		self.set_status()
 		self.validate_dates()
@@ -71,19 +71,18 @@ class Timesheet(Document):
 		base_task.db_set('percent_complete',self.work_percent_complete)
 		base_task.db_set('target_quantity_complete',self.target_quantity_complete)
 
-		# Updating Project
+		# Updating Project Progress
 		tl = frappe.db.sql("""
-                        select ts.project, ts.task, ts.work_quantity,
-                                sum(ifnull(ts.work_percent_complete,0)) as work_percent_complete,
-                                sum(ifnull(ts.target_quantity_complete,0)) as target_quantity_complete
+                        select sum(ifnull(ts.work_quantity,0)*(ifnull(ts.work_percent_complete,0)/100)) project_progress
                         from `tabTimesheet` as ts
                         where ts.project = %s
-                        group by ts.project, ts.task, ts.work_quantity
-			""", self.project, as_dict=1)
+                        and   ts.name <> %s
+			""", (self.project, self.name), as_dict=1)[0]
 
-                frappe.msgprint(_("{0}").format(tl))
-                #base_project = frappe.get_doc("Project",self.project)
-                #base_project.db_set('tot_wq_percent_complete',)
+                tl.project_progress = flt(tl.project_progress) + (flt(self.work_quantity)*(flt(self.work_percent_complete)/100))
+
+                base_project = frappe.get_doc("Project",self.project)
+                base_project.db_set('tot_wq_percent_complete',tl.project_progress)
 
 		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++				
 
@@ -129,7 +128,16 @@ class Timesheet(Document):
 
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
         # Following method introduced by SHIV on 2017/08/15
-        def set_child_defaults(self):
+        def set_defaults(self):
+                # Setting Timesheet items
+                if self.task:
+                        base_task = frappe.get_doc("Task", self.task)
+                        self.task_name = base_task.subject
+                        self.work_quantity = base_task.work_quantity
+                        self.exp_start_date = base_task.exp_start_date
+                        self.exp_end_date = base_task.exp_end_date
+                
+                # Setting Timesheet Detail
                 for data in self.time_logs:
                         if not data.project or data.project <> self.project:
                                 data.project = self.project

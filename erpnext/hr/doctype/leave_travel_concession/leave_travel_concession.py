@@ -9,7 +9,7 @@ from frappe.utils import flt
 
 class LeaveTravelConcession(Document):
 	def validate(self):
-		pass
+		self.calculate_values()
 
 	def on_submit(self):
 		cc_amount = {}
@@ -22,10 +22,19 @@ class LeaveTravelConcession(Document):
 		
 		self.post_journal_entry(cc_amount)
 
+	def calculate_values(self):
+		if self.items:
+			total = 0
+			for a in self.items:
+				total += flt(a.amount)
+			self.total_amount = total
+		else:
+			frappe.throw("Cannot save without any employee records")
+
 	def post_journal_entry(self, cc_amount):
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
-		je.title = "LTC (" + self.name + ")"
+		je.title = "LTC for " + self.branch + "(" + self.name + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
 		je.remark = 'LTC payment against : ' + self.name;
@@ -52,8 +61,6 @@ class LeaveTravelConcession(Document):
 		
 			je.append("accounts", {
 					"account": expense_bank_account,
-					"reference_type": "Leave Travel Concession",
-					"reference_name": self.name,
 					"cost_center": key,
 					"credit_in_account_currency": flt(cc_amount[key]),
 					"credit": flt(cc_amount[key]),
