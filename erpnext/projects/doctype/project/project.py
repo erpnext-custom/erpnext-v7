@@ -74,7 +74,6 @@ class Project(Document):
 				"end_date": task.exp_end_date,
 				"description": task.description,
                                 "work_quantity": task.work_quantity,
-                                "percent_complete": task.percent_complete,
                                 "target_uom": task.target_uom,
                                 "target_quantity": task.target_quantity,
                                 "target_quantity_complete": task.target_quantity_complete,
@@ -82,7 +81,7 @@ class Project(Document):
 			})
 
 	def get_activity_tasks(self):
-		return frappe.get_all("Task", "*", {"project": self.name}, order_by="exp_start_date asc")
+		return frappe.get_all("Task", "*", {"project": self.name}, order_by="task_idx, exp_start_date")
 	
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 			
@@ -153,7 +152,15 @@ class Project(Document):
 		if self.flags.dont_sync_tasks: return
 
 		task_names = []
+		task_idx = 0
 		for t in self.activity_tasks:
+                        task_idx += 1
+
+                        if not t.target_uom:
+                                t.target_uom = 'Percent'
+                                if not t.target_quantity:
+                                        t.target_quantity = 100
+                        
 			if t.task_id:
 				task = frappe.get_doc("Task", t.task_id)
 			else:
@@ -170,8 +177,8 @@ class Project(Document):
 				"exp_start_date": t.start_date,
 				"exp_end_date": t.end_date,
 				"description": t.description,
-                                "percent_complete": t.percent_complete,
-                                "target_quantity_complete": t.target_quantity_complete
+                                "target_quantity_complete": t.target_quantity_complete,
+                                "task_idx": task_idx
 			})
 
 			task.flags.ignore_links = True

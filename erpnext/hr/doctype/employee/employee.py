@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 
-from frappe.utils import getdate, validate_email_add, today, add_years
+from frappe.utils import flt, getdate, validate_email_add, today, add_years
 from frappe.model.naming import make_autoname
 from frappe import throw, _
 import frappe.permissions
@@ -205,6 +205,15 @@ def make_salary_structure(source_name, target=None):
 	})
 	target.make_earn_ded_table()
 	return target
+
+@frappe.whitelist()
+def get_overtime_rate(employee):
+		basic = frappe.db.sql("select a.amount as basic_pay from `tabSalary Detail` a, `tabSalary Structure` b where a.parent = b.name and a.salary_component = 'Basic Pay' and b.is_active = 'Yes' and b.employee = \'" + str(employee) + "\'", as_dict=True)
+		if basic:
+			return ((flt(basic[0].basic_pay) * 1.5) / (30 * 8))
+		else:
+			frappe.throw("No Salary Structure foudn for the employee")
+
 
 def validate_employee_role(doc, method):
 	# called via User hook

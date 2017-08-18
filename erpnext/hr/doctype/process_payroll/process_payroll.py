@@ -206,19 +206,19 @@ class ProcessPayroll(Document):
 			if self.get(f):
 				cond1 += " and ss." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 		
-                items.extend(frappe.db.sql("""select t2.cost_center,
+                items.extend(frappe.db.sql("""select t3.cost_center,
                         sum(ifnull(t1.rounded_total,0)) as total_amt
                          from `tabSalary Slip` t1, `tabDivision` t2, `tabEmployee` t3
                         where t3.employee = t1.employee
                           and t2.d_name = t3.division
                           and t2.dpt_name = t3.department
-                          and t2.branch = t3.branch
                           and t1.month = %s
                           and t1.fiscal_year = %s
                           and t1.docstatus = 1 
                           %s
-                        group by t2.cost_center
+                        group by t3.cost_center
                 """ % (self.month, self.fiscal_year, cond),as_dict=1))
+		
 
                 #
                 # GL Mapping
@@ -226,8 +226,8 @@ class ProcessPayroll(Document):
                 accounts = []
                 tot_deductions = 0
                 tot_earnings = 0
-                default_payable_account = 'Salary Payable - SMCL'
-                default_gpf_account = 'GPF Contribution (Employer) - SMCL'
+                default_payable_account = 'Salary Payable - CDCL'
+                default_gpf_account = 'Contribution to PF - CDCL'
                 default_gis_account = frappe.db.get_value("Salary Component", 'Group Insurance Scheme',"gl_head")
                 default_pf_account = frappe.db.get_value("Salary Component", 'PF',"gl_head")
                 default_loan_account = frappe.db.get_value("Salary Component", 'Financial Institution Loan',"gl_head")
@@ -260,10 +260,9 @@ class ProcessPayroll(Document):
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and e.branch = d.branch
                                  and e.department = d.dpt_name
                                  and e.division = d.d_name
-                                 and d.cost_center = '%s'
+                                 and e.cost_center = '%s'
                                  and dt.gl_head <> '%s'
                                  and dt.type = 'Deduction'
                                  %s
@@ -289,10 +288,9 @@ class ProcessPayroll(Document):
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and e.branch = d.branch
                                  and e.department = d.dpt_name
                                  and e.division = d.d_name
-                                 and d.cost_center = '%s'
+                                 and e.cost_center = '%s'
                                  and dt.gl_head = '%s'
                                  and dt.type = 'Deduction'
                                  %s
@@ -324,10 +322,9 @@ class ProcessPayroll(Document):
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and e.branch = d.branch
                                  and e.department = d.dpt_name
                                  and e.division = d.d_name
-                                 and d.cost_center = '%s'
+                                 and e.cost_center = '%s'
                                  %s
                                group by et.gl_head
                                 """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['cost_center'], cond1)
@@ -513,7 +510,8 @@ class ProcessPayroll(Document):
                                 "posting_date": nowdate(),                     
                                 "company": self.company,
                                 "total_amount_in_words": money_in_words((tot_earnings-tot_deductions)),
-                                "accounts": accounts
+                                "accounts": accounts,
+				"branch": "Corporate Head Office"
                         })
 
                         if (tot_deductions or tot_earnings):
@@ -523,7 +521,7 @@ class ProcessPayroll(Document):
                 else:
                         accounts.append({"account": default_bank_account,
                                         "credit_in_account_currency": (tot_earnings-tot_deductions),
-                                        "cost_center": 'CHQR-CEO - SMCL',
+                                        "cost_center": 'CEO Office - CDCL',
                                         "party_check": 0})                        
                         
                         ss = frappe.get_doc({
@@ -536,7 +534,8 @@ class ProcessPayroll(Document):
                                 "posting_date": nowdate(),                     
                                 "company": self.company,
                                 "total_amount_in_words": money_in_words((tot_earnings-tot_deductions)),
-                                "accounts": accounts
+                                "accounts": accounts,
+				"branch": "Corporate Head Office"
                         })
 
                         if (tot_deductions or tot_earnings):
@@ -573,43 +572,6 @@ class ProcessPayroll(Document):
 		])
 		return journal_entry.as_dict()
 	
-        # Ver 20160702.1 make_journal_entry1 is added by SSK
-	def make_journal_entry2(self, salary_account = None):
-		amount = self.get_total_salary()
-		default_bank_account = frappe.db.get_value("Company", self.company,
-			"default_bank_account")
-		# Following line added by SSK
-		salary_account = 'Salary Payable - SMCL'
-		ss_list = []
-		ss = frappe.get_doc({
-			"doctype": "Journal Entry",
-                        "voucher_type": 'Bank Entry',
-			"fiscal_year": self.fiscal_year,
-                        "user_remark": _('Payment of salary for the month {0} and year {1}').format(self.month,
-			self.fiscal_year),
-                        "posting_date": nowdate(),                     
-			"company": self.company,
-                        "accounts": [
-                                {
-                                        "account": salary_account,
-                                        "debit_in_account_currency": amount,
-                                        "account_type": 'Payable',
-                                        "against_account": 'Bank of Bhutan Ltd - SMCL',
-                                        "cost_center": 'Dummy-CEO - SMCL',
-                                        "party_type": 'Employee',
-                                        "party": 'EMP/0011'
-                                },
-                                {
-                                        "account": default_bank_account,
-                                        "credit_in_account_currency": amount,
-                                        "account_type": 'Bank',
-                                        "against_account": 'EMP/0011',
-                                        "cost_center": 'Dummy-CEO - SMCL'
-                                },
-                        ]
-		})
-		ss.insert()
-		ss_list.append('Direct posting Journal Entry...')		
 		
 @frappe.whitelist()
 def get_month_details(year, month):

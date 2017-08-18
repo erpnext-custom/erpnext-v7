@@ -30,4 +30,7 @@ def get_data(filters):
 
 	if filters.get("customer"):
 		query += " and jc.owned_by = \'" + str(filters.customer) + "\'"
+
+	if filters.get("equipment"):
+		query += " and jc.equipment_number = \'" + str(frappe.db.get_value("Equipment", filters.equipment, "equipment_number")) + "\'"
 	return frappe.db.sql(query)

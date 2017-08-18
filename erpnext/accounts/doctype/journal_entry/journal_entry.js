@@ -425,7 +425,7 @@ frappe.ui.form.on("Journal Entry Account", {
 		erpnext.journal_entry.set_debit_credit_in_company_currency(frm, cdt, cdn);
 	},
 
-	"account_currency": function(frm, cdt, cdn) {
+	/*"account_currency": function(frm, cdt, cdn) {
 		if(frm.doc.multi_currency) {
 			item = locals[cdt][cdn]
 			frappe.call({
@@ -439,7 +439,7 @@ frappe.ui.form.on("Journal Entry Account", {
 				}
 			})
 		}		
-	}
+	} */
 })
 
 frappe.ui.form.on("Journal Entry Account", "accounts_remove", function(frm) {

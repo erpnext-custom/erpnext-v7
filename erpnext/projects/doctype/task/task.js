@@ -72,6 +72,12 @@ frappe.ui.form.on("Task", {
 				query: "erpnext.projects.doctype.task.task.get_project"
 			}
 		};
+		
+		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		// Default values set as follows by SHIV on 2017/08/18
+		frm.set_value("target_uom","Percent");
+		frm.set_value("target_quantity",100);
+		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 	},
 
 	project: function(frm) {

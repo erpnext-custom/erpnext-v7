@@ -37,6 +37,10 @@ class Task(Document):
 	def validate(self):
 		self.validate_dates()
 		self.validate_status()
+		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# Following method created by SHIV on 2017/08/18
+		self.set_defaults()
+		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 	def validate_dates(self):
 		if self.exp_start_date and self.exp_end_date and getdate(self.exp_start_date) > getdate(self.exp_end_date):
@@ -54,6 +58,15 @@ class Task(Document):
 			from frappe.desk.form.assign_to import clear
 			clear(self.doctype, self.name)
 
+        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+        # Following method created by SHIV on 2017/08/18
+        def set_defaults(self):
+                if not self.target_uom:
+                        self.target_uom = 'Percent'
+                        if not self.target_quantity:
+                                self.target_quantity = 100
+        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+        
 	def on_update(self):
 		self.check_recursion()
 		self.reschedule_dependent_tasks()

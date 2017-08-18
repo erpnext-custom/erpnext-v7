@@ -9,22 +9,23 @@ def execute(filters=None):
 	columns =get_columns()
 	data =get_data(filters)
 	return columns, data
+
 def get_columns():
 	return [
 		("Equipment") + ":Link/Equipment:120",
 		("Equipment Type") + ":data:120",
 		("Equipment No")+":data:100",
 		("Hire Form Name")+":Link/Equipment Hiring Form:150",
-		("Hour W Fuel")+":data:100",
-		("Rate W Fuel")+":data:100",
-		("Amount W Fuel")+":data:150",
-		("Hour W/O Fuel")+":data:100",
-		("Rate W/O Fuel")+":data:100",
-		("Amount W/O Fuel")+":data:150",
-		("Idle Hour")+ ":data:150",
-       	("Idle Rate")+":data:170",
-		("Idle Amount") + ":data:170",
-		("Total Hire Charge")+":data:130"
+		("Hour W Fuel")+":data:80",
+		("Rate W Fuel")+":Currency:150",
+		("Amount W Fuel")+":Currency:150",
+		("Hour W/O Fuel")+":data:80",
+		("Rate W/O Fuel")+":Currency:150",
+		("Amount W/O Fuel")+":Currency:150",
+		("Idle Hour")+ ":data:80",
+       		("Idle Rate")+":Currency:150",
+		("Idle Amount") + ":Currency:150",
+		("Total Hire Charge")+":Currency:150"
 	]
 
 def get_data(filters):

@@ -5,6 +5,18 @@ cur_frm.add_fetch("project", "cost_center", "cost_center")
 cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on('Process MR Payment', {
+	refresh: function(frm) {
+		if (frm.doc.payment_jv && frappe.model.can_read("Journal Entry")) {
+			cur_frm.add_custom_button(__('Bank Entries'), function() {
+				frappe.route_options = {
+					"Journal Entry Account.reference_type": me.frm.doc.doctype,
+					"Journal Entry Account.reference_name": me.frm.doc.name,
+				};
+				frappe.set_route("List", "Journal Entry");
+			}, __("View"));
+		}
+	},
+
 	onload: function(frm) {
 		if(!frm.doc.from_date) {
 			frm.set_value("from_date", frappe.datetime.month_start(get_today()))	

@@ -27,11 +27,10 @@ frappe.ui.form.on("Timesheet", {
 
 		// Follwoing code is added by SHIV on 2017/08/11
 		frm.get_field('time_logs').grid.editable_fields = [
-			{fieldname: 'billable', columns: 1},
-			{fieldname: 'from_time', columns: 2},
-			{fieldname: 'to_time', columns: 2},
+			{fieldname: 'from_time', columns: 3},
+			{fieldname: 'to_time', columns: 3},
 			{fieldname: 'hours', columns: 1},
-			{fieldname: 'percent_complete', columns: 2},
+			{fieldname: 'target_quantity', columns: 1},
 			{fieldname: 'target_quantity_complete', columns: 2},
 		];
 		
@@ -112,6 +111,10 @@ frappe.ui.form.on("Timesheet", {
 			frm: frm
 		});
 	},
+	
+	onsubmit: function(frm){
+		msgprint(__("are you sure?"));
+	},
 })
 
 frappe.ui.form.on("Timesheet Detail", {	
@@ -119,10 +122,16 @@ frappe.ui.form.on("Timesheet Detail", {
 		calculate_time_and_amount(frm);
 	},
 
-	target_quantity_complete: function(frm){
-		calculate_time_and_amount(frm);
+	target_quantity_complete: function(frm, cdt, cdn){
+		var child = locals[cdt][cdn];
+		
+		if(child.target_quantity_complete > child.target_quantity){
+			msgprint(__("Achieved value cannot be more than Target value."));
+			frappe.model.set_value(cdt, cdn, "target_quantity_complete",child.target_quantity);
+		}
+		calculate_target_quantity_complete(frm);
 	},
-	
+		
 	time_logs_remove: function(frm) {
 		calculate_time_and_amount(frm);
 	},
@@ -200,40 +209,51 @@ var calculate_billing_costing_amount = function(frm, cdt, cdn){
 	calculate_time_and_amount(frm)
 }
 
+// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+// Following function created by SHIV on 2017/08/17
+var calculate_target_quantity_complete = function(frm){
+	var tl = frm.doc.time_logs || [];
+	total_target_quantity_complete = 0;
+	
+	for(var i=0; i<tl.length; i++) {
+		if (tl[i].target_quantity_complete) {
+			total_target_quantity_complete += tl[i].target_quantity_complete || 0;
+		}
+	}
+
+	frappe.call({
+			method: "frappe.client.get_value",
+			args: {
+				doctype: "Task",
+				filters: {
+					name: frm.doc.task
+				},
+				fieldname:["target_quantity_complete"]
+			},
+			callback: function(r){
+				console.log(r);
+				cur_frm.set_value("target_quantity_complete", (r.message.target_quantity_complete || 0) + (total_target_quantity_complete || 0));
+			}
+	})
+	//cur_frm.set_value("target_quantity_complete", (total_target_quantity_complete || 0));
+}
+// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++	
+
 var calculate_time_and_amount = function(frm) {
 	var tl = frm.doc.time_logs || [];
 	total_hr = 0;
 	total_billing_amount = 0;
 	total_costing_amount = 0;
-	
-	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-	// Following code added by SHIV on 2017/08/17
-	total_work_percent_complete    = 0;
-	total_target_quantity_complete = 0;
-	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-	
+		
 	for(var i=0; i<tl.length; i++) {
-		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-		// Following condition commented and modified one added below by SHIV on 2017/08/17
-		//if (tl[i].hours) {
-		if (tl[i].hours || tl[i].percent_complete || tl[i].target_quantity_complete) {
-		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++	
+		if (tl[i].hours) {
 			total_hr += tl[i].hours || 0;
 			total_billing_amount += tl[i].billing_amount;
 			total_costing_amount += tl[i].costing_amount;
-			
-			total_work_percent_complete    += tl[i].percent_complete || 0;
-			total_target_quantity_complete += tl[i].target_quantity_complete || 0;
 		}
 	}
 
 	cur_frm.set_value("total_hours", total_hr);
 	cur_frm.set_value("total_billing_amount", total_billing_amount);
 	cur_frm.set_value("total_costing_amount", total_costing_amount);
-	
-	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-	// Following code added by SHIV on 2017/08/17
-	cur_frm.set_value("work_percent_complete", total_work_percent_complete);
-	cur_frm.set_value("target_quantity_complete", total_target_quantity_complete);
-	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 }

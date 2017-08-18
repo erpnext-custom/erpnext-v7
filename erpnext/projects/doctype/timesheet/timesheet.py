@@ -33,6 +33,7 @@ class Timesheet(Document):
                 # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
                 # Following method introduced by SHIV on 2017/08/15
                 self.set_defaults()
+                self.calculate_target_quantity_complete()
                 # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		self.set_status()
 		self.validate_dates()
@@ -45,47 +46,40 @@ class Timesheet(Document):
 		self.total_billing_amount = 0.0
 		self.total_costing_amount = 0.0
 		
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-		# Following variables added by SHIV on 2017/08/16
-		self.work_percent_complete = 0.0
-		self.target_quantity_complete = 0.0
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-                
 		for d in self.get("time_logs"):
 			self.total_hours += flt(d.hours)
-			
-			# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-			# Following code added by SHIV on 2017/08/16
-			self.work_percent_complete += flt(d.percent_complete)
-			self.target_quantity_complete += flt(d.target_quantity_complete)
-			# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 			
 			if d.billable: 
 				self.total_billing_amount += flt(d.billing_amount)
 				self.total_costing_amount += flt(d.costing_amount)
 
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-                # Following code added by SHIV on 2017/08/16
-                # Updating Task
-		base_task = frappe.get_doc("Task", self.task)
-		base_task.db_set('percent_complete',self.work_percent_complete)
-		base_task.db_set('target_quantity_complete',self.target_quantity_complete)
+        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+        # Following method added by SHIV on 2017/08/16
+        def calculate_target_quantity_complete(self):
+                if flt(self.target_quantity_complete) > flt(self.target_quantity):
+                        frappe.throw(_("Total Achieved value({0}) cannot be greater than Task's Target value({1}).").format(flt(self.target_quantity_complete),flt(self.target_quantity)))
+                else:
+                        # Updating Task
+                        base_task = frappe.get_doc("Task", self.task)
+                        base_task.db_set('target_quantity_complete',self.target_quantity_complete)
+                        self.target_quantity_complete = 0
+                        for d in self.get("time_logs"):
+                                self.target_quantity_complete += d.target_quantity_complete
 
-		# Updating Project Progress
-		tl = frappe.db.sql("""
-                        select sum(ifnull(ts.work_quantity,0)*(ifnull(ts.work_percent_complete,0)/100)) project_progress
-                        from `tabTimesheet` as ts
-                        where ts.project = %s
-                        and   ts.name <> %s
-			""", (self.project, self.name), as_dict=1)[0]
+                        # Updating Project Progress
+                        tl = frappe.db.sql("""
+                                select sum(ifnull(ts.work_quantity,0)*((ifnull(target_quantity_complete,0)/ifnull(target_quantity,1))*100)*0.01) project_progress
+                                from `tabTimesheet` as ts
+                                where ts.project = %s
+                                and   ts.name <> %s
+                                """, (self.project, self.name), as_dict=1)[0]
 
-                tl.project_progress = flt(tl.project_progress) + (flt(self.work_quantity)*(flt(self.work_percent_complete)/100))
+                        tl.project_progress = flt(tl.project_progress) + (flt(self.work_quantity)*((flt(self.target_quantity_complete)/flt(self.target_quantity if self.target_quantity else 1))*100)*0.01)
 
-                base_project = frappe.get_doc("Project",self.project)
-                base_project.db_set('tot_wq_percent_complete',tl.project_progress)
-
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++				
-
+                        base_project = frappe.get_doc("Project",self.project)
+                        base_project.db_set('tot_wq_percent_complete',tl.project_progress)
+        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++				                        
+                        
 	def set_status(self):
 		self.status = {
 			"0": "Draft",
@@ -113,6 +107,7 @@ class Timesheet(Document):
 
 	def before_submit(self):
 		self.set_dates()
+		self.calculate_target_quantity_complete()
 
 	def before_cancel(self):
 		self.set_status()
@@ -122,6 +117,9 @@ class Timesheet(Document):
 		self.update_task_and_project()
 
 	def on_submit(self):
+                #if self.target_quantity_complete < self.target_quantity:
+                #        frappe.throw()
+                        
 		self.validate_mandatory_fields()
 		self.update_production_order(self.name)
 		self.update_task_and_project()
@@ -129,6 +127,21 @@ class Timesheet(Document):
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
         # Following method introduced by SHIV on 2017/08/15
         def set_defaults(self):
+                # Validations
+                total_target_quantity           = 0
+                total_target_quantity_complete  = 0
+                for tl in self.time_logs:
+                        total_target_quantity           += flt(tl.target_quantity)
+                        total_target_quantity_complete  += flt(tl.target_quantity_complete)
+                        if flt(tl.target_quantity_complete) > flt(tl.target_quantity):
+                                frappe.throw(_("Row {0}: Achieved value({1}) cannot be more than Target value({2})").format(tl.idx, tl.target_quantity_complete, tl.target_quantity))
+
+                if flt(total_target_quantity) > flt(self.target_quantity):
+                        frappe.throw(_("Total Timesheet target value({0}) cannot be more than Task's target value({1})").format(flt(total_target_quantity),flt(self.target_quantity)))
+
+                if flt(total_target_quantity_complete) > flt(self.target_quantity):
+                        frappe.throw(_("Total Achieved value({0}) cannot be more than Target value({1})").format(flt(total_target_quantity_complate),flt(self.target_quantity)))
+                
                 # Setting Timesheet items
                 if self.task:
                         base_task = frappe.get_doc("Task", self.task)

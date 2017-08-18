@@ -99,12 +99,13 @@ frappe.ui.form.on("Leave Application", {
 						"leave_type": frm.doc.leave_type,
 						"from_date": frm.doc.from_date,
 						"to_date": frm.doc.to_date,
-						"half_day": frm.doc.half_day
+						//"half_day": frm.doc.half_day
 					},
 					callback: function(r) {
 						if (r && r.message) {
 							frm.set_value('total_leave_days', r.message);
 							frm.trigger("get_leave_balance");
+							cur_frm.refresh_field("total_leave_days")
 						}
 					}
 				});

@@ -16,12 +16,13 @@ def get_columns():
 		("Equipment No.") + ":Data:120",
 		("Operator")+ ":Data:100",
 		("POL Type") + ":Data:120",
+		("UoM") + ":Data:120",
 		("Quantity") + ":Data:120"
 	]
 
 def get_data(filters):
 
-	query =  "select e.name, e.equipment_number, e.current_operator, p.pol_type, sum(p.qty) FROM tabEquipment AS e, `tabConsumed POL` AS p WHERE e.name = p.equipment"
+	query =  "select e.name, e.equipment_number, e.current_operator, p.pol_type, (select uom from `tabPOL Type` pt where pt.name = p.pol_type) as uom,sum(p.qty) FROM tabEquipment AS e, `tabConsumed POL` AS p WHERE e.name = p.equipment"
 
 	if filters.get("branch"):
 

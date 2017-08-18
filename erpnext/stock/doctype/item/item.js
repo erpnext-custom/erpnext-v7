@@ -379,7 +379,7 @@ cur_frm.cscript.item_group = function(doc) {
              cur_frm.set_value("item_code", r.message.toString());
         }
    });
-   if (doc.item_group != 'All Item Groups') {
+   /*if (doc.item_group != 'All Item Groups') {
      cur_frm.fields_dict['expense_account'].get_query = function(doc) {
         return {
                "filters": {
@@ -388,7 +388,7 @@ cur_frm.cscript.item_group = function(doc) {
         }
      }
      refresh_field("expense_account");
-   }
+   }*/
 }
 
 //function to assess item_code ranges
@@ -404,4 +404,11 @@ frappe.ui.form.on("Item", "refresh", function(frm) {
             }
         };
     });
+    /*cur_frm.set_query("expense_account", function() {
+        return {
+            "filters": {
+		"is_group": 0,
+            }
+        };
+    });*/ 
 })

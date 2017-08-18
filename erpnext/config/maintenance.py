@@ -91,20 +91,9 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "POL Issue Report",
-					"label": "POL Issue Report",
-					"description": _("POL Issue Report"),
-				},
-			]
-		},
-		{
-			"label": _("Settings"),
-			"icon": "icon-star",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Maintenance Settings",
-					"description": _("Maintenance Settings"),
+					"name": "Issue POL",
+					"label": "Issue POL",
+					"description": _("Issue POL"),
 				},
 			]
 		},
@@ -141,6 +130,12 @@ def get_data():
 					"is_query_report": True,
 					"name": "POL Consumption Report",
 					"doctype": "Consumed POL"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "POL Balance Report",
+					"doctype": "POL"
 				},
 			]
 		},

@@ -42,6 +42,13 @@ frappe.query_reports["Budget Consumption Report"] = {
 			"label": __("To Date"),
 			"fieldtype": "Date",
 			"default": frappe.defaults.get_user_default("year_end_date"),
-		}
+		},
+		{
+			"fieldname": "cost_center",
+			"label": __("Cost Center"),
+			"fieldtype": "Link",
+			"options": "Cost Center",
+			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1'], ['Cost Center', 'is_group', '=', '0']]}}
+		},
 	]
    }

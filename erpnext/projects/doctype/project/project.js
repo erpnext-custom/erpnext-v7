@@ -147,6 +147,15 @@ frappe.ui.form.on("Activity Tasks", {
 			msgprint(__("Save the document first."));
 		}
 	},
+	view_timesheet: function(frm, doctype, name){
+		var doc = frappe.get_doc(doctype, name);
+		if(doc.task_id){
+			frappe.route_options = {"project": frm.doc.name, "task": doc.task_id}
+			frappe.set_route("List", "Timesheet");
+		} else {
+			msgprint(__("Save the document first."));
+		}
+	},
 	status: function(frm, doctype, name) {
 		frm.trigger('tasks_refresh');
 	},

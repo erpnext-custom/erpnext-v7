@@ -21,6 +21,16 @@ class ProcessMRPayment(Document):
 			
 
 	def on_submit(self):
+		self.post_journal_entry()
+
+	def before_cancel(self):
+		cl_status = frappe.db.get_value("Journal Entry", self.payment_jv, "docstatus")
+		if cl_status != 2:
+			frappe.throw("You need to cancel the journal entry related to this payment first!")
+		
+		self.db_set('payment_jv', "")
+
+	def post_journal_entry(self):
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
 		if not expense_bank_account:
 			frappe.throw("Setup Default Expense Bank Account for your Branch")
@@ -29,21 +39,21 @@ class ProcessMRPayment(Document):
 			if not ot_account:
 				frappe.throw("Setup MR Overtime Account in Projects Accounts Settings")
 			wage_account = frappe.db.get_single_value("Projects Accounts Settings", "mr_wages_account")
-			if not revenue_bank_account:
+			if not wage_account:
 				frappe.throw("Setup MR Wages Account in Projects Accounts Settings")
 		elif self.employee_type == "GEP Employee":
 			ot_account = frappe.db.get_single_value("Projects Accounts Settings", "gep_overtime_account")
 			if not ot_account:
 				frappe.throw("Setup GEP Overtime Account in Projects Accounts Settings")
 			wage_account = frappe.db.get_single_value("Projects Accounts Settings", "gep_wages_account")
-			if not revenue_bank_account:
+			if not wage_account:
 				frappe.throw("Setup GEP Wages Account in Projects Accounts Settings")
 		else:
 			frappe.throw("Invalid Employee Type")
 
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
-		je.title = "Payment for " + self.employee_type  + " (" + self.project + ")"
+		je.title = "Payment for " + self.employee_type  + " (" + self.branch + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
 		je.remark = 'Payment against : ' + self.name;
@@ -61,6 +71,8 @@ class ProcessMRPayment(Document):
 		if self.ot_amount:	
 			je.append("accounts", {
 					"account": ot_account,
+					"reference_type": "Process MR Payment",
+					"reference_name": self.name,
 					"cost_center": self.cost_center,
 					"debit_in_account_currency": flt(self.ot_amount),
 					"debit": flt(self.ot_amount),
@@ -69,12 +81,16 @@ class ProcessMRPayment(Document):
 		if self.wages_amount:	
 			je.append("accounts", {
 					"account": wage_account,
+					"reference_type": "Process MR Payment",
+					"reference_name": self.name,
 					"cost_center": self.cost_center,
 					"debit_in_account_currency": flt(self.wages_amount),
 					"debit": flt(self.wages_amount),
 				})
 
 		je.insert()
+		self.db_set("payment_jv", je.name)
+
 
 @frappe.whitelist()
 def get_records(employee_type, from_date, to_date, cost_center, branch):

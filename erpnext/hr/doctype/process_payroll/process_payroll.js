@@ -89,12 +89,6 @@ frappe.ui.form.on("Process Payroll", {
 //custom Scripts
 //Ver20160705.1 Original version Added by SSK
 
-cur_frm.fields_dict['department'].get_query = function(doc, dt, dn) {
-       return {
-               filters:{"branch1": doc.branch}
-       }
-}
-
 cur_frm.fields_dict['division'].get_query = function(doc, dt, dn) {
        return {
                filters:{"dpt_name": doc.department, "branch": doc.branch}

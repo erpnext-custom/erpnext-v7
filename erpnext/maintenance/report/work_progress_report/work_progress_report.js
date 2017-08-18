@@ -31,12 +31,14 @@ frappe.query_reports["Work Progress Report"] = {
 			"label": ("Customer"),
 			"fieldtype": "Select",
 			"width": "80",
-			"options": [
-			
-				{ "value": "Own", "label": __("Own") },
-			  { "value": "CDCL", "label": __("CDCL") },
-			  { "value": "Others", "label": __("Others") },
-			]
+			"options": ["", "Own","CDCL", "Others"]
+		},
+		{
+			"fieldname": "equipment",
+			"label": ("Equipment"),
+			"fieldtype": "Link",
+			"width": "80",
+			"options": "Equipment",
 		},
 
 	]

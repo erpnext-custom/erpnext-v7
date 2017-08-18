@@ -1,0 +1,18 @@
+{
+ "creation": "2017-08-18 14:17:58.391047", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "Job Card", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div id=\"main\">\n  <div id=\"header\" style=\"text-align: center;\">\n    <h1>CONSTRUCTION DEVELOPMENT CORPORATION LTD.</h1>\n    <h2>{{doc.branch}}</h2>\n    <h3> JOB CARD INVOICE</h3>\n  </div>\n</div>\n<div>\n<table style=\"font-size: small; width: 100%;\">\n<tr>\n<td><strong>Job Card #:</strong></td>\n<td>{{ doc.name}}</td>\n<td><strong>Date:</strong></td>\n<td>{{ frappe.utils.formatdate(doc.posting_date)}}</td>\n</tr>\n<tr>\n<td><strong>Customer:</strong></td>\n<td>{{ doc.customer }}</td>\n</tr>\n<tr>\n</table>\n<table class=\"table table-bordered\" style=\"margin-top: 15px;\">\n  <tbody>\n\t<tr>\n\t\t<th style=\"text-align: center;\">Sr</th>\n\t\t<th style=\"text-align: center;\">Type</th>\n\t\t<th style=\"text-align: center;\">Discription</th>\n\t\t<th class=\"text-right\" style=\"text-align: center;\">Amount Billed (Nu.)</th>\n\t</tr>\n\t{%- for row in doc.items -%}\n\t<tr>\n\t\t<td style=\"width: 3%;\">1</td>\n\t\t<td style=\"width: 15%;\">{{ row.which }}</td>\t\t\t\n\t\t<td style=\"width: 25%;\">{{ row.job_name }}</td>\t\n\t\t<td style=\"width: 15%;\">{{ frappe.format_value(row.amount, {\"fieldtype\":\"Currency\"}) }}</td>\n\t{%- endfor -%}\t\n\t</tr>\n\n<tr><td style=\"width: 15%;\" colspan=3><b>Total Amount</b></td><td colspan = 2>{{ frappe.format_value((doc.total_amount), {\"fieldtype\":\"Currency\"})}}</td>\n</tr>\n  </tbody>\n</table>\n\n\n<div style=\"padding-top: 30px; clear: both;\">\n<div style=\"padding-top: 80px; width: 33%; float: left; text-align:center;\">(Mechanic) </div>\n<div style=\"padding-top: 110px; width: 33%; float: left; text-align:center;\">(Manager/Workshop) </div>\n<div style=\"padding-top: 130px; width: 33%; float: right; text-align:center;\">(Acknowleged By) </div>\n</div>\n</div>\n</div>", 
+ "idx": 0, 
+ "modified": "2017-08-18 14:21:10.735579", 
+ "modified_by": "Administrator", 
+ "name": "Job Card Invoice", 
+ "owner": "Administrator", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes"
+}
