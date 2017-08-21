@@ -31,7 +31,7 @@ class TravelAuthorization(Document):
 	def before_cancel(self):
 		if self.advance_journal:
 			jv_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
-			if jv_status == 1:
+			if jv_status != 2:
 				frappe.throw("You need to cancel the advance journal entry first!")
 	
 	##

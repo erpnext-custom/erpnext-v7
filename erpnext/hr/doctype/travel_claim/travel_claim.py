@@ -41,7 +41,7 @@ class TravelClaim(Document):
 
 	def before_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.claim_journal, "docstatus")
-		if cl_status == 1:
+		if cl_status != 2:
 			frappe.throw("You need to cancel the claim journal entry first!")
 		
 		ta = frappe.get_doc("Travel Authorization", self.ta)
