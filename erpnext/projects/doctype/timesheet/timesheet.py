@@ -30,10 +30,11 @@ class OverProductionLoggedError(frappe.ValidationError): pass
 
 class Timesheet(Document):
 	def validate(self):
+                frappe.msgprint("Basic validations")
                 # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-                # Following method introduced by SHIV on 2017/08/15
+                # Following methods introduced by SHIV on 2017/08/15
                 self.set_defaults()
-                self.calculate_target_quantity_complete()
+                self.calculate_target_quantity()
                 # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		self.set_status()
 		self.validate_dates()
@@ -54,8 +55,41 @@ class Timesheet(Document):
 				self.total_costing_amount += flt(d.costing_amount)
 
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+        # Following method introduced by SHIV on 2017/08/15
+        def set_defaults(self):
+                # `Timesheet Detail` Validations
+                total_target_quantity           = 0
+                total_target_quantity_complete  = 0
+                for tl in self.time_logs:
+                        total_target_quantity           += flt(tl.target_quantity)
+                        total_target_quantity_complete  += flt(tl.target_quantity_complete)
+                        if flt(tl.target_quantity_complete) > flt(tl.target_quantity):
+                                frappe.throw(_("Row {0}: Achieved value({1}) cannot be more than Target value({2})").format(tl.idx, tl.target_quantity_complete, tl.target_quantity))
+
+                if flt(total_target_quantity) > flt(self.target_quantity):
+                        frappe.throw(_("Total Timesheet target value({0}) cannot be more than Task's target value({1})").format(flt(total_target_quantity),flt(self.target_quantity)))
+
+                if flt(total_target_quantity_complete) > flt(self.target_quantity):
+                        frappe.throw(_("Total Achieved value({0}) cannot be more than Target value({1})").format(flt(total_target_quantity_complate),flt(self.target_quantity)))
+                
+                # Setting `Timesheet` Defaults
+                if self.task:
+                        base_task = frappe.get_doc("Task", self.task)
+                        self.task_name = base_task.subject
+                        self.work_quantity = base_task.work_quantity
+                        self.exp_start_date = base_task.exp_start_date
+                        self.exp_end_date = base_task.exp_end_date
+                
+                # Setting `Timesheet Detail` Defaults
+                for data in self.time_logs:
+                        if not data.project or data.project <> self.project:
+                                data.project = self.project
+
+                        if not data.task or data.task <> self.task:
+                                data.task = self.task
+                                
         # Following method added by SHIV on 2017/08/16
-        def calculate_target_quantity_complete(self):
+        def calculate_target_quantity(self):
                 if flt(self.target_quantity_complete) > flt(self.target_quantity):
                         frappe.throw(_("Total Achieved value({0}) cannot be greater than Task's Target value({1}).").format(flt(self.target_quantity_complete),flt(self.target_quantity)))
                 else:
@@ -64,7 +98,7 @@ class Timesheet(Document):
                         base_task.db_set('target_quantity_complete',self.target_quantity_complete)
                         self.target_quantity_complete = 0
                         for d in self.get("time_logs"):
-                                self.target_quantity_complete += d.target_quantity_complete
+                                self.target_quantity_complete += flt(d.target_quantity_complete)
 
                         # Updating Project Progress
                         tl = frappe.db.sql("""
@@ -124,41 +158,6 @@ class Timesheet(Document):
 		self.update_production_order(self.name)
 		self.update_task_and_project()
 
-        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-        # Following method introduced by SHIV on 2017/08/15
-        def set_defaults(self):
-                # Validations
-                total_target_quantity           = 0
-                total_target_quantity_complete  = 0
-                for tl in self.time_logs:
-                        total_target_quantity           += flt(tl.target_quantity)
-                        total_target_quantity_complete  += flt(tl.target_quantity_complete)
-                        if flt(tl.target_quantity_complete) > flt(tl.target_quantity):
-                                frappe.throw(_("Row {0}: Achieved value({1}) cannot be more than Target value({2})").format(tl.idx, tl.target_quantity_complete, tl.target_quantity))
-
-                if flt(total_target_quantity) > flt(self.target_quantity):
-                        frappe.throw(_("Total Timesheet target value({0}) cannot be more than Task's target value({1})").format(flt(total_target_quantity),flt(self.target_quantity)))
-
-                if flt(total_target_quantity_complete) > flt(self.target_quantity):
-                        frappe.throw(_("Total Achieved value({0}) cannot be more than Target value({1})").format(flt(total_target_quantity_complate),flt(self.target_quantity)))
-                
-                # Setting Timesheet items
-                if self.task:
-                        base_task = frappe.get_doc("Task", self.task)
-                        self.task_name = base_task.subject
-                        self.work_quantity = base_task.work_quantity
-                        self.exp_start_date = base_task.exp_start_date
-                        self.exp_end_date = base_task.exp_end_date
-                
-                # Setting Timesheet Detail
-                for data in self.time_logs:
-                        if not data.project or data.project <> self.project:
-                                data.project = self.project
-
-                        if not data.task or data.task <> self.task:
-                                data.task = self.task
-        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-        
 	def validate_mandatory_fields(self):
 		if self.production_order:
 			production_order = frappe.get_doc("Production Order", self.production_order)

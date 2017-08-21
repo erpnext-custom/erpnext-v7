@@ -21,6 +21,7 @@ from erpnext.hr.doctype.employee_leave_approver.employee_leave_approver import g
 from erpnext.hr.doctype.leave_encashment.leave_encashment import get_le_settings
 # Ver 1.0 Ends
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
+from datetime import timedelta, date
 
 class LeaveDayBlockedError(frappe.ValidationError): pass
 class OverlapError(frappe.ValidationError): pass
@@ -273,6 +274,11 @@ class LeaveApplication(Document):
 		if str(self.from_date)[0:4] != str(self.to_date)[0:4]:
 			frappe.throw("Leave Application cannot overlap fiscal years")
 
+def daterange(start_date, end_date):
+    for n in range(int ((date(end_date) - date(start_date)).days)):
+	yield date(start_date) + timedelta(n)
+
+
 @frappe.whitelist()
 def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 	if not filters.get("employee"):
@@ -299,7 +305,16 @@ def get_number_of_leave_days(employee, leave_type, from_date, to_date, half_day=
 	if not frappe.db.get_value("Leave Type", leave_type, "include_holiday"):
 		number_of_days = flt(number_of_days) - flt(get_holidays(employee, from_date, to_date))
 
+	d = from_date
+	while(d <= to_date):
+		#For Saturday half day work time
+		if getdate(d).weekday() == 5 and flt(get_holidays(employee, d, d)) == 0:
+			number_of_days-=0.5
+		d = frappe.utils.data.add_days(d, 1)
+	
 	return number_of_days
+
+	
 
 @frappe.whitelist()
 def get_leave_balance_on(employee, leave_type, date, allocation_records=None,

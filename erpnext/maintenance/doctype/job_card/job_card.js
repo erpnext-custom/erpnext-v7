@@ -38,7 +38,16 @@ frappe.ui.form.on('Job Card', {
 		cur_frm.refresh()
 	},
 	"get_items": function(frm) {
-		get_entries_from_min(frm.doc.stock_entry)
+		//get_entries_from_min(frm.doc.stock_entry)
+		//load_accounts(frm.doc.company)
+		return frappe.call({
+			method: "get_job_items",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.refresh_field("items");
+				frm.refresh_fields();
+			}
+		});
 	}
 });
 
@@ -103,7 +112,7 @@ function calculate_time(frm, cdt, cdn) {
 }
 
 frappe.ui.form.on("Job Card", "refresh", function(frm) {
-    cur_frm.set_query("stock_entry", function() {
+/*    cur_frm.set_query("stock_entry", function() {
         return {
             "filters": {
 		"docstatus": 1,
@@ -111,9 +120,8 @@ frappe.ui.form.on("Job Card", "refresh", function(frm) {
 		"job_card": frm.doc.name
             }
         };
-    });
+    }); */
 })
-
 	
 function get_entries_from_min(form) {
 	frappe.call({

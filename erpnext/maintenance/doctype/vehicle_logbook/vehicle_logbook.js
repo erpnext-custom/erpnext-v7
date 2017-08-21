@@ -103,8 +103,9 @@ frappe.ui.form.on("Vehicle Logbook", "refresh", function(frm) {
 
     cur_frm.set_query("equipment", function() {
         return {
+	    query: "erpnext.maintenance.doctype.equipment.equipment.get_equipments",
             "filters": {
-                "equipment_hire_form": frm.doc.ehf_name,
+                "ehf_name": frm.doc.ehf_name,
             }
         };
     });

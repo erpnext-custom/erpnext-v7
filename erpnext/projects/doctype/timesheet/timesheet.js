@@ -127,7 +127,7 @@ frappe.ui.form.on("Timesheet Detail", {
 		
 		if(child.target_quantity_complete > child.target_quantity){
 			msgprint(__("Achieved value cannot be more than Target value."));
-			frappe.model.set_value(cdt, cdn, "target_quantity_complete",child.target_quantity);
+			//frappe.model.set_value(cdt, cdn, "target_quantity_complete",child.target_quantity);
 		}
 		calculate_target_quantity_complete(frm);
 	},
@@ -217,10 +217,30 @@ var calculate_target_quantity_complete = function(frm){
 	
 	for(var i=0; i<tl.length; i++) {
 		if (tl[i].target_quantity_complete) {
-			total_target_quantity_complete += tl[i].target_quantity_complete || 0;
+			total_target_quantity_complete += parseFloat(tl[i].target_quantity_complete || 0);
 		}
 	}
-
+	
+	frappe.call({
+			method: "frappe.client.get_list",
+			args: {
+				doctype: "Timesheet",
+				filters: {
+					task: frm.doc.task
+				},
+				fields:["name","target_quantity_complete"]
+			},
+			callback: function(r){
+				$.each(r.message, function(i, d){
+					if (d.name != frm.doc.name){
+						total_target_quantity_complete += parseFloat(d.target_quantity_complete || 0);
+					}
+				})
+				cur_frm.set_value("target_quantity_complete", parseFloat(total_target_quantity_complete));
+			}
+	})	
+	
+	/*
 	frappe.call({
 			method: "frappe.client.get_value",
 			args: {
@@ -231,11 +251,10 @@ var calculate_target_quantity_complete = function(frm){
 				fieldname:["target_quantity_complete"]
 			},
 			callback: function(r){
-				console.log(r);
 				cur_frm.set_value("target_quantity_complete", (r.message.target_quantity_complete || 0) + (total_target_quantity_complete || 0));
 			}
 	})
-	//cur_frm.set_value("target_quantity_complete", (total_target_quantity_complete || 0));
+	*/
 }
 // +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++	
 

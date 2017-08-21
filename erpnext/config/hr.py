@@ -280,6 +280,12 @@ def get_data():
                                         "label": "RRCO Tax Slab Details",
 					"doctype": "Salary Tax"
 				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Employee Due Date Report",
+					"doctype": "Employee"
+				},
 			]
 		},
 	]

@@ -77,6 +77,11 @@ def get_data():
 					"name": "Hire Charge Invoice",
 					"description": _("Hire Charge Invoice"),
 				},
+				{
+					"type": "doctype",
+					"name": "Equipment Hiring Extension",
+					"description": _("Equipment Hiring Extension"),
+				},
 			]
 		},
 		{
