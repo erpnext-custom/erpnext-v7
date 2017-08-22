@@ -4,13 +4,15 @@
 from __future__ import unicode_literals
 import frappe
 
-from frappe.utils import flt, getdate, validate_email_add, today, add_years
+from frappe.utils import flt, getdate, cint, validate_email_add, today, add_years, date_diff
 from frappe.model.naming import make_autoname
 from frappe import throw, _
 import frappe.permissions
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from erpnext.utilities.transaction_base import delete_events
+from erpnext.custom_utils import get_year_start_date, get_year_end_date
+from frappe.utils.data import get_first_day, get_last_day, add_days
 
 
 class EmployeeUserDisabledError(frappe.ValidationError):
@@ -44,7 +46,8 @@ class Employee(Document):
 		self.validate_status()
 		self.validate_employee_leave_approver()
 		self.validate_reports_to()
-
+		self.post_casual_leave()	
+	
 		if self.user_id:
 			self.validate_for_enabled_user_id()
 			self.validate_duplicate_user_id()
@@ -168,6 +171,31 @@ class Employee(Document):
 
 	def on_trash(self):
 		delete_events(self.doctype, self.name)
+
+	def post_casual_leave(self):
+		from frappe.utils.password_strength import test_password_strength
+		frappe.msgprint("THS: " + str(test_password_strength("babfh68y")))
+		if not self.casual_leave_allocated:
+			date = getdate(self.date_of_joining)
+			start = date;
+			end = get_year_end_date(date);
+			end_month = get_last_day(date)
+			leave_amount = 0 
+			days = date_diff(end, start)
+			leave_amount = flt(cint(cint(days) / 30) * 0.84)
+			if cint(date_diff(end_month, start)) > 14:
+				leave_amount += 0.84
+			la = frappe.new_doc("Leave Allocation")
+			la.employee = self.employee
+			la.employee_name = self.employee_name
+			la.leave_type = "Casual Leave"
+			la.from_date = str(start)
+			la.to_date = str(end)
+			la.carry_forward = cint(0)
+			la.new_leaves_allocated = flt(leave_amount)
+			if flt(leave_amount) > 0:
+				la.submit()
+			self.db_set("casual_leave_allocated", 1)
 
 def get_timeline_data(doctype, name):
 	'''Return timeline for attendance'''

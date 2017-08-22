@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from frappe.utils.data import get_first_day, get_last_day, add_days
 from frappe.utils import flt, add_months, cint, nowdate, getdate, get_last_day
 from frappe.model.document import Document
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import get_fixed_asset_account
@@ -110,13 +111,14 @@ class Asset(Document):
 					schedule_date = get_last_day(add_months(self.next_depreciation_date,
 						n * cint(self.frequency_of_depreciation)))
 
-					last_schedule_date = add_months(self.next_depreciation_date,
-						(n - 1) * cint(self.frequency_of_depreciation))
+					#last_schedule_date = add_months(self.next_depreciation_date,
+					#	(n - 1) * cint(self.frequency_of_depreciation))
 
+					last_schedule_date = get_last_day(add_days(schedule_date, -40))
 					if n == 0:
 						num_of_days = get_number_of_days(self.purchase_date, schedule_date) + 1
 					else:
-						num_of_days = get_number_of_days(last_schedule_date, schedule_date)
+						num_of_days = get_number_of_days(last_schedule_date, schedule_date) 
 
 					depreciation_amount = self.get_depreciation_amount(value_after_depreciation, num_of_days)
 					income_tax_amount = self.get_income_tax_depreciation_amount(current_value_income_tax, flt(self.asset_depreciation_percent), num_of_days)

@@ -26,11 +26,6 @@ def get_data():
 					"name": "Purchase Invoice",
 					"description": _("Bills raised by Suppliers.")
 				},
-                                {
-					"type": "doctype",
-					"name": "Project Invoice",
-					"description": _("Bills raised to Customers.")
-				},
 				{
 					"type": "doctype",
 					"name": "Direct Payment",

@@ -4,15 +4,14 @@
 frappe.ui.form.on('Officiating Employee', {
 	refresh: function(frm) {
 		if(frm.doc.to_date < get_today) {
-			console.log("SHOW")
-			cur_frm.add_custom_button(__('Revoke Permissions'), this.revoke_permission)
+			/*cur_frm.add_custom_button(__('Revoke Permissions'), this.revoke_permission)
 			frm.add_custom_button("Create Job Card", function() {
-				frappe.call({
+				return frappe.call({
 					method: "erpnext.hr.doctype.officiating_employee.officiating_employee.revoke_perm",
 					args: {frm: cur_frm},
 					callback: function(r) {}
 				})
-			});
+			});*/
 		}
 	},
 	onload: function(frm) {
@@ -33,10 +32,9 @@ frappe.ui.form.on('Officiating Employee', {
 		}
 	},
 	"revoke_permission": function(frm) {
-		console.log("INSIS")
-		frappe.call({
-			method: "erpnext.hr.doctype.officiating_employee.officiating_employee.revoke_perm",
-			args: {frm: cur_frm},
+		return frappe.call({
+			method: "revoke_perm",
+			doc: frm.doc,
 			callback: function(r, rt) {
 			}
 		})	

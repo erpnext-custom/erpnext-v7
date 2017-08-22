@@ -17,16 +17,6 @@ def get_data():
 					"name": "Task",
 					"description": _("Project activity / task."),
 				},
-                                {
-					"type": "doctype",
-					"name": "Timesheet",
-					"description": _("Timesheet for all tasks."),
-				},
-                                {
-					"type": "doctype",
-					"name": "BOQ",
-					"description": _("Bill of Quantities."),
-				},
 				{
 					"type": "report",
 					"route": "Gantt/Task",

@@ -104,6 +104,16 @@ class EquipmentHiringForm(Document):
 			self.db_set("advance_journal", je.name)
 
 @frappe.whitelist()
+def get_hire_rates(e, rtype):
+	e = frappe.get_doc("Equipment", e)
+	query = "select with_fuel, without_fuel, idle from `tabHire Charge Parameter` where equipment_type = \"" + str(e.equipment_type) + "\" and equipment_model =\"" + str(e.equipment_model) + "\""
+	data = frappe.db.sql(query, as_dict=True)
+	if not data:
+		frappe.throw("No Hire Rates has been assigned for equipment type " + str(e.equipment_type) + " and model " + str(e.equipment_model))
+	return data	
+
+@frappe.whitelist()
 def get_rates(form, equipment):
 	if form and equipment:
 		return frappe.db.sql("select rate_type, rate, idle_rate from `tabHiring Approval Details` where docstatus = 1 and parent = \'" + str(form) + "\' and equipment = \'" + str(equipment) + "\'", as_dict=True)
+

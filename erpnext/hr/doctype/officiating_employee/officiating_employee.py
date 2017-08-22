@@ -25,12 +25,19 @@ class OfficiatingEmployee(Document):
 		user.flags.ignore_permissions = True
 
 		if "Leave Approver" not in user.get("user_roles"):
-			user.add_roles("Leave Approver")	
+			user.add_roles("Leave Approver")
+			self.db_set("already", 0)
+		else:
+			self.db_set("already", 1)
 
-@frappe.whitelist()
-def revoke_perm(frm):
-	frappe.throw("INSIDE")
-	for a in self.items:	
-		emp = frappe.get_doc("Employee", a.employee)
-		emp.db_set("reports_to", self.employee)
+	def revoke_perm(self):
+		for a in self.items:	
+			emp = frappe.get_doc("Employee", a.employee)
+			emp.db_set("reports_to", self.employee)
+		self.db_set("revoked", 1)
+		if not self.already:
+			user = frappe.get_doc("User", frappe.db.get_value("Employee", self.officiate, "user_id"))
+			user.flags.ignore_permissions = True
+			user.remove_roles("Leave Approver")
+		frappe.msgprint("Permissions Revoked")
 

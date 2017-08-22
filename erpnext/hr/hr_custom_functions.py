@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import flt, cint
+from frappe.utils import flt, cint, getdate, date_diff
 from frappe.utils.data import get_first_day, get_last_day, add_days
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
 
@@ -34,7 +34,7 @@ def post_earned_leaves():
 	start = get_first_day(date);
 	end = get_last_day(date);
 	
-	employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular\', \'Contract\')", as_dict=True)
+	employees = frappe.db.sql("select name, employee_name, date_of_joining from `tabEmployee` where status = 'Active' and employment_type in (\'Regular\', \'Contract\')", as_dict=True)
 	for e in employees:
 		la = frappe.new_doc("Leave Allocation")
 		la.employee = e.name
@@ -43,8 +43,11 @@ def post_earned_leaves():
 		la.from_date = str(start)
 		la.to_date = str(end)
 		la.carry_forward = cint(1)
-		la.new_leaves_allocated = flt(2.5)
-		la.submit()
+		if cint(date_diff(end, getdate(e.date_of_joining))) > 14:
+			la.new_leaves_allocated = flt(2.5)
+			la.submit()
+		else:
+			pass
 
 #function to get the difference between two dates
 @frappe.whitelist()

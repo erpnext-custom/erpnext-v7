@@ -113,8 +113,36 @@ frappe.ui.form.on("Hiring Approval Details", {
 	},
 	"grand_total": function(frm, cdt, cdn) {
 		calculate_total(frm)
+	},
+	"equipment": function(frm, cdt, cdn) {
+		get_rates(frm, cdt, cdn)
+	},
+	"rate_type": function(frm, cdt, cdn) {
+		get_rates(frm, cdt, cdn)
 	}
 })
+
+function get_rates(frm, cdt, cdn) {
+	doc = locals[cdt][cdn]
+	if (doc.equipment && doc.rate_type) {
+		return frappe.call({
+			method: "erpnext.maintenance.doctype.equipment_hiring_form.equipment_hiring_form.get_hire_rates",
+			args: {"e": doc.equipment, "rtype": doc.rate_type},
+			callback: function(r) {
+				if(r.message) {
+					if(doc.rate_type == "Without Fuel") {
+						frappe.model.set_value(cdt, cdn, "rate", r.message[0].without_fuel)
+					}
+					else {
+						frappe.model.set_value(cdt, cdn, "rate", r.message[0].with_fuel)
+					}
+					frappe.model.set_value(cdt, cdn, "idle_rate", r.message[0].idle)
+				}				
+				cur_frm.refresh_fields()
+			}
+		})	
+	}
+}
 
 function calculate_total(frm) {
 	var total = 0;

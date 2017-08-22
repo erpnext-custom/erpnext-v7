@@ -16,6 +16,8 @@ def get_columns():
 		("Equipment Type") + ":data:120",
 		("Equipment No")+":data:100",
 		("Hire Form Name")+":Link/Equipment Hiring Form:150",
+		("Customer Name") + ":data:120",
+		("Customer Type") + ":data:120",
 		("Hour W Fuel")+":data:80",
 		("Rate W Fuel")+":Currency:150",
 		("Amount W Fuel")+":Currency:150",
@@ -23,13 +25,13 @@ def get_columns():
 		("Rate W/O Fuel")+":Currency:150",
 		("Amount W/O Fuel")+":Currency:150",
 		("Idle Hour")+ ":data:80",
-       		("Idle Rate")+":Currency:150",
+       	("Idle Rate")+":Currency:150",
 		("Idle Amount") + ":Currency:150",
 		("Total Hire Charge")+":Currency:150"
 	]
 
 def get_data(filters):
-	query ="""select hid.equipment, (select equipment_type FROM tabEquipment e WHERE e.name = hid.equipment), hid.equipment_number, hci.ehf_name,
+	query ="""select hid.equipment, (select equipment_type FROM tabEquipment e WHERE e.name = hid.equipment), hid.equipment_number, hci.ehf_name, hci.customer, (select c.customer_group FROM tabCustomer AS c WHERE hci.customer = c.name),
 	CASE hid.rate_type
 	WHEN 'With Fuel' THEN (select sum(hid.total_work_hours))
 	END,
@@ -48,7 +50,7 @@ def get_data(filters):
 	CASE hid.rate_type
 	WHEN 'Without Fuel' THEN (select sum(hid.amount_work))
 	END,
-	sum(hid.total_idle_hours), hid.idle_rate, sum(hid.amount_idle), sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci WHERE hid.parent = hci.name AND hci.docstatus = 1"""
+	sum(hid.total_idle_hours), hid.idle_rate, sum(hid.amount_idle), sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci, `tabEquipment Hiring Form` as ehf WHERE hid.parent = hci.name AND ehf.name = hci.ehf_name and hci.docstatus = 1"""
 
 	if filters.get("branch"):
 		query += " and hci.branch = \'" + str(filters.branch) + "\'"

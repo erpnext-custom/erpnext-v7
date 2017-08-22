@@ -56,6 +56,11 @@ def get_data():
 					"name": "Service",
 					"description": _("Services"),
 				},
+				{
+					"type": "doctype",
+					"name": "Hire Charge Parameter",
+					"description": _("Hire Charge Parameter"),
+				},
 			]
 		},
 		{

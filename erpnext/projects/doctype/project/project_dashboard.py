@@ -15,7 +15,7 @@ data = {
 		{
 			'label': _('Project'),
 			#'items': ['Task', 'Timesheet', 'Expense Claim', 'Issue']
-                        'items': ['Task', 'Timesheet', 'Issue']
+                        'items': ['Task', 'Timesheet', 'BOQ', 'Issue']
 		},
 		{
 			'label': _('Material'),
