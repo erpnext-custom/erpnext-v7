@@ -17,166 +17,164 @@ def get_auto_name(dn, naming_series=None):
         #msgprint(dn.doctype)
 	series_seq = 'UNKO'
 	if dn.doctype == 'Purchase Order':
-		if naming_series == 'CONSUMABLE PO':
+		if naming_series == 'Consumables':
                 	series_seq = 'POCO'
-		elif naming_series == 'FIXED ASSET PO':
+		elif naming_series == 'Fixed Asset':
 	                series_seq = 'POFA'
-	        elif naming_series == 'CONSUMABLE SERVICE PO':
-	                series_seq = 'POCS'
-		elif naming_series == 'WORKS PO':
-        	        series_seq = 'POWO'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'POSA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'POSP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'POSM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'POSW'
 		else:
 			series_seq = 'POPO'
 	
 	if dn.doctype == 'Sales Order':
-        	if naming_series == 'Coal Sales Order':
-	                series_seq = 'SOCL'
-		elif naming_series == 'Dolomite Sales Order':
-	                series_seq = 'SODO'
-	        elif naming_series == 'Gypsum Sales Order':
-	                series_seq = 'SOGP'
-		elif naming_series == 'Lime Stone Sales Order':
-	                series_seq = 'SOLS'
-		elif naming_series == 'Stone Sales Order':
-	                series_seq = 'SOST'
-		elif naming_series == 'Bauxite Sales Order':
-	                series_seq = 'SOBA'
-		elif naming_series == 'Quartzite Sales Order':
-	                series_seq = 'SOQZ'
+		if naming_series == 'Consumables':
+                	series_seq = 'SOCO'
+		elif naming_series == 'Fixed Asset':
+	                series_seq = 'SOFA'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'SOSA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'SOSP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'SOSM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'SOSW'
 		else:
 			series_seq = 'SOSO'
 	
 	if dn.doctype == 'Purchase Invoice':
-		if naming_series == 'CONSUMABLE Invoice':
+		if naming_series == 'Consumables':
                 	series_seq = 'PICO'
-		elif naming_series == 'FIXED ASSET Invoice':
+		elif naming_series == 'Fixed Asset':
 	                series_seq = 'PIFA'
-	        elif naming_series == 'CONSUMABLE SERVICE Invoice':
-	                series_seq = 'PICS'
-		elif naming_series == 'WORKS Invoice':
-        	        series_seq = 'PIWO'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'PISA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'PISP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'PISM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'PISW'
 		else:
 			series_seq = 'PIPI'
 
 	if dn.doctype == 'Sales Invoice':
-        	if naming_series == 'Coal Invoice':
-	                series_seq = 'SICL'
-		elif naming_series == 'Dolomite Invoice':
-	                series_seq = 'SIDO'
-	        elif naming_series == 'Gypsum Invoice':
-	                series_seq = 'SIGP'
-		elif naming_series == 'Lime Stone Invoice':
-	                series_seq = 'SILS'
-		elif naming_series == 'Stone Invoice':
-	                series_seq = 'SIST'
-		elif naming_series == 'Bauxite Invoice':
-	                series_seq = 'SIBA'
-		elif naming_series == 'Quartzite Invoice':
-	                series_seq = 'SIQZ'
-		elif naming_series == 'Credit Invoice':
-	                series_seq = 'SICR'
+		if naming_series == 'Consumables':
+                	series_seq = 'SICO'
+		elif naming_series == 'Fixed Asset':
+	                series_seq = 'SIFA'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'SISA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'SISP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'SISM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'SISW'
 		else:
 			series_seq = 'SISI'
 
 	if dn.doctype == 'Stock Entry':
-        	if naming_series == 'Capital Inventory GR':
-	                series_seq = 'SEGRCI'
-		elif naming_series == 'Consumable GR':
-	                series_seq = 'SEGRCO'
-	        elif naming_series == 'Capital Inventory GI':
-	                series_seq = 'SEGICI'
-		elif naming_series == 'Consumable GI':
-	                series_seq = 'SEGICO'
-		elif naming_series == 'Inventory Transfer':
-	                series_seq = 'SETXIN'
-		elif naming_series == 'Coal GR':
-	                series_seq = 'SEGRCL'
-		elif naming_series == 'Dolomite GR':
-	                series_seq = 'SEGRDO'
-		elif naming_series == 'Gypsum GR':
-	                series_seq = 'SEGRGP'
-		elif naming_series == 'Stone GR':
-	                series_seq = 'SEGRST'
-		elif naming_series == 'Limestone GR':
-	                series_seq = 'SEGRLS'
-		elif naming_series == 'Bauxite GR':
-	                series_seq = 'SEGRBA'
-		elif naming_series == 'Quartzite GR':
-	                series_seq = 'SEGRQZ'
+		if naming_series == 'Consumables':
+                	series_seq = 'SECO'
+		elif naming_series == 'Fixed Asset':
+	                series_seq = 'SEFA'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'SESA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'SESP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'SESM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'SESW'
 		else:
 			series_seq = 'SESESE'
 
 	if dn.doctype == 'Delivery Note':
-        	if naming_series == 'Coal Delivery':
-	                series_seq = 'DNCL'
-		elif naming_series == 'Dolomite Delivery':
-	                series_seq = 'DNDO'
-	        elif naming_series == 'Gypsum Delivery':
-	                series_seq = 'DNGP'
-		elif naming_series == 'Limestone Delivery':
-	                series_seq = 'DNLS'
-		elif naming_series == 'Stone Delivery':
-	                series_seq = 'DNST'
-		elif naming_series == 'Bauxite Delivery':
-	                series_seq = 'DNBA'
-		elif naming_series == 'Quartzite Delivery':
-	                series_seq = 'DNQZ'
-		elif naming_series == 'Return Delivery':
-	                series_seq = 'DNRE'
+		if naming_series == 'Consumables':
+                	series_seq = 'DNCO'
+		elif naming_series == 'Fixed Asset':
+	                series_seq = 'DNFA'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'DNSA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'DNSP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'DNSM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'DNSW'
 		else:
 			series_seq = 'DNDN'
 
 	if dn.doctype == 'Purchase Receipt':
-		if naming_series == 'CONSUMABLE GR':
+		if naming_series == 'Consumables':
                 	series_seq = 'PRCO'
-		elif naming_series == 'FIXED ASSET GR':
+		elif naming_series == 'Fixed Asset':
 	                series_seq = 'PRFA'
-	        elif naming_series == 'CONSUMABLE SERVICE Entry':
-	                series_seq = 'PRCS'
-		elif naming_series == 'WORKS Service Entry':
-        	        series_seq = 'PRWO'
-		elif naming_series == 'Goods Return/Rejection':
-        	        series_seq = 'PRGR'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'PRSA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'PRSP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'PRSM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'PRSW'
 		else:
 			series_seq = 'PRPR'
 
 	if dn.doctype == 'Material Request':
-		if naming_series == 'CONSUMABLE PR':
+		if naming_series == 'Consumables':
                 	series_seq = 'MRCO'
-		elif naming_series == 'FIXED ASSET PR':
+		elif naming_series == 'Fixed Asset':
 	                series_seq = 'MRFA'
-	        elif naming_series == 'CONSUMABLE SERVICE PR':
-	                series_seq = 'MRCS'
-		elif naming_series == 'WORKS PR':
-        	        series_seq = 'MRWO'
-		elif naming_series == 'MINES PRODUCT PR':
-        	        series_seq = 'MRMP'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'MRSA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'MRSP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'MRSM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'MRSW'
 		elif naming_series == 'REORDER PR':
         	        series_seq = 'MRRE'
 		else:
 			series_seq = 'MRMR'
 
 	if dn.doctype == 'Supplier Quotation':
-		if naming_series == 'CONSUMABLE':
-                	series_seq = 'QTCO'
-		elif naming_series == 'FIXED ASSET':
-	                series_seq = 'QTFA'
-	        elif naming_series == 'CONSUMABLE SERVICE':
-	                series_seq = 'QTCS'
-		elif naming_series == 'WORKS':
-        	        series_seq = 'QTWO'
+		if naming_series == 'Consumables':
+                	series_seq = 'SQCO'
+		elif naming_series == 'Fixed Asset':
+	                series_seq = 'SQFA'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'SQSA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'SQSP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'SQSM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'SQSW'
 		else:
-			series_seq = 'QTQT'
+			series_seq = 'SQSQ'
 	
 	if dn.doctype == 'Request for Quotation':
-		if naming_series == 'RFQ Consumable':
-                	series_seq = 'RFQCO'
-		elif naming_series == 'RFQ Capital Inventory':
-	                series_seq = 'RFQCI'
-	        elif naming_series == 'RFQ Miscellaneous Services':
-	                series_seq = 'RFQMS'
-		elif naming_series == 'RFQ Works':
-        	        series_seq = 'RFQWO'
+		if naming_series == 'Consumables':
+                	series_seq = 'RQCO'
+		elif naming_series == 'Fixed Asset':
+	                series_seq = 'RQFA'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'RQSA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'RQSP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'RQSM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'RQSW'
 		else:
 			series_seq = 'RFQXX'
 	
@@ -191,16 +189,38 @@ def get_auto_name(dn, naming_series=None):
                         series_seq = 'PEPE'
 
 	if dn.doctype == 'Quality Inspection':
-		if naming_series == 'CAPITAL GOODS':
-                	series_seq = 'QICG'
-		elif naming_series == 'FINISHED GOODS':
-	                series_seq = 'QIFG'
-		elif naming_series == 'WORKS':
-        	        series_seq = 'QIWO'
+		if naming_series == 'Consumables':
+                	series_seq = 'QICO'
+		elif naming_series == 'Fixed Asset':
+	                series_seq = 'QIFA'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'QISA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'QISP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'QISM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'QISW'
 		else:
 			series_seq = 'QIQI'
 	
+	if dn.doctype == 'Quotation':
+		if naming_series == 'Consumables':
+                	series_seq = 'QTCO'
+		elif naming_series == 'Fixed Asset':
+	                series_seq = 'QTFA'
+	        elif naming_series == 'Sales Product':
+	                series_seq = 'QTSA'
+		elif naming_series == 'Spareparts':
+        	        series_seq = 'QTSP'
+		elif naming_series == 'Services Miscellaneous':
+        	        series_seq = 'QTSM'
+		elif naming_series == 'Services Works':
+        	        series_seq = 'QTSW'
+		else:
+			series_seq = 'QTQT'
+
         if dn.doctype == 'Leave Encashment':
                 series_seq = str(dn.employee)+"/LE/"
                 
-	return str(series_seq) + ".YYYY.MM"
+	return str(series_seq) + ".YY.MM"

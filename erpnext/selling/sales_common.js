@@ -127,8 +127,10 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 		this.apply_pricing_rule();
 	},
 
-	selling_price_list: function() {
-		this.apply_price_list();
+	selling_price_list: function(frm) {
+		if(!frm.doc.selling_price_template) {
+			this.apply_price_list();
+		}
 	},
 
 	price_list_rate: function(doc, cdt, cdn) {

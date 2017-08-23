@@ -209,6 +209,9 @@ def make_purchase_order(source_name, target_doc=None):
 	doclist = get_mapped_doc("Material Request", source_name, 	{
 		"Material Request": {
 			"doctype": "Purchase Order",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 				"material_request_type": ["=", "Purchase"]
@@ -236,6 +239,9 @@ def make_request_for_quotation(source_name, target_doc=None):
 	doclist = get_mapped_doc("Material Request", source_name, 	{
 		"Material Request": {
 			"doctype": "Request for Quotation",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 				"material_request_type": ["=", "Purchase"]
@@ -321,6 +327,9 @@ def make_supplier_quotation(source_name, target_doc=None):
 	doclist = get_mapped_doc("Material Request", source_name, {
 		"Material Request": {
 			"doctype": "Supplier Quotation",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 				"material_request_type": ["=", "Purchase"]
@@ -360,6 +369,9 @@ def make_stock_entry(source_name, target_doc=None):
 	doclist = get_mapped_doc("Material Request", source_name, {
 		"Material Request": {
 			"doctype": "Stock Entry",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 				"material_request_type": ["in", ["Material Transfer", "Material Issue"]]

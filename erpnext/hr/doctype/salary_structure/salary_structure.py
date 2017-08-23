@@ -43,6 +43,14 @@ class SalaryStructure(Document):
 		self.validate_employee()
 		self.validate_joining_date()
 		set_employee_name(self)
+		#self.test_calc()
+	
+	def test_calc(self):
+		frappe.msgprint(str(self.name))
+		for a in self.earnings:
+			frappe.msgprint(str(a))
+		frappe.throw("INNN")
+
 
 	def get_employee_details(self):
 		ret = {}
@@ -198,7 +206,7 @@ class SalaryStructure(Document):
                                 deductions += calc_health_amt
                         elif d.salary_component == 'Salary Tax':
                                 calc_tds_amt = 0;
-                                calc_tds_amt = get_salary_tax(gross_pay-calc_pf_amt-calc_gis_amt)
+                                calc_tds_amt = get_salary_tax(gross_pay-calc_pf_amt-calc_gis_amt-(0.5 * flt(self.communication_allowance)))
                                 d.amount = calc_tds_amt
                                 deductions += calc_tds_amt
                         else:

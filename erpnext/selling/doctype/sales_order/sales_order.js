@@ -12,6 +12,9 @@ frappe.ui.form.on("Sales Order", {
 		// formatter for material request item
 		frm.set_indicator_formatter('item_code',
 			function(doc) { return (doc.qty<=doc.delivered_qty) ? "green" : "orange" })
+	},
+	"naming_series": function(frm) {
+		cur_frm.toggle_reqd("selling_price_template", frm.doc.naming_series == 'Sales Product' )
 	}
 });
 
@@ -253,3 +256,48 @@ frappe.ui.form.on("Sales Order", "refresh", function(frm) {
         };
     });
 })
+
+//Set select option for "Initial Stock Templates"
+cur_frm.fields_dict['selling_price_template'].get_query = function(doc, dt, dn) {
+  return {
+     query: "erpnext.stock.doctype.stock_price_template.stock_price_template.get_template_list",
+     filters: { naming_series: doc.naming_series, posting_date: doc.transaction_date, purpose: 'Sales' },
+     searchfield: ["template_name", "from_date", "to_date"]
+  };
+}
+
+//Auto add items based on the values created in the "Initial Stock Template" Setting
+cur_frm.cscript.selling_price_template = function(doc) {
+    cur_frm.call({
+        method: "erpnext.stock.doctype.stock_price_template.stock_price_template.get_initial_values",
+        args: {
+             name: doc.selling_price_template
+        },
+        callback: function(r) {
+           if(r.message)  { 
+                cur_frm.clear_table("items");
+                var new_row = frappe.model.add_child(cur_frm.doc, "Sales Order Item", "items");
+                new_row.item_code = r.message[0]['item_code'];
+                new_row.item_name = r.message[0]['item_name'];
+                new_row.uom = r.message[0]['uom'];
+                new_row.stock_uom = r.message[0]['stock_uom'];
+                new_row.qty = 0;
+                new_row.rate = r.message[0]['rate_amount'];
+                refresh_field("items"); 
+            }
+        }
+   });
+	if(doc.selling_price_template) {
+	       //Set item table read only
+	       cur_frm.set_df_property("items", "read_only",1);
+	       frappe.meta.get_docfield("Sales Order Item", "rate", cur_frm.doc.name).read_only = 1;
+	       frappe.meta.get_docfield("Sales Order Item", "item_code", cur_frm.doc.name).read_only = 1;
+	       refresh_field("items");
+	}
+	else {
+	       cur_frm.set_df_property("items", "read_only", 0);
+	       frappe.meta.get_docfield("Sales Order Item", "rate", cur_frm.doc.name).read_only = 1;
+	       frappe.meta.get_docfield("Sales Order Item", "item_code", cur_frm.doc.name).read_only = 1;
+	       refresh_field("items");
+	}
+}

@@ -325,6 +325,9 @@ def make_purchase_receipt(source_name, target_doc=None):
 	doc = get_mapped_doc("Purchase Order", source_name,	{
 		"Purchase Order": {
 			"doctype": "Purchase Receipt",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 			}
@@ -361,6 +364,9 @@ def make_purchase_invoice(source_name, target_doc=None):
 	doc = get_mapped_doc("Purchase Order", source_name,	{
 		"Purchase Order": {
 			"doctype": "Purchase Invoice",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 			}

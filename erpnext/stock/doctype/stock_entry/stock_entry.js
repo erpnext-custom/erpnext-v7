@@ -512,8 +512,8 @@ frappe.ui.form.on('Landed Cost Taxes and Charges', {
 //Set select option for "Initial Stock Templates"
 cur_frm.fields_dict['initial_stock_templates'].get_query = function(doc, dt, dn) {
   return {
-     query: "erpnext.stock.stock_custom_functions.get_template_list",
-     filters: { naming_series: doc.naming_series, posting_date: doc.posting_date },
+     query: "erpnext.stock.doctype.stock_price_template.stock_price_template.get_template_list",
+     filters: { naming_series: doc.naming_series, posting_date: doc.posting_date, purpose: 'COP' },
      searchfield: "template_name"
   };
 }
@@ -521,7 +521,7 @@ cur_frm.fields_dict['initial_stock_templates'].get_query = function(doc, dt, dn)
 //Auto add items based on the values created in the "Initial Stock Template" Setting
 cur_frm.cscript.initial_stock_templates = function(doc) {
     cur_frm.call({
-        method: "erpnext.stock.stock_custom_functions.get_initial_values",
+        method: "erpnext.stock.doctype.stock_price_template.stock_price_template.get_initial_values",
         args: {
              name: doc.initial_stock_templates
         },
@@ -542,12 +542,18 @@ cur_frm.cscript.initial_stock_templates = function(doc) {
             }
         }
    });
-       //Set item table read only
-       cur_frm.set_df_property("items", "read_only",1);
-       frappe.meta.get_docfield("Stock Entry Detail", "basic_rate", cur_frm.doc.name).read_only = 1;
-       frappe.meta.get_docfield("Stock Entry Detail", "item_code", cur_frm.doc.name).read_only = 1;
-       frappe.meta.get_docfield("Stock Entry Detail", "uom", cur_frm.doc.name).read_only = 1;
-       refresh_field("items");
+	if(doc.initial_stock_templates) {
+	       //Set item table read only
+	       cur_frm.set_df_property("items", "read_only",1);
+	       frappe.meta.get_docfield("Stock Entry Detail", "basic_rate", cur_frm.doc.name).read_only = 1;
+	       frappe.meta.get_docfield("Stock Entry Detail", "item_code", cur_frm.doc.name).read_only = 1;
+	       frappe.meta.get_docfield("Stock Entry Detail", "uom", cur_frm.doc.name).read_only = 1;
+	       refresh_field("items");
+	}
+	else {
+	       cur_frm.set_df_property("items", "read_only", 0);
+	       refresh_field("items");
+	}
 }
 
 frappe.ui.form.on("Stock Entry", "refresh", function(frm) {
@@ -561,14 +567,14 @@ frappe.ui.form.on("Stock Entry", "refresh", function(frm) {
     });
 })
 
-frappe.ui.form.on("Stock Entry", "purpose", function(frm){
+/*frappe.ui.form.on("Stock Entry", "purpose", function(frm){
       if (cur_frm.fields_dict.purpose.value == 'Material Issue'){
          console.log(cur_frm.fields_dict.purpose.value)
          cur_frm.fields_dict.naming_series.df.options = "Consumable GI\nCapital Inventory GI";
       }
       if (cur_frm.fields_dict.purpose.value == 'Material Receipt'){
          console.log(cur_frm.fields_dict.purpose.value)
-         cur_frm.fields_dict.naming_series.df.options = "Consumable GR\nCapital Inventory GR\nCoal GR\nDolomite GR\nGypsum GR\nStone GR\nLimestone GR\nBauxite GR\nQuartzite GR";
+         cur_frm.fields_dict.naming_series.df.options = "Consumable\nCapital Inventory GR\nCoal GR\nDolomite GR\nGypsum GR\nStone GR\nLimestone GR\nBauxite GR\nQuartzite GR";
       }
       if (cur_frm.fields_dict.purpose.value == 'Material Transfer'){
          cur_frm.fields_dict.naming_series.df.options = "Inventory Transfer";
@@ -576,4 +582,4 @@ frappe.ui.form.on("Stock Entry", "purpose", function(frm){
       }
       frm.set_df_property("naming_series", "reqd", true)
       refresh_field('naming_series');
-});
+}); */

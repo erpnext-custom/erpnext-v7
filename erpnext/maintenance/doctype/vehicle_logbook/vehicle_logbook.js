@@ -22,15 +22,43 @@ frappe.ui.form.on('Vehicle Logbook', {
 						cur_frm.set_value("rate_type", r.message[0].rate_type)
 						cur_frm.set_value("work_rate", r.message[0].rate)
 						cur_frm.set_value("idle_rate", r.message[0].idle_rate)
-						cur_frm.refresh_field("rate_type")
-						cur_frm.refresh_field("work_rate")
-						cur_frm.refresh_field("idle_rate")
+						cur_frm.refresh_fields()
 					}
 				}
 			})
 		}
+	},
+	"final_km": function(frm) {
+		calculate_distance_km(frm)
+	},
+	"initial_km": function(frm) {
+		calculate_distance_km(frm)
+	},
+	"to_date": function(frm) {
+		if(frm.doc.from_date > frm.doc.to_date) {
+			frappe.msgprint("From Date cannot be greater than To Date")
+		}
+	},
+	"from_date": function(frm) {
+		if(frm.doc.from_date > frm.doc.to_date) {
+			frappe.msgprint("From Date cannot be greater than To Date")
+		}
 	}
 });
+
+function calculate_distance_km(frm) {
+	if(frm.doc.initial_km && frm.doc.final_km) {
+		if(frm.doc.final_km > frm.doc.initial_km) {
+			cur_frm.set_value("distance_km", frm.doc.final_km - frm.doc.initial_km)
+			frm.refresh_fields()
+		}
+		else {
+			cur_frm.set_value("distance_km", "0")
+			frm.refresh_fields()
+			frappe.msgprint("Final KM should be greater than Initial KM")
+		}
+	}
+}
 
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
 cur_frm.add_fetch("equipment", "current_operator", "equipment_operator")

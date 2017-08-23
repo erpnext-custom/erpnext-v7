@@ -819,7 +819,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 				if (calc_tds_amt > 0){
 					var tax_done = 0
 					cur_frm.doc.deductions.forEach(function(d) { 
-						if(d.salary_component = "Salary Tax") {
+						if(d.salary_component == "Salary Tax") {
 							tax_done = 1
 						}
 					})

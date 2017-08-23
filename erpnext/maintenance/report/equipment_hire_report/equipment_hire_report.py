@@ -27,7 +27,10 @@ def get_columns():
 		("Idle Hour")+ ":data:80",
        	("Idle Rate")+":Currency:150",
 		("Idle Amount") + ":Currency:150",
-		("Total Hire Charge")+":Currency:150"
+		("CDCL")+":Currency:150",
+		("Private")+":Currency:150",
+		("Others")+":Currency:150",
+		("Total Hire Charge")+":Currency:150",
 	]
 
 def get_data(filters):
@@ -50,7 +53,16 @@ def get_data(filters):
 	CASE hid.rate_type
 	WHEN 'Without Fuel' THEN (select sum(hid.amount_work))
 	END,
-	sum(hid.total_idle_hours), hid.idle_rate, sum(hid.amount_idle), sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci, `tabEquipment Hiring Form` as ehf WHERE hid.parent = hci.name AND ehf.name = hci.ehf_name and hci.docstatus = 1"""
+	sum(hid.total_idle_hours), hid.idle_rate, sum(hid.amount_idle),
+	CASE hci.owned_by
+	WHEN 'CDCL' THEN (select sum(hid.total_amount))
+	END,
+	CASE hci.owned_by
+	WHEN 'Private' THEN (select sum(hid.total_amount))
+	END,
+	CASE hci.owned_by
+	WHEN 'Others' THEN (select sum(hid.total_amount))
+	END,sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci  WHERE hid.parent = hci.name AND hci.docstatus = 1"""
 
 	if filters.get("branch"):
 		query += " and hci.branch = \'" + str(filters.branch) + "\'"

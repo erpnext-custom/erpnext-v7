@@ -355,6 +355,9 @@ def make_material_request(source_name, target_doc=None):
 	doc = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {
 			"doctype": "Material Request",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1]
 			}
@@ -406,6 +409,9 @@ def make_delivery_note(source_name, target_doc=None):
 	target_doc = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {
 			"doctype": "Delivery Note",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1]
 			}
@@ -454,6 +460,9 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 	doclist = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {
 			"doctype": "Sales Invoice",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"field_map": {
 				"party_account_currency": "party_account_currency"
 			},

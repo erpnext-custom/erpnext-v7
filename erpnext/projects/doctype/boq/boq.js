@@ -56,7 +56,9 @@ var calculate_amount = function(frm, cdt, cdn){
 		amount = parseFloat(child.quantity)*parseFloat(child.rate)
 	}
 	
-	frappe.model.set_value(cdt, cdn, 'amount', amount);
+	frappe.model.set_value(cdt, cdn, 'amount', parseFloat(amount));
+	frappe.model.set_value(cdt, cdn, 'balance_quantity', parseFloat(child.quantity));
+	frappe.model.set_value(cdt, cdn, 'balance_amount', parseFloat(amount));
 }
 
 var calculate_total_amount = function(frm){

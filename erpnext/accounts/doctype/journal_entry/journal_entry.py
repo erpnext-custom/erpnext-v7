@@ -62,8 +62,10 @@ class JournalEntry(AccountsController):
                         series_seq = 'JEMA'
                 elif self.voucher_type == 'Hire Invoice':
                         series_seq = 'JEHI'
+		else:
+			series_seq = 'JEJE'
 
-                self.name = make_autoname(str(series_seq) + '.YYYY.MM.#####')
+                self.name = make_autoname(str(series_seq) + '.YY.MM.#####')
 
 	def get_feed(self):
 		return self.voucher_type

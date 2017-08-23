@@ -72,6 +72,9 @@ def make_purchase_order(source_name, target_doc=None):
 	doclist = get_mapped_doc("Supplier Quotation", source_name,		{
 		"Supplier Quotation": {
 			"doctype": "Purchase Order",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 			}

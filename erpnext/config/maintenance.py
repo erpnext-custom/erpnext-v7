@@ -43,22 +43,19 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Equipment Accessories",
-					"description": _("Equipment Accessories Details"),
-				},
-				{
-					"type": "doctype",
 					"name": "POL Type",
 					"description": _("POL Types"),
 				},
 				{
 					"type": "doctype",
 					"name": "Service",
+					"label": "Services List",
 					"description": _("Services"),
 				},
 				{
 					"type": "doctype",
 					"name": "Hire Charge Parameter",
+					"label": "Hire Charge and Yardstick",
 					"description": _("Hire Charge Parameter"),
 				},
 			]
@@ -134,6 +131,12 @@ def get_data():
 					"is_query_report": True,
 					"name": "Equipment Hire Report",
 					"doctype": "Hire Charge Invoice"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Equipment Status Report",
+					"doctype": "Equipment"
 				},
 				{
 					"type": "report",
