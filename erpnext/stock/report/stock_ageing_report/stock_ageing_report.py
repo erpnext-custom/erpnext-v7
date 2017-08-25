@@ -22,7 +22,8 @@ def execute(filters=None):
 		latest_age = date_diff(to_date, fifo_queue[-1][1])
 
 		data.append([item, details.item_name, details.item_group, details.item_sub_group, 
-			average_age, earliest_age, latest_age])
+			#average_age, earliest_age, latest_age])
+			round(average_age), earliest_age, latest_age])
 
 	return columns, data
 
@@ -37,7 +38,7 @@ def get_average_age(fifo_queue, to_date):
 
 def get_columns():
 	return [_("Material Code") + ":Link/Item:100", _("Material Name") + "::100", 
-		_("Material Group") + ":Link/Item Group:100", _("Material Sub Group") + ":Link/Item Sub Group:100", _("Average Age") + ":Float:100",
+		_("Material Group") + ":Link/Item Group:100", _("Material Sub Group") + ":Link/Item Sub Group:100", _("Average Age") + ":Int:100",
 		_("Earliest (Days)") + ":Int:100", _("Latest (Days)") + ":Int:100" ]
 
 def get_fifo_queue(filters):

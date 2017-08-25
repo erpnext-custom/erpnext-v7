@@ -4,6 +4,14 @@
 frappe.query_reports["TDS Challen"] = {
 	"filters": [
 		{
+			"fieldname": "branch",
+			"label": ("Branch"),
+			"fieldtype": "Link",
+			"width": "80",
+			"options": "Branch",
+			"reqd": 1
+		},
+		{
 			"fieldname": "fiscal_year",
 			"label": __("Fiscal Year"),
 			"fieldtype": "Link",
@@ -39,7 +47,6 @@ frappe.query_reports["TDS Challen"] = {
 			"fieldname": "tds_rate",
 			"label": __("TDS Rate"),
 			"fieldtype": "Select",
-			"options": "\n2\n3\n5\n10",
-																	},
+			"options": "\n2\n3\n5\n10",												   },
 	],
 }

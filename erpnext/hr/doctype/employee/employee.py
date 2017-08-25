@@ -46,7 +46,6 @@ class Employee(Document):
 		self.validate_status()
 		self.validate_employee_leave_approver()
 		self.validate_reports_to()
-		self.post_casual_leave()	
 	
 		if self.user_id:
 			self.validate_for_enabled_user_id()
@@ -61,10 +60,13 @@ class Employee(Document):
 		if self.user_id:
 			self.update_user()
 			self.update_user_permissions()
+		self.post_casual_leave()	
 
 	def update_user_permissions(self):
 		frappe.permissions.add_user_permission("Employee", self.name, self.user_id)
 		frappe.permissions.set_user_permission_if_allowed("Company", self.company, self.user_id)
+		#Add Branch Permission to User
+		frappe.permissions.add_user_permission("Branch", self.branch, self.user_id)
 
 	def update_user(self):
 		# add employee role if missing
@@ -173,8 +175,8 @@ class Employee(Document):
 		delete_events(self.doctype, self.name)
 
 	def post_casual_leave(self):
-		from frappe.utils.password_strength import test_password_strength
-		frappe.msgprint("THS: " + str(test_password_strength("babfh68y")))
+		#from frappe.utils.password_strength import test_password_strength
+		#frappe.msgprint("THS: " + str(test_password_strength("babfh68y")))
 		if not self.casual_leave_allocated:
 			date = getdate(self.date_of_joining)
 			start = date;
@@ -206,12 +208,15 @@ def get_timeline_data(doctype, name):
 			group by att_date''', name))
 
 @frappe.whitelist()
-def get_retirement_date(date_of_birth=None):
+def get_retirement_date(date_of_birth=None, employment_type=None):
 	import datetime
 	ret = {}
-	if date_of_birth:
+	if date_of_birth and employment_type:
 		try:
-			retirement_age = int(frappe.db.get_single_value("HR Settings", "retirement_age") or 60)
+			if employment_type == "Contract":
+				retirement_age = int(frappe.db.get_single_value("HR Settings", "contract_retirement_age") or 60)
+			else:
+				retirement_age = int(frappe.db.get_single_value("HR Settings", "retirement_age") or 60)
 			dt = add_years(getdate(date_of_birth),retirement_age)
 			ret = {'date_of_retirement': dt.strftime('%Y-%m-%d')}
 		except ValueError:

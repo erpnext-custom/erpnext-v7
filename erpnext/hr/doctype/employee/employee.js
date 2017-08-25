@@ -29,7 +29,7 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 	date_of_birth: function() {
 		return cur_frm.call({
 			method: "get_retirement_date",
-			args: {date_of_birth: this.frm.doc.date_of_birth}
+			args: {date_of_birth: this.frm.doc.date_of_birth, employment_type: this.frm.doc.employment_type}
 		});
 	},
 
@@ -47,7 +47,14 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 			method: "erpnext.hr.doctype.employee.employee.make_salary_structure",
 			frm: cur_frm
 		});
-	}
+	},
+
+	employment_type: function() {
+		return cur_frm.call({
+			method: "get_retirement_date",
+			args: {date_of_birth: this.frm.doc.date_of_birth, employment_type: this.frm.doc.employment_type}
+		});
+	},
 });
 cur_frm.cscript = new erpnext.hr.EmployeeController({frm: cur_frm});
 

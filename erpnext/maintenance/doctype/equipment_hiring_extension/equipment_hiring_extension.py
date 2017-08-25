@@ -22,5 +22,10 @@ class EquipmentHiringExtension(Document):
 					ere = frappe.get_doc("Equipment Reservation Entry", res)
 					ere.db_set("to_date", self.extension_date)
 					doc.db_set("to_date", self.extension_date)
+					
+					#ehf = frappe.get_doc("Equipment Hiring Form", self.ehf_name)
+					#if ehf.private == 'Private':
+					#	frappe.throw("Private....ADvance")
 		else:
 			frappe.throw("Corresponding Hire Approved Detail not found")
+

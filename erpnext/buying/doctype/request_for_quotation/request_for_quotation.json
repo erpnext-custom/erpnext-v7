@@ -639,7 +639,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-09-08 16:04:31.704943", 
+ "modified": "2017-08-25 16:43:11.307008", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Request for Quotation", 
@@ -688,7 +688,7 @@
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
@@ -704,6 +704,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

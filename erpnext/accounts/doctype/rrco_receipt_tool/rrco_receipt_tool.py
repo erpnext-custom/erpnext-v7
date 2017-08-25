@@ -13,9 +13,11 @@ class RRCOReceiptTool(Document):
 
 
 @frappe.whitelist()
-def get_invoices(start_date=None, end_date=None, tds_rate=2):
+def get_invoices(branch=None, start_date=None, end_date=None, tds_rate=2):
 	invoices_not_marked = []
 	invoices_marked = []
+	if not filters.branch:
+		filters.branch = '48217412094rewqjhrouwq'	
 	query = ""
 	if tds_rate == '1234567890':
 		query = "select name, application_date as posting_date, concat(employee_name, \" (\",  name, \")\") bill_no FROM `tabLeave Encashment` AS a WHERE a.docstatus = 1 AND a.application_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"
