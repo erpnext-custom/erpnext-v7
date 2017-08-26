@@ -26,11 +26,11 @@ class ProcessPayroll(Document):
 		cond += self.get_joining_releiving_condition()
 
 		emp_list = frappe.db.sql("""
-			select t1.name
+			select t1.name, t1.cost_center
 			from `tabEmployee` t1, `tabSalary Structure` t2
 			where t1.docstatus!=2 and t2.docstatus != 2 and 
 			ifnull(t2.salary_slip_based_on_timesheet,0) = 0 and t1.name = t2.employee
-		%s """% cond)
+		%s """% cond, as_dict=True)
 
 		return emp_list
 
@@ -55,7 +55,7 @@ class ProcessPayroll(Document):
 
 
 	def check_mandatory(self):
-		for f in ['company', 'month', 'fiscal_year']:
+		for f in ['company', 'month', 'fiscal_year', 'branch']:
 			if not self.get(f):
 				frappe.throw(_("Please set {0}").format(f))
 
@@ -71,12 +71,13 @@ class ProcessPayroll(Document):
 		for emp in emp_list:
 			if not frappe.db.sql("""select name from `tabSalary Slip`
 					where docstatus!= 2 and employee = %s and month = %s and fiscal_year = %s and company = %s
-					""", (emp[0], self.month, self.fiscal_year, self.company)):
+					""", (emp.name, self.month, self.fiscal_year, self.company)):
 				ss = frappe.get_doc({
 					"doctype": "Salary Slip",
 					"salary_slip_based_on_timesheet": 0,
 					"fiscal_year": self.fiscal_year,
-					"employee": emp[0],
+					"cost_center": emp.cost_center,
+					"employee": emp.name,
 					"month": self.month,
 					"company": self.company,
 				})
@@ -206,17 +207,14 @@ class ProcessPayroll(Document):
 			if self.get(f):
 				cond1 += " and ss." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 		
-                items.extend(frappe.db.sql("""select t3.cost_center,
+                items.extend(frappe.db.sql("""select t1.cost_center,
                         sum(ifnull(t1.rounded_total,0)) as total_amt
-                         from `tabSalary Slip` t1, `tabDivision` t2, `tabEmployee` t3
-                        where t3.employee = t1.employee
-                          and t2.d_name = t3.division
-                          and t2.dpt_name = t3.department
-                          and t1.month = %s
+                         from `tabSalary Slip` t1
+                        where t1.month = %s
                           and t1.fiscal_year = %s
                           and t1.docstatus = 1 
                           %s
-                        group by t3.cost_center
+                        group by t1.cost_center
                 """ % (self.month, self.fiscal_year, cond),as_dict=1))
 		
 
@@ -235,7 +233,6 @@ class ProcessPayroll(Document):
                 default_tax_account = frappe.db.get_value("Salary Component", 'Salary Tax',"gl_head")
                 default_health_account = frappe.db.get_value("Salary Component", 'Health Contribution',"gl_head")
                 default_saladv_account = frappe.db.get_value("Salary Component", 'Salary Advance Deductions',"gl_head")
-
 
                 for item in items:
                         deductions = []
@@ -342,15 +339,6 @@ class ProcessPayroll(Document):
                                                  "cost_center": item['cost_center'],
                                                  "party_check": 0})
                                 
-                #msgprint(_("Total Earnings: {0} \nTotal Deductions: {1} \nNetPay: {2}").format(tot_earnings,tot_deductions,(tot_earnings-tot_deductions)))
-
-                #if tot_deductions <= tot_earnings:
-                #        accounts.append({"account": 'Salary Payable - SMCL',
-                #                         "credit_in_account_currency": (tot_earnings-tot_deductions),
-                #                         "against_account": 'Bank',
-                #                         "cost_center": 'Dummy-CEO - SMCL',
-                #                         "party_check": 0})
-
                 # Remittance
                 bank = []
                 gis = []                
@@ -472,33 +460,16 @@ class ProcessPayroll(Document):
                         title = _('Salary {0}{1} - SAVINGS Remittance').format(self.month, self.fiscal_year)
                         user_remark = _('Salary {0}{1} - SAVINGS Remittance').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, saving, 1, tot_saving, 0)                        
-                '''
-                if tot_tax:
-                        # TAX
-                        title = _('Salary [{0}{1}] - TAX Remittance').format(self.month, self.fiscal_year)
-                        user_remark = _('Salary [{0}{1}] - TAX Remittance').format(self.month, self.fiscal_year)
-                        self.post_journal_entry(title, user_remark, tax, 1, tot_tax, 0)
 
-                if tot_health:
-                        # HEALTH
-                        title = _('Salary [{0}{1}] - HEALTH Remittance').format(self.month, self.fiscal_year)
-                        user_remark = _('Salary [{0}{1}] - HEALTH Remittance').format(self.month, self.fiscal_year)
-                        self.post_journal_entry(title, user_remark, health, 1, tot_health, 0)                                                
-                #msgprint(_("{0}").format(gis))
-                #msgprint(_("{0}").format(str(gis).replace('credit_in_account_currency','debit_in_account_currency')))
-                '''
                 if (tot_tax or tot_health):
                         # TAX & HEALTH
                         title = _('Salary {0}{1} - TAX & HEALTH Remittance').format(self.month, self.fiscal_year)
                         user_remark = _('Salary {0}{1} - TAX & HEALTH Remittance').format(self.month, self.fiscal_year)
                         self.post_journal_entry(title, user_remark, temp, 1, (tot_tax+tot_health), 0)                                                                        
-                
         # Ver 20160706.1 added by SSK
         def post_journal_entry(self, title, user_remark, accounts, bank_entry_req, tot_earnings, tot_deductions):
                 from frappe.utils import money_in_words
                 ss_list = []
-                default_bank_account = frappe.db.get_value("Company", self.company,"default_bank_account")
-                
                 if bank_entry_req == 0:
                         ss = frappe.get_doc({
                                 "doctype": "Journal Entry",
@@ -511,7 +482,7 @@ class ProcessPayroll(Document):
                                 "company": self.company,
                                 "total_amount_in_words": money_in_words((tot_earnings-tot_deductions)),
                                 "accounts": accounts,
-				"branch": "Corporate Head Office"
+				"branch": self.branch
                         })
 
                         if (tot_deductions or tot_earnings):
@@ -519,11 +490,23 @@ class ProcessPayroll(Document):
                                 #ss.submit()
                         ss_list.append('Direct posting Journal Entry...')
                 else:
-                        accounts.append({"account": default_bank_account,
-                                        "credit_in_account_currency": (tot_earnings-tot_deductions),
-                                        "cost_center": 'CEO Office - CDCL',
-                                        "party_check": 0})                        
-                        
+			default_bank_account = frappe.db.get_value("Branch", self.branch,"expense_bank_account")
+			if not default_bank_account:
+				frappe.throw("Setup Expense bank Account in Branch " + str(self.branch)) 
+			new_accounts = []
+			for a in accounts:
+				if 'credit_in_account_currency' in a:
+					amount = a['credit_in_account_currency']
+				else:
+					amount = a['debit_in_account_currency']
+				new_accounts.append({"account": default_bank_account,
+						"credit_in_account_currency": flt(amount),
+						"cost_center": str(a['cost_center']),
+						"party_check": 0})                        
+                       
+			for a in new_accounts:
+				accounts.append(a)
+ 
                         ss = frappe.get_doc({
                                 "doctype": "Journal Entry",
                                 "voucher_type": 'Bank Entry',
@@ -535,14 +518,14 @@ class ProcessPayroll(Document):
                                 "company": self.company,
                                 "total_amount_in_words": money_in_words((tot_earnings-tot_deductions)),
                                 "accounts": accounts,
-				"branch": "Corporate Head Office"
+				"branch": self.branch
                         })
 
                         if (tot_deductions or tot_earnings):
                                 ss.insert()
                                 #ss.submit()
                         ss_list.append('Direct posting Journal Entry...')
-                        
+                       
         def make_journal_entry1(self, salary_account = None):
                 self.get_account_rules()
                 msgprint(_("Payslip posting to Accounts complete..."))
