@@ -4,6 +4,13 @@
 frappe.query_reports["TDS Certificate"] = {
 	"filters": [
 		{
+			"fieldname": "branch",
+			"label": __("Branch"),
+			"fieldtype": "Link",
+			"options": "Branch",
+			"reqd": 1
+		},
+		{
 			"fieldname": "fiscal_year",
 			"label": __("Fiscal Year"),
 			"fieldtype": "Link",

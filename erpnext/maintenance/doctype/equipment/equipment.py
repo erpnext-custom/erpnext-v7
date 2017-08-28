@@ -16,5 +16,13 @@ class Equipment(Document):
 			self.equipment_number = self.name
 
 @frappe.whitelist()
+def get_yards(equipment):
+	t, m = frappe.db.get_value("Equipment", equipment, ['equipment_type', 'equipment_model'])
+	data = frappe.db.sql("select lph, kph from `tabHire Charge Parameter` where equipment_type = %s and equipment_model = %s", (t, m), as_dict=True)
+	if not data:
+		frappe.throw("Setup yardstick for " + str(m))
+	return data
+
+@frappe.whitelist()
 def get_equipments(doctype, txt, searchfield, start, page_len, filters):
 	return frappe.db.sql("select a.equipment as name from `tabHiring Approval Details` a where a.parent = \'"+ str(filters.get("ehf_name")) +"\'")

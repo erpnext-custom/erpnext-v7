@@ -35,5 +35,12 @@ frappe.query_reports["Cheque Register"] = {
 			"fieldtype": "Date",
 			"default": frappe.defaults.get_user_default("year_end_date"),
 		},
+		{
+			"fieldname": "branch",
+			"label": __("Branch"),
+			"fieldtype": "Link",
+			"options": "Branch",
+			"reqd": 1,
+		}
 	],
 }

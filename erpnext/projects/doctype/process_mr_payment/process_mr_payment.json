@@ -672,7 +672,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-08-23 16:34:08.844977", 
+ "modified": "2017-08-28 13:07:34.181589", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Process MR Payment", 
@@ -700,11 +700,11 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 1, 
    "if_owner": 0, 
@@ -716,7 +716,7 @@
    "role": "Projects Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }
  ], 

@@ -15,6 +15,18 @@ frappe.ui.form.on('Equipment Hiring Form', {
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
 		}
+		cur_frm.add_custom_button(__('Logbooks'), function() {
+			frappe.route_options = {
+				"Vehicle Logbook.ehf_name": me.frm.doc.name,
+			};
+			frappe.set_route("List", "Vehicle Logbook");
+		}, __("View"));
+		cur_frm.add_custom_button(__('Invoices'), function() {
+			frappe.route_options = {
+				"Hire Charge Invoice.ehf_name": me.frm.doc.name,
+			};
+			frappe.set_route("List", "Hire Charge Invoice");
+		}, __("View"));
 	},
 	onload: function(frm) {
 		if (!frm.doc.request_date) {

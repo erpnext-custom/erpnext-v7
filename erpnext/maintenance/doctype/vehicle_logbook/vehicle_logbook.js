@@ -26,6 +26,19 @@ frappe.ui.form.on('Vehicle Logbook', {
 					}
 				}
 			})
+			if(frm.doc.rate_type == 'With Fuel') {
+				frappe.call({
+					"method": "erpnext.maintenance.doctype.equipment.equipment.get_yards",
+					args: {"equipment": frm.doc.equipment},
+					callback: function(r) {
+						if(r.message) {
+							cur_frm.set_value("ys_km", r.message[0].lph)
+							cur_frm.set_value("ys_hours", r.message[0].kph)
+							cur_frm.refresh_fields()
+						}
+					}
+				})
+			}
 		}
 	},
 	"final_km": function(frm) {
@@ -42,6 +55,20 @@ frappe.ui.form.on('Vehicle Logbook', {
 	"from_date": function(frm) {
 		if(frm.doc.from_date > frm.doc.to_date) {
 			frappe.msgprint("From Date cannot be greater than To Date")
+		}
+	},
+	"total_work_time": function(frm) {
+		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.rate_type == 'With Fuel') {
+			cur_frm.set_value("consumption_hours", frm.doc.total_work_time * frm.doc.ys_hours)
+			cur_frm.set_value("consumption", frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.refresh_fields()
+		}
+	},
+	"distance_km": function(frm) {
+		if(frm.doc.distance_km && frm.doc.ys_km && frm.doc.rate_type == 'With Fuel') {
+			cur_frm.set_value("consumption_km", frm.doc.distance_km / frm.doc.ys_km)
+			cur_frm.set_value("consumption", frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.refresh_fields()
 		}
 	}
 });

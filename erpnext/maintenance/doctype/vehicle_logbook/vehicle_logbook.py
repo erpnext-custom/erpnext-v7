@@ -12,14 +12,19 @@ class VehicleLogbook(Document):
 		self.check_duplicate()
 		self.calculate_totals()
 
+	def on_update(self):
+		self.calculate_balance()
+
 	def on_submit(self):
-		self.update_hire()
+		if self.rate_type == 'With Fuel':
+			self.update_hire()
 
 	def check_duplicate(self):		
 		for a in self.vlogs:
 			for b in self.vlogs:
 				if a.date == b.date and a.idx != b.idx:
 					frappe.throw("Duplicate Dates in Vehicle Logs in row " + str(a.idx) + " and " + str(b.idx))
+
 	def calculate_totals(self):
 		if self.vlogs:
 			total_w = total_i = 0
@@ -33,3 +38,9 @@ class VehicleLogbook(Document):
 		if self.ehf_name:
 			doc = frappe.get_doc("Equipment Hiring Form", self.ehf_name)
 			doc.db_set("hiring_status", 1)
+
+	def calculate_balance(self):
+		qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1", (self.equipment, self.from_date, self.to_date), as_dict=True)
+		if qty:
+			self.db_set("closing_balance", flt(qty[0].qty) - flt(self.consumption))
+

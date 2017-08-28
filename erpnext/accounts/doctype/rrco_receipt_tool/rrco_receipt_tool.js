@@ -15,6 +15,7 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.updateSalaryTDS",
 				args: {
 					"month": frm.doc.month,
+					"branch": frm.doc.branch,
 					"fiscal_year": frm.doc.fiscal_year,
 					"receipt_number":frm.doc.receipt_number,
 					"receipt_date":frm.doc.receipt_date,
@@ -40,6 +41,7 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.updateBonus",
 				args: {
 					"purpose": frm.doc.purpose,
+					"branch": frm.doc.branch,
 					"fiscal_year": frm.doc.bonus_and_pbva_fy,
 					"receipt_number":frm.doc.receipt_number,
 					"receipt_date":frm.doc.receipt_date,
@@ -65,6 +67,7 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.updatePBVA",
 				args: {
 					"month": frm.doc.purpose,
+					"branch": frm.doc.branch,
 					"fiscal_year": frm.doc.bonus_and_pbva_fy,
 					"receipt_number":frm.doc.receipt_number,
 					"receipt_date":frm.doc.receipt_date,
@@ -128,6 +131,7 @@ erpnext.rrco_receipt_tool = {
 			frappe.call({
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.get_invoices",
 				args: {
+				   "branch": frm.doc.branch,
 				   "start_date":frm.doc.start_date,
 				   "end_date":frm.doc.end_date,
 				   "tds_rate": tds_rate
@@ -248,6 +252,7 @@ erpnext.InvoiceSelector = Class.extend({
 					method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.mark_invoice",
 					args:{
 						"invoice_list":invoice_present,
+						"branch": frm.doc.branch,
 						"receipt_number":frm.doc.receipt_number,
 						"receipt_date":frm.doc.receipt_date,
 						"cheque_number":frm.doc.cheque_no,

@@ -178,6 +178,7 @@ class Employee(Document):
 		#from frappe.utils.password_strength import test_password_strength
 		#frappe.msgprint("THS: " + str(test_password_strength("babfh68y")))
 		if not self.casual_leave_allocated:
+			frappe.msgprint("ALLOCATED")
 			date = getdate(self.date_of_joining)
 			start = date;
 			end = get_year_end_date(date);
