@@ -11,7 +11,7 @@ from frappe.model.naming import make_autoname
 from frappe import _
 from frappe import msgprint
 import datetime
-from erpnext.hr.doctype.salary_structure.salary_structure import get_company_pf, \
+from erpnext.hr.hr_custom_functions import get_company_pf, \
      get_employee_gis, get_salary_tax
 
 class SalaryIncrement(Document):

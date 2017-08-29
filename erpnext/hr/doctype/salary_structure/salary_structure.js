@@ -15,7 +15,7 @@ cur_frm.cscript.onload = function(doc, dt, dn){
 	
 	//++ Ver 20160803.1 Begins added by SSK
 	cur_frm.call({
-		method: "erpnext.hr.doctype.salary_structure.salary_structure.get_company_pf",
+		method: "erpnext.hr.hr_custom_functions.get_company_pf",
 		args: {
 			fiscal_year: "",
 		},
@@ -32,7 +32,7 @@ cur_frm.cscript.onload = function(doc, dt, dn){
 	// GIS
 	if (doc.employee){
 		cur_frm.call({
-			method: "erpnext.hr.doctype.salary_structure.salary_structure.get_employee_gis",
+			method: "erpnext.hr.hr_custom_functions.get_employee_gis",
 			args: {
 				"employee": doc.employee,
 			},
@@ -80,7 +80,7 @@ frappe.ui.form.on('Salary Structure', {
 
 cur_frm.cscript['Make Salary Slip'] = function() {
 	frappe.model.open_mapped_doc({
-		method: "erpnext.hr.doctype.salary_structure.salary_structure.make_salary_slip",
+		method: "erpnext.hr.hr_custom_functions.make_salary_slip",
 		frm: cur_frm
 	});
 }
@@ -90,7 +90,7 @@ cur_frm.cscript.employee = function(doc, dt, dn){
 		//++ Ver 20160804.1 Begins added by SSK
 		// GIS
 		cur_frm.call({
-			method: "erpnext.hr.doctype.salary_structure.salary_structure.get_employee_gis",
+			method: "erpnext.hr.hr_custom_functions.get_employee_gis",
 			args: {
 				"employee": doc.employee,
 			},
@@ -495,218 +495,6 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 		}						
 	//}	
 	
-	/*
-	// Calculating Allowances
-	if (allowance_type == "Corporate Allowance"){
-		console.log('Checkvalue: '+doc.eligible_for_corporate_allowance);
-		if (doc.eligible_for_corporate_allowance){
-			var calc_amt = 0;
-			if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.ca*0.01);
-			}
-			else{
-				calc_amt = doc.ca;
-			}
-			
-			calc_amt = Math.round(calc_amt);
-			
-			if (corp_all_id >= 0){
-				frappe.model.set_value("Salary Detail", corp_all_dn, "amount", calc_amt);				
-			} 
-			else{
-				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
-				new_child.amount = calc_amt;	
-				//cur_frm.refresh();
-			}
-		}
-		else{
-			frappe.model.set_value("Salary Detail", corp_all_dn, "amount", 0);
-		}
-	}
-	else if (allowance_type == "Contract Allowance"){
-		if (doc.eligible_for_contract_allowance){
-			var calc_amt = 0;
-			if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.contract_allowance*0.01);
-			}
-			else{
-				calc_amt = doc.contract_allowance;
-			}
-			
-			calc_amt = Math.round(calc_amt);
-			
-			if (cont_all_id >= 0){
-				frappe.model.set_value("Salary Detail", cont_all_dn, "amount", calc_amt);				
-			} 
-			else{
-				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
-				new_child.amount = calc_amt;				
-				//cur_frm.refresh();
-			}
-		}
-		else{
-			frappe.model.set_value("Salary Detail", cont_all_dn, "amount", 0);
-		}
-	}
-	else if (allowance_type == "Communication Allowance"){
-		if (doc.eligible_for_communication_allowance){
-			var calc_amt = 0;
-			if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.communication_allowance*0.01);
-			}
-			else{
-				calc_amt = doc.communication_allowance;
-			}
-			
-			calc_amt = Math.round(calc_amt);
-			
-			if (comm_all_id >= 0){
-				frappe.model.set_value("Salary Detail", comm_all_dn, "amount", calc_amt);				
-			} 
-			else{
-				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
-				new_child.amount = calc_amt;				
-				//cur_frm.refresh();
-			}
-		}
-		else{
-			frappe.model.set_value("Salary Detail", comm_all_dn, "amount", 0);
-		}	
-	}
-	else if (allowance_type == "PSA"){
-		if (doc.eligible_for_psa){
-			var calc_amt = 0;
-			if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.psa*0.01);
-			}
-			else{
-				calc_amt = doc.psa;
-			}
-			
-			calc_amt = Math.round(calc_amt);
-			
-			if (psa_all_id >= 0){
-				frappe.model.set_value("Salary Detail", psa_all_dn, "amount", calc_amt);				
-			} 
-			else{
-				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
-				new_child.amount = calc_amt;				
-				//cur_frm.refresh();
-			}
-		}
-		else{
-			frappe.model.set_value("Salary Detail", psa_all_dn, "amount", 0);
-		}		
-	}
-	else if (allowance_type == "MPI"){
-		if (doc.eligible_for_mpi){
-			var calc_amt = 0;
-			if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.mpi*0.01);
-			}
-			else{
-				calc_amt = doc.mpi;
-			}
-			
-			calc_amt = Math.round(calc_amt);
-			
-			if (mpi_all_id >= 0){
-				frappe.model.set_value("Salary Detail", mpi_all_dn, "amount", calc_amt);				
-			} 
-			else{
-				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
-				new_child.amount = calc_amt;				
-				//cur_frm.refresh();
-			}
-		}
-		else{
-			frappe.model.set_value("Salary Detail", mpi_all_dn, "amount", 0);
-		}			
-	}
-	else if (allowance_type == "Officiating Allowance"){
-		if (doc.eligible_for_officiating_allowance){
-			var calc_amt = 0;
-			if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.officiating_allowance*0.01);
-			}
-			else{
-				calc_amt = doc.officiating_allowance;
-			}
-			
-			calc_amt = Math.round(calc_amt);
-			
-			if (off_all_id >= 0){
-				frappe.model.set_value("Salary Detail", off_all_dn, "amount", calc_amt);				
-			} 
-			else{
-				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
-				new_child.amount = calc_amt;				
-				//cur_frm.refresh();
-			}
-		}
-		else{
-			frappe.model.set_value("Salary Detail", off_all_dn, "amount", 0);
-		}				
-	}
-	else if (allowance_type == "Temporary Transfer Allowance"){	
-		if (doc.eligible_for_temporary_transfer_allowance){
-			var calc_amt = 0;
-			if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.temporary_transfer_allowance*0.01);
-			}
-			else{
-				calc_amt = doc.temporary_transfer_allowance;
-			}
-			
-			calc_amt = Math.round(calc_amt);
-			
-			if (tran_all_id >= 0){
-				frappe.model.set_value("Salary Detail", tran_all_dn, "amount", calc_amt);				
-			} 
-			else{
-				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
-				new_child.amount = calc_amt;				
-				//cur_frm.refresh();
-			}
-		}
-		else{
-			frappe.model.set_value("Salary Detail", tran_all_dn, "amount", 0);
-		}					
-	}
-	else if (allowance_type == "Fuel Allowance"){		
-		if (doc.eligible_for_fuel_allowances){
-			var calc_amt = 0;
-			if (amt_flag == "P"){
-				calc_amt = (e_tbl[basic_all_id].amount*doc.fuel_allowances*0.01);
-			}
-			else{
-				calc_amt = doc.fuel_allowances;
-			}
-			
-			calc_amt = Math.round(calc_amt);
-			
-			if (fuel_all_id >= 0){
-				frappe.model.set_value("Salary Detail", fuel_all_dn, "amount", calc_amt);				
-			} 
-			else{
-				var new_child = frappe.model.add_child(doc, "Salary Detail","earnings");
-				new_child.salary_component = allowance_type;
-				new_child.amount = calc_amt;		
-				//cur_frm.refresh();				
-			}
-		}
-		else{
-			frappe.model.set_value("Salary Detail", fuel_all_dn, "amount", 0);
-		}						
-	}*/
-	
 	// Calculating Deductions
 	for (var id in d_tbl){
 		if (d_tbl[id].salary_component == "PF"){
@@ -798,7 +586,7 @@ var calculate_others = function(doc, allowance_type="None", amt_flag="None"){
 	var calc_tds_amt = 0;	
 	calculate_totals(doc);
 	cur_frm.call({
-		method: "erpnext.hr.doctype.salary_structure.salary_structure.get_salary_tax",
+		method: "erpnext.hr.hr_custom_functions.get_salary_tax",
 		args: {
 			"gross_amt": (doc.total_earning-calc_pf_amt-calc_gis_amt2),
 		},

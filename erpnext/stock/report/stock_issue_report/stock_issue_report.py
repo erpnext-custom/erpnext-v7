@@ -13,13 +13,13 @@ def execute(filters=None):
 def get_columns(filters):
 	cols = [
 		("Date") + ":date:100",
-		("Material Code") + ":data:100",
-		("Material Name")+":data:110",
-		("Material Group")+":data:110",
-		("Material Sub Group")+":data:110",
+		("Material Code") + ":data:110",
+		("Material Name")+":data:120",
+		("Material Group")+":data:120",
+		("Material Sub Group")+":data:150",
 		("UoM") + ":data:50",
 		("Qty")+":data:50",
-		("Valuation Rate")+":data:50",
+		("Valuation Rate")+":data:120",
 		("Amount")+":Currency:110",
 	]
 	if filters.purpose == "Material Issue":

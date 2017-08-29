@@ -3,12 +3,18 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe.utils import flt
 
 def execute(filters=None):
 	columns = get_columns();
 
 	data = get_data(filters);
-
+	#data = []
+	#for a in datas:
+	#	total = flt(a.basic)
+	#	frappe.msgprint(str(a))
+	for a in data:
+		frappe.msgprint(str(a))
 	return columns, data
 
 #def get_data(query, filters=None):
@@ -21,29 +27,40 @@ def execute(filters=None):
 def get_columns():
 	return [
 		("Cost Center") + ":Link/Cost Center:120",
-		("Basic Pay") + ":Float:100",
-		("Coporate Allowance")+ ":Float:80",
-		("Contract Allow.") + ":Float:80",
-		("Officiating Allow.") +":Float:80",
-		("Communication Allow.")+":Float:80",
-		("Fuel Allow.") +":Float:80",
-		("Overtime Allow.") +":Float:=80",
-		("PSA Allow.") + ":Float:80",
-		("Transfer Allow.") + ":Float:80",
-		("Housing  Allow.") + ":Float:80",
-		("High Altitude Allow.")+ ":Float:80",
-		("Difficult Allow.") + ":Float:80",
-		("Shift Allow.") + ":Float:80",
-		("Scarcity  Allow.") +":Float:80",
-		("Salary Arrears ") +":Data:80",
-		("Amount") + ":Data:120"
+		("Basic Pay") + ":Currency:100",
+		("Coporate Allowance")+ ":Currency:80",
+		("Contract Allow.") + ":Cureency:80",
+		("Officiating Allow.") +":Currency:80",
+		("Communication Allow.")+":Currency:80",
+		("Fuel Allow.") +":Currency:80",
+		("Overtime Allow.") +":Currency:=80",
+		("PSA Allow.") + ":Currency:80",
+		("Transfer Allow.") + ":Currency:80",
+		("Housing  Allow.") + ":Currency:80",
+		("High Altitude Allow.")+ ":Currency:80",
+		("Difficult Allow.") + ":Currency:80",
+		("Shift Allow.") + ":Currency:80",
+		("Scarcity  Allow.") +":Currency:80",
+		("Salary Arrears ") +":Currency:80",
+		("Amount") + ":Currency:120"
 	]
 
 def get_data(filters):
+	if not filters.branch:
+		filters.branch = '%'
+	from_month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(filters["from_date"])
+	to_month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(filters["to_date"])
+	if from_month <= to_month:
+		dates = []
+		for a in range (from_month+1, to_month+2):
+			if a < 10:
+				dates.append('0'+ str(a))
+	else:
+		frappe.throw("From date cannot be grater than To Date")
 
 	query = ("""select cost_center, SUM(basic), SUM(corporate), SUM(contract), SUM(officiating), SUM(communication), SUM(fuel), SUM(overtime), SUM(psa), SUM(transfer), SUM(housing), SUM(high), SUM(difficult), SUM(shift),SUM(scarcity),SUM(salary), (sum(basic)+sum(corporate)+sum(contract)+sum(officiating)+sum(communication)+sum(fuel)+sum(overtime)+sum(psa)+sum(transfer)+sum(housing)+sum(high)+sum(difficult)+sum(shift)+sum(scarcity)+sum(salary)) as Amount FROM
 
-(select (select e.cost_center FROM tabEmployee e WHERE e.name = ss.employee) AS cost_center,
+(select (select cost_center from tabEmployee e where e.name = ss.employee) AS cost_center,
 (select SUM(sd.amount) FROM `tabSalary Detail` sd WHERE sd.parent = ss.name AND sd.salary_component = 'Basic Pay') AS basic,
 (select SUM(sd.amount) FROM `tabSalary Detail` sd WHERE sd.parent = ss.name AND sd.salary_component = 'Corporate Allowance') AS corporate,
 (select SUM(sd.amount) FROM `tabSalary Detail` sd WHERE sd.parent = ss.name AND sd.salary_component = 'Contract Allowance') AS contract,
@@ -59,19 +76,8 @@ def get_data(filters):
 (select SUM(sd.amount) FROM `tabSalary Detail` sd WHERE sd.parent = ss.name AND sd.salary_component = 'Shift Allowance') AS shift,
 (select SUM(sd.amount) FROM `tabSalary Detail` sd WHERE sd.parent = ss.name AND sd.salary_component = 'Scarcity Allowance') AS scarcity,
 (select SUM(sd.amount) FROM `tabSalary Detail` sd WHERE sd.parent = ss.name AND sd.salary_component = 'Salary Arrears') AS salary
-FROM `tabSalary Slip` ss)
+FROM `tabSalary Slip` ss where ss.docstatus = 1 and ss.branch like %(branch)s and ss.month in %(months)s and ss.fiscal_year = %(fy)s)
 AS tab """)
 
-	if filters.get("branch"):
-		query += " and ss.branch = \'" + str(filters.branch) + "\'"
-
-	if filters.get("from_date") and filters.get("to_date"):
-		month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(filters["from_date"])
-		filter["from_date"] = month
-		filter["to_date"] = month
-		query += " and month between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
-
-	if filters.get("fiscal_year"):
-		query += " and ss.fiscal_year = \'" + str(filters.fiscal_year) + "\'"
 	query += " group by cost_center "
-	return frappe.db.sql(query)
+	return frappe.db.sql(query, {"branch":filters.branch, "months": dates, "fy": filters.fiscal_year})

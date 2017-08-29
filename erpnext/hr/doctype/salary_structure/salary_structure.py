@@ -33,6 +33,8 @@ from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.document import Document
 from erpnext.hr.utils import set_employee_name
+from erpnext.hr.hr_custom_functions import get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+from erpnext.accounts.accounts_custom_functions import get_number_of_days
 
 class SalaryStructure(Document):
 	def autoname(self):
@@ -44,14 +46,6 @@ class SalaryStructure(Document):
 		self.validate_employee()
 		self.validate_joining_date()
 		set_employee_name(self)
-		#self.test_calc()
-	
-	def test_calc(self):
-		frappe.msgprint(str(self.name))
-		for a in self.earnings:
-			frappe.msgprint(str(a))
-		frappe.throw("INNN")
-
 
 	def get_employee_details(self):
 		ret = {}
@@ -140,6 +134,7 @@ class SalaryStructure(Document):
                         if e.salary_component == 'Basic Pay':
                                 e.amount = flt(new_basic)
                                 basic_pay += flt(new_basic)
+				break
 
                 gross_pay = flt(basic_pay)
 
@@ -229,9 +224,10 @@ def make_salary_slip(source_name, target_doc=None):
                 #frappe.msgprint(_("StartDate: {0} EndDate: {1}").format(target.start_date,target.end_date))
                 # Ver 1.0 Ends
 		days = cint(date_diff(get_first_day(add_days(nowdate(), -11)), getdate(employee.date_of_joining)))
+		days_month = 1 + cint(get_number_of_days(get_first_day((add_days(nowdate(), -11))), get_last_day((add_days(nowdate(), -11)))))
 		old_basic = 0
-		if days != 0:
-			old_basic = 0
+		prorated = 0
+		if days < days_month and days != 0:
 			for a in source.get('earnings'):
 				if a.salary_component == 'Basic Pay':
 					old_basic = a.amount
@@ -239,16 +235,10 @@ def make_salary_slip(source_name, target_doc=None):
 					actual_days = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -11)), getdate(employee.date_of_joining)))	
 					total = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -11)), get_first_day(add_days(nowdate(), -11))))
 					new_basic = flt((flt(actual_days) / flt(total)) * old_basic, 2)
-					frappe.msgprint(str(a.name))	
-					#doc = frappe.get_doc("Salary Detail", a.name)
-					#doc.db_set("amount", new_basic)
-					source.calculate_totals(employee, new_basic)
-					frappe.msgprint(str(actual_days) + " / " + str(total) + " * " + str(old_basic) + " = " + str(new_basic))
-					frappe.msgprint("PRORATE")
+					frappe.msgprint(str(source))	
+					source = update_salary_structure(str(source.employee), flt(new_basic))
+					prorated = 1
 					break
-		else:
-			frappe.msgprint("NOT PRORATE")
-		#frappe.throw("DONE")
 			
 		# copy earnings and deductions table
 		for key in ('earnings', 'deductions'):
@@ -278,7 +268,10 @@ def make_salary_slip(source_name, target_doc=None):
                                         })                                        
 
                 for e in target.get('earnings'):
-                        gross_amt += flt(e.amount)
+                        if d.salary_component == 'Communication Allowance':
+                        	gross_amt += (flt(e.amount)*0.5)
+			else:
+                        	gross_amt += flt(e.amount)
 
                 gross_amt += flt(target.arrear_amount) + flt(target.leave_encashment_amount)
 
@@ -297,6 +290,8 @@ def make_salary_slip(source_name, target_doc=None):
 		target.run_method("pull_emp_details")
 		target.run_method("get_leave_details")
 		target.run_method("calculate_net_pay")
+		if prorated == 1:
+			sst = update_salary_structure(str(source.employee), flt(old_basic))
 			
 
 	doc = get_mapped_doc("Salary Structure", source_name, {
