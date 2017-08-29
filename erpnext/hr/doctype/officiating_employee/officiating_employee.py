@@ -24,8 +24,8 @@ class OfficiatingEmployee(Document):
 		user = frappe.get_doc("User", frappe.db.get_value("Employee", self.officiate, "user_id"))
 		user.flags.ignore_permissions = True
 
-		if "Leave Approver" not in user.get("user_roles"):
-			user.add_roles("Leave Approver")
+		if "Approver" not in user.get("user_roles"):
+			user.add_roles("Approver")
 			self.db_set("already", 0)
 		else:
 			self.db_set("already", 1)
@@ -38,6 +38,6 @@ class OfficiatingEmployee(Document):
 		if not self.already:
 			user = frappe.get_doc("User", frappe.db.get_value("Employee", self.officiate, "user_id"))
 			user.flags.ignore_permissions = True
-			user.remove_roles("Leave Approver")
+			user.remove_roles("Approver")
 		frappe.msgprint("Permissions Revoked")
 

@@ -44,6 +44,7 @@ frappe.ui.form.on('Hire Charge Invoice', {
 					"frm": cur_frm.doc.name,
 				},
 				callback: function(r) {
+					cur_frm.refresh()
 				}
 			});
 		}

@@ -241,7 +241,7 @@ def make_bank_entry(frm=None):
 		je.naming_series = 'Bank Receipt Voucher'
 		je.remark = 'Payment Received against : ' + invoice.name;
 		je.posting_date = invoice.posting_date
-		total_amount = invoice.total_invoice_amount
+		total_amount = invoice.balance_amount
 		je.branch = invoice.branch
 
 		je.append("accounts", {

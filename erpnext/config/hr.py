@@ -177,7 +177,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Setup"),
+			"label": _("Settings"),
 			"icon": "icon-cog",
 			"items": [
 				{
@@ -190,11 +190,17 @@ def get_data():
 					"name": "Leave Encashment Settings",
 					"description": _("Leave Encashment Settings"),
 				},                                
-                                {
+				{
 					"type": "doctype",
-					"name": "Production Incentives",
-					"label": _("MPI Target Setting"),
-					"description": _("MPI Target Setup")
+					"name": "Assign Branch",
+					"label": "Branch Access Control",
+					"description": _("Assign Multiple Branches to Users")
+				},
+				{
+					"type": "doctype",
+					"name": "Officiating Employee",
+					"label": "Nominate Officiating",
+					"description": _("Nominate officiating employees")
 				},
 			]
 		},

@@ -164,8 +164,8 @@ class Employee(Document):
 			#if l.leave_approver:
 			#	frappe.permissions.add_user_permission("User", self.user_id, l.leave_approver)
 
-			if "Leave Approver" not in frappe.get_roles(l.leave_approver):
-				frappe.get_doc("User", l.leave_approver).add_roles("Leave Approver")
+			if "Approver" not in frappe.get_roles(l.leave_approver):
+				frappe.get_doc("User", l.leave_approver).add_roles("Approver")
 
 	def validate_reports_to(self):
 		if self.reports_to == self.name:

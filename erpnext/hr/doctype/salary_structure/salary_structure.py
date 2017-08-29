@@ -26,7 +26,8 @@ from __future__ import unicode_literals
 import frappe
 
 from frappe import msgprint
-from frappe.utils import cstr, flt, getdate
+from frappe.utils import cstr, flt, cint, getdate, date_diff, nowdate
+from frappe.utils.data import get_first_day, get_last_day, add_days
 from frappe.model.naming import make_autoname
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
@@ -221,11 +222,34 @@ def make_salary_slip(source_name, target_doc=None):
                 target.branch = employee.branch
                 target.department = employee.department
                 target.division = employee.division
+                target.cost_center = employee.cost_center
                 target.designation = employee.designation
                 target.section = employee.section
                 target.employee_subgroup = employee.employee_subgroup # Ver 1.0 Begins, added by SSK on 28/08/2016
                 #frappe.msgprint(_("StartDate: {0} EndDate: {1}").format(target.start_date,target.end_date))
                 # Ver 1.0 Ends
+		days = cint(date_diff(get_first_day(add_days(nowdate(), -11)), getdate(employee.date_of_joining)))
+		old_basic = 0
+		if days != 0:
+			old_basic = 0
+			for a in source.get('earnings'):
+				if a.salary_component == 'Basic Pay':
+					old_basic = a.amount
+					#Do prorating of salary
+					actual_days = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -11)), getdate(employee.date_of_joining)))	
+					total = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -11)), get_first_day(add_days(nowdate(), -11))))
+					new_basic = flt((flt(actual_days) / flt(total)) * old_basic, 2)
+					frappe.msgprint(str(a.name))	
+					#doc = frappe.get_doc("Salary Detail", a.name)
+					#doc.db_set("amount", new_basic)
+					source.calculate_totals(employee, new_basic)
+					frappe.msgprint(str(actual_days) + " / " + str(total) + " * " + str(old_basic) + " = " + str(new_basic))
+					frappe.msgprint("PRORATE")
+					break
+		else:
+			frappe.msgprint("NOT PRORATE")
+		#frappe.throw("DONE")
+			
 		# copy earnings and deductions table
 		for key in ('earnings', 'deductions'):
 			for d in source.get(key):

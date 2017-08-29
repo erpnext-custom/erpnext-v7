@@ -215,7 +215,7 @@ class LeaveApplication(Document):
 				.format(comma_or(leave_approvers)), InvalidLeaveApproverError)
 
 		elif self.leave_approver and not frappe.db.sql("""select name from `tabUserRole`
-			where parent=%s and role='Leave Approver'""", self.leave_approver):
+			where parent=%s and role='Approver'""", self.leave_approver):
 			frappe.throw(_("{0} ({1}) must have role 'Leave Approver'")\
 				.format(get_fullname(self.leave_approver), self.leave_approver), InvalidLeaveApproverError)
 

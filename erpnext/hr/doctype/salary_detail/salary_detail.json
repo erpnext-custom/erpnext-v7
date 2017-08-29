@@ -8,7 +8,7 @@
  "docstatus": 0, 
  "doctype": "DocType", 
  "document_type": "", 
- "editable_grid": 1, 
+ "editable_grid": 0, 
  "fields": [
   {
    "allow_on_submit": 0, 
@@ -148,7 +148,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2016-07-11 03:28:06.925361", 
+ "modified": "2017-08-29 10:59:42.090831", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Salary Detail", 
