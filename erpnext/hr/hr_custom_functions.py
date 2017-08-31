@@ -88,14 +88,27 @@ def get_salary_tax(gross_amt):
 		
 # Ver 1.0 added by SSK on 03/08/2016, Fetching PF component
 @frappe.whitelist()
-def get_company_pf(fiscal_year):
-        result = frappe.db.sql("""
-                select employee_pf, employer_pf, health_contribution, retirement_age
-                from `tabFiscal Year`
-                where now() between year_start_date and year_end_date
-                limit 1
-                """);
-        return result
+def get_company_pf(fiscal_year=None):
+        #result = frappe.db.sql("""
+        #       select employee_pf, employer_pf, health_contribution, retirement_age
+        #        from `tabFiscal Year`
+        #        where now() between year_start_date and year_end_date
+        #        limit 1
+        #        """);
+	employee_pf = frappe.db.get_single_value("HR Settings", "employee_pf")
+	if not employee_pf:
+		frappe.throw("Setup Employee PF in HR Settings")
+	employer_pf = frappe.db.get_single_value("HR Settings", "employer_pf")
+	if not employer_pf:
+		frappe.throw("Setup Employer PF in HR Settings")
+	health_contribution = frappe.db.get_single_value("HR Settings", "health_contribution")
+	if not health_contribution:
+		frappe.throw("Setup Health Contribution in HR Settings")
+	retirement_age = frappe.db.get_single_value("HR Settings", "retirement_age")
+	if not retirement_age:
+		frappe.throw("Setup Retirement Age in HR Settings")
+        result = ((flt(employee_pf), flt(employer_pf), flt(health_contribution), flt(retirement_age)),)
+	return result
 
 # Ver 1.0 added by SSK on 04/08/2016, Fetching GIS component
 @frappe.whitelist()
@@ -108,6 +121,7 @@ def get_employee_gis(employee):
                 and b.employee_subgroup = a.employee_subgroup
                 limit 1
                 """,employee);
+	return result
 
 @frappe.whitelist()
 def update_salary_structure(employee, new_basic):
@@ -123,7 +137,6 @@ def update_salary_structure(employee, new_basic):
 	""" % (employee))
 	
 	sst = ""
-	frappe.msgprint("EMPLOYEE: " + str(sal_struc_name))
 	if sal_struc_name and new_basic > 0:
 		sst = frappe.get_doc("Salary Structure", sal_struc_name[0][0])
 		if sst:
@@ -178,12 +191,12 @@ def update_salary_structure(employee, new_basic):
 				else:
 					gross_pay += e.amount
 
-			company_det = frappe.db.sql("""
-				select employee_pf, employer_pf, health_contribution, retirement_age
-				from `tabFiscal Year`
-				where now() between year_start_date and year_end_date
-				limit 1
-				""");
+			#company_det = frappe.db.sql("""
+			#	select employee_pf, employer_pf, health_contribution, retirement_age
+			#	from `tabFiscal Year`
+			#	where now() between year_start_date and year_end_date
+			#	limit 1
+			#	""");
 			employee_gis = frappe.db.sql("""select a.gis
 				from `tabEmployee Grade` a, `tabEmployee` b
 				where b.employee = %s
@@ -200,8 +213,11 @@ def update_salary_structure(employee, new_basic):
 					d.db_set('amount',calc_gis_amt,update_modified = True)
 					deductions += calc_gis_amt
 				elif d.salary_component == 'PF':
+					percent = frappe.db.get_single_value("HR Settings", "employee_pf")
+					if not percent:
+						frappe.throw("Setup Employee PF in HR Settings")
 					calc_pf_amt = 0;
-					calc_pf_amt = round(new_basic*company_det[0][0]*0.01);
+					calc_pf_amt = round(new_basic * flt(percent) * 0.01);
 					d.db_set('amount',calc_pf_amt,update_modified = True)
 					deductions += calc_pf_amt
 				elif d.salary_component == 'Salary Tax':
@@ -219,8 +235,11 @@ def update_salary_structure(employee, new_basic):
 						deductions += calc_tds_amt
 					
 					if d.salary_component == 'Health Contribution':
+						percent = frappe.db.get_single_value("HR Settings", "health_contribution")
+						if not percent:
+							frappe.throw("Setup Health Contribution Percent in HR Settings")
 						calc_health_amt = 0;
-						calc_health_amt = round(gross_pay*company_det[0][2]*0.01);
+						calc_health_amt = round(gross_pay * flt(percent) * 0.01);
 						d.db_set('amount',calc_health_amt,update_modified = True)
 						deductions += calc_health_amt
 

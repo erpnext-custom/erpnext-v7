@@ -134,8 +134,11 @@ class SalaryIncrement(Document):
                                                 d.db_set('amount',calc_gis_amt,update_modified = True)
                                                 deductions += calc_gis_amt
                                         elif d.salary_component == 'PF':
+						percent = frappe.db.get_single_value("HR Settings", "employee_pf")
+						if not percent:
+							frappe.throw("Setup PF Percent in HR Settings")
                                                 calc_pf_amt = 0;
-                                                calc_pf_amt = round(new_basic*company_det[0][0]*0.01);
+                                                calc_pf_amt = round(new_basic * flt(percent) * 0.01);
                                                 d.db_set('amount',calc_pf_amt,update_modified = True)
                                                 deductions += calc_pf_amt
                                         elif d.salary_component == 'Salary Tax':
@@ -153,8 +156,11 @@ class SalaryIncrement(Document):
                                                         deductions += calc_tds_amt
                                         	
 						if d.salary_component == 'Health Contribution':
+							percent = frappe.db.get_single_value("HR Settings", "health_contribution")
+							if not percent:
+								frappe.throw("Setup Health Contribution Percent in HR Settings")
 							calc_health_amt = 0;
-                                                	calc_health_amt = round(gross_pay*company_det[0][2]*0.01);
+                                                	calc_health_amt = round(gross_pay * flt(percent) * 0.01);
                                                 	d.db_set('amount',calc_health_amt,update_modified = True)
                                                 	deductions += calc_health_amt
 
@@ -167,7 +173,7 @@ class SalaryIncrement(Document):
 @frappe.whitelist()
 def get_employee_payscale(employee, gradecd, fiscal_year, month):
         payscale = frappe.db.get_value("Employee Grade", filters=gradecd, \
-                                       fieldname = ["minimum","maximum","increment"], as_dict = True)
+                                       fieldname = ["minimum","maximum","increment", "increment_percent"], as_dict = True)
         sal_struc_name = get_salary_structure(employee)
         
         if payscale:
@@ -179,6 +185,8 @@ def get_employee_payscale(employee, gradecd, fiscal_year, month):
                                 old_basic = flt(d.amount)
 
                 if old_basic:
+			if payscale.increment_percent > 0:
+				payscale["increment"] = flt(flt(old_basic) * flt(payscale.increment_percent) * 0.01)
                         new_basic = flt(old_basic if old_basic else 0) + flt(payscale.increment if payscale.increment else 0.00)
 
                 payscale["old_basic"] = flt(old_basic if old_basic else 0.00)

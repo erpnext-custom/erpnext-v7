@@ -15,12 +15,29 @@ frappe.ui.form.on('BOQ', {
 	},
 	
 	refresh: function(frm) {
-		if(frm.doc.docstatus==1 && frm.doc.balance_amount > 0){
+		if(!frm.doc.__islocal){
+			if(frappe.model.can_read("Project")) {
+				frm.add_custom_button(__("Project"), function() {
+					frappe.route_options = {"name": frm.doc.project}
+					frappe.set_route("Form", "Project", frm.doc.project);
+				}, __("View"), true);
+			}
+			
+			if(frappe.model.can_read("Project Invoice")) {
+				frm.add_custom_button(__("Invoices"), function() {
+					frappe.route_options = {"boq": frm.doc.name}
+					frappe.set_route("List", "Project Invoice");
+				}, __("View"), true);
+			}			
+		}
+		
+		if(frm.doc.docstatus==1 && parseFloat(frm.doc.claimed_amount) < (parseFloat(frm.doc.total_amount)+parseFloat(frm.doc.price_adjustment))){
+			/*
 			frm.add_custom_button(__("Claim Advance"),function(){frm.trigger("claim_advance")},
 				__("Make"), "icon-file-alt"
 			);
-			
-			frm.add_custom_button(__("Make Invoice"),function(){frm.trigger("make_project_invoice")},
+			*/
+			frm.add_custom_button(__("Invoice"),function(){frm.trigger("make_project_invoice")},
 				__("Make"), "icon-file-alt"
 			);
 		}

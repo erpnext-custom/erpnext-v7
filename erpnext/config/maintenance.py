@@ -135,6 +135,12 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
+					"name": "Party Wise Billing",
+					"doctype": "Hire Charge Invoice"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
 					"name": "Equipment Status Report",
 					"doctype": "Equipment"
 				},

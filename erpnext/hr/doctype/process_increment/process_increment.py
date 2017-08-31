@@ -21,6 +21,7 @@ class ProcessIncrement(Document):
 		cond += self.get_joining_releiving_condition()
 
                 increment_month = calendar.month_name[int(self.month)]
+		frappe.msgprint(str(increment_month))
                 '''
                 increment_month = ''
                 if self.month == '01':

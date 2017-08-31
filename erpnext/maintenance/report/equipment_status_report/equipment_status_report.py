@@ -37,6 +37,6 @@ def get_data(filters):
 	if filters.get("branch"):
 		query += " and e.branch = \'" + str(filters.branch) + "\'"
 
-	if filters.get("equipment"):
-		query += " and e.name = \'" + str(filters.equipment) + "\'"
+	if filters.get("equipment_type"):
+		query += " and e.equipment_type = \'" + str(filters.equipment_type) + "\'"
 	return frappe.db.sql(query)

@@ -19,10 +19,10 @@ frappe.query_reports["Equipment Status Report"] = {
 			"reqd": 1
 		},
 		{
-			"fieldname":"equipment",
-			"label": ("Equipment"),
-			"fieldtype":"Link",
-			"options": ("Equipment"),
+			"fieldname" : "equipment_type",
+			"label": ("Equipment Type"),
+			"fieldtype": "Link",
+			"options": "Equipment Type",	
 			"width": "80",
 		},
 

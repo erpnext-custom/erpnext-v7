@@ -13,35 +13,28 @@ def execute(filters=None):
 	#for a in datas:
 	#	total = flt(a.basic)
 	#	frappe.msgprint(str(a))
-	for a in data:
-		frappe.msgprint(str(a))
+	#for a in data:
+		#frappe.msgprint(str(a))
 	return columns, data
 
-#def get_data(query, filters=None):
-	#data = []
-	#datas = frappe.db.sql(query, as_dict=True);
-	#for d in datas:
-		#row = [d.Cost_centere, d.Basic, d.Corporate allow, d.Contract Allow, flt(d.received) - flt(d.issued)]
-		#data.append(row);
-	#return data
 def get_columns():
 	return [
 		("Cost Center") + ":Link/Cost Center:120",
-		("Basic Pay") + ":Currency:100",
-		("Coporate Allowance")+ ":Currency:80",
-		("Contract Allow.") + ":Cureency:80",
-		("Officiating Allow.") +":Currency:80",
-		("Communication Allow.")+":Currency:80",
-		("Fuel Allow.") +":Currency:80",
-		("Overtime Allow.") +":Currency:=80",
-		("PSA Allow.") + ":Currency:80",
-		("Transfer Allow.") + ":Currency:80",
-		("Housing  Allow.") + ":Currency:80",
-		("High Altitude Allow.")+ ":Currency:80",
-		("Difficult Allow.") + ":Currency:80",
-		("Shift Allow.") + ":Currency:80",
-		("Scarcity  Allow.") +":Currency:80",
-		("Salary Arrears ") +":Currency:80",
+		("Basic Pay") + ":Currency:120",
+		("Coporate Allowance")+ ":Currency:120",
+		("Contract Allow.") + ":Currency:120",
+		("Officiating Allow.") +":Currency:120",
+		("Communication Allow.")+":Currency:120",
+		("Fuel Allow.") +":Currency:120",
+		("Overtime Allow.") +":Currency:=120",
+		("PSA Allow.") + ":Currency:120",
+		("Transfer Allow.") + ":Currency:120",
+		("Housing  Allow.") + ":Currency:120",
+		("High Altitude Allow.")+ ":Currency:120",
+		("Difficult Allow.") + ":Currency:120",
+		("Shift Allow.") + ":Currency:120",
+		("Scarcity  Allow.") +":Currency:120",
+		("Salary Arrears ") +":Currency:120",
 		("Amount") + ":Currency:120"
 	]
 
@@ -58,7 +51,7 @@ def get_data(filters):
 	else:
 		frappe.throw("From date cannot be grater than To Date")
 
-	query = ("""select cost_center, SUM(basic), SUM(corporate), SUM(contract), SUM(officiating), SUM(communication), SUM(fuel), SUM(overtime), SUM(psa), SUM(transfer), SUM(housing), SUM(high), SUM(difficult), SUM(shift),SUM(scarcity),SUM(salary), (sum(basic)+sum(corporate)+sum(contract)+sum(officiating)+sum(communication)+sum(fuel)+sum(overtime)+sum(psa)+sum(transfer)+sum(housing)+sum(high)+sum(difficult)+sum(shift)+sum(scarcity)+sum(salary)) as Amount FROM
+	query = ("""select cost_center, SUM(ifnull(basic,0)), SUM(ifnull(corporate,0)), SUM(ifnull(contract,0)), SUM(ifnull(officiating,0)), SUM(ifnull(communication,0)), SUM(ifnull(fuel,0)), SUM(ifnull(overtime,0)), SUM(ifnull(psa,0)), SUM(ifnull(transfer,0)), SUM(ifnull(housing,0)), SUM(ifnull(high,0)), SUM(ifnull(difficult,0)), SUM(ifnull(shift,0)),SUM(ifnull(scarcity,0)),SUM(ifnull(salary,0)),sum(ifnull(basic,0)+ifnull(corporate,0)+ifnull(contract,0)+ifnull(officiating,0)+ifnull(communication,0)+ifnull(fuel,0)+ifnull(overtime,0)+ifnull(psa,0)+ifnull(transfer,0)+ifnull(housing,0)+ifnull(high,0)+ifnull(difficult,0)+ifnull(shift,0)+ifnull(scarcity,0)+ifnull(salary,0)) as Amount FROM
 
 (select (select cost_center from tabEmployee e where e.name = ss.employee) AS cost_center,
 (select SUM(sd.amount) FROM `tabSalary Detail` sd WHERE sd.parent = ss.name AND sd.salary_component = 'Basic Pay') AS basic,
@@ -80,4 +73,8 @@ FROM `tabSalary Slip` ss where ss.docstatus = 1 and ss.branch like %(branch)s an
 AS tab """)
 
 	query += " group by cost_center "
-	return frappe.db.sql(query, {"branch":filters.branch, "months": dates, "fy": filters.fiscal_year})
+	
+	result = frappe.db.sql(query, {"branch":filters.branch, "months": dates, "fy": filters.fiscal_year})
+	#frappe.msgprint(type(result))
+	#frappe.msgprint("{0}".format(result))
+	return result

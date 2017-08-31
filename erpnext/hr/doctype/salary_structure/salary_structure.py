@@ -47,6 +47,9 @@ class SalaryStructure(Document):
 		self.validate_joining_date()
 		set_employee_name(self)
 
+	def on_update(self):
+		self.assign_employee_details()
+
 	def get_employee_details(self):
 		ret = {}
 		det = frappe.db.sql("""select employee_name, branch, designation, department, division, section
@@ -74,18 +77,18 @@ class SalaryStructure(Document):
                 # Ver 1.0 by SSK on 08/08/2016, Following line is commented and the subsequent if condition is added
                 #list1 = frappe.db.sql("select name from `tab%s` where docstatus != 2" % doct_name)
                 if (tab_fname == 'earnings'):
-                        list1 = frappe.db.sql("select name from `tab%s` where `docstatus` != 2 and `type` = 'Earning' and `default` = 1" % doct_name)
+                        list1 = frappe.db.sql("select name, default_amount from `tab%s` where `docstatus` != 2 and `type` = 'Earning' and `default` = 1" % doct_name)
                 else:
-                        list1 = frappe.db.sql("select name from `tab%s` where `docstatus` != 2 and `type` = 'Deduction' and `default` = 1 " % doct_name)
+                        list1 = frappe.db.sql("select name, default_amount from `tab%s` where `docstatus` != 2 and `type` = 'Deduction' and `default` = 1 " % doct_name)
                         
 		for li in list1:
 			child = self.append(tab_fname, {})
 			if(tab_fname == 'earnings'):
 				child.salary_component = cstr(li[0])
-				child.amount = 0
+				child.amount = flt(li[1])
 			elif(tab_fname == 'deductions'):
 				child.salary_component = cstr(li[0])
-				child.amount = 0
+				child.amount = flt(li[1])
 
 	def make_earn_ded_table(self):
 		self.make_table('Salary Component','earnings','Salary Detail')
@@ -123,6 +126,16 @@ class SalaryStructure(Document):
 		joining_date = getdate(frappe.db.get_value("Employee", self.employee, "date_of_joining"))
 		if getdate(self.from_date) < joining_date:
 			frappe.throw(_("From Date in Salary Structure cannot be lesser than Employee Joining Date."))
+
+	def assign_employee_details(self):
+		if self.employee:
+			doc = frappe.get_doc("Employee", self.employee)
+			self.db_set("employee_name", doc.employee_name)
+			self.db_set("branch", doc.branch)
+			self.db_set("department", doc.department)
+			self.db_set("division", doc.division)
+			self.db_set("section", doc.section)
+			self.db_set("designation", doc.designation)
 
 	def calculate_totals(self, employee, new_basic):
                 basic_pay = 0.00
@@ -184,20 +197,25 @@ class SalaryStructure(Document):
                 # Calculating Deductions
                 #
                 company_det = get_company_pf('2016')
-                frappe.msgprint(company_det)
                 for d in self.deductions:
                         if d.salary_component == 'Group Insurance Scheme':
                                 calc_gis_amt = flt(get_employee_gis(self.employee))
                                 d.amount = calc_gis_amt
                                 deductions += calc_gis_amt
                         elif d.salary_component == 'PF':
+				percent = frappe.db.get_single_value("HR Settings", "employee_pf")
+				if not percent:
+					frappe.throw("Setup PF Percent in HR Settings")
                                 calc_pf_amt = 0;
-                                calc_pf_amt = round(basic_pay*company_det.employee_pf*0.01);
+                                calc_pf_amt = round(basic_pay*flt(percent)*0.01);
                                 d.amount = calc_pf_amt
                                 deductions += calc_pf_amt
                         elif d.salary_component == 'Health Contribution':
+				percent = frappe.db.get_single_value("HR Settings", "health_contribution")
+				if not percent:
+					frappe.throw("Setup Health Contribution Percent in HR Settings")
                                 calc_health_amt = 0;
-                                calc_health_amt = round(gross_pay*company_det.health_contribution*0.01);
+                                calc_health_amt = round(gross_pay*flt(percent)*0.01);
                                 d.amount = calc_health_amt
                                 deductions += calc_health_amt
                         elif d.salary_component == 'Salary Tax':
@@ -235,9 +253,9 @@ def make_salary_slip(source_name, target_doc=None):
 					actual_days = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -11)), getdate(employee.date_of_joining)))	
 					total = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -11)), get_first_day(add_days(nowdate(), -11))))
 					new_basic = flt((flt(actual_days) / flt(total)) * old_basic, 2)
-					frappe.msgprint(str(source))	
 					source = update_salary_structure(str(source.employee), flt(new_basic))
 					prorated = 1
+					frappe.msgprint("Prorated the salary for " + str(source.employee_name))
 					break
 			
 		# copy earnings and deductions table
@@ -281,9 +299,7 @@ def make_salary_slip(source_name, target_doc=None):
 
                 for d in target.get('deductions'):
                         if d.salary_component == 'Salary Tax':
-                                #frappe.msgprint(_("Gross Amount: {0}").format(flt(gross_amt)))
                                 tax_amt = get_salary_tax(flt(gross_amt))
-                                #frappe.msgprint(_("Tax: {0}").format(tax_amt))
                                 d.amount = flt(tax_amt)
 
                                         
@@ -291,7 +307,7 @@ def make_salary_slip(source_name, target_doc=None):
 		target.run_method("get_leave_details")
 		target.run_method("calculate_net_pay")
 		if prorated == 1:
-			sst = update_salary_structure(str(source.employee), flt(old_basic))
+			update_salary_structure(str(source.employee), flt(old_basic))
 			
 
 	doc = get_mapped_doc("Salary Structure", source_name, {
@@ -306,54 +322,3 @@ def make_salary_slip(source_name, target_doc=None):
 
 	return doc
 
-# Ver 1.0 added by SSK on 04/08/2016, Fetching TDS component
-@frappe.whitelist()
-def get_salary_tax(gross_amt):
-        tax_amount = 0
-        max_limit = frappe.db.sql("""select max(b.upper_limit)
-                from `tabSalary Tax` a, `tabSalary Tax Item` b
-                where now() between a.from_date and a.to_date
-                and b.parent = a.name
-                """)
-
-        if flt(flt(gross_amt) if flt(gross_amt) else 0.00) > flt(flt(max_limit[0][0]) if flt(max_limit[0][0]) else 0.00):
-                tax_amount = flt((((flt(gross_amt) if flt(gross_amt) else 0.00)-83333.00)*0.25)+11875.00)
-        else:
-                result = frappe.db.sql("""select b.tax from
-                        `tabSalary Tax` a, `tabSalary Tax Item` b
-                        where now() between a.from_date and a.to_date
-                        and b.parent = a.name
-                        and %s between b.lower_limit and b.upper_limit
-                        limit 1
-                        """,gross_amt)
-                if result:
-                        tax_amount = flt(result[0][0])
-                else:
-                        tax_amount = 0
-        
-        return tax_amount
-		
-# Ver 1.0 added by SSK on 03/08/2016, Fetching PF component
-@frappe.whitelist()
-def get_company_pf(fiscal_year):
-        result = frappe.db.sql("""
-                select employee_pf, employer_pf, health_contribution, retirement_age
-                from `tabFiscal Year`
-                where now() between year_start_date and year_end_date
-                limit 1
-                """);
-        return result
-
-# Ver 1.0 added by SSK on 04/08/2016, Fetching GIS component
-@frappe.whitelist()
-def get_employee_gis(employee):
-        #msgprint(employee);
-        result = frappe.db.sql("""select a.gis
-                from `tabEmployee Grade` a, `tabEmployee` b
-                where b.employee = %s
-                and b.employee_group = a.employee_group
-                and b.employee_subgroup = a.employee_subgroup
-                limit 1
-                """,employee);
-        #msgprint(result);
-        return result     

@@ -202,6 +202,16 @@ def get_data():
 					"label": "Nominate Officiating",
 					"description": _("Nominate officiating employees")
 				},
+				{
+					"type": "doctype",
+					"name": "Financial Institution",
+					"description": _("List of Financial Institution"),
+				},                                
+				{
+					"type": "doctype",
+					"name": "Financial Schemes",
+					"description": _("List of Financial Schemes"),
+				},                                
 			]
 		},
 		{
@@ -247,6 +257,12 @@ def get_data():
 					"is_query_report": True,
 					"name": "Tax and Health Report",
                                         "label": _("Salary Tax & Health Contribution Report"),
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Earning Report",
 					"doctype": "Salary Slip"
 				},
 			]
