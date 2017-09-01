@@ -539,10 +539,10 @@ def get_outstanding_reference_documents(args):
 				d["exchange_rate"] = frappe.db.get_value(d.voucher_type, d.voucher_no, "conversion_rate")
 
 	# Get all SO / PO which are not fully billed or aginst which full advance not paid
-	orders_to_be_billed =  get_orders_to_be_billed(args.get("party_type"), args.get("party"), 
-		party_account_currency, company_currency)
+	#orders_to_be_billed =  get_orders_to_be_billed(args.get("party_type"), args.get("party"), 
+	#	party_account_currency, company_currency)
 	
-	return negative_outstanding_invoices + outstanding_invoices + orders_to_be_billed
+	return negative_outstanding_invoices + outstanding_invoices #+ orders_to_be_billed
 	
 def get_orders_to_be_billed(party_type, party, party_account_currency, company_currency):
 	voucher_type = 'Sales Order' if party_type == "Customer" else 'Purchase Order'

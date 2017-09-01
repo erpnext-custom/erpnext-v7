@@ -14,20 +14,21 @@ frappe.query_reports["Earning Report"] = {
 		"label": __("From Date"),
 		"fieldtype": "Select",
 		"options": "\nJan\nFeb\nMar\nApr\nMay\nJun\nJul\nAug\nSep\nOct\nNov\nDec",
+		"reqd" 1
 	},
 	{
 		"fieldname":"from_date",
 		"label": __("From Date"),
 		"fieldtype": "Select",
 		"options": "\nJan\nFeb\nMar\nApr\nMay\nJun\nJul\nAug\nSep\nOct\nNov\nDec",
-
+		"reqd" 1
 	},
 	{
 		"fieldname":"fiscal_year",
 		"label": __("Fiscal Year"),
 		"fieldtype": "Link",
 		"options": "Fiscal Year",
-	
+		"reqd" 1
 	},
 
 	]
