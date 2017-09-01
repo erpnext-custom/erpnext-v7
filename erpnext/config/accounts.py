@@ -349,6 +349,13 @@ def get_data():
 					"name":"Mode of Payment",
 					"description": _("e.g. Bank, Cash, Credit Card")
 				},
+				{
+					"type": "report",
+					"name": "Exchange Report",
+					"label": "Exchange Rate History",
+					"doctype": "Exchange Rate History",
+					"is_query_report": True
+				},
 			]
 		},
 		{

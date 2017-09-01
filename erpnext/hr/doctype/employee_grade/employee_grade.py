@@ -5,6 +5,9 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.utils import flt
 
 class EmployeeGrade(Document):
-	pass
+	def validate(self):
+		if flt(self.increment) > 0 and flt(self.increment_percent) > 0:
+			frappe.throw("Cannot have both percent and lumpsum amount for increment")

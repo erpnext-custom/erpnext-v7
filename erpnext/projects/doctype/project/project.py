@@ -69,6 +69,7 @@ class Project(Document):
 			self.append("activity_tasks", {
                                 "activity": task.activity,
 				"task": task.subject,
+                                "is_group": task.is_group,
 				"status": task.status,
 				"start_date": task.exp_start_date,
 				"end_date": task.exp_end_date,
@@ -170,6 +171,7 @@ class Project(Document):
 			task.update({
                                 "activity": t.activity,
 				"subject": t.task,
+                                "is_group": t.is_group,
                                 "work_quantity": t.work_quantity,
                                 "target_uom": t.target_uom,
                                 "target_quantity": t.target_quantity,

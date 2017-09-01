@@ -178,7 +178,6 @@ class Employee(Document):
 		#from frappe.utils.password_strength import test_password_strength
 		#frappe.msgprint("THS: " + str(test_password_strength("babfh68y")))
 		if not self.casual_leave_allocated:
-			frappe.msgprint("ALLOCATED")
 			date = getdate(self.date_of_joining)
 			start = date;
 			end = get_year_end_date(date);
@@ -188,6 +187,8 @@ class Employee(Document):
 			leave_amount = flt(cint(cint(days) / 30) * 0.84)
 			if cint(date_diff(end_month, start)) > 14:
 				leave_amount += 0.84
+			if leave_amount > 10:
+				leave_amount = 10
 			la = frappe.new_doc("Leave Allocation")
 			la.employee = self.employee
 			la.employee_name = self.employee_name

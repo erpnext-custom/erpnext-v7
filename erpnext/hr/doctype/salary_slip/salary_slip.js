@@ -96,7 +96,7 @@ cur_frm.cscript.employee = function(doc,dt,dn){
 	// GIS
 		if (doc.employee){
 			cur_frm.call({
-				method: "erpnext.hr.doctype.salary_structure.salary_structure.get_employee_gis",
+				method: "erpnext.hr.hr_custom_functions.get_employee_gis",
 				args: {
 					"employee": doc.employee
 				},
@@ -111,7 +111,7 @@ cur_frm.cscript.employee = function(doc,dt,dn){
 		// PF
 		if (doc.employee){
 			cur_frm.call({
-				method: "erpnext.hr.doctype.salary_structure.salary_structure.get_company_pf",
+				method: "erpnext.hr.hr_custom_functions.get_company_pf",
 				args: {
 					fiscal_year: "",
 				},
@@ -541,7 +541,7 @@ var calculate_others = function(doc, dt, dn){
 		// Salary Tax
 		var calc_tds_amt = 0;	
 		cur_frm.call({
-			method: "erpnext.hr.doctype.salary_structure.salary_structure.get_salary_tax",
+			method: "erpnext.hr.hr_custom_functions.get_salary_tax",
 			args: {
 				"gross_amt": (cur_frm.doc.gross_pay-calc_pf_amt-calc_gis_amt),
 			},

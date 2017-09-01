@@ -3,63 +3,63 @@
 
 frappe.ui.form.on('Project Invoice', {
 	setup: function(frm){
-		/*
+		console.log("setup");
 		frm.get_field('project_invoice_boq').grid.editable_fields = [
 			{fieldname: 'item', columns: 3},
+			{fieldname: 'is_selected', columns: 1},
 			{fieldname: 'uom', columns: 1},
-			{fieldname: 'invoice_quantity', columns: 2},
+			{fieldname: 'invoice_quantity', columns: 1},
 			{fieldname: 'invoice_rate', columns: 2},
 			{fieldname: 'invoice_amount', columns: 2}
-		];
-		*/
+		];		
+	},
+
+	onload: function(frm){
+		console.log("onload");
+		calculate_totals(frm);
+	},
+	
+	onload_post_render: function(frm){
+		console.log("onload_post_render");	
+		cur_frm.refresh();
+	},
+	
+	refresh: function(frm, cdt, cdn) {
+		console.log("refresh");
+		//if(!frm.doc.__islocal){
+		if(frm.doc.project){
+			if(frappe.model.can_read("Project")) {
+				frm.add_custom_button(__("Project"), function() {
+					frappe.route_options = {"name": frm.doc.project}
+					frappe.set_route("Form", "Project", frm.doc.project);
+				}, __("View"), true);
+			}						
+		}
+
+		if(frm.doc.boq){
+			if(frappe.model.can_read("BOQ")) {
+				frm.add_custom_button(__("BOQ"), function() {
+					frappe.route_options = {"name": frm.doc.boq}
+					frappe.set_route("Form", "BOQ", frm.doc.boq);
+				}, __("View"), true);
+			}					
+		}
 		
 		if(frm.doc.boq_type=="Item Based"){
-			frm.get_field('project_invoice_boq').grid.editable_fields = [
-				{fieldname: 'item', columns: 3},
-				{fieldname: 'is_selected', columns: 1},
-				{fieldname: 'uom', columns: 1},
-				{fieldname: 'invoice_quantity', columns: 2},
-				{fieldname: 'invoice_rate', columns: 1},
-				{fieldname: 'invoice_amount', columns: 2}
-			];
 			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_quantity", true);
 			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_amount", false);
 			//frm.fields_dict.project_invoice_boq.grid.set_column_disp("invoice_quantity", true);			
 		} 
 		else if(frm.doc.boq_type=="Milestone Based"){
-			frm.get_field('project_invoice_boq').grid.editable_fields = [
-				{fieldname: 'item', columns: 3},
-				{fieldname: 'is_selected', columns: 1},
-				{fieldname: 'uom', columns: 1},
-				{fieldname: 'invoice_quantity', columns: 2},
-				{fieldname: 'invoice_rate', columns: 1},
-				{fieldname: 'invoice_amount', columns: 2}
-			];
 			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_quantity", false);
 			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_amount", true);
 		}
 		else if(frm.doc.boq_type=="Piece Rate Work Based(PRW)"){
-			frm.get_field('project_invoice_boq').grid.editable_fields = [
-				{fieldname: 'item', columns: 3},
-				{fieldname: 'is_selected', columns: 1},
-				{fieldname: 'uom', columns: 1},
-				{fieldname: 'invoice_quantity', columns: 2},
-				{fieldname: 'invoice_rate', columns: 1},
-				{fieldname: 'invoice_amount', columns: 2}
-			];
 			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_quantity", true);
 			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_amount", false);
-		}
+		}		
 	},
-	
-	onload: function(frm){
-		calculate_totals(frm);
-	},
-	
-	refresh: function(frm) {
 		
-	},
-	
 	price_adjustment_amount: function(frm){
 		calculate_totals(frm);
 	},
@@ -71,6 +71,10 @@ frappe.ui.form.on('Project Invoice', {
 	tds_amount: function(frm){
 		calculate_totals(frm);
 	},
+	
+	check_all: function(frm){
+		check_uncheck_all(frm);
+	}
 });
 
 frappe.ui.form.on("Project Invoice BOQ",{
@@ -82,7 +86,7 @@ frappe.ui.form.on("Project Invoice BOQ",{
 		}
 		
 		//if(child.invoice_quantity && child.invoice_rate){
-		frappe.model.set_value(cdt, cdn, 'invoice_amount', (parseFloat(child.invoice_quantity)*parseFloat(child.invoice_rate)));
+		frappe.model.set_value(cdt, cdn, 'invoice_amount', (parseFloat(child.invoice_quantity)*parseFloat(child.invoice_rate)).toFixed(2));
 		//}
 	},
 	invoice_amount: function(frm, cdt, cdn){
@@ -93,19 +97,61 @@ frappe.ui.form.on("Project Invoice BOQ",{
 		}
 		calculate_totals(frm);
 	},
+	is_selected: function(frm, cdt, cdn){
+		calculate_totals(frm);
+	},
 });
+
+/*
+frappe.ui.form.on("Project Invoice","onload",function(frm,cdt,cdn){
+	console.log("loader1");
+	var df = frappe.meta.get_docfield("Project Invoice BOQ", "invoice_quantity", cur_frm.doc.name);
+	
+	if(frm.doc.boq_type=="Item Based"){
+		df.read_only = 0;
+	} 
+	else if(frm.doc.boq_type=="Milestone Based"){
+		df.read_only = 1;
+	}
+	else if(frm.doc.boq_type=="Piece Rate Work Based(PRW)"){
+		df.read_only = 0;
+	}
+	cur_frm.refresh();
+});
+*/
+
+/*
+frappe.ui.form.on("Project Invoice BOQ", "invoice_amount", function(frm, cdt, cdn){
+	console.log("cdt: "+cdt);
+	console.log("cdn: "+cdn);
+	console.log(cur_frm.fields_dict["project_invoice_boq"].grid);
+
+	frappe.utils.filter_dict(cur_frm.fields_dict["project_invoice_boq"].grid.grid_rows_by_docname[cdn].docfields, {"fieldname": "invoice_quantity"})[0].read_only = true;
+	frappe.utils.filter_dict(cur_frm.fields_dict["project_invoice_boq"].grid.grid_rows_by_docname[cdn].docfields, {"fieldname": "invoice_amount"})[0].read_only = true;
+	cur_frm.fields_dict["project_invoice_boq"].grid.grid_rows_by_docname[cdn].fields_dict["invoice_quantity"].refresh();
+	cur_frm.fields_dict["project_invoice_boq"].grid.grid_rows_by_docname[cdn].fields_dict["invoice_amount"].refresh();
+});
+*/
 
 var calculate_totals = function(frm){
 	var pi = frm.doc.project_invoice_boq || [];
 	var gross_invoice_amount = 0.0, net_invoice_amount =0.0;
 	
 	for(var i=0; i<pi.length; i++){
-		if(pi[i].invoice_amount){
+		if(pi[i].invoice_amount && pi[i].is_selected==1){
 			gross_invoice_amount += parseFloat(pi[i].invoice_amount);
 		}
 	}
-	net_invoice_amount = parseFloat(gross_invoice_amount)+parseFloat(frm.doc.price_adjustment_amount)-parseFloat(frm.doc.advance_recovery)-parseFloat(frm.doc.tds_amount)
-	cur_frm.set_value("gross_invoice_amount",gross_invoice_amount);
-	cur_frm.set_value("net_invoice_amount",net_invoice_amount);
-	cur_frm.set_value("total_balance_amount",net_invoice_amount);
+	net_invoice_amount = (parseFloat(gross_invoice_amount)+parseFloat(frm.doc.price_adjustment_amount)-parseFloat(frm.doc.advance_recovery)-parseFloat(frm.doc.tds_amount));
+	cur_frm.set_value("gross_invoice_amount",(gross_invoice_amount));
+	cur_frm.set_value("net_invoice_amount",(net_invoice_amount));
+	cur_frm.set_value("total_balance_amount",(net_invoice_amount));
+}
+
+var check_uncheck_all = function(frm){
+	var pib =frm.doc.project_invoice_boq || [];
+
+	for(var id in pib){
+		frappe.model.set_value("Project Invoice BOQ", pib[id].name, "is_selected", frm.doc.check_all);
+	}
 }

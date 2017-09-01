@@ -163,7 +163,7 @@ def get_data():
 			"color": "#FF888B",
 			"icon": "octicon octicon-tools",
 			"type": "module",
-			"label": _("Fleet")
+			"label": _("Mechanical Services")
 		},
 		{
 			"module_name": "Student",

@@ -42,11 +42,12 @@ class BOQ(Document):
 def make_project_invoice(source_name, target_doc=None):
         def update_master(source_doc, target_doc, source_parent):
                 target_doc.invoice_title = str(target_doc.project) + "(Project Invoice)"
+                target_doc.check_all = 1
                 
         def update_item(source_doc, target_doc, source_parent):
-                target_doc.act_quantity = target_doc.invoice_quantity
-                target_doc.act_rate     = target_doc.invoice_rate
-                target_doc.act_amount   = target_doc.invoice_amount
+                target_doc.act_quantity = flt(target_doc.invoice_quantity)
+                target_doc.act_rate     = flt(target_doc.invoice_rate)
+                target_doc.act_amount   = flt(target_doc.invoice_amount)
                 
         doclist = get_mapped_doc("BOQ", source_name, {
                 "BOQ": {
