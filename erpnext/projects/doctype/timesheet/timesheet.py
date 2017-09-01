@@ -30,7 +30,6 @@ class OverProductionLoggedError(frappe.ValidationError): pass
 
 class Timesheet(Document):
 	def validate(self):
-                frappe.msgprint("Basic validations")
                 # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
                 # Following methods introduced by SHIV on 2017/08/15
                 self.set_defaults()
@@ -141,7 +140,7 @@ class Timesheet(Document):
 
 	def before_submit(self):
 		self.set_dates()
-		self.calculate_target_quantity_complete()
+		self.calculate_target_quantity()
 
 	def before_cancel(self):
 		self.set_status()
