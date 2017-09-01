@@ -2803,10 +2803,11 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2017-08-25 16:53:27.239267", 
+ "modified": "2017-09-01 16:04:25.922331", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Delivery Note", 
+ "name_case": "Title Case", 
  "owner": "Administrator", 
  "permissions": [
   {
@@ -3012,6 +3013,26 @@
    "role": "Stock Manager", 
    "set_user_permissions": 0, 
    "share": 0, 
+   "submit": 0, 
+   "write": 1
+  }, 
+  {
+   "amend": 0, 
+   "apply_user_permissions": 0, 
+   "cancel": 0, 
+   "create": 1, 
+   "delete": 1, 
+   "email": 1, 
+   "export": 1, 
+   "if_owner": 0, 
+   "import": 0, 
+   "permlevel": 0, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "Administrator", 
+   "set_user_permissions": 0, 
+   "share": 1, 
    "submit": 0, 
    "write": 1
   }

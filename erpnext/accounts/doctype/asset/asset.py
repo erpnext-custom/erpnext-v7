@@ -211,6 +211,7 @@ class Asset(Document):
 	def make_asset_gl_entry(self):
 		if self.gross_purchase_amount:
 			je = frappe.new_doc("Journal Entry")
+			je.flags.ignore_permissions = 1 
 			je.update({
 				"voucher_type": "Journal Entry",
 				"company": self.company,

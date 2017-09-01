@@ -4,17 +4,12 @@ from frappe import _
 def get_data():
 	return [
 		{
-			"label": _("Employee and Attendance"),
+			"label": _("Employee Records"),
 			"items": [
 				{
 					"type": "doctype",
 					"name": "Employee",
 					"description": _("Employee records."),
-				},
-				{
-					"type": "doctype",
-					"name": "GEP Employee",
-					"description": _("GEP Employee records."),
 				},
 				{
 					"type": "doctype",
@@ -33,6 +28,62 @@ def get_data():
 					"label": _("Employee Attendance Tool"),
 					"description":_("Mark Attendance for multiple employees"),
 					"hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "Training And Development",
+					"label": _("Training & Development Records"),
+					"description": _("Traning & Development Master."),
+				},                  
+			]
+		},
+		{
+			"label": _("MR & GEP Management"),
+			"icon": "icon-facetime-video",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "GEP Employee",
+					"description": _("GEP Employee records."),
+				},
+				{
+					"type": "doctype",
+					"name": "Muster Roll Employee",
+					"description": _("Muster Roll Employee Data"),
+				},
+				{
+					"type": "doctype",
+					"name": "Attendance Tool Others",
+					"label": "Attendance Tool for GEP & MR",
+					"description": _("Attendance Tool for Others"),
+				},
+				{
+					"type": "doctype",
+					"name": "Project Overtime Tool",
+					"label": "Overtime Tool for GEP & MR",
+					"description": _("Overtime Tool for MR and GEP"),
+				},
+				{
+					"type": "doctype",
+					"name": "Process MR Payment",
+					"label": "Process Payment for GEP & MR",
+					"description": _("Process Payments for Project Muster Roll"),
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Attendance Register",
+					"label": "Attendance Register for GEP & MR",
+					"description": _("Attendance Sheet"),
+					"doctype": "Attendance Others"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Overtime Register",
+					"label": "Overtime Register for GEP & MR",
+					"description": _("Overtime Register"),
+					"doctype": "Overtime Entry"
 				},
 			]
 		},
@@ -166,16 +217,6 @@ def get_data():
 				},
 			]
 		},
-                {
-			"label": _("Training & Development"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Training And Development",
-					"description": _("Traning & Development Master."),
-				},                  
-			]
-		},
 		{
 			"label": _("Settings"),
 			"icon": "icon-cog",
@@ -202,6 +243,11 @@ def get_data():
 					"label": "Nominate Officiating",
 					"description": _("Nominate officiating employees")
 				},
+				{
+					"type": "doctype",
+					"name": "Employee Grade",
+					"description": _("List of Employee Grades"),
+				},                                
 				{
 					"type": "doctype",
 					"name": "Financial Institution",

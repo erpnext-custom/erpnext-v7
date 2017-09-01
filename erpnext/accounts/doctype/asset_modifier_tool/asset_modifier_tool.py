@@ -17,6 +17,7 @@ class AssetModifierTool(Document):
 ##
 def make_gl_entry(asset_account, credit_account, value, asset, start_date):
 	je = frappe.new_doc("Journal Entry")
+	je.flags.ignore_permissions = 1 
 	je.update({
 		"voucher_type": "Journal Entry",
 		"company": asset.company,

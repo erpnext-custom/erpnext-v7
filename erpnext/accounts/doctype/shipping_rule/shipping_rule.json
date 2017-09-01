@@ -9,6 +9,7 @@
  "description": "Specify conditions to calculate shipping amount", 
  "docstatus": 0, 
  "doctype": "DocType", 
+ "document_type": "System", 
  "editable_grid": 1, 
  "fields": [
   {
@@ -348,7 +349,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-29 16:19:13.604638", 
+ "modified": "2017-09-01 15:38:55.871950", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Shipping Rule", 
@@ -433,10 +434,31 @@
    "share": 1, 
    "submit": 0, 
    "write": 1
+  }, 
+  {
+   "amend": 0, 
+   "apply_user_permissions": 0, 
+   "cancel": 0, 
+   "create": 1, 
+   "delete": 1, 
+   "email": 1, 
+   "export": 1, 
+   "if_owner": 0, 
+   "import": 0, 
+   "permlevel": 0, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "Administrator", 
+   "set_user_permissions": 0, 
+   "share": 1, 
+   "submit": 0, 
+   "write": 1
   }
  ], 
  "quick_entry": 1, 
  "read_only": 0, 
  "read_only_onload": 0, 
+ "sort_order": "ASC", 
  "track_seen": 0
 }
