@@ -41,6 +41,12 @@ class VehicleLogbook(Document):
 
 	def calculate_balance(self):
 		qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1", (self.equipment, self.from_date, self.to_date), as_dict=True)
+		closing = frappe.db.sql("select closing_balance from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and rate_type = 'With Fuel' and to_date <= %s order by to_date desc limit 1", (self.equipment, self.from_date), as_dict=True)
+
 		if qty:
-			self.db_set("closing_balance", flt(qty[0].qty) - flt(self.consumption))
+			if closing:
+				self.db_set("opening_balance", flt(closing[0].closing_balance))
+				self.db_set("closing_balance", flt(closing[0].closing_balance) + flt(qty[0].qty) - flt(self.consumption))
+			else:
+				self.db_set("closing_balance", flt(qty[0].qty) - flt(self.consumption))
 

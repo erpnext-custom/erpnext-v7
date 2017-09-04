@@ -3,7 +3,7 @@ from frappe import _
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SHIV		                    2017/08/15         Introducting BOQ
+1.0		  SHIV		                    15/08/2017         Introducting BOQ
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -14,20 +14,15 @@ data = {
 	'transactions': [
 		{
 			'label': _('Project'),
-			#'items': ['Task', 'Timesheet', 'Expense Claim', 'Issue']
                         'items': ['Task', 'Timesheet', 'BOQ', 'Issue']
+		},
+                {
+			'label': _('Transactions'),
+			'items': ['Project Advance', 'Project Invoice']
 		},
 		{
 			'label': _('Material'),
 			'items': ['Material Request', 'BOM', 'Stock Entry']
-		},
-		{
-			'label': _('Sales'),
-			'items': ['Sales Order', 'Delivery Note', 'Sales Invoice']
-		},
-		{
-			'label': _('Purchase'),
-			'items': ['Purchase Order', 'Purchase Receipt', 'Purchase Invoice']
 		},
 	]
 }

@@ -175,8 +175,6 @@ class Employee(Document):
 		delete_events(self.doctype, self.name)
 
 	def post_casual_leave(self):
-		#from frappe.utils.password_strength import test_password_strength
-		#frappe.msgprint("THS: " + str(test_password_strength("babfh68y")))
 		if not self.casual_leave_allocated:
 			date = getdate(self.date_of_joining)
 			start = date;

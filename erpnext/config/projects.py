@@ -27,6 +27,11 @@ def get_data():
 					"name": "BOQ",
 					"description": _("Bill of Quantities."),
 				},
+                                {
+					"type": "doctype",
+					"name": "Project Advance",
+					"description": _("Project Advances."),
+				},
 				{
 					"type": "report",
 					"route": "Gantt/Task",
