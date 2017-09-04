@@ -1,5 +1,12 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		          SHIV		   04/09/2017                            * Added "Project Advance" to Reference Type
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
 
 frappe.provide("erpnext.accounts");
 frappe.provide("erpnext.journal_entry");
@@ -108,6 +115,14 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 		me.frm.set_query("reference_name", "accounts", function(doc, cdt, cdn) {
 			var jvd = frappe.get_doc(cdt, cdn);
 
+			// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+			// Project Advance
+			// Following code added by SHIV on 04/09/2017
+			if(jvd.reference_type==="Project Advance"){
+				return {};
+			}
+			// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+			
 			// expense claim
 			if(jvd.reference_type==="Expense Claim") {
 				return {};

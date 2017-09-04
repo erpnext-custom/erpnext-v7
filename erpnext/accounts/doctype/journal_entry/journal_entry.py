@@ -6,6 +6,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   08/08/2016         DocumentNaming standard is introduced
 1.0		  SSK		                   29/08/2016         Validations for expense claim changed
+1.0		  SSK		                   04/09/2017         Project Advance is introduced
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -99,6 +100,10 @@ class JournalEntry(AccountsController):
 		self.make_gl_entries()
 		self.update_advance_paid()
 		self.update_expense_claim()
+		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# Following method is created by SHIV on 04/09/2017
+		self.update_project_advance()
+		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 	def get_title(self):
 		return self.pay_to_recd_from or self.accounts[0].account
@@ -571,6 +576,36 @@ class JournalEntry(AccountsController):
 					reference_name = %s and docstatus = 1""", d.reference_name ,as_dict=1)[0].amt
 				frappe.db.set_value("Expense Claim", d.reference_name , "total_amount_reimbursed", amt)
 
+        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+        # Folowing method is created by SHIV on 04/09/2017
+	def update_project_advance(self):
+                reference_list = dict()
+
+                for d in self.accounts:
+                        if d.reference_type=="Project Advance" and d.reference_name and d.credit:
+                                if d.reference_name in reference_list:
+                                        reference_list.update({d.reference_name: flt(reference_list[d.reference_name])+flt(d.credit)})
+                                else:
+                                        reference_list.update({d.reference_name: flt(d.credit)})
+
+                if reference_list:
+                        for key, value in reference_list.iteritems():
+                                amt = 0.00
+                                amt = frappe.db.sql("""select sum(ifnull(credit,0)) as amt
+                                        from `tabJournal Entry Account`
+					where reference_type = %s and
+					reference_name = %s and docstatus = 1 and
+					parent <> %s""", ("Project Advance", key, self.name) ,as_dict=1)[0].amt
+
+                                if value:
+                                        frappe.db.sql("""
+                                                update `tabProject Advance`
+                                                set received_amount = {0},
+                                                balance_amount = {1}-ifnull(adjustment_amount,0)
+                                                where name = '{2}'
+                                        """.format(flt(amt)+flt(value), flt(amt)+flt(value), key))
+        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+        
 	def validate_expense_claim(self):
                 entry_balance = 0.00
                 sanctiond_amount = 0.00

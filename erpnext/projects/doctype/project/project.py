@@ -4,8 +4,9 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SHIV		                    2017/08/11         Default "Project Tasks" is replaced by custom
+1.0		  SHIV		                    11/08/2017         Default "Project Tasks" is replaced by custom
                                                                          "Activity Tasks"
+1.0		  SHIV		                    02/09/2017         make_advance_payment method is created.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -16,6 +17,7 @@ from frappe.utils import flt, getdate, get_url
 from frappe import _
 
 from frappe.model.document import Document
+from frappe.model.mapper import get_mapped_doc
 
 class Project(Document):
 	def get_feed(self):
@@ -34,7 +36,8 @@ class Project(Document):
                 # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
                 # Following code added by SHIV on 2017/08/11
 		if not self.get('__unsaved') and not self.get("activity_tasks"):
-			self.load_activity_tasks()			
+			self.load_activity_tasks()
+			self.load_advance()
                 # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
                 
 		self.set_onload('activity_summary', frappe.db.sql('''select activity_type,
@@ -61,6 +64,18 @@ class Project(Document):
 
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
         # Follwoing code added by SSK on 2017/08/11
+        def load_advance(self):
+                """Load `project_advance_item` from the database"""
+                self.project_advance_item = []
+                for item in self.get_project_advance():
+                        self.append("project_advance_item",{
+                                "advance_name": item.name,
+                                "advance_date": item.advance_date,
+                                "received_amount": item.received_amount,
+                                "adjustment_amount": item.adjustment_amount,
+                                "balance_amount": item.balance_amount
+                        })
+                
 	def load_activity_tasks(self):
                 #frappe.msgprint(_("load_activity_task is called from onload"))
 		"""Load `activity_tasks` from the database"""
@@ -83,7 +98,9 @@ class Project(Document):
 
 	def get_activity_tasks(self):
 		return frappe.get_all("Task", "*", {"project": self.name}, order_by="task_idx, exp_start_date")
-	
+
+	def get_project_advance(self):
+                return frappe.get_all("Project Advance", "*", {"project": self.name, "docstatus": 1}, order_by="advance_date")
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 			
 	def get_tasks(self):
@@ -104,6 +121,7 @@ class Project(Document):
 		# Following 2 Lines added by SHIV on 2017/08/11
 		self.sync_activity_tasks()
 		self.activity_tasks = []
+		self.project_advance_item = []
 		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		self.send_welcome_email()
 
@@ -148,7 +166,6 @@ class Project(Document):
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
         # Following function is created
 	def sync_activity_tasks(self):
-                #frappe.msgprint(_("sync_activity_tasks is called...."))
 		"""sync tasks and remove table"""
 		if self.flags.dont_sync_tasks: return
 
@@ -338,3 +355,23 @@ def get_users_for_project(doctype, txt, searchfield, start, page_len, filters):
 @frappe.whitelist()
 def get_cost_center_name(project):
 	return frappe.db.get_value("Project", project, "cost_center")
+
+# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+# Following method is created by SHIV on 02/09/2017
+@frappe.whitelist()
+def make_project_advance(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_partent):
+                target_doc.customer = source_doc.customer
+        
+        doclist = get_mapped_doc("Project", source_name, {
+                "Project": {
+                                "doctype": "Project Advance",
+                                "field_map":{
+                                        "name": "project",
+                                        "customer": "customer"
+                                },
+                                "postprocess": update_master
+                        }
+        }, target_doc)
+        return doclist
+# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++

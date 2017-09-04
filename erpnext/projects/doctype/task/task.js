@@ -75,6 +75,18 @@ frappe.ui.form.on("Task", {
 		
 		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
 		// Default values set as follows by SHIV on 2017/08/18
+		frm.get_field('task_material_item').grid.editable_fields = [
+			{fieldname: 'item', columns: 1},
+			{fieldname: 'item_name', columns: 2},
+			{fieldname: 'item_quantity_used', columns: 1},
+			{fieldname: 'item_quantity', columns: 1},
+			{fieldname: 'item_rate', columns: 2},
+			{fieldname: 'item_amount', columns: 2}
+		];		
+		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		
+		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		// Default values set as follows by SHIV on 2017/08/18
 		frm.set_value("target_uom","Percent");
 		frm.set_value("target_quantity",100);
 		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++

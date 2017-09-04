@@ -6,6 +6,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  		  SHIV		     11/08/2017         					Default "Project Tasks" is replaced by custom
 																			"Activity Tasks"
+1.0				  SHIV           02/09/2017                             Introducing Project Advances
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
@@ -36,7 +37,13 @@ frappe.ui.form.on("Project", {
 			{fieldname: 'work_quantity', columns: 1},
 			{fieldname: 'work_quantity_complete', columns: 1}
 		];
-
+		frm.get_field('project_advance_item').grid.editable_fields = [
+			{fieldname: 'advance_name', columns: 2},
+			{fieldname: 'advance_date', columns: 2},
+			{fieldname: 'received_amount', columns: 2},
+			{fieldname: 'adjustment_amount', columns: 2},
+			{fieldname: 'balance_amount', columns: 2}
+		];		
 	},	
 	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 	
@@ -74,6 +81,11 @@ frappe.ui.form.on("Project", {
 		});
 	},
 	refresh: function(frm) {
+		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		// Following code added SHIV on 02/09/2017
+		frm.add_custom_button(__("Advance"), function(){frm.trigger("make_project_advance")},__("Make"), "icon-file-alt");
+		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		
 		if(frm.doc.__islocal) {
 			frm.web_link && frm.web_link.remove();
 		} else {
@@ -90,6 +102,17 @@ frappe.ui.form.on("Project", {
 			frm.trigger('show_dashboard');
 		}
 	},
+	
+	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+	// Following function created by SHIV on 02/09/2017
+	make_project_advance: function(frm){
+		frappe.model.open_mapped_doc({
+			method: "erpnext.projects.doctype.project.project.make_project_advance",
+			frm: frm
+		});
+	},
+	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+	
 	tasks_refresh: function(frm) {
 		var grid = frm.get_field('tasks').grid;
 		grid.wrapper.find('select[data-fieldname="status"]').each(function() {
@@ -134,6 +157,13 @@ frappe.ui.form.on("Project Task", {
 	status: function(frm, doctype, name) {
 		frm.trigger('tasks_refresh');
 	},
+});
+
+frappe.ui.form.on("Project Advance Item",{
+	view_advance: function(frm, doctype, name){
+		var doc = frappe.get_doc(doctype, name);
+		frappe.set_route("Form", "Project Advance", doc.advance_name);
+	}
 });
 
 // ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
