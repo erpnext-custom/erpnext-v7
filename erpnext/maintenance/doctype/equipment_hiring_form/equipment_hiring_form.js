@@ -27,6 +27,12 @@ frappe.ui.form.on('Equipment Hiring Form', {
 			};
 			frappe.set_route("List", "Hire Charge Invoice");
 		}, __("View"));
+
+		if(!frm.doc.payment_completed) {
+			cur_frm.add_custom_button(__('Close'), function() {
+				cur_frm.cscript.update_status()
+			}, __("Status"));
+		}
 	},
 	onload: function(frm) {
 		if (!frm.doc.request_date) {
@@ -41,24 +47,8 @@ frappe.ui.form.on('Equipment Hiring Form', {
 	"private": function(frm) {
 		cur_frm.toggle_reqd("customer_cost_center", frm.doc.private == 'CDCL')
 		cur_frm.toggle_reqd("customer_branch", frm.doc.private == 'CDCL')
-	}
+	},
 });
-
-/*cur_frm.fields_dict['customer'].get_query = function(frm) {
-	if(cur_frm.doc.private == "Private") {
-	console.log("INSIDE")
-		return {
-			filters: [["Customer", "customer_group", "like", "Internal"]]
-			//filters:[['customer_group', '=', 'Private Agency'], ['customer_group', '=', 'Individual']]
-		}
-	}
-	else {
-	console.log("OUTSIDE")
-		return {
-			filters:[['customer_group', '!=', 'Private Agency'], ['customer_group', '!=', 'Individual']]
-		}
-	}
-}*/
 
 cur_frm.add_fetch("cost_center", "branch", "branch")
 cur_frm.add_fetch("customer", "location", "address")
@@ -225,3 +215,17 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 	});
 });
 
+cur_frm.cscript.update_status = function(){
+	var doc = cur_frm.doc;
+	frappe.ui.form.is_saving = true;
+	frappe.call({
+		method: "erpnext.maintenance.doctype.equipment_hiring_form.equipment_hiring_form.update_status",
+		args: {name: doc.name},
+		callback: function(r){
+			cur_frm.reload_doc();
+		},
+		always: function() {
+			frappe.ui.form.is_saving = false;
+		}
+	});
+}

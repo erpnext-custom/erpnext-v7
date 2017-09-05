@@ -26,7 +26,7 @@ def get_columns():
 
 def get_data(filters):
 
-	query = ("""select hic.customer, hic.name, hid.equipment, hid.equipment_number, hid. work_rate, hid.idle_rate,
+	query = ("""select distinct hic.customer, hic.name, hid.equipment, hid.equipment_number, hid. work_rate, hid.idle_rate,
 CASE hic.owned_by
 	WHEN 'Private' THEN hic.total_invoice_amount
 	END as Private,
@@ -38,7 +38,7 @@ CASE hic.owned_by
 	END AS CDCL,
 hic.total_invoice_amount
 from `tabHire Charge Invoice` as hic, `tabHire Invoice Details` as hid
-where hic.name = hid.parent """)
+where hic.name = hid.parent and hic.docstatus = 1 """)
 
 	if filters.get("branch"):
 		query += " and hic.branch = \'" + str(filters.branch) + "\'"
@@ -48,3 +48,5 @@ where hic.name = hid.parent """)
 
 	query += " order by hic.customer "
 	return frappe.db.sql(query)
+
+

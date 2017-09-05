@@ -4,9 +4,10 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SHIV		                    11/08/2017         Default "Project Tasks" is replaced by custom
+2.0		  SHIV		                    11/08/2017         Default "Project Tasks" is replaced by custom
                                                                          "Activity Tasks"
-1.0		  SHIV		                    02/09/2017         make_advance_payment method is created.
+2.0		  SHIV		                    02/09/2017         make_advance_payment method is created.
+2.0		  SHIV		                    05/09/2017         make_project_payment method is created.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -25,20 +26,20 @@ class Project(Document):
 
 	def onload(self):
 		"""Load project tasks for quick view"""
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 		# Following code commented by SHIV on 2017/08/11
 		'''
 		if not self.get('__unsaved') and not self.get("tasks"):
 			self.load_tasks()
 		'''
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following code added by SHIV on 2017/08/11
 		if not self.get('__unsaved') and not self.get("activity_tasks"):
 			self.load_activity_tasks()
 			self.load_advance()
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
                 
 		self.set_onload('activity_summary', frappe.db.sql('''select activity_type,
 			sum(hours) as total_hours
@@ -62,7 +63,7 @@ class Project(Document):
 				"task_id": task.name
 			})
 
-        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         # Follwoing code added by SSK on 2017/08/11
         def load_advance(self):
                 """Load `project_advance_item` from the database"""
@@ -101,7 +102,7 @@ class Project(Document):
 
 	def get_project_advance(self):
                 return frappe.get_all("Project Advance", "*", {"project": self.name, "docstatus": 1}, order_by="advance_date")
-        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 			
 	def get_tasks(self):
 		return frappe.get_all("Task", "*", {"project": self.name}, order_by="exp_start_date asc")
@@ -109,20 +110,20 @@ class Project(Document):
 	def validate(self):
 		self.validate_dates()
 
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 		# Follwoing 2 lines are commented by SHIV on 2017/08/11
 		'''
 		self.sync_tasks()
 		self.tasks = []
 		'''
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 		# Following 2 Lines added by SHIV on 2017/08/11
 		self.sync_activity_tasks()
 		self.activity_tasks = []
 		self.project_advance_item = []
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.send_welcome_email()
 
 	def validate_dates(self):
@@ -163,7 +164,7 @@ class Project(Document):
 		self.update_percent_complete()
 		self.update_costing()
 		
-        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         # Following function is created
 	def sync_activity_tasks(self):
 		"""sync tasks and remove table"""
@@ -212,7 +213,7 @@ class Project(Document):
 
 		self.update_percent_complete()
 		self.update_costing()
-        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		
 	def update_project(self):
 		self.update_percent_complete()
@@ -221,7 +222,7 @@ class Project(Document):
 		self.save(ignore_permissions = True)
 
 	def update_percent_complete(self):
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following code commented by SHIV on 2017/08/16
                 '''
 		total = frappe.db.sql("""select count(*) from tabTask where project=%s""", self.name)[0][0]
@@ -245,7 +246,7 @@ class Project(Document):
 
                 if total.tot_work_quantity:
                         self.tot_wq_percent = flt(total.tot_work_quantity,2)
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
                         
 	def update_costing(self):
 		from_time_sheet = frappe.db.sql("""select
@@ -301,7 +302,7 @@ class Project(Document):
 				user.welcome_email_sent=1
 
 	def on_update(self):
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following 2 lines commented by SHIV on 2017/08/11
                 '''
 		self.load_tasks()
@@ -310,7 +311,7 @@ class Project(Document):
 		# Following 2 lines added by SHIV on 2017/08/11
 		self.load_activity_tasks()
 		self.sync_activity_tasks()		
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
 def get_timeline_data(doctype, name):
 	'''Return timeline for attendance'''
@@ -356,7 +357,7 @@ def get_users_for_project(doctype, txt, searchfield, start, page_len, filters):
 def get_cost_center_name(project):
 	return frappe.db.get_value("Project", project, "cost_center")
 
-# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 # Following method is created by SHIV on 02/09/2017
 @frappe.whitelist()
 def make_project_advance(source_name, target_doc=None):
@@ -374,4 +375,4 @@ def make_project_advance(source_name, target_doc=None):
                         }
         }, target_doc)
         return doclist
-# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++

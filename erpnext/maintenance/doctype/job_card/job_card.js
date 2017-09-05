@@ -13,7 +13,10 @@ frappe.ui.form.on('Job Card', {
 		}
 	
 		if (!frm.doc.payment_jv && frm.doc.jv && frappe.model.can_write("Journal Entry")) {
-			cur_frm.toggle_display("receive_payment", 1)
+			//cur_frm.toggle_display("receive_payment", 1)
+			cur_frm.add_custom_button(__('Payment'), function() {
+				cur_frm.cscript.receive_payment()
+			}, __("Receive"));
 		}
 		else {
 			cur_frm.toggle_display("receive_payment", 0)
@@ -144,4 +147,21 @@ function get_entries_from_min(form) {
 			}
 		}
 	})
+}
+
+cur_frm.cscript.receive_payment = function(){
+	var doc = cur_frm.doc;
+	frappe.ui.form.is_saving = true;
+	frappe.call({
+		method: "erpnext.maintenance.doctype.job_card.job_card.make_bank_entry",
+		args: {
+			"frm": cur_frm.doc.name,
+		},
+		callback: function(r){
+			cur_frm.reload_doc();
+		},
+		always: function() {
+			frappe.ui.form.is_saving = false;
+		}
+	});
 }

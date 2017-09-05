@@ -440,6 +440,7 @@ frappe.ui.form.on('Payment Entry', {
 			frm.set_value("received_amount", frm.doc.paid_amount);
 			frm.set_value("target_exchange_rate", frm.doc.source_exchange_rate);
 			frm.set_value("base_received_amount", frm.doc.base_paid_amount);
+			frm.set_value("actual_receivable_amount", frm.doc.base_paid_amount - frm.doc.tds_amount);
 		}
 
 		if(frm.doc.payment_type == "Receive")
@@ -721,6 +722,11 @@ frappe.ui.form.on('Payment Entry', {
 				}
 			})
 		}
+	},
+	tds_amount: function(frm) {
+		frm.set_value("actual_receivable_amount", frm.doc.base_received_amount - frm.doc.tds_amount)
+		cur_frm.refresh_field("actual_receivable_amount")
+		cur_frm.toggle_reqd("tds_account", frm.doc.tds_amount)
 	}
 });
 

@@ -8,6 +8,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                       by Hap Dorji
                                                                           i) Abnormal Loss - SMCL
                                                                           ii) Normal Loss - SMCL
+1.0		  SHIV		                   05/09/2017         Project Invoice is introduced.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -185,6 +186,11 @@ class ReceivablePayableReport(object):
 			out_amt = frappe.db.get_value("Sales Invoice", gle.voucher_no, "outstanding_amount")
 		elif gle.voucher_type == "Purchase Invoice":
 			out_amt = frappe.db.get_value("Purchase Invoice", gle.voucher_no, "outstanding_amount")
+		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# Following condition added by SHIV on 05/09/2017
+		elif gle.voucher_type == "Project Invoice":
+                        out_amt = frappe.db.get_value("Project Invoice", gle.voucher_no, "total_balance_amount")
+                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		else:
 			pass
 		

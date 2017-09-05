@@ -40,13 +40,25 @@ class VehicleLogbook(Document):
 			doc.db_set("hiring_status", 1)
 
 	def calculate_balance(self):
-		qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1", (self.equipment, self.from_date, self.to_date), as_dict=True)
-		closing = frappe.db.sql("select closing_balance from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and rate_type = 'With Fuel' and to_date <= %s order by to_date desc limit 1", (self.equipment, self.from_date), as_dict=True)
+		self.db_set("closing_balance", self.opening_balance + self.hsd_received - self.consumption)
 
-		if qty:
-			if closing:
-				self.db_set("opening_balance", flt(closing[0].closing_balance))
-				self.db_set("closing_balance", flt(closing[0].closing_balance) + flt(qty[0].qty) - flt(self.consumption))
-			else:
-				self.db_set("closing_balance", flt(qty[0].qty) - flt(self.consumption))
+@frappe.whitelist()
+def get_opening(equipment, from_date, to_date):
+	closing = frappe.db.sql("select closing_balance from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and rate_type = 'With Fuel' and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
 
+	qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1", (equipment, from_date, to_date), as_dict=True)
+
+
+	result = []
+	if closing:
+		result.append(closing[0].closing_balance)
+	else:
+		result.append(0)
+
+	if qty:
+		result.append(qty[0].qty)
+	else:
+		result.append(0)
+
+	return result
+		

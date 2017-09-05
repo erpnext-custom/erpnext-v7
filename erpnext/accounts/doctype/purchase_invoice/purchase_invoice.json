@@ -3033,7 +3033,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2017-08-25 16:49:43.411227", 
+ "modified": "2017-09-05 11:32:07.290601", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Purchase Invoice", 
@@ -3184,7 +3184,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 

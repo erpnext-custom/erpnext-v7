@@ -386,6 +386,7 @@ class PaymentEntry(AccountsController):
 		gl_entries = []
 		self.add_party_gl_entries(gl_entries)
 		self.add_bank_gl_entries(gl_entries)
+		self.add_tds_gl_entries(gl_entries)
 		self.add_deductions_gl_entries(gl_entries)
 
 		make_gl_entries(gl_entries, cancel=cancel, adv_adj=adv_adj)
@@ -473,8 +474,10 @@ class PaymentEntry(AccountsController):
 							"account": self.paid_to,
 							"account_currency": self.paid_to_account_currency,
 							"against": self.party if self.payment_type=="Receive" else self.paid_from,
-							"debit_in_account_currency": self.received_amount,
-							"debit": self.base_received_amount,
+							#"debit_in_account_currency": self.received_amount,
+							#"debit": self.base_received_amount,
+							"debit_in_account_currency": self.actual_receivable_amount,
+							"debit": self.actual_receivable_amount,
 							"cost_center": self.pl_cost_center
 						})
 					)
@@ -486,8 +489,10 @@ class PaymentEntry(AccountsController):
 						"account": self.paid_to,
 						"account_currency": self.paid_to_account_currency,
 						"against": self.party if self.payment_type=="Receive" else self.paid_from,
-						"debit_in_account_currency": self.received_amount,
-						"debit": self.base_received_amount
+						#"debit_in_account_currency": self.received_amount,
+						#"debit": self.base_received_amount
+						"debit_in_account_currency": self.actual_receivable_amount,
+						"debit": self.actual_receivable_amount
 					})
 				)
 			
@@ -508,7 +513,26 @@ class PaymentEntry(AccountsController):
 						"cost_center": d.cost_center
 					})
 				)
-				
+	
+	def add_tds_gl_entries(self, gl_entries):
+		if self.tds_amount:
+			if self.pl_cost_center:
+				if self.tds_account:
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": self.tds_account,
+							"account_currency": self.paid_to_account_currency,
+							"against": self.party if self.payment_type=="Receive" else self.paid_from,
+							"debit_in_account_currency": self.tds_amount,
+							"debit": self.tds_amount,
+							"cost_center": self.pl_cost_center
+						})
+					)
+				else:
+					frappe.throw("Please set TDS Account")
+			else:
+				frappe.throw("Please select a Cost Center under 'Cost Center (If Applicable)' field")
+	
 	def update_advance_paid(self):
 		if self.payment_type in ("Receive", "Pay") and self.party:
 			for d in self.get("references"):
