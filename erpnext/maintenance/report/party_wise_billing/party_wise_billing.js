@@ -8,8 +8,7 @@ frappe.query_reports["Party Wise Billing"] = {
 				"label": ("Branch"),
 				"fieldtype": "Link",
 				"options" : "Branch",
-				"reqd" : 1
-
+				
 			},
 
 			{

@@ -2,6 +2,13 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Travel Claim', {
+	"items_on_form_rendered": function(frm, grid_row, cdt, cdn) {
+		/*var row = cur_frm.open_grid_row();
+		if(!row.grid_form.fields_dict.dsa_per_day.value) {
+			row.grid_form.fields_dict.dsa.set_value(frm.doc.dsa_per_day)
+                	row.grid_form.fields_dict.dsa.refresh()
+		}*/
+	},
 	refresh: function(frm) {
 		if(frm.doc.docstatus == 1) {
 			cur_frm.set_df_property("hr_approval", "hidden", 0)
@@ -52,7 +59,7 @@ frappe.ui.form.on('Travel Claim', {
 	},
 	"extra_claim_amount": function(frm) {
 		frm.set_value("balance_amount", frm.doc.total_claim_amount + frm.doc.extra_claim_amount - frm.doc.advance_amount)
-	}
+	},
 });
 
 frappe.ui.form.on("Travel Claim Item", {

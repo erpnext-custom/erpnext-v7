@@ -9,6 +9,18 @@ frappe.ui.form.on('POL', {
 			frm.set_value("date", get_today());
 		}
 	},
+	refresh: function(frm) {
+		if(frm.doc.jv) {
+			cur_frm.add_custom_button(__('Bank Entries'), function() {
+				frappe.route_options = {
+					"Journal Entry Account.reference_type": me.frm.doc.doctype,
+					"Journal Entry Account.reference_name": me.frm.doc.name,
+				};
+				frappe.set_route("List", "Journal Entry");
+			}, __("View"));
+		}
+	},
+
 	"qty": function(frm) {
 		calculate_total(frm)
 	},

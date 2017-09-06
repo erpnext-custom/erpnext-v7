@@ -80,19 +80,32 @@ frappe.ui.form.on('Vehicle Logbook', {
 			cur_frm.refresh_fields()
 		}
 	},
+
 	opening_balance: function(frm) {
-		frm.set_value("closing_balance", frm.doc.hsd_received + frm.doc.opening_balance - frm.doc.consumption)
-		cur_frm.refresh_field("closing_balance")
+		calculate_closing(frm)
 	},
+
 	hsd_received: function(frm) {
-		frm.set_value("closing_balance", frm.doc.hsd_received + frm.doc.opening_balance - frm.doc.consumption)
-		cur_frm.refresh_field("closing_balance")
+		calculate_closing(frm)
 	},
+
+	consumption_hours: function(frm) {
+		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.rate_type == 'With Fuel') {
+			frm.set_value("consumption", frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.refresh_field("consumption")
+			calculate_closing(frm)
+		}
+	},
+
 	consumption: function(frm) {
-		frm.set_value("closing_balance", frm.doc.hsd_received + frm.doc.opening_balance - frm.doc.consumption)
-		cur_frm.refresh_field("closing_balance")
+		calculate_closing(frm)
 	}
 });
+
+function calculate_closing(frm) {
+	frm.set_value("closing_balance", frm.doc.hsd_received + frm.doc.opening_balance - frm.doc.consumption)
+	cur_frm.refresh_field("closing_balance")
+}
 
 function calculate_distance_km(frm) {
 	if(frm.doc.initial_km && frm.doc.final_km) {

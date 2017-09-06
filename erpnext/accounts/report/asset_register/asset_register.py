@@ -48,7 +48,7 @@ def validate_filters(filters):
 		filters.to_date = filters.year_end_date
 
 def get_data(filters):
-	query = "select income_tax_opening_depreciation_amount as iopening, opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, equipment_number, old_asset_code, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, value_after_depreciation, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date < \'" + str(filters.from_date) + "\' and gl.docstatus = 1) as opening_amount, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\' and gl.docstatus = 1) as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date <= \'" + str(filters.to_date) + "\' and ds.docstatus = 1) as depreciation_income_tax from tabAsset as ass where ass.docstatus = 1 and ass.status != 'Scrapped'"
+	query = "select asset_sub_category, income_tax_opening_depreciation_amount as iopening, opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, equipment_number, old_asset_code, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, value_after_depreciation, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date < \'" + str(filters.from_date) + "\' and gl.docstatus = 1) as opening_amount, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\' and gl.docstatus = 1) as depreciation_amount, (select sum(depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date <= \'" + str(filters.to_date) + "\' and ds.docstatus = 1) as depreciation_income_tax from tabAsset as ass where ass.docstatus = 1 and ass.status != 'Scrapped'"
 
 	if filters.cost_center:
 		query+=" and ass.cost_center = \'" + filters.cost_center + "\'"
@@ -92,6 +92,7 @@ def get_data(filters):
 				"asset_code": a.name,
 				"asset_name": a.asset_name,
 				"asset_category": a.asset_category,
+				"asset_sub_category": a.asset_sub_category,
 				"issued_to": a.issued_to,
 				"cost_center": a.cost_center,
 				"date_of_issue": a.purchase_date,
@@ -133,6 +134,13 @@ def get_columns():
 			"label": _("Asset Category"),
 			"fieldtype": "Link",
 			"options":"Asset Category",
+			"width": 200
+		},
+		{
+			"fieldname": "asset_sub_category",
+			"label": _("Sub Category"),
+			"fieldtype": "Link",
+			"options":"Item Sub Group",
 			"width": 200
 		},
 		{

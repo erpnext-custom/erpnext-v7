@@ -11,12 +11,12 @@ def execute(filters=None):
 	query = construct_query(filters)
 	data = get_data(query, filters = None)
 
-	return columns,data, query
+	return columns,data
 def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		row = [d.ty, d.no, d.br, d.min, d.max, flt(d.max)-flt(d.min),
+		row = [d.ty, d.no, d.br, d.min, d.max, d.km,
 		d.drawn, d.opening, flt(d.drawn)+flt(d.opening),
 		d.yardstick, d.consumed, d.closing, d.rate, flt(d.rate)*flt(d.consumed)]
 		data.append(row);
@@ -24,33 +24,44 @@ def get_data(query, filters=None):
 
 
 def construct_query(filters):
-	query = """select hcp.equipment_type ty,  e.equipment_number  as no, pol.branch br, MIN(vl.initial_km) AS min, MAX(vl.final_km) AS max, (select sum(vl.hsd_received) from `tabVehicle Logbook` vl) AS drawn,
+	"""query = select e.equipment_type ty, e.equipment_number as no, e.branch br, MIN(vl.initial_km) AS min, MAX(vl.final_km) AS max,
+	(select avg(pol.rate) from tabPOL pol where pol.equipment = e.name and pol.date between '%(from_date)s' and '%(to_date)s' and pol.docstatus = 1) as rate,
+	(select sum(vl.hsd_received) from `tabVehicle Logbook` vl where vl.equipment_number = e.equipment_number) AS drawn,
+	CASE WHEN vl.to_date > '%(from_date)s'
+	then (select vl.opening_balance from `tabVehicle Logbook` vl where vl.equipment_number = e.equipment_number order by vl.to_date asc limit 1)
+	else 0 end as opening,
 	CASE
-	WHEN vl.to_date < '%(from_date)s'
-	then (select vl.opening_balance from `tabVehicle Logbook` vl where vl.equipment = pol.equipment order by vl.to_date asc limit 1)
-	else 0
-	end as opening,
-	CASE
-	WHEN hcp.lph
-	THEN hcp.lph
-	WHEN hcp.kph
-	THEN hcp.kph
+	WHEN vl.ys_km THEN vl.ys_km
+	WHEN vl.ys_hours THEN vl.ys_hours
 	END AS yardstick,
-	(select sum(vl.consumption) from `tabVehicle Logbook` vl) as consumed,
-	case
-	when vl.to_date > '%(from_date)s'
-	then (select vl.closing_balance from `tabVehicle Logbook` vl where vl.equipment = pol.equipment order by vl.to_date desc limit 1)
-	else 0
-	end as closing,
-	avg(pol.rate) as rate from  `tabHire Charge Parameter` hcp, `tabEquipment` e, `tabVehicle Logbook` vl, `tabPOL` pol where hcp.equipment_model = e.equipment_model and  vl.equipment = pol.equipment and  e.equipment_number = vl.equipment_number and vl.docstatus = 1 """ % {"from_date": str(filters.from_date)}
+	(select sum(vl.distance_km) from `tabVehicle Logbook` vl where vl.equipment_number = e.equipment_number  and vl.docstatus = 1) as km,
+	(select sum(vl.consumption) from `tabVehicle Logbook` vl where vl.equipment_number = e.equipment_number) as consumed,
+	case when vl.to_date < '%(to_date)s'
+	then (select vl.closing_balance from `tabVehicle Logbook` vl where vl.equipment_number = e.equipment_number order by vl.to_date desc limit 1)
+	else 0 end as closing from `tabEquipment` e, `tabVehicle Logbook` vl where e.equipment_number = vl.equipment_number
+	(select a.opening_balance from `tabVehicle Logbook` a where a.equipment_number = e.equipment_number a.from_date between %(from_date)s and %(to_date)s and a.to_date between %(from_date)s and %(to_date)s order by a.from_date asc limit 1)
+	and vl.docstatus = 1  %{"from_date": str(filters.from_date), "to_date": str(filters.to_date)}"""
+
+	query = """select e.equipment_type ty, e.equipment_number as no, e.branch br, MIN(vl.initial_km) AS min, MAX(vl.final_km) AS max,
+	(select avg(pol.rate) from tabPOL pol where pol.equipment = e.name and pol.date between '%(from_date)s' and '%(to_date)s' and pol.docstatus = 1) as rate,
+	sum(vl.hsd_received) as drawn,
+	(select a.opening_balance from `tabVehicle Logbook` a where a.rate_type = 'With Fuel' and a.equipment_number = e.equipment_number and a.from_date between \'%(from_date)s\' and \'%(to_date)s\' and a.to_date between \'%(from_date)s\' and \'%(to_date)s\' order by a.from_date asc limit 1) as opening,
+	CASE
+	WHEN vl.ys_km THEN vl.ys_km
+	WHEN vl.ys_hours THEN vl.ys_hours
+	END AS yardstick,
+	sum(vl.distance_km) as km,
+	sum(vl.consumption) as consumed,
+	(select a.closing_balance from `tabVehicle Logbook` a where a.rate_type = 'With Fuel' and a.equipment_number = e.equipment_number and a.from_date between \'%(from_date)s\' and \'%(to_date)s\' and a.to_date between \'%(from_date)s\' and \'%(to_date)s\' order by a.from_date desc limit 1) as closing
+	from `tabEquipment` e, `tabVehicle Logbook` vl where e.equipment_number = vl.equipment_number
+	and vl.docstatus = 1"""  %{"from_date": str(filters.from_date), "to_date": str(filters.to_date)}
 
 	if filters.get("branch"):
-		query += " and pol.branch = \'" + str(filters.branch) + "\'"
+		query += " and e.branch = \'" + str(filters.branch) + "\'"
 
 	if filters.get("from_date") and filters.get("to_date"):
-		query += " and pol.date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+		 query += " and vl.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' and vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 	query += " GROUP BY e.equipment_number "
-	frappe.msgprint(query)
 	return query
 
 def get_columns():

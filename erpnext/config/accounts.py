@@ -33,6 +33,22 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Hire Charge Invoice",
+					"description": _("Hire Charge Invoice"),
+				},
+				{
+					"type": "doctype",
+					"name": "Job Card",
+					"description": _("Create Job Card"),
+				},
+				{
+					"type": "doctype",
+					"name": "POL",
+					"label": "POL Payment",
+					"description": _("Receive POL"),
+				},
+				{
+					"type": "doctype",
 					"name": "Direct Payment",
 					"description": _("Direct Payment")
 				},
@@ -175,7 +191,14 @@ def get_data():
 					"name": "RRCO Receipt Tool",
 					"description": "Enter RRCO Receipts in Bulk",
 					"hide_count": True
-				}
+				},
+				{
+					"type": "report",
+					"name": "TDS Deducted By Customer",
+					"label": "TDS Deducted By Customer",
+					"doctype": "Payment Entry",
+					"is_query_report": True
+				},
 			]
 		},
 		{

@@ -23,6 +23,14 @@ frappe.ui.form.on('Asset', {
 				}
 			};
 		});
+
+		frm.set_query("asset_sub_category", function() {
+			return {
+				"filters": {
+					"item_group": "Fixed Asset",
+				}
+			};
+		});
 	},
 
 	refresh: function(frm) {

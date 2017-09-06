@@ -13,11 +13,11 @@ class VehicleLogbook(Document):
 		self.calculate_totals()
 
 	def on_update(self):
-		self.calculate_balance()
+		if self.rate_type == 'With Fuel':
+			self.calculate_balance()
 
 	def on_submit(self):
-		if self.rate_type == 'With Fuel':
-			self.update_hire()
+		self.update_hire()
 
 	def check_duplicate(self):		
 		for a in self.vlogs:
@@ -40,7 +40,7 @@ class VehicleLogbook(Document):
 			doc.db_set("hiring_status", 1)
 
 	def calculate_balance(self):
-		self.db_set("closing_balance", self.opening_balance + self.hsd_received - self.consumption)
+		self.db_set("closing_balance", flt(self.opening_balance) + flt(self.hsd_received) - flt(self.consumption))
 
 @frappe.whitelist()
 def get_opening(equipment, from_date, to_date):
