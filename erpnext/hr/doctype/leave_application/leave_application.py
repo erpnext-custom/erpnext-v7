@@ -321,7 +321,10 @@ def get_leave_balance_on(employee, leave_type, date, allocation_records=None,
         if leave_type == 'Earned Leave' and \
            flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken) - flt(leaves_encashed)) > flt(le.encashment_lapse):
                 return flt(le.encashment_lapse)
-        
+
+	if leave_type == 'Earned Leave':
+	       leaves_taken = 0
+
 	return flt(allocation.total_leaves_allocated) - flt(leaves_taken) - flt(leaves_encashed)
 
 # Ver 1.0 Begins added by SSK on 20/08/2016, following function is added
