@@ -55,7 +55,7 @@ frappe.ui.form.on('Project Invoice', {
 				frappe.set_route("query-report", "General Ledger");
 			}, __("View"));
 			
-			if(frappe.model.can_read("Project Payment")){
+			if(frappe.model.can_read("Project Payment") && parseFloat(frm.doc.total_balance_amount) > 0){
 				frm.add_custom_button(__("Payment"), function(){
 					frm.trigger("make_project_payment")},
 					__("Make"), "icon-file-alt");
@@ -169,7 +169,7 @@ var calculate_totals = function(frm){
 	net_invoice_amount = (parseFloat(gross_invoice_amount)+parseFloat(frm.doc.price_adjustment_amount)-parseFloat(frm.doc.advance_recovery)-parseFloat(frm.doc.tds_amount));
 	cur_frm.set_value("gross_invoice_amount",(gross_invoice_amount));
 	cur_frm.set_value("net_invoice_amount",(net_invoice_amount));
-	cur_frm.set_value("total_balance_amount",(net_invoice_amount));
+	cur_frm.set_value("total_balance_amount",(parseFloat(frm.doc.net_invoice_amount || 0)-parseFloat(frm.doc.total_received_amount || 0)));
 }
 
 var check_uncheck_all = function(frm){

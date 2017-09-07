@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
+# project_invoice.py
 '''
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
@@ -76,7 +77,6 @@ class ProjectInvoice(AccountsController):
 
 
                         make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
-                        frappe.msgprint(_("{0}").format(gl_entries))
                 
         
         def update_boq(self):

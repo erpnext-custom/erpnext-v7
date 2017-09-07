@@ -137,6 +137,11 @@ def get_data():
 					"is_query_report": True,
 				},
 				{
+					"type": "doctype",
+					"name": "Insurance and Registration",
+					"description": _("Insurance and Registration details for equipments")
+				},
+				{
 					"type": "report",
 					"name": "Employee Asset Report",
 					"doctype": "Asset",

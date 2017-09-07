@@ -13,10 +13,12 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe import _
-from frappe.utils import flt, getdate, get_url
+from frappe.utils import flt, getdate, get_url, nowdate
 from frappe.model.mapper import get_mapped_doc
+from frappe.utils import money_in_words
+from erpnext.controllers.accounts_controller import AccountsController
 
-class ProjectPayment(Document):
+class ProjectPayment(AccountsController):
 	def __setup__(self):
                 self.onload()
                 
@@ -26,11 +28,326 @@ class ProjectPayment(Document):
                         #self.load_advances()
                         pass
 
+        def on_update(self):
+                self.validate_invoice_balance()
+                self.validate_advance_balance()
+
         def validate(self):
                 self.validate_mandatory_fields()
                 self.validate_allocated_amounts()
                 #frappe.msgprint(_("{0}").format(self.get("project")))
 
+        def on_submit(self):
+                self.update_invoice_balance()
+                self.update_advance_balance()                
+                self.update_boq_balance()
+                self.make_gl_entries()
+
+        def make_gl_entries(self):
+                tot_advance = 0.0
+                
+                if flt(self.total_amount) > 0:
+                        from erpnext.accounts.general_ledger import make_gl_entries
+                        gl_entries = []
+                        currency = frappe.db.get_value(doctype="Customer", filters=self.party, fieldname=["default_currency"], as_dict=True)
+                        
+                        # Bank Entry
+                        if flt(self.paid_amount) > 0:
+                                rev_gl = frappe.db.get_value(doctype="Branch",filters=self.branch,fieldname="revenue_bank_account", as_dict=True)
+
+                                if not rev_gl.revenue_bank_account:
+                                        frappe.throw("Revenue Bank Account is not defined for the Branch.")
+                                        
+                                rev_gl_det = frappe.db.get_value(doctype="Account", filters=rev_gl.revenue_bank_account, fieldname=["account_type"], as_dict=True)
+                                
+                                gl_entries.append(
+                                        self.get_gl_dict({"account": rev_gl.revenue_bank_account,
+                                                         "debit": flt(self.paid_amount),
+                                                         "debit_in_account_currency": flt(self.paid_amount),
+                                                         "cost_center": self.cost_center,
+                                                         "party_check": 0,
+                                                         "account_type": rev_gl_det.account_type,
+                                                         "is_advance": "No"
+                                        }, currency.default_currency)
+                                )
+
+                        # Advance Entry
+                        for adv in self.advances:
+                                tot_advance += flt(adv.allocated_amount)
+
+                        if flt(tot_advance) > 0:        
+                                adv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="project_advance_account", as_dict=True)
+
+                                if not adv_gl.project_advance_account:
+                                        frappe.throw("Project Advance Account is not defined in Projects Accounts Settings")
+                                        
+                                adv_gl_det = frappe.db.get_value(doctype="Account", filters=adv_gl.project_advance_account, fieldname=["account_type"], as_dict=True)
+                                        
+                                        
+                                gl_entries.append(
+                                        self.get_gl_dict({"account": adv_gl.project_advance_account,
+                                                         "debit": flt(tot_advance),
+                                                         "debit_in_account_currency": flt(tot_advance),
+                                                         "cost_center": self.cost_center,
+                                                         "party_check": 1,
+                                                         "party_type": "Customer",
+                                                         "party": self.party,
+                                                         "account_type": adv_gl_det.account_type,
+                                                         "is_advance": "No",
+                                                         "reference_type": "Project Payment",
+                                                         "reference_name": self.name,
+                                                         "project": self.project
+                                        }, currency.default_currency)
+                                )
+
+                        # Other Deductions
+                        for ded in self.deductions:
+                                if flt(ded.amount) > 0:
+                                        if not ded.account:
+                                                frappe.throw("Account cannot be blank under other deductions.")
+                                                
+                                        ded_gl_det = frappe.db.get_value(doctype="Account", filters=ded.account, fieldname=["account_type"], as_dict=True)
+                                        gl_entries.append(
+                                                self.get_gl_dict({"account": ded.account,
+                                                                 "debit": flt(ded.amount),
+                                                                 "debit_in_account_currency": flt(ded.amount),
+                                                                 "cost_center": self.cost_center,
+                                                                 "account_type": ded_gl_det.account_type,
+                                                                 "is_advance": "No",
+                                                                 "reference_type": "Project Payment",
+                                                                 "reference_name": self.name,
+                                                                 "project": self.project
+                                                }, currency.default_currency)
+                                        )
+
+                        # TDS Deductions
+                        if flt(self.tds_amount) > 0:
+                                if not self.tds_account:
+                                        frappe.throw("TDS Account cannot be blank.")
+                                        
+                                tds_gl_det = frappe.db.get_value(doctype="Account", filters=self.tds_account, fieldname=["account_type"], as_dict=True)
+
+                                gl_entries.append(
+                                        self.get_gl_dict({"account": self.tds_account,
+                                                        "debit": flt(self.tds_amount),
+                                                        "debit_in_account_currency": flt(self.tds_amount),
+                                                        "cost_center": self.cost_center,
+                                                        "account_type": tds_gl_det.account_type,
+                                                        "is_advance": "No",
+                                                        "reference_type": "Project Payment",
+                                                        "reference_name": self.name,
+                                                        "project": self.project
+                                        }, currency.default_currency)
+                                )
+                        # Receivable Account
+                        if flt(self.total_amount) > 0:
+                                rec_gl = frappe.db.get_value(doctype="Company",filters=self.company,fieldname="default_receivable_account", as_dict=True)
+                                
+                                if not rec_gl.default_receivable_account:
+                                        frappe.throw("Default Receivables Account is not defined in Company Settings")
+
+                                rec_gl_det = frappe.db.get_value(doctype="Account", filters=rec_gl.default_receivable_account, fieldname=["account_type"], as_dict=True)
+                                        
+                                gl_entries.append(
+                                        self.get_gl_dict({"account": rec_gl.default_receivable_account,
+                                                         "credit": flt(self.total_amount),
+                                                         "credit_in_account_currency": flt(self.total_amount),
+                                                         "cost_center": self.cost_center,
+                                                         "party_check": 1,
+                                                         "party_type": "Customer",
+                                                         "party": self.party,
+                                                         "account_type": rec_gl_det.account_type,
+                                                         "is_advance": "No",
+                                                         "reference_type": "Project Payment",
+                                                         "reference_name": self.name,
+                                                         "project": self.project
+                                        }, currency.default_currency)
+                                )
+                                 
+                        make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
+                        
+        def post_journal_entry(self):
+                accounts    = []
+                tot_advance = 0.0
+                
+                # Bank Entry
+                if flt(self.paid_amount) > 0:
+                        rev_gl = frappe.db.get_value(doctype="Branch",filters=self.branch,fieldname="revenue_bank_account", as_dict=True)
+                        rev_gl_det = frappe.db.get_value(doctype="Account", filters=rev_gl.revenue_bank_account, fieldname=["account_type"], as_dict=True)
+                        accounts.append({"account": rev_gl.revenue_bank_account,
+                                         "debit_in_account_currency": flt(self.paid_amount),
+                                         "cost_center": self.cost_center,
+                                         "party_check": 0,
+                                         "account_type": rev_gl_det.account_type,
+                                         "is_advance": "No"
+                        })
+
+                # Advance Entry
+                for adv in self.advances:
+                        tot_advance += flt(adv.allocated_amount)
+
+                if flt(tot_advance) > 0:        
+                        adv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="project_advance_account", as_dict=True)
+                        adv_gl_det = frappe.db.get_value(doctype="Account", filters=adv_gl.project_advance_account, fieldname=["account_type"], as_dict=True)
+                        accounts.append({"account": adv_gl.project_advance_account,
+                                         "debit_in_account_currency": flt(tot_advance),
+                                         "cost_center": self.cost_center,
+                                         "party_check": 1,
+                                         "party_type": "Customer",
+                                         "party": self.party,
+                                         "account_type": adv_gl_det.account_type,
+                                         "is_advance": "No",
+                                         "reference_type": "Project Payment",
+                                         "reference_name": self.name,
+                                         "project": self.project
+                        })
+
+                # Other Deductions
+                for ded in self.deductions:
+                        if flt(ded.amount) > 0 and ded.account:
+                                ded_gl_det = frappe.db.get_value(doctype="Account", filters=ded.account, fieldname=["account_type"], as_dict=True)
+                                accounts.append({"account": ded.account,
+                                                 "debit_in_account_currency": flt(ded.amount),
+                                                 "cost_center": self.cost_center,
+                                                 "account_type": ded_gl_det.account_type,
+                                                 "is_advance": "No",
+                                                 "reference_type": "Project Payment",
+                                                 "reference_name": self.name,
+                                                 "project": self.project
+                                })
+
+                # TDS Deductions
+                if flt(self.tds_amount) > 0 and self.tds_account:
+                        tds_gl_det = frappe.db.get_value(doctype="Account", filters=self.tds_account, fieldname=["account_type"], as_dict=True)
+
+                        accounts.append({"account": self.tds_account,
+                                        "debit_in_account_currency": flt(self.tds_amount),
+                                        "cost_center": self.cost_center,
+                                        "account_type": tds_gl_det.account_type,
+                                        "is_advance": "No",
+                                        "reference_type": "Project Payment",
+                                        "reference_name": self.name,
+                                        "project": self.project
+                                        })
+                # Receivable Account
+                if flt(self.total_amount) > 0:
+                        rec_gl = frappe.db.get_value(doctype="Company",filters=self.company,fieldname="default_receivable_account", as_dict=True)
+                        rec_gl_det = frappe.db.get_value(doctype="Account", filters=rec_gl.default_receivable_account, fieldname=["account_type"], as_dict=True)
+
+                        accounts.append({"account": rec_gl.default_receivable_account,
+                                         "credit_in_account_currency": flt(self.total_amount),
+                                         "cost_center": self.cost_center,
+                                         "party_check": 1,
+                                         "party_type": "Customer",
+                                         "party": self.party,
+                                         "account_type": rec_gl_det.account_type,
+                                         "is_advance": "No",
+                                         "reference_type": "Project Payment",
+                                         "reference_name": self.name,
+                                         "project": self.project
+                        })                         
+                         
+                        je = frappe.get_doc({
+                                "doctype": "Journal Entry",
+                                "voucher_type": "Bank Entry",
+                                "naming_series": "Bank Receipt Voucher",
+                                "title": "Project Payment - "+self.project,
+                                "user_remark": "Project Payment - "+self.project,
+                                "posting_date": nowdate(),
+                                "company": self.company,
+                                "total_amount_in_words": money_in_words(self.total_amount),
+                                "accounts": accounts,
+                                "branch": self.branch
+                        })
+                
+                        je.submit()
+                        
+        def update_invoice_balance(self):
+                for inv in self.references:
+                        if flt(inv.allocated_amount) > 0:
+                                result = frappe.db.sql("""
+                                                select ifnull(total_balance_amount,0) as total_balance_amount
+                                                from `tabProject Invoice`
+                                                where name = %s
+                                                and docstatus = 1
+                                                """, (inv.reference_name), as_dict=1)[0]
+
+                                if flt(result.total_balance_amount) < flt(inv.allocated_amount):
+                                        frappe.throw(_("Invoice#{0} : Allocated amount{1} cannot be more than Invoice Balance({2})").format(inv.reference_name, flt(inv.allocated_amount),flt(result.total_balance_amount)))
+                                else:
+                                        frappe.db.sql("""
+                                                update `tabProject Invoice`
+                                                set total_received_amount = ifnull(total_received_amount,0) + ifnull({0},0),
+                                                        total_balance_amount = ifnull(total_balance_amount,0) - ifnull({1},0)
+                                                where name = '{2}'
+                                                and docstatus = 1
+                                        """.format(flt(inv.allocated_amount),flt(inv.allocated_amount),inv.reference_name))
+
+        def update_advance_balance(self):
+                for adv in self.advances:
+                        if flt(adv.allocated_amount) > 0:
+                                result = frappe.db.sql("""
+                                                select ifnull(balance_amount,0) as balance_amount
+                                                from `tabProject Advance`
+                                                where name = %s
+                                                and docstatus = 1
+                                                """, (adv.reference_name), as_dict=1)[0]
+
+                                if flt(result.balance_amount) < flt(adv.allocated_amount):
+                                        frappe.throw(_("Advance#{0} : Allocated amount{1} cannot be more than Advance Balance({2})").format(adv.reference_name, flt(adv.allocated_amount),flt(result.balance_amount)))
+                                else:
+                                        frappe.db.sql("""
+                                                update `tabProject Advance`
+                                                set adjustment_amount = ifnull(adjustment_amount,0) + ifnull({0},0),
+                                                        balance_amount = ifnull(balance_amount,0) - ifnull({1},0)
+                                                where name = '{2}'
+                                                and docstatus = 1
+                                        """.format(flt(adv.allocated_amount),flt(adv.allocated_amount),adv.reference_name))
+                                        
+        def update_boq_balance(self):
+                for inv in self.references:
+                        result = frappe.db.sql("""
+                                select boq
+                                from `tabProject Invoice`
+                                where name = '{0}'
+                                and docstatus = 1
+                        """.format(inv.reference_name),as_dict=1)[0]
+
+                        if result.boq:
+                                frappe.db.sql("""
+                                        update `tabBOQ`
+                                        set received_amount = ifnull(received_amount,0) + ifnull({0},0),
+                                                balance_amount = ifnull(balance_amount,0) -  ifnull({1},0)
+                                        where name = '{2}'
+                                        and docstatus = 1
+                                """.format(flt(inv.allocated_amount), flt(inv.allocated_amount), result.boq))
+                
+        def validate_invoice_balance(self):
+                for inv in self.references:
+                        if flt(inv.allocated_amount) > 0:
+                                result = frappe.db.sql("""
+                                                select ifnull(total_balance_amount,0) as total_balance_amount
+                                                from `tabProject Invoice`
+                                                where name = %s
+                                                and docstatus = 1
+                                                """, (inv.reference_name), as_dict=1)[0]
+
+                                if flt(result.total_balance_amount) < flt(inv.allocated_amount):
+                                        frappe.throw(_("Invoice#{0} : Allocated amount{1} cannot be more than Invoice Available Balance Amount({2})").format(inv.reference_name, flt(inv.allocated_amount),flt(result.total_balance_amount)))
+
+        def validate_advance_balance(self):
+                for adv in self.advances:
+                        if flt(adv.allocated_amount) > 0:
+                                result = frappe.db.sql("""
+                                                select ifnull(balance_amount,0) as balance_amount
+                                                from `tabProject Advance`
+                                                where name = %s
+                                                and docstatus = 1
+                                                """, (adv.reference_name), as_dict=1)[0]
+
+                                if flt(result.balance_amount) < flt(adv.allocated_amount):
+                                        frappe.throw(_("Advance#{0} : Allocated amount{1} cannot be more than Advance Available Balance Amount({2})").format(adv.reference_name, flt(adv.allocated_amount),flt(result.total_balance_amount)))                                        
+                
         def validate_mandatory_fields(self):
                 if not self.project:
                         frappe.throw("Project Cannot be null.")
@@ -54,9 +371,13 @@ class ProjectPayment(Document):
                 
                 for adv in self.advances:
                         tot_adv_amount += adv.allocated_amount
+                        if flt(adv.allocated_amount) > flt(adv.total_amount):
+                                frappe.throw(_("Advance#{0} : Allocated amount cannot be more than available balance.").format(adv.reference_name))
 
                 for inv in self.references:
                         tot_inv_amount += inv.allocated_amount
+                        if flt(inv.allocated_amount) > flt(inv.total_amount):
+                                frappe.throw(_("Invoice#{0} : Allocated amount cannot be more than available balance.").format(inv.reference_name))                        
 
                 if flt(tot_adv_amount) > flt(tot_inv_amount):
                         frappe.throw(_("Total Advance Allocated({0}) cannot be more than Total Invoice Amount Allocated({1}).".format(flt(tot_adv_amount), flt(tot_inv_amount))))

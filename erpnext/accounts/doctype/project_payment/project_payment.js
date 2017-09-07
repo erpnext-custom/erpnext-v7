@@ -38,6 +38,19 @@ frappe.ui.form.on('Project Payment', {
 	},
 	
 	refresh: function(frm, cdt, cdn) {
+		if(frm.doc.docstatus===1){
+			frm.add_custom_button(__('Accounting Ledger'), function(){
+				frappe.route_options = {
+					voucher_no: frm.doc.name,
+					from_date: frm.doc.posting_date,
+					to_date: frm.doc.posting_date,
+					company: frm.doc.company,
+					group_by_voucher: false
+				};
+				frappe.set_route("query-report", "General Ledger");
+			}, __("View"));
+		}
+		
 		assign_items(frm, cdt, cdn);
 	},
 	
@@ -119,12 +132,12 @@ var assign_items = function(frm, cdt, cdn){
 	
 	//Advances
 	for(var id in pa){
-		paid_amount += parseFloat(pa[id].allocated_amount);
+		paid_amount += parseFloat(pa[id].allocated_amount || 0.0);
 	}	
 	
 	//Other Deductions
 	for(var id in pd){
-		paid_amount += parseFloat(pd[id].amount);
+		paid_amount += parseFloat(pd[id].amount || 0.0);
 	}	
 	
 	//TDS 

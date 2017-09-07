@@ -277,6 +277,24 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 		}
 
 		this.frm.refresh_fields();
+	},
+	
+	rate_per_unit: function() {
+		if(this.frm.doc.rate_per_unit) {
+			var qty = 0
+			this.frm.doc.items.forEach(function(d) {
+				qty += d.delivered_qty	
+			})		
+			this.frm.set_value("total_loading_amount", qty * this.frm.doc.rate_per_unit)
+		}
+		this.frm.refresh_fields();
+	},
+	
+	void_rate: function() {
+		if(this.frm.doc.void_rate) {
+			this.frm.set_value("void_amount", this.frm.doc.void_rate * .01 * (this.frm.doc.total + this.frm.doc.total_loading_amount))
+		}
+		this.frm.refresh_fields();
 	}
 });
 
