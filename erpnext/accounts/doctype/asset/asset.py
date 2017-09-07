@@ -272,6 +272,9 @@ def make_sales_invoice(asset, item_code, company, branch):
 	si.currency = frappe.db.get_value("Company", company, "default_currency")
 	disposal_account, depreciation_cost_center = get_disposal_account_and_cost_center(company)
 	si.branch = branch
+	si.title = "Sale of Asset " + str(asset)
+	si.naming_series = 'Fixed Asset'
+	si.selling_price_list = "Standard Selling"
 	si.append("items", {
 		"item_code": item_code,
 		"is_fixed_asset": 1,

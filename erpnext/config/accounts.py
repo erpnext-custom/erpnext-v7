@@ -31,6 +31,11 @@ def get_data():
 					"name": "Project Invoice",
 					"description": _("Bills raised to Customers.")
 				},
+                                {
+					"type": "doctype",
+					"name": "Project Payment",
+					"description": _("Payments agains Project Invoices.")
+				},
 				{
 					"type": "doctype",
 					"name": "Hire Charge Invoice",

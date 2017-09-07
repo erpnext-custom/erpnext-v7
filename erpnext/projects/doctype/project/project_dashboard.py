@@ -18,7 +18,7 @@ data = {
 		},
                 {
 			'label': _('Transactions'),
-			'items': ['Project Advance', 'Project Invoice']
+			'items': ['Project Advance', 'Project Invoice', 'Project Payment']
 		},
 		{
 			'label': _('Material'),

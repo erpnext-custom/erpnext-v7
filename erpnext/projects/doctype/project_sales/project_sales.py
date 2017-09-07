@@ -48,9 +48,9 @@ class ProjectSales(Document):
 				
 	
 	def post_journal_entry(self):
-		ic_account = frappe.db.get_single_value("Maintenance Accounts Settings", "intra_company_account")
+		ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
 		if not ic_account:
-			frappe.throw("Setup Intra-Company Account in Maintenance Accounts Settings")	
+			frappe.throw("Setup Intra-Company Account in Accounts Settings")	
 		sale_account = frappe.db.get_single_value("Projects Accounts Settings", "inventory_account")
 		if not sale_account:
 			frappe.throw("Setup Sale of Inventory Account in Maintenance Accounts Settings")	

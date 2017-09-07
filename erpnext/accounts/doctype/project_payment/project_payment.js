@@ -11,9 +11,11 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 frappe.ui.form.on('Project Payment', {
 	onload: function(frm, cdt, cdn){
 		if(frm.doc.project){
-			get_invoice_list(frm);
-			get_advance_list(frm);
-			assign_items(frm, cdt, cdn);
+			if(frm.doc.docstatus != 1){
+				get_invoice_list(frm);
+				get_advance_list(frm);
+				assign_items(frm, cdt, cdn);
+			}
 		}
 	},
 
@@ -49,9 +51,9 @@ frappe.ui.form.on('Project Payment', {
 				};
 				frappe.set_route("query-report", "General Ledger");
 			}, __("View"));
+		} else {
+			assign_items(frm, cdt, cdn);
 		}
-		
-		assign_items(frm, cdt, cdn);
 	},
 	
 	get_invoices_dummy: function(frm){

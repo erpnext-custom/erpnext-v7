@@ -50,6 +50,12 @@ frappe.ui.form.on('Vehicle Logbook', {
 	"initial_km": function(frm) {
 		calculate_distance_km(frm)
 	},
+	"final_hour": function(frm) {
+		calculate_work_hour(frm)
+	},
+	"initial_hour": function(frm) {
+		calculate_work_hour(frm)
+	},
 	"to_date": function(frm) {
 		if(frm.doc.from_date > frm.doc.to_date) {
 			frappe.msgprint("From Date cannot be greater than To Date")
@@ -117,6 +123,20 @@ function calculate_distance_km(frm) {
 			cur_frm.set_value("distance_km", "0")
 			frm.refresh_fields()
 			frappe.msgprint("Final KM should be greater than Initial KM")
+		}
+	}
+}
+
+function calculate_work_hour(frm) {
+	if(frm.doc.initial_hour && frm.doc.final_hour) {
+		if(frm.doc.final_hour >= frm.doc.initial_hour) {
+			cur_frm.set_value("total_work_time", frm.doc.final_hour - frm.doc.initial_hour)
+			frm.refresh_fields()
+		}
+		else {
+			cur_frm.set_value("total_work_time", "0")
+			frm.refresh_fields()
+			frappe.msgprint("Final Hour should be greater than Initial Hour")
 		}
 	}
 }
