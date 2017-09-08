@@ -95,6 +95,12 @@ def get_data():
 					"name": "Ordered Materials To Be Delivered",
 					"doctype": "Delivery Note"
 				},
+				{
+					"type": "report",
+					"name": "Invoice Receivable",
+					"doctype": "Sales Invoice",
+					"is_query_report": True
+				},
 			]
 		},
 		{

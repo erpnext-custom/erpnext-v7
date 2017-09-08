@@ -147,7 +147,7 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Equipment Status Report",
+					"name": "Equipment Reservation Report",
 					"doctype": "Equipment"
 				},
 				{

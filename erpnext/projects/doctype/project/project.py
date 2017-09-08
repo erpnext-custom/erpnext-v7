@@ -19,6 +19,7 @@ from frappe import _
 
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
+import datetime
 
 class Project(Document):
 	def get_feed(self):
@@ -38,7 +39,9 @@ class Project(Document):
                 # Following code added by SHIV on 2017/08/11
 		if not self.get('__unsaved') and not self.get("activity_tasks"):
 			self.load_activity_tasks()
+			self.load_boq()
 			self.load_advance()
+			self.load_invoice()
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
                 
 		self.set_onload('activity_summary', frappe.db.sql('''select activity_type,
@@ -65,18 +68,97 @@ class Project(Document):
 
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         # Follwoing code added by SSK on 2017/08/11
+        def load_boq(self):
+                """Load `project_advance_item` from the database"""
+                self.project_boq_item = []
+                tot_tot_amt = 0.0
+                tot_rcd_amt = 0.0
+                tot_bal_amt = 0.0
+                boq_list    = self.get_project_boq()
+                
+                for item in boq_list:
+                        self.append("project_boq_item",{
+                                "boq_name": item.name,
+                                "boq_date": item.boq_date.strftime("%d-%m-%Y"),
+                                "amount": flt(item.total_amount),
+                                "price_adjustment": flt(item.price_adjustment),
+                                "total_amount": flt(item.total_amount)+flt(item.price_adjustment),
+                                "received_amount": flt(item.received_amount),
+                                "balance_amount": flt(item.balance_amount)
+                        })
+                        tot_tot_amt += flt(item.total_amount)+flt(item.price_adjustment)
+                        tot_rcd_amt += flt(item.received_amount)
+                        tot_bal_amt += flt(item.balance_amount)
+
+                if flt(tot_tot_amt) > 0 and len(boq_list) > 1:
+                        self.append("project_boq_item",{
+                                "boq_date": "TOTAL",
+                                "total_amount": flt(tot_tot_amt),
+                                "received_amount": flt(tot_rcd_amt),
+                                "balance_amount": flt(tot_bal_amt)
+                        })
+                        
         def load_advance(self):
                 """Load `project_advance_item` from the database"""
                 self.project_advance_item = []
-                for item in self.get_project_advance():
+                tot_rcd_amt = 0.0
+                tot_adj_amt = 0.0
+                tot_bal_amt = 0.0
+                advance_list= self.get_project_advance()
+                
+                for item in advance_list:
+                        #datetime.datetime.strptime(str(item.advance_date),"%Y-%m-%d").strftime("%d-%m-%Y")
                         self.append("project_advance_item",{
                                 "advance_name": item.name,
-                                "advance_date": item.advance_date,
-                                "received_amount": item.received_amount,
-                                "adjustment_amount": item.adjustment_amount,
-                                "balance_amount": item.balance_amount
+                                "advance_date": item.advance_date.strftime("%d-%m-%Y"),
+                                "received_amount": flt(item.received_amount),
+                                "adjustment_amount": flt(item.adjustment_amount),
+                                "balance_amount": flt(item.balance_amount)
                         })
+                        tot_rcd_amt += flt(item.received_amount)
+                        tot_adj_amt += flt(item.adjustment_amount)
+                        tot_bal_amt += flt(item.balance_amount)
+
+                if flt(tot_rcd_amt) > 0 and len(advance_list) > 1:
+                        self.append("project_advance_item",{
+                                "advance_date": "TOTAL",
+                                "received_amount": tot_rcd_amt,
+                                "adjustment_amount": tot_adj_amt,
+                                "balance_amount": tot_bal_amt
+                        })
+                        
+
+        def load_invoice(self):
+                """Load `project_invoice_item` from the database"""
+                self.project_invoice_item = []
+                tot_tot_amt = 0.0
+                tot_rcd_amt = 0.0
+                tot_bal_amt = 0.0
+                invoice_list= self.get_project_invoice()
                 
+                for item in invoice_list:
+                        self.append("project_invoice_item",{
+                                "invoice_name": item.name,
+                                "invoice_date": item.invoice_date.strftime("%d-%m-%Y"),
+                                "boq": item.boq,
+                                "gross_invoice_amount": flt(item.gross_invoice_amount),
+                                "price_adjustment_amount": flt(item.price_adjustment_amount),
+                                "net_invoice_amount": flt(item.net_invoice_amount),
+                                "total_received_amount": flt(item.total_received_amount),
+                                "total_balance_amount": flt(item.total_balance_amount)
+                        })
+                        tot_tot_amt += flt(item.net_invoice_amount)
+                        tot_rcd_amt += flt(item.total_received_amount)
+                        tot_bal_amt += flt(item.total_balance_amount)
+
+                if flt(tot_tot_amt) > 0 and len(invoice_list) > 1:
+                        self.append("project_invoice_item",{
+                                "invoice_date": "TOTAL",
+                                "net_invoice_amount": flt(tot_tot_amt),
+                                "total_received_amount": flt(tot_rcd_amt),
+                                "total_balance_amount": flt(tot_bal_amt)
+                        })
+                        
 	def load_activity_tasks(self):
                 #frappe.msgprint(_("load_activity_task is called from onload"))
 		"""Load `activity_tasks` from the database"""
@@ -103,6 +185,13 @@ class Project(Document):
 
 	def get_project_advance(self):
                 return frappe.get_all("Project Advance", "*", {"project": self.name, "docstatus": 1}, order_by="advance_date")
+
+	def get_project_boq(self):
+                return frappe.get_all("BOQ", "*", {"project": self.name, "docstatus": 1}, order_by="boq_date")
+
+	def get_project_invoice(self):
+                return frappe.get_all("Project Invoice", "*", {"project": self.name, "docstatus": 1}, order_by="invoice_date")        
+        
         # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 			
 	def get_tasks(self):
@@ -124,6 +213,8 @@ class Project(Document):
 		self.sync_activity_tasks()
 		self.activity_tasks = []
 		self.project_advance_item = []
+		self.project_boq_item = []
+		self.project_invoice_item = []
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.send_welcome_email()
 

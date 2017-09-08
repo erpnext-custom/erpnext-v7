@@ -38,7 +38,8 @@ class ProcessPayroll(Document):
 		self.check_mandatory()
 
 		cond = ''
-		for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
+		#for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
+		for f in ['company', 'employee']:
 			if self.get(f):
 				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 
@@ -55,7 +56,8 @@ class ProcessPayroll(Document):
 
 
 	def check_mandatory(self):
-		for f in ['company', 'month', 'fiscal_year', 'branch']:
+		#for f in ['company', 'month', 'fiscal_year', 'branch']:
+		for f in ['company', 'month', 'fiscal_year']:
 			if not self.get(f):
 				frappe.throw(_("Please set {0}").format(f))
 
@@ -88,7 +90,8 @@ class ProcessPayroll(Document):
 
         def remove_sal_slip(self):
 		cond = ''
-		for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
+		#for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
+		for f in ['company', 'employee']:
 			if self.get(f):
 				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
                 
@@ -203,7 +206,8 @@ class ProcessPayroll(Document):
                 items = []
                 cond = self.get_filter_condition()
                 cond1 = ''
-		for f in ['company', 'branch', 'department', 'designation', 'division', 'employee']:
+		#for f in ['company', 'branch', 'department', 'designation', 'division', 'employee']:
+		for f in ['company', 'employee']:
 			if self.get(f):
 				cond1 += " and ss." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 		
@@ -308,7 +312,7 @@ class ProcessPayroll(Document):
                                 sum(ifnull(amount,0)) as debit_in_account_currency,
                                 '%s' as against_account,
                                 '%s' as cost_center,
-                                0 as party_check
+                                0 as party_check, se.salary_component
                                 from `tabSalary Detail` se, `tabSalary Slip` ss, `tabSalary Component` et, `tabEmployee` e,
                                 `tabDivision` d
                                where ss.name = se.parent
@@ -357,14 +361,6 @@ class ProcessPayroll(Document):
                 tot_tax = 0
                 tot_health = 0
                 
-                #msgprint(_("{0}").format(default_payable_account))
-                #msgprint(_("{0}").format(default_gis_account))
-                #msgprint(_("{0}").format(default_pf_account))
-                #msgprint(_("{0}").format(default_loan_account))
-                #msgprint(_("{0}").format(default_saving_account))
-                #msgprint(_("{0}").format(default_tax_account))
-                #msgprint(_("{0}").format(default_health_account))
-                                
                 for list_item in accounts:
                         #msgprint(_("{0}").format(list_item['account']))
                         if default_payable_account == list_item['account']:
@@ -470,6 +466,7 @@ class ProcessPayroll(Document):
         def post_journal_entry(self, title, user_remark, accounts, bank_entry_req, tot_earnings, tot_deductions):
                 from frappe.utils import money_in_words
                 ss_list = []
+
                 if bank_entry_req == 0:
                         ss = frappe.get_doc({
                                 "doctype": "Journal Entry",
