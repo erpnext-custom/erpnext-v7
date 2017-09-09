@@ -161,15 +161,18 @@ var calculate_totals = function(frm){
 	var pi = frm.doc.project_invoice_boq || [];
 	var gross_invoice_amount = 0.0, net_invoice_amount =0.0;
 	
-	for(var i=0; i<pi.length; i++){
-		if(pi[i].invoice_amount && pi[i].is_selected==1){
-			gross_invoice_amount += parseFloat(pi[i].invoice_amount);
+	if(frm.doc.docstatus != 1)
+	{
+		for(var i=0; i<pi.length; i++){
+			if(pi[i].invoice_amount && pi[i].is_selected==1){
+				gross_invoice_amount += parseFloat(pi[i].invoice_amount);
+			}
 		}
+		net_invoice_amount = (parseFloat(gross_invoice_amount)+parseFloat(frm.doc.price_adjustment_amount)-parseFloat(frm.doc.advance_recovery)-parseFloat(frm.doc.tds_amount));
+		cur_frm.set_value("gross_invoice_amount",(gross_invoice_amount));
+		cur_frm.set_value("net_invoice_amount",(net_invoice_amount));
+		cur_frm.set_value("total_balance_amount",(parseFloat(frm.doc.net_invoice_amount || 0)-parseFloat(frm.doc.total_received_amount || 0)));
 	}
-	net_invoice_amount = (parseFloat(gross_invoice_amount)+parseFloat(frm.doc.price_adjustment_amount)-parseFloat(frm.doc.advance_recovery)-parseFloat(frm.doc.tds_amount));
-	cur_frm.set_value("gross_invoice_amount",(gross_invoice_amount));
-	cur_frm.set_value("net_invoice_amount",(net_invoice_amount));
-	cur_frm.set_value("total_balance_amount",(parseFloat(frm.doc.net_invoice_amount || 0)-parseFloat(frm.doc.total_received_amount || 0)));
 }
 
 var check_uncheck_all = function(frm){
