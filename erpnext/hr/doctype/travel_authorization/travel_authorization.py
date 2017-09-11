@@ -78,7 +78,7 @@ class TravelAuthorization(Document):
 				})
 
 				je.append("accounts", {
-					"account": "Bank of Bhutan Ltd - 100891887 - SMCL",
+					"account": expense_bank_account,
 					"cost_center": cost_center,
 					"credit_in_account_currency": flt(self.advance_amount_nu),
 					"credit": flt(self.advance_amount_nu),
