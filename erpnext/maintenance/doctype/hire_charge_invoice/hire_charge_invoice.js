@@ -13,7 +13,10 @@ frappe.ui.form.on('Hire Charge Invoice', {
 			}, __("View"));
 		}
 		if (frm.doc.owned_by != "CDCL" && !frm.doc.payment_jv && frm.doc.invoice_jv && frappe.model.can_write("Journal Entry")) {
-			cur_frm.toggle_display("receive_payment", 1)
+			//cur_frm.toggle_display("receive_payment", 1)
+			cur_frm.add_custom_button(__('Payment'), function() {
+				cur_frm.cscript.receive_payment()
+			}, __("Receive"));
 		}
 		else {
 			cur_frm.toggle_display("receive_payment", 0)
@@ -212,4 +215,21 @@ function get_advances(hire_name) {
 			}
 		}
 	})
+}
+
+cur_frm.cscript.receive_payment = function(){
+	var doc = cur_frm.doc;
+	frappe.ui.form.is_saving = true;
+	frappe.call({
+		method: "erpnext.maintenance.doctype.hire_charge_invoice.hire_charge_invoice.make_bank_entry",
+		args: {
+			"frm": cur_frm.doc.name,
+		},
+		callback: function(r){
+			cur_frm.reload_doc();
+		},
+		always: function() {
+			frappe.ui.form.is_saving = false;
+		}
+	});
 }

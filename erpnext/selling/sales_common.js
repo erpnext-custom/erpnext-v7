@@ -128,7 +128,7 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 	},
 
 	selling_price_list: function(frm) {
-		if(!frm.doc.selling_price_template) {
+		if(frm.doc && !frm.doc.selling_price_template) {
 			this.apply_price_list();
 		}
 	},

@@ -5,6 +5,9 @@ cur_frm.add_fetch("project", "cost_center", "cost_center")
 cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on('Process MR Payment', {
+	setup: function(frm) {
+		frm.get_docfield("items").allow_bulk_edit = 1;
+	},
 	refresh: function(frm) {
 		if (frm.doc.payment_jv && frappe.model.can_read("Journal Entry")) {
 			cur_frm.add_custom_button(__('Bank Entries'), function() {
@@ -41,6 +44,17 @@ frappe.ui.form.on('Process MR Payment', {
 			msgprint("To Date should be smaller than From Date")
 			frm.set_value("to_date", "")
 		}
+	},
+	load_employee: function(frm) {
+		//load_accounts(frm.doc.company)
+		return frappe.call({
+			method: "load_employee",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.refresh_field("items");
+				frm.refresh_fields();
+			}
+		});
 	}
 });
 

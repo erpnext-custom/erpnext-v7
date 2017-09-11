@@ -12,33 +12,37 @@ def execute(filters=None):
 
 def get_columns():
 	return [
+		("Branch") + ":Link/Branch:120",
 		("Customer") + ":Link/Customer:120",
-		("Bill Name") + ":Data:120",
+		("Bill Name") + ":Link/Hire Charge Invoice:120",
 		("Equipment")+ ":Data:120",
 		("Equipment No.") + ":Data:120",
-		("Work Rate") + ":Data:100",
-		("Idle Rate") +":Data:100",
-		("Private")+":Data:100",
-		("Others") +":Data:100",
-		("CDCL") +":Data:100",
-		("Amount") + ":Data:100"
+		("Work Rate") + ":Currency:100",
+		("Idle Rate") +":Currency:100",
+		("Private")+":Currency:100",
+		("Others") +":Currency:100",
+		("CDCL") +":Currency:100",
+		("Amount") + ":Currency:150"
 	]
 
 def get_data(filters):
 
-	query = ("""select hic.customer, hic.name, hid.equipment, hid.equipment_number, hid. work_rate, hid.idle_rate,
+	query = ("""select hic.branch, hic.customer, hic.name, hid.equipment, hid.equipment_number, hid. work_rate, hid.idle_rate,
 CASE hic.owned_by
-	WHEN 'Private' THEN hic.total_invoice_amount
+	WHEN 'Private' THEN SUM(hid.total_amount)
 	END as Private,
 CASE hic.owned_by
-	WHEN 'Others' THEN hic.total_invoice_amount
+	WHEN 'Others' THEN SUM(hid.total_amount)
+
 	END AS Others,
 CASE hic.owned_by
-	WHEN 'CDCL' THEN hic.total_invoice_amount
-	END AS CDCL,
-hic.total_invoice_amount
+	WHEN 'CDCL' THEN 
+	SUM(hid.total_amount)
+
+END AS CDCL,
+SUM(hid.total_amount) 
 from `tabHire Charge Invoice` as hic, `tabHire Invoice Details` as hid
-where hic.name = hid.parent """)
+where hic.name = hid.parent and hic.docstatus = 1 """)
 
 	if filters.get("branch"):
 		query += " and hic.branch = \'" + str(filters.branch) + "\'"
@@ -46,5 +50,7 @@ where hic.name = hid.parent """)
 	if filters.get("from_date") and filters.get("to_date"):
 		query += " and hic.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 
-	query += " order by hic.customer "
+	query += " group by hic.customer, hic.name, hid.equipment "
 	return frappe.db.sql(query)
+
+

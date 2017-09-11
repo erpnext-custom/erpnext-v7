@@ -38,18 +38,18 @@ class ProjectAdvance(Document):
         def post_journal_entry(self):
                 accounts = []
 
-                # Advance GLs
+                # Fetching GLs
                 #get_value(self, doctype, filters=None, fieldname="name", ignore=None, as_dict=False, debug=False):
                 adv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="project_advance_account", as_dict=True)
                 rev_gl = frappe.db.get_value(doctype="Branch",filters=self.branch,fieldname="revenue_bank_account", as_dict=True)
-
-                if not adv_gl:
+                
+                if not adv_gl.project_advance_account:
                         frappe.throw(_("Advance GL is not defined in Projects Accounts Settings."))
 
-                if not rev_gl:
-                        frappe.throw(_("Revenue GL is not defined in Branch."))
+                if not rev_gl.revenue_bank_account:
+                        frappe.throw(_("Revenue GL is not defined in Branch '{0}'.").format(self.branch))
 
-                #GL Accounts
+                # Fetching GL Account details
                 adv_gl_det = frappe.db.get_value(doctype="Account", filters=adv_gl.project_advance_account, fieldname=["account_type","is_an_advance_account"], as_dict=True)
                 rev_gl_det = frappe.db.get_value(doctype="Account", filters=rev_gl.revenue_bank_account, fieldname=["account_type","is_an_advance_account"], as_dict=True)
                 

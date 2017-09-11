@@ -12,6 +12,12 @@ from frappe.utils.data import add_days
 class TravelClaim(Document):
 
 	def validate(self):
+		hr_role = frappe.db.get_value("UserRole", {"parent": frappe.session.user, "role": "HR User"}, "role")
+		if frappe.session.user == self.supervisor and not self.supervisor_approval:
+			self.db_set("supervisor_approved_on", '')
+			self.supervisor_approved_on = ''
+		if self.supervisor_approved_on and not hr_role:
+			frappe.throw("Cannot change records after approval by supervisor")
 		self.validate_dates()
 		self.check_approval()
 		self.update_travel_authorization()

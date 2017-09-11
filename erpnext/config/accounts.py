@@ -31,6 +31,27 @@ def get_data():
 					"name": "Project Invoice",
 					"description": _("Bills raised to Customers.")
 				},
+                                {
+					"type": "doctype",
+					"name": "Project Payment",
+					"description": _("Payments agains Project Invoices.")
+				},
+				{
+					"type": "doctype",
+					"name": "Hire Charge Invoice",
+					"description": _("Hire Charge Invoice"),
+				},
+				{
+					"type": "doctype",
+					"name": "Job Card",
+					"description": _("Create Job Card"),
+				},
+				{
+					"type": "doctype",
+					"name": "POL",
+					"label": "POL Payment",
+					"description": _("Receive POL"),
+				},
 				{
 					"type": "doctype",
 					"name": "Direct Payment",
@@ -121,6 +142,11 @@ def get_data():
 					"is_query_report": True,
 				},
 				{
+					"type": "doctype",
+					"name": "Insurance and Registration",
+					"description": _("Insurance and Registration details for equipments")
+				},
+				{
 					"type": "report",
 					"name": "Employee Asset Report",
 					"doctype": "Asset",
@@ -175,7 +201,14 @@ def get_data():
 					"name": "RRCO Receipt Tool",
 					"description": "Enter RRCO Receipts in Bulk",
 					"hide_count": True
-				}
+				},
+				{
+					"type": "report",
+					"name": "TDS Deducted By Customer",
+					"label": "TDS Deducted By Customer",
+					"doctype": "Payment Entry",
+					"is_query_report": True
+				},
 			]
 		},
 		{

@@ -14,6 +14,8 @@ frappe.ui.form.on("Purchase Order", {
 		frm.set_indicator_formatter('item_code',
 			function(doc) { return (doc.qty<=doc.received_qty) ? "green" : "orange" })
 
+		//set default price list
+		frm.set_value("buying_price_list", "Standard Buying")
 	},
 
 	freight_and_insurance_charges: function(frm) {

@@ -11,80 +11,81 @@ def execute(filters=None):
 	query = construct_query(filters)
 	data = get_data(query, filters = None)
 
-	return columns, data, query
+	return columns,data
 def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		row = [d.equipment_type, d.equipment_number, d.branch, d.min, d.max, d.distance,
-		d.drawn,
-		((flt(d.opening)+flt(d.drawn))*d.yardstickd),
-		flt((d.drawn)+flt(d.opening+d.drawn)*d.yardstick),
-		d.yardstick,
-		flt(d.opening)+
-		(flt(d.drawn)-(flt(d.opening)+flt(d.drawn))*d.yardstickd),
-		d.opening,d.rate,
-		((flt(d.drawn)-(flt(d.opening)+flt(d.drawn))*d.yardstickd))*d.rate]
+		row = [d.ty, d.no, d.br, d.min, d.max, round(d.ckm,2),d.ch,
+		round(flt(d.drawn),2), round(flt(d.opening),2), round((flt(d.drawn)+flt(d.opening)),2),
+		d.yskm, d.yshour, round(d.consumed,2), round(flt(d.closing),2), round(flt(d.rate),2),  round((flt(d.rate)*flt(d.consumed)),2)]
 		data.append(row);
 	return data
 
 
 def construct_query(filters):
-	query = """select e.equipment_type as equipment_type, e.equipment_number as equipment_number,
-	vl.branch branch, MIN(vl.initial_km) as min,
-	MAX(vl.final_km) as max,
-	SUM(distance_km) distance,
-	case
-	when cp.date> "str(filters.from_Date)"
-	then SUM(cp.qty)
-	else 0
-	end as drawn
-
-	CASE WHEN cp.date < "str(filters.from_date)"
-	THEN sum(cp.qty)
-	else 0
-	END  AS opening,
-
-
-
+	"""query = select e.equipment_type ty, e.equipment_number as no, e.branch br, MIN(vl.initial_km) AS min, MAX(vl.final_km) AS max,
+	(select avg(pol.rate) from tabPOL pol where pol.equipment = e.name and pol.date between '%(from_date)s' and '%(to_date)s' and pol.branch like "%(branch)s" and pol.docstatus = 1) as rate,
+	(select sum(vl.hsd_received) from `tabVehicle Logbook` vl where vl.equipment_number = e.equipment_number) AS drawn,
+	CASE WHEN vl.to_date > '%(from_date)s'
+	then (select vl.opening_balance from `tabVehicle Logbook` vl where vl.equipment_number = e.equipment_number order by vl.to_date asc limit 1)
+	else 0 end as opening,
 	CASE
-	WHEN hcp.lph
-	THEN hcp.lph
-	WHEN hcp.kph
-	THEN hcp.kph
-	END as yardstick,
-	vl.work_rate as rate,
-	FROM `tabConsumed POL` cp, `tabVehicle Logbook` vl,
-	`tabEquipment` e, `tabHire Charge Parameter` hcp  where hcp.equipment_model = e.equipment_model and e.equipment_number = vl.equipment_number
-	AND cp.equipment = vl.equipment
-	AND cp.docstatus = '1'"""
+	WHEN vl.ys_km THEN vl.ys_km
+	WHEN vl.ys_hours THEN vl.ys_hours
+	END AS yardstick,
+	(select sum(vl.distance_km) from `tabVehicle Logbook` vl where vl.equipment_number = e.equipment_number  and vl.docstatus = 1) as km,
+	(select sum(vl.consumption) from `tabVehicle Logbook` vl where vl.equipment_number = e.equipment_number) as consumed,
+	case when vl.to_date < '%(to_date)s'
+	then (select vl.closing_balance from `tabVehicle Logbook` vl where vl.equipment_number = e.equipment_number order by vl.to_date desc limit 1)
+	else 0 end as closing from `tabEquipment` e, `tabVehicle Logbook` vl where e.equipment_number = vl.equipment_number
+	(select a.opening_balance from `tabVehicle Logbook` a where a.equipment_number = e.equipment_number a.from_date between %(from_date)s and %(to_date)s and a.to_date between %(from_date)s and %(to_date)s order by a.from_date asc limit 1)
+	and vl.docstatus = 1  %{"from_date": str(filters.from_date), "to_date": str(filters.to_date)}"""
 
-	 #GROUP BY e.equipment_number
+	query = """select e.equipment_type ty, e.equipment_number as no, e.branch br, MIN(vl.initial_km) AS min, MAX(vl.final_km) AS max, vl.consumption_km as ckm, vl.consumption_hours as ch,
+	(select avg(pol.rate) from tabPOL pol where pol.equipment = e.name and pol.date between '%(from_date)s' and '%(to_date)s'   and pol.docstatus = 1) as rate,
+	sum(vl.hsd_received) as drawn,
+	(select a.opening_balance from `tabVehicle Logbook` a where a.rate_type = 'With Fuel' and a.equipment_number = e.equipment_number and a.from_date between \'%(from_date)s\' and \'%(to_date)s\' and a.to_date between \'%(from_date)s\' and \'%(to_date)s\' order by a.from_date asc limit 1) as opening,
+	CASE
+	WHEN vl.ys_km THEN vl.ys_km
+	else 0
+	end as yskm,
+	CASE
+	WHEN vl.ys_hours THEN vl.ys_hours
+	else 0
+	end as yshour,
+	sum(vl.distance_km) as km,
+	sum(vl.consumption) as consumed,
+	(select a.closing_balance from `tabVehicle Logbook` a where a.rate_type = 'With Fuel' and a.equipment_number = e.equipment_number and a.from_date between \'%(from_date)s\' and \'%(to_date)s\' and a.to_date between \'%(from_date)s\' and \'%(to_date)s\' order by a.from_date desc limit 1) as closing
+	from `tabEquipment` e, `tabVehicle Logbook` vl where e.equipment_number = vl.equipment_number
+	and vl.docstatus = 1"""  %{"from_date": str(filters.from_date), "to_date": str(filters.to_date),"branch": str(filters.branch)}
 
 	if filters.get("branch"):
-		query += " and vl.branch = \'" + str(filters.branch) + "\'"
+		query += " and e.branch = \'" + str(filters.branch) + "\'"
 
 	if filters.get("from_date") and filters.get("to_date"):
-		query += " and cp.date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+		 query += " and vl.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' and vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 	query += " GROUP BY e.equipment_number "
 	return query
 
 def get_columns():
 	cols = [
-		("Equipment Type.") + ":data:150",
-		("Registration No") + ":data:150",
-		("Location")+":data:150",
-		("Initial KM/H Reading")+":data:150",
-		("Final KM/H Reading")+":data:150",
-		("KM/H")+":data:150",
-		("HSD Drawn(L)")+":data:150",
-		("Previous Balance(L)")+":data:150",
-		("Total HSD(L)")+":data:150",
-		("Rate of Consumption")+":data:150",
-		("HSD Consumption(L)")+":data:150",
-		("Opening Balance(L)")+":data:150",
-		("Rate(Nu.)")+":currency:150",
-		("Amount(Nu.)")+":currency:150",
+		("Equipment Type.") + ":data:120",
+		("Registration No") + ":data:120",
+		("Location")+":data:120",
+		("Initial KM/H Reading")+":data:100",
+		("Final KM/H Reading")+":data:100",
+		("KM")+":data:100",
+		("Hour")+":data:100",
+		("HSD Drawn(L)")+":data:100",
+		("Previous Balance(L)")+":data:100",
+		("Total HSD(L)")+":data:100",
+		("Per KM")+":data:110",
+		("Per Hour")+":data:110",
+		("HSD Consumption(L)")+":data:110",
+		("Closing Balance(L)")+":data:110",
+		("Rate(Nu.)")+":currency:100",
+		("Amount(Nu.)")+":currency:100",
 
 	]
 	return cols

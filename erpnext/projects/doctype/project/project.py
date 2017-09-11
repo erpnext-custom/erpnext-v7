@@ -4,9 +4,10 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SHIV		                    11/08/2017         Default "Project Tasks" is replaced by custom
+2.0		  SHIV		                    11/08/2017         Default "Project Tasks" is replaced by custom
                                                                          "Activity Tasks"
-1.0		  SHIV		                    02/09/2017         make_advance_payment method is created.
+2.0		  SHIV		                    02/09/2017         make_advance_payment method is created.
+2.0		  SHIV		                    05/09/2017         make_project_payment method is created.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -18,6 +19,7 @@ from frappe import _
 
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
+import datetime
 
 class Project(Document):
 	def get_feed(self):
@@ -25,20 +27,22 @@ class Project(Document):
 
 	def onload(self):
 		"""Load project tasks for quick view"""
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 		# Following code commented by SHIV on 2017/08/11
 		'''
 		if not self.get('__unsaved') and not self.get("tasks"):
 			self.load_tasks()
 		'''
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following code added by SHIV on 2017/08/11
 		if not self.get('__unsaved') and not self.get("activity_tasks"):
 			self.load_activity_tasks()
+			self.load_boq()
 			self.load_advance()
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+			self.load_invoice()
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
                 
 		self.set_onload('activity_summary', frappe.db.sql('''select activity_type,
 			sum(hours) as total_hours
@@ -62,20 +66,99 @@ class Project(Document):
 				"task_id": task.name
 			})
 
-        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         # Follwoing code added by SSK on 2017/08/11
+        def load_boq(self):
+                """Load `project_advance_item` from the database"""
+                self.project_boq_item = []
+                tot_tot_amt = 0.0
+                tot_rcd_amt = 0.0
+                tot_bal_amt = 0.0
+                boq_list    = self.get_project_boq()
+                
+                for item in boq_list:
+                        self.append("project_boq_item",{
+                                "boq_name": item.name,
+                                "boq_date": item.boq_date.strftime("%d-%m-%Y"),
+                                "amount": flt(item.total_amount),
+                                "price_adjustment": flt(item.price_adjustment),
+                                "total_amount": flt(item.total_amount)+flt(item.price_adjustment),
+                                "received_amount": flt(item.received_amount),
+                                "balance_amount": flt(item.balance_amount)
+                        })
+                        tot_tot_amt += flt(item.total_amount)+flt(item.price_adjustment)
+                        tot_rcd_amt += flt(item.received_amount)
+                        tot_bal_amt += flt(item.balance_amount)
+
+                if flt(tot_tot_amt) > 0 and len(boq_list) > 1:
+                        self.append("project_boq_item",{
+                                "boq_date": "TOTAL",
+                                "total_amount": flt(tot_tot_amt),
+                                "received_amount": flt(tot_rcd_amt),
+                                "balance_amount": flt(tot_bal_amt)
+                        })
+                        
         def load_advance(self):
                 """Load `project_advance_item` from the database"""
                 self.project_advance_item = []
-                for item in self.get_project_advance():
+                tot_rcd_amt = 0.0
+                tot_adj_amt = 0.0
+                tot_bal_amt = 0.0
+                advance_list= self.get_project_advance()
+                
+                for item in advance_list:
+                        #datetime.datetime.strptime(str(item.advance_date),"%Y-%m-%d").strftime("%d-%m-%Y")
                         self.append("project_advance_item",{
                                 "advance_name": item.name,
-                                "advance_date": item.advance_date,
-                                "received_amount": item.received_amount,
-                                "adjustment_amount": item.adjustment_amount,
-                                "balance_amount": item.balance_amount
+                                "advance_date": item.advance_date.strftime("%d-%m-%Y"),
+                                "received_amount": flt(item.received_amount),
+                                "adjustment_amount": flt(item.adjustment_amount),
+                                "balance_amount": flt(item.balance_amount)
                         })
+                        tot_rcd_amt += flt(item.received_amount)
+                        tot_adj_amt += flt(item.adjustment_amount)
+                        tot_bal_amt += flt(item.balance_amount)
+
+                if flt(tot_rcd_amt) > 0 and len(advance_list) > 1:
+                        self.append("project_advance_item",{
+                                "advance_date": "TOTAL",
+                                "received_amount": tot_rcd_amt,
+                                "adjustment_amount": tot_adj_amt,
+                                "balance_amount": tot_bal_amt
+                        })
+                        
+
+        def load_invoice(self):
+                """Load `project_invoice_item` from the database"""
+                self.project_invoice_item = []
+                tot_tot_amt = 0.0
+                tot_rcd_amt = 0.0
+                tot_bal_amt = 0.0
+                invoice_list= self.get_project_invoice()
                 
+                for item in invoice_list:
+                        self.append("project_invoice_item",{
+                                "invoice_name": item.name,
+                                "invoice_date": item.invoice_date.strftime("%d-%m-%Y"),
+                                "boq": item.boq,
+                                "gross_invoice_amount": flt(item.gross_invoice_amount),
+                                "price_adjustment_amount": flt(item.price_adjustment_amount),
+                                "net_invoice_amount": flt(item.net_invoice_amount),
+                                "total_received_amount": flt(item.total_received_amount),
+                                "total_balance_amount": flt(item.total_balance_amount)
+                        })
+                        tot_tot_amt += flt(item.net_invoice_amount)
+                        tot_rcd_amt += flt(item.total_received_amount)
+                        tot_bal_amt += flt(item.total_balance_amount)
+
+                if flt(tot_tot_amt) > 0 and len(invoice_list) > 1:
+                        self.append("project_invoice_item",{
+                                "invoice_date": "TOTAL",
+                                "net_invoice_amount": flt(tot_tot_amt),
+                                "total_received_amount": flt(tot_rcd_amt),
+                                "total_balance_amount": flt(tot_bal_amt)
+                        })
+                        
 	def load_activity_tasks(self):
                 #frappe.msgprint(_("load_activity_task is called from onload"))
 		"""Load `activity_tasks` from the database"""
@@ -90,6 +173,7 @@ class Project(Document):
 				"end_date": task.exp_end_date,
 				"description": task.description,
                                 "work_quantity": task.work_quantity,
+                                "work_quantity_complete": task.work_quantity_complete,
                                 "target_uom": task.target_uom,
                                 "target_quantity": task.target_quantity,
                                 "target_quantity_complete": task.target_quantity_complete,
@@ -101,7 +185,14 @@ class Project(Document):
 
 	def get_project_advance(self):
                 return frappe.get_all("Project Advance", "*", {"project": self.name, "docstatus": 1}, order_by="advance_date")
-        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+
+	def get_project_boq(self):
+                return frappe.get_all("BOQ", "*", {"project": self.name, "docstatus": 1}, order_by="boq_date")
+
+	def get_project_invoice(self):
+                return frappe.get_all("Project Invoice", "*", {"project": self.name, "docstatus": 1}, order_by="invoice_date")        
+        
+        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 			
 	def get_tasks(self):
 		return frappe.get_all("Task", "*", {"project": self.name}, order_by="exp_start_date asc")
@@ -109,20 +200,22 @@ class Project(Document):
 	def validate(self):
 		self.validate_dates()
 
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 		# Follwoing 2 lines are commented by SHIV on 2017/08/11
 		'''
 		self.sync_tasks()
 		self.tasks = []
 		'''
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 		# Following 2 Lines added by SHIV on 2017/08/11
 		self.sync_activity_tasks()
 		self.activity_tasks = []
 		self.project_advance_item = []
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		self.project_boq_item = []
+		self.project_invoice_item = []
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.send_welcome_email()
 
 	def validate_dates(self):
@@ -163,7 +256,7 @@ class Project(Document):
 		self.update_percent_complete()
 		self.update_costing()
 		
-        # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         # Following function is created
 	def sync_activity_tasks(self):
 		"""sync tasks and remove table"""
@@ -190,6 +283,7 @@ class Project(Document):
 				"subject": t.task,
                                 "is_group": t.is_group,
                                 "work_quantity": t.work_quantity,
+                                "work_quantity_complete": t.work_quantity_complete,
                                 "target_uom": t.target_uom,
                                 "target_quantity": t.target_quantity,
 				"status": t.status,
@@ -212,7 +306,7 @@ class Project(Document):
 
 		self.update_percent_complete()
 		self.update_costing()
-        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		
 	def update_project(self):
 		self.update_percent_complete()
@@ -221,7 +315,7 @@ class Project(Document):
 		self.save(ignore_permissions = True)
 
 	def update_percent_complete(self):
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following code commented by SHIV on 2017/08/16
                 '''
 		total = frappe.db.sql("""select count(*) from tabTask where project=%s""", self.name)[0][0]
@@ -245,7 +339,7 @@ class Project(Document):
 
                 if total.tot_work_quantity:
                         self.tot_wq_percent = flt(total.tot_work_quantity,2)
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
                         
 	def update_costing(self):
 		from_time_sheet = frappe.db.sql("""select
@@ -301,7 +395,7 @@ class Project(Document):
 				user.welcome_email_sent=1
 
 	def on_update(self):
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following 2 lines commented by SHIV on 2017/08/11
                 '''
 		self.load_tasks()
@@ -310,7 +404,7 @@ class Project(Document):
 		# Following 2 lines added by SHIV on 2017/08/11
 		self.load_activity_tasks()
 		self.sync_activity_tasks()		
-		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
 def get_timeline_data(doctype, name):
 	'''Return timeline for attendance'''
@@ -356,7 +450,7 @@ def get_users_for_project(doctype, txt, searchfield, start, page_len, filters):
 def get_cost_center_name(project):
 	return frappe.db.get_value("Project", project, "cost_center")
 
-# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 # Following method is created by SHIV on 02/09/2017
 @frappe.whitelist()
 def make_project_advance(source_name, target_doc=None):
@@ -374,4 +468,4 @@ def make_project_advance(source_name, target_doc=None):
                         }
         }, target_doc)
         return doclist
-# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++

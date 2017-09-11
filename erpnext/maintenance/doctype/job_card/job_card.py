@@ -84,10 +84,10 @@ class JobCard(Document):
 
 			if self.owned_by == "CDCL":
 				ir_account = frappe.db.get_single_value("Maintenance Accounts Settings", "internal_revenue_account")
-				ic_account = frappe.db.get_single_value("Maintenance Accounts Settings", "intra_company_account")
+				ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
 			
 				if not ic_account:
-					frappe.throw("Setup Intra-Company Account in Maintenance Accounts Settings")	
+					frappe.throw("Setup Intra-Company Account in Accounts Settings")	
 				if not ir_account:
 					frappe.throw("Setup Internal Revenue Account in Maintenance Accounts Settings")	
 

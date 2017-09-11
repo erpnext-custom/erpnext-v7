@@ -141,7 +141,13 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Equipment Status Report",
+					"name": "HSD Consumption Report",
+					"doctype": "Vehicle Logbook"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Equipment Reservation Report",
 					"doctype": "Equipment"
 				},
 				{

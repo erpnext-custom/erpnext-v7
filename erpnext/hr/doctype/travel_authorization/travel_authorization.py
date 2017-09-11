@@ -24,6 +24,9 @@ class TravelAuthorization(Document):
 		elif self.document_status == "Rejected":
 			self.sendmail(self.employee, "Travel Authorization Rejected" + str(self.name), "Following remarks has been added by the supervisor: \n" + str(self.reason))
 
+	def on_update(self):
+		self.set_dsa_rate()
+
 	def on_submit(self):
 		self.validate_submitter()
 		self.validate_travel_dates()
@@ -135,6 +138,10 @@ class TravelAuthorization(Document):
 			except:
 				pass
 
+	def set_dsa_rate(self):
+		if self.grade:
+			self.db_set("dsa_per_day", frappe.db.get_value("Employee Grade", self.grade, "dsa"))
+
 @frappe.whitelist()
 def make_travel_claim(source_name, target_doc=None): 
 	def update_date(obj, target, source_parent):
@@ -142,6 +149,7 @@ def make_travel_claim(source_name, target_doc=None):
 	
 	def transfer_currency(obj, target, source_parent):
 		target.currency = source_parent.currency
+		target.dsa = source_parent.dsa_per_day
 
 	doc = get_mapped_doc("Travel Authorization", source_name, {
 			"Travel Authorization": {

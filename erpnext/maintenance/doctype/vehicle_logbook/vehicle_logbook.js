@@ -26,19 +26,22 @@ frappe.ui.form.on('Vehicle Logbook', {
 					}
 				}
 			})
-			if(frm.doc.rate_type == 'With Fuel') {
-				frappe.call({
-					"method": "erpnext.maintenance.doctype.equipment.equipment.get_yards",
-					args: {"equipment": frm.doc.equipment},
-					callback: function(r) {
-						if(r.message) {
-							cur_frm.set_value("ys_km", r.message[0].lph)
-							cur_frm.set_value("ys_hours", r.message[0].kph)
-							cur_frm.refresh_fields()
-						}
+			frappe.call({
+				"method": "erpnext.maintenance.doctype.equipment.equipment.get_yards",
+				args: {"equipment": frm.doc.equipment},
+				callback: function(r) {
+					if(r.message) {
+						cur_frm.set_value("ys_km", r.message[0].lph)
+						cur_frm.set_value("ys_hours", r.message[0].kph)
+						cur_frm.refresh_fields()
 					}
-				})
-			}
+					else {
+						msgprint("No yardsticks settings for the equipment")
+					}
+				}
+			})
+
+			get_openings(frm.doc.equipment, frm.doc.from_date, frm.doc.to_date)
 		}
 	},
 	"final_km": function(frm) {
@@ -47,14 +50,26 @@ frappe.ui.form.on('Vehicle Logbook', {
 	"initial_km": function(frm) {
 		calculate_distance_km(frm)
 	},
+	"final_hour": function(frm) {
+		calculate_work_hour(frm)
+	},
+	"initial_hour": function(frm) {
+		calculate_work_hour(frm)
+	},
 	"to_date": function(frm) {
 		if(frm.doc.from_date > frm.doc.to_date) {
 			frappe.msgprint("From Date cannot be greater than To Date")
+		}
+		else {
+			get_openings(frm.doc.equipment, frm.doc.from_date, frm.doc.to_date)
 		}
 	},
 	"from_date": function(frm) {
 		if(frm.doc.from_date > frm.doc.to_date) {
 			frappe.msgprint("From Date cannot be greater than To Date")
+		}
+		else {
+			get_openings(frm.doc.equipment, frm.doc.from_date, frm.doc.to_date)
 		}
 	},
 	"total_work_time": function(frm) {
@@ -70,8 +85,33 @@ frappe.ui.form.on('Vehicle Logbook', {
 			cur_frm.set_value("consumption", frm.doc.consumption_km + frm.doc.consumption_hours)
 			cur_frm.refresh_fields()
 		}
+	},
+
+	opening_balance: function(frm) {
+		calculate_closing(frm)
+	},
+
+	hsd_received: function(frm) {
+		calculate_closing(frm)
+	},
+
+	consumption_hours: function(frm) {
+		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.rate_type == 'With Fuel') {
+			frm.set_value("consumption", frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.refresh_field("consumption")
+			calculate_closing(frm)
+		}
+	},
+
+	consumption: function(frm) {
+		calculate_closing(frm)
 	}
 });
+
+function calculate_closing(frm) {
+	frm.set_value("closing_balance", frm.doc.hsd_received + frm.doc.opening_balance - frm.doc.consumption)
+	cur_frm.refresh_field("closing_balance")
+}
 
 function calculate_distance_km(frm) {
 	if(frm.doc.initial_km && frm.doc.final_km) {
@@ -83,6 +123,20 @@ function calculate_distance_km(frm) {
 			cur_frm.set_value("distance_km", "0")
 			frm.refresh_fields()
 			frappe.msgprint("Final KM should be greater than Initial KM")
+		}
+	}
+}
+
+function calculate_work_hour(frm) {
+	if(frm.doc.initial_hour && frm.doc.final_hour) {
+		if(frm.doc.final_hour >= frm.doc.initial_hour) {
+			cur_frm.set_value("total_work_time", frm.doc.final_hour - frm.doc.initial_hour)
+			frm.refresh_fields()
+		}
+		else {
+			cur_frm.set_value("total_work_time", "0")
+			frm.refresh_fields()
+			frappe.msgprint("Final Hour should be greater than Initial Hour")
 		}
 	}
 }
@@ -112,6 +166,22 @@ frappe.ui.form.on("Vehicle Log", {
 		total_time(frm, cdt, cdn)
         }
 })
+
+function get_openings(equipment, from_date, to_date) {
+	if (equipment && from_date && to_date) {
+		frappe.call({
+			"method": "erpnext.maintenance.doctype.vehicle_logbook.vehicle_logbook.get_opening",
+			args: {"equipment": equipment, "from_date": from_date, "to_date": to_date},
+			callback: function(r) {
+				if(r.message) {
+					cur_frm.set_value("opening_balance", r.message[0])
+					cur_frm.set_value("hsd_received", r.message[1])
+					cur_frm.refresh_fields()
+				}
+			}
+		})
+	}
+}
 
 function total_time(frm, cdt, cdn) {
 	var total_idle = total_work = 0;

@@ -117,3 +117,7 @@ def get_rates(form, equipment):
 	if form and equipment:
 		return frappe.db.sql("select rate_type, rate, idle_rate from `tabHiring Approval Details` where docstatus = 1 and parent = \'" + str(form) + "\' and equipment = \'" + str(equipment) + "\'", as_dict=True)
 
+@frappe.whitelist()
+def update_status(name):
+	so = frappe.get_doc("Equipment Hiring Form", name)
+	so.db_set("payment_completed", 1)

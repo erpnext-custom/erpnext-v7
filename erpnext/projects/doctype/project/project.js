@@ -11,6 +11,8 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 */
 
 cur_frm.add_fetch("cost_center", "branch", "branch")
+cur_frm.add_fetch("customer", "image", "customer_image" );
+cur_frm.add_fetch("customer", "customer_details", "customer_address" );
 
 frappe.ui.form.on("Project", {
 	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
@@ -44,6 +46,20 @@ frappe.ui.form.on("Project", {
 			{fieldname: 'adjustment_amount', columns: 2},
 			{fieldname: 'balance_amount', columns: 2}
 		];		
+		frm.get_field('project_boq_item').grid.editable_fields = [
+			{fieldname: 'boq_name', columns: 2},
+			{fieldname: 'boq_date', columns: 2},
+			{fieldname: 'total_amount', columns: 2},
+			{fieldname: 'received_amount', columns: 2},
+			{fieldname: 'balance_amount', columns: 2}
+		];				
+		frm.get_field('project_invoice_item').grid.editable_fields = [
+			{fieldname: 'invoice_name', columns: 2},
+			{fieldname: 'invoice_date', columns: 2},
+			{fieldname: 'net_invoice_amount', columns: 2},
+			{fieldname: 'total_received_amount', columns: 2},
+			{fieldname: 'total_balance_amount', columns: 2}
+		];						
 	},	
 	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 	

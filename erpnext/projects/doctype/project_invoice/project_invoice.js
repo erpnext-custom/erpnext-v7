@@ -3,7 +3,6 @@
 
 frappe.ui.form.on('Project Invoice', {
 	setup: function(frm){
-		console.log("setup");
 		frm.get_field('project_invoice_boq').grid.editable_fields = [
 			{fieldname: 'item', columns: 3},
 			{fieldname: 'is_selected', columns: 1},
@@ -15,18 +14,17 @@ frappe.ui.form.on('Project Invoice', {
 	},
 
 	onload: function(frm){
-		console.log("onload");
 		calculate_totals(frm);
 	},
 	
 	onload_post_render: function(frm){
-		console.log("onload_post_render");	
 		cur_frm.refresh();
 	},
 	
 	refresh: function(frm, cdt, cdn) {
-		console.log("refresh");
 		//if(!frm.doc.__islocal){
+				
+			
 		if(frm.doc.project){
 			if(frappe.model.can_read("Project")) {
 				frm.add_custom_button(__("Project"), function() {
@@ -45,6 +43,25 @@ frappe.ui.form.on('Project Invoice', {
 			}					
 		}
 		
+		if(frm.doc.docstatus===1){
+			frm.add_custom_button(__('Accounting Ledger'), function(){
+				frappe.route_options = {
+					voucher_no: frm.doc.name,
+					from_date: frm.doc.invoice_date,
+					to_date: frm.doc_invoice_date,
+					company: frm.doc.company,
+					group_by_voucher: false
+				};
+				frappe.set_route("query-report", "General Ledger");
+			}, __("View"));
+			
+			if(frappe.model.can_read("Project Payment") && parseFloat(frm.doc.total_balance_amount) > 0){
+				frm.add_custom_button(__("Payment"), function(){
+					frm.trigger("make_project_payment")},
+					__("Make"), "icon-file-alt");
+			}
+		}
+		
 		if(frm.doc.boq_type=="Item Based"){
 			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_quantity", true);
 			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_amount", false);
@@ -59,7 +76,14 @@ frappe.ui.form.on('Project Invoice', {
 			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_amount", false);
 		}		
 	},
-		
+
+	make_project_payment: function(frm){
+		frappe.model.open_mapped_doc({
+			method: "erpnext.accounts.doctype.project_payment.project_payment.make_project_payment",
+			frm: frm
+		});
+	},
+	
 	price_adjustment_amount: function(frm){
 		calculate_totals(frm);
 	},
@@ -137,15 +161,18 @@ var calculate_totals = function(frm){
 	var pi = frm.doc.project_invoice_boq || [];
 	var gross_invoice_amount = 0.0, net_invoice_amount =0.0;
 	
-	for(var i=0; i<pi.length; i++){
-		if(pi[i].invoice_amount && pi[i].is_selected==1){
-			gross_invoice_amount += parseFloat(pi[i].invoice_amount);
+	if(frm.doc.docstatus != 1)
+	{
+		for(var i=0; i<pi.length; i++){
+			if(pi[i].invoice_amount && pi[i].is_selected==1){
+				gross_invoice_amount += parseFloat(pi[i].invoice_amount);
+			}
 		}
+		net_invoice_amount = (parseFloat(gross_invoice_amount)+parseFloat(frm.doc.price_adjustment_amount)-parseFloat(frm.doc.advance_recovery)-parseFloat(frm.doc.tds_amount));
+		cur_frm.set_value("gross_invoice_amount",(gross_invoice_amount));
+		cur_frm.set_value("net_invoice_amount",(net_invoice_amount));
+		cur_frm.set_value("total_balance_amount",(parseFloat(frm.doc.net_invoice_amount || 0)-parseFloat(frm.doc.total_received_amount || 0)));
 	}
-	net_invoice_amount = (parseFloat(gross_invoice_amount)+parseFloat(frm.doc.price_adjustment_amount)-parseFloat(frm.doc.advance_recovery)-parseFloat(frm.doc.tds_amount));
-	cur_frm.set_value("gross_invoice_amount",(gross_invoice_amount));
-	cur_frm.set_value("net_invoice_amount",(net_invoice_amount));
-	cur_frm.set_value("total_balance_amount",(net_invoice_amount));
 }
 
 var check_uncheck_all = function(frm){
