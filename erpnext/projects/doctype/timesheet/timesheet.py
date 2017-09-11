@@ -5,7 +5,7 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SHIV		                    2017/08/15         'Project Name', 'Tasks' are moved to parent doctype
+2.0		  SHIV		                    2017/08/15         'Project Name', 'Tasks' are moved to parent doctype
                                                                         'Timesheet' in order to provide more flexibility
                                                                         in recording time logs against a single task.
                                                                         However same fields from child doctype 'Timesheet Details'
@@ -30,16 +30,40 @@ class OverProductionLoggedError(frappe.ValidationError): pass
 
 class Timesheet(Document):
 	def validate(self):
-                # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-                # Following methods introduced by SHIV on 2017/08/15
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following methods introduced by SHIV on 15/08/2017
                 self.set_defaults()
-                self.calculate_target_quantity()
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.set_status()
 		self.validate_dates()
 		self.validate_time_logs()
 		self.update_cost()
 		self.calculate_total_amounts()
+
+        def reset_time_log_order(self):
+                idx = 0
+                tl_list = frappe.db.sql("""
+                                        select *
+                                        from `tabTimesheet Detail`
+                                        where parent = '{0}'
+                                        order by from_date, to_date
+                                """.format(self.name), as_dict=1)
+
+                for tl in tl_list:
+                        idx += 1
+                        frappe.db.sql("""
+                                update `tabTimesheet Detail`
+                                set idx = {0}
+                                where name = '{1}'
+                        """.format(idx, tl.name))
+                
+                        
+        def on_update(self):
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following methods introduced by SHIV on 15/08/2017
+                self.calculate_target_quantity()
+                self.reset_time_log_order()
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
 	def calculate_total_amounts(self):
 		self.total_hours = 0.0
@@ -95,10 +119,12 @@ class Timesheet(Document):
                         # Updating Task
                         base_task = frappe.get_doc("Task", self.task)
                         base_task.db_set('target_quantity_complete',self.target_quantity_complete)
+
                         self.target_quantity_complete = 0
                         for d in self.get("time_logs"):
                                 self.target_quantity_complete += flt(d.target_quantity_complete)
 
+                        
                         # Updating Project Progress
                         tl = frappe.db.sql("""
                                 select sum(ifnull(ts.work_quantity,0)*((ifnull(target_quantity_complete,0)/ifnull(target_quantity,1))*100)*0.01) project_progress
@@ -374,6 +400,7 @@ def get_activity_cost(employee=None, activity_type=None):
 		
 @frappe.whitelist()
 def get_events(start, end, filters=None):
+        frappe.msgprint("get_events")
 	"""Returns events for Gantt / Calendar view rendering.
 	:param start: Start date-time.
 	:param end: End date-time.
@@ -382,6 +409,8 @@ def get_events(start, end, filters=None):
 	filters = json.loads(filters)
 
 	conditions = get_conditions(filters)
+	
+	'''
 	return frappe.db.sql("""select `tabTimesheet Detail`.name as name, `tabTimesheet Detail`.parent as parent,
 		from_time, hours, activity_type, project, to_time from `tabTimesheet Detail`, 
 		`tabTimesheet` where `tabTimesheet Detail`.parent = `tabTimesheet`.name and 
@@ -390,6 +419,19 @@ def get_events(start, end, filters=None):
 			"start": start,
 			"end": end
 		}, as_dict=True, update={"allDay": 0})
+        '''
+
+	result = frappe.db.sql("""select `tabTimesheet Detail`.name as name, `tabTimesheet Detail`.parent as parent,
+		`tabTimesheet Detail`.from_date, `tabTimesheet Detail`.days, activity_type, `tabTimesheet Detail`.project,
+		`tabTimesheet Detail`.to_date from `tabTimesheet Detail`, 
+		`tabTimesheet` where `tabTimesheet Detail`.parent = `tabTimesheet`.name and 
+		(from_date between %(start)s and %(end)s) {conditions}""".format(conditions=conditions),
+		{
+			"start": start,
+			"end": end
+		}, as_dict=True, update={"allDay": 0})
+	frappe.msgprint(_("{0}").format(result))
+	return result
 
 def get_conditions(filters):
 	conditions = []
