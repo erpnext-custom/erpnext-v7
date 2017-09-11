@@ -4,9 +4,11 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  		  SHIV		     2017/08/15         					Project Name & Task are added at 'Timesheet' level
+2.0		  		  SHIV		     2017/08/15         					Project Name & Task are added at 'Timesheet' level
 																			inorder to provide flexibility in task based
 																			progress logging.
+2.0				  SHIV           2017/09/10                             Fields from_date, to_date, days are created for
+																			days based progress.							
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 cur_frm.add_fetch('employee', 'employee_name', 'employee_name');
@@ -27,10 +29,10 @@ frappe.ui.form.on("Timesheet", {
 
 		// Follwoing code is added by SHIV on 2017/08/11
 		frm.get_field('time_logs').grid.editable_fields = [
-			{fieldname: 'from_time', columns: 3},
-			{fieldname: 'to_time', columns: 3},
-			{fieldname: 'hours', columns: 1},
-			{fieldname: 'target_quantity', columns: 1},
+			{fieldname: 'from_date', columns: 2},
+			{fieldname: 'to_date', columns: 2},
+			{fieldname: 'days', columns: 2},
+			{fieldname: 'target_quantity', columns: 2},
 			{fieldname: 'target_quantity_complete', columns: 2},
 		];
 		
@@ -132,26 +134,41 @@ frappe.ui.form.on("Timesheet Detail", {
 		calculate_target_quantity_complete(frm);
 	},
 		
-	time_logs_remove: function(frm) {
+	time_logs_remove: function(frm, cdt, cdn) {
 		calculate_time_and_amount(frm);
+		calculate_target_quantity_complete(frm);
+		calculate_tot_days(frm, cdt, cdn);
 	},
 
 	from_time: function(frm, cdt, cdn) {
 		calculate_end_time(frm, cdt, cdn)
 	},
-
+	
 	to_time: function(frm, cdt, cdn) {
 		var child = locals[cdt][cdn];
 
 		if(frm._setting_hours) return;
 		frappe.model.set_value(cdt, cdn, "hours", moment(child.to_time).diff(moment(child.from_time),
 			"seconds") / 3600);
-	},
-
+		//frappe.model.set_value(cdt, cdn, "days", (moment(child.to_time).startOf('day').diff(moment(child.from_time).startOf('day'),'days') || 0)+1);
+	},	
+	
 	hours: function(frm, cdt, cdn) {
 		calculate_end_time(frm, cdt, cdn)
 	},
 
+	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+	// Following functions created by SHIV on 10/09/2017
+	from_date: function(frm, cdt, cdn){
+		calculate_days(frm, cdt, cdn);
+		calculate_tot_days(frm, cdt, cdn);
+	},
+
+	to_date: function(frm, cdt, cdn){
+		calculate_days(frm, cdt, cdn);
+		calculate_tot_days(frm, cdt, cdn);
+	},	
+	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 	billing_rate: function(frm, cdt, cdn) {
 		calculate_billing_costing_amount(frm, cdt, cdn)
 	},
@@ -188,12 +205,43 @@ calculate_end_time = function(frm, cdt, cdn){
 
 	var d = moment(child.from_time);
 	d.add(child.hours, "hours");
+	//console.log(moment(child.from_time).startOf('day').toDate());
 	frm._setting_hours = true;
 	frappe.model.set_value(cdt, cdn, "to_time", d.format(moment.defaultDatetimeFormat));
 	frm._setting_hours = false;
 
 	calculate_billing_costing_amount(frm, cdt, cdn)
 }
+
+// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+// Following function created by SHIV on 10/09/2017
+calculate_days = function(frm, cdt, cdn){
+	var child = locals[cdt][cdn];
+	
+	if(child.to_date){
+		frappe.model.set_value(cdt, cdn, "days", (moment(child.to_date).diff(moment(child.from_date),'days') || 0)+1);
+	}
+	else {
+		frappe.model.set_value(cdt, cdn, "days", 0);
+	}	
+}
+
+calculate_tot_days = function(frm, cdt, cdn){
+	var tl = frm.doc.time_logs || [];
+	total_days = 0;
+
+	for(var i=0; i<tl.length; i++) {
+		if (tl[i].days) {
+			total_days += (tl[i].days || 0);
+		}
+	}
+	
+	if(total_days){
+		cur_frm.set_value("total_days", total_days);
+	}
+	
+}
+// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 var calculate_billing_costing_amount = function(frm, cdt, cdn){
 	child = locals[cdt][cdn]
