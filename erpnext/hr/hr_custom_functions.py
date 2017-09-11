@@ -125,7 +125,6 @@ def get_employee_gis(employee):
 
 @frappe.whitelist()
 def update_salary_structure(employee, new_basic):
-
 	sal_struc_name = frappe.db.sql("""
 	select name
 	from `tabSalary Structure` st

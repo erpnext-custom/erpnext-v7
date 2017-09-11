@@ -8,6 +8,9 @@ from frappe.model.document import Document
 from frappe.utils import cstr, flt, fmt_money, formatdate
 
 class POL(Document):
+	def validate(self):
+		pass
+
 	def on_submit(self):
 		if self.direct_consumption:
 			self.consume_pol()
@@ -35,7 +38,10 @@ class POL(Document):
 				pol_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_pol_expense_account")
 		else:
 			frappe.throw("Can not determine machine category")
-		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+		#expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+		expense_bank_account = frappe.db.get_value("Company", frappe.defaults.get_user_default("Company"), "default_payable_account")
+		if not expense_bank_account:
+ 			frappe.throw("No Default Payable Account set in Company")
 
 		if expense_bank_account and pol_account:
 			je = frappe.new_doc("Journal Entry")
@@ -59,6 +65,8 @@ class POL(Document):
 			je.append("accounts", {
 					"account": expense_bank_account,
 					"cost_center": self.cost_center,
+					"party_type": "Supplier",
+					"party": self.supplier,
 					"credit_in_account_currency": flt(self.total_amount),
 					"credit": flt(self.total_amount),
 				})

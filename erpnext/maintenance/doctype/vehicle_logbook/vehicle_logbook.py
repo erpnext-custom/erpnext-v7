@@ -48,7 +48,9 @@ def get_opening(equipment, from_date, to_date):
 
 	qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1", (equipment, from_date, to_date), as_dict=True)
 
+	c_km = frappe.db.sql("select final_km from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
 
+	c_hr = frappe.db.sql("select final_hour from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
 	result = []
 	if closing:
 		result.append(closing[0].closing_balance)
@@ -57,6 +59,16 @@ def get_opening(equipment, from_date, to_date):
 
 	if qty:
 		result.append(qty[0].qty)
+	else:
+		result.append(0)
+
+	if c_km:
+		result.append(c_km[0].final_km)
+	else:
+		result.append(0)
+
+	if c_hr:
+		result.append(c_hr[0].final_hour)
 	else:
 		result.append(0)
 

@@ -31,8 +31,8 @@ frappe.ui.form.on('Vehicle Logbook', {
 				args: {"equipment": frm.doc.equipment},
 				callback: function(r) {
 					if(r.message) {
-						cur_frm.set_value("ys_km", r.message[0].lph)
-						cur_frm.set_value("ys_hours", r.message[0].kph)
+						cur_frm.set_value("ys_km", r.message[0].kph)
+						cur_frm.set_value("ys_hours", r.message[0].lph)
 						cur_frm.refresh_fields()
 					}
 					else {
@@ -176,6 +176,8 @@ function get_openings(equipment, from_date, to_date) {
 				if(r.message) {
 					cur_frm.set_value("opening_balance", r.message[0])
 					cur_frm.set_value("hsd_received", r.message[1])
+					cur_frm.set_value("initial_km", r.message[2])
+					cur_frm.set_value("initial_hour", r.message[3])
 					cur_frm.refresh_fields()
 				}
 			}

@@ -12,7 +12,7 @@ frappe.listview_settings['Hire Charge Invoice'] = {
 
 		if(doc.docstatus == 1) {
 			if(doc.invoice_jv && doc.payment_jv) {
-				return ["Payment Completed", "green", "docstatus,=,1|invoice_jv,>,0|payment_jv,>,0"];
+				return ["Payment Received", "green", "docstatus,=,1|invoice_jv,>,0|payment_jv,>,0"];
 			}
 			else {
 				return ["Invoice Raised", "blue", "docstatus,=,1|invoice_jv,>,0"];

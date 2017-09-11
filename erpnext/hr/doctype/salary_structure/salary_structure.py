@@ -250,10 +250,12 @@ def make_salary_slip(source_name, target_doc=None):
 				if a.salary_component == 'Basic Pay':
 					old_basic = a.amount
 					#Do prorating of salary
-					actual_days = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -11)), getdate(employee.date_of_joining)))	
-					total = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -11)), get_first_day(add_days(nowdate(), -11))))
+					actual_days = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -13)), getdate(employee.date_of_joining)))	
+					total = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -13)), get_first_day(add_days(nowdate(), -13))))
 					new_basic = flt((flt(actual_days) / flt(total)) * old_basic, 2)
 					source = update_salary_structure(str(source.employee), flt(new_basic))
+					if not source:
+						frappe.throw("There is either no salary structure or the payroll processing is done before time")
 					prorated = 1
 					frappe.msgprint("Prorated the salary for " + str(source.employee_name))
 					break
