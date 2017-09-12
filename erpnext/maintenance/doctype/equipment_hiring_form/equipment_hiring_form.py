@@ -29,7 +29,8 @@ class EquipmentHiringForm(Document):
 		cl_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
 		if cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this job card first!")
-		
+	
+		frappe.db.sql("delete from `tabEquipment Reservation Entry` where ehf_name = \'"+ str(self.name) +"\'")	
 		self.db_set("advance_journal", '')
 
 	def check_duplicate(self):
@@ -121,3 +122,9 @@ def get_rates(form, equipment):
 def update_status(name):
 	so = frappe.get_doc("Equipment Hiring Form", name)
 	so.db_set("payment_completed", 1)
+
+def equipment_query(doctype, txt, searchfield, start, page_len, filters):
+	return frappe.db.sql("select e.name, e.equipment_number, e.equipment_type from `tabEquipment` e where e.equipment_type = %s and e.branch = %s and e.is_disabled != 1 and not exists (select 1 from `tabEquipment Reservation Entry` a where (a.from_date between %s and %s or a.to_date between %s and %s) and a.equipment = e.name)", (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
+
+
+

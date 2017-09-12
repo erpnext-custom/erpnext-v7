@@ -17,3 +17,11 @@ frappe.ui.form.on('Issue POL', {
 });
 
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
+
+frappe.ui.form.on("Issue POL", "refresh", function(frm) {
+	cur_frm.set_query("tanker", function() {
+		return {
+			filters:[['branch', "=", frm.doc.branch], ['equipment_type', '=', 'Tanker']]
+		}
+	})
+})

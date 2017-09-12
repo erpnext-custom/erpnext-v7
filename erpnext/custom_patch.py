@@ -8,10 +8,10 @@ from frappe.utils.data import get_first_day, get_last_day, add_years
 def give_permission():
 	users = frappe.db.sql("select name from tabUser", as_dict=True)
 	for u in users:
-		if u.name in ['proco@cdcl.bt', 'accounts@cdcl.bt', 'project@cdcl.bt', 'maintenance@cdcl.bt', 'fleet@cdcl.bt', 'sales@cdcl.bt','stock@cdcl.bt', 'hr@cdcl.bt','tashi.dorji775@bt.bt', 'sonam.zangmo@bt.bt', 'siva@bt.bt', 'jigme@bt.bt', 'dorji2392@bt.bt', 'sangay.dorji2695@bt.bt', 'lhendrup.dorji@bt.bt']:
+		if u.name in ['admins@cdcl.bt', 'proco@cdcl.bt', 'accounts@cdcl.bt', 'project@cdcl.bt', 'maintenance@cdcl.bt', 'fleet@cdcl.bt', 'sales@cdcl.bt','stock@cdcl.bt', 'hr@cdcl.bt','tashi.dorji775@bt.bt', 'sonam.zangmo@bt.bt', 'siva@bt.bt', 'jigme@bt.bt', 'dorji2392@bt.bt', 'sangay.dorji2695@bt.bt', 'lhendrup.dorji@bt.bt']:
 			for branch in frappe.db.sql("select name from tabBranch", as_dict=True):
-				if branch == 'Lingmethang':
-					frappe.permissions.add_user_permission("Branch", branch.name, u.name)
+				#if branch == 'Lingmethang':
+				frappe.permissions.add_user_permission("Branch", branch.name, u.name)
 			print("DONE")	
 		print(str(u))
 

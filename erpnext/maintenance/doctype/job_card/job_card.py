@@ -27,7 +27,8 @@ class JobCard(Document):
 
 	def on_submit(self):
 		self.check_items()
-		self.post_journal_entry()
+		if not self.owned_by == "Own":
+			self.post_journal_entry()
 		self.update_breakdownreport()
 
 	def before_cancel(self):
@@ -224,6 +225,7 @@ def make_bank_entry(frm=None):
 		frappe.msgprint("Bill NOT processed")
 		return "NO"
 
+#Deprecated to accomodate more than one MIN
 @frappe.whitelist()
 def get_min_items(name):
 	doc = frappe.get_doc("Stock Entry", name)	

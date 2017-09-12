@@ -97,6 +97,11 @@ frappe.ui.form.on("Timesheet", {
 				frappe.set_route("Form", "Task", frm.doc.task);
 			}, __("View"), true);
 		}
+		
+		if(frm.doc.docstatus!=1){
+			console.log("refresh");
+			populate_dates(frm);
+		}
 		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++		
 	},
 
@@ -127,12 +132,19 @@ frappe.ui.form.on("Timesheet Detail", {
 	target_quantity_complete: function(frm, cdt, cdn){
 		var child = locals[cdt][cdn];
 		
+		/*
 		if(child.target_quantity_complete > child.target_quantity){
 			msgprint(__("Achieved value cannot be more than Target value."));
 			//frappe.model.set_value(cdt, cdn, "target_quantity_complete",child.target_quantity);
 		}
+		*/
 		calculate_target_quantity_complete(frm);
 	},
+		
+	time_logs_add: function(frm, cdt, cdn){
+		console.log("time_logs_add");
+		populate_dates(frm);
+	},	
 		
 	time_logs_remove: function(frm, cdt, cdn) {
 		calculate_time_and_amount(frm);
@@ -200,6 +212,13 @@ frappe.ui.form.on("Timesheet Detail", {
 	}
 });
 
+var populate_dates = function(frm){
+	var tl = frm.doc.time_logs || [];
+	for(item in tl){
+		console.log(item);
+	}
+}
+
 calculate_end_time = function(frm, cdt, cdn){
 	var child = locals[cdt][cdn];
 
@@ -261,7 +280,8 @@ var calculate_billing_costing_amount = function(frm, cdt, cdn){
 // Following function created by SHIV on 2017/08/17
 var calculate_target_quantity_complete = function(frm){
 	var tl = frm.doc.time_logs || [];
-	total_target_quantity_complete = 0;
+	total_target_quantity_complete = 0.0;
+	total_work_quantity_complete = 0.0;
 	
 	for(var i=0; i<tl.length; i++) {
 		if (tl[i].target_quantity_complete) {
@@ -269,18 +289,21 @@ var calculate_target_quantity_complete = function(frm){
 		}
 	}
 	
+	cur_frm.set_value("work_quantity_complete",parseFloat(frm.doc.work_quantity)*(parseFloat(total_target_quantity_complete)/(frm.doc.target_quantity || 1)));
+	
 	frappe.call({
 			method: "frappe.client.get_list",
 			args: {
-				doctype: "Timesheet",
+				doctype: "Timesheet Detail",
 				filters: {
-					task: frm.doc.task
+					task: frm.doc.task,
+					docstatus: ["<",2]
 				},
-				fields:["name","target_quantity_complete"]
+				fields:["parent","target_quantity_complete"]
 			},
 			callback: function(r){
 				$.each(r.message, function(i, d){
-					if (d.name != frm.doc.name){
+					if (d.parent != frm.doc.name){
 						total_target_quantity_complete += parseFloat(d.target_quantity_complete || 0);
 					}
 				})

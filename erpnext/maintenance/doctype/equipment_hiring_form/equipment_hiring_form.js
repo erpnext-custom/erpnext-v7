@@ -28,7 +28,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
 			frappe.set_route("List", "Hire Charge Invoice");
 		}, __("View"));
 
-		if(!frm.doc.payment_completed) {
+		if(!frm.doc.payment_completed && frm.doc.docstatus == 1) {
 			cur_frm.add_custom_button(__('Close'), function() {
 				cur_frm.cscript.update_status()
 			}, __("Status"));
@@ -121,6 +121,14 @@ frappe.ui.form.on("Hiring Approval Details", {
 	},
 	"rate_type": function(frm, cdt, cdn) {
 		get_rates(frm, cdt, cdn)
+	},
+	"equipment": function(frm, cdt, cdn) {
+		doc = locals[cdt][cdn]
+		cur_frm.fields_dict.approved_items.grid.toggle_reqd("equipment_number", doc.equipment)
+		cur_frm.fields_dict.approved_items.grid.toggle_reqd("rate_type", doc.equipment)
+		cur_frm.fields_dict.approved_items.grid.toggle_reqd("rate", doc.equipment)
+		cur_frm.fields_dict.approved_items.grid.toggle_reqd("idle_rate", doc.equipment)
+		cur_frm.fields_dict.approved_items.grid.toggle_reqd("place", doc.equipment)
 	}
 })
 
@@ -183,8 +191,11 @@ function calculate_amount(frm, cdt, cdn) {
 //Filter equipments based on branch
 frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 	frm.fields_dict['approved_items'].grid.get_field('equipment').get_query = function(doc, cdt, cdn) {
+		doc = locals[cdt][cdn]
 		return {
-			filters:[['branch', "=", frm.doc.branch]]
+			"query": "erpnext.maintenance.doctype.equipment_hiring_form.equipment_hiring_form.equipment_query",
+			filters: {'branch': frm.doc.branch, 'equipment_type': doc.equipment_type, "from_date": doc.from_date, "to_date": doc.to_date}
+			//filters:[['branch', "=", frm.doc.branch], ['is_disabled', '!=', '1'], ['equipment_type', '=', doc.equipment_type]]
 		}
 	}
 	cur_frm.set_query("customer", function() {
@@ -208,7 +219,7 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 			return {
 			    "filters": {
 				"disabled": 0,
-				"customer_group": [["!=","Internal"], ["!=", "Domestic"]]
+				"customer_group": ["not in", "Internal, Domestic"]
 			    }
 			};
 		}
