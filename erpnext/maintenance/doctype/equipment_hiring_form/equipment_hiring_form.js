@@ -129,8 +129,30 @@ frappe.ui.form.on("Hiring Approval Details", {
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("rate", doc.equipment)
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("idle_rate", doc.equipment)
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("place", doc.equipment)
+	},
+	"from_time": function(frm, cdt, cdn) {
+		calculate_time(frm, cdt, cdn)
+	},
+	"to_time": function(frm, cdt, cdn) {
+		calculate_time(frm, cdt, cdn)
 	}
 })
+
+function calculate_time(frm, cdt, cdn) {
+	doc = locals[cdt][cdn]
+	if (doc.from_time && doc.to_time) {
+		var sd=Date.parse("2/12/2016"+' '+doc.from_time)
+		var ed=Date.parse("2/12/2016"+' '+doc.to_time)
+		console.log(sd)
+		if(sd > ed) {
+			frappe.msgprint("From Time should be smaller than To Date")
+		}
+		else {
+			frappe.model.set_value(cdt, cdn, "total_hours", (frappe.datetime.get_hour_diff(doc.to_date + " " + doc.to_time, doc.from_date + " " + doc.from_time)))
+			cur_frm.refresh_fields()
+		}
+	}
+}
 
 function get_rates(frm, cdt, cdn) {
 	doc = locals[cdt][cdn]

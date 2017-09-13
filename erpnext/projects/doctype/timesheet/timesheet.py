@@ -88,6 +88,9 @@ class Timesheet(Document):
                         total_target_quantity_complete  += flt(tl.target_quantity_complete)
                         tl.from_time = tl.from_date
                         tl.to_time   = tl.to_date
+
+                        if tl.from_date > tl.to_date:
+                                frappe.throw(_("Row {0}: From Date cannot be after To Date.").format(tl.idx))
                 """
                         if flt(tl.target_quantity_complete) > flt(tl.target_quantity):
                                 frappe.throw(_("Row {0}: Achieved value({1}) cannot be more than Target value({2})").format(tl.idx, tl.target_quantity_complete, tl.target_quantity))
@@ -97,7 +100,7 @@ class Timesheet(Document):
                 """
 
                 if flt(total_target_quantity_complete) > flt(self.target_quantity):
-                        frappe.throw(_("Total Achieved value({0}) cannot be more than Target value({1})").format(flt(total_target_quantity_complate),flt(self.target_quantity)))
+                        frappe.throw(_("Total Achieved value({0}) cannot be more than Target value({1})").format(flt(total_target_quantity_complete),flt(self.target_quantity)))
 
                 #self.work_quantity_complete = (flt(self.work_quantity)*((flt(total_target_quantity_complete)/(total_target_quantity if total_target_quantity else 1))*100)*0.01)
                 
@@ -258,9 +261,14 @@ class Timesheet(Document):
 				frappe.get_doc("Project", data.project).update_project()
 
 	def validate_dates(self):
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following code is commented by SHIV on 13/09/2017
+                """
 		for data in self.time_logs:
 			if time_diff_in_hours(data.to_time, data.from_time) < 0:
 				frappe.throw(_("To date cannot be before from date"))
+                """
+		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 	def validate_time_logs(self):
 		for data in self.get('time_logs'):

@@ -3,7 +3,7 @@
 
 // render
 frappe.listview_settings['Job Card'] = {
-	add_fields: ["payment_jv", "docstatus", "assigned_to"],
+	add_fields: ["payment_jv", "docstatus", "assigned_to", "outstanding_amount", "owned_by"],
 	has_indicator_for_draft: 1,
 	get_indicator: function(doc) {
 		if(doc.docstatus==0) {
@@ -16,11 +16,14 @@ frappe.listview_settings['Job Card'] = {
 		}
 
 		if(doc.docstatus == 1) {
-			if(doc.payment_jv) {
-				return ["Payment Received", "green", "docstatus,=,1|payment_jv,>,0"];
+			if(doc.owned_by != "Others") {
+				return ["Journal Adjusted", "green", "docstatus,=,1|owned_by,!=,Others"];
+			}
+			else if(doc.outstanding_amount == 0) {
+				return ["Payment Received", "green", "docstatus,=,1|outstanding_amount,=,0"];
 			}
 			else {
-				return ["Payment Booked", "blue", "docstatus,=,1|payment_jv,<=,0"];
+				return ["Invoice Raised", "blue", "docstatus,=,1|outstanding_amount,>,0"];
 			}
 		}
 	}

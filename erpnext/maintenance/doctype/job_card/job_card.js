@@ -12,10 +12,16 @@ frappe.ui.form.on('Job Card', {
 			}, __("View"));
 		}
 	
-		if (!frm.doc.payment_jv && frm.doc.jv && frappe.model.can_write("Journal Entry")) {
+		if (frm.doc.outstanding_amount > 0 && frm.doc.jv && frappe.model.can_write("Journal Entry")) {
 			//cur_frm.toggle_display("receive_payment", 1)
-			cur_frm.add_custom_button(__('Payment'), function() {
+			/*cur_frm.add_custom_button(__('Payment'), function() {
 				cur_frm.cscript.receive_payment()
+			}, __("Receive"));*/
+			frm.add_custom_button("Receive Payment", function() {
+				frappe.model.open_mapped_doc({
+					method: "erpnext.maintenance.doctype.job_card.job_card.make_payment_entry",
+					frm: cur_frm
+				})
 			}, __("Receive"));
 		}
 		else {

@@ -97,11 +97,6 @@ frappe.ui.form.on("Timesheet", {
 				frappe.set_route("Form", "Task", frm.doc.task);
 			}, __("View"), true);
 		}
-		
-		if(frm.doc.docstatus!=1){
-			console.log("refresh");
-			populate_dates(frm);
-		}
 		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++		
 	},
 
@@ -117,10 +112,6 @@ frappe.ui.form.on("Timesheet", {
 			method: "erpnext.projects.doctype.timesheet.timesheet.make_salary_slip",
 			frm: frm
 		});
-	},
-	
-	onsubmit: function(frm){
-		msgprint(__("are you sure?"));
 	},
 })
 
@@ -142,8 +133,7 @@ frappe.ui.form.on("Timesheet Detail", {
 	},
 		
 	time_logs_add: function(frm, cdt, cdn){
-		console.log("time_logs_add");
-		populate_dates(frm);
+		populate_dates(frm, cdt, cdn);
 	},	
 		
 	time_logs_remove: function(frm, cdt, cdn) {
@@ -212,12 +202,89 @@ frappe.ui.form.on("Timesheet Detail", {
 	}
 });
 
-var populate_dates = function(frm){
+// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+// Following function created by SHIV on 13/09/2017
+var populate_dates = function(frm, cdt, cdn){
 	var tl = frm.doc.time_logs || [];
-	for(item in tl){
-		console.log(item);
+	var child = locals[cdt][cdn];
+	var flag = 0, balance_quantity = 0.0, total_quantity = 0.0;
+	
+	for(idx in tl){
+		if (tl[idx].from_date){
+			flag += 1;
+		}
+		total_quantity += parseFloat(tl[idx].target_quantity_complete || 0);
 	}
+	
+	if (total_quantity >= parseFloat(frm.doc.target_quantity)){
+		balance_quantity = 0.0;
+	}
+	else {
+		balance_quantity = parseFloat(frm.doc.target_quantity || 0)-total_quantity;
+	}
+	
+	if (frm.doc.docstatus != 1 && flag == 0){
+		cur_frm.clear_table("time_logs");
+		var row = frappe.model.add_child(frm.doc, "Timesheet Detail", "time_logs");
+		row.from_date 		= frm.doc.exp_start_date;
+		row.to_date 		= frm.doc.exp_end_date;
+		row.days      		= (moment(row.to_date).diff(moment(row.from_date),'days') || 0)+1;
+		row.target_quantity = parseFloat(balance_quantity);
+	} else if(frm.doc.docstatus != 1 && flag > 0){
+		min = tl.reduce(function(prev, curr){
+						if(curr.from_date){
+							return moment(prev.from_date).toDate() < moment(curr.from_date).toDate() ? prev : curr;
+						} else {
+							return prev;
+						}
+					});		
+
+		max = tl.reduce(function(prev, curr){
+						if(curr.to_date){
+							return moment(prev.to_date).toDate() > moment(curr.to_date).toDate() ? prev : curr;
+						} else {
+							return prev;
+						}
+					});	
+					
+		if (min.from_date > frm.doc.exp_start_date && max.to_date < frm.doc.exp_end_date){
+			frappe.model.set_value(cdt, cdn, "from_date", frm.doc.exp_start_date);
+			frappe.model.set_value(cdt, cdn, "to_date", moment(min.from_date).add(-1,"days"));
+			frappe.model.set_value(cdt, cdn, "target_quantity", balance_quantity);
+			
+			var row = frappe.model.add_child(frm.doc, "Timesheet Detail", "time_logs");
+			row.from_date 		= moment(max.to_date).add(1,"days");
+			row.to_date   		= frm.doc.exp_end_date;
+			row.days      		= (moment(row.to_date).diff(moment(row.from_date),'days') || 0)+1;
+			row.target_quantity = parseFloat(balance_quantity);
+		} else if(min.from_date > frm.doc.exp_start_date){
+			frappe.model.set_value(cdt, cdn, "from_date", frm.doc.exp_start_date);
+			frappe.model.set_value(cdt, cdn, "to_date", moment(min.from_date).add(-1,"days"));
+			frappe.model.set_value(cdt, cdn, "target_quantity", balance_quantity);
+		} else if (max.to_date < frm.doc.exp_end_date){
+			frappe.model.set_value(cdt, cdn, "from_date", moment(max.to_date).add(1,"days"));
+			frappe.model.set_value(cdt, cdn, "to_date", frm.doc.exp_end_date);		
+			frappe.model.set_value(cdt, cdn, "target_quantity", balance_quantity);
+		}
+	}
+	
+	/*
+
+
+
+
+	*/
+	//frappe.model.set_value("Timesheet Detail", tl[0].name, 'from_date', frm.doc.exp_start_date);
+
+
+	/*
+	if (!min.from_date && !max.to_date){
+		//frappe.model.set_value(cdt, cdn, 'from_date', frm.doc.exp_start_date);
+		frappe.model.set_value("Timesheet Detail", tl[0].name, 'from_date', frm.doc.exp_start_date);
+	}
+*/	
 }
+// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
 calculate_end_time = function(frm, cdt, cdn){
 	var child = locals[cdt][cdn];
@@ -232,7 +299,7 @@ calculate_end_time = function(frm, cdt, cdn){
 	calculate_billing_costing_amount(frm, cdt, cdn)
 }
 
-// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 // Following function created by SHIV on 10/09/2017
 calculate_days = function(frm, cdt, cdn){
 	var child = locals[cdt][cdn];
@@ -260,7 +327,7 @@ calculate_tot_days = function(frm, cdt, cdn){
 	}
 	
 }
-// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
 var calculate_billing_costing_amount = function(frm, cdt, cdn){
 	child = locals[cdt][cdn]

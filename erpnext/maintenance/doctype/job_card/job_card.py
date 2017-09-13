@@ -6,7 +6,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils.data import time_diff_in_hours
-from frappe.utils import cstr, flt, fmt_money, formatdate
+from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
+from frappe.model.mapper import get_mapped_doc
 
 class JobCard(Document):
 	def validate(self):
@@ -24,8 +25,13 @@ class JobCard(Document):
 		if cc_amount.has_key('Item'):
 			self.goods_amount = cc_amount['Item']
 		self.total_amount = flt(self.services_amount) + flt(self.goods_amount)
+		self.outstanding_amount = self.total_amount
 
 	def on_submit(self):
+		if not self.finish_date:
+			frappe.throw("Please enter Job Out Date")
+		else:
+			self.update_reservation()
 		self.check_items()
 		if not self.owned_by == "Own":
 			self.post_journal_entry()
@@ -170,6 +176,9 @@ class JobCard(Document):
 		else:
 			frappe.throw("Setup Default Goods, Services and Receivable Accounts in Maintenance Accounts Settings")
 
+	def update_reservation(self):
+		frappe.db.sql("update `tabEquipment Reservation Entry` set to_date = \'"+str(self.finish_date)+"\' where ehf_name = \'"+str(self.break_down_report)+"\'")
+
 	##
 	# Update the job card reference on Break Down Report
 	##
@@ -244,3 +253,22 @@ def get_min_items(name):
 				result.append(row)
 			return result
 
+@frappe.whitelist()
+def make_payment_entry(source_name, target_doc=None): 
+	def update_docs(obj, target, source_parent):
+		target.posting_date = nowdate()
+		target.ref_doc = "Job Card"
+		target.net_amount = obj.total_amount
+	
+	doc = get_mapped_doc("Job Card", source_name, {
+			"Job Card": {
+				"doctype": "Mechanical Payment",
+				"field_map": {
+					"name": "ref_no",
+					"outstanding_amount": "receivable_amount",
+				},
+				"postprocess": update_docs,
+				"validation": {"docstatus": ["=", 1]}
+			},
+		}, target_doc)
+	return doc

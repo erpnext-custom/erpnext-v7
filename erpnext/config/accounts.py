@@ -48,6 +48,11 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Mechanical Payment",
+					"description": _("Create Payment"),
+				},
+				{
+					"type": "doctype",
 					"name": "POL",
 					"label": "POL Payment",
 					"description": _("Receive POL"),

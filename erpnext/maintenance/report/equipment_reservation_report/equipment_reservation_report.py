@@ -16,6 +16,7 @@ def execute(filters=None):
 	eqp_map = get_equipment_details(filters)
 
 	data = []
+	filters.month = str(filters.month) if cint(filters.month) > 9 else str("0" + str(filters.month))
 	for e in eqp_map:
 		if not filters.equipment_type:
 			row = [e.name, e.equipment_number, e.equipment_type]
@@ -24,13 +25,27 @@ def execute(filters=None):
 
 		for day in range(filters["total_days_in_month"]):
 			day = str(day + 1) if day + 1 > 9 else str("0" + str(day + 1))
-			filters.month = str(filters.month) if cint(filters.month) > 9 else str("0" + str(filters.month))
-			res = frappe.db.sql("select 1 from `tabEquipment Reservation Entry` where docstatus = 1 and equipment = %s and %s between from_date and to_date", (e.name, str(str(filters.year) + "-" + str(filters.month) + "-" + str(day))))
+			res = frappe.db.sql("select reason, hours from `tabEquipment Reservation Entry` where docstatus = 1 and equipment = %s and %s between from_date and to_date", (e.name, str(str(filters.year) + "-" + str(filters.month) + "-" + str(day))), as_dict=True)
 			if res:
-				row.append("\u2713".encode("utf8"))
+				v = ""
+				if res[0].reason == "Maintenance":
+					v = "X"
+				else:
+					if cint(res[0].hours) > 8:
+						v = "8"
+					elif cint(res[0].hours) > 0:
+						total = 0
+						for a in res: 
+							total+=cint(a.hours)
+						v = str(total)
+				row.append(v)
+			else:
+				row.append("")	
 		data.append(row)
 
-	return columns, data
+		legend = "X = Under Maintenance"
+
+	return columns, data, legend
 
 def get_columns(filters):
 	if not filters.equipment_type:

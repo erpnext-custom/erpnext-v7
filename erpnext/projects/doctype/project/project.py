@@ -48,11 +48,61 @@ class Project(Document):
 			sum(hours) as total_hours
 			from `tabTimesheet Detail` where project=%s and docstatus < 2 group by activity_type
 			order by total_hours desc''', self.name, as_dict=True))
-
-
+        
 	def __setup__(self):
 		self.onload()
 
+	def validate(self):
+		self.validate_dates()
+
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+		# Follwoing 2 lines are commented by SHIV on 2017/08/11
+		'''
+		self.sync_tasks()
+		self.tasks = []
+		'''
+		# Following code added by SHIV on 2017/08/11
+		self.sync_activity_tasks()
+		self.activity_tasks = []
+		self.project_advance_item = []
+		self.project_boq_item = []
+		self.project_invoice_item = []
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+		self.send_welcome_email()
+
+	def on_update(self):
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following 2 lines commented by SHIV on 2017/08/11
+                '''
+		self.load_tasks()
+		self.sync_tasks()
+                '''
+		# Following 2 lines added by SHIV on 2017/08/11
+		self.load_activity_tasks()
+		self.sync_activity_tasks()
+		self.update_group_tasks()
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+
+        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+        # Following code added by SHIV on 13/09/2017
+        def update_group_tasks(self):
+                group_list = frappe.db.sql("""
+                                        select t1.task_idx, t1.subject, t1.is_group,
+                                                (select ifnull(min(t2.task_idx),999)
+                                                 from  `tabTask` as t2
+                                                 where t2.project  = t1.project
+                                                 and   t2.is_group = t1.is_group
+                                                 and   t2.task_idx > t1.task_idx
+                                                ) as min_idx
+                                        from `tabTask` as t1
+                                        where t1.project = '{0}'
+                                        and   t1.is_group = 1
+                                        order by t1.task_idx
+                                """.format(self.name),as_dict=1)
+                
+                frappe.msgprint(_("{0}").format(group_list))
+        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+        
 	def load_tasks(self):
 		"""Load `tasks` from the database"""
 		self.tasks = []
@@ -196,27 +246,6 @@ class Project(Document):
 			
 	def get_tasks(self):
 		return frappe.get_all("Task", "*", {"project": self.name}, order_by="exp_start_date asc")
-
-	def validate(self):
-		self.validate_dates()
-
-		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-		# Follwoing 2 lines are commented by SHIV on 2017/08/11
-		'''
-		self.sync_tasks()
-		self.tasks = []
-		'''
-		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-
-		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-		# Following 2 Lines added by SHIV on 2017/08/11
-		self.sync_activity_tasks()
-		self.activity_tasks = []
-		self.project_advance_item = []
-		self.project_boq_item = []
-		self.project_invoice_item = []
-		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-		self.send_welcome_email()
 
 	def validate_dates(self):
 		if self.expected_start_date and self.expected_end_date:
@@ -393,18 +422,6 @@ class Project(Document):
 			if user.welcome_email_sent==0:
 				frappe.sendmail(user.user, subject=_("Project Collaboration Invitation"), content=content.format(*messages))
 				user.welcome_email_sent=1
-
-	def on_update(self):
-                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-                # Following 2 lines commented by SHIV on 2017/08/11
-                '''
-		self.load_tasks()
-		self.sync_tasks()
-                '''
-		# Following 2 lines added by SHIV on 2017/08/11
-		self.load_activity_tasks()
-		self.sync_activity_tasks()		
-		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
 def get_timeline_data(doctype, name):
 	'''Return timeline for attendance'''

@@ -15,11 +15,11 @@ data = {
 		},
 		{
 			'label': _('Expense'),
-			'items': ['Expense Claim']
+			'items': ['Travel Claim', 'Leave Encashment', 'Overtime Application']
 		},
 		{
-			'label': _('Evaluation'),
-			'items': ['Appraisal']
-		}
+			'label': _('Yearly Components'),
+			'items': ['Leave Travel Concession', 'PBVA', 'Bonus']
+		},
 	]
 }
