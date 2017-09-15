@@ -233,11 +233,6 @@ def get_data():
 				},                                
 				{
 					"type": "doctype",
-					"name": "Branch",
-					"description": _("List of Branches"),
-				},                                
-				{
-					"type": "doctype",
 					"name": "Assign Branch",
 					"label": "Branch Access Control",
 					"description": _("Assign Multiple Branches to Users")

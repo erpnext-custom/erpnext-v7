@@ -2803,7 +2803,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2017-09-01 16:04:25.922331", 
+ "modified": "2017-09-15 10:47:30.173588", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Delivery Note", 
@@ -3017,9 +3017,9 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 1, 
    "email": 1, 
@@ -3033,7 +3033,7 @@
    "role": "Administrator", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }
  ], 

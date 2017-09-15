@@ -43,10 +43,13 @@ class VehicleLogbook(Document):
 		self.db_set("closing_balance", flt(self.opening_balance) + flt(self.hsd_received) - flt(self.consumption))
 
 @frappe.whitelist()
-def get_opening(equipment, from_date, to_date):
+def get_opening(equipment, from_date, to_date, pol_type):
+	if not pol_type:
+		frappe.throw("Set HSD type in Equipment")
+
 	closing = frappe.db.sql("select closing_balance from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and rate_type = 'With Fuel' and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
 
-	qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1", (equipment, from_date, to_date), as_dict=True)
+	qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (equipment, from_date, to_date, pol_type), as_dict=True)
 
 	c_km = frappe.db.sql("select final_km from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
 

@@ -608,7 +608,6 @@ frappe.ui.form.on("Sales Invoice Item","loss_method",function(frm, cdt, cdn){
 });
 
 frappe.ui.form.on("Sales Invoice","items_on_form_rendered", function(frm, grid_row) {
-    console.log('On load is called...');
     cur_frm.call({
         method: "erpnext.accounts.accounts_custom_functions.get_loss_tolerance",
         callback: function(r) {
@@ -621,10 +620,10 @@ frappe.ui.form.on("Sales Invoice","items_on_form_rendered", function(frm, grid_r
              {
                   if (cur_frm.doc.docstatus == 0)
                   {
-                       grid_row.grid_form.fields_dict.name_tolerance.set_value(r.message[0][0]);
-                       grid_row.grid_form.fields_dict.loss_tolerance.set_value(r.message[0][1]);
-					   grid_row.grid_form.fields_dict.loss_qty_flat.set_value(r.message[0][2]);
-					   grid_row.grid_form.fields_dict.loss_method.set_value("Quantity in %");
+			grid_row.grid_form.fields_dict.name_tolerance.set_value(r.message[0][0]);
+			grid_row.grid_form.fields_dict.loss_tolerance.set_value(r.message[0][1]);
+			grid_row.grid_form.fields_dict.loss_qty_flat.set_value(r.message[0][2]);
+			grid_row.grid_form.fields_dict.loss_method.set_value("Quantity in %");
                   }
              }
 
@@ -640,7 +639,6 @@ frappe.ui.form.on("Sales Invoice","items_on_form_rendered", function(frm, grid_r
                        if (grid_row.grid_form.fields_dict.accepted_qty.value == 0)
                        {
                             var actual_qty = grid_row.grid_form.fields_dict.qty.value;
-                            console.log("Quantity"+actual_qty)
                             grid_row.grid_form.fields_dict.accepted_qty.set_value(actual_qty);
                             grid_row.grid_form.fields_dict.normal_loss.set_value(0);
                             grid_row.grid_form.fields_dict.abnormal_loss.set_value(0);

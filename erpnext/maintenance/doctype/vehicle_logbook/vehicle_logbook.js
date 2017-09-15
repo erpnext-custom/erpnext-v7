@@ -41,7 +41,7 @@ frappe.ui.form.on('Vehicle Logbook', {
 				}
 			})
 
-			get_openings(frm.doc.equipment, frm.doc.from_date, frm.doc.to_date)
+			get_openings(frm.doc.equipment, frm.doc.from_date, frm.doc.to_date, frm.doc.pol_type)
 		}
 	},
 	"final_km": function(frm) {
@@ -61,7 +61,7 @@ frappe.ui.form.on('Vehicle Logbook', {
 			frappe.msgprint("From Date cannot be greater than To Date")
 		}
 		else {
-			get_openings(frm.doc.equipment, frm.doc.from_date, frm.doc.to_date)
+			get_openings(frm.doc.equipment, frm.doc.from_date, frm.doc.to_date, frm.doc.pol_type)
 		}
 	},
 	"from_date": function(frm) {
@@ -69,7 +69,7 @@ frappe.ui.form.on('Vehicle Logbook', {
 			frappe.msgprint("From Date cannot be greater than To Date")
 		}
 		else {
-			get_openings(frm.doc.equipment, frm.doc.from_date, frm.doc.to_date)
+			get_openings(frm.doc.equipment, frm.doc.from_date, frm.doc.to_date, frm.doc.pol_type)
 		}
 	},
 	"total_work_time": function(frm) {
@@ -114,7 +114,7 @@ function calculate_closing(frm) {
 }
 
 function calculate_distance_km(frm) {
-	if(frm.doc.initial_km && frm.doc.final_km) {
+	if(frm.doc.initial_km >= 0 && frm.doc.final_km >= 0) {
 		if(frm.doc.final_km > frm.doc.initial_km) {
 			cur_frm.set_value("distance_km", frm.doc.final_km - frm.doc.initial_km)
 			frm.refresh_fields()
@@ -128,7 +128,7 @@ function calculate_distance_km(frm) {
 }
 
 function calculate_work_hour(frm) {
-	if(frm.doc.initial_hour && frm.doc.final_hour) {
+	if(frm.doc.initial_hour >= 0 && frm.doc.final_hour) {
 		if(frm.doc.final_hour >= frm.doc.initial_hour) {
 			cur_frm.set_value("total_work_time", frm.doc.final_hour - frm.doc.initial_hour)
 			frm.refresh_fields()
@@ -142,6 +142,7 @@ function calculate_work_hour(frm) {
 }
 
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
+cur_frm.add_fetch("equipment", "hsd_type", "pol_type")
 cur_frm.add_fetch("equipment", "current_operator", "equipment_operator")
 cur_frm.add_fetch("operator", "employee_name", "driver_name")
 
@@ -167,11 +168,11 @@ frappe.ui.form.on("Vehicle Log", {
         }
 })
 
-function get_openings(equipment, from_date, to_date) {
-	if (equipment && from_date && to_date) {
+function get_openings(equipment, from_date, to_date, pol_type) {
+	if (equipment && from_date && to_date && pol_type) {
 		frappe.call({
 			"method": "erpnext.maintenance.doctype.vehicle_logbook.vehicle_logbook.get_opening",
-			args: {"equipment": equipment, "from_date": from_date, "to_date": to_date},
+			args: {"equipment": equipment, "from_date": from_date, "to_date": to_date, "pol_type": pol_type},
 			callback: function(r) {
 				if(r.message) {
 					cur_frm.set_value("opening_balance", r.message[0])

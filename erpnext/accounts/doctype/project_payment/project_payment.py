@@ -33,6 +33,7 @@ class ProjectPayment(AccountsController):
                 self.validate_advance_balance()
 
         def validate(self):
+                self.set_status()
                 self.validate_mandatory_fields()
                 self.validate_allocated_amounts()
                 #frappe.msgprint(_("{0}").format(self.get("project")))
@@ -43,6 +44,22 @@ class ProjectPayment(AccountsController):
                 self.update_boq_balance()
                 self.make_gl_entries()
 
+        def before_cancel(self):
+                self.set_status()
+
+        def on_cancel(self):
+                self.make_gl_entries()
+                self.update_invoice_balance()
+                self.update_advance_balance()
+                self.update_boq_balance()
+                
+        def set_status(self):
+                self.status = {
+                        "0": "Draft",
+                        "1": "Payment Received",
+                        "2": "Cancelled"
+                }[str(self.docstatus or 0)]
+                
         def make_gl_entries(self):
                 tot_advance = 0.0
                 
@@ -264,6 +281,7 @@ class ProjectPayment(AccountsController):
                         
         def update_invoice_balance(self):
                 for inv in self.references:
+                        allocated_amount = 0.0
                         if flt(inv.allocated_amount) > 0:
                                 result = frappe.db.sql("""
                                                 select ifnull(total_balance_amount,0) as total_balance_amount
@@ -272,19 +290,29 @@ class ProjectPayment(AccountsController):
                                                 and docstatus = 1
                                                 """, (inv.reference_name), as_dict=1)[0]
 
-                                if flt(result.total_balance_amount) < flt(inv.allocated_amount):
+                                if flt(result.total_balance_amount) < flt(inv.allocated_amount) and self.docstatus < 2:
                                         frappe.throw(_("Invoice#{0} : Allocated amount{1} cannot be more than Invoice Balance({2})").format(inv.reference_name, flt(inv.allocated_amount),flt(result.total_balance_amount)))
                                 else:
+                                        if self.docstatus < 2:
+                                                allocated_amount = flt(inv.allocated_amount)
+                                        else:
+                                                allocated_amount = -1*flt(inv.allocated_amount)
+                                                
                                         frappe.db.sql("""
                                                 update `tabProject Invoice`
                                                 set total_received_amount = ifnull(total_received_amount,0) + ifnull({0},0),
-                                                        total_balance_amount = ifnull(total_balance_amount,0) - ifnull({1},0)
+                                                        total_balance_amount = ifnull(total_balance_amount,0) - ifnull({1},0),
+                                                        status = case
+                                                                        when (ifnull(total_balance_amount,0) - ifnull({1},0)) > 0 then 'Unpaid'
+                                                                        else 'Paid'
+                                                                 end
                                                 where name = '{2}'
                                                 and docstatus = 1
-                                        """.format(flt(inv.allocated_amount),flt(inv.allocated_amount),inv.reference_name))
+                                        """.format(allocated_amount,allocated_amount,inv.reference_name))
 
         def update_advance_balance(self):
                 for adv in self.advances:
+                        allocated_amount = 0.0
                         if flt(adv.allocated_amount) > 0:
                                 result = frappe.db.sql("""
                                                 select ifnull(balance_amount,0) as balance_amount
@@ -293,19 +321,26 @@ class ProjectPayment(AccountsController):
                                                 and docstatus = 1
                                                 """, (adv.reference_name), as_dict=1)[0]
 
-                                if flt(result.balance_amount) < flt(adv.allocated_amount):
+                                if flt(result.balance_amount) < flt(adv.allocated_amount) and self.docstatus < 2:
                                         frappe.throw(_("Advance#{0} : Allocated amount{1} cannot be more than Advance Balance({2})").format(adv.reference_name, flt(adv.allocated_amount),flt(result.balance_amount)))
                                 else:
+                                        if self.docstatus < 2:
+                                                allocated_amount = flt(adv.allocated_amount)
+                                        else:
+                                                allocated_amount = -1*flt(adv.allocated_amount)
+                                        
                                         frappe.db.sql("""
                                                 update `tabProject Advance`
                                                 set adjustment_amount = ifnull(adjustment_amount,0) + ifnull({0},0),
                                                         balance_amount = ifnull(balance_amount,0) - ifnull({1},0)
                                                 where name = '{2}'
                                                 and docstatus = 1
-                                        """.format(flt(adv.allocated_amount),flt(adv.allocated_amount),adv.reference_name))
+                                        """.format(allocated_amount,allocated_amount,adv.reference_name))
                                         
         def update_boq_balance(self):
                 for inv in self.references:
+                        allocated_amount = 0.0
+                        
                         result = frappe.db.sql("""
                                 select boq
                                 from `tabProject Invoice`
@@ -314,13 +349,18 @@ class ProjectPayment(AccountsController):
                         """.format(inv.reference_name),as_dict=1)[0]
 
                         if result.boq:
+                                if self.docstatus < 2:
+                                        allocated_amount = flt(inv.allocated_amount)
+                                else:
+                                        allocated_amount = -1*flt(inv.allocated_amount)
+                                        
                                 frappe.db.sql("""
                                         update `tabBOQ`
                                         set received_amount = ifnull(received_amount,0) + ifnull({0},0),
                                                 balance_amount = ifnull(balance_amount,0) -  ifnull({1},0)
                                         where name = '{2}'
                                         and docstatus = 1
-                                """.format(flt(inv.allocated_amount), flt(inv.allocated_amount), result.boq))
+                                """.format(allocated_amount, allocated_amount, result.boq))
                 
         def validate_invoice_balance(self):
                 for inv in self.references:

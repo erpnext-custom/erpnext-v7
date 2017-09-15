@@ -19,7 +19,7 @@ class MechanicalPayment(AccountsController):
 		self.update_ref_doc()
 
 	def on_cancel(self):	
-		self._gl_entry()
+		self.make_gl_entry()
 		self.update_ref_doc(cancel=1)
 
 	def check_amount(self):

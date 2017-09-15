@@ -8,9 +8,11 @@ frappe.ui.form.on("Sales Order", {
 		erpnext.queries.setup_queries(frm, "Warehouse", function() {
 			return erpnext.queries.warehouse(frm.doc);
 		});
-
-		//set default price list
-		frm.set_value("selling_price_list", "Standard Selling")
+		
+		if(!frm.doc.selling_price_list) {
+			//set default price list
+			frm.set_value("selling_price_list", "Standard Selling")
+		}
 
 		// formatter for material request item
 		frm.set_indicator_formatter('item_code',

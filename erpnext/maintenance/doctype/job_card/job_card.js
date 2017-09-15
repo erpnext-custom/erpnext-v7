@@ -12,7 +12,7 @@ frappe.ui.form.on('Job Card', {
 			}, __("View"));
 		}
 	
-		if (frm.doc.outstanding_amount > 0 && frm.doc.jv && frappe.model.can_write("Journal Entry")) {
+		if (frm.doc.outstanding_amount > 0 && frm.doc.owned_by == "Others" && frappe.model.can_write("Journal Entry")) {
 			//cur_frm.toggle_display("receive_payment", 1)
 			/*cur_frm.add_custom_button(__('Payment'), function() {
 				cur_frm.cscript.receive_payment()

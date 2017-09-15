@@ -22,7 +22,18 @@ class BOQ(Document):
                 
 	def validate(self):
                 self.update_defaults()
+                self.validate_defaults()
 
+        def validate_defaults(self):
+                if not self.project:
+                        frappe.throw("`Project` cannot be null.")
+                        
+                if not self.branch:
+                        frappe.throw("`Branch` cannot be null.")
+
+                if not self.cost_center:
+                        frappe.throw("`Cost Center` cannot be null.")
+                        
         def update_defaults(self):
                 item_group = ""
                 self.claimed_amount = 0

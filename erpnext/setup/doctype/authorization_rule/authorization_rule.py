@@ -48,3 +48,5 @@ class AuthorizationRule(Document):
 		self.check_duplicate_entry()
 		self.validate_rule()
 		if not self.value: self.value = 0.0
+
+

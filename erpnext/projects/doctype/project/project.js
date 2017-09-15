@@ -230,7 +230,7 @@ var calculate_work_quantity = function(frm){
 	total_work_quantity = 0;
 	
 	for(var i=0; i<at.length; i++){
-		if (at[i].work_quantity){
+		if (at[i].work_quantity && at[i].is_group == 0){
 			total_work_quantity += at[i].work_quantity || 0;
 		}
 	}
@@ -238,3 +238,17 @@ var calculate_work_quantity = function(frm){
 	
 }
 // +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+
+/*
+frappe.ui.form.on("Activity Tasks","is_group", function(frm, cdt, cdn){
+	var child = locals[cdt][cdn];
+	cur_frm.doc.activity_tasks.forEach(function(child){
+		var sel = format('div[data-fieldname="activity_tasks"] > div.grid-row[data-idx="{0}"]',[child.idx]);
+		if (child.is_group == 1){
+			$(sel).css('background-color',"#ff5858");
+		} else {
+			$(sel).css('background-color','transparent');
+		}
+	});
+});
+*/

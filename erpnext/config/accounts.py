@@ -26,37 +26,6 @@ def get_data():
 					"name": "Purchase Invoice",
 					"description": _("Bills raised by Suppliers.")
 				},
-                                {
-					"type": "doctype",
-					"name": "Project Invoice",
-					"description": _("Bills raised to Customers.")
-				},
-                                {
-					"type": "doctype",
-					"name": "Project Payment",
-					"description": _("Payments agains Project Invoices.")
-				},
-				{
-					"type": "doctype",
-					"name": "Hire Charge Invoice",
-					"description": _("Hire Charge Invoice"),
-				},
-				{
-					"type": "doctype",
-					"name": "Job Card",
-					"description": _("Create Job Card"),
-				},
-				{
-					"type": "doctype",
-					"name": "Mechanical Payment",
-					"description": _("Create Payment"),
-				},
-				{
-					"type": "doctype",
-					"name": "POL",
-					"label": "POL Payment",
-					"description": _("Receive POL"),
-				},
 				{
 					"type": "doctype",
 					"name": "Direct Payment",
@@ -87,15 +56,52 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Customer",
-                                        "label": _("Customer Master"),
-					"description": _("Customer database.")
+					"name": "Cost Center",
+					"icon": "icon-sitemap",
+					"label": _("Chart of Cost Centers"),
+					"route": "Tree/Cost Center",
+					"description": _("Tree of financial Cost Centers."),
 				},
 				{
 					"type": "doctype",
-					"name": "Supplier",
-                                        "label": _("Supplier Master"),
-					"description": _("Supplier database.")
+					"name": "Branch",
+					"description": _("List of Branches"),
+				},                                
+			]
+		},
+		{
+			"label": _("Project Accounts"),
+			"items": [
+                                {
+					"type": "doctype",
+					"name": "Project Invoice",
+					"description": _("Bills raised to Customers.")
+				},
+                                {
+					"type": "doctype",
+					"name": "Project Payment",
+					"description": _("Payments agains Project Invoices.")
+				},
+			]
+		},
+		{
+			"label": _("Mechanical Accounts"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Hire Charge Invoice",
+					"description": _("Hire Charge Invoice"),
+				},
+				{
+					"type": "doctype",
+					"name": "Job Card",
+					"label": "Job Card Invoice",
+					"description": _("Create Job Card"),
+				},
+				{
+					"type": "doctype",
+					"name": "Mechanical Payment",
+					"description": _("Create Payment"),
 				},
 			]
 		},
@@ -277,11 +283,17 @@ def get_data():
 					"name": "Party Wise Ledger",
 					"doctype": "GL Entry",
 					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Intra Company Report",
+					"doctype": "GL Entry",
+					"is_query_report": True,
 				}
 			]
 		},
 		{
-			"label": _("Banking and Payments"),
+			"label": _("Bank Accounting"),
 			"items": [
                 		{
 					"type": "doctype",
@@ -307,19 +319,21 @@ def get_data():
                     			"is_query_report": True,
 					"doctype": "Journal Entry"
 				},
+                		{
+					"type": "doctype",
+					"name": "Bank Guarantee",
+				},
+                		{
+					"type": "report",
+					"name": "Bank Guarantee Report",
+                    			"is_query_report": True,
+					"doctype": "Bank Guarantee"
+				},
 			]
 		},
 		{
-			"label": _("Budget and Cost Center"),
+			"label": _("Budget"),
 			"items": [
-				{
-					"type": "doctype",
-					"name": "Cost Center",
-					"icon": "icon-sitemap",
-					"label": _("Chart of Cost Centers"),
-					"route": "Tree/Cost Center",
-					"description": _("Tree of financial Cost Centers."),
-				},
 				{
 					"type": "doctype",
 					"name": "Budget",
@@ -428,7 +442,61 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Analytics"),
+			"label": _("Salary Reports"),
+			"icon": "icon-list",
+			"items": [
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Monthly Salary Register",
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Loan Report",
+                                        "label": _("Loan Report"),
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "SSS Report",
+                                        "label": _("Salary Saving Scheme Report"),
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "PF Report",
+                                        "label": _("PF Report"),
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "GIS Report",
+                                        "label": _("GIS Report"),
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Tax and Health Report",
+                                        "label": _("Salary Tax & Health Contribution Report"),
+					"doctype": "Salary Slip"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Earning Report",
+					"doctype": "Salary Slip"
+				}
+			]
+		},
+		{
+			"label": _("Other Reports"),
+			"icon": "icon-table",
 			"items": [
 				{
 					"type": "report",
@@ -436,24 +504,6 @@ def get_data():
 					"doctype": "Sales Invoice",
 					"is_query_report": True
 				},
-				{
-					"type": "report",
-					"name": "Purchase Invoice Trends",
-					"is_query_report": True,
-					"doctype": "Purchase Invoice"
-				},
-				{
-					"type": "report",
-					"name": "Sales Invoice Trends",
-					"is_query_report": True,
-					"doctype": "Sales Invoice"
-				},
-			]
-		},
-		{
-			"label": _("Other Reports"),
-			"icon": "icon-table",
-			"items": [
 				{
 					"type": "report",
 					"name": "Payment Period Based On Invoice Date",
