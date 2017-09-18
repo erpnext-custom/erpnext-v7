@@ -33,6 +33,7 @@ class Timesheet(Document):
                 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following methods introduced by SHIV on 15/08/2017
                 self.set_defaults()
+                self.validate_target_quantity()
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.set_status()
 		self.validate_dates()
@@ -80,6 +81,25 @@ class Timesheet(Document):
                 self.reset_time_log_order()
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
+        def validate_target_quantity(self):
+                curr_balance = 0.0
+                
+                result = frappe.db.sql("""
+                        select sum(case
+                                        when parent != '{0}' then ifnull(target_quantity_complete,0)
+                                        else 0
+                                   end) as prev_balance
+                        from  `tabTimesheet Detail`
+                        where task = '{2}'
+                        and   docstatus < 2
+                """.format(self.name, self.name, self.task), as_dict=1)[0]
+
+                for tl in self.time_logs:
+                        curr_balance += flt(tl.target_quantity_complete)
+                
+                if flt(self.target_quantity) < (flt(result.prev_balance)+flt(curr_balance)):
+                        frappe.throw(_("`Total Achieved Value` cannot be more than `Total Target Value`."))
+                
         def reset_time_log_order(self):
                 idx = 0
                 tl_list = frappe.db.sql("""
@@ -123,18 +143,9 @@ class Timesheet(Document):
 
                         if tl.from_date > tl.to_date:
                                 frappe.throw(_("Row {0}: From Date cannot be after To Date.").format(tl.idx))
-                """
-                        if flt(tl.target_quantity_complete) > flt(tl.target_quantity):
-                                frappe.throw(_("Row {0}: Achieved value({1}) cannot be more than Target value({2})").format(tl.idx, tl.target_quantity_complete, tl.target_quantity))
-
-                if flt(total_target_quantity) > flt(self.target_quantity):
-                        frappe.throw(_("Total Timesheet target value({0}) cannot be more than Task's target value({1})").format(flt(total_target_quantity),flt(self.target_quantity)))
-                """
-
+                                
                 if flt(total_target_quantity_complete) > flt(self.target_quantity):
                         frappe.throw(_("Total Achieved value({0}) cannot be more than Target value({1})").format(flt(total_target_quantity_complete),flt(self.target_quantity)))
-
-                #self.work_quantity_complete = (flt(self.work_quantity)*((flt(total_target_quantity_complete)/(total_target_quantity if total_target_quantity else 1))*100)*0.01)
                 
                 # Setting `Timesheet` Defaults
                 if self.task:
@@ -156,7 +167,7 @@ class Timesheet(Document):
         def calculate_target_quantity(self):
                 if flt(self.target_quantity_complete) > flt(self.target_quantity):
                         frappe.throw(_("Total Achieved value({0}) cannot be greater than Task's Target value({1}).").format(flt(self.target_quantity_complete),flt(self.target_quantity)))
-                else:
+                else:   
                         self.target_quantity_complete = 0.0
                         for item in self.time_logs:
                                 self.target_quantity_complete += flt(item.target_quantity_complete)
