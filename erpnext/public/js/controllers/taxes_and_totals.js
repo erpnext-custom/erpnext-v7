@@ -102,7 +102,7 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 				frappe.model.round_floats_in(item);
 				item.amount = flt(item.rate * item.qty, precision("amount", item));
 				if(in_list(["Purchase Receipt", "Purchase Invoice"], this.frm.doc.doctype)) {
-					console.log("NET AMOUNT")
+					console.log("NET AMOUNT");
 					item.net_rate = item.rate + (item.rate / item.qty);
 					item.net_amount = item.amount + item.tax_amount;
 				}
@@ -225,14 +225,14 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 			me.frm.doc.net_total += item.net_amount;
 			me.frm.doc.base_net_total += item.base_net_amount;
 			if(in_list(["Purchase Receipt", "Purchase Invoice"], this.frm.doc.doctype)) {
-				console.log("ADDITION")
+				console.log("ADDITION");
 				me.frm.doc.tax_amount += item.tax_amount;
 				me.frm.doc.base_tax_amount += item.base_tax_amount;
 			}
 		});
 
 		if(in_list(["Purchase Receipt", "Purchase Invoice"], this.frm.doc.doctype)) {
-			console.log("TOTAL")
+			console.log("TOTAL");
 			frappe.model.round_floats_in(this.frm.doc, ["tax_amount", "base_tax_amount", "total", "base_total", "net_total", "base_net_total"]);
 		}
 		else {
