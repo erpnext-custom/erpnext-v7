@@ -27,11 +27,6 @@ def get_data():
 					"name": "BOQ",
 					"description": _("Bill of Quantities."),
 				},
-                                {
-					"type": "doctype",
-					"name": "Project Advance",
-					"description": _("Project Advances."),
-				},
 				{
 					"type": "report",
 					"route": "Gantt/Task",
@@ -41,6 +36,27 @@ def get_data():
 				},
 			]
 		},
+                {
+                        "label": _("Transactions"),
+                        "icon": "icon-pencil",
+                        "items": [
+                                {
+                                        "type": "doctype",
+                                        "name": "Project Advance",
+                                        "description": _("Project Advances."),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Project Invoice",
+                                        "description": _("Project Invoices."),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Project Payment",
+                                        "description": _("Project Payments."),
+                                },
+                        ]
+                },
 		{
 			"label": _("Manpower Management"),
 			"icon": "icon-facetime-video",

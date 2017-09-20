@@ -19,7 +19,21 @@ frappe.ui.form.on('Officiating Employee', {
 			frm.set_value("posting_date", get_today())
 		}
 	},
-	validate: function(frm) {
+	from_date: function(frm) {
+		if(frm.doc.from_date && frm.doc.to_date && frm.doc.to_date < frm.doc.from_date) {
+			cur_frm.set_vaue("from_date", "")
+			cur_frm.refresh_field("from_date")
+			frappe.msgprint("To Date cannot be smaller than from date")
+		}
+	},
+	to_date: function(frm) {
+		if(frm.doc.from_date && frm.doc.to_date && frm.doc.to_date < frm.doc.from_date) {
+			cur_frm.set_vaue("to_date", "")
+			cur_frm.refresh_field("to_date")
+			frappe.msgprint("To Date cannot be smaller than from date")
+		}
+	},
+	/*validate: function(frm) {
 		if(frm.doc.employee) {
 			return frappe.call({
 				method: "validate",
@@ -30,7 +44,7 @@ frappe.ui.form.on('Officiating Employee', {
 				}
 			});
 		}
-	},
+	},*/
 	"revoke_permission": function(frm) {
 		return frappe.call({
 			method: "revoke_perm",

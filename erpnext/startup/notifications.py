@@ -9,7 +9,9 @@ def get_notification_config():
 			"Issue": {"status": "Open"},
 			"Warranty Claim": {"status": "Open"},
 			"Task": {"status": "Overdue"},
-			"Project": {"status": "Open"},
+			"Project": {
+                                "status": "Ongoing"
+                        },
 			"Item": {"total_projected_qty": ("<", 0)},
 			"Lead": {"status": "Open"},
 			"Contact": {"status": "Open"},
@@ -53,5 +55,9 @@ def get_notification_config():
 			"Leave Encashment": {"docstatus": 0},
 			"Break Down Report": {"docstatus": 0},
 			"Job Card": {"docstatus": 0},
+                        "BOQ": {"docstatus": 0},
+                        "Project Advance": {"docstatus": 0},
+                        "Project Invoice": {"docstatus": 0},
+                        "Project Payment": {"docstatus": 0}
 		}
 	}

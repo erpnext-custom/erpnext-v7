@@ -51,7 +51,9 @@ class PurchaseReceipt(BuyingController):
 		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
 	def validate(self):
+		frappe.msgprint("BEFORE" + str(self.grand_total))
 		super(PurchaseReceipt, self).validate()
+		frappe.msgprint("AFTERRE" + str(self.grand_total))
 
 		self.set_status()
 		self.po_required()
@@ -62,6 +64,7 @@ class PurchaseReceipt(BuyingController):
 
 		pc_obj = frappe.get_doc('Purchase Common')
 		self.check_for_closed_status(pc_obj)
+		frappe.msgprint(str(self.grand_total))
 
 	def validate_with_previous_doc(self):
 		super(PurchaseReceipt, self).validate_with_previous_doc({

@@ -22,6 +22,9 @@ class ProjectAdvance(Document):
                 
         def on_submit(self):
                 self.post_journal_entry()
+
+        def before_cancel(self):
+                self.set_status()
         
         def set_status(self):
                 self.status = {

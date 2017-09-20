@@ -7,6 +7,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
+'''
 data = {
 	'heatmap': True,
 	'heatmap_message': _('This is based on the Time Sheets created against this project'),
@@ -23,6 +24,27 @@ data = {
 		{
 			'label': _('Material'),
 			'items': ['Material Request', 'BOM', 'Stock Entry']
+		},
+	]
+}
+'''
+
+data = {
+	'heatmap': True,
+	'heatmap_message': _('This is based on the Time Sheets created against this project'),
+	'fieldname': 'project',
+	'transactions': [
+		{
+			'label': _('Project'),
+                        'items': ['Task', 'Timesheet', 'BOQ']
+		},
+                {
+			'label': _('Transactions'),
+			'items': ['Project Advance', 'Project Invoice', 'Project Payment']
+		},
+		{
+			'label': _('Material'),
+			'items': ['Material Request', 'Stock Entry']
 		},
 	]
 }

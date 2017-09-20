@@ -70,6 +70,9 @@ class calculate_taxes_and_totals(object):
 				item.net_rate = item.rate
 				item.amount = flt(item.rate * item.qty,	item.precision("amount"))
 				item.net_amount = item.amount
+				if item.doctype in ['Purchase Receipt Item', 'Purchase Invoice Item']:
+					item.net_rate = item.rate + (item.tx_amount/ item.qty)
+					item.net_amount = item.amount + item.tx_amount
 
 				self._set_in_company_currency(item, ["price_list_rate", "rate", "net_rate", "amount", "net_amount"])
 
@@ -163,14 +166,22 @@ class calculate_taxes_and_totals(object):
 
 	def calculate_net_total(self):
 		self.doc.total = self.doc.base_total = self.doc.net_total = self.doc.base_net_total = 0.0
-
+		if self.doc.doctype in ['Purcahse Receipt', 'Purchase Invoice']:
+			self.doc.total_tax_amount = self.base_tax_amount = 0	
+	
 		for item in self.doc.get("items"):
 			self.doc.total += item.amount
 			self.doc.base_total += item.base_amount
 			self.doc.net_total += item.net_amount
 			self.doc.base_net_total += item.base_net_amount
+			if self.doc.doctype in ['Purcahse Receipt', 'Purchase Invoice']:
+				self.doc.total_tax_amount += item.tx_amount
+				self.doc.base_tax_amount += item.base_tx_amount
+
 
 		self.doc.round_floats_in(self.doc, ["total", "base_total", "net_total", "base_net_total"])
+		if self.doc.doctype in ['Purcahse Receipt', 'Purchase Invoice']:
+			self.doc.round_floats_in(self.doc, ["total_tax_amount", "base_tax_amount"])
 
 	def calculate_taxes(self):
 		# maintain actual tax rate based on idx
@@ -298,6 +309,9 @@ class calculate_taxes_and_totals(object):
 	def calculate_totals(self):
 		self.doc.grand_total = flt(self.doc.get("taxes")[-1].total
 			if self.doc.get("taxes") else self.doc.net_total)
+
+		if self.doc.doctype in ['Purchase Receipt','Purchase Invoice']:
+			self.doc.grand_total = self.doc.total + self.doc.total_tax_amount + self.doc.total_add_ded
 
 		self.doc.total_taxes_and_charges = flt(self.doc.grand_total - self.doc.net_total,
 			self.doc.precision("total_taxes_and_charges"))

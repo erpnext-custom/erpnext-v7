@@ -18,7 +18,7 @@ from frappe import _
 
 import json
 from datetime import timedelta
-from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str
+from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str, date_diff
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from erpnext.manufacturing.doctype.workstation.workstation import (check_if_within_operating_hours,
@@ -206,6 +206,8 @@ class Timesheet(Document):
 				self.start_date = getdate(start_date)
 				self.end_date = getdate(end_date)
 
+                        if not self.total_days:
+                                self.total_days = flt(date_diff(getdate(end_date),getdate(start_date)))+1
 
 	def validate_mandatory_fields(self):
 		if self.production_order:

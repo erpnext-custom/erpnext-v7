@@ -4,9 +4,9 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  		  SHIV		     11/08/2017         					Default "Project Tasks" is replaced by custom
+2.0		  		  SHIV		     11/08/2017         					Default "Project Tasks" is replaced by custom
 																			"Activity Tasks"
-1.0				  SHIV           02/09/2017                             Introducing Project Advances
+2.0				  SHIV           02/09/2017                             Introducing Project Advances
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
@@ -15,7 +15,7 @@ cur_frm.add_fetch("customer", "image", "customer_image" );
 cur_frm.add_fetch("customer", "customer_details", "customer_address" );
 
 frappe.ui.form.on("Project", {
-	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+	// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 	// Following code is commented by SHIV on 2017/08/11
 	/*
 	setup: function(frm) {
@@ -61,7 +61,7 @@ frappe.ui.form.on("Project", {
 			{fieldname: 'total_balance_amount', columns: 2}
 		];						
 	},	
-	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+	// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 	
 	onload: function(frm) {
 		var so = frappe.meta.get_docfield("Project", "sales_order");
@@ -140,6 +140,9 @@ frappe.ui.form.on("Project", {
 		});
 	},
 	show_dashboard: function(frm) {
+		// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+		// Following code is replaced by following code by SHIV on 20/09/2017
+		/*
 		if(frm.doc.__onload.activity_summary.length) {
 			var hours = $.map(frm.doc.__onload.activity_summary, function(d) { return d.total_hours });
 			var max_count = Math.max.apply(null, hours);
@@ -158,6 +161,26 @@ frappe.ui.form.on("Project", {
 					{'activity_type': activity_type, 'project': frm.doc.name});
 			});
 		}
+		*/
+		if(frm.doc.__onload.activity_summary.length) {
+			var days = $.map(frm.doc.__onload.activity_summary, function(d) { return d.total_days });
+			var max_count = Math.max.apply(null, days);
+			var sum = days.reduce(function(a, b) { return a + b; }, 0);
+			var section = frm.dashboard.add_section(
+				frappe.render_template('project_dashboard',
+					{
+						data: frm.doc.__onload.activity_summary,
+						max_count: max_count,
+						sum: sum
+					}));
+
+			section.on('click', '.time-sheet-link', function() {
+				var activity_type = $(this).attr('data-activity_type');
+				frappe.set_route('List', 'Timesheet',
+					{'activity_type': activity_type, 'project': frm.doc.name});
+			});
+		}
+		// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 	}
 });
 

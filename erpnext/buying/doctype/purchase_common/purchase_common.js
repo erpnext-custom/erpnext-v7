@@ -166,6 +166,15 @@ erpnext.buying.BuyingController = erpnext.TransactionController.extend({
 		this.conversion_factor(doc, cdt, cdn);
 
 	},
+	
+	tx_amount: function(doc, cdt, cdn) {
+		/*var item = frappe.get_doc(cdt, cdn);
+		if(item.tax_amount) {
+			item.net_rate = item.rate + (item.tax_amount / item.qty)	
+			item.net_amount = item.amount + item.tax_amount	
+		} */
+		this.calculate_taxes_and_totals() 
+	},
 
 	received_qty: function(doc, cdt, cdn) {
 		var item = frappe.get_doc(cdt, cdn);
