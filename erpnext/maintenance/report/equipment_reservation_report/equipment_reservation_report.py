@@ -29,7 +29,7 @@ def execute(filters=None):
 			if res:
 				v = ""
 				if res[0].reason == "Maintenance":
-					v = "X"
+					v = "M"
 				else:
 					if cint(res[0].hours) > 8:
 						v = "8"
@@ -38,12 +38,14 @@ def execute(filters=None):
 						for a in res: 
 							total+=cint(a.hours)
 						v = str(total)
+					else:
+						v = ""
 				row.append(v)
 			else:
 				row.append("")	
 		data.append(row)
 
-		legend = "X = Under Maintenance"
+		legend = "M = Under Maintenance"
 
 	return columns, data, legend
 

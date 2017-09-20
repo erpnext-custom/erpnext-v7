@@ -53,6 +53,7 @@ frappe.ui.form.on('Salary Increment', {
 					frm.set_value('old_basic',r.message.old_basic);
 					frm.set_value('new_basic',r.message.new_basic);
 					frm.set_value('increment',r.message.increment);
+					frm.set_value('salary_structure',r.message.salary_structure);
 				}
 			});			
 		}

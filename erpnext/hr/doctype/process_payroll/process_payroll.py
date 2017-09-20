@@ -12,6 +12,7 @@ import frappe
 from frappe.utils import cint, flt, nowdate
 from frappe import _
 from frappe import msgprint
+from erpnext.hr.hr_custom_functions import get_month_details
 
 from frappe.model.document import Document
 
@@ -555,23 +556,4 @@ class ProcessPayroll(Document):
 		return journal_entry.as_dict()
 	
 		
-@frappe.whitelist()
-def get_month_details(year, month):
-	ysd = frappe.db.get_value("Fiscal Year", year, "year_start_date")
-	if ysd:
-		from dateutil.relativedelta import relativedelta
-		import calendar, datetime
-		diff_mnt = cint(month)-cint(ysd.month)
-		if diff_mnt<0:
-			diff_mnt = 12-int(ysd.month)+cint(month)
-		msd = ysd + relativedelta(months=diff_mnt) # month start date
-		month_days = cint(calendar.monthrange(cint(msd.year) ,cint(month))[1]) # days in month
-		med = datetime.date(msd.year, cint(month), month_days) # month end date
-		return frappe._dict({
-			'year': msd.year,
-			'month_start_date': msd,
-			'month_end_date': med,
-			'month_days': month_days
-		})
-	else:
-		frappe.throw(_("Fiscal Year {0} not found").format(year))
+

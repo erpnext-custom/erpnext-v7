@@ -102,6 +102,12 @@ def get_data():
 					"doctype": "Sales Invoice",
 					"is_query_report": True
 				},
+				{
+					"type": "report",
+					"name": "Stock Price History",
+					"doctype": "Stock Price Template",
+					"is_query_report": True
+				},
 			]
 		},
 		{

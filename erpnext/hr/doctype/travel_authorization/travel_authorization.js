@@ -29,6 +29,23 @@ frappe.ui.form.on('Travel Authorization', {
 			frm.toggle_display("document_status", 1);
 		}
 	},
+	//Auto calculate next date on form render
+	"items_on_form_rendered": function(frm, grid_row, cdt, cdn) {
+		var row = cur_frm.open_grid_row();
+		if(!row.grid_form.fields_dict.date.value) {
+			if(frm.doc.items.length > 1) {
+				var d = ''
+				if(frm.doc.items[frm.doc.items.length - 2].halt == 1) {
+					d = frappe.datetime.add_days(frm.doc.items[frm.doc.items.length - 2].till_date, 1)
+				}else {
+					d = frappe.datetime.add_days(frm.doc.items[frm.doc.items.length - 2].date, 1)
+				}
+				d = d.toString()
+				row.grid_form.fields_dict.date.set_value(d.substring(8) + "-" + d.substring(5, 7) + "-" + d.substring(0, 4))
+				//row.grid_form.fields_dict.date.refresh()
+			}
+		}
+	},
 	onload: function(frm) {
 		if (!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today());

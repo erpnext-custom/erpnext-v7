@@ -61,15 +61,22 @@ class JobCard(Document):
 			for a in self.items:
 				if flt(a.amount) == 0: 
 					frappe.throw("Cannot submit job card without cost details")
+
 	def get_job_items(self):
 		items = frappe.db.sql("select se.name as stock_entry, sed.item_code as job, sed.item_name as job_name, sed.qty as quantity, sed.amount from `tabStock Entry Detail` sed, `tabStock Entry` se where se.docstatus = 1 and sed.parent = se.name and se.purpose = \'Material Issue\' and se.job_card = \'"+ str(self.name) +"\'", as_dict=True)
 
-		if items:	
+		if items:
 			#self.set('items', [])
 			for d in items:
-				d.which = "Item"
-				row = self.append('items', {})
-				row.update(d)
+				already = False
+				
+				for a in self.items:
+					if a.stock_entry == d.stock_entry and a.job == d.job and a.job_name == d.job_name and a.quantity == d.quantity:
+						already = True
+				if not already:
+					d.which = "Item"
+					row = self.append('items', {})
+					row.update(d)
 		else:
 			frappe.msgprint("No stock entries related to the job card found. Entries might not have been submitted?")
 

@@ -665,7 +665,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "depends_on": "", 
@@ -1226,7 +1226,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-14 12:43:06.307241", 
+ "modified": "2017-09-19 17:25:42.778528", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Job Card", 

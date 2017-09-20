@@ -9,6 +9,14 @@ frappe.ui.form.on('Overtime Application', {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
 		}
+		frm.set_query("approver", function() {
+			return {
+				query: "erpnext.hr.doctype.leave_application.leave_application.get_approvers",
+				filters: {
+					employee: frm.doc.employee
+				}
+			};
+		});
 	},
 	approver: function(frm) {
 		if(frm.doc.approver){

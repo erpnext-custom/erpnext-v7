@@ -233,6 +233,12 @@ def get_data():
 				},                                
 				{
 					"type": "doctype",
+					"name": "DepartmentDirector",
+					"label": "Department\'s Director",
+					"description": _("Assign Directors to Departments")
+				},
+				{
+					"type": "doctype",
 					"name": "Assign Branch",
 					"label": "Branch Access Control",
 					"description": _("Assign Multiple Branches to Users")

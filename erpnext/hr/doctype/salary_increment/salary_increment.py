@@ -11,8 +11,7 @@ from frappe.model.naming import make_autoname
 from frappe import _
 from frappe import msgprint
 import datetime
-from erpnext.hr.hr_custom_functions import get_company_pf, \
-     get_employee_gis, get_salary_tax
+from erpnext.hr.hr_custom_functions import  update_salary_structure
 
 class SalaryIncrement(Document):
         def autoname(self):
@@ -24,7 +23,7 @@ class SalaryIncrement(Document):
 
 	def on_submit(self):
 		if self.docstatus == 1:
-			self.update_salary_structure(self.employee, self.new_basic)
+			update_salary_structure(self.employee, self.new_basic, self.salary_structure)
 
         def validate_dates(self):
 		cur_year = getdate(nowdate()).year
@@ -56,7 +55,7 @@ class SalaryIncrement(Document):
 					for the Month: {2} and Year: {3}".format(self.employee, self.employee_name, \
 					self.month, self.fiscal_year))
 
-	def update_salary_structure(self, employee, new_basic):
+	def update_salary_structure_not_used(self, employee, new_basic):
 
 		sal_struc_name = frappe.db.sql("""
 		select name
@@ -178,6 +177,8 @@ def get_employee_payscale(employee, gradecd, fiscal_year, month):
         
         if payscale:
                 sal_struc= frappe.get_doc("Salary Structure",sal_struc_name)
+		if not sal_struc:
+			frappe.throw("No Active Salary Structure Found")
                 old_basic = 0.00
                 new_basic = 0.00
                 for d in sal_struc.earnings:
@@ -191,6 +192,7 @@ def get_employee_payscale(employee, gradecd, fiscal_year, month):
 
                 payscale["old_basic"] = flt(old_basic if old_basic else 0.00)
                 payscale["new_basic"] = new_basic
+		payscale["salary_structure"] = sal_struc.name
         else:
                 frappe.throw(_('Pay Scale not defined for grade: <a style="color: green" href="#Form/Employee Grade/{0}">{0}</a>').format(gradecd))
         
@@ -201,7 +203,6 @@ def get_salary_structure(employee):
                         select name from `tabSalary Structure`
                         where employee = %s
                         and is_active = 'Yes'
-                        and now() between ifnull(from_date,'0000-00-00') and ifnull(to_date,'2050-12-31')
                         order by ifnull(from_date,'0000-00-00') desc limit 1
                 """,(employee))
 

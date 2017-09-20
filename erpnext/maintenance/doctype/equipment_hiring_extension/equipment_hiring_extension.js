@@ -9,10 +9,16 @@ frappe.ui.form.on('Equipment Hiring Extension', {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
 		}
-	}
+	},
+	"hours": function(frm) {
+		cur_frm.set_value("total_amount", frm.doc.hours * frm.doc.rate)
+		cur_frm.refresh_field("total_amount")
+	},
 });
 
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
+cur_frm.add_fetch("ehf_name", "cost_center", "cost_center")
+cur_frm.add_fetch("ehf_name", "customer", "customer")
 
 frappe.ui.form.on("Equipment Hiring Extension", "refresh", function(frm) {
     cur_frm.set_query("ehf_name", function() {
