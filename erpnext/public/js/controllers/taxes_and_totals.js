@@ -100,10 +100,17 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 		if (!this.discount_amount_applied) {
 			$.each(this.frm.doc["items"] || [], function(i, item) {
 				frappe.model.round_floats_in(item);
-				item.net_rate = item.rate;
 				item.amount = flt(item.rate * item.qty, precision("amount", item));
-				item.net_amount = item.amount;
-				item.item_tax_amount = 0.0;
+				if(in_list(["Purchase Receipt", "Purchase Invoice"], this.frm.doc.doctype)) {
+					console.log("NET AMOUNT")
+					item.net_rate = item.rate + (item.rate / item.qty);
+					item.net_amount = item.amount + item.tax_amount;
+				}
+				else {
+					item.net_rate = item.rate;
+					item.net_amount = item.amount;
+				}
+					item.item_tax_amount = 0.0;
 
 				me.set_in_company_currency(item, ["price_list_rate", "rate", "amount", "net_rate", "net_amount"]);
 			});
@@ -217,9 +224,20 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 			me.frm.doc.base_total += item.base_amount;
 			me.frm.doc.net_total += item.net_amount;
 			me.frm.doc.base_net_total += item.base_net_amount;
+			if(in_list(["Purchase Receipt", "Purchase Invoice"], this.frm.doc.doctype)) {
+				console.log("ADDITION")
+				me.frm.doc.tax_amount += item.tax_amount;
+				me.frm.doc.base_tax_amount += item.base_tax_amount;
+			}
 		});
 
-		frappe.model.round_floats_in(this.frm.doc, ["total", "base_total", "net_total", "base_net_total"]);
+		if(in_list(["Purchase Receipt", "Purchase Invoice"], this.frm.doc.doctype)) {
+			console.log("TOTAL")
+			frappe.model.round_floats_in(this.frm.doc, ["tax_amount", "base_tax_amount", "total", "base_total", "net_total", "base_net_total"]);
+		}
+		else {
+			frappe.model.round_floats_in(this.frm.doc, ["total", "base_total", "net_total", "base_net_total"]);
+		}
 	},
 
 	calculate_taxes: function() {
