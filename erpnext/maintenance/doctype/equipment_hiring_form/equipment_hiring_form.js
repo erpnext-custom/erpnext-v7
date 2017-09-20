@@ -50,6 +50,8 @@ frappe.ui.form.on('Equipment Hiring Form', {
 	},
 });
 
+cur_frm.add_fetch("tc_name", "terms", "terms")
+
 cur_frm.add_fetch("cost_center", "branch", "branch")
 cur_frm.add_fetch("customer", "location", "address")
 cur_frm.add_fetch("customer", "telephone_and_fax", "contact_number")
@@ -219,6 +221,14 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 			filters: {'branch': frm.doc.branch, 'equipment_type': doc.equipment_type, "from_date": doc.from_date, "to_date": doc.to_date}
 		}
 	}
+	cur_frm.set_query("tc_name", function() {
+		return {
+		    "filters": {
+			"disabled": 0,
+			"reference": "Equipment Hiring Form"
+		    }
+		};
+	});
 	cur_frm.set_query("customer", function() {
 		if(frm.doc.private == "CDCL") {
 			return {

@@ -281,6 +281,7 @@ def daterange(start_date, end_date):
 
 @frappe.whitelist()
 def get_approvers(doctype, txt, searchfield, start, page_len, filters):
+	app_list = []
 	if not filters.get("employee"):
 		frappe.throw(_("Please select Employee Record first."))
 
@@ -288,10 +289,22 @@ def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 
 	approver = frappe.get_value("Employee", filters.get("employee"), "reports_to")
 	approver_id = frappe.get_value("Employee", approver, "user_id")
+	if not approver:
+		frappe.throw("Set Reports To Field in Employee")
+	app_list.append(str(approver_id))
 
-	lists = frappe.db.sql("""select user.name, user.first_name, user.last_name from
-			         tabUser user where
-				 user.name = %s""", approver_id)
+	d = frappe.db.get_value("DepartmentDirector", {"department": frappe.get_value("Employee", filters.get("employee"), "department")}, "director")
+	if d:
+		app_list.append(str(d))
+	
+	approvers = ""
+	for a in app_list:
+		approvers += "\'"+str(a)+"\',"
+	approvers += "\'dshfghasfgqyegfheqkhjf\'"
+
+	query = "select emp.user_id, emp.employee_name, emp.designation from tabEmployee emp where emp.user_id in (" + str(approvers) + ")"
+	lists = frappe.db.sql(query)
+
 	if lists:
 		return lists
 	else:

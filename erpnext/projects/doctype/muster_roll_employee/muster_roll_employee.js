@@ -7,7 +7,6 @@ cur_frm.add_fetch("project", "branch", "branch")
 
 frappe.ui.form.on('Muster Roll Employee', {
 	refresh: function(frm) {
-
 	},
 
 	rate_per_day: function(frm) {

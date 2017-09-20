@@ -20,7 +20,7 @@ from frappe import msgprint, _
 from erpnext.accounts.utils import get_fiscal_year
 from erpnext.setup.utils import get_company_currency
 from erpnext.hr.utils import set_employee_name
-from erpnext.hr.doctype.process_payroll.process_payroll import get_month_details
+from erpnext.hr.hr_custom_functions import get_month_details
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 from erpnext.utilities.transaction_base import TransactionBase
 
@@ -89,12 +89,17 @@ class SalarySlip(TransactionBase):
 			self.end_date = m['month_end_date']
 
 	def check_sal_struct(self, joining_date, relieving_date):
+		#struct = frappe.db.sql("""select name from `tabSalary Structure`
+		#	where employee=%s and is_active = 'Yes'
+		#	and (from_date <= %s or from_date <= %s)
+		#	and (to_date is null or to_date >= %s or to_date >= %s) order by from_date desc limit 1""",
+		#	(self.employee, self.start_date, joining_date, self.end_date, relieving_date))
 		struct = frappe.db.sql("""select name from `tabSalary Structure`
 			where employee=%s and is_active = 'Yes'
-			and (from_date <= %s or from_date <= %s)
-			and (to_date is null or to_date >= %s or to_date >= %s) order by from_date desc limit 1""",
-			(self.employee, self.start_date, joining_date, self.end_date, relieving_date))
-                
+			and (from_date between %s and %s or from_date <= %s or from_date <= %s)
+			and (to_date is null or to_date >= %s or to_date >= %s or to_date between %s and %s) order by from_date desc limit 1""",
+			(self.employee, self.start_date, self.end_date, self.start_date, joining_date, self.end_date, relieving_date, self.start_date, self.end_date))
+ 
 		if not struct:
 			self.salary_structure = None
 			frappe.throw(_('No active or default Salary Structure found for employee <a href="#Form/Employee/{0}">{0}</a> for the given dates')

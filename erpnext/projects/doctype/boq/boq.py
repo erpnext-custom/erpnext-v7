@@ -59,6 +59,7 @@ def make_project_invoice(source_name, target_doc=None):
                 target_doc.act_quantity = flt(target_doc.invoice_quantity)
                 target_doc.act_rate     = flt(target_doc.invoice_rate)
                 target_doc.act_amount   = flt(target_doc.invoice_amount)
+                target_doc.original_rate= flt(target_doc.invoice_rate)
                 
         doclist = get_mapped_doc("BOQ", source_name, {
                 "BOQ": {
@@ -75,7 +76,9 @@ def make_project_invoice(source_name, target_doc=None):
                                 "name": "boq_item_name",
                                 "balance_quantity": "invoice_quantity",
                                 "rate": "invoice_rate",
-                                "balance_amount": "invoice_amount"
+                                "balance_amount": "invoice_amount",
+                                "quantity": "original_quantity",
+                                "amount": "original_amount"
                         },
                         "postprocess": update_item
                 }

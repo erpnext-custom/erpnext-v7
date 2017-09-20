@@ -31,9 +31,10 @@ class OverProductionLoggedError(frappe.ValidationError): pass
 class Timesheet(Document):
 	def validate(self):
                 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-                # Following methods introduced by SHIV on 15/08/2017
-                self.set_defaults()
+                # Following two methods introduced by SHIV on 15/08/2017
                 self.validate_target_quantity()
+                self.set_defaults()
+                self.set_dates()
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.set_status()
 		self.validate_dates()
@@ -154,6 +155,11 @@ class Timesheet(Document):
                         self.work_quantity = base_task.work_quantity
                         self.exp_start_date = base_task.exp_start_date
                         self.exp_end_date = base_task.exp_end_date
+
+                        self.target_quantity_complete = 0.0
+                        for item in self.time_logs:
+                                self.target_quantity_complete += flt(item.target_quantity_complete)
+
                 
                 # Setting `Timesheet Detail` Defaults
                 for data in self.time_logs:

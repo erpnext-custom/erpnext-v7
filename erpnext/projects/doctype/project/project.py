@@ -62,6 +62,8 @@ class Project(Document):
 		self.tasks = []
 		'''
 		# Following code added by SHIV on 2017/08/11
+		self.validate_target_quantity()
+		self.validate_work_quantity()
 		self.sync_activity_tasks()
 		self.activity_tasks = []
 		self.project_advance_item = []
@@ -86,7 +88,54 @@ class Project(Document):
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-        # Following methods added by SHIV on 13/09/2017
+        def validate_target_quantity(self):
+                for task in self.activity_tasks:
+                        prev_value = frappe.db.get_value("Task", task.task_id, "target_quantity")
+                        
+                        if flt(task.target_quantity) < flt(task.target_quantity_complete):
+                                frappe.throw(_("<b>WORK PLAN</b><br/> Row# {0} : `Target Value` cannot be less than `Achieved Value`.").format(task.idx))
+
+                        if flt(task.target_quantity) != flt(prev_value) and flt(prev_value) > 0:
+                                msg = ""
+                                ts_list = frappe.db.sql("""
+                                                select name
+                                                from `tabTimesheet`
+                                                where project = '{0}'
+                                                and task = '{1}'
+                                                and docstatus < 2
+                                        """.format(self.name, task.task_id), as_dict=1)
+
+                                if len(ts_list):
+                                        for item in ts_list:
+                                                msg += 'Reference: <a href="#Form/Timesheet/{0}">{0}</a><br/>'.format(item.name,item.name)
+                                        
+                                        frappe.throw("Row# {0} : Cannot change `Target Quantity/Value` for Tasks already having active Timesheets. <br/>{1}".format(task.idx, msg))
+                
+        def validate_work_quantity(self):
+                for task in self.activity_tasks:
+                        prev_value = frappe.db.get_value("Task", task.task_id, "work_quantity")
+                        
+                        if flt(task.work_quantity) < flt(task.work_quantity_complete):
+                                frappe.throw(_("<b>WORK PLAN</b><br/> Row# {0} : `Target Work Quantity` cannot be less than `Already Achieved Wrok Quantity`.").format(task.idx))
+
+                        if flt(task.work_quantity) != flt(prev_value) and flt(prev_value) > 0:
+                                msg = ""
+                                ts_list = frappe.db.sql("""
+                                                select name
+                                                from `tabTimesheet`
+                                                where project = '{0}'
+                                                and task = '{1}'
+                                                and docstatus < 2
+                                        """.format(self.name, task.task_id), as_dict=1)
+
+                                if len(ts_list):
+                                        for item in ts_list:
+                                                msg += 'Reference: <a href="#Form/Timesheet/{0}">{0}</a><br/>'.format(item.name,item.name)
+                                        
+                                        frappe.throw("Row# {0} : Cannot change `Target Work Quantity` for Tasks already having active Timesheets. <br/>{1}".format(task.idx, msg))
+        
+
+        
         def update_task_progress(self):
                 task_list = frappe.db.sql("""
                                 select name

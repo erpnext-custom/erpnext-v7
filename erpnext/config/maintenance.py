@@ -127,7 +127,7 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Work Progress Report",
+					"name": "Workshop Progress Report",
 					"doctype": "Job Card"
 				},
 			]
@@ -157,13 +157,19 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
+					"name": "Equipment Expense Report",
+					"doctype": "Equipment"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
 					"name": "Equipment Reservation Report",
 					"doctype": "Equipment"
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "POL Consumption Report",
+					"name": "POL Issue Report",
 					"doctype": "Consumed POL"
 				},
 				{

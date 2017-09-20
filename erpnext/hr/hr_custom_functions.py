@@ -89,12 +89,6 @@ def get_salary_tax(gross_amt):
 # Ver 1.0 added by SSK on 03/08/2016, Fetching PF component
 @frappe.whitelist()
 def get_company_pf(fiscal_year=None):
-        #result = frappe.db.sql("""
-        #       select employee_pf, employer_pf, health_contribution, retirement_age
-        #        from `tabFiscal Year`
-        #        where now() between year_start_date and year_end_date
-        #        limit 1
-        #        """);
 	employee_pf = frappe.db.get_single_value("HR Settings", "employee_pf")
 	if not employee_pf:
 		frappe.throw("Setup Employee PF in HR Settings")
@@ -124,20 +118,21 @@ def get_employee_gis(employee):
 	return result
 
 @frappe.whitelist()
-def update_salary_structure(employee, new_basic):
-	sal_struc_name = frappe.db.sql("""
-	select name
-	from `tabSalary Structure` st
-	where st.employee = '%s'
-	and is_active = 'Yes'
-	and now() between ifnull(from_date,'0000-00-00') and ifnull(to_date,'2050-12-31')
-	order by ifnull(from_date,'0000-00-00') desc 
-	limit 1
-	""" % (employee))
-	
+def update_salary_structure(employee, new_basic, sal_struc_name=None):
+	#sal_struc_name = frappe.db.sql("""
+	#select name
+	#from `tabSalary Structure` st
+	#where st.employee = '%s'
+	#and is_active = 'Yes'
+	#and now() between ifnull(from_date,'0000-00-00') and ifnull(to_date,'2050-12-31')
+	#order by ifnull(from_date,'0000-00-00') desc 
+	#limit 1
+	#""" % (employee))	
+
 	sst = ""
 	if sal_struc_name and new_basic > 0:
-		sst = frappe.get_doc("Salary Structure", sal_struc_name[0][0])
+		#sst = frappe.get_doc("Salary Structure", sal_struc_name[0][0])
+		sst = frappe.get_doc("Salary Structure", sal_struc_name)
 		if sst:
 			gross_pay = 0.00
 			deductions = 0.00
@@ -190,12 +185,6 @@ def update_salary_structure(employee, new_basic):
 				else:
 					gross_pay += e.amount
 
-			#company_det = frappe.db.sql("""
-			#	select employee_pf, employer_pf, health_contribution, retirement_age
-			#	from `tabFiscal Year`
-			#	where now() between year_start_date and year_end_date
-			#	limit 1
-			#	""");
 			employee_gis = frappe.db.sql("""select a.gis
 				from `tabEmployee Grade` a, `tabEmployee` b
 				where b.employee = %s
@@ -250,3 +239,23 @@ def update_salary_structure(employee, new_basic):
 			return sst
 
 
+@frappe.whitelist()
+def get_month_details(year, month):
+	ysd = frappe.db.get_value("Fiscal Year", year, "year_start_date")
+	if ysd:
+		from dateutil.relativedelta import relativedelta
+		import calendar, datetime
+		diff_mnt = cint(month)-cint(ysd.month)
+		if diff_mnt<0:
+			diff_mnt = 12-int(ysd.month)+cint(month)
+		msd = ysd + relativedelta(months=diff_mnt) # month start date
+		month_days = cint(calendar.monthrange(cint(msd.year) ,cint(month))[1]) # days in month
+		med = datetime.date(msd.year, cint(month), month_days) # month end date
+		return frappe._dict({
+			'year': msd.year,
+			'month_start_date': msd,
+			'month_end_date': med,
+			'month_days': month_days
+		})
+	else:
+		frappe.throw(_("Fiscal Year {0} not found").format(year))

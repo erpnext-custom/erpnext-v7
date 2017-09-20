@@ -29,11 +29,12 @@ frappe.ui.form.on("Timesheet", {
 
 		// Follwoing code is added by SHIV on 2017/08/11
 		frm.get_field('time_logs').grid.editable_fields = [
+			{fieldname: 'description', columns: 3},
 			{fieldname: 'from_date', columns: 2},
 			{fieldname: 'to_date', columns: 2},
-			{fieldname: 'days', columns: 2},
-			{fieldname: 'target_quantity', columns: 2},
-			{fieldname: 'target_quantity_complete', columns: 2},
+			{fieldname: 'days', columns: 1},
+			{fieldname: 'target_quantity', columns: 1},
+			{fieldname: 'target_quantity_complete', columns: 1},
 		];
 		
 		frm.fields_dict.task.get_query = function() {

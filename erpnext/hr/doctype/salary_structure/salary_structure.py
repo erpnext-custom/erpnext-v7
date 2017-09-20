@@ -33,7 +33,7 @@ from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.document import Document
 from erpnext.hr.utils import set_employee_name
-from erpnext.hr.hr_custom_functions import get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from erpnext.accounts.accounts_custom_functions import get_number_of_days
 
 class SalaryStructure(Document):
@@ -46,6 +46,7 @@ class SalaryStructure(Document):
 		self.validate_employee()
 		self.validate_joining_date()
 		set_employee_name(self)
+		self.check_multiple_active()
 
 	def on_update(self):
 		self.assign_employee_details()
@@ -136,6 +137,12 @@ class SalaryStructure(Document):
 			self.db_set("division", doc.division)
 			self.db_set("section", doc.section)
 			self.db_set("designation", doc.designation)
+
+	def check_multiple_active(self):
+		if self.is_active == 'Yes':
+			result = frappe.db.sql("select 1 from `tabSalary Structure` where employee = %s and is_active = \'Yes\' and name != %s", (self.employee, self.name))
+			if result:
+				frappe.throw("Can not have multiple 'Active' Salary Structures")
 
 	def calculate_totals(self, employee, new_basic):
                 basic_pay = 0.00
@@ -241,19 +248,30 @@ def make_salary_slip(source_name, target_doc=None):
                 target.employee_subgroup = employee.employee_subgroup # Ver 1.0 Begins, added by SSK on 28/08/2016
                 #frappe.msgprint(_("StartDate: {0} EndDate: {1}").format(target.start_date,target.end_date))
                 # Ver 1.0 Ends
-		days = cint(date_diff(get_first_day(add_days(nowdate(), -11)), getdate(employee.date_of_joining)))
-		days_month = 1 + cint(get_number_of_days(get_first_day((add_days(nowdate(), -11))), get_last_day((add_days(nowdate(), -11)))))
+		m_details = get_month_details(target_doc.fiscal_year, target_doc.month)
+		#days = cint(date_diff(get_first_day(add_days(nowdate(), -11)), getdate(employee.date_of_joining)))
+		#days_month = 1 + cint(get_number_of_days(get_first_day((add_days(nowdate(), -11))), get_last_day((add_days(nowdate(), -11)))))
 		old_basic = 0
 		prorated = 0
-		if days < days_month and days != 0:
+		actual_days = 0
+		
+		#if days < days_month and days != 0:
+		if m_details.month_start_date < source.from_date or (source.to_date and m_details.month_end_date > source.to_date):
 			for a in source.get('earnings'):
 				if a.salary_component == 'Basic Pay':
 					old_basic = a.amount
 					#Do prorating of salary
-					actual_days = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -13)), getdate(employee.date_of_joining)))	
-					total = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -13)), get_first_day(add_days(nowdate(), -13))))
+					if m_details.month_start_date < source.from_date and (source.to_date and m_details.month_end_date > source.to_date):
+						actual_days = 1 + cint(date_diff(source.to_date, source.from_date))
+					elif m_details.month_start_date < source.from_date: 
+						actual_days = 1 + cint(date_diff(m_details.month_end_date, source.from_date))
+					else:
+						actual_days = 1 + cint(date_diff(source.to_date, m_details.month_start_date))
+					#actual_days = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -13)), getdate(employee.date_of_joining)))	
+					#total = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -13)), get_first_day(add_days(nowdate(), -13))))
+					total = m_details.month_days
 					new_basic = flt((flt(actual_days) / flt(total)) * old_basic, 2)
-					source = update_salary_structure(str(source.employee), flt(new_basic))
+					source = update_salary_structure(str(source.employee), flt(new_basic), source.name)
 					if not source:
 						frappe.throw("There is either no salary structure or the payroll processing is done before time")
 					prorated = 1
@@ -308,8 +326,9 @@ def make_salary_slip(source_name, target_doc=None):
 		target.run_method("pull_emp_details")
 		target.run_method("get_leave_details")
 		target.run_method("calculate_net_pay")
+		target.payment_days = actual_days
 		if prorated == 1:
-			update_salary_structure(str(source.employee), flt(old_basic))
+			update_salary_structure(str(source.employee), flt(old_basic), source.name)
 			
 
 	doc = get_mapped_doc("Salary Structure", source_name, {

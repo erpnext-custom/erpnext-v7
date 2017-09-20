@@ -89,6 +89,9 @@ frappe.ui.form.on("Travel Claim Item", {
 	"distance": function(frm, cdt, cdn) {
 		do_update(frm, cdt, cdn)
 	},
+	"dsa_percent": function(frm, cdt, cdn) {
+		do_update(frm, cdt, cdn)
+	},
 	"actual_amount": function(frm, cdt, cdn) {
 		var total = 0;
 		frm.doc.items.forEach(function(d) { 
@@ -101,9 +104,9 @@ frappe.ui.form.on("Travel Claim Item", {
 function do_update(frm, cdt, cdn) {
 	//var item = frappe.get_doc(cdt, cdn)
 	var item = locals[cdt][cdn]
-	var amount = flt(item.dsa + item.mileage_rate * item.distance)
+	var amount = flt((item.dsa_percent/100 * item.dsa) + item.mileage_rate * item.distance)
 	if (item.halt == 1) {
-		amount = flt(item.dsa * item.no_days)
+		amount = flt((item.dsa_percent/100 * item.dsa) * item.no_days)
 	}
 	if(item.currency != "BTN") {
 		frappe.call({
@@ -123,7 +126,7 @@ function do_update(frm, cdt, cdn) {
 		frappe.model.set_value(cdt, cdn, "actual_amount", amount)
 	}
 	
-	frappe.model.set_value(cdt, cdn, "amount", format_currency(flt(item.dsa * item.no_days + item.mileage_rate * item.distance), item.currency))
+	frappe.model.set_value(cdt, cdn, "amount", format_currency(amount, item.currency))
 	refresh_field("amount")	
 
 }

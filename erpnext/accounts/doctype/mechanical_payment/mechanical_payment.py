@@ -58,6 +58,7 @@ class MechanicalPayment(AccountsController):
 					 "party_check": 1,
 					 "reference_type": self.ref_doc,
 					 "reference_name": self.ref_no,
+					 "remarks": self.remarks
 					})
 			)
 
@@ -70,6 +71,7 @@ class MechanicalPayment(AccountsController):
 						 "party_check": 1,
 						 "reference_type": self.ref_doc,
 						 "reference_name": self.ref_no,
+						 "remarks": self.remarks
 						})
 				)
 		
@@ -83,6 +85,7 @@ class MechanicalPayment(AccountsController):
 					 "party": self.customer,
 					 "reference_type": self.ref_doc,
 					 "reference_name": self.ref_no,
+					 "remarks": self.remarks
 					})
 			)
 

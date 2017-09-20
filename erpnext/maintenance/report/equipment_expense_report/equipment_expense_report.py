@@ -71,6 +71,5 @@ def get_columns():
 		("Travel Claim(Nu.)")+":currency:100",
 		("Leave Encashment(Nu.)")+":currency:120",
 		("Total Expense(Nu.)")+":currency:100",
-
 	]
 	return cols
