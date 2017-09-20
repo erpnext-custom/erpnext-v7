@@ -5,13 +5,15 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cstr, flt, fmt_money, formatdate
+from frappe.model.mapper import get_mapped_doc
+from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
 
 class HireChargeInvoice(Document):
 	def validate(self):
 		self.check_advances(self.ehf_name)
 		if self.balance_amount < 0:
 			frappe.throw("Balance amount cannot be negative")
+		self.outstanding_amount = self.balance_amount
 
 	def on_submit(self):
 		self.update_advance_amount();
@@ -270,3 +272,23 @@ def make_bank_entry(frm=None):
 	else:
 		frappe.msgprint("Bill NOT processed")
 		return "NO"
+
+@frappe.whitelist()
+def make_payment_entry(source_name, target_doc=None): 
+	def update_docs(obj, target, source_parent):
+		target.posting_date = nowdate()
+		target.ref_doc = "Hire Charge Invoice"
+		target.net_amount = obj.outstanding_amount
+	
+	doc = get_mapped_doc("Hire Charge Invoice", source_name, {
+			"Hire Charge Invoice": {
+				"doctype": "Mechanical Payment",
+				"field_map": {
+					"name": "ref_no",
+					"outstanding_amount": "receivable_amount",
+				},
+				"postprocess": update_docs,
+				"validation": {"docstatus": ["=", 1]}
+			},
+		}, target_doc)
+	return doc

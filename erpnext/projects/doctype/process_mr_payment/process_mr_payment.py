@@ -12,14 +12,14 @@ class ProcessMRPayment(Document):
 		if self.items:
 			total_ot = total_wage = total_health = 0
 			for a in self.items:
-				a.total_ot_amount = a.hourly_rate * a.number_of_hours
-				a.total_wage = a.daily_rate * a.number_of_days
-				a.total_amount = a.total_ot_amount + a.total_wage
+				a.total_ot_amount = flt(a.hourly_rate) * flt(a.number_of_hours)
+				a.total_wage = flt(a.daily_rate) * flt(a.number_of_days)
+				a.total_amount = flt(a.total_ot_amount) + flt(a.total_wage)
 				total_ot += flt(a.total_ot_amount)
 				total_wage += flt(a.total_wage)
 				if a.employee_type == "GEP Employee":
-					a.health = a.total_wage * 0.01
-					a.wage_payable = a.total_wage - a.health
+					a.health = flt(a.total_wage) * 0.01
+					a.wage_payable = flt(a.total_wage) - flt(a.health)
 					total_health += flt(a.health)
 				
 			total = total_ot + total_wage
@@ -43,7 +43,7 @@ class ProcessMRPayment(Document):
 	#Populate Budget Accounts with Expense and Fixed Asset Accounts
 	def load_employee(self):
 		if self.employee_type == "GEP Employee":
-			query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabMuster Roll Employee` where status = 'Active'"
+			query = "select 'GEP Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabGEP Employee` where status = 'Active'"
 		elif self.employee_type == "Muster Roll Employee":
 			query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabMuster Roll Employee` where status = 'Active'"
 		else:

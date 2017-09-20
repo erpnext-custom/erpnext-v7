@@ -17,3 +17,20 @@ frappe.ui.form.on('Issue POL', {
 });
 
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
+
+frappe.ui.form.on("Issue POL", "refresh", function(frm) {
+	cur_frm.set_query("tanker", function() {
+		return {
+			filters:[['branch', "=", frm.doc.branch], ['equipment_type', '=', 'Tanker']]
+		}
+	})
+	frm.fields_dict['items'].grid.get_field('equipment').get_query = function(doc, cdt, cdn) {
+		doc = locals[cdt][cdn]
+		return {
+			filters: {
+				'hsd_type': frm.doc.pol_type, 
+				"is_disabled": 0, 
+			}
+		}
+	}
+})

@@ -3,7 +3,8 @@
 
 frappe.ui.form.on('Equipment', {
 	refresh: function(frm) {
-
+		cur_frm.set_df_property("engine_number", "read_only", frm.doc.engine_number ? 1 : 0)
+		cur_frm.set_df_property("chassis_number", "read_only", frm.doc.chassis_number ? 1 : 0)
 	},
 	validate: function(frm) {
 		if (frm.doc.operators) {

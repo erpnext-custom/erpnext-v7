@@ -19,11 +19,26 @@ from erpnext.controllers.accounts_controller import AccountsController
 
 class ProjectInvoice(AccountsController):
 	def validate(self):
+                self.set_status()
                 self.default_validations()
                 
         def on_submit(self):
                 self.update_boq()
                 self.make_gl_entries()
+
+        def before_cancel(self):
+                self.set_status()
+
+        def on_cancel(self):
+                self.make_gl_entries()
+                self.update_boq()
+                
+        def set_status(self):
+                self.status = {
+                        "0": "Unpaid",
+                        "1": "Unpaid",
+                        "2": "Cancelled"
+                }[str(self.docstatus or 0)]
                 
         def default_validations(self):
                 for rec in self.project_invoice_boq:
@@ -103,14 +118,24 @@ class ProjectInvoice(AccountsController):
                                 gtot_invoice_amount += flt(item.invoice_amount)
                                         
                                 if tot_invoice_amount:
-                                        base_item = frappe.get_doc("BOQ Item", item.boq_item_name)
-                                        base_item.db_set('claimed_quantity',flt(tot_invoice_quantity))
-                                        base_item.db_set('claimed_amount',flt(tot_invoice_amount))
-                                        if self.boq_type == "Milestone Based":
-                                                base_item.db_set('balance_amount',flt(base_item.amount)-flt(tot_invoice_amount)-flt(base_item.received_amount))
+                                        if self.docstatus < 2:
+                                                base_item = frappe.get_doc("BOQ Item", item.boq_item_name)
+                                                base_item.db_set('claimed_quantity',flt(tot_invoice_quantity))
+                                                base_item.db_set('claimed_amount',flt(tot_invoice_amount))
+                                                if self.boq_type == "Milestone Based":
+                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(tot_invoice_amount)-flt(base_item.received_amount))
+                                                else:
+                                                        base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(tot_invoice_quantity)-flt(base_item.received_quantity))
+                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(tot_invoice_amount)-flt(base_item.received_amount))
                                         else:
-                                                base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(tot_invoice_quantity)-flt(base_item.received_quantity))
-                                                base_item.db_set('balance_amount',flt(base_item.amount)-flt(tot_invoice_amount)-flt(base_item.received_amount))                                                
+                                                base_item = frappe.get_doc("BOQ Item", item.boq_item_name)
+                                                base_item.db_set('claimed_quantity',flt(bi.tot_invoice_quantity))
+                                                base_item.db_set('claimed_amount',flt(bi.tot_invoice_amount))
+                                                if self.boq_type == "Milestone Based":
+                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(bi.tot_invoice_amount))
+                                                else:
+                                                        base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(bi.tot_invoice_quantity))
+                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(bi.tot_invoice_amount))
                                         
                 # Updating balance in `tabBOQ`
                 if gtot_invoice_amount:
@@ -128,9 +153,16 @@ class ProjectInvoice(AccountsController):
                                 and docstatus = 1
                                 and name <> %s
                                 """, (self.boq, self.name), as_dict=1)[0]
-                        
-                        base_boq = frappe.get_doc("BOQ", self.boq)
-                        base_boq.db_set('claimed_amount', flt(bm.tot_claimed_amount)+(flt(pi.tot_price_adjustment_amount)+flt(self.price_adjustment_amount)))
-                        base_boq.db_set('received_amount', flt(pi.tot_received_amount)+flt(self.total_received_amount))
-                        base_boq.db_set('price_adjustment', flt(pi.tot_price_adjustment_amount)+flt(self.price_adjustment_amount))
-                        base_boq.db_set('balance_amount', flt(base_boq.total_amount)+(flt(pi.tot_price_adjustment_amount)+flt(self.price_adjustment_amount))-(flt(pi.tot_received_amount)+flt(self.total_received_amount)))
+
+                        if self.docstatus < 2:
+                                base_boq = frappe.get_doc("BOQ", self.boq)
+                                base_boq.db_set('claimed_amount', flt(bm.tot_claimed_amount)+(flt(pi.tot_price_adjustment_amount)+flt(self.price_adjustment_amount)))
+                                base_boq.db_set('received_amount', flt(pi.tot_received_amount)+flt(self.total_received_amount))
+                                base_boq.db_set('price_adjustment', flt(pi.tot_price_adjustment_amount)+flt(self.price_adjustment_amount))
+                                base_boq.db_set('balance_amount', flt(base_boq.total_amount)+(flt(pi.tot_price_adjustment_amount)+flt(self.price_adjustment_amount))-(flt(pi.tot_received_amount)+flt(self.total_received_amount)))
+                        else:
+                                base_boq = frappe.get_doc("BOQ", self.boq)
+                                base_boq.db_set('claimed_amount', flt(bm.tot_claimed_amount)+flt(pi.tot_price_adjustment_amount))
+                                base_boq.db_set('received_amount', flt(pi.tot_received_amount))
+                                base_boq.db_set('price_adjustment', flt(pi.tot_price_adjustment_amount))
+                                base_boq.db_set('balance_amount', flt(base_boq.total_amount)+flt(pi.tot_price_adjustment_amount)-flt(pi.tot_received_amount))

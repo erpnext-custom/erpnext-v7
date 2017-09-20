@@ -12,10 +12,16 @@ frappe.ui.form.on('Hire Charge Invoice', {
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
 		}
-		if (frm.doc.owned_by != "CDCL" && !frm.doc.payment_jv && frm.doc.invoice_jv && frappe.model.can_write("Journal Entry")) {
-			//cur_frm.toggle_display("receive_payment", 1)
+		if (frm.doc.owned_by != "CDCL" && frm.doc.outstanding_amount > 0 && frappe.model.can_write("Journal Entry")) {
+			/*//cur_frm.toggle_display("receive_payment", 1)
 			cur_frm.add_custom_button(__('Payment'), function() {
 				cur_frm.cscript.receive_payment()
+			}, __("Receive")); */
+			frm.add_custom_button("Receive Payment", function() {
+				frappe.model.open_mapped_doc({
+					method: "erpnext.maintenance.doctype.hire_charge_invoice.hire_charge_invoice.make_payment_entry",
+					frm: cur_frm
+				})
 			}, __("Receive"));
 		}
 		else {
@@ -66,6 +72,8 @@ function calculate_balance(frm) {
 			frm.set_value("balance_amount", frm.doc.total_invoice_amount)
 		}
 		frm.refresh_field("balance_amount")
+		frm.set_value("outstanding_amount", frm.doc.balance_amount)
+		frm.refresh_field("outstanding_amount")
 	}	
 }
 

@@ -26,6 +26,7 @@ class TravelAuthorization(Document):
 
 	def on_update(self):
 		self.set_dsa_rate()
+		self.check_double_dates()
 
 	def on_submit(self):
 		self.validate_submitter()
@@ -141,6 +142,18 @@ class TravelAuthorization(Document):
 	def set_dsa_rate(self):
 		if self.grade:
 			self.db_set("dsa_per_day", frappe.db.get_value("Employee Grade", self.grade, "dsa"))
+
+	def check_double_dates(self):
+		if self.items:
+			start_date = self.items[0].date
+			end_date = self.items[len(self.items) - 1].till_date
+			if not end_date:
+				end_date = self.items[len(self.items) - 1].date
+
+			tas = frappe.db.sql("select a.name from `tabTravel Authorization` a, `tabTravel Authorization Item` b where a.employee = %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date)", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)
+			if tas:
+				frappe.throw("The dates in your current Travel Authorization has already been claimed in " + str(tas[0].name))
+						
 
 @frappe.whitelist()
 def make_travel_claim(source_name, target_doc=None): 

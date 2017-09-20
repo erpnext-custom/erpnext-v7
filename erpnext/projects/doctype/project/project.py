@@ -48,11 +48,121 @@ class Project(Document):
 			sum(hours) as total_hours
 			from `tabTimesheet Detail` where project=%s and docstatus < 2 group by activity_type
 			order by total_hours desc''', self.name, as_dict=True))
-
-
+        
 	def __setup__(self):
 		self.onload()
 
+	def validate(self):
+		self.validate_dates()
+
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+		# Follwoing 2 lines are commented by SHIV on 2017/08/11
+		'''
+		self.sync_tasks()
+		self.tasks = []
+		'''
+		# Following code added by SHIV on 2017/08/11
+		self.sync_activity_tasks()
+		self.activity_tasks = []
+		self.project_advance_item = []
+		self.project_boq_item = []
+		self.project_invoice_item = []
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+		self.send_welcome_email()
+
+	def on_update(self):
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following 2 lines commented by SHIV on 2017/08/11
+                '''
+		self.load_tasks()
+		self.sync_tasks()
+                '''
+		# Following 2 lines added by SHIV on 2017/08/11
+		self.load_activity_tasks()
+		self.sync_activity_tasks()
+		self.update_task_progress()
+		self.update_project_progress()
+		# self.update_group_tasks()
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+
+        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+        # Following methods added by SHIV on 13/09/2017
+        def update_task_progress(self):
+                task_list = frappe.db.sql("""
+                                select name
+                                from `tabTask`
+                                where project = '{0}'
+                                """.format(self.name), as_dict=1)
+
+                for task in task_list:
+                        values = frappe.db.sql("""
+                                        select sum(ifnull(target_quantity_complete,0)) as target_quantity_complete,
+                                                sum(ifnull(work_quantity_complete,0)) as work_quantity_complete
+                                        from `tabTimesheet`
+                                        where task = '{0}'
+                                        and   docstatus < 2
+                                        """.format(task.name), as_dict=1)[0]
+                        
+                        frappe.db.sql("""
+                                update `tabTask`
+                                set target_quantity_complete = {0},
+                                        work_quantity_complete = {1}
+                                where name = '{2}'
+                        """.format(flt(values.target_quantity_complete), flt(values.work_quantity_complete), task.name))
+
+                
+        def update_project_progress(self):
+                tl = frappe.db.sql("""
+                                select sum(ifnull(ts.work_quantity_complete,0)) project_progress
+                                from `tabTimesheet` as ts
+                                where ts.project = %s
+                                and ts.docstatus < 2
+                                """, (self.name), as_dict=1)[0]
+
+                frappe.db.sql("""
+                        update `tabProject`
+                        set tot_wq_percent_complete = ifnull({0},0)
+                        where name = '{1}'
+                """.format(flt(tl.project_progress),self.name))
+
+        def update_group_tasks(self):
+                group_list = frappe.db.sql("""
+                                        select t1.name, t1.task_idx, t1.subject, t1.is_group,
+                                                (select ifnull(min(t2.task_idx),999)
+                                                 from  `tabTask` as t2
+                                                 where t2.project  = t1.project
+                                                 and   t2.is_group = t1.is_group
+                                                 and   t2.task_idx > t1.task_idx
+                                                ) as max_idx
+                                        from `tabTask` as t1
+                                        where t1.project = '{0}'
+                                        and   t1.is_group = 1
+                                        order by t1.task_idx
+                                """.format(self.name), as_dict=1)
+                
+                for item in group_list:
+                        values = frappe.db.sql("""
+                                        select min(exp_start_date) as min_start_date,
+                                                max(exp_end_date) as max_end_date,
+                                                sum(ifnull(work_quantity,0)) as tot_work_quantity,
+                                                sum(ifnull(work_quantity_complete,0)) as tot_work_quantity_complete
+                                         from   `tabTask`
+                                         where  project = '{0}'
+                                         and    task_idx > {1}
+                                         and    task_idx < {2}
+                                """.format(self.name, item.task_idx, item.max_idx), as_dict=1)[0]
+
+                        frappe.db.sql("""
+                                        update `tabTask`
+                                        set exp_start_date = '{0}',
+                                                exp_end_date = '{1}',
+                                                work_quantity = {4},
+                                                work_quantity_complete = {5}
+                                        where project = '{2}'
+                                        and name = '{3}'
+                                """.format(values.min_start_date, values.max_end_date, self.name, item.name, flt(values.tot_work_quantity), flt(values.tot_work_quantity_complete)))
+        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+        
 	def load_tasks(self):
 		"""Load `tasks` from the database"""
 		self.tasks = []
@@ -197,27 +307,6 @@ class Project(Document):
 	def get_tasks(self):
 		return frappe.get_all("Task", "*", {"project": self.name}, order_by="exp_start_date asc")
 
-	def validate(self):
-		self.validate_dates()
-
-		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-		# Follwoing 2 lines are commented by SHIV on 2017/08/11
-		'''
-		self.sync_tasks()
-		self.tasks = []
-		'''
-		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-
-		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-		# Following 2 Lines added by SHIV on 2017/08/11
-		self.sync_activity_tasks()
-		self.activity_tasks = []
-		self.project_advance_item = []
-		self.project_boq_item = []
-		self.project_invoice_item = []
-		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-		self.send_welcome_email()
-
 	def validate_dates(self):
 		if self.expected_start_date and self.expected_end_date:
 			if getdate(self.expected_end_date) < getdate(self.expected_start_date):
@@ -329,7 +418,7 @@ class Project(Document):
                 # Following code added by SHIV on 2017/08/16
 		total = frappe.db.sql("""select count(*) as counts,
                         sum(work_quantity) as tot_work_quantity
-                        from tabTask where project=%s""", self.name, as_dict=1)[0]
+                        from tabTask where project=%s and is_group=0""", self.name, as_dict=1)[0]
 
 		if total.counts:
 			completed = frappe.db.sql("""select count(*) from tabTask where
@@ -393,18 +482,6 @@ class Project(Document):
 			if user.welcome_email_sent==0:
 				frappe.sendmail(user.user, subject=_("Project Collaboration Invitation"), content=content.format(*messages))
 				user.welcome_email_sent=1
-
-	def on_update(self):
-                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-                # Following 2 lines commented by SHIV on 2017/08/11
-                '''
-		self.load_tasks()
-		self.sync_tasks()
-                '''
-		# Following 2 lines added by SHIV on 2017/08/11
-		self.load_activity_tasks()
-		self.sync_activity_tasks()		
-		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
 def get_timeline_data(doctype, name):
 	'''Return timeline for attendance'''

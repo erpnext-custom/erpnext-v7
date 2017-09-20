@@ -19,8 +19,10 @@ class EquipmentHiringForm(Document):
 		if not self.approved_items:
 			frappe.throw("Cannot submit hiring form without Approved Items")
 
-	def on_submit(self):
+	def before_submit(self):
 		self.check_equipment_free()
+
+	def on_submit(self):
 		self.assign_hire_form_to_equipment()
 		if self.advance_amount > 0:
 			self.post_journal_entry()
@@ -29,7 +31,8 @@ class EquipmentHiringForm(Document):
 		cl_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
 		if cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this job card first!")
-		
+	
+		frappe.db.sql("delete from `tabEquipment Reservation Entry` where ehf_name = \'"+ str(self.name) +"\'")	
 		self.db_set("advance_journal", '')
 
 	def check_duplicate(self):
@@ -53,17 +56,22 @@ class EquipmentHiringForm(Document):
 			doc = frappe.new_doc("Equipment Reservation Entry")
 			doc.flags.ignore_permissions = 1 
 			doc.equipment = a.equipment
+			doc.reason = "Hire"
 			doc.ehf_name = self.name
 			doc.place = a.place
 			doc.from_date = a.from_date
 			doc.to_date = a.to_date
+			doc.hours = a.total_hours
 			doc.submit()
 
 	def check_equipment_free(self):
 		for a in self.approved_items:
 			result = frappe.db.sql("select ehf_name from `tabEquipment Reservation Entry` where equipment = \'" + str(a.equipment) + "\' and docstatus = 1 and (\'" + str(a.from_date) + "\' between from_date and to_date OR \'" + str(a.to_date) + "\' between from_date and to_date)", as_dict=True)
 			if result:
-				frappe.throw("The equipment " + str(a.equipment) + " is already in use from by " + str(result[0].ehf_name))
+				if a.from_time and a.to_time:
+					res = frappe.db.sql("select name from `tabHiring Approval Details` where docstatus = 1 and equipment = %s and (%s between from_time and to_time or %s between from_time and to_time)", (str(a.equipment), str(a.from_time), str(a.to_time)))
+					if res:
+						frappe.throw("The equipment " + str(a.equipment) + " is already in use from by " + str(result[0].ehf_name))
 		
 	##
 	# make necessary journal entry
@@ -121,3 +129,9 @@ def get_rates(form, equipment):
 def update_status(name):
 	so = frappe.get_doc("Equipment Hiring Form", name)
 	so.db_set("payment_completed", 1)
+
+def equipment_query(doctype, txt, searchfield, start, page_len, filters):
+	return frappe.db.sql("select e.name, e.equipment_number, e.equipment_type from `tabEquipment` e where e.equipment_type = %s and e.branch = %s and e.is_disabled != 1 and not exists (select 1 from `tabEquipment Reservation Entry` a where (a.from_date != a.to_date and (a.from_date between %s and %s or a.to_date between %s and %s)) and a.equipment = e.name)", (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
+
+
+

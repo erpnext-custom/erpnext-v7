@@ -89,6 +89,18 @@ frappe.ui.form.on("Task", {
 		// Default values set as follows by SHIV on 2017/08/18
 		frm.set_value("target_uom","Percent");
 		frm.set_value("target_quantity",100);
+		
+		frm.fields_dict['depends_on'].grid.get_field('task').get_query = function(frm, cdt, cdn) {
+			child = locals[cdt][cdn];
+			//console.log(self.project);
+			return{
+				filters: {
+					'project': frm.project,
+					'status': ["!=", "Closed"],
+					'is_group': 0
+				}
+			}
+		}		
 		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 	},
 

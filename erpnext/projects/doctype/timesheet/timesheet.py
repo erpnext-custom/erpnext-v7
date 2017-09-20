@@ -33,6 +33,7 @@ class Timesheet(Document):
                 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following methods introduced by SHIV on 15/08/2017
                 self.set_defaults()
+                self.validate_target_quantity()
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.set_status()
 		self.validate_dates()
@@ -40,6 +41,65 @@ class Timesheet(Document):
 		self.update_cost()
 		self.calculate_total_amounts()
 
+	def before_submit(self):
+		self.set_dates()
+		self.calculate_target_quantity()
+
+	def before_cancel(self):
+		self.set_status()
+                
+	def on_cancel(self):
+		self.update_production_order(None)
+		self.update_task_and_project()
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following methods introduced by SHIV on 15/08/2017
+                self.calculate_target_quantity()
+                self.reset_time_log_order()
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++		
+
+        '''
+        def on_trash(self):
+                frappe.msgprint("on_trash")
+                self.calculate_target_quantity()
+                self.reset_time_log_order()
+        '''
+
+        def after_delete(self):
+                self.calculate_target_quantity()
+                self.reset_time_log_order()
+
+                
+	def on_submit(self):
+		self.validate_mandatory_fields()
+		self.update_production_order(self.name)
+		self.update_task_and_project()
+
+        def on_update(self):
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following methods introduced by SHIV on 15/08/2017
+                self.calculate_target_quantity()
+                self.reset_time_log_order()
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+
+        def validate_target_quantity(self):
+                curr_balance = 0.0
+                
+                result = frappe.db.sql("""
+                        select sum(case
+                                        when parent != '{0}' then ifnull(target_quantity_complete,0)
+                                        else 0
+                                   end) as prev_balance
+                        from  `tabTimesheet Detail`
+                        where task = '{2}'
+                        and   docstatus < 2
+                """.format(self.name, self.name, self.task), as_dict=1)[0]
+
+                for tl in self.time_logs:
+                        curr_balance += flt(tl.target_quantity_complete)
+                
+                if flt(self.target_quantity) < (flt(result.prev_balance)+flt(curr_balance)):
+                        frappe.throw(_("`Total Achieved Value` cannot be more than `Total Target Value`."))
+                
         def reset_time_log_order(self):
                 idx = 0
                 tl_list = frappe.db.sql("""
@@ -57,14 +117,6 @@ class Timesheet(Document):
                                 where name = '{1}'
                         """.format(idx, tl.name))
                 
-                        
-        def on_update(self):
-                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-                # Following methods introduced by SHIV on 15/08/2017
-                self.calculate_target_quantity()
-                self.reset_time_log_order()
-                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-
 	def calculate_total_amounts(self):
 		self.total_hours = 0.0
 		self.total_billing_amount = 0.0
@@ -88,18 +140,12 @@ class Timesheet(Document):
                         total_target_quantity_complete  += flt(tl.target_quantity_complete)
                         tl.from_time = tl.from_date
                         tl.to_time   = tl.to_date
-                """
-                        if flt(tl.target_quantity_complete) > flt(tl.target_quantity):
-                                frappe.throw(_("Row {0}: Achieved value({1}) cannot be more than Target value({2})").format(tl.idx, tl.target_quantity_complete, tl.target_quantity))
 
-                if flt(total_target_quantity) > flt(self.target_quantity):
-                        frappe.throw(_("Total Timesheet target value({0}) cannot be more than Task's target value({1})").format(flt(total_target_quantity),flt(self.target_quantity)))
-                """
-
+                        if tl.from_date > tl.to_date:
+                                frappe.throw(_("Row {0}: From Date cannot be after To Date.").format(tl.idx))
+                                
                 if flt(total_target_quantity_complete) > flt(self.target_quantity):
-                        frappe.throw(_("Total Achieved value({0}) cannot be more than Target value({1})").format(flt(total_target_quantity_complate),flt(self.target_quantity)))
-
-                #self.work_quantity_complete = (flt(self.work_quantity)*((flt(total_target_quantity_complete)/(total_target_quantity if total_target_quantity else 1))*100)*0.01)
+                        frappe.throw(_("Total Achieved value({0}) cannot be more than Target value({1})").format(flt(total_target_quantity_complete),flt(self.target_quantity)))
                 
                 # Setting `Timesheet` Defaults
                 if self.task:
@@ -145,7 +191,9 @@ class Timesheet(Document):
                                 """, (self.project), as_dict=1)[0]
 
                         base_project = frappe.get_doc("Project",self.project)
-                        base_project.db_set('tot_wq_percent_complete',tl.project_progress)
+                        base_project.update_task_progress()
+                        base_project.update_project_progress()
+                        #base_project.update_group_tasks()
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++				                        
                         
 	def set_status(self):
@@ -173,24 +221,6 @@ class Timesheet(Document):
 				self.start_date = getdate(start_date)
 				self.end_date = getdate(end_date)
 
-	def before_submit(self):
-		self.set_dates()
-		self.calculate_target_quantity()
-
-	def before_cancel(self):
-		self.set_status()
-                
-	def on_cancel(self):
-		self.update_production_order(None)
-		self.update_task_and_project()
-
-	def on_submit(self):
-                #if self.target_quantity_complete < self.target_quantity:
-                #        frappe.throw()
-                        
-		self.validate_mandatory_fields()
-		self.update_production_order(self.name)
-		self.update_task_and_project()
 
 	def validate_mandatory_fields(self):
 		if self.production_order:
@@ -258,9 +288,14 @@ class Timesheet(Document):
 				frappe.get_doc("Project", data.project).update_project()
 
 	def validate_dates(self):
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following code is commented by SHIV on 13/09/2017
+                """
 		for data in self.time_logs:
 			if time_diff_in_hours(data.to_time, data.from_time) < 0:
 				frappe.throw(_("To date cannot be before from date"))
+                """
+		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 	def validate_time_logs(self):
 		for data in self.get('time_logs'):

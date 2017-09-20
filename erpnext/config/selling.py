@@ -63,13 +63,13 @@ def get_data():
 			"label": _("Selling Reports"),
 			"icon": "icon-list",
 			"items": [
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Material-wise Sales History",
-					"doctype": "Item",
-					"label": "Materialwise Sales History"
-				},
+				#{
+				#	"type": "report",
+				#	"is_query_report": True,
+				#	"name": "Material-wise Sales History",
+				#	"doctype": "Item",
+				#	"label": "Materialwise Sales History"
+				#},
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -97,7 +97,8 @@ def get_data():
 				},
 				{
 					"type": "report",
-					"name": "Invoice Receivable",
+					"name": "Accounts Receivable",
+					"label": "Invoice Receivable",
 					"doctype": "Sales Invoice",
 					"is_query_report": True
 				},

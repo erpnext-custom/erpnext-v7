@@ -765,7 +765,9 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	pe.paid_to_account_currency = party_account_currency if payment_type=="Pay" else bank.account_currency
 	pe.paid_amount = paid_amount
 	pe.received_amount = received_amount
-	
+	pe.actual_receivable_amount = received_amount
+	pe.branch = doc.branch	
+
 	pe.append("references", {
 		"reference_doctype": dt,
 		"reference_name": dn,

@@ -15,6 +15,11 @@ def get_data():
 					"name": "Job Card",
 					"description": _("Create Job Card"),
 				},
+				{
+					"type": "doctype",
+					"name": "Mechanical Payment",
+					"description": _("Create Payment"),
+				},
 			]
 		},
 		{
@@ -78,6 +83,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Hire Charge Invoice",
 					"description": _("Hire Charge Invoice"),
+				},
+				{
+					"type": "doctype",
+					"name": "Mechanical Payment",
+					"description": _("Create Payment"),
 				},
 				{
 					"type": "doctype",

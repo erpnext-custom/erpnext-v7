@@ -21,6 +21,9 @@ frappe.ui.form.on('Break Down Report', {
 	owned_by: function(frm) {
 		cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'CDCL')
 		cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'CDCL')
+
+		cur_frm.toggle_reqd("equipment_model", frm.doc.owned_by != 'Others')
+		cur_frm.toggle_reqd("equipment_number", frm.doc.owned_by != 'Others')
 	}
 });
 

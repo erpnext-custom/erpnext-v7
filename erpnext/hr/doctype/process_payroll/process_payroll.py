@@ -481,6 +481,7 @@ class ProcessPayroll(Document):
                                 "accounts": accounts,
 				"branch": self.branch
                         })
+			ss.flags.ignore_permissions = 1 
 
                         if (tot_deductions or tot_earnings):
                                 ss.insert()
@@ -517,6 +518,7 @@ class ProcessPayroll(Document):
                                 "accounts": accounts,
 				"branch": self.branch
                         })
+			ss.flags.ignore_permissions = 1 
 
                         if (tot_deductions or tot_earnings):
                                 ss.insert()
