@@ -1,0 +1,20 @@
+{
+ "creation": "2017-09-19 11:49:14.382767", 
+ "css": "table {\n    margin: 0 auto; /* or margin: 0 auto 0 auto */\n    height: auto;\n    width : 90%;\n\t\n  }\n\n}\n@media all {\n   div .printedby {\n       position: fixed;\n       bottom: 0;\n       text-align: right;\n       font-size: xx-small;\n       width: 100% !important;\n   }\n}", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "BOQ", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div class=\"page-break\">\n\t{%- macro add_header(page_num, max_pages, doc, letter_head, no_letterhead) -%} {%- if letter_head and not no_letterhead -%}\n\t<div class=\"letter-head\">{{ letter_head }}</div>\n\t{%- endif -%} {%- endmacro -%} {{ add_header(0,1,doc,letter_head, no_letterhead) }}\n<div  style=\"text-align: center;\">\n<h2>BOQ</h2>\n</div>\n\t<div style=\"padding-top:10px\";>\n\t\t<table style=\"font-size: small; width:100%\">\n\t\t\t<tr>\n\t\t\t\t<td width = \"21%\"><strong>Project Name:</strong></td>\n\t\t\t\t<td style=\"text-align:left;\">{{ doc.project}}</td>\n\t\t\t</tr>\n\t\t\t<tr>\n\t\t\t\t<td><strong>Date:</strong></td>\n\t\t\t\t<td style=\"text-align:left\">{{ frappe.utils.formatdate(doc.creation) }}</td>\n\t\t\t</tr>\n\t\t</table>\n\t</div>\n\n\n\t<div style=\"padding-top:20px\";>\n<table class=\"table table-bordered\" style=\"font-size: small;\">\n\t\t<tbody>\n\t\t\t<tr>\n\t\t\t\t<th>BOQ Code</th>\n\t\t\t\t<th>Item</th>\n\t\t\t\t<th>UOM</th>\n\t\t\t\t<th>QTY</th>\n\t\t\t\t<th>Rate</th>\n\t\t\t\t<th>Amount</th>\n\t\t\t</tr>\n\t\t\t{%- for row in doc.boq_item -%}\n\t\t\t<tr style=\"height : auto\">\n\t\t\t\t{%- if row.boq_code -%}\n\t\t\t\t<td style=\"width: auto; text-align:left;\">{{ row.boq_code }}</td>\n\t\t\t\t{% else %}\n\t\t\t\t<td></td>\n\t\t\t\t{%- endif -%}\n\t\t\t\t<td style=\"width: auto; text-align:left;\">{{ row.item }}</td>\n\t\t\t\t<td style=\"width: auto%;\">{{ row.uom }}</td>\n\t\t\t\t{%- if row.is_group == 1 -%}\n\t\t\t\t<td></td>\n\t\t\t\t{% else %}\n\t\t\t\t<td style=\"width: auto; text-align:right;\">{{ row.quantity }}</td>\n\t\t\t\t{%- endif -%}\n\t\t\t\t{%- if row.is_group == 1 -%}\n\t\t\t\t<td></td>\n\t\t\t\t{% else %}\n\t\t\t\t<td style=\"width: auto; text-align:right;\">{{ frappe.format_value(row.rate, {\"fieldtype\":\"Currency\"})}}</td>\n\t\t\t\t{%- endif -%}\n\t\t\t\t{%- if row.is_group == 1 -%}\n\t\t\t\t<td></td>\n\t\t\t\t{% else %}\n\t\t\t\t<td style=\"width: auto; text-align:right;\">{{ frappe.format_value(row.amount, {\"fieldtype\":\"Currency\" })}}</td>\n\t\t\t\t{%- endif -%}\n\t\t\t</tr>\n\t\t\t{%- endfor -%}\n<tr>\n\t\t\t\t<td colspan=\"5\" style=\"text-align:right;\"><b>Total:</b></td>\n\t\t\t\t<td style=\"width: auto; text-align:right;\">{{ frappe.format_value(doc.total_amount, {\"fieldtype\":\"Currency\"}) }}</td>\n\t\t\t</tr>\n\t\t</tbody>\n\t</table>\n</div>\n</div>\n\n\t<div class=\"printedby\">This print is system generated and should be considered VALID only with appropriate seal and/or signature. <br> Printed by {{ frappe.user }} on {{ frappe.utils.nowdate() }} at {{ frappe.utils.nowtime() }}</div>\n", 
+ "idx": 0, 
+ "modified": "2017-09-19 16:28:46.153586", 
+ "modified_by": "Administrator", 
+ "name": "BOQ", 
+ "owner": "Administrator", 
+ "parent": "Project", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes"
+}
