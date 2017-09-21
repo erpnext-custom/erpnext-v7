@@ -100,6 +100,14 @@ frappe.ui.form.on("Project", {
 		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
 		// Following code added SHIV on 02/09/2017
 		frm.add_custom_button(__("Advance"), function(){frm.trigger("make_project_advance")},__("Make"), "icon-file-alt");
+		frm.add_custom_button(__("Project Register"), function(){
+				frappe.route_options = {
+					project: frm.doc.name,
+					additional_info: 1
+				};
+				frappe.set_route("query-report", "Project Register");
+			},__("Reports"), "icon-file-alt"
+		);
 		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		
 		if(frm.doc.__islocal) {
@@ -166,6 +174,7 @@ frappe.ui.form.on("Project", {
 			var days = $.map(frm.doc.__onload.activity_summary, function(d) { return d.total_days });
 			var max_count = Math.max.apply(null, days);
 			var sum = days.reduce(function(a, b) { return a + b; }, 0);
+			/*
 			var section = frm.dashboard.add_section(
 				frappe.render_template('project_dashboard',
 					{
@@ -173,7 +182,15 @@ frappe.ui.form.on("Project", {
 						max_count: max_count,
 						sum: sum
 					}));
-
+			*/
+			
+			var section = frm.dashboard.add_section(
+				frappe.render_template('test_dashboard',
+					{
+						sum: sum
+					}
+			));
+			
 			section.on('click', '.time-sheet-link', function() {
 				var activity_type = $(this).attr('data-activity_type');
 				frappe.set_route('List', 'Timesheet',

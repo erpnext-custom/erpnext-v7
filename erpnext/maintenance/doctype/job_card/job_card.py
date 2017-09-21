@@ -28,6 +28,8 @@ class JobCard(Document):
 		self.outstanding_amount = self.total_amount
 
 	def on_submit(self):
+		if not self.repair_type:
+			frappe.throw("Specify whether the maintenance is Major or Minor")
 		if not self.finish_date:
 			frappe.throw("Please enter Job Out Date")
 		else:

@@ -93,6 +93,9 @@ class HireChargeInvoice(Document):
 		hea_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_expense_account")
 		if not hea_account:
 			frappe.throw("Setup Hire Expense Internal Account in Maintenance Accounts Settings")
+		discount_account = frappe.db.get_single_value("Maintenance Accounts Settings", "discount_account")
+		if not discount_account:
+			frappe.throw("Setup Discount Account in Maintenance Accounts Settings")
 
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
@@ -160,6 +163,18 @@ class HireChargeInvoice(Document):
 						"cost_center": self.cost_center,
 						"debit_in_account_currency": flt(self.advance_amount),
 						"debit": flt(self.advance_amount),
+					})
+
+			if self.discount_amount > 0:
+				je.append("accounts", {
+						"account": discount_account,
+						"party_type": "Customer",
+						"party": self.customer,
+						"reference_type": "Hire Charge Invoice",
+						"reference_name": self.name,
+						"cost_center": self.cost_center,
+						"debit_in_account_currency": flt(self.discount_amount),
+						"debit": flt(self.discount_amount),
 					})
 
 			if self.balance_amount > 0:

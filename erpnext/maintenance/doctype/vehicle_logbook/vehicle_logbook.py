@@ -33,11 +33,18 @@ class VehicleLogbook(Document):
 				total_i += flt(a.idle_time)
 			self.total_work_time = total_w
 			self.total_idle_time = total_i
+		self.consumption = flt(self.consumption_hours) + flt(self.consumption_km)
+		self.closing_balance = flt(self.hsd_received) + flt(self.opening_balance) - flt(self.consumption)
 
 	def update_hire(self):
 		if self.ehf_name:
 			doc = frappe.get_doc("Equipment Hiring Form", self.ehf_name)
 			doc.db_set("hiring_status", 1)
+		e = frappe.get_doc("Equipment", self.equipment)
+		if self.final_km:
+			e.db_set("current_km_reading", flt(self.final_km))
+		if self.final_hour:
+			e.db_set("current_hr_reading", flt(self.final_hour))
 
 	def calculate_balance(self):
 		self.db_set("closing_balance", flt(self.opening_balance) + flt(self.hsd_received) - flt(self.consumption))

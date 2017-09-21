@@ -163,7 +163,8 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Equipment Reservation Report",
+					"name": "Equipment Status",
+					"label": "Equipment Status Report",
 					"doctype": "Equipment"
 				},
 				{

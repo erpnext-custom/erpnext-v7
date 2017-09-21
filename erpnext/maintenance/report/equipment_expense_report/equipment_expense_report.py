@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, cint
+from frappe.utils import flt, cint,add_days, cstr, flt, getdate, nowdate, rounded, date_diff
 
 def execute(filters=None):
 	columns = get_columns(filters)
@@ -48,7 +48,8 @@ def get_data(filters):
 	branch, consumption_date, rate_date, jc_date, insurance_date,  reg_date, operator_date, tc_date, le_date, ss_date  =  get_conditions(filters)
 	#frappe.msgprint(reg_date)
 	data = []
-	branch_cond = " where branch = '{0}'".format(branch) if branch else ""
+	#branch_cond = " where branch = '{0}' and name = 'EQUIP170008".format(branch) if branch else ""
+	branch_cond = " where name = 'EQUIP170008'".format(branch) if branch else " where name = 'EQUIP170008'"
 	rate_cond = " and branch = '{0}'" .format(branch) if branch else ""
 	
 	equipments = frappe.db.sql("""
@@ -114,13 +115,16 @@ def get_data(filters):
 				from `tabEquipment Operator` eo
 				where eo.parent = '{0}' 
 				and   eo.docstatus < 2 
-				and   {1}
-			""".format(eq.name, operator_date), as_dict=1)
-
+			""".format(eq.name), as_dict=1)
+			#	and   {1}
+			#""".format(eq.name, operator_date), as_dict=1)
+		
 		#frappe.msgprint(c_operator)
 		travel_claim = 0.0
 		e_amount     = 0.0
 		gross_pay    = 0.0
+		#from_date    = 0.0
+		#to_date	     = 0.0
 		for co in c_operator:
 			tc = frappe.db.sql("""
 				select sum(ifnull(tc.total_claim_amount,0)) as travel_claim
@@ -140,30 +144,57 @@ def get_data(filters):
 					and   {1}
 				""".format(co.operator, le_date), as_dict=1)[0]
 
-			# `tabSalary Slip`
-			#a = frappe.db.get_value("Salary Slip", self.co, "employee_name")
-			#total_worked_days = min(end_date, filters.to_date) - max(start_date, filters.from_date)
-			'''total_payment_days =frappe.db.sql("""select max(s.end_date)-min(s.start_date) from `tabSlary Slip` s where s.employee = '{0}'
-			and s.end_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'
-			and s.start_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'""".format(co.current_operator), as_dict=1)'''
 
-			#gross_pay = (sum(gross_pay)/total_payment_days)*total_worked_days)
-			ss = frappe.db.sql("""
-				     	select sum(ifnull(gross_pay,0)) as gross_pay
+			'''ss = frappe.db.sql("""
+				     	select sum(ifnull(((gross_pay/total_days_in_month)*1),0)) as gross_pay
 				     	from `tabSalary Slip` ss 
 					where ss.employee = '{0}'
 				     	and ss.docstatus = 1
-					and {1}
-			       """.format(co.operator, ss_date),  as_dict=1)[0]
+					and {1} group by employee
+			       """.format(co.operator, ss_date),  as_dict=1)[0]'''
+			
+			cem = frappe.db.sql("""
+			                select gross_pay, start_date, end_date
+                    			from `tabSalary Slip` ss 
+                    			where employee = '{0}'
+                   			and docstatus = 1
+                    			and {1} group by employee
+            		      """.format(co.operator, ss_date),  as_dict=1)
 
+			total_sal = 0.0
+			if cem:
+				for e in cem:
+					total_days = flt(date_diff(e.end_date, e.start_date) + 1)
+					if e.end_date < co.start_date:
+						pass	
+					elif co.end_date and e.start_date > co.end_date:
+						pass
+					elif co.end_date and e.start_date > co.start_date and e.end_date < co.end_date:
+						total_sal += flt(e.gross_pay)
+						frappe.msgprint("A")
+					elif co.end_date and e.start_date <= co.start_date and e.end_date >= co.end_date:
+						frappe.msgprint("B")
+						days = date_diff(co.end_date, co.start_date) + 1
+						total_sal += (flt(e.gross_pay) * days ) / total_days
+					elif co.end_date and e.start_date > co.start_date and e.end_date > co.end_date:
+						days = date_diff(co.end_date, e.start_date) + 1
+						total_sal += (flt(e.gross_pay) * days ) / total_days
+					elif co.end_date and e.start_date < co.start_date and e.end_date < co.end_date:
+						days = date_diff(e.end_date, co.start_date) + 1
+						total_sal += (flt(e.gross_pay) * days ) / total_days
+					elif not co.end_date and e.start_date >= co.start_date:
+						total_sal += flt(e.gross_pay)
+					elif not co.end_date and e.start_date < co.start_date:
+						days = date_diff(e.end_date, co.start_date) + 1
+						total_sal += (flt(e.gross_pay) * days ) / total_days
+					else:
+						pass
+            			if flt(total_sal) > 0:	
+					frappe.msgprint(str(total_sal) + " SAL" )	
 			travel_claim += flt(tc.travel_claim)
 			e_amount     += flt(lea.e_amount) 
-			gross_pay    += flt(ss.gross_pay)
-		#frappe.msgprint("{0}".format(tc))
-		'''if filters.get("branch"):
-			equipments += " and branch = \'" + str(filters.branch) + "\'"
-		if filters.get("from_date") and filters.get("to_date"):
-			data += " and " + str(filters.uinput) +" between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'" '''
+			gross_pay    += flt(total_sal)
+
 
 		data.append((	eq.branch,
 				eq.name,

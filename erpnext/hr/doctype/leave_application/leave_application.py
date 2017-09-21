@@ -10,7 +10,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import cint, cstr, date_diff, flt, formatdate, getdate, get_link_to_form, \
+from frappe.utils import nowdate, cint, cstr, date_diff, flt, formatdate, getdate, get_link_to_form, \
 	comma_or, get_fullname
 from erpnext.hr.utils import set_employee_name
 from erpnext.hr.doctype.leave_block_list.leave_block_list import get_applicable_block_dates
@@ -302,15 +302,14 @@ def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 	
 	#Check for Officiating Employeee, if so, replace
 	for a, b in enumerate(app_list):
-		off = frappe.db.sql("select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date", {today: nowdate()}, as_dict=True)
-		for of in off:
-			app_list[a] = of
+		off = frappe.db.sql("select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date and employee = %(employee)s", {"today": nowdate(), "employee": frappe.db.get_value("Employee", {"user_id": app_list[a]}, "name")}, as_dict=True)
+		if off:
+			app_list[a] = str(frappe.db.get_value("Employee", off[0].officiate, "user_id"))
 	
 	approvers = ""
 	for a in app_list:
 		approvers += "\'"+str(a)+"\',"
 	approvers += "\'dshfghasfgqyegfheqkhjf\'"
-	frappe.msgprint(str(approvers))
 
 	query = "select emp.user_id, emp.employee_name, emp.designation from tabEmployee emp where emp.user_id in (" + str(approvers) + ")"
 	lists = frappe.db.sql(query)

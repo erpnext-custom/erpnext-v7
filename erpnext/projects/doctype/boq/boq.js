@@ -37,15 +37,24 @@ frappe.ui.form.on('BOQ', {
 				__("Make"), "icon-file-alt"
 			);
 			*/
+			frm.add_custom_button(__("Measurement Book Entry"),function(){frm.trigger("make_book_entry")},
+				__("Make"), "icon-file-alt"
+			);
 			frm.add_custom_button(__("Invoice"),function(){frm.trigger("make_project_invoice")},
 				__("Make"), "icon-file-alt"
 			);
 		}
 	},
-	
 	make_project_invoice: function(frm){
 		frappe.model.open_mapped_doc({
 			method: "erpnext.projects.doctype.boq.boq.make_project_invoice",
+			frm: frm
+		});
+	},
+	
+	make_book_entry: function(frm){
+		frappe.model.open_mapped_doc({
+			method: "erpnext.projects.doctype.boq.boq.make_book_entry",
 			frm: frm
 		});
 	},

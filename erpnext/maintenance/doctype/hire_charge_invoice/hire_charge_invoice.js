@@ -3,6 +3,7 @@
 
 frappe.ui.form.on('Hire Charge Invoice', {
 	refresh: function(frm) {
+		frm.set_df_property("discount_amount", "read_only", frm.doc.owned_by == "CDCL")
 		if (frm.doc.invoice_jv && frappe.model.can_read("Journal Entry")) {
 			cur_frm.add_custom_button(__('Bank Entries'), function() {
 				frappe.route_options = {
@@ -42,6 +43,9 @@ frappe.ui.form.on('Hire Charge Invoice', {
 	"total_invoice_amount": function(frm) {
 		calculate_balance(frm)
 	},
+	"discount_amount": function(frm) {
+		calculate_balance(frm)
+	},
 	"get_advances": function(frm) {
 		get_advances(frm.doc.ehf_name)
 	},
@@ -65,12 +69,9 @@ frappe.ui.form.on('Hire Charge Invoice', {
 
 function calculate_balance(frm) {
 	if (frm.doc.total_invoice_amount) {
-		if(frm.doc.advance_amount) {
-			frm.set_value("balance_amount", frm.doc.total_invoice_amount - frm.doc.advance_amount)
-		}
-		else {
-			frm.set_value("balance_amount", frm.doc.total_invoice_amount)
-		}
+		if(!frm.doc.advance_amount) {frm.doc.advance_amount = 0}
+		if(!frm.doc.discount_amount) {frm.doc.discount_amount = 0}
+		frm.set_value("balance_amount", frm.doc.total_invoice_amount - frm.doc.advance_amount - frm.doc.discount_amount)
 		frm.refresh_field("balance_amount")
 		frm.set_value("outstanding_amount", frm.doc.balance_amount)
 		frm.refresh_field("outstanding_amount")
