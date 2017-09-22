@@ -15,7 +15,7 @@ data = {
 	'transactions': [
 		{
 			'label': _('Project'),
-                        'items': ['Task', 'Timesheet', 'BOQ', 'Issue']
+                        'items': ['Task', 'Timesheet', 'BOQ', 'Issue', 'MB Entry']
 		},
                 {
 			'label': _('Transactions'),
@@ -36,7 +36,7 @@ data = {
 	'transactions': [
 		{
 			'label': _('Project'),
-                        'items': ['Task', 'Timesheet', 'BOQ']
+                        'items': ['Task', 'Timesheet', 'BOQ', 'MB Entry']
 		},
                 {
 			'label': _('Transactions'),

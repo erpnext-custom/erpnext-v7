@@ -63,6 +63,7 @@ frappe.query_reports["TDS Certificate"] = {
 			"fieldname": "vendor_tpn_no",
 			"label": __("Vendor TPN Number"),
 			"fieldtype": "Data",
-		}
+			"read_only": 1
+		},
 	],
 }

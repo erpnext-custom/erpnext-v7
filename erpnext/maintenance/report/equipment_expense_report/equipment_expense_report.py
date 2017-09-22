@@ -48,8 +48,8 @@ def get_data(filters):
 	branch, consumption_date, rate_date, jc_date, insurance_date,  reg_date, operator_date, tc_date, le_date, ss_date  =  get_conditions(filters)
 	#frappe.msgprint(reg_date)
 	data = []
-	#branch_cond = " where branch = '{0}' and name = 'EQUIP170008".format(branch) if branch else ""
-	branch_cond = " where name = 'EQUIP170008'".format(branch) if branch else " where name = 'EQUIP170008'"
+	branch_cond = " where branch = '{0}'".format(branch) if branch else ""
+	#branch_cond = " where name = 'EQUIP170008'".format(branch) if branch else " where name = 'EQUIP170008'"
 	rate_cond = " and branch = '{0}'" .format(branch) if branch else ""
 	
 	equipments = frappe.db.sql("""
@@ -111,7 +111,7 @@ def get_data(filters):
 			
 		#v1.append(	#frappe.msgprint(values)
 		c_operator = frappe.db.sql("""
-				select operator, start_date, end_date  
+				select operator, start_date, end_date , name 
 				from `tabEquipment Operator` eo
 				where eo.parent = '{0}' 
 				and   eo.docstatus < 2 
@@ -123,6 +123,8 @@ def get_data(filters):
 		travel_claim = 0.0
 		e_amount     = 0.0
 		gross_pay    = 0.0
+		total_exp    = 0.0
+		total_sal    = 0.0
 		#from_date    = 0.0
 		#to_date	     = 0.0
 		for co in c_operator:
@@ -145,23 +147,15 @@ def get_data(filters):
 				""".format(co.operator, le_date), as_dict=1)[0]
 
 
-			'''ss = frappe.db.sql("""
-				     	select sum(ifnull(((gross_pay/total_days_in_month)*1),0)) as gross_pay
-				     	from `tabSalary Slip` ss 
-					where ss.employee = '{0}'
-				     	and ss.docstatus = 1
-					and {1} group by employee
-			       """.format(co.operator, ss_date),  as_dict=1)[0]'''
-			
+
 			cem = frappe.db.sql("""
-			                select gross_pay, start_date, end_date
+			                select employee, gross_pay, start_date, end_date
                     			from `tabSalary Slip` ss 
                     			where employee = '{0}'
                    			and docstatus = 1
                     			and {1} group by employee
-            		      """.format(co.operator, ss_date),  as_dict=1)
-
-			total_sal = 0.0
+           		      """.format(co.operator, ss_date),  as_dict=1)
+			#frappe.msgprint(str(cem))
 			if cem:
 				for e in cem:
 					total_days = flt(date_diff(e.end_date, e.start_date) + 1)
@@ -189,13 +183,12 @@ def get_data(filters):
 						total_sal += (flt(e.gross_pay) * days ) / total_days
 					else:
 						pass
-            			if flt(total_sal) > 0:	
-					frappe.msgprint(str(total_sal) + " SAL" )	
+
+				
 			travel_claim += flt(tc.travel_claim)
 			e_amount     += flt(lea.e_amount) 
 			gross_pay    += flt(total_sal)
-
-
+		        total_exp = 	(flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(reg.r_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
 		data.append((	eq.branch,
 				eq.name,
 				eq.equipment_number,
@@ -207,11 +200,10 @@ def get_data(filters):
 				gross_pay,
 				e_amount,
 				travel_claim,
-				(flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(reg.r_amount)+
-					flt(jc.services_amount)+ travel_claim+e_amount+gross_pay))
-	#frappe.msgprint(str(equipments))
+				total_exp))
+	frappe.msgprint(str(data))
     	return tuple(data)
-#       return tuple()
+#    return tuple()
 
 def get_columns(filters):
 	cols = [

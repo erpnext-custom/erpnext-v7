@@ -15,11 +15,10 @@ def execute(filters=None):
 	return columns, data, filters
 
 def get_data(query, filters=None):
-	frappe.msgprint(str(filters.year_start) + " ENDDDDDD")
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		row = [get_month(d.month), "Salary", d.basic_pay, flt(d.gross_pay) - flt(d.basic_pay), d.gross_pay, d.gross_pay, d.nppf,d.gis, flt(d.gross_pay) - flt(d.nppf) - flt(d.gis), d.tds, d.health, d.receipt_number, d.receipt_date]
+		row = [get_month(d.month), "Salary", d.basic_pay, round(flt(d.gross_pay) - flt(d.basic_pay) - (flt(d.comm_all) / 2), 2), d.gross_pay, d.gross_pay, d.nppf,d.gis, flt(d.gross_pay) - flt(d.nppf) - flt(d.gis), d.tds, d.health, d.receipt_number, d.receipt_date]
 		data.append(row);
 
 	#Leave Encashment 
@@ -38,6 +37,7 @@ def construct_query(filters=None):
 	(select b.amount from `tabSalary Detail` b where salary_component = 'Salary Tax' and b.parent = a.name) as tds ,
 	(select b.amount from `tabSalary Detail` b where salary_component = 'PF' and b.parent = a.name) as nppf ,
 	(select b.amount from `tabSalary Detail` b where salary_component = 'Group Insurance Scheme' and b.parent = a.name) as gis ,
+	(select b.amount from `tabSalary Detail` b where salary_component = 'Communication Allowance' and b.parent = a.name) as comm_all ,
 	(select b.amount from `tabSalary Detail` b where salary_component = 'Health Contribution' and b.parent = a.name) as health,
 	r.receipt_number, r.receipt_date
 	 from `tabSalary Slip` a, `tabRRCO Receipt Entries` r

@@ -22,6 +22,13 @@ frappe.ui.form.on('BOQ', {
 					frappe.set_route("Form", "Project", frm.doc.project);
 				}, __("View"), true);
 			}
+
+			if(frappe.model.can_read("MB Entry")) {
+				frm.add_custom_button(__("Measurement Book Entries"), function() {
+					frappe.route_options = {"boq": frm.doc.name}
+					frappe.set_route("List", "MB Entry");
+				}, __("View"), true);
+			}			
 			
 			if(frappe.model.can_read("Project Invoice")) {
 				frm.add_custom_button(__("Invoices"), function() {

@@ -58,6 +58,21 @@ def get_notification_config():
                         "BOQ": {"docstatus": 0},
                         "Project Advance": {"docstatus": 0},
                         "Project Invoice": {"docstatus": 0},
-                        "Project Payment": {"docstatus": 0}
+                        "Project Payment": {"docstatus": 0},
+                        "Equipment Hire Form": {"docstatus": 0},
+                        "Vehicle Logbook": {"docstatus": 0},
+                        "Hire Charge Invoice": {"docstatus": 0},
+                        "Mechanical Payment": {"docstatus": 0},
+                        "Equipment Hiring Extension": {"docstatus": 0},
+                        "Overtime Application": {"docstatus": 0},
+                        "POL": {"docstatus": 0},
+                        "Issue POL": {"docstatus": 0},
+                        "Project Sales": {"docstatus": 0},
+                        "Process MR Payment": {"docstatus": 0},
+                        "PBVA": {"docstatus": 0},
+                        "Leave Travel Concession": {"docstatus": 0},
+                        "Bonus": {"docstatus": 0},
+                        "Direct Payment": {"docstatus": 0},
+                        "Budget": {"docstatus": 0}
 		}
 	}

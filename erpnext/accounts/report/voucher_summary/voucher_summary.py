@@ -12,10 +12,10 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		("Entry Type") + ":Data:120",
-                ("Title") + ":Data:120",
+		("Entry Type") + ":Data:150",
+                ("Title") + ":Data:250",
                 ("Posting Date") + ":Date:100",
-                ("Voucher No.") + ":Data:120"
+                ("Voucher No.") + ":Link/Journal Entry:140"
        	]
  
 def get_data(filters):

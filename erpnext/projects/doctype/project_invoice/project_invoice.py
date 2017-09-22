@@ -123,19 +123,19 @@ class ProjectInvoice(AccountsController):
                                                 base_item.db_set('claimed_quantity',flt(tot_invoice_quantity))
                                                 base_item.db_set('claimed_amount',flt(tot_invoice_amount))
                                                 if self.boq_type == "Milestone Based":
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(tot_invoice_amount)-flt(base_item.received_amount))
+                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.booked_amount)-flt(tot_invoice_amount)-flt(base_item.received_amount))
                                                 else:
-                                                        base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(tot_invoice_quantity)-flt(base_item.received_quantity))
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(tot_invoice_amount)-flt(base_item.received_amount))
+                                                        base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(base_item.booked_quantity)-flt(tot_invoice_quantity)-flt(base_item.received_quantity))
+                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.booked_amount)-flt(tot_invoice_amount)-flt(base_item.received_amount))
                                         else:
                                                 base_item = frappe.get_doc("BOQ Item", item.boq_item_name)
                                                 base_item.db_set('claimed_quantity',flt(bi.tot_invoice_quantity))
                                                 base_item.db_set('claimed_amount',flt(bi.tot_invoice_amount))
                                                 if self.boq_type == "Milestone Based":
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(bi.tot_invoice_amount))
+                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.booked_amount)-flt(bi.tot_invoice_amount))
                                                 else:
-                                                        base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(bi.tot_invoice_quantity))
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(bi.tot_invoice_amount))
+                                                        base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(base_item.booked_quantity)-flt(bi.tot_invoice_quantity))
+                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.booked_amount)-flt(bi.tot_invoice_amount))
                                         
                 # Updating balance in `tabBOQ`
                 if gtot_invoice_amount:
