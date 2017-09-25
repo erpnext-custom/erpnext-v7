@@ -11,17 +11,24 @@ frappe.ui.form.on('Project Invoice', {
 			{fieldname: 'invoice_rate', columns: 2},
 			{fieldname: 'invoice_amount', columns: 2}
 		];		
+		console.log('setup');
+		toggle_items_based_on_boq_type(frm);
 	},
 
 	onload: function(frm){
+		console.log('onload');
+		toggle_items_based_on_boq_type(frm);
 		calculate_totals(frm);
 	},
 	
 	onload_post_render: function(frm){
+		console.log('onload_post_render');
+		toggle_items_based_on_boq_type(frm);
 		cur_frm.refresh();
 	},
 	
 	refresh: function(frm, cdt, cdn) {
+		console.log('refresh');
 		//if(!frm.doc.__islocal){
 				
 			
@@ -62,19 +69,7 @@ frappe.ui.form.on('Project Invoice', {
 			}
 		}
 		
-		if(frm.doc.boq_type=="Item Based"){
-			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_quantity", true);
-			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_amount", false);
-			//frm.fields_dict.project_invoice_boq.grid.set_column_disp("invoice_quantity", true);			
-		} 
-		else if(frm.doc.boq_type=="Milestone Based"){
-			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_quantity", false);
-			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_amount", true);
-		}
-		else if(frm.doc.boq_type=="Piece Rate Work Based(PRW)"){
-			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_quantity", true);
-			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_amount", false);
-		}		
+		//toggle_items_based_on_boq_type(frm);
 	},
 
 	make_project_payment: function(frm){
@@ -156,6 +151,24 @@ frappe.ui.form.on("Project Invoice BOQ", "invoice_amount", function(frm, cdt, cd
 	cur_frm.fields_dict["project_invoice_boq"].grid.grid_rows_by_docname[cdn].fields_dict["invoice_amount"].refresh();
 });
 */
+
+var toggle_items_based_on_boq_type = function(frm){
+		frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_quantity", false);
+		frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_amount", false);
+		
+		if(frm.doc.boq_type=="Item Based"){
+			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_quantity", true);
+			//frm.fields_dict.project_invoice_boq.grid.set_column_disp("invoice_quantity", true);			
+		} 
+		else if(frm.doc.boq_type=="Milestone Based"){
+			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_amount", true);
+		}
+		else if(frm.doc.boq_type=="Piece Rate Work Based(PRW)"){
+			frm.fields_dict.project_invoice_boq.grid.toggle_enable("invoice_quantity", true);
+		}
+		
+		frm.refresh_field("project_invoice_boq");
+}
 
 var calculate_totals = function(frm){
 	var pi = frm.doc.project_invoice_boq || [];

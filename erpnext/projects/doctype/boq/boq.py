@@ -17,8 +17,10 @@ from frappe.model.naming import make_autoname
 from frappe.utils import cstr, flt
 
 class BOQ(Document):
+        """
         def autoname(self):
                 self.name = make_autoname(str('BOQ')+'.YYYY.MM.####')
+        """
                 
 	def validate(self):
                 self.update_defaults()

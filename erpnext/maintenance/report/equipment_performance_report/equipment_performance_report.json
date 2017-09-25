@@ -1,0 +1,18 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2017-09-25 15:43:51.740846", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2017-09-25 15:43:51.740846", 
+ "modified_by": "Administrator", 
+ "module": "Maintenance", 
+ "name": "Equipment Performance Report", 
+ "owner": "Administrator", 
+ "ref_doctype": "Equipment", 
+ "report_name": "Equipment Performance Report", 
+ "report_type": "Script Report"
+}

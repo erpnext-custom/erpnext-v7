@@ -11,8 +11,6 @@ def execute(filters=None):
 	data = get_data(filters)
 	return columns, data
 
-#def get_data(filters):
-        #values = []
 def get_conditions(filters):
 	branch = consumption_date = rate_date = jc_date = insurance_date =  reg_date = tc_date = operator_date = le_date = ss_date= reg_date = ""
 	if filters.get("branch"):
@@ -125,8 +123,6 @@ def get_data(filters):
 		gross_pay    = 0.0
 		total_exp    = 0.0
 		total_sal    = 0.0
-		#from_date    = 0.0
-		#to_date	     = 0.0
 		for co in c_operator:
 			tc = frappe.db.sql("""
 				select sum(ifnull(tc.total_claim_amount,0)) as travel_claim
@@ -155,7 +151,7 @@ def get_data(filters):
                    			and docstatus = 1
                     			and {1} group by employee
            		      """.format(co.operator, ss_date),  as_dict=1)
-			#frappe.msgprint(str(cem))
+
 			if cem:
 				for e in cem:
 					total_days = flt(date_diff(e.end_date, e.start_date) + 1)

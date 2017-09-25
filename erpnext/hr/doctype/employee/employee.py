@@ -213,10 +213,10 @@ def get_retirement_date(date_of_birth=None, employment_type=None):
 	ret = {}
 	if date_of_birth and employment_type:
 		try:
-			if employment_type == "Contract":
+			if employment_type in ['Executive','Chief Executive Officer']:
 				retirement_age = int(frappe.db.get_single_value("HR Settings", "contract_retirement_age") or 60)
 			else:
-				retirement_age = int(frappe.db.get_single_value("HR Settings", "retirement_age") or 60)
+				retirement_age = int(frappe.db.get_single_value("HR Settings", "retirement_age") or 58)
 			dt = add_years(getdate(date_of_birth),retirement_age)
 			ret = {'date_of_retirement': dt.strftime('%Y-%m-%d')}
 		except ValueError:
