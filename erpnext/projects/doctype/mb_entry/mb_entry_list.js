@@ -1,21 +1,18 @@
-frappe.listview_settings['Project Invoice']={
-	add_fields: ["invoice_title", "status", "invoice_date", "net_invoice_amount"],
-	filters: [["status", "=", "Unpaid"]],
+frappe.listview_settings['MB Entry']={
+	add_fields: ["name", "status", "entry_date", "total_balance_amount"],
+	filters: [["status", "=", "Uninvoiced"]],
 	get_indicator: function(doc){
 		var colors = {
-			"Open": "orange",
-			"Overdue": "red",
-			"Pending Review": "orange",
-			"Working": "orange",
-			"Closed": "green",
-			"Cancelled": "dark grey",
-			"Unpaid": "red",
-			"Paid": "green",
+			"Draft": "orange",
+			"Uninvoiced": "red",
+			"Invoiced": "green",
 			"Cancelled": "dark grey"
 		}		
 
+		return [__(doc.status), colors[doc.status], "status,=," + doc.status];
+		/*
 		if(doc.status == "Draft"){
-			return [__("Draft"), "orange", "status,=," + doc.status];
+			return [__("Draft"), "orance", "status,=," + doc.status];
 		}
 		else if(parseFloat(doc.total_balance_amount) > 0.0 || doc.status == "Unpaid"){
 			//return [__(doc.status), colors[doc.status], "status,=," + doc.status];
@@ -27,5 +24,6 @@ frappe.listview_settings['Project Invoice']={
 		else if(doc.docstatus==2 || doc.status == "Cancelled"){
 			return [__("Cancelled"), "dark grey", "status,=," + doc.status];
 		}
+		*/
 	}
 };

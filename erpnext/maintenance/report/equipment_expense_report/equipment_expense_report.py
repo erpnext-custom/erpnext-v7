@@ -149,7 +149,7 @@ def get_data(filters):
                     			from `tabSalary Slip` ss 
                     			where employee = '{0}'
                    			and docstatus = 1
-                    			and {1} group by employee
+                    			and {1} 
            		      """.format(co.operator, ss_date),  as_dict=1)
 
 			if cem:
@@ -169,22 +169,28 @@ def get_data(filters):
 					elif co.end_date and e.start_date > co.start_date and e.end_date > co.end_date:
 						days = date_diff(co.end_date, e.start_date) + 1
 						total_sal += (flt(e.gross_pay) * days ) / total_days
+						frappe.msgprint("C")
 					elif co.end_date and e.start_date < co.start_date and e.end_date < co.end_date:
 						days = date_diff(e.end_date, co.start_date) + 1
 						total_sal += (flt(e.gross_pay) * days ) / total_days
+						frappe.msgprint("D")
 					elif not co.end_date and e.start_date >= co.start_date:
 						total_sal += flt(e.gross_pay)
+						frappe.msgprint("E")
 					elif not co.end_date and e.start_date < co.start_date:
 						days = date_diff(e.end_date, co.start_date) + 1
+						frappe.msgprint("F")
 						total_sal += (flt(e.gross_pay) * days ) / total_days
 					else:
 						pass
 
+				#gross_pay    += flt(total_sal)
+			
 				
 			travel_claim += flt(tc.travel_claim)
 			e_amount     += flt(lea.e_amount) 
 			gross_pay    += flt(total_sal)
-		        total_exp = 	(flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(reg.r_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
+		        total_exp = 	(flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(reg.r_amount)+flt(jc.services_amount)+ travel_claim+e_amount + gross_pay
 		data.append((	eq.branch,
 				eq.name,
 				eq.equipment_number,
@@ -197,7 +203,7 @@ def get_data(filters):
 				e_amount,
 				travel_claim,
 				total_exp))
-	frappe.msgprint(str(data))
+#	frappe.msgprint(str(data))
     	return tuple(data)
 #    return tuple()
 

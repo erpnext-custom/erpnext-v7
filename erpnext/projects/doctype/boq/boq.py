@@ -80,9 +80,10 @@ class BOQ(Document):
                         """.format(flt(boq.total_amount), self.project))
         
 @frappe.whitelist()
-def make_project_invoice(source_name, target_doc=None):
+def make_direct_invoice(source_name, target_doc=None):
         def update_master(source_doc, target_doc, source_parent):
                 target_doc.invoice_title = str(target_doc.project) + "(Project Invoice)"
+                target_doc.invoice_type = "Direct Invoice"
                 target_doc.check_all = 1
                 
         def update_item(source_doc, target_doc, source_parent):
@@ -115,6 +116,26 @@ def make_project_invoice(source_name, target_doc=None):
         }, target_doc)
 
         return doclist
+
+@frappe.whitelist()
+def make_mb_invoice(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_parent):
+                target_doc.invoice_title = str(target_doc.project) + "(Project Invoice)"
+                target_doc.invoice_type = "MB Based Invoice"
+                target_doc.check_all_mb = 1
+                
+        doclist = get_mapped_doc("BOQ", source_name, {
+                "BOQ": {
+                        "doctype": "Project Invoice",
+                        "field_map": {
+                                "project": "project"
+                        },
+                        "postprocess": update_master
+                }
+        }, target_doc)
+
+        return doclist
+
 
 @frappe.whitelist()
 def make_book_entry(source_name, target_doc=None):

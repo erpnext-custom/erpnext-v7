@@ -33,7 +33,7 @@ def add_header(w):
 	w.writerow(["Notes:"])
 	w.writerow(["Please DO NOT change the template headings"])
 	w.writerow([""])
-	w.writerow(["Employee", "Basic", "Corporate", "Contract", "Communication", "Fuel", "Underground", "Shift", "PSA", "PDA", "Deputation", "Officiating", "Scarcity", "Difficulty", "High Altitude", "Cash Handling", "Component 1", "Amount 1", "Scheme 1", "Bank 1", "Number 1",  "Component 2", "Amount 2", "Scheme 2", "Bank 2", "Number 2", "Component 3", "Amount 3", "Scheme 3", "Bank 3", "Number 3"])
+	w.writerow(["Employee", "Employee Name", "Basic", "Corporate", "Contract", "Communication", "Fuel", "Underground", "Shift", "PSA", "PDA", "Deputation", "Officiating", "Scarcity", "Difficulty", "High Altitude", "Cash Handling", "Component 1", "Amount 1", "Scheme 1", "Bank 1", "Number 1",  "Component 2", "Amount 2", "Scheme 2", "Bank 2", "Number 2", "Component 3", "Amount 3", "Scheme 3", "Bank 3", "Number 3"])
 	return w
 
 @frappe.whitelist()
@@ -179,7 +179,9 @@ def upload():
 				doc.append("deductions",{"salary_component": "SWS", "amount": sws_amount})	
 				ded += sws_amount
 				
-				gis_amount =  flt(get_employee_gis(emp.employee))
+				if not emp.employee_subgroup:
+					frappe.throw("No Grade assigned to " + str(emp.employee_name))
+				gis_amount = flt(frappe.db.get_value("Employee Grade", emp.employee_subgroup, "gis"))
 				doc.append("deductions",{"salary_component": "Group Insurance Scheme", "amount": gis_amount})	
 				ded += gis_amount
 

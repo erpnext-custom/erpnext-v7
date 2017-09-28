@@ -23,11 +23,19 @@ frappe.ui.form.on('Leave Travel Concession', {
 		}
 	},
 	"get_ltc": function(frm) {
-		if(frm.doc.branch) {
-			process_ltc(frm.doc.branch);
+		if(frm.doc.fiscal_year) {
+			//load_accounts(frm.doc.company)
+			return frappe.call({
+				method: "get_ltc_details",
+				doc: frm.doc,
+				callback: function(r, rt) {
+					frm.refresh_field("items");
+					frm.refresh_fields();
+				}
+			});
 		}
 		else {
-			msgprint("Select Branch First")
+			msgprint("Select Fiscal Year First")
 		}
 	}
 });

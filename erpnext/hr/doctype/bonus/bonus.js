@@ -23,7 +23,7 @@ frappe.ui.form.on('Bonus', {
 		}
 	},
 	"get_employees": function(frm) {
-		if(frm.doc.branch) {
+		if(frm.doc.fiscal_year) {
 			//load_accounts(frm.doc.company)
 			return frappe.call({
 				method: "get_employees",
@@ -35,7 +35,7 @@ frappe.ui.form.on('Bonus', {
 			});
 		}
 		else {
-			msgprint("Select Branch First")
+			msgprint("Select Fiscal Year First")
 		}
 	}
 });

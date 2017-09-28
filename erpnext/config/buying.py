@@ -126,6 +126,12 @@ def get_data():
 					"name": "Asset Balance Report",
 					"doctype": "Asset Received Entries"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Registered Vendors",
+					"doctype": "Supplier"
+				},
 			]
 		},
 		{
