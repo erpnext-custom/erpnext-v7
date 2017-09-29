@@ -65,7 +65,13 @@ def get_data():
 					"name":"Terms and Conditions",
 					"label": _("Purchase Terms and Conditions Template"),
 					"description": _("Template of terms or contract.")
-				}
+				},
+				{
+					"type": "doctype",
+					"name": "Annual Tender",
+					"label": "Annual Tender",
+					"description": _("Supplier Type master.")
+				},
 			]
 		},
 		{

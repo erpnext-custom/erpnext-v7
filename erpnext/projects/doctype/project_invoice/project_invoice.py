@@ -23,8 +23,12 @@ class ProjectInvoice(AccountsController):
                 self.default_validations()
                 
         def on_submit(self):
+                self.update_boq_item()
                 self.update_boq()
-                self.update_mb()
+                
+                if self.invoice_type == "MB Based Invoice":
+                        self.update_mb_entries()
+                
                 self.make_gl_entries()
 
         def before_cancel(self):
@@ -32,8 +36,12 @@ class ProjectInvoice(AccountsController):
 
         def on_cancel(self):
                 self.make_gl_entries()
+                
+                self.update_boq_item()
                 self.update_boq()
-                self.update_mb()
+                
+                if self.invoice_type == "MB Based Invoice":
+                        self.update_mb_entries()
                 
         def set_status(self):
                 self.status = {
@@ -94,132 +102,115 @@ class ProjectInvoice(AccountsController):
 
 
                         make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
+
+        def update_boq_item(self):
+                if self.invoice_type == "Direct Invoice":
+                        # Direct Invoice
+                        item_list = frappe.db.sql("""
+                                        select
+                                                pib.boq_item_name,
+                                                sum(
+                                                        case
+                                                        when '{0}' = 'Milestone Based' then 0
+                                                        else
+                                                                case
+                                                                when pib.docstatus < 2 then ifnull(pib.invoice_quantity,0)
+                                                                else -1*ifnull(pib.invoice_quantity,0)
+                                                                end
+                                                        end
+                                                    ) as invoice_quantity,
+                                                sum(
+                                                        case
+                                                        when pib.docstatus < 2 then ifnull(pib.invoice_amount,0)
+                                                        else -1*ifnull(pib.invoice_amount,0)
+                                                        end
+                                                    ) as invoice_amount
+                                        from `tabProject Invoice BOQ` pib
+                                        where pib.parent         = '{1}'
+                                        and   pib.is_selected    = 1
+                                        and   pib.invoice_amount > 0
+                                        group by pib.boq_item_name
+                                        """.format(self.boq_type, self.name), as_dict=1)
                 
+                        for item in item_list:
+                                frappe.db.sql("""
+                                        update `tabBOQ Item`
+                                        set
+                                                claimed_quantity = ifnull(claimed_quantity,0)+ifnull({1},0),
+                                                claimed_amount   = ifnull(claimed_amount,0)+ifnull({2},0),
+                                                balance_quantity = ifnull(balance_quantity,0) - ifnull({1},0),
+                                                balance_amount   = ifnull(balance_amount,0) - ifnull({2},0)
+                                        where name = '{0}'
+                                        """.format(item.boq_item_name, flt(item.invoice_quantity), flt(item.invoice_amount)))
+                else:
+                        # MB Based Invoice
+                        boq_list = frappe.db.sql("""
+                                        select
+                                                meb.boq_item_name,
+                                                sum(
+                                                        case
+                                                        when '{0}' = 'Milestone Based' then 0
+                                                        else
+                                                                case
+                                                                when pim.docstatus < 2 then ifnull(meb.entry_quantity,0)
+                                                                else -1*ifnull(meb.entry_quantity,0)
+                                                                end
+                                                        end
+                                                ) as entry_quantity,
+                                                sum(
+                                                        case
+                                                        when pim.docstatus < 2 then ifnull(meb.entry_amount,0)
+                                                        else -1*ifnull(meb.entry_amount,0)
+                                                        end
+                                                ) as entry_amount
+                                        from  `tabProject Invoice MB` as pim, `tabMB Entry BOQ` meb
+                                        where pim.parent        = '{1}'
+                                        and   pim.is_selected   = 1
+                                        and   meb.parent        = pim.entry_name
+                                        and   meb.is_selected   = 1
+                                        group by meb.boq_item_name
+                                        """.format(self.boq_type, self.name), as_dict=1)
+
+                        for item in boq_list:
+                                frappe.db.sql("""
+                                        update `tabBOQ Item`
+                                        set
+                                                claimed_quantity = ifnull(claimed_quantity,0)+ifnull({1},0),
+                                                booked_quantity  = ifnull(booked_quantity,0)-ifnull({1},0),
+                                                claimed_amount   = ifnull(claimed_amount,0)+ifnull({2},0),
+                                                booked_amount    = ifnull(booked_amount,0)-ifnull({2},0)
+                                        where name = '{0}'
+                                """.format(item.boq_item_name, flt(item.entry_quantity), flt(item.entry_amount)))
+                        
         def update_boq(self):
-                # Updating balance in `tabBOQ Item`
-                gtot_invoice_amount = 0
-                
-                for item in self.project_invoice_boq:                        
-                        if flt(item.invoice_amount) > 0 and item.is_selected:
-                                tot_invoice_quantity = 0
-                                tot_invoice_amount   = 0
-                                
-                                bi = frappe.db.sql("""
-                                        select sum(ifnull(invoice_quantity,0)) as tot_invoice_quantity,
-                                                sum(ifnull(invoice_amount,0)) as tot_invoice_amount
-                                        from `tabProject Invoice BOQ`
-                                        where boq_item_name = %s
-                                        and name <> %s
-                                        and docstatus = 1
-                                        and is_selected = 1
-                                        """, (item.boq_item_name, item.name), as_dict=1)[0]
+                # Updating `tabBOQ`
+                tot_invoice_amount = flt(self.net_invoice_amount) if self.docstatus < 2 else -1*flt(self.net_invoice_amount)
+                tot_price_adj      = flt(self.price_adjustment_amount) if self.docstatus < 2 else -1*flt(self.price_adjustment_amount)
 
-                                tot_invoice_quantity = flt(bi.tot_invoice_quantity) + flt(item.invoice_quantity)
-                                tot_invoice_amount   = flt(bi.tot_invoice_amount) + flt(item.invoice_amount)
-                                gtot_invoice_amount += flt(item.invoice_amount)
-                                        
-                                if tot_invoice_amount:
-                                        if self.docstatus < 2:
-                                                base_item = frappe.get_doc("BOQ Item", item.boq_item_name)
-                                                base_item.db_set('claimed_quantity',flt(tot_invoice_quantity))
-                                                base_item.db_set('claimed_amount',flt(tot_invoice_amount))
-                                                if self.boq_type == "Milestone Based":
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.booked_amount)-flt(tot_invoice_amount)-flt(base_item.received_amount))
-                                                else:
-                                                        base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(base_item.booked_quantity)-flt(tot_invoice_quantity)-flt(base_item.received_quantity))
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.booked_amount)-flt(tot_invoice_amount)-flt(base_item.received_amount))
-                                        else:
-                                                base_item = frappe.get_doc("BOQ Item", item.boq_item_name)
-                                                base_item.db_set('claimed_quantity',flt(bi.tot_invoice_quantity))
-                                                base_item.db_set('claimed_amount',flt(bi.tot_invoice_amount))
-                                                if self.boq_type == "Milestone Based":
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.booked_amount)-flt(bi.tot_invoice_amount))
-                                                else:
-                                                        base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(base_item.booked_quantity)-flt(bi.tot_invoice_quantity))
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.booked_amount)-flt(bi.tot_invoice_amount))
-                                        
-                # Updating balance in `tabBOQ`
-                if gtot_invoice_amount:
-                        bm = frappe.db.sql("""
-                                select sum(ifnull(claimed_amount,0)) as tot_claimed_amount
-                                from `tabBOQ Item`
-                                where parent = %s
-                                """, (self.boq), as_dict=1)[0]
+                if tot_invoice_amount or tot_price_adj:
+                        base_boq = frappe.get_doc("BOQ", self.boq)
+                        base_boq.db_set('claimed_amount', flt(base_boq.claimed_amount)+flt(tot_invoice_amount))
+                        base_boq.db_set('price_adjustment', flt(base_boq.price_adjustment)+flt(tot_price_adj))
+                        base_boq.db_set('balance_amount', flt(base_boq.balance_amount)+flt(tot_price_adj))
 
-                        pi = frappe.db.sql("""
-                                select sum(ifnull(price_adjustment_amount,0)) as tot_price_adjustment_amount,
-                                        sum(ifnull(total_received_amount,0)) as tot_received_amount
-                                from `tabProject Invoice`
-                                where boq = %s
-                                and docstatus = 1
-                                and name <> %s
-                                """, (self.boq, self.name), as_dict=1)[0]
-
-                        if self.docstatus < 2:
-                                base_boq = frappe.get_doc("BOQ", self.boq)
-                                base_boq.db_set('claimed_amount', flt(bm.tot_claimed_amount)+(flt(pi.tot_price_adjustment_amount)+flt(self.price_adjustment_amount)))
-                                base_boq.db_set('received_amount', flt(pi.tot_received_amount)+flt(self.total_received_amount))
-                                base_boq.db_set('price_adjustment', flt(pi.tot_price_adjustment_amount)+flt(self.price_adjustment_amount))
-                                base_boq.db_set('balance_amount', flt(base_boq.total_amount)+(flt(pi.tot_price_adjustment_amount)+flt(self.price_adjustment_amount))-(flt(pi.tot_received_amount)+flt(self.total_received_amount)))
-                        else:
-                                base_boq = frappe.get_doc("BOQ", self.boq)
-                                base_boq.db_set('claimed_amount', flt(bm.tot_claimed_amount)+flt(pi.tot_price_adjustment_amount))
-                                base_boq.db_set('received_amount', flt(pi.tot_received_amount))
-                                base_boq.db_set('price_adjustment', flt(pi.tot_price_adjustment_amount))
-                                base_boq.db_set('balance_amount', flt(base_boq.total_amount)+flt(pi.tot_price_adjustment_amount)-flt(pi.tot_received_amount))
-                
-        def update_mb(self):
-                # Updating `tabBOQ Item`
-                boq = frappe.db.sql("""
-                                select
-                                        meb.boq_item_name,
-                                        sum(
-                                                case
-                                                        when pim.docstatus = 2 then -1*ifnull(meb.entry_quantity,0)
-                                                        else ifnull(meb.entry_quantity,0)
-                                                end
-                                        ) as entry_quantity,
-                                        sum(
-                                                case
-                                                        when pim.docstatus = 2 then -1*ifnull(meb.entry_amount,0)
-                                                        else ifnull(meb.entry_amount,0)
-                                                end
-                                        ) as entry_amount
-                                from  `tabProject Invoice MB` as pim, `tabMB Entry BOQ` meb
-                                where pim.parent        = '{0}'
-                                and   pim.is_selected   = 1
-                                and   meb.parent        = pim.entry_name
-                                and   meb.is_selected   = 1
-                                group by meb.boq_item_name
-                        """.format(self.name), as_dict=1)
-
-                for item in boq:
-                        frappe.db.sql("""
-                                update `tabBOQ Item`
-                                set
-                                        claimed_quantity = ifnull(claimed_quantity,0)+ifnull(%(entry_quantity)f,0),
-                                        booked_quantity  = ifnull(booked_quantity,0)-ifnull(%(entry_quantity)f,0),
-                                        claimed_amount   = ifnull(claimed_amount,0)+ifnull(%(entry_amount)f,0),
-                                        booked_amount    = ifnull(booked_amount,0)-ifnull(%(entry_amount)f,0)
-                                where name = '{0}'
-                        """.format(item.boq_item_name)%{'entry_quantity': flt(item.entry_quantity), 'entry_amount': flt(item.entry_amount)})
-
+        def update_mb_entries(self):
                 # Updating `tabMB Entry`
                 for mb in self.project_invoice_mb:
-                        entry_amount = flt(mb.entry_amount) if self.docstatus < 2 else -1*flt(mb.entry_amount)
-                        
                         if flt(mb.entry_amount) > 0 and mb.is_selected:
+                                entry_amount = flt(mb.entry_amount) if self.docstatus < 2 else -1*flt(mb.entry_amount)
+                                        
                                 frappe.db.sql("""
                                         update `tabMB Entry`
                                         set
-                                                total_invoice_amount = ifnull(total_invoice_amount,0) + ifnull(%(entry_amount)f,0),
-                                                total_balance_amount = ifnull(total_balance_amount,0) - ifnull(%(entry_amount)f,0),
+                                                total_invoice_amount = ifnull(total_invoice_amount,0) + ifnull({1},0),
+                                                total_balance_amount = ifnull(total_balance_amount,0) - ifnull({1},0),
                                                 status = (case
-                                                                when (ifnull(total_balance_amount,0) - ifnull(%(entry_amount)f,0)) > 0 then 'Uninvoiced'
+                                                                when (ifnull(total_balance_amount,0) - ifnull({1},0)) > 0 then 'Uninvoiced'
                                                                 else 'Invoiced'
                                                           end)
                                         where name = '{0}'
-                                """.format(mb.entry_name)%{'entry_amount': flt(entry_amount)})
+                                        """.format(mb.entry_name, flt(entry_amount)))
+                                        
 
 @frappe.whitelist()
 def get_mb_list(project, boq_name, entry_name):

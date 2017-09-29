@@ -17,6 +17,10 @@ class TravelAuthorization(Document):
 			frappe.throw("Setup Branch in Emplpoyee Information and try again")
 
 		self.validate_travel_dates()
+
+	def on_update(self):
+		self.set_dsa_rate()
+		self.check_double_dates()
 		if frappe.session.user != self.supervisor:
 			if self.document_status == "Rejected":
 				self.db_set("document_status", "")
@@ -24,11 +28,8 @@ class TravelAuthorization(Document):
 		elif self.document_status == "Rejected":
 			self.sendmail(self.employee, "Travel Authorization Rejected" + str(self.name), "Following remarks has been added by the supervisor: \n" + str(self.reason))
 
-	def on_update(self):
-		self.set_dsa_rate()
-		self.check_double_dates()
-
 	def on_submit(self):
+		self.check_double_dates()
 		self.validate_submitter()
 		self.validate_travel_dates()
 		self.check_status()
@@ -155,8 +156,9 @@ class TravelAuthorization(Document):
 			tas = frappe.db.sql("select a.name from `tabTravel Authorization` a, `tabTravel Authorization Item` b where a.employee = %s and a.name != %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date)", (str(self.employee), str(self.name), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)
 			if tas:
 				frappe.throw("The dates in your current Travel Authorization has already been claimed in " + str(tas[0].name))
-						
-
+			las = frappe.db.sql("select name from `tabLeave Application` where docstatus = 1 and employee = %s and (from_date between %s and %s or to_date between %s and %s)", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)					
+			if las:
+				frappe.throw("The dates in your current travel authorization has been used in leave application " + str(las[0].name))
 @frappe.whitelist()
 def make_travel_claim(source_name, target_doc=None): 
 	def update_date(obj, target, source_parent):
