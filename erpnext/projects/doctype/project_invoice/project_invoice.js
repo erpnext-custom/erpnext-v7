@@ -181,8 +181,8 @@ var get_mb_list = function(frm){
 		method: "erpnext.projects.doctype.project_invoice.project_invoice.get_mb_list",
 		args: {
 			"project": frm.doc.project,
-			"boq_name": frm.doc.boq,
-			"entry_name": "dummy"
+			"boq_name": frm.doc.boq ||  "dummy",
+			"entry_name": frm.doc.reference_name || "dummy"
 		},
 		callback: function(r){
 			if(r.message){
