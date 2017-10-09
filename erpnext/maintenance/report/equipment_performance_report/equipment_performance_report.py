@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe import _
+from frappe import _, json
 from frappe.utils import flt, cint
 from frappe.utils import flt, cint,add_days, cstr, flt, getdate, nowdate, rounded, date_diff
 def execute(filters=None):
@@ -11,8 +11,6 @@ def execute(filters=None):
 	data = get_data(filters)
 	return columns, data
 
-#def get_data(filters):
-        #values = []
 def get_conditions(filters):
 	branch = consumption_date = rate_date = jc_date = insurance_date = rev_date = tc_date = operator_date = le_date = ss_date= ""
 	if filters.get("branch"):
@@ -27,8 +25,9 @@ def get_conditions(filters):
 		le_date		 = get_dates(filters, "le", "encashed_date")
 		ss_date		 = get_dates(filters, "ss", "start_date", "ifnull(end_date,curdate())")
 		rev_date	 = get_dates(filters, "revn", "ci.posting_date")
+		bench_date       = get_dates(filters, "benchmark", "hi.from_date", "hi.to_date")
 
-	return branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, operator_date, tc_date, le_date, ss_date
+	return branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date
 
 def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	cond1 = ""
@@ -38,7 +37,7 @@ def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 		cond1 = ("{0} between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'").format(from_date_column)
 
 	if to_date_column:
-		if module in ("op","ss"):
+		if module in ("op","ss", "benchmark"):
 			cond2 = str(" or {0} between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'").format(to_date_column)
 		else:
 			cond2 = str("and {0} between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'").format(to_date_column)
@@ -46,19 +45,19 @@ def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	return "({0} {1})".format(cond1, cond2)
 
 def get_data(filters):
-	branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, operator_date, tc_date, le_date, ss_date =  get_conditions(filters)
+	branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date =  get_conditions(filters)
 	data = []
 	branch_cond = " where branch = '{0}'".format(branch) if branch else ""
 
 	equipments = frappe.db.sql("""
-                                select name, branch, equipment_number, equipment_type
+                                select name, branch, equipment_number, equipment_type, equipment_model
                                 from `tabEquipment`
 				{0}
 				order by branch, name
                         """.format(branch_cond), as_dict=1)
-	frappe.msgprint("{0}".format(equipments))
+	#frappe.msgprint("{0}".format(equipments))
     	for eq in equipments:
-		frappe.msgprint("{0}".format(eq))
+		#frappe.msgprint("{0}".format(eq.equipment_type))
                 # `tabVehicle Logbook`
         	vl = frappe.db.sql("""
                         	select sum(ifnull(consumption,0)) as consumption
@@ -87,7 +86,7 @@ def get_data(filters):
                             	and   docstatus = 1
 				and   {1}
                     """.format(eq.name,jc_date), as_dict=1)[0]
-
+	
 		#Insurance
 		ins = frappe.db.sql("""
 			 	select sum(ifnull(id.insured_amount,0)) as insurance
@@ -96,7 +95,7 @@ def get_data(filters):
 				and   ir.docstatus = 1
 				and   {1}
 			 """.format(eq.name, insurance_date), as_dict=1)[0]
-
+	
 		revn = frappe.db.sql("""
 			 	 select sum(ifnull(id.total_amount, 0)) as rev from `tabHire Invoice Details` id, `tabHire Charge Invoice` ci
 			 	 where ci.name = id.parent
@@ -104,8 +103,20 @@ def get_data(filters):
 			 	 and {1}
 			 """.format(eq.name, rev_date), as_dict=1)[0]
 
-
-		#v1.append(	#frappe.msgprint(values)
+		 #benchmar
+                benchmark  = frappe.db.sql("""
+                               select ifnull(group_concat(round(hi.rate_fuel) separator '/'),0) as rat, ifnull(group_concat(hi.perf_bench separator '/'),0) bn, 
+                               ifnull(sum(hi.rate_fuel*hi.perf_bench),0) as su 
+                               from  `tabHire Charge Item` hi, `tabHire Charge Parameter` hp
+                               where hi.parent = hp.name 
+			       and hp.equipment_type = '{0}'
+			       and hp.equipment_model = '{1}'
+                               and {2}
+                       """.format(eq.equipment_type, eq.equipment_model,  bench_date), as_dict=1)[0]
+		#frappe.msgprint("rat:{0}".format(benchmark.rat))
+		#frappe.msgprint("rat:{0}".format(benchmark.bn))
+		
+		#frappe.msgprint("{0}".format(benchmark.rat))
 		c_operator = frappe.db.sql("""
 				select operator, start_date, end_date
 				from `tabEquipment Operator` eo
@@ -114,13 +125,14 @@ def get_data(filters):
 				and   {1}
 			""".format(eq.name, operator_date), as_dict=1)
 
-		#frappe.msgprint(c_operator)
+		#frappe.msgprint(benchmark)
 		travel_claim = 0.0
 		e_amount     = 0.0
 		gross_pay    = 0.0
 		total_sal    = 0.0
 		total_exp    = 0.0
 		total_rev    = 0.0
+		bench 	     = 0.0
 		for co in c_operator:
 			tc = frappe.db.sql("""
 				select sum(ifnull(tc.total_claim_amount,0)) as travel_claim
@@ -129,9 +141,10 @@ def get_data(filters):
 				and   tc.docstatus = 1
 				and   {1}
 			""".format(co.operator, tc_date), as_dict=1)[0]
+			
+			#frappe.msgprint("{0}".format(tc.travel_claim))
+			#Leave Encashment Aomun
 
-
-			#Leave Encashment Aomunt
 			lea = frappe.db.sql("""
 					select sum(ifnull(le.encashment_amount,0)) as e_amount
 					from `tabLeave Encashment` le
@@ -140,14 +153,6 @@ def get_data(filters):
 					and   {1}
 				""".format(co.operator, le_date), as_dict=1)[0]
 
-			#gross_pay = (sum(gross_pay)/total_payment_days)*total_worked_days)
-			'''ss = frappe.db.sql("""
-				     	select sum(ifnull(gross_pay,0)) as gross_pay
-				     	from `tabSalary Slip` ss
-					where ss.employee = '{0}'
-				     	and ss.docstatus = 1
-					and {1}
-			       """.format(co.operator, ss_date),  as_dict=1)[0]'''
 			cem = frappe.db.sql("""
 			                select employee, gross_pay, start_date, end_date
                     			from `tabSalary Slip` ss 
@@ -155,7 +160,7 @@ def get_data(filters):
                    			and docstatus = 1
                     			and {1}
            		      """.format(co.operator, ss_date),  as_dict=1)
-
+			
 			if cem:
 				for e in cem:
 					total_days = flt(date_diff(e.end_date, e.start_date) + 1)
@@ -165,9 +170,9 @@ def get_data(filters):
 						pass
 					elif co.end_date and e.start_date > co.start_date and e.end_date < co.end_date:
 						total_sal += flt(e.gross_pay)
-						frappe.msgprint("A")
+					#	frappe.msgprint("A")
 					elif co.end_date and e.start_date <= co.start_date and e.end_date >= co.end_date:
-						frappe.msgprint("B")
+					#	frappe.msgprint("B")
 						days = date_diff(co.end_date, co.start_date) + 1
 						total_sal += (flt(e.gross_pay) * days ) / total_days
 					elif co.end_date and e.start_date > co.start_date and e.end_date > co.end_date:
@@ -182,24 +187,27 @@ def get_data(filters):
 						days = date_diff(e.end_date, co.start_date) + 1
 						total_sal += (flt(e.gross_pay) * days ) / total_days
 					else:
-						pass
-					frappe.msgprint(total_sal)									
+						pass									
 			travel_claim += flt(tc.travel_claim)
 			e_amount     += flt(lea.e_amount)
 			gross_pay    += flt(total_sal)
 			total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
 			total_rev    = flt(revn.rev)
-		#frappe.msgprint("{0}".format(tc))
-
+		bench        = str(benchmark.rat)
+		#bench	     = frappe.utils.data.cint (benchmark.rat)
 		data.append((	eq.branch,
 				eq.name,
 				eq.equipment_number,
 				eq.equipment_type,
+				eq.equipment_model,
 				total_exp,
 				total_rev,
-				total_rev-total_exp
+				flt(total_rev-total_exp),
+				bench,
+				str(benchmark.bn),
+				flt(benchmark.su),
 			))
-	#frappe.msgprint(str(equipments))
+#	frappe.msgprint(type(bench))
     	return tuple(data)
 #       return tuple()
 
@@ -209,9 +217,14 @@ def get_columns(filters):
                 ("ID") + ":Link/Equipment:120",
 		("Registration No") + ":Data:120",
 		("Equipment Type") + ":Data:120",
+		("Equipment Model") + ":Data:120",
 		("Total Expense") + ":Currency:120",
 		("Total Revenue") + ":Currency:120",
-		("Remarks") + ":Currency:120"
+		("Remarks") + ":Currency:120",
+		("Rate") + ":Data:120",
+		("Bench") + ":Data:120",
+		("Benchmark Total") + ":Currency:120"
+
 	]
 	return cols
 

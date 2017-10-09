@@ -47,7 +47,7 @@ def get_data(filters):
                 and exists(select 1
                                 from `tabSalary Component` sc
                                 where sc.name = t2.salary_component
-                                and sc.gl_head = 'Salary Saving Scheme - SMCL')
+                                and sc.name = 'Salary Saving Scheme')
                 """ % conditions, filters)
 		
 	if not data:

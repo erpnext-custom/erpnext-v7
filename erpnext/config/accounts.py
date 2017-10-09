@@ -13,21 +13,6 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Payment Entry",
-					"description": _("Bank/Cash transactions against party or for internal transfer")
-				},
-				{
-					"type": "doctype",
-					"name": "Sales Invoice",
-					"description": _("Bills raised to Customers.")
-				},
-				{
-					"type": "doctype",
-					"name": "Purchase Invoice",
-					"description": _("Bills raised by Suppliers.")
-				},
-				{
-					"type": "doctype",
 					"name": "Direct Payment",
 					"description": _("Direct Payment")
 				},
@@ -35,6 +20,12 @@ def get_data():
 					"type": "doctype",
 					"name": "Period Closing Voucher",
 					"description": _("Close Balance Sheet and book Profit or Loss.")
+				},
+                                {
+					"type": "report",
+					"name": "Voucher Summary",
+					"doctype": "Journal Entry",
+					"is_query_report": True,
 				},
 			]
 		},
@@ -69,6 +60,32 @@ def get_data():
 				},                                
 			]
 		},
+		{
+			"label": _("Sales & Purchase Accounts"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Payment Entry",
+					"description": _("Bank/Cash transactions against party or for internal transfer")
+				},
+				{
+					"type": "doctype",
+					"name": "Sales Invoice",
+					"description": _("Bills raised to Customers.")
+				},
+				{
+					"type": "doctype",
+					"name": "Purchase Invoice",
+					"description": _("Bills raised by Suppliers.")
+				},
+                                {
+					"type": "report",
+					"name": "Payment Entry Summary",
+					"doctype": "Payment Entry",
+					"is_query_report": True,
+				},                                
+			]
+		},                
 		{
 			"label": _("Project Accounts"),
 			"items": [
@@ -252,6 +269,12 @@ def get_data():
 				{
 					"type": "report",
 					"name": "Comparative Statement",
+					"doctype": "GL Entry",
+					"is_query_report": True,
+				},
+                                {
+					"type": "report",
+					"name": "Profitability Analysis",
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				}

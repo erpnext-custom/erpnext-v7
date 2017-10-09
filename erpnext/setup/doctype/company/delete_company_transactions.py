@@ -25,11 +25,11 @@ def delete_company_transactions(company_name):
 		tabDocField where fieldtype='Link' and options='Company'"""):
 		if doctype not in ("Account", "SMS Center"):
 				delete_for_doctype(doctype, company_name)
-		#if doctype not in ("Account", "Cost Center", "Warehouse", "Budget",
-		#	"Party Account", "Employee", "Sales Taxes and Charges Template",
-		#	"Salary Structure",
-		#	"Purchase Taxes and Charges Template", "POS Profile", 'BOM'):
-		#		delete_for_doctype(doctype, company_name)
+		if doctype not in ("Account", "Cost Center", "Warehouse", "Budget",
+			"Party Account", "Employee", "Sales Taxes and Charges Template",
+			"Salary Structure",
+			"Purchase Taxes and Charges Template", "POS Profile", 'BOM'):
+				delete_for_doctype(doctype, company_name)
 
 	for d in ["ToDo","Communication", "Quality Inspection", "Quality Inspection Reading", "Mines Quality Record", "Stock Price Template", "Reappropriation Details", "Supplementary Details", "Cheque Lot", "BRS Entries", "RRCO Receipt Entries", "Training And Development", "Training Fees", "Leave Encashment", "Consumed Budget", "Mining Process", "Mines Quality Record Details", "Break Down Report", "Job Card", "Job Card Item", "Mechanic Assigned", "Equipment", "Equipment Type", "Equipment Accessories", "Equipment Model", "Equipment Hiring Form", "Hiring Request Details", "Hiring Approval Details", "Hire Charge Invoice", "Hire Invoice Details", "Hire Invoice Advance", "POL", "POL Type", "Consumed POL", "POL Issue Report", "POL Issue Report Item", "Direct Payment", "Transfer CoGM", "Committed Budget", "Muster Roll Employee", "MR Attendance", "Overtime Entry", "Travel Authorization", "Travel Claim", "Travel Authorization Item", "Travel Claim Item", 'Asset Category', 'Item', 'Supplier', 'Customer', 'Leave Travel Concession', 'LTC Details', 'Leave Allocation', 'Holiday List', 'Holiday', 'Leave Type', 'Loss Tolerance', 'Consolidated Invoice', 'Consolidated Invoice Item', 'DocShare']:
 		delete_doc(d)

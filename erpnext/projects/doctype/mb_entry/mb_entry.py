@@ -23,6 +23,7 @@ class MBEntry(Document):
                 self.default_validations()
                 
         def on_submit(self):
+                self.validate_boq_items()
                 self.update_boq()
 
         def before_cancel(self):
@@ -46,7 +47,25 @@ class MBEntry(Document):
                                 frappe.throw(_("Row{0}: Entry Amount cannot be greater than Balance Amount").format(rec.idx))
                         elif flt(rec.entry_quantity) < 0 or flt(rec.entry_amount) < 0:
                                 frappe.throw(_("Row{0}: Value cannot be in negative.").format(rec.idx))
-        
+
+        def validate_boq_items(self):
+                for rec in self.mb_entry_boq:
+                        if rec.is_selected == 1 and flt(rec.entry_amount) > 0:
+                                item = frappe.db.sql("""
+                                                select
+                                                        ifnull(balance_quantity,0) as balance_quantity,
+                                                        ifnull(balance_amount,0) as balance_amount
+                                                from
+                                                        `tabBOQ Item`
+                                                where   name = '{0}'
+                                                """.format(rec.boq_item_name), as_dict=1)[0]
+
+                                if flt(rec.entry_quantity) > flt(item.balance_quantity):
+                                        frappe.throw(_('Row{0}: Insufficient Balance. Please refer to BOQ# <a href="#Form/BOQ/{1}">{1}</a>').format(rec.idx, self.boq))
+                                elif flt(rec.entry_amount) > flt(item.balance_amount):
+                                        frappe.throw(_('Row{0}: Insufficient Balance. Please refer to BOQ# <a href="#Form/BOQ/{1}">{1}</a>').format(rec.idx, self.boq))
+                                        
+                        
         def update_boq(self):
                 # Updating `tabBOQ Item`
                 boq_list = frappe.db.sql("""
