@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt, cint
 
 class VehicleLogbook(Document):
 	def validate(self):
@@ -41,13 +41,26 @@ class VehicleLogbook(Document):
 			doc = frappe.get_doc("Equipment Hiring Form", self.ehf_name)
 			doc.db_set("hiring_status", 1)
 		e = frappe.get_doc("Equipment", self.equipment)
+
 		if self.final_km:
+			self.check_repair(cint(e.current_km_reading), cint(self.final_km))
 			e.db_set("current_km_reading", flt(self.final_km))
+
 		if self.final_hour:
+			self.check_repair(cint(e.current_hr_reading), cint(self.final_hour))
 			e.db_set("current_hr_reading", flt(self.final_hour))
 
 	def calculate_balance(self):
 		self.db_set("closing_balance", flt(self.opening_balance) + flt(self.hsd_received) - flt(self.consumption))
+
+	def check_repair(self, start, end):
+		et, em = frappe.db.get_value("Equipment", self.equipment, ["equipment_type", "equipment_model"])
+		interval = frappe.db.get_value("Hire Charge Parameter", {"equipment_type": et, "equipment_model": em}, "interval")
+		if interval:
+			for a in xrange(start, end):
+				if (flt(a) % flt(interval)) == 0:
+					frappe.msgprint("Send Mail")
+					break
 
 @frappe.whitelist()
 def get_opening(equipment, from_date, to_date, pol_type):

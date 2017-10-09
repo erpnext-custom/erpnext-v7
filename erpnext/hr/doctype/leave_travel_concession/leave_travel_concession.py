@@ -24,7 +24,7 @@ class LeaveTravelConcession(Document):
 		self.post_journal_entry(cc_amount)
 
 	def validate_duplicate(self):
-		doc = frappe.db.sql("select name from `tabLeave Travel Concession` where docstatus != 2 and fiscal_year = \'"+str(self.fiscal_year)+"\'")		
+		doc = frappe.db.sql("select name from `tabLeave Travel Concession` where docstatus != 2 and fiscal_year = \'"+str(self.fiscal_year)+"\' and name != \'"+str(self.name)+"\'" )		
 		if doc:
 			frappe.throw("Can not create multiple LTC for the same year")
 

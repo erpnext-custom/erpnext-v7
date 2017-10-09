@@ -113,9 +113,18 @@ def get_data(filters):
 			       and hp.equipment_model = '{1}'
                                and {2}
                        """.format(eq.equipment_type, eq.equipment_model,  bench_date), as_dict=1)[0]
+
+		# % Utility based on existance of target and revenue
+		'''if benchmark.su != 0:
+                                util_percent = 100*total_rev/benchmark.su	
+                elif benchmark.su == 0  and revn.rev > 0.0:
+                                util_percent = 100
+                elif benchmark.su == 0 and revn.rev <= 0.0:
+                                util_percent = 0.0
+                else:
+                                pass'''
 		#frappe.msgprint("rat:{0}".format(benchmark.rat))
 		#frappe.msgprint("rat:{0}".format(benchmark.bn))
-		
 		#frappe.msgprint("{0}".format(benchmark.rat))
 		c_operator = frappe.db.sql("""
 				select operator, start_date, end_date
@@ -194,6 +203,17 @@ def get_data(filters):
 			total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
 			total_rev    = flt(revn.rev)
 		bench        = str(benchmark.rat)
+		if benchmark.su != 0:
+				util_percent = 100*total_rev/benchmark.su
+
+		elif benchmark.su == 0  and revn.rev > 0.0:
+				util_percent = 100
+		elif benchmark.su == 0 and revn.rev < 0.0:
+				util_percent = 0.0
+		else:
+				pass
+		frappe.msgprint("{0}".format(eq.equipment_type))
+		frappe.msgprint("{0}".format(util_percent))
 		#bench	     = frappe.utils.data.cint (benchmark.rat)
 		data.append((	eq.branch,
 				eq.name,
@@ -206,6 +226,7 @@ def get_data(filters):
 				bench,
 				str(benchmark.bn),
 				flt(benchmark.su),
+				round(flt(util_percent),2)
 			))
 #	frappe.msgprint(type(bench))
     	return tuple(data)
@@ -220,10 +241,11 @@ def get_columns(filters):
 		("Equipment Model") + ":Data:120",
 		("Total Expense") + ":Currency:120",
 		("Total Revenue") + ":Currency:120",
-		("Remarks") + ":Currency:120",
-		("Rate") + ":Data:120",
-		("Bench") + ":Data:120",
-		("Benchmark Total") + ":Currency:120"
+		("R-E") + ":Currency:120",
+		("HC Rate/Hour") + ":Data:120",
+		("Utility/Month") + ":Data:120",
+		("Total HC Amount") + ":Currency:120",
+		("Utility %") + ":Data:120"
 
 	]
 	return cols
