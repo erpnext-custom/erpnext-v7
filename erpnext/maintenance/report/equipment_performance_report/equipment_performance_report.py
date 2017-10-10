@@ -57,7 +57,7 @@ def get_data(filters):
                         """.format(branch_cond), as_dict=1)
 	#frappe.msgprint("{0}".format(equipments))
     	for eq in equipments:
-		#frappe.msgprint("{0}".format(eq.equipment_type))
+		#frappe.msgprint("{0}".format(eq))
                 # `tabVehicle Logbook`
         	vl = frappe.db.sql("""
                         	select sum(ifnull(consumption,0)) as consumption
@@ -103,24 +103,6 @@ def get_data(filters):
 			 	 and {1}
 			 """.format(eq.name, rev_date), as_dict=1)[0]
 
-		 #benchmar
-                benchmark  = frappe.db.sql("""
-                               select ifnull(group_concat(round(hi.rate_fuel) separator '/'),0) as rat, ifnull(group_concat(hi.perf_bench separator '/'),0) bn, 
-                               ifnull(sum(hi.rate_fuel*hi.perf_bench),0) as su, hi.from_date as fr, hi.to_date as t, hi.to_date-hi.from_date as dif
-                               from  `tabHire Charge Item` hi, `tabHire Charge Parameter` hp
-                               where hi.parent = hp.name 
-			       and hp.equipment_type = '{0}'
-			       and hp.equipment_model = '{1}'
-                               and {2}
-                       """.format(eq.equipment_type, eq.equipment_model,  bench_date), as_dict=1)[0]
-		from_date  = flt(filters.get("from_date")) 
-		to_date    = flt(filters.get("to_date"))
-		bench_date = flt(date_diff(benchmark.t, benchmark.fr)+1)
-		target     = 0.0
-	    	
-		#frappe.msgprint("from:{0}".format(benchmark.fr))
-		#frappe.msgprint("to:{0}".format(benchmark.t))
-		#frappe.msgprint("{0}".format(benchmark.dif))
 		c_operator = frappe.db.sql("""
 				select operator, start_date, end_date
 				from `tabEquipment Operator` eo
@@ -129,7 +111,7 @@ def get_data(filters):
 				and   {1}
 			""".format(eq.name, operator_date), as_dict=1)
 
-		#frappe.msgprint(benchmark)
+		#frappe.msgprint(c_operator)
 		travel_claim = 0.0
 		e_amount     = 0.0
 		gross_pay    = 0.0
@@ -146,7 +128,6 @@ def get_data(filters):
 				and   {1}
 			""".format(co.operator, tc_date), as_dict=1)[0]
 			
-			#frappe.msgprint("{0}".format(tc.travel_claim))
 			#Leave Encashment Aomun
 
 			lea = frappe.db.sql("""
@@ -198,51 +179,75 @@ def get_data(filters):
 			gross_pay    += flt(total_sal)
 			total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
 			total_rev    = flt(revn.rev)
-		bench        = str(benchmark.rat)
+		pro_target = 0.0
+		 #benchmar
+                benchmark  = frappe.db.sql("""
+                               select hi.rate_fuel as rat, hi.perf_bench as bn, 
+                               hi.from_date as fr, hi.to_date as t
+                               from  `tabHire Charge Item` hi, `tabHire Charge Parameter` hp
+                               where hi.parent = hp.name 
+			       and hp.equipment_type = '{0}'
+			       and hp.equipment_model = '{1}'
+                               and {2}
+                       """.format(eq.equipment_type, eq.equipment_model,  bench_date), as_dict=1)
+		rate = []
+		bench = []
+		total_hc = 0
+		for a in benchmark:
+			frappe.msgprint("hi{0}".format(type(a.t)))
+			bench_date = date_diff(a.t, a.fr) + 1 
+			if a.fr >= getdate(filters.from_date) and (not a.t or a.t <= getdate(filters.to_date)):
+				rate.append(a.rat) 
+				bench.append(a.bn)
+				total_hc = [i*j for i,j in zip(rate,bench)]
+				total_hc += total_hc 
 
-		if from_date <flt(benchmark.fr) < to_date and flt(benchmark.t)>to_date:
-			cal_date = date_diff(least(to_date, benchmark.t) - greatest(from_date,benchmark.fr)+1)
-	    		target = cal_date*su/bench_date
-			frappe.msgprint("a")	
-	   	if from_date<flt(benchmark.t) < to_date and flt(benchmark.t) >to_date:
-	   		cal_date = date_diff(least(from_date, benchmark.fr)+1)- date_diff(least(to_date, benchmark.t)+1)
-			target   = cal_date*su/bech_date
-			frappe.msgprint("b")	
-	   	if from_date< flt(benchmark.fr) and flt(benchmark.t) < to_date:
-			target = su
-			frappe.msgprint("c")
-		frappe.msgprint("target : {0}".format(target))
-		# utility % based on existance of revenue and benchmark target
-		if benchmark.su != 0:
-				util_percent = 100*total_rev/benchmark.su
+			if a.fr >= getdate(filters.from_date) and (a.t > getdate(filters.to_date)):
+				cal_date = getdate(filters.to_date) - min(getdate(filters.to_date, a.fr))+1
+				total_hc += cal_date*total_hc/bech_date
 
-		elif benchmark.su == 0  and revn.rev > 0.0:
-				util_percent = 100
-		elif benchmark.su == 0 and revn.rev < 0.0:
-				util_percent = 0.0
-		else:
-				pass
+			if a.t > getdate(filters.from_date) and (a.fr < getdate(filters.from_date)):
+				cal_date = a.fr - getdate(filters.from_date) +1
+				total_hc += cal_date*total_hc/bench_date 
+
+		#frappe.msgprint(str(list(set(rate))))
+			
+		if not benchmark:
+			benchmark = {"rat": 0, "bn": 0, "fr": '', "t": ''}
+
+                # utility % based on existance of revenue and benchmark target'''
+	
+                if total_hc != 0:
+                        util_percent = 100*total_rev/total_hc
+
+                elif total_hc == 0  and revn.rev > 0.0:
+                        util_percent = 100
+
+                elif total_hc == 0 and revn.rev < 0.0:
+                        util_percent = 0.0
+                else:
+                        pass
+
 		data.append((	eq.branch,
-				eq.name,
-				eq.equipment_number,
-				eq.equipment_type,
-				eq.equipment_model,
-				total_exp,
-				total_rev,
-				flt(total_rev-total_exp),
-				bench,
-				str(benchmark.bn),
-				flt(benchmark.su),
-				round(flt(util_percent),2)
-			))
-#	frappe.msgprint(type(bench))
-    	return tuple(data)
-#       return tuple()
+			eq.name,
+			eq.equipment_number,
+			eq.equipment_type,
+			eq.equipment_model,
+			total_exp,
+			total_rev,
+			flt(total_rev-total_exp),
+			bench,
+			rate,
+			flt(total_hc),
+			round(flt(util_percent),2)
+		))
+	#frappe.msgprint(type(bench))
+	return tuple(data)
 
 def get_columns(filters):
 	cols = [
 		("Branch") + ":Data:120",
-                ("ID") + ":Link/Equipment:120",
+		("ID") + ":Link/Equipment:120",
 		("Registration No") + ":Data:120",
 		("Equipment Type") + ":Data:120",
 		("Equipment Model") + ":Data:120",
@@ -256,4 +261,3 @@ def get_columns(filters):
 
 	]
 	return cols
-

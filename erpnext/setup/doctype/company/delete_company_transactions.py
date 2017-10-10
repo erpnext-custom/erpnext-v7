@@ -23,7 +23,7 @@ def delete_company_transactions(company_name):
 	if frappe.session.user != doc.owner:
 		frappe.throw(_("Transactions can only be deleted by the creator of the Company"), 
 			frappe.PermissionError)
-		
+
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         # Following code commented by SHIV on 09/10/2017
         '''
@@ -60,18 +60,61 @@ def delete_company_transactions(company_name):
                         order by module, name
                         """)        
         for doctype in dt_list:
-                if doctype not in ("Blood Group", "Department", "Designation", "Division",
-                        "Dzongkhags", "Employment Type", "Expense Claim Type", "Financial Institution",
-                        "Financial Schemes", "Gewogs", "HR Settings", "Leave Encashment Settings",
-                        "Leave Type", "Salary Component", "Salary Tax", "Salary Tax Item", "Section",
-                        "Type of Training", "Villages", "Activity Type", "Industry Type"):
+                if doctype not in ("Fiscal Year", "Fiscal Year Company", "Blood Group", "Department",
+                        "Designation", "Division", "Dzongkhags", "Employee Group", "Employment Type",
+                        "Expense Claim Type", "Financial Institution", "Financial Schemes", "Gewogs",
+                        "HR Settings", "Leave Encashment Settings", "Leave Type", "Salary Component",
+                        "Salary Tax", "Salary Tax Item", "Section", "Type of Training", "Villages",
+                        "Activity Type", "Industry Type"):
 
-                        frappe.msgprint(doctype)
-                        #delete_for_doctype(doctype, company_name)
+                        delete_for_doctype_all(doctype)
+                        
+        clear_notifications()
         # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-        
 
-def delete_for_doctype_x(doctype, company_name):
+# Following function created by SHIV on 09/10/2017        
+def delete_for_doctype_all(doctype):
+	meta = frappe.get_meta(doctype)
+
+	if not meta.issingle:
+		if not meta.istable:
+			# delete children
+			for df in meta.get_table_fields():
+				frappe.db.sql("""delete from `tab{0}`""".format(df.options))
+
+		# delete parent
+		frappe.db.sql("""delete from `tab{0}` """.format(doctype))
+
+		# reset series
+		naming_series = meta.get_field("naming_series")
+		if naming_series and naming_series.options:
+			prefixes = sorted(naming_series.options.split("\n"), lambda a, b: len(b) - len(a))
+
+			for prefix in prefixes:
+				if prefix:
+					last = frappe.db.sql("""select max(name) from `tab{0}`
+						where name like %s""".format(doctype), prefix + "%")
+					if last and last[0][0]:
+						last = cint(last[0][0].replace(prefix, ""))
+					else:
+						last = 0
+
+					frappe.db.sql("""update tabSeries set current = %s
+						where name=%s""", (last, prefix))
+
+		# reset autoname
+		frappe.db.sql("""
+                        delete
+                          from `tabSeries`
+                         where exists(select 1
+                                        from `tabDocType` as dt
+                                       where dt.name = '{0}'
+                                         and dt.autoname like '%#%'
+                                         and `tabSeries`.name like concat(substring_index(dt.autoname,'.',1),'%')
+                                      )
+                        """.format(doctype))
+                        
+def delete_for_doctype(doctype, company_name):
 	meta = frappe.get_meta(doctype)
 	company_fieldname = meta.get("fields", {"fieldtype": "Link",
 		"options": "Company"})[0].fieldname

@@ -58,7 +58,7 @@ def get_data(filters):
                         """.format(branch_cond), as_dict=1)
 
     	for eq in equipments:
-		#frappe.msgprint("{0}".format(eq))
+		#:frappe.msgprint("{0}".format(eq))
                 # `tabVehicle Logbook`
         	vl = frappe.db.sql("""
                         	select sum(ifnull(consumption,0)) as consumption
@@ -161,25 +161,25 @@ def get_data(filters):
 						pass
 					elif co.end_date and e.start_date > co.start_date and e.end_date < co.end_date:
 						total_sal += flt(e.gross_pay)
-						frappe.msgprint("A")
+					#	frappe.msgprint("A")
 					elif co.end_date and e.start_date <= co.start_date and e.end_date >= co.end_date:
-						frappe.msgprint("B")
+					#	frappe.msgprint("B")
 						days = date_diff(co.end_date, co.start_date) + 1
 						total_sal += (flt(e.gross_pay) * days ) / total_days
 					elif co.end_date and e.start_date > co.start_date and e.end_date > co.end_date:
 						days = date_diff(co.end_date, e.start_date) + 1
 						total_sal += (flt(e.gross_pay) * days ) / total_days
-						frappe.msgprint("C")
+					#	frappe.msgprint("C")
 					elif co.end_date and e.start_date < co.start_date and e.end_date < co.end_date:
 						days = date_diff(e.end_date, co.start_date) + 1
 						total_sal += (flt(e.gross_pay) * days ) / total_days
-						frappe.msgprint("D")
+					#	frappe.msgprint("D")
 					elif not co.end_date and e.start_date >= co.start_date:
 						total_sal += flt(e.gross_pay)
-						frappe.msgprint("E")
+					#	frappe.msgprint("E")
 					elif not co.end_date and e.start_date < co.start_date:
 						days = date_diff(e.end_date, co.start_date) + 1
-						frappe.msgprint("F")
+					#	frappe.msgprint("F")
 						total_sal += (flt(e.gross_pay) * days ) / total_days
 					else:
 						pass

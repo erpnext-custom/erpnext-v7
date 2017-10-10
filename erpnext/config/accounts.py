@@ -254,12 +254,12 @@ def get_data():
 					"doctype": "GL Entry",
 					"is_query_report": True
 				},
-				#{
-				#	"type": "report",
-				#	"name": "Statement of Cash Flow",
-				#	"doctype": "GL Entry",
-				#	"is_query_report": True
-				#},
+				{
+					"type": "report",
+					"name": "Statement of Cash Flow",
+					"doctype": "GL Entry",
+					"is_query_report": True
+				},
 				{
 					"type": "report",
 					"name": "Statement of Comprehensive Income",

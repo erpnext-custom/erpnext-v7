@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.utils import getdate
 
 class HireChargeParameter(Document):
 	def before_save(self):
@@ -23,5 +24,7 @@ class HireChargeParameter(Document):
 			self.db_set("kph", self.items[len(self.items) - 1].yard_distance)	
 			self.db_set("benchmark", self.items[len(self.items) - 1].perf_bench)	
 			self.db_set("interval", self.items[len(self.items) - 1].main_int)
+		if len(self.items) > 1:
+			for a in range(len(self.items)-1):
+				self.items[a].to_date = frappe.utils.data.add_days(getdate(self.items[a + 1].from_date), -1)
 
-	

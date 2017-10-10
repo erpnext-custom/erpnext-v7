@@ -151,10 +151,13 @@ class Timesheet(Document):
                 # Setting `Timesheet` Defaults
                 if self.task:
                         base_task = frappe.get_doc("Task", self.task)
-                        self.task_name = base_task.subject
-                        self.work_quantity = base_task.work_quantity
-                        self.exp_start_date = base_task.exp_start_date
-                        self.exp_end_date = base_task.exp_end_date
+                        
+                        self.task_name          = base_task.subject
+                        self.work_quantity      = base_task.work_quantity
+                        self.exp_start_date     = base_task.exp_start_date
+                        self.exp_end_date       = base_task.exp_end_date
+                        self.target_uom         = base_task.target_uom
+                        self.target_quantity    = base_task.target_quantity
 
                         self.target_quantity_complete = 0.0
                         for item in self.time_logs:
@@ -178,7 +181,7 @@ class Timesheet(Document):
                         base_project = frappe.get_doc("Project",self.project)
                         base_project.update_task_progress()
                         base_project.update_project_progress()
-                        #base_project.update_group_tasks()
+                        base_project.update_group_tasks()
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++				                        
                         
 	def set_status(self):

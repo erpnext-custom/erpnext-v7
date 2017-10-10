@@ -91,7 +91,7 @@ class Project(Document):
 		self.sync_activity_tasks()
 		self.update_task_progress()
 		self.update_project_progress()
-		# self.update_group_tasks()
+		self.update_group_tasks()
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
@@ -210,10 +210,11 @@ class Project(Document):
 
                         frappe.db.sql("""
                                         update `tabTask`
-                                        set exp_start_date = '{0}',
-                                                exp_end_date = '{1}',
-                                                work_quantity = {4},
-                                                work_quantity_complete = {5}
+                                        set
+                                                grp_exp_start_date = '{0}',
+                                                grp_exp_end_date = '{1}',
+                                                grp_work_quantity = {4},
+                                                grp_work_quantity_complete = {5}
                                         where project = '{2}'
                                         and name = '{3}'
                                 """.format(values.min_start_date, values.max_end_date, self.name, item.name, flt(values.tot_work_quantity), flt(values.tot_work_quantity_complete)))
@@ -343,7 +344,11 @@ class Project(Document):
                                 "target_uom": task.target_uom,
                                 "target_quantity": task.target_quantity,
                                 "target_quantity_complete": task.target_quantity_complete,
-				"task_id": task.name
+				"task_id": task.name,
+                                "grp_exp_start_date": task.grp_exp_start_date,
+                                "grp_exp_end_date": task.grp_exp_end_date,
+                                "grp_work_quantity": task.grp_work_quantity,
+                                "grp_work_quantity_complete": task.grp_work_quantity_complete
 			})
 
 	def get_activity_tasks(self):
@@ -476,7 +481,11 @@ class Project(Document):
 				"exp_end_date": t.end_date,
 				"description": t.description,
                                 "target_quantity_complete": t.target_quantity_complete,
-                                "task_idx": task_idx
+                                "task_idx": task_idx,
+                                "grp_exp_start_date": t.grp_exp_start_date,
+                                "grp_exp_end_date": t.grp_exp_end_date,
+                                "grp_work_quantity": t.grp_work_quantity,
+                                "grp_work_quantity_complete": t.grp_work_quantity_complete
 			})
 
 			task.flags.ignore_links = True
