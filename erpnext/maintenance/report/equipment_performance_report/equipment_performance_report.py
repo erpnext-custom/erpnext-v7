@@ -106,26 +106,21 @@ def get_data(filters):
 		 #benchmar
                 benchmark  = frappe.db.sql("""
                                select ifnull(group_concat(round(hi.rate_fuel) separator '/'),0) as rat, ifnull(group_concat(hi.perf_bench separator '/'),0) bn, 
-                               ifnull(sum(hi.rate_fuel*hi.perf_bench),0) as su 
+                               ifnull(sum(hi.rate_fuel*hi.perf_bench),0) as su, hi.from_date as fr, hi.to_date as t, hi.to_date-hi.from_date as dif
                                from  `tabHire Charge Item` hi, `tabHire Charge Parameter` hp
                                where hi.parent = hp.name 
 			       and hp.equipment_type = '{0}'
 			       and hp.equipment_model = '{1}'
                                and {2}
                        """.format(eq.equipment_type, eq.equipment_model,  bench_date), as_dict=1)[0]
-
-		# % Utility based on existance of target and revenue
-		'''if benchmark.su != 0:
-                                util_percent = 100*total_rev/benchmark.su	
-                elif benchmark.su == 0  and revn.rev > 0.0:
-                                util_percent = 100
-                elif benchmark.su == 0 and revn.rev <= 0.0:
-                                util_percent = 0.0
-                else:
-                                pass'''
-		#frappe.msgprint("rat:{0}".format(benchmark.rat))
-		#frappe.msgprint("rat:{0}".format(benchmark.bn))
-		#frappe.msgprint("{0}".format(benchmark.rat))
+		from_date  = flt(filters.get("from_date")) 
+		to_date    = flt(filters.get("to_date"))
+		bench_date = flt(date_diff(benchmark.t, benchmark.fr)+1)
+		target     = 0.0
+	    	
+		#frappe.msgprint("from:{0}".format(benchmark.fr))
+		#frappe.msgprint("to:{0}".format(benchmark.t))
+		#frappe.msgprint("{0}".format(benchmark.dif))
 		c_operator = frappe.db.sql("""
 				select operator, start_date, end_date
 				from `tabEquipment Operator` eo
@@ -196,13 +191,28 @@ def get_data(filters):
 						days = date_diff(e.end_date, co.start_date) + 1
 						total_sal += (flt(e.gross_pay) * days ) / total_days
 					else:
-						pass									
+						pass
+				
 			travel_claim += flt(tc.travel_claim)
 			e_amount     += flt(lea.e_amount)
 			gross_pay    += flt(total_sal)
 			total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
 			total_rev    = flt(revn.rev)
 		bench        = str(benchmark.rat)
+
+		if from_date <flt(benchmark.fr) < to_date and flt(benchmark.t)>to_date:
+			cal_date = date_diff(least(to_date, benchmark.t) - greatest(from_date,benchmark.fr)+1)
+	    		target = cal_date*su/bench_date
+			frappe.msgprint("a")	
+	   	if from_date<flt(benchmark.t) < to_date and flt(benchmark.t) >to_date:
+	   		cal_date = date_diff(least(from_date, benchmark.fr)+1)- date_diff(least(to_date, benchmark.t)+1)
+			target   = cal_date*su/bech_date
+			frappe.msgprint("b")	
+	   	if from_date< flt(benchmark.fr) and flt(benchmark.t) < to_date:
+			target = su
+			frappe.msgprint("c")
+		frappe.msgprint("target : {0}".format(target))
+		# utility % based on existance of revenue and benchmark target
 		if benchmark.su != 0:
 				util_percent = 100*total_rev/benchmark.su
 
@@ -212,9 +222,6 @@ def get_data(filters):
 				util_percent = 0.0
 		else:
 				pass
-		frappe.msgprint("{0}".format(eq.equipment_type))
-		frappe.msgprint("{0}".format(util_percent))
-		#bench	     = frappe.utils.data.cint (benchmark.rat)
 		data.append((	eq.branch,
 				eq.name,
 				eq.equipment_number,

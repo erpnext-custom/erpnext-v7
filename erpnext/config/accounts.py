@@ -559,6 +559,22 @@ def get_data():
 					"doctype": "Purchase Invoice",
 					"is_query_report": True
 				},
+				{
+					"type": "page",
+					"name": "sales-analytics",
+					"label": "Sales Analytics"
+				},
+				{
+					"type": "page",
+					"name": "stock-analytics",
+					"label": "Stock Analytics"
+				},
+				{
+					"type": "report",
+					"name": "Accounts Payable Summary",
+					"doctype": "Purchase Invoice",
+					"is_query_report": True
+				},
 			]
 		},
 	]

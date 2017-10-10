@@ -152,7 +152,12 @@ def get_data():
 					"type": "doctype",
 					"name": "Stock Reconciliation",
 					"description": _("Upload stock balance via csv.")
-				}
+				},
+				{
+					"type": "page",
+					"name": "stock-analytics",
+					"label": "Stock Analytics"
+				},
 			]
 		}
 	]

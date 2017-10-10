@@ -108,6 +108,11 @@ def get_data():
 					"doctype": "Stock Price Template",
 					"is_query_report": True
 				},
+				{
+					"type": "page",
+					"name": "sales-analytics",
+					"label": "Sales Analytics"
+				},
 			]
 		},
 		{

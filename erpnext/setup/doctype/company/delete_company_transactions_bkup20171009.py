@@ -1,12 +1,5 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-2.0		  SHIV		                    09/10/2017         Changing the base logic
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
 
 from __future__ import unicode_literals
 import frappe
@@ -23,21 +16,19 @@ def delete_company_transactions(company_name):
 	if frappe.session.user != doc.owner:
 		frappe.throw(_("Transactions can only be deleted by the creator of the Company"), 
 			frappe.PermissionError)
-		
-        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-        # Following code commented by SHIV on 09/10/2017
-        '''
+
 	delete_bins(company_name)
 	delete_time_sheets(company_name)
 	delete_lead_addresses(company_name)
 
 	for doctype in frappe.db.sql_list("""select parent from
 		tabDocField where fieldtype='Link' and options='Company'"""):
-                
+		if doctype not in ("Account", "SMS Center"):
+				delete_for_doctype(doctype, company_name)
 		if doctype not in ("Account", "Cost Center", "Warehouse", "Budget",
 			"Party Account", "Employee", "Sales Taxes and Charges Template",
 			"Salary Structure",
-			"Purchase Taxes and Charges Template", "POS Profile", 'BOM'):                        
+			"Purchase Taxes and Charges Template", "POS Profile", 'BOM'):
 				delete_for_doctype(doctype, company_name)
 
 	for d in ["ToDo","Communication", "Quality Inspection", "Quality Inspection Reading", "Mines Quality Record", "Stock Price Template", "Reappropriation Details", "Supplementary Details", "Cheque Lot", "BRS Entries", "RRCO Receipt Entries", "Training And Development", "Training Fees", "Leave Encashment", "Consumed Budget", "Mining Process", "Mines Quality Record Details", "Break Down Report", "Job Card", "Job Card Item", "Mechanic Assigned", "Equipment", "Equipment Type", "Equipment Accessories", "Equipment Model", "Equipment Hiring Form", "Hiring Request Details", "Hiring Approval Details", "Hire Charge Invoice", "Hire Invoice Details", "Hire Invoice Advance", "POL", "POL Type", "Consumed POL", "POL Issue Report", "POL Issue Report Item", "Direct Payment", "Transfer CoGM", "Committed Budget", "Muster Roll Employee", "MR Attendance", "Overtime Entry", "Travel Authorization", "Travel Claim", "Travel Authorization Item", "Travel Claim Item", 'Asset Category', 'Item', 'Supplier', 'Customer', 'Leave Travel Concession', 'LTC Details', 'Leave Allocation', 'Holiday List', 'Holiday', 'Leave Type', 'Loss Tolerance', 'Consolidated Invoice', 'Consolidated Invoice Item', 'DocShare']:
@@ -50,28 +41,8 @@ def delete_company_transactions(company_name):
 
 	# Clear notification counts
 	clear_notifications()
-	'''
 
-        # Following code added by SHIV on 09/10/2017
-        dt_list = frappe.db.sql_list("""
-                        select name
-                        from `tabDocType`
-                        where module in ('Accounts','Buying','CRM','HR','Maintenance','Manufacturing','Projects','Schools','Selling','Stock')
-                        order by module, name
-                        """)        
-        for doctype in dt_list:
-                if doctype not in ("Blood Group", "Department", "Designation", "Division",
-                        "Dzongkhags", "Employment Type", "Expense Claim Type", "Financial Institution",
-                        "Financial Schemes", "Gewogs", "HR Settings", "Leave Encashment Settings",
-                        "Leave Type", "Salary Component", "Salary Tax", "Salary Tax Item", "Section",
-                        "Type of Training", "Villages", "Activity Type", "Industry Type"):
-
-                        frappe.msgprint(doctype)
-                        #delete_for_doctype(doctype, company_name)
-        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-        
-
-def delete_for_doctype_x(doctype, company_name):
+def delete_for_doctype(doctype, company_name):
 	meta = frappe.get_meta(doctype)
 	company_fieldname = meta.get("fields", {"fieldtype": "Link",
 		"options": "Company"})[0].fieldname
