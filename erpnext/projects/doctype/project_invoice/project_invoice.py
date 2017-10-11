@@ -21,6 +21,7 @@ class ProjectInvoice(AccountsController):
 	def validate(self):
                 self.set_status()
                 self.default_validations()
+                self.load_invoice_boq()
                 
         def on_submit(self):
                 self.update_boq_item()
@@ -49,7 +50,57 @@ class ProjectInvoice(AccountsController):
                         "1": "Unpaid",
                         "2": "Cancelled"
                 }[str(self.docstatus or 0)]
-                
+
+
+        def load_invoice_boq(self):
+                if self.invoice_type == "MB Based Invoice":
+                        mb_list = ",".join(["'" + i.entry_name + "'" if i.is_selected == 1 else "'x'" for i in self.project_invoice_mb])
+
+                        frappe.msgprint(_("{0}").format(mb_list))
+                        
+                        mb_boq = frappe.db.sql("""
+                                        select boq_item_name, item, uom,
+                                                sum(ifnull(is_group,0))          as is_group,
+                                                sum(ifnull(idx,0))               as idx,
+                                                sum(ifnull(a.original_quantity,0)) as original_quantity,
+                                                sum(ifnull(original_rate,0))     as original_rate,
+                                                sum(ifnull(original_amount,0))   as original_amount,
+                                                sum(ifnull(invoice_quantity,0))  as invoice_quantity,
+                                                sum(ifnull(invoice_rate,0))      as invoice_rate,
+                                                sum(ifnull(invoice_amount,0))    as invoice_amount
+                                        from (
+                                                select
+                                                        bi.name as boq_item_name, bi.item, bi.uom,
+                                                        bi.is_group,
+                                                        bi.idx,
+                                                        bi.quantity       as original_quantity,
+                                                        bi.rate           as original_rate,
+                                                        bi.amount         as original_amount,
+                                                        0                 as invoice_quantity,
+                                                        0                 as invoice_rate,
+                                                        0                 as invoice_amount
+                                                from `tabBOQ Item` as bi
+                                                where parent = '{0}'
+                                                union all
+                                                select
+                                                        mb.boq_item_name, mb.item, mb.uom,
+                                                        0 as is_group,
+                                                        0 as idx,
+                                                        0                 as original_quantity,
+                                                        0                 as original_rate,
+                                                        0                 as original_amount,
+                                                        mb.entry_quantity as invoice_quantity,
+                                                        mb.entry_rate     as invoice_rate,
+                                                        mb.entry_amount   as invoice_amount
+                                                from `tabMB Entry BOQ` as mb
+                                                where parent in ({1})
+                                        ) as a
+                                        group by boq_item_name, item, uom
+                                        order by idx
+                                        """.format(self.boq, mb_list), as_dict=1)
+
+                        frappe.msgprint(_("{0}").format(mb_boq))
+                        
         def default_validations(self):
                 for rec in self.project_invoice_boq:
                         if flt(rec.invoice_quantity) > flt(rec.act_quantity):

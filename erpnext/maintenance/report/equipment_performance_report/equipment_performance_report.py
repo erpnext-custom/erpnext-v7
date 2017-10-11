@@ -194,40 +194,48 @@ def get_data(filters):
 		bench = []
 		total_hc = 0
 		for a in benchmark:
-			frappe.msgprint("hi{0}".format(type(a.t)))
+			ta = 0.0	
 			bench_date = date_diff(a.t, a.fr) + 1 
 			if a.fr >= getdate(filters.from_date) and (not a.t or a.t <= getdate(filters.to_date)):
 				rate.append(a.rat) 
 				bench.append(a.bn)
-				total_hc = [i*j for i,j in zip(rate,bench)]
-				total_hc += total_hc 
-
-			if a.fr >= getdate(filters.from_date) and (a.t > getdate(filters.to_date)):
-				cal_date = getdate(filters.to_date) - min(getdate(filters.to_date, a.fr))+1
-				total_hc += cal_date*total_hc/bech_date
-
-			if a.t > getdate(filters.from_date) and (a.fr < getdate(filters.from_date)):
-				cal_date = a.fr - getdate(filters.from_date) +1
-				total_hc += cal_date*total_hc/bench_date 
-
+				frappe.msgprint("c")		
+				total_hc  += sum([i*j for i,j in zip(rate,bench)])
+			if a.fr >= getdate(filters.from_date) and (a.t and  a.t > getdate(filters.to_date)):
+				rate.append(a.rat)
+                                bench.append(a.bn)
+				ta  += sum([i*j for i,j in zip(rate,bench)])
+				cal_date = flt(getdate(filters.to_date) - a.fr)+1
+				total_hc = cal_date*ta/bench_date
+				frappe.msgprint("c1")
+	
+			if a.t and getdate(filters.to_date) > a.t > getdate(filters.from_date) and  a.fr < getdate(filters.from_date):
+				rate.append(a.rat)
+                                bench.append(a.bn)
+                               	ta  += sum([i*j for i,j in zip(rate,bench)])
+				cal_date = flt(a.t - getdate(filters.from_date)) +1
+				total_hc = cal_date*ta/bench_date 
+				frappe.msgprint("c2")
 		#frappe.msgprint(str(list(set(rate))))
-			
+		frappe.msgprint("{0}".format(total_hc))		
 		if not benchmark:
 			benchmark = {"rat": 0, "bn": 0, "fr": '', "t": ''}
 
                 # utility % based on existance of revenue and benchmark target'''
-	
+
                 if total_hc != 0:
                         util_percent = 100*total_rev/total_hc
 
                 elif total_hc == 0  and revn.rev > 0.0:
                         util_percent = 100
+			#frappe.msgprint("1")
 
                 elif total_hc == 0 and revn.rev < 0.0:
                         util_percent = 0.0
+			#frappe.msgprint("2")
                 else:
                         pass
-
+	
 		data.append((	eq.branch,
 			eq.name,
 			eq.equipment_number,
@@ -236,8 +244,8 @@ def get_data(filters):
 			total_exp,
 			total_rev,
 			flt(total_rev-total_exp),
-			bench,
 			rate,
+			bench,
 			flt(total_hc),
 			round(flt(util_percent),2)
 		))
