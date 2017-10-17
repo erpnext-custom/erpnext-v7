@@ -33,8 +33,11 @@ class Employee(Document):
 			throw(_("Please setup Employee Naming System in Human Resource > HR Settings"))
 		else:
 			if naming_method == 'Naming Series':
-				x = make_autoname(self.naming_series + '.###')
-				y = make_autoname("MM.#")
+				if not self.date_of_joining:
+					frappe.throw("Date of Joining not Set!")
+				naming_series = "CDCL" + str(getdate(self.date_of_joining).year)[2:4]	
+				x = make_autoname(str(naming_series) + '.###')
+				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
 				eid = x[:6] + y[:2] + x[6:9]
 				self.name = eid
 				self.yearid = x

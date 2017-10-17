@@ -36,5 +36,4 @@ def get_conditions(filters):
 	if filters.get("from_date") and filters.get("to_date"):
 		conditions += " and jc.posting_date between %(from_date)s and %(to_date)s"
 		#query += " and jc.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
-
 	return conditions

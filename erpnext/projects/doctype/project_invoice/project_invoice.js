@@ -167,6 +167,9 @@ frappe.ui.form.on("Project Invoice MB",{
 
 // Custom Functions
 var toggle_child_tables = function(frm){
+	//var boq = frappe.meta.get_docfield("Project Invoice BOQ", "item", cur_frm.doc.name);
+	//boq.hidden = 1;
+	
 	if(frm.doc.invoice_type == "Direct Invoice"){
 		frm.toggle_enable("project_invoice_boq", true);
 		frm.toggle_enable("project_invoice_mb", false);
@@ -231,17 +234,20 @@ var calculate_totals = function(frm){
 	
 	if(frm.doc.docstatus != 1)
 	{
-		// Direct Invoice
-		for(var i=0; i<pi.length; i++){
-			if(pi[i].invoice_amount && pi[i].is_selected==1){
-				gross_invoice_amount += parseFloat(pi[i].invoice_amount);
+		if(frm.doc.invoice_type == "Direct Invoice"){
+			// Direct Invoice
+			for(var i=0; i<pi.length; i++){
+				if(pi[i].invoice_amount && pi[i].is_selected==1){
+					gross_invoice_amount += parseFloat(pi[i].invoice_amount);
+				}
 			}
 		}
-		
-		// MB Based Invoice
-		for(var i=0; i<mb.length; i++){
-			if(mb[i].entry_amount && mb[i].is_selected==1){
-				gross_invoice_amount += parseFloat(mb[i].entry_amount);
+		else {
+			// MB Based Invoice
+			for(var i=0; i<mb.length; i++){
+				if(mb[i].entry_amount && mb[i].is_selected==1){
+					gross_invoice_amount += parseFloat(mb[i].entry_amount);
+				}
 			}
 		}
 		

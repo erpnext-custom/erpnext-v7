@@ -44,18 +44,21 @@ class BOQ(Document):
                         
         def update_defaults(self):
                 item_group = ""
-                self.claimed_amount = 0
-                self.received_amount = 0
-                self.balance_amount = 0
+                self.total_amount    = 0.0
+                self.claimed_amount  = 0.0
+                self.received_amount = 0.0
+                self.balance_amount  = 0.0
                 
                 for item in self.boq_item:
                         if item.is_group:
                                 item_group = item.item
 
                         item.parent_item = item_group
+                        
+                        self.total_amount    += flt(item.amount)
                         self.claimed_amount  += flt(item.claimed_amount)
                         self.received_amount += flt(item.received_amount)
-                        self.balance_amount += (flt(item.amount)-flt(item.received_amount))
+                        self.balance_amount  += (flt(item.amount)-flt(item.received_amount))
 
                 # Defaults
                 if not self.branch:
