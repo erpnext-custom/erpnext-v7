@@ -6,8 +6,3 @@ frappe.ui.form.on('Designation', {
 
 	}
 });
-cur_frm.fields_dict['employee_subgroup'].get_query = function(doc, dt, dn) {
-	return {
-              filters:{"employee_group": doc.employee_group}
-       }
-}

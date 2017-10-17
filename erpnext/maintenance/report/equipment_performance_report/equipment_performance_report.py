@@ -3,6 +3,8 @@
 
 from __future__ import unicode_literals
 import frappe
+from datetime import datetime
+import time
 from frappe import _, json
 from frappe.utils import flt, cint
 from frappe.utils.data import get_last_day
@@ -14,7 +16,7 @@ def execute(filters=None):
 
 
 def get_conditions(filters):
-	branch = consumption_date = rate_date = jc_date = insurance_date = rev_date = tc_date = operator_date = le_date = ss_date= ""
+	branch = consumption_date = rate_date = jc_date = insurance_date = rev_date = bench_date = tc_date = operator_date = le_date = ss_date= ""
 	if filters.get("branch"):
 		branch += str(filters.branch)
 		
@@ -35,29 +37,31 @@ def get_conditions(filters):
 def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	cond1 = ""
 	cond2 = ""
-	f_from_date = f_to_date = get_date_conditions(filters)
+	from_date = to_date = no_of_months = get_date_conditions(filters)
+	#frappe.msgprint(_("{0}, {1}, {2}").format(from_date, to_date, no_of_months))
 
 	if from_date_column:
-		cond1 = ("{0} between %(f_from_date)s  and %(f_to_date)s").format(from_date_column)
+		cond1 = ("{0} between '%(from_date)s'  and '%(to_date)s'").format(from_date_column)
 
 	if to_date_column:
 		if module in ("op","ss", "benchmark"):
-			cond2 = str(" or {0} between %(f_from_date)s and %(f_to_date)s").format(to_date_column)
+			cond2 = str(" or {0} between '%(from_date)s' and '%(to_date)s'").format(to_date_column)
 		else:
-			cond2 = str("and {0} between %(f_from_date)s and %(f_to_date)s").format(to_date_column)
+			cond2 = str("and {0} between '%(from_date)s' and '%(to_date)s'").format(to_date_column)
 
 	return "({0} {1})".format(cond1, cond2)
 
 def get_date_conditions(filters):
+	from_date = to_date = no_of_months = 0
 	months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 	no_of_months = 0
 
 	def calc_dates(from_month, to_month):
 		from_date = getdate(filters.get("fy") + "-" + str(from_month) + "-" + "01")
 		to_date   = get_last_day(getdate(filters.get("fy") + "-" + str(to_month) + "-" + "01"))
-		
+		frappe.msgprint("ff {0}".format(form_date1))
 		return from_date, to_date, (to_month-from_month)+1
-
+		
 	if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 		if filters.get("period") == "1st Quarter":
 			from_date,to_date,no_of_months = calc_dates(1,3)
@@ -80,113 +84,12 @@ def get_date_conditions(filters):
 	#frappe.msgprint(_("{0}, {1}, {2}").format(from_date, to_date, no_of_months))
 	return from_date, to_date, no_of_months
 
-	'''
-	if filters.fy:
-		f = frappe.utils.datetime.datetime(filters.fy, 1, 15)
-		f1 =  frappe.utils.data.get_last_day (f)
-		frappe.msgprint(f1)
-		f_from_date = getdate(filters.fy,1,1)
-		f_to_date   = getdate(filters.fy,12,12)
-		no_of_month = 12	
-        if filters.period == "Jan":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-        if filters.period == "Feb":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-
-        if filters.period == "Mar":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-        if filters.period == "Apr":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-        if filters.period == "May":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-        if filters.period == "Jun":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-        if filters.period == "Jul":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-        if filters.period == "Aug":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-        if filters.period == "Sep":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-        if filters.period == "Oct":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-        if filters.period == "Nov":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-	if filters.period == "Dec":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 1
-
-        if filters.period == "1st Quarter":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 3
-
-        if filters.period == "2nd Quarter":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 3
-
-        if filters.period == "3rd Quarter":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 3
-
-        if filters.period == "4th Quarter":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 3
-
-        if filters.period == "1st Half Year":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 6
-
-        if filters.period == "2nd Half Year":
-                f_from_date = getdate(filtrs.fy, 1,1)
-                f_to_date   = getdate(filters.fy, 15,1)
-		no_of_month  = 6
-
-        return f_from_date, f_to_date
-	'''
 
 def get_data(filters):
 	branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date =  get_conditions(filters)
 	data = []
 	branch_cond = " where branch = '{0}'".format(branch) if branch else ""
-	f_from_date = f_to_date = no_of_month = get_date_conditions(filters)
+	from_date = to_date = no_of_month = get_date_conditions(filters)
 
 	equipments = frappe.db.sql("""
                                 select name, branch, equipment_number, equipment_type, equipment_model
@@ -350,12 +253,14 @@ def get_data(filters):
 		bench = []
 		total_hc = 0
 		for a in benchmark:
+			from_date = to_date = no_of_months = get_date_conditions(filters)				
+			frappe.msgprint("da {0}, {1}, {2}".format(from_date, to_date, no_of_months))
+			bench_date = date_diff(a.t, a.fr) + 1
 			ta = ta1= ta2 =  ta3 = 0.0
 			if not a.t:
 				a.t = getdate(filters.to_date)
-			bench_date = date_diff(a.t, a.fr) + 1
- 
-			if a.fr >= f_from_date and a.t <= f_to_date:
+			 
+			if a.fr >= from_date and a.t <= to_date:
 				rate.append(a.rat) 
 				bench.append(a.bn)
 				frappe.msgprint("c")	
@@ -365,13 +270,13 @@ def get_data(filters):
 				frappe.msgprint("rat{0}".format(a.rat))
 				frappe.msgprint("bn {0}".format(a.bn))
 
-			if f_from_date  <= a.fr <= f_to_date  and (a.t > f_to_date):
+			if from_date  <= a.fr <= to_date  and (a.t > to_date):
 				rate.append(a.rat)
                                 bench.append(a.bn)
 				ta1 += flt(a.rat)*flt(a.bn)*8
 				#ta1  = sum([i*j for i,j in zip(rate,bench)])
 				#frappe.msgprint("ta {0}".format(ta))
-				cal_date = date_diff(f_to_date, a.fr)+1
+				cal_date = date_diff(to_date, a.fr)+1
 				total_hc += cal_date*no_of_month*ta1/bench_date
 				frappe.msgprint("c1")
 				frappe.msgprint("rat1{0}".format(a.rat))
@@ -381,13 +286,13 @@ def get_data(filters):
 				frappe.msgprint("ben_da1{0}".format(bench_date))
 
 
-			if f_to_date >= a.t >= f_from_date and  a.fr < f_from_date:
+			if to_date >= a.t >= from_date and  a.fr < from_date:
 				rate.append(a.rat)
                                 bench.append(a.bn)
 				ta2  += flt(a.rat)*flt(a.bn)*8
                                	#ta2  = sum([i*j for i,j in zip(rate,bench)])
 				#frappe.msgprint("ta1 {0}".format(ta))
-				cal_date = date_diff(a.t, f_from_date)+1
+				cal_date = date_diff(a.t, from_date)+1
 				total_hc += cal_date*no_of_month*ta2/bench_date 
 				frappe.msgprint("c2")
 				frappe.msgprint("rat2{0}".format(a.rat))
@@ -396,7 +301,7 @@ def get_data(filters):
 				frappe.msgprint("cal2 {0}".format(cal_date))
 				frappe.msgprint("bench_date2{0}".format(bench_date))
 
-			if a.fr < f_from_date and a.t > f_to_date:
+			if a.fr < from_date and a.t > to_date:
 				rate.append(a.rat)
 				bench.append(a.bn)
 				total_hc += flt(a.rat)*flt(a.bn)*no_of_month

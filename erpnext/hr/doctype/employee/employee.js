@@ -97,7 +97,7 @@ cur_frm.fields_dict['employee_subgroup'].get_query = function(doc, dt, dn) {
 
 cur_frm.fields_dict['designation'].get_query = function(doc, dt, dn) {
        return {
-               filters:{"employee_subgroup": doc.employee_subgroup}
+               filters:{"employee_group": doc.employee_group}
        }
 }
 

@@ -18,6 +18,7 @@ class VehicleLogbook(Document):
 
 	def on_submit(self):
 		self.update_hire()
+		self.check_tank_capacity()
 
 	def check_duplicate(self):		
 		for a in self.vlogs:
@@ -71,6 +72,14 @@ class VehicleLogbook(Document):
 						except:
 							pass
 					break
+
+	def check_tank_capacity(self):
+		em = frappe.db.get_value("Equipment", self.equipment, "equipment_model")
+		tank = frappe.db.get_value("Equipment Model", em, "tank_capacity") 
+		if tank:
+			if flt(tank) < flt(self.closing_balance):
+				frappe.msgprint("Closing balance cannot be greater than the tank capacity (" + str(tank) + ")")
+
 
 @frappe.whitelist()
 def get_opening(equipment, from_date, to_date, pol_type):
