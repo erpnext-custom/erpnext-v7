@@ -20,7 +20,7 @@ frappe.query_reports["Equipment Performance Report"] = {
 				"fieldname": "period",
 				"label": __("Period"),
 				"fieldtype": "Select",
-				"options": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"],
+				"options": ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"],
 				"default": "",
 			},
 

@@ -22,6 +22,7 @@ class ProjectInvoice(AccountsController):
                 self.set_status()
                 self.default_validations()
                 self.load_invoice_boq()
+                self.set_defaults()
                 
         def on_submit(self):
                 self.update_boq_item()
@@ -50,6 +51,18 @@ class ProjectInvoice(AccountsController):
                         "1": "Unpaid",
                         "2": "Cancelled"
                 }[str(self.docstatus or 0)]
+
+        def set_defaults(self):
+                if self.project:
+                        base_project          = frappe.get_doc("Project", self.project)
+                        self.company          = base_project.company
+                        self.customer         = base_project.customer
+                        
+                if self.boq:
+                        base_boq              = frappe.get_doc("BOQ", self.boq)
+                        self.cost_center      = base_boq.cost_center
+                        self.branch           = base_boq.branch
+                        self.boq_type         = base_boq.boq_type
 
         # This function is create for "MB Based Invoice" where the BOQ Items are actually
         def load_invoice_boq(self):

@@ -1,5 +1,7 @@
 *.pyc
 *.py~
+*.swp
+*.swo
 .DS_Store
 conf.py
 locale

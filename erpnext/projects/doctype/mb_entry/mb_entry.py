@@ -21,6 +21,7 @@ class MBEntry(Document):
 	def validate(self):
                 self.set_status()
                 self.default_validations()
+                self.set_defaults()
                 
         def on_submit(self):
                 self.validate_boq_items()
@@ -48,6 +49,18 @@ class MBEntry(Document):
                         elif flt(rec.entry_quantity) < 0 or flt(rec.entry_amount) < 0:
                                 frappe.throw(_("Row{0}: Value cannot be in negative.").format(rec.idx))
 
+        def set_defaults(self):
+                if self.project:
+                        base_project          = frappe.get_doc("Project", self.project)
+                        self.company          = base_project.company
+                        self.customer         = base_project.customer
+                        
+                if self.boq:
+                        base_boq              = frappe.get_doc("BOQ", self.boq)
+                        self.cost_center      = base_boq.cost_center
+                        self.branch           = base_boq.branch
+                        self.boq_type         = base_boq.boq_type
+                        
         def validate_boq_items(self):
                 for rec in self.mb_entry_boq:
                         if rec.is_selected == 1 and flt(rec.entry_amount) > 0:

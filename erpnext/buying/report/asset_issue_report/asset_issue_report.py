@@ -18,19 +18,18 @@ def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, (filters.from_date, filters.to_date), as_dict=True);
 	for d in datas:
-		row = [d.item_code, d.item_name, d.qty, d.custodian, d.issued_date, d.amount]
+		row = [d.item_code, d.item_name, d.serial_number, d.qty, d.custodian, d.issued_date, d.amount]
 		data.append(row);
 	return data
 
 def construct_query(filters=None):
-	query = """select id.item_code, id.item_name, id.qty, (select e.employee_name from tabEmployee as e where e.name = id.issued_to) as custodian, id.issued_date, id.amount from `tabAsset Issue Details` as id
+	query = """select id.serial_number, id.item_code, id.item_name, id.qty, (select e.employee_name from tabEmployee as e where e.name = id.issued_to) as custodian, id.issued_date, id.amount from `tabAsset Issue Details` as id
 	where id.docstatus = 1 and id.issued_date between %s and %s
 	order by id.issued_date asc
 	"""
 	return query;
 
 def validate_filters(filters):
-
 	if not filters.fiscal_year:
 		frappe.throw(_("Fiscal Year {0} is required").format(filters.fiscal_year))
 
@@ -79,6 +78,12 @@ def get_columns():
 		  "label": "Material Name",
 		  "fieldtype": "Data",
 		  "width": 150
+		},
+		{
+		  "fieldname": "serial",
+		  "label": "Serial Number",
+		  "fieldtype": "Data",
+		  "width": 120
 		},
 		{
 		  "fieldname": "qty",

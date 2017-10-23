@@ -27,6 +27,12 @@ def get_data():
 					"name": "BOQ",
 					"description": _("Bill of Quantities."),
 				},
+                                {
+					"type": "doctype",
+					"name": "MB Entry",
+                                        "label": "Measurement Book Entries",
+					"description": _("Measurement Book Entries."),
+				},
 				{
 					"type": "report",
 					"route": "Gantt/Task",
@@ -140,6 +146,24 @@ def get_data():
 					"type": "report",
 					"is_query_report": True,
 					"name": "Project Register",
+					"doctype": "Project"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Project Work Plan",
+					"doctype": "Project"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "BOQ Register",
+					"doctype": "Project"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Advance Payment Register",
 					"doctype": "Project"
 				},
 				{

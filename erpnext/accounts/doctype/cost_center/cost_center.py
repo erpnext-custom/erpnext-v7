@@ -16,6 +16,7 @@ class CostCenter(NestedSet):
 
 	def validate(self):
 		self.validate_mandatory()
+		self.create_customer()
 
 	def validate_mandatory(self):
 		if self.cost_center_name != self.company and not self.parent_cost_center:
@@ -87,4 +88,23 @@ class CostCenter(NestedSet):
 				" - ".join(newdn.split(" - ")[:-1]))
 		else:
 			super(CostCenter, self).after_rename(olddn, newdn, merge)
+
+	def create_customer(self):
+		if self.name and self.branch and not self.is_group:
+			cus = frappe.db.get_value("Customer", {"cost_center": self.name, "branch": self.branch}, "name")
+			if not cus:
+				doc = frappe.new_doc("Customer")
+				doc.flags.ignore_permissions = 1
+				doc.customer_name = str(self.name).strip().rstrip(" -CDCL").encode('utf-8')
+				doc.customer_type = "Domestic Customer"
+				doc.customer_group = "Internal"
+				doc.territory = "Bhutan"
+				doc.cost_center = self.name
+				doc.branch = self.branch
+				doc.save()
+
+			if cus and self.is_disabled:
+				doc = frappe.get_doc("Customer", cus)
+				doc.flags.ignore_permissions = 1
+				doc.db_set("disabled", 1)
 
