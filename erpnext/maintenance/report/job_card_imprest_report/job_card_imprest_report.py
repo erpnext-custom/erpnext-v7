@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe.utils import getdate
 
 def execute(filters=None):
 	columns = get_columns()
@@ -26,5 +27,4 @@ def get_data(filters):
 		query += " and jc.cost_center = \'" + str(filters.cost_center) + "\'"
 	if filters.get("from_date") and filters.get("to_date"):
 		query += " and jc.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
-
 	return frappe.db.sql(query)

@@ -44,18 +44,23 @@ class BOQ(Document):
                         
         def update_defaults(self):
                 item_group = ""
-                self.claimed_amount = 0
-                self.received_amount = 0
-                self.balance_amount = 0
+                self.total_amount    = 0.0
+                self.claimed_amount  = 0.0
+                self.received_amount = 0.0
+                self.balance_amount  = 0.0
                 
                 for item in self.boq_item:
                         if item.is_group:
                                 item_group = item.item
 
                         item.parent_item = item_group
+                        item.balance_quantity = flt(item.quantity)
+                        item.balance_amount   = flt(item.amount)
+                        
+                        self.total_amount    += flt(item.amount)
                         self.claimed_amount  += flt(item.claimed_amount)
                         self.received_amount += flt(item.received_amount)
-                        self.balance_amount += (flt(item.amount)-flt(item.received_amount))
+                        self.balance_amount  += (flt(item.amount)-flt(item.received_amount))
 
                 # Defaults
                 if not self.branch:
@@ -65,6 +70,8 @@ class BOQ(Document):
                         self.cost_center = frappe.db.get_value("Project", self.project, "cost_center")
 
         def update_project_value(self):
+                total_amount = 0.0
+                
                 boq = frappe.db.sql("""
                                         select sum(ifnull(total_amount,0)) total_amount
                                         from `tabBOQ`
@@ -72,12 +79,14 @@ class BOQ(Document):
                                         and   docstatus = 1
                                 """.format(self.project), as_dict=1)[0]
 
-                if flt(boq.total_amount) > 0:
-                        frappe.db.sql("""
-                                update `tabProject`
-                                set project_value = {0}
-                                where name = '{1}'
-                        """.format(flt(boq.total_amount), self.project))
+                if boq:
+                        total_amount = flt(boq.total_amount) if boq.total_amount else 0.0
+                        
+                frappe.db.sql("""
+                        update `tabProject`
+                        set project_value = {0}
+                        where name = '{1}'
+                """.format(flt(total_amount), self.project))
         
 @frappe.whitelist()
 def make_direct_invoice(source_name, target_doc=None):

@@ -33,4 +33,7 @@ def get_data(filters):
 
 	if filters.get("equipment"):
 		query += " and jc.equipment_number = \'" + str(frappe.db.get_value("Equipment", filters.equipment, "equipment_number")) + "\'"
+	da = {"month" : 2, "date" : 20, "year":2017}
+        frappe.msgprint("{0}".format(da))
+
 	return frappe.db.sql(query)

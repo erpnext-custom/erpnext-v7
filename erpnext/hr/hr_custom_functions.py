@@ -65,7 +65,7 @@ def get_salary_tax(gross_amt):
         tax_amount = 0
         max_limit = frappe.db.sql("""select max(b.upper_limit)
                 from `tabSalary Tax` a, `tabSalary Tax Item` b
-                where now() between a.from_date and a.to_date
+                where now() between a.from_date and ifnull(a.to_date, now())
                 and b.parent = a.name
                 """)
 
@@ -74,7 +74,7 @@ def get_salary_tax(gross_amt):
         else:
                 result = frappe.db.sql("""select b.tax from
                         `tabSalary Tax` a, `tabSalary Tax Item` b
-                        where now() between a.from_date and a.to_date
+                        where now() between a.from_date and ifnull(a.to_date, now())
                         and b.parent = a.name
                         and %s between b.lower_limit and b.upper_limit
                         limit 1
@@ -83,7 +83,7 @@ def get_salary_tax(gross_amt):
                         tax_amount = flt(result[0][0])
                 else:
                         tax_amount = 0
-        
+
         return tax_amount
 		
 # Ver 1.0 added by SSK on 03/08/2016, Fetching PF component

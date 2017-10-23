@@ -33,14 +33,18 @@ def get_data(filters):
 				cc_amount[key] = {"debit": cc_amount[key]['debit'], "credit": cc_amount[key]['credit'] + flt(gl.credit)}
 	for key in cc_amount:
 		row = [key]
+		#Payable
 		if cc_amount[key].has_key('credit'):
 			row.append(cc_amount[key]['credit'])
 		else:
 			 row.append(0)
+
+		#Receivable
 		if cc_amount[key].has_key('debit'):
 			row.append(cc_amount[key]['debit'])
 		else:
 			 row.append(0)
+		#Balance
 		row.append(flt(row[2]) - flt(row[1]))
 		data.append(row)
 	return data

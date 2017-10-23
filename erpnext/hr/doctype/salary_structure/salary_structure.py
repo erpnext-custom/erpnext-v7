@@ -41,6 +41,8 @@ class SalaryStructure(Document):
 		self.name = make_autoname(self.employee + '/.SST' + '/.#####')
 		
 	def validate(self):
+		if self.is_active == 'No' and not self.to_date:
+			frappe.throw("To Date is mandatory for Non Active Salary Structures")
 		self.check_overlap()
 		self.validate_amount()
 		self.validate_employee()
@@ -317,11 +319,13 @@ def make_salary_slip(source_name, target_doc=None):
                         if d.salary_component in ('PF','Group Insurance Scheme'):
                                 gross_amt -= flt(d.amount)
 
+		tax_included = 0
                 for d in target.get('deductions'):
                         if d.salary_component == 'Salary Tax':
-                                tax_amt = get_salary_tax(flt(gross_amt))
-                                d.amount = flt(tax_amt)
-
+				if not tax_included:
+					tax_amt = get_salary_tax(flt(gross_amt))
+					d.amount = flt(tax_amt)
+					tax_included = 1
                                         
 		target.run_method("pull_emp_details")
 		target.run_method("get_leave_details")

@@ -120,17 +120,17 @@ function calculate_time(frm, cdt, cdn) {
 	cur_frm.refresh_field("total_time")
 }
 
-frappe.ui.form.on("Job Card", "refresh", function(frm) {
-/*    cur_frm.set_query("stock_entry", function() {
-        return {
-            "filters": {
-		"docstatus": 1,
-		"purpose": "Material Issue",
-		"job_card": frm.doc.name
-            }
-        };
-    }); */
-})
+cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+		filters: [[
+			'Employee', 'designation', '=', 'Mechanic'
+		],
+		['Employee', 'branch', '=', frm.branch],
+		['Employee', 'status', '=', 'Active']
+		]
+	}
+}
 	
 function get_entries_from_min(form) {
 	frappe.call({

@@ -18,17 +18,30 @@ from frappe import _
 
 import json
 from datetime import timedelta
-from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str, date_diff
+from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str, date_diff, today
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from erpnext.manufacturing.doctype.workstation.workstation import (check_if_within_operating_hours,
 	WorkstationHolidayError)
 from erpnext.manufacturing.doctype.manufacturing_settings.manufacturing_settings import get_mins_between_operations
+# Autonaming is changed, SHIV on 23/10/2017
+from frappe.model.naming import make_autoname
 
 class OverlapError(frappe.ValidationError): pass
 class OverProductionLoggedError(frappe.ValidationError): pass
 
 class Timesheet(Document):
+        def autoname(self):
+                cur_year  = str(today())[0:4]
+                cur_month = str(today())[5:7]
+                if self.project:
+                        serialno  = make_autoname("TSM" + self.project[-3:] + ".#####")
+                        #self.name = serialno[0:3] + cur_year + cur_month + serialno[3:]
+                else:
+                        serialno  = make_autoname("TSM.YY.MM.#####")
+
+                self.name = serialno
+                
 	def validate(self):
                 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following two methods introduced by SHIV on 15/08/2017
@@ -311,7 +324,8 @@ class Timesheet(Document):
 	def validate_time_logs(self):
 		for data in self.get('time_logs'):
 			self.check_workstation_timings(data)
-			self.validate_overlap(data)
+			# Commented by SHIV on 19/10/2017
+			#self.validate_overlap(data)
 
 	def validate_overlap(self, data):
 		if self.production_order:

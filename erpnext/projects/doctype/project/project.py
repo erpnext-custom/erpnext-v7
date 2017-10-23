@@ -14,14 +14,23 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 from __future__ import unicode_literals
 import frappe
 
-from frappe.utils import flt, getdate, get_url
+from frappe.utils import flt, getdate, get_url, today
 from frappe import _
 
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 import datetime
 
+# Autonaming is changed, SHIV on 23/10/2017
+from frappe.model.naming import make_autoname
+
 class Project(Document):
+        def autoname(self):
+                cur_year  = str(today())[0:4]
+                cur_month = str(today())[5:7]
+                serialno  = make_autoname("PRJ.###")
+                self.name = serialno[0:3] + cur_year + cur_month + serialno[3:]
+                
 	def get_feed(self):
 		return '{0}: {1}'.format(_(self.status), self.project_name)
 
@@ -107,7 +116,7 @@ class Project(Document):
                                 ts_list = frappe.db.sql("""
                                                 select name
                                                 from `tabTimesheet`
-                                                where project = '{0}'
+                                                where project = "{0}"
                                                 and task = '{1}'
                                                 and docstatus < 2
                                         """.format(self.name, task.task_id), as_dict=1)
@@ -130,7 +139,7 @@ class Project(Document):
                                 ts_list = frappe.db.sql("""
                                                 select name
                                                 from `tabTimesheet`
-                                                where project = '{0}'
+                                                where project = "{0}"
                                                 and task = '{1}'
                                                 and docstatus < 2
                                         """.format(self.name, task.task_id), as_dict=1)
@@ -147,25 +156,29 @@ class Project(Document):
                 task_list = frappe.db.sql("""
                                 select name
                                 from `tabTask`
-                                where project = '{0}'
+                                where project = "{0}"
                                 """.format(self.name), as_dict=1)
 
-                for task in task_list:
-                        values = frappe.db.sql("""
-                                        select sum(ifnull(target_quantity_complete,0)) as target_quantity_complete,
-                                                sum(ifnull(work_quantity_complete,0)) as work_quantity_complete
-                                        from `tabTimesheet`
-                                        where task = '{0}'
-                                        and   docstatus < 2
-                                        """.format(task.name), as_dict=1)[0]
+                if task_list:
+                        for task in task_list:
+                                values = frappe.db.sql("""
+                                                select sum(ifnull(target_quantity_complete,0)) as target_quantity_complete,
+                                                        sum(ifnull(work_quantity_complete,0)) as work_quantity_complete
+                                                from `tabTimesheet`
+                                                where task = '{0}'
+                                                and   docstatus < 2
+                                                """.format(task.name), as_dict=1)[0]
                         
-                        frappe.db.sql("""
-                                update `tabTask`
-                                set target_quantity_complete = {0},
-                                        work_quantity_complete = {1}
-                                where name = '{2}'
-                        """.format(flt(values.target_quantity_complete), flt(values.work_quantity_complete), task.name))
-
+                                frappe.db.sql("""
+                                        update `tabTask`
+                                        set target_quantity_complete = {0},
+                                                work_quantity_complete = {1},
+                                                status = case
+                                                                when {0} >= target_quantity then 'Closed'
+                                                                else status
+                                                         end
+                                        where name = '{2}'
+                                """.format(flt(values.target_quantity_complete), flt(values.work_quantity_complete), task.name))
                 
         def update_project_progress(self):
                 tl = frappe.db.sql("""
@@ -178,7 +191,7 @@ class Project(Document):
                 frappe.db.sql("""
                         update `tabProject`
                         set tot_wq_percent_complete = ifnull({0},0)
-                        where name = '{1}'
+                        where name = "{1}"
                 """.format(flt(tl.project_progress),self.name))
 
         def update_group_tasks(self):
@@ -191,7 +204,7 @@ class Project(Document):
                                                  and   t2.task_idx > t1.task_idx
                                                 ) as max_idx
                                         from `tabTask` as t1
-                                        where t1.project = '{0}'
+                                        where t1.project = "{0}"
                                         and   t1.is_group = 1
                                         order by t1.task_idx
                                 """.format(self.name), as_dict=1)
@@ -203,7 +216,7 @@ class Project(Document):
                                                 sum(ifnull(work_quantity,0)) as tot_work_quantity,
                                                 sum(ifnull(work_quantity_complete,0)) as tot_work_quantity_complete
                                          from   `tabTask`
-                                         where  project = '{0}'
+                                         where  project = "{0}"
                                          and    task_idx > {1}
                                          and    task_idx < {2}
                                 """.format(self.name, item.task_idx, item.max_idx), as_dict=1)[0]
@@ -215,7 +228,7 @@ class Project(Document):
                                                 grp_exp_end_date = '{1}',
                                                 grp_work_quantity = {4},
                                                 grp_work_quantity_complete = {5}
-                                        where project = '{2}'
+                                        where project = "{2}"
                                         and name = '{3}'
                                 """.format(values.min_start_date, values.max_end_date, self.name, item.name, flt(values.tot_work_quantity), flt(values.tot_work_quantity_complete)))
         # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
@@ -384,7 +397,7 @@ class Project(Document):
                                 ts_list = frappe.db.sql("""
                                                 select name
                                                 from `tabTimesheet`
-                                                where project = '{0}'
+                                                where project = "{0}"
                                                 and task = '{1}'
                                                 and docstatus < 2
                                         """.format(self.name, task.task_id), as_dict=1)
@@ -400,7 +413,7 @@ class Project(Document):
                                 ts_list = frappe.db.sql("""
                                                 select name
                                                 from `tabTimesheet`
-                                                where project = '{0}'
+                                                where project = "{0}"
                                                 and task = '{1}'
                                                 and docstatus < 2
                                         """.format(self.name, task.task_id), as_dict=1)

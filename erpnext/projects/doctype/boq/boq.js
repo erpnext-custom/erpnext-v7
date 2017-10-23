@@ -3,6 +3,8 @@
 
 frappe.ui.form.on('BOQ', {
 	setup: function(frm){
+        frm.get_docfield("boq_item").allow_bulk_edit = 1;		
+		
 		frm.get_field('boq_item').grid.editable_fields = [
 			{fieldname: 'boq_code', columns: 1},
 			{fieldname: 'item', columns: 3},

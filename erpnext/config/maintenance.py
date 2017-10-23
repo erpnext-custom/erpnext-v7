@@ -60,8 +60,12 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Hire Charge Parameter",
-					"label": "Hire Charge and Yardstick",
 					"description": _("Hire Charge Parameter"),
+				},
+				{
+					"type": "doctype",
+					"name": "Branch Fleet Manager",
+					"label": "Assign Fleet Manager for Branches",
 				},
 			]
 		},

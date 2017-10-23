@@ -31,6 +31,7 @@ frappe.ui.form.on("Project", {
 	
 	// Follwoing code is added by SHIV on 2017/08/11
 	setup: function(frm) {
+		frm.get_docfield("activity_tasks").allow_bulk_edit = 1;		
 		frm.get_field('activity_tasks').grid.editable_fields = [
 			{fieldname: 'task', columns: 3},
 			{fieldname: 'is_group', columns: 1},

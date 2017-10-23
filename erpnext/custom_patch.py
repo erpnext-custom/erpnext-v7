@@ -5,6 +5,31 @@ from frappe import msgprint
 from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
 
+def create_users():
+	emp = frappe.db.sql("select name, company_email from tabEmployee where status = 'Active'", as_dict=True)
+	if emp:
+		for e in emp:
+			if e.company_email == 'sumzang.choden@cdcl.bt':
+				doc = frappe.new_doc("User")
+				doc.enabled = 1
+				doc.email = e.company_email
+				doc.first_name = "Test"
+				doc.new_password = "CDCL!2017"
+				doc.save()
+			
+				role = frappe.new_doc("UserRole")
+				role.parent = doc.name
+				role.role = "Employee"
+				role.parenttype = "User"
+				role.save()
+				doc.save()
+				em = frappe.get_doc("Employee", e.name)	
+				em.user_id = doc.name
+				em.save()
+				print(str(e.name) + " ==> " + str(e.company_email) + " ==> " + str(doc.name))
+				break
+
+
 def give_permission():
 	users = frappe.db.sql("select name from tabUser", as_dict=True)
 	for u in users:

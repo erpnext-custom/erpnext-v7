@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "PJP.YYYY.MM.####", 
  "beta": 0, 
@@ -859,7 +859,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-20 15:13:24.258324", 
+ "modified": "2017-10-13 11:58:57.693464", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Project Payment", 

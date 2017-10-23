@@ -18,6 +18,7 @@ class VehicleLogbook(Document):
 
 	def on_submit(self):
 		self.update_hire()
+		self.check_tank_capacity()
 
 	def check_duplicate(self):		
 		for a in self.vlogs:
@@ -54,13 +55,31 @@ class VehicleLogbook(Document):
 		self.db_set("closing_balance", flt(self.opening_balance) + flt(self.hsd_received) - flt(self.consumption))
 
 	def check_repair(self, start, end):
-		et, em = frappe.db.get_value("Equipment", self.equipment, ["equipment_type", "equipment_model"])
+		et, em, branch = frappe.db.get_value("Equipment", self.equipment, ["equipment_type", "equipment_model", "branch"])
 		interval = frappe.db.get_value("Hire Charge Parameter", {"equipment_type": et, "equipment_model": em}, "interval")
 		if interval:
 			for a in xrange(start, end):
 				if (flt(a) % flt(interval)) == 0:
-					frappe.msgprint("Send Mail")
+					manager = frappe.db.get_value("Branch Fleet Manager", branch, "manager")
+					if not manager:
+						frappe.msgprint("Setup the fleet manager in Branch Fleet Manager")
+					email = frappe.db.get_value("Employee", manager, "user_id")
+					subject = "Regular Maintenance for " + str(self.equipment)
+					message = "It is time to do regular maintenance for equipment " + str(self.equipment) + " since it passed the hour/km reading of " + str(a) 
+					if email:
+						try:
+							frappe.sendmail(recipients=email, sender=None, subject=subject, message=message)
+						except:
+							pass
 					break
+
+	def check_tank_capacity(self):
+		em = frappe.db.get_value("Equipment", self.equipment, "equipment_model")
+		tank = frappe.db.get_value("Equipment Model", em, "tank_capacity") 
+		if tank:
+			if flt(tank) < flt(self.closing_balance):
+				frappe.msgprint("Closing balance cannot be greater than the tank capacity (" + str(tank) + ")")
+
 
 @frappe.whitelist()
 def get_opening(equipment, from_date, to_date, pol_type):

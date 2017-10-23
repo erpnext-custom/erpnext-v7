@@ -21,6 +21,8 @@ class ProjectInvoice(AccountsController):
 	def validate(self):
                 self.set_status()
                 self.default_validations()
+                self.load_invoice_boq()
+                self.set_defaults()
                 
         def on_submit(self):
                 self.update_boq_item()
@@ -49,7 +51,155 @@ class ProjectInvoice(AccountsController):
                         "1": "Unpaid",
                         "2": "Cancelled"
                 }[str(self.docstatus or 0)]
-                
+
+        def set_defaults(self):
+                if self.project:
+                        base_project          = frappe.get_doc("Project", self.project)
+                        self.company          = base_project.company
+                        self.customer         = base_project.customer
+                        
+                if self.boq:
+                        base_boq              = frappe.get_doc("BOQ", self.boq)
+                        self.cost_center      = base_boq.cost_center
+                        self.branch           = base_boq.branch
+                        self.boq_type         = base_boq.boq_type
+
+        # This function is create for "MB Based Invoice" where the BOQ Items are actually
+        def load_invoice_boq(self):
+                if self.invoice_type == "MB Based Invoice":
+                        mb_list = ",".join(["'" + i.entry_name + "'" if i.is_selected == 1 else "'x'" for i in self.project_invoice_mb])
+                        
+                        mb_boq = frappe.db.sql("""
+                                        select boq_item_name, item, uom,
+                                                max(ifnull(is_group,0))          as is_group,
+                                                max(ifnull(is_selected,0))       as is_selected,
+                                                sum(ifnull(idx,0))               as idx,
+                                                sum(ifnull(a.original_quantity,0)) as original_quantity,
+                                                max(ifnull(original_rate,0))     as original_rate,
+                                                sum(ifnull(original_amount,0))   as original_amount,
+                                                sum(ifnull(entry_quantity,0))    as entry_quantity,
+                                                max(ifnull(entry_rate,0))        as entry_rate,
+                                                sum(ifnull(entry_amount,0))      as entry_amount,
+                                                max(creation)                    as creation
+                                        from (
+                                                select
+                                                        bi.name as boq_item_name, bi.item, bi.uom,
+                                                        bi.is_group,
+                                                        0                 as is_selected,
+                                                        bi.idx,
+                                                        bi.quantity       as original_quantity,
+                                                        bi.rate           as original_rate,
+                                                        bi.amount         as original_amount,
+                                                        0                 as entry_quantity,
+                                                        0                 as entry_rate,
+                                                        0                 as entry_amount,
+                                                        creation
+                                                from `tabBOQ Item` as bi
+                                                where parent = '{0}'
+                                                union all
+                                                select
+                                                        mb.boq_item_name, mb.item, mb.uom,
+                                                        0 as is_group,
+                                                        mb.is_selected,
+                                                        0 as idx,
+                                                        0                 as original_quantity,
+                                                        0                 as original_rate,
+                                                        0                 as original_amount,
+                                                        mb.entry_quantity as entry_quantity,
+                                                        mb.entry_rate     as entry_rate,
+                                                        mb.entry_amount   as entry_amount,
+                                                        creation
+                                                from `tabMB Entry BOQ` as mb
+                                                where parent in ({1})
+                                                and   is_selected = 1
+                                        ) as a
+                                        group by boq_item_name, item, uom
+                                        order by idx
+                                        """.format(self.boq, mb_list), as_dict=1)
+
+                        #frappe.msgprint(_("{0}").format(mb_boq))
+                        
+                        self.project_invoice_boq = []
+                        for item in mb_boq:
+                                act_quantity = flt(item.original_quantity)
+                                act_rate     = flt(item.original_rate)
+                                act_amount   = flt(item.original_amount)
+
+                                uptodate_quantity = 0.0
+                                uptodate_rate     = 0.0
+                                uptodate_amount   = 0.0
+                                                
+                                if flt(item.entry_amount) > 0:
+                                        # Total Invoiced so far (excluding this Invoice)
+                                        ti = frappe.db.sql("""
+                                                        select
+                                                                sum(ifnull(invoice_quantity,0)) as tot_invoice_quantity,
+                                                                max(ifnull(invoice_rate,0))     as tot_invoice_rate,
+                                                                sum(ifnull(invoice_amount,0))   as tot_invoice_amount
+                                                        from   `tabProject Invoice BOQ`
+                                                        where  boq_item_name    = '{0}'
+                                                        and    is_selected      = 1
+                                                        and    docstatus        = 1
+                                                        and    parent           != '{1}'
+                                                        """.format(item.boq_item_name, self.name), as_dict=1)[0]
+
+                                        if ti:
+                                                act_quantity = flt(item.original_quantity)-flt(ti.tot_invoice_quantity)
+                                                act_rate     = flt(ti.tot_invoice_rate,0)
+                                                act_amount   = flt(item.original_amount)-flt(ti.tot_invoice_amount,0)
+
+                                                uptodate_quantity = flt(ti.tot_invoice_quantity)
+                                                uptodate_rate     = flt(ti.tot_invoice_rate,0)
+                                                uptodate_amount   = flt(ti.tot_invoice_amount,0)
+
+                                self.append("project_invoice_boq",{
+                                        "boq_item_name": item.boq_item_name,
+                                        "item": item.item,
+                                        "uom": item.uom,
+                                        "is_selected": item.is_selected,
+                                        "original_quantity": item.original_quantity,
+                                        "original_rate": item.original_rate,
+                                        "original_amount": item.original_amount,
+                                        "act_quantity": act_quantity,
+                                        "act_rate": act_rate,
+                                        "act_amount": act_amount,
+                                        "invoice_quantity": item.entry_quantity,
+                                        "invoice_rate": item.entry_rate,
+                                        "invoice_amount": item.entry_amount,
+                                        "uptodate_quantity": uptodate_quantity,
+                                        "uptodate_rate": uptodate_rate,
+                                        "uptodate_amount": uptodate_amount,
+                                        "creation": self.creation,
+                                        "modified": self.modified,
+                                        "modified_by": self.modified_by,
+                                        "owner": self.owner
+                                })
+                else:
+                        #Direct Invoice
+                        for item in self.project_invoice_boq:
+                                item.uptodate_quantity = 0.0
+                                item.uptodate_rate     = 0.0
+                                item.uptodate_amount   = 0.0
+                                
+                                if flt(item.invoice_amount) > 0 and item.is_selected:
+                                        # Total Invoiced so far (excluding this Invoice)
+                                        ti = frappe.db.sql("""
+                                                        select
+                                                                sum(ifnull(invoice_quantity,0)) as tot_invoice_quantity,
+                                                                max(ifnull(invoice_rate,0))     as tot_invoice_rate,
+                                                                sum(ifnull(invoice_amount,0))   as tot_invoice_amount
+                                                        from   `tabProject Invoice BOQ`
+                                                        where  boq_item_name    = '{0}'
+                                                        and    is_selected      = 1
+                                                        and    docstatus        = 1
+                                                        and    parent           != '{1}'
+                                                        """.format(item.boq_item_name, self.name), as_dict=1)[0]
+
+                                        if ti:
+                                                item.uptodate_quantity = flt(ti.tot_invoice_quantity)
+                                                item.uptodate_rate     = flt(ti.tot_invoice_rate,0)
+                                                item.uptodate_amount   = flt(ti.tot_invoice_amount,0)
+                        
         def default_validations(self):
                 for rec in self.project_invoice_boq:
                         if flt(rec.invoice_quantity) > flt(rec.act_quantity):
