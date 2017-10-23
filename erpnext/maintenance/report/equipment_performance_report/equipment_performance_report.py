@@ -266,7 +266,7 @@ def get_data(filters):
 				total_hc   += flt(a.rat)*flt(a.bn)*8*no_of_months
 				frappe.msgprint("0")
 		
-			if a.fr < from_date and a.t > to_date:
+			if a.fr <= from_date and a.t >= to_date:
                                 rate.append(a.rat)
                                 bench.append(a.bn)
                                 total_hc += flt(a.rat)*flt(a.bn)*no_of_months*8	
