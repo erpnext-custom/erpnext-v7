@@ -33,6 +33,16 @@ frappe.ui.form.on("Purchase Order", {
 	tax: function(frm) {
 		calculate_discount(frm)
 	},
+
+	annual_tender: function(frm) {
+		cur_frm.set_df_property("buying_price_list", "read_only", frm.doc.annual_tender != 1)
+		if(frm.doc.annual_tender == 1) {
+			frm.set_value("buying_price_list", "")
+		}
+		else {
+			frm.set_value("buying_price_list", "Standard Buying")
+		}
+	}
 });
 
 function calculate_discount(frm) {

@@ -55,6 +55,9 @@ class ProcessMRPayment(Document):
 			query += " and branch = \'" + str(self.branch) + "\'"	
 			
 		entries = frappe.db.sql(query, as_dict=True)
+		if not entries:
+			frappe.msgprint("No Attendance and Overtime Record Found")
+
 		self.set('items', [])
 
 		for d in entries:

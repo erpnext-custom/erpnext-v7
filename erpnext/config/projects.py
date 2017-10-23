@@ -27,11 +27,6 @@ def get_data():
 					"name": "BOQ",
 					"description": _("Bill of Quantities."),
 				},
-                                {
-					"type": "doctype",
-					"name": "Project Advance",
-					"description": _("Project Advances."),
-				},
 				{
 					"type": "report",
 					"route": "Gantt/Task",
@@ -41,6 +36,27 @@ def get_data():
 				},
 			]
 		},
+                {
+                        "label": _("Transactions"),
+                        "icon": "icon-pencil",
+                        "items": [
+                                {
+                                        "type": "doctype",
+                                        "name": "Project Advance",
+                                        "description": _("Project Advances."),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Project Invoice",
+                                        "description": _("Project Invoices."),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Project Payment",
+                                        "description": _("Project Payments."),
+                                },
+                        ]
+                },
 		{
 			"label": _("Manpower Management"),
 			"icon": "icon-facetime-video",
@@ -58,9 +74,21 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Upload Attendance Others",
+					"label": "Upload Bulk Attendance for GEP & MR",
+					"description": _("Attendance Tool for Others"),
+				},
+				{
+					"type": "doctype",
 					"name": "Project Overtime Tool",
 					"label": "Overtime Tool for GEP & MR",
 					"description": _("Overtime Tool for MR and GEP"),
+				},
+				{
+					"type": "doctype",
+					"name": "Upload Overtime Entries",
+					"label": "Upload Overtime Entry for GEP & MR",
+					"description": _("Overtime Tool for Others"),
 				},
 				{
 					"type": "doctype",
@@ -108,6 +136,12 @@ def get_data():
 			"label": _("Reports"),
 			"icon": "icon-list",
 			"items": [
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Project Register",
+					"doctype": "Project"
+				},
 				{
 					"type": "report",
 					"is_query_report": True,

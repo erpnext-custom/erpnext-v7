@@ -10,7 +10,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import cint, cstr, date_diff, flt, formatdate, getdate, get_link_to_form, \
+from frappe.utils import nowdate, cint, cstr, date_diff, flt, formatdate, getdate, get_link_to_form, \
 	comma_or, get_fullname
 from erpnext.hr.utils import set_employee_name
 from erpnext.hr.doctype.leave_block_list.leave_block_list import get_applicable_block_dates
@@ -34,6 +34,7 @@ class LeaveApplication(Document):
 		return _("{0}: From {0} of type {1}").format(self.status, self.employee_name, self.leave_type)
 
 	def validate(self):
+		self.validate_dates_ta()
 		self.validate_fiscal_year()
 		if not getattr(self, "__islocal", None) and frappe.db.exists(self.doctype, self.name):
 			self.previous_doc = frappe.db.get_value(self.doctype, self.name, "*", as_dict=True)
@@ -64,6 +65,7 @@ class LeaveApplication(Document):
 			self.notify_employee(self.status)
 
 	def on_submit(self):
+		self.validate_dates_ta()
 		self.validate_fiscal_year()
 		if self.status == "Open":
 			frappe.throw(_("Only Leave Applications with status 'Approved' or 'Rejected' can be submitted"))
@@ -84,6 +86,14 @@ class LeaveApplication(Document):
 		if is_lwp(self.leave_type):
 			self.validate_dates_acorss_allocation()
 			self.validate_back_dated_application()
+
+	def validate_dates_ta(self):
+		start_date = self.from_date
+		end_date = self.to_date
+
+		tas = frappe.db.sql("select a.name from `tabTravel Authorization` a, `tabTravel Authorization Item` b where a.employee = %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date)", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)
+		if tas:
+			frappe.throw("The dates in your current Travel Authorization has already been used in " + str(tas[0].name))
 
 	def validate_dates_acorss_allocation(self):
 		def _get_leave_alloction_record(date):
@@ -296,6 +306,15 @@ def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 	d = frappe.db.get_value("DepartmentDirector", {"department": frappe.get_value("Employee", filters.get("employee"), "department")}, "director")
 	if d:
 		app_list.append(str(d))
+	ceo = frappe.db.get_value("Employee", {"employee_subgroup": "CEO", "status": "Active"}, "user_id")
+	if ceo:
+		app_list.append(str(ceo))
+	
+	#Check for Officiating Employeee, if so, replace
+	for a, b in enumerate(app_list):
+		off = frappe.db.sql("select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date and employee = %(employee)s", {"today": nowdate(), "employee": frappe.db.get_value("Employee", {"user_id": app_list[a]}, "name")}, as_dict=True)
+		if off:
+			app_list[a] = str(frappe.db.get_value("Employee", off[0].officiate, "user_id"))
 	
 	approvers = ""
 	for a in app_list:

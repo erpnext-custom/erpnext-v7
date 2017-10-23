@@ -104,6 +104,9 @@ function get_records(employee_type, from_date, to_date, cost_center, branch) {
 				cur_frm.refresh_field("ot_amount")
 				cur_frm.refresh_field("items");
 			}
+			else {
+				frappe.msgprint("No Overtime and Attendance Record Found")
+			}
 		}
 	})
 }

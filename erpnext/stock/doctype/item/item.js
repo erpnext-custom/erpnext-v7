@@ -16,7 +16,6 @@ frappe.ui.form.on("Item", {
 	},
 
 	refresh: function(frm) {
-
 		if(frm.doc.is_stock_item) {
 			frm.add_custom_button(__("Balance"), function() {
 				frappe.route_options = {
@@ -389,6 +388,21 @@ cur_frm.cscript.item_group = function(doc) {
      }
      refresh_field("expense_account");
    }*/
+
+	if(doc.item_group) {
+		if(doc.item_group.match(/Service*/) ) {
+			cur_frm.set_value("is_stock_item", 0)
+			cur_frm.set_value("is_fixed_asset", 0)
+			cur_frm.toggle_display("is_stock_item",  !doc.item_group.match(/Service*/))
+			cur_frm.toggle_display("is_fixed_asset",  !doc.item_group.match(/Service*/))
+		}
+		else {
+			cur_frm.set_value("is_stock_item", 1)
+			cur_frm.set_value("is_fixed_asset", 0)
+			cur_frm.toggle_display("is_stock_item",  !doc.item_group.match(/Service*/))
+			cur_frm.toggle_display("is_fixed_asset",  !doc.item_group.match(/Service*/))
+		}
+	}
 }
 
 //function to assess item_code ranges

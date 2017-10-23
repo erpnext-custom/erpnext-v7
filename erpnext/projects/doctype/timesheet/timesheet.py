@@ -18,7 +18,7 @@ from frappe import _
 
 import json
 from datetime import timedelta
-from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str
+from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str, date_diff
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from erpnext.manufacturing.doctype.workstation.workstation import (check_if_within_operating_hours,
@@ -151,10 +151,13 @@ class Timesheet(Document):
                 # Setting `Timesheet` Defaults
                 if self.task:
                         base_task = frappe.get_doc("Task", self.task)
-                        self.task_name = base_task.subject
-                        self.work_quantity = base_task.work_quantity
-                        self.exp_start_date = base_task.exp_start_date
-                        self.exp_end_date = base_task.exp_end_date
+                        
+                        self.task_name          = base_task.subject
+                        self.work_quantity      = base_task.work_quantity
+                        self.exp_start_date     = base_task.exp_start_date
+                        self.exp_end_date       = base_task.exp_end_date
+                        self.target_uom         = base_task.target_uom
+                        self.target_quantity    = base_task.target_quantity
 
                         self.target_quantity_complete = 0.0
                         for item in self.time_logs:
@@ -199,7 +202,7 @@ class Timesheet(Document):
                         base_project = frappe.get_doc("Project",self.project)
                         base_project.update_task_progress()
                         base_project.update_project_progress()
-                        #base_project.update_group_tasks()
+                        base_project.update_group_tasks()
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++				                        
                         
 	def set_status(self):
@@ -227,6 +230,8 @@ class Timesheet(Document):
 				self.start_date = getdate(start_date)
 				self.end_date = getdate(end_date)
 
+                        if not self.total_days:
+                                self.total_days = flt(date_diff(getdate(end_date),getdate(start_date)))+1
 
 	def validate_mandatory_fields(self):
 		if self.production_order:

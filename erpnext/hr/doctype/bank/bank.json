@@ -2,6 +2,7 @@
  "allow_copy": 0, 
  "allow_import": 0, 
  "allow_rename": 0, 
+ "autoname": "field:bank_name", 
  "beta": 0, 
  "creation": "2017-08-25 15:49:07.305450", 
  "custom": 0, 
@@ -96,7 +97,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-08-25 15:49:07.305450", 
+ "modified": "2017-09-28 15:01:00.683816", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Bank", 
@@ -149,5 +150,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "title_field": "", 
  "track_seen": 0
 }

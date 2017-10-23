@@ -112,6 +112,13 @@ frappe.ui.form.on("Travel Authorization Item", {
 			msgprint("Till Date cannot be earlier than From Date")
 			frappe.model.set_value(cdt, cdn, "till_date", "")
 		}
+	},
+	"halt": function(frm, cdt, cdn) {
+		var item = locals[cdt][cdn]
+		if(!item.halt) {
+			frappe.model.set_value(cdt, cdn, "no_days", 1)
+			frappe.model.set_value(cdt, cdn, "till_date", "")
+		}
 	}
 });
 

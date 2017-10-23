@@ -22,6 +22,7 @@ def execute(filters=None):
 			item_map[item]["item_group"],
 			item_map[item]["item_sub_group"],
 			warehouse,
+			item_map[item]["rack"],
 			item_map[item]["stock_uom"], qty_dict.opening_qty,
 			qty_dict.opening_val, qty_dict.in_qty,
 			qty_dict.in_val, qty_dict.out_qty,
@@ -41,6 +42,7 @@ def get_columns():
 		_("Material Group")+"::100",
 		_("Material Sub Group")+"::100",
 		_("Warehouse")+":Link/Warehouse:100",
+		_("Rack")+":Data:90",
 		_("Stock UOM")+":Link/UOM:90",
 		_("Opening Qty")+":Float:100",
 		_("Opening Value")+":Float:110",
@@ -134,7 +136,7 @@ def get_item_details(filters):
 		condition = "where item_code=%s"
 		value = (filters["item_code"],)
 
-	items = frappe.db.sql("""select name, item_name, stock_uom, item_group, item_sub_group, brand, description
+	items = frappe.db.sql("""select name, item_name, stock_uom, item_group, item_sub_group, brand, rack, description
 		from tabItem {condition}""".format(condition=condition), value, as_dict=1)
 
 	return dict((d.name, d) for d in items)

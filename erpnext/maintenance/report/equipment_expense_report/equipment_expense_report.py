@@ -11,6 +11,7 @@ def execute(filters=None):
 	query = construct_query(filters)
 	data = get_data(query, filters = None)
 
+<<<<<<< HEAD
 	return columns,data
 def get_data(query, filters=None):
 	data = []
@@ -58,7 +59,6 @@ def construct_query(filters):
 		 # and start_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' OR end_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 	query += " group by k.equipment_number "
 	return query
-
 
 def get_columns():
 	cols = [

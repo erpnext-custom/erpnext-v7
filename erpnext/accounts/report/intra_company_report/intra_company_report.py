@@ -41,10 +41,11 @@ def get_data(filters):
 			row.append(cc_amount[key]['debit'])
 		else:
 			 row.append(0)
+		row.append(flt(row[2]) - flt(row[1]))
 		data.append(row)
 	return data
 	
 def get_columns():
 	return [	
-		"Cost Center:Link/Cost Center:230", "Payable:Currency:150", "Receivable:Currency:150"
+		"Cost Center:Link/Cost Center:230", "Payable:Currency:150", "Receivable:Currency:150", "Balance:Currency:150"
 		]	

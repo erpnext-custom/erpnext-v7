@@ -22,7 +22,6 @@ class ProcessIncrement(Document):
 		cond += self.get_joining_releiving_condition()
 
                 increment_month = calendar.month_name[int(self.month)]
-		frappe.msgprint(str(increment_month))
                 '''
                 increment_month = ''
                 if self.month == '01':
@@ -42,6 +41,7 @@ class ProcessIncrement(Document):
 			ifnull(t2.salary_slip_based_on_timesheet,0) = 0 and t1.name = t2.employee
 		%s """% (increment_month,cond),as_dict=True)
 
+		frappe.msgprint(str(emp_list))
 		return emp_list
 
 	def get_filter_condition(self):

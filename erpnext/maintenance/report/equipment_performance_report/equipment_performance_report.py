@@ -101,6 +101,7 @@ def get_data(filters):
 				  group by id.equipment
 		     """.format(eq.name, rev_date), as_dict=1)
 		#frappe.msgprint("{0}".format(revn))	
+	
 		#Insurance
 		ins = frappe.db.sql("""
 			 	select sum(ifnull(id.insured_amount,0)) as insurance
@@ -146,7 +147,6 @@ def get_data(filters):
 				and   {1}
 			""".format(co.operator, tc_date), as_dict=1)[0]
 
-
 			#Leave Encashment Aomunt
 			lea = frappe.db.sql("""
 					select sum(ifnull(le.encashment_amount,0)) as e_amount
@@ -155,8 +155,6 @@ def get_data(filters):
 					and   le.docstatus = 1
 					and   {1}
 				""".format(co.operator, le_date), as_dict=1)[0]
-
-
 
 			cem = frappe.db.sql("""
 			                select employee, gross_pay, start_date, end_date

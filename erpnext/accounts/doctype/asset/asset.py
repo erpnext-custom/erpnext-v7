@@ -108,6 +108,7 @@ class Asset(Document):
 				cint(self.number_of_depreciations_booked)
 			if number_of_pending_depreciations:
 				for n in xrange(number_of_pending_depreciations):
+					#frappe.throw("THHH " + str(self.number_of_depreciations_booked))
 					schedule_date = get_last_day(add_months(self.next_depreciation_date,
 						n * cint(self.frequency_of_depreciation)))
 
@@ -121,7 +122,7 @@ class Asset(Document):
 						num_of_days = get_number_of_days(last_schedule_date, schedule_date) 
 
 					depreciation_amount = self.get_depreciation_amount(value_after_depreciation, num_of_days)
-					income_tax_amount = self.get_income_tax_depreciation_amount(current_value_income_tax, flt(self.asset_depreciation_percent), num_of_days)
+					income_tax_amount = self.get_income_tax_depreciation_amount(income_accumulated_depreciation, flt(self.asset_depreciation_percent), num_of_days)
 
 					accumulated_depreciation += flt(depreciation_amount)
 					value_after_depreciation -= flt(depreciation_amount)
@@ -206,8 +207,14 @@ class Asset(Document):
 		return status
 
 	def get_income_tax_depreciation_amount(self, depreciable_value, percent, num_days=1):
-		return ((flt(self.gross_purchase_amount) - flt(self.residual_value))/(100 * 365.25)) * percent * num_days
-	
+		cel = flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life)
+		if flt(depreciable_value) < cel:
+			value = ((flt(self.gross_purchase_amount) - flt(self.residual_value))/(100 * 365.25)) * percent * num_days
+			if flt(depreciable_value) + flt(value) > cel:
+				value = cel - flt(depreciable_value)
+			return value
+		else:
+			return 0
 	def make_asset_gl_entry(self):
 		if self.gross_purchase_amount:
 			je = frappe.new_doc("Journal Entry")

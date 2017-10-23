@@ -49,10 +49,17 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 		});
 	},
 
-	employment_type: function() {
+	/*employment_type: function() {
 		return cur_frm.call({
 			method: "get_retirement_date",
 			args: {date_of_birth: this.frm.doc.date_of_birth, employment_type: this.frm.doc.employment_type}
+		});
+	},*/
+
+	employee_group: function() {
+		return cur_frm.call({
+			method: "get_retirement_date",
+			args: {date_of_birth: this.frm.doc.date_of_birth, employment_type: this.frm.doc.employee_group}
 		});
 	},
 });
@@ -90,7 +97,7 @@ cur_frm.fields_dict['employee_subgroup'].get_query = function(doc, dt, dn) {
 
 cur_frm.fields_dict['designation'].get_query = function(doc, dt, dn) {
        return {
-               filters:{"employee_subgroup": doc.employee_subgroup}
+               filters:{"employee_group": doc.employee_group}
        }
 }
 

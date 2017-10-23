@@ -28,26 +28,33 @@ class Project(Document):
 	def onload(self):
 		"""Load project tasks for quick view"""
 		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-		# Following code commented by SHIV on 2017/08/11
+		# Following code commented by SHIV on 11/08/2017
 		'''
 		if not self.get('__unsaved') and not self.get("tasks"):
 			self.load_tasks()
 		'''
-		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
-                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-                # Following code added by SHIV on 2017/08/11
+                # Following code added by SHIV on 11/08/2017 
 		if not self.get('__unsaved') and not self.get("activity_tasks"):
 			self.load_activity_tasks()
 			self.load_boq()
 			self.load_advance()
 			self.load_invoice()
-                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-                
+
+                # Following code is commented and the subsequent is added by SHIV on 20/09/2017
+                """
 		self.set_onload('activity_summary', frappe.db.sql('''select activity_type,
 			sum(hours) as total_hours
 			from `tabTimesheet Detail` where project=%s and docstatus < 2 group by activity_type
 			order by total_hours desc''', self.name, as_dict=True))
+
+                """
+                
+		self.set_onload('activity_summary', frappe.db.sql('''select description activity_type,
+			sum(days) as total_days
+			from `tabTimesheet Detail` where project=%s and docstatus < 2 group by description
+			order by total_days desc''', self.name, as_dict=True))
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
         
 	def __setup__(self):
 		self.onload()
@@ -84,7 +91,7 @@ class Project(Document):
 		self.sync_activity_tasks()
 		self.update_task_progress()
 		self.update_project_progress()
-		# self.update_group_tasks()
+		self.update_group_tasks()
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
@@ -203,10 +210,11 @@ class Project(Document):
 
                         frappe.db.sql("""
                                         update `tabTask`
-                                        set exp_start_date = '{0}',
-                                                exp_end_date = '{1}',
-                                                work_quantity = {4},
-                                                work_quantity_complete = {5}
+                                        set
+                                                grp_exp_start_date = '{0}',
+                                                grp_exp_end_date = '{1}',
+                                                grp_work_quantity = {4},
+                                                grp_work_quantity_complete = {5}
                                         where project = '{2}'
                                         and name = '{3}'
                                 """.format(values.min_start_date, values.max_end_date, self.name, item.name, flt(values.tot_work_quantity), flt(values.tot_work_quantity_complete)))
@@ -336,7 +344,11 @@ class Project(Document):
                                 "target_uom": task.target_uom,
                                 "target_quantity": task.target_quantity,
                                 "target_quantity_complete": task.target_quantity_complete,
-				"task_id": task.name
+				"task_id": task.name,
+                                "grp_exp_start_date": task.grp_exp_start_date,
+                                "grp_exp_end_date": task.grp_exp_end_date,
+                                "grp_work_quantity": task.grp_work_quantity,
+                                "grp_work_quantity_complete": task.grp_work_quantity_complete
 			})
 
 	def get_activity_tasks(self):
@@ -360,6 +372,46 @@ class Project(Document):
 		if self.expected_start_date and self.expected_end_date:
 			if getdate(self.expected_end_date) < getdate(self.expected_start_date):
 				frappe.throw(_("Expected End Date can not be less than Expected Start Date"))
+				
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+		# Following code added by SHIV on 20/09/2017
+                for task in self.activity_tasks:
+                        prev_start_date = getdate(frappe.db.get_value("Task", task.task_id, "exp_start_date"))
+                        prev_end_date = getdate(frappe.db.get_value("Task", task.task_id, "exp_end_date"))
+
+                        if (prev_start_date and getdate(task.start_date)) and (getdate(task.start_date) != prev_start_date):
+                                msg = ""
+                                ts_list = frappe.db.sql("""
+                                                select name
+                                                from `tabTimesheet`
+                                                where project = '{0}'
+                                                and task = '{1}'
+                                                and docstatus < 2
+                                        """.format(self.name, task.task_id), as_dict=1)
+
+                                if len(ts_list):
+                                        for item in ts_list:
+                                                msg += 'Reference: <a href="#Form/Timesheet/{0}">{0}</a><br/>'.format(item.name,item.name)
+                                        
+                                        frappe.throw("Row# {0} : Cannot change `Start Date` for Tasks already having active Timesheets. <br/>{1}".format(task.idx, msg))
+
+                        if (prev_end_date and getdate(task.end_date)) and (getdate(task.end_date) != prev_end_date):
+                                msg = ""
+                                ts_list = frappe.db.sql("""
+                                                select name
+                                                from `tabTimesheet`
+                                                where project = '{0}'
+                                                and task = '{1}'
+                                                and docstatus < 2
+                                        """.format(self.name, task.task_id), as_dict=1)
+
+                                if len(ts_list):
+                                        for item in ts_list:
+                                                msg += 'Reference: <a href="#Form/Timesheet/{0}">{0}</a><br/>'.format(item.name,item.name)
+                                        
+                                        frappe.throw("Row# {0} : Cannot change `End Date` for Tasks already having active Timesheets. <br/>{1}".format(task.idx, msg))
+                                        
+                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 	def sync_tasks(self):
 		"""sync tasks and remove table"""
@@ -429,7 +481,11 @@ class Project(Document):
 				"exp_end_date": t.end_date,
 				"description": t.description,
                                 "target_quantity_complete": t.target_quantity_complete,
-                                "task_idx": task_idx
+                                "task_idx": task_idx,
+                                "grp_exp_start_date": t.grp_exp_start_date,
+                                "grp_exp_end_date": t.grp_exp_end_date,
+                                "grp_work_quantity": t.grp_work_quantity,
+                                "grp_work_quantity_complete": t.grp_work_quantity_complete
 			})
 
 			task.flags.ignore_links = True

@@ -21,8 +21,6 @@ def get_data(query, filters=None):
 		d.yskm, d.yshour, round(d.consumed,2), round(flt(d.closing),2), round(flt(d.rate),2),  round((flt(d.rate)*flt(d.consumed)),2)]
 		data.append(row);
 	return data
-
-
 def construct_query(filters):
 	"""query = select e.equipment_type ty, e.equipment_number as no, e.branch br, MIN(vl.initial_km) AS min, MAX(vl.final_km) AS max,
 	(select avg(pol.rate) from tabPOL pol where pol.equipment = e.name and pol.date between '%(from_date)s' and '%(to_date)s' and pol.branch like "%(branch)s" and pol.docstatus = 1) as rate,
