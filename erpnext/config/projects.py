@@ -158,13 +158,31 @@ def get_data():
 					"type": "report",
 					"is_query_report": True,
 					"name": "BOQ Register",
-					"doctype": "Project"
+					"doctype": "BOQ"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Measurement Book Register",
+					"doctype": "MB Entry"
 				},
                                 {
 					"type": "report",
 					"is_query_report": True,
 					"name": "Advance Payment Register",
-					"doctype": "Project"
+					"doctype": "Project Advance"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Invoice Register",
+					"doctype": "Project Invoice"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Payment Register",
+					"doctype": "Project Payment"
 				},
 				{
 					"type": "report",

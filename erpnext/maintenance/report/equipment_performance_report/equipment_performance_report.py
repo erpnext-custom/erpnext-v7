@@ -264,13 +264,11 @@ def get_data(filters):
 				rate.append(a.rat) 
 				bench.append(a.bn)
 				total_hc   += flt(a.rat)*flt(a.bn)*8*no_of_months
-				frappe.msgprint("0")
 		
 			if a.fr <= from_date and a.t >= to_date:
                                 rate.append(a.rat)
                                 bench.append(a.bn)
-                                total_hc += flt(a.rat)*flt(a.bn)*no_of_months*8	
-				frappe.msgprint("1")
+                                total_hc += flt(a.rat)*flt(a.bn)*no_of_months*8
 
 			#if filters.get("period") not in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 			if from_date  < a.fr < to_date  and (a.t > to_date) and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
@@ -280,7 +278,6 @@ def get_data(filters):
 				ta2 += flt(a.rat)*flt(a.bn)*8
 				bench_date = date_diff(to_date, from_date) + 1
 				total_hc += cal_date*ta2/bench_date
-				frappe.msgprint("2")
 
 			if to_date > a.t > from_date and  a.fr < from_date and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
 				rate.append(a.rat)
@@ -289,7 +286,6 @@ def get_data(filters):
 				bench_date = date_diff(to_date, from_date) + 1
 				cal_date = date_diff(a.t, from_date)+1
 				total_hc += cal_date*ta3/bench_date 
-				frappe.msgprint("3")
 
 			if from_date  < a.fr <= to_date  and (a.t > to_date) and filters.get("period")  in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 				for i in ra:
@@ -302,36 +298,25 @@ def get_data(filters):
 						bench_date = date_diff(to_date1, from_date1) + 1
 						ta4   += flt(a.rat)*flt(a.bn)*8
 						total_hc += cal_date*ta4/bench_date
-						frappe.msgprint("4")
-						frappe.msgprint("c {0}".format(cal_date))
-						frappe.msgprint(" b {0}".format(bench_date))
 					else:
 						rate.append(a.rat)
                                                 bench.append(a.bn)
 						total_hc   += flt(a.rat)*flt(a.bn)*8
-						frappe.msgprint("5")
 			if to_date > a.t >= from_date and  (a.fr < from_date) and filters.get("period")	in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 				for i in  ra:
-					frappe.msgprint("i {0}".format(i))
 					from_date1 = getdate(filters.get("fy") + "-" + str(i) + "-" + "01")
                                         to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(i) + "-" + "01"))
                                         if from_date1 < a.t <= to_date1 and (a.fr <  from_date1):
-						frappe.msgprint("f {0}, t {1}".format(from_date1, to_date1))
-                                                rate.append(a.rat)
+						rate.append(a.rat)
                                                 bench.append(a.bn)
                                                 cal_date = date_diff(a.t, from_date1) + 1
                                                 bench_date = date_diff(to_date1, from_date1) + 1
                                                 ta4   = flt(a.rat)*flt(a.bn)*8
                                                 total_hc += cal_date*ta4/bench_date
-                                                frappe.msgprint("6")
-						frappe.msgprint("ta {0}, to {1}, cal {2}, bn {3}".format(ta4, total_hc, cal_date, bench_date))
                                         elif (from_date1 < a.fr and a.t < to_date1) or (a.fr < from_date1 and a.t > to_date1):
-						frappe.msgprint("f {0}, t {1}".format(from_date1, to_date1))
                                                 rate.append(a.rat)
                                                 bench.append(a.bn)
                                                 total_hc   += flt(a.rat)*flt(a.bn)*8
-                                                frappe.msgprint("7")
-						frappe.msgprint("ra {0}, bn {1}, {2}".format(a.rate, a.bench, total_hc))
 				
 		if not benchmark:
 			benchmark = {"rat": 0, "bn": 0, "fr": '', "t": ''}
