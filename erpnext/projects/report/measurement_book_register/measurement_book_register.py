@@ -12,11 +12,12 @@ def execute(filters=None):
 def get_columns():
 	return [
 		("Project") + ":Link/Project:210",
-		("Transaction #") + ":Data:100",
-		("Date") + ":Data:100",
-		("Cost Center") + ":Data:180",
+		("Transaction #") + ":Link/MB Entry:120",
+		("Date") + ":Data:80",
+		("Cost Center") + ":Data:150",
 		("Customer") + ":Data:120",
-		("BOQ") + ":Data:120",
+		("Status") + ":Data :80",
+		("BOQ") + ":Link/BOQ:110",
 		("Booked Amount (A)") + ":Currency:120",
 		("Invoice Amount(B)") + ":Currency:120",
 		("Balance Amount(A-B)") + ":Currency: 120"
@@ -29,7 +30,8 @@ def get_data(filters):
 				mb.name,
 				mb.entry_date, 
 				mb.cost_center, 
-				mb.customer, 
+				mb.customer,
+				mb.status, 
 				mb.boq, 
 				mb.total_entry_amount, 
 				mb.total_invoice_amount, 
