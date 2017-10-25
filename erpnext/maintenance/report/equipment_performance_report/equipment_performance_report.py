@@ -23,7 +23,7 @@ def get_conditions(filters):
                 not_cdcl  += "0"
 
 	if filters.get("include_disabled"):
-                disable  += "is_disabled "
+                disable  += " "
         else:
                 disable  += "0"	
 
@@ -119,8 +119,8 @@ def get_data(filters):
 	branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable  =  get_conditions(filters)
 	data = []
 	branch_cond = " branch = '{0}'".format(branch) if branch else "branch = branch"
-	not_cdcll = " where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else " not_cdcl = not_cdcl"
-	dis	= " is_disabled = '{0}'".format(disable) if disable 
+	not_cdcll = " where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else "where not_cdcl = not_cdcl"
+	dis	= " is_disabled = '{0}'".format(disable)
 	#branch_cond = " where branch = '{0}'".format(branch) if branch else ""
 	from_date = to_date = no_of_month = get_date_conditions(filters)
 
@@ -128,8 +128,8 @@ def get_data(filters):
                                 select name, branch, equipment_number, equipment_type, equipment_model
                                 from `tabEquipment`
 				{0} and 
-				'{1}' and 
-				'{2}'
+				{1} and 
+				{2}
 				order by branch, name
                         """.format(not_cdcll, branch_cond, dis), as_dict=1)
 

@@ -23,5 +23,18 @@ frappe.query_reports["POL Issue Report"] = {
 			"fieldtype": "Date",
 			"width": "80",
 		},
+		
+		{
+                        "fieldname": "not_cdcl",
+                        "label": ("Include Only CDCL Equipments"),
+                        "fieldtype": "Check",
+                        "default": 1
+                },
+		{
+                        "fieldname": "include_disabled",
+                        "label": ("Include Disbaled Equipments"),
+                        "fieldtype": "Check",
+                        "default": 0
+                }
 	]
 }

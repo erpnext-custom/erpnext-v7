@@ -30,9 +30,9 @@ def get_conditions(filters):
                 not_cdcl +=  '0'
 	
 	if filters.get("include_disabled"):
-                disable  += "is_disabled "
-        else:
-                disable  += '0'
+                disable  += " "
+        '''else:
+                disable  += '0' '''
 
 	
 	return branch, consumption_date, rate_date, jc_date, insurance_date, reg_date,  operator_date, tc_date, le_date, ss_date, not_cdcl, disable
@@ -57,14 +57,15 @@ def get_data(filters):
 	data = []
 	not_cdcll = "where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else "where not_cdcl = not_cdcl"
 	branch_cond = " branch = '{0}'".format(branch) if branch else "branch = branch"
-	dis = " is_disabled = '{0}'".format(disable)
+	dis = " is_disabled = '{0}'".format(disable) if disable else " is_disabled = 0 "
 	#branch_cond = " where branch = '{0}'".format(branch) if branch else ""
 	rate_cond = " and branch = '{0}'" .format(branch) if branch else ""	
 	equipments = frappe.db.sql("""
                                 select name, branch, equipment_number, equipment_type
                                 from `tabEquipment`
 				{0} and 
-				{1}
+				{1} and 
+				{2}
 				order by branch, name
                         """.format(not_cdcll, branch_cond, dis), as_dict=1)
 	frappe.msgprint(equipments)

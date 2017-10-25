@@ -79,5 +79,14 @@ def get_equipment_details(filters):
 	query = "select name, equipment_number, equipment_type from `tabEquipment` where is_disabled != 1 and branch = \'"+str(filters.branch)+"\'"
 	if filters.equipment_type:
 		query += " and equipment_type = \'"+ str(filters.equipment_type) +"\'"
+	
+	if filters.get("not_cdcl"):
+                query += " and not_cdcl = 0"
+
+	if filters.get("include_disabled"):
+                query += " "
+        else:
+                query += " and is_disabled = 0"
+
 	return frappe.db.sql(query, as_dict=1)
 
