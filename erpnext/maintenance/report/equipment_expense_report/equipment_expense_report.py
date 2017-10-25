@@ -12,7 +12,7 @@ def execute(filters=None):
 	return columns, data
 
 def get_conditions(filters):
-	branch = consumption_date = rate_date = jc_date = insurance_date =  reg_date = tc_date = operator_date = le_date = ss_date= reg_date = ""
+	branch = consumption_date = rate_date = jc_date = insurance_date =  reg_date = tc_date = operator_date = le_date = ss_date= reg_date = not_cdcl = disable =  ""
 	if filters.get("branch"):
 		branch += str(filters.branch)
 	if filters.get("from_date") and filters.get("to_date"):
@@ -25,8 +25,17 @@ def get_conditions(filters):
 		le_date		 = get_dates(filters, "le", "encashed_date")
 		ss_date		 = get_dates(filters, "ss", "start_date", "ifnull(end_date,curdate())")
 		reg_date	 = get_dates(filters, "reg", "registration_date")
+
+	if filters.get("not_cdcl"):
+                not_cdcl +=  '0'
 	
-	return branch, consumption_date, rate_date, jc_date, insurance_date, reg_date,  operator_date, tc_date, le_date, ss_date
+	if filters.get("include_disabled"):
+                disable  += "is_disabled "
+        else:
+                disable  += '0'
+
+	
+	return branch, consumption_date, rate_date, jc_date, insurance_date, reg_date,  operator_date, tc_date, le_date, ss_date, not_cdcl, disable
 
 def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	cond1 = ""
@@ -43,20 +52,22 @@ def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	return "({0} {1})".format(cond1, cond2)
 
 def get_data(filters):
-	branch, consumption_date, rate_date, jc_date, insurance_date,  reg_date, operator_date, tc_date, le_date, ss_date  =  get_conditions(filters)
+	branch, consumption_date, rate_date, jc_date, insurance_date,  reg_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable  =  get_conditions(filters)
 	#frappe.msgprint(reg_date)
 	data = []
-	branch_cond = " where branch = '{0}'".format(branch) if branch else ""
-	#branch_cond = " where name = 'EQUIP170008'".format(branch) if branch else " where name = 'EQUIP170008'"
-	rate_cond = " and branch = '{0}'" .format(branch) if branch else ""
-	
+	not_cdcll = "where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else "where not_cdcl = not_cdcl"
+	branch_cond = " branch = '{0}'".format(branch) if branch else "branch = branch"
+	dis = " is_disabled = '{0}'".format(disable)
+	#branch_cond = " where branch = '{0}'".format(branch) if branch else ""
+	rate_cond = " and branch = '{0}'" .format(branch) if branch else ""	
 	equipments = frappe.db.sql("""
                                 select name, branch, equipment_number, equipment_type
                                 from `tabEquipment`
-				{0}
+				{0} and 
+				{1}
 				order by branch, name
-                        """.format(branch_cond), as_dict=1)
-
+                        """.format(not_cdcll, branch_cond, dis), as_dict=1)
+	frappe.msgprint(equipments)
     	for eq in equipments:
 		#:frappe.msgprint("{0}".format(eq))
                 # `tabVehicle Logbook`

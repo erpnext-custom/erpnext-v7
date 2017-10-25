@@ -16,10 +16,17 @@ def execute(filters=None):
 
 
 def get_conditions(filters):
-	branch = consumption_date = rate_date = jc_date = insurance_date = rev_date = bench_date = tc_date = operator_date = le_date = ss_date= ""
+	branch = consumption_date = rate_date = jc_date = insurance_date = rev_date = bench_date = tc_date = operator_date = le_date = ss_date= not_cdcl = disable = ""
 	if filters.get("branch"):
 		branch += str(filters.branch)
-		
+	if filters.get("not_cdcl"):
+                not_cdcl  += "0"
+
+	if filters.get("include_disabled"):
+                disable  += "is_disabled "
+        else:
+                disable  += "0"	
+
 	consumption_date = get_dates(filters, "vl", "from_date", "to_date")
 	rate_date 	 = get_dates(filters, "pol", "date")
 	jc_date 	 = get_dates(filters, "jc", "posting_date", "finish_date")
@@ -31,7 +38,7 @@ def get_conditions(filters):
 	rev_date	 = get_dates(filters, "revn", "ci.posting_date")
 	bench_date       = get_dates(filters, "benchmark", "hi.from_date", "hi.to_date")
 
-	return branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date
+	return branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable
 
 def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	cond1 = ""
@@ -109,17 +116,22 @@ def get_date_conditions(filters):
 
 
 def get_data(filters):
-	branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date =  get_conditions(filters)
+	branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable  =  get_conditions(filters)
 	data = []
-	branch_cond = " where branch = '{0}'".format(branch) if branch else ""
+	branch_cond = " branch = '{0}'".format(branch) if branch else "branch = branch"
+	not_cdcll = " where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else " not_cdcl = not_cdcl"
+	dis	= " is_disabled = '{0}'".format(disable) if disable 
+	#branch_cond = " where branch = '{0}'".format(branch) if branch else ""
 	from_date = to_date = no_of_month = get_date_conditions(filters)
 
 	equipments = frappe.db.sql("""
                                 select name, branch, equipment_number, equipment_type, equipment_model
                                 from `tabEquipment`
-				{0}
+				{0} and 
+				'{1}' and 
+				'{2}'
 				order by branch, name
-                        """.format(branch_cond), as_dict=1)
+                        """.format(not_cdcll, branch_cond, dis), as_dict=1)
 
     	for eq in equipments:
 

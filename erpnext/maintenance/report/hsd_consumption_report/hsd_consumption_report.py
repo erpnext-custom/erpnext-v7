@@ -45,6 +45,14 @@ def construct_query(filters):
 
 	if filters.get("from_date") and filters.get("to_date"):
 		 query += " and vl.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' and vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+
+	if filters.get("not_cdcl"):
+               query += " and e.not_cdcl = 0"
+	if filters.get("include_disabled"):
+                query += " "
+        else:
+                query += " and e.is_disabled = 0"
+
 	query += " GROUP BY e.equipment_number "
 	return query
 
