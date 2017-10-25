@@ -30,6 +30,14 @@ frappe.query_reports["POL Balance Report"] = {
                         "label": ("Include Only CDCL Equipments"),
                         "fieldtype": "Check",
                         "default": 1
+                },
+		
+		{
+                        "fieldname": "include_disabled",
+                        "label": ("Include Disbaled Equipments"),
+                        "fieldtype": "Check",
+                        "default": 0
                 }
+
 	]
 }
