@@ -17,7 +17,7 @@ from frappe.model.naming import make_autoname
 class Asset(Document):
 
 	def autoname(self):
-		self.name = make_autoname('ASSET.YYYY.MM.###')
+		self.name = make_autoname('ASSET.YY.MM.###')
 
 	def validate(self):
 		self.status = self.get_status()
@@ -224,7 +224,8 @@ class Asset(Document):
 				"company": self.company,
 				"remark": self.name + " (" + self.asset_name + ") Asset Issued",
 				"user_remark": self.name + " (" + self.asset_name + ") Asset Issued",
-				"posting_date": self.purchase_date,
+				#"posting_date": self.purchase_date,
+				"posting_date": "2017-08-31",
 				"branch": self.branch
 				})
 
