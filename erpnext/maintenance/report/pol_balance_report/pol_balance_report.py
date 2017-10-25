@@ -65,6 +65,8 @@ def construct_query(filters=None):
 			GROUP BY branch, pol_type, uom
 			""" % {'from_date': str(filters.from_date), 'to_date': str(filters.to_date), 'branch': str(filters.branch)}
 		#frappe.msgprint(query)
+		'''if filters.get("not_cdcl"):
+                	query += " and e.not_cdcl = 0"'''
 		return query;
 
 def get_columns():

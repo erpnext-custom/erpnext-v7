@@ -131,7 +131,7 @@ def update_status(name):
 	so.db_set("payment_completed", 1)
 
 def equipment_query(doctype, txt, searchfield, start, page_len, filters):
-	return frappe.db.sql("select e.name, e.equipment_type, e.equipment_number from `tabEquipment` e where e.equipment_type = %s and e.branch = %s and e.is_disabled != 1 and not exists (select 1 from `tabEquipment Reservation Entry` a where (a.from_date != a.to_date and (a.from_date between %s and %s or a.to_date between %s and %s)) and a.equipment = e.name)", (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
+	return frappe.db.sql("select e.name, e.equipment_type, e.equipment_number from `tabEquipment` e where e.equipment_type = %s and e.branch = %s and e.is_disabled != 1 and e.not_cdcl = 0 and not exists (select 1 from `tabEquipment Reservation Entry` a where (a.from_date != a.to_date and (a.from_date between %s and %s or a.to_date between %s and %s)) and a.equipment = e.name)", (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
 
 
 

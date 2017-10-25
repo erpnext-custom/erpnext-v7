@@ -47,6 +47,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
 	"private": function(frm) {
 		cur_frm.toggle_reqd("customer_cost_center", frm.doc.private == 'CDCL')
 		cur_frm.toggle_reqd("customer_branch", frm.doc.private == 'CDCL')
+		cur_frm.toggle_reqd("advance_amount", frm.doc.private == 'Private')
 	},
 });
 

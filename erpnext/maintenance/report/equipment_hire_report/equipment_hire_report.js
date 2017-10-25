@@ -24,13 +24,24 @@ frappe.query_reports["Equipment Hire Report"] = {
 			"width": "80",
 			"default": frappe.datetime.get_today()
 		},
-
 		{
 			"fieldname": "customer",
 			"label": ("Customer"),
 			"fieldtype": "Link",
 			"width": "80",
 			"options": "Customer"
+		},
+		{
+			"fieldname": "not_cdcl",
+			"label": ("Include Only CDCL Equipments"),
+			"fieldtype": "Check",
+			"default": 1
+		},
+		{
+			"fieldname": "include_disabled",
+			"label": ("Include Disbaled Equipments"),
+			"fieldtype": "Check",
+			"default": 0
 		},
 
 	]

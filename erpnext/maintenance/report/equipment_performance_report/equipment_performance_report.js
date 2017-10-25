@@ -23,6 +23,19 @@ frappe.query_reports["Equipment Performance Report"] = {
 				"options": ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"],
 				"default": "",
 			},
+		{
+                        "fieldname": "not_cdcl",
+                        "label": ("Include Only CDCL Equipments"),
+                        "fieldtype": "Check",
+                        "default": 1
+                },
+		{
+                        "fieldname": "include_disabled",
+                        "label": ("Include Disbaled Equipments"),
+                        "fieldtype": "Check",
+                        "default": 0
+                }
+
 
 	]
 }
