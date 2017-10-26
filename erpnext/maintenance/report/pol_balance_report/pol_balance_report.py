@@ -25,8 +25,7 @@ def construct_query(filters=None):
 		not_cdcl = dis  = ''
 		if not filters.branch:
 			filters.branch = '%'
-		if filters.get("not_cdcl"):
-                        not_cdcl += " and e.not_cdcl = 0"
+		
 
                 if filters.get("include_disabled"):
                         dis  += " e.is_disabled = ''"
@@ -66,12 +65,12 @@ def construct_query(filters=None):
 				END AS received
 			FROM   `tabConsumed POL` pc, `tabPOL Type` pt, `tabEquipment` e
 			WHERE  pt.name = pc.pol_type and e.name = pc.equipment
-			and '%(not_cdcl)s' and '%(disa)s'
+		         and '%(disa)s'
 			AND    pc.date <= '%(to_date)s'
 			) AS X
 			where branch like '%(branch)s'
 			GROUP BY branch, pol_type, uom
-			""" % {'not_cdcl': not_cdcl, 'disa': dis, 'from_date': str(filters.from_date), 'to_date': str(filters.to_date), 'branch': str(filters.branch)}
+			""" % { 'disa': dis, 'from_date': str(filters.from_date), 'to_date': str(filters.to_date), 'branch': str(filters.branch)}
 		#frappe.msgprint(query)
 
 		return query;

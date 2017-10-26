@@ -27,10 +27,10 @@ class Task(Document):
                 cur_year  = str(today())[0:4]
                 cur_month = str(today())[5:7]
                 if self.project:
-                        serialno  = make_autoname("TSK" + self.project[-3:] + ".####")
+                        serialno  = make_autoname("TSK" + self.project[-4:] + ".####")
                         #self.name = serialno[0:3] + cur_year + cur_month + serialno[3:]
                 else:
-                        serialno  = make_autoname("TSK.YY.MM.###")
+                        serialno  = make_autoname("TSK.YY.MM.####")
 
                 self.name = serialno
                 

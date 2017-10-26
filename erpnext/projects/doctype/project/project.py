@@ -28,7 +28,7 @@ class Project(Document):
         def autoname(self):
                 cur_year  = str(today())[0:4]
                 cur_month = str(today())[5:7]
-                serialno  = make_autoname("PRJ.###")
+                serialno  = make_autoname("PRJ.####")
                 self.name = serialno[0:3] + cur_year + cur_month + serialno[3:]
                 
 	def get_feed(self):
