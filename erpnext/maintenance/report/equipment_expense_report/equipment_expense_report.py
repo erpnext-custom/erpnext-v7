@@ -15,6 +15,15 @@ def get_conditions(filters):
 	branch = consumption_date = rate_date = jc_date = insurance_date =  reg_date = tc_date = operator_date = le_date = ss_date= reg_date = not_cdcl = disable =  ""
 	if filters.get("branch"):
 		branch += str(filters.branch)
+
+	if filters.get("not_cdcl"):
+                not_cdcl +=  "0"
+        
+        if filters.get("include_disabled"):
+                disable  += " "
+        else:
+                disable  += "0" 
+
 	if filters.get("from_date") and filters.get("to_date"):
 		consumption_date = get_dates(filters, "vl", "from_date", "to_date")
 		rate_date 	 = get_dates(filters, "pol", "date")
@@ -25,15 +34,6 @@ def get_conditions(filters):
 		le_date		 = get_dates(filters, "le", "encashed_date")
 		ss_date		 = get_dates(filters, "ss", "start_date", "ifnull(end_date,curdate())")
 		reg_date	 = get_dates(filters, "reg", "registration_date")
-
-	if filters.get("not_cdcl"):
-                not_cdcl +=  '0'
-	
-	if filters.get("include_disabled"):
-                disable  += " "
-        '''else:
-                disable  += '0' '''
-
 	
 	return branch, consumption_date, rate_date, jc_date, insurance_date, reg_date,  operator_date, tc_date, le_date, ss_date, not_cdcl, disable
 
@@ -55,11 +55,12 @@ def get_data(filters):
 	branch, consumption_date, rate_date, jc_date, insurance_date,  reg_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable  =  get_conditions(filters)
 	#frappe.msgprint(reg_date)
 	data = []
-	not_cdcll = "where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else "where not_cdcl = not_cdcl"
-	branch_cond = " branch = '{0}'".format(branch) if branch else "branch = branch"
+	not_cdcll = "where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else "where not_cdcl = '' "
+	#branch_cond = "where branch = '{0}'".format(branch) if branch else "where branch = "
 	dis = " is_disabled = '{0}'".format(disable) if disable else " is_disabled = 0 "
-	#branch_cond = " where branch = '{0}'".format(branch) if branch else ""
-	rate_cond = " and branch = '{0}'" .format(branch) if branch else ""	
+	branch_cond = "branch = '{0}'".format(branch) if branch else " branch = branch"
+	rate_cond = "branch = '{0}'" .format(branch) if branch else ""
+	frappe.msgprint("{0}".format(branch_cond))	
 	equipments = frappe.db.sql("""
                                 select name, branch, equipment_number, equipment_type
                                 from `tabEquipment`
@@ -68,6 +69,14 @@ def get_data(filters):
 				{2}
 				order by branch, name
                         """.format(not_cdcll, branch_cond, dis), as_dict=1)
+
+	'''equipments = frappe.db.sql("""
+                                select name, branch, equipment_number, equipment_type
+                                from `tabEquipment`
+                                {0}
+                                order by branch, name
+                        """.format(branch_cond), as_dict=1)'''
+
 	frappe.msgprint(equipments)
     	for eq in equipments:
 		#:frappe.msgprint("{0}".format(eq))

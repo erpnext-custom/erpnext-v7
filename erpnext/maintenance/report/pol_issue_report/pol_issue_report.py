@@ -31,6 +31,7 @@ def get_data(filters):
 	if filters.get("from_date") and filters.get("to_date"):
 
 		query += " and p.date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+	
 	if filters.get("not_cdcl"):
                 query += " and e.not_cdcl = 0"
 
