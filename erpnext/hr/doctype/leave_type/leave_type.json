@@ -199,7 +199,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-29 15:46:43.548024", 
+ "modified": "2017-10-26 20:34:19.429571", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Leave Type", 
@@ -239,7 +239,7 @@
    "print": 1, 
    "read": 1, 
    "report": 1, 
-   "role": "SMCL HR Master", 
+   "role": "HR Master", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
@@ -310,5 +310,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "DESC", 
+ "track_changes": 1, 
  "track_seen": 0
 }
