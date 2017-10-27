@@ -9,26 +9,31 @@ def create_users():
 	emp = frappe.db.sql("select name, company_email from tabEmployee where status = 'Active'", as_dict=True)
 	if emp:
 		for e in emp:
-			if e.company_email == 'sumzang.choden@cdcl.bt':
-				doc = frappe.new_doc("User")
-				doc.enabled = 1
-				doc.email = e.company_email
-				doc.first_name = "Test"
-				doc.new_password = "CDCL!2017"
-				doc.save()
-			
-				role = frappe.new_doc("UserRole")
-				role.parent = doc.name
-				role.role = "Employee"
-				role.parenttype = "User"
-				role.save()
-				doc.save()
-				em = frappe.get_doc("Employee", e.name)	
-				em.user_id = doc.name
-				em.save()
-				print(str(e.name) + " ==> " + str(e.company_email) + " ==> " + str(doc.name))
-				break
+			print(str(e.name))
+			doc = frappe.new_doc("User")
+			doc.enabled = 1
+			doc.email = e.company_email
+			doc.first_name = "Test"
+			doc.new_password = "CDCL!2017"
+			doc.save()
+		
+			role = frappe.new_doc("UserRole")
+			role.parent = doc.name
+			role.role = "Employee"
+			role.parenttype = "User"
+			role.save()
+			doc.save()
+			em = frappe.get_doc("Employee", e.name)	
+			em.user_id = doc.name
+			em.save()
+		print("DONE")
 
+def submit_assets():
+	list = frappe.db.sql("select name from tabAsset where docstatus = 0", as_dict=True)
+	if list:
+		for a in list:
+			doc = frappe.get_doc("Asset", a.name)
+			doc.submit()
 
 def give_permission():
 	users = frappe.db.sql("select name from tabUser", as_dict=True)

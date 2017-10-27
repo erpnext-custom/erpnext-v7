@@ -210,6 +210,7 @@ def upload():
 			
 			ret.append("Salary Structure created for " + str(d.employee))
 		except Exception, e:
+			frappe.db.rollback()
 			error = True
 			ret.append('Error for row (#%d) ' % (row_idx))
 			ret.append(str(frappe.get_traceback()))
