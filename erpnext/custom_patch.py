@@ -31,9 +31,15 @@ def create_users():
 def submit_assets():
 	list = frappe.db.sql("select name from tabAsset where docstatus = 0", as_dict=True)
 	if list:
+		num = 0
 		for a in list:
+			num = num + 1
 			doc = frappe.get_doc("Asset", a.name)
 			doc.submit()
+			print(str(a.name))
+			if cint(num) % 100 == 0:
+				frappe.db.commit()
+		print("DONE")
 
 def give_permission():
 	users = frappe.db.sql("select name from tabUser", as_dict=True)
