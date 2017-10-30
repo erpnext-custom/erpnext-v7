@@ -60,6 +60,7 @@ def get_notification_config():
                         "Project Advance": {"docstatus": 0},
                         "Project Invoice": {"docstatus": 0},
                         "Project Payment": {"docstatus": 0},
+                        "Cash Journal Entry": {"docstatus": 0},
                         "Equipment Hire Form": {"docstatus": 0},
                         "Vehicle Logbook": {"docstatus": 0},
                         "Hire Charge Invoice": {"docstatus": 0},

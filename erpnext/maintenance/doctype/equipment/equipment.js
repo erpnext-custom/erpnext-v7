@@ -41,11 +41,21 @@ frappe.ui.form.on("Equipment", "refresh", function(frm) {
 
 cur_frm.fields_dict['operators'].grid.get_field('operator').get_query = function(frm, cdt, cdn) {
 	var d = locals[cdt][cdn];
-	return {
-		filters: [
-		['Employee', 'designation', 'in', ['Operator', 'Driver']],
-		['Employee', 'branch', '=', frm.branch],
-		['Employee', 'status', '=', 'Active']
-		]
+	if (d.employee_type == "Employee") {
+		return {
+			filters: [
+			['Employee', 'designation', 'in', ['Operator', 'Driver']],
+			['Employee', 'branch', '=', frm.branch],
+			['Employee', 'status', '=', 'Active']
+			]
+		}
+	}
+	else {
+		return {
+			filters: [
+				['Muster Roll Employee', 'branch', '=', frm.branch],
+				['Muster Roll Employee', 'status', '=', 'Active']
+			]
+		}
 	}
 }

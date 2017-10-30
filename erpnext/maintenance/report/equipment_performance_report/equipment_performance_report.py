@@ -9,6 +9,7 @@ from frappe import _, json
 from frappe.utils import flt, cint
 from frappe.utils.data import get_last_day
 from frappe.utils.data import flt, cint,add_days, cstr, flt, getdate, nowdate, rounded, date_diff
+
 def execute(filters=None):
 	columns = get_columns(filters)
 	data = get_data(filters)
@@ -126,15 +127,15 @@ def get_data(filters):
 	#frappe.msgprint("dis {0}".format(dis))
 	#frappe.msgprint("not cd {0}".format(not_cdcll))
 	equipments = frappe.db.sql("""
-                                select name, branch, equipment_number, equipment_type
+                                select name, branch, equipment_number, equipment_type, equipment_model
                                 from `tabEquipment`
 				{0} and 
 				{1} and 
 				{2}
 				order by branch, name
                         """.format(not_cdcll, branch_cond, dis), as_dict=1)
-
-    	for eq in equipments:
+ 
+   	for eq in equipments:
 
                 # `tabVehicle Logbook`
         	vl = frappe.db.sql("""
@@ -152,8 +153,7 @@ def get_data(filters):
                         	where equipment = '{0}'
                         	and   docstatus = 1
 				and   {1}
-				{2}
-                    """.format(eq.name, rate_date, rate_cond), as_dict=1)[0]
+                    """.format(eq.name, rate_date), as_dict=1)[0]
 
                 # `tabJob Card`
             	jc = frappe.db.sql("""
@@ -164,7 +164,7 @@ def get_data(filters):
                             	and   docstatus = 1
 				and   {1}
                     """.format(eq.name,jc_date), as_dict=1)[0]
-		frappe.msgprint(str(eq.name))
+
 		#revenue
 		revn = frappe.db.sql("""
 				  select sum(ifnull(id.total_amount,0)) as rev
@@ -230,7 +230,7 @@ def get_data(filters):
 			                select employee, gross_pay, start_date, end_date
                     			from `tabSalary Slip` ss
                     			where employee = '{0}'
-                   			and docstatus = 1
+                   			and ss.docstatus = 1
                     			and {1} group by employee
            		      """.format(co.operator, ss_date),  as_dict=1)
 			#frappe.msgprint(str(cem))
@@ -264,6 +264,7 @@ def get_data(filters):
 			travel_claim += flt(tc.travel_claim)
 			e_amount     += flt(lea.e_amount)
 			gross_pay    += flt(total_sal)
+			frappe.msgprint(str(pol.rate))
 			total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
 			total_rev    = flt(revn.rev)
 		pro_target = 0.0
@@ -275,7 +276,9 @@ def get_data(filters):
                                from  `tabHire Charge Item` hi, `tabHire Charge Parameter` hp
                                where hi.parent = hp.name 
                                and hp.equipment_type = '{0}'
-			""".format(eq.equipment_type), as_dict=1)
+			       and hp.equipment_model = '{1}'
+			""".format(eq.equipment_type, eq.equipment_model), as_dict=1)
+
 		rate = []
 		bench = []
 		total_hc = 0
@@ -389,6 +392,7 @@ def get_columns(filters):
                 ("ID") + ":Link/Equipment:120",
 		("Registration No") + ":Data:120",
 		("Equipment Type") + ":Data:120",
+		("Equipment Model") + ":Data:120",
 		("Total Expense") + ":Currency:120",
 		("Total Revenue") + ":Currency:120",
 		("R-E") + ":Currency:120",

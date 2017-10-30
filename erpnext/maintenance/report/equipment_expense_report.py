@@ -18,7 +18,7 @@ def get_data(filters):
                                 select name, equipment_number, equipment_type
                                 from `tabEquipment`
                         """, as_dict=1)
-
+	frappe.msgprint("INSIDE")
         for eq in equipments:
                 # `tabVehicle Logbook`
                 vl = frappe.db.sql("""
@@ -36,12 +36,12 @@ def get_data(filters):
                                 and docstatus = 1
                         """.format(eq.name), as_dict=1)[0]
 
-				# Insurance
-				ins = frappe.db.sql("""
-								select id.insured_amount as insur from `tabInsurance Details` id,`tabInsurance and Registration` ir
-								where id.parent = ir.name and ir.equipment = '{0}'
- 								and ir.docstatus = 1
-						""".format(eq.name), as_dict=1)[0]
+		# Insurance
+		ins = frappe.db.sql("""
+						select id.insured_amount as insur from `tabInsurance Details` id,`tabInsurance and Registration` ir
+						where id.parent = ir.name and ir.equipment = '{0}'
+						and ir.docstatus = 1
+				""".format(eq.name), as_dict=1)[0]
 
                 # `tabJob Card`
                 # owned_by pending
@@ -55,42 +55,42 @@ def get_data(filters):
 				#Insurance
 
 
-				#Total Travel Claim
-				c_operator = frappe.db.sql(	"""select e.current_operator from `tabEquipment` e
-								where e.name = '{0}' and e.docstatus = 1 """.format(eq.name), as_dict=1)
-				for co in c_operator:
-					tc = frappe.db.sql("""
-								select sum(ifnull(tc.total_claim_amount,0)) as travel_claim
-								from `tabTravel Claim` tc where tc.employee = '{0}'
-								and tc.docstatus = 1
-								""".format(co.current_operator), as_dict=1)
+		#Total Travel Claim
+		c_operator = frappe.db.sql(	"""select e.current_operator from `tabEquipment` e
+						where e.name = '{0}' and e.docstatus = 1 """.format(eq.name), as_dict=1)
+		for co in c_operator:
+			tc = frappe.db.sql("""
+						select sum(ifnull(tc.total_claim_amount,0)) as travel_claim
+						from `tabTravel Claim` tc where tc.employee = '{0}'
+						and tc.docstatus = 1
+						""".format(co.current_operator), as_dict=1)
 
-				#Leave Encashment Aomunt
-					lea = frappe.db.sql("""
-								select sum(ifnull(le.encashment_amount,0)) as e_amount from `tabLeave Encashment` le
-								where and le.employee = '{0}'
-								and le.docstatus = 1
-								""".format(co.current_operator), as_dict=1)[0]
+			#Leave Encashment Aomunt
+			lea = frappe.db.sql("""
+						select sum(ifnull(le.encashment_amount,0)) as e_amount from `tabLeave Encashment` le
+						where and le.employee = '{0}'
+						and le.docstatus = 1
+						""".format(co.current_operator), as_dict=1)[0]
 
-                # `tabSalary Slip`
-                	ss = frappe.db.sql("""
-	                               select sum(ifnull(gross_pay,0)) as gross_pay
-	                               from `tabSalary Slip` ss where ss.employee = '{0}'
-	                               and ss.docstatus = 1
-	                       		""".format(co.current_operator) as_dict=1)[0]
+			# `tabSalary Slip`
+			ss = frappe.db.sql("""
+				       select sum(ifnull(gross_pay,0)) as gross_pay
+				       from `tabSalary Slip` ss where ss.employee = '{0}'
+				       and ss.docstatus = 1
+					""".format(co.current_operator) as_dict=1)[0]
 
 
-    		values.append((eq.name,
-                           eq.equipment_number,
-                           eq.equipment_type,
-                           vl.consumption,
-                           pol.rate,
-                           jc.goods_amount,
-                           jc.services_amount,
-						   ins.insur))
+		values.append((eq.name,
+			   eq.equipment_number,
+			   eq.equipment_type,
+			   vl.consumption,
+			   pol.rate,
+			   jc.goods_amount,
+			   jc.services_amount,
+			   ins.insur))
 
         #frappe.msgprint(_("{0}").format(tuple(values)))
-        	return tuple(values)
+	return tuple(values)
 
 def get_columns(filters):
 	cols = [

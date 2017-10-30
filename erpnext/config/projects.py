@@ -63,6 +63,22 @@ def get_data():
                                 },
                         ]
                 },
+                {
+                        "label": _("Cash Journal"),
+                        "icon": "icon-pencil",
+                        "items": [
+                                {
+                                        "type": "doctype",
+                                        "name": "Imprest Type",
+                                        "description": _("Imprest Type Master."),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Cash Journal Entry",
+                                        "description": _("Cash Journal Entries."),
+                                },
+                        ]
+                },
 		{
 			"label": _("Manpower Management"),
 			"icon": "icon-facetime-video",
@@ -135,11 +151,6 @@ def get_data():
 					"name": "Project Muster Roll Tool",
 					"label": "Assign Muster Roll To Projects",
 					"description": _("Project Muster Roll Tool"),
-				},
-				{
-					"type": "doctype",
-					"name": "Tender Records",
-					"description": _("Project Tender Records"),
 				},
 			]
 		},

@@ -131,7 +131,7 @@ def upload():
 					doc.append("earnings",{"salary_component": "Deputation Allowance", "amount": amount})	
 					ear += amount	
 				if d.officiating:
-					doc.eligible_for_officiating = 1
+					doc.eligible_for_officiating_allowance = 1
 					doc.officiating = d.officiating
 					amount = flt(d.basic) * 0.01 * flt(d.officiating)
 					doc.append("earnings",{"salary_component": "Officiating Allowance", "amount": amount})	

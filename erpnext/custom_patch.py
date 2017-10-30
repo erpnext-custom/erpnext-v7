@@ -4,6 +4,18 @@ from frappe.model.document import Document
 from frappe import msgprint
 from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
+from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+
+def submit_ss():
+	ss = frappe.db.sql("select name from `tabSalary Structure`", as_dict=True)
+	for s in ss:
+		doc = frappe.get_doc("Salary Structure", s.name)
+		for a in doc.earnings:
+			if a.salary_component == "Basic Pay":
+				print(str(doc.employee) + " ==> " + str(a.amount))
+				update_salary_structure(doc.employee, flt(a.amount), s.name)
+				break
+		#doc.save()
 
 def create_users():
 	emp = frappe.db.sql("select name, company_email from tabEmployee where status = 'Active'", as_dict=True)

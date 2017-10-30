@@ -136,6 +136,7 @@ def update_salary_structure(employee, new_basic, sal_struc_name=None):
 		if sst:
 			gross_pay = 0.00
 			deductions = 0.00
+			comm_amt = 0.00
 
 			#Earnings
 			for e in sst.earnings:
@@ -154,6 +155,7 @@ def update_salary_structure(employee, new_basic, sal_struc_name=None):
 					gross_pay += calc_amt
 				elif sst.eligible_for_communication_allowance and e.salary_component == 'Communication Allowance':
 					calc_amt = 0
+					comm_amt = round(flt(sst.communication_allowance))
 					calc_amt = round(flt(sst.communication_allowance))			
 					e.db_set('amount',calc_amt,update_modified=True)
 					gross_pay += calc_amt
@@ -218,7 +220,7 @@ def update_salary_structure(employee, new_basic, sal_struc_name=None):
 				for d in sst.deductions:
 					if d.salary_component == 'Salary Tax':
 						calc_tds_amt = 0;
-						calc_tds_amt = get_salary_tax(gross_pay-calc_pf_amt-calc_gis_amt)
+						calc_tds_amt = get_salary_tax(gross_pay-calc_pf_amt-calc_gis_amt-(0.5 * comm_amt))
 						d.db_set('amount',calc_tds_amt,update_modified = True)
 						deductions += calc_tds_amt
 					

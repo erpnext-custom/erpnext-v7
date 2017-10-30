@@ -11,6 +11,7 @@ class VehicleLogbook(Document):
 	def validate(self):
 		self.check_duplicate()
 		self.calculate_totals()
+		self.update_operator()	
 
 	def on_update(self):
 		if self.rate_type == 'With Fuel':
@@ -19,6 +20,9 @@ class VehicleLogbook(Document):
 	def on_submit(self):
 		self.update_hire()
 		self.check_tank_capacity()
+	
+	def update_operator(self):
+		self.equipment_operator = frappe.db.get_value("Equipment", self.equipment, "current_operator")
 
 	def check_duplicate(self):		
 		for a in self.vlogs:
