@@ -22,15 +22,15 @@ def get_data(query, filters=None):
 	return data
 
 def construct_query(filters=None):
-		not_cdcl = dis  = ''
+		#not_cdcl = dis  = ''
 		if not filters.branch:
 			filters.branch = '%'
 		
 
-                if filters.get("include_disabled"):
-                        dis  += " e.is_disabled = e.is_disabled"
-                else:
-                        dis  += " and e.is_disabled = 0"
+                #if filters.get("include_disabled"):
+                        #dis  += " e.is_disabled = e.is_disabled"
+                #else:
+                        #dis  += " and e.is_disabled = 0"
 		query = """
 			select branch, pol_type, uom,
 				SUM(opening) opening,
@@ -69,7 +69,7 @@ def construct_query(filters=None):
 			where branch like '%(branch)s'
 			GROUP BY branch, pol_type, uom
 			""" % {'from_date': str(filters.from_date), 'to_date': str(filters.to_date), 'branch': str(filters.branch)}
-		frappe.msgprint(dis)
+		#frappe.msgprint(dis)
 
 		return query;
 
