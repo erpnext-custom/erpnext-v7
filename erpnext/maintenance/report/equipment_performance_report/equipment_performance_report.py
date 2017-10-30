@@ -23,8 +23,8 @@ def get_conditions(filters):
 
 	if filters.get("include_disabled"):
                 disable  += "is_disabled"
-        else:
-                disable  += "0"
+        '''else:
+                disable  += "0"'''
 
 	consumption_date = get_dates(filters, "vl", "from_date", "to_date")
 	rate_date 	 = get_dates(filters, "pol", "date")
@@ -118,13 +118,13 @@ def get_data(filters):
 	branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable  =  get_conditions(filters)
 	data = []
 	branch_cond = " branch = '{0}'".format(branch) if branch else "branch = branch"
-	not_cdcll = " where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else "where not_cdcl =! not_cdcl"
-	dis	= " is_disabled = '{0}'".format(disable) 
+	not_cdcll = " where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else "where not_cdcl = not_cdcl"
+	dis	= " is_disabled = {0}".format(disable) if disable else "is_disabled = 0"
 	#if disable else "is_disabled = is_disabled"
 	#branch_cond = " where branch = '{0}'".format(branch) if branch else ""
 	from_date = to_date = no_of_month = get_date_conditions(filters)
-	frappe.msgprint("dis {0}".format(dis))
-	frappe.msgprint("not cd {0}".format(not_cdcll))
+	#frappe.msgprint("dis {0}".format(dis))
+	#frappe.msgprint("not cd {0}".format(not_cdcll))
 	equipments = frappe.db.sql("""
                                 select name, branch, equipment_number, equipment_type
                                 from `tabEquipment`

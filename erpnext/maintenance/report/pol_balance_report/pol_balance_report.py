@@ -28,10 +28,9 @@ def construct_query(filters=None):
 		
 
                 if filters.get("include_disabled"):
-                        dis  += " e.is_disabled = ''"
+                        dis  += " e.is_disabled = e.is_disabled"
                 else:
                         dis  += " and e.is_disabled = 0"
-
 		query = """
 			select branch, pol_type, uom,
 				SUM(opening) opening,
@@ -63,15 +62,14 @@ def construct_query(filters=None):
 					WHEN pc.date >= '%(from_date)s' THEN pc.qty
 					ELSE 0
 				END AS received
-			FROM   `tabConsumed POL` pc, `tabPOL Type` pt, `tabEquipment` e
-			WHERE  pt.name = pc.pol_type and e.name = pc.equipment
-		         and '%(disa)s'
+			FROM   `tabConsumed POL` pc, `tabPOL Type` pt
+			WHERE  pt.name = pc.pol_type
 			AND    pc.date <= '%(to_date)s'
 			) AS X
 			where branch like '%(branch)s'
 			GROUP BY branch, pol_type, uom
-			""" % { 'disa': dis, 'from_date': str(filters.from_date), 'to_date': str(filters.to_date), 'branch': str(filters.branch)}
-		#frappe.msgprint(query)
+			""" % {'from_date': str(filters.from_date), 'to_date': str(filters.to_date), 'branch': str(filters.branch)}
+		frappe.msgprint(dis)
 
 		return query;
 

@@ -20,9 +20,9 @@ def get_conditions(filters):
                 not_cdcl +=  "0"
         
         if filters.get("include_disabled"):
-                disable  += " "
-        else:
-                disable  += "0" 
+                disable  += "is_disabled"
+        '''else:
+                disable  += "0" '''
 
 	if filters.get("from_date") and filters.get("to_date"):
 		consumption_date = get_dates(filters, "vl", "from_date", "to_date")
@@ -57,7 +57,7 @@ def get_data(filters):
 	data = []
 	branch_cond = " branch = '{0}'".format(branch) if branch else "branch = branch"
         not_cdcll = " where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else "where not_cdcl = not_cdcl"
-        dis     = " is_disabled = '{0}'".format(disable)
+        dis     = "is_disabled = {0}".format(disable) if disable else "is_disabled = 0"
         #branch_cond = " where branch = '{0}'".format(branch) if branch else ""
 
         equipments = frappe.db.sql("""
@@ -68,7 +68,6 @@ def get_data(filters):
                                 {2}
                                 order by branch, name
                         """.format(not_cdcll, branch_cond, dis), as_dict=1)
-
 	'''equipments = frappe.db.sql("""
                                 select name, branch, equipment_number, equipment_type
                                 from `tabEquipment`
@@ -76,7 +75,6 @@ def get_data(filters):
                                 order by branch, name
                         """.format(branch_cond), as_dict=1)'''
 
-	frappe.msgprint(equipments)
     	for eq in equipments:
 		#:frappe.msgprint("{0}".format(eq))
                 # `tabVehicle Logbook`
@@ -87,7 +85,6 @@ def get_data(filters):
                         	and   docstatus = 1
 				and   {1} 
                     """.format(eq.name,consumption_date), as_dict=1)[0]
-
                 # `tabPOL`
             	pol = frappe.db.sql("""
                             	select avg(rate) as rate
@@ -95,8 +92,7 @@ def get_data(filters):
                         	where equipment = '{0}'
                         	and   docstatus = 1
 				and   {1} 
-				{2}
-                    """.format(eq.name, rate_date, rate_cond), as_dict=1)[0]
+                    """.format(eq.name, rate_date), as_dict=1)[0]
 
                 # `tabJob Card`
                 # owned_by pending

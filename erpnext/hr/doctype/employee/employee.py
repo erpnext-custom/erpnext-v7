@@ -68,7 +68,12 @@ class Employee(Document):
 
 		# Following method introducted by SHIV on 04/10/2017
 		self.populate_work_history()
-                
+    
+	def before_save(self):
+		if self.branch != self.get_db_value("branch") and  self.user_id:
+			frappe.msgprint(str(self.get_db_value("branch")))
+			frappe.permissions.remove_user_permission("Branch", self.get_db_value("branch"), self.user_id)           
+ 
 	def on_update(self):
 		if self.user_id:
 			self.update_user()
