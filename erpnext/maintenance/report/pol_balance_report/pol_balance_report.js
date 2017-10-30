@@ -23,14 +23,6 @@ frappe.query_reports["POL Balance Report"] = {
 			"fieldtype": "Date",
 			"width": "80",
 			"reqd" : 1
-		},               
-		
-		{
-                        "fieldname": "include_disabled",
-                        "label": ("Include Disbaled Equipments"),
-                        "fieldtype": "Check",
-                        "default": 0
-                }
-
+		},          
 	]
 }
