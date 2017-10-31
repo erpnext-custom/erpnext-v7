@@ -12,7 +12,7 @@ def execute(filters=None):
 	return columns, data
 
 def get_conditions(filters):
-	branch = consumption_date = rate_date = jc_date = insurance_date =  reg_date = tc_date = operator_date = le_date = ss_date= reg_date = not_cdcl = disable =  ""
+	branch = consumption_date = rate_date = jc_date = insurance_date =  reg_date = tc_date = operator_date = le_date = ss_date= reg_date = not_cdcl = disable = mr_date =  ""
 	if filters.get("branch"):
 		branch += str(filters.branch)
 
@@ -34,8 +34,8 @@ def get_conditions(filters):
 		le_date		 = get_dates(filters, "le", "encashed_date")
 		ss_date		 = get_dates(filters, "ss", "start_date", "ifnull(end_date,curdate())")
 		reg_date	 = get_dates(filters, "reg", "registration_date")
-	
-	return branch, consumption_date, rate_date, jc_date, insurance_date, reg_date,  operator_date, tc_date, le_date, ss_date, not_cdcl, disable
+		mr_date		 = get_dates(filters, "mr_pay", "from_date", "to_date")
+	return branch, consumption_date, rate_date, jc_date, insurance_date, reg_date,  operator_date, tc_date, le_date, ss_date, not_cdcl, disable, mr_date
 
 def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	cond1 = ""
@@ -52,7 +52,7 @@ def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	return "({0} {1})".format(cond1, cond2)
 
 def get_data(filters):
-	branch, consumption_date, rate_date, jc_date, insurance_date,  reg_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable  =  get_conditions(filters)
+	branch, consumption_date, rate_date, jc_date, insurance_date,  reg_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable, mr_date  =  get_conditions(filters)
 	#frappe.msgprint(reg_date)
 	data = []
 	#branch_cond = " and branch = '{0}'".format(branch) if branch else " and branch = branch"
@@ -149,14 +149,25 @@ def get_data(filters):
 		for co in c_operator:
 			if co.employee_type == "Muster Roll Employee":
 				#PRoCESS FROM "PROCESS MR PAYMENT"
+				mr_pay = frappe.db.sql("""
+						select sum(ifnull(mr.total_overall_amount,0)) as mr_payment 
+						from `tabProcess MR Payment` mr 
+						where mr.name = '{0}' 
+						and mr.docstatus = 1
+						and '{1}'
+					""".format(co.operator, mr_date), as_dict=1)[0]
+				travel_claim += 0.0
+                                e_amount     += 0.0
+                                gross_pay    += flt(mr_pay.mr_payment)
+	
 			elif co.employee_type == "Employee":
 				tc = frappe.db.sql("""
-					select sum(ifnull(tc.total_claim_amount,0)) as travel_claim
-					from `tabTravel Claim` tc 
-					where tc.employee = '{0}'
-					and   tc.docstatus = 1
-					and   {1}
-				""".format(co.operator, tc_date), as_dict=1)[0]
+						select sum(ifnull(tc.total_claim_amount,0)) as travel_claim
+						from `tabTravel Claim` tc 
+						where tc.employee = '{0}'
+						and   tc.docstatus = 1
+						and   {1}
+					""".format(co.operator, tc_date), as_dict=1)[0]
 
 
 				#Leave Encashment Aomunt
@@ -206,13 +217,13 @@ def get_data(filters):
 						elif not co.end_date and e.start_date < co.start_date:
 							days = date_diff(e.end_date, co.start_date) + 1
 						#	frappe.msgprint("F")
-						total_sal += (flt(e.gross_pay) * days ) / total_days
-					else:
-						pass
+							total_sal += (flt(e.gross_pay) * days ) / total_days
+						else:
+							pass
 
-			travel_claim += flt(tc.travel_claim)
-			e_amount     += flt(lea.e_amount) 
-			gross_pay    += flt(total_sal)
+				travel_claim += flt(tc.travel_claim)
+				e_amount     += flt(lea.e_amount) 
+				gross_pay    += flt(total_sal)
 		        total_exp = 	(flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(reg.r_amount)+flt(jc.services_amount)+ travel_claim+e_amount + gross_pay
 		data.append((	eq.branch,
 				eq.name,

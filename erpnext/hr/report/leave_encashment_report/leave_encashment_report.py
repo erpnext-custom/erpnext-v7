@@ -5,6 +5,7 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		26/08/2016                              Original Report
+2.0               SHIV          31/10/2017                              Hardcoding of GLs removed
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -23,7 +24,7 @@ def execute(filters=None):
 	
 def get_columns(data):
 	columns = [
-		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140",
+		_("Employee") + ":Link/Employee:100", _("Employee Name") + "::140",
                 _("Transaction No") + ":Link/Leave Encashment:140", _("Date") + "::80", 
                 _("TPN No") + ":Link/Leave Encashment:80",
                 _("Accounts Entry") + ":Link/Journal Entry:120",
@@ -39,14 +40,18 @@ def get_columns(data):
 def get_data(filters):
 	conditions, filters = get_conditions(filters)
 
+	# Following two lines added by SHIV on 31/10/2017
+	enc_gl = frappe.db.get_value(doctype="HR Accounts Settings",fieldname="leave_encashment_account")
+	tax_gl = frappe.db.get_value(doctype="HR Accounts Settings",fieldname="salary_tax_account")
+
         data = frappe.db.sql("""
                 select t1.employee, t1.employee_name, t1.name, min(t1.application_date) as transactiondt,
                 min(t3.tpn_number) as tpn_number, t2.parent voucherno,
-                sum(case when t2.account = 'Leave Encashment - SMCL' then ifnull(debit_in_account_currency,0) else 0 end) grossamount,
-                sum(case when t2.account = 'Salary Tax - SMCL' then ifnull(credit_in_account_currency,0) else 0 end) taxamount,
+                sum(case when t2.account = '%(enc_gl)s' then ifnull(debit_in_account_currency,0) else 0 end) grossamount,
+                sum(case when t2.account = '%(tax_gl)s' then ifnull(credit_in_account_currency,0) else 0 end) taxamount,
                 sum(case
-                        when t2.account = 'Leave Encashment - SMCL' then ifnull(debit_in_account_currency,0)
-                        when t2.account = 'Salary Tax - SMCL' then -1*ifnull(credit_in_account_currency,0)
+                        when t2.account = '%(enc_gl)s' then ifnull(debit_in_account_currency,0)
+                        when t2.account = '%(tax_gl)s' then -1*ifnull(credit_in_account_currency,0)
                         else 0 end) as netamount,
                 t1.remarks,
                 min(t1.balance_before) as balance_before, min(t1.encashed_days) as encashed_days, min(t1.balance_after) as balance_after,
@@ -57,9 +62,9 @@ def get_data(filters):
                 and t2.reference_type = 'Leave Encashment'
                 left join `tabEmployee` t3
                 on t3.employee = t1.employee                
-                where t1.docstatus = 1 %s
+                where t1.docstatus = 1 %(cond)s
                 group by t1.employee, t1.employee_name, t1.name, t2.parent, t1.remarks
-                """ % (conditions,), filters)
+                """ % ({"enc_gl": enc_gl, "tax_gl": tax_gl, "cond": conditions}), filters)
 		
 	if not data:
 		msgprint(_("No Data Found for month: "), raise_exception=1)
