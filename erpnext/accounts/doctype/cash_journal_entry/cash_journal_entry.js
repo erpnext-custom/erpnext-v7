@@ -12,7 +12,6 @@ frappe.ui.form.on('Cash Journal Entry', {
 			{fieldname: 'budget_account', columns: 2},
 			{fieldname: 'remarks', columns: 1}
 		];
-		set_mandatory(frm);
 	},	
 	
 	onload: function(frm){
@@ -40,6 +39,7 @@ frappe.ui.form.on('Cash Journal Entry', {
 	},
 	
 	entry_type: function(frm){
+		set_mandatory(frm);
 		calculate_totals(frm);
 	},
 	
@@ -72,6 +72,7 @@ frappe.ui.form.on('Cash Journal Detail',{
 });
 
 var set_mandatory = function(frm){
+	console.log('inside set_mandatory: '+frm.doc.entry_type);
 	frm.toggle_reqd(["imprest_type", "amount"], (frm.doc.entry_type == 'Receipt' ? 1 : 0));
 	frm.toggle_reqd("reference_no", (frm.doc.entry_type == 'Purchase' ? 1 : 0));	
 }
@@ -81,7 +82,7 @@ var calculate_amount = function(frm, cdt, cdn){
 	var amount = 0.0;
 	
 	amount = parseFloat(child.quantity)*parseFloat(child.rate);
-	frappe.model.set_value(cdt, cdn, "amount", parseFloat(amount));
+	frappe.model.set_value(cdt, cdn, "amount", parseFloat(amount) || 0.0);
 }
 
 var calculate_totals = function(frm){

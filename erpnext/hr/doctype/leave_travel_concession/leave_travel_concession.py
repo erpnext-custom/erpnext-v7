@@ -26,7 +26,7 @@ class LeaveTravelConcession(Document):
 	def validate_duplicate(self):
 		doc = frappe.db.sql("select name from `tabLeave Travel Concession` where docstatus != 2 and fiscal_year = \'"+str(self.fiscal_year)+"\' and name != \'"+str(self.name)+"\'" )		
 		if doc:
-			frappe.throw("Can not create multiple LTC for the same year")
+			frappe.throw("Cannot create multiple LTC for the same year")
 
 	def calculate_values(self):
 		if self.items:
@@ -93,6 +93,7 @@ class LeaveTravelConcession(Document):
 		self.set('items', [])
 
 		for d in entries:
+			d.basic_pay = d.amount
 			if getdate(str(self.fiscal_year) + "-01-01") < getdate(d.date_of_joining) <  getdate(str(self.fiscal_year) + "-12-31"):
 				if cint(str(d.date_of_joining)[8:10]) < 15:
 					months = 12 - cint(str(d.date_of_joining)[5:7]) + 1
@@ -103,7 +104,6 @@ class LeaveTravelConcession(Document):
 				if flt(d.amount) > 15000:
 					amount = 15000
 				d.amount = round(flt((flt(months)/12.0) * amount), 2)
-				frappe.msgprint(str(d.employee) + " ==> " + str(d.date_of_joining) + " ==> " + str(d.amount) + " ==> " + str(amount))
 			else:
 				if flt(d.amount) > 15000:
 					d.amount = 15000
