@@ -264,7 +264,7 @@ def get_data(filters):
 			travel_claim += flt(tc.travel_claim)
 			e_amount     += flt(lea.e_amount)
 			gross_pay    += flt(total_sal)
-			frappe.msgprint(str(pol.rate))
+			#frappe.msgprint(str(pol.rate))
 			total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
 			total_rev    = flt(revn.rev)
 		pro_target = 0.0

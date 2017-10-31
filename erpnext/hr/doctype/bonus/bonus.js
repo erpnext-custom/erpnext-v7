@@ -1,9 +1,24 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		  		  SHIV		                        31/10/2017         Display Fields added to grid table "items"
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
 
 frappe.ui.form.on('Bonus', {
 	setup: function(frm) {
 		frm.get_docfield("items").allow_bulk_edit = 1;
+		// Following coded added by SHIV on 31/10/2017
+		frm.get_field('items').grid.editable_fields = [
+			{fieldname: 'employee_name', columns: 2},
+			{fieldname: 'basic_pay', columns: 2},
+			{fieldname: 'amount', columns: 2},
+			{fieldname: 'tax_amount', columns: 2},
+			{fieldname: 'balance_amount', columns: 2}
+		];
 	},
 	refresh: function(frm) {
 		if(!frm.doc.posting_date) {
