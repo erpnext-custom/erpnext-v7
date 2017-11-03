@@ -40,6 +40,8 @@ frappe.ui.form.on('BOQ', {
 			}			
 		}
 		
+		frm.trigger("get_defaults");
+		
 		if(frm.doc.docstatus==1 && parseFloat(frm.doc.claimed_amount) < (parseFloat(frm.doc.total_amount)+parseFloat(frm.doc.price_adjustment))){
 			/*
 			frm.add_custom_button(__("Claim Advance"),function(){frm.trigger("claim_advance")},
@@ -76,6 +78,15 @@ frappe.ui.form.on('BOQ', {
 			method: "erpnext.projects.doctype.boq.boq.make_book_entry",
 			frm: frm
 		});
+	},
+	
+	project: function(frm){
+		frm.trigger("get_defaults");
+	},
+	
+	get_defaults: function(frm){
+		frm.add_fetch("project", "branch","branch");
+		frm.add_fetch("project", "cost_center","cost_center");		
 	},
 });
 

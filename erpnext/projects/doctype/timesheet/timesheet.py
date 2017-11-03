@@ -145,7 +145,13 @@ class Timesheet(Document):
 
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
         # Following method introduced by SHIV on 2017/08/15
-        def set_defaults(self):                
+        def set_defaults(self):
+                # Defaults
+                if self.project:
+                        base_project    = frappe.get_doc("Project", self.project)
+                        self.branch     = base_project.branch
+                        self.cost_center= base_project.cost_center
+                
                 # `Timesheet Detail` Validations
                 total_target_quantity           = 0.0
                 total_target_quantity_complete  = 0.0
@@ -189,29 +195,8 @@ class Timesheet(Document):
         def calculate_target_quantity(self):
                 if flt(self.target_quantity_complete) > flt(self.target_quantity):
                         frappe.throw(_("Total Achieved value({0}) cannot be greater than Task's Target value({1}).").format(flt(self.target_quantity_complete),flt(self.target_quantity)))
-                else:
-                        # Updating Task
-                        base_task = frappe.get_doc("Task", self.task)
-                        base_task.db_set('target_quantity_complete',self.target_quantity_complete)
-
-                        task = frappe.db.sql("""
-                                select sum(ifnull(work_quantity_complete,0)) task_progress
-                                from `tabTimesheet` as ts
-                                where ts.project = %s
-                                and ts.docstatus < 2
-                                and ts.task = %s
-                                """, (self.project, self.task), as_dict=1)[0]
-                        
-                        base_task.db_set('work_quantity_complete',task.task_progress)
-
-                        # Updating Project Progress
-                        tl = frappe.db.sql("""
-                                select sum(ifnull(work_quantity_complete,0)) project_progress
-                                from `tabTimesheet` as ts
-                                where ts.project = %s
-                                and ts.docstatus < 2
-                                """, (self.project), as_dict=1)[0]
-
+                else:   
+                        # Updating Project Progress                        
                         base_project = frappe.get_doc("Project",self.project)
                         base_project.update_task_progress()
                         base_project.update_project_progress()

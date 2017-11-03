@@ -79,6 +79,11 @@ class Task(Document):
                         self.target_uom = 'Percent'
                         if not self.target_quantity:
                                 self.target_quantity = 100
+
+                if self.project:
+                        base_project    = frappe.get_doc("Project", self.project)
+                        self.branch     = base_project.branch
+                        self.cost_center= base_project.cost_center 
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
         
 	def on_update(self):

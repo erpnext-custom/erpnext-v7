@@ -976,7 +976,7 @@
  "istable": 0, 
  "max_attachments": 5, 
  "menu_index": 0, 
- "modified": "2017-10-23 11:35:07.321678", 
+ "modified": "2017-11-03 15:32:01.634132", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Task", 
@@ -984,7 +984,7 @@
  "permissions": [
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -1000,6 +1000,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
@@ -1024,7 +1025,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 1, 
@@ -1040,6 +1041,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }
  ], 

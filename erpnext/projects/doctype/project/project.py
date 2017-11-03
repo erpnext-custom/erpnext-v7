@@ -8,6 +8,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                          "Activity Tasks"
 2.0		  SHIV		                    02/09/2017         make_advance_payment method is created.
 2.0		  SHIV		                    05/09/2017         make_project_payment method is created.
+2.0               SHIV                              03/11/2017         set_status method is created.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -77,9 +78,13 @@ class Project(Document):
 		self.sync_tasks()
 		self.tasks = []
 		'''
+		# set_status method created by SHIV on 03/11/2017
+		self.set_status()
+		
 		# Following code added by SHIV on 2017/08/11
 		self.validate_target_quantity()
 		self.validate_work_quantity()
+		self.validate_imprest()
 		self.sync_activity_tasks()
 		self.activity_tasks = []
 		self.project_advance_item = []
@@ -103,6 +108,23 @@ class Project(Document):
 		self.update_group_tasks()
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
+        def set_status(self):
+                self.docstatus = {
+                      "Ongoing": 0,
+                      "Completed": 1,
+                      "Cancelled": 2
+                }[str(self.status) or "Ongoing"]
+
+        def validate_imprest(self):
+                if flt(self.imprest_limit) < 0:
+                        frappe.throw(_("Imprest Limit cannot be a negative value."),title="Invalid Value")
+                        
+                if flt(self.imprest_limit) < flt(self.imprest_received):
+                        frappe.throw(_("Imprest Limit cannot be less than already received amount."),title="Invalid Value")
+
+                self.imprest_receivable = flt(self.imprest_limit) - flt(self.imprest_received)
+
+        
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         def validate_target_quantity(self):
                 for task in self.activity_tasks:

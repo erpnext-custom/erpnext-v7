@@ -199,7 +199,16 @@ frappe.ui.form.on("Project", {
 			});
 		}
 		// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-	}
+	},
+	
+	imprest_limit: function(frm){
+		if (parseFloat(frm.doc.imprest_limit || 0.0) < parseFloat(frm.doc.imprest_received || 0.0)){
+			msgprint(__("Imprest Limit cannot be less than already received amount."));
+		}
+		else {
+			cur_frm.set_value("imprest_receivable",parseFloat(frm.doc.imprest_limit || 0.0)-parseFloat(frm.doc.imprest_received || 0.0))
+		}
+	},
 });
 
 frappe.ui.form.on("Project Task", {

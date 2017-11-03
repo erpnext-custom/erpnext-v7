@@ -859,7 +859,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-13 11:58:57.693464", 
+ "modified": "2017-11-03 14:03:23.773452", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Project Payment", 
@@ -889,7 +889,7 @@
   {
    "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 

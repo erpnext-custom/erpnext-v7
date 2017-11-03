@@ -54,6 +54,8 @@ class MBEntry(Document):
                         base_project          = frappe.get_doc("Project", self.project)
                         self.company          = base_project.company
                         self.customer         = base_project.customer
+                        self.branch           = base_project.branch
+                        self.cost_center      = base_project.cost_center
                         
                 if self.boq:
                         base_boq              = frappe.get_doc("BOQ", self.boq)

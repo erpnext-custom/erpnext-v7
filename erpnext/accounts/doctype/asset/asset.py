@@ -97,7 +97,7 @@ class Asset(Document):
 
 	def make_depreciation_schedule(self):
 		self.schedules = []
-		done = ""
+		dep_done = 0
 		if not self.get("schedules") and self.next_depreciation_date:
 			accumulated_depreciation = flt(self.opening_accumulated_depreciation)
 			income_accumulated_depreciation = flt(self.income_tax_opening_depreciation_amount)
@@ -137,14 +137,26 @@ class Asset(Document):
 							"accumulated_depreciation_income_tax": income_accumulated_depreciation
 						})
 					else:
-						self.append("schedules", {
-							"schedule_date": schedule_date,
-							"depreciation_amount": flt(self.gross_purchase_amount) - flt(accumulated_depreciation) + flt(self.expected_value_after_useful_life) + flt(depreciation_amount),
-							"depreciation_income_tax": income_tax_amount,
-							"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life),
-							"accumulated_depreciation_income_tax": income_accumulated_depreciation
-						})
-						break
+						if dep_done == 0:
+							self.append("schedules", {
+								"schedule_date": schedule_date,
+								"depreciation_amount": flt(self.gross_purchase_amount) - flt(accumulated_depreciation) + flt(self.expected_value_after_useful_life) + flt(depreciation_amount),
+								"depreciation_income_tax": income_tax_amount,
+								"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life),
+								"accumulated_depreciation_income_tax": income_accumulated_depreciation
+							})
+							dep_done = 1
+			
+						if dep_done == 1 and income_tax_amount == 0:
+							break
+						else:
+							self.append("schedules", {
+								"schedule_date": schedule_date,
+								"depreciation_amount": 0,
+								"depreciation_income_tax": income_tax_amount,
+								"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life),
+								"accumulated_depreciation_income_tax": income_accumulated_depreciation
+							})
 					
 
 	def get_depreciation_amount(self, depreciable_value, num_days=1):
@@ -215,6 +227,7 @@ class Asset(Document):
 			return value
 		else:
 			return 0
+
 	def make_asset_gl_entry(self):
 		if self.gross_purchase_amount:
 			je = frappe.new_doc("Journal Entry")

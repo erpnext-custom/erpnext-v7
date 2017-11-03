@@ -211,12 +211,13 @@ def get_data(filters):
 		for co in c_operator:
 			if co.employee_type =="Muster Roll Employee":
 				mr_pay = frappe.db.sql("""
-					           select sum(mr.total_overall_amount) as mr_payment
-						   from `tabProcess MR Payment` mr
-					           where mr.name='{0}'
+					           select sum(ifnull(mr.total_overall_amount,0)) as mr_payment
+						   from `tabProcess MR Payment` mr, `tabMR Payment Item` mi
+					           where mi.parent = mr.name
+						   and mi.id_card ='{0}'
 						   and mr.docstatus = 1
-					           and '{0}' 
-					""" .fromat(co.operator, mr_date), as_dict =1) [0]
+					           and {1} 
+					""".format(co.operator, mr_date), as_dict =1) [0]
 				travel_claim += 0.0
 				e_amount += 0.0
 				gross_pay += flt(mr_pay.mr_payment)

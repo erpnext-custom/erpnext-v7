@@ -15,7 +15,9 @@ frappe.ui.form.on('Project Advance', {
 		}
 	},
 	customer: function(frm){
-		fetch_customer_details(frm);
+		if(frm.doc.__islocal){
+			fetch_customer_details(frm);
+		}
 	}	
 });
 
