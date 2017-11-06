@@ -5,7 +5,7 @@
  "doctype": "Page", 
  "icon": "icon-bar-chart", 
  "idx": 1, 
- "modified": "2017-09-08 11:08:58.300659", 
+ "modified": "2017-11-06 15:38:16.754514", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "stock-analytics", 
@@ -17,6 +17,12 @@
   }, 
   {
    "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Management"
   }
  ], 
  "script": null, 
