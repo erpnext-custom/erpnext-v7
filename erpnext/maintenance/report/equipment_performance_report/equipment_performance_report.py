@@ -410,7 +410,7 @@ def get_columns(filters):
 		("Total Expense") + ":Currency:120",
 		("Total Revenue") + ":Currency:120",
 		("R-E") + ":Currency:120",
-		("HC Rate/Hour") + ":Data:120",
+		("HC Rate/Hour") + ":Currency:120",
 		("Utility/Month") + ":Data:120",
 		("Benchmark Amount") + ":Currency:120",
 		("Utility %") + ":Data:120"
