@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-07-06 19:31:25.534583", 
+ "modified": "2017-11-06 18:26:01.495140", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Daily Timesheet Summary", 
  "owner": "Administrator", 
  "ref_doctype": "Timesheet", 
  "report_name": "Daily Timesheet Summary", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

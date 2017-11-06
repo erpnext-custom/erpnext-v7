@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-09-21 20:10:57.649817", 
+ "modified": "2017-11-06 18:26:03.544662", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Register", 
  "owner": "Administrator", 
  "ref_doctype": "Project", 
  "report_name": "Project Register", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

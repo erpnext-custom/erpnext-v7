@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-21 15:31:23.829785", 
+ "modified": "2017-11-06 18:26:01.624550", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee Due Date Report", 
  "owner": "Administrator", 
  "ref_doctype": "Employee", 
  "report_name": "Employee Due Date Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

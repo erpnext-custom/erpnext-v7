@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-10-31 16:22:59.005577", 
+ "modified": "2017-11-06 18:26:02.515410", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Leave Encashment Report", 
  "owner": "Administrator", 
  "ref_doctype": "Leave Encashment", 
  "report_name": "Leave Encashment Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

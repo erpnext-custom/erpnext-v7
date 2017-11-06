@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-10-04 12:18:16.406720", 
+ "modified": "2017-11-06 18:26:03.100514", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Payment Entry Summary", 
  "owner": "Administrator", 
  "ref_doctype": "Payment Entry", 
  "report_name": "Payment Entry Summary", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

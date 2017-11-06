@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-04-28 15:05:53.481855", 
+ "modified": "2017-11-06 18:26:04.409319", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Cash Flow", 
  "owner": "Administrator", 
  "ref_doctype": "GL Entry", 
  "report_name": "Statement of Cash Flow", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-31 19:32:26.872117", 
+ "modified": "2017-11-06 18:26:01.575434", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Earning Report", 
  "owner": "Administrator", 
  "ref_doctype": "Salary Slip", 
  "report_name": "Earning Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2016-01-28 04:22:49.476068", 
+ "modified": "2017-11-06 18:26:04.261105", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Sales Person-wise Transaction Summary", 
  "owner": "Administrator", 
  "ref_doctype": "Sales Order", 
  "report_name": "Sales Person-wise Transaction Summary", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

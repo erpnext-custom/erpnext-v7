@@ -7,12 +7,20 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-04-28 15:00:12.450918", 
+ "modified": "2017-11-06 18:50:51.956321", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Trial Balance", 
  "owner": "Administrator", 
  "ref_doctype": "GL Entry", 
  "report_name": "Statement of Trial Balance", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Management"
+  }
+ ]
 }

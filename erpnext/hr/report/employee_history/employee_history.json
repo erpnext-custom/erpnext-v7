@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-21 11:33:58.267981", 
+ "modified": "2017-11-06 18:26:01.639441", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee History", 
  "owner": "Administrator", 
  "ref_doctype": "Employee", 
  "report_name": "Employee History", 
- "report_type": "Query Report"
+ "report_type": "Query Report", 
+ "roles": []
 }

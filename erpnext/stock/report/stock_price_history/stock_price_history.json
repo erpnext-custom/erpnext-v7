@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-09-19 14:44:39.937861", 
+ "modified": "2017-11-06 18:26:04.699955", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Price History", 
  "owner": "Administrator", 
  "ref_doctype": "Stock Price Template", 
  "report_name": "Stock Price History ", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

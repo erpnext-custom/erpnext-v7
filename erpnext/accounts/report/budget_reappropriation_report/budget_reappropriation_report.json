@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-08-18 16:10:36.995943", 
+ "modified": "2017-11-06 18:26:01.202712", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Budget Reappropriation Report", 
  "owner": "Administrator", 
  "ref_doctype": "Reappropriation Details", 
  "report_name": "Budget Reappropriation Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

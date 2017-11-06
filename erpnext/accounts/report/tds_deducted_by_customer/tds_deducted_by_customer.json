@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-09-07 16:57:13.472413", 
+ "modified": "2017-11-06 18:26:04.939944", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "TDS Deducted By Customer", 
  "owner": "Administrator", 
  "ref_doctype": "Payment Entry", 
  "report_name": "TDS Deducted By Customer", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

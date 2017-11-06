@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-30 16:09:16.746431", 
+ "modified": "2017-11-06 18:26:01.923838", 
  "modified_by": "Administrator", 
  "module": "Setup", 
  "name": "Exchange Rate History", 
  "owner": "Administrator", 
  "ref_doctype": "Currency Exchange", 
  "report_name": "Exchange Rate History", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

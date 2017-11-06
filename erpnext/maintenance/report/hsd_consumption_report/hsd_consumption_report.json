@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-24 10:55:43.345520", 
+ "modified": "2017-11-06 18:26:02.084772", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "HSD Consumption Report", 
  "owner": "Administrator", 
  "ref_doctype": "Equipment", 
  "report_name": "HSD Consumption Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

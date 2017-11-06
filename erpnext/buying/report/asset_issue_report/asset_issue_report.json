@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-09-10 19:11:23.939795", 
+ "modified": "2017-11-06 18:26:00.880523", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Asset Issue Report", 
@@ -15,5 +15,6 @@
  "query": "select item_code, item_name, qty, issued_to, issued_date, amount from `tabAsset Issue Details`;", 
  "ref_doctype": "Asset Issue Details", 
  "report_name": "Asset Issue Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

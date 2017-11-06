@@ -7,12 +7,20 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-10-30 14:14:49.739158", 
+ "modified": "2017-11-06 18:26:03.257677", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "POL Balance Report", 
  "owner": "Administrator", 
  "ref_doctype": "POL", 
  "report_name": "POL Balance Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Fleet User"
+  }
+ ]
 }

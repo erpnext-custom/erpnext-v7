@@ -45,7 +45,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Reports"),
+			"label": _("Project"),
 			"icon": "icon-list",
 			"items": [
                                 {
@@ -54,6 +54,12 @@ def get_data():
 					"name": "Project Register",
 					"doctype": "Project"
 				},
+			]
+		},
+		{
+			"label": _("Mechanical Services"),
+			"icon": "icon-list",
+			"items": [
                                 {
 					"type": "report",
 					"is_query_report": True,
@@ -66,6 +72,12 @@ def get_data():
 					"name": "Workshop Progress Report",
 					"doctype": "Job Card"
 				},
+			]
+		},
+		{
+			"label": _("Sales"),
+			"icon": "icon-list",
+			"items": [
                                 {
 					"type": "report",
 					"is_query_report": True,
@@ -77,6 +89,12 @@ def get_data():
 					"name": "sales-analytics",
 					"label": "Sales Analytics"
 				},
+			]
+		},
+		{
+			"label": _("Procurement"),
+			"icon": "icon-list",
+			"items": [
                                 {
 					"type": "report",
 					"is_query_report": True,
@@ -88,6 +106,12 @@ def get_data():
 					"name": "purchase-analytics",
 					"label": "Purchase Analytics"
 				},
+			]
+		},
+		{
+			"label": _("Stock/Inventory"),
+			"icon": "icon-list",
+			"items": [
 				{
 					"type": "page",
 					"name": "stock-analytics",

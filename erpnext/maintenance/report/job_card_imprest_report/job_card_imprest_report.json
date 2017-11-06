@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-12 12:52:44.187324", 
+ "modified": "2017-11-06 18:26:02.469198", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Job Card Imprest Report", 
  "owner": "Administrator", 
  "ref_doctype": "Job Card", 
  "report_name": "Job Card Imprest Report ", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-09-22 17:11:42.451001", 
+ "modified": "2017-11-06 18:26:01.817849", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Performance Report", 
  "owner": "Administrator", 
  "ref_doctype": "Equipment", 
  "report_name": "Equipment Performance Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

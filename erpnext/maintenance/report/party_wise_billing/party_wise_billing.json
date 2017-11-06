@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-23 18:40:52.166819", 
+ "modified": "2017-11-06 18:26:03.055536", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Party Wise Billing", 
  "owner": "Administrator", 
  "ref_doctype": "Hire Charge Invoice", 
  "report_name": "Party Wise Billing", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

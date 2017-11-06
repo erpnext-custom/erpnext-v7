@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-07-07 12:50:31.200106", 
+ "modified": "2017-11-06 18:26:03.078471", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Party Wise Ledger", 
  "owner": "Administrator", 
  "ref_doctype": "GL Entry", 
  "report_name": "Party Wise Ledger", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

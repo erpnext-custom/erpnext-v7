@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-06-30 09:52:13.767389", 
+ "modified": "2017-11-06 18:26:04.911351", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "TDS Challen", 
  "owner": "Administrator", 
  "ref_doctype": "Purchase Invoice", 
  "report_name": "TDS Challen", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

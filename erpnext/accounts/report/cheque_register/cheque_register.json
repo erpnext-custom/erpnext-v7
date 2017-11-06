@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-07-01 18:59:28.492906", 
+ "modified": "2017-11-06 18:26:01.299278", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Cheque Register", 
  "owner": "Administrator", 
  "ref_doctype": "Journal Entry", 
  "report_name": "Cheque Register", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

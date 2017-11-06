@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-09-28 14:52:09.672433", 
+ "modified": "2017-11-06 18:26:03.985840", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Registered Vendors", 
@@ -15,5 +15,6 @@
  "query": "select supplier_name as \"Vendor:Link/Supplier:120\",\nlocation as \"Location:Data:120\", \ntelephone_and_fax as \"Contact #:Data:120\"\nfrom tabSupplier\nwhere registered = 1 and disabled != 1;", 
  "ref_doctype": "Supplier", 
  "report_name": "Registered Vendors", 
- "report_type": "Query Report"
+ "report_type": "Query Report", 
+ "roles": []
 }

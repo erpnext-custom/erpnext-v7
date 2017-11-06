@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-08-25 17:58:27.729030", 
+ "modified": "2017-11-06 18:26:04.381526", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "SSS Report", 
  "owner": "Administrator", 
  "ref_doctype": "Salary Slip", 
  "report_name": "SSS Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

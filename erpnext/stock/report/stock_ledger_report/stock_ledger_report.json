@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-05-26 15:28:33.470451", 
+ "modified": "2017-11-06 18:26:04.670137", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Ledger Report", 
  "owner": "Administrator", 
  "ref_doctype": "Stock Ledger Entry", 
  "report_name": "Stock Ledger Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

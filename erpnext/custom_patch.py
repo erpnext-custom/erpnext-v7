@@ -6,6 +6,22 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 
+def give_admin_access():
+	reports = frappe.db.sql("select name from tabReport", as_dict=True)
+	for r in reports:
+		role = frappe.new_doc("Report Role")
+		role.parent = r.name
+		role.parenttype = "Report"
+		role.parentfield = "roles"
+		role.role = "Administrator"
+		role.save()		
+
+def save_equipments():
+	for a in frappe.db.sql("select name from tabEquipment", as_dict=True):
+		doc = frappe.get_doc("Equipment", a.name)
+		print(str(a))
+		doc.save()
+
 def submit_ss():
 	ss = frappe.db.sql("select name from `tabSalary Structure`", as_dict=True)
 	for s in ss:

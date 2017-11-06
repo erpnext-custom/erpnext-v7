@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-10-23 14:24:56.095147", 
+ "modified": "2017-11-06 18:26:02.163762", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Invoice Register", 
  "owner": "Administrator", 
  "ref_doctype": "Project Invoice", 
  "report_name": "Invoice Register", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

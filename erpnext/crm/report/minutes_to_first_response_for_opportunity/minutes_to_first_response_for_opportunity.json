@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-06-17 11:28:25.867258", 
+ "modified": "2017-11-06 18:26:02.891465", 
  "modified_by": "Administrator", 
  "module": "CRM", 
  "name": "Minutes to First Response for Opportunity", 
  "owner": "Administrator", 
  "ref_doctype": "Opportunity", 
  "report_name": "Minutes to First Response for Opportunity", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

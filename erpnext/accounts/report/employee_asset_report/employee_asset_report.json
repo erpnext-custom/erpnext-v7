@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-09-01 11:32:09.036130", 
+ "modified": "2017-11-06 18:26:01.594375", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Employee Asset Report", 
@@ -15,5 +15,6 @@
  "query": "", 
  "ref_doctype": "Asset", 
  "report_name": "Employee Asset Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

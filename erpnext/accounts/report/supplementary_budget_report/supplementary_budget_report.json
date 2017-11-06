@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-08-19 11:34:58.685164", 
+ "modified": "2017-11-06 18:26:04.802970", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Supplementary Budget Report", 
  "owner": "Administrator", 
  "ref_doctype": "Supplementary Details", 
  "report_name": "Supplementary Budget Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

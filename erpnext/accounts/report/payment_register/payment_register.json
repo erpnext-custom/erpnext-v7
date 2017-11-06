@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-10-23 15:29:30.752150", 
+ "modified": "2017-11-06 18:26:03.147030", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Payment Register", 
  "owner": "Administrator", 
  "ref_doctype": "Project Payment", 
  "report_name": "Payment Register", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

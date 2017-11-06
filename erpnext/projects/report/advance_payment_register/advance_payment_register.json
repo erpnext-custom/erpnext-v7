@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-10-20 11:13:29.003209", 
+ "modified": "2017-11-06 18:26:00.810010", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Advance Payment Register", 
  "owner": "Administrator", 
  "ref_doctype": "Project", 
  "report_name": "Advance Payment Register", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }
