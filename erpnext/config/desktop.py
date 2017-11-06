@@ -274,8 +274,7 @@ def get_data():
 		{
 			"module_name": "Management Dashboard",
 			"color": "#c0392b",
-			"icon": "icon-shopping-cart",
-			"icon": "octicon octicon-briefcase",
+			"icon": "octicon octicon-broadcast",
 			"type": "module",
 		},
 	]

@@ -138,6 +138,11 @@ def get_data():
 					"name": "Registered Vendors",
 					"doctype": "Supplier"
 				},
+				{
+					"type": "page",
+					"name": "purchase-analytics",
+					"label": "Purcahse Analytics"
+				},
 			]
 		},
 		{
