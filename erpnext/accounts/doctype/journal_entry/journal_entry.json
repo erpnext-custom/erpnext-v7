@@ -1136,7 +1136,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2017-11-03 17:06:15.353089", 
+ "modified": "2017-11-03 18:16:47.609388", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Journal Entry", 
@@ -1154,13 +1154,13 @@
    "import": 0, 
    "permlevel": 0, 
    "print": 1, 
-   "read": 1, 
+   "read": 0, 
    "report": 1, 
    "role": "Projects Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 1
+   "write": 0
   }, 
   {
    "amend": 1, 
@@ -1279,13 +1279,13 @@
    "import": 0, 
    "permlevel": 0, 
    "print": 1, 
-   "read": 1, 
+   "read": 0, 
    "report": 1, 
    "role": "Projects User", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 1
+   "write": 0
   }, 
   {
    "amend": 1, 

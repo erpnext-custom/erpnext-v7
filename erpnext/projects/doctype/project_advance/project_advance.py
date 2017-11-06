@@ -49,6 +49,11 @@ class ProjectAdvance(Document):
                         self.customer_details = base_project.customer_address
                         self.cost_center      = base_project.cost_center
                         self.branch           = base_project.branch
+
+                if self.customer:
+                        base_customer = frappe.get_doc("Customer", self.customer)
+                        self.customer_details = base_customer.customer_details
+                        self.customer_currency= base_customer.default_currency
                 
         def post_journal_entry(self):
                 accounts = []

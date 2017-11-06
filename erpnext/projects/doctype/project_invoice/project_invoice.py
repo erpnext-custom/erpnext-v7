@@ -57,6 +57,8 @@ class ProjectInvoice(AccountsController):
                         base_project          = frappe.get_doc("Project", self.project)
                         self.company          = base_project.company
                         self.customer         = base_project.customer
+                        self.branch           = base_project.branch
+                        self.cost_center      = base_project.cost_center
                         
                 if self.boq:
                         base_boq              = frappe.get_doc("BOQ", self.boq)
@@ -201,6 +203,9 @@ class ProjectInvoice(AccountsController):
                                                 item.uptodate_amount   = flt(ti.tot_invoice_amount,0)
                         
         def default_validations(self):
+                if not self.project:
+                        frappe.throw(_("Project cannot be blank. Please generate the invoice from BOQ."), title="Invalid Project")
+                        
                 for rec in self.project_invoice_boq:
                         if flt(rec.invoice_quantity) > flt(rec.act_quantity):
                                 frappe.throw(_("Row{0}: Invoice Quantity cannot be greater than Balance Quantity").format(rec.idx))
