@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:02.554761", 
+ "modified": "2017-11-07 15:46:17.529289", 
  "modified_by": "Administrator", 
  "module": "Support", 
  "name": "Maintenance Schedules", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Maintenance Schedule", 
  "report_name": "Maintenance Schedules", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Fleet User"
+  }, 
+  {
+   "role": "Maintenance Common"
+  }
+ ]
 }

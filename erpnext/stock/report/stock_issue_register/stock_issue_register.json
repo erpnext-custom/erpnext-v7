@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.612666", 
+ "modified": "2017-11-07 14:21:09.135194", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Issue Register", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Stock Entry", 
  "report_name": "Stock Issue Register", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }
+ ]
 }

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:05.122722", 
+ "modified": "2017-11-07 12:48:26.566556", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Vendor Addresses", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Supplier", 
  "report_name": "Vendor Addresses", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Sales Master"
+  }, 
+  {
+   "role": "Purchase Manager"
+  }
+ ]
 }

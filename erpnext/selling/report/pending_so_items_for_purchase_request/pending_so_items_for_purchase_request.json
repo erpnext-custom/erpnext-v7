@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.207939", 
+ "modified": "2017-11-07 15:05:46.227583", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Pending SO Items For Purchase Request", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Sales Order", 
  "report_name": "Pending SO Items For Purchase Request", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales User"
+  }
+ ]
 }

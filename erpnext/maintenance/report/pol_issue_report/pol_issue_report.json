@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.290019", 
+ "modified": "2017-11-07 13:01:39.952194", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "POL Issue Report", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Consumed POL", 
  "report_name": "POL Issue Report ", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Fleet User"
+  }, 
+  {
+   "role": "Maintenance Common"
+  }
+ ]
 }

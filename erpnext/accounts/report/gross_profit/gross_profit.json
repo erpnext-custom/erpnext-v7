@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:02.064421", 
+ "modified": "2017-11-07 14:26:57.544114", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Gross Profit", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Sales Invoice", 
  "report_name": "Gross Profit", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.522149", 
+ "modified": "2017-11-07 12:56:14.630072", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Profitability Analysis", 
@@ -15,5 +15,15 @@
  "ref_doctype": "GL Entry", 
  "report_name": "Profitability Analysis", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

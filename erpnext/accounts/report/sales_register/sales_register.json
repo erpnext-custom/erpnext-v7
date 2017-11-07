@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.287935", 
+ "modified": "2017-11-07 11:19:53.323953", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Sales Register", 
@@ -15,5 +15,18 @@
  "ref_doctype": "Sales Invoice", 
  "report_name": "Sales Register", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Sales Master"
+  }, 
+  {
+   "role": "Sales User"
+  }, 
+  {
+   "role": "Sales Manager"
+  }
+ ]
 }

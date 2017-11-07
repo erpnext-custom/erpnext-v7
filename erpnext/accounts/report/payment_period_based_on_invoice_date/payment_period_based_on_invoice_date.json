@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.123584", 
+ "modified": "2017-11-07 15:37:30.895607", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Payment Period Based On Invoice Date", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Journal Entry", 
  "report_name": "Payment Period Based On Invoice Date", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

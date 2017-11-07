@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.575725", 
+ "modified": "2017-11-07 11:17:59.581915", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Balance", 
@@ -15,5 +15,18 @@
  "ref_doctype": "Stock Ledger Entry", 
  "report_name": "Stock Balance", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }, 
+  {
+   "role": "Stock Master"
+  }
+ ]
 }

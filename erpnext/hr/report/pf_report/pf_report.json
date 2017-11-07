@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.241867", 
+ "modified": "2017-11-07 12:56:57.908322", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "PF Report", 
@@ -15,5 +15,12 @@
  "ref_doctype": "Salary Slip", 
  "report_name": "PF Report", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "HR Manager"
+  }
+ ]
 }

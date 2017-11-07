@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:47:51.431825", 
+ "modified": "2017-11-07 15:09:07.635394", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Comprehensive Income", 
@@ -21,6 +21,12 @@
   }, 
   {
    "role": "Management"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
   }
  ]
 }

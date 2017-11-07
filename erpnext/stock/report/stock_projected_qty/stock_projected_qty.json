@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.729887", 
+ "modified": "2017-11-07 11:58:47.215621", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Projected Qty", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Item", 
  "report_name": "Stock Projected Qty", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }
+ ]
 }

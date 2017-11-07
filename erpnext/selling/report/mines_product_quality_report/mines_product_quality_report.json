@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:02.853133", 
+ "modified": "2017-11-07 15:54:35.714713", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Mines Product Quality Report", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Mines Quality Record", 
  "report_name": "Mines Product Quality Report", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales User"
+  }
+ ]
 }

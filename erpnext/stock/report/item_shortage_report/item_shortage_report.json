@@ -8,7 +8,7 @@
  "idx": 1, 
  "is_standard": "Yes", 
  "json": "{\"filters\":[[\"Bin\",\"projected_qty\",\"<\",\"0\"]],\"columns\":[[\"warehouse\",\"Bin\"],[\"item_code\",\"Bin\"],[\"actual_qty\",\"Bin\"],[\"ordered_qty\",\"Bin\"],[\"planned_qty\",\"Bin\"],[\"reserved_qty\",\"Bin\"],[\"projected_qty\",\"Bin\"]],\"sort_by\":\"Bin.projected_qty\",\"sort_order\":\"asc\",\"sort_by_next\":\"\",\"sort_order_next\":\"desc\"}", 
- "modified": "2017-11-06 18:26:02.237269", 
+ "modified": "2017-11-07 15:20:13.895460", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Item Shortage Report", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Bin", 
  "report_name": "Item Shortage Report", 
  "report_type": "Report Builder", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }
+ ]
 }

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:01.594375", 
+ "modified": "2017-11-07 10:23:19.773914", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Employee Asset Report", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Asset", 
  "report_name": "Employee Asset Report", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Master"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }

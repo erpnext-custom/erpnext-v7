@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:01.027395", 
+ "modified": "2017-11-07 12:54:05.468356", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Bank Guarantee Report", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Bank Guarantee", 
  "report_name": "Bank Guarantee Report", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

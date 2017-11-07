@@ -8,7 +8,7 @@
  "idx": 1, 
  "is_standard": "Yes", 
  "json": "{\"filters\":[],\"columns\":[[\"name\",\"Employee\"],[\"employee_number\",\"Employee\"],[\"date_of_joining\",\"Employee\"],[\"branch\",\"Employee\"],[\"department\",\"Employee\"],[\"designation\",\"Employee\"],[\"gender\",\"Employee\"],[\"status\",\"Employee\"],[\"company\",\"Employee\"],[\"employment_type\",\"Employee\"],[\"reports_to\",\"Employee\"],[\"company_email\",\"Employee\"]],\"sort_by\":\"Employee.bank_ac_no\",\"sort_order\":\"desc\",\"sort_by_next\":\"\",\"sort_order_next\":\"desc\"}", 
- "modified": "2017-11-06 18:26:01.655310", 
+ "modified": "2017-11-07 14:12:11.356712", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee Information", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Employee", 
  "report_name": "Employee Information", 
  "report_type": "Report Builder", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "HR User"
+  }
+ ]
 }

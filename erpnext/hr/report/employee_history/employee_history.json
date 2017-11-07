@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:01.639441", 
+ "modified": "2017-11-07 13:16:35.114465", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee History", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Employee", 
  "report_name": "Employee History", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "HR User"
+  }
+ ]
 }

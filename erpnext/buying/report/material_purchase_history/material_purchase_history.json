@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:02.610827", 
+ "modified": "2017-11-07 15:47:22.048014", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Material Purchase History", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Purchase Order", 
  "report_name": "Material Purchase History", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Purchase Manager"
+  }, 
+  {
+   "role": "Purchase User"
+  }
+ ]
 }

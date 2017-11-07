@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.017176", 
+ "modified": "2017-11-07 15:52:09.970001", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Ordered Materials To Be Delivered", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Delivery Note", 
  "report_name": "Ordered Materials To Be Delivered", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }
+ ]
 }

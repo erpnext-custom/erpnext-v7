@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.818928", 
+ "modified": "2017-11-07 11:23:38.958464", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Supplier Addresses and Contacts", 
@@ -16,5 +16,18 @@
  "ref_doctype": "Supplier", 
  "report_name": "Supplier Addresses and Contacts", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }, 
+  {
+   "role": "Stock Master"
+  }
+ ]
 }

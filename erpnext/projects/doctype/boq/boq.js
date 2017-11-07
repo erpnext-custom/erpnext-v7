@@ -26,7 +26,7 @@ frappe.ui.form.on('BOQ', {
 			}
 
 			if(frappe.model.can_read("MB Entry")) {
-				frm.add_custom_button(__("Measurement Book Entries"), function() {
+				frm.add_custom_button(__("MB Entries"), function() {
 					frappe.route_options = {"boq": frm.doc.name}
 					frappe.set_route("List", "MB Entry");
 				}, __("View"), true);
@@ -48,7 +48,7 @@ frappe.ui.form.on('BOQ', {
 				__("Make"), "icon-file-alt"
 			);
 			*/
-			frm.add_custom_button(__("Measurement Book Entry"),function(){frm.trigger("make_book_entry")},
+			frm.add_custom_button(__("MB Entry"),function(){frm.trigger("make_book_entry")},
 				__("Make"), "icon-file-alt"
 			);
 			frm.add_custom_button(__("Direct Invoice"),function(){frm.trigger("make_direct_invoice")},
@@ -58,6 +58,25 @@ frappe.ui.form.on('BOQ', {
 				__("Make"), "icon-file-alt"
 			);			
 		}
+		
+		$.each(cur_frm.doc['boq_item'], function(i, item){
+			console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])));
+			$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).css({'background-color': '#FF0000'});
+			$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).find('.grid-static-col').css({'background-color': '#FF0000'});
+		})		
+		
+		/*
+		$.each(cur_frm.doc['boq_item'], function(i, item){
+			//console.log(item.balance_amount); this line works
+			//console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])));
+			if(parseFloat(item.balance_amount || 0.0) > 0.0){
+				console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])));
+				$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).css({'background-color': '#FF0000'});
+				//$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).css({"background-color": "#FF0000"});
+				$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).find('.grid-static-col').css({'background-color': '#FF0000 !important'});
+			}
+		})
+		*/
 	},
 	make_direct_invoice: function(frm){
 		frappe.model.open_mapped_doc({

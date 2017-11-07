@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.718194", 
+ "modified": "2017-11-07 15:24:10.083723", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Purchase Order Items To Be Billed", 
@@ -16,5 +16,21 @@
  "ref_doctype": "Purchase Invoice", 
  "report_name": "Purchase Order Items To Be Billed", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "Purchase Manager"
+  }, 
+  {
+   "role": "Purchase User"
+  }
+ ]
 }

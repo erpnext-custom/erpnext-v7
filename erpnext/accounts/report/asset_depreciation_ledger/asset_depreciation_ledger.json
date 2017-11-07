@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:00.844388", 
+ "modified": "2017-11-07 10:47:24.302426", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Asset Depreciation Ledger", 
@@ -15,5 +15,18 @@
  "ref_doctype": "Asset", 
  "report_name": "Asset Depreciation Ledger", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Asset Manager"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts Master"
+  }
+ ]
 }

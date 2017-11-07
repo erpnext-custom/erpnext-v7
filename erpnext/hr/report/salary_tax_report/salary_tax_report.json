@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.089944", 
+ "modified": "2017-11-07 11:30:55.826115", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Salary Tax Report", 
@@ -15,5 +15,18 @@
  "ref_doctype": "Salary Tax", 
  "report_name": "Salary Tax Report", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "HR Master"
+  }, 
+  {
+   "role": "HR User"
+  }
+ ]
 }

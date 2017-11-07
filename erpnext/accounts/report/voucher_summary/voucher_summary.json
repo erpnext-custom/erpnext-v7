@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:05.151350", 
+ "modified": "2017-11-07 11:18:38.322319", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Voucher Summary", 
@@ -15,5 +15,18 @@
  "ref_doctype": "Journal Entry", 
  "report_name": "Voucher Summary ", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Master"
+  }, 
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }

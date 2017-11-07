@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:02.975118", 
+ "modified": "2017-11-07 15:15:37.478096", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Ordered Items To Be Billed", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Sales Invoice", 
  "report_name": "Ordered Items To Be Billed", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales User"
+  }
+ ]
 }

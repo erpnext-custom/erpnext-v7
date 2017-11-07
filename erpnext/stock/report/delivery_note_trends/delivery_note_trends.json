@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:01.529475", 
+ "modified": "2017-11-07 15:52:44.708857", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Delivery Note Trends", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Delivery Note", 
  "report_name": "Delivery Note Trends", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }
+ ]
 }

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.622138", 
+ "modified": "2017-11-07 15:41:35.772855", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Work Plan", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Project", 
  "report_name": "Project Work Plan", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Projects Readonly"
+  }, 
+  {
+   "role": ""
+  }
+ ]
 }

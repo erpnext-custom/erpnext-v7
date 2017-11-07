@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.803259", 
+ "modified": "2017-11-07 15:37:37.791418", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Purchase Penalty Report", 
@@ -15,5 +15,21 @@
  "ref_doctype": "Purchase Invoice", 
  "report_name": "Purchase Penalty Report", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Purchase Manager"
+  }, 
+  {
+   "role": "Purchase User"
+  }
+ ]
 }

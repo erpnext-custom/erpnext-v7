@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:00.765111", 
+ "modified": "2017-11-07 12:44:06.094501", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Accounts Receivable", 
@@ -15,5 +15,18 @@
  "ref_doctype": "Sales Invoice", 
  "report_name": "Accounts Receivable", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Master"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

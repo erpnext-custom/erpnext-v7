@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:02.816358", 
+ "modified": "2017-11-07 15:40:13.064488", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Measurement Book Register", 
@@ -15,5 +15,15 @@
  "ref_doctype": "MB Entry", 
  "report_name": "Measurement Book Register", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Projects Manager"
+  }, 
+  {
+   "role": "Projects User"
+  }
+ ]
 }

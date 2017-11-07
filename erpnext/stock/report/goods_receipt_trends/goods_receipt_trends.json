@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:02.043324", 
+ "modified": "2017-11-07 15:47:52.545724", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Goods Receipt Trends", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Purchase Receipt", 
  "report_name": "Goods Receipt Trends", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Purchase Manager"
+  }, 
+  {
+   "role": "Purchase User"
+  }
+ ]
 }

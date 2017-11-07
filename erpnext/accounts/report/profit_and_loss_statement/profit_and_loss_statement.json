@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.345707", 
+ "modified": "2017-11-07 14:26:06.939837", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Profit and Loss Statement", 
@@ -15,5 +15,15 @@
  "ref_doctype": "GL Entry", 
  "report_name": "Profit and Loss Statement", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

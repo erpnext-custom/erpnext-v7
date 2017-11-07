@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:01.462542", 
+ "modified": "2017-11-07 15:20:48.992006", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Customer Contact Address Detail", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Customer", 
  "report_name": "Customer Contact Address Detail", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales User"
+  }
+ ]
 }

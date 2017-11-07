@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.120915", 
+ "modified": "2017-11-07 14:18:38.968660", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Sales History Report", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Sales Order", 
  "report_name": "Sales History Report", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales User"
+  }
+ ]
 }

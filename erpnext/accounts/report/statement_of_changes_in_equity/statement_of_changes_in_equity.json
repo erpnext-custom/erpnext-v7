@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.434099", 
+ "modified": "2017-11-07 12:06:29.569634", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Changes in Equity", 
@@ -15,5 +15,15 @@
  "ref_doctype": "GL Entry", 
  "report_name": "Statement of Changes in Equity", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

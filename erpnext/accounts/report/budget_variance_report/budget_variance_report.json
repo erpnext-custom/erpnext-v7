@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:01.248015", 
+ "modified": "2017-11-07 13:06:55.016486", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Budget Variance Report", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Cost Center", 
  "report_name": "Budget Variance Report", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

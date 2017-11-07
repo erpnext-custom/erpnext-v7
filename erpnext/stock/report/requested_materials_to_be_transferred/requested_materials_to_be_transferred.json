@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.060484", 
+ "modified": "2017-11-07 12:53:24.947136", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Requested Materials To Be Transferred", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Stock Entry", 
  "report_name": "Requested Materials To Be Transferred", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }
+ ]
 }

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.985840", 
+ "modified": "2017-11-07 13:12:55.326371", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Registered Vendors", 
@@ -16,5 +16,18 @@
  "ref_doctype": "Supplier", 
  "report_name": "Registered Vendors", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Purchase Master"
+  }, 
+  {
+   "role": "Purchase Manager"
+  }, 
+  {
+   "role": "Purchase User"
+  }
+ ]
 }

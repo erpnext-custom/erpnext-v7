@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:01.970596", 
+ "modified": "2017-11-07 15:56:37.656202", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Finished Goods Delivery Overview", 
@@ -16,5 +16,15 @@
  "ref_doctype": "Delivery Note", 
  "report_name": "Finished Goods Delivery Overview", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }
+ ]
 }

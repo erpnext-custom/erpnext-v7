@@ -8,7 +8,7 @@
  "idx": 0, 
  "is_standard": "Yes", 
  "json": "{\"filters\":[],\"columns\":[[\"name\",\"Item Price\"],[\"price_list\",\"Item Price\"],[\"item_code\",\"Item Price\"],[\"item_name\",\"Item Price\"],[\"item_description\",\"Item Price\"],[\"price_list_rate\",\"Item Price\"],[\"buying\",\"Item Price\"],[\"selling\",\"Item Price\"],[\"currency\",\"Item Price\"]],\"sort_by\":\"Item Price.modified\",\"sort_order\":\"desc\",\"sort_by_next\":null,\"sort_order_next\":\"desc\"}", 
- "modified": "2017-11-06 18:26:02.731095", 
+ "modified": "2017-11-07 15:43:29.986023", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Material-wise Price List Rate", 
@@ -17,5 +17,15 @@
  "ref_doctype": "Item Price", 
  "report_name": "Material-wise Price List Rate", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }
+ ]
 }

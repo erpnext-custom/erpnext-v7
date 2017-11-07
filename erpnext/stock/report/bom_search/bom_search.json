@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:01.116851", 
+ "modified": "2017-11-07 13:01:53.868890", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "BOM Search", 
@@ -15,5 +15,15 @@
  "ref_doctype": "BOM", 
  "report_name": "BOM Search", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }
+ ]
 }

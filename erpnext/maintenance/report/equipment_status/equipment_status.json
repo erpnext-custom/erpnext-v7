@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:01.875030", 
+ "modified": "2017-11-07 15:01:38.685715", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Status", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Equipment", 
  "report_name": "Equipment Status", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Maintenance Common"
+  }, 
+  {
+   "role": "Fleet User"
+  }
+ ]
 }

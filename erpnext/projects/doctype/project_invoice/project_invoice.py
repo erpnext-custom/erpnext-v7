@@ -107,13 +107,17 @@ class ProjectInvoice(AccountsController):
                                                         0                 as original_quantity,
                                                         0                 as original_rate,
                                                         0                 as original_amount,
-                                                        mb.entry_quantity as entry_quantity,
+                                                        case
+                                                                when me.boq_type = 'Milestone Based' then 0
+                                                                else mb.entry_quantity
+                                                        end as entry_quantity,
                                                         mb.entry_rate     as entry_rate,
                                                         mb.entry_amount   as entry_amount,
-                                                        creation
-                                                from `tabMB Entry BOQ` as mb
-                                                where parent in ({1})
-                                                and   is_selected = 1
+                                                        mb.creation
+                                                from `tabMB Entry BOQ` as mb, `tabMB Entry` me
+                                                where mb.parent in ({1})
+                                                and   me.name = mb.parent
+                                                and   mb.is_selected = 1
                                         ) as a
                                         group by boq_item_name, item, uom
                                         order by idx

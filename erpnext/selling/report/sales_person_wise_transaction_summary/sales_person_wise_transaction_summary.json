@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.261105", 
+ "modified": "2017-11-07 12:55:42.637835", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Sales Person-wise Transaction Summary", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Sales Order", 
  "report_name": "Sales Person-wise Transaction Summary", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales User"
+  }
+ ]
 }

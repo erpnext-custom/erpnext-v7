@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.649994", 
+ "modified": "2017-11-07 15:24:50.344325", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Property Plant & Equipment", 
@@ -15,5 +15,15 @@
  "ref_doctype": "GL Entry", 
  "report_name": "Property Plant & Equipment", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Asset Manager"
+  }
+ ]
 }

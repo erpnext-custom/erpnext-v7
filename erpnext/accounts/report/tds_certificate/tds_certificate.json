@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:04.881358", 
+ "modified": "2017-11-07 12:50:53.442019", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "TDS Certificate", 
@@ -15,5 +15,21 @@
  "ref_doctype": "Purchase Invoice", 
  "report_name": "TDS Certificate", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "HR Master"
+  }, 
+  {
+   "role": "Purchase Manager"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }

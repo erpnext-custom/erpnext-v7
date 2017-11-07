@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.691923", 
+ "modified": "2017-11-07 12:52:28.998746", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Purchase Invoice Trends", 
@@ -15,5 +15,15 @@
  "ref_doctype": "Purchase Invoice", 
  "report_name": "Purchase Invoice Trends", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Purchase Manager"
+  }, 
+  {
+   "role": "Purchase User"
+  }
+ ]
 }
