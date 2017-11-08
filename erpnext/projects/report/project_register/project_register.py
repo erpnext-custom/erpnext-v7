@@ -126,13 +126,14 @@ def get_data(filters):
                         # tds_amount, other_ded, payment_received
                         tds_amount, other_ded, payment_received = frappe.db.sql("""
                                                                         select
-                                                                                max(ifnull(pp.tds_amount,0)) as tds_amount,
+                                                                                sum(ifnull(pp.tds_amount,0)) as tds_amount,
                                                                                 sum(ifnull(ppd.amount,0)) as other_ded,
-                                                                                max(ifnull(pp.paid_amount,0)) as payment_received
-                                                                        from  `tabProject Payment` as pp, `tabProject Payment Deduction` as ppd
+                                                                                sum(ifnull(pp.paid_amount,0)) as payment_received
+                                                                        from  `tabProject Payment` as pp
+                                                                        left join `tabProject Payment Deduction` as ppd
+                                                                        on ppd.parent = pp.name
                                                                         where pp.project = "{0}"
                                                                         and   pp.docstatus = 1
-                                                                        and   ppd.parent = pp.name
                                                                         """.format(r.name))[0]
                         
                         data.append((

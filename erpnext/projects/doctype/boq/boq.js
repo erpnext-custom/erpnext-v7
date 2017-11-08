@@ -59,23 +59,27 @@ frappe.ui.form.on('BOQ', {
 			);			
 		}
 		
+		/*
 		$.each(cur_frm.doc['boq_item'], function(i, item){
 			console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])));
 			$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).css({'background-color': '#FF0000'});
 			$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).find('.grid-static-col').css({'background-color': '#FF0000'});
-		})		
+		})
+		*/		
 		
+		// Not working
 		/*
 		$.each(cur_frm.doc['boq_item'], function(i, item){
 			//console.log(item.balance_amount); this line works
 			//console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])));
 			if(parseFloat(item.balance_amount || 0.0) > 0.0){
-				console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])));
-				$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).css({'background-color': '#FF0000'});
-				//$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).css({"background-color": "#FF0000"});
+				//console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])));
+				console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-name="{0}"]', [item.name])));
+				//$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).css({'background-color': '#FF0000'});
+				$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-name="{0}"]', [item.name])).css({'background-color': 'red'});
 				$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).find('.grid-static-col').css({'background-color': '#FF0000 !important'});
 			}
-		})
+		});
 		*/
 	},
 	make_direct_invoice: function(frm){

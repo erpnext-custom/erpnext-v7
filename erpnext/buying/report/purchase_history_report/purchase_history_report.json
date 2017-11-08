@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:26:00.025304", 
+ "modified": "2017-11-08 12:45:58.128651", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Purchase History Report", 
@@ -25,6 +25,9 @@
   }, 
   {
    "role": "Purchase User"
+  }, 
+  {
+   "role": "Accounts Manager"
   }
  ]
 }

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 12:01:39.657204", 
+ "modified": "2017-11-08 12:46:46.594495", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Ledger Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Accounts Manager"
   }
  ]
 }

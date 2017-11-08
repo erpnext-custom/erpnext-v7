@@ -220,11 +220,11 @@ class Asset(Document):
 
 	def get_income_tax_depreciation_amount(self, depreciable_value, percent, num_days=1):
 		cel = flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life)
-		if flt(depreciable_value) < cel:
-			value = ((flt(self.gross_purchase_amount) - flt(self.residual_value))/(100 * 365.25)) * percent * num_days
-			if flt(depreciable_value) + flt(value) > cel:
-				value = cel - flt(depreciable_value)
-			return value
+		if flt(depreciable_value) < flt(cel):
+			value = ((flt(self.gross_purchase_amount) - flt(self.residual_value))/(100.00 * 365.25)) * flt(percent) * flt(num_days)
+			if flt(depreciable_value) + flt(value) > flt(cel):
+				value = flt(cel) - flt(depreciable_value)
+			return flt(value)
 		else:
 			return 0
 

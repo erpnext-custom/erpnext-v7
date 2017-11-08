@@ -122,7 +122,7 @@ def get_columns():
 			"label": _("Asset Code"),
 			"fieldtype": "Link",
 			"options": "Asset",
-			"width": 200
+			"width": 100
 		},
 		{
 			"fieldname": "asset_name",

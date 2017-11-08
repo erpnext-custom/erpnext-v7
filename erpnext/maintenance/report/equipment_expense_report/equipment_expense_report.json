@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 14:33:38.846189", 
+ "modified": "2017-11-08 12:38:19.000476", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Expense Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Maintenance Common"
+  }, 
+  {
+   "role": "HR Manager"
   }
  ]
 }

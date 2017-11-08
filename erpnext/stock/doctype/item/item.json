@@ -2389,7 +2389,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 1, 
- "modified": "2017-11-07 17:42:29.715230", 
+ "modified": "2017-11-08 20:23:36.645158", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Item", 
@@ -2743,6 +2743,6 @@
  "sort_field": "idx desc, modified desc", 
  "sort_order": "DESC", 
  "title_field": "item_name", 
- "track_changes": 1, 
+ "track_changes": 0, 
  "track_seen": 0
 }
