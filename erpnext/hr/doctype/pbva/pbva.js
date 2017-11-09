@@ -23,19 +23,33 @@ frappe.ui.form.on('PBVA', {
 		}
 	},
 	"get_pbva": function(frm) {
-		if(frm.doc.branch) {
-			process_pbva(frm.doc.branch, frm);
+		if(frm.doc.fiscal_year) {
+			//load_accounts(frm.doc.company)
+			return frappe.call({
+				method: "get_pbva_details",
+				doc: frm.doc,
+				callback: function(r, rt) {
+					frm.refresh_field("items");
+					frm.refresh_fields();
+				}
+			});
 		}
 		else {
-			msgprint("Select Branch First")
+			msgprint("Select Fiscal Year First")
 		}
+		/*if(frm.doc.fiscal_year) {
+			process_pbva(frm.doc.fiscal_year, frm);
+		}
+		else {
+			msgprint("Select Fiscal Year First")
+		}*/
 	}
 });
 
-function process_pbva(branch, frm) {
+function process_pbva(fiscal_year, frm) {
 	frappe.call({
 		method: "erpnext.hr.doctype.pbva.pbva.get_pbva_details",
-		args: {"branch": branch},
+		args: {"fiscal_year": fiscal_year},
 		callback: function(r) {
 			if(r.message) {
 				var total_amount = 0;

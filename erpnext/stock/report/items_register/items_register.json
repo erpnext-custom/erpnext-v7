@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-14 18:48:53.041978", 
+ "modified": "2017-11-06 18:26:02.384175", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Items Register", 
  "owner": "Administrator", 
  "ref_doctype": "Consumable Register Entry", 
  "report_name": "Items Register", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

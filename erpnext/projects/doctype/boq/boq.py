@@ -17,8 +17,10 @@ from frappe.model.naming import make_autoname
 from frappe.utils import cstr, flt
 
 class BOQ(Document):
+        """
         def autoname(self):
                 self.name = make_autoname(str('BOQ')+'.YYYY.MM.####')
+        """
                 
 	def validate(self):
                 self.update_defaults()
@@ -42,18 +44,23 @@ class BOQ(Document):
                         
         def update_defaults(self):
                 item_group = ""
-                self.claimed_amount = 0
-                self.received_amount = 0
-                self.balance_amount = 0
+                self.total_amount    = 0.0
+                self.claimed_amount  = 0.0
+                self.received_amount = 0.0
+                self.balance_amount  = 0.0
                 
                 for item in self.boq_item:
                         if item.is_group:
                                 item_group = item.item
 
                         item.parent_item = item_group
+                        item.balance_quantity = flt(item.quantity)
+                        item.balance_amount   = flt(item.amount)
+                        
+                        self.total_amount    += flt(item.amount)
                         self.claimed_amount  += flt(item.claimed_amount)
                         self.received_amount += flt(item.received_amount)
-                        self.balance_amount += (flt(item.amount)-flt(item.received_amount))
+                        self.balance_amount  += (flt(item.amount)-flt(item.received_amount))
 
                 # Defaults
                 if not self.branch:
@@ -63,6 +70,8 @@ class BOQ(Document):
                         self.cost_center = frappe.db.get_value("Project", self.project, "cost_center")
 
         def update_project_value(self):
+                total_amount = 0.0
+                
                 boq = frappe.db.sql("""
                                         select sum(ifnull(total_amount,0)) total_amount
                                         from `tabBOQ`
@@ -70,17 +79,20 @@ class BOQ(Document):
                                         and   docstatus = 1
                                 """.format(self.project), as_dict=1)[0]
 
-                if flt(boq.total_amount) > 0:
-                        frappe.db.sql("""
-                                update `tabProject`
-                                set project_value = {0}
-                                where name = '{1}'
-                        """.format(flt(boq.total_amount), self.project))
+                if boq:
+                        total_amount = flt(boq.total_amount) if boq.total_amount else 0.0
+                        
+                frappe.db.sql("""
+                        update `tabProject`
+                        set project_value = {0}
+                        where name = '{1}'
+                """.format(flt(total_amount), self.project))
         
 @frappe.whitelist()
-def make_project_invoice(source_name, target_doc=None):
+def make_direct_invoice(source_name, target_doc=None):
         def update_master(source_doc, target_doc, source_parent):
                 target_doc.invoice_title = str(target_doc.project) + "(Project Invoice)"
+                target_doc.invoice_type = "Direct Invoice"
                 target_doc.check_all = 1
                 
         def update_item(source_doc, target_doc, source_parent):
@@ -113,6 +125,26 @@ def make_project_invoice(source_name, target_doc=None):
         }, target_doc)
 
         return doclist
+
+@frappe.whitelist()
+def make_mb_invoice(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_parent):
+                target_doc.invoice_title = str(target_doc.project) + "(Project Invoice)"
+                target_doc.invoice_type = "MB Based Invoice"
+                target_doc.check_all_mb = 1
+                
+        doclist = get_mapped_doc("BOQ", source_name, {
+                "BOQ": {
+                        "doctype": "Project Invoice",
+                        "field_map": {
+                                "project": "project"
+                        },
+                        "postprocess": update_master
+                }
+        }, target_doc)
+
+        return doclist
+
 
 @frappe.whitelist()
 def make_book_entry(source_name, target_doc=None):

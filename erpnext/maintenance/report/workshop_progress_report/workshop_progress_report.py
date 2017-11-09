@@ -16,12 +16,13 @@ def get_columns():
 		("Description") + ":data:300",
 		("Equipment No")+":data:150",
 		("Amount")+":Currency:150",
+		("Mechanic Assigned")+":data:150",
 		("Customer")+":data:150"
 
 	]
 
 def get_data(filters):
-	query ="""select jc.name, (select group_concat(jci.job_name separator ',') from `tabJob Card Item` jci where jci.parent = jc.name) as description, jc.equipment_number, jc.total_amount, jc.customer FROM `tabJob Card` AS jc, `tabBreak Down Report` AS bdr WHERE bdr.name = jc.break_down_report AND jc.docstatus = '1'"""
+	query ="""select jc.name, (select group_concat(jci.job_name separator ',') from `tabJob Card Item` jci where jci.parent = jc.name) as description, jc.equipment_number, jc.total_amount, (select group_concat(ma.employee_name separator ',') from `tabMechanic Assigned` ma where ma.parent = jc.name ), jc.customer from `tabJob Card` AS jc, `tabBreak Down Report` AS bdr WHERE bdr.name = jc.break_down_report and jc.docstatus = '1'"""
 	if filters.get("branch"):
 		query += " and jc.branch = \'" + str(filters.branch) + "\'"
 
@@ -33,4 +34,7 @@ def get_data(filters):
 
 	if filters.get("equipment"):
 		query += " and jc.equipment_number = \'" + str(frappe.db.get_value("Equipment", filters.equipment, "equipment_number")) + "\'"
+	da = {"month" : 2, "date" : 20, "year":2017}
+        #frappe.msgprint("{0}".format(da))
+
 	return frappe.db.sql(query)

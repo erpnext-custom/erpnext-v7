@@ -5,7 +5,7 @@
  "doctype": "Page", 
  "icon": "icon-bar-chart", 
  "idx": 1, 
- "modified": "2017-09-08 11:13:00.060097", 
+ "modified": "2017-11-06 15:37:32.126855", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "purchase-analytics", 
@@ -20,6 +20,9 @@
   }, 
   {
    "role": "Administrator"
+  }, 
+  {
+   "role": "Management"
   }
  ], 
  "script": null, 

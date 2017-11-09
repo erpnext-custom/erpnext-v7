@@ -2,7 +2,7 @@
  "allow_copy": 0, 
  "allow_import": 1, 
  "allow_rename": 0, 
- "autoname": "TK.YY.MM.DD.####", 
+ "autoname": "TSK.####", 
  "beta": 0, 
  "creation": "2013-01-29 19:25:50", 
  "custom": 0, 
@@ -976,15 +976,15 @@
  "istable": 0, 
  "max_attachments": 5, 
  "menu_index": 0, 
- "modified": "2017-09-18 17:16:57.238994", 
- "modified_by": "siva@bt.bt", 
+ "modified": "2017-11-03 15:32:01.634132", 
+ "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Task", 
  "owner": "Administrator", 
  "permissions": [
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -1000,6 +1000,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
@@ -1024,7 +1025,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 1, 
@@ -1040,6 +1041,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }
  ], 

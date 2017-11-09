@@ -270,5 +270,11 @@ def get_data():
 			"icon": "octicon octicon-mortar-board",
 			"type": "module",
 			"label": _("Schools")
-		}
+		},
+		{
+			"module_name": "Management Dashboard",
+			"color": "#c0392b",
+			"icon": "octicon octicon-broadcast",
+			"type": "module",
+		},
 	]

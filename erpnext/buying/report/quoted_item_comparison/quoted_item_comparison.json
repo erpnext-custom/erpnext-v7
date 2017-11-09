@@ -7,12 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-07-21 12:32:45.733155", 
+ "modified": "2017-11-07 13:02:11.619275", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Quoted Item Comparison", 
  "owner": "Administrator", 
  "ref_doctype": "Supplier Quotation", 
  "report_name": "Quoted Item Comparison", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Purchase Manager"
+  }, 
+  {
+   "role": "Purchase User"
+  }
+ ]
 }

@@ -66,7 +66,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Stock Price Template",
-					"label": "Price Templates for Mines Products",
+					"label": "COP/Sales Price Template",
 					"description": _("Price Templates for Mines Products"),
 				},
 				{
@@ -96,6 +96,13 @@ def get_data():
 					"name": "Stock Ledger Report",
 					"doctype": "Stock Ledger Entry",
 					"Label": _("Stock Ledger")
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Stock Issue Report",
+					"doctype": "Stock Entry",
+					"Label": _("Stock Issue Report")
 				},
 				{
 					"type": "report",
@@ -152,7 +159,12 @@ def get_data():
 					"type": "doctype",
 					"name": "Stock Reconciliation",
 					"description": _("Upload stock balance via csv.")
-				}
+				},
+				{
+					"type": "page",
+					"name": "stock-analytics",
+					"label": "Stock Analytics"
+				},
 			]
 		}
 	]

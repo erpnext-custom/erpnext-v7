@@ -5,12 +5,21 @@ frappe.ui.form.on('Asset Movement', {
 	onload: function(frm) {
 		frm.add_fetch("asset", "warehouse", "source_warehouse");
 		frm.add_fetch("asset", "issued_to", "source_custodian");
+		frm.add_fetch("asset", "cost_center", "current_cost_center");
 		
 		frm.set_query("target_warehouse", function() {
 			return {
 				filters: [
                                          ["Warehouse", "company", "in", ["", cstr(frm.doc.company)]],
                                          ["Warehouse", "is_group", "=", 0]
+                                        ]				
+			}
+		})
+		frm.set_query("target_cost_center", function() {
+			return {
+				filters: [
+                                         ["Cost Center", "is_disabled", "!=", 1],
+                                         ["Cost Center", "is_group", "=", 0]
                                         ]				
 			}
 		})

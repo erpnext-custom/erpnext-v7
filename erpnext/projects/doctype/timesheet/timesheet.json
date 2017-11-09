@@ -2,7 +2,7 @@
  "allow_copy": 0, 
  "allow_import": 1, 
  "allow_rename": 0, 
- "autoname": "TS.YY.MM.DD.###", 
+ "autoname": "TSM.####", 
  "beta": 0, 
  "creation": "2013-02-28 17:57:33", 
  "custom": 0, 
@@ -662,15 +662,15 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-18 17:43:15.318833", 
- "modified_by": "siva@bt.bt", 
+ "modified": "2017-11-03 16:32:29.024886", 
+ "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Timesheet", 
  "owner": "Administrator", 
  "permissions": [
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -685,11 +685,12 @@
    "role": "Projects User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
@@ -709,9 +710,9 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
-   "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "amend": 1, 
+   "apply_user_permissions": 1, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -726,6 +727,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }
  ], 

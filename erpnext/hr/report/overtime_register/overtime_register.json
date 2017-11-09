@@ -7,12 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-10 12:07:25.285809", 
+ "modified": "2017-11-07 14:19:11.247512", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Overtime Register", 
  "owner": "Administrator", 
  "ref_doctype": "Overtime Entry", 
  "report_name": "Overtime Register", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "HR User"
+  }
+ ]
 }

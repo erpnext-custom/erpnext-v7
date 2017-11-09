@@ -60,8 +60,12 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Hire Charge Parameter",
-					"label": "Hire Charge and Yardstick",
 					"description": _("Hire Charge Parameter"),
+				},
+				{
+					"type": "doctype",
+					"name": "Branch Fleet Manager",
+					"label": "Assign Fleet Manager for Branches",
 				},
 			]
 		},
@@ -158,6 +162,12 @@ def get_data():
 					"type": "report",
 					"is_query_report": True,
 					"name": "Equipment Expense Report",
+					"doctype": "Equipment"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Equipment Performance Report",
 					"doctype": "Equipment"
 				},
 				{

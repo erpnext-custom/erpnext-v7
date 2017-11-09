@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "BG.YY.###", 
  "beta": 0, 
@@ -424,8 +424,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-14 11:49:46.705241", 
- "modified_by": "Administrator", 
+ "modified": "2017-10-23 13:01:39.292936", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Accounts", 
  "name": "Bank Guarantee", 
  "name_case": "", 

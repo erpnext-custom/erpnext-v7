@@ -7,12 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-08-20 15:11:46.526526", 
+ "modified": "2017-11-07 15:58:05.191418", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Penalty Report", 
  "owner": "Administrator", 
  "ref_doctype": "Mines Quality Record", 
  "report_name": "Penalty Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Sales Master"
+  }, 
+  {
+   "role": "Sales User"
+  }
+ ]
 }

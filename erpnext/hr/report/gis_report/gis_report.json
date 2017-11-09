@@ -7,12 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-08-25 17:58:46.718912", 
+ "modified": "2017-11-07 15:04:07.964057", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "GIS Report", 
  "owner": "Administrator", 
  "ref_doctype": "Salary Slip", 
  "report_name": "GIS Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "HR User"
+  }
+ ]
 }

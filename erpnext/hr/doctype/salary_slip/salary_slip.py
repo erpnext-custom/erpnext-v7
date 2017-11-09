@@ -65,10 +65,11 @@ class SalarySlip(TransactionBase):
 			struct = self.check_sal_struct(joining_date, relieving_date)
 
 			if struct:
-				ss_doc = frappe.get_doc('Salary Structure', struct)
-				self.salary_slip_based_on_timesheet = ss_doc.salary_slip_based_on_timesheet or 0
-				self.set_time_sheet()
-				self.pull_sal_struct(ss_doc)
+				for st in struct:
+					ss_doc = frappe.get_doc('Salary Structure', st.name)
+					self.salary_slip_based_on_timesheet = ss_doc.salary_slip_based_on_timesheet or 0
+					self.set_time_sheet()
+					self.pull_sal_struct(ss_doc)
 
 	def set_time_sheet(self):
 		if self.salary_slip_based_on_timesheet:
@@ -95,17 +96,16 @@ class SalarySlip(TransactionBase):
 		#	and (to_date is null or to_date >= %s or to_date >= %s) order by from_date desc limit 1""",
 		#	(self.employee, self.start_date, joining_date, self.end_date, relieving_date))
 		struct = frappe.db.sql("""select name from `tabSalary Structure`
-			where employee=%s and is_active = 'Yes'
+			where employee=%s 
 			and (from_date between %s and %s or from_date <= %s or from_date <= %s)
-			and (to_date is null or to_date >= %s or to_date >= %s or to_date between %s and %s) order by from_date desc limit 1""",
-			(self.employee, self.start_date, self.end_date, self.start_date, joining_date, self.end_date, relieving_date, self.start_date, self.end_date))
+			and (to_date is null or to_date >= %s or to_date >= %s or to_date between %s and %s) order by from_date desc""",
+			(self.employee, self.start_date, self.end_date, self.start_date, joining_date, self.end_date, relieving_date, self.start_date, self.end_date), as_dict=True)
  
 		if not struct:
 			self.salary_structure = None
 			frappe.throw(_('No active or default Salary Structure found for employee <a href="#Form/Employee/{0}">{0}</a> for the given dates')
 				.format(self.employee), title=_('Salary Structure Missing'))
-
-		return struct and struct[0][0] or ''
+		return struct 
 
 	def pull_sal_struct(self, ss_doc):
 		from erpnext.hr.doctype.salary_structure.salary_structure import make_salary_slip

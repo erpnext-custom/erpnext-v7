@@ -7,12 +7,26 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-09-13 09:50:40.643163", 
+ "modified": "2017-11-08 12:38:19.000476", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Expense Report", 
  "owner": "Administrator", 
  "ref_doctype": "Equipment", 
  "report_name": "Equipment Expense Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Fleet User"
+  }, 
+  {
+   "role": "Maintenance Common"
+  }, 
+  {
+   "role": "HR Manager"
+  }
+ ]
 }

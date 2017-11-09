@@ -12,14 +12,28 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 from __future__ import unicode_literals
 import frappe, json
 
-from frappe.utils import getdate, date_diff, add_days, cstr
+from frappe.utils import getdate, date_diff, add_days, cstr, today
 from frappe import _
 
 from frappe.model.document import Document
 
+# Autonaming is changed, SHIV on 23/10/2017
+from frappe.model.naming import make_autoname
+
 class CircularReferenceError(frappe.ValidationError): pass
 
 class Task(Document):
+        def autoname(self):
+                cur_year  = str(today())[0:4]
+                cur_month = str(today())[5:7]
+                if self.project:
+                        serialno  = make_autoname("TSK" + self.project[-4:] + ".####")
+                        #self.name = serialno[0:3] + cur_year + cur_month + serialno[3:]
+                else:
+                        serialno  = make_autoname("TSK.YY.MM.####")
+
+                self.name = serialno
+                
 	def get_feed(self):
 		return '{0}: {1}'.format(_(self.status), self.subject)
 
@@ -65,6 +79,11 @@ class Task(Document):
                         self.target_uom = 'Percent'
                         if not self.target_quantity:
                                 self.target_quantity = 100
+
+                if self.project:
+                        base_project    = frappe.get_doc("Project", self.project)
+                        self.branch     = base_project.branch
+                        self.cost_center= base_project.cost_center 
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
         
 	def on_update(self):

@@ -14,7 +14,8 @@ def execute(filters=None):
 def get_columns(filters):
         if filters.get("additional_info"):
                 cols = [
-                                ("Project")             + ":Link/Project:250",
+                                ("ID")                  + ":Link/Project:100",
+                                ("Project")             + ":Data:250",
                                 ("Customer")            + ":Link/Customer:120",
                                 ("Physical Progress")   + ":Percent:120",
                                 ("Status")              + ":Data:120",
@@ -37,7 +38,8 @@ def get_columns(filters):
                         ]
         else:
                 cols = [
-                                ("Project")             + ":Link/Project:250",
+                                ("ID")                  + ":Link/Project:80",
+                                ("Project")             + ":Data:250",
                                 ("Customer")            + ":Link/Customer:120",
                                 ("Physical Progress")   + ":Percent:120",
                                 ("Status")              + ":Data:120",
@@ -55,6 +57,7 @@ def get_data(filters):
         if filters.get("additional_info"):
                 query = """
                                 select name,
+                                        project_name,
                                         customer,
                                         tot_wq_percent_complete,
                                         status,
@@ -74,7 +77,8 @@ def get_data(filters):
                         """.format(cond)
         else:
                 query = """
-                                select project_name,
+                                select  name,
+                                        project_name,
                                         customer,
                                         tot_wq_percent_complete,
                                         status,
@@ -106,7 +110,7 @@ def get_data(filters):
                                                         sum(ifnull(received_amount,0)) as received_amount,
                                                         sum(ifnull(adjustment_amount,0)) as adjustment_amount
                                                 from  `tabProject Advance`
-                                                where project   = '{0}'
+                                                where project   = "{0}"
                                                 and   docstatus = 1
                                         """.format(r.name))[0]
 
@@ -115,23 +119,25 @@ def get_data(filters):
                                                 select
                                                         sum(ifnull(price_adjustment_amount,0)) as price_adjustment_amount
                                                 from  `tabProject Invoice`
-                                                where project   = '{0}'
+                                                where project   = "{0}"
                                                 and   docstatus = 1
                                         """.format(r.name))[0][0]
 
                         # tds_amount, other_ded, payment_received
                         tds_amount, other_ded, payment_received = frappe.db.sql("""
                                                                         select
-                                                                                max(ifnull(pp.tds_amount,0)) as tds_amount,
+                                                                                sum(ifnull(pp.tds_amount,0)) as tds_amount,
                                                                                 sum(ifnull(ppd.amount,0)) as other_ded,
-                                                                                max(ifnull(pp.paid_amount,0)) as payment_received
-                                                                        from  `tabProject Payment` as pp, `tabProject Payment Deduction` as ppd
-                                                                        where pp.project = '{0}'
+                                                                                sum(ifnull(pp.paid_amount,0)) as payment_received
+                                                                        from  `tabProject Payment` as pp
+                                                                        left join `tabProject Payment Deduction` as ppd
+                                                                        on ppd.parent = pp.name
+                                                                        where pp.project = "{0}"
                                                                         and   pp.docstatus = 1
-                                                                        and   ppd.parent = pp.name
                                                                         """.format(r.name))[0]
                         
                         data.append((
+                                r.name,
                                 r.project_name,
                                 r.customer,
                                 r.tot_wq_percent_complete,
@@ -162,22 +168,23 @@ def get_conditions(filters):
         cond = []
 
         if filters.get("project"):
-                cond.append("project_name = '{0}'".format(filters.get("project")))
+                cond.append('name = "{0}"'.format(filters.get("project")))
 
         if filters.get("branch"):
-                cond.append("branch = '{0}'".format(filters.get("branch")))
+                cond.append('branch = "{0}"'.format(filters.get("branch")))
 
         if filters.get("cost_center"):
-                cond.append("cost_center = '{0}'".format(filters.get("cost_center")))
+                cond.append('cost_center = "{0}"'.format(filters.get("cost_center")))
 
         if filters.get("from_date"):
                 cond.append("expected_start_date >= \'{0}\'".format(str(filters.get("from_date"))))
 
         if filters.get("to_date"):
                 cond.append("expected_end_date <= \'{0}\'".format(str(filters.get("to_date"))))
-
+        
         if cond:
-                return str('where ')+str(' and '.join(cond))
+                query = str("where ")+str(" and ".join(cond))
         else:
-                return ""
+                query = ""
 
+        return query

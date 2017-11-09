@@ -18,7 +18,7 @@ def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, (filters.from_date, filters.to_date), as_dict=True);
 	for d in datas:
-		row = [d.mr_name, d.mr_title, d.mr_date, d.mr_status, d.mr_qty, d.mr_warehouse, d.mr_cost_center, d.sq_name, d.sq_title, d.sq_date, d.sq_discount, d.sq_rate, d.sq_amount, d.sq_discount_percentage, d.po_name, d.po_title, d.po_date, d.po_status, d.vendor, d.item_name, d.item_code, d.po_qty, d.po_rate, d.po_amount, d.po_discount_percentage, d.po_received_qty, d.po_returned_qty, d.po_billed_amt, d.pr_qi, d.pr_qi_date, d.pr_name, d.pr_date, d.actual_receipt_date, d.transporter_name, d.lr_no, d.pr_bill_no, d.pr_bill_date, d.pr_rejected_warehouse, d.pr_status, d.pr_received_qty, d.pr_rejected_qty, d.pr_qty, d.pr_rate, d.pr_amount, d.pi_name, d.pi_date, d.pi_bill_no, d.pi_bill_date, d.pi_tds_type, d.tds_taxable_amount, d.pi_tds_type, d.tds_amount, d.write_off_amount, d.write_off_description, d.pi_qty, d.pi_amount, d.outstanding_amount]
+		row = [d.mr_name, d.mr_title, d.mr_date, d.mr_status, d.mr_qty, d.mr_warehouse, d.mr_cost_center, d.sq_name, d.sq_title, d.sq_date, d.sq_discount, d.sq_rate, d.sq_amount, d.sq_discount_percentage, d.po_name, d.po_title, d.po_date, d.po_status, d.vendor, d.item_name, d.item_code, d.po_qty, d.po_rate, d.po_amount, d.po_discount_percentage, d.po_received_qty, d.po_returned_qty, d.po_billed_amt, d.pr_qi, d.pr_qi_date, d.pr_name, d.pr_date, d.actual_receipt_date,(getdate(d.actual_receipt_date) -getdate(d.pr_date)).days or 0, d.transporter_name, d.lr_no, d.pr_bill_no, d.pr_bill_date, d.pr_rejected_warehouse, d.pr_status, d.pr_received_qty, d.pr_rejected_qty, d.pr_qty, d.pr_rate, d.pr_amount, d.pi_name, d.pi_date, d.pi_bill_no, d.pi_bill_date, d.pi_tds_type, d.tds_taxable_amount, d.pi_tds_type, d.tds_amount, d.write_off_amount, d.write_off_description, d.pi_qty, d.pi_amount, d.outstanding_amount]
 		data.append(row);
 	return data
 
@@ -302,6 +302,13 @@ def get_columns():
 		  "fieldtype": "Date",
 		  "width": 150
 		},
+		{
+		  "fieldname": "no_of_days",
+		  "label": "No. of Days",
+		  "fieldtype": "Data",
+		  "width": 80
+		},
+		
 		{
 		  "fieldname": "transporter_name",
 		  "label": "Transporter",

@@ -3,6 +3,8 @@
 
 frappe.ui.form.on('BOQ', {
 	setup: function(frm){
+        frm.get_docfield("boq_item").allow_bulk_edit = 1;		
+		
 		frm.get_field('boq_item').grid.editable_fields = [
 			{fieldname: 'boq_code', columns: 1},
 			{fieldname: 'item', columns: 3},
@@ -24,7 +26,7 @@ frappe.ui.form.on('BOQ', {
 			}
 
 			if(frappe.model.can_read("MB Entry")) {
-				frm.add_custom_button(__("Measurement Book Entries"), function() {
+				frm.add_custom_button(__("MB Entries"), function() {
 					frappe.route_options = {"boq": frm.doc.name}
 					frappe.set_route("List", "MB Entry");
 				}, __("View"), true);
@@ -38,32 +40,76 @@ frappe.ui.form.on('BOQ', {
 			}			
 		}
 		
+		frm.trigger("get_defaults");
+		
 		if(frm.doc.docstatus==1 && parseFloat(frm.doc.claimed_amount) < (parseFloat(frm.doc.total_amount)+parseFloat(frm.doc.price_adjustment))){
 			/*
 			frm.add_custom_button(__("Claim Advance"),function(){frm.trigger("claim_advance")},
 				__("Make"), "icon-file-alt"
 			);
 			*/
-			frm.add_custom_button(__("Measurement Book Entry"),function(){frm.trigger("make_book_entry")},
+			frm.add_custom_button(__("MB Entry"),function(){frm.trigger("make_book_entry")},
 				__("Make"), "icon-file-alt"
 			);
-			frm.add_custom_button(__("Invoice"),function(){frm.trigger("make_project_invoice")},
+			frm.add_custom_button(__("Direct Invoice"),function(){frm.trigger("make_direct_invoice")},
 				__("Make"), "icon-file-alt"
 			);
+			frm.add_custom_button(__("MB Based Invoice"),function(){frm.trigger("make_mb_invoice")},
+				__("Make"), "icon-file-alt"
+			);			
 		}
+		
+		/*
+		$.each(cur_frm.doc['boq_item'], function(i, item){
+			console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])));
+			$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).css({'background-color': '#FF0000'});
+			$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).find('.grid-static-col').css({'background-color': '#FF0000'});
+		})
+		*/		
+		
+		// Not working
+		/*
+		$.each(cur_frm.doc['boq_item'], function(i, item){
+			//console.log(item.balance_amount); this line works
+			//console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])));
+			if(parseFloat(item.balance_amount || 0.0) > 0.0){
+				//console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])));
+				console.log($("div[data-fieldname=boq_item]").find(format('div.grid-row[data-name="{0}"]', [item.name])));
+				//$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).css({'background-color': '#FF0000'});
+				$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-name="{0}"]', [item.name])).css({'background-color': 'red'});
+				$("div[data-fieldname=boq_item]").find(format('div.grid-row[data-idx="{0}"]', [item.idx])).find('.grid-static-col').css({'background-color': '#FF0000 !important'});
+			}
+		});
+		*/
 	},
-	make_project_invoice: function(frm){
+	make_direct_invoice: function(frm){
 		frappe.model.open_mapped_doc({
-			method: "erpnext.projects.doctype.boq.boq.make_project_invoice",
+			method: "erpnext.projects.doctype.boq.boq.make_direct_invoice",
 			frm: frm
 		});
 	},
+	
+	make_mb_invoice: function(frm){
+		frappe.model.open_mapped_doc({
+			method: "erpnext.projects.doctype.boq.boq.make_mb_invoice",
+			frm: frm
+		});
+	},	
 	
 	make_book_entry: function(frm){
 		frappe.model.open_mapped_doc({
 			method: "erpnext.projects.doctype.boq.boq.make_book_entry",
 			frm: frm
 		});
+	},
+	
+	project: function(frm){
+		frm.trigger("get_defaults");
+	},
+	
+	get_defaults: function(frm){
+		frm.add_fetch("project", "branch","branch");
+		frm.add_fetch("project", "cost_center","cost_center");		
 	},
 });
 

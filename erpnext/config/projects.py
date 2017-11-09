@@ -27,6 +27,12 @@ def get_data():
 					"name": "BOQ",
 					"description": _("Bill of Quantities."),
 				},
+                                {
+					"type": "doctype",
+					"name": "MB Entry",
+                                        "label": "Measurement Book Entries",
+					"description": _("Measurement Book Entries."),
+				},
 				{
 					"type": "report",
 					"route": "Gantt/Task",
@@ -54,6 +60,22 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Project Payment",
                                         "description": _("Project Payments."),
+                                },
+                        ]
+                },
+                {
+                        "label": _("Cash Journal"),
+                        "icon": "icon-pencil",
+                        "items": [
+                                {
+                                        "type": "doctype",
+                                        "name": "Imprest Type",
+                                        "description": _("Imprest Type Master."),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Cash Journal Entry",
+                                        "description": _("Cash Journal Entries."),
                                 },
                         ]
                 },
@@ -141,6 +163,42 @@ def get_data():
 					"is_query_report": True,
 					"name": "Project Register",
 					"doctype": "Project"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Project Work Plan",
+					"doctype": "Project"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "BOQ Register",
+					"doctype": "BOQ"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Measurement Book Register",
+					"doctype": "MB Entry"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Advance Payment Register",
+					"doctype": "Project Advance"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Invoice Register",
+					"doctype": "Project Invoice"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Payment Register",
+					"doctype": "Project Payment"
 				},
 				{
 					"type": "report",

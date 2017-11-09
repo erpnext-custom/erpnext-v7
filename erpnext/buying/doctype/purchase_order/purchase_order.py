@@ -264,6 +264,7 @@ class PurchaseOrder(BuyingController):
 				"item_code": a.item_code,
 				"date": frappe.utils.nowdate()
 				})
+			bud_obj.flags.ignore_permissions = 1
 			bud_obj.submit()
 
 	##

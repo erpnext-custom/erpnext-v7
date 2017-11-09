@@ -19,9 +19,11 @@ from frappe.utils import cint, flt, nowdate
 class ProjectAdvance(Document):
 	def validate(self):
                 self.set_status()
+                self.set_defaults()
                 
         def on_submit(self):
-                self.post_journal_entry()
+                if not self.migration_data:
+                        self.post_journal_entry()
 
         def before_cancel(self):
                 self.set_status()
@@ -38,6 +40,21 @@ class ProjectAdvance(Document):
                         self.status = "Billed"
                 """
 
+        def set_defaults(self):
+                if self.project:
+                        base_project = frappe.get_doc("Project", self.project)
+
+                        self.company          = base_project.company
+                        self.customer         = base_project.customer
+                        self.customer_details = base_project.customer_address
+                        self.cost_center      = base_project.cost_center
+                        self.branch           = base_project.branch
+
+                if self.customer:
+                        base_customer = frappe.get_doc("Customer", self.customer)
+                        self.customer_details = base_customer.customer_details
+                        self.customer_currency= base_customer.default_currency
+                
         def post_journal_entry(self):
                 accounts = []
 

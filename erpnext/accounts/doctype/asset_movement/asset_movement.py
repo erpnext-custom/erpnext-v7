@@ -14,7 +14,8 @@ class AssetMovement(Document):
 			self.validate_warehouses()
 		if self.target_custodian:
 			self.validate_custodian()
-		
+			self.target_cost_center = ""	
+	
 	def validate_asset(self):
 		status, company = frappe.db.get_value("Asset", self.asset, ["status", "company"])
 		if status in ("Draft", "Scrapped", "Sold"):
@@ -42,13 +43,17 @@ class AssetMovement(Document):
 			self.set_latest_warehouse_in_asset()
 		if self.target_custodian:
 			self.set_latest_custodian_in_asset()
+		if self.target_cost_center:	
+			self.set_latest_cc_in_asset()
 		
 	def on_cancel(self):
 		if self.target_warehouse:
 			self.set_latest_warehouse_in_asset()
 		if self.target_custodian:
 			self.set_latest_custodian_in_asset()
-		
+		if self.target_cost_center:	
+			self.set_latest_cc_in_asset()
+	
 	def set_latest_warehouse_in_asset(self):
 		latest_movement_entry = frappe.db.sql("""select target_warehouse from `tabAsset Movement`
 			where asset=%s and docstatus=1 and company=%s
@@ -77,3 +82,19 @@ class AssetMovement(Document):
 		
 		frappe.db.set_value("Asset", self.asset, "issued_to", custodian)
 		frappe.db.set_value("Asset", self.asset, "cost_center", frappe.db.get_value("Employee", custodian, "cost_center"))
+		frappe.db.set_value("Asset", self.asset, "branch", frappe.db.get_value("Employee", custodian, "branch"))
+
+	def set_latest_cc_in_asset(self):
+		latest_movement_entry = frappe.db.sql("""select target_cost_center from `tabAsset Movement`
+			where asset=%s and docstatus=1 and company=%s
+			order by transaction_date desc limit 1""", (self.asset, self.company))
+		
+		if latest_movement_entry:
+			cc = latest_movement_entry[0][0]
+		else:
+			cc = frappe.db.sql("""select current_cost_center from `tabAsset Movement`
+				where asset=%s and docstatus=2 and company=%s
+				order by transaction_date asc limit 1""", (self.asset, self.company))[0][0]
+		
+		frappe.db.set_value("Asset", self.asset, "cost_center", cc)
+		frappe.db.set_value("Asset", self.asset, "branch", frappe.db.get_value("Cost Center", cc, "branch"))

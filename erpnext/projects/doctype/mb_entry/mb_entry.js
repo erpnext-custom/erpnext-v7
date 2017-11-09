@@ -33,7 +33,7 @@ frappe.ui.form.on('MB Entry', {
 				}, __("View"), true);
 			}						
 		}
-
+		
 		if(frm.doc.boq){
 			if(frappe.model.can_read("BOQ")) {
 				frm.add_custom_button(__("BOQ"), function() {
@@ -43,6 +43,15 @@ frappe.ui.form.on('MB Entry', {
 			}					
 		}
 		
+		if(frm.doc.docstatus===1){			
+			if(frappe.model.can_read("Project Invoice") && parseFloat(frm.doc.total_balance_amount) > 0){
+				frm.add_custom_button(__("Invoice"), function(){
+					frm.trigger("make_mb_invoice")},
+					__("Make"), "icon-file-alt");
+			}
+		}		
+		
+		/*
 		if(frm.doc.boq_type=="Item Based"){
 			frm.fields_dict.mb_entry_boq.grid.toggle_enable("entry_quantity", true);
 			frm.fields_dict.mb_entry_boq.grid.toggle_enable("entry_amount", false);
@@ -56,8 +65,16 @@ frappe.ui.form.on('MB Entry', {
 			frm.fields_dict.mb_entry_boq.grid.toggle_enable("entry_quantity", true);
 			frm.fields_dict.mb_entry_boq.grid.toggle_enable("entry_amount", false);
 		}		
+		*/
 	},
 
+	make_mb_invoice: function(frm){
+		frappe.model.open_mapped_doc({
+			method: "erpnext.projects.doctype.mb_entry.mb_entry.make_mb_invoice",
+			frm: frm
+		});
+	},	
+	
 	check_all: function(frm){
 		check_uncheck_all(frm);
 	}
@@ -87,37 +104,6 @@ frappe.ui.form.on("MB Entry BOQ",{
 		calculate_totals(frm);
 	},
 });
-
-/*
-frappe.ui.form.on("Project Invoice","onload",function(frm,cdt,cdn){
-	console.log("loader1");
-	var df = frappe.meta.get_docfield("MB Entry BOQ", "entry_quantity", cur_frm.doc.name);
-	
-	if(frm.doc.boq_type=="Item Based"){
-		df.read_only = 0;
-	} 
-	else if(frm.doc.boq_type=="Milestone Based"){
-		df.read_only = 1;
-	}
-	else if(frm.doc.boq_type=="Piece Rate Work Based(PRW)"){
-		df.read_only = 0;
-	}
-	cur_frm.refresh();
-});
-*/
-
-/*
-frappe.ui.form.on("MB Entry BOQ", "entry_amount", function(frm, cdt, cdn){
-	console.log("cdt: "+cdt);
-	console.log("cdn: "+cdn);
-	console.log(cur_frm.fields_dict["mb_entry_boq"].grid);
-
-	frappe.utils.filter_dict(cur_frm.fields_dict["mb_entry_boq"].grid.grid_rows_by_docname[cdn].docfields, {"fieldname": "entry_quantity"})[0].read_only = true;
-	frappe.utils.filter_dict(cur_frm.fields_dict["mb_entry_boq"].grid.grid_rows_by_docname[cdn].docfields, {"fieldname": "entry_amount"})[0].read_only = true;
-	cur_frm.fields_dict["mb_entry_boq"].grid.grid_rows_by_docname[cdn].fields_dict["entry_quantity"].refresh();
-	cur_frm.fields_dict["mb_entry_boq"].grid.grid_rows_by_docname[cdn].fields_dict["entry_amount"].refresh();
-});
-*/
 
 var calculate_totals = function(frm){
 	var me = frm.doc.mb_entry_boq || [];

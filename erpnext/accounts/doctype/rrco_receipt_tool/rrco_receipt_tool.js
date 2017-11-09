@@ -119,10 +119,8 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 
 erpnext.rrco_receipt_tool = {
 	load_invoices: function(frm) {
-		console.log(frm.doc.purpose)
 		if(frm.doc.purpose == "Purchase Invoices" || frm.doc.purpose == "Leave Encashment") {
 		   var tds_rate = frm.doc.tds_rate
-		   console.log(tds_rate)
 		   if(frm.doc.purpose == "Leave Encashment") {
 			tds_rate = '1234567890'
 		   }

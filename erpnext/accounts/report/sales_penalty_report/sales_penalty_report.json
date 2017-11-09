@@ -7,12 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-08-21 14:11:12.147794", 
+ "modified": "2017-11-07 12:51:42.627210", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Sales Penalty Report", 
  "owner": "Administrator", 
  "ref_doctype": "Sales Invoice", 
  "report_name": "Sales Penalty Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales User"
+  }
+ ]
 }

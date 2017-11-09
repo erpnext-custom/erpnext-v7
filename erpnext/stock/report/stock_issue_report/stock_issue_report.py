@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe.utils import flt, cint,add_days, cstr, flt, getdate, nowdate, rounded, date_diff
 
 def execute(filters=None):
 	columns = get_columns(filters)
@@ -39,5 +40,4 @@ def get_data(filters):
 		data += " and sed.s_warehouse = \'" + str(filters.warehouse) + "\'"
 	if filters.get("from_date") and filters.get("to_date"):
 		data += " and se.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
-
 	return frappe.db.sql(data)

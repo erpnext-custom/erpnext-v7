@@ -43,7 +43,7 @@ frappe.ui.form.on("Company", {
 				fieldname: "company_name",
 				label: __("Please re-type company name to confirm"),
 				reqd: 1,
-				description: __("Please make sure you really want to delete all the transactions for this company. Your master data will remain as it is. This action cannot be undone.")},
+				description: __("Please make sure you really want to delete all the transactions for this company. Your master data will remain as it is. This action cannot be undone. SHIV")},
 					function(data) {
 						if(data.company_name !== frm.doc.name) {
 							frappe.msgprint("Company name not same");

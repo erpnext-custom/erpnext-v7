@@ -7,12 +7,29 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-09-18 12:17:18.900641", 
+ "modified": "2017-11-08 12:41:20.740652", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Workshop Progress Report", 
  "owner": "Administrator", 
  "ref_doctype": "Job Card", 
  "report_name": "Workshop Progress Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Management"
+  }, 
+  {
+   "role": "Maintenance Common"
+  }, 
+  {
+   "role": "Workshop Manager"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }

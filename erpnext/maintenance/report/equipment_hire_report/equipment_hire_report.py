@@ -62,13 +62,21 @@ def get_data(filters):
 	END,
 	CASE hci.owned_by
 	WHEN 'Others' THEN (select sum(hid.total_amount))
-	END,sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci  WHERE hid.parent = hci.name AND hci.docstatus = 1"""
+	END,sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci, `tabEquipment` e  WHERE hid.parent = hci.name AND hid.equipment = e.name AND hci.docstatus = 1"""
 
 	if filters.get("branch"):
 		query += " and hci.branch = \'" + str(filters.branch) + "\'"
 
 	if filters.get("from_date") and filters.get("to_date"):
 		query += " and hci.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+
+	if filters.get("not_cdcl"):
+		query += " and e.not_cdcl = 0"
+		
+	if filters.get("include_disabled"):
+		query += " "
+	else:	
+		query += " and e.is_disabled = 0"
 
 	if filters.get("customer"):
 		query += " and hci.customer = \'" + str(filters.customer) + "\'"

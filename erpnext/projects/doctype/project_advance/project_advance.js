@@ -14,9 +14,13 @@ frappe.ui.form.on('Project Advance', {
 			}, __("View"), true);
 		}
 	},
+	/*
 	customer: function(frm){
-		fetch_customer_details(frm);
-	}	
+		if(frm.doc.__islocal){
+			fetch_customer_details(frm);
+		}
+	}
+	*/
 });
 
 var fetch_customer_details = function(frm){

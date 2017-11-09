@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-04-27 11:16:08.492461", 
+ "modified": "2017-11-07 13:12:39.783732", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Committed Budget Report", 
@@ -15,5 +15,16 @@
  "query": "", 
  "ref_doctype": "Committed Budget", 
  "report_name": "Committed Budget Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

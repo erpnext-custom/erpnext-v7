@@ -29,11 +29,13 @@ frappe.ui.form.on('Break Down Report', {
 
 cur_frm.add_fetch("cost_center", "branch", "branch");
 cur_frm.add_fetch("customer", "customer_group", "client");
+cur_frm.add_fetch("customer", "cost_center", "customer_cost_center");
+cur_frm.add_fetch("customer", "branch", "customer_branch");
 cur_frm.add_fetch("equipment", "equipment_model", "equipment_model");
 cur_frm.add_fetch("equipment", "equipment_type", "equipment_type");
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number");
 
-cur_frm.add_fetch("customer_cost_center", "branch", "customer_branch");
+//cur_frm.add_fetch("customer_cost_center", "branch", "customer_branch");
 
 frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
     cur_frm.set_query("equipment", function() {

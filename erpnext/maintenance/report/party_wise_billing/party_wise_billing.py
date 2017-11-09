@@ -41,15 +41,20 @@ CASE hic.owned_by
 
 END AS CDCL,
 SUM(hid.total_amount) 
-from `tabHire Charge Invoice` as hic, `tabHire Invoice Details` as hid
-where hic.name = hid.parent and hic.docstatus = 1 """)
+from `tabHire Charge Invoice` as hic, `tabHire Invoice Details` as hid, `tabEquipment` e
+where hic.name = hid.parent and hid.equipment = e.name and hic.docstatus = 1 """)
 
 	if filters.get("branch"):
 		query += " and hic.branch = \'" + str(filters.branch) + "\'"
 
 	if filters.get("from_date") and filters.get("to_date"):
 		query += " and hic.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
-
+	if filters.get("not_cdcl"):
+                query += " and e.not_cdcl = 0"
+	if filters.get("include_disabled"):
+                query += " "
+        else:
+                query += " and e.is_disabled = 0"
 	query += " group by hic.customer, hic.name, hid.equipment "
 	return frappe.db.sql(query)
 

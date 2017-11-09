@@ -1,5 +1,12 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		  SSK		                   04/10/2017         Auto populating internal_work_history 
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -26,8 +33,11 @@ class Employee(Document):
 			throw(_("Please setup Employee Naming System in Human Resource > HR Settings"))
 		else:
 			if naming_method == 'Naming Series':
-				x = make_autoname(self.naming_series + '.###')
-				y = make_autoname("MM.#")
+				if not self.date_of_joining:
+					frappe.throw("Date of Joining not Set!")
+				naming_series = "CDCL" + str(getdate(self.date_of_joining).year)[2:4]	
+				x = make_autoname(str(naming_series) + '.###')
+				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
 				eid = x[:6] + y[:2] + x[6:9]
 				self.name = eid
 				self.yearid = x
@@ -56,12 +66,89 @@ class Employee(Document):
 				frappe.permissions.remove_user_permission(
 					"Employee", self.name, existing_user_id)
 
+		# Following method introducted by SHIV on 04/10/2017
+		self.populate_work_history()
+    
+	def before_save(self):
+		if self.branch != self.get_db_value("branch") and  self.user_id:
+			frappe.msgprint(str(self.get_db_value("branch")))
+			frappe.permissions.remove_user_permission("Branch", self.get_db_value("branch"), self.user_id)           
+ 
 	def on_update(self):
 		if self.user_id:
 			self.update_user()
 			self.update_user_permissions()
-		self.post_casual_leave()	
+		self.post_casual_leave()
 
+        # Following method introducted by SHIV on 04/10/2017
+        def populate_work_history(self):
+                if self.branch != self.get_db_value("branch") \
+                   or self.department != self.get_db_value("department") \
+                   or self.designation != self.get_db_value("designation"):
+                        latest = frappe.db.sql("""
+                                        select
+                                                name,
+                                                from_date,
+                                                to_date
+                                        from  `tabEmployee Internal Work History`
+                                        where parent = '{0}'
+                                        and   ifnull(from_date, to_date) <= '{1}'
+                                        order by ifnull(from_date, to_date) desc, to_date asc limit 1
+                                        """.format(self.name, today()), as_dict=1)
+                        
+                        if latest:
+                                latest = latest[0]
+                                #frappe.msgprint(_("{0}").format(str(latest.to_date)))
+                                if latest.to_date:
+                                        if str(latest.to_date) < today():
+                                                self.append("internal_work_history",{
+                                                        "branch": self.get_db_value("branch"),
+                                                        "department": self.get_db_value("department"),
+                                                        "designation": self.get_db_value("designation"),
+                                                        "from_date": add_days(str(latest.to_date),1),
+                                                        "to_date": add_days(str(latest.to_date),1) if add_days(today(),-1) < add_days(str(latest.to_date),1) else today()
+                                                        })
+                                        elif str(latest.to_date) > today():
+                                                self.append("internal_work_history",{
+                                                        "branch": self.get_db_value("branch"),
+                                                        "department": self.get_db_value("department"),
+                                                        "designation": self.get_db_value("designation"),
+                                                        "from_date": str(latest.from_date),
+                                                        "to_date": str(latest.from_date) if today() < str(latest.from_date) else today()
+                                                        })
+                                        elif str(latest.to_date) == today():
+                                                self.append("internal_work_history",{
+                                                        "branch": self.get_db_value("branch"),
+                                                        "department": self.get_db_value("department"),
+                                                        "designation": self.get_db_value("designation"),
+                                                        "from_date": today(),
+                                                        "to_date": today()
+                                                        })                                                                                
+                                elif latest.from_date:
+                                        self.append("internal_work_history",{
+                                                "branch": self.get_db_value("branch"),
+                                                "department": self.get_db_value("department"),
+                                                "designation": self.get_db_value("designation"),
+                                                "from_date": str(latest.from_date),
+                                                "to_date": today()                                                        
+                                                })
+                                else:
+                                        self.append("internal_work_history",{
+                                                "branch": self.get_db_value("branch"),
+                                                "department": self.get_db_value("department"),
+                                                "designation": self.get_db_value("designation"),
+                                                "from_date": self.date_of_joining,
+                                                "to_date": add_ays(today(),-1)
+                                                })                                        
+                        else:
+                                self.append("internal_work_history",{
+                                                "branch": self.get_db_value("branch"),
+                                                "department": self.get_db_value("department"),
+                                                "designation": self.get_db_value("designation"),
+                                                "from_date": self.date_of_joining,
+                                                "to_date": add_days(today(),-1)
+                                })                                
+        
 	def update_user_permissions(self):
 		frappe.permissions.add_user_permission("Employee", self.name, self.user_id)
 		frappe.permissions.set_user_permission_if_allowed("Company", self.company, self.user_id)
@@ -213,10 +300,10 @@ def get_retirement_date(date_of_birth=None, employment_type=None):
 	ret = {}
 	if date_of_birth and employment_type:
 		try:
-			if employment_type == "Contract":
+			if employment_type in ['Executive','Chief Executive Officer']:
 				retirement_age = int(frappe.db.get_single_value("HR Settings", "contract_retirement_age") or 60)
 			else:
-				retirement_age = int(frappe.db.get_single_value("HR Settings", "retirement_age") or 60)
+				retirement_age = int(frappe.db.get_single_value("HR Settings", "retirement_age") or 58)
 			dt = add_years(getdate(date_of_birth),retirement_age)
 			ret = {'date_of_retirement': dt.strftime('%Y-%m-%d')}
 		except ValueError:

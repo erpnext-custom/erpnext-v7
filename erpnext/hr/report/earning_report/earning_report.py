@@ -48,6 +48,8 @@ def get_data(filters):
 		for a in range (from_month+1, to_month+2):
 			if a < 10:
 				dates.append('0'+ str(a))
+			else:
+				dates.append(str(a))
 	else:
 		frappe.throw("From date cannot be grater than To Date")
 

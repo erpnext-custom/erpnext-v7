@@ -15,13 +15,16 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str
+from frappe.model.mapper import get_mapped_doc
 
 class MBEntry(Document):
 	def validate(self):
                 self.set_status()
                 self.default_validations()
+                self.set_defaults()
                 
         def on_submit(self):
+                self.validate_boq_items()
                 self.update_boq()
 
         def before_cancel(self):
@@ -45,52 +48,97 @@ class MBEntry(Document):
                                 frappe.throw(_("Row{0}: Entry Amount cannot be greater than Balance Amount").format(rec.idx))
                         elif flt(rec.entry_quantity) < 0 or flt(rec.entry_amount) < 0:
                                 frappe.throw(_("Row{0}: Value cannot be in negative.").format(rec.idx))
-        
-        def update_boq(self):
-                # Updating balance in `tabBOQ Item`
-                gtot_entry_amount = 0
-                
-                for item in self.mb_entry_boq:                        
-                        if flt(item.entry_amount) > 0 and item.is_selected:
-                                tot_entry_quantity = 0
-                                tot_entry_amount   = 0
 
-                                #frappe.msgprint(_("Docstatus: {0}").format(self.docstatus))
-                                
-                                bi = frappe.db.sql("""
+        def set_defaults(self):
+                if self.project:
+                        base_project          = frappe.get_doc("Project", self.project)
+                        self.company          = base_project.company
+                        self.customer         = base_project.customer
+                        self.branch           = base_project.branch
+                        self.cost_center      = base_project.cost_center
+                        
+                if self.boq:
+                        base_boq              = frappe.get_doc("BOQ", self.boq)
+                        self.cost_center      = base_boq.cost_center
+                        self.branch           = base_boq.branch
+                        self.boq_type         = base_boq.boq_type
+                        
+        def validate_boq_items(self):
+                for rec in self.mb_entry_boq:
+                        if rec.is_selected == 1 and flt(rec.entry_amount) > 0:
+                                item = frappe.db.sql("""
                                                 select
-                                                        sum(ifnull(entry_quantity,0)) as tot_entry_quantity,
-                                                        sum(ifnull(entry_amount,0)) as tot_entry_amount
-                                                from `tabMB Entry BOQ`
-                                                where boq_item_name = %s
-                                                and   name <> %s
-                                                and   docstatus = 1
-                                                and   is_selected = 1
-                                        """, (item.boq_item_name, item.name), as_dict=1)[0]
+                                                        ifnull(balance_quantity,0) as balance_quantity,
+                                                        ifnull(balance_amount,0) as balance_amount
+                                                from
+                                                        `tabBOQ Item`
+                                                where   name = '{0}'
+                                                """.format(rec.boq_item_name), as_dict=1)[0]
 
-                                tot_entry_quantity = flt(bi.tot_entry_quantity) + flt(item.entry_quantity)
-                                tot_entry_amount   = flt(bi.tot_entry_amount) + flt(item.entry_amount)
-                                gtot_entry_amount += flt(item.entry_amount)
-
-                                #frappe.msgprint(_("tot_entry_quantity: {0}").format(tot_entry_quantity))
-                                
-                                if tot_entry_amount:
-                                        if self.docstatus < 2:
-                                                base_item = frappe.get_doc("BOQ Item", item.boq_item_name)
-                                                base_item.db_set('booked_quantity',flt(tot_entry_quantity))
-                                                base_item.db_set('booked_amount',flt(tot_entry_amount))
-                                                if self.boq_type == "Milestone Based":
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.claimed_amount)-flt(tot_entry_amount)-flt(base_item.received_amount))
-                                                else:
-                                                        base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(base_item.claimed_quantity)-flt(tot_entry_quantity)-flt(base_item.received_quantity))
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.claimed_amount)-flt(tot_entry_amount)-flt(base_item.received_amount))
-                                        else:
-                                                base_item = frappe.get_doc("BOQ Item", item.boq_item_name)
-                                                base_item.db_set('booked_quantity',flt(bi.tot_entry_quantity))
-                                                base_item.db_set('booked_amount',flt(bi.tot_entry_amount))
-                                                if self.boq_type == "Milestone Based":
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.claimed_amount)-flt(bi.tot_entry_amount))
-                                                else:
-                                                        base_item.db_set('balance_quantity',flt(base_item.quantity)-flt(base_item.claimed_quantity)-flt(bi.tot_entry_quantity))
-                                                        base_item.db_set('balance_amount',flt(base_item.amount)-flt(base_item.claimed_amount)-flt(bi.tot_entry_amount))
+                                if flt(rec.entry_quantity) > flt(item.balance_quantity):
+                                        frappe.throw(_('Row{0}: Insufficient Balance. Please refer to BOQ# <a href="#Form/BOQ/{1}">{1}</a>').format(rec.idx, self.boq))
+                                elif flt(rec.entry_amount) > flt(item.balance_amount):
+                                        frappe.throw(_('Row{0}: Insufficient Balance. Please refer to BOQ# <a href="#Form/BOQ/{1}">{1}</a>').format(rec.idx, self.boq))
                                         
+                        
+        def update_boq(self):
+                # Updating `tabBOQ Item`
+                boq_list = frappe.db.sql("""
+                                select
+                                        meb.boq_item_name,
+                                        sum(
+                                                case
+                                                when '{0}' = 'Milestone Based' then 0
+                                                else
+                                                        case
+                                                        when meb.docstatus < 2 then ifnull(meb.entry_quantity,0)
+                                                        else -1*ifnull(meb.entry_quantity,0)
+                                                        end
+                                                end
+                                        ) as entry_quantity,
+                                        sum(
+                                                case
+                                                when meb.docstatus < 2 then ifnull(meb.entry_amount,0)
+                                                else -1*ifnull(meb.entry_amount,0)
+                                                end
+                                        ) as entry_amount
+                                from  `tabMB Entry BOQ` as meb
+                                where meb.parent        = '{1}'
+                                and   meb.is_selected   = 1
+                                group by meb.boq_item_name
+                                """.format(self.boq_type, self.name), as_dict=1)
+
+                for item in boq_list:
+                        frappe.db.sql("""
+                                update `tabBOQ Item`
+                                set
+                                        booked_quantity  = ifnull(booked_quantity,0) + ifnull({1},0),
+                                        booked_amount    = ifnull(booked_amount,0) + ifnull({2},0),
+                                        balance_quantity = ifnull(balance_quantity,0) - ifnull({1},0),
+                                        balance_amount   = ifnull(balance_amount,0) - ifnull({2},0)
+                                where name = '{0}'
+                                """.format(item.boq_item_name, flt(item.entry_quantity), flt(item.entry_amount)))
+
+@frappe.whitelist()
+def make_mb_invoice(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_partent):
+                #target_doc.project = source_doc.project
+                target_doc.invoice_title = str(target_doc.project) + "(Project Invoice)"
+                target_doc.reference_doctype = "MB Entry"
+                target_doc.reference_name    = source_doc.name
+
+        def update_reference(source_doc, target_doc, source_parent):
+                pass
+                
+        doclist = get_mapped_doc("MB Entry", source_name, {
+                "MB Entry": {
+                                "doctype": "Project Invoice",
+                                "field_map":{
+                                        "project": "project",
+                                        "branch": "branch",
+                                        "customer": "customer"
+                                },
+                                "postprocess": update_master
+                        },
+        }, target_doc)
+        return doclist        

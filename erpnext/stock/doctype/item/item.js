@@ -16,12 +16,6 @@ frappe.ui.form.on("Item", {
 	},
 
 	refresh: function(frm) {
-		if(frm.doc.item_group) {
-			console.log("THHH " + frm.doc.item_group.tostring())
-			if(frm.doc.item_group.tostring().match(/Service*/) ) {
-				console.log("SERVICE")
-			}
-		}
 		if(frm.doc.is_stock_item) {
 			frm.add_custom_button(__("Balance"), function() {
 				frappe.route_options = {

@@ -7,12 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-09-15 14:32:23.373931", 
+ "modified": "2017-11-07 15:33:08.739617", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Intra Company Report", 
  "owner": "Administrator", 
  "ref_doctype": "GL Entry", 
  "report_name": "Intra Company Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

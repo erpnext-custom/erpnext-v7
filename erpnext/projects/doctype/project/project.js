@@ -31,6 +31,9 @@ frappe.ui.form.on("Project", {
 	
 	// Follwoing code is added by SHIV on 2017/08/11
 	setup: function(frm) {
+		frm.get_docfield("activity_tasks").allow_bulk_edit = 1;		
+		frm.get_docfield("additional_tasks").allow_bulk_edit = 1;		
+		
 		frm.get_field('activity_tasks').grid.editable_fields = [
 			{fieldname: 'task', columns: 3},
 			{fieldname: 'is_group', columns: 1},
@@ -39,6 +42,16 @@ frappe.ui.form.on("Project", {
 			{fieldname: 'work_quantity', columns: 1},
 			{fieldname: 'work_quantity_complete', columns: 1}
 		];
+		
+		frm.get_field('additional_tasks').grid.editable_fields = [
+			{fieldname: 'task', columns: 3},
+			{fieldname: 'is_group', columns: 1},
+			{fieldname: 'start_date', columns: 2},
+			{fieldname: 'end_date', columns: 2},
+			{fieldname: 'work_quantity', columns: 1},
+			{fieldname: 'work_quantity_complete', columns: 1}
+		];
+		
 		frm.get_field('project_advance_item').grid.editable_fields = [
 			{fieldname: 'advance_name', columns: 2},
 			{fieldname: 'advance_date', columns: 2},
@@ -46,6 +59,7 @@ frappe.ui.form.on("Project", {
 			{fieldname: 'adjustment_amount', columns: 2},
 			{fieldname: 'balance_amount', columns: 2}
 		];		
+		
 		frm.get_field('project_boq_item').grid.editable_fields = [
 			{fieldname: 'boq_name', columns: 2},
 			{fieldname: 'boq_date', columns: 2},
@@ -53,6 +67,7 @@ frappe.ui.form.on("Project", {
 			{fieldname: 'received_amount', columns: 2},
 			{fieldname: 'balance_amount', columns: 2}
 		];				
+		
 		frm.get_field('project_invoice_item').grid.editable_fields = [
 			{fieldname: 'invoice_name', columns: 2},
 			{fieldname: 'invoice_date', columns: 2},
@@ -198,7 +213,16 @@ frappe.ui.form.on("Project", {
 			});
 		}
 		// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-	}
+	},
+	
+	imprest_limit: function(frm){
+		if (parseFloat(frm.doc.imprest_limit || 0.0) < parseFloat(frm.doc.imprest_received || 0.0)){
+			msgprint(__("Imprest Limit cannot be less than already received amount."));
+		}
+		else {
+			cur_frm.set_value("imprest_receivable",parseFloat(frm.doc.imprest_limit || 0.0)-parseFloat(frm.doc.imprest_received || 0.0))
+		}
+	},
 });
 
 frappe.ui.form.on("Project Task", {
@@ -252,6 +276,35 @@ frappe.ui.form.on("Activity Tasks", {
 		calculate_work_quantity(frm);
 	},
 });
+
+frappe.ui.form.on("Additional Tasks", {
+	activity_tasks_remove: function(frm, doctype, name){
+		calculate_work_quantity(frm);
+	},
+	edit_task: function(frm, doctype, name) {
+		var doc = frappe.get_doc(doctype, name);
+		if(doc.task_id) {
+			frappe.set_route("Form", "Task", doc.task_id);
+		} else {
+			msgprint(__("Save the document first."));
+		}
+	},
+	view_timesheet: function(frm, doctype, name){
+		var doc = frappe.get_doc(doctype, name);
+		if(doc.task_id){
+			frappe.route_options = {"project": frm.doc.name, "task": doc.task_id}
+			frappe.set_route("List", "Timesheet");
+		} else {
+			msgprint(__("Save the document first."));
+		}
+	},
+	status: function(frm, doctype, name) {
+		frm.trigger('tasks_refresh');
+	},
+	work_quantity: function(frm, doctype, name){
+		calculate_work_quantity(frm);
+	},
+});
 // +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 frappe.ui.form.on("Project", "refresh", function(frm) {
@@ -270,8 +323,11 @@ frappe.ui.form.on("Project", "refresh", function(frm) {
 // Following function created by SHIV on 2017/08/17
 var calculate_work_quantity = function(frm){
 	var at = frm.doc.activity_tasks || [];
+	var adt= frm.doc.additional_tasks || [];
 	total_work_quantity = 0.0;
 	total_work_quantity_complete = 0.0;
+	total_add_work_quantity = 0.0;
+	total_add_work_quantity_complete = 0.0;
 
 	for(var i=0; i<at.length; i++){
 		//console.log(at[i].is_group);
@@ -280,9 +336,19 @@ var calculate_work_quantity = function(frm){
 			total_work_quantity_complete += at[i].work_quantity_complete || 0;
 		}
 	}
+	
+	for(var i=0; i<adt.length; i++){
+		//console.log(at[i].is_group);
+		if (adt[i].work_quantity && !adt[i].is_group){
+			total_add_work_quantity += adt[i].work_quantity || 0;
+			total_add_work_quantity_complete += adt[i].work_quantity_complete || 0;
+		}
+	}
+	
 	cur_frm.set_value("tot_wq_percent",total_work_quantity);
 	cur_frm.set_value("tot_wq_percent_complete",total_work_quantity_complete);
-	
+	cur_frm.set_value("tot_add_wq_percent",total_add_work_quantity);
+	cur_frm.set_value("tot_add_wq_percent_complete",total_add_work_quantity_complete);
 }
 // +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 

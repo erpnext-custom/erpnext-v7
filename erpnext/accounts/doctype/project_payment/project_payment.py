@@ -34,6 +34,7 @@ class ProjectPayment(AccountsController):
 
         def validate(self):
                 self.set_status()
+                self.set_defaults()
                 self.validate_mandatory_fields()
                 self.validate_allocated_amounts()
                 #frappe.msgprint(_("{0}").format(self.get("project")))
@@ -59,7 +60,15 @@ class ProjectPayment(AccountsController):
                         "1": "Payment Received",
                         "2": "Cancelled"
                 }[str(self.docstatus or 0)]
-                
+
+        def set_defaults(self):
+                if self.project:
+                        base_project          = frappe.get_doc("Project", self.project)
+                        self.company          = base_project.company
+                        self.party            = base_project.customer
+                        self.branch           = base_project.branch
+                        self.cost_center      = base_project.cost_center
+                        
         def make_gl_entries(self):
                 tot_advance = 0.0
                 

@@ -603,7 +603,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-19 12:51:06.383197", 
+ "modified": "2017-11-06 18:43:12.145351", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Mechanical Payment", 
@@ -656,5 +656,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

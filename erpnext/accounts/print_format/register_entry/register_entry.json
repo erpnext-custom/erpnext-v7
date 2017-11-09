@@ -1,0 +1,19 @@
+{
+ "creation": "2017-11-03 15:15:14.101649", 
+ "css": ".mytable, .mytable th, .mytable td {\n\tborder: 1px solid #999;\n        line-height: 1;    \n}\n.table1,  td {\n\tline-height:0.8;\n}", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "Cash Journal Entry", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div class=\"page-break\">\n\t{%- macro add_header(page_num, max_pages, doc, letter_head, no_letterhead) -%}\n\t\t{%- if letter_head and not no_letterhead -%}\n\t\t\t<div class=\"letter-head\">{{ letter_head }}</div>\n\t\t{%- endif -%}\n\t{%- endmacro -%}\n\t{{ add_header(0,1,doc,letter_head, no_letterhead) }}\n\t<div class=\"print-heading\">\n<div id=\"main\">\n    <h6 align = \"center\">{{doc.project_name}}</h6>\n\t<h5 align = \"center\">Register Entry</h5>\n  </div>\n  <div >\n    <table class = \"table1\" style=\"margin-top: 1px; text-align:justify;font-size:small; width:100% \">\n\t<tr >\n\t <td width =\"140\" style = \"width:25%;\"> <strong>Title:</strong></td>\n\t<td>{{doc.remarks}}</td>\n\t<td align= \"left\" style=\"width: 15%;\"><strong>Receipt #:</strong></td>\n\t<td>{{ doc.name }}</td>\n\t</tr>\n\t<tr>\n\t <td> <strong>Amount:</strong></td>\n\t<td>{{ frappe.db.get_value(\"Cash Journal Entry\", \"receipt_amount\") }}</td>\n\t<td><strong>Receipt Date: </strong></td>\n\t<td > {{frappe.utils.formatdate(doc.entry_date)}}</td>\n\n\n\t    </table>\n  </div>\n\n\n  <div>\n    <table cellpadding=\"0\" cellspacing=\"0\" class=\"mytable\" style=\"margin-top: 20px; border: 1px solid black; text-align:center;font-size:small\">\n\t\t<col align=\"left\">\n\t\t<col align=\"left\">\n      <thead>\n        <tr>\n          <th style=\"text-align: center;\" rowspan=\"4\" ;>Sr</th>\n          <th style=\"text-align: center;\" rowspan=\"4\">Opening Amount</th>\n\t      <th style=\"text-align: center;\" colspan=\"4\" ;>Purchase</th>\n          <th style=\"text-align: center;\" rowspan=\"4\">Closing Amount</th>\n\n        </tr>\n        <tr>\n\t<th style=\"text-align: center;\">Particulars</th>\n          <th style=\"text-align: center;\">Qty</th>\n          <th style=\"text-align: center;\">Rate</th>\n          <th style=\"text-align: center;\">Amount</th>\n\n\t\t\t\t\t</tr>\n        <thead>\n<tr>\n<td style=\"width: 12%; text-align: right\";colspan=\"2\" ;> {{ frappe.format_value (doc.opening_balance, {\"fieldtype\":\"Currency\"}) }}</td>\n\n          {%- for row in doc.cash_journal_detail -%}\n\t \n\n\t\t\t\t\t\n\n\t\t\t\t\t\t\t<td style=\"width: 3%;\">  {{ row.idx }}</td>\n                                                        \n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<td style=\"width: 30%;\">{{ row.particulars}}</td>\n\t\t\t\t\t\t\t<td style=\"width: 7%; text-align:center\">{{ row.quantity }}</td>\n\t\t\t\t\t\t\t<td style=\"width: 11%;text-align:center \">{{ row.rate }}</td>\n\t\t\t\t\t\t\t<td style=\"width: 12%; text-align: right\">{{ frappe.format_value (row.amount, {\"fieldtype\":\"Currency\"})}}</td>\n\t\t\t\t\t\t\t<td style=\"width: 15%; text-align: right\">{{frappe.format_value (doc.closing_balance, {\"fieldtype\":\"Currency\"}) }}</td>\n\n\t\t\t\t\t\t</tr>\n\t\n\n          {%- endfor -%}\n\n  </div>\n  </table>\n <div>\n\n\n  <div style=\"padding-top: 85px; width: 60%; float: right; text-align:right;\">Project Engineer.</div>\n\n\n  <div class=\"printedby\">This print is system generated and should be considered VALID only with appropriate seal and/or signature. <br> Printed by {{ frappe.user }} on {{ frappe.utils.nowdate() }} at {{ frappe.utils.nowtime() }}\n  </div>\n", 
+ "idx": 0, 
+ "modified": "2017-11-06 14:27:04.345503", 
+ "modified_by": "Administrator", 
+ "name": "Register Entry", 
+ "owner": "Administrator", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes"
+}

@@ -65,7 +65,13 @@ def get_data():
 					"name":"Terms and Conditions",
 					"label": _("Purchase Terms and Conditions Template"),
 					"description": _("Template of terms or contract.")
-				}
+				},
+				{
+					"type": "doctype",
+					"name": "Annual Tender",
+					"label": "Annual Tender",
+					"description": _("Supplier Type master.")
+				},
 			]
 		},
 		{
@@ -125,6 +131,17 @@ def get_data():
 					"is_query_report": True,
 					"name": "Asset Balance Report",
 					"doctype": "Asset Received Entries"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Registered Vendors",
+					"doctype": "Supplier"
+				},
+				{
+					"type": "page",
+					"name": "purchase-analytics",
+					"label": "Purcahse Analytics"
 				},
 			]
 		},

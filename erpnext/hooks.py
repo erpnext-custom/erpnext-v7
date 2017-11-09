@@ -48,8 +48,8 @@ fixtures = ["Web Form", "Custom Field", "Property Setter"]
 website_generators = ["Item Group", "Item", "Sales Partner", "Job Opening"]
 
 website_context = {
-	"favicon": 	"/assets/erpnext/images/favicon.ico",
-	"splash_image": ""
+	"favicon": 	"/assets/erpnext/images/cdcl.ico",
+	"splash_image": "/assets/erpnext/images/loading_icon.gif"
 }
 
 website_route_rules = [

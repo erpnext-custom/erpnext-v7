@@ -66,7 +66,7 @@ class TravelClaim(Document):
 			if not end_date:
 				end_date = self.items[len(self.items) - 1].date
 
-			tas = frappe.db.sql("select a.name from `tabTravel Claim` a, `tabTravel Claim Item` b where a.employee = %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date)", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)
+			tas = frappe.db.sql("select a.name from `tabTravel Claim` a, `tabTravel Claim Item` b where a.employee = %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date) and a.name != %s", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date), str(self.name)), as_dict=True)
 			if tas:
 				frappe.throw("The dates in your current Travel Claim has already been claimed in " + str(tas[0].name))
 
@@ -130,7 +130,7 @@ class TravelClaim(Document):
 			if not advance_account:
 				frappe.throw("Setup Advance to Employee (Travel) in HR Accounts Settings")
 			if flt(self.balance_amount) < 0:
-				advance_amt = flt(total_claim_amount)
+				advance_amt = flt(self.total_claim_amount)
 
 			je.append("accounts", {
 				"account": advance_account,
@@ -145,7 +145,7 @@ class TravelClaim(Document):
 
 
 		if flt(self.balance_amount) < 0:
-			bank_amt = flt(total_claim_amount)
+			bank_amt = flt(self.total_claim_amount)
 		
 		je.append("accounts", {
 				"account": expense_bank_account,

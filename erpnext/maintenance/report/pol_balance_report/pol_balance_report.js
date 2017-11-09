@@ -23,6 +23,6 @@ frappe.query_reports["POL Balance Report"] = {
 			"fieldtype": "Date",
 			"width": "80",
 			"reqd" : 1
-		},
+		},          
 	]
 }

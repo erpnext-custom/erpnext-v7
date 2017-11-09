@@ -8,12 +8,23 @@
  "idx": 0, 
  "is_standard": "Yes", 
  "json": "{\"filters\":[],\"columns\":[[\"naming_series\",\"Stock Entry\"],[\"purpose\",\"Stock Entry\"],[\"posting_date\",\"Stock Entry\"],[\"to_warehouse\",\"Stock Entry\"],[\"from_warehouse\",\"Stock Entry\"],[\"company\",\"Stock Entry\"],[\"material_request\",\"Stock Entry Detail\"],[\"qty\",\"Stock Entry Detail\"],[\"item_code\",\"Stock Entry Detail\"],[\"item_name\",\"Stock Entry Detail\"],[\"cost_center\",\"Stock Entry Detail\"],[\"amount\",\"Stock Entry Detail\"],[\"item_code\",\"Stock Entry Detail\"],[\"item_name\",\"Stock Entry Detail\"],[\"transporter_name\",\"Stock Entry\"],[\"vehicle_no\",\"Stock Entry\"]],\"sort_by\":\"Stock Entry.modified\",\"sort_order\":\"desc\",\"sort_by_next\":null,\"sort_order_next\":\"desc\"}", 
- "modified": "2016-08-20 15:53:41.207904", 
+ "modified": "2017-11-07 15:33:43.803601", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Material issue report", 
  "owner": "Administrator", 
  "ref_doctype": "Stock Entry", 
  "report_name": "Material issue report", 
- "report_type": "Report Builder"
+ "report_type": "Report Builder", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Stock Manager"
+  }, 
+  {
+   "role": "Stock User"
+  }
+ ]
 }

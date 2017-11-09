@@ -34,6 +34,7 @@ class LeaveApplication(Document):
 		return _("{0}: From {0} of type {1}").format(self.status, self.employee_name, self.leave_type)
 
 	def validate(self):
+		self.validate_dates_ta()
 		self.validate_fiscal_year()
 		if not getattr(self, "__islocal", None) and frappe.db.exists(self.doctype, self.name):
 			self.previous_doc = frappe.db.get_value(self.doctype, self.name, "*", as_dict=True)
@@ -64,6 +65,7 @@ class LeaveApplication(Document):
 			self.notify_employee(self.status)
 
 	def on_submit(self):
+		self.validate_dates_ta()
 		self.validate_fiscal_year()
 		if self.status == "Open":
 			frappe.throw(_("Only Leave Applications with status 'Approved' or 'Rejected' can be submitted"))
@@ -84,6 +86,14 @@ class LeaveApplication(Document):
 		if is_lwp(self.leave_type):
 			self.validate_dates_acorss_allocation()
 			self.validate_back_dated_application()
+
+	def validate_dates_ta(self):
+		start_date = self.from_date
+		end_date = self.to_date
+
+		tas = frappe.db.sql("select a.name from `tabTravel Authorization` a, `tabTravel Authorization Item` b where a.employee = %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date)", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)
+		if tas:
+			frappe.throw("The dates in your current Travel Authorization has already been used in " + str(tas[0].name))
 
 	def validate_dates_acorss_allocation(self):
 		def _get_leave_alloction_record(date):
@@ -208,8 +218,11 @@ class LeaveApplication(Document):
 
 	def validate_leave_approver(self):
 		employee = frappe.get_doc("Employee", self.employee)
-		leave_approvers = [frappe.db.get_value("Employee", employee.reports_to, "user_id")]
-		
+		all_app = get_approvers("User", "", "", "", "", {"employee": self.employee})
+		leave_approvers = []
+		for a in all_app:
+			leave_approvers.append(a[0])
+
 		if len(leave_approvers) and self.leave_approver not in leave_approvers:
 			frappe.throw(_("Leave approver must be one of {0}")
 				.format(comma_or(leave_approvers)), InvalidLeaveApproverError)

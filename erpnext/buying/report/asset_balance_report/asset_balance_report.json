@@ -7,12 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-04-20 16:51:05.618573", 
+ "modified": "2017-11-07 10:36:30.981481", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Asset Balance Report", 
  "owner": "Administrator", 
  "ref_doctype": "Asset Received Entries", 
  "report_name": "Asset Balance Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Asset Manager"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }

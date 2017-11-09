@@ -4,6 +4,70 @@ from frappe.model.document import Document
 from frappe import msgprint
 from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
+from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+
+def give_admin_access():
+	reports = frappe.db.sql("select name from tabReport", as_dict=True)
+	for r in reports:
+		role = frappe.new_doc("Report Role")
+		role.parent = r.name
+		role.parenttype = "Report"
+		role.parentfield = "roles"
+		role.role = "Administrator"
+		role.save()		
+
+def save_equipments():
+	for a in frappe.db.sql("select name from tabEquipment", as_dict=True):
+		doc = frappe.get_doc("Equipment", a.name)
+		print(str(a))
+		doc.save()
+
+def submit_ss():
+	ss = frappe.db.sql("select name from `tabSalary Structure`", as_dict=True)
+	for s in ss:
+		doc = frappe.get_doc("Salary Structure", s.name)
+		for a in doc.earnings:
+			if a.salary_component == "Basic Pay":
+				print(str(doc.employee) + " ==> " + str(a.amount))
+				update_salary_structure(doc.employee, flt(a.amount), s.name)
+				break
+		#doc.save()
+
+def create_users():
+	emp = frappe.db.sql("select name, company_email from tabEmployee where status = 'Active'", as_dict=True)
+	if emp:
+		for e in emp:
+			print(str(e.name))
+			doc = frappe.new_doc("User")
+			doc.enabled = 1
+			doc.email = e.company_email
+			doc.first_name = "Test"
+			doc.new_password = "CDCL!2017"
+			doc.save()
+		
+			role = frappe.new_doc("UserRole")
+			role.parent = doc.name
+			role.role = "Employee"
+			role.parenttype = "User"
+			role.save()
+			doc.save()
+			em = frappe.get_doc("Employee", e.name)	
+			em.user_id = doc.name
+			em.save()
+		print("DONE")
+
+def submit_assets():
+	list = frappe.db.sql("select name from tabAsset where docstatus = 0", as_dict=True)
+	if list:
+		num = 0
+		for a in list:
+			num = num + 1
+			doc = frappe.get_doc("Asset", a.name)
+			doc.submit()
+			print(str(a.name))
+			if cint(num) % 100 == 0:
+				frappe.db.commit()
+		print("DONE")
 
 def give_permission():
 	users = frappe.db.sql("select name from tabUser", as_dict=True)

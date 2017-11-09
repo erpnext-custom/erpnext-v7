@@ -7,12 +7,26 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-23 14:37:53.507473", 
+ "modified": "2017-11-08 12:22:23.869692", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Hire Report", 
  "owner": "Administrator", 
  "ref_doctype": "Hire Charge Invoice", 
  "report_name": "Equipment Hire Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Fleet User"
+  }, 
+  {
+   "role": "Maintenance Common"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }

@@ -8,7 +8,7 @@ def get_notification_config():
 		{
 			"Issue": {"status": "Open"},
 			"Warranty Claim": {"status": "Open"},
-			"Task": {"status": "Overdue"},
+			"Task": {"status": "Overdue", "is_group": 0},
 			"Project": {
                                 "status": "Ongoing"
                         },
@@ -56,9 +56,11 @@ def get_notification_config():
 			"Break Down Report": {"docstatus": 0},
 			"Job Card": {"docstatus": 0},
                         "BOQ": {"docstatus": 0},
+                        "MB Entry": {"docstatus": 0},
                         "Project Advance": {"docstatus": 0},
                         "Project Invoice": {"docstatus": 0},
                         "Project Payment": {"docstatus": 0},
+                        "Cash Journal Entry": {"docstatus": 0},
                         "Equipment Hire Form": {"docstatus": 0},
                         "Vehicle Logbook": {"docstatus": 0},
                         "Hire Charge Invoice": {"docstatus": 0},

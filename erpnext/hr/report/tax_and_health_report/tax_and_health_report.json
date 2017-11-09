@@ -7,12 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-08-25 17:59:21.376034", 
+ "modified": "2017-11-07 10:18:26.225836", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Tax and Health Report", 
  "owner": "Administrator", 
  "ref_doctype": "Salary Slip", 
  "report_name": "Tax and Health Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "HR Master"
+  }, 
+  {
+   "role": "HR Manager"
+  }
+ ]
 }

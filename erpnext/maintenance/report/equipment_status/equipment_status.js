@@ -31,5 +31,19 @@ frappe.query_reports["Equipment Status"] = {
 			"fieldtype": "Link",
 			"options": "Equipment Type",
 		},
+		{
+                        "fieldname": "not_cdcl",
+                        "label": ("Include Only CDCL Equipments"),
+                        "fieldtype": "Check",
+                        "default": 1
+                },
+		{
+                        "fieldname": "include_disabled",
+                        "label": ("Include Disbaled Equipments"),
+                        "fieldtype": "Check",
+                        "default": 0
+                }
+
+
 	]
 }

@@ -19,7 +19,7 @@ class IssuePOL(Document):
 			con = frappe.new_doc("Consumed POL")	
 			con.equipment = a.equipment
 			con.branch = self.branch
-			con.pol_type = a.pol_type
+			con.pol_type = self.pol_type
 			con.date = self.date
 			con.qty = a.qty
 			con.submit()

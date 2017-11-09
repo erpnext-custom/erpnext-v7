@@ -48,7 +48,7 @@ def get_data(filters):
                 and exists(select 1
                                 from `tabSalary Component` sc
                                 where sc.name = t2.salary_component
-                                and sc.gl_head = 'Group Insurance Scheme - SMCL')
+                                and sc.name = 'Group Insurance Scheme')
                 order by t1.employee
                 """ % conditions, filters)
 		

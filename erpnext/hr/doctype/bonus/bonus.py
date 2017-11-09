@@ -10,6 +10,7 @@ from erpnext.hr.doctype.salary_structure.salary_structure import get_salary_tax
 
 class Bonus(Document):
 	def validate(self):
+		self.validate_duplicate()
 		self.calculate_values()
 
 	def on_submit(self):
@@ -27,6 +28,11 @@ class Bonus(Document):
 
 		self.post_journal_entry(cc_amount)
 
+	def validate_duplicate(self):
+		doc = frappe.db.sql("select name from `tabBonus` where docstatus != 2 and fiscal_year = \'"+str(self.fiscal_year)+"\' and name != \'"+str(self.name)+"\'")	
+		if doc:
+			frappe.throw("Can not create multiple Bonuses for the same year")
+
 	def calculate_values(self):
 		if self.items:
 			tot = tax = 0
@@ -42,7 +48,11 @@ class Bonus(Document):
 
 	#Populate Bonus details 
 	def get_employees(self):
-		query = "select b.employee, b.employee_name, b.branch, a.amount as basic_pay from `tabSalary Detail` a, `tabSalary Structure` b where a.parent = b.name and a.salary_component = 'Basic Pay' and b.is_active = 'Yes' and b.eligible_for_annual_bonus = 1 and b.branch = \'" + str(self.branch) + "\'"
+		if not self.fiscal_year:
+			frappe.throw("Fiscal Year is Mandatory")
+		start, end = frappe.db.get_value("Fiscal Year", self.fiscal_year, ["year_start_date", "year_end_date"])
+		query = "select b.employee, b.employee_name, b.branch, a.amount as basic_pay from `tabSalary Detail` a, `tabSalary Structure` b, tabEmployee e where a.parent = b.name and b.employee = e.name and a.salary_component = 'Basic Pay' and (b.is_active = 'Yes' or e.relieving_date between \'"+str(start)+"\' and \'"+str(end)+"\') and b.eligible_for_annual_bonus = 1 "
+		query += " order by b.branch"
 		entries = frappe.db.sql(query, as_dict=True)
 		self.set('items', [])
 

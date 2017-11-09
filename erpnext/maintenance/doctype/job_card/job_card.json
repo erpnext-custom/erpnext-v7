@@ -1276,7 +1276,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-21 18:42:46.534042", 
+ "modified": "2017-11-06 18:43:10.394436", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Job Card", 
@@ -1351,5 +1351,6 @@
  "search_fields": "customer, posting_date", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

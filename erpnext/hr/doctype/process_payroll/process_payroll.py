@@ -153,7 +153,7 @@ class ProcessPayroll(Document):
 				ss_obj.submit()
 			except Exception,e:
 				not_submitted_ss.append(ss[0])
-				frappe.msgprint(e)
+				frappe.msgprint(str(e))
 				continue
 
 		return self.create_submit_log(ss_list, not_submitted_ss)

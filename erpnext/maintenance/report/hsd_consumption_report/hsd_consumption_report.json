@@ -7,12 +7,26 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-08-24 10:55:43.345520", 
+ "modified": "2017-11-08 12:37:33.783105", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "HSD Consumption Report", 
  "owner": "Administrator", 
  "ref_doctype": "Equipment", 
  "report_name": "HSD Consumption Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Maintenance Common"
+  }, 
+  {
+   "role": "Fleet User"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }
+ ]
 }

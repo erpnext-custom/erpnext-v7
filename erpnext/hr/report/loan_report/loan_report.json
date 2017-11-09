@@ -7,12 +7,29 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-08-25 17:58:16.655960", 
+ "modified": "2017-11-07 15:18:49.456624", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Loan Report", 
  "owner": "Administrator", 
  "ref_doctype": "Salary Slip", 
  "report_name": "Loan Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "HR User"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

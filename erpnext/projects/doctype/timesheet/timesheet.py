@@ -18,17 +18,30 @@ from frappe import _
 
 import json
 from datetime import timedelta
-from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str, date_diff
+from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str, date_diff, today
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from erpnext.manufacturing.doctype.workstation.workstation import (check_if_within_operating_hours,
 	WorkstationHolidayError)
 from erpnext.manufacturing.doctype.manufacturing_settings.manufacturing_settings import get_mins_between_operations
+# Autonaming is changed, SHIV on 23/10/2017
+from frappe.model.naming import make_autoname
 
 class OverlapError(frappe.ValidationError): pass
 class OverProductionLoggedError(frappe.ValidationError): pass
 
 class Timesheet(Document):
+        def autoname(self):
+                cur_year  = str(today())[0:4]
+                cur_month = str(today())[5:7]
+                if self.project:
+                        serialno  = make_autoname("TSM" + self.project[-4:] + ".####")
+                        #self.name = serialno[0:3] + cur_year + cur_month + serialno[3:]
+                else:
+                        serialno  = make_autoname("TSM.YY.MM.####")
+
+                self.name = serialno
+                
 	def validate(self):
                 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following two methods introduced by SHIV on 15/08/2017
@@ -60,15 +73,14 @@ class Timesheet(Document):
 
         '''
         def on_trash(self):
-                frappe.msgprint("on_trash")
                 self.calculate_target_quantity()
                 self.reset_time_log_order()
-        '''
 
+        '''
+        
         def after_delete(self):
                 self.calculate_target_quantity()
                 self.reset_time_log_order()
-
                 
 	def on_submit(self):
 		self.validate_mandatory_fields()
@@ -132,7 +144,13 @@ class Timesheet(Document):
 
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
         # Following method introduced by SHIV on 2017/08/15
-        def set_defaults(self):                
+        def set_defaults(self):
+                # Defaults
+                if self.project:
+                        base_project    = frappe.get_doc("Project", self.project)
+                        self.branch     = base_project.branch
+                        self.cost_center= base_project.cost_center
+                
                 # `Timesheet Detail` Validations
                 total_target_quantity           = 0.0
                 total_target_quantity_complete  = 0.0
@@ -151,10 +169,13 @@ class Timesheet(Document):
                 # Setting `Timesheet` Defaults
                 if self.task:
                         base_task = frappe.get_doc("Task", self.task)
-                        self.task_name = base_task.subject
-                        self.work_quantity = base_task.work_quantity
-                        self.exp_start_date = base_task.exp_start_date
-                        self.exp_end_date = base_task.exp_end_date
+                        
+                        self.task_name          = base_task.subject
+                        self.work_quantity      = base_task.work_quantity
+                        self.exp_start_date     = base_task.exp_start_date
+                        self.exp_end_date       = base_task.exp_end_date
+                        self.target_uom         = base_task.target_uom
+                        self.target_quantity    = base_task.target_quantity
 
                         self.target_quantity_complete = 0.0
                         for item in self.time_logs:
@@ -173,12 +194,97 @@ class Timesheet(Document):
         def calculate_target_quantity(self):
                 if flt(self.target_quantity_complete) > flt(self.target_quantity):
                         frappe.throw(_("Total Achieved value({0}) cannot be greater than Task's Target value({1}).").format(flt(self.target_quantity_complete),flt(self.target_quantity)))
-                else:   
-                        # Updating Project Progress                        
-                        base_project = frappe.get_doc("Project",self.project)
-                        base_project.update_task_progress()
-                        base_project.update_project_progress()
-                        #base_project.update_group_tasks()
+                else:
+                        if self.project:
+                                # Updating Project Progress                        
+                                base_project = frappe.get_doc("Project",self.project)
+                                base_project.update_task_progress()
+                                #base_project.update_project_progress()
+                                base_project.update_group_tasks()
+
+                                total = frappe.db.sql("""
+                                                select
+                                                        sum(
+                                                                case
+                                                                when additional_task = 0 and status in ('Closed', 'Cancelled') then 1
+                                                                else 0
+                                                                end
+                                                        ) as completed_count,
+                                                        sum(
+                                                                case
+                                                                when additional_task = 0 then 1
+                                                                else 0
+                                                                end
+                                                        ) as count,
+                                                        sum(
+                                                                case
+                                                                when additional_task = 1 and status in ('Closed', 'Cancelled') then 1
+                                                                else 0
+                                                                end
+                                                        ) as add_completed_count,
+                                                        sum(
+                                                                case
+                                                                when additional_task = 1 then 1
+                                                                else 0
+                                                                end
+                                                        ) as add_count,
+                                                        sum(
+                                                                case
+                                                                when additional_task = 0 then ifnull(work_quantity,0)
+                                                                else 0
+                                                                end
+                                                        ) as tot_work_quantity,
+                                                        sum(
+                                                                case
+                                                                when additional_task = 1 then ifnull(work_quantity,0)
+                                                                else 0
+                                                                end
+                                                        ) as tot_add_work_quantity,
+                                                        sum(
+                                                                case
+                                                                when additional_task = 0 then ifnull(work_quantity_complete,0)
+                                                                else 0
+                                                                end
+                                                        ) as tot_work_quantity_complete,
+                                                        sum(
+                                                                case
+                                                                when additional_task = 1 then ifnull(work_quantity_complete,0)
+                                                                else 0
+                                                                end
+                                                        ) as tot_add_work_quantity_complete
+                                                from tabTask
+                                                where project=%s
+                                                and is_group=0
+                                        """, self.project, as_dict=1)[0]
+                                
+                                percent_complete           = 0.0
+                                add_percent_complete       = 0.0
+                                tot_wq_percent             = 0.0
+                                tot_wq_percent_complete    = 0.0
+                                tot_add_wq_percent         = 0.0
+                                tot_add_wq_percent_complete= 0.0
+
+                                if total.count:
+                                        percent_complete   = flt(flt(total.completed_count) / total.count * 100, 2)
+                                        tot_wq_percent     = flt(total.tot_work_quantity,2)
+                                        tot_wq_percent_complete = flt(total.tot_work_quantity_complete,2)
+
+                                if total.add_count:
+                                        add_percent_complete = flt(flt(total.add_completed_count) / total.add_count * 100, 2)
+                                        tot_add_wq_percent = flt(total.tot_add_work_quantity,2)
+                                        tot_add_wq_percent_complete = flt(total.tot_add_work_quantity_complete,2)                                
+
+                                frappe.db.sql("""
+                                        update `tabProject`
+                                        set
+                                                percent_complete = ifnull({1},0),
+                                                add_percent_complete = ifnull({2},0),
+                                                tot_wq_percent = ifnull({3},0),
+                                                tot_wq_percent_complete = ifnull({4},0),
+                                                tot_add_wq_percent = ifnull({5},0),
+                                                tot_add_wq_percent_complete = ifnull({6},0)
+                                        where name = '{0}'
+                                """.format(self.project, flt(percent_complete), flt(add_percent_complete), flt(tot_wq_percent), flt(tot_wq_percent_complete), flt(tot_add_wq_percent), flt(tot_add_wq_percent_complete)))
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++				                        
                         
 	def set_status(self):
@@ -287,7 +393,8 @@ class Timesheet(Document):
 	def validate_time_logs(self):
 		for data in self.get('time_logs'):
 			self.check_workstation_timings(data)
-			self.validate_overlap(data)
+			# Commented by SHIV on 19/10/2017
+			#self.validate_overlap(data)
 
 	def validate_overlap(self, data):
 		if self.production_order:

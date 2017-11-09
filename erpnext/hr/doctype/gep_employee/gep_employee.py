@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.utils import flt
 
 class GEPEmployee(Document):
 	def validate(self):

@@ -7,12 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-07-14 12:03:56.967739", 
+ "modified": "2017-11-07 14:39:59.492856", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employees working on a holiday", 
  "owner": "Administrator", 
  "ref_doctype": "Attendance", 
  "report_name": "Employees working on a holiday", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "HR User"
+  }
+ ]
 }

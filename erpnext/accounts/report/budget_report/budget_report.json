@@ -7,12 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-07-05 11:40:52.195548", 
+ "modified": "2017-11-07 13:04:27.515921", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Budget Report", 
  "owner": "Administrator", 
  "ref_doctype": "GL Entry", 
  "report_name": "Budget Report", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }
+ ]
 }

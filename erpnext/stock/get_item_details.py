@@ -234,6 +234,9 @@ def get_price_list_rate(args, item_doc, out):
 				args.name, args.conversion_rate))
 
 def insert_item_price(args):
+	if args.doctype == "Purchase Order":
+		if args.annual_tender:
+			return 
 	"""Insert Item Price if Price List and Price List Rate are specified and currency is the same"""
 	if frappe.db.get_value("Price List", args.price_list, "currency") == args.currency \
 		and cint(frappe.db.get_single_value("Stock Settings", "auto_insert_price_list_rate_if_missing")):
