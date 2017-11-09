@@ -24,7 +24,7 @@ def get_data(query, filters=None):
 	#KM and Hour value is changed from consumption_km and consumption_hours to diference between the final and initial after discussing with Project Lead
 def construct_query(filters):
 	query = """select e.equipment_type ty, e.equipment_number as no, e.branch br, MIN(vl.initial_km)  AS mink, MAX(vl.final_km) AS maxk, MIN(vl.initial_hour) as minh, MAX(vl.final_hour) as maxh, vl.consumption_km as ckm, vl.consumption_hours as ch,
-	(select avg(pol.rate) from tabPOL pol where pol.equipment = e.name and pol.date between '%(from_date)s' and '%(to_date)s'   and pol.docstatus = 1) as rate,
+	(select (sum(pol.qty*pol.rate)/sum(pol.qty)) from tabPOL pol where pol.branch = e.branch and pol.docstatus = 1) as rate,
 	sum(vl.hsd_received) as drawn,
 	(select a.opening_balance from `tabVehicle Logbook` a where a.rate_type = 'With Fuel' and a.equipment_number = e.equipment_number and a.from_date between \'%(from_date)s\' and \'%(to_date)s\' and a.to_date between \'%(from_date)s\' and \'%(to_date)s\' order by a.from_date asc limit 1) as opening, (select em.tank_capacity from  `tabEquipment Model` em where em.model = e.equipment_model) as cap,
 	CASE
@@ -75,7 +75,7 @@ def get_columns():
 		("Closing Balance(L)")+":data:110",
 		("Tank Capacity")+":data:110",
 		("Rate(Nu.)")+":currency:100",
-		("Amount(Nu.)")+":currency:100",
+		("Amount(Nu.)")+":Currency:100",
 
 	]
 	return cols

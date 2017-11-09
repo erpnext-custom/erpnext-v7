@@ -148,12 +148,11 @@ def get_data(filters):
 
                 # `tabPOL`
             	pol = frappe.db.sql("""
-                            	select avg(rate) as rate
+                            	select (sum(qty*rate)/sum(qty)) as rate
                             	from `tabPOL`
-                        	where equipment = '{0}'
+                        	where branch = '{0}'
                         	and   docstatus = 1
-				and   {1}
-                    """.format(eq.name, rate_date), as_dict=1)[0]
+                    """.format(eq.branch), as_dict=1)[0]
 
                 # `tabJob Card`
             	jc = frappe.db.sql("""
