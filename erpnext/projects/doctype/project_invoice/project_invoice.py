@@ -59,6 +59,9 @@ class ProjectInvoice(AccountsController):
                         self.customer         = base_project.customer
                         self.branch           = base_project.branch
                         self.cost_center      = base_project.cost_center
+
+                        if base_project.status in ('Completed','Cancelled'):
+                                frappe.throw(_("Operation not permitted on already {0} Project.").format(base_project.status),title="Project Invoice: Invalid Operation")
                         
                 if self.boq:
                         base_boq              = frappe.get_doc("BOQ", self.boq)

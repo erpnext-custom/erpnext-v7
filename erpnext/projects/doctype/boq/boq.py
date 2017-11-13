@@ -63,11 +63,16 @@ class BOQ(Document):
                         self.balance_amount  += (flt(item.amount)-flt(item.received_amount))
 
                 # Defaults
+                base_project = frappe.get_doc("Project", self.project)
+                
+                if base_project.status in ('Completed','Cancelled'):
+                                frappe.throw(_("Operation not permitted on already {0} Project.").format(base_project.status),title="BOQ: Invalid Operation")
+                                
                 if not self.branch:
-                        self.branch = frappe.db.get_value("Project", self.project, "branch")
+                        self.branch = base_project.branch
 
                 if not self.cost_center:
-                        self.cost_center = frappe.db.get_value("Project", self.project, "cost_center")
+                        self.cost_center = base_project.cost_center
 
         def update_project_value(self):
                 total_amount = 0.0

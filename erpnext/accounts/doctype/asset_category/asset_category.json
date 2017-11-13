@@ -199,8 +199,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-13 16:07:17.826720", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2017-11-09 17:07:57.777055", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Asset Category", 
  "name_case": "", 
@@ -372,5 +372,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

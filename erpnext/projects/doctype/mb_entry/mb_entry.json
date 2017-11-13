@@ -580,7 +580,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-09 11:44:05.777706", 
+ "modified": "2017-11-09 18:22:21.964153", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "MB Entry", 
@@ -656,6 +656,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

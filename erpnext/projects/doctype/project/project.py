@@ -86,8 +86,9 @@ class Project(Document):
 		self.validate_target_quantity()
 		self.validate_work_quantity()
 		self.validate_imprest()
-		self.sync_activity_tasks()
-		self.sync_additional_tasks()
+		if self.status == 'Ongoing':
+                        self.sync_activity_tasks()
+                        self.sync_additional_tasks()
 		self.activity_tasks = []
 		self.additional_tasks = []
 		self.project_advance_item = []
@@ -106,8 +107,9 @@ class Project(Document):
 		# Following 2 lines added by SHIV on 2017/08/11
 		self.load_activity_tasks()
 		self.load_additional_tasks()
-		self.sync_activity_tasks()
-		self.sync_additional_tasks()
+		if self.status == 'Ongoing':
+                        self.sync_activity_tasks()
+                        self.sync_additional_tasks()
 		self.update_task_progress()
 		self.update_project_progress()
 		self.update_group_tasks()

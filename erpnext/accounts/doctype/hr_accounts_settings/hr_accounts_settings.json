@@ -556,7 +556,7 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-08-02 15:53:31.289225", 
+ "modified": "2017-11-09 17:27:13.468569", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "HR Accounts Settings", 
@@ -609,5 +609,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

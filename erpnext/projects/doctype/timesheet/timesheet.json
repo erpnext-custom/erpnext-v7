@@ -662,7 +662,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-03 16:32:29.024886", 
+ "modified": "2017-11-09 18:23:12.292641", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Timesheet", 
@@ -735,5 +735,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

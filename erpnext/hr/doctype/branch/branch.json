@@ -348,7 +348,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-16 16:23:24.023058", 
+ "modified": "2017-11-09 17:07:37.880659", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Branch", 
@@ -439,7 +439,7 @@
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 1, 
    "if_owner": 0, 
@@ -459,5 +459,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

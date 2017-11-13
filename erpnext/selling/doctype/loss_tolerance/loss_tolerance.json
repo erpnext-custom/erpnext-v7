@@ -204,7 +204,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-31 18:28:30.643594", 
+ "modified": "2017-11-09 17:22:56.130176", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Loss Tolerance", 
@@ -359,5 +359,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "title", 
+ "track_changes": 1, 
  "track_seen": 0
 }

@@ -705,7 +705,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-03 17:01:48.526894", 
+ "modified": "2017-11-09 18:20:42.649311", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Advance", 
@@ -781,5 +781,6 @@
  "search_fields": "project, customer, advance_amount", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

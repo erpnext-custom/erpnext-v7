@@ -976,7 +976,7 @@
  "istable": 0, 
  "max_attachments": 5, 
  "menu_index": 0, 
- "modified": "2017-11-03 15:32:01.634132", 
+ "modified": "2017-11-09 18:22:51.670722", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Task", 
@@ -1052,5 +1052,6 @@
  "sort_order": "DESC", 
  "timeline_field": "project", 
  "title_field": "subject", 
+ "track_changes": 1, 
  "track_seen": 1
 }

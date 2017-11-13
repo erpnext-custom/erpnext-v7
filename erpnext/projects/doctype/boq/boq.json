@@ -549,7 +549,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-09 11:42:24.460060", 
+ "modified": "2017-11-09 18:21:22.180527", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "BOQ", 
@@ -625,6 +625,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "cost_center", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 1
 }

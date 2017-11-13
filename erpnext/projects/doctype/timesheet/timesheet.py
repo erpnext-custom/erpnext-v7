@@ -150,7 +150,10 @@ class Timesheet(Document):
                         base_project    = frappe.get_doc("Project", self.project)
                         self.branch     = base_project.branch
                         self.cost_center= base_project.cost_center
-                
+
+                        if base_project.status in ('Completed','Cancelled'):
+                                frappe.throw(_("Operation not permitted on already {0} Project.").format(base_project.status),title="Timesheet: Invalid Operation")
+                                
                 # `Timesheet Detail` Validations
                 total_target_quantity           = 0.0
                 total_target_quantity_complete  = 0.0

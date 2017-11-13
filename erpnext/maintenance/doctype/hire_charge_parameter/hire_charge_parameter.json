@@ -493,7 +493,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-29 18:00:06.117451", 
+ "modified": "2017-11-09 17:21:16.275862", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Hire Charge Parameter", 
@@ -546,5 +546,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

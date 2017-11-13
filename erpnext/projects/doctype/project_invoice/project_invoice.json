@@ -889,7 +889,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-03 19:05:31.105861", 
+ "modified": "2017-11-09 18:20:53.448092", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Invoice", 
@@ -1005,5 +1005,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "invoice_title", 
+ "track_changes": 1, 
  "track_seen": 0
 }

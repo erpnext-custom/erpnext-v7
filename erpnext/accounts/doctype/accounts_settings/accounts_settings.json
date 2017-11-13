@@ -428,7 +428,7 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-07 16:23:46.615541", 
+ "modified": "2017-11-09 17:26:02.847307", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Accounts Settings", 
@@ -499,5 +499,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

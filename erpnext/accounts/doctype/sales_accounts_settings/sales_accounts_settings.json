@@ -223,7 +223,7 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-07 17:57:08.503341", 
+ "modified": "2017-11-09 17:27:36.959970", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Sales Accounts Settings", 
@@ -276,5 +276,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

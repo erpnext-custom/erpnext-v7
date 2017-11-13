@@ -56,6 +56,9 @@ class CashJournalEntry(Document):
                         self.project_name = base_project.project_name
                         self.branch       = base_project.branch
                         self.cost_center  = base_project.cost_center
+
+                        if base_project.status in ('Completed','Cancelled'):
+                                frappe.throw(_("Operation not permitted on already {0} Project.").format(base_project.status),title="Cash Journal: Invalid Operation")
                 else:
                         self.project_name = ""
                         self.branch       = ""

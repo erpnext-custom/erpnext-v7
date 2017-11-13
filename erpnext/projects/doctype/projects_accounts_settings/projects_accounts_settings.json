@@ -422,7 +422,7 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-04 10:48:42.403245", 
+ "modified": "2017-11-09 17:27:32.209284", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Projects Accounts Settings", 
@@ -475,5 +475,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

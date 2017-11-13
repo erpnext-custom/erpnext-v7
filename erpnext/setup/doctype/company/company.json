@@ -1386,7 +1386,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2017-09-01 17:17:47.794758", 
+ "modified": "2017-11-09 17:09:33.778138", 
  "modified_by": "Administrator", 
  "module": "Setup", 
  "name": "Company", 
@@ -1677,5 +1677,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

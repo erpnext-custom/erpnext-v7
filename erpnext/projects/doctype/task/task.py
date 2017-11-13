@@ -83,7 +83,10 @@ class Task(Document):
                 if self.project:
                         base_project    = frappe.get_doc("Project", self.project)
                         self.branch     = base_project.branch
-                        self.cost_center= base_project.cost_center 
+                        self.cost_center= base_project.cost_center
+
+                        if base_project.status in ('Completed','Cancelled'):
+                                frappe.throw(_("Operation not permitted on already {0} Project.").format(base_project.status),title="Task: Invalid Operation")
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
         
 	def on_update(self):

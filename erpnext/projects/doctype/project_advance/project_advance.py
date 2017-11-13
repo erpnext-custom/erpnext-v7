@@ -50,6 +50,9 @@ class ProjectAdvance(Document):
                         self.cost_center      = base_project.cost_center
                         self.branch           = base_project.branch
 
+                        if base_project.status in ('Completed','Cancelled'):
+                                frappe.throw(_("Operation not permitted on already {0} Project.").format(base_project.status),title="Project Advance: Invalid Operation")
+
                 if self.customer:
                         base_customer = frappe.get_doc("Customer", self.customer)
                         self.customer_details = base_customer.customer_details

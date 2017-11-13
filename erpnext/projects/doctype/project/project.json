@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "PRJ.####", 
  "beta": 0, 
  "creation": "2013-03-07 11:55:07", 
@@ -1155,7 +1155,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 4, 
- "modified": "2017-11-03 14:27:46.841647", 
+ "modified": "2017-11-09 19:05:34.775372", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project", 
@@ -1271,5 +1271,6 @@
  "sort_order": "DESC", 
  "timeline_field": "customer", 
  "title_field": "project_name", 
+ "track_changes": 0, 
  "track_seen": 1
 }

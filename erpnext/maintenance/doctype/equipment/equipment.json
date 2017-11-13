@@ -822,7 +822,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-31 17:51:22.074541", 
+ "modified": "2017-11-09 17:20:37.647744", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment", 
@@ -897,5 +897,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "equipment_number", 
+ "track_changes": 1, 
  "track_seen": 0
 }

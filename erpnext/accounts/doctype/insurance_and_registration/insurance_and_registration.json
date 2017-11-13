@@ -618,7 +618,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-07 13:07:34.434329", 
+ "modified": "2017-11-13 16:57:57.195521", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Insurance and Registration", 
@@ -672,5 +672,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "equipment_number", 
+ "track_changes": 1, 
  "track_seen": 0
 }

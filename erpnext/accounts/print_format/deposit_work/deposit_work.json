@@ -1,0 +1,19 @@
+{
+ "creation": "2017-11-13 16:09:19.916873", 
+ "css": "", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "Deposit Work", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div id=\"main\">\n<div  style=\"text-align: center;\">\n{%- macro add_header(page_num, max_pages, doc, letter_head, no_letterhead) -%}\n\t\t{%- if letter_head and not no_letterhead -%}\n\t\t\t<div class=\"letter-head\">{{ letter_head }}</div>\n\t\t{%- endif -%}\n\t{%- endmacro -%}\n\t{{ add_header(0,1,doc,letter_head, no_letterhead) }}\n<p>\n{%- if doc.branch -%}\n\t{{ doc.branch }}\n{%- endif -%}\n</p>\n</div>\n<div>\n<div id = \"menu\">\n<table style=\"font-size: 15px; width:100%\">\n<tr>\n<td><strong>Name of Work:</strong></td>\n<td align=\"left\">{{ doc.name_of_work }}</td>\n<td><strong>Revenue:</strong></td>\n<td align=\"left\"> {{ frappe.format_value(doc.total_received_amount , {\"fieldtype\":\"Currency\"})}}</td>\n</tr>\n<tr>\n<td><strong>Work Type: </strong></td>\n<td align=\"left\" > {{ doc.work_type }} </td>\n<td><strong> Expense : </strong> </td>\n<td> {{ frappe.format_value(doc.total_expense_amount , {\"fieldtype\":\"Currency\"}) }} </td>\n</tr>\n<tr>\n<td><strong>Cost Center: </strong></td>\n<td> {{ doc.cost_center }} </td>\n<td><strong> Balance : </strong> </td>\n<td> {{ frappe.format_value(doc.balance_amount  , {\"fieldtype\":\"Currency\"})}} </td>\n</tr>\n</table>\n</div>\n\n<table class=\"table table-bordered\" style=\"margin-top: 15px;\">\n <caption>Revenue Details</caption>\n  <tbody>\n\t<tr>\n\t\t<th>Sr</th>\n\t\t<th style=\"text-align: center;\">Date</th>\n\t\t<th style=\"text-align: center;\">Amount</th>\n\t\t<th style=\"text-align: center;\">Remarks</th>\n\t</tr>\n\t{%- for row in doc.r_items -%}\n\t<tr>\n\t\t<td style=\"width: 3%;\">{{ row.idx }}</td>\n\t\t<td style=\"width: 13%;\">{{ row.date }}</td>\n\t\t<td style=\"width: 13%;\">{{ frappe.format_value(row.amount, {\"fieldtype\":\"Currency\"}) }}</td>\n\t\t<td style=\"width: 30%;\">{{ row.remarks }}</td>\n\t</tr>\n\t{%- endfor -%}\n  </tbody>\n</table>\n\n<table class=\"table table-bordered\" style=\"margin-top: 15px;\">\n <caption>Expense Details</caption>\n  <tbody>\n\t<tr>\n\t\t<th>Sr</th>\n\t\t<th style=\"text-align: center;\">Date</th>\n\t\t<th style=\"text-align: center;\">Particulars</th>\n\t\t<th style=\"text-align: center;\">Amount</th>\n\t</tr>\n\t{%- for row in doc.e_items -%}\n\t<tr>\n\t\t<td style=\"width: 3%;\">{{ row.idx }}</td>\n\t\t<td style=\"width: 15%;\">{{ row.date }}</td>\n\t\t<td style=\"width: 30%;\">{{ row.particulars }}</td>\n\t\t<td style=\"width: 20%;\">{{ frappe.format_value(row.amount, {\"fieldtype\":\"Currency\"}) }}</td>\n\t</tr>\n\t{%- endfor -%}\n  </tbody>\n</table>\n\n\n</div>\n</div>\n<div class=\"printedby\">This print is system generated and should be considered VALID only with appropriate seal and/or signature. <br>  Printed by {{ frappe.user }} on {{ frappe.utils.nowdate()  }} at {{ frappe.utils.nowtime() }}</div>", 
+ "idx": 0, 
+ "modified": "2017-11-13 17:32:41.374711", 
+ "modified_by": "Administrator", 
+ "name": "Deposit Work", 
+ "owner": "Administrator", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes"
+}
