@@ -123,6 +123,13 @@ frappe.ui.form.on("Project", {
 				frappe.set_route("query-report", "Project Register");
 			},__("Reports"), "icon-file-alt"
 		);
+		frm.add_custom_button(__("Manpower"), function(){
+				frappe.route_options = {
+					project: frm.doc.name
+				};
+				frappe.set_route("query-report", "Project Manpower");
+			},__("Reports"), "icon-file-alt"
+		);
 		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		
 		if(frm.doc.__islocal) {

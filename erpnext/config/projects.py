@@ -173,6 +173,12 @@ def get_data():
                                 {
 					"type": "report",
 					"is_query_report": True,
+					"name": "Project Manpower",
+					"doctype": "Project"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
 					"name": "BOQ Register",
 					"doctype": "BOQ"
 				},
