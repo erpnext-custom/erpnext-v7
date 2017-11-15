@@ -159,14 +159,44 @@ def update_salary_structure(employee, new_basic, sal_struc_name=None):
 					calc_amt = round(flt(sst.communication_allowance))			
 					e.db_set('amount',calc_amt,update_modified=True)
 					gross_pay += calc_amt
-				elif sst.eligible_for_psa and e.salary_component == 'PDA':
+				elif sst.eligible_for_underground and e.salary_component == 'Underground Allowance':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.psa)*0.01)
+					calc_amt = round(new_basic*flt(sst.underground)*0.01)
+					e.db_set('amount',calc_amt,update_modified = True)
+					gross_pay += calc_amt
+				elif sst.eligible_for_shift and e.salary_component == 'Shift Allowance':
+					calc_amt = 0
+					calc_amt = round(new_basic*flt(sst.shift)*0.01)
+					e.db_set('amount',calc_amt,update_modified = True)
+					gross_pay += calc_amt
+				elif sst.eligible_for_difficulty and e.salary_component == 'Difficult Area Allowance':
+					calc_amt = 0
+					calc_amt = round(new_basic*flt(sst.difficulty)*0.01)
+					e.db_set('amount',calc_amt,update_modified = True)
+					gross_pay += calc_amt
+				elif sst.eligible_for_high_altitude and e.salary_component == 'High Altitude Allowance':
+					calc_amt = 0
+					calc_amt = round(new_basic*flt(sst.high_altitude)*0.01)
+					e.db_set('amount',calc_amt,update_modified = True)
+					gross_pay += calc_amt
+				elif sst.eligible_for_pda and e.salary_component == 'PDA':
+					calc_amt = 0
+					calc_amt = round(new_basic*flt(sst.pda)*0.01)
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_psa and e.salary_component == 'PSA':
 					calc_amt = 0
 					calc_amt = round(new_basic*flt(sst.psa)*0.01)
+					e.db_set('amount',calc_amt,update_modified = True)
+					gross_pay += calc_amt
+				elif sst.eligible_for_deputation and e.salary_component == 'Deputation Allowance':
+					calc_amt = 0
+					calc_amt = round(new_basic*flt(sst.deputation)*0.01)
+					e.db_set('amount',calc_amt,update_modified = True)
+					gross_pay += calc_amt
+				elif sst.eligible_for_scarcity and e.salary_component == 'Scarcity Allowance':
+					calc_amt = 0
+					calc_amt = round(new_basic*flt(sst.scarcity)*0.01)
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_mpi and e.salary_component == 'MPI':
@@ -182,11 +212,6 @@ def update_salary_structure(employee, new_basic, sal_struc_name=None):
 				elif sst.eligible_for_temporary_transfer_allowance and e.salary_component == 'Temporary Transfer Allowance':
 					calc_amt = 0
 					calc_amt = (new_basic*flt(sst.temporary_transfer_allowance)*0.01)
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif sst.eligible_for_fuel_allowances and e.salary_component == 'Fuel Allowance':
-					calc_amt = 0
-					calc_amt = round(flt(sst.fuel_allowances))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				else:
