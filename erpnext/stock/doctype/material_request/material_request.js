@@ -25,9 +25,19 @@ frappe.ui.form.on("Material Request Item", {
 			if (flt(d.qty) < flt(d.min_order_qty)) {
 				alert(__("Warning: Material Requested Qty is less than Minimum Order Qty"));
 			}
+		},
+	"issued_quantity": function(frm, doctype, name) {
+		var d = locals[doctype][name];
+		if(d.qty < d.issued_quantity) {
+			frappe.model.set_value(doctype, name, "issued_quantity", "")
+			frappe.model.set_value(doctype, name, "ordered_qty", "")
+			msgprint("Issued Quantity cannot be greater than actual quantity")
+		}
+		else {	
+			frappe.model.set_value(doctype, name, "ordered_qty", d.issued_quantity)
 		}
 	}
-);
+},);
 
 erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.extend({
 	onload: function(doc) {

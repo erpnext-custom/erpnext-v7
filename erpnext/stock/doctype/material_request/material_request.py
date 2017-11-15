@@ -200,6 +200,8 @@ def update_item(obj, target, source_parent):
 	target.conversion_factor = 1
 	target.qty = flt(obj.qty) - flt(obj.ordered_qty)
 	target.stock_qty = target.qty
+	if obj.item_group == "Fixed Asset":
+		target.qty = flt(obj.qty) - flt(obj.issued_quantity)
 
 @frappe.whitelist()
 def make_purchase_order(source_name, target_doc=None):
