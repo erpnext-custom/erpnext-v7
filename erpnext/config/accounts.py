@@ -407,7 +407,17 @@ def get_data():
 					"is_query_report": True,
 					"name": "Budget Proposal",
 					"doctype": "Budget"
-				}
+				},
+				{
+					"type": "doctype",
+					"name": "Revenue Target",
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Revenue Target",
+					"doctype": "Revenue Target"
+				},
 			]
 		},
 		{

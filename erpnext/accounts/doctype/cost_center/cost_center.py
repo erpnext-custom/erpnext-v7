@@ -17,6 +17,11 @@ class CostCenter(NestedSet):
 	def validate(self):
 		self.validate_mandatory()
 		self.create_customer()
+		self.check_ware_house()
+
+	def check_ware_house(self):
+		if not self.is_group and not self.warehouse:
+			frappe.throw("Warehouse is mandatory for non-group cost center")
 
 	def validate_mandatory(self):
 		if self.cost_center_name != self.company and not self.parent_cost_center:

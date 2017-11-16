@@ -80,7 +80,15 @@ class MaterialRequest(BuyingController):
 		pc_obj.validate_for_items(self)
 
 		self.set_title()
+		if not self.items:
+			frappe.throw("Cannot save without items in material request")
 
+		if not self.approver:	
+			app = frappe.db.get_value("Approver Item", {"cost_center": self.temp_cc}, "approver")	
+			if not app:
+				frappe.throw("Setup MR Approver for <b>" + str(self.temp_cc) + "</b> in Document Approver")
+			else:
+				self.approver = app
 
 		# self.validate_qty_against_so()
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated
@@ -226,7 +234,7 @@ def make_purchase_order(source_name, target_doc=None):
 				["parent", "material_request"],
 				["uom", "stock_uom"],
 				["budget_account", "budget_account"],
-                                ["cost_center", "cost_center"],
+                                ["cost_center_w", "cost_center"],
 				["uom", "uom"]
 			],
 			"postprocess": update_item,
@@ -255,7 +263,7 @@ def make_request_for_quotation(source_name, target_doc=None):
 				["name", "material_request_item"],
 				["parent", "material_request"],
 				["budget_account", "budget_account"],
-                                ["cost_center", "cost_center"],
+                                ["cost_center_w", "cost_center"],
 				["uom", "uom"]
 			]
 		}
@@ -293,7 +301,7 @@ def make_purchase_order_based_on_supplier(source_name, target_doc=None):
 					["parent", "material_request"],
 					["uom", "stock_uom"],
 					["budget_account", "budget_account"],
-                                	["cost_center", "cost_center"],
+                                	["cost_center_w", "cost_center"],
 					["uom", "uom"]
 				],
 				"postprocess": update_item,
@@ -342,7 +350,7 @@ def make_supplier_quotation(source_name, target_doc=None):
 			"field_map": {
 				"name": "material_request_item",
 				"budget_account": "budget_account",
-                                "cost_center": "cost_center",
+                                "cost_center_w": "cost_center",
 				"parent": "material_request"
 			}
 		}
@@ -385,7 +393,7 @@ def make_stock_entry(source_name, target_doc=None):
 				"name": "material_request_item",
 				"parent": "material_request",
 				"uom": "stock_uom",
-				"cost_center": "cost_center",
+				"cost_center_w": "cost_center",
 				"budget_account": "expense_account"
 			},
 			"postprocess": update_item,
@@ -427,3 +435,10 @@ def raise_production_orders(material_request):
 	if errors:
 		msgprint(_("Productions Orders cannot be raised for:" + '\n' + new_line_sep(errors)))
 	return production_orders
+
+@frappe.whitelist()
+def get_cc_warehouse(user):
+	cc = frappe.db.get_value("Employee", {"user_id": user}, "cost_center")
+	wh = frappe.db.get_value("Cost Center", cc, "warehouse")
+	app = frappe.db.get_value("Approver Item", {"cost_center": cc}, "approver")
+	return [cc, wh, app]

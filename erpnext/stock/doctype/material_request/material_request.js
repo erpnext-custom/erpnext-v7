@@ -12,14 +12,49 @@ frappe.ui.form.on('Material Request', {
 			{fieldname: 'schedule_date', columns: 2},
 		];
 	},
+	/*"items_on_form_rendered": function(frm, grid_row, cdt, cdn) {
+		var row = cur_frm.open_grid_row();
+		if(!row.grid_form.fields_dict.cost_center_w.value) {
+			row.grid_form.fields_dict.cost_center_w.set_value(frm.doc.temp_cc)
+                	row.grid_form.fields_dict.cost_center_w.refresh()
+		}
+		if(!row.grid_form.fields_dict.warehouse.value) {
+			row.grid_form.fields_dict.warehouse.set_value(frm.doc.temp_wh)
+                	row.grid_form.fields_dict.warehouse.refresh()
+		}
+	}, */
 	onload: function(frm) {
 		// formatter for material request item
 		frm.set_indicator_formatter('item_code',
 			function(doc) { return (doc.qty<=doc.ordered_qty) ? "green" : "orange" })
+		if(frm.doc.__islocal) {
+			cur_frm.set_value("material_request_type", "Material Issue")
+			frappe.call({
+				method: "erpnext.stock.doctype.material_request.material_request.get_cc_warehouse",
+				args: {"user": frappe.session.user},
+				callback(r) {
+					cur_frm.set_value("temp_cc", r.message[0]);		
+					cur_frm.set_value("temp_wh", r.message[1]);		
+					cur_frm.set_value("approver", r.message[2]);		
+				}
+			})
+		}
+	},
+	/*
+	temp_cc: function(frm){
+		frappe.model.get_value('Approver Item',{'cost_center': frm.doc.temp_cc}, 'approver', 
+		function(r){
+			cur_frm.set_value("approver", r.approver);
+		});
 	}
+	*/
 });
 
 frappe.ui.form.on("Material Request Item", {
+	"items_add": function(frm, cdt, cdn) {
+		frappe.model.set_value(cdt, cdn, "cost_center_w", frm.doc.temp_cc)
+		frappe.model.set_value(cdt, cdn, "warehouse", frm.doc.temp_wh)
+	}, 
 	"qty": function(frm, doctype, name) {
 			var d = locals[doctype][name];
 			if (flt(d.qty) < flt(d.min_order_qty)) {
@@ -266,4 +301,4 @@ cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc
 			"is_disabled": 0,
 		}
 	}
-}
+} 

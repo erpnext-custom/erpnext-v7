@@ -245,7 +245,7 @@ def get_data():
 				},                                
 				{
 					"type": "doctype",
-					"name": "DepartmentDirector",
+					"name": "Department Director",
 					"label": "Department\'s Director",
 					"description": _("Assign Directors to Departments")
 				},
