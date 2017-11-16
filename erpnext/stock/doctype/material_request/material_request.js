@@ -27,6 +27,7 @@ frappe.ui.form.on('Material Request', {
 		// formatter for material request item
 		frm.set_indicator_formatter('item_code',
 			function(doc) { return (doc.qty<=doc.ordered_qty) ? "green" : "orange" })
+
 		if(frm.doc.__islocal) {
 			cur_frm.set_value("material_request_type", "Material Issue")
 			frappe.call({
@@ -40,14 +41,14 @@ frappe.ui.form.on('Material Request', {
 			})
 		}
 	},
-	/*
-	temp_cc: function(frm){
-		frappe.model.get_value('Approver Item',{'cost_center': frm.doc.temp_cc}, 'approver', 
-		function(r){
-			cur_frm.set_value("approver", r.approver);
-		});
+	refresh: function(frm){
+		if(in_list(user_roles, "Stock User") || in_list(user_roles, "Purchase User")) {
+			frm.set_df_property("material_request_type", "read_only", 0)
+		}
+		else {
+			frm.set_df_property("material_request_type", "read_only", 1)
+		}
 	}
-	*/
 });
 
 frappe.ui.form.on("Material Request Item", {
