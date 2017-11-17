@@ -500,32 +500,12 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-01 14:33:13.033854", 
+ "modified": "2017-11-17 19:45:22.936757", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Appraisal", 
  "owner": "ashwini@webnotestech.com", 
  "permissions": [
-  {
-   "amend": 0, 
-   "apply_user_permissions": 0, 
-   "cancel": 0, 
-   "create": 1, 
-   "delete": 1, 
-   "email": 1, 
-   "export": 1, 
-   "if_owner": 0, 
-   "import": 0, 
-   "permlevel": 1, 
-   "print": 1, 
-   "read": 1, 
-   "report": 1, 
-   "role": "All", 
-   "set_user_permissions": 0, 
-   "share": 1, 
-   "submit": 0, 
-   "write": 1
-  }, 
   {
    "amend": 0, 
    "apply_user_permissions": 0, 
@@ -575,5 +555,6 @@
  "sort_order": "DESC", 
  "timeline_field": "employee", 
  "title_field": "employee_name", 
+ "track_changes": 0, 
  "track_seen": 0
 }

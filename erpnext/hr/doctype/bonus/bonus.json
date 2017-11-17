@@ -447,7 +447,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-31 12:54:00.190081", 
+ "modified": "2017-11-17 19:35:36.747967", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Bonus", 
@@ -513,26 +513,6 @@
    "share": 1, 
    "submit": 1, 
    "write": 1
-  }, 
-  {
-   "amend": 0, 
-   "apply_user_permissions": 0, 
-   "cancel": 0, 
-   "create": 0, 
-   "delete": 0, 
-   "email": 1, 
-   "export": 1, 
-   "if_owner": 0, 
-   "import": 0, 
-   "permlevel": 0, 
-   "print": 1, 
-   "read": 1, 
-   "report": 1, 
-   "role": "Accounts User", 
-   "set_user_permissions": 0, 
-   "share": 1, 
-   "submit": 0, 
-   "write": 0
   }
  ], 
  "quick_entry": 0, 
@@ -540,5 +520,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }
