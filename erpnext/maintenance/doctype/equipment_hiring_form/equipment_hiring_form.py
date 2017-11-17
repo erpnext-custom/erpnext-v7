@@ -47,7 +47,7 @@ class EquipmentHiringForm(Document):
 			for a in self.approved_items:
 				total += flt(a.grand_total)
 			self.total_hiring_amount = total
-			if self.private == "Private":
+			if self.private == "Private" and not self.advance_amount:
 				self.advance_amount = total
 		
 

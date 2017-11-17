@@ -58,7 +58,7 @@ def get_notification_config():
                         "BOQ": {"docstatus": 0},
                         "MB Entry": {"docstatus": 0},
                         "Project Advance": {"docstatus": 0},
-                        "Project Invoice": {"docstatus": 0},
+                        "Project Invoice": {"status": ("in", ("Draft", "Unpaid"))},
                         "Project Payment": {"docstatus": 0},
                         "Cash Journal Entry": {"docstatus": 0},
                         "Equipment Hire Form": {"docstatus": 0},

@@ -414,9 +414,10 @@ def get_data():
 				},
 				{
 					"type": "report",
+					"label": _("Revenue Achievement"),
 					"is_query_report": True,
 					"name": "Revenue Target",
-					"doctype": "Revenue Target"
+					"doctype": "Revenue Target",
 				},
 			]
 		},

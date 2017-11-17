@@ -53,7 +53,7 @@ def get_data(filters):
 
                 t["achieved_amount"] = flt(achieved_amount)
                 t["balance_amount"]  = flt(t.target_amount)-flt(achieved_amount)
-                t["achievement"]     = (flt(achieved_amount)/flt(t.target_amount))*100
+                t["achievement"]     = (flt(achieved_amount)/flt(t.target_amount if t.target_amount else 1))*100
 
                 tot_target_amount   += flt(t.target_amount)
                 tot_achieved_amount += flt(achieved_amount)
@@ -65,7 +65,7 @@ def get_data(filters):
                 "target_amount": flt(tot_target_amount),
                 "achieved_amount": flt(tot_achieved_amount),
                 "balance_amount": flt(tot_target_amount)-flt(tot_achieved_amount),
-                "achievement": (flt(tot_achieved_amount)/flt(tot_target_amount))*100
+                "achievement": (flt(tot_achieved_amount)/flt(tot_target_amount if tot_target_amount else 1))*100
         })        
 
         return data
