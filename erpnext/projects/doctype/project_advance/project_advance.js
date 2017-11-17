@@ -3,7 +3,7 @@
 
 frappe.ui.form.on('Project Advance', {
 	refresh: function(frm) {
-		if(frm.doc.customer){
+		if(frm.doc.customer && frm.doc.docstatus == 0){
 			fetch_customer_details(frm);
 		}
 		
@@ -12,8 +12,17 @@ frappe.ui.form.on('Project Advance', {
 				frappe.route_options = {"name": frm.doc.project}
 				frappe.set_route("Form", "Project", frm.doc.project);
 			}, __("View"), true);
+			
+			if (frm.doc.docstatus == 0){
+				set_mandatory(frm);
+			}
 		}
 	},
+	
+	project: function(frm){
+		set_mandatory(frm);
+	}
+	
 	/*
 	customer: function(frm){
 		if(frm.doc.__islocal){
@@ -22,6 +31,13 @@ frappe.ui.form.on('Project Advance', {
 	}
 	*/
 });
+
+var set_mandatory = function(frm){
+	if (frm.doc.project) {
+		frm.add_fetch("project","branch","branch");
+		frm.add_fetch("project","cost_center","cost_center");
+	}
+}
 
 var fetch_customer_details = function(frm){
 	frappe.call({

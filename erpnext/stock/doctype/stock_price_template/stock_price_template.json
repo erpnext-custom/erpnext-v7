@@ -573,7 +573,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-17 19:41:18.373029", 
+ "modified": "2017-11-17 23:08:19.626832", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Price Template", 
@@ -661,10 +661,10 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 0, 
-   "cancel": 1, 
-   "create": 1, 
+   "cancel": 0, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 

@@ -544,7 +544,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-20 18:04:45.043036", 
+ "modified": "2017-11-17 21:31:19.611316", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Officiating Employee", 
@@ -573,13 +573,13 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
-   "if_owner": 0, 
+   "if_owner": 1, 
    "import": 0, 
    "permlevel": 0, 
    "print": 1, 
@@ -589,6 +589,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }
  ], 
@@ -597,5 +598,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

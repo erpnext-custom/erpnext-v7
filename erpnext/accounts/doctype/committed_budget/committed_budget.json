@@ -226,7 +226,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-03-03 14:35:56.463643", 
+ "modified": "2017-11-17 21:42:01.165182", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Committed Budget", 
@@ -337,7 +337,7 @@
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 1, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -350,7 +350,7 @@
    "role": "Purchase User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "write": 1
   }, 
   {
@@ -379,5 +379,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

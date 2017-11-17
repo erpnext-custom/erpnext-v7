@@ -693,6 +693,7 @@ class PurchaseInvoice(BuyingController):
 		for d in self.items:
 			if d.project and d.project not in project_list:
 				project = frappe.get_doc("Project", d.project)
+				project.flags.ignore_permissions = 1
 				project.flags.dont_sync_tasks = True
 				project.update_purchase_costing()
 				project.save()
@@ -772,6 +773,7 @@ class PurchaseInvoice(BuyingController):
 						"item_code": item.item_code,
 						"com_ref": item.purchase_order,
 						"date": frappe.utils.nowdate()})
+					consume.flags.ignore_permissions=1
 					consume.submit()
 	
 	#Cancel the consumed budget

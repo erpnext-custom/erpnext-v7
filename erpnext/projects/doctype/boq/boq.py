@@ -14,7 +14,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.naming import make_autoname
-from frappe.utils import cstr, flt
+from frappe.utils import cstr, flt, getdate, today
 
 class BOQ(Document):
         """
@@ -73,6 +73,9 @@ class BOQ(Document):
 
                 if not self.cost_center:
                         self.cost_center = base_project.cost_center
+
+                if not self.boq_date:
+                        self.boq_date = today()
 
         def update_project_value(self):
                 total_amount = 0.0

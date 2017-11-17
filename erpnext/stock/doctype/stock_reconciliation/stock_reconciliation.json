@@ -349,7 +349,7 @@
  "istable": 0, 
  "max_attachments": 1, 
  "menu_index": 0, 
- "modified": "2017-09-01 15:26:57.551146", 
+ "modified": "2017-11-17 23:13:40.467465", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Reconciliation", 
@@ -360,7 +360,7 @@
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 0, 
    "export": 0, 
    "if_owner": 0, 
@@ -402,5 +402,6 @@
  "search_fields": "posting_date", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

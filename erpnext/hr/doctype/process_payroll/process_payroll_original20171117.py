@@ -253,14 +253,18 @@ class ProcessPayroll(Document):
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check
-                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt
+                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e,
+                                 `tabDivision` d
                                where ss.name = sd.parent
                                  and sd.amount > 0
+                                 and e.employee = ss.employee
                                  and dt.name = sd.salary_component
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and ss.cost_center = '%s'
+                                 and e.department = d.dpt_name
+                                 and e.division = d.d_name
+                                 and e.cost_center = '%s'
                                  and dt.gl_head <> '%s'
                                  and dt.type = 'Deduction'
                                  %s
@@ -277,14 +281,18 @@ class ProcessPayroll(Document):
                                 'Payable' as account_type,
                                 'Employee' as party_type,
                                 ss.employee as party
-                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt
+                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e,
+                                 `tabDivision` d
                                where ss.name = sd.parent
                                  and sd.amount > 0
+                                 and e.employee = ss.employee
                                  and dt.name = sd.salary_component
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and ss.cost_center = '%s'
+                                 and e.department = d.dpt_name
+                                 and e.division = d.d_name
+                                 and e.cost_center = '%s'
                                  and dt.gl_head = '%s'
                                  and dt.type = 'Deduction'
                                  %s
@@ -306,15 +314,19 @@ class ProcessPayroll(Document):
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check, se.salary_component
-                                from `tabSalary Detail` se, `tabSalary Slip` ss, `tabSalary Component` et
+                                from `tabSalary Detail` se, `tabSalary Slip` ss, `tabSalary Component` et, `tabEmployee` e,
+                                `tabDivision` d
                                where ss.name = se.parent
                                  and se.amount > 0
+                                 and e.employee = ss.employee
                                  and et.name = se.salary_component
                                  and et.type = 'Earning'
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and ss.cost_center = '%s'
+                                 and e.department = d.dpt_name
+                                 and e.division = d.d_name
+                                 and e.cost_center = '%s'
                                  %s
                                group by et.gl_head
                                 """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['cost_center'], cond1)

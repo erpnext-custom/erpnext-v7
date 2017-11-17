@@ -1073,7 +1073,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-01 17:32:44.377329", 
+ "modified": "2017-11-17 22:33:15.161234", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Pricing Rule", 
@@ -1124,7 +1124,7 @@
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 0, 
    "export": 0, 
    "if_owner": 0, 
@@ -1206,5 +1206,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "", 
+ "track_changes": 0, 
  "track_seen": 0
 }

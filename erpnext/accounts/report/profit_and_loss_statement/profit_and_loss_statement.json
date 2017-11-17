@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 14:26:06.939837", 
+ "modified": "2017-11-17 23:02:25.256206", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Profit and Loss Statement", 
@@ -23,7 +23,7 @@
    "role": "Accounts Manager"
   }, 
   {
-   "role": "Accounts User"
+   "role": "Management"
   }
  ]
 }

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 12:56:14.630072", 
+ "modified": "2017-11-17 23:03:59.992076", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Profitability Analysis", 
@@ -23,7 +23,7 @@
    "role": "Accounts Manager"
   }, 
   {
-   "role": "Accounts User"
+   "role": "Management"
   }
  ]
 }

@@ -248,6 +248,32 @@ class ProcessPayroll(Document):
                         #
                         # Deductions
                         #
+			'''
+                        query = """select dt.gl_head as account,
+                                sum(ifnull(amount,0)) as credit_in_account_currency,
+                                '%s' as against_account,
+                                '%s' as cost_center,
+                                0 as party_check
+                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e,
+                                 `tabDivision` d
+                               where ss.name = sd.parent
+                                 and sd.amount > 0
+                                 and e.employee = ss.employee
+                                 and dt.name = sd.salary_component
+                                 and ss.month = '%s'
+                                 and ss.fiscal_year = %s
+                                 and ss.docstatus = 1
+                                 and e.department = d.dpt_name
+                                 and e.division = d.d_name
+                                 and e.cost_center = '%s'
+                                 and dt.gl_head <> '%s'
+                                 and dt.type = 'Deduction'
+                                 %s
+                               group by dt.gl_head
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['cost_center'], default_saladv_account, cond1)
+                        deductions.extend(frappe.db.sql(query, as_dict=1))
+			'''
+
                         query = """select dt.gl_head as account,
                                 sum(ifnull(amount,0)) as credit_in_account_currency,
                                 '%s' as against_account,
@@ -260,12 +286,11 @@ class ProcessPayroll(Document):
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and ss.cost_center = '%s'
                                  and dt.gl_head <> '%s'
                                  and dt.type = 'Deduction'
                                  %s
                                group by dt.gl_head
-                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['cost_center'], default_saladv_account, cond1)
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, default_saladv_account, cond1)
                         deductions.extend(frappe.db.sql(query, as_dict=1))
 
                         # Salary Advance
@@ -284,12 +309,11 @@ class ProcessPayroll(Document):
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and ss.cost_center = '%s'
                                  and dt.gl_head = '%s'
                                  and dt.type = 'Deduction'
                                  %s
                                group by dt.gl_head, ss.employee
-                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['cost_center'], default_saladv_account, cond1)
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, default_saladv_account, cond1)
                         deductions.extend(frappe.db.sql(query2, as_dict=1))                        
                         accounts.extend(deductions)
 
@@ -314,10 +338,9 @@ class ProcessPayroll(Document):
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and ss.cost_center = '%s'
                                  %s
                                group by et.gl_head
-                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['cost_center'], cond1)
+                                """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, cond1)
                         earnings.extend(frappe.db.sql(query, as_dict=1))
                         accounts.extend(earnings)
 

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:07:35.063725", 
+ "modified": "2017-11-17 23:02:07.971431", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Trial Balance", 
@@ -24,9 +24,6 @@
   }, 
   {
    "role": "Accounts Manager"
-  }, 
-  {
-   "role": "Accounts User"
   }
  ]
 }

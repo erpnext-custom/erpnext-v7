@@ -22,6 +22,9 @@ class ProjectAdvance(Document):
                 self.set_defaults()
                 
         def on_submit(self):
+                if flt(self.advance_amount) <= 0:
+                        frappe.throw(_("Please input valid advance amount."), title="Invalid Amount")
+                        
                 if not self.migration_data:
                         self.post_journal_entry()
 
@@ -97,6 +100,8 @@ class ProjectAdvance(Document):
                                  "is_advance": "Yes" if rev_gl_det.is_an_advance_account == 1 else None
                 })                        
 
+
+                '''
                 je = frappe.get_doc({
                         "doctype": "Journal Entry",
                         "voucher_type": "Bank Entry",
@@ -112,3 +117,23 @@ class ProjectAdvance(Document):
         
                 if self.advance_amount:
                         je.insert()
+
+                '''
+
+                je = frappe.new_doc("Journal Entry")
+                
+                je.update({
+                        "doctype": "Journal Entry",
+                        "voucher_type": "Bank Entry",
+                        "naming_series": "Bank Receipt Voucher",
+                        "title": "Project Advance - "+self.project,
+                        "user_remark": "Project Advance - "+self.project,
+                        "posting_date": nowdate(),
+                        "company": self.company,
+                        "total_amount_in_words": money_in_words(self.advance_amount),
+                        "accounts": accounts,
+                        "branch": self.branch
+                })
+        
+                if self.advance_amount:
+                        je.save(ignore_permissions = True)

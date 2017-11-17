@@ -240,7 +240,7 @@ def update_salary_structure(employee, new_basic, sal_struc_name=None):
 					calc_pf_amt = round(new_basic * flt(percent) * 0.01);
 					d.db_set('amount',calc_pf_amt,update_modified = True)
 					deductions += calc_pf_amt
-				elif d.salary_component == 'Salary Tax':
+				elif d.salary_component == 'Salary Tax' or d.salary_component == 'Health Contribution':
 					calc_tds_amt = 0;
 				else:
 					deductions += d.amount

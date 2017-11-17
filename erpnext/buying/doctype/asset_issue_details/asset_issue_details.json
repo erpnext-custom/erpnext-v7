@@ -322,7 +322,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-20 10:29:36.751341", 
+ "modified": "2017-11-17 21:00:02.615994", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Asset Issue Details", 
@@ -364,7 +364,7 @@
    "read": 1, 
    "report": 1, 
    "role": "Purchase User", 
-   "set_user_permissions": 0, 
+   "set_user_permissions": 1, 
    "share": 1, 
    "submit": 0, 
    "write": 1
@@ -395,5 +395,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

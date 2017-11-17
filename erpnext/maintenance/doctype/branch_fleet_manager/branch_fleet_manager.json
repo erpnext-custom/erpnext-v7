@@ -98,7 +98,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-11 14:25:35.968145", 
+ "modified": "2017-11-17 22:03:20.247648", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Branch Fleet Manager", 
@@ -124,26 +124,6 @@
    "share": 1, 
    "submit": 0, 
    "write": 1
-  }, 
-  {
-   "amend": 0, 
-   "apply_user_permissions": 0, 
-   "cancel": 0, 
-   "create": 1, 
-   "delete": 0, 
-   "email": 1, 
-   "export": 1, 
-   "if_owner": 1, 
-   "import": 0, 
-   "permlevel": 0, 
-   "print": 1, 
-   "read": 1, 
-   "report": 1, 
-   "role": "Fleet User", 
-   "set_user_permissions": 0, 
-   "share": 1, 
-   "submit": 0, 
-   "write": 1
   }
  ], 
  "quick_entry": 1, 
@@ -153,5 +133,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "branch", 
+ "track_changes": 0, 
  "track_seen": 0
 }

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 10:24:53.411675", 
+ "modified": "2017-11-17 23:38:11.510006", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Monthly Salary Register", 
@@ -20,10 +20,10 @@
    "role": "Administrator"
   }, 
   {
-   "role": "HR Master"
+   "role": "HR Manager"
   }, 
   {
-   "role": "HR Manager"
+   "role": "Accounts User"
   }
  ]
 }

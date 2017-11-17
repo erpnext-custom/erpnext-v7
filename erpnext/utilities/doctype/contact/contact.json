@@ -586,7 +586,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-01 15:45:35.342026", 
+ "modified": "2017-11-17 22:36:17.344737", 
  "modified_by": "Administrator", 
  "module": "Utilities", 
  "name": "Contact", 
@@ -637,7 +637,7 @@
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 0, 
    "if_owner": 0, 
@@ -858,5 +858,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

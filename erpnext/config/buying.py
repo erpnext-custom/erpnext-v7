@@ -141,7 +141,7 @@ def get_data():
 				{
 					"type": "page",
 					"name": "purchase-analytics",
-					"label": "Purcahse Analytics"
+					"label": "Purchase Analytics"
 				},
 			]
 		},

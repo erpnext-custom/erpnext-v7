@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-08 12:41:20.740652", 
+ "modified": "2017-11-17 23:50:21.568873", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Workshop Progress Report", 
@@ -29,7 +29,10 @@
    "role": "Workshop Manager"
   }, 
   {
-   "role": "Accounts Manager"
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "Workshop User"
   }
  ]
 }
