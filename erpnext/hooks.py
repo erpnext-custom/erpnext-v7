@@ -189,7 +189,7 @@ scheduler_events = {
 
 default_mail_footer = """<div style="text-align: center;">
 	<a style="color: #8d99a6;">
-		Sent via eMines at SMCL 
+		Sent via <b>ERPNext</b> 
 	</a>
 </div>"""
 

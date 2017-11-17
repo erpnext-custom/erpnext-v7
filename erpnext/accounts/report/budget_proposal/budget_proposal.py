@@ -28,7 +28,8 @@ def get_data(filters, grand_total):
 		total = 0
 		for b in cc_amount[a]:
 			row[b] = cc_amount[a][b]
-			total = flt(total) + flt(cc_amount[a][b])
+			if b not in ('account','account_code'):
+				total = flt(total) + flt(cc_amount[a][b])
 		row['total'] = flt(total)
 		data.append(row)
 	data.append(grand_total)
