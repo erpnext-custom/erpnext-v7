@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:41:35.772855", 
+ "modified": "2017-11-13 09:44:17.255471", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Work Plan", 
@@ -20,10 +20,10 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Projects Readonly"
+   "role": "Projects Manager"
   }, 
   {
-   "role": ""
+   "role": "Projects User"
   }
  ]
 }

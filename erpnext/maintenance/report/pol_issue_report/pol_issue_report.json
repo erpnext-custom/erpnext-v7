@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:01:39.952194", 
+ "modified": "2017-11-17 23:05:07.607523", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "POL Issue Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Maintenance Common"
+  }, 
+  {
+   "role": "Fleet Manager"
   }
  ]
 }

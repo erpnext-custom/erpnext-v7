@@ -346,7 +346,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-01 17:09:37.788921", 
+ "modified": "2017-11-17 22:42:10.175769", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Item Price", 
@@ -398,7 +398,7 @@
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 0, 
    "if_owner": 0, 
@@ -439,5 +439,6 @@
  "read_only_onload": 0, 
  "sort_order": "DESC", 
  "title_field": "item_code", 
+ "track_changes": 0, 
  "track_seen": 0
 }

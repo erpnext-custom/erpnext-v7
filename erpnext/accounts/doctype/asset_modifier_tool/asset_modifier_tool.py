@@ -44,6 +44,7 @@ def make_gl_entry(asset_account, credit_account, value, asset, start_date):
 		"reference_name": asset.name,
 		"cost_center": asset.cost_center
 		})
+	je.flags.ignore_permissions=1
 	je.submit();
 
 ##
@@ -100,6 +101,7 @@ def change_value(asset=None, value=None, start_date=None, credit_account=None, a
 			
 			#Add the reappropriation details for record
 			app_details = frappe.new_doc("Asset Modification Entries")
+			app_details.flags.ignore_permissions=1
 			app_details.asset = asset
 			app_details.value = value
 			app_details.credit_account = credit_account

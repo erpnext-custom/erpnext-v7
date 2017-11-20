@@ -36,4 +36,9 @@ def transfer(employee_list, project):
 	employee_list = json.loads(employee_list)
 	for employee in employee_list:
 		attendance = frappe.get_doc("Muster Roll Employee", employee['name'])
-		attendance.db_set("project", project)
+		branch, cc = frappe.db.get_value("Project", project, ['branch', 'cost_center'])
+		if branch and cc:
+			attendance.project = project
+			attendance.branch = branch
+			attendance.cost_center = cc
+			attendance.save()

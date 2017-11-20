@@ -102,6 +102,7 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 						"amount": flt(entry.debit_in_account_currency) - flt(entry.credit_in_account_currency),
 						"date": frappe.utils.nowdate()
 					})
+					bud_obj.flags.ignore_permissions=1
 					bud_obj.submit()
 				
 					#Consume Budget
@@ -115,6 +116,7 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 						"com_ref": entry.voucher_no,
 						"date": frappe.utils.nowdate()
 					})
+					con_obj.flags.ignore_permissions=1
 					con_obj.submit()
 
 def make_entry(args, adv_adj, update_outstanding):

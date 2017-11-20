@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 14:20:35.469895", 
+ "modified": "2017-11-17 23:02:39.853444", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Financial Position", 
@@ -23,7 +23,7 @@
    "role": "Accounts Manager"
   }, 
   {
-   "role": "Accounts User"
+   "role": "Management"
   }
  ]
 }

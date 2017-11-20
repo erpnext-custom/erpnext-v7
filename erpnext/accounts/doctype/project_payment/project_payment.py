@@ -68,6 +68,9 @@ class ProjectPayment(AccountsController):
                         self.party            = base_project.customer
                         self.branch           = base_project.branch
                         self.cost_center      = base_project.cost_center
+
+                        if base_project.status in ('Completed','Cancelled'):
+                                frappe.throw(_("Operation not permitted on already {0} Project.").format(base_project.status),title="Project Payment: Invalid Operation")
                         
         def make_gl_entries(self):
                 tot_advance = 0.0

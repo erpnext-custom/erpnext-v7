@@ -852,7 +852,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-01 17:33:34.542956", 
+ "modified": "2017-11-17 23:13:28.235622", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Mining Process", 
@@ -864,7 +864,7 @@
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 1, 
    "if_owner": 0, 
@@ -906,5 +906,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "", 
+ "track_changes": 0, 
  "track_seen": 0
 }

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 10:23:19.773914", 
+ "modified": "2017-11-17 23:41:41.691394", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Employee Asset Report", 
@@ -21,10 +21,7 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Accounts Master"
-  }, 
-  {
-   "role": "Accounts Manager"
+   "role": "Employee"
   }
  ]
 }

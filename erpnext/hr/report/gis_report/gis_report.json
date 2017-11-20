@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:04:07.964057", 
+ "modified": "2017-11-17 23:36:55.118869", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "GIS Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "HR User"
+  }, 
+  {
+   "role": "Accounts User"
   }
  ]
 }

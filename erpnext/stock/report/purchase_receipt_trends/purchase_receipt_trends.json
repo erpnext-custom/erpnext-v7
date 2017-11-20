@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:16:37.237942", 
+ "modified": "2017-11-17 22:55:38.264247", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Purchase Receipt Trends", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Purchase Manager"
+  }, 
+  {
+   "role": "Stock Manager"
   }
  ]
 }

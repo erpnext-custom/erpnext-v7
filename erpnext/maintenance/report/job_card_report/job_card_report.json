@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 14:50:57.076191", 
+ "modified": "2017-11-17 21:52:39.743534", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Job Card Report", 
@@ -25,6 +25,12 @@
   }, 
   {
    "role": "Fleet User"
+  }, 
+  {
+   "role": "Workshop Manager"
+  }, 
+  {
+   "role": "Workshop User"
   }
  ]
 }

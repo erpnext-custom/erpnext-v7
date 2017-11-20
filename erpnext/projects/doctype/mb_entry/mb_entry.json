@@ -6,7 +6,7 @@
  "beta": 0, 
  "creation": "2017-09-21 21:15:03.604552", 
  "custom": 0, 
- "default_print_format": "Project Running Bill", 
+ "default_print_format": "MB Entry", 
  "docstatus": 0, 
  "doctype": "DocType", 
  "document_type": "", 
@@ -580,7 +580,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-09 11:44:05.777706", 
+ "modified": "2017-11-17 23:10:12.477518", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "MB Entry", 
@@ -588,7 +588,7 @@
  "owner": "Administrator", 
  "permissions": [
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
@@ -604,7 +604,7 @@
    "role": "Projects User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
@@ -656,6 +656,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

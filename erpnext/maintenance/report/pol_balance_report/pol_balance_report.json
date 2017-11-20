@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:08:52.513058", 
+ "modified": "2017-11-17 23:05:38.962832", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "POL Balance Report", 
@@ -20,13 +20,13 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Administrator"
-  }, 
-  {
    "role": "Fleet User"
   }, 
   {
    "role": "Maintenance Common"
+  }, 
+  {
+   "role": "Fleet Manager"
   }
  ]
 }

@@ -99,6 +99,10 @@ def get_data():
 					"name": "Project Payment",
 					"description": _("Payments agains Project Invoices.")
 				},
+                                {
+					"type": "doctype",
+					"name": "Deposit Work",
+				},
 			]
 		},
 		{
@@ -403,7 +407,24 @@ def get_data():
 					"is_query_report": True,
 					"name": "Budget Proposal",
 					"doctype": "Budget"
-				}
+				},
+				{
+					"type": "doctype",
+					"name": "Revenue Target",
+				},
+				{
+					"type": "report",
+					"label": _("Revenue Achievement"),
+					"is_query_report": True,
+					"name": "Revenue Target",
+					"doctype": "Revenue Target",
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Revenue Target Proposal",
+					"doctype": "Revenue Target"
+				},
 			]
 		},
 		{

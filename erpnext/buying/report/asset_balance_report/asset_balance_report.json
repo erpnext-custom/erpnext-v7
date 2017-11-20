@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 10:36:30.981481", 
+ "modified": "2017-11-17 23:59:15.905009", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Asset Balance Report", 
@@ -23,7 +23,7 @@
    "role": "Asset Manager"
   }, 
   {
-   "role": "Accounts Manager"
+   "role": "Purchase Manager"
   }
  ]
 }

@@ -48,7 +48,7 @@ fixtures = ["Web Form", "Custom Field", "Property Setter"]
 website_generators = ["Item Group", "Item", "Sales Partner", "Job Opening"]
 
 website_context = {
-	"favicon": 	"/assets/erpnext/images/cdcl.ico",
+	"favicon": 	"/assets/erpnext/images/favicon.ico",
 	"splash_image": "/assets/erpnext/images/loading_icon.gif"
 }
 
@@ -189,7 +189,7 @@ scheduler_events = {
 
 default_mail_footer = """<div style="text-align: center;">
 	<a style="color: #8d99a6;">
-		Sent via eMines at SMCL 
+		Sent via <b>ERPNext</b> 
 	</a>
 </div>"""
 

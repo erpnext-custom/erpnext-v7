@@ -1434,7 +1434,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-08-31 20:27:05.145193", 
+ "modified": "2017-11-17 23:13:36.957524", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Entry", 
@@ -1463,7 +1463,7 @@
   {
    "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -1477,7 +1477,7 @@
    "role": "Stock User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "write": 1
   }, 
   {
@@ -1565,7 +1565,7 @@
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 0, 
    "if_owner": 0, 
@@ -1608,5 +1608,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "title", 
+ "track_changes": 0, 
  "track_seen": 0
 }

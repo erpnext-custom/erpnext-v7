@@ -230,7 +230,7 @@ class ProcessPayroll(Document):
                 tot_deductions = 0
                 tot_earnings = 0
                 default_payable_account = 'Salary Payable - CDCL'
-                default_gpf_account = 'Contribution to PF - CDCL'
+                default_gpf_account = 'Employee Contribution to PF - CDCL'
                 default_gis_account = frappe.db.get_value("Salary Component", 'Group Insurance Scheme',"gl_head")
                 default_pf_account = frappe.db.get_value("Salary Component", 'PF',"gl_head")
                 default_loan_account = frappe.db.get_value("Salary Component", 'Financial Institution Loan',"gl_head")
@@ -253,18 +253,14 @@ class ProcessPayroll(Document):
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check
-                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e,
-                                 `tabDivision` d
+                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt
                                where ss.name = sd.parent
                                  and sd.amount > 0
-                                 and e.employee = ss.employee
                                  and dt.name = sd.salary_component
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and e.department = d.dpt_name
-                                 and e.division = d.d_name
-                                 and e.cost_center = '%s'
+                                 and ss.cost_center = '%s'
                                  and dt.gl_head <> '%s'
                                  and dt.type = 'Deduction'
                                  %s
@@ -281,18 +277,14 @@ class ProcessPayroll(Document):
                                 'Payable' as account_type,
                                 'Employee' as party_type,
                                 ss.employee as party
-                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt, `tabEmployee` e,
-                                 `tabDivision` d
+                                from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Component` dt
                                where ss.name = sd.parent
                                  and sd.amount > 0
-                                 and e.employee = ss.employee
                                  and dt.name = sd.salary_component
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and e.department = d.dpt_name
-                                 and e.division = d.d_name
-                                 and e.cost_center = '%s'
+                                 and ss.cost_center = '%s'
                                  and dt.gl_head = '%s'
                                  and dt.type = 'Deduction'
                                  %s
@@ -314,19 +306,15 @@ class ProcessPayroll(Document):
                                 '%s' as against_account,
                                 '%s' as cost_center,
                                 0 as party_check, se.salary_component
-                                from `tabSalary Detail` se, `tabSalary Slip` ss, `tabSalary Component` et, `tabEmployee` e,
-                                `tabDivision` d
+                                from `tabSalary Detail` se, `tabSalary Slip` ss, `tabSalary Component` et
                                where ss.name = se.parent
                                  and se.amount > 0
-                                 and e.employee = ss.employee
                                  and et.name = se.salary_component
                                  and et.type = 'Earning'
                                  and ss.month = '%s'
                                  and ss.fiscal_year = %s
                                  and ss.docstatus = 1
-                                 and e.department = d.dpt_name
-                                 and e.division = d.d_name
-                                 and e.cost_center = '%s'
+                                 and ss.cost_center = '%s'
                                  %s
                                group by et.gl_head
                                 """ % (default_payable_account,item['cost_center'],self.month, self.fiscal_year, item['cost_center'], cond1)
@@ -527,16 +515,18 @@ class ProcessPayroll(Document):
                         ss_list.append('Direct posting Journal Entry...')
                        
         def make_journal_entry1(self, salary_account = None):
+		if not self.branch:
+			frappe.throw("Processing Branch is Mandatory!")
                 self.get_account_rules()
                 msgprint(_("Payslip posting to Accounts complete..."))
-	def make_journal_entry(self, salary_account = None):
-		self.check_permission('write')
 
+	def make_journal_entry(self, salary_account = None):
 		amount = self.get_total_salary()
 		default_bank_account = frappe.db.get_value("Company", self.company,
 			"default_bank_account")
 
 		journal_entry = frappe.new_doc('Journal Entry')
+		journal_entry.flags.ignore_permissions = 1 
 		journal_entry.voucher_type = 'Bank Entry'
 		journal_entry.user_remark = _('Payment of salary for the month {0} and year {1}').format(self.month,
 			self.fiscal_year)

@@ -112,7 +112,7 @@ def get_opening_balances(filters):
 		and ifnull(party_type, '') = %(party_type)s and ifnull(party, '') != ''
 		and (posting_date < %(from_date)s or ifnull(is_opening, 'No') = 'Yes')
 		and account LIKE %(account)s
-		and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL', 'TDS-2%% - SMCL', 'TDS-3%% - SMCL', 'TDS-5%% - SMCL')
+		and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL', 'TDS - 2%% - CDCL', 'TDS - 3%% - CDCL', 'TDS - 5%% - CDCL', 'TDS - 10%% - CDCL')
 		and not exists(select 1 from `tabAccount` as ac
                                 where ac.name = ge.account
                                 and ac.parent_account = 'Sale of mines product - SMCL')
@@ -147,7 +147,7 @@ def get_balances_within_period(filters):
 		and posting_date >= %(from_date)s and posting_date <= %(to_date)s 
 		and ifnull(is_opening, 'No') = 'No'
 		and account LIKE %(account)s
-		and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL', 'TDS-2%% - SMCL', 'TDS-3%% - SMCL', 'TDS-5%% - SMCL')
+		and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL', 'TDS - 2%% - CDCL', 'TDS - 3%% - CDCL', 'TDS - 5%% - CDCL', 'TDS - 10%% - CDCL')
                 and not exists(select 1 from `tabAccount` as ac
                                 where ac.name = ge.account
                                 and ac.parent_account = 'Sale of mines product - SMCL')		

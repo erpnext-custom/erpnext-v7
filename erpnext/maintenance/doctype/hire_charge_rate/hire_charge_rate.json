@@ -149,7 +149,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-08-22 17:30:43.056113", 
+ "modified": "2017-11-17 23:07:50.527267", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Hire Charge Rate", 
@@ -175,26 +175,6 @@
    "share": 1, 
    "submit": 0, 
    "write": 1
-  }, 
-  {
-   "amend": 0, 
-   "apply_user_permissions": 0, 
-   "cancel": 0, 
-   "create": 1, 
-   "delete": 0, 
-   "email": 1, 
-   "export": 1, 
-   "if_owner": 0, 
-   "import": 0, 
-   "permlevel": 0, 
-   "print": 1, 
-   "read": 1, 
-   "report": 1, 
-   "role": "Fleet User", 
-   "set_user_permissions": 0, 
-   "share": 1, 
-   "submit": 0, 
-   "write": 1
   }
  ], 
  "quick_entry": 1, 
@@ -202,5 +182,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

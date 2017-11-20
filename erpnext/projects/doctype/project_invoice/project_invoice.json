@@ -889,7 +889,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-03 19:05:31.105861", 
+ "modified": "2017-11-18 00:13:22.217669", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Invoice", 
@@ -897,7 +897,7 @@
  "owner": "siva@bt.bt", 
  "permissions": [
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
@@ -913,7 +913,7 @@
    "role": "Projects User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
@@ -960,7 +960,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -976,11 +976,12 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -996,6 +997,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }
  ], 
@@ -1005,5 +1007,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "invoice_title", 
+ "track_changes": 1, 
  "track_seen": 0
 }

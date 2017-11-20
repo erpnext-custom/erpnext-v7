@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 10:49:16.943017", 
+ "modified": "2017-11-17 23:36:00.354163", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee Leave Balance", 
@@ -23,10 +23,10 @@
    "role": "HR Manager"
   }, 
   {
-   "role": "HR Master"
+   "role": "HR User"
   }, 
   {
-   "role": "HR User"
+   "role": "Employee"
   }
  ]
 }

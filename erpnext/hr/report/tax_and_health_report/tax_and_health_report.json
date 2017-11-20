@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 10:18:26.225836", 
+ "modified": "2017-11-17 23:38:50.867429", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Tax and Health Report", 
@@ -20,10 +20,10 @@
    "role": "Administrator"
   }, 
   {
-   "role": "HR Master"
+   "role": "HR User"
   }, 
   {
-   "role": "HR Manager"
+   "role": "Accounts User"
   }
  ]
 }

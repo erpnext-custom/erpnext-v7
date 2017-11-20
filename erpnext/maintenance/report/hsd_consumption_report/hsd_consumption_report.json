@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-08 12:37:33.783105", 
+ "modified": "2017-11-17 23:52:42.057159", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "HSD Consumption Report", 
@@ -20,13 +20,13 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Maintenance Common"
-  }, 
-  {
    "role": "Fleet User"
   }, 
   {
-   "role": "Accounts Manager"
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "Fleet Manager"
   }
  ]
 }

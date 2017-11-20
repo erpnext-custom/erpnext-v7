@@ -41,7 +41,7 @@ class ProcessIncrement(Document):
 			ifnull(t2.salary_slip_based_on_timesheet,0) = 0 and t1.name = t2.employee
 		%s """% (increment_month,cond),as_dict=True)
 
-		frappe.msgprint(str(emp_list))
+		#frappe.msgprint(str(emp_list))
 		return emp_list
 
 	def get_filter_condition(self):
@@ -81,7 +81,8 @@ class ProcessIncrement(Document):
 					where docstatus!= 2 and employee = %s and month = %s and fiscal_year = %s and company = %s
 					""", (emp.name, self.month, self.fiscal_year, self.company)):
                                 payscale = get_employee_payscale(emp.name, emp.employee_subgroup, self.fiscal_year, self.month)
-                                if payscale:
+				
+				if payscale:
                                         si = frappe.get_doc({
                                                 "doctype": "Salary Increment",
                                                 "fiscal_year": self.fiscal_year,
@@ -99,11 +100,11 @@ class ProcessIncrement(Document):
                                                 "old_basic": payscale.old_basic,
                                                 "new_basic": payscale.new_basic,
                                                 "increment": payscale.increment,
-                                                "employee_name": emp.employee_name
+                                                "employee_name": emp.employee_name,
+						"salary_structure": payscale.salary_structure
                                         })
                                         si.insert()
                                         si_list.append(si.name)
-			
 
 		return self.create_log(si_list)
 

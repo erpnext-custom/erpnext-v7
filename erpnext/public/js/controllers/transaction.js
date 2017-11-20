@@ -216,7 +216,6 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 	item_code: function(doc, cdt, cdn, from_barcode) {
 		var me = this;
 		var item = frappe.get_doc(cdt, cdn);
-
 		// clear barcode if setting item (else barcode will take priority)
 		if(!from_barcode) {
 			item.barcode = null;

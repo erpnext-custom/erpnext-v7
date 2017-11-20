@@ -9,7 +9,8 @@ frappe.query_reports["Project Work Plan"] = {
 			"fieldname": 	"project",
 			"label": 		("Project"),
 			"fieldtype": 	"Link",
-			"options":		"Project"			
+			"options":		"Project",
+			"reqd": 1
 		}
 	],
 	"formatter": function(row, cell, value, columnDef, dataContext, default_formatter) {

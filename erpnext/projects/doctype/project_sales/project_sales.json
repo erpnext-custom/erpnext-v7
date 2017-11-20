@@ -449,7 +449,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-08-23 16:34:34.583902", 
+ "modified": "2017-11-17 23:10:53.068351", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Sales", 
@@ -477,7 +477,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
@@ -522,5 +522,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }
