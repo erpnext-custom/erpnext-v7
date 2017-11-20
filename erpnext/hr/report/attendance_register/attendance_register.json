@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 12:50:35.453340", 
+ "modified": "2017-11-20 17:41:59.189041", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Attendance Register", 
@@ -20,10 +20,10 @@
    "role": "Administrator"
   }, 
   {
-   "role": "HR Manager"
+   "role": "HR User"
   }, 
   {
-   "role": "HR User"
+   "role": "Projects User"
   }
  ]
 }
