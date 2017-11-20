@@ -36,7 +36,7 @@ def construct_query(filters=None):
 				SUM(received) received,
 				SUM(issued) issued
 			FROM (
-			select e.name equipment, 
+			select p.equipment, 
 				CASE  
 					WHEN '%(branch)s' = 'x' THEN ''
 					ELSE p.branch
@@ -51,12 +51,10 @@ def construct_query(filters=None):
 					ELSE 0
 				END AS received,
 				0 issued
-			FROM  `tabEquipment` e
-			LEFT JOIN `tabPOL` p
-				INNER JOIN `tabPOL Type` pt
-				ON p.pol_type = pt.name
-			ON   e.name = p.equipment
-			WHERE  e.equipment_type = 'Fuel Tanker'
+			FROM   `tabPOL` p, `tabPOL Type` pt, `tabEquipment` e
+			WHERE  pt.name = p.pol_type
+			AND    e.name  = p.equipment
+			AND    e.equipment_type = 'Fuel Tanker'
 			AND    p.date <= '%(to_date)s'
 			AND    (
 				'%(branch)s' = 'x'

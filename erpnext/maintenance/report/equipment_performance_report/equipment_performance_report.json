@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-17 23:51:27.526545", 
+ "modified": "2017-11-18 15:00:10.843967", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Performance Report", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Fleet Manager"
+  }, 
+  {
+   "role": "Management"
   }
  ]
 }

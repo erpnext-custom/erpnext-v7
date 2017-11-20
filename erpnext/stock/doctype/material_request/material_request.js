@@ -45,6 +45,7 @@ frappe.ui.form.on('Material Request', {
 		if(in_list(user_roles, "Stock User") || in_list(user_roles, "Purchase User")) {
 			frm.set_df_property("material_request_type", "read_only", 0)
 		}
+		console.log("INSIDE MR")
 	}
 });
 

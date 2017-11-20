@@ -705,7 +705,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-17 23:11:24.096575", 
+ "modified": "2017-11-20 10:29:46.428649", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Advance", 
@@ -729,7 +729,7 @@
    "role": "Projects User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 

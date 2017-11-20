@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:11:45.938941", 
+ "modified": "2017-11-18 14:59:37.748670", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Register", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Projects User"
+  }, 
+  {
+   "role": "Management"
   }
  ]
 }
