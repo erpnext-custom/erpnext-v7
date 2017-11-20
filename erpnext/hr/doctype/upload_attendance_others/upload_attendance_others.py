@@ -64,7 +64,7 @@ def get_active_employees(args):
 
 @frappe.whitelist()
 def upload():
-	if not frappe.has_permission("MR Attendance", "create"):
+	if not frappe.has_permission("Attendance Others", "create"):
 		raise frappe.PermissionError
 
 	from frappe.utils.csvutils import read_csv_content_from_uploaded_file
@@ -99,7 +99,7 @@ def upload():
 				month = str(month) if cint(month) > 9 else str("0" + str(month))
 				day = str(j) if cint(j) > 9 else str("0" + str(j))
 				doc.date = str(row[5]) + '-' + str(month) + '-' + str(day)
-				if str(row[j -1]) == "P":
+				if str(row[j -1]) == "P" or str(row[j -1]) == "p":
 					doc.status = "Present"
 					doc.submit()
 		except Exception, e:
