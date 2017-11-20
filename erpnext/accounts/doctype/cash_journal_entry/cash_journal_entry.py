@@ -59,10 +59,23 @@ class CashJournalEntry(Document):
 
                         if base_project.status in ('Completed','Cancelled'):
                                 frappe.throw(_("Operation not permitted on already {0} Project.").format(base_project.status),title="Cash Journal: Invalid Operation")
-                else:
-                        self.project_name = ""
-                        self.branch       = ""
-                        self.cost_center  = ""                        
+
+                if not self.cost_center:
+                        emp = frappe.db.sql("""
+                                select
+                                        cost_center,
+                                        branch
+                                from `tabEmployee`
+                                where user_id = '{0}'
+                                order by creation desc
+                                limit 1
+                                """.format(frappe.session.user), as_dict=1)
+
+                        if emp:
+                                self.branch      = emp.branch
+                                self.cost_center = emp.cost_center
+                        else:
+                                frappe.throw(_("Cost Center not defined for the user."), title="Missing Value")
                         
                 self.closing_balance = flt(self.opening_balance) + flt(self.receipt_amount) - flt(self.purchase_amount)
 
@@ -84,7 +97,7 @@ class CashJournalEntry(Document):
                         where user_id = '{0}'
                         order by sort_order, creation
                         limit 1
-                """.format(self.owner), as_dict=1)
+                """.format(frappe.session.user), as_dict=1)
 
                 if emp:
                         self.employee             = emp.name

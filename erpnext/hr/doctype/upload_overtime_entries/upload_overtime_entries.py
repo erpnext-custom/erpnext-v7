@@ -48,28 +48,12 @@ def add_header(w, args):
 def add_data(w, args):
 	#dates = get_dates(args)
 	employees = get_active_employees(args)
-	#existing_attendance_records = get_existing_attendance_records(args)
-	#for date in dates:
 	for e in employees:
-		#existing_attendance = {}
-		#if existing_attendance_records \
-		#	and tuple([date, employee.name]) in existing_attendance_records:
-		#		existing_attendance = existing_attendance_records[tuple([date, employee.name])]
 		row = [
-			#existing_attendance and existing_attendance.name or "",
-			#employee.name, employee.employee_name, date,
-			#existing_attendance and existing_attendance.status or "", employee.company,
-			#existing_attendance and existing_attendance.naming_series or get_naming_series(),
 			e.branch, e.cost_center, e.etype, "\'"+str(e.name)+"\'", e.person_name, args.fiscal_year, args.month
 		]
 		w.writerow(row)
 	return w
-
-def get_dates(args):
-	"""get list of dates in between from date and to date"""
-	no_of_days = date_diff(add_days(args["to_date"], 1), args["from_date"])
-	dates = [add_days(args["from_date"], i) for i in range(0, no_of_days)]
-	return dates
 
 def get_active_employees(args):
 	employees = frappe.db.sql("""select "MR" as etype, name, person_name, branch, cost_center
@@ -77,24 +61,6 @@ def get_active_employees(args):
 		select "GEP" as etype, name, person_name, branch, cost_center
 		from `tabGEP Employee` where docstatus < 2 and status = 'Active' and branch = %(branch)s""", {"branch": args.branch}, as_dict=1)
 	return employees
-
-def get_existing_attendance_records(args):
-	attendance = frappe.db.sql("""select name, att_date, employee, status, naming_series
-		from `tabAttendance` where att_date between %s and %s and docstatus < 2""",
-		(args["from_date"], args["to_date"]), as_dict=1)
-
-	existing_attendance = {}
-	for att in attendance:
-		existing_attendance[tuple([att.att_date, att.employee])] = att
-
-	return existing_attendance
-
-def get_naming_series():
-	series = frappe.get_meta("Attendance").get_field("naming_series").options.strip().split("\n")
-	if not series:
-		frappe.throw(_("Please setup numbering series for Attendance via Setup > Numbering Series"))
-	return series[0]
-
 
 @frappe.whitelist()
 def upload():
