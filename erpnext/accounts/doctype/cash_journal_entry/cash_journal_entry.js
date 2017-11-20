@@ -18,7 +18,7 @@ frappe.ui.form.on('Cash Journal Entry', {
 		frm.fields_dict.reference_no.get_query = function(){
 			return {
 				filters:{
-					'owner': frm.doc.owner,
+					'cost_center': frm.doc.cost_center,
 					'docstatus': 1,
 					'closing_balance': [">",0],
 					'entry_date': ["<=",frm.doc.entry_date],
@@ -93,8 +93,8 @@ var calculate_amount = function(frm, cdt, cdn){
 	var child  = locals[cdt][cdn];
 	var amount = 0.0;
 	
-	amount = parseFloat(child.quantity)*parseFloat(child.rate);
-	frappe.model.set_value(cdt, cdn, "amount", parseFloat(amount) || 0.0);
+	amount = parseFloat(child.quantity || 0.0)*parseFloat(child.rate || 0.0);
+	frappe.model.set_value(cdt, cdn, "amount", parseFloat(amount || 0.0));
 }
 
 var get_opening_balance = function(frm){
@@ -131,7 +131,7 @@ var calculate_totals = function(frm){
 		tot_opening_balance = get_opening_balance(frm);
 				
 		for(var i=0; i<det.length; i++){
-			tot_purchase_amount += parseFloat(det[i].amount);
+			tot_purchase_amount += parseFloat(det[i].amount || 0.0);
 		}		
 	}
 	

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:02.384175", 
+ "modified": "2017-11-20 17:48:37.612863", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Items Register", 
@@ -15,5 +15,12 @@
  "ref_doctype": "Consumable Register Entry", 
  "report_name": "Items Register", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Projects User"
+  }
+ ]
 }

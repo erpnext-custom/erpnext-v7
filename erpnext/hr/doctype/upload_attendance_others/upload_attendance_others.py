@@ -16,7 +16,7 @@ class UploadAttendanceOthers(Document):
 
 @frappe.whitelist()
 def get_template():
-	if not frappe.has_permission("MR Attendance", "create"):
+	if not frappe.has_permission("Attendance Others", "create"):
 		raise frappe.PermissionError
 
 	args = frappe.local.form_dict
@@ -27,10 +27,10 @@ def get_template():
 	# write out response as a type csv
 	frappe.response['result'] = cstr(w.getvalue())
 	frappe.response['type'] = 'csv'
-	frappe.response['doctype'] = "MR Attendance"
+	frappe.response['doctype'] = "Attendance Others"
 
 def add_header(w, args):
-	status = ", ".join((frappe.get_meta("MR Attendance").get_field("status").options or "").strip().split("\n"))
+	status = ", ".join((frappe.get_meta("Attendance Others").get_field("status").options or "").strip().split("\n"))
 	w.writerow(["Notes:"])
 	w.writerow(["Please do not change the template headings"])
 	w.writerow(["Status should be P if Present"])
@@ -47,30 +47,13 @@ def add_header(w, args):
 	return w
 
 def add_data(w, args):
-	#dates = get_dates(args)
 	employees = get_active_employees(args)
-	#existing_attendance_records = get_existing_attendance_records(args)
-	#for date in dates:
 	for e in employees:
-		#existing_attendance = {}
-		#if existing_attendance_records \
-		#	and tuple([date, employee.name]) in existing_attendance_records:
-		#		existing_attendance = existing_attendance_records[tuple([date, employee.name])]
 		row = [
-			#existing_attendance and existing_attendance.name or "",
-			#employee.name, employee.employee_name, date,
-			#existing_attendance and existing_attendance.status or "", employee.company,
-			#existing_attendance and existing_attendance.naming_series or get_naming_series(),
 			e.branch, e.cost_center, e.etype, "\'"+str(e.name)+"\'", e.person_name, args.fiscal_year, args.month
 		]
 		w.writerow(row)
 	return w
-
-def get_dates(args):
-	"""get list of dates in between from date and to date"""
-	no_of_days = date_diff(add_days(args["to_date"], 1), args["from_date"])
-	dates = [add_days(args["from_date"], i) for i in range(0, no_of_days)]
-	return dates
 
 def get_active_employees(args):
 	employees = frappe.db.sql("""select "MR" as etype, name, person_name, branch, cost_center
@@ -79,27 +62,9 @@ def get_active_employees(args):
 		from `tabGEP Employee` where docstatus < 2 and status = 'Active' and branch = %(branch)s""", {"branch": args.branch}, as_dict=1)
 	return employees
 
-def get_existing_attendance_records(args):
-	attendance = frappe.db.sql("""select name, att_date, employee, status, naming_series
-		from `tabAttendance` where att_date between %s and %s and docstatus < 2""",
-		(args["from_date"], args["to_date"]), as_dict=1)
-
-	existing_attendance = {}
-	for att in attendance:
-		existing_attendance[tuple([att.att_date, att.employee])] = att
-
-	return existing_attendance
-
-def get_naming_series():
-	series = frappe.get_meta("Attendance").get_field("naming_series").options.strip().split("\n")
-	if not series:
-		frappe.throw(_("Please setup numbering series for Attendance via Setup > Numbering Series"))
-	return series[0]
-
-
 @frappe.whitelist()
 def upload():
-	if not frappe.has_permission("MR Attendance", "create"):
+	if not frappe.has_permission("Attendance Others", "create"):
 		raise frappe.PermissionError
 
 	from frappe.utils.csvutils import read_csv_content_from_uploaded_file
@@ -121,7 +86,7 @@ def upload():
 		try:
 			row_idx = i + 4
 			for j in range(8, len(row)):
-				doc = frappe.new_doc("MR Attendance")
+				doc = frappe.new_doc("Attendance Others")
 				doc.branch = row[0]
 				doc.cost_center = row[1]
 				if str(row[2]) == "MR":
@@ -134,7 +99,7 @@ def upload():
 				month = str(month) if cint(month) > 9 else str("0" + str(month))
 				day = str(j) if cint(j) > 9 else str("0" + str(j))
 				doc.date = str(row[5]) + '-' + str(month) + '-' + str(day)
-				if str(row[j -1]) == "P":
+				if str(row[j -1]) == "P" or str(row[j -1]) == "p":
 					doc.status = "Present"
 					doc.submit()
 		except Exception, e:

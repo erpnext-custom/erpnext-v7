@@ -14,14 +14,17 @@ def execute(filters=None):
 	return columns, data
 
 def get_data(query, filters=None):
-	data = []
-	#frappe.msgprint("{0}".format(query))
+	#data = []
 	datas = frappe.db.sql(query, as_dict=True)
-	#frappe.msgprint("dat {0}".format(datas))
+
+	'''
 	for d in datas:
 		row = [d.equipment, d.branch, d.pol_type, d.uom, d.opening, d.received, d.issued, flt(d.opening) + flt(d.received) - flt(d.issued)]
 		data.append(row);
-	return data
+	'''
+
+	
+	return datas
 
 def construct_query(filters=None):
 	#not_cdcl = dis  = ''
@@ -32,9 +35,10 @@ def construct_query(filters=None):
 			select equipment, 
 				branch, 
 				pol_type, uom,
-				SUM(opening) opening,
-				SUM(received) received,
-				SUM(issued) issued
+				SUM(ifnull(opening,0)) opening,
+				SUM(ifnull(received,0)) received,
+				SUM(ifnull(issued,0)) issued,
+				SUM(ifnull(opening,0)+ifnull(received,0)-ifnull(issued,0)) balance
 			FROM (
 			select e.name equipment, 
 				CASE  
@@ -51,12 +55,10 @@ def construct_query(filters=None):
 					ELSE 0
 				END AS received,
 				0 issued
-			FROM  `tabEquipment` e
-			LEFT JOIN `tabPOL` p
-				INNER JOIN `tabPOL Type` pt
-				ON p.pol_type = pt.name
-			ON   e.name = p.equipment
-			WHERE  e.equipment_type = 'Fuel Tanker'
+			FROM  `tabEquipment` e, `tabPOL` p, `tabPOL Type` pt
+			WHERE  e.name = p.equipment
+			AND    e.equipment_type = 'Fuel Tanker'
+			AND    p.pol_type = pt.name
 			AND    p.date <= '%(to_date)s'
 			AND    (
 				'%(branch)s' = 'x'
@@ -64,7 +66,7 @@ def construct_query(filters=None):
 				p.branch = '%(branch)s'
 				)
 			UNION ALL
-			select pc.equipment, 
+			select e.name equipment, 
 				CASE
 					WHEN '%(branch)s' = 'x' THEN ''
 					ELSE pc.branch
@@ -79,10 +81,10 @@ def construct_query(filters=None):
 					WHEN pc.date >= '%(from_date)s' THEN pc.qty
 					ELSE 0
 				END AS received
-			FROM   `tabConsumed POL` pc, `tabPOL Type` pt, `tabEquipment` e
-			WHERE  pt.name = pc.pol_type
-			AND    e.name  = pc.equipment
+			FROM   `tabEquipment` e, `tabConsumed POL` pc, `tabPOL Type` pt
+			WHERE  e.name = pc.equipment
 			AND    e.equipment_type = 'Fuel Tanker'
+			AND    pt.name = pc.pol_type
 			AND    pc.date <= '%(to_date)s'
 			AND    (
 				'%(branch)s' = 'x'
@@ -96,13 +98,69 @@ def construct_query(filters=None):
 	return query;
 
 def get_columns():
+	'''
 	return [
 		("Equipment") + ":Link/Equipment:120",
 		("Branch") + ":Data:120",
 		("POL Type") + ":Data:120",
 		("UOM") + ":Data:90",
-		("Opening Qty") +":Data:120",
-		 ("Recieved") + ":Data:120",
-		("Issued") + ":Data:120",
-		("Balance") + ":Data:120"
+		("Opening Qty") +":Float:120",
+		 ("Recieved") + ":Float:120",
+		("Issued") + ":Float:120",
+		("Balance") + ":Float:120"
+	]
+	'''
+
+	return [
+		{
+			"fieldname": "equipment",
+			"label": _("Equipment"),
+			"fieldtype": "Link",
+			"options": "Equipment",
+			"width": 100
+		},
+		{
+                        "fieldname": "branch",
+                        "label": _("Branch"),
+                        "fieldtype": "Link",
+                        "options": "Branch",
+                        "width": 200
+                },
+		{
+                        "fieldname": "pol_type",
+                        "label": _("POL Type"),
+                        "fieldtype": "Data",
+                        "width": 100
+                },
+		{
+                        "fieldname": "uom",
+                        "label": _("UOM"),
+                        "fieldtype": "Link",
+                        "options": "UOM",
+                        "width": 60
+                },
+		{
+                        "fieldname": "opening",
+                        "label": _("Opening"),
+                        "fieldtype": "Float",
+                        "width": 100
+                },
+		{
+                        "fieldname": "received",
+                        "label": _("Received"),
+                        "fieldtype": "Float",
+                        "width": 100
+                },
+		{
+                        "fieldname": "issued",
+                        "label": _("Issued"),
+                        "fieldtype": "Float",
+                        "width": 100
+                },
+		{
+                        "fieldname": "balance",
+                        "label": _("Balance"),
+                        "fieldtype": "Float",
+                        "width": 100
+                },
 	]
