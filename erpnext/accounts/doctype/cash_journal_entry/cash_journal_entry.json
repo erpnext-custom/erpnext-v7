@@ -798,7 +798,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-20 18:37:10.379560", 
+ "modified": "2017-11-20 20:58:48.350423", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Cash Journal Entry", 
@@ -847,7 +847,7 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
@@ -860,7 +860,7 @@
    "print": 1, 
    "read": 1, 
    "report": 1, 
-   "role": "Administration", 
+   "role": "Administrator", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
