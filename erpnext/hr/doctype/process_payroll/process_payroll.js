@@ -15,7 +15,7 @@ cur_frm.cscript.display_activity_log = function(msg) {
 //Create salary slip
 //-----------------------
 cur_frm.cscript.create_salary_slip = function(doc, cdt, cdn) {
-	cur_frm.cscript.display_activity_log("");
+	cur_frm.cscript.display_activity_log("<div style='width: 100%; height: 20px;z-index: 15;'><img src='/assets/erpnext/images/hloading.gif' width='100%' height='100%' /></div>");
 	var callback = function(r, rt){
 		if (r.message)
 			cur_frm.cscript.display_activity_log(r.message);
@@ -24,9 +24,8 @@ cur_frm.cscript.create_salary_slip = function(doc, cdt, cdn) {
 }
 
 cur_frm.cscript.submit_salary_slip = function(doc, cdt, cdn) {
-	cur_frm.cscript.display_activity_log("");
-
 	frappe.confirm(__("Do you really want to Submit all Salary Slip for month {0} and year {1}", [doc.month, doc.fiscal_year]), function() {
+		cur_frm.cscript.display_activity_log("<div style='width: 100%; height: 20px;z-index: 15;'><img src='/assets/erpnext/images/hloading.gif' width='100%' height='100%' /></div>");
 		// clear all in locals
 		if(locals["Salary Slip"]) {
 			$.each(locals["Salary Slip"], function(name, d) {
@@ -45,9 +44,8 @@ cur_frm.cscript.submit_salary_slip = function(doc, cdt, cdn) {
 
 // Ver 20160702.1 by SSK, accounts_posting is added
 cur_frm.cscript.accounts_posting = function(doc, cdt, cdn) {
-	cur_frm.cscript.display_activity_log("");
-
 	frappe.confirm(__("Do you really want to Post Payroll to Accounts for month {0} and year {1}?", [doc.month, doc.fiscal_year]), function() {
+		cur_frm.cscript.display_activity_log("<div style='width: 100%; height: 20px;z-index: 15;'><img src='/assets/erpnext/images/hloading.gif' width='100%' height='100%' /></div>");
 		// clear all in locals
 		if(locals["Salary Slip"]) {
 			$.each(locals["Salary Slip"], function(name, d) {

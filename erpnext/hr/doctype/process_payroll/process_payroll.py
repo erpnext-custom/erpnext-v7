@@ -516,9 +516,9 @@ class ProcessPayroll(Document):
                        
         def make_journal_entry1(self, salary_account = None):
 		if not self.branch:
-			frappe.throw("Processing Branch is Mandatory!")
+			return "<a style='color: red; font-weight: bold; '>Processing Branch is Mandatory!</a>"
                 self.get_account_rules()
-                msgprint(_("Payslip posting to Accounts complete..."))
+		return "<a style='color: green; font-weight: bold; '>Salary Journal Entry has been posted to Accounts.</a>"
 
 	def make_journal_entry(self, salary_account = None):
 		amount = self.get_total_salary()
