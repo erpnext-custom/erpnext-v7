@@ -30,14 +30,16 @@ class ProjectInvoice(AccountsController):
                 
                 if self.invoice_type == "MB Based Invoice":
                         self.update_mb_entries()
-                
-                self.make_gl_entries()
+
+                if str(self.invoice_date) > '2017-09-30':
+                        self.make_gl_entries()
 
         def before_cancel(self):
                 self.set_status()
 
         def on_cancel(self):
-                self.make_gl_entries()
+                if str(self.invoice_date) > '2017-09-30':
+                        self.make_gl_entries()
                 
                 self.update_boq_item()
                 self.update_boq()

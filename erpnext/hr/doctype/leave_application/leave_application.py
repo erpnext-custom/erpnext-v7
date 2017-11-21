@@ -74,6 +74,9 @@ class LeaveApplication(Document):
 			#self.validate_back_dated_application()
 			# notify leave applier about approval
 			self.notify_employee(self.status)
+			immediate_sp = frappe.db.get_value("Employee", frappe.db.get_value("Employee", self.employee, "reports_to"), "user_id")
+			if str(immediate_sp) != str(self.approver):
+				self.notify_supervisor()
 
 	def on_cancel(self):
 		# notify leave applier about cancellation
@@ -272,6 +275,28 @@ class LeaveApplication(Document):
 			# for post in messages
 			"message": _get_message(url=True),
 			"message_to": self.leave_approver,
+
+			# for email
+			"subject": _get_message()
+		})
+
+	def notify_supervisor(self):
+		employee = frappe.get_doc("Employee", self.employee)
+		supervisor = frappe.db.get_value("Employee", employee.reports_to, "user_id")
+
+		def _get_message(url=False):
+			name = self.name
+			employee_name = cstr(employee.employee_name)
+			if url:
+				name = get_link_to_form(self.doctype, self.name)
+				employee_name = get_link_to_form("Employee", self.employee, label=employee_name)
+
+			return (_("New Leave Application") + ": %s - " + _("Employee") + ": %s") % (name, employee_name)
+
+		self.notify({
+			# for post in messages
+			"message": _get_message(url=True),
+			"message_to": supervisor,
 
 			# for email
 			"subject": _get_message()

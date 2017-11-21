@@ -43,13 +43,15 @@ class ProjectPayment(AccountsController):
                 self.update_invoice_balance()
                 self.update_advance_balance()                
                 self.update_boq_balance()
-                self.make_gl_entries()
+                if str(self.posting_date) > '2017-09-30':
+                        self.make_gl_entries()
 
         def before_cancel(self):
                 self.set_status()
 
         def on_cancel(self):
-                self.make_gl_entries()
+                if str(self.posting_date) > '2017-09-30':
+                        self.make_gl_entries()
                 self.update_invoice_balance()
                 self.update_advance_balance()
                 self.update_boq_balance()

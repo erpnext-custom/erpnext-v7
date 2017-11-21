@@ -25,7 +25,7 @@ class ProjectAdvance(Document):
                 if flt(self.advance_amount) <= 0:
                         frappe.throw(_("Please input valid advance amount."), title="Invalid Amount")
                         
-                if not self.migration_data:
+                if str(self.advance_date) > '2017-09-30':
                         self.post_journal_entry()
 
         def before_cancel(self):

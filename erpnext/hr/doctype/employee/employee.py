@@ -71,7 +71,6 @@ class Employee(Document):
     
 	def before_save(self):
 		if self.branch != self.get_db_value("branch") and  self.user_id:
-			frappe.msgprint(str(self.get_db_value("branch")))
 			frappe.permissions.remove_user_permission("Branch", self.get_db_value("branch"), self.user_id)           
  
 	def on_update(self):

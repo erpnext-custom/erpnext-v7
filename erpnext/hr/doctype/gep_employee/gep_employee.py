@@ -13,6 +13,18 @@ class GEPEmployee(Document):
 		self.calculate_rates()
 		self.populate_work_history()
 
+	def before_save(self):
+		if self.branch != self.get_db_value("branch") and  self.user_id:
+			frappe.permissions.remove_user_permission("Branch", self.get_db_value("branch"), self.user_id)           
+
+	def on_update(self):
+		if self.user_id:
+			self.update_user_permissions()
+
+	def update_user_permissions(self):
+		frappe.permissions.set_user_permission_if_allowed("Company", self.company, self.user_id)
+		frappe.permissions.add_user_permission("Branch", self.branch, self.user_id)
+
 	def calculate_rates(self):
 		if not self.rate_per_day:
 			self.rate_per_day = flt(self.salary) / 30
