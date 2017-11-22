@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-08 17:53:52.001700", 
+ "modified": "2017-11-22 16:54:27.676145", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Budget Proposal", 
@@ -21,6 +21,9 @@
   }, 
   {
    "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Budget User"
   }
  ]
 }

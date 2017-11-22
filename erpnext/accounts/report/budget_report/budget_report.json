@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:04:27.515921", 
+ "modified": "2017-11-22 16:54:17.079038", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Budget Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Budget User"
   }
  ]
 }

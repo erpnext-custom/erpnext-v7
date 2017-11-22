@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:06:55.016486", 
+ "modified": "2017-11-22 16:55:00.600692", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Budget Variance Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Budget User"
   }
  ]
 }
