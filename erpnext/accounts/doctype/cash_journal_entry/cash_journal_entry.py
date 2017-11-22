@@ -69,7 +69,7 @@ class CashJournalEntry(Document):
                                 where user_id = '{0}'
                                 order by creation desc
                                 limit 1
-                                """.format(frappe.session.user), as_dict=1)
+                                """.format(frappe.session.user), as_dict=1)[0]
 
                         if emp:
                                 self.branch      = emp.branch
@@ -97,7 +97,7 @@ class CashJournalEntry(Document):
                         where user_id = '{0}'
                         order by sort_order, creation
                         limit 1
-                """.format(frappe.session.user), as_dict=1)
+                """.format(frappe.session.user), as_dict=1)[0]
 
                 if emp:
                         self.employee             = emp.name
