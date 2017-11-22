@@ -251,7 +251,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-20 17:31:03.746096", 
+ "modified": "2017-11-22 12:41:20.987884", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Overtime Entry", 
@@ -261,7 +261,7 @@
   {
    "amend": 1, 
    "apply_user_permissions": 1, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -275,7 +275,7 @@
    "role": "Projects User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 

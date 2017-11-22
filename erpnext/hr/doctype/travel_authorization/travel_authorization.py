@@ -159,6 +159,7 @@ class TravelAuthorization(Document):
 			las = frappe.db.sql("select name from `tabLeave Application` where docstatus = 1 and employee = %s and (from_date between %s and %s or to_date between %s and %s)", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)					
 			if las:
 				frappe.throw("The dates in your current travel authorization has been used in leave application " + str(las[0].name))
+
 @frappe.whitelist()
 def make_travel_claim(source_name, target_doc=None): 
 	def update_date(obj, target, source_parent):

@@ -129,8 +129,8 @@ class TravelClaim(Document):
 			advance_account = frappe.db.get_single_value("HR Accounts Settings", "employee_advance_travel")
 			if not advance_account:
 				frappe.throw("Setup Advance to Employee (Travel) in HR Accounts Settings")
-			if flt(self.balance_amount) < 0:
-				advance_amt = flt(self.total_claim_amount)
+			if flt(self.balance_amount) <= 0:
+				advance_amt = total_amt
 
 			je.append("accounts", {
 				"account": advance_account,
@@ -144,17 +144,15 @@ class TravelClaim(Document):
 			})
 
 
-		if flt(self.balance_amount) < 0:
-			bank_amt = flt(self.total_claim_amount)
-		
-		je.append("accounts", {
-				"account": expense_bank_account,
-				"reference_type": "Travel Claim",
-				"reference_name": self.name,
-				"cost_center": cost_center,
-				"credit_in_account_currency": bank_amt,
-				"credit": bank_amt,
-			})
+		if flt(self.balance_amount) > 0:
+			je.append("accounts", {
+					"account": expense_bank_account,
+					"reference_type": "Travel Claim",
+					"reference_name": self.name,
+					"cost_center": cost_center,
+					"credit_in_account_currency": bank_amt,
+					"credit": bank_amt,
+				})
 
 		je.insert()
 	

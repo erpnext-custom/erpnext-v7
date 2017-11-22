@@ -1181,7 +1181,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-31 17:14:00.785393", 
+ "modified": "2017-11-22 11:21:27.448416", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Authorization", 
@@ -1266,7 +1266,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
-   "user_permission_doctypes": "[\"User\"]", 
+   "user_permission_doctypes": "[\"Branch\",\"User\"]", 
    "write": 1
   }, 
   {
@@ -1297,5 +1297,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "employee_name", 
+ "track_changes": 0, 
  "track_seen": 0
 }
