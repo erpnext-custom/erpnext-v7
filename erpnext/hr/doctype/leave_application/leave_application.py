@@ -75,7 +75,7 @@ class LeaveApplication(Document):
 			# notify leave applier about approval
 			self.notify_employee(self.status)
 			immediate_sp = frappe.db.get_value("Employee", frappe.db.get_value("Employee", self.employee, "reports_to"), "user_id")
-			if str(immediate_sp) != str(self.approver):
+			if str(immediate_sp) != str(self.leave_approver):
 				self.notify_supervisor()
 
 	def on_cancel(self):

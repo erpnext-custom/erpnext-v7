@@ -580,7 +580,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-21 21:04:39.379561", 
+ "modified": "2017-11-22 14:55:16.066926", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "MB Entry", 
@@ -604,7 +604,7 @@
    "role": "Projects User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 

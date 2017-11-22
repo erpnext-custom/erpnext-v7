@@ -97,7 +97,7 @@ def upload():
 				
 				month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(row[6]) + 1	
 				month = str(month) if cint(month) > 9 else str("0" + str(month))
-				day = str(j) if cint(j) > 9 else str("0" + str(j))
+				day = str(cint(j) - 7) if cint(j) > 9 else str("0" + str(cint(j) - 7))
 				doc.date = str(row[5]) + '-' + str(month) + '-' + str(day)
 				if str(row[j -1]) == "P" or str(row[j -1]) == "p":
 					doc.status = "Present"
