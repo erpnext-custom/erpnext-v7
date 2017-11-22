@@ -33,7 +33,7 @@ def add_header(w, args):
 	status = ", ".join((frappe.get_meta("Attendance Others").get_field("status").options or "").strip().split("\n"))
 	w.writerow(["Notes:"])
 	w.writerow(["Please do not change the template headings"])
-	w.writerow(["Status should be P if Present"])
+	w.writerow(["Status should be P if Present, A if Absent"])
 	hd = ["Branch", "Cost Center", "Employee Type", "Employee ID", "Employee Name", "Year", "Month"]
 
 	month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
@@ -85,7 +85,8 @@ def upload():
 		if not row: continue
 		try:
 			row_idx = i + 4
-			for j in range(8, len(row)):
+			for j in range(8, len(row) + 1):
+				frappe.msgprint(str(j))
 				doc = frappe.new_doc("Attendance Others")
 				doc.branch = row[0]
 				doc.cost_center = row[1]

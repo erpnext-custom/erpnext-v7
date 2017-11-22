@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:00:39.232008", 
+ "modified": "2017-11-22 16:55:32.686543", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Budget Reappropriation Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Budget User"
   }
  ]
 }

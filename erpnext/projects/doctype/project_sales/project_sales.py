@@ -8,14 +8,15 @@ from frappe.model.document import Document
 from frappe.utils import cstr, flt, fmt_money, formatdate
 
 class ProjectSales(Document):
+	def validate(self):
+		self.flags.ignore_permissions = 1
+
 	def before_submit(self):
 		self.validate_accounts()
-
 
 	def on_submit(self):
 		self.update_consumable_register()
 		self.post_journal_entry()
-
 
 	def before_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
@@ -38,6 +39,7 @@ class ProjectSales(Document):
 		for a in self.items:
 			if frappe.db.get_value("Item", a.item_code, "maintain_in_register"):
 				doc = frappe.new_doc("Consumable Register Entry")
+				doc.flags.ignore_permissions = 1
 				doc.branch = self.buying_branch
 				doc.item_code = a.item_code
 				doc.date = self.posting_date

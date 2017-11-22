@@ -166,8 +166,18 @@ def make_travel_claim(source_name, target_doc=None):
 		target.posting_date = nowdate()
 	
 	def transfer_currency(obj, target, source_parent):
+		if obj.halt:
+			target.from_place = ""
+			target.to_place = ""
+		else:
+			target.no_days = 1
+			target.halt_at = ""
 		target.currency = source_parent.currency
 		target.dsa = source_parent.dsa_per_day
+		target.actual_amount = target.dsa
+		if target.halt:
+			target.actual_amount = flt(target.dsa) * flt(target.no_days)
+		target.amount = target.actual_amount
 
 	doc = get_mapped_doc("Travel Authorization", source_name, {
 			"Travel Authorization": {
