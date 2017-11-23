@@ -23,11 +23,11 @@ class HireChargeInvoice(Document):
 
 	def on_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.invoice_jv, "docstatus")
-		if cl_status != 2:
+		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry ("+ str(self.invoice_jv) + ")related to this invoice first!")
 		if self.payment_jv:
 			cl_status = frappe.db.get_value("Journal Entry", self.payment_jv, "docstatus")
-			if cl_status != 2:
+			if cl_status and cl_status != 2:
 				frappe.throw("You need to cancel the journal entry ("+ str(self.payment_jv) + ")related to this invoice first!")
 		self.readjust_advance()
 		self.update_vlogs(0)

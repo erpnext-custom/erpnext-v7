@@ -6,6 +6,9 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 
+def create_customer():
+	cus = frappe.db.sql()
+
 def give_admin_access():
 	reports = frappe.db.sql("select name from tabReport", as_dict=True)
 	for r in reports:

@@ -8,10 +8,17 @@ from frappe.model.document import Document
 
 class AssignBranch(Document):
 	def validate(self):
+		self.assign_name()	
 		self.check_duplicate()
 
 	def on_update(self):
 		self.assign_branch()
+	
+	def assign_name(self):
+		if self.employee:
+			emp = frappe.get_doc("Employee", self.employee)
+			self.user = emp.user_id
+			self.current_branch = emp.branch
 
 	def check_duplicate(self):		
 		for a in self.items:

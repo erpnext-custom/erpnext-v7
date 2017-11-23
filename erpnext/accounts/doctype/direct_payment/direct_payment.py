@@ -24,14 +24,27 @@ class DirectPayment(Document):
 		je.posting_date = self.posting_date
 		je.branch = self.branch
 
-		je.append("accounts", {
-				"account": self.budget_account,
-				"reference_type": "Direct Payment",
-				"reference_name": self.name,
-				"cost_center": self.cost_center,
-				"debit_in_account_currency": flt(self.amount),
-				"debit": flt(self.amount),
-			})
+		account_type = frappe.db.get_value("Account", self.budget_account, "account_type")
+		if str(account_type) == "Payable":
+			je.append("accounts", {
+					"account": self.budget_account,
+					"reference_type": "Direct Payment",
+					"reference_name": self.name,
+					"cost_center": self.cost_center,
+					"party_type": "Supplier",
+					"party": self.supplier,
+					"debit_in_account_currency": flt(self.amount),
+					"debit": flt(self.amount),
+				})
+		else:
+			je.append("accounts", {
+					"account": self.budget_account,
+					"reference_type": "Direct Payment",
+					"reference_name": self.name,
+					"cost_center": self.cost_center,
+					"debit_in_account_currency": flt(self.amount),
+					"debit": flt(self.amount),
+				})
 		
 		je.append("accounts", {
 				"account": self.credit_account,

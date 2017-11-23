@@ -53,6 +53,8 @@ class BOQ(Document):
                         if item.is_group:
                                 item_group = item.item
 
+                        item.amount = flt(item.quantity)*flt(item.rate)
+
                         item.parent_item = item_group
                         item.balance_quantity = flt(item.quantity)
                         item.balance_amount   = flt(item.amount)

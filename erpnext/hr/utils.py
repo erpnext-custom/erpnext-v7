@@ -6,5 +6,11 @@ import frappe
 from frappe import _
 
 def set_employee_name(doc):
-	if doc.employee and not doc.employee_name:
-		doc.employee_name = frappe.db.get_value("Employee", doc.employee, "employee_name")
+	if doc.employee:
+		emp = frappe.get_doc("Employee", doc.employee)
+		doc.employee_name = emp.employee_name
+		doc.designation = emp.designation
+		doc.branch = emp.branch
+		doc.department = emp.department
+		doc.division = emp.division
+

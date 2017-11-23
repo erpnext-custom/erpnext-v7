@@ -39,11 +39,21 @@ cur_frm.add_fetch("equipment", "equipment_number", "equipment_number");
 
 frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
     cur_frm.set_query("equipment", function() {
-        return {
-            "filters": {
-                "branch": frm.doc.branch
-            }
-        };
+	if (frm.doc.owned_by == "Owned") {
+		return {
+		    "filters": {
+			"branch": frm.doc.branch
+		    }
+		};
+	}
+	else if (frm.doc.owned_by == "CDCL"){
+		return {
+		    "filters": {
+			"branch": frm.doc.customer_branch
+		    }
+		};
+	}
+	else {}
     });
 
     cur_frm.set_query("cost_center", function() {

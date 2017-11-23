@@ -1176,11 +1176,11 @@
  "image_view": 0, 
  "in_create": 0, 
  "in_dialog": 0, 
- "is_submittable": 1, 
+ "is_submittable": 0, 
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 4, 
- "modified": "2017-11-22 16:47:04.259250", 
+ "modified": "2017-11-23 14:42:51.130940", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project", 
@@ -1268,9 +1268,9 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 1, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -1284,7 +1284,7 @@
    "role": "Projects Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }

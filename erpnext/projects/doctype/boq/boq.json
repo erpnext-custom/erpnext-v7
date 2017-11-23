@@ -549,7 +549,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-22 16:47:23.697503", 
+ "modified": "2017-11-23 09:27:32.540703", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "BOQ", 
@@ -573,7 +573,7 @@
    "role": "Projects User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 

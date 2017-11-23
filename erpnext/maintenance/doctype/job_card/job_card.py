@@ -41,7 +41,7 @@ class JobCard(Document):
 
 	def before_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
-		if cl_status != 2:
+		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this job card first!")
 		
 		bdr = frappe.get_doc("Break Down Report", self.break_down_report)

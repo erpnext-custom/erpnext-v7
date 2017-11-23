@@ -51,6 +51,8 @@ class Employee(Document):
 		validate_status(self.status, ["Active", "Left"])
 
 		self.employee = self.name
+		if self.reports_to:
+			self.approver_name = frappe.db.get_value("Employee", self.reports_to, "employee_name")
 		self.validate_date()
 		self.validate_email()
 		self.validate_status()

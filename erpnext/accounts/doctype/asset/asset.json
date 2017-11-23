@@ -741,8 +741,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-18 00:08:20.106887", 
- "modified_by": "Administrator", 
+ "modified": "2017-11-23 15:31:21.421432", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Accounts", 
  "name": "Asset", 
  "name_case": "", 
@@ -865,7 +865,7 @@
    "role": "Asset User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "write": 1
   }, 
   {

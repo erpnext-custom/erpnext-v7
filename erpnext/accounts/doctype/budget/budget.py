@@ -36,20 +36,22 @@ class Budget(Document):
 				account_details = frappe.db.get_value("Account", d.account,
 					["is_group", "company", "report_type"], as_dict=1)
 
-				if account_details.is_group:
-					frappe.throw(_("Budget cannot be assigned against Group Account {0}").format(d.account))
-				elif account_details.company != self.company:
-					frappe.throw(_("Account {0} does not belongs to company {1}")
-						.format(d.account, self.company))
-				elif account_details.report_type != "Profit and Loss" and account_details.report_type != "Balance Sheet":
-					frappe.throw(_("Budget cannot be assigned against {0}, as it's not an Income or Expense account")
-						.format(d.account))
+				if account_details:
+					if account_details.is_group:
+						frappe.throw(_("Budget cannot be assigned against Group Account {0}").format(d.account))
+					elif account_details.company != self.company:
+						frappe.throw(_("Account {0} does not belongs to company {1}")
+							.format(d.account, self.company))
+					elif account_details.report_type != "Profit and Loss" and account_details.report_type != "Balance Sheet":
+						frappe.throw(_("Budget cannot be assigned against {0}, as it's not an Income or Expense account")
+							.format(d.account))
 
-				if d.account in account_list:
-					frappe.throw(_("Account {0} has been entered multiple times").format(d.account))
+					if d.account in account_list:
+						frappe.throw(_("Account {0} has been entered multiple times").format(d.account))
+					else:
+						account_list.append(d.account)
 				else:
-					account_list.append(d.account)
-
+					frappe.msgprint("Account <b>" + str(d.account) + "</b> not found on system")
 	#Populate Budget Accounts with Expense and Fixed Asset Accounts
 	def get_accounts(self):
 		query = "select name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes')"
