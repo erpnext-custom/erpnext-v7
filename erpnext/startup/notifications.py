@@ -75,6 +75,7 @@ def get_notification_config():
                         "Leave Travel Concession": {"docstatus": 0},
                         "Bonus": {"docstatus": 0},
                         "Direct Payment": {"docstatus": 0},
-                        "Budget": {"docstatus": 0}
+                        "Budget": {"docstatus": 0},
+                        "Revenue Target": {"docstatus": 0},
 		}
 	}

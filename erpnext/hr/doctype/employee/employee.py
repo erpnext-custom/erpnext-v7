@@ -53,6 +53,8 @@ class Employee(Document):
 		self.employee = self.name
 		if self.reports_to:
 			self.approver_name = frappe.db.get_value("Employee", self.reports_to, "employee_name")
+		if self.cost_center:
+			self.branch = frappe.db.get_value("Cost Center", self.cost_center, "branch")
 		self.validate_date()
 		self.validate_email()
 		self.validate_status()
@@ -60,6 +62,7 @@ class Employee(Document):
 		self.validate_reports_to()
 	
 		if self.user_id:
+			self.company_email = self.user_id
 			self.validate_for_enabled_user_id()
 			self.validate_duplicate_user_id()
 		else:

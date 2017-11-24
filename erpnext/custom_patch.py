@@ -6,8 +6,30 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 
-def create_customer():
-	cus = frappe.db.sql()
+def update_ss():
+	sss = frappe.db.sql("select name from `tabSalary Structure`", as_dict=True)
+	for ss in sss:
+		doc = frappe.get_doc("Salary Structure", ss)
+		doc.save()
+
+def update_customer():
+	ccs = frappe.db.sql("select name from `tabCost Center` where is_group != 1", as_dict=True)
+	for cc in ccs:
+		obj = frappe.get_doc("Cost Center", cc)
+		print(cc)
+		obj.save()
+
+def update_employee():
+	emp_list = frappe.db.sql("select name from tabEmployee", as_dict=True)
+	for emp in emp_list:
+		print(emp.name)
+		edoc = frappe.get_doc("Employee", emp)
+		branch = frappe.db.get_value("Cost Center", edoc.cost_center, "branch")
+		if branch:
+			edoc.branch = branch
+			edoc.save()
+		else:
+			frappe.throw("No branch for " + str(edoc.cost_center) + " for " + str(emp))
 
 def give_admin_access():
 	reports = frappe.db.sql("select name from tabReport", as_dict=True)

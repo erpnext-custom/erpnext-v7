@@ -29,7 +29,23 @@ frappe.ui.form.on('Revenue Target', {
 		}
 	},
 	refresh: function(frm) {
-
+		frm.add_custom_button(__("Achievement Report"), function(){
+				var fy = frappe.model.get_doc("Fiscal Year", frm.doc.fiscal_year);
+				var y_start_date = y_end_date = "";
+				
+				if (fy){
+					y_start_date = fy.year_start_date;
+					y_end_date   = fy.year_end_date;
+				}
+				
+				frappe.route_options = {
+					fiscal_year: frm.doc.fiscal_year,
+					from_date: y_start_date,
+					to_date: y_end_date
+				};
+				frappe.set_route("query-report", "Revenue Target");
+			}
+		);
 	}
 });
 

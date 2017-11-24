@@ -96,7 +96,7 @@ class CostCenter(NestedSet):
 
 	def create_customer(self):
 		if self.name and self.branch and not self.is_group:
-			cus = frappe.db.get_value("Customer", {"cost_center": self.name, "branch": self.branch}, "name")
+			cus = frappe.db.get_value("Customer", {"cost_center": self.name}, "name")
 			if not cus:
 				doc = frappe.new_doc("Customer")
 				doc.flags.ignore_permissions = 1
@@ -107,6 +107,11 @@ class CostCenter(NestedSet):
 				doc.cost_center = self.name
 				doc.branch = self.branch
 				doc.save()
+			if cus:
+				customer = frappe.get_doc("Customer", cus)
+				customer.flags.ignore_permissions = 1
+				customer.branch = self.branch
+				customer.save()
 
 			if cus and self.is_disabled:
 				doc = frappe.get_doc("Customer", cus)
