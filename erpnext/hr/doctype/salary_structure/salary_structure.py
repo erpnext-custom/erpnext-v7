@@ -240,6 +240,8 @@ def make_salary_slip(source_name, target_doc=None):
 	def postprocess(source, target):
                 # Ver 1.0 Begins added by SSK on 25/08/201, updating branch, department, division in salary slip
                 gross_amt = 0.00
+		comm_amt = 0.00
+		basic_amt = 0.00
                 employee = frappe.get_doc("Employee",source.employee)
                 target.branch = employee.branch
                 target.department = employee.department
@@ -311,22 +313,37 @@ def make_salary_slip(source_name, target_doc=None):
                                         })                                        
 
                 for e in target.get('earnings'):
-                        if d.salary_component == 'Communication Allowance':
-                        	gross_amt += (flt(e.amount)*0.5)
-			else:
-                        	gross_amt += flt(e.amount)
+                        if e.salary_component == 'Basic Pay':
+                        	basic_amt = (flt(e.amount))
+                        if e.salary_component == 'Communication Allowance':
+                        	comm_amt = (flt(e.amount))
+			gross_amt += flt(e.amount)
 
-                gross_amt += flt(target.arrear_amount) + flt(target.leave_encashment_amount)
+                gross_amt += (flt(target.arrear_amount) + flt(target.leave_encashment_amount))
 
+		pf = gis = health = 0.00
                 for d in target.get('deductions'):
-                        if d.salary_component in ('PF','Group Insurance Scheme'):
-                                gross_amt -= flt(d.amount)
+                        if d.salary_component == 'PF': 
+				percent = frappe.db.get_single_value("HR Settings", "employee_pf")
+				if not percent:
+					frappe.throw("Setup PF Percent in HR Settings")
+                                pf = round(basic_amt*flt(percent)*0.01);
+				d.amount = pf
+			if d.salary_component == 'Group Insurance Scheme':
+                                gis = flt(get_employee_gis(source.employee))
+				d.amount = gis
+			if d.salary_component == 'Health Contribution': 
+				percent = frappe.db.get_single_value("HR Settings", "health_contribution")
+				if not percent:
+					frappe.throw("Setup Health Contribution Percent in HR Settings")
+                                health = round(gross_amt*flt(percent)*0.01);
+				d.amount = health
 
 		tax_included = 0
                 for d in target.get('deductions'):
                         if d.salary_component == 'Salary Tax':
 				if not tax_included:
-					tax_amt = get_salary_tax(flt(gross_amt))
+					tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
 					d.amount = flt(tax_amt)
 					tax_included = 1
                                         
