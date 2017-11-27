@@ -427,6 +427,29 @@ def get_data():
 				},
 			]
 		},
+                {
+			"label": _("Cash Journal"),
+			"icon": "icon-cog",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Imprest Type",
+					"description": _("Imprest Types.")
+				},
+				{
+					"type": "doctype",
+					"name": "Cash Journal Entry",
+					"description": _("Cash Journal Entry.")
+				},
+                                {
+					"type": "report",
+                                        "label": _("Report"),
+					"is_query_report": True,
+					"name": "Imprest Register",
+					"doctype": "Cash Journal Entry"
+				},
+			]
+		},
 		{
 			"label": _("Setup"),
 			"icon": "icon-cog",

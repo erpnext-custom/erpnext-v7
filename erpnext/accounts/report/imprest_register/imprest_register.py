@@ -21,16 +21,8 @@ def execute(filters=None):
 
 def get_data(filters):
         cond = get_conditions(filters)
-        frappe.msgprint(str(frappe.get_roles(frappe.session.user)))
-
+        #frappe.msgprint(str(frappe.get_roles(frappe.session.user)))
         
-        #frappe.msgprint(_("{0}").format(frappe.permissions.get_user_permissions(frappe.session.user)))
-
-        #for i in frape.get_roles(frappe.session.user):
-        #        frappe.msgprint(str(frappe.permissions.get_all_perms(i)))
-        #frappe.msgprint(str(frappe.permissions.get_user_permissions(frappe.session.user)))
-
-
         result = frappe.db.sql("""
                 select
                         name            as tran_no,
@@ -42,21 +34,33 @@ def get_data(filters):
                         reference_no    as ref_no,
                         imprest_type    as imprest_type,
                         cost_center,
-                        project
+                        project,
+                        owner           as createby,
+                        creation        as createdt,
+                        modified_by     as modifyby,
+                        modified        as modifydt
                 from `tabCash Journal Entry`
+                {0}
                 order by cost_center, ifnull(reference_no, name), entry_date
-        """, as_dict=1)
+        """.format(cond), as_dict=1)
         
         return result
 
 def get_conditions(filters):
-        cond = ''
+        cond = []
+
+        if filters.get('cost_center'):
+                cond.append('cost_center = "{0}"'.format(filters.get('cost_center')))
         
         if filters.get('imprest_type'):
-                cond += ' and imprest_type = "{0}"'.format(filters.get('imprest_type'))
+                cond.append('imprest_type = "{0}"'.format(filters.get('imprest_type')))
 
         if filters.get('from_date') and filters.get('to_date'):
-                cond += ' and entry_date between "{0}" and "{1}"'.format(filters.from_date, filters.to_date)
+                cond.append('entry_date between "{0}" and "{1}"'.format(filters.from_date, filters.to_date))
+
+        if cond:
+                #frappe.msgprint(_("{0}").format('where '+str(' and '.join(cond))))
+                return 'where '+str(' and '.join(cond))
         
 def get_columns():
         return [
@@ -109,7 +113,7 @@ def get_columns():
                         "label": _("Imprest Type"),
                         "fieldtype": "Link",
                         "options": "Cost Center",
-                        "width": 80,
+                        "width": 120,
                 },
                 {
                         "fieldname": "cost_center",
@@ -122,6 +126,30 @@ def get_columns():
                         "label": _("Project"),
                         "fieldtype": "Link",
                         "options": "Project",
-                        "width": 80
+                        "width": 100
+                },
+                {
+                        "fieldname": "createby",
+                        "label": _("Created By"),
+                        "fieldtype": "Data",
+                        "width": 150
+                },
+                {
+                        "fieldname": "createdt",
+                        "label": _("Created Date"),
+                        "fieldtype": "Date",
+                        "width": 120
+                },
+                {
+                        "fieldname": "modifyby",
+                        "label": _("Modified By"),
+                        "fieldtype": "Data",
+                        "width": 150
+                },
+                {
+                        "fieldname": "modifydt",
+                        "label": _("Modified Date"),
+                        "fieldtype": "Date",
+                        "width": 120
                 },
         ]        

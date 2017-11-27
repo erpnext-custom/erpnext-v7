@@ -77,6 +77,13 @@ def get_data():
                                         "name": "Cash Journal Entry",
                                         "description": _("Cash Journal Entries."),
                                 },
+                                {
+					"type": "report",
+                                        "label": _("Report"),
+					"is_query_report": True,
+					"name": "Imprest Register",
+					"doctype": "Cash Journal Entry"
+				},
                         ]
                 },
 		{

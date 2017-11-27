@@ -1,5 +1,14 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		          SHIV		     					26/11/2017         * "PR Type/material_request_type" should only be 
+																			allowed to change by "Stock User"
+																			as recommened by Payma, CDCL
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
 
 {% include 'erpnext/buying/doctype/purchase_common/purchase_common.js' %};
 
@@ -42,10 +51,11 @@ frappe.ui.form.on('Material Request', {
 		}
 	},
 	refresh: function(frm){
-		if(in_list(user_roles, "Stock User") || in_list(user_roles, "Purchase User")) {
+		// Ver2.0, Following condition is changed by SHIV on 26/11/2017
+		//if(in_list(user_roles, "Stock User") || in_list(user_roles, "Purchase User")) {		
+		if(in_list(user_roles, "Stock User")) {
 			frm.set_df_property("material_request_type", "read_only", 0)
 		}
-		console.log("INSIDE MR")
 	}
 });
 

@@ -1,4 +1,14 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors // License: GNU General Public License v3. See license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		         SHIV		                        26/11/2017         * If purpose is "Material Issue", from_ware should
+																			be from loggedin user's cost_center's by default,
+																			as the user can issue material from only his/her
+																			warehouse.
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
 
 frappe.provide("erpnext.stock");
 
@@ -66,6 +76,24 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 
 	},
 
+	// Ver2.0 Begins, onload added by SHIV on 26/11/2017
+	onload: function(frm){
+		var me = this;
+		if(me.frm.doc.__islocal && me.frm.doc.purpose == "Material Issue") {
+			frappe.call({
+				method: "erpnext.stock.doctype.material_request.material_request.get_cc_warehouse",
+				args: {"user": frappe.session.user},
+				callback(r) {
+					//cur_frm.set_value("temp_cc", r.message[0]);		
+					//cur_frm.set_value("temp_wh", r.message[1]);		
+					//cur_frm.set_value("approver", r.message[2]);		
+					cur_frm.set_value("from_warehouse", r.message[1])
+				}
+			})
+		}		
+	},
+	// Ver2.0 Ends
+	
 	onload_post_render: function() {
 		var me = this;
 		this.set_default_account(function() {

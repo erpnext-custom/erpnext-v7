@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-23 14:33:35.031801", 
+ "modified": "2017-11-27 09:57:36.104499", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Asset Register", 
@@ -21,6 +21,9 @@
   }, 
   {
    "role": "Asset Manager"
+  }, 
+  {
+   "role": "Asset User"
   }
  ]
 }

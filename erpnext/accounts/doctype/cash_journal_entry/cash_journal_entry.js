@@ -81,6 +81,7 @@ var set_mandatory = function(frm){
 		frm.add_fetch("reference_no", "project_name","project_name");
 		frm.add_fetch("reference_no", "branch","branch");
 		frm.add_fetch("reference_no", "cost_center","cost_center");
+		frm.add_fetch("reference_no", "imprest_type","imprest_type");
 		
 		frm.set_df_property("project", "read_only", 1);
 	}
