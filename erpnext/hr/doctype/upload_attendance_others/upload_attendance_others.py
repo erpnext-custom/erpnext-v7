@@ -55,11 +55,86 @@ def add_data(w, args):
 		w.writerow(row)
 	return w
 
-def get_active_employees(args):
-	employees = frappe.db.sql("""select "MR" as etype, name, person_name, branch, cost_center
-		from `tabMuster Roll Employee` where docstatus < 2 and status = 'Active' and branch =%(branch)s UNION
-		select "GEP" as etype, name, person_name, branch, cost_center
-		from `tabGEP Employee` where docstatus < 2 and status = 'Active' and branch = %(branch)s""", {"branch": args.branch}, as_dict=1)
+def test():
+        print 'Test print...'
+
+        args = frappe.local.form_dict
+        print args
+        
+        month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+		"Dec"].index('Dec') + 1
+        total_days = monthrange(cint(2017), month)[1]
+        
+
+        col = []
+        for day in range(cint(total_days)):
+		#hd.append(str(day + 1))
+                col.append(" MAX(case when day(date) = {0} then lower(substr(status,1,1)) else '' end) as day{0}".format(day+1))
+
+        att_list = """
+                        select
+                                case
+                                        when a.employee_type = 'GEP Employee' then 'GEP'
+                                        when a.employee_type = 'Muster Roll Employee' then 'MR'
+                                end as etype,
+                                a.employee,
+                                
+                """
+        
+        employees = frappe.db.sql("""
+                select
+                        "MR" as etype,
+                        name,
+                        person_name,
+                        branch,
+                        cost_center
+		from `tabMuster Roll Employee`
+		where docstatus < 2
+		and status = 'Active'
+		and branch = %(branch)s
+		UNION
+		select
+                        "GEP" as etype,
+                        name,
+                        person_name,
+                        branch,
+                        cost_center
+		from `tabGEP Employee`
+		where docstatus < 2
+		and status = 'Active'
+		and branch = %(branch)s
+		""", {"branch": 'Nyera Amari I & II Integrated Hydropower Project'}, as_dict=1)
+
+        
+
+        print employees
+        print 'Test 2'
+
+def get_active_employees(args):        
+	employees = frappe.db.sql("""
+                select
+                        "MR" as etype,
+                        name,
+                        person_name,
+                        branch,
+                        cost_center
+		from `tabMuster Roll Employee`
+		where docstatus < 2
+		and status = 'Active'
+		and branch = "%(branch)s"
+		UNION
+		select
+                        "GEP" as etype,
+                        name,
+                        person_name,
+                        branch,
+                        cost_center
+		from `tabGEP Employee`
+		where docstatus < 2
+		and status = 'Active'
+		and branch = "%(branch)s"
+		""", {"branch": args.branch}, as_dict=1)
+
 	return employees
 
 @frappe.whitelist()

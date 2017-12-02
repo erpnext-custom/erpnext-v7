@@ -170,7 +170,7 @@ scheduler_events = {
 		"erpnext.stock.doctype.item.item.sync_item_code"
 	],
 	"daily": [
-		"erpnext.stock.reorder_item.reorder_item",
+		#"erpnext.stock.reorder_item.reorder_item",
 		"erpnext.setup.doctype.email_digest.email_digest.send",
 		"erpnext.support.doctype.issue.issue.auto_close_tickets",
 		"erpnext.accounts.doctype.fiscal_year.fiscal_year.auto_create_fiscal_year",

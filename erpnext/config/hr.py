@@ -54,38 +54,38 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Attendance Tool Others",
-					"label": "Attendance Tool for GEP & MR",
+					"label": "Attendance Tool for GEP & Muster Roll",
 					"description": _("Attendance Tool for Others"),
 				},
 				{
 					"type": "doctype",
 					"name": "Upload Attendance Others",
-					"label": "Upload Bulk Attendance for GEP & MR",
+					"label": "Upload Bulk Attendance for GEP & Muster Roll",
 					"description": _("Attendance Tool for Others"),
 				},
 				{
 					"type": "doctype",
 					"name": "Project Overtime Tool",
-					"label": "Overtime Tool for GEP & MR",
+					"label": "Overtime Tool for GEP & Muster Roll",
 					"description": _("Overtime Tool for MR and GEP"),
 				},
 				{
 					"type": "doctype",
 					"name": "Upload Overtime Entries",
-					"label": "Upload Overtime Entry for GEP & MR",
+					"label": "Upload Overtime Entry for GEP & Muster Roll",
 					"description": _("Overtime Tool for Others"),
 				},
 				{
 					"type": "doctype",
 					"name": "Process MR Payment",
-					"label": "Process Payment for GEP & MR",
+					"label": "Process Payment for GEP & Muster Roll",
 					"description": _("Process Payments for Project Muster Roll"),
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Attendance Register",
-					"label": "Attendance Register for GEP & MR",
+					"label": "Attendance Register for GEP & Muster Roll",
 					"description": _("Attendance Sheet"),
 					"doctype": "Attendance Others"
 				},
@@ -93,7 +93,7 @@ def get_data():
 					"type": "report",
 					"is_query_report": True,
 					"name": "Overtime Register",
-					"label": "Overtime Register for GEP & MR",
+					"label": "Overtime Register for GEP & Muster Roll",
 					"description": _("Overtime Register"),
 					"doctype": "Overtime Entry"
 				},

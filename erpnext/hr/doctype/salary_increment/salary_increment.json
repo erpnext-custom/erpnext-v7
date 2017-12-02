@@ -612,7 +612,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-18 20:07:10.360246", 
+ "modified": "2017-12-02 11:07:00.968988", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Salary Increment", 
@@ -623,7 +623,7 @@
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 1, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -637,7 +637,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 1
+   "write": 0
   }, 
   {
    "amend": 0, 
@@ -706,5 +706,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

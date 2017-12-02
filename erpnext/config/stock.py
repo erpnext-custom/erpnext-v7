@@ -88,6 +88,34 @@ def get_data():
 			]
 		},
 		{
+			"label": _("Stock Tools"),
+			"icon": "icon-wrench",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Stock Reconciliation",
+					"description": _("Upload stock balance via csv.")
+				},
+				{
+					"type": "page",
+					"name": "stock-analytics",
+					"label": "Stock Analytics"
+				},
+			]
+		},
+                {
+			"label": _("POL Transaction"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "POL",
+					"label": "Receive POL",
+					"description": _("Receive POL"),
+				},
+			]
+		},
+                {
 			"label": _("Stock Reports"),
 			"items": [
 				{
@@ -151,20 +179,4 @@ def get_data():
 				}
 			]
 		},
-		{
-			"label": _("Stock Tools"),
-			"icon": "icon-wrench",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Stock Reconciliation",
-					"description": _("Upload stock balance via csv.")
-				},
-				{
-					"type": "page",
-					"name": "stock-analytics",
-					"label": "Stock Analytics"
-				},
-			]
-		}
 	]

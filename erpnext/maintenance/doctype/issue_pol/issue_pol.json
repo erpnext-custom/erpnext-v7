@@ -299,8 +299,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-26 21:33:32.830019", 
- "modified_by": "siva@bt.bt", 
+ "modified": "2017-12-02 17:46:53.317166", 
+ "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Issue POL", 
  "name_case": "", 
@@ -328,7 +328,7 @@
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
@@ -344,11 +344,12 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -364,6 +365,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }
  ], 

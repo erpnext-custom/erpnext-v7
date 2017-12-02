@@ -2,10 +2,12 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe import msgprint
-from frappe.utils import flt, cint
+from frappe.utils import flt, cint, now
 from frappe.utils.data import get_first_day, get_last_day, add_years
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 
+def get_date():
+	print(now())
 def update_ss():
 	sss = frappe.db.sql("select name from `tabSalary Structure`", as_dict=True)
 	for ss in sss:

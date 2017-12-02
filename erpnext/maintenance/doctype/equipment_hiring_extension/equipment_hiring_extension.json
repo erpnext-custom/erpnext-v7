@@ -596,7 +596,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-17 23:06:45.382426", 
+ "modified": "2017-11-28 13:07:24.290123", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Hiring Extension", 
@@ -625,7 +625,7 @@
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -641,11 +641,12 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
@@ -661,6 +662,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }
  ], 

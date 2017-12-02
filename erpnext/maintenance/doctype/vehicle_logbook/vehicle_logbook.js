@@ -73,20 +73,56 @@ frappe.ui.form.on('Vehicle Logbook', {
 		}
 	},
 	"total_work_time": function(frm) {
-		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.rate_type == 'With Fuel') {
+		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.rate_type == 'With Fuel' && frm.doc.include_hour) {
 			cur_frm.set_value("consumption_hours", frm.doc.total_work_time * frm.doc.ys_hours)
-			cur_frm.set_value("consumption", frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
 			cur_frm.refresh_fields()
 		}
 	},
 	"distance_km": function(frm) {
-		if(frm.doc.distance_km && frm.doc.ys_km && frm.doc.rate_type == 'With Fuel') {
+		if(frm.doc.distance_km && frm.doc.ys_km && frm.doc.rate_type == 'With Fuel' && frm.doc.include_km) {
 			cur_frm.set_value("consumption_km", frm.doc.distance_km / frm.doc.ys_km)
-			cur_frm.set_value("consumption", frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
 			cur_frm.refresh_fields()
 		}
 	},
 
+	"include_hour": function(frm) {
+		if(!frm.doc.include_hour) {
+			cur_frm.set_value("consumption_hours", 0)
+			cur_frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.refresh_fields()
+		}
+		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.rate_type == 'With Fuel' && frm.doc.include_hour) {
+			cur_frm.set_value("consumption_hours", frm.doc.total_work_time * frm.doc.ys_hours)
+			cur_frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.refresh_fields()
+		}
+	},
+
+	"include_km": function(frm) {
+		if(!frm.doc.include_km) {
+			cur_frm.set_value("consumption_km", 0)
+			cur_frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.refresh_fields()
+		}
+		if(frm.doc.distance_km && frm.doc.ys_km && frm.doc.rate_type == 'With Fuel' && frm.doc.include_km) {
+			cur_frm.set_value("consumption_km", frm.doc.distance_km / frm.doc.ys_km)
+			cur_frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.refresh_fields()
+		}
+	},
+	
+	"other_consumption": function(frm) {
+		if(!frm.doc.other_consumption && frm.doc.rate_type == 'With Fuel') {
+			cur_frm.set_value("other_consumption", 0)
+			cur_frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
+		}
+		if(frm.doc.rate_type == 'With Fuel' && frm.doc.other_consumption) {
+			cur_frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
+			cur_frm.refresh_fields()
+		}
+	},
 	opening_balance: function(frm) {
 		calculate_closing(frm)
 	},
@@ -96,8 +132,8 @@ frappe.ui.form.on('Vehicle Logbook', {
 	},
 
 	consumption_hours: function(frm) {
-		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.rate_type == 'With Fuel') {
-			frm.set_value("consumption", frm.doc.consumption_km + frm.doc.consumption_hours)
+		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.rate_type == 'With Fuel' && frm.doc.include_hour) {
+			frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
 			cur_frm.refresh_field("consumption")
 			calculate_closing(frm)
 		}
@@ -114,30 +150,26 @@ function calculate_closing(frm) {
 }
 
 function calculate_distance_km(frm) {
-	if(frm.doc.initial_km >= 0 && frm.doc.final_km >= 0) {
-		if(frm.doc.final_km > frm.doc.initial_km) {
-			cur_frm.set_value("distance_km", frm.doc.final_km - frm.doc.initial_km)
-			frm.refresh_fields()
-		}
-		else {
-			cur_frm.set_value("distance_km", "0")
-			frm.refresh_fields()
-			frappe.msgprint("Final KM should be greater than Initial KM")
-		}
+	if(frm.doc.final_km > frm.doc.initial_km) {
+		cur_frm.set_value("distance_km", frm.doc.final_km - frm.doc.initial_km)
+		frm.refresh_fields()
+	}
+	else {
+		cur_frm.set_value("distance_km", "0")
+		frm.refresh_fields()
+		frappe.msgprint("Final KM should be greater than Initial KM")
 	}
 }
 
 function calculate_work_hour(frm) {
-	if(frm.doc.initial_hour >= 0 && frm.doc.final_hour) {
-		if(frm.doc.final_hour >= frm.doc.initial_hour) {
-			cur_frm.set_value("total_work_time", frm.doc.final_hour - frm.doc.initial_hour)
-			frm.refresh_fields()
-		}
-		else {
-			cur_frm.set_value("total_work_time", "0")
-			frm.refresh_fields()
-			frappe.msgprint("Final Hour should be greater than Initial Hour")
-		}
+	if(frm.doc.final_hour > frm.doc.initial_hour) {
+		cur_frm.set_value("total_work_time", frm.doc.final_hour - frm.doc.initial_hour)
+		frm.refresh_fields()
+	}
+	else {
+		cur_frm.set_value("total_work_time", "0")
+		frm.refresh_fields()
+		frappe.msgprint("Final Hour should be greater than Initial Hour")
 	}
 }
 

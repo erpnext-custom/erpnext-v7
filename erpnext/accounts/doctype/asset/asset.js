@@ -43,27 +43,28 @@ frappe.ui.form.on('Asset', {
 					erpnext.asset.make_purchase_invoice(frm);
 				});
 			}
-			if (in_list(["Submitted", "Partially Depreciated", "Fully Depreciated"], frm.doc.status)) {
-				frm.add_custom_button("Transfer Asset", function() {
-					erpnext.asset.transfer_asset(frm);
-				});
+			if(in_list(user_roles, "Asset User") || in_list(user_roles, "Asset Manager")) {
+				if (in_list(["Submitted", "Partially Depreciated", "Fully Depreciated"], frm.doc.status)) {
+					frm.add_custom_button("Transfer Asset", function() {
+						erpnext.asset.transfer_asset(frm);
+					});
 
-				frm.add_custom_button("Scrap Asset", function() {
-					erpnext.asset.scrap_asset(frm);
-				});
+					frm.add_custom_button("Scrap Asset", function() {
+						erpnext.asset.scrap_asset(frm);
+					});
 
-				frm.add_custom_button("Sale Asset", function() {
-					erpnext.asset.make_sales_invoice(frm);
-				});
+					frm.add_custom_button("Sale Asset", function() {
+						erpnext.asset.make_sales_invoice(frm);
+					});
 
-			} else if (frm.doc.status=='Scrapped') {
-				/*
-				frm.add_custom_button("Restore Asset", function() {
-					erpnext.asset.restore_asset(frm);
-				});
-				*/
+				} else if (frm.doc.status=='Scrapped') {
+					/*
+					frm.add_custom_button("Restore Asset", function() {
+						erpnext.asset.restore_asset(frm);
+					});
+					*/
+				}
 			}
-
 			frm.trigger("show_graph");
 		}
 	},

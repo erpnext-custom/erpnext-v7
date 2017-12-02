@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:08:31.493480", 
+ "modified": "2017-11-28 16:52:11.154748", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Quotation Trends", 
@@ -24,6 +24,12 @@
   }, 
   {
    "role": "Purchase User"
+  }, 
+  {
+   "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales User"
   }
  ]
 }

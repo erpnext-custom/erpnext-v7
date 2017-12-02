@@ -1,5 +1,12 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		  SHIV		                   28/11/2017         * "Item Rate" should be greater than zero.
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -69,6 +76,12 @@ class PurchaseOrder(BuyingController):
 		})
 
 	def validate_minimum_order_qty(self):
+                # Ver 2.0 Begins, following code added by SHIV on 28/11/2017
+                for i in self.items:
+                        if flt(i.qty ) >= 0 and i.rate <= 0:
+                                frappe.throw(_("Row#{0}: Item rate should be greater than zero.").format(i.idx),title="Invalid Value")
+                # Ver 2.0 Ends
+                
 		items = list(set([d.item_code for d in self.get("items")]))
 
 		itemwise_min_order_qty = frappe._dict(frappe.db.sql("""select name, min_order_qty

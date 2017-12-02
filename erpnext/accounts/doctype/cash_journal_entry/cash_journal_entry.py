@@ -46,6 +46,7 @@ class CashJournalEntry(Document):
                         self.opening_balance = get_opening_balance(self.reference_no)
                         
                         for item in self.cash_journal_detail:
+                                item.amount           = flt(item.quantity)*flt(item.rate)
                                 self.purchase_amount += (flt(item.quantity)*flt(item.rate))
 
                 if self.entry_type == 'Purchase' and self.reference_no and not self.project:
@@ -97,15 +98,15 @@ class CashJournalEntry(Document):
                         where user_id = '{0}'
                         order by sort_order, creation
                         limit 1
-                """.format(frappe.session.user), as_dict=1)[0]
+                """.format(frappe.session.user), as_dict=1)
 
                 if emp:
-                        self.employee             = emp.name
-                        self.department           = emp.department
-                        self.division             = emp.division
-                        self.section              = emp.section
-                        self.employee_branch      = emp.branch
-                        self.employee_cost_center = emp.cost_center
+                        self.employee             = emp[0].name
+                        self.department           = emp[0].department
+                        self.division             = emp[0].division
+                        self.section              = emp[0].section
+                        self.employee_branch      = emp[0].branch
+                        self.employee_cost_center = emp[0].cost_center
                 
         def validate_defaults(self):
                 if self.entry_type == 'Receipt' and flt(self.receipt_amount,0) < 0:

@@ -52,7 +52,6 @@ frappe.ui.form.on("POL", "refresh", function(frm) {
     cur_frm.set_query("equipment", function() {
         return {
             "filters": {
-		"branch": frm.doc.branch,
 		"is_disabled": 0
             }
         };

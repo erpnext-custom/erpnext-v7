@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 12:44:06.094501", 
+ "modified": "2017-11-28 16:51:07.898993", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Accounts Receivable", 
@@ -27,6 +27,12 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales User"
   }
  ]
 }

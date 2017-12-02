@@ -1,5 +1,13 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		          SHIV		                        28/11/2017         * Code added to fetch cost_center, branch, customer
+																			automatically based on logged in user.
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
 
 frappe.ui.form.on('Break Down Report', {
 	refresh: function(frm) {
@@ -17,6 +25,20 @@ frappe.ui.form.on('Break Down Report', {
 		if (!frm.doc.date) {
 			frm.set_value("date", get_today());
 		}
+		
+		// Ver 2.0 Begins, following code added by SHIV on 28/11/2017
+		if(frm.doc.__islocal) {
+			frappe.call({
+				method: "erpnext.custom_utils.get_user_info",
+				args: {"user": frappe.session.user},
+				callback(r) {
+					cur_frm.set_value("cost_center", r.message.cost_center);
+					cur_frm.set_value("branch", r.message.branch);
+					cur_frm.set_value("customer", r.message.customer);
+				}
+			});
+		}
+		// Ver 2.0 Ends
 	},
 	owned_by: function(frm) {
 		cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'CDCL')

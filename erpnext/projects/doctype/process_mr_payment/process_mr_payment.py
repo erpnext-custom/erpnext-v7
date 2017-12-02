@@ -35,7 +35,7 @@ class ProcessMRPayment(Document):
 
 	def before_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.payment_jv, "docstatus")
-		if cl_status != 2:
+		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this payment first!")
 		
 		self.db_set('payment_jv', "")
@@ -141,6 +141,37 @@ class ProcessMRPayment(Document):
 		je.insert()
 		self.db_set("payment_jv", je.name)
 
+		
+		if self.total_health_amount and self.employee_type == "GEP Employee":
+			health_account = frappe.db.get_value("Salary Component", "Health Contribution", "gl_head")
+			if not health_account:
+				frappe.throw("No GL Account for Health Contribution")
+			hjv = frappe.new_doc("Journal Entry")
+			hjv.flags.ignore_permissions = 1 
+			hjv.title = "Health Contribution for " + self.employee_type  + " (" + self.branch + ")"
+			hjv.voucher_type = 'Bank Entry'
+			hjv.naming_series = 'Bank Payment Voucher'
+			hjv.remark = 'HC Payment against : ' + self.name;
+			hjv.posting_date = self.posting_date
+			hjv.branch = self.branch
+
+			hjv.append("accounts", {
+					"account": health_account,
+					"reference_type": "Process MR Payment",
+					"reference_name": self.name,
+					"cost_center": self.cost_center,
+					"debit_in_account_currency": flt(self.total_health_amount),
+					"debit": flt(self.total_health_amount),
+				})
+
+			hjv.append("accounts", {
+					"account": expense_bank_account,
+					"cost_center": self.cost_center,
+					"credit_in_account_currency": flt(self.total_health_amount),
+					"credit": flt(self.total_health_amount),
+				})
+			hjv.insert()
+			
 
 @frappe.whitelist()
 def get_records(employee_type, from_date, to_date, cost_center, branch):

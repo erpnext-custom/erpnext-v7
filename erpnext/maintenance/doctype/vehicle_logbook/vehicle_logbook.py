@@ -38,7 +38,7 @@ class VehicleLogbook(Document):
 				total_i += flt(a.idle_time)
 			self.total_work_time = total_w
 			self.total_idle_time = total_i
-		self.consumption = flt(self.consumption_hours) + flt(self.consumption_km)
+		self.consumption = flt(self.other_consumption) + flt(self.consumption_hours) + flt(self.consumption_km)
 		self.closing_balance = flt(self.hsd_received) + flt(self.opening_balance) - flt(self.consumption)
 
 	def update_hire(self):

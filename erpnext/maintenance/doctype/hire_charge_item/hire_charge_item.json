@@ -224,7 +224,7 @@
    "length": 0, 
    "no_copy": 0, 
    "permlevel": 0, 
-   "precision": "1", 
+   "precision": "2", 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
@@ -249,7 +249,7 @@
    "length": 0, 
    "no_copy": 0, 
    "permlevel": 0, 
-   "precision": "1", 
+   "precision": "2", 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
@@ -345,7 +345,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2017-09-29 18:52:22.284600", 
+ "modified": "2017-12-02 16:36:44.823144", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Hire Charge Item", 
@@ -357,5 +357,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

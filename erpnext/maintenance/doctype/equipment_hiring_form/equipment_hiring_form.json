@@ -220,7 +220,7 @@
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "customer_cost_center", 
-   "fieldtype": "Link", 
+   "fieldtype": "Read Only", 
    "hidden": 0, 
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
@@ -229,7 +229,7 @@
    "label": "Customer Cost Center", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "Cost Center", 
+   "options": "customer.cost_center", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -270,7 +270,7 @@
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "customer_branch", 
-   "fieldtype": "Link", 
+   "fieldtype": "Read Only", 
    "hidden": 0, 
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
@@ -279,7 +279,7 @@
    "label": "Customer Branch", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "Branch", 
+   "options": "customer.branch", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -900,7 +900,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-18 00:16:30.946870", 
+ "modified": "2017-11-29 15:31:16.856097", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Hiring Form", 
@@ -909,7 +909,7 @@
  "permissions": [
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -925,6 +925,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
@@ -989,7 +990,7 @@
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
@@ -1005,6 +1006,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }
  ], 

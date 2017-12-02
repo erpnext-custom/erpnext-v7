@@ -1652,7 +1652,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-24 18:17:54.964423", 
+ "modified": "2017-12-02 11:05:20.717642", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee", 
@@ -1742,9 +1742,9 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
-   "create": 1, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -1758,7 +1758,8 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 1
+   "user_permission_doctypes": "[\"Branch\"]", 
+   "write": 0
   }, 
   {
    "amend": 0, 
