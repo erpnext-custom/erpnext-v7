@@ -127,7 +127,7 @@ class TravelClaim(Document):
 
 		if (self.advance_amount) > 0:
 			if flt(self.balance_amount) < 0:
-				advance_amt = flt(total_claim_amount)
+				advance_amt = flt(self.total_claim_amount)
 
 			je.append("accounts", {
 				"account": "Advance to Employee-Travel - SMCL",
@@ -142,7 +142,7 @@ class TravelClaim(Document):
 
 
 		if flt(self.balance_amount) < 0:
-			bank_amt = flt(total_claim_amount)
+			bank_amt = flt(self.total_claim_amount)
 		
 		je.append("accounts", {
 				"account": "Bank of Bhutan Ltd - 100891887 - SMCL",

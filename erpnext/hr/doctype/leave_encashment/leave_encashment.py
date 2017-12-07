@@ -32,14 +32,39 @@ class LeaveEncashment(Document):
                 self.validate_balances()
                 
         def on_submit(self):
+		self.adjust_leave()
 		self.post_accounts_entry()
 
 	def before_cancel(self):
 		self.check_gl_entry()
 	
+	def on_cancel(self):
+		self.adjust_leave(True)
+	
 	def get_leave_credits(self):
                 pass
-	
+
+	def adjust_leave(self, cancel=False):
+		leave_allocation = frappe.db.sql("""
+			select name, from_date, to_date, total_leaves_allocated
+			from `tabLeave Allocation`
+			where employee=%s and leave_type=%s and docstatus=1 
+			order by to_date desc limit 1
+		""", (self.employee, self.leave_type), as_dict=1)
+		if leave_allocation:
+			doc = frappe.get_doc("Leave Allocation", leave_allocation[0].name)
+			if cancel:
+				new_total = (flt(doc.total_leaves_allocated) + flt(self.encashed_days))
+				days = flt(self.encashed_days)
+				self.db_set("leave_adjusted", 0)
+			else:
+				new_total = (flt(doc.total_leaves_allocated) - flt(self.encashed_days))
+				days = 0 - flt(self.encashed_days)
+				self.db_set("leave_adjusted", 1)
+			doc.db_set("total_leaves_allocated", new_total)
+			doc.db_set("leave_encashment", self.name)
+			doc.db_set("encashed_days", days)
+
 	def check_gl_entry(self):
 		if self.encash_journal:
 			docstat = frappe.db.get_value("Journal Entry", self.encash_journal, "docstatus")

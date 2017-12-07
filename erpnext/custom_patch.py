@@ -6,6 +6,17 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
 
 
+def adjust_leave_encashment():
+	les = frappe.db.sql("select name, encashed_days, employee from `tabLeave Encashment` where docstatus = 1 and application_date between %s and %s", ('2017-01-01', '2017-12-31'), as_dict=True)
+	for le in les:
+		print(str(le.name))
+		allocation = frappe.db.sql("select name, to_date from `tabLeave Allocation` where docstatus = 1 and employee = %s and leave_type = 'Earned Leave' order by to_date desc limit 1", (le.employee), as_dict=True)
+		obj = frappe.get_doc("Leave Allocation", allocation[0].name)
+		obj.db_set("leave_encashment", le.name)
+		obj.db_set("encashed_days", (le.encashed_days))
+		obj.db_set("total_leaves_allocated", (flt(obj.total_leaves_allocated) - flt(le.encashed_days)))
+
+
 ##
 # Post earned leave on the first day of every month
 ##
