@@ -87,6 +87,9 @@ function get_records(employee_type, from_date, to_date, cost_center, branch) {
 						row.hourly_rate = mr['rate_per_hour']
 						row.total_ot_amount = row.number_of_hours * row.hourly_rate
 						row.total_wage = row.daily_rate * row.number_of_days
+						if(mr['type'] == 'GEP Employee' && parseFloat(row.total_wage) > parseFloat(mr['salary'])){
+							row.total_wage = parseFloat(mr['salary'])
+						}
 						row.total_amount = row.total_ot_amount + row.total_wage
 						refresh_field("items");
 

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-28 16:46:04.571332", 
+ "modified": "2017-12-06 21:43:00.658149", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Price History", 
@@ -20,13 +20,10 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Stock Manager"
-  }, 
-  {
-   "role": "Stock User"
-  }, 
-  {
    "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales User"
   }
  ]
 }

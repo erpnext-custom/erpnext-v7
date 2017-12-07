@@ -94,6 +94,9 @@ def get_rootwise_opening_balances(filters, report_type):
 	if not flt(filters.with_period_closing_entry):
 		additional_conditions += " and ifnull(voucher_type, '')!='Period Closing Voucher'"
 
+        if filters.cost_center:
+                additional_conditions += " and cost_center = %(cost_center)s"
+                
 	gle = frappe.db.sql("""
 		select
 			account, sum(debit) as opening_debit, sum(credit) as opening_credit
@@ -108,7 +111,8 @@ def get_rootwise_opening_balances(filters, report_type):
 			"company": filters.company,
 			"from_date": filters.from_date,
 			"report_type": report_type,
-			"year_start_date": filters.year_start_date
+			"year_start_date": filters.year_start_date,
+                        "cost_center": filters.cost_center
 		},
 		as_dict=True)
 

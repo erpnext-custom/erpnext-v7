@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-28 16:46:52.740092", 
+ "modified": "2017-12-06 21:34:02.013277", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Ordered Materials To Be Delivered", 
@@ -19,12 +19,6 @@
  "roles": [
   {
    "role": "Administrator"
-  }, 
-  {
-   "role": "Stock Manager"
-  }, 
-  {
-   "role": "Stock User"
   }, 
   {
    "role": "Sales Manager"

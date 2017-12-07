@@ -118,6 +118,13 @@ def get_data():
                 {
 			"label": _("Stock Reports"),
 			"items": [
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Items Register",
+					"doctype": "Consumable Register Entry",
+					"Label": _("Items Register")
+				},
 				{
 					"type": "report",
 					"is_query_report": True,

@@ -2998,7 +2998,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-11-17 23:56:56.244736", 
+ "modified": "2017-12-07 15:14:24.017704", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Sales Order", 
@@ -3045,7 +3045,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 

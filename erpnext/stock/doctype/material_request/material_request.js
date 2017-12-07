@@ -37,6 +37,7 @@ frappe.ui.form.on('Material Request', {
 		frm.set_indicator_formatter('item_code',
 			function(doc) { return (doc.qty<=doc.ordered_qty) ? "green" : "orange" })
 
+		/*
 		if(frm.doc.__islocal) {
 			cur_frm.set_value("material_request_type", "Material Issue")
 			frappe.call({
@@ -49,6 +50,20 @@ frappe.ui.form.on('Material Request', {
 				}
 			})
 		}
+		*/
+		
+		if(frm.doc.__islocal) {
+			frappe.call({
+					method: "erpnext.custom_utils.get_user_info",
+					args: {"user": frappe.session.user},
+					callback(r) {
+							cur_frm.set_value("temp_cc", r.message.cost_center);
+							cur_frm.set_value("temp_wh", r.message.warehouse);
+							cur_frm.set_value("approver", r.message.approver);
+							cur_frm.set_value("branch", r.message.branch);
+					}
+			});
+        }
 	},
 	refresh: function(frm){
 		// Ver2.0, Following condition is changed by SHIV on 26/11/2017

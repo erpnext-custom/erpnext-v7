@@ -36,6 +36,7 @@ def execute(filters=None):
 def get_columns():
 	"""return columns"""
 
+        '''
 	columns = [
 		_("Material Code")+":Link/Item:100",
 		_("Material Name")+"::150",
@@ -50,8 +51,95 @@ def get_columns():
 		_("Receipt Value")+":Float:80",
 		_("Issue Qty")+":Float:80",
 		_("Issue Value")+":Float:80",
-		_("Balance Qty")+":Float:100",
+		_("Balance Qty")+":Float/5:100",
 		_("Balance Value")+":Float:100",
+		_("MAP")+":Float:90",
+		_("Company")+":Link/Company:100"
+	]
+        '''
+        
+	columns = [
+                {
+                        "label": "Material Code",
+                        "fieldtype": "Link",
+                        "options": "Item"
+                },
+                {
+                        "label": "Material Name",
+                        "fieldtype": "Data",
+                        "width": 150
+                },
+                {
+                        "label": "Material Group",
+                        "fieldtype": "Data",
+                        "width": 100
+                },
+		{
+                        "label": "Material Sub Group",
+                        "fieldtype": "Data",
+                        "width": 100
+                },
+		{
+                        "label": "Warehouse",
+                        "fieldtype": "Link",
+                        "options": "Warehouse",
+                        "width": 100
+                },
+		{
+                        "label": "Rack",
+                        "fieldtype": "Data",
+                        "width": 90
+                },
+		{
+                        "label": "Stock UOM",
+                        "fieldtype": "Link",
+                        "options": "UOM",
+                        "width": 90
+                },
+		{
+                        "label": "Opening Qty",
+                        "fieldtype": "Float",
+                        "precision": 5,
+                        "width": 100
+                },
+		{
+                        "label": "Opening Value",
+                        "fieldtype": "Float",
+                        "width": 110
+                },
+		{
+                        "label": "Receipt Qty",
+                        "fieldtype": "Float",
+                        "precision": 5,
+                        "width": 80
+                },
+		{
+                        "label": "Receipt Value",
+                        "fieldtype": "Float",
+                        "width": 80
+                },
+		{
+                        "label": "Issue Qty",
+                        "fieldtype": "Float",
+                        "precision": 5,
+                        "width": 80
+                },
+		{
+                        "label": "Issue Value",
+                        "fieldtype": "Float",
+                        "width": 80
+                },
+		{
+                        "label": "Balance Qty",
+                        "fieldtype": "Float",
+                        "precision": 5,
+                        "width": 100
+                },
+		{
+                        "label": "Balance Value",
+                        "fieldtype": "Float",
+                        "width": 100
+                },
 		_("MAP")+":Float:90",
 		_("Company")+":Link/Company:100"
 	]
@@ -105,26 +193,26 @@ def get_item_warehouse_map(filters):
 		qty_dict = iwb_map[(d.company, d.item_code, d.warehouse)]
 
 		if d.voucher_type == "Stock Reconciliation":
-			qty_diff = flt(d.qty_after_transaction) - qty_dict.bal_qty
+			qty_diff = flt(d.qty_after_transaction,5) - flt(qty_dict.bal_qty,5)
 		else:
-			qty_diff = flt(d.actual_qty)
+			qty_diff = flt(d.actual_qty,5)
 
 		value_diff = flt(d.stock_value_difference)
 
 		if d.posting_date < from_date:
-			qty_dict.opening_qty += qty_diff
+			qty_dict.opening_qty += flt(qty_diff,5)
 			qty_dict.opening_val += value_diff
 
 		elif d.posting_date >= from_date and d.posting_date <= to_date:
 			if qty_diff > 0:
-				qty_dict.in_qty += qty_diff
+				qty_dict.in_qty += flt(qty_diff,5)
 				qty_dict.in_val += value_diff
 			else:
 				qty_dict.out_qty += abs(qty_diff)
 				qty_dict.out_val += abs(value_diff)
 
 		qty_dict.val_rate = d.valuation_rate
-		qty_dict.bal_qty += qty_diff
+		qty_dict.bal_qty += flt(qty_diff,5)
 		qty_dict.bal_val += value_diff
 
 	return iwb_map

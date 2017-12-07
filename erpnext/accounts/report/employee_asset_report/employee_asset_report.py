@@ -23,7 +23,7 @@ def get_data(query):
 	return data
 
 def construct_query(filters=None):
-	query ="SELECT name, asset_name, purchase_date, gross_purchase_amount, status FROM `tabAsset` WHERE docstatus = 1 and status in ('Submitted','Partially Depreciated')"
+	query ="SELECT name, asset_name, purchase_date, gross_purchase_amount, status FROM `tabAsset` WHERE docstatus = 1 and status in ('Submitted','Partially Depreciated','Fully Depreciated')"
 	if filters.employee:
 		query += " and issued_to = \'" + str(filters.employee) + "\'"
 	

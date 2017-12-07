@@ -55,11 +55,8 @@ def add_data(w, args):
 		w.writerow(row)
 	return w
 
-def test():
-        print 'Test print...'
-
-        args = frappe.local.form_dict
-        print args
+def test(args):
+        print 'Test print...', args.fname, args.lname
         
         month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
 		"Dec"].index('Dec') + 1
@@ -103,9 +100,7 @@ def test():
 		where docstatus < 2
 		and status = 'Active'
 		and branch = %(branch)s
-		""", {"branch": 'Nyera Amari I & II Integrated Hydropower Project'}, as_dict=1)
-
-        
+		""", {"branch": 'Pachu Zam Construction'}, as_dict=1)
 
         print employees
         print 'Test 2'
@@ -121,7 +116,7 @@ def get_active_employees(args):
 		from `tabMuster Roll Employee`
 		where docstatus < 2
 		and status = 'Active'
-		and branch = "%(branch)s"
+		and branch = %(branch)s
 		UNION
 		select
                         "GEP" as etype,
@@ -132,7 +127,7 @@ def get_active_employees(args):
 		from `tabGEP Employee`
 		where docstatus < 2
 		and status = 'Active'
-		and branch = "%(branch)s"
+		and branch = %(branch)s
 		""", {"branch": args.branch}, as_dict=1)
 
 	return employees
@@ -161,23 +156,40 @@ def upload():
 		try:
 			row_idx = i + 4
 			for j in range(8, len(row) + 1):
-				frappe.msgprint(str(j))
-				doc = frappe.new_doc("Attendance Others")
-				doc.branch = row[0]
-				doc.cost_center = row[1]
-				if str(row[2]) == "MR":
-					doc.employee_type = "Muster Roll Employee"
-				elif str(row[2]) == "GEP":
-					doc.employee_type = "GEP Employee"
-				doc.employee = str(row[3]).strip('\'')
-				
-				month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(row[6]) + 1	
+                                month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(row[6]) + 1	
 				month = str(month) if cint(month) > 9 else str("0" + str(month))
 				day = str(cint(j) - 7) if cint(j) > 9 else str("0" + str(cint(j) - 7))
-				doc.date = str(row[5]) + '-' + str(month) + '-' + str(day)
-				if str(row[j -1]) == "P" or str(row[j -1]) == "p":
-					doc.status = "Present"
-					doc.submit()
+				status = ''
+				
+				if str(row[j -1]) in ("P","p"):
+                                        status = 'Present'
+                                elif str(row[j -1]) in ("A","a"):
+                                        status = 'Absent'
+                                else:
+                                        status = ''
+                                        
+				#frappe.msgprint(str(j))
+                                old = frappe.db.get_value("Attendance Others", {"employee": row[3].strip('\''), "date": str(row[5]) + '-' + str(month) + '-' + str(day)}, ["status","name"], as_dict=1)
+                                if old:
+                                        doc = frappe.get_doc("Attendance Others", old.name)
+                                        doc.db_set('status', status if status in ('Present','Absent') else doc.status)
+                                        doc.db_set('branch', row[0])
+                                        doc.db_set('cost_center', row[1])
+                                else:
+                                        doc = frappe.new_doc("Attendance Others")
+                                        doc.status = status
+                                        doc.branch = row[0]
+                                        doc.cost_center = row[1]
+                                        doc.employee = str(row[3]).strip('\'')
+                                        doc.date = str(row[5]) + '-' + str(month) + '-' + str(day)
+                                        
+                                        if str(row[2]) == "MR":
+                                                doc.employee_type = "Muster Roll Employee"
+                                        elif str(row[2]) == "GEP":
+                                                doc.employee_type = "GEP Employee"
+                                        
+                                        if doc.status in ('Present','Absent'):
+                                                doc.submit()
 		except Exception, e:
 			error = True
 			ret.append('Error for row (#%d) %s : %s' % (row_idx,

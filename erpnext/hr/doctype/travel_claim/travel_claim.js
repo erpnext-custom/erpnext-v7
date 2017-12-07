@@ -53,6 +53,20 @@ frappe.ui.form.on('Travel Claim', {
 				});
 			//}
 		}
+		
+		if(frm.doc.docstatus < 2 || frm.doc.__islocal){
+			var ti = frm.doc.items || [];
+			var total = 0.0;
+
+			frm.doc.items.forEach(function(d) { 
+				total += parseFloat(d.actual_amount || 0.0)
+			})
+			
+			if(parseFloat(total) != parseFloat(frm.doc.total_claim_amount)){
+				frm.set_value("total_claim_amount", parseFloat(total));
+			}
+		}
+		
 	},
 	"total_claim_amount": function(frm) {
 		frm.set_value("balance_amount", frm.doc.total_claim_amount + frm.doc.extra_claim_amount - frm.doc.advance_amount)

@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, flt, nowdate, money_in_words
 from erpnext.accounts.utils import get_account_currency, get_fiscal_year
@@ -17,6 +18,7 @@ class TravelAuthorization(Document):
 			frappe.throw("Setup Branch in Emplpoyee Information and try again")
 
 		self.validate_travel_dates()
+                self.check_double_dates()
 
 	def on_update(self):
 		self.set_dsa_rate()
@@ -29,7 +31,7 @@ class TravelAuthorization(Document):
 			self.sendmail(self.employee, "Travel Authorization Rejected" + str(self.name), "Following remarks has been added by the supervisor: \n" + str(self.reason))
 
 	def on_submit(self):
-		self.check_double_dates()
+		#self.check_double_dates()
 		self.validate_submitter()
 		self.validate_travel_dates()
 		self.check_status()

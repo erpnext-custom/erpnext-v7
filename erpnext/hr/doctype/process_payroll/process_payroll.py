@@ -229,8 +229,8 @@ class ProcessPayroll(Document):
                 accounts = []
                 tot_deductions = 0
                 tot_earnings = 0
-                default_payable_account = 'Salary Payable - CDCL'
-                default_gpf_account = 'Employee Contribution to PF - CDCL'
+                default_payable_account = frappe.db.get_single_value("HR Accounts Settings", "salary_payable_account")
+                default_gpf_account = frappe.db.get_single_value("HR Accounts Settings", "employee_contribution_pf")
                 default_gis_account = frappe.db.get_value("Salary Component", 'Group Insurance Scheme',"gl_head")
                 default_pf_account = frappe.db.get_value("Salary Component", 'PF',"gl_head")
                 default_loan_account = frappe.db.get_value("Salary Component", 'Financial Institution Loan',"gl_head")
@@ -238,6 +238,10 @@ class ProcessPayroll(Document):
                 default_tax_account = frappe.db.get_value("Salary Component", 'Salary Tax',"gl_head")
                 default_health_account = frappe.db.get_value("Salary Component", 'Health Contribution',"gl_head")
                 default_saladv_account = frappe.db.get_value("Salary Component", 'Salary Advance Deductions',"gl_head")
+
+                # Mandatory GL Checking
+                if not default_payable_account:
+                        frappe.throw("Setup Default Salary Payable Account in `HR Accounts Settings`")
 
                 for item in items:
                         deductions = []

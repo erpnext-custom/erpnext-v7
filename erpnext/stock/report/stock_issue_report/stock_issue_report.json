@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 12:05:23.336363", 
+ "modified": "2017-12-07 15:06:12.386952", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Issue Report", 
@@ -24,6 +24,12 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Asset Manager"
+  }, 
+  {
+   "role": "Asset User"
   }
  ]
 }

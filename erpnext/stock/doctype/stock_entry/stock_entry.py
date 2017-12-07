@@ -26,7 +26,17 @@ form_grid_templates = {
 
 class StockEntry(StockController):
 	def autoname(self):
-		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
+                if self.purpose == 'Material Issue':
+                        series = 'SEMI'
+                elif self.purpose == 'Material Receipt':
+                        series = 'SEMR'
+                elif self.purpose == 'Material Transfer':
+                        series = 'SEMT'
+                else:
+                        series = 'SE'
+
+		#self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
+                self.name = make_autoname(str(series) + ".YY.MM.####")
 
 	def get_feed(self):
 		return _("From {0} to {1}").format(self.from_warehouse, self.to_warehouse)
@@ -230,7 +240,9 @@ class StockEntry(StockController):
 			d.actual_qty = previous_sle.get("qty_after_transaction") or 0
 
 			# validate qty during submit
-			if d.docstatus==1 and d.s_warehouse and not allow_negative_stock and d.actual_qty < d.transfer_qty:
+			# Following condition modified by SHHIV on 07/12/2017
+			#if d.docstatus==1 and d.s_warehouse and not allow_negative_stock and d.actual_qty < d.transfer_qty:
+			if d.s_warehouse and not allow_negative_stock and flt(d.actual_qty) < flt(d.transfer_qty):
 				frappe.throw(_("Row {0}: Qty not available for {4} in warehouse {1} at posting time of the entry ({2} {3})".format(d.idx,
 					frappe.bold(d.s_warehouse), formatdate(self.posting_date),
 					format_time(self.posting_time), frappe.bold(d.item_code)))
