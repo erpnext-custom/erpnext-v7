@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:56:37.656202", 
+ "modified": "2017-12-14 10:14:36.077419", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Finished Goods Delivery Overview", 
@@ -25,6 +25,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

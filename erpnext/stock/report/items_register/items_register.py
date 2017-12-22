@@ -16,7 +16,7 @@ def get_columns():
 		("Material Code") + ":Link/Item:120",
 		("Material Name") + ":Data:120",
 		("Issue Date") + ":Date:120",
-		("Issued To")+ ":Link/Employee:100",
+		("Issued To")+ ":Data:100",
 		("Employee Name") + ":Data:120",
 		("Quantity") + ":Data:70",
 		("Ref Document")+ ":Link/Stock Entry:150",

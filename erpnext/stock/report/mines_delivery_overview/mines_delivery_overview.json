@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:55:54.195745", 
+ "modified": "2017-12-14 10:22:48.650199", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Mines Delivery Overview", 
@@ -25,6 +25,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

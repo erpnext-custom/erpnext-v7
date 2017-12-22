@@ -144,6 +144,12 @@ def get_data():
 					"description": _("Multiple Item prices."),
 					"route": "Report/Item Price"
 				},
+				{
+					"type" : "doctype",
+					"name": "Stock Price Template",
+					"description": _("Price Template for Mines Products"),
+					"label": _("COP/ Sales Price Template"),
+				},
 			]
 		},
 

@@ -10,10 +10,16 @@ from frappe.utils import flt
 class ProcessMRPayment(Document):
 	def validate(self):
 		if self.items:
-			total_ot = total_wage = total_health = 0
+			total_ot = total_wage = total_health = salary = 0
 			for a in self.items:
 				a.total_ot_amount = flt(a.hourly_rate) * flt(a.number_of_hours)
 				a.total_wage = flt(a.daily_rate) * flt(a.number_of_days)
+				
+				if a.employee_type == "GEP Employee":
+                                        salary = frappe.db.get_value("GEP Employee", a.employee, "salary")
+                                        if flt(a.total_wage) > flt(salary):
+                                                a.total_wage = flt(salary)
+                                        
 				a.total_amount = flt(a.total_ot_amount) + flt(a.total_wage)
 				total_ot += flt(a.total_ot_amount)
 				total_wage += flt(a.total_wage)
@@ -197,8 +203,7 @@ def get_records(employee_type, from_date, to_date, cost_center, branch):
                                                 select sum(1)
                                                 from `tabAttendance Others` b
                                                 where b.employee = a.name
-                                                and b.date between %s
-                                                and %s
+                                                and b.date between %s and %s
                                                 and b.cost_center = %s
                                                 and b.branch = %s
                                                 and b.status = 'Present'
@@ -208,8 +213,7 @@ def get_records(employee_type, from_date, to_date, cost_center, branch):
                                                 select sum(c.number_of_hours)
                                                 from `tabOvertime Entry` c
                                                 where c.number = a.name
-                                                and c.date between %s
-                                                and %s
+                                                and c.date between %s and %s
                                                 and c.cost_center = %s
                                                 and c.branch = %s
                                                 and c.docstatus = 1

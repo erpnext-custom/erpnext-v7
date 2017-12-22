@@ -1377,8 +1377,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-12-01 15:33:07.746166", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2017-12-08 09:24:21.365207", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Claim", 
  "name_case": "", 
@@ -1568,7 +1568,7 @@
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
@@ -1584,6 +1584,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

@@ -298,3 +298,93 @@ def createConsumed():
 			else:
 				print("NOT FOUND")
 			#print(str(i.purchase_order) + " / " + str(i.item_code) + " / " + str(i.amount))
+
+
+# /home/frappe/erp bench execute erpnext.custom_patch.grant_permission_all_test
+def grant_permission_all_test():
+        emp_list = frappe.db.sql("""
+                                 select company, branch, name as employeecd, user_id, 'Employee' type
+                                 from `tabEmployee`
+                                 where user_id is not null
+                                 and exists(select 1
+                                                from  `tabUser`
+                                                where `tabUser`.name = `tabEmployee`.user_id)
+                                and name = 'CDCL0403003'
+                        """, as_dict=1)
+
+        for emp in emp_list:
+                # From Employee Master
+                frappe.permissions.remove_user_permission("Company", emp.company, emp.user_id)
+                frappe.permissions.remove_user_permission("Branch", emp.branch, emp.user_id)
+
+                frappe.permissions.add_user_permission("Company", emp.company, emp.user_id)
+                frappe.permissions.add_user_permission("Branch", emp.branch, emp.user_id)
+
+                frappe.permissions.remove_user_permission(emp.type, emp.employeecd, emp.user_id)
+                frappe.permissions.add_user_permission(emp.type, emp.employeecd, emp.user_id)
+                
+                # From Assign Branch 
+                ba = frappe.db.sql("""
+                                select branch
+                                from `tabBranch Item`
+                                where exists(select 1
+                                               from `tabAssign Branch`
+                                               where `tabAssign Branch`.name = `tabBranch Item`.parent
+                                               and   `tabAssign Branch`.user = '{0}')
+                        """.format(emp.user_id), as_dict=1)
+                
+
+                for a in ba:
+                        frappe.permissions.remove_user_permission("Branch", a.branch, emp.user_id)
+                        frappe.permissions.add_user_permission("Branch", a.branch, emp.user_id)
+
+
+def grant_permission_all():
+        emp_list = frappe.db.sql("""
+                                 select company, branch, name as employeecd, user_id, 'Employee' type
+                                 from `tabEmployee`
+                                 where user_id is not null
+                                 and exists(select 1
+                                                from  `tabUser`
+                                                where `tabUser`.name = `tabEmployee`.user_id)
+                                union all
+                                select company, branch, name as employeecd, user_id, 'GEP Employee' type
+                                 from `tabGEP Employee`
+                                 where user_id is not null
+                                 and exists(select 1
+                                                from  `tabUser`
+                                                where `tabUser`.name = `tabGEP Employee`.user_id)
+                                union all
+                                select company, branch, name as employeecd, user_id, 'Muster Roll Employee' type
+                                 from `tabMuster Roll Employee`
+                                 where user_id is not null
+                                 and exists(select 1
+                                                from  `tabUser`
+                                                where `tabUser`.name = `tabMuster Roll Employee`.user_id)
+                        """, as_dict=1)
+
+        for emp in emp_list:
+                # From Employee Master
+                frappe.permissions.remove_user_permission("Company", emp.company, emp.user_id)
+                frappe.permissions.remove_user_permission("Branch", emp.branch, emp.user_id)
+
+                frappe.permissions.add_user_permission("Company", emp.company, emp.user_id)
+                frappe.permissions.add_user_permission("Branch", emp.branch, emp.user_id)
+
+                frappe.permissions.remove_user_permission(emp.type, emp.employeecd, emp.user_id)
+                frappe.permissions.add_user_permission(emp.type, emp.employeecd, emp.user_id)
+                                                
+                # From Assign Branch 
+                ba = frappe.db.sql("""
+                                select branch
+                                from `tabBranch Item`
+                                where exists(select 1
+                                               from `tabAssign Branch`
+                                               where `tabAssign Branch`.name = `tabBranch Item`.parent
+                                               and   `tabAssign Branch`.user = '{0}')
+                        """.format(emp.user_id), as_dict=1)
+                
+
+                for a in ba:
+                        frappe.permissions.remove_user_permission("Branch", a.branch, emp.user_id)
+                        frappe.permissions.add_user_permission("Branch", a.branch, emp.user_id)

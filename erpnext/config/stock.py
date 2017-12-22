@@ -21,6 +21,11 @@ def get_data():
 					"name": "Delivery Note",
 					"description": _("Shipments to customers."),
 				},
+                                {
+					"type": "doctype",
+					"name": "Purchase Order",
+					"description": _("Purchase Order"),
+				},
 				{
 					"type": "doctype",
 					"name": "Purchase Receipt",
@@ -62,12 +67,6 @@ def get_data():
 					"label": _("Material Price"),
 					"description": _("Multiple Item prices."),
 					"route": "Report/Item Price"
-				},
-				{
-					"type": "doctype",
-					"name": "Stock Price Template",
-					"label": "COP/Sales Price Template",
-					"description": _("Price Templates for Mines Products"),
 				},
 				{
 					"type": "doctype",

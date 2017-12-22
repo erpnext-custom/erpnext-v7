@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 12:32:36.980646", 
+ "modified": "2017-12-14 10:14:53.080479", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Transportation Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

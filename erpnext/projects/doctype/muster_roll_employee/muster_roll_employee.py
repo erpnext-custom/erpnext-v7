@@ -12,7 +12,23 @@ class MusterRollEmployee(Document):
 		self.calculate_rates()
 		#self.check_status()
 		self.populate_work_history()
+		self.update_user_permissions()
 
+        def update_user_permissions(self):
+                prev_branch  = self.get_db_value("branch")
+                prev_company = self.get_db_value("company")
+                prev_user_id = self.get_db_value("user_id")
+
+                if prev_user_id:
+                        frappe.permissions.remove_user_permission("Muster Roll Employee", self.name, prev_user_id)
+                        frappe.permissions.remove_user_permission("Company", prev_company, prev_user_id)
+                        frappe.permissions.remove_user_permission("Branch", prev_branch, prev_user_id)
+
+                if self.user_id:
+                        frappe.permissions.add_user_permission("Muster Roll Employee", self.name, self.user_id)
+                        frappe.permissions.add_user_permission("Company", self.company, self.user_id)
+                        frappe.permissions.add_user_permission("Branch", self.branch, self.user_id)
+                
 	def calculate_rates(self):
 		if not self.rate_per_hour:
 			self.rate_per_hour = (flt(self.rate_per_day) * 1.5) / 8
@@ -25,7 +41,7 @@ class MusterRollEmployee(Document):
 
         # Following method introducted by SHIV on 04/10/2017
         def populate_work_history(self):
-                if self.branch != self.get_db_value("branch"):
+                if self.branch != self.get_db_value("branch") or self.cost_center != self.get_db_value("cost_center"):
 
                         for wh in self.internal_work_history:
                                 if not wh.to_date:
@@ -33,6 +49,7 @@ class MusterRollEmployee(Document):
                         
                         self.append("internal_work_history",{
                                                         "branch": self.branch,
+                                                        "cost_center": self.cost_center,
                                                         "from_date": today(),
                                                         "owner": frappe.session.user,
                                                         "creation": nowdate(),

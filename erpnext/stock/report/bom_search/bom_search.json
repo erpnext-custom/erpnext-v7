@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:01:53.868890", 
+ "modified": "2017-12-14 10:23:33.460533", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "BOM Search", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

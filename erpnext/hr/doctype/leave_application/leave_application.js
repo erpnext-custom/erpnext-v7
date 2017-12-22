@@ -21,12 +21,27 @@ frappe.ui.form.on("Leave Application", {
 
 		frm.set_query("employee", erpnext.queries.employee);
 
+		if(frm.doc.__islocal) {
+			frm.trigger("get_employee_branch_costcenter");
+        }		
 	},
 
 	refresh: function(frm) {
 		if (frm.is_new()) {
 			frm.set_value("status", "Open");
 			frm.trigger("calculate_total_days");
+		}
+				
+		if(!frm.doc.__islocal && in_list(user_roles, "Approver")){
+			if(frappe.session.user == frm.doc.leave_approver){
+				frm.toggle_display("status", true);
+			}
+			else{
+				frm.toggle_display("status", false);
+			}
+		}
+		else{
+			frm.toggle_display("status", false);
 		}
 	},
 
@@ -37,6 +52,7 @@ frappe.ui.form.on("Leave Application", {
 	},
 
 	employee: function(frm) {
+		frm.trigger("get_employee_branch_costcenter")
 		frm.trigger("get_leave_balance");
 	},
 
@@ -55,6 +71,7 @@ frappe.ui.form.on("Leave Application", {
 		if (cint(frm.doc.half_day)==1) {
 			frm.set_value("to_date", frm.doc.from_date);
 		}
+		frm.trigger("get_leave_balance");
 		frm.trigger("calculate_total_days");
 	},
 
@@ -67,19 +84,42 @@ frappe.ui.form.on("Leave Application", {
 		frm.trigger("calculate_total_days");
 	},
 
+	get_employee_branch_costcenter: function(frm){
+		/*
+		if((frm.doc.docstatus==0 || frm.doc.__islocal) && frm.doc.employee){
+			frappe.call({
+						method: "erpnext.custom_utils.get_user_info",
+						args: {"employee": frm.doc.employee},
+						callback(r) {
+								cur_frm.set_value("cost_center", r.message.cost_center);
+								cur_frm.set_value("branch", r.message.branch);
+						}
+			});
+		}
+		*/
+		if((frm.doc.docstatus==0 || frm.doc.__islocal) && frm.doc.employee){
+			cur_frm.add_fetch("employee", "branch", "branch");
+			cur_frm.add_fetch("employee", "cost_center", "cost_center");
+		}
+	},
+	
 	get_leave_balance: function(frm) {
-		if(frm.doc.docstatus==0 && frm.doc.employee && frm.doc.leave_type && frm.doc.from_date) {
+		//if(frm.doc.docstatus==0 && frm.doc.employee && frm.doc.leave_type && frm.doc.from_date) {
+		if(frm.doc.docstatus==0 && frm.doc.employee && frm.doc.leave_type) {
 			return frappe.call({
 				method: "erpnext.hr.doctype.leave_application.leave_application.get_leave_balance_on",
 				args: {
 					employee: frm.doc.employee,
-					date: frm.doc.from_date,
+					date: frm.doc.from_date || frappe.datetime.get_today(),
 					leave_type: frm.doc.leave_type,
 					consider_all_leaves_in_the_allocation_period: true
 				},
 				callback: function(r) {
 					if (!r.exc && r.message) {
-						frm.set_value('leave_balance', r.message);
+						frm.set_value('leave_balance', parseFloat(r.message));
+					}
+					else{
+						frm.set_value('leave_balance', 0.0);
 					}
 				}
 			});

@@ -19,9 +19,46 @@ frappe.ui.form.on("Sales Order", {
 			function(doc) { return (doc.qty<=doc.delivered_qty) ? "green" : "orange" })
 	},
 	"naming_series": function(frm) {
-		cur_frm.toggle_reqd("selling_price_template", frm.doc.naming_series == 'Sales Product' )
+		cur_frm.toggle_reqd("selling_price_template", frm.doc.naming_series == 'Sales Product' );
+
+		/*
+		// Following code added by SHIV on 08/12/2017
+		cur_frm.fields_dict['items'].grid.get_field('item_code').get_query = function(frm, cdt, cdn) {
+			var d = locals[cdt][cdn];
+			return {
+				filters: [
+				['Item', 'item_group', '=', frm.naming_series]
+				]
+			}
+		}*/
 	},
 });
+
+/*
+// Following function added by SHIV on 08/12/2017
+frappe.ui.form.on("Sales Order Item", {
+	"item_code": function(frm, cdt, cdn){
+		var child = locals[cdt][cdn];
+		cur_frm.call({
+				method: "erpnext.stock.doctype.stock_price_template.stock_price_template.get_item_rate",
+				args: {
+					 tran_type: 'Sales',
+					 item_code: child.item_code,
+					 tran_date: frm.doc.transaction_date
+				},
+				callback: function(r) {
+				   if(r.message)  { 
+						frappe.model.set_value(cdt, cdn, 'item_code', r.message[0]['item_code']);
+						frappe.model.set_value(cdt, cdn, 'item_name', r.message[0]['item_name']);
+						frappe.model.set_value(cdt, cdn, 'qty', 0);
+						frappe.model.set_value(cdt, cdn, 'rate', r.message[0]['rate']);
+						//refresh_field("items"); 
+					}
+				}
+		});
+	},
+});
+*/
 
 erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend({
 	refresh: function(doc, dt, dn) {
@@ -306,3 +343,7 @@ cur_frm.cscript.selling_price_template = function(doc) {
 	       refresh_field("items");
 	}
 }
+
+
+
+

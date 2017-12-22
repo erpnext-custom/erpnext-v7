@@ -49,6 +49,11 @@ frappe.query_reports["General Ledger"] = {
 			"options": "Cost Center",
 		},
 		{
+                        "fieldname":"voucher_no",
+                        "label": __("Voucher Number"),
+                        "fieldtype": "Data",
+                },
+		{
 			"fieldtype": "Break",
 		},
 		{

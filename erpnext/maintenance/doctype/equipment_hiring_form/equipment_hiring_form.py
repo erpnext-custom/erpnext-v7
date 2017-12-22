@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import cstr, flt, fmt_money, formatdate
+from frappe.desk.reportview import get_match_cond
 
 class EquipmentHiringForm(Document):
 	def validate(self):
@@ -131,7 +132,65 @@ def update_status(name):
 	so.db_set("payment_completed", 1)
 
 def equipment_query(doctype, txt, searchfield, start, page_len, filters):
-	return frappe.db.sql("select e.name, e.equipment_type, e.equipment_number from `tabEquipment` e where e.equipment_type = %s and e.branch = %s and e.is_disabled != 1 and e.not_cdcl = 0 and not exists (select 1 from `tabEquipment Reservation Entry` a where (a.from_date != a.to_date and (a.from_date between %s and %s or a.to_date between %s and %s)) and a.equipment = e.name)", (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
-
-
-
+        # Shiv, 20/12/2017
+        # Following code temporarily replaced by the subsequent as per Payma's request for doing backlog entries, 20/12/2017
+        # Needs to be set back later
+        '''
+	return frappe.db.sql("""
+                        select
+                                e.name,
+                                e.equipment_type,
+                                e.equipment_number
+                        from `tabEquipment` e
+                        where e.equipment_type = %s
+                        and e.branch = %s
+                        and e.is_disabled != 1
+                        and e.not_cdcl = 0
+                        and not exists (select 1
+                                        from `tabEquipment Reservation Entry` a
+                                        where (
+                                                a.from_date != a.to_date
+                                                and
+                                                (a.from_date between %s and %s or a.to_date between %s and %s)
+                                                )
+                                        and a.equipment = e.name)
+                        """, (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
+        '''
+        
+        return frappe.db.sql("""
+                        select
+                                e.name,
+                                e.equipment_type,
+                                e.equipment_number
+                        from `tabEquipment` e
+                        where e.equipment_type = %(equipment_type)s
+                        and e.branch = %(branch)s
+                        and e.is_disabled != 1
+                        and e.not_cdcl = 0
+                        and (
+                                {key} like %(txt)s
+                                or
+                                equipment_type like %(txt)s
+                                or
+                                equipment_number like %(txt)s
+                        )
+                        {mcond}
+                        order by
+                                if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
+                                if(locate(%(_txt)s, equipment_type), locate(%(_txt)s, equipment_type), 99999),
+                                if(locate(%(_txt)s, equipment_number), locate(%(_txt)s, equipment_number), 99999),
+                                idx desc,
+                                name, equipment_type, equipment_number
+                        limit %(start)s, %(page_len)s
+                        """.format(**{
+                                'key': searchfield,
+                                'mcond': get_match_cond(doctype)
+                        }),
+                        {
+				"txt": "%%%s%%" % txt,
+				"_txt": txt.replace("%", ""),
+				"start": start,
+				"page_len": page_len,
+                                "equipment_type": filters['equipment_type'],
+                                "branch": filters['branch']
+			})

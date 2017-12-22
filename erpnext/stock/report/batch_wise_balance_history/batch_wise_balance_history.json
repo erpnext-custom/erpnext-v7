@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:13:54.566734", 
+ "modified": "2017-12-14 10:18:08.185327", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Batch-Wise Balance History", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

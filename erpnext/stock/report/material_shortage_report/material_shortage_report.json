@@ -8,7 +8,7 @@
  "idx": 0, 
  "is_standard": "Yes", 
  "json": "{\"filters\":[[\"Bin\",\"projected_qty\",\"<\",\"0\"]],\"columns\":[[\"warehouse\",\"Bin\"],[\"item_code\",\"Bin\"],[\"actual_qty\",\"Bin\"],[\"ordered_qty\",\"Bin\"],[\"planned_qty\",\"Bin\"],[\"reserved_qty\",\"Bin\"],[\"projected_qty\",\"Bin\"]],\"sort_by\":\"Bin.projected_qty\",\"sort_order\":\"asc\",\"sort_by_next\":\"\",\"sort_order_next\":\"desc\"}", 
- "modified": "2017-11-07 15:55:25.593466", 
+ "modified": "2017-12-14 10:26:53.148906", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Material Shortage Report", 
@@ -26,6 +26,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

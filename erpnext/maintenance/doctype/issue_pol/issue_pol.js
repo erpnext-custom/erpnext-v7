@@ -21,7 +21,7 @@ cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
 frappe.ui.form.on("Issue POL", "refresh", function(frm) {
 	cur_frm.set_query("tanker", function() {
 		return {
-			filters:[['branch', "=", frm.doc.branch], ['equipment_type', '=', 'Fuel Tanker']]
+			filters:[['branch', "=", frm.doc.branch], ['equipment_type', 'in', ['Fuel Tanker','Skid Tank','Barrel']]]
 		}
 	})
 	frm.fields_dict['items'].grid.get_field('equipment').get_query = function(doc, cdt, cdn) {

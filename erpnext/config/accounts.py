@@ -103,6 +103,12 @@ def get_data():
 					"type": "doctype",
 					"name": "Deposit Work",
 				},
+				{	
+					"type": "report",
+					"name": "Deposit Work Report",
+					"doctype": "Deposit Work",
+					"is_query_report": True,
+				},
 			]
 		},
 		{

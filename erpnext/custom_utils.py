@@ -22,19 +22,40 @@ def get_year_end_date(date):
 
 # Ver 2.0 Begins, following method added by SHIV on 28/11/2017
 @frappe.whitelist()
-def get_user_info(user):
+def get_user_info(user=None, employee=None, cost_center=None):
         info = {}
         
 	#cost_center,branch = frappe.db.get_value("Employee", {"user_id": user}, ["cost_center", "branch"])
-        
-	cost_center = frappe.db.get_value("Employee", {"user_id": user}, "cost_center")
-	branch      = frappe.db.get_value("Employee", {"user_id": user}, "branch")
-	
-	if not cost_center:
-		cost_center = frappe.db.get_value("GEP Employee", {"user_id": user}, "cost_center")
 
-	#if not cost_center:
-	#	cost_center = frappe.db.get_value("Muster Roll Employee", {"user_id": user}, "cost_center")
+        if employee:
+                # Nornal Employee
+                cost_center = frappe.db.get_value("Employee", {"name": employee}, "cost_center")
+                branch      = frappe.db.get_value("Employee", {"name": employee}, "branch")
+
+                # GEP Employee
+                if not cost_center:
+                        cost_center = frappe.db.get_value("GEP Employee", {"name": employee}, "cost_center")
+                        branch      = frappe.db.get_value("GEP Employee", {"name": employee}, "branch")
+
+                # MR Employee
+                if not cost_center:
+                        cost_center = frappe.db.get_value("Muster Roll Employee", {"name": employee}, "cost_center")
+                        branch      = frappe.db.get_value("Muster Roll Employee", {"name": employee}, "branch")
+		
+        elif user:
+                # Normal Employee
+                cost_center = frappe.db.get_value("Employee", {"user_id": user}, "cost_center")
+                branch      = frappe.db.get_value("Employee", {"user_id": user}, "branch")
+
+                # GEP Employee
+                if not cost_center:
+                        cost_center = frappe.db.get_value("GEP Employee", {"user_id": user}, "cost_center")
+                        branch      = frappe.db.get_value("GEP Employee", {"user_id": user}, "branch")
+
+                # MR Employee
+                if not cost_center:
+                        cost_center = frappe.db.get_value("Muster Roll Employee", {"user_id": user}, "cost_center")
+                        branch      = frappe.db.get_value("Muster Roll Employee", {"user_id": user}, "branch")
 		
 	warehouse   = frappe.db.get_value("Cost Center", cost_center, "warehouse")
 	approver    = frappe.db.get_value("Approver Item", {"cost_center": cost_center}, "approver")

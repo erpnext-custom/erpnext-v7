@@ -73,6 +73,8 @@ class MaterialRequest(BuyingController):
 		if not self.status:
 			self.status = "Draft"
 
+                self.docstatus = 2 if self.workflow_state == "Rejected" else self.docstatus
+                
 		from erpnext.controllers.status_updater import validate_status
 		validate_status(self.status, ["Draft", "Submitted", "Stopped", "Cancelled"])
 

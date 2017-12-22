@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:22:17.068688", 
+ "modified": "2017-12-14 10:12:41.462575", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Delivery Trends", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

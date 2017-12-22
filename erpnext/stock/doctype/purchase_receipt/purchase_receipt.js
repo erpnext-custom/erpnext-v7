@@ -78,7 +78,7 @@ erpnext.stock.PurchaseReceiptController = erpnext.buying.BuyingController.extend
 		}
 
 		if(!this.frm.doc.is_return && this.frm.doc.status!="Closed") {
-			if(this.frm.doc.docstatus==0) {
+			/*if(this.frm.doc.docstatus==0) {
 				cur_frm.add_custom_button(__('Purchase Order'),
 					function() {
 						erpnext.utils.map_current_doc({
@@ -93,7 +93,7 @@ erpnext.stock.PurchaseReceiptController = erpnext.buying.BuyingController.extend
 							}
 						})
 				}, __("Get items from"));
-			}
+			} */
 
 			if(this.frm.doc.docstatus == 1 && this.frm.doc.status!="Closed") {
 				if (this.frm.has_perm("submit")) {
@@ -254,7 +254,7 @@ frappe.ui.form.on("Purchase Receipt","items_on_form_rendered", function(frm, gri
                 "item_code": grid_row.grid_form.fields_dict.item_code.value
             },
             callback: function(r)  {
-                if(r.message && r.message == 'Services (works)') {
+                if(r.message && r.message == 'Services Works') {
                       grid_row.grid_form.fields_dict.rate.df.read_only = false
                       grid_row.grid_form.fields_dict.rate.refresh()
                 }

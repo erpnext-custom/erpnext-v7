@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-08 12:48:37.308702", 
+ "modified": "2017-12-14 10:11:41.252791", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Balance", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

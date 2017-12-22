@@ -17,9 +17,9 @@ class JobCard(Document):
 		self.services_amount = self.goods_amount = 0;
 		for a in self.items:
 			if cc_amount.has_key(a.which):
-				cc_amount[a.which] = cc_amount[a.which] + a.amount
+				cc_amount[a.which] = flt(cc_amount[a.which]) + flt(a.amount)
 			else:
-				cc_amount[a.which] = a.amount;
+				cc_amount[a.which] = flt(a.amount);
 		if cc_amount.has_key('Service'):
 			self.services_amount = cc_amount['Service']
 		if cc_amount.has_key('Item'):

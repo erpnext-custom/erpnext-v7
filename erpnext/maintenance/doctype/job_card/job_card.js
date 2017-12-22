@@ -1,6 +1,14 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 frappe.ui.form.on('Job Card', {
+	setup: function(frm){
+		frm.get_field('assigned_to').grid.editable_fields = [
+			{fieldname: 'mechanic', columns: 3},
+			{fieldname: 'start_time', columns: 3},
+			{fieldname: 'end_time', columns: 3},
+			{fieldname: 'total_time', columns: 1},
+		];		
+	},
 	refresh: function(frm) {
 		if (frm.doc.jv && frappe.model.can_read("Journal Entry")) {
 			cur_frm.add_custom_button(__('Bank Entries'), function() {
@@ -120,12 +128,26 @@ function calculate_time(frm, cdt, cdn) {
 	cur_frm.refresh_field("total_time")
 }
 
+/*
 cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = function(frm, cdt, cdn) {
 	var d = locals[cdt][cdn];
 	return {
-		filters: [[
-			'Employee', 'designation', '=', 'Mechanic'
+		filters: [
+		[
+			'Employee', 'designation', 'in', ['Mechanic','Auto Electrician','Operator','Welder','Driver']
 		],
+		['Employee', 'branch', '=', frm.branch],
+		['Employee', 'status', '=', 'Active']
+		]
+	}
+}
+*/
+
+cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+		filters: [
+		['Employee', 'is_job_card_employee', '=', 1],
 		['Employee', 'branch', '=', frm.branch],
 		['Employee', 'status', '=', 'Active']
 		]

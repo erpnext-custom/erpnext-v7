@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:43:37.992298", 
+ "modified": "2017-12-14 10:13:21.671746", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Material Prices Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

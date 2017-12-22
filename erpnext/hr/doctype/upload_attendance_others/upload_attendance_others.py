@@ -116,7 +116,7 @@ def get_active_employees(args):
 		from `tabMuster Roll Employee`
 		where docstatus < 2
 		and status = 'Active'
-		and branch = %(branch)s
+		and branch = '{0}'
 		UNION
 		select
                         "GEP" as etype,
@@ -127,8 +127,8 @@ def get_active_employees(args):
 		from `tabGEP Employee`
 		where docstatus < 2
 		and status = 'Active'
-		and branch = %(branch)s
-		""", {"branch": args.branch}, as_dict=1)
+		and branch = '{0}'
+		""".format(args.branch), {"branch": args.branch}, as_dict=1)
 
 	return employees
 

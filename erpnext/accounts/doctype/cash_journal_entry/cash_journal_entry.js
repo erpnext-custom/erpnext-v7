@@ -34,6 +34,19 @@ frappe.ui.form.on('Cash Journal Entry', {
 				}
 			}
 		};
+		
+		if(frm.doc.__islocal) {
+			frappe.call({
+					method: "erpnext.custom_utils.get_user_info",
+					args: {
+						"user": frappe.session.user
+					},
+					callback(r) {
+							cur_frm.set_value("cost_center", r.message.cost_center);
+							cur_frm.set_value("branch", r.message.branch);
+					}
+			});
+        }
 	},
 	
 	refresh: function(frm) {
@@ -51,7 +64,12 @@ frappe.ui.form.on('Cash Journal Entry', {
 
 	reference_no: function(frm){
 		calculate_totals(frm);
-	}
+	},
+	
+	project: function(frm){
+		frm.add_fetch("project","branch","branch");
+		frm.add_fetch("project","cost_center","cost_center");
+	},
 });
 
 

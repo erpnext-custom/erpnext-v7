@@ -20,9 +20,10 @@ class POL(Document):
 		docstatus = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
 		if docstatus != 2:
 			frappe.throw("Cancel the Journal Entry " + str(self.jv) + " and proceed.")
-	
-		doc = frappe.get_doc("Consumed POL", self.consumed)
-		doc.db_set("docstatus", 2)
+
+                if self.consumed:	
+                        doc = frappe.get_doc("Consumed POL", self.consumed)
+                        doc.db_set("docstatus", 2)
 		
 		self.db_set("consumed", "")
 		self.db_set("jv", "")

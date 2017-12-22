@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:equipment_type", 
  "beta": 0, 
  "creation": "2017-07-17 10:44:16.220908", 
@@ -73,7 +73,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-08-17 19:53:30.779564", 
+ "modified": "2017-12-14 10:47:41.248184", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Type", 
@@ -114,7 +114,7 @@
    "print": 1, 
    "read": 1, 
    "report": 1, 
-   "role": "Maintenance Common", 
+   "role": "Mechanical Master", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
@@ -127,5 +127,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "equipment_type", 
+ "track_changes": 0, 
  "track_seen": 0
 }

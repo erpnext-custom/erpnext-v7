@@ -8,7 +8,7 @@
  "docstatus": 0, 
  "doctype": "DocType", 
  "document_type": "", 
- "editable_grid": 0, 
+ "editable_grid": 1, 
  "fields": [
   {
    "allow_on_submit": 0, 
@@ -47,7 +47,7 @@
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
    "in_list_view": 1, 
-   "label": "Mechanic Name", 
+   "label": "Technician Name", 
    "length": 0, 
    "no_copy": 0, 
    "permlevel": 0, 
@@ -171,7 +171,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2017-08-01 12:17:01.602530", 
+ "modified": "2017-12-08 10:12:32.220818", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Mechanic Assigned", 
@@ -183,5 +183,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

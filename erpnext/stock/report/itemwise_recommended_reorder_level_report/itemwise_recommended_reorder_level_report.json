@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:49:48.430352", 
+ "modified": "2017-12-14 10:16:56.803101", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Itemwise Recommended Reorder Level Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

@@ -553,6 +553,8 @@ class SalesInvoice(SellingController):
 			#	self.precision("grand_total"))
 			grand_total = flt(self.grand_total) + flt(self.total_loading_amount) + flt(self.void_amount)
 
+                        cost_center_gl = frappe.db.get_value(doctype="Cost Center",filters={"branch": self.branch},fieldname="name", as_dict=True)
+                        
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.debit_to,
@@ -563,7 +565,8 @@ class SalesInvoice(SellingController):
 					"debit_in_account_currency": grand_total_in_company_currency \
 						if self.party_account_currency==self.company_currency else grand_total,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
-					"against_voucher_type": self.doctype
+					"against_voucher_type": self.doctype,
+                                        "cost_center": cost_center_gl.name
 				}, self.party_account_currency)
 			)
 		

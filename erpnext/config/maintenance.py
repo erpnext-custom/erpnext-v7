@@ -23,7 +23,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Maintenance Master"),
+			"label": _("Mechanical Service Master"),
 			"icon": "icon-star",
 			"items": [
 				{

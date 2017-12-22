@@ -31,7 +31,7 @@ def get_filters_cond(doctype, filters, conditions):
 
  # searches for active employees
 def employee_query(doctype, txt, searchfield, start, page_len, filters):
-	return frappe.db.sql("""select name, employee_name from `tabEmployee`
+	return frappe.db.sql("""select name, employee_name, designation from `tabEmployee`
 		where status = 'Active'
 			and docstatus < 2
 			and ({key} like %(txt)s
@@ -166,7 +166,7 @@ def tax_account_query(doctype, txt, searchfield, start, page_len, filters):
 def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=False):
 	conditions = []
 
-	return frappe.db.sql("""select tabItem.name, tabItem.item_group, tabItem.image,
+	return frappe.db.sql("""select tabItem.name, tabItem.item_group, tabItem.item_sub_group, tabItem.image,
 		if(length(tabItem.item_name) > 40,
 			concat(substr(tabItem.item_name, 1, 40), "..."), item_name) as item_name,
 		if(length(tabItem.description) > 40, \
@@ -178,6 +178,7 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 			and (tabItem.end_of_life > %(today)s or ifnull(tabItem.end_of_life, '0000-00-00')='0000-00-00')
 			and (tabItem.`{key}` LIKE %(txt)s
 				or tabItem.item_group LIKE %(txt)s
+				or tabItem.item_sub_group LIKE %(txt)s
 				or tabItem.item_name LIKE %(txt)s
 				or tabItem.description LIKE %(txt)s)
 			{fcond} {mcond}

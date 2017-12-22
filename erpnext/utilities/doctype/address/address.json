@@ -672,7 +672,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-01 14:28:57.427853", 
+ "modified": "2017-12-08 14:46:26.938575", 
  "modified_by": "Administrator", 
  "module": "Utilities", 
  "name": "Address", 
@@ -805,5 +805,6 @@
  "search_fields": "customer, supplier, sales_partner, country, state", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

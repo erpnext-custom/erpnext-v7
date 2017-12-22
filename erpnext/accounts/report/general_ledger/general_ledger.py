@@ -136,6 +136,9 @@ def get_conditions(filters):
 		conditions.append("""account in (select name from tabAccount
 			where lft>=%s and rgt<=%s and docstatus<2)""" % (lft, rgt))
 
+	if filters.get("voucher_no"):
+		conditions.append("voucher_no=%(voucher_no)s")
+
 	if filters.get("cost_center"):
 		conditions.append("cost_center=%(cost_center)s")
 

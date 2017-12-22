@@ -87,6 +87,7 @@ class Employee(Document):
         # Following method introducted by SHIV on 04/10/2017
         def populate_work_history(self):
                 if self.branch != self.get_db_value("branch") \
+                        or self.cost_center != self.get_db_value("cost_center")\
                         or self.department != self.get_db_value("department") \
                         or self.designation != self.get_db_value("designation"):
 
@@ -96,6 +97,7 @@ class Employee(Document):
                         
                         self.append("internal_work_history",{
                                                         "branch": self.branch,
+                                                        "cost_center": self.cost_center,
                                                         "department": self.department,
                                                         "designation": self.designation,
                                                         "from_date": today(),
