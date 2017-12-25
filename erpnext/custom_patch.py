@@ -388,3 +388,25 @@ def grant_permission_all():
                 for a in ba:
                         frappe.permissions.remove_user_permission("Branch", a.branch, emp.user_id)
                         frappe.permissions.add_user_permission("Branch", a.branch, emp.user_id)
+
+def remove_memelakha_entries():
+	# This is done after manually crosschecking, everything is ok
+	il = frappe.db.sql("""
+		select a.name, b.item_code, count(*), sum(b.qty)
+		from `tabStock Entry` a, `tabStock Entry Detail` b
+		where a.branch = 'Memelakha Asphalt Plant' 
+		and b.parent = a.name
+		and a.job_card is null
+		and a.name not in ('SECO17100009')
+		and a.purpose = 'Material Issue'
+		and lower(title) not like '%asphalt%'
+		group by a.name, b.item_code
+		order by a.name, b.item_code;
+		""", as_dict=1)
+	
+	counter = 0
+
+	for i in il:
+		counter += 1
+		idoc = frappe.get_doc("Stock Entry", i.name)
+		print counter, idoc.name, idoc.docstatus

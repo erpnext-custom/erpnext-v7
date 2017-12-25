@@ -15,9 +15,10 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 frappe.ui.form.on('Material Request', {
 	setup: function(frm) {
 		frm.get_field('items').grid.editable_fields = [
-			{fieldname: 'item_code', columns: 3},
+			{fieldname: 'item_code', columns: 2},
+			{fieldname: 'item_name', columns: 2},
 			{fieldname: 'qty', columns: 2},
-			{fieldname: 'warehouse', columns: 3},
+			{fieldname: 'warehouse', columns: 2},
 			{fieldname: 'schedule_date', columns: 2},
 		];
 	},
@@ -37,6 +38,13 @@ frappe.ui.form.on('Material Request', {
 		frm.set_indicator_formatter('item_code',
 			function(doc) { return (doc.qty<=doc.ordered_qty) ? "green" : "orange" })
 
+		frappe.form.link_formatters['Item'] = function(value, doc) {
+			console.log('inside link_formatters');
+			
+			return value + ': ' + doc.item_name;
+		}
+		
+		
 		/*
 		if(frm.doc.__islocal) {
 			cur_frm.set_value("material_request_type", "Material Issue")
@@ -106,6 +114,14 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 				query: "erpnext.controllers.queries.item_query"
 			}
 		});
+		
+		/* Shiv, 25/12/2017 tried here not working
+		frappe.form.link_formatters['Item'] = function(value, doc) {
+			console.log('inside link_formatters');
+			
+			return value + ': ' + doc.item_name;
+		}
+		*/
 	},
 
 	refresh: function(doc) {
@@ -326,3 +342,16 @@ cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc
 		}
 	}
 } 
+
+/*
+// Shiv, 25/12/2017 test not working
+cur_frm.cscript.onload = function(frm){
+	console.log('test from cscript');
+
+	frappe.form.link_formatters['Item'] = function(value, doc) {
+		console.log('inside link_formatters');
+		
+		return value + ': ' + doc.items.item_name;
+	}
+}
+*/

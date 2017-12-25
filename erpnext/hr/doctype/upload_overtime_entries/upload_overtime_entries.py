@@ -63,7 +63,7 @@ def get_active_employees(args):
 	return employees
 
 @frappe.whitelist()
-def upload():
+def upload():			
 	if not frappe.has_permission("Overtime Entry", "create"):
 		raise frappe.PermissionError
 
@@ -85,23 +85,34 @@ def upload():
 		if not row: continue
 		try:
 			row_idx = i + 4
-			for j in range(8, len(row)):
-				doc = frappe.new_doc("Overtime Entry")
-				doc.branch = row[0]
-				doc.cost_center = row[1]
-				if str(row[2]) == "MR":
-					doc.employee_type = "Muster Roll Employee"
-				elif str(row[2]) == "GEP":
-					doc.employee_type = "GEP Employee"
-				doc.number = str(row[3]).strip('\'')
-				
-				month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(row[6]) + 1	
-				month = str(month) if cint(month) > 9 else str("0" + str(month))
-				day = str(j) if cint(j) > 9 else str("0" + str(j))
-				doc.date = str(row[5]) + '-' + str(month) + '-' + str(day)
-				if flt(row[j -1]) > 0:
-					doc.number_of_hours = flt(row[j -1])
-					doc.submit()
+			for j in range(8, len(row) + 1):
+                                month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(row[6]) + 1
+                                month = str(month) if cint(month) > 9 else str("0" + str(month))
+                                day   = str(cint(j) - 7) if cint(j) > 9 else str("0" + str(cint(j) - 7))
+
+                                old = frappe.db.get_value("Overtime Entry", {"number":str(row[3]).strip('\''), "date": str(row[5]) + '-' + str(month) + '-' + str(day), "docstatus": 1}, ["docstatus","name","number_of_hours"], as_dict=1)
+
+                                '''
+                                if old:
+                                        doc = frappe.get_doc("Overtime Entry", old.name)
+                                        doc.db_set('number_of_hours', flt(row[j-1]))
+                                else:
+                                '''
+                                
+                                if not old and row[j-1]:
+                                        doc = frappe.new_doc("Overtime Entry")
+					doc.branch          = row[0]
+                                        doc.cost_center     = row[1]
+                                        doc.number          = str(row[3]).strip('\'')
+                                        doc.date            = str(row[5]) + '-' + str(month) + '-' + str(day)
+                                        doc.number_of_hours = flt(row[j -1])
+                                        
+                                        if str(row[2]) == "MR":
+                                                doc.employee_type = "Muster Roll Employee"
+                                        elif str(row[2]) == "GEP":
+                                                doc.employee_type = "GEP Employee"
+                                                
+                                        doc.submit()
 		except Exception, e:
 			error = True
 			ret.append('Error for row (#%d) %s : %s' % (row_idx,

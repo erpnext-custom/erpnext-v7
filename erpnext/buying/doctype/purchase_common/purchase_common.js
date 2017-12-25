@@ -14,9 +14,10 @@ erpnext.buying.BuyingController = erpnext.TransactionController.extend({
 		this._super();
 		if(!in_list(["Material Request", "Request for Quotation"], this.frm.doc.doctype)){
 			this.frm.get_field('items').grid.editable_fields = [
-				{fieldname: 'item_code', columns: 3},
+				{fieldname: 'item_code', columns: 2},
+				{fieldname: 'item_name', columns: 2},
 				{fieldname: 'qty', columns: 2},
-				{fieldname: 'rate', columns: 3},
+				{fieldname: 'rate', columns: 2},
 				{fieldname: 'amount', columns: 2}
 			];
 		}
@@ -44,6 +45,12 @@ erpnext.buying.BuyingController = erpnext.TransactionController.extend({
 					}
 				}
 			});
+		}
+		
+		frappe.form.link_formatters['Item'] = function(value, doc) {
+			console.log('inside link_formatters');
+			
+			return value + ': ' + doc.item_name;
 		}
 	},
 

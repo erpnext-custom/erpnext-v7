@@ -30,6 +30,12 @@ frappe.query_reports["Accounts Receivable"] = {
 			"default": "Posting Date"
 		},
 		{
+			"fieldname" : "cost_center",
+			"label": __ ("Cost Center"),
+			"fieldtype" : "Link",
+			"options": "Cost Center",
+		},
+		{
 			"fieldtype": "Break",
 		},
 		{

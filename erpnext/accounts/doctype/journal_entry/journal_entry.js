@@ -23,9 +23,10 @@ frappe.ui.form.on("Journal Entry", {
 	},
 
 	refresh: function(frm) {
-		erpnext.toggle_naming_series();
+		//erpnext.toggle_naming_series();
+		cur_frm.toggle_display("naming_series", 1)
 		frm.cscript.voucher_type(frm.doc);
-
+		
 		if(frm.doc.docstatus==1) {
 			frm.add_custom_button(__('Ledger'), function() {
 				frappe.route_options = {
@@ -57,6 +58,10 @@ frappe.ui.form.on("Journal Entry", {
 			$(document).ready(function(){
 				$(".btn-sm").css("display", "inline");
 			});
+		}
+		if(cur_frm.fields_dict.naming_series) {
+			console.log("Naming Series")
+			cur_frm.toggle_display("naming_series", 1)
 		}
 	},
 

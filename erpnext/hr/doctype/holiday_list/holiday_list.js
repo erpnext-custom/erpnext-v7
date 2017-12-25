@@ -2,6 +2,10 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Holiday List', {
+	setup: function(frm){
+		frm.get_docfield("holidays").allow_bulk_edit = 1;
+	},
+	
 	refresh: function(frm) {
 
 	},

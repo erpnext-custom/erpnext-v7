@@ -87,7 +87,7 @@ class ReceivablePayableReport(object):
 			columns += [_("Supplier Type") + ":Link/Supplier Type:80"]
 			
 		columns.append(_("Remarks") + "::200")
-		
+		columns.append(_("Cost Center") + "::200")		
 		return columns
 
 	def get_data(self, party_naming_by, args):
@@ -147,6 +147,7 @@ class ReceivablePayableReport(object):
 					row += [self.get_supplier_type(gle.party)]
 
 				row.append(gle.remarks)
+				row.append(gle.cost_center)
 				data.append(row)
 
 		return data
@@ -265,14 +266,14 @@ class ReceivablePayableReport(object):
                         '''
 
 			self.gl_entries = frappe.db.sql("""select posting_date, party_type, party,
-				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks, {0}
+				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks,cost_center, {0}
 				from `tabGL Entry`
 				where docstatus < 2 and party_type=%s and (party is not null and party != '') {1}
 				{2}
 				{3}
 				and against_voucher_type is not null
 				group by posting_date, party_type, party, voucher_type, voucher_no,
-				against_voucher_type, against_voucher, account_currency
+				against_voucher_type, against_voucher, account_currency, cost_center
 				order by posting_date, party"""
 				.format(select_fields, conditions, cus_query, exempt_gls), values, as_dict=True)
 
@@ -287,6 +288,10 @@ class ReceivablePayableReport(object):
 		if self.filters.company:
 			conditions.append("company=%s")
 			values.append(self.filters.company)
+
+		if self.filters.cost_center:
+			conditions.append("cost_center=%s")
+			values.append(self.filters.cost_center)
 
 		if self.filters.get(party_type_field):
 			conditions.append("party=%s")

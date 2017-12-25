@@ -209,7 +209,7 @@ class HireChargeInvoice(Document):
 @frappe.whitelist()
 def get_vehicle_logs(form):
 	if form:
-		return frappe.db.sql("select a.name, a.equipment, a.rate_type, a.equipment_number, a.total_work_time, a.total_idle_time, a.work_rate, a.idle_rate, (select count(1) from `tabVehicle Log` b where b.parent = a.name) as no_of_days from `tabVehicle Logbook` a where a.docstatus = 1 and a.invoice_created = 0 and a.ehf_name = \'" + str(form) + "\'", as_dict=True)
+		return frappe.db.sql("select a.name, a.equipment, a.rate_type, a.equipment_number, (a.total_work_time + a.hour_taken) as total_work_time, a.total_idle_time, a.work_rate, a.idle_rate, (select count(1) from `tabVehicle Log` b where b.parent = a.name) as no_of_days from `tabVehicle Logbook` a where a.docstatus = 1 and a.invoice_created = 0 and a.ehf_name = \'" + str(form) + "\'", as_dict=True)
 	else:
 		frappe.throw("Select Equipment Hiring Form first!")
 

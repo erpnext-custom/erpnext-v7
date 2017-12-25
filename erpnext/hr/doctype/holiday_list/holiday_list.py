@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 import json
-from frappe.utils import cint, getdate, formatdate
+from frappe.utils import  cint, getdate, formatdate
 from frappe import throw, _
 from frappe.model.document import Document
 
@@ -13,6 +13,17 @@ class OverlapError(frappe.ValidationError): pass
 class HolidayList(Document):
 	def validate(self):
 		self.validate_days()
+
+	def on_update(self):	
+		self.assign_branch()	
+
+	def assign_branch(self):
+		if self.branches:
+			for branch in self.branches:
+				doc = frappe.get_doc("Branch", branch.branch)
+				doc.flags.ignore_user_permissions = 1
+				doc.holiday_list = self.name
+				doc.save()
 
 	def get_weekly_off_dates(self):
 		self.validate_values()
