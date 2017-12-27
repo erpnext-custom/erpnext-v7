@@ -408,7 +408,7 @@ class JournalEntry(AccountsController):
 			if d.party_type and d.party:
 				if not pay_to_recd_from:
 					pay_to_recd_from = frappe.db.get_value(d.party_type, d.party,
-						"customer_name" if d.party_type=="Customer" else "supplier_name" if d.party_type=="Supplier" else "employee_name")
+						"customer_name" if d.party_type=="Customer" else "supplier_name" if d.party_type=="Supplier" else "registration_number" if d.party_type == "Vehicle" else "employee_name")
 
 				party_amount += (d.debit_in_account_currency or d.credit_in_account_currency)
 				party_account_currency = d.account_currency

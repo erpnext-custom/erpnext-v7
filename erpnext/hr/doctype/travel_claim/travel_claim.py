@@ -17,6 +17,9 @@ class TravelClaim(Document):
 		self.update_travel_authorization()
 		employee = frappe.db.get_value("Employee", self.employee, "user_id")
 
+		if self.supervisor_approval and (frappe.session.user == self.owner or frappe.session.user == employee):
+			frappe.throw("Cannot edit once approved by supervisor")
+
 		if frappe.session.user == self.owner or frappe.session.user == employee:
 			self.db_set("claim_status", "")
 			self.sendmail(frappe.db.get_value("Employee", {"user_id": self.supervisor}, "name"), "Travel Claim Submitted", str(self.employee_name) + " has requested you to verify and sign a travel claim")

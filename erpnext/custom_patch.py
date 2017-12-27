@@ -5,6 +5,13 @@ from frappe import msgprint
 from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
 
+def assign_date_ta():
+	tas = frappe.db.sql("select name from `tabTravel Authorization` where travel_claim is null", as_dict=True)
+	for ta in tas:
+		taa = frappe.db.sql("select name, date from `tabTravel Authorization Item` where parent = %s order by date desc limit 1", (str(ta.name)), as_dict=True)
+		doc = frappe.get_doc("Travel Authorization", ta.name)
+		doc.db_set('end_date_auth', taa[0].date)
+		print(str(ta.name) + " ==> " + str(taa[0].date) + "  ==> " + str(doc.end_date_auth))
 
 def adjust_leave_encashment():
 	les = frappe.db.sql("select name, encashed_days, employee from `tabLeave Encashment` where docstatus = 1 and application_date between %s and %s", ('2017-01-01', '2017-12-31'), as_dict=True)

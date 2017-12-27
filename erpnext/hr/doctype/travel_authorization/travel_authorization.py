@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+1.0		  SHIV		                   27/12/2017         Rejected documents made to cancel
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -14,6 +21,14 @@ class TravelAuthorization(Document):
 
 	def validate(self):
 		self.validate_travel_dates()
+		self.check_double_dates()
+		self.assign_end_date()
+		# Ver 1.0 Begins, Following function created by SHIV on 27/12/2017
+		self.update_status()
+		# Ver 1.0 Ends
+
+	def on_update(self):
+		self.check_double_dates()
 		if frappe.session.user != self.supervisor:
 			if self.document_status == "Rejected":
 				self.db_set("document_status", "")
@@ -31,9 +46,27 @@ class TravelAuthorization(Document):
 	def before_cancel(self):
 		if self.advance_journal:
 			jv_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
-			if jv_status != 2:
+			if jv_status and jv_status != 2:
 				frappe.throw("You need to cancel the advance journal entry first!")
-	
+
+        def update_status(self):
+                self.docstatus = 1 if self.document_status == "Rejected" else self.docstatus
+                
+	def assign_end_date(self):
+		if self.items:
+			self.end_date_auth = self.items[len(self.items) - 1].date 
+
+	def check_double_dates(self):
+		if self.items:
+			start_date = self.items[0].date
+			end_date = self.items[len(self.items) - 1].till_date
+			if not end_date:
+				end_date = self.items[len(self.items) - 1].date
+
+			tas = frappe.db.sql("select a.name from `tabTravel Authorization` a, `tabTravel Authorization Item` b where a.employee = %s and a.name != %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date)", (str(self.employee), str(self.name), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)
+			if tas:
+				frappe.throw("The dates in your current Travel Authorization has already been claimed in " + str(tas[0].name))
+
 	##
 	# check advance and make necessary journal entry
 	##

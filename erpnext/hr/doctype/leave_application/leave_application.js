@@ -28,6 +28,18 @@ frappe.ui.form.on("Leave Application", {
 			frm.set_value("status", "Open");
 			frm.trigger("calculate_total_days");
 		}
+		
+		if(!frm.doc.__islocal && in_list(user_roles, "Approver")){
+			if(frappe.session.user == frm.doc.leave_approver){
+				frm.toggle_display("status", true);
+			}
+			else{
+				frm.toggle_display("status", false);
+			}
+		}
+		else{
+			frm.toggle_display("status", false);
+		}
 	},
 
 	leave_approver: function(frm) {
@@ -68,18 +80,21 @@ frappe.ui.form.on("Leave Application", {
 	},
 
 	get_leave_balance: function(frm) {
-		if(frm.doc.docstatus==0 && frm.doc.employee && frm.doc.leave_type && frm.doc.from_date) {
+		if(frm.doc.docstatus==0 && frm.doc.employee && frm.doc.leave_type) {
 			return frappe.call({
 				method: "erpnext.hr.doctype.leave_application.leave_application.get_leave_balance_on",
 				args: {
 					employee: frm.doc.employee,
-					date: frm.doc.from_date,
+					date: frm.doc.from_date || frappe.datetime.get_today(),
 					leave_type: frm.doc.leave_type,
 					consider_all_leaves_in_the_allocation_period: true
 				},
 				callback: function(r) {
 					if (!r.exc && r.message) {
-						frm.set_value('leave_balance', r.message);
+						frm.set_value('leave_balance', parseFloat(r.message));
+					}
+					else{
+						frm.set_value('leave_balance', 0.0);
 					}
 				}
 			});
@@ -105,6 +120,7 @@ frappe.ui.form.on("Leave Application", {
 						if (r && r.message) {
 							frm.set_value('total_leave_days', r.message);
 							frm.trigger("get_leave_balance");
+							cur_frm.refresh_field("total_leave_days");
 						}
 					}
 				});

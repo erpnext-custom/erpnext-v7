@@ -15,11 +15,21 @@ def execute(filters=None):
 	return columns, data, filters
 
 def get_data(query, filters=None):
-	frappe.msgprint(str(filters.year_start) + " ENDDDDDD")
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
+	t_basic = t_allowance = t_gross = t_income = t_nppf = t_gis = t_taxable = t_tds = t_health = 0
 	for d in datas:
-		row = [get_month(d.month), "Salary", d.basic_pay, flt(d.gross_pay) - flt(d.basic_pay), d.gross_pay, d.gross_pay, d.nppf,d.gis, flt(d.gross_pay) - flt(d.nppf) - flt(d.gis), d.tds, d.health, d.receipt_number, d.receipt_date]
+		allowance = round(flt(d.gross_pay) - flt(d.basic_pay) - (flt(d.comm_all) / 2), 2)
+		taxable = flt(d.gross_pay) - flt(d.nppf) - flt(d.gis)
+		row = [get_month(d.month), "Salary", d.basic_pay, allowance, d.gross_pay, d.gross_pay, d.nppf,d.gis, taxable, d.tds, d.health, d.receipt_number, d.receipt_date]
+		t_basic += flt(d.basic_pay)
+		t_allowance += flt(allowance)
+		t_gross += flt(d.gross_pay)
+		t_nppf += flt(d.nppf)
+		t_gis += flt(d.gis)
+		t_taxable += flt(taxable)
+		t_tds += flt(d.tds)
+		t_health += flt(d.health)
 		data.append(row);
 
 	#Leave Encashment 
@@ -29,7 +39,13 @@ def get_data(query, filters=None):
 			for a in encash_data:
 				row = [get_month(str(a.date)[5:7]), "Leave Encashment", a.encashment_amount, "", a.encashment_amount, a.encashment_amount, "","", a.encashment_amount, a.tax_amount, "", a.receipt_number, a.receipt_date]
 				data.append(row)
+				t_basic += flt(a.encashment_amount)
+				t_gross += flt(a.encashment_amount)
+				t_taxable += flt(a.encashment_amount)
+				t_tds += flt(a.tax_amount)
 
+	row = ["Total", "", t_basic, t_allowance, t_gross, t_gross, t_nppf, t_gis, t_taxable, t_tds, t_health, "", ""]
+	data.append(row)
 	return data
 
 def construct_query(filters=None):
@@ -38,6 +54,7 @@ def construct_query(filters=None):
 	(select b.amount from `tabSalary Detail` b where salary_component = 'Salary Tax' and b.parent = a.name) as tds ,
 	(select b.amount from `tabSalary Detail` b where salary_component = 'PF' and b.parent = a.name) as nppf ,
 	(select b.amount from `tabSalary Detail` b where salary_component = 'Group Insurance Scheme' and b.parent = a.name) as gis ,
+	(select b.amount from `tabSalary Detail` b where salary_component = 'Communication Allowance' and b.parent = a.name) as comm_all ,
 	(select b.amount from `tabSalary Detail` b where salary_component = 'Health Contribution' and b.parent = a.name) as health,
 	r.receipt_number, r.receipt_date
 	 from `tabSalary Slip` a, `tabRRCO Receipt Entries` r

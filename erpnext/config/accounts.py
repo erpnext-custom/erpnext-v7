@@ -72,6 +72,11 @@ def get_data():
                                         "label": _("Supplier Master"),
 					"description": _("Supplier database.")
 				},
+				{
+					"type": "doctype",
+					"name": "Vehicle",
+                                        "label": _("Vehicle Master"),
+				},
 			]
 		},
 		{
