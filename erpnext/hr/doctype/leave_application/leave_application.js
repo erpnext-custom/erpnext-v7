@@ -66,7 +66,11 @@ frappe.ui.form.on("Leave Application", {
 			frm.trigger("calculate_total_days");
 		}
 	},
-
+	include_half_day: function(frm) {
+		if (frm.doc.from_date) {
+			frm.trigger("calculate_total_days");
+		}
+	},
 	from_date: function(frm) {
 		if (cint(frm.doc.half_day)==1) {
 			frm.set_value("to_date", frm.doc.from_date);
@@ -143,7 +147,11 @@ frappe.ui.form.on("Leave Application", {
 					},
 					callback: function(r) {
 						if (r && r.message) {
-							frm.set_value('total_leave_days', r.message);
+							if(frm.doc.include_half_day == 1) {
+								frm.set_value('total_leave_days', r.message - 0.5);
+							} else {
+								frm.set_value('total_leave_days', r.message);
+							}
 							frm.trigger("get_leave_balance");
 							cur_frm.refresh_field("total_leave_days")
 						}

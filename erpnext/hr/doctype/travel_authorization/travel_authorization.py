@@ -19,6 +19,7 @@ class TravelAuthorization(Document):
 
 		self.validate_travel_dates()
                 self.check_double_dates()
+		self.assign_end_date()
 
 	def on_update(self):
 		self.set_dsa_rate()
@@ -44,6 +45,10 @@ class TravelAuthorization(Document):
 			if jv_status and jv_status != 2:
 				frappe.throw("You need to cancel the advance journal entry first!")
 	
+	def assign_end_date(self):
+		if self.items:
+			self.end_date_auth = self.items[len(self.items) - 1].date 
+
 	##
 	# check advance and make necessary journal entry
 	##
@@ -181,6 +186,9 @@ def make_travel_claim(source_name, target_doc=None):
 			target.actual_amount = flt(target.dsa) * flt(target.no_days)
 		target.amount = target.actual_amount
 
+	def adjust_last_date(source, target):
+		target.items[len(target.items) - 1].actual_amount = target.items[len(target.items) - 1].actual_amount / 2
+
 	doc = get_mapped_doc("Travel Authorization", source_name, {
 			"Travel Authorization": {
 				"doctype": "Travel Claim",
@@ -196,7 +204,7 @@ def make_travel_claim(source_name, target_doc=None):
 				"doctype": "Travel Claim Item",
 				"postprocess": transfer_currency
 			},
-		}, target_doc)
+		}, target_doc, adjust_last_date)
 	return doc
 
 @frappe.whitelist()

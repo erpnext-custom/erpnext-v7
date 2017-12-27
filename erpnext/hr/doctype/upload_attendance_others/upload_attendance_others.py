@@ -5,7 +5,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import cstr, add_days, date_diff, cint, flt
+from frappe.utils import cstr, add_days, date_diff, cint, flt, getdate, nowdate
 from frappe import _
 from frappe.utils.csvutils import UnicodeWriter
 from frappe.model.document import Document
@@ -47,63 +47,55 @@ def add_header(w, args):
 	return w
 
 def add_data(w, args):
+        month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(args.month) + 1
+        month = str(month) if cint(month) > 9 else str("0" + str(month))
+
+        total_days = monthrange(cint(args.fiscal_year), cint(month))[1]
+        start_date = str(args.fiscal_year) + '-' + str(month) + '-' + str('01')
+        end_date   = str(args.fiscal_year) + '-' + str(month) + '-' + str(total_days)
+        
 	employees = get_active_employees(args)
+	loaded     = get_loaded_records(args, start_date, end_date)
+	
 	for e in employees:
+                status = ''
 		row = [
 			e.branch, e.cost_center, e.etype, "\'"+str(e.name)+"\'", e.person_name, args.fiscal_year, args.month
 		]
+		
+		for day in range(cint(total_days)):
+                        status = loaded.get(e.etype, frappe._dict()).get(e.name, frappe._dict()).get(day+1,'')
+                        row.append(status)
+                        
 		w.writerow(row)
 	return w
 
-def test(args):
-        print 'Test print...', args.fname, args.lname
-        
-        month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
-		"Dec"].index('Dec') + 1
-        total_days = monthrange(cint(2017), month)[1]
-        
+def get_loaded_records(args, start_date, end_date):
+        loaded_list= frappe._dict()
 
-        col = []
-        for day in range(cint(total_days)):
-		#hd.append(str(day + 1))
-                col.append(" MAX(case when day(date) = {0} then lower(substr(status,1,1)) else '' end) as day{0}".format(day+1))
-
-        att_list = """
+        rl = frappe.db.sql("""
                         select
+                                case 
+                                    when employee_type = 'Muster Roll Employee' then 'MR'
+                                    when employee_type = 'GEP Employee' then 'GEP'
+                                    else employee_type
+                                end as employee_type,
+                                employee,
+                                day(date) as day_of_date,
                                 case
-                                        when a.employee_type = 'GEP Employee' then 'GEP'
-                                        when a.employee_type = 'Muster Roll Employee' then 'MR'
-                                end as etype,
-                                a.employee,
-                                
-                """
-        
-        employees = frappe.db.sql("""
-                select
-                        "MR" as etype,
-                        name,
-                        person_name,
-                        branch,
-                        cost_center
-		from `tabMuster Roll Employee`
-		where docstatus < 2
-		and status = 'Active'
-		and branch = %(branch)s
-		UNION
-		select
-                        "GEP" as etype,
-                        name,
-                        person_name,
-                        branch,
-                        cost_center
-		from `tabGEP Employee`
-		where docstatus < 2
-		and status = 'Active'
-		and branch = %(branch)s
-		""", {"branch": 'Pachu Zam Construction'}, as_dict=1)
+                                    when status = 'Present' then 'P'
+                                    when status = 'Absent' then 'A'
+                                    else status
+                                end as status
+                        from `tabAttendance Others`
+                        where date between %s and %s
+                        and docstatus = 1
+                """, (start_date, end_date), as_dict=1)
 
-        print employees
-        print 'Test 2'
+        for r in rl:
+                loaded_list.setdefault(r.employee_type, frappe._dict()).setdefault(r.employee, frappe._dict()).setdefault(r.day_of_date,r.status)
+
+        return loaded_list
 
 def get_active_employees(args):        
 	employees = frappe.db.sql("""
@@ -170,12 +162,16 @@ def upload():
                                         
 				#frappe.msgprint(str(j))
                                 old = frappe.db.get_value("Attendance Others", {"employee": row[3].strip('\''), "date": str(row[5]) + '-' + str(month) + '-' + str(day)}, ["status","name"], as_dict=1)
+                                '''
                                 if old:
                                         doc = frappe.get_doc("Attendance Others", old.name)
                                         doc.db_set('status', status if status in ('Present','Absent') else doc.status)
                                         doc.db_set('branch', row[0])
                                         doc.db_set('cost_center', row[1])
                                 else:
+                                '''
+                                
+                                if not old and status in ('Present','Absent'):
                                         doc = frappe.new_doc("Attendance Others")
                                         doc.status = status
                                         doc.branch = row[0]
@@ -187,9 +183,10 @@ def upload():
                                                 doc.employee_type = "Muster Roll Employee"
                                         elif str(row[2]) == "GEP":
                                                 doc.employee_type = "GEP Employee"
-                                        
-                                        if doc.status in ('Present','Absent'):
-                                                doc.submit()
+                                    	
+					#Prevent future dates creation
+					if not getdate(doc.date) > getdate(nowdate()):
+						doc.submit()
 		except Exception, e:
 			error = True
 			ret.append('Error for row (#%d) %s : %s' % (row_idx,

@@ -6,14 +6,6 @@ from frappe.utils import flt, cint, now
 from frappe.utils.data import get_first_day, get_last_day, add_years
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 
-def assign_date_ta():
-	tas = frappe.db.sql("select name from `tabTravel Authorization` where travel_claim is null", as_dict=True)
-	for ta in tas:
-		taa = frappe.db.sql("select name, date from `tabTravel Authorization Item` where parent = %s order by date desc limit 1", (str(ta.name)), as_dict=True)
-		doc = frappe.get_doc("Travel Authorization", ta.name)
-		#doc.db_set('end_date_auth', taa[0].date)
-		print(str(ta.name) + " ==> " + str(taa[0].date) + "  ==> " + str(doc.end_date_auth))
-
 def adjust_leave_encashment():
         les = frappe.db.sql("select name, encashed_days, employee from `tabLeave Encashment` where docstatus = 1 and application_date between %s and %s", ('2017-01-01', '2017-12-31'), as_dict=True)
         for le in les:
@@ -421,66 +413,59 @@ def remove_memelakha_entries():
 
 # 25/12/2017 SHIV, It is observed that parent cost_centers are used in the transaction which is wrong
 def check_for_cc_group_entries():
-        ex = ['Cost Center','Attendance Tool Others','Budget Reappropriation Tool','Project Overtime Tool']
+        ex = ['Cost Center','Attendance Tool Others','Budget Reappropriation Tool','Project Overtime Tool', 'Supplementary Budget Tool']
 
-        sql = """
-                        select
-                                parent as doctype,
-                                fieldname,
-                                'tabDocField' as table_name
-                        from `tabDocField` 
-                        where fieldtype = 'Link' 
-                        and options = 'Cost Center'
-                        and parent not in {0}
-                        union all
-                        select
-                                dt as doctype,
-                                fieldname,
-                                'tabCustom Field' as table_name
-                        from `tabCustom Field` 
-                        where fieldtype = 'Link' 
-                        and options = 'Cost Center'
-                        and dt not in {0}
-                """.format(tuple(ex))
-
-        print sql
-        
         li = frappe.db.sql("""
-                        select
-                                parent as doctype,
-                                fieldname,
-                                'tabDocField' as table_name
-                        from `tabDocField` 
-                        where fieldtype = 'Link' 
-                        and options = 'Cost Center'
-                        and parent not in {0}
-                        union all
-                        select
-                                dt as doctype,
-                                fieldname,
-                                'tabCustom Field' as table_name
-                        from `tabCustom Field` 
-                        where fieldtype = 'Link' 
-                        and options = 'Cost Center'
-                        and dt not in {0}
-                """.format(tuple(ex)), as_dict=1)
+                        select g.doctype, g.fieldname, g.table_name
+                        from (
+                        
+                                select
+                                        parent as doctype,
+                                        fieldname,
+                                        'tabDocField' as table_name
+                                from `tabDocField` 
+                                where (
+                                        (fieldtype = 'Link' and options = 'Cost Center')
+                                        or
+                                        (lower(fieldname) like '%cost%center%' and fieldtype in ('Data','Dynamic Link','Small Text','Long Text','Read Only', 'Text'))
+                                        )
+                                union all
+                                select
+                                        dt as doctype,
+                                        fieldname,
+                                        'tabCustom Field' as table_name
+                                from `tabCustom Field` 
+                                where (
+                                        (fieldtype = 'Link' and options = 'Cost Center')
+                                        or
+                                        (lower(fieldname) like '%cost%center%' and fieldtype in ('Data','Dynamic Link','Small Text','Long Text','Read Only', 'Text'))
+                                        )
+                        ) as g
+                        where g.doctype not in ({0})
+                """.format("'"+"','".join(ex)+"'"), as_dict=1)
 
         for i in li:
                 no_of_rec = 0
                 
                 counts = frappe.db.sql("""
-                                select count(*) counts
+                                select a.{1} cc, count(*) counts
                                 from `tab{0}` as a
                                 where a.{1} is not null
                                 and exists(select 1
                                                 from `tabCost Center` as b
                                                 where b.name = a.{1}
                                                 and b.is_group = 1)
+                                group by a.{1}
                 """.format(i.doctype, i.fieldname), as_dict=1)
 
+                '''
                 if counts:
-                        no_of_rec = counts[0].counts
-                        print i.doctype, i.fieldname, no_of_rec
-                
+                        if counts[0].counts > 0:
+                                no_of_rec = counts[0].counts
+                                print i.doctype+" ("+i.fieldname+") : "+str(no_of_rec)
+                '''
+
+                for c in counts:
+                        print i.doctype.ljust(50,' ')+str(":"), c.cc, c.counts
                 
 

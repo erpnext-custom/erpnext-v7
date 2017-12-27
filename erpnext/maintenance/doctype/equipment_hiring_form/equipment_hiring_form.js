@@ -69,6 +69,9 @@ frappe.ui.form.on("Hiring Request Details", {
 	"to_date": function(frm, cdt, cdn) {
 		calculate_datetime(frm, cdt, cdn)
 	},
+	"tender_hire_rate": function(frm, cdt, cdn) {
+		
+	}
 })
 
 function calculate_datetime(frm, cdt, cdn) {
@@ -141,6 +144,9 @@ frappe.ui.form.on("Hiring Approval Details", {
 	},
 	"to_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
+	},
+	"tender_hire_rate": function(frm, cdt, cdn) {
+		get_diff_rates(frm, cdt, cdn)	
 	}
 })
 
@@ -179,6 +185,28 @@ function get_rates(frm, cdt, cdn) {
 				cur_frm.refresh_fields()
 			}
 		})	
+	}
+}
+
+function get_diff_rates(frm, cdt, cdn) {
+	doc = locals[cdt][cdn]
+	if (doc.equipment && doc.rate_type && doc.tender_hire_rate) {
+		return frappe.call({
+			method: "erpnext.maintenance.doctype.equipment_hiring_form.equipment_hiring_form.get_diff_hire_rates",
+			args: { "tr": doc.tender_hire_rate},
+			callback: function(r) {
+				if(r.message) {
+					if(doc.rate_type == "Without Fuel") {
+						frappe.model.set_value(cdt, cdn, "rate", r.message[0].without_fuel)
+					}
+					else {
+						frappe.model.set_value(cdt, cdn, "rate", r.message[0].with_fuel)
+					}
+					frappe.model.set_value(cdt, cdn, "idle_rate", r.message[0].idle)
+				}				
+				cur_frm.refresh_fields()
+			}
+		})
 	}
 }
 
@@ -274,4 +302,29 @@ cur_frm.cscript.update_status = function(){
 			frappe.ui.form.is_saving = false;
 		}
 	});
+}
+
+frappe.ui.form.on("Hiring Approval Detail", "refresh", function(frm) {
+    cur_frm.set_query("tender_hire_rate", function() {
+        return {
+            "filters": {
+                "customer": frm.doc.customer,
+		"equipment_type": frm.doc.equipment_type,
+		"docstatus": 1,
+		"branch": frm.doc.branch
+            }
+        };
+    });
+})
+
+cur_frm.fields_dict['approved_items'].grid.get_field('tender_hire_rate').get_query = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+		filters: [
+		['Tender Hire Rate', 'docstatus', '=', 1],
+		['Tender Hire Rate', 'branch', '=', frm.branch],
+		['Tender Hire Rate', 'customer', '=', frm.customer],
+		['Tender Hire Rate', 'equipment_type', '=', d.equipment_type]
+		]
+	}
 }

@@ -87,7 +87,6 @@ def get_employee_details(employee_type):
 			emp_map.setdefault(d.name, d)
 	else:
 		frappe.throw("Select a Employee Type")
-
 	return emp_map
 
 @frappe.whitelist()

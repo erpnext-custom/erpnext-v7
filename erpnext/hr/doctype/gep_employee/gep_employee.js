@@ -25,3 +25,14 @@ frappe.ui.form.on('GEP Employee', {
 		cur_frm.toggle_reqd("date_of_separation", frm.doc.status == "Left")
 	}
 });
+
+frappe.ui.form.on("GEP Employee", "refresh", function(frm) {
+    cur_frm.set_query("cost_center", function() {
+        return {
+            "filters": {
+		"is_group": 0,
+		"is_disabled": 0
+            }
+        };
+    });
+})

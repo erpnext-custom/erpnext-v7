@@ -95,24 +95,24 @@ def get_data():
 					"name": "Muster Roll Employee",
 					"description": _("Muster Roll Employee Data"),
 				},
-				{
-					"type": "doctype",
-					"name": "Attendance Tool Others",
-					"label": "Attendance Tool for GEP & MR",
-					"description": _("Attendance Tool for Others"),
-				},
+				#{
+				#	"type": "doctype",
+				#	"name": "Attendance Tool Others",
+				#	"label": "Attendance Tool for GEP & MR",
+				#	"description": _("Attendance Tool for Others"),
+				#},
 				{
 					"type": "doctype",
 					"name": "Upload Attendance Others",
 					"label": "Upload Bulk Attendance for GEP & MR",
 					"description": _("Attendance Tool for Others"),
 				},
-				{
-					"type": "doctype",
-					"name": "Project Overtime Tool",
-					"label": "Overtime Tool for GEP & MR",
-					"description": _("Overtime Tool for MR and GEP"),
-				},
+				#{
+				#	"type": "doctype",
+				#	"name": "Project Overtime Tool",
+				#	"label": "Overtime Tool for GEP & MR",
+				#	"description": _("Overtime Tool for MR and GEP"),
+				#},
 				{
 					"type": "doctype",
 					"name": "Upload Overtime Entries",

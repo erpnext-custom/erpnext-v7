@@ -42,6 +42,8 @@ class PurchaseInvoice(BuyingController):
 		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
 	def validate(self):
+		if not self.buying_cost_center:
+			frappe.throw("Buying Cost Center is Mandatory")
 		if not self.is_opening:
 			self.is_opening = 'No'
 
@@ -363,6 +365,7 @@ class PurchaseInvoice(BuyingController):
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.credit_to,
+					"cost_center": self.buying_cost_center,
 					"party_type": "Supplier",
 					"party": self.supplier,
 					"against": self.against_expense_account,

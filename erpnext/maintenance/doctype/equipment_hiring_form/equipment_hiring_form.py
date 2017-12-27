@@ -122,6 +122,14 @@ def get_hire_rates(e, rtype):
 	return data	
 
 @frappe.whitelist()
+def get_diff_hire_rates(tr):
+	query = "select with_fuel, without_fuel, idle_rate as idle from `tabTender Hire Rate` where name = \"" + str(tr) + "\""
+	data = frappe.db.sql(query, as_dict=True)
+	if not data:
+		frappe.throw("No Hire Rates has been assigned")
+	return data	
+
+@frappe.whitelist()
 def get_rates(form, equipment):
 	if form and equipment:
 		return frappe.db.sql("select rate_type, rate, idle_rate from `tabHiring Approval Details` where docstatus = 1 and parent = \'" + str(form) + "\' and equipment = \'" + str(equipment) + "\'", as_dict=True)

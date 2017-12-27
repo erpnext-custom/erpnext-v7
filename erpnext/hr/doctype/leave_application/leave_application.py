@@ -334,10 +334,10 @@ def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 	d = frappe.db.get_value("DepartmentDirector", {"department": frappe.get_value("Employee", filters.get("employee"), "department")}, "director")
 	if d:
 		app_list.append(str(d))
-	ceo = frappe.db.get_value("Employee", {"employee_subgroup": "CEO", "status": "Active"}, "user_id")
+	"""ceo = frappe.db.get_value("Employee", {"employee_subgroup": "CEO", "status": "Active"}, "user_id")
 	if ceo:
 		app_list.append(str(ceo))
-	
+	"""
 	#Check for Officiating Employeee, if so, replace
 	for a, b in enumerate(app_list):
 		off = frappe.db.sql("select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date and employee = %(employee)s", {"today": nowdate(), "employee": frappe.db.get_value("Employee", {"user_id": app_list[a]}, "name")}, as_dict=True)

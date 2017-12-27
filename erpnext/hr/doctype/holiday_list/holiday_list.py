@@ -21,9 +21,9 @@ class HolidayList(Document):
 		if self.branches:
 			for branch in self.branches:
 				doc = frappe.get_doc("Branch", branch.branch)
-				doc.flags.ignore_user_permissions = 1
+				#doc.flags.ignore_user_permissions = 1
 				doc.holiday_list = self.name
-				doc.save()
+				doc.save(ignore_permissions = True)
 
 	def get_weekly_off_dates(self):
 		self.validate_values()

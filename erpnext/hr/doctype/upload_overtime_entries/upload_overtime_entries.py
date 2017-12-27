@@ -5,7 +5,8 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import cstr, add_days, date_diff, cint, flt
+from frappe import msgprint
+from frappe.utils import cstr, add_days, date_diff, cint, flt, getdate, nowdate
 from frappe import _
 from frappe.utils.csvutils import UnicodeWriter
 from frappe.model.document import Document
@@ -47,13 +48,52 @@ def add_header(w, args):
 
 def add_data(w, args):
 	#dates = get_dates(args)
-	employees = get_active_employees(args)
+        month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(args.month) + 1
+        month = str(month) if cint(month) > 9 else str("0" + str(month))
+
+        total_days = monthrange(cint(args.fiscal_year), cint(month))[1]
+        start_date = str(args.fiscal_year) + '-' + str(month) + '-' + str('01')
+        end_date   = str(args.fiscal_year) + '-' + str(month) + '-' + str(total_days)
+        
+	employees  = get_active_employees(args)
+	loaded     = get_loaded_records(args, start_date, end_date)
+	
 	for e in employees:
+                number_of_hours = ''
+                
 		row = [
 			e.branch, e.cost_center, e.etype, "\'"+str(e.name)+"\'", e.person_name, args.fiscal_year, args.month
 		]
+
+                for day in range(cint(total_days)):
+                        number_of_hours = loaded.get(e.etype, frappe._dict()).get(e.name, frappe._dict()).get(day+1,'')
+                        row.append(number_of_hours)                
 		w.writerow(row)
 	return w
+
+def get_loaded_records(args, start_date, end_date):
+        loaded_list= frappe._dict()
+
+        rl = frappe.db.sql("""
+                        select
+                                case 
+                                    when employee_type = 'Muster Roll Employee' then 'MR'
+                                    when employee_type = 'GEP Employee' then 'GEP'
+                                    else 'Employee'
+                                end as employee_type,
+                                number as employee,
+                                day(date) as day_of_date,
+                                sum(ifnull(number_of_hours,0)) as number_of_hours
+                        from `tabOvertime Entry`
+                        where date between %s and %s
+                        and docstatus = 1
+                        group by employee_type, employee, day_of_date
+                """, (start_date, end_date), as_dict=1)
+
+        for r in rl:
+                loaded_list.setdefault(r.employee_type, frappe._dict()).setdefault(r.employee, frappe._dict()).setdefault(r.day_of_date,r.number_of_hours)
+
+        return loaded_list
 
 def get_active_employees(args):
 	employees = frappe.db.sql("""select "MR" as etype, name, person_name, branch, cost_center
@@ -99,7 +139,7 @@ def upload():
                                 else:
                                 '''
                                 
-                                if not old and row[j-1]:
+                                if not old and flt(row[j-1]) > 0:
                                         doc = frappe.new_doc("Overtime Entry")
 					doc.branch          = row[0]
                                         doc.cost_center     = row[1]
@@ -112,7 +152,8 @@ def upload():
                                         elif str(row[2]) == "GEP":
                                                 doc.employee_type = "GEP Employee"
                                                 
-                                        doc.submit()
+					if not getdate(doc.date) > getdate(nowdate()):
+						doc.submit()
 		except Exception, e:
 			error = True
 			ret.append('Error for row (#%d) %s : %s' % (row_idx,
