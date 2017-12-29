@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate, cint, validate_email_add, today, add_years, date_diff, nowdate
 
@@ -26,21 +27,45 @@ class GEPEmployee(Document):
 
 	# Following method introducted by SHIV on 04/10/2017
         def populate_work_history(self):
+                if getdate(self.date_of_joining) != getdate(self.get_db_value("date_of_joining")):
+                        for wh in self.internal_work_history:
+                                if getdate(self.get_db_value("date_of_joining")) == getdate(wh.from_date):
+                                        wh.from_date = self.date_of_joining
+
+                if self.status == 'Left' and self.date_of_separation:
+                        for wh in self.internal_work_history:
+                                if not wh.to_date:
+                                        wh.to_date = self.date_of_separation
+                                elif self.get_db_value("date_of_separation"):
+                                        if getdate(self.get_db_value("date_of_separation")) == getdate(wh.to_date):
+                                                wh.to_date = self.date_of_separation
+                                        
                 if self.branch != self.get_db_value("branch") or self.cost_center != self.get_db_value("cost_center"):
 
                         for wh in self.internal_work_history:
                                 if not wh.to_date:
                                         wh.to_date = wh.from_date if getdate(today()) < getdate(wh.from_date) else today()
-                        
-                        self.append("internal_work_history",{
-                                                        "branch": self.branch,
-                                                        "cost_center": self.cost_center,
-                                                        "from_date": today(),
-                                                        "owner": frappe.session.user,
-                                                        "creation": nowdate(),
-                                                        "modified_by": frappe.session.user,
-                                                        "modified": nowdate()
-                                        })
+
+                        if not self.internal_work_history:
+                                self.append("internal_work_history",{
+                                                                "branch": self.branch,
+                                                                "cost_center": self.cost_center,
+                                                                "from_date": today(),
+                                                                "owner": frappe.session.user,
+                                                                "creation": self.date_of_joining,
+                                                                "modified_by": frappe.session.user,
+                                                                "modified": nowdate()
+                                                })
+                        else:
+                                self.append("internal_work_history",{
+                                                                "branch": self.branch,
+                                                                "cost_center": self.cost_center,
+                                                                "from_date": today(),
+                                                                "owner": frappe.session.user,
+                                                                "creation": nowdate(),
+                                                                "modified_by": frappe.session.user,
+                                                                "modified": nowdate()
+                                                })
 
 
 def update_work_history():

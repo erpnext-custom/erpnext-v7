@@ -87,7 +87,7 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 		# check against budget only if not se
 		if entry.voucher_type not in ['Stock Entry', 'Period Closing Voucher']:
 			validate_expense_against_budget(entry)
-
+	
 			#commit the budget too
 			if entry.voucher_type == 'Journal Entry' and entry.against_voucher_type != 'Asset':
 				acc_type = frappe.db.get_value("Account", entry.account, "account_type")
@@ -188,7 +188,8 @@ def make_round_off_gle(gl_map, debit_credit_diff):
 		"party_type": None,
 		"party": None,
 		"against_voucher_type": None,
-		"against_voucher": None
+		"against_voucher": None,
+		"fiscal_year": str(gl_map[0].posting_date)[0:4]
 	})
 
 	gl_map.append(round_off_gle)

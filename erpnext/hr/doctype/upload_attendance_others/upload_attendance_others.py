@@ -54,7 +54,7 @@ def add_data(w, args):
         start_date = str(args.fiscal_year) + '-' + str(month) + '-' + str('01')
         end_date   = str(args.fiscal_year) + '-' + str(month) + '-' + str(total_days)
         
-	employees = get_active_employees(args)
+	employees = get_active_employees(args, start_date, end_date)
 	loaded     = get_loaded_records(args, start_date, end_date)
 	
 	for e in employees:
@@ -97,7 +97,7 @@ def get_loaded_records(args, start_date, end_date):
 
         return loaded_list
 
-def get_active_employees(args):        
+def get_active_employees(args, start_date, end_date):        
 	employees = frappe.db.sql("""
                 select
                         "MR" as etype,
@@ -105,10 +105,22 @@ def get_active_employees(args):
                         person_name,
                         branch,
                         cost_center
-		from `tabMuster Roll Employee`
+		from `tabMuster Roll Employee` as me
 		where docstatus < 2
-		and status = 'Active'
-		and branch = '{0}'
+		and exists(select 1
+                                from `tabEmployee Internal Work History` iw
+                                where iw.branch = '{0}'
+                                and iw.parent = me.name
+                                and (
+                                        ('{1}' between iw.from_date and ifnull(iw.to_date,now()))
+                                        or
+                                        ('{2}' between iw.from_date and ifnull(iw.to_date,now()))
+                                        or
+                                        (iw.from_date between '{1}' and '{2}')
+                                        or
+                                        (ifnull(iw.to_date,now()) between '{1}' and '{2}')
+                                        )
+                )
 		UNION
 		select
                         "GEP" as etype,
@@ -116,11 +128,23 @@ def get_active_employees(args):
                         person_name,
                         branch,
                         cost_center
-		from `tabGEP Employee`
+		from `tabGEP Employee` as ge
 		where docstatus < 2
-		and status = 'Active'
-		and branch = '{0}'
-		""".format(args.branch), {"branch": args.branch}, as_dict=1)
+		and exists(select 1
+                                from `tabEmployee Internal Work History` iw
+                                where iw.branch = '{0}'
+                                and iw.parent = ge.name
+                                and (
+                                        ('{1}' between iw.from_date and ifnull(iw.to_date,now()))
+                                        or
+                                        ('{2}' between iw.from_date and ifnull(iw.to_date,now()))
+                                        or
+                                        (iw.from_date between '{1}' and '{2}')
+                                        or
+                                        (ifnull(iw.to_date,now()) between '{1}' and '{2}')
+                                        )
+                )
+		""".format(args.branch, start_date, end_date), {"branch": args.branch}, as_dict=1)
 
 	return employees
 

@@ -103,6 +103,20 @@ frappe.ui.form.on('Travel Authorization', {
 });
 
 frappe.ui.form.on("Travel Authorization Item", {
+	"date": function(frm, cdt, cdn) {
+		var item = locals[cdt][cdn];
+		
+		if(item.till_date){
+			if (item.till_date >= item.date) {
+				frappe.model.set_value(cdt, cdn, "no_days", 1 + cint(frappe.datetime.get_day_diff(item.till_date, item.date)))
+			}
+			else{
+				msgprint("Till Date cannot be earlier than From Date")
+				frappe.model.set_value(cdt, cdn, "till_date", "")
+			}
+		}
+	},
+	
 	"till_date": function(frm, cdt, cdn) {
 		var item = locals[cdt][cdn]
 		if (item.till_date >= item.date) {

@@ -14,6 +14,9 @@ class IssuePOL(Document):
 	def on_submit(self):
 		self.consume_pol()
 
+	def on_cancel(self):
+		self.cancel_consumed_pol()
+
 	def consume_pol(self):
 		for a in self.items:
 			con = frappe.new_doc("Consumed POL")	
@@ -22,5 +25,9 @@ class IssuePOL(Document):
 			con.pol_type = self.pol_type
 			con.date = self.date
 			con.qty = a.qty
+			con.reference_type = "Issue POL"
+			con.reference_name = self.name
 			con.submit()
-
+	
+	def cancel_consumed_pol(self):
+		frappe.db.sql("update `tabConsumed POL` set docstatus = 2 where reference_type = 'Issue POL' and reference_name = %s", (self.name))

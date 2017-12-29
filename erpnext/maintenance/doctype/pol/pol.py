@@ -18,7 +18,7 @@ class POL(Document):
 	
 	def on_cancel(self):
 		docstatus = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
-		if docstatus != 2:
+		if docstatus and docstatus != 2:
 			frappe.throw("Cancel the Journal Entry " + str(self.jv) + " and proceed.")
 
                 if self.consumed:	
@@ -27,6 +27,7 @@ class POL(Document):
 		
 		self.db_set("consumed", "")
 		self.db_set("jv", "")
+
 	##
 	# make necessary journal entry
 	##
@@ -84,6 +85,8 @@ class POL(Document):
 		con.branch = self.branch
 		con.date = self.date
 		con.qty = self.qty
+		con.reference_type = "POL"
+		con.reference_name = self.name
 		con.submit()
 		self.db_set("consumed", con.name)
 

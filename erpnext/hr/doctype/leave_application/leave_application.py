@@ -389,19 +389,21 @@ def get_leave_balance_on(employee, leave_type, date, allocation_records=None,
 		date = allocation.to_date
 	leaves_taken = get_approved_leaves_for_period(employee, leave_type, get_year_start_date(str(date)), date)
 	# Ver 1.0 Begins added by SSK on 20/08/2016, following line is added
-	leaves_encashed = get_leaves_encashed(employee, leave_type, date)
+	#leaves_encashed = get_leaves_encashed(employee, leave_type, date)
 	# Ver 1.0 Ends
 
         le = get_le_settings()
         if leave_type == 'Earned Leave' and \
-           flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken) - flt(leaves_encashed)) > flt(le.encashment_lapse):
+           flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken)) > flt(le.encashment_lapse):
+           #flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken) - flt(leaves_encashed)) > flt(le.encashment_lapse):
                 return flt(le.encashment_lapse)
 	
 	#reseting earned leave taken to 0 since it is already minused in the allocation
         if leave_type == 'Earned Leave':
 		leaves_taken = 0
         
-	return flt(allocation.total_leaves_allocated) - flt(leaves_taken) - flt(leaves_encashed)
+	return flt(allocation.total_leaves_allocated) - flt(leaves_taken)
+	#return flt(allocation.total_leaves_allocated) - flt(leaves_taken) - flt(leaves_encashed)
 
 # Ver 1.0 Begins added by SSK on 20/08/2016, following function is added
 def get_leaves_encashed(employee=None, leave_type=None, from_date=None):

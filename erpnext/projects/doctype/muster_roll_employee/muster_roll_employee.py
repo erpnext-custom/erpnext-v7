@@ -41,18 +41,43 @@ class MusterRollEmployee(Document):
 
         # Following method introducted by SHIV on 04/10/2017
         def populate_work_history(self):
+                if getdate(self.joining_date) != getdate(self.get_db_value("joining_date")):
+                        for wh in self.internal_work_history:
+                                if getdate(self.get_db_value("joining_date")) == getdate(wh.from_date):
+                                        wh.from_date = self.joining_date
+
+                if self.status == 'Left' and self.separation_date:
+                        for wh in self.internal_work_history:
+                                if not wh.to_date:
+                                        wh.to_date = self.separation_date
+                                elif self.get_db_value("separation_date"):
+                                        if getdate(self.get_db_value("separation_date")) == getdate(wh.to_date):
+                                                wh.to_date = self.separation_date
+                                                
                 if self.branch != self.get_db_value("branch") or self.cost_center != self.get_db_value("cost_center"):
 
                         for wh in self.internal_work_history:
                                 if not wh.to_date:
                                         wh.to_date = wh.from_date if getdate(today()) < getdate(wh.from_date) else today()
-                        
-                        self.append("internal_work_history",{
-                                                        "branch": self.branch,
-                                                        "cost_center": self.cost_center,
-                                                        "from_date": today(),
-                                                        "owner": frappe.session.user,
-                                                        "creation": nowdate(),
-                                                        "modified_by": frappe.session.user,
-                                                        "modified": nowdate()
-                                        })
+
+                        if not self.internal_work_history:
+                                self.append("internal_work_history",{
+                                                                "branch": self.branch,
+                                                                "cost_center": self.cost_center,
+                                                                "from_date": self.joining_date,
+                                                                "owner": frappe.session.user,
+                                                                "creation": nowdate(),
+                                                                "modified_by": frappe.session.user,
+                                                                "modified": nowdate()
+                                                })
+                        else:
+                                self.append("internal_work_history",{
+                                                                "branch": self.branch,
+                                                                "cost_center": self.cost_center,
+                                                                "from_date": today(),
+                                                                "owner": frappe.session.user,
+                                                                "creation": nowdate(),
+                                                                "modified_by": frappe.session.user,
+                                                                "modified": nowdate()
+                                                })
+                                
