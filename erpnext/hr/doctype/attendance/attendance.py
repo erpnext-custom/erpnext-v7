@@ -45,7 +45,7 @@ class Attendance(Document):
 		self.validate_att_date()
 		self.validate_duplicate_record()
 		self.check_leave_record()
-		self.branch = frapppe.db.get_value("Employee", self.employee, "branch")
+		self.branch = frappe.db.get_value("Employee", self.employee, "branch")
 
 	def on_update(self):
 		# this is done because sometimes user entered wrong employee name
@@ -55,4 +55,4 @@ class Attendance(Document):
 		frappe.db.set(self, 'branch', branch)
 
 	def on_submit(self):
-		self.db_set("branch", frapppe.db.get_value("Employee", self.employee, "branch"))
+		self.db_set("branch", frappe.db.get_value("Employee", self.employee, "branch"))
