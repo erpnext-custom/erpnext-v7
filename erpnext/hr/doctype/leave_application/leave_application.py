@@ -478,10 +478,10 @@ def get_leave_allocation_records(date, employee=None):
                 leave_allocation_records = frappe.db.sql("""
                         select employee, leave_type, total_leaves_allocated, from_date, to_date
                         from `tabLeave Allocation`
-                        where from_date between %s and %s
+                        where from_date <= %s
                         and docstatus=1 and leave_type = 'Earned Leave'
                         {0}
-                        order by to_date desc limit 1""".format(conditions), (from_date, date), as_dict=1)
+                        order by to_date desc limit 1""".format(conditions), (date), as_dict=1)
 
                 for d in leave_allocation_records:
                         if d.leave_type == 'Earned Leave':
@@ -494,17 +494,17 @@ def get_leave_allocation_records(date, employee=None):
                 employee_list = frappe.db.sql("""
                         select distinct employee
                         from `tabLeave Allocation`
-                        where from_date between %s and %s
+                        where from_date <= %s
                         and docstatus=1 and leave_type = 'Earned Leave'
-                        """, (from_date,date), as_dict=1)
+                        """, (date), as_dict=1)
                 for e in employee_list:
                         leave_allocation_records = frappe.db.sql("""
                                 select employee, leave_type, total_leaves_allocated, from_date, to_date
                                 from `tabLeave Allocation`
                                 where employee = %s
-                                and from_date between %s and %s
+                                and from_date <= %s
                                 and docstatus=1 and leave_type = 'Earned Leave'
-                                order by to_date desc limit 1""", (e.employee, from_date, date), as_dict=1)
+                                order by to_date desc limit 1""", (e.employee, date), as_dict=1)
                         
                         for d in leave_allocation_records:
                                 if d.leave_type == 'Earned Leave':

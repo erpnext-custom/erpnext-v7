@@ -706,6 +706,10 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		party_account = doc.debit_to
 	elif dt == "Purchase Invoice":
 		party_account = doc.credit_to
+	elif dt == "Purchase Order" and doc.status == "To Receive and Bill":
+		party_account = frappe.db.get_single_value("Accounts Settings", "advance_to_supplier")
+		if not party_account:
+			frappe.throw("Setup Advance to Supplier Account in Accounts Settings")
 	else:
 		party_account = get_party_account(party_type, doc.get(party_type.lower()), doc.company)
 		

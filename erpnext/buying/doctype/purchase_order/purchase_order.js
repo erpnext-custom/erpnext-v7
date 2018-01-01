@@ -99,6 +99,10 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 			}
 		}
 
+		if(flt(doc.per_billed)==0 && doc.status != "Delivered") {
+			cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_payment_entry, __("Make"));
+		}
+
 		if(doc.docstatus == 1 && doc.status != "Closed") {
 			if(flt(doc.per_received, 2) < 100 && allow_receipt) {
 				cur_frm.add_custom_button(__('Receive'), this.make_purchase_receipt, __("Make"));

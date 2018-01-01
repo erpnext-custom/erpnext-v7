@@ -6,6 +6,13 @@ from frappe.utils import flt, cint, now
 from frappe.utils.data import get_first_day, get_last_day, add_years
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 
+def assign_branch_att():
+	atts = frappe.db.sql("select name, employee from `tabAttendance` where docstatus = 1", as_dict=True)
+	for a in atts:
+		emp = frappe.db.get_value("Employee", a.employee, "branch")
+		doc = frappe.get_doc("Attendance", a.name)
+		doc.db_set("branch", emp)
+
 def assign_date_ta():
 	tas = frappe.db.sql("select name from `tabTravel Authorization` where travel_claim is null", as_dict=True)
 	for ta in tas:

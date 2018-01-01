@@ -157,7 +157,9 @@ function calculate_distance_km(frm) {
 	else {
 		cur_frm.set_value("distance_km", "0")
 		frm.refresh_fields()
-		frappe.msgprint("Final KM should be greater than Initial KM")
+		if(frm.doc.final_km) {
+			frappe.msgprint("Final KM should be greater than Initial KM")
+		}
 	}
 }
 
@@ -169,7 +171,9 @@ function calculate_work_hour(frm) {
 	else {
 		cur_frm.set_value("total_work_time", "0")
 		frm.refresh_fields()
-		frappe.msgprint("Final Hour should be greater than Initial Hour")
+		if(frm.doc.final_hour) {
+			frappe.msgprint("Final Hour should be greater than Initial Hour")
+		}
 	}
 }
 

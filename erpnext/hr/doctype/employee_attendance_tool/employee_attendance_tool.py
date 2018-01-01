@@ -44,6 +44,7 @@ def mark_employee_attendance(employee_list, status, date, company=None):
 		attendance.employee_name = employee['employee_name']
 		attendance.att_date = date
 		attendance.status = status
+		attendance.branch = frappe.db.get_value("Employee", employee['employee'], "branch")
 		if company:
 			attendance.company = company
 		else:

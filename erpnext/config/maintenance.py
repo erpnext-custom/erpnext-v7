@@ -116,6 +116,10 @@ def get_data():
 					"label": "Issue POL",
 					"description": _("Issue POL"),
 				},
+				{
+					"type": "doctype",
+					"name": "Equipment POL Transfer",
+				},
 			]
 		},
 		{
@@ -189,6 +193,13 @@ def get_data():
 					"name": "POL Balance Report",
 					"doctype": "POL"
 				},
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "POL Receive Report",
+                                        "doctype": "POL"
+                                },
+
 			]
 		},
 	]

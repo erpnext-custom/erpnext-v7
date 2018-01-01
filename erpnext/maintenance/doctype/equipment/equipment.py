@@ -36,4 +36,4 @@ def get_yards(equipment):
 
 @frappe.whitelist()
 def get_equipments(doctype, txt, searchfield, start, page_len, filters):
-	return frappe.db.sql("select a.equipment as name from `tabHiring Approval Details` a where a.parent = \'"+ str(filters.get("ehf_name")) +"\'")
+	return frappe.db.sql("select a.equipment as name from `tabHiring Approval Details` a where docstatus = 1 and a.parent = \'"+ str(filters.get("ehf_name")) +"\'")

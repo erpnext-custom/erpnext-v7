@@ -9,6 +9,7 @@ from frappe.utils import flt, cint
 
 class VehicleLogbook(Document):
 	def validate(self):
+		self.check_hire_form()
 		self.check_duplicate()
 		self.calculate_totals()
 		self.update_operator()	
@@ -20,6 +21,12 @@ class VehicleLogbook(Document):
 	def on_submit(self):
 		self.update_hire()
 		self.check_tank_capacity()
+
+	def check_hire_form(self):
+		if self.ehf_name:
+			docstatus = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "docstatus")
+			if docstatus != 1:
+				frappe.throw("Cannot create Vehicle Logbook without submitting Hire Form")
 	
 	def update_operator(self):
 		self.equipment_operator = frappe.db.get_value("Equipment", self.equipment, "current_operator")
@@ -38,6 +45,8 @@ class VehicleLogbook(Document):
 				total_i += flt(a.idle_time)
 			self.total_work_time = total_w
 			self.total_idle_time = total_i
+		
+		self.hsd_received = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (self.equipment, self.from_date, self.to_date, frappe.db.get_value("Equipment", self.equipment, "hsd_type")), as_dict=True)
 		self.consumption = flt(self.other_consumption) + flt(self.consumption_hours) + flt(self.consumption_km)
 		self.closing_balance = flt(self.hsd_received) + flt(self.opening_balance) - flt(self.consumption)
 
