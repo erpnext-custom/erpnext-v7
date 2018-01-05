@@ -8,6 +8,8 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 1.0		  SSK		                   08/08/2016         DocumentNaming standard is introduced
 1.0               SSK                              15/08/2016         Introducing Loss Tolerance for Sales
 1.0               SSK                              22/09/2016         get_default_bank_cash_sales_account is introduced.
+2.0               SHIV                             03/01/2018         *Following fields introduced
+                                                                        party_currency, party_exchange_rate, party_paid_amount
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -695,6 +697,10 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 
 	#for d in doc.get("items"):
         #        msgprint(d.item_code)
+
+	# Ver 2.0 Begins, Following code added by SHIV on 03/01/2018
+	party_currency = ''
+	# Ver 2.0 Ends
 	
 	if dt in ("Sales Order", "Purchase Order") and flt(doc.per_billed, 2) > 0:
 		frappe.throw(_("Can only make payment against unbilled {0}").format(dt))
@@ -710,6 +716,11 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		party_account = frappe.db.get_single_value("Accounts Settings", "advance_to_supplier")
 		if not party_account:
 			frappe.throw("Setup Advance to Supplier Account in Accounts Settings")
+
+		# Ver 2.0 Begins, Following code added by SHIV on 03/01/2018
+		party_currency      = doc.get("currency")
+		# Ver 2.0 Ends
+		
 	else:
 		party_account = get_party_account(party_type, doc.get(party_type.lower()), doc.company)
 		
@@ -771,6 +782,15 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	pe.received_amount = received_amount
 	pe.actual_receivable_amount = received_amount
 	pe.branch = doc.branch	
+
+        # Ver 2.0 Begins, Following code added SHIV on 03/01/2018
+        if party_currency and bank.account_currency:
+                pe.party_currency = party_currency
+                party_exchange_rate = get_exchange_rate(party_currency, bank.account_currency)
+                if party_exchange_rate:
+                        pe.party_exchange_rate = party_exchange_rate
+                        pe.party_paid_amount = (paid_amount / party_exchange_rate)
+        # Ver 2.0 Ends
 
 	pe.append("references", {
 		"reference_doctype": dt,

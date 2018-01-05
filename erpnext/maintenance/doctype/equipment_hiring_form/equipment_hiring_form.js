@@ -324,6 +324,8 @@ cur_frm.fields_dict['approved_items'].grid.get_field('tender_hire_rate').get_que
 		['Tender Hire Rate', 'docstatus', '=', 1],
 		['Tender Hire Rate', 'branch', '=', frm.branch],
 		['Tender Hire Rate', 'customer', '=', frm.customer],
+		['Tender Hire Rate', 'from_date', '<=', get_today()],
+		['Tender Hire Rate', 'to_date', '>=', get_today()],
 		['Tender Hire Rate', 'equipment_type', '=', d.equipment_type]
 		]
 	}

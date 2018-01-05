@@ -27,7 +27,7 @@ def execute(filters=None):
 		total_p = total_a = total_t = 0.0
 		for day in range(filters["total_days_in_month"]):
 			status = att_map.get(emp).get(day + 1, "None")
-			status_map = {"Present": "P", "Absent": "A", "Half Day": "H", "Tour": "T", "None": ""}
+			status_map = {"Present": "P", "Absent": "A", "Half Day": "H", "Tour": "T", "Leave": "L", "None": ""}
 			row.append(status_map[status])
 
 			if status == "Present":

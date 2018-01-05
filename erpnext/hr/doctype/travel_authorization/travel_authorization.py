@@ -6,10 +6,11 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cint, flt, nowdate, money_in_words
+from frappe.utils import cint, flt, nowdate, money_in_words, getdate
 from erpnext.accounts.utils import get_account_currency, get_fiscal_year
-from frappe.utils.data import add_days
+from frappe.utils.data import add_days, date_diff
 from frappe.model.mapper import get_mapped_doc
+from datetime import timedelta
 
 class TravelAuthorization(Document):
 
@@ -37,6 +38,7 @@ class TravelAuthorization(Document):
 		self.validate_travel_dates()
 		self.check_status()
 		self.check_advance()
+		self.create_attendance()
 		self.sendmail(self.employee, "Travel Authorization Approved" + str(self.name), "Your travel authorization has been approved by the supervisor")
 
 	def before_cancel(self):
@@ -44,6 +46,37 @@ class TravelAuthorization(Document):
 			jv_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
 			if jv_status and jv_status != 2:
 				frappe.throw("You need to cancel the advance journal entry first!")
+	
+	def on_cancel(self):
+		self.cancel_attendance()	
+
+	def create_attendance(self):
+		d = getdate(self.items[0].date)
+		if self.items[len(self.items) - 1].halt and self.items[len(self.items) - 1].till_date:
+			e = getdate(self.items[len(self.items) - 1].till_date)
+		else:
+			e = getdate(self.items[len(self.items) - 1].date)
+		days = date_diff(e, d) + 1
+		for a in (d + timedelta(n) for n in range(days)):
+			al = frappe.db.sql("select name from tabAttendance where docstatus = 1 and employee = %s and att_date = %s", (self.employee, a), as_dict=True)
+			if al:
+				doc = frappe.get_doc("Attendance", al[0].name)
+				doc.cancel()
+			#create attendance
+			attendance = frappe.new_doc("Attendance")
+			attendance.flags.ignore_permissions = 1
+			attendance.employee = self.employee
+			attendance.employee_name = self.employee_name 
+			attendance.att_date = a
+			attendance.status = "Tour"
+			attendance.branch = self.branch
+			attendance.company = frappe.db.get_value("Employee", self.employee, "company")
+			attendance.reference_name = self.name
+			attendance.submit()
+
+	def cancel_attendance(self):
+		frappe.db.sql("update tabAttendance set docstatus = 2 where reference_name = %s", (self.name))
+		frappe.db.commit()	
 	
 	def assign_end_date(self):
 		if self.items:

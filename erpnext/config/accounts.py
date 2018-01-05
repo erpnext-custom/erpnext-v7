@@ -487,6 +487,10 @@ def get_data():
 					"doctype": "Exchange Rate History",
 					"is_query_report": True
 				},
+				{
+					"type": "doctype",
+					"name": "Separation Benefit Type",
+				},
 			]
 		},
 		{

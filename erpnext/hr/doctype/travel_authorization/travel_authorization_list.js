@@ -3,7 +3,7 @@
 
 // render
 frappe.listview_settings['Travel Authorization'] = {
-	add_fields: ["employee_name", "employee", "grade", "docstatus", "document_status"],
+	add_fields: ["employee_name", "employee", "grade", "docstatus", "document_status", "travel_claim"],
 	has_indicator_for_draft: 1,
 	get_indicator: function(doc) {
 		if(doc.docstatus==0) {
@@ -16,7 +16,12 @@ frappe.listview_settings['Travel Authorization'] = {
 		}
 
 		if(doc.docstatus == 1) {
-			return ["Approved", "green", "docstatus,=,1"];
+			if(doc.travel_claim) {
+				return ["Claimed", "green", "docstatus,=,1|travel_claim,>,0"];
+			}
+			else {
+				return ["Approved", "blue", "docstatus,=,1"];
+			}
 		}
 	}
 };

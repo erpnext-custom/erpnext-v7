@@ -67,6 +67,10 @@ def get_data():
 					"name": "Branch Fleet Manager",
 					"label": "Assign Fleet Manager for Branches",
 				},
+				{
+					"type": "doctype",
+					"name": "Tender Hire Rate",
+				},
 			]
 		},
 		{

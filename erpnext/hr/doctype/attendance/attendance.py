@@ -30,6 +30,8 @@ class Attendance(Document):
 					self.att_date))
 
 	def validate_att_date(self):
+		if self.reference_name:
+			return
 		if getdate(self.att_date) > getdate(nowdate()):
 			frappe.throw(_("Attendance can not be marked for future dates"))
 
@@ -41,7 +43,7 @@ class Attendance(Document):
 
 	def validate(self):
 		from erpnext.controllers.status_updater import validate_status
-		validate_status(self.status, ["Present", "Absent", "Half Day", "Tour"])
+		validate_status(self.status, ["Present", "Absent", "Half Day", "Tour", "Leave"])
 		self.validate_att_date()
 		self.validate_duplicate_record()
 		self.check_leave_record()

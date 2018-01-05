@@ -73,6 +73,7 @@ class LeaveApplication(Document):
 		if self.status == "Approved":
 			#self.validate_back_dated_application()
 			# notify leave applier about approval
+			self.create_attendance()
 			self.notify_employee(self.status)
 			immediate_sp = frappe.db.get_value("Employee", frappe.db.get_value("Employee", self.employee, "reports_to"), "user_id")
 			if str(immediate_sp) != str(self.leave_approver):
@@ -81,7 +82,30 @@ class LeaveApplication(Document):
 	def on_cancel(self):
 		# notify leave applier about cancellation
 		self.notify_employee("cancelled")
+		self.cancel_attendance()
 
+	def create_attendance(self):
+		d = getdate(self.from_date)
+		e = getdate(self.to_date)
+		days = date_diff(e, d) + 1
+		for a in (d + timedelta(n) for n in range(days)):
+			if getdate(a).weekday() != 6:
+				#create attendance
+				attendance = frappe.new_doc("Attendance")
+				attendance.flags.ignore_permissions = 1
+				attendance.employee = self.employee
+				attendance.employee_name = self.employee_name 
+				attendance.att_date = a
+				attendance.status = "Leave"
+				attendance.branch = self.branch
+				attendance.company = self.company
+				attendance.reference_name = self.name
+				attendance.submit()
+
+	def cancel_attendance(self):
+		frappe.db.sql("update tabAttendance set docstatus = 2 where reference_name = %s", (self.name))
+		frappe.db.commit()	
+	
 	def validate_dates(self):
 		if self.from_date and self.to_date and (getdate(self.to_date) < getdate(self.from_date)):
 			frappe.throw(_("To date cannot be before from date"))

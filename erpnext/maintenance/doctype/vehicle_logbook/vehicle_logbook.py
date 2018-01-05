@@ -9,8 +9,10 @@ from frappe.utils import flt, cint
 
 class VehicleLogbook(Document):
 	def validate(self):
+		self.check_double_vl()
 		self.check_hire_form()
 		self.check_duplicate()
+		self.update_consumed()
 		self.calculate_totals()
 		self.update_operator()	
 
@@ -19,6 +21,8 @@ class VehicleLogbook(Document):
 			self.calculate_balance()
 
 	def on_submit(self):
+		self.update_consumed()
+		self.calculate_totals()
 		self.update_hire()
 		self.check_tank_capacity()
 
@@ -37,6 +41,11 @@ class VehicleLogbook(Document):
 				if a.date == b.date and a.idx != b.idx:
 					frappe.throw("Duplicate Dates in Vehicle Logs in row " + str(a.idx) + " and " + str(b.idx))
 
+	def update_consumed(self):
+		pol = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (self.equipment, self.from_date, self.to_date, frappe.db.get_value("Equipment", self.equipment, "hsd_type")), as_dict=True)
+		if pol:
+			self.hsd_received = pol[0].qty
+
 	def calculate_totals(self):
 		if self.vlogs:
 			total_w = total_i = 0
@@ -46,7 +55,6 @@ class VehicleLogbook(Document):
 			self.total_work_time = total_w
 			self.total_idle_time = total_i
 		
-		self.hsd_received = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (self.equipment, self.from_date, self.to_date, frappe.db.get_value("Equipment", self.equipment, "hsd_type")), as_dict=True)
 		self.consumption = flt(self.other_consumption) + flt(self.consumption_hours) + flt(self.consumption_km)
 		self.closing_balance = flt(self.hsd_received) + flt(self.opening_balance) - flt(self.consumption)
 
@@ -93,6 +101,13 @@ class VehicleLogbook(Document):
 			if flt(tank) < flt(self.closing_balance):
 				frappe.msgprint("Closing balance cannot be greater than the tank capacity (" + str(tank) + ")")
 
+	def check_double_vl(self):
+		result = frappe.db.sql("select ehf_name from `tabVehicle Logbook` where equipment = \'" + str(self.equipment) + "\' and docstatus = 1 and (\'" + str(self.from_date) + "\' between from_date and to_date OR \'" + str(self.to_date) + "\' between from_date and to_date)", as_dict=True)
+		if result:
+			if self.from_time and self.to_time:
+				res = frappe.db.sql("select name from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and (%s between from_time and to_time or %s between from_time and to_time)", (str(self.equipment), str(self.from_time), str(self.to_time)))
+				if res:
+					frappe.throw("The logbook for the same equipment, date, and time has been created at " + str(result[0].ehf_name))
 
 @frappe.whitelist()
 def get_opening(equipment, from_date, to_date, pol_type):
@@ -128,4 +143,5 @@ def get_opening(equipment, from_date, to_date, pol_type):
 		result.append(0)
 
 	return result
+
 		

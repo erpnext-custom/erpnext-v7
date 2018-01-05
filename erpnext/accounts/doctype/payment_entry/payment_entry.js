@@ -129,6 +129,10 @@ frappe.ui.form.on('Payment Entry', {
 				(frm.doc.paid_from_account_currency != company_currency ||
 					frm.doc.paid_to_account_currency != company_currency)));
 
+		// Ver 2.0 Begins, Following code added by SHIV on 03/01/2018
+		frm.toggle_display(["party_exchange_rate", "party_paid_amount"], frm.doc.party_exchange_rate)
+		// Ver 2.0 Ends
+					
 		frm.refresh_fields();
 	},
 
@@ -158,6 +162,9 @@ frappe.ui.form.on('Payment Entry', {
 			"difference_amount"], company_currency);
 
 		setup_field_label_map(["paid_amount"], frm.doc.paid_from_account_currency);
+		// Ver 2.0 Begins, Following code added by SHIV on 03/01/2018
+		setup_field_label_map(["party_paid_amount"], frm.doc.party_currency);
+		// Ver 2.0 Ends
 		setup_field_label_map(["received_amount"], frm.doc.paid_to_account_currency);
 
 		var party_account_currency = frm.doc.payment_type=="Receive" ?
@@ -410,6 +417,13 @@ frappe.ui.form.on('Payment Entry', {
 
 	paid_amount: function(frm) {
 		frm.set_value("base_paid_amount", flt(frm.doc.paid_amount) * flt(frm.doc.source_exchange_rate));
+		
+		// Ver 2.0 Begins, Following code added by SHIV on 03/01/2018
+		if(frm.doc.party_exchange_rate){
+			frm.set_value("party_paid_amount", flt(frm.doc.paid_amount) / flt(frm.doc.party_exchange_rate));
+		}
+		// Ver 2.0 Ends
+		
 		frm.trigger("reset_received_amount");
 	},
 

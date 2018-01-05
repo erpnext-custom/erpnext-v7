@@ -22,6 +22,10 @@ frappe.ui.form.on('Vehicle Logbook', {
 						cur_frm.set_value("rate_type", r.message[0].rate_type)
 						cur_frm.set_value("work_rate", r.message[0].rate)
 						cur_frm.set_value("idle_rate", r.message[0].idle_rate)
+						cur_frm.set_value("from_date", r.message[0].from_date)
+						cur_frm.set_value("to_date", r.message[0].to_date)
+						cur_frm.set_value("from_time", r.message[0].from_time)
+						cur_frm.set_value("to_time", r.message[0].to_time)
 						cur_frm.refresh_fields()
 					}
 				}

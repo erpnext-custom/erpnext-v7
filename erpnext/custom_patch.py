@@ -2,9 +2,61 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe import msgprint
-from frappe.utils import flt, cint, now
-from frappe.utils.data import get_first_day, get_last_day, add_years
+from frappe.utils import flt, cint, now, nowdate, getdate
+from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, add_years
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+from datetime import timedelta, date
+
+def ta_attendance():
+	all_ta = frappe.db.sql("select name from `tabTravel Authorization` where docstatus = 1", as_dict=True)
+	for ta in all_ta:
+		ta = frappe.get_doc("Travel Authorization", ta.name)
+		d = ta.items[0].date
+		if ta.items[len(ta.items) - 1].halt and ta.items[len(ta.items) - 1].till_date:
+			e = ta.items[len(ta.items) - 1].till_date
+		else:
+			e = ta.items[len(ta.items) - 1].date
+
+		days = date_diff(e,d) + 1
+		print(str(ta.name) + " ==> " + str(d) + " till " + str(e) + " ::: " + str(days))
+		for a in (d + timedelta(n) for n in range(days)):
+			al = frappe.db.sql("select name from tabAttendance where docstatus = 1 and employee = %s and att_date = %s", (ta.employee, a), as_dict=True)
+			if al:
+				doc = frappe.get_doc("Attendance", al[0].name)
+				doc.cancel()
+			#create attendance
+			attendance = frappe.new_doc("Attendance")
+			attendance.flags.ignore_permissions = 1
+			attendance.employee = ta.employee
+			attendance.employee_name = ta.employee_name 
+			attendance.att_date = a
+			attendance.status = "Tour"
+			attendance.branch = ta.branch
+			attendance.company = frappe.db.get_value("Employee", ta.employee, "company")
+			attendance.reference_name = ta.name
+			attendance.submit()
+
+def add_days_test():
+	all_att = frappe.db.sql("select name from `tabLeave Application` where docstatus = 1", as_dict=True)
+	for att in all_att:
+		print(att.name)
+		self = frappe.get_doc("Leave Application", att.name) 
+		d = getdate(self.from_date)
+		e = getdate(self.to_date)
+		days = date_diff(e, d) + 1
+		for a in (d + timedelta(n) for n in range(days)):
+			if getdate(a).weekday() != 6:
+				#create attendance
+				attendance = frappe.new_doc("Attendance")
+				attendance.flags.ignore_permissions = 1
+				attendance.employee = self.employee
+				attendance.employee_name = self.employee_name 
+				attendance.att_date = a
+				attendance.status = "Leave"
+				attendance.branch = self.branch
+				attendance.company = self.company
+				attendance.reference_name = self.name
+				attendance.submit()
 
 def assign_branch_att():
 	atts = frappe.db.sql("select name, employee from `tabAttendance` where docstatus = 1", as_dict=True)

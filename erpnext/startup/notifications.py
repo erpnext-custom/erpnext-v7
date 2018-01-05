@@ -77,5 +77,6 @@ def get_notification_config():
                         "Direct Payment": {"docstatus": 0},
                         "Budget": {"docstatus": 0},
                         "Revenue Target": {"docstatus": 0},
+                        "Payment Entry": {"docstatus": 0},
 		}
 	}

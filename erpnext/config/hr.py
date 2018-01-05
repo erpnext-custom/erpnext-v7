@@ -227,6 +227,11 @@ def get_data():
                                         "label": _("Overtime Application"),
 					"description": _("Overtime Application"),
 				},
+				{
+					"type": "doctype",
+					"name": "Employee Separation Benefits",
+                                        "label": _("Employee Separation Benefits"),
+				},
 			]
 		},
 		{
@@ -328,6 +333,13 @@ def get_data():
 					"is_query_report": True,
 					"name": "Earning Report",
 					"doctype": "Salary Slip"
+				},
+				{
+					"type" : "report",
+					"is_query_report": True,
+					"name": "Salary Increment",
+					"label": _("Salary Increment Report"),
+					"doctype": "Salary Increment"
 				},
 			]
 		},

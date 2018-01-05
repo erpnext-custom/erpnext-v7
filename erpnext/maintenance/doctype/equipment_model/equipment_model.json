@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "beta": 0, 
  "creation": "2017-07-18 10:25:56.508220", 
  "custom": 0, 
@@ -33,7 +33,7 @@
    "report_hide": 0, 
    "reqd": 1, 
    "search_index": 0, 
-   "set_only_once": 0, 
+   "set_only_once": 1, 
    "unique": 0
   }, 
   {
@@ -82,7 +82,7 @@
    "report_hide": 0, 
    "reqd": 1, 
    "search_index": 0, 
-   "set_only_once": 0, 
+   "set_only_once": 1, 
    "unique": 0
   }, 
   {
@@ -170,7 +170,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-10-17 14:28:36.925283", 
+ "modified": "2018-01-04 16:31:11.283864", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Model", 
@@ -211,7 +211,7 @@
    "print": 1, 
    "read": 1, 
    "report": 1, 
-   "role": "Maintenance Common", 
+   "role": "Mechanical Master", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
@@ -225,5 +225,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "model", 
+ "track_changes": 1, 
  "track_seen": 0
 }

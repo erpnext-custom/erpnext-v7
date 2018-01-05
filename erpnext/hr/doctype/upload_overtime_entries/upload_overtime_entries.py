@@ -85,10 +85,11 @@ def get_loaded_records(args, start_date, end_date):
                                 day(date) as day_of_date,
                                 sum(ifnull(number_of_hours,0)) as number_of_hours
                         from `tabOvertime Entry`
-                        where date between %s and %s
+                        where branch = '{0}'
+                        and date between %s and %s
                         and docstatus = 1
                         group by employee_type, employee, day_of_date
-                """, (start_date, end_date), as_dict=1)
+                """.format(args.branch), (start_date, end_date), as_dict=1)
 
         for r in rl:
                 loaded_list.setdefault(r.employee_type, frappe._dict()).setdefault(r.employee, frappe._dict()).setdefault(r.day_of_date,r.number_of_hours)
@@ -97,50 +98,44 @@ def get_loaded_records(args, start_date, end_date):
 
 def get_active_employees(args, start_date, end_date):
 	employees = frappe.db.sql("""
-                select
+                select distinct
                         "MR" as etype,
-                        name,
-                        person_name,
-                        branch,
-                        cost_center
-		from `tabMuster Roll Employee` as me
-		where docstatus < 2
-		and exists(select 1
-                                from `tabEmployee Internal Work History` iw
-                                where iw.branch = '{0}'
-                                and iw.parent = me.name
-                                and (
-                                        ('{1}' between iw.from_date and ifnull(iw.to_date,now()))
-                                        or
-                                        ('{2}' between iw.from_date and ifnull(iw.to_date,now()))
-                                        or
-                                        (iw.from_date between '{1}' and '{2}')
-                                        or
-                                        (ifnull(iw.to_date,now()) between '{1}' and '{2}')
-                                        )
+                        me.name,
+                        me.person_name,
+                        iw.branch,
+                        iw.cost_center
+		from `tabMuster Roll Employee` as me, `tabEmployee Internal Work History` as iw
+                where me.docstatus < 2
+                and iw.parent = me.name
+                and iw.branch = '{0}'
+		and (
+                        ('{1}' between iw.from_date and ifnull(iw.to_date,now()))
+                        or
+                        ('{2}' between iw.from_date and ifnull(iw.to_date,now()))
+                        or
+                        (iw.from_date between '{1}' and '{2}')
+                        or
+                        (ifnull(iw.to_date,now()) between '{1}' and '{2}')
                 )
 		UNION
-		select
+		select distinct
                         "GEP" as etype,
-                        name,
-                        person_name,
-                        branch,
-                        cost_center
-		from `tabGEP Employee` as ge
-		where docstatus < 2
-		and exists(select 1
-                                from `tabEmployee Internal Work History` iw
-                                where iw.branch = '{0}'
-                                and iw.parent = ge.name
-                                and (
-                                        ('{1}' between iw.from_date and ifnull(iw.to_date,now()))
-                                        or
-                                        ('{2}' between iw.from_date and ifnull(iw.to_date,now()))
-                                        or
-                                        (iw.from_date between '{1}' and '{2}')
-                                        or
-                                        (ifnull(iw.to_date,now()) between '{1}' and '{2}')
-                                        )
+                        ge.name,
+                        ge.person_name,
+                        iw.branch,
+                        iw.cost_center
+		from `tabGEP Employee` as ge, `tabEmployee Internal Work History` as iw
+                where ge.docstatus < 2
+                and iw.parent = ge.name
+                and iw.branch = '{0}'
+		and (
+                        ('{1}' between iw.from_date and ifnull(iw.to_date,now()))
+                        or
+                        ('{2}' between iw.from_date and ifnull(iw.to_date,now()))
+                        or
+                        (iw.from_date between '{1}' and '{2}')
+                        or
+                        (ifnull(iw.to_date,now()) between '{1}' and '{2}')
                 )
 		""".format(args.branch, start_date, end_date), {"branch": args.branch}, as_dict=1)
 	return employees

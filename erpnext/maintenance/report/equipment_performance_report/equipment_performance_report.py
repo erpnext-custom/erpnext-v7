@@ -206,6 +206,7 @@ def get_data(filters):
 		gross_pay    = 0.0
 		total_exp    = 0.0
 		total_sal    = 0.0
+		total_rev    = 0.0
 
 		for co in c_operator:
 			if co.employee_type =="Muster Roll Employee":
