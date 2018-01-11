@@ -7,8 +7,10 @@ import frappe
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
+from erpnext.controllers.accounts_controller import AccountsController
+from erpnext.custom_utils import check_uncancelled_linked_doc
 
-class HireChargeInvoice(Document):
+class HireChargeInvoice(AccountsController):
 	def validate(self):
 		self.check_advances(self.ehf_name)
 		if self.balance_amount < 0:
@@ -18,10 +20,16 @@ class HireChargeInvoice(Document):
 	def on_submit(self):
 		self.update_advance_amount();
 		self.update_vlogs(1)
-		self.post_journal_entry()
+		if self.owned_by == "CDCL":
+			self.post_journal_entry()
+		else:
+			self.make_gl_entries()
 		self.check_close()
 
 	def on_cancel(self):
+		docs = check_uncancelled_linked_doc(self.doctype, self.name)
+                if docs != 1:
+                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
 		cl_status = frappe.db.get_value("Journal Entry", self.invoice_jv, "docstatus")
 		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry ("+ str(self.invoice_jv) + ")related to this invoice first!")
@@ -29,6 +37,8 @@ class HireChargeInvoice(Document):
 			cl_status = frappe.db.get_value("Journal Entry", self.payment_jv, "docstatus")
 			if cl_status and cl_status != 2:
 				frappe.throw("You need to cancel the journal entry ("+ str(self.payment_jv) + ")related to this invoice first!")
+		if self.owned_by != "CDCL":
+			self.make_gl_entries()
 		self.readjust_advance()
 		self.update_vlogs(0)
 		self.check_close(1)
@@ -205,6 +215,73 @@ class HireChargeInvoice(Document):
 			else:
 				hire.db_set("payment_completed", 1)
 
+        def make_gl_entries(self):
+                if self.total_invoice_amount > 0:
+                        from erpnext.accounts.general_ledger import make_gl_entries
+                        gl_entries = []
+                        self.posting_date = self.posting_date
+
+			receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
+			if not receivable_account:
+				frappe.throw("Setup Reveivable Account in Maintenance Accounts Settings")
+			advance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_advance_account")
+			if not advance_account:
+				frappe.throw("Setup Advance Account in Maintenance Accounts Settings")
+			hire_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_account")
+			if not hire_account:
+				frappe.throw("Setup Hire Account in Maintenance Accounts Settings")
+			discount_account = frappe.db.get_single_value("Maintenance Accounts Settings", "discount_account")
+			if not discount_account:
+				frappe.throw("Setup Discount Account in Maintenance Accounts Settings")
+                        
+                        gl_entries.append(
+                                self.get_gl_dict({
+                                       "account": hire_account,
+                                       "against": hire_account,
+                                       "credit": self.total_invoice_amount,
+                                       "credit_in_account_currency": self.total_invoice_amount,
+                                       "cost_center": self.cost_center
+                                }, self.currency)
+                        )
+
+			if self.advance_amount:
+				gl_entries.append(
+					self.get_gl_dict({
+					       "account": advance_account,
+					       "against": self.customer,
+					       "party_type": "Customer",
+					       "party": self.customer,
+					       "debit": self.advance_amount,
+					       "debit_in_account_currency": self.advance_amount,
+					       "cost_center": self.cost_center
+					}, self.currency)
+				)
+
+			if self.discount_amount:
+				gl_entries.append(
+					self.get_gl_dict({
+					       "account": discount_account,
+					       "against": self.customer,
+					       "debit": self.discount_amount,
+					       "debit_in_account_currency": self.discount_amount,
+					       "cost_center": self.cost_center
+					}, self.currency)
+				)
+			if self.balance_amount:
+				gl_entries.append(
+					self.get_gl_dict({
+					       "account": receivable_account,
+					       "against": self.customer,
+					       "party_type": "Customer",
+					       "party": self.customer,
+					       "against_voucher": self.name,
+					       "against_voucher_type": self.doctype,
+					       "debit": self.balance_amount,
+					       "debit_in_account_currency": self.balance_amount,
+					       "cost_center": self.cost_center
+					}, self.currency)
+				)
+                        make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 
 @frappe.whitelist()
 def get_vehicle_logs(form):

@@ -5,11 +5,13 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cstr, flt, fmt_money, formatdate
+from frappe.utils import cstr, flt, fmt_money, formatdate, getdate
 from frappe.desk.reportview import get_match_cond
+from erpnext.custom_utils import check_uncancelled_linked_doc
 
 class EquipmentHiringForm(Document):
 	def validate(self):
+		self.check_date_approval()
 		self.check_duplicate()
 		self.calculate_totals()
 
@@ -29,12 +31,20 @@ class EquipmentHiringForm(Document):
 			self.post_journal_entry()
 
 	def before_cancel(self):		
+		docs = check_uncancelled_linked_doc(self.doctype, self.name)
+                if docs != 1:
+                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
 		cl_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
 		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this job card first!")
 	
 		frappe.db.sql("delete from `tabEquipment Reservation Entry` where ehf_name = \'"+ str(self.name) +"\'")	
 		self.db_set("advance_journal", '')
+
+	def check_date_approval(self):
+		for a in self.approved_items:
+			if getdate(a.to_date) < getdate(a.from_date):
+				frappe.throw("To Date cannot be smaller than From Date for Equipment <b>" + str(a.equipment) + "</b>")
 
 	def check_duplicate(self):
 		for a in self.approved_items:

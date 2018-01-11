@@ -18,6 +18,7 @@ from erpnext.accounts.doctype.asset.depreciation \
 	import get_disposal_account_and_cost_center, get_gl_entries_on_asset_disposal
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
+from erpnext.custom_utils import check_uncancelled_linked_doc
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -131,6 +132,9 @@ class SalesInvoice(SellingController):
 		self.update_time_sheet(None)
 
 	def on_cancel(self):
+		docs = check_uncancelled_linked_doc(self.doctype, self.name)
+                if docs != 1:
+                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
 		self.check_close_sales_order("sales_order")
 
 		from erpnext.accounts.utils import unlink_ref_doc_from_payment_entries

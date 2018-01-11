@@ -480,66 +480,134 @@ def remove_memelakha_entries():
 
 # 25/12/2017 SHIV, It is observed that parent cost_centers are used in the transaction which is wrong
 def check_for_cc_group_entries():
-        ex = ['Cost Center','Attendance Tool Others','Budget Reappropriation Tool','Project Overtime Tool']
+        ex = ['Cost Center','Attendance Tool Others','Budget Reappropriation Tool','Project Overtime Tool', 'Supplementary Budget Tool']
 
-        sql = """
-                        select
-                                parent as doctype,
-                                fieldname,
-                                'tabDocField' as table_name
-                        from `tabDocField` 
-                        where fieldtype = 'Link' 
-                        and options = 'Cost Center'
-                        and parent not in {0}
-                        union all
-                        select
-                                dt as doctype,
-                                fieldname,
-                                'tabCustom Field' as table_name
-                        from `tabCustom Field` 
-                        where fieldtype = 'Link' 
-                        and options = 'Cost Center'
-                        and dt not in {0}
-                """.format(tuple(ex))
-
-        print sql
-        
         li = frappe.db.sql("""
-                        select
-                                parent as doctype,
-                                fieldname,
-                                'tabDocField' as table_name
-                        from `tabDocField` 
-                        where fieldtype = 'Link' 
-                        and options = 'Cost Center'
-                        and parent not in {0}
-                        union all
-                        select
-                                dt as doctype,
-                                fieldname,
-                                'tabCustom Field' as table_name
-                        from `tabCustom Field` 
-                        where fieldtype = 'Link' 
-                        and options = 'Cost Center'
-                        and dt not in {0}
-                """.format(tuple(ex)), as_dict=1)
+                        select g.doctype, g.fieldname, g.table_name
+                        from (
+                        
+                                select
+                                        parent as doctype,
+                                        fieldname,
+                                        'tabDocField' as table_name
+                                from `tabDocField` 
+                                where (
+                                        (fieldtype = 'Link' and options = 'Cost Center')
+                                        or
+                                        (lower(fieldname) like '%cost%center%' and fieldtype in ('Data','Dynamic Link','Small Text','Long Text','Read Only', 'Text'))
+                                        )
+                                union all
+                                select
+                                        dt as doctype,
+                                        fieldname,
+                                        'tabCustom Field' as table_name
+                                from `tabCustom Field` 
+                                where (
+                                        (fieldtype = 'Link' and options = 'Cost Center')
+                                        or
+                                        (lower(fieldname) like '%cost%center%' and fieldtype in ('Data','Dynamic Link','Small Text','Long Text','Read Only', 'Text'))
+                                        )
+                        ) as g
+                        where g.doctype not in ({0})
+                """.format("'"+"','".join(ex)+"'"), as_dict=1)
 
         for i in li:
                 no_of_rec = 0
                 
                 counts = frappe.db.sql("""
-                                select count(*) counts
+                                select a.{1} cc, count(*) counts
                                 from `tab{0}` as a
                                 where a.{1} is not null
                                 and exists(select 1
                                                 from `tabCost Center` as b
                                                 where b.name = a.{1}
                                                 and b.is_group = 1)
+                                group by a.{1}
                 """.format(i.doctype, i.fieldname), as_dict=1)
 
+                '''
                 if counts:
-                        no_of_rec = counts[0].counts
-                        print i.doctype, i.fieldname, no_of_rec
-                
-                
+                        if counts[0].counts > 0:
+                                no_of_rec = counts[0].counts
+                                print i.doctype+" ("+i.fieldname+") : "+str(no_of_rec)
+                '''
 
+                for c in counts:
+                        print i.doctype.ljust(50,' ')+str(":"), c.cc, c.counts
+                
+#bench execute erpnext.custom_patch.el_allocation --args 'CDCL0005001','no'
+def el_allocation(employee=None):
+        # Allocating missed out 5days EL for Hesothangkha for 01/01/17-30/09/17
+        print 'employee', employee
+
+        cond = ""
+        
+        if employee:
+                cond = "and employee = '{0}'".format(employee)
+                
+        li = frappe.db.sql("""
+                select name, employee, from_date, to_date,
+                        new_leaves_allocated,
+                        carry_forwarded_leaves,
+                        total_leaves_allocated,
+                        leave_type
+                from `tabLeave Allocation` as la
+                where la.leave_type = 'Earned Leave'
+                and from_date = '2017-01-01'
+                and to_date = '2017-09-30'
+                and exists(select 1
+                             from `tabEmployee Internal Work History` as e
+                            where e.branch = 'Hesothangkha'
+                              and e.parent = la.employee)
+                and docstatus = 1
+                {cond}
+                order by employee
+                """.format(cond=cond), as_dict=True)
+
+        '''
+        for i in li:
+                cf = flt(i.carry_forwarded_leaves)+5.0 if flt(i.carry_forwarded_leaves)+5.0 <= 60.0 else 60.0
+                ta = flt(i.total_leaves_allocated)+5.0 if flt(i.total_leaves_allocated)+5.0 <= 60.0 else 60.0
+                
+                frappe.db.sql("""
+                                update `tabLeave Allocation`
+                                set carry_forwarded_leaves = {0}, total_leaves_allocated = {1}
+                                where name = '{2}'
+                        """.format(flt(cf), flt(ta), i.name))
+        '''
+
+        counter = 0
+        for i in li:
+                counter += 1
+                print counter,'|', i.employee,'|', i.from_date,'|', i.to_date,'|', i.new_leaves_allocated,'|', i.carry_forwarded_leaves,'|', i.total_leaves_allocated
+
+                # New allocations
+                na = frappe.db.sql("""
+                        select name, employee, from_date, to_date,
+                                new_leaves_allocated,
+                                carry_forwarded_leaves,
+                                total_leaves_allocated,
+                                leave_type
+                          from `tabLeave Allocation`
+                         where employee   = '{0}'
+                           and leave_type = '{1}'
+                           and docstatus  = 1
+                           and from_date  > '{2}'
+                         order by from_date, to_date
+                        """.format(i.employee, i.leave_type, i.to_date), as_dict=True)
+
+                for a in na:
+                        print counter,'|',a.employee,'|', a.from_date,'|', a.to_date,'|', a.new_leaves_allocated,'|', a.carry_forwarded_leaves,'|', a.total_leaves_allocated
+
+                        '''
+                        cf = flt(a.carry_forwarded_leaves)+5.0 if flt(a.carry_forwarded_leaves)+5.0 <= 60.0 else 60.0
+                        ta = flt(a.total_leaves_allocated)+5.0 if flt(a.total_leaves_allocated)+5.0 <= 60.0 else 60.0
+
+                        print cf, ta
+
+                        frappe.db.sql("""
+                                update `tabLeave Allocation`
+                                set carry_forwarded_leaves = {0}, total_leaves_allocated = {1}
+                                where name = '{2}'
+                        """.format(flt(cf), flt(ta), a.name))
+                        '''

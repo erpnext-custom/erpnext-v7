@@ -17,6 +17,7 @@ from erpnext.accounts.general_ledger import make_gl_entries, merge_similar_entri
 from erpnext.accounts.doctype.gl_entry.gl_entry import update_outstanding_amt
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
+from erpnext.custom_utils import check_uncancelled_linked_doc
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -669,6 +670,9 @@ class PurchaseInvoice(BuyingController):
 			)
 
 	def on_cancel(self):
+		docs = check_uncancelled_linked_doc(self.doctype, self.name)
+                if docs != 1:
+                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
 		self.check_for_closed_status()
 
 		self.update_status_updater_args()

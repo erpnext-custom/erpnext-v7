@@ -159,6 +159,11 @@ def get_data():
 					"label": "Assign Muster Roll To Projects",
 					"description": _("Project Muster Roll Tool"),
 				},
+				{
+					"type": "doctype",
+					"name": "MusterRoll Application",
+					"label": "Muster Roll Application",
+				},
 			]
 		},
 		{

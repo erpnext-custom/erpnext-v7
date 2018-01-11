@@ -61,7 +61,7 @@ def get_notification_config():
                         "Project Invoice": {"status": ("in", ("Draft", "Unpaid"))},
                         "Project Payment": {"docstatus": 0},
                         "Cash Journal Entry": {"docstatus": 0},
-                        "Equipment Hire Form": {"docstatus": 0},
+                        "Equipment Hiring Form": {"docstatus": 0},
                         "Vehicle Logbook": {"docstatus": 0},
                         "Hire Charge Invoice": {"docstatus": 0},
                         "Mechanical Payment": {"docstatus": 0},

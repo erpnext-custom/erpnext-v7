@@ -1,5 +1,13 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		  SHIV		                   01/01/2018         1. Issue with Leaves getting allocated to employees
+                                                                        who are joined after the allocation period.
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -18,9 +26,17 @@ class LeaveControlPanel(Document):
 
 		condition_str = " and " + " and ".join(conditions) if len(conditions) else ""
 
+                # Ver 2.0 Begins, by SHIV on 10/01/2018
+                # Following code commented on 10/01/2018
+                '''
 		e = frappe.db.sql("select name from tabEmployee where status='Active' {condition}"
 			.format(condition=condition_str), tuple(values))
-
+                '''
+                # Following code added
+                e = frappe.db.sql("select name from tabEmployee where status='Active' and date_of_joining =< '{from_date}' {condition}"
+			.format(condition=condition_str, from_date=self.from_date), tuple(values))
+                # Ver 2.1 Ends
+                
 		return e
 
 	def validate_values(self):

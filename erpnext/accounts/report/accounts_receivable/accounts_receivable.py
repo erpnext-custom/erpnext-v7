@@ -191,6 +191,10 @@ class ReceivablePayableReport(object):
 		# Following condition added by SHIV on 05/09/2017
 		elif gle.voucher_type == "Project Invoice":
                         out_amt = frappe.db.get_value("Project Invoice", gle.voucher_no, "total_balance_amount")
+		elif gle.voucher_type == "Job Card":
+			out_amt = frappe.db.get_value("Job Card", gle.voucher_no, "outstanding_amount")
+		elif gle.voucher_type == "Hire Charge Invoice":
+			out_amt = frappe.db.get_value("Hire Charge Invoice", gle.voucher_no, "outstanding_amount")
                 # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		else:
 			pass

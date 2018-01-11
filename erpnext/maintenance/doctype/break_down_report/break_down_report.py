@@ -8,12 +8,16 @@ from frappe.model.document import Document
 from frappe.utils import cint, flt, nowdate, money_in_words
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils.data import add_years
+from erpnext.custom_utils import check_uncancelled_linked_doc
 
 class BreakDownReport(Document):
 	def on_submit(self):
 		self.assign_reservation()
 
 	def on_cancel(self):
+		docs = check_uncancelled_linked_doc(self.doctype, self.name)
+                if docs != 1:
+                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
 		frappe.db.sql("delete from `tabEquipment Reservation Entry` where ehf_name = \'"+str(self.name)+"\'")
 	
 	def assign_reservation(self):

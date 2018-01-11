@@ -3,6 +3,19 @@
 
 frappe.ui.form.on('Hire Charge Invoice', {
 	refresh: function(frm) {
+		if(frm.doc.docstatus===1){
+			frm.add_custom_button(__('Accounting Ledger'), function(){
+				frappe.route_options = {
+					voucher_no: frm.doc.name,
+					from_date: frm.doc.posting_date,
+					to_date: frm.doc.posting_date,
+					company: frm.doc.company,
+					group_by_voucher: false
+				};
+				frappe.set_route("query-report", "General Ledger");
+			}, __("View"));
+		}
+
 		frm.set_df_property("discount_amount", "read_only", frm.doc.owned_by == "CDCL")
 		if (frm.doc.invoice_jv && frappe.model.can_read("Journal Entry")) {
 			cur_frm.add_custom_button(__('Bank Entries'), function() {

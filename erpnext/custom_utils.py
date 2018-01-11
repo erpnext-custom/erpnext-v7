@@ -12,7 +12,19 @@ from frappe.model.document import Document
 from frappe import msgprint
 from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
+from frappe.desk.form.linked_with import get_linked_doctypes, get_linked_docs
 
+##
+# If the document is linked and the linked docstatus is 0 and 1, return the first linked document
+##
+def check_uncancelled_linked_doc(doctype, docname):
+        linked_doctypes = get_linked_doctypes(doctype)
+        linked_docs = get_linked_docs(doctype, docname, linked_doctypes)
+        for docs in linked_docs:
+                for doc in linked_docs[docs]:
+                        if doc['docstatus'] < 2:
+                                return [docs, doc['name']]
+        return 1
 
 def get_year_start_date(date):
 	return str(date)[0:4] + "-01-01"

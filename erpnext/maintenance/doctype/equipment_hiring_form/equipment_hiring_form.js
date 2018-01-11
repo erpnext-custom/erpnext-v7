@@ -96,7 +96,13 @@ frappe.ui.form.on("Hiring Approval Details", {
 		calculate_datetime(frm, cdt, cdn)
 	},
 	"to_date": function(frm, cdt, cdn) {
-		calculate_datetime(frm, cdt, cdn)
+		if(frm.doc.from_date && frm.doc.to_date && frm.doc.from_date > frm.doc.to_date) {
+			msgprint("To Date cannot be smaller than from date")
+			frappe.set_value("to_date", "")
+		}
+		else {
+			calculate_datetime(frm, cdt, cdn)
+		}
 	},
 	"rate": function(frm, cdt, cdn) {
 		calculate_amount(frm, cdt, cdn)

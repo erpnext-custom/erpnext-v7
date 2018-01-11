@@ -8,8 +8,10 @@ from frappe.model.document import Document
 from frappe.utils.data import time_diff_in_hours
 from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
 from frappe.model.mapper import get_mapped_doc
+from erpnext.controllers.accounts_controller import AccountsController
+from erpnext.custom_utils import check_uncancelled_linked_doc
 
-class JobCard(Document):
+class JobCard(AccountsController):
 	def validate(self):
 		self.update_breakdownreport()
 		#Amount Segregation
@@ -34,12 +36,18 @@ class JobCard(Document):
 			frappe.throw("Please enter Job Out Date")
 		else:
 			self.update_reservation()
-		self.check_items()
-		if not self.owned_by == "Own":
+		self.check_items() 
+		if self.owned_by == "CDCL":
 			self.post_journal_entry()
+		if self.owned_by == "Others":
+			self.make_gl_entries()
 		self.update_breakdownreport()
 
 	def before_cancel(self):
+		docs = check_uncancelled_linked_doc(self.doctype, self.name)
+                if docs != 1:
+			if str(docs[0]) != "Stock Entry":
+				frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
 		cl_status = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
 		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this job card first!")
@@ -47,6 +55,10 @@ class JobCard(Document):
 		bdr = frappe.get_doc("Break Down Report", self.break_down_report)
 		bdr.db_set("job_card", "")
 		self.db_set('jv', "")
+
+	def on_cancel(self):
+		if self.owned_by == "Others":
+			self.make_gl_entries()	
 
 	def get_default_settings(self):
 		goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
@@ -184,6 +196,61 @@ class JobCard(Document):
 		else:
 			frappe.throw("Setup Default Goods, Services and Receivable Accounts in Maintenance Accounts Settings")
 
+        def make_gl_entries(self):
+                if self.total_amount:
+                        from erpnext.accounts.general_ledger import make_gl_entries
+                        gl_entries = []
+                        self.posting_date = self.finish_date
+
+			goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
+			services_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_services_account")
+			receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
+			if not goods_account:
+				frappe.throw("Setup Default Goods Account in Maintenance Setting")
+			if not services_account:
+				frappe.throw("Setup Default Services Account in Maintenance Setting")
+			if not receivable_account:
+				frappe.throw("Setup Default Receivable Account in Maintenance Setting")
+                        
+                        gl_entries.append(
+                                self.get_gl_dict({
+                                       "account":  receivable_account,
+                                       "party_type": "Customer",
+                                       "party": self.customer,
+                                       "against": receivable_account,
+                                       "debit": self.total_amount,
+                                       "debit_in_account_currency": self.total_amount,
+                                       "against_voucher": self.name,
+                                       "against_voucher_type": self.doctype,
+                                       "cost_center": self.cost_center
+                                }, self.currency)
+                        )
+
+			if self.goods_amount:
+				gl_entries.append(
+					self.get_gl_dict({
+					       "account": goods_account,
+					       "against": self.customer,
+					       "credit": self.goods_amount,
+					       "credit_in_account_currency": self.goods_amount,
+					       "cost_center": self.cost_center
+					}, self.currency)
+				)
+			if self.services_amount:
+				gl_entries.append(
+					self.get_gl_dict({
+					       "account": services_account,
+					       "against": self.customer,
+					       "credit": self.services_amount,
+					       "credit_in_account_currency": self.services_amount,
+					       "cost_center": self.cost_center
+					}, self.currency)
+				)
+
+
+                        make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
+
+
 	def update_reservation(self):
 		frappe.db.sql("update `tabEquipment Reservation Entry` set to_date = \'"+str(self.finish_date)+"\' where ehf_name = \'"+str(self.break_down_report)+"\'")
 
@@ -211,7 +278,7 @@ def make_bank_entry(frm=None):
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Receipt Voucher'
 		je.remark = 'Payment Received against : ' + job.name;
-		je.posting_date = job.posting_date
+		je.posting_date = job.finish_date
 		total_amount = job.total_amount
 		je.branch = job.branch
 	
@@ -241,6 +308,7 @@ def make_bank_entry(frm=None):
 	else:
 		frappe.msgprint("Bill NOT processed")
 		return "NO"
+
 
 #Deprecated to accomodate more than one MIN
 @frappe.whitelist()

@@ -6,9 +6,11 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt, cint
+from erpnext.custom_utils import check_uncancelled_linked_doc
 
 class VehicleLogbook(Document):
 	def validate(self):
+		self.check_dates()
 		self.check_double_vl()
 		self.check_hire_form()
 		self.check_duplicate()
@@ -25,6 +27,15 @@ class VehicleLogbook(Document):
 		self.calculate_totals()
 		self.update_hire()
 		self.check_tank_capacity()
+	
+	def on_cancel(self):
+		docs = check_uncancelled_linked_doc(self.doctype, self.name)
+                if docs != 1:
+                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
+
+	def check_dates(self):
+		if getdate(self.from_date) > getdate(self.to_date):
+			frappe.throw("From Date cannot be smaller than To Date")
 
 	def check_hire_form(self):
 		if self.ehf_name:
@@ -42,9 +53,15 @@ class VehicleLogbook(Document):
 					frappe.throw("Duplicate Dates in Vehicle Logs in row " + str(a.idx) + " and " + str(b.idx))
 
 	def update_consumed(self):
-		pol = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (self.equipment, self.from_date, self.to_date, frappe.db.get_value("Equipment", self.equipment, "hsd_type")), as_dict=True)
-		if pol:
-			self.hsd_received = pol[0].qty
+		pol_type = frappe.db.get_value("Equipment", self.equipment, "hsd_type")
+		closing = frappe.db.sql("select closing_balance, to_date from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and rate_type = 'With Fuel' and to_date <= %s order by to_date desc limit 1", (self.equipment, self.from_date), as_dict=True)
+
+		if closing:
+			qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (self.equipment, closing[0].to_date, self.to_date, pol_type), as_dict=True)
+		else:
+			qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date <= %s and docstatus = 1 and pol_type = %s", (self.equipment, self.to_date, pol_type), as_dict=True)
+		if qty:
+			self.hsd_received = qty[0].qty
 
 	def calculate_totals(self):
 		if self.vlogs:
@@ -114,9 +131,12 @@ def get_opening(equipment, from_date, to_date, pol_type):
 	if not pol_type:
 		frappe.throw("Set HSD type in Equipment")
 
-	closing = frappe.db.sql("select closing_balance from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and rate_type = 'With Fuel' and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
+	closing = frappe.db.sql("select closing_balance, to_date from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and rate_type = 'With Fuel' and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
 
-	qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (equipment, from_date, to_date, pol_type), as_dict=True)
+	if closing:
+		qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (equipment, closing[0].to_date, to_date, pol_type), as_dict=True)
+	else:
+		qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date <= %s and docstatus = 1 and pol_type = %s", (equipment, to_date, pol_type), as_dict=True)
 
 	c_km = frappe.db.sql("select final_km from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
 

@@ -20,6 +20,7 @@ from erpnext.stock.stock_balance import update_bin_qty, get_ordered_qty
 from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
+from erpnext.custom_utils import check_uncancelled_linked_doc
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -201,6 +202,9 @@ class PurchaseOrder(BuyingController):
 		self.commit_budget()
 
 	def on_cancel(self):
+		docs = check_uncancelled_linked_doc(self.doctype, self.name)
+                if docs != 1:
+                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
 		if self.is_against_so():
 			self.update_status_updater()
 

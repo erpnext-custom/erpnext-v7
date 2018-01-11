@@ -15,6 +15,7 @@ from erpnext.controllers.recurring_document import month_map, get_next_date
 from erpnext.controllers.selling_controller import SellingController
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
+from erpnext.custom_utils import check_uncancelled_linked_doc
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -169,6 +170,9 @@ class SalesOrder(SellingController):
 		# Cannot cancel closed SO
 		if self.status == 'Closed':
 			frappe.throw(_("Closed order cannot be cancelled. Unclose to cancel."))
+		docs = check_uncancelled_linked_doc(self.doctype, self.name)
+                if docs != 1:
+                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
 
 		self.check_nextdoc_docstatus()
 		self.update_reserved_qty()
