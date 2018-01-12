@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, cint
+from frappe.utils import flt, cint, getdate
 from erpnext.custom_utils import check_uncancelled_linked_doc
 
 class VehicleLogbook(Document):

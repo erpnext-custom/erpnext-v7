@@ -3,7 +3,6 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe import _
 from frappe.utils import flt
 
 def execute(filters=None):
@@ -38,7 +37,6 @@ def get_data(filters, grand_total):
 	return data
 
 def get_columns(filters):
-	gtot = 0.0
 	total_dict = {"account_code": "Total"}
 	cols = [
 		{
@@ -55,7 +53,7 @@ def get_columns(filters):
 			"width": 100
 		},
 	]
-	ccs = frappe.db.sql("select ra.cost_center, sum(ra.target_amount) as grand_total from `tabRevenue Target Account` ra, `tabRevenue Target` rt where ra.parent = rt.name and rt.docstatus < 2 and rt.fiscal_year = %s group by ra.cost_center order by ra.cost_center ASC", filters.fiscal_year, as_dict=True)
+	ccs = frappe.db.sql("select ra.cost_center, sum(ra.target_amount) as grand_total from `tabRevenue Target Account` ra, `tabRevenue Target` rt where ra.parent = rt.name and ra.docstatus = 0 and rt.fiscal_year = %s group by ra.cost_center order by ra.cost_center ASC", filters.fiscal_year, as_dict=True)
 	for cc in ccs:
 		cc_key = str(cc.cost_center).rstrip(" - CDCL").replace(' ', '_').strip().lower().encode('utf-8')
 		row = {}
@@ -65,8 +63,5 @@ def get_columns(filters):
 		row['width'] = 180
 		cols.append(row)
 		total_dict[cc_key] = flt(cc.grand_total)
-		gtot += flt(cc.grand_total)
 	cols.append({"fieldname": "total", "label": "Total", "fieldtype": "Currency", "width": 180})
-	total_dict['total'] = flt(gtot)
-	#frappe.msgprint(_("{0}").format(total_dict))
 	return cols, total_dict

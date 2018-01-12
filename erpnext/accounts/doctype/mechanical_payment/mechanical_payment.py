@@ -42,16 +42,13 @@ class MechanicalPayment(AccountsController):
 
 	def make_gl_entry(self):
 		from erpnext.accounts.general_ledger import make_gl_entries
-		revenue_bank_account = frappe.db.get_value("Branch", self.branch, "revenue_bank_account")
-		if not revenue_bank_account:
-			frappe.throw("Setup Default Revenue Bank Account for your Branch")
 		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
 		if not receivable_account:
 			frappe.throw("Setup Default Receivable Account in Maintenance Setting")
 
 		gl_entries = []
 		gl_entries.append(
-			self.get_gl_dict({"account": revenue_bank_account,
+			self.get_gl_dict({"account": self.income_account,
 					 "debit": flt(self.net_amount),
 					 "debit_in_account_currency": flt(self.net_amount),
 					 "cost_center": self.cost_center,

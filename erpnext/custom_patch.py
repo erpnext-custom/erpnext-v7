@@ -7,6 +7,15 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from datetime import timedelta, date
 
+def update_mechanical():
+	mps = frappe.db.sql("select name from `tabMechanical Payment` where docstatus = 1", as_dict=True)
+	for a in mps:
+		acc_name = frappe.db.sql("select account from `tabGL Entry` where voucher_no = %s and debit > 0 and docstatus = 1", (a.name), as_dict=True)
+		if acc_name:
+			doc = frappe.get_doc("Mechanical Payment", a.name)
+			doc.db_set("income_account", acc_name[0].account)
+			print(str(acc_name[0].account) + " ==> " + str(a.name))
+
 def ta_attendance():
 	all_ta = frappe.db.sql("select name from `tabTravel Authorization` where docstatus = 1", as_dict=True)
 	for ta in all_ta:

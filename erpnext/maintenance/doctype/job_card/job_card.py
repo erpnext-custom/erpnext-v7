@@ -335,6 +335,7 @@ def make_payment_entry(source_name, target_doc=None):
 		target.posting_date = nowdate()
 		target.ref_doc = "Job Card"
 		target.net_amount = obj.total_amount
+		target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
 	
 	doc = get_mapped_doc("Job Card", source_name, {
 			"Job Card": {

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-22 16:55:12.952626", 
+ "modified": "2018-01-12 16:29:37.105393", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Budget Consumption Report", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Budget User"
+  }, 
+  {
+   "role": "Management"
   }
  ]
 }

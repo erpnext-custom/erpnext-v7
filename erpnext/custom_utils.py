@@ -82,3 +82,12 @@ def get_user_info(user=None, employee=None, cost_center=None):
 	#return [cc, wh, app, cust]
         return info
 # Ver 2.0 Ends
+
+##
+# Cancelling draft documents
+##
+@frappe.whitelist()
+def cancel_draft_doc(doctype, docname):
+        doc = frappe.get_doc(doctype, docname)
+        doc.db_set("docstatus", 2)
+
