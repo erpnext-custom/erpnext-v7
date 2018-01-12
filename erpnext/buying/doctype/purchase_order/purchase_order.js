@@ -16,6 +16,16 @@ frappe.ui.form.on("Purchase Order", {
 
 		//set default price list
 		frm.set_value("buying_price_list", "Standard Buying")
+
+		if(frm.doc.__islocal) {
+                        frappe.call({
+                              method: "erpnext.custom_utils.get_user_info",
+                              args: {"user": frappe.session.user},
+                              callback(r) {
+                                        cur_frm.set_value("branch", r.message.branch);
+                             }
+                        });
+                }
 	},
 
 	freight_and_insurance_charges: function(frm) {
@@ -340,3 +350,21 @@ cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc
 		}
 	}
 }
+
+frappe.ui.form.on("Purchase Order", "items_on_form_rendered", function(frm, grid_row, cdt, cdn) {
+                var row = cur_frm.open_grid_row();
+                frappe.call({
+                              method: "erpnext.custom_utils.get_user_info",
+                              args: {"user": frappe.session.user},
+                              callback(r) {
+                                if(!row.grid_form.fields_dict.cost_center.value) {
+                                        row.grid_form.fields_dict.cost_center.set_value(r.message.cost_center)
+                                        row.grid_form.fields_dict.cost_center.refresh()
+                                }
+                                if(!row.grid_form.fields_dict.warehouse.value) {
+                                        row.grid_form.fields_dict.warehouse.set_value(r.message.warehouse)
+                                        row.grid_form.fields_dict.warehouse.refresh()
+                                }
+                             }
+                        });
+        })

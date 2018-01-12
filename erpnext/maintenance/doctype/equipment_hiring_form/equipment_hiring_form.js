@@ -38,6 +38,17 @@ frappe.ui.form.on('Equipment Hiring Form', {
 		if (!frm.doc.request_date) {
 			frm.set_value("request_date", get_today());
 		}
+		
+		if(frm.doc.__islocal) {
+                        frappe.call({
+                                method: "erpnext.custom_utils.get_user_info",
+                                args: {"user": frappe.session.user},
+                                callback(r) {
+                                        cur_frm.set_value("cost_center", r.message.cost_center);
+                                        cur_frm.set_value("branch", r.message.branch);
+                                }
+                        });
+                }
 	},
 	"total_hiring_amount": function(frm) {
 		if(frm.doc.docstatus != 1 && frm.doc.private == "Private") {

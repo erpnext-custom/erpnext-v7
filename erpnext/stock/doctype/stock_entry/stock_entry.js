@@ -90,7 +90,20 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 					cur_frm.set_value("from_warehouse", r.message[1])
 				}
 			})
+	
+			
 		}		
+		if(me.frm.doc.__islocal) {
+			frappe.call({
+                              method: "erpnext.custom_utils.get_user_info",
+                              args: {"user": frappe.session.user},
+                              callback(r) {
+                                        cur_frm.set_value("branch", r.message.branch);
+                                        cur_frm.set_value("from_warehouse", r.message.warehouse);
+                                        cur_frm.set_value("user_cost_center", r.message.cost_center);
+                             }
+                        });
+		}
 	},
 	// Ver2.0 Ends
 	
@@ -611,3 +624,10 @@ frappe.ui.form.on("Stock Entry", "refresh", function(frm) {
       frm.set_df_property("naming_series", "reqd", true)
       refresh_field('naming_series');
 }); */
+frappe.ui.form.on("Stock Entry", "items_on_form_rendered", function(frm, grid_row, cdt, cdn) {
+                var row = cur_frm.open_grid_row();
+                if(!row.grid_form.fields_dict.cost_center.value) {
+                        row.grid_form.fields_dict.cost_center.set_value(frm.doc.user_cost_center)
+                        row.grid_form.fields_dict.cost_center.refresh()
+                }
+        })

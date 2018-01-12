@@ -80,8 +80,6 @@ frappe.ui.form.on('Job Card', {
 	}
 });
 
-cur_frm.add_fetch("mechanic", "employee_name", "employee_name")
-
 //Job Card Item  Details
 frappe.ui.form.on("Job Card Item", {
 	"start_time": function(frm, cdt, cdn) {
@@ -129,7 +127,46 @@ frappe.ui.form.on("Mechanic Assigned", {
 	},
 	"end_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
-	}
+	},
+	"mechanic": function(frm, cdt, cdn) {
+                var item = locals[cdt][cdn]
+                if(item.employee_type == "Employee") {
+                        frappe.call({
+                                method: "frappe.client.get_value",
+                                args: {
+                                        doctype: "Employee",
+                                        fieldname: "employee_name",
+                                        filters: {name: item.mechanic}
+                                },
+                                callback: function(r) {
+                                        if(r.message.employee_name) {
+                                                frappe.model.set_value(cdt, cdn, "employee_name", r.message.employee_name)
+                                                cur_frm.refresh_fields()
+                                        }
+                                }
+                        })
+                }
+                else {
+			var doc_type = "Muster Roll Employee"
+			if(item.employee_type == "GEP Employee") {
+				doc_type = "GEP Employee"
+			}
+                        frappe.call({
+                                method: "frappe.client.get_value",
+                                args: {
+                                        doctype: doc_type,
+                                        fieldname: "person_name",
+                                        filters: {name: item.mechanic}
+                                },
+                                callback: function(r) {
+                                        if(r.message.person_name) {
+                                                frappe.model.set_value(cdt, cdn, "employee_name", r.message.person_name)
+                                                cur_frm.refresh_fields()
+                                        }
+                                }
+                        })
+                }
+        }
 })
 
 function calculate_time(frm, cdt, cdn) {
@@ -157,13 +194,33 @@ cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = functi
 
 cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = function(frm, cdt, cdn) {
 	var d = locals[cdt][cdn];
-	return {
-		filters: [
-		['Employee', 'is_job_card_employee', '=', 1],
-		['Employee', 'branch', '=', frm.branch],
-		['Employee', 'status', '=', 'Active']
-		]
+        if(d.employee_type == "Employee") {
+                return {
+                        filters: [
+                        ['Employee', 'is_job_card_employee', '=', 1],
+                        ['Employee', 'branch', '=', frm.branch],
+                        ['Employee', 'status', '=', 'Active']
+                        ]
+                }
+        }
+	else if(d.employee_type == "GEP Employee") {
+                return {
+                        filters: [
+                        ['GEP Employee', 'list_in_job_card', '=', 1],
+                        ['GEP Employee', 'branch', '=', frm.branch],
+                        ['GEP Employee', 'status', '=', 'Active']
+                        ]
+                }
 	}
+        else {
+                return {
+                        filters: [
+                        ['Muster Roll Employee', 'list_in_job_card', '=', 1],
+                        ['Muster Roll Employee', 'branch', '=', frm.branch],
+                        ['Muster Roll Employee', 'status', '=', 'Active']
+                        ]
+                }
+        }
 }
 	
 function get_entries_from_min(form) {
