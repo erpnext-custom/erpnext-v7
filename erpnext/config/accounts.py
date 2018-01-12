@@ -190,6 +190,10 @@ def get_data():
 					"doctype": "Asset",
 					"is_query_report": True,
 				},
+				{
+					"type": "doctype",
+					"name": "Bulk Asset Transfer",
+				},
 			]
 		},
 		{

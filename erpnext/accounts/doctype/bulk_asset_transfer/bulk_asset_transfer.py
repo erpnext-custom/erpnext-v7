@@ -8,7 +8,7 @@ from frappe.model.document import Document
 
 class BulkAssetTransfer(Document):
 	def on_submit(self):
-		if not custodian or not custodian_cost_center or not custodian_branch:
+		if not self.custodian or not self.custodian_cost_center or not self.custodian_branch:
 			frappe.throw("The custodian doesn't have Cost Center and Branch defined in Employee Master")
 
 		for a in self.items:
