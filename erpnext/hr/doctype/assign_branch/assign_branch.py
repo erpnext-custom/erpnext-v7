@@ -8,8 +8,10 @@ from frappe.model.document import Document
 
 class AssignBranch(Document):
 	def validate(self):
+		self.check_employee_duplicate()
 		self.assign_name()	
 		self.check_duplicate()
+	
 
 	def on_update(self):
 		self.assign_branch()
@@ -19,6 +21,11 @@ class AssignBranch(Document):
 			emp = frappe.get_doc("Employee", self.employee)
 			self.user = emp.user_id
 			self.current_branch = emp.branch
+
+	def check_employee_duplicate(self):
+		docs = frappe.db.sql("select name from `tabAssign Branch` where employee = %s and user = %s and name != %s", (self.employee, self.user, self.name), as_dict=True)
+		if docs:
+			frappe.throw("The Employee has been already assigned Branch through <b>" + str(docs[0].name) + "</b>")
 
 	def check_duplicate(self):		
 		for a in self.items:
@@ -41,3 +48,12 @@ class AssignBranch(Document):
 
 		frappe.msgprint("Branch Assigned")
 
+	#Populate branches with active branches 
+	def get_all_branches(self):
+		query = "select name as branch from tabBranch where is_disabled != 1" 
+		entries = frappe.db.sql(query, as_dict=True)
+		self.set('items', [])
+
+		for d in entries:
+			row = self.append('items', {})
+			row.update(d)
