@@ -82,7 +82,7 @@ class EquipmentHiringForm(Document):
 			result = frappe.db.sql("select ehf_name from `tabEquipment Reservation Entry` where equipment = \'" + str(a.equipment) + "\' and docstatus = 1 and (\'" + str(a.from_date) + "\' between from_date and to_date OR \'" + str(a.to_date) + "\' between from_date and to_date)", as_dict=True)
 			if result:
 				if a.from_time and a.to_time:
-					res = frappe.db.sql("select name from `tabEquipment Reservation Entry` where docstatus = 1 and equipment = %s and ((from_time not null and %s > from_time) or (to_time not null and %s < to_time))", (str(a.equipment), str(a.from_time), str(a.to_time)))
+					res = frappe.db.sql("select name from `tabEquipment Reservation Entry` where docstatus = 1 and equipment = %s and ( %s between to_time and from_time or %s between to_time and from_time )", (str(a.equipment), str(a.from_time), str(a.to_time)))
 					if res:
 						frappe.throw("The equipment " + str(a.equipment) + " is already in use from by " + str(result[0].ehf_name))
 		

@@ -252,7 +252,7 @@ class JobCard(AccountsController):
 
 
 	def update_reservation(self):
-		frappe.db.sql("update `tabEquipment Reservation Entry` set to_date = %s, from_date = %s, to_time = %s, from_time = %s where ehf_name = %s", (self.job_out_date, self.posting_date, self.job_out_time, self.job_in_date, self.break_down_report))
+		frappe.db.sql("update `tabEquipment Reservation Entry` set to_date = %s, from_date = %s, to_time = %s, from_time = %s where docstatus = 1 and ehf_name = %s", (self.finish_date, self.posting_date, self.job_out_time, self.job_in_time, self.break_down_report))
 		frappe.db.commit()
 
 	##

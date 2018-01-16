@@ -12,7 +12,7 @@ def get_notification_config():
 			"Project": {
                                 "status": "Ongoing"
                         },
-			"Item": {"total_projected_qty": ("<", 0)},
+			#"Item": {"total_projected_qty": ("<", 0)},
 			"Lead": {"status": "Open"},
 			"Contact": {"status": "Open"},
 			"Opportunity": {"status": "Open"},

@@ -46,6 +46,7 @@ class StockEntry(StockController):
 			item.update(get_bin_details(item.item_code, item.s_warehouse))
 
 	def validate(self):
+		self.check_item_value()
 		self.pro_doc = None
 		if self.production_order:
 			self.pro_doc = frappe.get_doc('Production Order', self.production_order)
@@ -80,6 +81,14 @@ class StockEntry(StockController):
 		self.update_stock_ledger()
 		self.update_production_order()
 		self.make_gl_entries_on_cancel()
+
+	def check_item_value(self):
+		if self.items:
+			for a in self.items:
+				if flt(a.qty) == 0 or flt(a.basic_amount) == 0 or flt(a.amount) == 0:
+					frappe.throw("Either Quantity or Amount is 0 for Item <b>" + str(a.item_name) + "</b>")
+		else:
+			frappe.throw("Stock Entry shoould have an Item Entry")
 
 	def validate_purpose(self):
 		valid_purposes = ["Material Issue", "Material Receipt", "Material Transfer", "Material Transfer for Manufacture",

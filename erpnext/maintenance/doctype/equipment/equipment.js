@@ -8,6 +8,23 @@ frappe.ui.form.on('Equipment', {
 	refresh: function(frm) {
 		cur_frm.set_df_property("engine_number", "read_only", frm.doc.engine_number ? 1 : 0)
 		cur_frm.set_df_property("chassis_number", "read_only", frm.doc.chassis_number ? 1 : 0)
+		cur_frm.set_df_property("hsd_type", "read_only", frm.doc.hsd_type ? 1 : 0)
+		cur_frm.set_df_property("equipment_category", "read_only", frm.doc.equipment_category ? 1 : 0)
+		if(!frm.doc.__islocal && in_list(user_roles, "Asset User")) {
+			frm.set_df_property("operator", "read_only", 0)
+			frm.set_df_property("branch", "read_only", 0)
+			frm.set_df_property("is_disabled", "read_only", 0)
+		}
+		if(!frm.doc.__islocal && in_list(user_roles, "Mechanical Master")) {
+			frm.set_df_property("operator", "read_only", 0)
+			frm.set_df_property("branch", "read_only", 1)
+			frm.set_df_property("is_disabled", "read_only", 1)
+		}
+		if(!frm.doc.__islocal && in_list(user_roles, "Fleet User")) {
+			frm.set_df_property("operator", "read_only", 1)
+			frm.set_df_property("branch", "read_only", 0)
+			frm.set_df_property("is_disabled", "read_only", 0)
+		}
 	},
 	validate: function(frm) {
 		if (frm.doc.operators) {
@@ -36,6 +53,13 @@ frappe.ui.form.on("Equipment", "refresh", function(frm) {
 		"equipment_category": frm.doc.equipment_category
             }
         };
+    });
+    cur_frm.set_query("branch", function() {
+	return {
+		"filters": {
+			"is_disabled": 0
+		}
+	}
     });
 })
 

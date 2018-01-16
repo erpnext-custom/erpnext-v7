@@ -21,16 +21,22 @@ def get_columns():
                 ("Increment") + ":Currency:80",
                 ("New Basic") + ":Currency:120"
         ]
-
 def get_data(filters):
-	docstatus = 1
-        query =  "select branch, employee, employee_name, fiscal_year, month, old_basic, increment, new_basic from `tabSalary Increment` where docstatus = %s"
-	if filters.uinput == "Draft":
-		docstatus = 0
-
+	#docstatus = ""
+        if filters.uinput == "Draft":
+                docstatus = 0
+        if filters.uinput == "Submitted":
+                docstatus = 1
+        if filters.uinput == "All":
+                docstatus = "docstatus"
+        query =  """select branch, employee, employee_name, fiscal_year, month, old_basic, 
+                    increment, new_basic 
+                    from `tabSalary Increment` 
+                    where docstatus = {0}
+                """.format(docstatus)
         if filters.get("branch"):
-		query += " and branch = \'"+ str(filters.branch) + "\'"
-
-	query += " order by branch"
-        return frappe.db.sql(query, docstatus)
-
+                query += " and branch = \'"+ str(filters.branch) + "\'"
+        #frappe.msgprint(docstatus)
+        query += "order by branch"
+        return frappe.db.sql(query)
+      
