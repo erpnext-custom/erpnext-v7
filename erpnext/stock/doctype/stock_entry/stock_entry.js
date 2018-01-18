@@ -631,3 +631,14 @@ frappe.ui.form.on("Stock Entry", "items_on_form_rendered", function(frm, grid_ro
                         row.grid_form.fields_dict.cost_center.refresh()
                 }
         })
+
+frappe.ui.form.on("Stock Entry Detail", "refresh", function(frm) {
+    cur_frm.set_query("cost_center", function() {
+        return {
+            "filters": {
+		"is_disabled": 0,
+		"is_group": 0
+            }
+        };
+    });
+})

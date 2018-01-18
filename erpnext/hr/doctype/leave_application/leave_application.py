@@ -382,9 +382,10 @@ def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 		frappe.throw("Set \'Reports To\' field for employee " + str(filters.get("employee")))
 
 @frappe.whitelist()
-def get_number_of_leave_days(employee, leave_type, from_date, to_date, half_day=None):
-	if half_day:
+def get_number_of_leave_days(employee, leave_type, from_date, to_date, half_day=0):
+	if half_day == 1:
 		return 0.5
+
 	number_of_days = date_diff(to_date, from_date) + 1
 	if not frappe.db.get_value("Leave Type", leave_type, "include_holiday"):
 		number_of_days = flt(number_of_days) - flt(get_holidays(employee, from_date, to_date))
