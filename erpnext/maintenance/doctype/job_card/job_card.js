@@ -77,7 +77,19 @@ frappe.ui.form.on('Job Card', {
 				frm.refresh_fields();
 			}
 		});
-	}
+	},
+	"items_on_form_rendered": function(frm, grid_row, cdt, cdn) {
+                var row = cur_frm.open_grid_row();
+                var df = frappe.meta.get_docfield("Job Card Item", "quantity", cur_frm.doc.name)
+                if(!row.grid_form.fields_dict.stock_entry.value) {
+                        df.read_only = 0
+                        row.grid_form.fields_dict.quantity.refresh()
+                }
+                else {
+                        df.read_only = 1
+                        row.grid_form.fields_dict.quantity.refresh()
+                }
+        }
 });
 
 //Job Card Item  Details

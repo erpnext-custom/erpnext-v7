@@ -19,8 +19,7 @@ class VehicleLogbook(Document):
 		self.update_operator()	
 
 	def on_update(self):
-		if self.rate_type == 'With Fuel':
-			self.calculate_balance()
+		self.calculate_balance()
 
 	def on_submit(self):
 		self.update_consumed()
@@ -54,7 +53,7 @@ class VehicleLogbook(Document):
 
 	def update_consumed(self):
 		pol_type = frappe.db.get_value("Equipment", self.equipment, "hsd_type")
-		closing = frappe.db.sql("select closing_balance, to_date from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and rate_type = 'With Fuel' and to_date <= %s order by to_date desc limit 1", (self.equipment, self.from_date), as_dict=True)
+		closing = frappe.db.sql("select closing_balance, to_date from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s order by to_date desc limit 1", (self.equipment, self.from_date), as_dict=True)
 
 		if closing:
 			qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (self.equipment, add_days(closing[0].to_date, 1), self.to_date, pol_type), as_dict=True)
@@ -131,7 +130,7 @@ def get_opening(equipment, from_date, to_date, pol_type):
 	if not pol_type:
 		frappe.throw("Set HSD type in Equipment")
 
-	closing = frappe.db.sql("select closing_balance, to_date from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and rate_type = 'With Fuel' and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
+	closing = frappe.db.sql("select closing_balance, to_date from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
 
 	if closing:
 		qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (equipment, add_days(closing[0].to_date, 1), to_date, pol_type), as_dict=True)

@@ -36,11 +36,20 @@ frappe.ui.form.on("Issue POL", "refresh", function(frm) {
 	
 	frm.fields_dict['items'].grid.get_field('equipment').get_query = function(doc, cdt, cdn) {
 		doc = locals[cdt][cdn]
-		return {
-			filters: {
-				'hsd_type': frm.doc.pol_type, 
-				"is_disabled": 0, 
-			}
-		}
+                if(frm.doc.purpose == "Transfer") {
+                        return {
+				"query": "erpnext.maintenance.doctype.issue_pol.issue_pol.equipment_query",
+				filters: {'branch': '%'}
+                                //filters:[['is_disabled', '=', 0], ['equipment_type', 'in', ['Fuel Tanker','Skid Tank','Barrel']]]
+                        }
+                }
+                else {
+                        return {
+                                filters: {
+                                        'hsd_type': frm.doc.pol_type,
+                                        "is_disabled": 0,
+                                }
+                        }
+                }
 	}
 })

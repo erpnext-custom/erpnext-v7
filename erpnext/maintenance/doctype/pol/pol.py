@@ -21,12 +21,13 @@ class POL(Document):
 		if docstatus and docstatus != 2:
 			frappe.throw("Cancel the Journal Entry " + str(self.jv) + " and proceed.")
 
-                if self.consumed:	
-                        doc = frappe.get_doc("Consumed POL", self.consumed)
-                        doc.db_set("docstatus", 2)
-		
-		self.db_set("consumed", "")
 		self.db_set("jv", "")
+
+		if self.direct_consumption:
+			self.cancel_consumed_pol()
+
+	def cancel_consumed_pol(self):
+		frappe.db.sql("update `tabConsumed POL` set docstatus = 2 where reference_type = 'POL' and reference_name = %s", (self.name))
 
 	##
 	# make necessary journal entry
@@ -88,6 +89,5 @@ class POL(Document):
 		con.reference_type = "POL"
 		con.reference_name = self.name
 		con.submit()
-		self.db_set("consumed", con.name)
 
 

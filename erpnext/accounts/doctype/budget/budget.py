@@ -78,7 +78,7 @@ def validate_expense_against_budget(args):
 	elif action and action[0].action == 'Ignore':
 		pass
 	elif frappe.db.get_value("Account", {"name": args.account, "root_type": "Expense"}) or frappe.db.get_value("Account", {"name": args.account, "root_type": "Asset", "account_type": "Fixed Asset"}):
-		if args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Good Manufacture - SMCL', 'Stripping Cost Amortization - SMCL']:
+		if args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Goods Manufacture - CDCL', 'Expenses Included In Valuation - CDCL', 'Increase or Decrease in Stock - CDCL', 'Stock Adjustment - CDCL', 'Discount alllowed - CDCL', 'Gain or Loss on Sale of Asset - CDCL', 'Gain or Loss on Sale of Inventory - CDCL', 'Gain or Loss on Foreign Exchange - CDCL']:
 			pass
 		elif str(frappe.db.get_value("Account", args.account, "parent_account")) == "Depreciation & Amortisation - SMCL":
 			pass

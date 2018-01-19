@@ -320,7 +320,6 @@ def get_account_list(doctype, txt, searchfield, start, page_len, filters):
 		fields = ["name", "parent_account"],
 		limit_start=start, limit_page_length=page_len, as_list=True)
 
-
 @frappe.whitelist()
 def get_income_account(doctype, txt, searchfield, start, page_len, filters):
 	from erpnext.controllers.queries import get_match_cond

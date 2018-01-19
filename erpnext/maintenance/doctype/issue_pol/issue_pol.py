@@ -13,10 +13,12 @@ class IssuePOL(Document):
 			frappe.throw("Should have a POL Issue Details to Submit")
 
 	def on_submit(self):
-		self.consume_pol()
+		if self.purpose == "Issue":
+			self.consume_pol()
 
 	def on_cancel(self):
-		self.cancel_consumed_pol()
+		if self.purpose == "Issue":
+			self.cancel_consumed_pol()
 
 	def consume_pol(self):
 		for a in self.items:
@@ -34,13 +36,15 @@ class IssuePOL(Document):
 		frappe.db.sql("update `tabConsumed POL` set docstatus = 2 where reference_type = 'Issue POL' and reference_name = %s", (self.name))
 
 def equipment_query(doctype, txt, searchfield, start, page_len, filters):
+	if not filters['branch']:
+		filters['branch'] = '%'
         return frappe.db.sql("""
                         select
                                 e.name,
                                 e.equipment_type,
                                 e.equipment_number
                         from `tabEquipment` e
-                        where e.branch = %(branch)s
+                        where e.branch like %(branch)s
                         and e.is_disabled != 1
                         and e.not_cdcl = 0
                         and exists(select 1

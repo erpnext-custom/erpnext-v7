@@ -7,6 +7,39 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from datetime import timedelta, date
 
+def consume_pol():
+	frappe.db.sql("delete from `tabConsumed POL`")
+	frappe.db.commit()
+
+	issues = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1", as_dict=True)
+	for a in issues:
+		pol = frappe.get_doc("Issue POL", a.name)
+		for b in pol.items:
+			con = frappe.new_doc("Consumed POL")	
+			con.equipment = b.equipment
+			con.branch = pol.branch
+			con.pol_type = pol.pol_type
+			con.date = pol.date
+			con.qty = b.qty
+			con.reference_type = "Issue POL"
+			con.reference_name = pol.name
+			con.submit()
+			frappe.db.commit()
+	
+	dcs = frappe.db.sql("select name from `tabPOL` where docstatus = 1 and direct_consumption = 1", as_dict=True)
+	for a in dcs:
+		b = frappe.get_doc("POL", a.name)
+		con = frappe.new_doc("Consumed POL")	
+		con.equipment = b.equipment
+		con.branch = b.branch
+		con.pol_type = b.pol_type
+		con.date = b.date
+		con.qty = b.qty
+		con.reference_type = "POL"
+		con.reference_name = b.name
+		con.submit()
+		frappe.db.commit()
+
 def update_mechanical():
 	mps = frappe.db.sql("select name from `tabMechanical Payment` where docstatus = 1", as_dict=True)
 	for a in mps:
