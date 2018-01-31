@@ -7,4 +7,5 @@ import frappe
 from frappe.model.document import Document
 
 class BranchFleetManager(Document):
-	pass
+	def validate(self):
+		self.office_name = self.branch

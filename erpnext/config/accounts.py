@@ -578,7 +578,20 @@ def get_data():
 					"is_query_report": True,
 					"name": "Earning Report",
 					"doctype": "Salary Slip"
-				}
+				},
+				{
+					"type": "report",
+					"name": "LTC Details",
+					"doctype": "Leave Travel Concession"
+				},
+				 {
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "LTC Process Report",
+                                        "label": _("LTC Process Report"),
+                                        "doctype": "Leave Travel Concession"
+                                }
+
 			]
 		},
 		{

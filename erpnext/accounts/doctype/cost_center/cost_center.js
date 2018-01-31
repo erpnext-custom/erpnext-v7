@@ -23,6 +23,9 @@ cur_frm.cscript.refresh = function(doc, cdt, cdn) {
 	cur_frm.toggle_display('cost_center_name', doc.__islocal);
 	cur_frm.toggle_enable(['is_group', 'company'], doc.__islocal);
 
+	cur_frm.toggle_reqd("branch", !doc.is_group)
+        cur_frm.toggle_display("branch", !doc.is_group)
+
 	if(!doc.__islocal && doc.is_group==1) {
 		intro_txt += __('Note: This Cost Center is a Group. Cannot make accounting entries against groups.');
 	}

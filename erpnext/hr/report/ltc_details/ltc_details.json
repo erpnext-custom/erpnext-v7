@@ -1,0 +1,33 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2018-01-26 14:27:27.156973", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "json": "{\"filters\":[],\"columns\":[[\"name\",\"Leave Travel Concession\"],[\"fiscal_year\",\"Leave Travel Concession\"],[\"employee\",\"LTC Details\"],[\"employee_name\",\"LTC Details\"],[\"bank_name\",\"LTC Details\"],[\"bank_ac_no\",\"LTC Details\"],[\"amount\",\"LTC Details\"]],\"sort_by\":\"LTC Details.employee\",\"sort_order\":\"desc\",\"sort_by_next\":null,\"sort_order_next\":\"desc\"}", 
+ "modified": "2018-01-26 14:44:11.227209", 
+ "modified_by": "Administrator", 
+ "module": "HR", 
+ "name": "LTC Details", 
+ "owner": "Administrator", 
+ "ref_doctype": "Leave Travel Concession", 
+ "report_name": "LTC Details", 
+ "report_type": "Report Builder", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "HR User"
+  }, 
+  {
+   "role": "HR Manager"
+  }
+ ]
+}

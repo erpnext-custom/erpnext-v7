@@ -22,6 +22,12 @@ class ProcessIncrement(Document):
 		cond += self.get_joining_releiving_condition()
 
                 increment_month = calendar.month_name[int(self.month)]
+
+                ### Ver 2.0 Begins
+                # Following line added by shiv on 26/01/2018
+                increment_date  = str(self.fiscal_year)+'-'+str(self.month)+'-01'
+                ### Ver 2.0 Ends
+                
                 '''
                 increment_month = ''
                 if self.month == '01':
@@ -33,13 +39,26 @@ class ProcessIncrement(Document):
                 '''
 
 		emp_list = frappe.db.sql("""
-			select t1.name, t1.employee_subgroup, t1.company, t1.branch,
-			t1.department, t1.division, t1.section, t1.employee_name
-			from `tabEmployee` t1, `tabSalary Structure` t2
-			where t1.docstatus!=2 and t2.docstatus != 2
-			and t1.increment_and_promotion_cycle = '%s' and 
-			ifnull(t2.salary_slip_based_on_timesheet,0) = 0 and t1.name = t2.employee
-		%s """% (increment_month,cond),as_dict=True)
+			select
+                                t1.name, t1.employee_subgroup, t1.company, t1.branch,
+                                t1.department, t1.division, t1.section, t1.employee_name,
+                                t1.date_of_joining,
+                                (
+                                case
+                                        when day(t1.date_of_joining) > 1 and day(t1.date_of_joining) <= 15
+                                        then timestampdiff(MONTH,t1.date_of_joining,'%s')+1 
+                                        else timestampdiff(MONTH,t1.date_of_joining,'%s')       
+                                end
+                                ) as no_of_months
+			  from
+                                `tabEmployee` t1,
+                                `tabSalary Structure` t2
+			 where t1.docstatus!=2 and t2.docstatus != 2
+			   and t1.increment_and_promotion_cycle = '%s'
+			   and ifnull(t2.salary_slip_based_on_timesheet,0) = 0
+			   and t1.name = t2.employee
+			   and t2.is_active = 'Yes'
+		%s """% (increment_date, increment_date, increment_month,cond),as_dict=True)
 
 		#frappe.msgprint(str(emp_list))
 		return emp_list
@@ -79,8 +98,14 @@ class ProcessIncrement(Document):
                         #frappe.msgprint(_("Employee: {0}, Grade: {1}").format(emp.name, emp.employee_subgroup))
 			if not frappe.db.sql("""select name from `tabSalary Increment`
 					where docstatus!= 2 and employee = %s and month = %s and fiscal_year = %s and company = %s
-					""", (emp.name, self.month, self.fiscal_year, self.company)):
+					""", (emp.name, self.month, self.fiscal_year, self.company)) and flt(emp.no_of_months) >= 3:
                                 payscale = get_employee_payscale(emp.name, emp.employee_subgroup, self.fiscal_year, self.month)
+
+                                # Prorate based on noof months
+                                minimum_months       = 3
+                                total_months         = flt(emp.no_of_months)
+                                calculated_factor    = 1 if flt(total_months)/12 >= 1 else round(flt(total_months)/12,2)
+                                calculated_increment = round(flt(payscale.increment)*flt(calculated_factor))
 				
 				if payscale:
                                         si = frappe.get_doc({
@@ -98,10 +123,15 @@ class ProcessIncrement(Document):
                                                 "payscale_increment": payscale.increment,
                                                 "payscale_maximum": payscale.maximum,
                                                 "old_basic": payscale.old_basic,
-                                                "new_basic": payscale.new_basic,
-                                                "increment": payscale.increment,
+                                                "new_basic": flt(payscale.old_basic)+flt(calculated_increment),
+                                                "increment": calculated_increment,
                                                 "employee_name": emp.employee_name,
-						"salary_structure": payscale.salary_structure
+						"salary_structure": payscale.salary_structure,
+                                                "minimum_months": minimum_months,
+                                                "total_months": total_months,
+                                                "calculated_factor": calculated_factor,
+                                                "calculated_increment": calculated_increment,
+                                                "date_of_reference": emp.date_of_joining
                                         })
                                         si.insert()
                                         si_list.append(si.name)

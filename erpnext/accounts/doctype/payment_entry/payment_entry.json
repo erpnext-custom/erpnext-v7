@@ -1350,7 +1350,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-01-12 11:43:03.362513", 
+ "modified": "2018-01-31 15:07:31.070948", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Payment Entry", 
@@ -1358,9 +1358,9 @@
  "owner": "Administrator", 
  "permissions": [
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 1, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -1371,18 +1371,18 @@
    "print": 1, 
    "read": 1, 
    "report": 1, 
-   "role": "Custom Temp Role", 
+   "role": "Purchase Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
-   "create": 1, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -1396,7 +1396,8 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 1
+   "user_permission_doctypes": "[\"Branch\"]", 
+   "write": 0
   }, 
   {
    "amend": 1, 

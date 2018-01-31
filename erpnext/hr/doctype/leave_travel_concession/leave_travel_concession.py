@@ -87,7 +87,7 @@ class LeaveTravelConcession(Document):
 	#@frappe.whitelist()
 	def get_ltc_details(self):
 		start, end = frappe.db.get_value("Fiscal Year", self.fiscal_year, ["year_start_date", "year_end_date"])
-		query = "select e.date_of_joining, b.employee, b.employee_name, b.branch, a.amount from `tabSalary Detail` a, `tabSalary Structure` b, tabEmployee e where a.parent = b.name and b.employee = e.name and a.salary_component = 'Basic Pay' and (b.is_active = 'Yes' or e.relieving_date between \'"+str(start)+"\' and \'"+str(end)+"\') and b.eligible_for_ltc = 1 "
+		query = "select e.date_of_joining, b.employee, b.employee_name, b.branch, a.amount, e.bank_name, e.bank_ac_no  from `tabSalary Detail` a, `tabSalary Structure` b, tabEmployee e where a.parent = b.name and b.employee = e.name and a.salary_component = 'Basic Pay' and (b.is_active = 'Yes' or e.relieving_date between \'"+str(start)+"\' and \'"+str(end)+"\') and b.eligible_for_ltc = 1 "
 		query += " order by b.branch"
 		entries = frappe.db.sql(query, as_dict=True)
 		self.set('items', [])

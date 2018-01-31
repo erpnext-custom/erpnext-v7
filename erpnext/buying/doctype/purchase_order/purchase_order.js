@@ -17,7 +17,7 @@ frappe.ui.form.on("Purchase Order", {
 		//set default price list
 		frm.set_value("buying_price_list", "Standard Buying")
 
-		if(frm.doc.__islocal) {
+		if(frm.doc.__islocal && !frm.doc.branch) {
                         frappe.call({
                               method: "erpnext.custom_utils.get_user_info",
                               args: {"user": frappe.session.user},

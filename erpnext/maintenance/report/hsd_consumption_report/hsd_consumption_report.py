@@ -16,7 +16,7 @@ def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		row = [d.name, d.ty, d.no, d.br, (d.mink, d.minh), (d.maxk,d.maxh), round(d.maxk-d.mink,2), round(d.maxh-d.minh,2),
+		row = [d.name, d.ty, d.no, d.br, ("{0}" '/' "{1}".format(d.mink, d.minh)), ("{0}" '/' "{1}".format(d.maxk,d.maxh)), round(d.maxk-d.mink,2), round(d.maxh-d.minh,2),
 		round(flt(d.drawn),2), round(flt(d.opening),2), round((flt(d.drawn)+flt(d.opening)),2),
 		d.yskm, d.yshour, round(d.consumed,2), round(flt(d.closing),2), flt(d.cap), round(flt(d.rate),2), round((flt(d.rate)*flt(d.consumed)),2)]
 		data.append(row);

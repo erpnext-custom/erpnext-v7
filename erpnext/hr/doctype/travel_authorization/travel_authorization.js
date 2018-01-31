@@ -152,3 +152,7 @@ function update_advance_amount(frm) {
 		}
 	})
 }
+
+frappe.form.link_formatters['Employee'] = function(value, doc) {
+	return value
+}

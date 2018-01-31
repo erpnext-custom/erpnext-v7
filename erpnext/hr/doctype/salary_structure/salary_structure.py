@@ -323,6 +323,7 @@ def make_salary_slip(source_name, target_doc=None):
 
 		pf = gis = health = 0.00
                 for d in target.get('deductions'):
+                        #frappe.msgprint(_("{0}").format(d.salary_component))
                         if d.salary_component == 'PF': 
 				percent = frappe.db.get_single_value("HR Settings", "employee_pf")
 				if not percent:
@@ -346,7 +347,7 @@ def make_salary_slip(source_name, target_doc=None):
 					tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
 					d.amount = flt(tax_amt)
 					tax_included = 1
-                                        
+                #frappe.msgprint(_("gross_amt: {0}, gis: {1}, pf: {2}, comm_amt: {3}, tax: {4}").format(flt(gross_amt),flt(gis),flt(pf),flt(comm_amt),flt(tax_amt)))                        
 		target.run_method("pull_emp_details")
 		target.run_method("get_leave_details")
 		target.run_method("calculate_net_pay")

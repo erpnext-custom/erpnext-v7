@@ -279,6 +279,7 @@ class PurchaseOrder(BuyingController):
 				"po_date": self.transaction_date,
 				"amount": amount,
 				"item_code": a.item_code,
+				"poi_name": a.name,
 				"date": frappe.utils.nowdate()
 				})
 			bud_obj.flags.ignore_permissions = 1

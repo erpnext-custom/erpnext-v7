@@ -384,6 +384,11 @@ def get_data():
 					"name": "Employee Due Date Report",
 					"doctype": "Employee"
 				},
+				{
+                                        "type": "report",
+                                        "name": "LTC Details",
+                                        "doctype": "Leave Travel Concession"
+                                },
 			]
 		},
 	]

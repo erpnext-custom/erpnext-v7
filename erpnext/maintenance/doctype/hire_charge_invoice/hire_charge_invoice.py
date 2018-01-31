@@ -27,6 +27,9 @@ class HireChargeInvoice(AccountsController):
 		self.check_close()
 
 	def on_cancel(self):
+		if self.owned_by != "CDCL":
+			self.make_gl_entries()
+			#self.make_gl_entries_on_cancel()
 		docs = check_uncancelled_linked_doc(self.doctype, self.name)
                 if docs != 1:
                         frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
@@ -37,8 +40,6 @@ class HireChargeInvoice(AccountsController):
 			cl_status = frappe.db.get_value("Journal Entry", self.payment_jv, "docstatus")
 			if cl_status and cl_status != 2:
 				frappe.throw("You need to cancel the journal entry ("+ str(self.payment_jv) + ")related to this invoice first!")
-		if self.owned_by != "CDCL":
-			self.make_gl_entries()
 		self.readjust_advance()
 		self.update_vlogs(0)
 		self.check_close(1)
@@ -284,7 +285,7 @@ class HireChargeInvoice(AccountsController):
                         make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 
 @frappe.whitelist()
-def get_vehicle_logs(form):
+def get_vehicle_logs(form=None):
 	if form:
 		return frappe.db.sql("select a.name, a.equipment, a.rate_type, a.equipment_number, (a.total_work_time + a.hour_taken) as total_work_time, a.total_idle_time, a.work_rate, a.idle_rate, (select count(1) from `tabVehicle Log` b where b.parent = a.name) as no_of_days from `tabVehicle Logbook` a where a.docstatus = 1 and a.invoice_created = 0 and a.ehf_name = \'" + str(form) + "\'", as_dict=True)
 	else:

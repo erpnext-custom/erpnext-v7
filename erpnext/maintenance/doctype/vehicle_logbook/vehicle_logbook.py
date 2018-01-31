@@ -121,7 +121,7 @@ class VehicleLogbook(Document):
 		result = frappe.db.sql("select ehf_name from `tabVehicle Logbook` where equipment = \'" + str(self.equipment) + "\' and docstatus = 1 and (\'" + str(self.from_date) + "\' between from_date and to_date OR \'" + str(self.to_date) + "\' between from_date and to_date)", as_dict=True)
 		if result:
 			if self.from_time and self.to_time:
-				res = frappe.db.sql("select name from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and (%s between from_time and to_time or %s between from_time and to_time)", (str(self.equipment), str(self.from_time), str(self.to_time)))
+				res = frappe.db.sql("select name from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and ehf_name = %s and (%s between from_time and to_time or %s between from_time and to_time)", (str(self.equipment), str(result[0].ehf_name), str(self.from_time), str(self.to_time)))
 				if res:
 					frappe.throw("The logbook for the same equipment, date, and time has been created at " + str(result[0].ehf_name))
 
@@ -130,7 +130,7 @@ def get_opening(equipment, from_date, to_date, pol_type):
 	if not pol_type:
 		frappe.throw("Set HSD type in Equipment")
 
-	closing = frappe.db.sql("select closing_balance, to_date from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s order by to_date desc limit 1", (equipment, from_date), as_dict=True)
+	closing = frappe.db.sql("select name, closing_balance, to_date, final_km, final_hour from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s order by to_date desc, to_time desc limit 1", (equipment, from_date), as_dict=True)
 
 	if closing:
 		qty = frappe.db.sql("select sum(qty) as qty from `tabConsumed POL` where equipment = %s and date between %s and %s and docstatus = 1 and pol_type = %s", (equipment, add_days(closing[0].to_date, 1), to_date, pol_type), as_dict=True)
@@ -143,7 +143,11 @@ def get_opening(equipment, from_date, to_date, pol_type):
 	result = []
 	if closing:
 		result.append(closing[0].closing_balance)
+		result.append(closing[0].final_km)
+		result.append(closing[0].final_hour)
 	else:
+		result.append(0)
+		result.append(0)
 		result.append(0)
 
 	if qty:
@@ -151,7 +155,7 @@ def get_opening(equipment, from_date, to_date, pol_type):
 	else:
 		result.append(0)
 
-	if c_km:
+	'''if c_km:
 		result.append(c_km[0].final_km)
 	else:
 		result.append(0)
@@ -159,7 +163,7 @@ def get_opening(equipment, from_date, to_date, pol_type):
 	if c_hr:
 		result.append(c_hr[0].final_hour)
 	else:
-		result.append(0)
+		result.append(0)'''
 
 	return result
 

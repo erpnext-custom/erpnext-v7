@@ -18,6 +18,17 @@ class CostCenter(NestedSet):
 		self.validate_mandatory()
 		self.create_customer()
 		self.check_ware_house()
+		self.check_cost_center()
+
+	def check_cost_center(self):
+                if self.is_group:
+                        self.branch = ''
+                else:
+                        if not self.branch:
+                                frappe.throw("Non-Group Cost Center should have a Branch linked")
+                        ccs = frappe.db.sql("select name from `tabCost Center` where branch = %s and name != %s", (self.branch, self.name), as_dict=True)
+                        if ccs:
+                                frappe.throw("Branch <b>" + str(self.branch) + "</b> is already linked to Cost Center <b>"+str(ccs[0].name)+"</b>")
 
 	def check_ware_house(self):
 		if not self.is_group and not self.warehouse:

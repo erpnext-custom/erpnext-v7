@@ -71,6 +71,8 @@ class calculate_taxes_and_totals(object):
 				item.amount = flt(item.rate * item.qty,	item.precision("amount"))
 				item.net_amount = item.amount
 				if item.doctype in ['Purchase Receipt Item', 'Purchase Invoice Item']:
+					if flt(item.qty) == 0:
+						frappe.throw("Accepted Quantity cannnot be zero for <b>" + str(item.item_code) + "</b>")
 					item.net_rate = item.rate + (item.tx_amount/ item.qty)
 					item.net_amount = item.amount + item.tx_amount
 

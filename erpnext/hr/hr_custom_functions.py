@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.utils import flt, cint, getdate, date_diff
 from frappe.utils.data import get_first_day, get_last_day, add_days
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
@@ -115,7 +116,11 @@ def get_employee_gis(employee):
                 and b.employee_subgroup = a.employee_subgroup
                 limit 1
                 """,employee);
-	return result
+
+        if result:
+                return result[0][0]
+        else:
+                return 0.0
 
 @frappe.whitelist()
 def update_salary_structure(employee, new_basic, sal_struc_name=None):

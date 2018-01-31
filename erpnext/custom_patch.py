@@ -7,6 +7,31 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from datetime import timedelta, date
 
+def consume_trans():
+	trans = frappe.db.sql("select name from `tabEquipment POL Transfer` where docstatus = 1", as_dict=True)
+	for a in trans:
+		b = frappe.get_doc("Equipment POL Transfer", a.name)
+		con = frappe.new_doc("Consumed POL")	
+		con.equipment = b.from_equipment
+		con.branch = b.from_branch
+		con.pol_type = b.pol_type
+		con.date = b.transfer_date
+		con.qty = -1 * flt(b.quantity)
+		con.reference_type = "Equipment POL Transfer"
+		con.reference_name = b.name
+		con.submit()
+		con1 = frappe.new_doc("Consumed POL")	
+		con1.equipment = b.to_equipment
+		con1.branch = b.to_branch
+		con1.pol_type = b.pol_type
+		con1.date = b.transfer_date
+		con1.qty = b.quantity
+		con1.reference_type = "Equipment POL Transfer"
+		con1.reference_name = b.name
+		con1.submit()
+		frappe.db.commit()
+
+
 def consume_pol():
 	frappe.db.sql("delete from `tabConsumed POL`")
 	frappe.db.commit()
@@ -289,6 +314,7 @@ def commitBudget():
 					"po_no": order.name,
 					"po_date": order.transaction_date,
 					"amount": item.amount,
+					"poi_name": item.name,
 					"item_code": item.item_code,
 					"date": frappe.utils.nowdate()})
 				consume.submit()
@@ -337,7 +363,7 @@ def consumeBudget():
 	for a in invoices:
 		invoice = frappe.get_doc("Purchase Invoice", a['name'])
 		for item in invoice.get("items"):
-			expense, cost_center = frappe.db.get_value("Purchase Order Item", {"item_code": item.item_code, "cost_center": item.cost_center, "parent": item.purchase_order, "docstatus": 1}, ["budget_account", "cost_center"])
+			expense, cost_center = frappe.db.get_value("Purchase Order Item", item.po_detail, ["budget_account", "cost_center"])
 			if expense:
 				account_type = frappe.db.get_value("Account", expense, "account_type")
 				if account_type in ("Fixed Asset", "Expense Account"):
@@ -349,6 +375,7 @@ def consumeBudget():
 						"po_no": invoice.name,
 						"po_date": po_date,
 						"amount": item.amount,
+						"pii_name": item.name,
 						"item_code": item.item_code,
 						"com_ref": item.purchase_order,
 						"date": frappe.utils.nowdate()})

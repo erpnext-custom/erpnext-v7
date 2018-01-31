@@ -137,7 +137,7 @@ class PurchaseReceipt(BuyingController):
 		update_serial_nos_after_submit(self, "items")
 
 		self.make_gl_entries()
-		self.consume_budget()
+		#self.consume_budget()
 		self.update_asset()
 
 	def check_next_docstatus(self):
@@ -490,7 +490,7 @@ def update_purchase_receipt_status(docname, status):
 	pr.update_status(status)
 
 @frappe.whitelist()
-def get_item_group(item_code):
+def get_item_group(item_code=None):
 	grp = ""
 	if item_code:
 		grp = frappe.db.get_value("Item", item_code, "item_group")
