@@ -25,7 +25,7 @@ def get_columns():
 
 def get_data(filters):
 
-        query =  "select p.equipment, p.equipment_number, p.book_type, p.supplier, p.pol_type, p.date, p.qty, p.rate, ifnull(sum(p.total_amount),0) from tabPOL as p where p.docstatus = 1"
+        query =  "select p.equipment, p.equipment_number, p.book_type, p.supplier, p.pol_type, p.date, p.qty, p.rate, ifnull(p.total_amount,0) from tabPOL as p where p.docstatus = 1"
 
         if filters.get("branch"):
 		query += " and p.branch = \'"+ str(filters.branch) + "\'"
@@ -38,5 +38,5 @@ def get_data(filters):
 	else:
 		query += " and p.direct_consumption =  p.direct_consumption "
 	
-	query += " group by p.equipment"
+	query += " order by p.equipment"
         return frappe.db.sql(query)

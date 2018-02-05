@@ -46,7 +46,8 @@ def make_depreciation_entry(asset_name, date=None):
 
 	#depreciation_cost_center = frappe.db.get_value("Company", asset.company, "depreciation_cost_center")
 	depreciation_cost_center = asset.cost_center
-
+	
+	value_after_dep = 0
 	for d in asset.get("schedules"):
 		if not d.journal_entry and getdate(d.schedule_date) <= getdate(date):
 			je = frappe.new_doc("Journal Entry")
@@ -76,9 +77,9 @@ def make_depreciation_entry(asset_name, date=None):
 			je.submit()
 
 			d.db_set("journal_entry", je.name)
-			asset.value_after_depreciation -= d.depreciation_amount
+			value_after_dep = flt(asset.gross_purchase_amount) - flt(d.accumulated_depreciation_amount)
 
-	asset.db_set("value_after_depreciation", asset.value_after_depreciation)
+	asset.db_set("value_after_depreciation", value_after_dep)
 	asset.set_status()
 
 	return asset

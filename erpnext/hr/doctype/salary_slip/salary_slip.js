@@ -102,7 +102,8 @@ cur_frm.cscript.employee = function(doc,dt,dn){
 				},
 				callback: function(r){	
 					if (r.message){
-						calc_gis_amt = Math.round(r.message[0][0]);
+						//calc_gis_amt = Math.round(r.message[0][0]);
+						calc_gis_amt = Math.round(r.message);
 					}
 				}
 			});	

@@ -493,7 +493,7 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Separation Benefit Type",
+					"name": "Employee Benefit Type",
 				},
 			]
 		},

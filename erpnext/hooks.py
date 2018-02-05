@@ -178,12 +178,8 @@ scheduler_events = {
 		"erpnext.projects.doctype.task.task.set_tasks_as_overdue",
 		"erpnext.accounts.doctype.asset.depreciation.post_depreciation_entries",
 		"erpnext.hr.doctype.officiating_employee.officiating_employee.check_off_exp",
-		"erpnext.maintenance.maintenance_utils.check_hire_end"
-	],
-	"monthly": [
-		"erpnext.hr.hr_custom_functions.post_earned_leaves"
-	],
-	"yearly": [
+		"erpnext.maintenance.maintenance_utils.check_hire_end",
+		"erpnext.hr.hr_custom_functions.post_earned_leaves",
 		"erpnext.hr.hr_custom_functions.post_casual_leaves"
 	],
 }

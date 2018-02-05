@@ -181,15 +181,13 @@ def upload():
                                         
 				#frappe.msgprint(str(j))
                                 old = frappe.db.get_value("Attendance Others", {"employee": row[3].strip('\''), "date": str(row[5]) + '-' + str(month) + '-' + str(day)}, ["status","name"], as_dict=1)
-                                '''
+                                # Following IF condition enabled temporarily by SHIV on 2018/02/01
                                 if old:
                                         doc = frappe.get_doc("Attendance Others", old.name)
                                         doc.db_set('status', status if status in ('Present','Absent') else doc.status)
                                         doc.db_set('branch', row[0])
                                         doc.db_set('cost_center', row[1])
-                                else:
-                                '''
-                                
+                                #else:
                                 if not old and status in ('Present','Absent'):
                                         doc = frappe.new_doc("Attendance Others")
                                         doc.status = status

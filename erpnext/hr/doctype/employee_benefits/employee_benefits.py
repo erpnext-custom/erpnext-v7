@@ -7,7 +7,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import flt
 
-class EmployeeSeparationBenefits(Document):
+class EmployeeBenefits(Document):
 	def validate(self):
 		pass
 
@@ -33,7 +33,7 @@ class EmployeeSeparationBenefits(Document):
 					"account": a.gl_account,
 					"party_type": "Employee",
 					"party": self.employee,
-					"reference_type": "Employee Separation Benefits",
+					"reference_type": "Employee Benefits",
 					"reference_name": self.name,
 					"cost_center": emp.cost_center,
 					"debit_in_account_currency": flt(a.amount),

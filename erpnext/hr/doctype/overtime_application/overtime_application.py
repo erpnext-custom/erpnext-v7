@@ -12,12 +12,17 @@ class OvertimeApplication(Document):
 		self.validate_dates()
 
 	def on_submit(self):
+		self.check_status()
 		self.validate_submitter()
 		self.post_journal_entry()
 
 	def on_cancel(self):
 		self.check_journal()
-		
+	
+	def check_status(self):
+		if self.status != "Approved":
+			frappe.throw("Only Approved documents can be submitted")
+	
 	##
 	# Dont allow duplicate dates
 	##
@@ -84,7 +89,7 @@ class OvertimeApplication(Document):
 	##
 	def check_journal(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.payment_jv, "docstatus")
-		if cl_status != 2:
+		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry " + str(self.payment_jv) + " first!")
 		
 		self.db_set("payment_jv", "")

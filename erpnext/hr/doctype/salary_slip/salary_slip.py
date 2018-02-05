@@ -279,6 +279,8 @@ class SalarySlip(TransactionBase):
                 # Ver 1.0 Begins by SSK on 25/08/2016, following block added
 
                 #sst = frappe.get_doc("Salary Structure", self.salary_structure)
+                
+                '''
                 for ssl in self.deductions:
                         if (ssl.from_date and ssl.to_date):
                                 sst = frappe.get_doc("Salary Structure", self.salary_structure)
@@ -289,10 +291,22 @@ class SalarySlip(TransactionBase):
                                                 sst.total_deducted_amount += ssl.amount
                                                 sst.total_outstanding_amount = (sst.total_deductible_amount-sst.total_deducted_amount) if sst.total_deductible_amount else 0
                                                 sst.save()
-
+                '''
                 # Ver 1.0 Ends
+                self.update_deduction_balance()
+                
 	def on_cancel(self):
 		self.update_status()
+		self.update_deduction_balance()
+
+        def update_deduction_balance(self):
+                for ssl in self.deductions:
+                        if (ssl.ref_docname and ssl.amount and ssl.total_deductible_amount):
+                                sst = frappe.get_doc("Salary Detail", ssl.ref_docname)
+                                if sst:
+                                        sst.total_deducted_amount    += (-1*flt(ssl.amount) if self.docstatus == 2 else flt(ssl.amount))
+                                        sst.total_outstanding_amount -= (-1*flt(ssl.amount) if self.docstatus == 2 else flt(ssl.amount))
+                                        sst.save()
 
 	def email_salary_slip(self):
 		receiver = frappe.db.get_value("Employee", self.employee, "company_email") or \

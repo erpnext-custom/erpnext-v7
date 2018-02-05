@@ -229,8 +229,8 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Employee Separation Benefits",
-                                        "label": _("Employee Separation Benefits"),
+					"name": "Employee Benefits",
+                                        "label": _("Process Employee Benefits"),
 				},
 			]
 		},

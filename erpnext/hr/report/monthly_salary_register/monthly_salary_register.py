@@ -33,7 +33,9 @@ def execute(filters=None):
                 else:
                         status = str(ss.docstatus)
                         
-		row = [ss.employee, ss.employee_name, ss.company, ss.branch, ss.department,
+		row = [ss.employee, ss.employee_name,
+			ss.bank_name, ss.bank_account_no, 
+			ss.company, ss.branch, ss.department,
                          ss.division, ss.section, ss.designation, 
 			 ss.fiscal_year, ss.month, ss.leave_withut_pay, ss.payment_days,
                          status]
@@ -54,7 +56,9 @@ def execute(filters=None):
 	
 def get_columns(salary_slips):
 	columns = [
-		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140", _("Company") + ":Link/Company:120",
+		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140",
+		_("Bank Name")+ "::80", _("Bank A/C#")+"::100", 
+		_("Company") + ":Link/Company:120",
                 _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120", _("Division") + ":Link/Division:120",
                 _("Section") + ":Link/Section:120", _("Designation") + ":Link/Designation:120",
 		_("Year") + "::80", _("Month") + "::80", _("Leave Without Pay") + ":Float:130", 

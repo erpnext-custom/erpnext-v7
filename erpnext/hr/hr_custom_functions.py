@@ -12,6 +12,9 @@ from erpnext.custom_utils import get_year_start_date, get_year_end_date
 # Post casual leave on the first day of every month
 ##
 def post_casual_leaves():
+	date = getdate(frappe.utils.nowdate())
+	if not (date.month == 1 and date.day == 1):
+		return 0
 	date = add_days(frappe.utils.nowdate(), 10)
 	start = get_year_start_date(date);
 	end = get_year_end_date(date);
@@ -31,6 +34,9 @@ def post_casual_leaves():
 # Post earned leave on the first day of every month
 ##
 def post_earned_leaves():
+	if not getdate(frappe.utils.nowdate()) == getdate(get_first_day(frappe.utils.nowdate())):
+		return 0
+ 
 	date = add_days(frappe.utils.nowdate(), -20)
 	start = get_first_day(date);
 	end = get_last_day(date);
@@ -145,78 +151,121 @@ def update_salary_structure(employee, new_basic, sal_struc_name=None):
 
 			#Earnings
 			for e in sst.earnings:
+				per_or_lum = frappe.db.get_value("Salary Component", e.salary_component, "payment_method")
 				if e.salary_component == "Basic Pay":
 					e.db_set('amount',new_basic,update_modified=True)
 					gross_pay += new_basic
 				elif sst.eligible_for_corporate_allowance and e.salary_component == 'Corporate Allowance':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.ca)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.ca)*0.01)
+					else:
+						calc_amt = round(flt(sst.ca))
 					e.db_set('amount',calc_amt,update_modified=True)
-					gross_pay += calc_amt
+					gross_pay += calc_amt					
 				elif sst.eligible_for_contract_allowance and e.salary_component == 'Contract Allowance':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.contract_allowance)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.contract_allowance)*0.01)
+					else:
+						calc_amt = round(flt(sst.contract_allowance))
 					e.db_set('amount',calc_amt,update_modified=True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_communication_allowance and e.salary_component == 'Communication Allowance':
 					calc_amt = 0
 					comm_amt = round(flt(sst.communication_allowance))
-					calc_amt = round(flt(sst.communication_allowance))			
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.communication_allowance)*0.01)
+					else:
+						calc_amt = round(flt(sst.communication_allowance))
 					e.db_set('amount',calc_amt,update_modified=True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_underground and e.salary_component == 'Underground Allowance':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.underground)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.underground)*0.01)
+					else:
+						calc_amt = round(flt(sst.underground))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_shift and e.salary_component == 'Shift Allowance':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.shift)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.shift)*0.01)
+					else:
+						calc_amt = round(flt(sst.shift))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_difficulty and e.salary_component == 'Difficult Area Allowance':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.difficulty)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.difficulty)*0.01)
+					else:
+						calc_amt = round(flt(sst.difficulty))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_high_altitude and e.salary_component == 'High Altitude Allowance':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.high_altitude)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.high_altitude)*0.01)
+					else:
+						calc_amt = round(flt(sst.high_altitude))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_pda and e.salary_component == 'PDA':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.pda)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.pda)*0.01)
+					else:
+						calc_amt = round(flt(sst.pda))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_psa and e.salary_component == 'PSA':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.psa)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.psa)*0.01)
+					else:
+						calc_amt = round(flt(sst.psa))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_deputation and e.salary_component == 'Deputation Allowance':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.deputation)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.deputation)*0.01)
+					else:
+						calc_amt = round(flt(sst.deputation))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_scarcity and e.salary_component == 'Scarcity Allowance':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.scarcity)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.scarcity)*0.01)
+					else:
+						calc_amt = round(flt(sst.scarcity))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_mpi and e.salary_component == 'MPI':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.mpi)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.mpi)*0.01)
+					else:
+						calc_amt = round(flt(sst.mpi))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_officiating_allowance and e.salary_component == 'Officiating Allowance':
 					calc_amt = 0
-					calc_amt = round(new_basic*flt(sst.officiating_allowance)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.officiating_allowance)*0.01)
+					else:
+						calc_amt = round(flt(sst.officiating_allowance))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				elif sst.eligible_for_temporary_transfer_allowance and e.salary_component == 'Temporary Transfer Allowance':
 					calc_amt = 0
-					calc_amt = (new_basic*flt(sst.temporary_transfer_allowance)*0.01)
+					if per_or_lum == "Percent": 
+						calc_amt = round(new_basic*flt(sst.temporary_transfer_allowance)*0.01)
+					else:
+						calc_amt = round(flt(sst.temporary_transfer_allowance))
 					e.db_set('amount',calc_amt,update_modified = True)
 					gross_pay += calc_amt
 				else:

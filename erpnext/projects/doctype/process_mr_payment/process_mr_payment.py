@@ -273,15 +273,17 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                 where name = '{1}'
                                 and not exists(
                                         select 1
-                                        from `tabMR Payment Item` i
+                                        from `tabMR Payment Item` i, `tabProcess MR Payment` m
                                         where i.employee = e.name
                                         and i.employee_type = '{0}'
                                         and i.fiscal_year = '{2}'
                                         and i.month = '{3}'
                                         and i.docstatus in (0,1)
                                         and i.parent != '{4}'
+                                        and m.name = i.parent
+                                        and m.cost_center = '{5}'
                                 )
-                        """.format(employee_type, i.employee, fiscal_year, fiscal_month, dn), as_dict=True)
+                        """.format(employee_type, i.employee, fiscal_year, fiscal_month, dn, cost_center), as_dict=True)
 
                 if rest:
                         rest[0].update(i)

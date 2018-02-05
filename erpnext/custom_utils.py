@@ -3,6 +3,7 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 2.0		  SHIV		                   28/11/2017         get_user_info method included.
+2.0               SHIV                             02/02/2018         added function nvl()
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -91,3 +92,8 @@ def cancel_draft_doc(doctype, docname):
         doc = frappe.get_doc(doctype, docname)
         doc.db_set("docstatus", 2)
 
+##
+#  nvl() function added by SHIV on 02/02/2018
+##
+def nvl(val1, val2):
+        return val1 if val1 else val2

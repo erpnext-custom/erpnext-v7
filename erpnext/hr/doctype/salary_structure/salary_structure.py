@@ -35,6 +35,7 @@ from frappe.model.document import Document
 from erpnext.hr.utils import set_employee_name
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from erpnext.accounts.accounts_custom_functions import get_number_of_days
+from erpnext.custom_utils import nvl
 
 class SalaryStructure(Document):
 	def autoname(self):
@@ -285,6 +286,66 @@ def make_salary_slip(source_name, target_doc=None):
 		# copy earnings and deductions table
 		for key in ('earnings', 'deductions'):
 			for d in source.get(key):
+                                amount          = flt(d.amount)
+                                deductible_amt  = 0.0
+                                deducted_amt    = 0.0
+                                outstanding_amt = 0.0
+                                                
+                                if d.from_date:
+                                        if (target.start_date <= d.from_date <= target.end_date) or ((d.from_date <= target.end_date) and (nvl(d.to_date,target.end_date) >= target.start_date)):                
+                                                if key == 'deductions':
+                                                        if flt(d.total_deductible_amount) > 0:
+                                                                if flt(d.total_outstanding_amount) > 0:
+                                                                        if flt(amount) >= flt(d.total_outstanding_amount):
+                                                                                amount          = flt(d.total_outstanding_amount)
+                                                                else:
+                                                                        amount = 0
+                                        else:
+                                                amount = 0                
+                                elif d.to_date:
+                                        if (target.start_date <= d.to_date <= target.end_date) or ((d.to_date >= target.start_date) and (nvl(d.from_date,target.start_date) <= target.end_date)):
+                                                if key == 'deductions':
+                                                        if flt(d.total_deductible_amount) > 0:
+                                                                if flt(d.total_outstanding_amount) > 0:
+                                                                        if flt(amount) >= flt(d.total_outstanding_amount):
+                                                                                amount          = flt(d.total_outstanding_amount)
+                                                                else:
+                                                                        amount = 0
+                                        else:
+                                                amount = 0
+                                else:
+                                        if key == 'deductions':
+                                                if flt(d.total_deductible_amount) > 0:
+                                                        if flt(d.total_outstanding_amount) > 0:
+                                                                if flt(amount) >= flt(d.total_outstanding_amount):
+                                                                        amount          = flt(d.total_outstanding_amount)
+
+                                                        else:
+                                                                amount = 0
+
+                                if flt(d.total_deductible_amount) > 0:
+                                        if flt(d.total_outstanding_amount) > 0:
+                                                deductible_amt  = flt(d.total_deductible_amount)
+                                                deducted_amt    = flt(d.total_deducted_amount) + flt(amount)
+                                                outstanding_amt = flt(d.total_outstanding_amount) - flt(amount)
+
+                                target.append(key, {
+                                        'salary_component'         : d.salary_component,
+                                        'depends_on_lwp'           : d.depends_on_lwp,
+					'institution_nme'          : d.institution_name,
+					'reference_type'           : d.reference_type,
+					'reference_number'         : d.reference_number,
+                                        'ref_docname'              : d.name,
+                                        'from_date'                : d.from_date,
+                                        'to_date'                  : d.to_date,
+                                        'amount'                   : flt(amount),
+                                        'default_amount'           : flt(amount),
+                                        'total_deductible_amount'  : flt(deductible_amt),
+                                        'total_deducted_amount'    : flt(deducted_amt),
+                                        'total_outstanding_amount' : flt(outstanding_amt)
+                                })
+                                
+                                '''
                                 if d.from_date and d.to_date:
                                         if ((d.from_date <= target.start_date <= d.to_date) or (d.from_date <= target.end_date <= d.to_date)):
                                                 target.append(key, {
@@ -310,7 +371,8 @@ def make_salary_slip(source_name, target_doc=None):
 						'institution_name' : d.institution_name,
 						'reference_type' : d.reference_type,
 						'reference_number' : d.reference_number,
-                                        })                                        
+                                        })
+                                '''
 
                 for e in target.get('earnings'):
                         if e.salary_component == 'Basic Pay':

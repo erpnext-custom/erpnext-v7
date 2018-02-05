@@ -170,12 +170,9 @@ def upload():
 
                                 old = frappe.db.get_value("Overtime Entry", {"number":str(row[3]).strip('\''), "date": str(row[5]) + '-' + str(month) + '-' + str(day), "docstatus": 1}, ["docstatus","name","number_of_hours"], as_dict=1)
 
-                                '''
                                 if old:
                                         doc = frappe.get_doc("Overtime Entry", old.name)
                                         doc.db_set('number_of_hours', flt(row[j-1]))
-                                else:
-                                '''
                                 
                                 if not old and flt(row[j-1]) > 0:
                                         doc = frappe.new_doc("Overtime Entry")
