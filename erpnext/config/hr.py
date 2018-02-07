@@ -335,6 +335,13 @@ def get_data():
 					"doctype": "Salary Slip"
 				},
 				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Deduction Report",
+                                        "doctype": "Salary Slip"
+                                },
+
+				{
 					"type" : "report",
 					"is_query_report": True,
 					"name": "Salary Increment",

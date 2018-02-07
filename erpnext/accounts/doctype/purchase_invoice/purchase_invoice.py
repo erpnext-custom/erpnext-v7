@@ -634,6 +634,7 @@ class PurchaseInvoice(BuyingController):
 						if tds_account_currency==self.company_currency else self.tds_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
+					"cost_center": self.tds_cost_center,
 				}, tds_account_currency)
 			)
 		

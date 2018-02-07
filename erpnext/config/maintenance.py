@@ -188,6 +188,13 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
+					"name": "Equipment Status Report",
+					"label": "Equipment Status (Details)",
+					"doctype": "Equipment"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
 					"name": "POL Issue Report",
 					"doctype": "Consumed POL"
 				},

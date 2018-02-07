@@ -18,9 +18,14 @@ class BulkAssetTransfer(Document):
 			doc.db_set("branch", self.custodian_branch)
 
 	def get_assets(self):
-		if not self.cost_center:
-			frappe.throw("Select Cost Center First")
-		entries = frappe.db.sql("select name as asset_code, asset_name, gross_purchase_amount as gross_amount from tabAsset where cost_center = %s", self.cost_center, as_dict=True)
+		if not self.purpose:
+			frappe.throw("Select a Purpose first!")
+		if self.cost_center and self.purpose == "Cost Center":
+			entries = frappe.db.sql("select name as asset_code, asset_name, gross_purchase_amount as gross_amount from tabAsset where cost_center = %s", self.cost_center, as_dict=True)
+		elif self.current_custodian and self.purpose == "Custodian":
+			entries = frappe.db.sql("select name as asset_code, asset_name, gross_purchase_amount as gross_amount from tabAsset where issued_to = %s", self.current_custodian, as_dict=True)
+		else:
+			frappe.throw("Either select Cost Center or Custodian")
 		self.set('items', [])
 
 		for d in entries:

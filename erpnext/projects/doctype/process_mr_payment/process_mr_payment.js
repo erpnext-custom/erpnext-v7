@@ -76,6 +76,7 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 				var total_overall_amount = 0;
 				var ot_amount = 0; 
 				var wages_amount = 0;
+				console.log(r.message)
 				cur_frm.clear_table("items");
 				r.message.forEach(function(mr) {
 					if(mr['number_of_days'] > 0 || mr['number_of_hours'] > 0) {

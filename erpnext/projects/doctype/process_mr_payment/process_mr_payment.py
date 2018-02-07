@@ -61,19 +61,21 @@ class ProcessMRPayment(Document):
         def duplicate_entry_check(self, employee, employee_type, idx):
                 pl = frappe.db.sql("""
                                 select
-                                        name,
-                                        parent,
-                                        docstatus,
-                                        person_name,
-                                        employee
-                                from `tabMR Payment Item`
-                                where employee = '{0}'
-                                and employee_type = '{1}'
-                                and fiscal_year = '{2}'
-                                and month = '{3}'
-                                and docstatus in (0,1)
-                                and parent != '{4}'
-                        """.format(employee, employee_type, self.fiscal_year, self.month, self.name), as_dict=1)
+                                        i.name,
+                                        i.parent,
+                                        i.docstatus,
+                                        i.person_name,
+                                        i.employee
+                                from `tabMR Payment Item` i, `tabProcess MR Payment` m
+                                where i.employee = '{0}'
+                                and i.employee_type = '{1}'
+                                and i.fiscal_year = '{2}'
+                                and i.month = '{3}'
+                                and i.docstatus in (0,1)
+                                and i.parent != '{4}'
+				and i.parent = m.name
+				and m.cost_center = '{5}'
+                        """.format(employee, employee_type, self.fiscal_year, self.month, self.name, self.cost_center), as_dict=1)
 
                 for l in pl:
                         msg = 'Payment already processed for `{2}({3})`<br>RowId#{1}: Reference# <a href="#Form/Process MR Payment/{0}">{0}</a>'.format(l.parent, idx, l.person_name, l.employee)
@@ -278,7 +280,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         and i.employee_type = '{0}'
                                         and i.fiscal_year = '{2}'
                                         and i.month = '{3}'
-                                        and i.docstatus in (0,1)
+                                        and m.docstatus in (0,1)
                                         and i.parent != '{4}'
                                         and m.name = i.parent
                                         and m.cost_center = '{5}'

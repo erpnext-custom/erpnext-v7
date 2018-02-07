@@ -97,18 +97,16 @@ class VehicleLogbook(Document):
 		if interval:
 			for a in xrange(start, end):
 				if (flt(a) % flt(interval)) == 0:
-					manager = frappe.db.get_value("Branch Fleet Manager", branch, "manager")
-					if not manager:
-						frappe.msgprint("Setup the fleet manager in Branch Fleet Manager")
-					email = frappe.db.get_value("Employee", manager, "user_id")
-					subject = "Regular Maintenance for " + str(self.equipment)
-					message = "It is time to do regular maintenance for equipment " + str(self.equipment) + " since it passed the hour/km reading of " + str(a) 
-					if email:
-						try:
-							frappe.sendmail(recipients=email, sender=None, subject=subject, message=message)
-						except:
-							pass
-					break
+					mails = frappe.db.sql("select email from `tabBranch Fleet Manager Item` where parent = %s", branch, as_dict=True)
+					for b in mails:
+						subject = "Regular Maintenance for " + str(self.equipment)
+						message = "It is time to do regular maintenance for equipment " + str(self.equipment) + " since it passed the hour/km reading of " + str(a) 
+						if email:
+							try:
+								frappe.sendmail(recipients=b.email, sender=None, subject=subject, message=message)
+							except:
+								pass
+						break
 
 	def check_tank_capacity(self):
 		em = frappe.db.get_value("Equipment", self.equipment, "equipment_model")

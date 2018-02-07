@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:01:38.685715", 
+ "modified": "2018-02-06 12:28:25.924165", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Status", 
@@ -20,10 +20,19 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Maintenance Common"
+   "role": "Mechanical Master"
+  }, 
+  {
+   "role": "Fleet Manager"
+  }, 
+  {
+   "role": "Workshop Manager"
   }, 
   {
    "role": "Fleet User"
+  }, 
+  {
+   "role": "Workshop User"
   }
  ]
 }

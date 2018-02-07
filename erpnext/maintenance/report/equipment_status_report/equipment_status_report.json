@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-01-15 14:48:22.402627", 
+ "modified": "2018-02-06 12:28:01.120839", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Status Report", 
@@ -23,9 +23,6 @@
    "role": "Fleet User"
   }, 
   {
-   "role": "Mechanical Master"
-  }, 
-  {
    "role": "Fleet Manager"
   }, 
   {
@@ -36,18 +33,6 @@
   }, 
   {
    "role": "Regional Manager"
-  }, 
-  {
-   "role": "Management"
-  }, 
-  {
-   "role": "Asset User"
-  }, 
-  {
-   "role": "Asset Manager"
-  }, 
-  {
-   "role": "Management"
   }
  ]
 }

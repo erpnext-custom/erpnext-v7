@@ -22,11 +22,14 @@ def execute(filters=None):
 			row = [e.name, e.equipment_number, e.equipment_type]
 		else:
 			row = [e.name, e.equipment_number]
-
+		row = []
+		location = ""
 		for day in range(filters["total_days_in_month"]):
 			day = str(day + 1) if day + 1 > 9 else str("0" + str(day + 1))
-			res = frappe.db.sql("select reason, hours from `tabEquipment Reservation Entry` where docstatus = 1 and equipment = %s and %s between from_date and to_date order by reason desc", (e.name, str(str(filters.year) + "-" + str(filters.month) + "-" + str(day))), as_dict=True)
+			res = frappe.db.sql("select place, reason, hours from `tabEquipment Reservation Entry` where docstatus = 1 and equipment = %s and %s between from_date and to_date order by reason desc", (e.name, str(str(filters.year) + "-" + str(filters.month) + "-" + str(day))), as_dict=True)
 			if res:
+				if res[0].place:
+					location = res[0].place
 				v = ""
 				if res[0].reason == "Maintenance":
 					v = "M"
@@ -43,7 +46,15 @@ def execute(filters=None):
 				row.append(v)
 			else:
 				row.append("")	
-		data.append(row)
+		cols = []
+		if not filters.equipment_type:
+			cols = [e.name, e.equipment_number, e.equipment_type, location]
+		else:
+			cols = [e.name, e.equipment_number, location]
+
+		for a in row:
+			cols.append(a)			
+		data.append(cols)
 
 		legend = "M = Under Maintenance"
 
@@ -52,11 +63,11 @@ def execute(filters=None):
 def get_columns(filters):
 	if not filters.equipment_type:
 		columns = [
-			_("Eqp. Name") + "::140", _("Reg. Number")+ "::140", _("Eqp. Type")+ "::140"
+			_("Eqp. Name") + "::140", _("Reg. Number")+ "::140", _("Eqp. Type")+ "::140", _("Location")+ "::140"
 		]
 	else:
 		columns = [
-			_("Eqp. Name") + "::140", _("Reg. Number")+ "::140"
+			_("Eqp. Name") + "::140", _("Reg. Number")+ "::140", _("Location")+ "::140"
 		]
 
 	for day in range(filters["total_days_in_month"]):

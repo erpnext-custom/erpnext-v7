@@ -412,10 +412,17 @@ class PaymentEntry(AccountsController):
 			dr_or_cr = "credit" if self.party_type == "Customer" else "debit"
 			
 			for d in self.get("references"):
+				inv = frappe.get_doc(d.reference_doctype, d.reference_name)
+                                if self.payment_type == "Pay":
+                                        cc  = inv.buying_cost_center
+                                else:
+                                        cc  = frappe.db.get_value(doctype="Cost Center",filters={"branch": inv.branch},fieldname="name", as_dict=False)
+
 				gle = party_gl_dict.copy()
 				gle.update({
 					"against_voucher_type": d.reference_doctype,
-					"against_voucher": d.reference_name
+					"against_voucher": d.reference_name,
+					"cost_center": cc
 				})
 				
 				allocated_amount_in_company_currency = flt(flt(d.allocated_amount) * flt(d.exchange_rate), 
@@ -464,7 +471,8 @@ class PaymentEntry(AccountsController):
 						"account_currency": self.paid_from_account_currency,
 						"against": self.party if self.payment_type=="Pay" else self.paid_to,
 						"credit_in_account_currency": self.paid_amount,
-						"credit": self.base_paid_amount
+						"credit": self.base_paid_amount,
+						"cost_center": self.pl_cost_center
 					})
 				)
 
@@ -494,7 +502,8 @@ class PaymentEntry(AccountsController):
 						#"debit_in_account_currency": self.received_amount,
 						#"debit": self.base_received_amount
 						"debit_in_account_currency": self.actual_receivable_amount,
-						"debit": self.actual_receivable_amount
+						"debit": self.actual_receivable_amount,
+						"cost_center": self.pl_cost_center
 					})
 				)
 			

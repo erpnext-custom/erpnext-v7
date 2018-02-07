@@ -7,6 +7,25 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from datetime import timedelta, date
 
+def tds_cost_center():
+	datas = frappe.db.sql("select a.name as gl, b.name as pi, b.tds_cost_center, b.posting_date from `tabGL Entry` a,`tabPurchase Invoice` b where a.voucher_no = b.name and b.tds_amount > 0 and account like 'Creditors-Other - CDCL' and cost_center is null group by a.name, b.name;", as_dict=True)
+	for a in datas:
+		doc = frappe.get_doc("GL Entry", a.gl)
+		doc.db_set("cost_center", a.tds_cost_center)
+		print(str(a.gl) + " ==> " + str(a.tds_cost_center))
+
+def pe_cost_center():
+	datas = frappe.db.sql("select pe.name, per.reference_name as pi from `tabPayment Entry Reference` per, `tabPayment Entry` pe where pe.name = per.parent and  pe.paid_to = 'Creditors-Other - CDCL' and pe.docstatus = 1 and pe.payment_type = 'Pay'  group by pe.name;", as_dict=True)
+	for a in datas:
+		gls = frappe.db.sql("select name from `tabGL Entry` where voucher_no = %s and account = 'Creditors-Other - CDCL' and cost_center is null", a.name, as_dict=True)
+		for g in gls:
+			doc = frappe.get_doc("GL Entry", g.name)
+			cc = frappe.db.get_value("Purchase Invoice", doc.against_voucher, "buying_cost_center")
+			if not cc:
+				cc = "Pachu Zam Construction - CDCL"
+			doc.db_set("cost_center", cc)
+			print(str(a.pi) + " :: " + str(g.name) + " ==> " + str(a.name) + " >>> " + str(cc))
+
 def adjust_asset():
         assets = frappe.db.sql("select name, company, branch, cost_center, asset_category, expected_value_after_useful_life, status from tabAsset", as_dict=True)
         for a in assets:
@@ -24,7 +43,8 @@ def adjust_asset():
                                                 dr_or_cr = "debit"
                                                 amount = flt(b.debit_in_account_currency)
                                         account_curr = str(dr_or_cr) + "_in_account_currency"
-                                        jea.db_set(account_curr, flt(amount) - flt(a.expected_value_after_useful_life) * 2)
+					#amount = flt(amount) - flt(a.expected_value_after_useful_life) * 2
+                                        #jea.db_set(account_curr, flt(amount) - flt(a.expected_value_after_useful_life) * 2)
 
 				je = frappe.get_doc("Journal Entry", dep[0].journal_entry)
 				je.db_set("total_debit", amount)
@@ -39,12 +59,13 @@ def adjust_asset():
                                                 dr_or_cr = "debit"
                                                 amount = flt(c.debit)
                                         account_curr = str(dr_or_cr) + "_in_account_currency"
-                                        gl.db_set(account_curr, flt(amount) - flt(a.expected_value_after_useful_life) * 2)
-                                        gl.db_set(dr_or_cr, flt(amount) - flt(a.expected_value_after_useful_life) * 2)
+                                        #gl.db_set(account_curr, flt(amount) - flt(a.expected_value_after_useful_life) * 2)
+                                        #gl.db_set(dr_or_cr, flt(amount) - flt(a.expected_value_after_useful_life) * 2)
 
                         if flt(a.expected_value_after_useful_life) > 0:
                                 cur_value = flt(obj.depreciation_amount) - flt(a.expected_value_after_useful_life) * 2
-                                obj.db_set("depreciation_amount", flt(cur_value))
+                                #obj.db_set("depreciation_amount", flt(cur_value))
+
 				        
 def consume_trans():
 	trans = frappe.db.sql("select name from `tabEquipment POL Transfer` where docstatus = 1", as_dict=True)
