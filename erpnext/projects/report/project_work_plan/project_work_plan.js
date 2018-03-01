@@ -28,13 +28,14 @@ frappe.query_reports["Project Work Plan"] = {
 
 		if (!dataContext.parent_item || dataContext.item_name == "Time Sheets") {
 			//var $value = $(value).css("font-weight", "bold");
-			var $value = $(value).css({"font-weight": "bold", "color": "blue"});
+			var $value = $(value).css({"font-weight": "bold", "color": "blue", "background-color": "#75ff3a"});
 
 			/*
 			if (dataContext.warn_if_negative && dataContext[columnDef.df.fieldname] < 0) {
 				$value.addClass("text-danger");
 			}
 			*/
+			console.log($value.wrap("<p></p>").parent().html())
 			value = $value.wrap("<p></p>").parent().html();
 		}
 		

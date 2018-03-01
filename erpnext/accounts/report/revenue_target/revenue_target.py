@@ -13,12 +13,21 @@ def execute(filters=None):
 	
 	return columns, data
 
+def get_conditions(filters):
+	conditions = ""
+	if filters.get("cost_center"):
+		conditions =  "and cost_center = '{0}'".format(filters.get("cost_center"))
+
+	return conditions
+
 def get_data(filters):
         data = []
         tot_target_amount   = 0.0
         tot_achieved_amount = 0.0
         tot_balance_amount  = 0.0
-                
+        
+	cond = get_conditions(filters)
+        
         tl = frappe.db.sql("""
                         select
                                 rtc.cost_center,
@@ -28,15 +37,17 @@ def get_data(filters):
                                 0 as achieved_amount
                         from `tabRevenue Target Account` as rtc, `tabRevenue Target` as rt
                         where rt.fiscal_year = "{0}"
+			{1}
                         and   rtc.parent     = rt.name
                         group by cost_center, account, account_code
                         order by cost_center, account, account_code
-                """.format(filters.get("fiscal_year")), as_dict=1)
+                """.format(filters.get("fiscal_year"),cond), as_dict=1)
 
         for t in tl:
                 achieved_amount     = 0.0
                 balance_amount      = 0.0
                 
+		'''
                 a = frappe.db.sql("""
                                 select
                                         sum(ifnull(jea.credit,0)-ifnull(jea.debit,0)) as achieved_amount
@@ -46,6 +57,16 @@ def get_data(filters):
                                 and   je.name         = jea.parent
                                 and   je.posting_date between '{2}' and '{3}'
                                 and   je.docstatus    = 1
+                        """.format(t.account, t.cost_center, filters.get("from_date"), filters.get("to_date")), as_dict=1)[0]
+		'''
+		a = frappe.db.sql("""
+                                select
+                                        sum(ifnull(gl.credit,0)-ifnull(gl.debit,0)) as achieved_amount
+                                from `tabGL Entry` gl
+                                where gl.account     = "{0}"
+                                and   gl.cost_center = "{1}"
+                                and   gl.posting_date between '{2}' and '{3}'
+                                and   gl.docstatus    = 1
                         """.format(t.account, t.cost_center, filters.get("from_date"), filters.get("to_date")), as_dict=1)[0]
 
                 if a:

@@ -34,5 +34,11 @@ frappe.query_reports["Revenue Target"] = {
 				"fieldtype": "Date",
 				"default": frappe.defaults.get_user_default("year_end_date"),
 			},
+			{
+				"fieldname": "cost_center",
+				"label": __("Cost Center"),
+				"fieldtype": "Link",
+				"options": "Cost Center"
+			}
 	],
 }

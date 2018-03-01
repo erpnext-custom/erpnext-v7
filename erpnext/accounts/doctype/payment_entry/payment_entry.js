@@ -653,9 +653,9 @@ frappe.ui.form.on('Payment Entry', {
 		}
 		// Ver 1.0 Ends
 
-		$.each(frm.doc.deductions || [], function(i, d) {
+		/*$.each(frm.doc.deductions || [], function(i, d) {
 			if(d.amount) difference_amount -= flt(d.amount);
-		})
+		})*/
 
 		frm.set_value("difference_amount", difference_amount);
 

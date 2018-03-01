@@ -306,9 +306,9 @@ class PaymentEntry(AccountsController):
                         self.difference_amount = self.paid_amount - self.total_allocated_amount
 		# Ver 1.0 Ends
 		
-		for d in self.get("deductions"):
-			if d.amount:
-				self.difference_amount -= flt(d.amount)
+		#for d in self.get("deductions"):
+		#	if d.amount:
+		#		self.difference_amount -= flt(d.amount)
 				
 		self.difference_amount = flt(self.difference_amount, self.precision("difference_amount"))
 				
@@ -452,6 +452,11 @@ class PaymentEntry(AccountsController):
 				gl_entries.append(gle)
 				
 	def add_bank_gl_entries(self, gl_entries):
+		total_deductions = 0
+                for d in self.get("deductions"):
+                        if d.amount:
+                                total_deductions += flt(d.amount)
+
 		if self.payment_type in ("Pay", "Internal Transfer"):
 			if frappe.get_value("Account", self.paid_from, "report_type") == "Profit and Loss":	
 				if self.pl_cost_center:
@@ -460,8 +465,8 @@ class PaymentEntry(AccountsController):
 							"account": self.paid_from,
 							"account_currency": self.paid_from_account_currency,
 							"against": self.party if self.payment_type=="Pay" else self.paid_to,
-							"credit_in_account_currency": self.paid_amount,
-							"credit": self.base_paid_amount,
+							"credit_in_account_currency": self.paid_amount + total_deductions,
+							"credit": self.base_paid_amount + total_deductions,
 							"cost_center": self.pl_cost_center
 						})
 					)
@@ -473,8 +478,8 @@ class PaymentEntry(AccountsController):
 						"account": self.paid_from,
 						"account_currency": self.paid_from_account_currency,
 						"against": self.party if self.payment_type=="Pay" else self.paid_to,
-						"credit_in_account_currency": self.paid_amount,
-						"credit": self.base_paid_amount,
+						"credit_in_account_currency": self.paid_amount + total_deductions,
+						"credit": self.base_paid_amount + total_deductions,
 						"cost_center": self.pl_cost_center
 					})
 				)
@@ -489,8 +494,8 @@ class PaymentEntry(AccountsController):
 							"against": self.party if self.payment_type=="Receive" else self.paid_from,
 							#"debit_in_account_currency": self.received_amount,
 							#"debit": self.base_received_amount,
-							"debit_in_account_currency": self.actual_receivable_amount,
-							"debit": self.actual_receivable_amount,
+							"debit_in_account_currency": self.actual_receivable_amount - total_deductions,
+							"debit": self.actual_receivable_amount - total_deductions,
 							"cost_center": self.pl_cost_center
 						})
 					)
@@ -504,8 +509,8 @@ class PaymentEntry(AccountsController):
 						"against": self.party if self.payment_type=="Receive" else self.paid_from,
 						#"debit_in_account_currency": self.received_amount,
 						#"debit": self.base_received_amount
-						"debit_in_account_currency": self.actual_receivable_amount,
-						"debit": self.actual_receivable_amount,
+						"debit_in_account_currency": self.actual_receivable_amount - total_deductions,
+						"debit": self.actual_receivable_amount - total_deductions,
 						"cost_center": self.pl_cost_center
 					})
 				)
@@ -516,6 +521,15 @@ class PaymentEntry(AccountsController):
 				account_currency = get_account_currency(d.account)
 				if account_currency != self.company_currency:
 					frappe.throw(_("Currency for {0} must be {1}").format(d.account, self.company_currency))
+
+				dr_or_cr = "debit"
+                                dr_or_cr_cur = "debit_in_account_currency"
+                                if flt(d.amount) < 0:
+                                        amount = -1 * flt(d.amount)
+                                        dr_or_cr = "credit"
+                                        dr_or_cr_cur = "credit_in_account_currency"
+                                else:
+                                        amount = flt(d.amount)
 	
 				account_type = frappe.db.get_value("Account", d.account, "account_type")
 				if account_type == "Payable" or account_type == "Receivable":
@@ -524,8 +538,8 @@ class PaymentEntry(AccountsController):
 							"account": d.account,
 							"account_currency": account_currency,
 							"against": self.party or self.paid_from,
-							"debit_in_account_currency": d.amount,
-							"debit": d.amount,
+							dr_or_cr_cur: amount,
+                                                        dr_or_cr: amount,
 							"cost_center": d.cost_center,
 							"party_type": self.party_type,
 							"party": self.party
@@ -537,8 +551,8 @@ class PaymentEntry(AccountsController):
 							"account": d.account,
 							"account_currency": account_currency,
 							"against": self.party or self.paid_from,
-							"debit_in_account_currency": d.amount,
-							"debit": d.amount,
+							dr_or_cr_cur: amount,
+                                                        dr_or_cr: amount,
 							"cost_center": d.cost_center
 						})
 					)

@@ -45,5 +45,14 @@ frappe.query_reports["Monthly Attendance Sheet"] = {
 				year_filter.set_input(year_filter.df.default);
 			}
 		});
+	},
+	"formatter":function (row, cell, value, columnDef, dataContext, default_formatter) {
+		value = default_formatter(row, cell, value, columnDef, dataContext);
+		if (value == "X") {
+			//var $value = $(value).css({"background-color": "rgb(208, 73, 73)", "font-weight": "bold"});
+			//value = $value.wrap("<p></p>").parent().html();
+			value = "<div style='background-color: rgb(208, 73, 73); width: 100%; height: 100%; border: -5;'>" + value + "</div>"
+		}
+		return value;
 	}
 }

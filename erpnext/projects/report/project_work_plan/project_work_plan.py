@@ -42,7 +42,7 @@ def get_data(filters):
                 additional_tasks = get_additional_tasks(prj, indent)
                 data += additional_tasks
 
-        frappe.msgprint(_("{0}").format(data))
+        #frappe.msgprint(_("{0}").format(data))
         return data
 
 def get_tasks(prj, indent):

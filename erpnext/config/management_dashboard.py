@@ -41,7 +41,14 @@ def get_data():
 					"name": "Profitability Analysis",
 					"doctype": "GL Entry",
 					"is_query_report": True,
-				}
+				},
+				{
+                                        "type": "report",
+                                        "label": _("Revenue Target & Achievement Report"),
+                                        "is_query_report": True,
+                                        "name": "Revenue Target",
+                                        "doctype": "Revenue Target",
+                                },
 			]
 		},
 		{
