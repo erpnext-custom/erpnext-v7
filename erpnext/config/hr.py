@@ -334,12 +334,6 @@ def get_data():
 					"name": "Earning Report",
 					"doctype": "Salary Slip"
 				},
-				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Deduction Report",
-                                        "doctype": "Salary Slip"
-                                },
 
 				{
 					"type" : "report",
@@ -348,6 +342,28 @@ def get_data():
 					"label": _("Salary Increment Report"),
 					"doctype": "Salary Increment"
 				},
+				{
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Salary Payable Report",
+                                        "label": _("Salary Payable Report"),
+                                        "doctype": "Salary Slip"
+                                },
+				{
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Other Recoveries",
+                                        "label": _("Other Recoveries"),
+                                        "doctype": "Salary Slip"
+                                },
+
+				{
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Summarized Salary Report",
+                                        "label": _("Summarized Salary Report"),
+                                        "doctype": "Salary Slip"
+                                }
 			]
 		},
 		{

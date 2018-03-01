@@ -94,7 +94,7 @@ def get_salary_slips(filters):
 	if not salary_slips:
 		msgprint(_("No salary slip found for month: ") + cstr(filters.get("month")) + 
 			_(" and year: ") + cstr(filters.get("fiscal_year")), raise_exception=1)
-	
+
 	return salary_slips
 	
 def get_conditions(filters):

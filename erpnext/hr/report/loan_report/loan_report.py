@@ -67,6 +67,6 @@ def get_conditions(filters):
 	if filters.get("fiscal_year"): conditions += " and t1.fiscal_year = %(fiscal_year)s"
 	if filters.get("company"): conditions += " and t1.company = %(company)s"
 	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"
-	
+	if filters.get("bank"): conditions += "and t2.institution_name = '{0}'".format(filters.bank)
 	return conditions, filters
 	

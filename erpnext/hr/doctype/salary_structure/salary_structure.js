@@ -1,5 +1,13 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		          SHIV		                        27/02/2018         Dynamic get_query added for Salary_Components under
+																			tables `earnings` and `deductions`
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
 
 cur_frm.add_fetch('employee', 'company', 'company');
 cur_frm.add_fetch('company', 'default_letter_head', 'letter_head');
@@ -953,3 +961,26 @@ cur_frm.cscript.cash_handling = function(frm){
 	calculate_others(frm);
 }
 //++ Ver 20160804.1 Ends
+
+// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+// Following code added by SHIV on 2018/02/27
+frappe.ui.form.on("Salary Structure", "refresh", function(frm) {
+    frm.fields_dict['earnings'].grid.get_field('salary_component').get_query = function(doc, cdt, cdn) {
+        doc = locals[cdt][cdn]
+        return {
+            "query": "erpnext.hr.doctype.salary_structure.salary_structure.salary_component_query",
+            filters: {'parentfield': 'earnings'}
+        }
+    };
+});
+
+frappe.ui.form.on("Salary Structure", "refresh", function(frm) {
+    frm.fields_dict['deductions'].grid.get_field('salary_component').get_query = function(doc, cdt, cdn) {
+        doc = locals[cdt][cdn]
+        return {
+            "query": "erpnext.hr.doctype.salary_structure.salary_structure.salary_component_query",
+            filters: {'parentfield': 'deductions'}
+        }
+    };
+});
+// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++

@@ -28,6 +28,7 @@ class LeaveEncashment(Document):
                 self.name = make_autoname(self.employee+"/LE/"+monthyear+"/.#####")
         
         def validate(self):
+		self.branch = str(frappe.db.get_value("Employee", self.employee, "branch"))
                 self.validate_leave_application()
                 self.validate_balances()
                 

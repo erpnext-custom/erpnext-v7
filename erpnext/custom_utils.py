@@ -91,7 +91,9 @@ def get_user_info(user=None, employee=None, cost_center=None):
 def cancel_draft_doc(doctype, docname):
         doc = frappe.get_doc(doctype, docname)
         doc.db_set("docstatus", 2)
-
+	if doctype == "Material Request":
+		doc.db_set("status", "Cancelled")
+		doc.db_set("workflow_state", "Cancelled")
 ##
 #  nvl() function added by SHIV on 02/02/2018
 ##

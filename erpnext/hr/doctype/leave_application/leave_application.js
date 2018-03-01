@@ -114,7 +114,7 @@ frappe.ui.form.on("Leave Application", {
 				method: "erpnext.hr.doctype.leave_application.leave_application.get_leave_balance_on",
 				args: {
 					employee: frm.doc.employee,
-					date: frm.doc.from_date || frappe.datetime.get_today(),
+					ason_date: frm.doc.from_date || frappe.datetime.get_today(),
 					leave_type: frm.doc.leave_type,
 					consider_all_leaves_in_the_allocation_period: true
 				},

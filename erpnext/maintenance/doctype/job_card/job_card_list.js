@@ -16,14 +16,17 @@ frappe.listview_settings['Job Card'] = {
 		}
 
 		if(doc.docstatus == 1) {
-			if(doc.owned_by != "Others") {
-				return ["Journal Adjusted", "green", "docstatus,=,1|owned_by,!=,Others"];
+			if(doc.owned_by == "Own") {
+				return ["Own Equipment", "yellow", "docstatus,=,1|owned_by,=,Own"];
+			}
+			else if(doc.owned_by == "CDCL") {
+				return ["Journal Adjusted", "green", "docstatus,=,1|owned_by,=,CDCL"];
 			}
 			else if(doc.outstanding_amount == 0) {
-				return ["Payment Received", "green", "docstatus,=,1|outstanding_amount,=,0"];
+				return ["Payment Received", "green", "docstatus,=,1|outstanding_amount,=,0|owned_by,=,Others"];
 			}
 			else {
-				return ["Invoice Raised", "blue", "docstatus,=,1|outstanding_amount,>,0"];
+				return ["Invoice Raised", "blue", "docstatus,=,1|outstanding_amount,>,0|owned_by,=,Others"];
 			}
 		}
 	}

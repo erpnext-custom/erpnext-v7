@@ -5,14 +5,13 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   20/08/2016         Introducing Leave Encashment Logic
-2.0               SHIV                             09/02/2018         Taking care balance for back dated leave applications
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import nowdate, cint, cstr, date_diff, flt, formatdate, getdate, get_link_to_form, \
-	comma_or, get_fullname, today, add_days
+	comma_or, get_fullname
 from erpnext.hr.utils import set_employee_name
 from erpnext.hr.doctype.leave_block_list.leave_block_list import get_applicable_block_dates
 from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
@@ -53,8 +52,7 @@ class LeaveApplication(Document):
 		self.validate_block_days()
 		self.validate_salary_processed_days()
 		self.validate_leave_approver()
-		self.validate_backdated_applications()
-                
+
 	def on_update(self):
 		self.validate_fiscal_year()
 		if (not self.previous_doc and self.leave_approver) or (self.previous_doc and \
@@ -80,43 +78,12 @@ class LeaveApplication(Document):
 			immediate_sp = frappe.db.get_value("Employee", frappe.db.get_value("Employee", self.employee, "reports_to"), "user_id")
 			if str(immediate_sp) != str(self.leave_approver):
 				self.notify_supervisor()
-		self.update_for_backdated_applications()
 
 	def on_cancel(self):
 		# notify leave applier about cancellation
 		self.notify_employee("cancelled")
 		self.cancel_attendance()
-		self.update_for_backdated_applications()
 
-        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-        # Following methods created by SHIV on 2018/02/12
-        def validate_backdated_applications(self):
-                if self.leave_balance:
-                        to_date = get_leave_allocation_records(self.from_date, self.employee).get(self.employee, frappe._dict()).get(self.leave_type, frappe._dict()).to_date
-                        balance = get_leave_balance_on(self.employee, self.leave_type, to_date)
-
-                        if balance:
-                                if flt(balance) < flt(self.total_leave_days):
-                                        frappe.throw(_("Insufficient Leave Balance {0}/{1}").format(flt(balance),flt(self.total_leave_days)),title="Insufficient Leave Balance")
-
-        def update_for_backdated_applications(self):
-                is_carry_forward = frappe.db.get_value("Leave Type", self.leave_type, "is_carry_forward")
-                leave_days       = -1*flt(self.total_leave_days) if self.docstatus == 2 else flt(self.total_leave_days)
-                
-                if is_carry_forward:
-                        frappe.db.sql("""
-                                update
-                                        `tabLeave Allocation`
-                                set
-                                        carry_forwarded_leaves = carry_forwarded_leaves - {0},
-                                        total_leaves_allocated = total_leaves_allocated - {0}
-                                where   employee = '{1}'
-                                and     leave_type = '{2}'
-                                and     docstatus = 1
-                                and     from_date > '{3}'
-                        """.format(leave_days, self.employee, self.leave_type, self.from_date))
-        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-                
 	def create_attendance(self):
 		d = getdate(self.from_date)
 		e = getdate(self.to_date)
@@ -366,9 +333,8 @@ class LeaveApplication(Document):
 			"notify": cint(self.follow_via_email)})
 
 	def validate_fiscal_year(self):
-                if not frappe.get_value("Leave Type", self.leave_type, "is_carry_forward"):
-                        if str(self.from_date)[0:4] != str(self.to_date)[0:4]:
-                                frappe.throw("Leave Application cannot overlap fiscal years")
+		if str(self.from_date)[0:4] != str(self.to_date)[0:4]:
+			frappe.throw("Leave Application cannot overlap fiscal years")
 
 def daterange(start_date, end_date):
     for n in range(int ((date(end_date) - date(start_date)).days)):
@@ -425,7 +391,7 @@ def get_number_of_leave_days(employee, leave_type, from_date, to_date, half_day=
 		number_of_days = flt(number_of_days) - flt(get_holidays(employee, from_date, to_date))
 
 	d = from_date
-	while(getdate(d) <= getdate(to_date)):
+	while(d <= to_date):
 		#For Saturday half day work time
 		if getdate(d).weekday() == 5 and flt(get_holidays(employee, d, d)) == 0:
 			number_of_days-=0.5
@@ -433,21 +399,19 @@ def get_number_of_leave_days(employee, leave_type, from_date, to_date, half_day=
 	
 	return number_of_days
 
+	
+
 @frappe.whitelist()
-def get_leave_balance_on(employee, leave_type, ason_date, allocation_records=None,
+def get_leave_balance_on(employee, leave_type, date, allocation_records=None,
 		consider_all_leaves_in_the_allocation_period=False):
-        ##
-        #  Ver 2.0 Begins, Following code replaced by subsequent, by SHIV on 2018/02/09
-        ##
-        '''
 	if allocation_records == None:
 		allocation_records = get_leave_allocation_records(date, employee).get(employee, frappe._dict())
 
 	allocation = allocation_records.get(leave_type, frappe._dict())
+        #frappe.msgprint(_("Employee: {0} Leave Type{1} Total Leaves Allocated: {2}").format(employee,allocation.leave_type,flt(allocation.total_leaves_allocated)))
 
 	if consider_all_leaves_in_the_allocation_period:
 		date = allocation.to_date
-		
 	leaves_taken = get_approved_leaves_for_period(employee, leave_type, get_year_start_date(str(date)), date)
 	# Ver 1.0 Begins added by SSK on 20/08/2016, following line is added
 	#leaves_encashed = get_leaves_encashed(employee, leave_type, date)
@@ -465,26 +429,6 @@ def get_leave_balance_on(employee, leave_type, ason_date, allocation_records=Non
         
 	return flt(allocation.total_leaves_allocated) - flt(leaves_taken)
 	#return flt(allocation.total_leaves_allocated) - flt(leaves_taken) - flt(leaves_encashed)
-        '''
-
-        allocation   = get_leave_allocation_records(ason_date, employee).get(employee, frappe._dict()).get(leave_type, frappe._dict())
-        balance      = 0
-        
-        if allocation:
-                leaves_taken = get_approved_leaves_for_period(employee, leave_type, allocation.from_date, ason_date)
-                balance      = flt(allocation.total_leaves_allocated) - flt(leaves_taken)
-                
-                if leave_type == 'Earned Leave':
-                        le = get_le_settings()
-                        if flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken)) > flt(le.encashment_lapse):
-                                balance = flt(le.encashment_lapse)
-        else:
-                balance = 0
-                
-        return flt(balance)
-        ##
-        #  Ver 2.0 Ends
-        ##
 
 # Ver 1.0 Begins added by SSK on 20/08/2016, following function is added
 def get_leaves_encashed(employee=None, leave_type=None, from_date=None):
@@ -504,21 +448,13 @@ def get_leaves_encashed(employee=None, leave_type=None, from_date=None):
 
 def get_approved_leaves_for_period(employee, leave_type, from_date, to_date):
 	leave_applications = frappe.db.sql("""
-		select
-                        employee, leave_type, from_date, to_date, total_leave_days
-		from
-                        `tabLeave Application`
-		where   employee=%(employee)s
-		and     leave_type=%(leave_type)s
-		and     status="Approved"
-		and     docstatus=1
-		and     (
-                                (from_date between %(from_date)s and %(to_date)s)
-				or
-				(to_date between %(from_date)s and %(to_date)s)
-				or
-				(from_date < %(from_date)s and to_date > %(to_date)s)
-		)
+		select employee, leave_type, from_date, to_date, total_leave_days
+		from `tabLeave Application`
+		where employee=%(employee)s and leave_type=%(leave_type)s
+			and status="Approved" and docstatus=1
+			and (from_date between %(from_date)s and %(to_date)s
+				or to_date between %(from_date)s and %(to_date)s
+				or (from_date < %(from_date)s and to_date > %(to_date)s))
 	""", {
 		"from_date": from_date,
 		"to_date": to_date,
@@ -541,12 +477,7 @@ def get_approved_leaves_for_period(employee, leave_type, from_date, to_date):
 
 	return leave_days
 
-def get_leave_allocation_records(ason_date, employee=None):
-        ##
-        #  Ver 2.0 Begins, Following code replaced by the subsequent, by SHIV on 2018/02/09
-        ##
-        
-        '''
+def get_leave_allocation_records(date, employee=None):
         from datetime import date as mod_date
 	conditions = (" and employee='%s'" % employee) if employee else ""
 	from_date = date
@@ -608,56 +539,6 @@ def get_leave_allocation_records(ason_date, employee=None):
                                                 "total_leaves_allocated": d.total_leaves_allocated
                                         }))
         # Ver 1.0 Ends
-        '''
-        
-        allocated_leaves = frappe._dict()
-        conditions       = ("where employee='%s' and " % employee) if employee else "where "
-        leave_types_cf   = frappe.db.sql_list("select name from `tabLeave Type` where is_carry_forward=1")
-
-        # Non-CarryForward Types
-        leave_allocation_records = frappe.db.sql("""
-                                        select
-                                                la.employee, la.leave_type, la.total_leaves_allocated,
-                                                la.from_date, la.to_date, lt.is_carry_forward 
-                                        from
-                                                `tabLeave Allocation` as la,
-                                                `tabLeave Type` as lt
-                                        {0}     lt.name = la.leave_type
-                                        and     lt.is_carry_forward = 0
-                                        and     '{1}' between la.from_date and la.to_date
-                                        and     la.docstatus = 1
-                                        """.format(conditions, ason_date), as_dict=True)
-
-        # CarryForward Types
-        for emp in frappe.db.sql("select name from `tabEmployee` {0} 1=1".format(conditions),as_dict=True):
-                for lt in leave_types_cf:
-                        latest = frappe.db.sql("""
-                                                select
-                                                        la.employee, la.leave_type, la.total_leaves_allocated,
-                                                        la.from_date, la.to_date, lt.is_carry_forward
-                                                from
-                                                        `tabLeave Allocation` as la,
-                                                        `tabLeave Type` as lt
-                                                where   la.employee = '{0}'
-                                                and     la.leave_type = '{1}'
-                                                and     lt.name = la.leave_type
-                                                and     la.docstatus = 1
-                                                and     la.from_date <= '{2}'
-                                                order by from_date desc limit 1
-                                        """.format(emp.name, lt, ason_date), as_dict=True)
-                        if latest:
-                                leave_allocation_records.append(latest[0])
-                                
-        for d in leave_allocation_records:
-                allocated_leaves.setdefault(d.employee, frappe._dict()).setdefault(d.leave_type, frappe._dict({
-                        "from_date": d.from_date,
-                        "to_date": d.to_date,
-                        "total_leaves_allocated": d.total_leaves_allocated,
-                        "is_carry_forward": d.is_carry_forward
-                }))
-        ##
-        #  Ver 2.0 Ends
-        ##
 	return allocated_leaves
 
 

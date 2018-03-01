@@ -19,6 +19,12 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 1.0               SSK                              28/08/2016         Added employee_subgroup to Salary Slip
 1.0               SSK                              29/08/2016         Added method calculate_totals for use in
                                                                         Salary Increment
+2.0               SSK                              27/02/2018         Methods
+                                                                                validate_salary_component()
+                                                                                salary_component_query()
+                                                                        introducted inorder to restrict user from making
+                                                                        mistakes by adding deduction salary_component type
+                                                                        under earnings table vice versa.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -36,6 +42,7 @@ from erpnext.hr.utils import set_employee_name
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from erpnext.accounts.accounts_custom_functions import get_number_of_days
 from erpnext.custom_utils import nvl
+from frappe.desk.reportview import get_match_cond
 
 class SalaryStructure(Document):
 	def autoname(self):
@@ -50,10 +57,21 @@ class SalaryStructure(Document):
 		self.validate_joining_date()
 		set_employee_name(self)
 		self.check_multiple_active()
+		self.validate_salary_component()
 
 	def on_update(self):
 		self.assign_employee_details()
 
+        # Ver 2.0, following method introduced by SHIV on 2018/02/2017
+        def validate_salary_component(self):
+                for parentfield in ['earnings','deductions']:
+                        parenttype = 'Earning' if parentfield == 'earnings' else 'Deduction'
+                        for i in self.get(parentfield):
+                                component_type = frappe.db.get_value("Salary Component",i.salary_component,"type")
+                                if parenttype != component_type:
+                                        frappe.throw(_('Salary Component <b>`{1}`</b> of type <b>`{2}`</b> cannot be added under <b>`{3}`</b> table. <br/> <b><u>Reference# : </u></b> <a href="#Form/Salary Structure/{0}">{0}</a>').format(self.name,i.salary_component,component_type,parentfield.title()),title="Invalid Salary Component")
+
+                
 	def get_employee_details(self):
 		ret = {}
 		det = frappe.db.sql("""select employee_name, branch, designation, department, division, section
@@ -332,7 +350,7 @@ def make_salary_slip(source_name, target_doc=None):
                                 target.append(key, {
                                         'salary_component'         : d.salary_component,
                                         'depends_on_lwp'           : d.depends_on_lwp,
-					'institution_nme'          : d.institution_name,
+					'institution_name'          : d.institution_name,
 					'reference_type'           : d.reference_type,
 					'reference_number'         : d.reference_number,
                                         'ref_docname'              : d.name,
@@ -430,3 +448,39 @@ def make_salary_slip(source_name, target_doc=None):
 
 	return doc
 
+# Ver 2.0, Following method added by SHIV on 2018/02/27
+@frappe.whitelist()
+def salary_component_query(doctype, txt, searchfield, start, page_len, filters):
+        return frappe.db.sql(""" 
+                        select
+                                name,
+                                type,
+                                payment_method
+                        from `tabSalary Component`
+                        where type = %(component_type)s
+                        and (
+                                {key} like %(txt)s
+                                or
+                                type like %(txt)s
+                                or
+                                payment_method like %(txt)s
+                        )
+                        {mcond}
+                        order by
+                                if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
+                                if(locate(%(_txt)s, type), locate(%(_txt)s, type), 99999),
+                                if(locate(%(_txt)s, payment_method), locate(%(_txt)s, payment_method), 99999),
+                                idx desc,
+                                name, type, payment_method
+                        limit %(start)s, %(page_len)s
+                        """.format(**{
+                                'key': searchfield,
+                                'mcond': get_match_cond(doctype)
+                        }),
+                        {
+                "txt": "%%%s%%" % txt,
+                "_txt": txt.replace("%", ""),
+                "start": start,
+                "page_len": page_len,
+                "component_type": 'Earning' if filters['parentfield'] == 'earnings' else 'Deduction'
+            })

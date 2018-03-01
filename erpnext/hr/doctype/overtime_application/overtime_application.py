@@ -56,7 +56,7 @@ class OvertimeApplication(Document):
 
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
-		je.title = "Payment for Overtime (" + self.name + ")"
+		je.title = "Payment for Overtime (" + self.employee_name + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
 		je.remark = 'Payment Paid against : ' + self.name;

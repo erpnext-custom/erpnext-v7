@@ -90,6 +90,11 @@ def get_data():
 			"label": _("Manpower Management"),
 			"icon": "icon-facetime-video",
 			"items": [
+                                {
+					"type": "doctype",
+					"name": "GEP Employee",
+					"description": _("GEP Employee Master Data"),
+				},
 				{
 					"type": "doctype",
 					"name": "Muster Roll Employee",

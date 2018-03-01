@@ -884,8 +884,8 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-08-28 11:51:46.589096", 
- "modified_by": "Administrator", 
+ "modified": "2018-02-28 12:47:48.336726", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Accounts", 
  "name": "RRCO Receipt Tool", 
  "name_case": "", 
@@ -957,5 +957,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

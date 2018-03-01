@@ -414,7 +414,10 @@ class PaymentEntry(AccountsController):
 			for d in self.get("references"):
 				inv = frappe.get_doc(d.reference_doctype, d.reference_name)
                                 if self.payment_type == "Pay":
-                                        cc  = inv.buying_cost_center
+					if d.reference_doctype == "Purchase Invoice":
+						cc  = inv.buying_cost_center
+					else:
+						cc  = self.pl_cost_center
                                 else:
                                         cc  = frappe.db.get_value(doctype="Cost Center",filters={"branch": inv.branch},fieldname="name", as_dict=False)
 
@@ -513,17 +516,32 @@ class PaymentEntry(AccountsController):
 				account_currency = get_account_currency(d.account)
 				if account_currency != self.company_currency:
 					frappe.throw(_("Currency for {0} must be {1}").format(d.account, self.company_currency))
-					
-				gl_entries.append(
-					self.get_gl_dict({
-						"account": d.account,
-						"account_currency": account_currency,
-						"against": self.party or self.paid_from,
-						"debit_in_account_currency": d.amount,
-						"debit": d.amount,
-						"cost_center": d.cost_center
-					})
-				)
+	
+				account_type = frappe.db.get_value("Account", d.account, "account_type")
+				if account_type == "Payable" or account_type == "Receivable":
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": d.account,
+							"account_currency": account_currency,
+							"against": self.party or self.paid_from,
+							"debit_in_account_currency": d.amount,
+							"debit": d.amount,
+							"cost_center": d.cost_center,
+							"party_type": self.party_type,
+							"party": self.party
+						})
+					)
+				else:
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": d.account,
+							"account_currency": account_currency,
+							"against": self.party or self.paid_from,
+							"debit_in_account_currency": d.amount,
+							"debit": d.amount,
+							"cost_center": d.cost_center
+						})
+					)
 	
 	def add_tds_gl_entries(self, gl_entries):
 		if self.tds_amount:

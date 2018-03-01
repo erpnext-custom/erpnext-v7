@@ -36,9 +36,12 @@ class JobCard(AccountsController):
 			frappe.throw("Please enter Job Out Date")
 		else:
 			self.update_reservation()
-		self.check_items() 
+		self.check_items()
+		if self.owned_by == "Own":
+			self.db_set("outstanding_amount", 0)
 		if self.owned_by == "CDCL":
 			self.post_journal_entry()
+			self.db_set("outstanding_amount", 0)
 		if self.owned_by == "Others":
 			self.make_gl_entries()
 		self.update_breakdownreport()

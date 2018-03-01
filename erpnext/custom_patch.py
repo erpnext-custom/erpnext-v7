@@ -7,6 +7,14 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from datetime import timedelta, date
 
+def cancel_mr():
+	mrs = frappe.db.sql("select name from `tabMaterial Request` where docstatus = 2", as_dict=True)
+	for a in mrs:
+		print(a.name)
+		doc = frappe.get_doc("Material Request", a.name)
+		doc.db_set("status", "Cancelled")
+                doc.db_set("workflow_state", "Cancelled")
+
 def tds_cost_center():
 	datas = frappe.db.sql("select a.name as gl, b.name as pi, b.tds_cost_center, b.posting_date from `tabGL Entry` a,`tabPurchase Invoice` b where a.voucher_no = b.name and b.tds_amount > 0 and account like 'Creditors-Other - CDCL' and cost_center is null group by a.name, b.name;", as_dict=True)
 	for a in datas:
@@ -740,3 +748,16 @@ def el_allocation(employee=None):
                                 where name = '{2}'
                         """.format(flt(cf), flt(ta), a.name))
                         '''
+
+# /home/frappe/erp bench execute erpnext.custom_patch.refresh_salary_structure
+def refresh_salary_structure():
+        ss = frappe.db.sql("select name from `tabSalary Structure` where is_active='Yes'", as_dict=True)
+        counter = 0
+	for s in ss:
+		doc = frappe.get_doc("Salary Structure", s.name)
+		for a in doc.earnings:
+			if a.salary_component == "Basic Pay":
+                                counter += 1
+                                print counter,s.name
+				update_salary_structure(doc.employee, flt(a.amount), s.name)
+				break

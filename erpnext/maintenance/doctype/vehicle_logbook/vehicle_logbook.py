@@ -101,7 +101,7 @@ class VehicleLogbook(Document):
 					for b in mails:
 						subject = "Regular Maintenance for " + str(self.equipment)
 						message = "It is time to do regular maintenance for equipment " + str(self.equipment) + " since it passed the hour/km reading of " + str(a) 
-						if email:
+						if b.email:
 							try:
 								frappe.sendmail(recipients=b.email, sender=None, subject=subject, message=message)
 							except:

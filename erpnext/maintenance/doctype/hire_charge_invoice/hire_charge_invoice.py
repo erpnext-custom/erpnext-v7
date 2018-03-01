@@ -22,6 +22,7 @@ class HireChargeInvoice(AccountsController):
 		self.update_vlogs(1)
 		if self.owned_by == "CDCL":
 			self.post_journal_entry()
+			self.db_set("outstanding_amount", 0)
 		else:
 			self.make_gl_entries()
 		self.check_close()

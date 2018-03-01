@@ -573,6 +573,13 @@ def get_data():
                                         "label": _("Salary Tax & Health Contribution Report"),
 					"doctype": "Salary Slip"
 				},
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Summarized Salary Report",
+                                        "doctype": "Salary Slip"
+                                },
+
                                 {
 					"type": "report",
 					"is_query_report": True,
@@ -584,6 +591,20 @@ def get_data():
 					"name": "LTC Details",
 					"doctype": "Leave Travel Concession"
 				},
+				{
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Salary Payable Report",
+                                        "label": _("Salary Payable Report"),
+                                        "doctype": "Salary Slip"
+                                },
+				{
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Other Recoveries",
+                                        "label": _("Other Recoveries"),
+                                        "doctype": "Salary Slip"
+                                },
 				 {
                                         "type": "report",
                                         "is_query_report": True,

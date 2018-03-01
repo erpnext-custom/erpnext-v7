@@ -3,7 +3,7 @@
 
 // render
 frappe.listview_settings['Hire Charge Invoice'] = {
-	add_fields: ["invoice_jv", "docstatus", "payment_jv", "outstanding_amount"],
+	add_fields: ["invoice_jv", "owned_by", "docstatus", "payment_jv", "outstanding_amount"],
 	has_indicator_for_draft: 1,
 	get_indicator: function(doc) {
 		if(doc.docstatus==0) {
@@ -11,11 +11,14 @@ frappe.listview_settings['Hire Charge Invoice'] = {
 		}
 
 		if(doc.docstatus == 1) {
-			if(doc.outstanding_amount == 0) {
-				return ["Payment Received", "green", "docstatus,=,1|outstanding_amount,=,0"];
+			if (doc.owned_by == "CDCL") {
+				return ["Journal Adjusted", "yellow", "docstatus,=,1|outstanding_amount,=,0|owned_by,=,CDCL"];
+			}
+			else if(doc.outstanding_amount == 0) {
+				return ["Payment Received", "green", "docstatus,=,1|outstanding_amount,=,0|owned_by,!=,CDCL"];
 			}
 			else {
-				return ["Invoice Raised", "blue", "docstatus,=,1|invoice_jv,>,0"];
+				return ["Invoice Raised", "blue", "docstatus,=,1|outstanding_amount,>,0|owned_by,!=,CDCL"];
 			}
 		}
 		

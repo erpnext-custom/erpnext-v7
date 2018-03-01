@@ -220,7 +220,9 @@ def make_travel_claim(source_name, target_doc=None):
 		target.amount = target.actual_amount
 
 	def adjust_last_date(source, target):
+		target.items[len(target.items) - 1].dsa_percent = 50 
 		target.items[len(target.items) - 1].actual_amount = target.items[len(target.items) - 1].actual_amount / 2
+		target.items[len(target.items) - 1].amount = target.items[len(target.items) - 1].amount / 2
 
 	doc = get_mapped_doc("Travel Authorization", source_name, {
 			"Travel Authorization": {

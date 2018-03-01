@@ -71,7 +71,7 @@ class ProcessMRPayment(Document):
                                 and i.employee_type = '{1}'
                                 and i.fiscal_year = '{2}'
                                 and i.month = '{3}'
-                                and i.docstatus in (0,1)
+                                and m.docstatus in (0,1)
                                 and i.parent != '{4}'
 				and i.parent = m.name
 				and m.cost_center = '{5}'
