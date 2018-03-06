@@ -167,7 +167,8 @@ doc_events = {
 scheduler_events = {
 	"hourly": [
 		"erpnext.controllers.recurring_document.create_recurring_documents",
-		"erpnext.stock.doctype.item.item.sync_item_code"
+		"erpnext.stock.doctype.item.item.sync_item_code",
+		"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"
 	],
 	"daily": [
 		#"erpnext.stock.reorder_item.reorder_item",

@@ -294,7 +294,7 @@ def make_salary_slip(source_name, target_doc=None):
 					#total = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -13)), get_first_day(add_days(nowdate(), -13))))
 					total = m_details.month_days
 					new_basic = flt((flt(actual_days) / flt(total)) * old_basic, 2)
-					source = update_salary_structure(str(source.employee), flt(new_basic), source.name)
+					source = update_salary_structure(str(source.employee), flt(new_basic), source.name, old_basic)
 					if not source:
 						frappe.throw("There is either no salary structure or the payroll processing is done before time")
 					prorated = 1
@@ -441,7 +441,8 @@ def make_salary_slip(source_name, target_doc=None):
 			"doctype": "Salary Slip",
 			"field_map": {
 				"total_earning": "gross_pay",
-				"name": "salary_structure"
+				"name": "salary_structure",
+				"actual_basic": "actual_basic"
 			}
 		}
 	}, target_doc, postprocess, ignore_child_tables=True)

@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt, getdate, date_diff, cint
 from erpnext.hr.doctype.salary_structure.salary_structure import get_salary_tax
 
 class PBVA(Document):
@@ -105,12 +105,34 @@ class PBVA(Document):
 	#@frappe.whitelist()
 	def get_pbva_details(self):
 		start, end = frappe.db.get_value("Fiscal Year", self.fiscal_year, ["year_start_date", "year_end_date"])
-		query = "select b.employee, b.employee_name, b.branch, a.amount as basic_pay from `tabSalary Detail` a, `tabSalary Structure` b, tabEmployee e where a.parent = b.name and b.employee = e.name and a.salary_component = 'Basic Pay' and (b.is_active = 'Yes' or e.relieving_date between \'"+str(start)+"\' and \'"+str(end)+"\') and b.eligible_for_pbva = 1 "
-		query += " order by b.branch"
+		query = "select e.name as employee, e.employee_name, e.branch, e.date_of_joining, e.relieving_date, (select sd.amount from `tabSalary Detail` sd, `tabSalary Slip` sl, `tabSalary Structure` ss where sd.parent = sl.name and sl.employee = e.name and sl.salary_structure = ss.name and sd.salary_component = 'Basic Pay' and sl.actual_basic = 0 and sl.docstatus = 1 and ss.eligible_for_pbva = 1 and sl.fiscal_year = \'" + str(self.fiscal_year) + "\' order by sl.month desc limit 1) as basic_pay from tabEmployee e where e.status = 'Active' or e.relieving_date between \'" + str(start)+ "\' and \'"+str(end)+"\' "
+		query += " order by e.branch"
 		entries = frappe.db.sql(query, as_dict=True)
 		self.set('items', [])
 
+		start = getdate(start)
+		end = getdate(end)
+
 		for d in entries:
+			joining = getdate(d.date_of_joining)
+			relieving = getdate(d.relieving_date)
+
+			if not (joining >= start and joining <= end): 
+				d.date_of_joining = None
+			if not (relieving >= start and relieving <= end): 
+				d.relieving_date = None
+
+			d.days_worked = date_diff(getdate(self.fiscal_year + '-12-31'), getdate(self.fiscal_year + '-01-01'))
+			if d.date_of_joining: 
+				d.days_worked = date_diff(getdate(self.fiscal_year + '-12-31'), d.date_of_joining)
+
+			if d.relieving_date:
+				d.days_worked = date_diff(d.relieving_date, getdate(self.fiscal_year + '-01-01'))
+	
+			if d.relieving_date and d.date_of_joining:
+                                d.days_worked = date_diff(d.relieving_date, d.date_of_joining)
+
+			d.days_worked = cint(d.days_worked) + 1
 			d.amount = 0
 			row = self.append('items', {})
 			row.update(d)

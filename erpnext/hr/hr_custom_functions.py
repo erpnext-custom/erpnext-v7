@@ -129,7 +129,7 @@ def get_employee_gis(employee):
                 return 0.0
 
 @frappe.whitelist()
-def update_salary_structure(employee, new_basic, sal_struc_name=None):
+def update_salary_structure(employee, new_basic, sal_struc_name=None, actual_basic=None):
 	#sal_struc_name = frappe.db.sql("""
 	#select name
 	#from `tabSalary Structure` st
@@ -371,7 +371,9 @@ def update_salary_structure(employee, new_basic, sal_struc_name=None):
 			sst.db_set('total_earning',flt(gross_pay),update_modified = True)
 			sst.db_set('total_deduction',flt(deductions),update_modified = True)
 			sst.db_set('net_pay',flt(flt(gross_pay)-flt(deductions)),update_modified = True)
-			
+			if actual_basic:
+				sst.actual_basic = actual_basic
+
 			sst.save()
 			return sst
 

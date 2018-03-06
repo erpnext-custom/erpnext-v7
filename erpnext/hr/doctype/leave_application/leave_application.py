@@ -771,3 +771,9 @@ def add_holidays(events, start, end, employee, company):
 				"title": _("Holiday") + ": " + cstr(holiday.description),
 				"name": holiday.name
 			})
+
+def check_cancelled_leaves():
+	ls = frappe.db.sql("select name from `tabLeave Application` where docstatus = 2 and status != 'Cancelled'", as_dict=True)
+	for l in ls:
+		doc = frappe.get_doc("Leave Application", l.name)
+		doc.db_set("status", "Cancelled")
