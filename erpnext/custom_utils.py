@@ -16,6 +16,12 @@ from frappe.utils.data import get_first_day, get_last_day, add_years
 from frappe.desk.form.linked_with import get_linked_doctypes, get_linked_docs
 
 ##
+# Rounds to the nearest 5 with precision of 1 by default
+##
+def round5(x, prec=1, base=0.5):
+        return round(base * round(flt(x)/base), prec)
+
+##
 # If the document is linked and the linked docstatus is 0 and 1, return the first linked document
 ##
 def check_uncancelled_linked_doc(doctype, docname):

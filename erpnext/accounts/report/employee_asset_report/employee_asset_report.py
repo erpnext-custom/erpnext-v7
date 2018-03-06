@@ -17,7 +17,7 @@ def get_data(query):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		row = [d.employee_id, d.employee_name, d.name, d.asset_name, d.purchase_date, d.gross_purchase_amount, d.status]
+		row = [d.employee_id, d.employee_name, d.name, d.asset_name, d.purchase_date, d.gross_purchase_amount]
 		data.append(row);
 
 	return data
@@ -78,10 +78,10 @@ def get_columns():
 		  "fieldtype": "Currency",
 		  "width": 150
 		},
-		{
-		  "fieldname": "status",
-		  "label": "Asset Status",
-		  "fieldtype": "Data",
-		  "width": 150
-		}
+		#{
+		#  "fieldname": "status",
+		#  "label": "Asset Status",
+		#  "fieldtype": "Data",
+		#  "width": 150
+		#}
 	]

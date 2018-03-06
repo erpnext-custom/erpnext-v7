@@ -7,6 +7,14 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from datetime import timedelta, date
 
+def check_round():
+	print("2.34 rounded to " + str(round(2.34, 1)))
+	print("2.54 rounded to " + str(round(2.54, 1)))
+	print("2.24 rounded to " + str(round5(2.24)))
+
+def round5(x, prec=1, base=0.5):
+	return round(base * round(flt(x)/base), prec)
+
 def cancel_mr():
 	mrs = frappe.db.sql("select name from `tabMaterial Request` where docstatus = 2", as_dict=True)
 	for a in mrs:

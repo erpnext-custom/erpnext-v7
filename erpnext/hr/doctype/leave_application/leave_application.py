@@ -35,6 +35,8 @@ class LeaveApplication(Document):
 		return _("{0}: From {0} of type {1}").format(self.status, self.employee_name, self.leave_type)
 
 	def validate(self):
+		self.branch = frappe.db.get_value("Employee", self.employee, "branch")
+		self.cost_center = frappe.db.get_value("Employee", self.employee, "cost_center")
 		self.validate_dates_ta()
 		self.validate_fiscal_year()
 		if not getattr(self, "__islocal", None) and frappe.db.exists(self.doctype, self.name):

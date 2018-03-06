@@ -51,7 +51,7 @@ frappe.query_reports["Monthly Attendance Sheet"] = {
 		if (value == "X") {
 			//var $value = $(value).css({"background-color": "rgb(208, 73, 73)", "font-weight": "bold"});
 			//value = $value.wrap("<p></p>").parent().html();
-			value = "<div style='background-color: rgb(208, 73, 73); width: 100%; height: 100%; border: -5;'>" + value + "</div>"
+			value = "<div style='color: rgb(208, 73, 73); background-color: rgb(208, 73, 73); width: 100%; height: 100%; border: -5;'>" + value + "</div>"
 		}
 		return value;
 	}

@@ -15,6 +15,7 @@ class ProcessMRPayment(Document):
 		month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(self.month) + 1
 		month = str(month) if cint(month) > 9 else str("0" + str(month))
                 self.monthyear = str(self.fiscal_year)+str(month)
+                total_days = monthrange(cint(self.fiscal_year), cint(month))[1]
                 
 		if self.items:
 			total_ot = total_wage = total_health = salary = 0
@@ -30,6 +31,9 @@ class ProcessMRPayment(Document):
 				if a.employee_type == "GEP Employee":
                                         salary = frappe.db.get_value("GEP Employee", a.employee, "salary")
                                         if flt(a.total_wage) > flt(salary):
+                                                a.total_wage = flt(salary)
+
+                                        if flt(total_days) == flt(a.number_of_days):
                                                 a.total_wage = flt(salary)
                                         
 				a.total_amount = flt(a.total_ot_amount) + flt(a.total_wage)
@@ -235,7 +239,8 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
         li = frappe.db.sql("""
                                 select employee,
                                         sum(number_of_days) as number_of_days,
-                                        sum(number_of_hours) as number_of_hours
+                                        sum(number_of_hours) as number_of_hours,
+                                        {4} as noof_days_in_month
                                 from (
                                         select
                                                 employee,
@@ -259,7 +264,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         and c.docstatus = 1
                                 ) as abc
                                 group by employee
-                        """.format(employee_type, from_date, to_date, cost_center), as_dict=True)
+                        """.format(employee_type, from_date, to_date, cost_center, total_days), as_dict=True)
 
         for i in li:
                 rest = frappe.db.sql("""

@@ -18,7 +18,7 @@ import frappe.permissions
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from erpnext.utilities.transaction_base import delete_events
-from erpnext.custom_utils import get_year_start_date, get_year_end_date
+from erpnext.custom_utils import get_year_start_date, get_year_end_date, round5
 from frappe.utils.data import get_first_day, get_last_day, add_days
 
 
@@ -342,7 +342,7 @@ class Employee(Document):
 			la.from_date = str(start)
 			la.to_date = str(end)
 			la.carry_forward = cint(0)
-			la.new_leaves_allocated = flt(leave_amount)
+			la.new_leaves_allocated = round5(leave_amount)
 			if flt(leave_amount) > 0:
 				la.submit()
 			self.db_set("casual_leave_allocated", 1)

@@ -6,6 +6,7 @@ import frappe
 from frappe.utils import cstr, cint, getdate
 from frappe import msgprint, _
 from calendar import monthrange
+from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 
 def execute(filters=None):
 	if not filters: filters = {}
@@ -28,11 +29,13 @@ def execute(filters=None):
 		for day in range(filters["total_days_in_month"]):
 			str_date = str(filters.year) + "-" + str(filters.month) + "-" + str(day + 1)
 			date = getdate(str_date)
+		
+			holiday = frappe.db.sql("select 1 from `tabHoliday` where parent = %s and holiday_date = %s", (get_holiday_list_for_employee(emp), str_date))	
 			#frappe.msgprint(str(date.weekday()))
 			status = att_map.get(emp).get(day + 1, "None")
 			status_map = {"Present": "P", "Absent": "A", "Half Day": "H", "Tour": "T", "Leave": "L", "None": ""}
 			#frappe.msgprint(str(status))
-			if status == "None" and date.weekday() == 6:
+			if status == "None" and (date.weekday() == 6 or holiday):
 				row.append("X")
 			else:
 				row.append(status_map[status])

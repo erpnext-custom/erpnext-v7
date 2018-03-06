@@ -378,7 +378,7 @@ frappe.ui.form.on("Purchase Invoice", {
 cur_frm.cscript.type = function(doc) {
     //Set the initial value for tds rate
     if(doc.type) {
-	cur_frm.toggle_reqd("tds_cost_center", doc.type)
+	//cur_frm.toggle_reqd("tds_cost_center", doc.type)
     }
 
     var percent = 0;

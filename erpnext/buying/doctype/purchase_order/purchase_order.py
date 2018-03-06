@@ -289,6 +289,10 @@ class PurchaseOrder(BuyingController):
 	# Check budget availability in the budget head
 	##
 	def check_budget_available(self):
+		net_additional_charges = 0
+		if self.total_add_ded:
+			net_additional_charges = flt(self.total_add_ded) / flt(self.total)
+	
 		for a in self.items:
 			action = frappe.db.sql("select action_if_annual_budget_exceeded as action from tabBudget where docstatus = 1 and cost_center = \'" + str(a.cost_center) + "\' and fiscal_year = " + str(self.transaction_date)[0:4] + " ", as_dict=True)
 			if action and action[0].action == "Ignore":
@@ -298,8 +302,8 @@ class PurchaseOrder(BuyingController):
 				if budget_amount:
 					consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (a.cost_center, a.budget_account, str(self.transaction_date)[0:4] + "-01-01", str(self.transaction_date)[0:4] + "-12-31"), as_dict=True)
 					if consumed:
-						if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(a.amount)):
-							frappe.throw("Not enough budget in " + str(a.budget_account) + " under " + str(a.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(a.amount) - flt(budget_amount[0].budget_amount))))
+						if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(a.amount) + (flt(net_additional_charges) * flt(a.amount))):
+							frappe.throw("Not enough budget in " + str(a.budget_account) + " under " + str(a.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(a.amount) + (flt(net_additional_charges) * flt(a.amount)) - flt(budget_amount[0].budget_amount))))
 				else:
 					frappe.throw("There is no budget in " + str(a.budget_account) + " under " + str(a.cost_center))
 

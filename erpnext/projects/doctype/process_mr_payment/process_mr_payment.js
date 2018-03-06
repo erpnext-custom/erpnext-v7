@@ -95,9 +95,25 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						row.total_ot_amount = row.number_of_hours * row.hourly_rate;
 						row.total_wage 		= row.daily_rate * row.number_of_days;
 						
+						if(mr['type'] == 'GEP Employee'){
+							row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
+							row.hourly_rate     = parseFloat(mr['salary']*1.5)/parseFloat(mr['noof_days_in_month']*8);
+							row.total_ot_amount = row.number_of_hours * row.hourly_rate;
+							row.total_wage      = row.daily_rate * row.number_of_days;
+							
+							if((parseFloat(row.total_wage) > parseFloat(mr['salary']))||(parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days']))){
+								row.total_wage = parseFloat(mr['salary']);
+							}
+						}
+						
+						/*
 						if(mr['type'] == 'GEP Employee' && parseFloat(row.total_wage) > parseFloat(mr['salary'])){
 							row.total_wage = parseFloat(mr['salary']);
 						}
+						else if(mr['type'] == 'GEP Employee' && parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days'])){
+							row.total_wage = parseFloat(mr['salary']);
+						}
+						*/
 						
 						row.total_amount 	= row.total_ot_amount + row.total_wage;
 						refresh_field("items");
