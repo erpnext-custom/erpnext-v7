@@ -611,7 +611,21 @@ def get_data():
                                         "name": "LTC Process Report",
                                         "label": _("LTC Process Report"),
                                         "doctype": "Leave Travel Concession"
-                                }
+                                },
+                                {
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "House Rent Report",
+                                        "label": _("House Rent Report"),
+                                        "doctype": "Salary Slip",
+                                },
+                                 {
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Staff Welfare Scheme",
+                                        "label": _("Staff Welfare Scheme"),
+                                        "doctype": "Salary Slip"
+                                },
 
 			]
 		},

@@ -342,6 +342,7 @@ def get_data():
 					"label": _("Salary Increment Report"),
 					"doctype": "Salary Increment"
 				},
+
 				{
                                         "type" : "report",
                                         "is_query_report": True,
@@ -356,14 +357,30 @@ def get_data():
                                         "label": _("Other Recoveries"),
                                         "doctype": "Salary Slip"
                                 },
-
 				{
                                         "type" : "report",
                                         "is_query_report": True,
                                         "name": "Summarized Salary Report",
                                         "label": _("Summarized Salary Report"),
+                                        "doctype": "Salary Slip",
+                                },
+                                {
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "House Rent Report",
+                                        "label": _("House Rent Report"),
+                                        "doctype": "Salary Slip",
+                                },
+                                 {
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Staff Welfare Scheme",
+                                        "label": _("Staff Welfare Scheme"),
                                         "doctype": "Salary Slip"
                                 }
+
+
+
 			]
 		},
 		{

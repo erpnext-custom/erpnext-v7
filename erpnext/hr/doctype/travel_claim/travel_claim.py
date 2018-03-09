@@ -164,6 +164,8 @@ class TravelClaim(Document):
 	##
 	def update_travel_authorization(self):
 		ta = frappe.get_doc("Travel Authorization", self.ta)
+		if ta.travel_claim:
+			frappe.throw("A travel claim <b>" + str(ta.travel_claim) + "</b> has already been created for the authorization")
 		ta.db_set("travel_claim", self.name)
 
 	##

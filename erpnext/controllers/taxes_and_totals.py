@@ -378,9 +378,9 @@ class calculate_taxes_and_totals(object):
 				for i, item in enumerate(self.doc.get("items")):
 					distributed_amount = flt(self.doc.discount_amount) * \
 						item.net_amount / total_for_discount_amount
-	
+				
 					if item.doctype in ['Purchase Receipt Item', 'Purchase Invoice Item']:
-						item.net_amount = flt(item.net_amount + (item.tx_amount if item.tx_amount else 0) - distributed_amount, item.precision("net_amount"))
+						item.net_amount = flt(flt(item.net_amount) + flt(item.tx_amount if item.tx_amount else 0) - flt(distributed_amount), item.precision("net_amount"))
 					else:
 						item.net_amount = flt(item.net_amount - distributed_amount, item.precision("net_amount"))
 					net_total += item.net_amount
@@ -394,8 +394,8 @@ class calculate_taxes_and_totals(object):
 						else:
 							discount_amount_loss = flt(self.doc.total - net_total - self.doc.discount_amount,
 								self.doc.precision("net_total"))
-							item.net_amount = flt(item.net_amount + discount_amount_loss,
-								item.precision("net_amount"))
+						item.net_amount = flt(item.net_amount + discount_amount_loss,
+							item.precision("net_amount"))
 
 					item.net_rate = flt(item.net_amount / item.qty, item.precision("net_rate")) if item.qty else 0
 

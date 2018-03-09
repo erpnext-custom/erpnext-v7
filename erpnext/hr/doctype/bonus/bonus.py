@@ -4,13 +4,14 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, getdate, cint, date_diff
+from frappe.utils import flt, getdate, cint, date_diff, today
 from erpnext.hr.doctype.salary_structure.salary_structure import get_salary_tax
 
 class Bonus(Document):
 	def validate(self):
-		self.validate_duplicate()
+		#self.validate_duplicate()
 		self.calculate_values()
 
 	def on_submit(self):
@@ -35,14 +36,16 @@ class Bonus(Document):
 
 	def calculate_values(self):
 		if self.items:
-			tot = tax = 0
+			tot = tax = net = 0
 			for a in self.items:
 				a.tax_amount = get_salary_tax(a.amount)
 				a.balance_amount = flt(a.amount) - flt(a.tax_amount)
 				tot += flt(a.amount)
 				tax += flt(a.tax_amount)
+				net += flt(tot)-flt(tax)
 			self.total_amount = tot
 			self.tax_amount = tax
+			self.net_amount = net
 		else:
 			frappe.throw("Cannot save without employee details")
 
@@ -51,9 +54,57 @@ class Bonus(Document):
 		if not self.fiscal_year:
 			frappe.throw("Fiscal Year is Mandatory")
 
-		start, end = frappe.db.get_value("Fiscal Year", self.fiscal_year, ["year_start_date", "year_end_date"])
-                query = "select e.name as employee, e.employee_name, e.branch, e.date_of_joining, e.relieving_date, (select sd.amount from `tabSalary Detail` sd, `tabSalary Slip` sl, `tabSalary Structure` ss where sd.parent = sl.name and sl.employee = e.name and sl.salary_structure = ss.name and sd.salary_component = 'Basic Pay' and sl.actual_basic = 0 and sl.docstatus = 1 and ss.eligible_for_annual_bonus = 1 and sl.fiscal_year = \'" + str(self.fiscal_year) + "\' order by sl.month desc limit 1) as basic_pay from tabEmployee e where e.status = 'Active' or e.relieving_date between \'" + str(start)+ "\' and \'"+str(end)+"\' "
-                query += " order by e.branch"
+		#start, end = frappe.db.get_value("Fiscal Year", self.fiscal_year, ["year_start_date", "year_end_date"])
+		start = str(self.fiscal_year)+'-01-01'
+		end   = str(self.fiscal_year)+'-12-31'
+		
+                query = """
+                                select
+                                        e.name as employee,
+                                        e.employee_name,
+                                        e.employment_type,
+                                        e.branch,
+                                        e.date_of_joining,
+                                        e.relieving_date,
+                                        e.reason_for_resignation as leaving_type,
+                                        datediff(least(ifnull(e.relieving_date,now()),'{2}'),
+                                                        greatest(e.date_of_joining,'{1}'))+1 days_worked,
+                                        (
+                                                select
+                                                        sd.amount
+                                                from
+                                                        `tabSalary Detail` sd,
+                                                        `tabSalary Slip` sl,
+                                                        `tabSalary Structure` ss
+                                                where sd.parent = sl.name
+                                                and sl.employee = e.name
+                                                and sl.salary_structure = ss.name
+                                                and sd.salary_component = 'Basic Pay'
+                                                and sl.actual_basic = 0
+                                                and sl.docstatus = 1
+                                                and ss.eligible_for_annual_bonus = 1
+                                                and sl.fiscal_year = '{0}'
+                                                order by sl.month desc limit 1
+                                        ) as basic_pay
+                                from tabEmployee e
+                                where (
+                                        ('{3}' = 'Active' and e.date_of_joining <= '{2}' and ifnull(e.relieving_date,now()) > '{2}')
+                                        or
+                                        ('{3}' = 'Left' and ifnull(e.relieving_date,now()) between '{1}' and '{2}')
+                                        or
+                                        ('{3}' = 'All' and e.date_of_joining <= '{2}' and ifnull(e.relieving_date,now()) >= '{1}')
+                                        )
+                                and not exists(
+                                                select 1
+                                                from `tabBonus Details` bd, `tabBonus` b
+                                                where b.fiscal_year = '{0}'
+                                                and b.name <> '{4}'
+                                                and bd.parent = b.name
+                                                and bd.employee = e.employee
+                                                and b.docstatus in (0,1))
+                                order by e.branch
+                        """.format(self.fiscal_year, start, end, self.employee_status, self.name)
+                
                 entries = frappe.db.sql(query, as_dict=True)
                 self.set('items', [])
 
@@ -61,6 +112,7 @@ class Bonus(Document):
                 end = getdate(end)
 
                 for d in entries:
+                        '''
                         joining = getdate(d.date_of_joining)
                         relieving = getdate(d.relieving_date)
 
@@ -80,6 +132,7 @@ class Bonus(Document):
 				d.days_worked = date_diff(d.relieving_date, d.date_of_joining)
 
                         d.days_worked = cint(d.days_worked) + 1
+                        '''
                         d.amount = 0
                         row = self.append('items', {})
                         row.update(d)

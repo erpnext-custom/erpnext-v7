@@ -48,8 +48,6 @@ erpnext.buying.BuyingController = erpnext.TransactionController.extend({
 		}
 		
 		frappe.form.link_formatters['Item'] = function(value, doc) {
-			console.log('inside link_formatters');
-			
 			return value + ': ' + doc.item_name;
 		}
 	},
@@ -179,7 +177,7 @@ erpnext.buying.BuyingController = erpnext.TransactionController.extend({
 		if(item.tax_amount) {
 			item.net_rate = item.rate + (item.tax_amount / item.qty)	
 			item.net_amount = item.amount + item.tax_amount	
-		} */
+		}*/ 
 		this.calculate_taxes_and_totals() 
 	},
 
