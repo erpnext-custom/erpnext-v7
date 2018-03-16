@@ -5,6 +5,17 @@ frappe.ui.form.on('PBVA', {
 	setup: function(frm) {
 		frm.get_docfield("items").allow_bulk_edit = 1;
 	},
+	onload: function(frm) {
+			if(frm.doc.__islocal && !frm.doc.branch) {
+					frappe.call({
+						  method: "erpnext.custom_utils.get_user_info",
+						  args: {"user": frappe.session.user},
+						  callback(r) {
+									cur_frm.set_value("branch", r.message.branch);
+						 }
+					});
+			}
+	},
 	refresh: function(frm) {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
@@ -24,6 +35,11 @@ frappe.ui.form.on('PBVA', {
 	},
 	"get_pbva": function(frm) {
 		if(frm.doc.fiscal_year) {
+			cur_frm.set_value("total_amount", 0.0);
+			cur_frm.set_value("tax_amount", 0.0);
+			cur_frm.set_value("net_amount", 0.0);
+			refresh_many(["items", "total_amount", "tax_amount", "net_amount"]);
+			
 			//load_accounts(frm.doc.company)
 			return frappe.call({
 				method: "get_pbva_details",
@@ -104,14 +120,17 @@ function calculate_total(frm, cdt, cdn) {
 	item.balance_amount = item.amount - item.tax_amount
 	var total = 0;
 	var total_tax = 0;
+	var net   = 0.0;
 	frm.doc.items.forEach(function(d) {
-		total += d.amount
-		total_tax += d.tax_amount
+		total     += parseFloat(d.amount);
+		total_tax += parseFloat(d.tax_amount);
+		net       += parseFloat(d.amount-d.tax_amount);
 	})
-	cur_frm.set_value("total_amount", total)
-	cur_frm.set_value("tax_amount", total_tax)
+	cur_frm.set_value("total_amount", total);
+	cur_frm.set_value("tax_amount", total_tax);
+	cur_frm.set_value("net_amount", net);
 	
-	refresh_many(["items", "total_amount", "tax_amount"]);
+	refresh_many(["items", "total_amount", "tax_amount", "net_amount"]);
 }
 
 function calculate_tax(gross_amt) {

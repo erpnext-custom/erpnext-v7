@@ -24,7 +24,7 @@ def execute(filters=None):
 def get_columns(data):
 	columns = [
 		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140", _("Designation") + ":Link/Designation:120",
-                _("CID") + "::120", _("Basic Pay") + ":Currency:120",_("PF Account#") + "::120",
+                _("CID") + "::120",_("NPPF Tier") + "::100", _("Basic Pay") + ":Currency:120",_("PF Account#") + "::120",
                 _("Employee PF") + ":Currency:120", _("Employer PF") + ":Currency:120", _("Total") + ":Currency:120",
                 _("Company") + ":Link/Branch:120", _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120",
                 _("Division") + ":Link/Division:120", _("Section") + ":Link/Section:120", _("Year") + "::80", _("Month") + "::80"
@@ -36,7 +36,7 @@ def get_data(filters):
 	conditions, filters = get_conditions(filters)
 
         data = frappe.db.sql("""
-                select t1.employee, t3.employee_name, t1.designation, t3.passport_number,
+                select t1.employee, t3.employee_name, t1.designation, t3.passport_number,t3.nppf_tiers,
                         sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0) else 0 end) as basicpay,
                         t3.nppf_number,
                         sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end) as employeepf,
@@ -71,6 +71,7 @@ def get_conditions(filters):
 	if filters.get("fiscal_year"): conditions += " and t1.fiscal_year = %(fiscal_year)s"
 	if filters.get("company"): conditions += " and t1.company = %(company)s"
 	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"
+	if filters.get("tier"): conditions += " and t3.nppf_tiers = %(tier)s"
 	
 	return conditions, filters
 	

@@ -125,7 +125,19 @@ def get_data():
 					"label": "Stock Analytics"
 				},
 			]
-		}
+		},
+		{
+			"label": _ ("Human Resource"),
+			"icon": "icon-list",
+			"items": [
+				{	
+					"type": "report",
+					"is_query_report": False,
+					"name": "Employee Information",
+					"doctype": "Employee"
+				},
+			]	
+		},
 	]
 
 

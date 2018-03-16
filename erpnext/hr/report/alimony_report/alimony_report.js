@@ -1,14 +1,14 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.query_reports["PF Report"] = {
+frappe.query_reports["Alimony Report"] = {
 	"filters": [
 		{
 			"fieldname":"month",
 			"label": __("Month"),
 			"fieldtype": "Select",
 			"options": "Jan\nFeb\nMar\nApr\nMay\nJun\nJul\nAug\nSep\nOct\nNov\nDec",
-			"default": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", 
+			"default": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
 				"Dec"][frappe.datetime.str_to_obj(frappe.datetime.get_today()).getMonth()],
 		},
 		{
@@ -22,22 +22,21 @@ frappe.query_reports["PF Report"] = {
 			"fieldname":"employee",
 			"label": __("Employee"),
 			"fieldtype": "Link",
-			"options": "Employee"
+			"options": "Employee",
+		},
+		{
+			"fieldname": "branch",
+			"label": ("Branch"),
+			"fieldtype": "Link",
+			"options": "Branch",
 		},
 		{
 			"fieldname":"company",
 			"label": __("Company"),
 			"fieldtype": "Link",
 			"options": "Company",
-			"default": frappe.defaults.get_user_default("Company")
-		},
-		{
-                        "fieldname":"tier",
-                        "label": __("Tier"),
-                        "fieldtype": "Select",
-                        "options":[" ", 1, 2],
+			"default": frappe.defaults.get_user_default("Company"),
+		}
 
-                },
-	
 	]
 }

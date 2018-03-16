@@ -15,13 +15,14 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 from __future__ import unicode_literals
 import frappe, json
 from frappe import _, scrub, ValidationError
-from frappe.utils import flt, comma_or, nowdate
+from frappe.utils import flt, comma_or, nowdate, getdate
 from erpnext.accounts.utils import get_outstanding_invoices, get_account_currency, get_balance_on
 from erpnext.accounts.party import get_party_account
 from erpnext.accounts.doctype.journal_entry.journal_entry \
 	import get_average_exchange_rate, get_default_bank_cash_account, get_default_bank_cash_sales_account
 from erpnext.setup.utils import get_exchange_rate
 from erpnext.accounts.general_ledger import make_gl_entries
+from erpnext.custom_utils import generate_receipt_no
 
 from erpnext.controllers.accounts_controller import AccountsController
 
@@ -581,6 +582,10 @@ class PaymentEntry(AccountsController):
 			for d in self.get("references"):
 				if d.allocated_amount and d.reference_doctype in ("Sales Order", "Purchase Order"):
 					frappe.get_doc(d.reference_doctype, d.reference_name).set_total_advance_paid()
+
+	def get_series(self):
+		fiscal_year = getdate(self.posting_date).year
+		generate_receipt_no(self.doctype, self.name, self.branch, fiscal_year)
 
 @frappe.whitelist()
 def get_outstanding_reference_documents(args):

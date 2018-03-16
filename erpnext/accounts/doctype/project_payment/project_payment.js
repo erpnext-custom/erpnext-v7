@@ -91,6 +91,16 @@ frappe.ui.form.on('Project Payment', {
 			set_tds_account(frm);
 		}
 	},
+
+	get_series: function(frm) {
+		return frappe.call({
+			method: "get_series",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.reload_doc();
+			}
+		});
+	}
 });
 
 frappe.ui.form.on("Project Payment Advance",{

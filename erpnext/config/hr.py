@@ -364,6 +364,13 @@ def get_data():
                                         "label": _("Summarized Salary Report"),
                                         "doctype": "Salary Slip",
                                 },
+				{
+					"type" : "report",
+					"is_query_report": True,
+					"name": "Alimony Report",
+					"label":_("Alimony Report"),
+					"doctype" : "Salary Slip"
+				},
                                 {
                                         "type" : "report",
                                         "is_query_report": True,
@@ -377,7 +384,15 @@ def get_data():
                                         "name": "Staff Welfare Scheme",
                                         "label": _("Staff Welfare Scheme"),
                                         "doctype": "Salary Slip"
+                                },
+				 {
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Adhoc Recoveries",
+                                        "label": _("Adhoc Recoveries"),
+                                        "doctype": "Salary Slip"
                                 }
+
 
 
 

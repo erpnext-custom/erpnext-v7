@@ -35,34 +35,35 @@ def get_columns():
 
 def get_data(filters):
 	query ="""select hid.equipment, (select equipment_type FROM tabEquipment e WHERE e.name = hid.equipment), hid.equipment_number, hci.ehf_name, hci.customer, (select c.customer_group FROM tabCustomer AS c WHERE hci.customer = c.name),
-	CASE hid.rate_type
-	WHEN 'With Fuel' THEN (select sum(hid.total_work_hours))
-	END,
-	CASE hid.rate_type
-	WHEN 'With Fuel' THEN (select hid.work_rate)
-	END,
-	CASE hid.rate_type
-	WHEN 'With Fuel' THEN (select sum(hid.amount_work))
-	END,
-	CASE hid.rate_type
-	WHEN 'Without Fuel' THEN (select sum(hid.total_work_hours))
-	END,
-	CASE hid.rate_type
-	WHEN 'Without Fuel' THEN (select hid.work_rate)
-	END,
-	CASE hid.rate_type
-	WHEN 'Without Fuel' THEN (select sum(hid.amount_work))
-	END,
-	sum(hid.total_idle_hours), hid.idle_rate, sum(hid.amount_idle),
-	CASE hci.owned_by
-	WHEN 'CDCL' THEN (select sum(hid.total_amount))
-	END,
-	CASE hci.owned_by
-	WHEN 'Private' THEN (select sum(hid.total_amount))
-	END,
-	CASE hci.owned_by
-	WHEN 'Others' THEN (select sum(hid.total_amount))
-	END,sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci, `tabEquipment` e  WHERE hid.parent = hci.name AND hid.equipment = e.name AND hci.docstatus = 1"""
+        CASE hid.rate_type
+        WHEN 'With Fuel' THEN (select sum(hid.total_work_hours))
+        END,
+        CASE hid.rate_type
+        WHEN 'With Fuel' THEN (select hid.work_rate)
+        END,
+        CASE hid.rate_type
+        WHEN 'With Fuel' THEN (select sum(hid.amount_work))
+        END,
+        CASE hid.rate_type
+        WHEN 'Without Fuel' THEN (select sum(hid.total_work_hours))
+        END,
+        CASE hid.rate_type
+        WHEN 'Without Fuel' THEN (select hid.work_rate)
+        END,
+        CASE hid.rate_type
+        WHEN 'Without Fuel' THEN (select sum(hid.amount_work))
+        END,
+        sum(hid.total_idle_hours), hid.idle_rate, sum(hid.amount_idle),
+        CASE hci.owned_by
+        WHEN 'CDCL' THEN (select sum(hid.total_amount))
+        END,
+        CASE hci.owned_by
+        WHEN 'Private' THEN (select sum(hid.total_amount))
+        END,
+        CASE hci.owned_by
+        WHEN 'Others' THEN (select sum(hid.total_amount))
+        END,sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci, `tabEquipment` e,  `tabVehicle Logbook` vl   WHERE hid.parent = hci.name AND hid.vehicle_logbook = vl.name and hid.equipment = e.name and hci.docstatus = 1 and vl.from_date between '{0}' and '{1}' and vl.to_date between '{0}' and '{1}'""".format(filters.get("from_date"), filters.get("to_date"))
+
 
 	if filters.get("branch"):
 		query += " and hci.branch = \'" + str(filters.branch) + "\'"

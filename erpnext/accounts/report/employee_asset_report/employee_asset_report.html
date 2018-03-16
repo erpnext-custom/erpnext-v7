@@ -33,7 +33,10 @@
 					{% if (filters.employee && (i != 1 && i != 2)) { %}
 						<td>
 							{% var fieldname = report.columns[i].field; %}
-							{% if (!is_null(row[fieldname])) { %}
+							{% if (!is_null(row[fieldname]) && i == 6) { %}
+								{%= format_currency(row[fieldname], row.currency) %} 
+							{% } %}
+							{% if (!is_null(row[fieldname]) && i != 6) { %}
 								{%= row[fieldname] %}
 							{% } %}
 						</td>
@@ -41,7 +44,10 @@
 					{% if (!filters.employee) { %}
 						<td>
 							{% var fieldname = report.columns[i].field; %}
-							{% if (!is_null(row[fieldname])) { %}
+							{% if (!is_null(row[fieldname]) && i == 6) { %}
+								{%= format_currency(row[fieldname], row.currency) %} 
+							{% } %}
+							{% if (!is_null(row[fieldname]) && i != 6) { %}
 								{%= row[fieldname] %}
 							{% } %}
 						</td>

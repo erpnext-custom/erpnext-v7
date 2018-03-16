@@ -63,6 +63,7 @@ class Employee(Document):
 	
 		if self.user_id:
 			self.company_email = self.user_id
+			self.toggle_user_enable()
 			self.validate_for_enabled_user_id()
 			self.validate_duplicate_user_id()
 		else:
@@ -307,6 +308,13 @@ class Employee(Document):
 			throw(_("User {0} is already assigned to Employee {1}").format(
 				self.user_id, employee[0]), frappe.DuplicateEntryError)
 
+	def toggle_user_enable(self):
+		user = frappe.get_doc("User", self.user_id)
+		if user and self.status == 'Active':
+			user.db_set("enabled", 1)
+		if user and self.status == 'Left':
+			user.db_set("enabled", 0)
+	
 	def validate_employee_leave_approver(self):
 		for l in self.get("leave_approvers")[:]:
 			#if l.leave_approver:

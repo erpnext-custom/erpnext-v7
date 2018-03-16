@@ -5,8 +5,9 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
+from frappe.utils import getdate, cstr, flt, fmt_money, formatdate, nowdate
 from erpnext.controllers.accounts_controller import AccountsController
+from erpnext.custom_utils import generate_receipt_no
 
 class MechanicalPayment(AccountsController):
 	def validate(self):
@@ -39,6 +40,10 @@ class MechanicalPayment(AccountsController):
 			doc.db_set("outstanding_amount", flt(doc.outstanding_amount) - flt(self.receivable_amount))
 		else:
 			doc.db_set("outstanding_amount", flt(doc.outstanding_amount) + flt(self.receivable_amount))
+
+	def get_series(self):
+		fiscal_year = getdate(self.posting_date).year
+		generate_receipt_no(self.doctype, self.name, self.branch, fiscal_year)
 
 	def make_gl_entry(self):
 		from erpnext.accounts.general_ledger import make_gl_entries

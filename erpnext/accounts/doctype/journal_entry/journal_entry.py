@@ -12,12 +12,13 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 
 from __future__ import unicode_literals
 import frappe, json
-from frappe.utils import cstr, flt, fmt_money, formatdate
+from frappe.utils import cstr, flt, fmt_money, formatdate, getdate
 from frappe import msgprint, _, scrub
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.utils import get_balance_on, get_account_currency
 from erpnext.setup.utils import get_company_currency
 from erpnext.accounts.party import get_party_account
+from erpnext.custom_utils import generate_receipt_no
 # Ver 1.0 by SSK on 09/08/2016, Following datetime, make_autoname imports are included
 import datetime
 from frappe.model.naming import make_autoname
@@ -70,6 +71,10 @@ class JournalEntry(AccountsController):
 
 	def get_feed(self):
 		return self.voucher_type
+
+	def get_series(self):
+		fiscal_year = getdate(self.posting_date).year
+		generate_receipt_no(self.doctype, self.name, self.branch, fiscal_year)
 
 	def validate(self):
 		if not self.is_opening:

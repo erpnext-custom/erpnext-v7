@@ -16,12 +16,24 @@ frappe.ui.form.on('Mechanical Payment', {
 		} 
 
 	},
+
 	"receivable_amount": function(frm) {
 		calculate_totals(frm)
 	},
+
 	"tds_amount": function(frm) {
 		calculate_totals(frm)
 		frm.toggle_reqd("tds_account", frm.doc.tds_amount)
+	},
+
+	get_series: function(frm) {
+		return frappe.call({
+			method: "get_series",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.reload_doc();
+			}
+		});
 	}
 });
 

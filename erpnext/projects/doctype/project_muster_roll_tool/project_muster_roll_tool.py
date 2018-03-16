@@ -16,9 +16,11 @@ class ProjectMusterRollTool(Document):
 def get_employees(project, current_project=None):
 	attendance_not_marked = []
 	attendance_marked = []
-	employee_list = frappe.get_list("Muster Roll Employee", fields=["name", "person_name", "project"], filters={
-		"status": "Active", "project": current_project}, order_by="person_name")
-	marked_employee = {}
+	employee_list = []
+
+	if current_project:
+		employee_list = frappe.get_list("Muster Roll Employee", fields=["name", "person_name", "project"], filters={
+			"status": "Active", "project": current_project}, order_by="person_name")
 
 	for employee in employee_list:
 		if employee['project'] != project:

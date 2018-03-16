@@ -27,6 +27,9 @@ frappe.ui.form.on('Direct Payment', {
 	"tds_percent": function(frm) {
 		calculate_tds(frm);
 	},
+	"tds_amount": function(frm){
+		frm.set_value("balance_amount", parseFloat(frm.doc.amount) - parseFloat(frm.doc.tds_amount))
+	},
 	"branch": function(frm) {
 		frappe.call({
 			method: "frappe.client.get_value",

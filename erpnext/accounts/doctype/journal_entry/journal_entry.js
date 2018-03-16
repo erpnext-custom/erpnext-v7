@@ -67,6 +67,16 @@ frappe.ui.form.on("Journal Entry", {
 
 	multi_currency: function(frm) {
 		erpnext.journal_entry.toggle_fields_based_on_currency(frm);
+	},
+	
+	get_series: function(frm) {
+		return frappe.call({
+			method: "get_series",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.reload_doc();
+			}
+		});
 	}
 })
 

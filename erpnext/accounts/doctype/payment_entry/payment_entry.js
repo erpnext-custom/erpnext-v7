@@ -741,6 +741,16 @@ frappe.ui.form.on('Payment Entry', {
 		frm.set_value("actual_receivable_amount", frm.doc.base_received_amount - frm.doc.tds_amount)
 		cur_frm.refresh_field("actual_receivable_amount")
 		cur_frm.toggle_reqd("tds_account", frm.doc.tds_amount)
+	},
+
+	get_series: function(frm) {
+		return frappe.call({
+			method: "get_series",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.reload_doc();
+			}
+		});
 	}
 });
 
@@ -778,6 +788,12 @@ frappe.ui.form.on('Payment Entry Reference', {
 
 	references_remove: function(frm) {
 		frm.events.set_total_allocated_amount(frm);
+	},
+
+	get_series: function(frm) {
+		console.log(frm.doc.doctype)	
+		console.log(frm.doc.docname)	
+		console.log(frm.doc.branch)	
 	}
 })
 

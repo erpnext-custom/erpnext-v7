@@ -1,5 +1,6 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
+cur_frm.add_fetch("asset_code", "branch", "branch")
 
 frappe.ui.form.on('Equipment', {
 	onload: function(frm) {
@@ -26,6 +27,7 @@ frappe.ui.form.on('Equipment', {
 			frm.set_df_property("branch", "read_only", 0)
 			frm.set_df_property("is_disabled", "read_only", 0)
 		}
+		cur_frm.set_df_property("branch", "read_only", frm.doc.asset_code ? 1 : 0)
 	},
 	validate: function(frm) {
 		if (frm.doc.operators) {

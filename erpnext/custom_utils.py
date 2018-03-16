@@ -14,6 +14,7 @@ from frappe import msgprint
 from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
 from frappe.desk.form.linked_with import get_linked_doctypes, get_linked_docs
+from frappe.model.naming import getseries
 
 ##
 # Rounds to the nearest 5 with precision of 1 by default
@@ -100,8 +101,24 @@ def cancel_draft_doc(doctype, docname):
 	if doctype == "Material Request":
 		doc.db_set("status", "Cancelled")
 		doc.db_set("workflow_state", "Cancelled")
+
 ##
 #  nvl() function added by SHIV on 02/02/2018
 ##
 def nvl(val1, val2):
         return val1 if val1 else val2
+
+##
+# generate and get the receipt number
+##
+def generate_receipt_no(doctype, docname, branch, fiscal_year):
+	if doctype and docname:
+		abbr = frappe.db.get_value("Branch", branch, "abbr")
+		if not abbr:
+			frappe.throw("Set Branch Abbreviation in Branch Master Record")
+		name = str("CDCL/" + str(abbr) + "/" + str(fiscal_year) + "/")
+		current = getseries(name, 4)
+		doc = frappe.get_doc(doctype, docname)
+		doc.db_set("money_receipt_no", current)
+		doc.db_set("money_receipt_prefix", name)
+		

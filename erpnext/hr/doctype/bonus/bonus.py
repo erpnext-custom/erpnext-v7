@@ -67,7 +67,7 @@ class Bonus(Document):
                                         e.date_of_joining,
                                         e.relieving_date,
                                         e.reason_for_resignation as leaving_type,
-                                        datediff(least(ifnull(e.relieving_date,now()),'{2}'),
+                                        datediff(least(ifnull(e.relieving_date,'9999-12-31'),'{2}'),
                                                         greatest(e.date_of_joining,'{1}'))+1 days_worked,
                                         (
                                                 select
@@ -88,11 +88,11 @@ class Bonus(Document):
                                         ) as basic_pay
                                 from tabEmployee e
                                 where (
-                                        ('{3}' = 'Active' and e.date_of_joining <= '{2}' and ifnull(e.relieving_date,now()) > '{2}')
+                                        ('{3}' = 'Active' and e.date_of_joining <= '{2}' and ifnull(e.relieving_date,'9999-12-31') > '{2}')
                                         or
-                                        ('{3}' = 'Left' and ifnull(e.relieving_date,now()) between '{1}' and '{2}')
+                                        ('{3}' = 'Left' and ifnull(e.relieving_date,'9999-12-31') between '{1}' and '{2}')
                                         or
-                                        ('{3}' = 'All' and e.date_of_joining <= '{2}' and ifnull(e.relieving_date,now()) >= '{1}')
+                                        ('{3}' = 'All' and e.date_of_joining <= '{2}' and ifnull(e.relieving_date,'9999-12-31') >= '{1}')
                                         )
                                 and not exists(
                                                 select 1

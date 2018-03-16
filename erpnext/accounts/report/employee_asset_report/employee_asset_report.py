@@ -73,7 +73,7 @@ def get_columns():
 		  "width": 100
 		},
 		{
-		  "fieldname": "gross_purchase_amount",
+		  "fieldname": "gross_amount",
 		  "label": "Price",
 		  "fieldtype": "Currency",
 		  "width": 150

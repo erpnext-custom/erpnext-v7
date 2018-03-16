@@ -17,6 +17,7 @@ from frappe.utils import flt, getdate, get_url, nowdate
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import money_in_words
 from erpnext.controllers.accounts_controller import AccountsController
+from erpnext.custom_utils import generate_receipt_no
 
 class ProjectPayment(AccountsController):
 	def __setup__(self):
@@ -465,6 +466,9 @@ class ProjectPayment(AccountsController):
                 return frappe.get_all("Project Advance","*",filters={"project":self.project, "docstatus":1, "balance_amount": [">",0]})
 
         
+	def get_series(self):
+		fiscal_year = getdate(self.posting_date).year
+		generate_receipt_no(self.doctype, self.name, self.branch, fiscal_year)
 
 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++        
 # Following method is created by SHIV on 05/09/2017
