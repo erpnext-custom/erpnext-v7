@@ -49,6 +49,12 @@ def get_data():
                                         "name": "Revenue Target",
                                         "doctype": "Revenue Target",
                                 },
+				  {
+                                        "type": "report",
+                                        "name": "Budget Consumption Report",
+                                        "is_query_report": True,
+                                        "doctype": "GL Entry"
+                                }
 			]
 		},
 		{

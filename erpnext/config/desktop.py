@@ -4,6 +4,14 @@ from frappe import _
 def get_data():
 	return [
 		{
+			"module_name": "User Manual",
+			"color": "#f39c12",
+			"icon": "octicon octicon-package",
+			"type": "page",
+			"link": "manual",
+			"label": "User Manual"
+		},
+		{
 			"module_name": "Item",
 			"_doctype": "Item",
 			"color": "#f39c12",

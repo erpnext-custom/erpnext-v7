@@ -25,7 +25,7 @@ def get_columns():
 		("Rate W/O Fuel")+":Currency:150",
 		("Amount W/O Fuel")+":Currency:150",
 		("Idle Hour")+ ":data:80",
-       	("Idle Rate")+":Currency:150",
+       		("Idle Rate")+":Currency:150",
 		("Idle Amount") + ":Currency:150",
 		("CDCL")+":Currency:150",
 		("Private")+":Currency:150",
@@ -62,24 +62,27 @@ def get_data(filters):
         END,
         CASE hci.owned_by
         WHEN 'Others' THEN (select sum(hid.total_amount))
-        END,sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci, `tabEquipment` e,  `tabVehicle Logbook` vl   WHERE hid.parent = hci.name AND hid.vehicle_logbook = vl.name and hid.equipment = e.name and hci.docstatus = 1 and vl.from_date between '{0}' and '{1}' and vl.to_date between '{0}' and '{1}'""".format(filters.get("from_date"), filters.get("to_date"))
-
+        END,sum(hid.total_amount) FROM `tabHire Invoice Details` AS hid, `tabHire Charge Invoice` AS hci, `tabEquipment` e,  `tabVehicle Logbook` vl   WHERE hid.parent = hci.name AND hid.vehicle_logbook = vl.name and hid.equipment = e.name and hci.docstatus = 1 and ((vl.from_date between '{0}' and '{1}') or (vl.to_date between '{0}' and '{1}'))""".format(filters.get("from_date"), filters.get("to_date"))
 
 	if filters.get("branch"):
 		query += " and hci.branch = \'" + str(filters.branch) + "\'"
 
-	if filters.get("from_date") and filters.get("to_date"):
-		query += " and hci.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+	'''if filters.get("from_date") and filters.get("to_date"):
+		query += " and (vl.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'") or
+		(vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'")
+
+		#OR vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"'''
 
 	if filters.get("not_cdcl"):
 		query += " and e.not_cdcl = 0"
-		
+
 	if filters.get("include_disabled"):
 		query += " "
-	else:	
+	else:
 		query += " and e.is_disabled = 0"
 
 	if filters.get("customer"):
 		query += " and hci.customer = \'" + str(filters.customer) + "\'"
 	query += " group by hid.equipment, hci.ehf_name"
+	#frappe.msgprint("{0}, {1}".format(filters.get("from_date"), filters.get("to_date")))
 	return frappe.db.sql(query)
