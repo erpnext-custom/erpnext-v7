@@ -4,6 +4,12 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 2.0		  SHIV		                   28/11/2017         get_user_info method included.
 2.0               SHIV                             02/02/2018         added function nvl()
+                                                                        * This function return if the arg1 is not null,
+                                                                        else return arg2.
+2.0               SHIV                             03/22/2018         added functon get_prev_doc()
+                                                                        * This function can be used globally to fetch
+                                                                        previous database record by passing arguments
+                                                                        like DocType, DocName, ListOf Columns to be fetched.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -125,4 +131,15 @@ def generate_receipt_no(doctype, docname, branch, fiscal_year):
 		doc = frappe.get_doc(doctype, docname)
 		doc.db_set("money_receipt_no", current)
 		doc.db_set("money_receipt_prefix", name)
+
+##
+#  get_prev_doc() function added by SHIV on 03/22/2018
+##
+@frappe.whitelist()
+def get_prev_doc(doctype,docname,col_list=""):
+        if col_list:
+                return frappe.db.get_value(doctype,docname,col_list.split(","),as_dict=1)
+        else:
+                return frappe.get_doc(doctype,docname)
+
 		

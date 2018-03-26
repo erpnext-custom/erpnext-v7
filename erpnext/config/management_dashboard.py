@@ -130,6 +130,31 @@ def get_data():
 					"name": "stock-analytics",
 					"label": "Stock Analytics"
 				},
+				{
+					"type":"report",
+					"is_query_report": True,
+					"name": "Stock Ledger Report",
+					"doctype": "Stock Ledger Entry"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Stock Balance Report",
+					"doctype": "Stock Ledger Entry"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Stock Ageing Report",
+					"doctype": "Item"
+				},
+				{	
+					"type": "report",
+					"is_query_report": True,
+					"name": "Material Shortage Report",
+					"doctype":"Bin"
+				},
+ 
 			]
 		},
 		{

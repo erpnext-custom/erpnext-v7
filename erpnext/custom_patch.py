@@ -7,13 +7,28 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from datetime import timedelta, date
 
-def check_round():
-	print("2.34 rounded to " + str(round(2.34, 1)))
-	print("2.54 rounded to " + str(round(2.54, 1)))
-	print("2.24 rounded to " + str(round5(2.24)))
+def cancel_mr_po():
+	mrs = frappe.db.sql("select mr.name from `tabMaterial Request` mr where mr.transaction_date < '2018-01-01' and mr.status = 'Cancelled' and mr.workflow_state = 'Approved' and mr.per_ordered = 0 and not exists (select 1 from `tabPurchase Order Item` poi where poi.docstatus != 1 and poi.material_request = mr.name)", as_dict=True)
+	for a in mrs:
+		if a.name != 'MRSP18010012':
+			doc = frappe.get_doc("Material Request", a.name)
+			#doc.cancel()
+			doc.db_set("workflow_state", "Cancelled")
+			print(a.name)
 
-def round5(x, prec=1, base=0.5):
-	return round(base * round(flt(x)/base), prec)
+def move_equipment():
+	assets = frappe.db.sql("select name from `tabAsset Movement` where docstatus = 1", as_dict=True)
+	for a in assets:
+		doc = frappe.get_doc("Asset Movement", a.name)
+		equipment = frappe.db.get_value("Equipment", {"asset_code": doc.asset}, "name")
+		if equipment:
+			e = frappe.get_doc("Equipment", equipment)
+			if doc.target_custodian:
+				branch = frappe.db.get_value("Employee", doc.target_custodian, "branch")
+			if doc.target_cost_center:
+				branch = frappe.db.get_value("Cost Center", doc.target_cost_center, "branch")
+			print(str(equipment) + " : " + str(branch))
+			e.db_set("branch", branch)
 
 def cancel_mr():
 	mrs = frappe.db.sql("select name from `tabMaterial Request` where docstatus = 2", as_dict=True)

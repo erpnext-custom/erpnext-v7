@@ -19,6 +19,8 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 				}
 			}
 		});
+		//cur_frm.set_value("date_of_transfer",frappe.datetime.nowdate());
+		//refresh_many(["date_of_transfer"]);
 	},
 
 	refresh: function() {
@@ -62,7 +64,58 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 			args: {date_of_birth: this.frm.doc.date_of_birth, employment_type: this.frm.doc.employee_group}
 		});
 	},
+	
+	cost_center: function(){
+		if(!this.frm.doc.__islocal){
+			cur_frm.set_value("date_of_transfer",frappe.datetime.nowdate());
+			refresh_many(["date_of_transfer"]);
+			validate_prev_doc(this.frm,__("Please select date of transfer to new cost center"));		
+		}
+	},
+	
+	status: function(){
+		this.frm.toggle_reqd(["relieving_date","reason_for_resignation"],(this.frm.doc.status == 'Left' ? 1:0));
+	},
+	/*
+	department: function(){
+		if(!this.frm.doc.__islocal){
+			validate_prev_doc(this.frm,__("Please select date of transfer to new department"));		
+		}
+	},
+	
+	designation: function(){
+		if(!this.frm.doc.__islocal){
+			validate_prev_doc(this.frm,__("Please select date of effect for designation change"));		
+		}
+	},
+	*/
 });
+
+function validate_prev_doc(frm, title){
+	return frappe.call({
+				method: "erpnext.custom_utils.get_prev_doc",
+				args: {doctype: frm.doctype, docname: frm.docname, col_list: "cost_center,branch"},
+				callback: function(r) {
+					if(frm.doc.cost_center && (frm.doc.cost_center !== r.message.cost_center)){
+						console.log(frm);
+						console.log(r);
+						var d = frappe.prompt({
+							fieldtype: "Date",
+							fieldname: "date_of_transfer",
+							reqd: 1,
+							description: __("*This information shall be recorded in employee internal work history.")},
+							function(data) {
+								cur_frm.set_value("date_of_transfer",data.date_of_transfer);
+								refresh_many(["date_of_transfer"]);
+							},
+							title, 
+							__("Update")
+						);
+					}
+				}
+		});
+}
+
 cur_frm.cscript = new erpnext.hr.EmployeeController({frm: cur_frm});
 
 //Custom Scripts

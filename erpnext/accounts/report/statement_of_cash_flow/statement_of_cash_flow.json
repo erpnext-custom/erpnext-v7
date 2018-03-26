@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-17 23:03:20.514657", 
+ "modified": "2018-03-26 10:29:07.488427", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Cash Flow", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Management"
+  }, 
+  {
+   "role": "Regional Manager"
   }
  ]
 }

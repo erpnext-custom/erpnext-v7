@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-09 15:46:02.833506", 
+ "modified": "2018-03-26 10:28:38.388724", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Trial Balance", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Regional Manager"
   }
  ]
 }

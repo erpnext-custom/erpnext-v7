@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-09 15:46:44.793176", 
+ "modified": "2018-03-26 10:28:54.359578", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Financial Position", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Regional Manager"
   }
  ]
 }

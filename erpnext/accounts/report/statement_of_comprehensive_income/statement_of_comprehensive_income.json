@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-09 15:46:18.945814", 
+ "modified": "2018-03-26 10:29:21.241061", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Comprehensive Income", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Regional Manager"
   }
  ]
 }

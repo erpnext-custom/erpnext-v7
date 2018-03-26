@@ -14,6 +14,11 @@ class BulkAssetTransfer(Document):
 			doc.db_set("cost_center", a.cost_center)
 			doc.db_set("branch", frappe.db.get_value("Cost Center", a.cost_center, "branch"))
 
+			equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code, "docstatus": 1}, "name")
+			if equipment:
+				doc = frappe.get_doc("Equipment", equipment)
+				doc.db_set("branch", frappe.db.get_value("Cost Center", a.cost_center, "branch"))
+
 	def on_submit(self):
 		if not self.custodian or not self.custodian_cost_center or not self.custodian_branch:
 			frappe.throw("The custodian doesn't have Cost Center and Branch defined in Employee Master")
@@ -23,6 +28,11 @@ class BulkAssetTransfer(Document):
 			doc.db_set("issued_to", self.custodian)
 			doc.db_set("cost_center", self.custodian_cost_center)
 			doc.db_set("branch", self.custodian_branch)
+
+			equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code, "docstatus": 1}, "name")
+			if equipment:
+				doc = frappe.get_doc("Equipment", equipment)
+				doc.db_set("branch", self.custodian_branch)
 
 	def get_assets(self):
 		if not self.purpose:

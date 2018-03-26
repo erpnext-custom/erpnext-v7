@@ -83,6 +83,11 @@ class AssetMovement(Document):
 		frappe.db.set_value("Asset", self.asset, "issued_to", custodian)
 		frappe.db.set_value("Asset", self.asset, "cost_center", frappe.db.get_value("Employee", custodian, "cost_center"))
 		frappe.db.set_value("Asset", self.asset, "branch", frappe.db.get_value("Employee", custodian, "branch"))
+		
+		equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
+		if equipment:
+			doc = frappe.get_doc("Equipment", equipment)
+			doc.db_set("branch", frappe.db.get_value("Employee", custodian, "branch"))
 
 	def set_latest_cc_in_asset(self):
 		latest_movement_entry = frappe.db.sql("""select target_cost_center from `tabAsset Movement`
@@ -98,3 +103,8 @@ class AssetMovement(Document):
 		
 		frappe.db.set_value("Asset", self.asset, "cost_center", cc)
 		frappe.db.set_value("Asset", self.asset, "branch", frappe.db.get_value("Cost Center", cc, "branch"))
+
+		equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
+		if equipment:
+			doc = frappe.get_doc("Equipment", equipment)
+			doc.db_set("branch", frappe.db.get_value("Cost Center", cc, "branch"))

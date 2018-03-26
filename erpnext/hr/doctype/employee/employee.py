@@ -87,27 +87,73 @@ class Employee(Document):
 
         # Following method introducted by SHIV on 04/10/2017
         def populate_work_history(self):
-                if getdate(self.date_of_joining) != getdate(self.get_db_value("date_of_joining")):
-                        for wh in self.internal_work_history:
-                                if getdate(self.get_db_value("date_of_joining")) == getdate(wh.from_date):
-                                        wh.from_date = self.date_of_joining
+                # Fetching previous document from db
+                prev_doc = frappe.get_doc(self.doctype,self.name)
+                self.date_of_transfer = self.date_of_transfer if self.date_of_transfer else today()
 
+                if (getdate(self.date_of_joining) != prev_doc.date_of_joining) or \
+                   (self.status == 'Left' and self.relieving_date) or \
+                   (self.cost_center != prev_doc.cost_center):
+                        for wh in self.internal_work_history:
+                                # For change in date_of_joining
+                                if (getdate(self.date_of_joining) != prev_doc.date_of_joining):
+                                        if (getdate(prev_doc.date_of_joining) == getdate(wh.from_date)):
+                                                wh.from_date = self.date_of_joining
+
+                                # For change in relieving_date, cost_center
+                                if (self.status == 'Left' and self.relieving_date):
+                                        if not wh.to_date:
+                                                wh.to_date = self.relieving_date
+                                        elif prev_doc.relieving_date:
+                                                if (getdate(prev_doc.relieving_date) == getdate(wh.to_date)):
+                                                        wh.to_date = self.relieving_date
+                                elif (self.cost_center != prev_doc.cost_center):
+                                        if getdate(self.date_of_transfer) > getdate(today()):
+                                                frappe.throw(_("Date of transfer cannot be a future date."),title="Invalid Date")      
+                                        elif not wh.to_date:
+                                                if getdate(self.date_of_transfer) < getdate(wh.from_date):
+                                                        frappe.throw(_("Row#{0} : Date of transfer({1}) cannot be beyond current effective entry.").format(wh.idx,self.date_of_transfer),title="Invalid Date")
+                                                        
+                                                wh.to_date = wh.from_date if add_days(getdate(self.date_of_transfer),-1) < getdate(wh.from_date) else add_days(self.date_of_transfer,-1)
+                                        
+                if (self.cost_center != prev_doc.cost_center):
+                        self.append("internal_work_history",{
+                                        "branch": self.branch,
+                                        "cost_center": self.cost_center,
+                                        "department": self.department,
+                                        "designation": self.designation,
+                                        "from_date": self.date_of_transfer,
+                                        "owner": frappe.session.user,
+                                        "creation": nowdate(),
+                                        "modified_by": frappe.session.user,
+                                        "modified": nowdate()
+                        })
+                elif not self.internal_work_history:
+                        self.append("internal_work_history",{
+                                                "branch": self.branch,
+                                                "cost_center": self.cost_center,
+                                                "department": self.department,
+                                                "designation": self.designation,
+                                                "from_date": self.date_of_joining,
+                                                "owner": frappe.session.user,
+                                                "creation": nowdate(),
+                                                "modified_by": frappe.session.user,
+                                                "modified": nowdate()
+                        })
+                '''
                 if self.status == 'Left' and self.relieving_date:
                         for wh in self.internal_work_history:
                                 if not wh.to_date:
                                         wh.to_date = self.relieving_date
-                                elif self.get_db_value("relieving_date"):
-                                        if getdate(self.get_db_value("relieving_date")) == getdate(wh.to_date):
+                                elif prev_doc.relieving_date:
+                                        if getdate(prev_doc.relieving_date) == getdate(wh.to_date):
                                                 wh.to_date = self.relieving_date
                         
-                if self.branch != self.get_db_value("branch") \
-                        or self.cost_center != self.get_db_value("cost_center")\
-                        or self.department != self.get_db_value("department") \
-                        or self.designation != self.get_db_value("designation"):
+                if self.cost_center != prev_doc.cost_center:
 
                         for wh in self.internal_work_history:
                                 if not wh.to_date:
-                                        wh.to_date = wh.from_date if getdate(today()) < getdate(wh.from_date) else today()
+                                        wh.to_date = wh.from_date if getdate(prev_doc.date_of_transfer) < getdate(wh.from_date) else prev_doc.date_of_transfer
 
                         if not self.internal_work_history:
                                 self.append("internal_work_history",{
@@ -127,88 +173,12 @@ class Employee(Document):
                                                                 "cost_center": self.cost_center,
                                                                 "department": self.department,
                                                                 "designation": self.designation,
-                                                                "from_date": today(),
+                                                                "from_date": self.date_of_transfer,
                                                                 "owner": frappe.session.user,
                                                                 "creation": nowdate(),
                                                                 "modified_by": frappe.session.user,
                                                                 "modified": nowdate()
-                                                })                                
-                
-                '''
-                if self.get('__unsaved'):
-                        self.append("internal_work_history",{
-                                                        "branch": self.branch,
-                                                        "department": self.department,
-                                                        "designation": self.designation,
-                                                        "from_date": self.date_of_joining
-                                        })                                
-                else:
-                        if self.branch != self.get_db_value("branch") \
-                           or self.department != self.get_db_value("department") \
-                           or self.designation != self.get_db_value("designation"):
-                                latest = frappe.db.sql("""
-                                                select
-                                                        name,
-                                                        from_date,
-                                                        to_date
-                                                from  `tabEmployee Internal Work History`
-                                                where parent = '{0}'
-                                                and   ifnull(from_date, to_date) <= '{1}'
-                                                order by ifnull(from_date, to_date) desc, to_date asc limit 1
-                                                """.format(self.name, today()), as_dict=1)
-                                
-                                if latest:
-                                        latest = latest[0]
-                                        #frappe.msgprint(_("{0}").format(str(latest.to_date)))
-                                        if latest.to_date:
-                                                if str(latest.to_date) < today():
-                                                        self.append("internal_work_history",{
-                                                                "branch": self.get_db_value("branch"),
-                                                                "department": self.get_db_value("department"),
-                                                                "designation": self.get_db_value("designation"),
-                                                                "from_date": add_days(str(latest.to_date),1),
-                                                                "to_date": add_days(str(latest.to_date),1) if add_days(today(),-1) < add_days(str(latest.to_date),1) else today()
-                                                                })
-                                                elif str(latest.to_date) > today():
-                                                        self.append("internal_work_history",{
-                                                                "branch": self.get_db_value("branch"),
-                                                                "department": self.get_db_value("department"),
-                                                                "designation": self.get_db_value("designation"),
-                                                                "from_date": str(latest.from_date),
-                                                                "to_date": str(latest.from_date) if today() < str(latest.from_date) else today()
-                                                                })
-                                                elif str(latest.to_date) == today():
-                                                        self.append("internal_work_history",{
-                                                                "branch": self.get_db_value("branch"),
-                                                                "department": self.get_db_value("department"),
-                                                                "designation": self.get_db_value("designation"),
-                                                                "from_date": today(),
-                                                                "to_date": today()
-                                                                })                                                                                
-                                        elif latest.from_date:
-                                                self.append("internal_work_history",{
-                                                        "branch": self.get_db_value("branch"),
-                                                        "department": self.get_db_value("department"),
-                                                        "designation": self.get_db_value("designation"),
-                                                        "from_date": str(latest.from_date),
-                                                        "to_date": today()                                                        
-                                                        })
-                                        else:
-                                                self.append("internal_work_history",{
-                                                        "branch": self.get_db_value("branch"),
-                                                        "department": self.get_db_value("department"),
-                                                        "designation": self.get_db_value("designation"),
-                                                        "from_date": self.date_of_joining,
-                                                        "to_date": add_ays(today(),-1)
-                                                        })                                        
-                                else:
-                                        self.append("internal_work_history",{
-                                                        "branch": self.get_db_value("branch"),
-                                                        "department": self.get_db_value("department"),
-                                                        "designation": self.get_db_value("designation"),
-                                                        "from_date": self.date_of_joining,
-                                                        "to_date": add_days(today(),-1)
-                                        })
+                                                })
                 '''
         
 	def update_user_permissions(self):
@@ -282,14 +252,18 @@ class Employee(Document):
 
 	def validate_status(self):
 		if self.status == 'Left' and not self.relieving_date:
-			throw(_("Please enter relieving date."))
-		
+			throw(_("Please enter relieving date."),title="Missing Value")
+                elif self.status == 'Left' and not self.reason_for_resignation:
+                        frappe.throw(_("Please select reason for seperation."),title="Missing Value")
 		if self.status == 'Left' and self.relieving_date:
 			name = frappe.db.get_value("Salary Structure", {"employee": self.name, "is_active":"Yes"}, "name")
 			if name:
 				ss = frappe.get_doc("Salary Structure", name)
 				if ss:
 					ss.db_set("is_active", "No")
+
+			# Disabling Employee record after marked as "Left"
+			self.docstatus = 1
 
 
 	def validate_for_enabled_user_id(self):
@@ -457,4 +431,3 @@ def get_holiday_list_for_employee(employee, raise_exception=True):
 		frappe.throw(_('Please set a default Holiday List for Branch {0} or Company {1}').format(branch, company))
 
 	return holiday_list
-
