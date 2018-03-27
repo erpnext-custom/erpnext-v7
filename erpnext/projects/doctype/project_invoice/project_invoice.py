@@ -20,8 +20,8 @@ from erpnext.controllers.accounts_controller import AccountsController
 class ProjectInvoice(AccountsController):
 	def validate(self):
                 self.set_status()
-                self.default_validations()
                 self.load_invoice_boq()
+                self.default_validations()
                 self.set_defaults()
                 
         def on_submit(self):
@@ -77,7 +77,9 @@ class ProjectInvoice(AccountsController):
                         mb_list = ",".join(["'" + i.entry_name + "'" if i.is_selected == 1 else "'x'" for i in self.project_invoice_mb])
                         
                         mb_boq = frappe.db.sql("""
-                                        select boq_item_name, item, uom,
+                                        select boq_item_name,
+                                                max(item)                        as item,
+                                                max(uom)                         as uom,
                                                 max(ifnull(is_group,0))          as is_group,
                                                 max(ifnull(is_selected,0))       as is_selected,
                                                 sum(ifnull(idx,0))               as idx,
@@ -87,7 +89,8 @@ class ProjectInvoice(AccountsController):
                                                 sum(ifnull(entry_quantity,0))    as entry_quantity,
                                                 max(ifnull(entry_rate,0))        as entry_rate,
                                                 sum(ifnull(entry_amount,0))      as entry_amount,
-                                                max(creation)                    as creation
+                                                max(creation)                    as creation,
+                                                sum(flag)                        as flag
                                         from (
                                                 select
                                                         bi.name as boq_item_name, bi.item, bi.uom,
@@ -100,7 +103,8 @@ class ProjectInvoice(AccountsController):
                                                         0                 as entry_quantity,
                                                         0                 as entry_rate,
                                                         0                 as entry_amount,
-                                                        creation
+                                                        creation,
+                                                        2                 as flag
                                                 from `tabBOQ Item` as bi
                                                 where parent = '{0}'
                                                 union all
@@ -118,16 +122,18 @@ class ProjectInvoice(AccountsController):
                                                         end as entry_quantity,
                                                         mb.entry_rate     as entry_rate,
                                                         mb.entry_amount   as entry_amount,
-                                                        mb.creation
+                                                        mb.creation,
+                                                        -2                as flag
                                                 from `tabMB Entry BOQ` as mb, `tabMB Entry` me
                                                 where mb.parent in ({1})
                                                 and   me.name = mb.parent
                                                 and   mb.is_selected = 1
                                         ) as a
-                                        group by boq_item_name, item, uom
+                                        group by boq_item_name
                                         order by idx
                                         """.format(self.boq, mb_list), as_dict=1)
 
+                        #frappe.msgprint(_("{0}").format(self.boq))
                         #frappe.msgprint(_("{0}").format(mb_boq))
                         
                         self.project_invoice_boq = []
@@ -217,6 +223,7 @@ class ProjectInvoice(AccountsController):
                         
                 for rec in self.project_invoice_boq:
                         if flt(rec.invoice_quantity) > flt(rec.act_quantity):
+                                #frappe.msgprint(_("{0}, {1}, {2}").format(rec.boq_item_name, rec.invoice_quantity, rec.act_quantity))
                                 frappe.throw(_("Row{0}: Invoice Quantity cannot be greater than Balance Quantity").format(rec.idx))
                         elif flt(rec.invoice_amount) > flt(rec.act_amount):
                                 frappe.throw(_("Row{0}: Invoice Amount cannot be greater than Balance Amount").format(rec.idx))
