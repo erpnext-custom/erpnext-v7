@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-01-12 16:29:37.105393", 
- "modified_by": "Administrator", 
+ "modified": "2018-03-28 16:29:52.985389", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Accounts", 
  "name": "Budget Consumption Report", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Management"
+  }, 
+  {
+   "role": "Projects User"
   }
  ]
 }

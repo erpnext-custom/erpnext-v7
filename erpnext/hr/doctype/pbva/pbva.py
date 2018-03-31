@@ -35,14 +35,17 @@ class PBVA(Document):
 
 	def calculate_values(self):
 		if self.items:
-			tot = tax = 0
+			tot = tax = net = 0
 			for a in self.items:
 				a.tax_amount = get_salary_tax(a.amount)
 				a.balance_amount = flt(a.amount) - flt(a.tax_amount)
 				tot += flt(a.amount)
 				tax += flt(a.tax_amount)
+				net += flt(a.balance_amount)
+
 			self.total_amount = tot
-			self.tax_amount = tax
+			self.tax_amount   = tax
+			self.net_amount   = net
 		else:
 			frappe.throw("Cannot save without employee details")
 
@@ -135,7 +138,7 @@ class PBVA(Document):
                                                 and sd.salary_component = 'Basic Pay'
                                                 and sl.actual_basic = 0
                                                 and sl.docstatus = 1
-                                                and ss.eligible_for_annual_bonus = 1
+                                                and ss.eligible_for_pbva = 1
                                                 and sl.fiscal_year <= {0}
                                                 order by sl.month desc limit 1
                                         ) as basic_pay

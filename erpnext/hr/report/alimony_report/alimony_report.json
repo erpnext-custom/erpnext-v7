@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-14 12:18:58.055157", 
+ "modified": "2018-03-28 09:54:27.099206", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Alimony Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "HR User"
+  }, 
+  {
+   "role": "Accounts User"
   }
  ]
 }

@@ -14,42 +14,8 @@ class StockPriceTemplate(Document):
 @frappe.whitelist()
 def get_template_list(doctype, txt, searchfield, start, page_len, filters): 
 	if filters['naming_series']:
-		'''
-		res = frappe.db.sql("""
-			SELECT 
-				name, 
-				template_name 
-			FROM `tabStock Price Template` 
-			WHERE '{0}'  BETWEEN from_date AND to_date 
-			AND naming_series = '{1}' 
-			AND docstatus = 1 
-			AND purpose= '{2}'
-			ORDER BY from_date desc, creation desc
-		""".format(filters['posting_date'],filters['naming_series'],filters['purpose']))
-		'''
-
-		res = frappe.db.sql("""
-			select
-				name,
-				concat('<b style="font-size: 115%;">',template_name,'</b>') template_name,
-				concat('<b style="color:green;">','Nu.',format(rate_amount,2),'</b>') rate_amount,
-				concat('(',date_format(from_date,'%d/%m/%Y'),' - ',date_format(to_date,'%d/%m/%Y'),')') date_range,
-				concat(item_code,' : ',item_name) item_name
-			from `tabStock Price Template`
-			where name in (
-				select max(name)
-				from `tabStock Price Template`
-				where '{0}' between from_date and ifnull(to_date,now())
-				and naming_series = '{1}'
-				and docstatus = 1
-				and purpose = '{2}'
-				group by item_code
-			)
-		""".format(filters['posting_date'],filters['naming_series'],filters['purpose']))
-
-
-		#frappe.msgprint(_("{0}").format(res))
-		return res;
+		query = "SELECT name, template_name FROM `tabStock Price Template` WHERE \'" + filters['posting_date'] +"\'  BETWEEN from_date AND to_date AND naming_series = \'" + filters['naming_series'] + "\' and docstatus = 1 and purpose= \'"+ filters['purpose'] +"\'";
+		return frappe.db.sql(query);
 	
 
 #Get item values from "Initial Stock Templates" during stock entry

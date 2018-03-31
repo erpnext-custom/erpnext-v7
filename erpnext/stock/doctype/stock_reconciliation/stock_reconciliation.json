@@ -9,6 +9,7 @@
  "description": "This tool helps you to update or fix the quantity and valuation of stock in the system. It is typically used to synchronise the system values and what actually exists in your warehouses.", 
  "docstatus": 0, 
  "doctype": "DocType", 
+ "document_type": "Document", 
  "editable_grid": 1, 
  "fields": [
   {
@@ -349,8 +350,8 @@
  "istable": 0, 
  "max_attachments": 1, 
  "menu_index": 0, 
- "modified": "2017-11-17 23:13:40.467465", 
- "modified_by": "Administrator", 
+ "modified": "2018-03-30 11:35:14.574224", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Stock", 
  "name": "Stock Reconciliation", 
  "owner": "Administrator", 

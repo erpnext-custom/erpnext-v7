@@ -36,7 +36,8 @@ class MusterRollEmployee(Document):
 
 	def check_status(self):
                 if self.status == "Left" and self.separation_date:
-                        self.docstatus = 1
+                        #self.docstatus = 1
+			pass
                 '''
 		if self.status == "Left":
 			self.cost_center = ''
