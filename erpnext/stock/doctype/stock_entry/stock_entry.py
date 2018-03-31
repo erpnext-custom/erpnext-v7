@@ -13,6 +13,7 @@ from erpnext.manufacturing.doctype.bom.bom import validate_bom_no
 import json
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
+from erpnext.custom_utils import check_future_date
 
 class IncorrectValuationRateError(frappe.ValidationError): pass
 class DuplicateEntryForProductionOrderError(frappe.ValidationError): pass
@@ -46,6 +47,7 @@ class StockEntry(StockController):
 			item.update(get_bin_details(item.item_code, item.s_warehouse))
 
 	def validate(self):
+		check_future_date(self.posting_date)
 		self.check_item_value()
 		self.pro_doc = None
 		if self.production_order:

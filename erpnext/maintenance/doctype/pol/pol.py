@@ -5,13 +5,17 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cstr, flt, fmt_money, formatdate
+from frappe.utils import cstr, flt, fmt_money, formatdate, getdate
 
 class POL(Document):
 	def validate(self):
+		if getdate(self.date) > getdate("2018-03-31"):
+			frappe.throw("Please kindly hold on the HSD transactions after 31/03/2018")
 		pass
 
 	def on_submit(self):
+		if getdate(self.date) > getdate("2018-03-31"):
+			frappe.throw("Please kindly hold on the HSD transactions after 31/03/2018")
 		if self.direct_consumption:
 			self.consume_pol()
 		self.post_journal_entry()

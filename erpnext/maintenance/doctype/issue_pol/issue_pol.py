@@ -6,13 +6,18 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.desk.reportview import get_match_cond
+from frappe.utils import getdate
 
 class IssuePOL(Document):
 	def validate(self):
+		if getdate(self.date) > getdate("2018-03-31"):
+			frappe.throw("Please kindly hold on the HSD transactions after 31/03/2018")
 		if not self.items:
 			frappe.throw("Should have a POL Issue Details to Submit")
 
 	def on_submit(self):
+		if getdate(self.date) > getdate("2018-03-31"):
+			frappe.throw("Please kindly hold on the HSD transactions after 31/03/2018")
 		if self.purpose == "Issue":
 			self.consume_pol()
 

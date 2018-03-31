@@ -64,6 +64,14 @@ frappe.ui.form.on("Equipment", "refresh", function(frm) {
 		}
 	}
     });
+    cur_frm.set_query("fuelbook", function() {
+	return {
+		"filters": {
+			"is_disabled": 0,
+			"branch": frm.doc.branch
+		}
+	}
+    });
 })
 
 cur_frm.fields_dict['operators'].grid.get_field('operator').get_query = function(frm, cdt, cdn) {

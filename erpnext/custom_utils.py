@@ -17,10 +17,32 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe import msgprint
-from frappe.utils import flt, cint
+from frappe.utils import flt, cint, nowdate, getdate
+from erpnext.accounts.utils import get_fiscal_year
 from frappe.utils.data import get_first_day, get_last_day, add_years
 from frappe.desk.form.linked_with import get_linked_doctypes, get_linked_docs
 from frappe.model.naming import getseries
+
+
+##
+# Check for future dates in transactions
+##
+def check_future_date(date):
+	if not date:
+		frappe.throw("Date Argument Missing")
+	if getdate(date) > getdate(nowdate()):
+		frappe.throw("Posting for Future Date is not Permitted")
+
+##
+# Get cost center from branch
+##
+def get_branch_cc(branch):
+        if not branch:
+                frappe.throw("No Branch Argument Found")
+        cc = frappe.db.get_value("Cost Center", {"branch": branch, "is_disabled": 0, "is_group": 0}, "name")
+        if not cc:
+                frappe.throw(str(branch) + " is not linked to any cost center")
+        return cc
 
 ##
 # Rounds to the nearest 5 with precision of 1 by default
@@ -142,4 +164,79 @@ def get_prev_doc(doctype,docname,col_list=""):
         else:
                 return frappe.get_doc(doctype,docname)
 
-		
+##
+# Prepre the basic stock ledger 
+##
+def prepare_sl(d, args):
+        sl_dict = frappe._dict({
+                "item_code": d.pol_type,
+                "warehouse": d.warehouse,
+                "posting_date": d.posting_date,
+                "posting_time": d.posting_time,
+                'fiscal_year': get_fiscal_year(d.posting_date, company=d.company)[0],
+                "voucher_type": d.doctype,
+                "voucher_no": d.name,
+                "voucher_detail_no": d.name,
+                "actual_qty": 0,
+                "stock_uom": d.stock_uom,
+                "incoming_rate": 0,
+                "company": d.company,
+                "batch_no": "",
+                "serial_no": "",
+                "project": "",
+                "is_cancelled": d.docstatus==2 and "Yes" or "No"
+        })
+
+        sl_dict.update(args)
+        return sl_dict
+
+##
+# Prepre the basic accounting ledger 
+##
+def prepare_gl(d, args):
+        """this method populates the common properties of a gl entry record"""
+        gl_dict = frappe._dict({
+                'company': d.company,
+                'posting_date': d.posting_date,
+                'fiscal_year': get_fiscal_year(d.posting_date, company=d.company)[0],
+                'voucher_type': d.doctype,
+                'voucher_no': d.name,
+                'remarks': d.remarks,
+                'debit': 0,
+                'credit': 0,
+                'debit_in_account_currency': 0,
+                'credit_in_account_currency': 0,
+                'is_opening': "No",
+                'party_type': None,
+                'party': None,
+                'project': ""
+        })
+        gl_dict.update(args)
+
+        return gl_dict
+
+##
+# Check budget availability in the budget head
+##
+def check_budget_available(cost_center, budget_account, transaction_date, amount):
+        action = frappe.db.sql("select action_if_annual_budget_exceeded as action from tabBudget where docstatus = 1 and cost_center = \'" + str(cost_center) + "\' and fiscal_year = " + str(transaction_date)[0:4] + " ", as_dict=True)
+        if action and action[0].action == "Ignore":
+                pass
+        else:
+                budget_amount = frappe.db.sql("select ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (budget_account, cost_center, str(transaction_date)[0:4]), as_dict=True)
+                if budget_amount:
+                        consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31"), as_dict=True)
+                        if consumed:
+                                total_consumed_amount = flt(consumed[0].total) + flt(amount)
+                                if flt(budget_amount[0].budget_amount) < flt(total_consumed_amount):
+                                        frappe.throw("Not enough budget in <b>" + str(budget_account) + "</b> under <b>" + str(cost_center) + "</b>. Budget exceeded by <b>" + str(flt(total_consumed_amount) - flt(budget_amount[0].budget_amount)) + "</b>")
+                else:
+                        frappe.throw("There is no budget in <b>" + str(budget_account) + "</b> under <b>" + str(cost_center) + "</b>")
+
+
+@frappe.whitelist()
+def get_cc_warehouse(branch):
+        cc = get_branch_cc(branch)
+        wh = frappe.db.get_value("Cost Center", cc, "warehouse")
+        return {"cc": cc, "wh": wh}	
+
