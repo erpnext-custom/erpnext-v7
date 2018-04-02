@@ -40,7 +40,7 @@ erpnext.project_muster_roll_tool = {
 					}
 
 					if(r.message['marked'].length > 0) {
-						unhide_field('marked_attendance_section')
+						unhide_field('marked_attendance_html')
 						if(!frm.marked_employee_area) {
 							frm.marked_employee_area = $('<div>')
 								.appendTo(frm.fields_dict.marked_attendance_html.wrapper);
@@ -48,7 +48,7 @@ erpnext.project_muster_roll_tool = {
 						frm.marked_employee = new erpnext.MarkedEmployee(frm, frm.marked_employee_area, r.message['marked'])
 					}
 					else{
-						hide_field('marked_attendance_section')
+						hide_field('marked_attendance_html')
 					}
 				}
 			});
@@ -141,18 +141,24 @@ erpnext.EmployeeSelector = Class.extend({
 						employee_present.push(employee[i]);
 					}
 				});
-				frappe.call({
-					method: "erpnext.projects.doctype.project_muster_roll_tool.project_muster_roll_tool.transfer",
-					args:{
-						"employee_list":employee_present,
-						"project":frm.doc.project,
-					},
+				if (frm.doc.date_of_transfer) {
+					frappe.call({
+						method: "erpnext.projects.doctype.project_muster_roll_tool.project_muster_roll_tool.transfer",
+						args:{
+							"employee_list":employee_present,
+							"project":frm.doc.project,
+							date_of_transfer: frm.doc.date_of_transfer,
+						},
 
-					callback: function(r) {
-						erpnext.project_muster_roll_tool.load_employees(frm);
+						callback: function(r) {
+							erpnext.project_muster_roll_tool.load_employees(frm);
 
-					}
-				});
+						}
+					});
+				}
+				else {
+					frappe.msgprint("Date of Transfer is Mandatory")
+				}
 			});
 
 		var row;

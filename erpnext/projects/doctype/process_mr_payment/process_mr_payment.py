@@ -252,16 +252,18 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         and b.cost_center = '{3}'
                                         and b.status = 'Present'
                                         and b.docstatus = 1
+                                        group by employee, b.date
                                         UNION ALL
                                         select
                                                 number as employee,
                                                 0 as number_of_days,
-                                                c.number_of_hours as number_of_hours
+                                                max(c.number_of_hours) as number_of_hours
                                         from `tabOvertime Entry` c
                                         where c.employee_type = '{0}'
                                         and c.date between '{1}' and '{2}'
                                         and c.cost_center = '{3}'
                                         and c.docstatus = 1
+                                        group by number, c.date
                                 ) as abc
                                 group by employee
                         """.format(employee_type, from_date, to_date, cost_center, total_days), as_dict=True)

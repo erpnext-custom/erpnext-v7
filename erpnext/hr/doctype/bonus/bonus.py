@@ -42,7 +42,7 @@ class Bonus(Document):
 				a.balance_amount = flt(a.amount) - flt(a.tax_amount)
 				tot += flt(a.amount)
 				tax += flt(a.tax_amount)
-				net += flt(tot)-flt(tax)
+				net += a.balance_amount
 			self.total_amount = tot
 			self.tax_amount = tax
 			self.net_amount = net

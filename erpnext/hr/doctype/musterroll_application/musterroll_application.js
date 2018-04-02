@@ -5,6 +5,9 @@ cur_frm.add_fetch("project", "cost_center", "cost_center")
 cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on('MusterRoll Application', {
+	setup: function(frm) {
+		frm.get_docfield("items").allow_bulk_edit = 1;
+	},
 	refresh: function(frm) {
 
 	},
@@ -20,7 +23,19 @@ frappe.ui.form.on('MusterRoll Application', {
 				}
 			};
 		}); 
+	},
+	get_employees: function(frm) {
+		//load_accounts(frm.doc.company)
+		return frappe.call({
+			method: "get_employees",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.refresh_field("items");
+				frm.refresh_fields();
+			}
+		});
 	}
+
 });
 
 frappe.ui.form.on('MusterRoll Application Item', {
@@ -30,6 +45,21 @@ frappe.ui.form.on('MusterRoll Application Item', {
 			frappe.model.set_value(cdt, cdn, "rate_per_hour", (doc.rate_per_day * 1.5) / 8)
 			cur_frm.refresh_field("rate_per_hour")
 		}
-	}
-})
+	},
+	"existing_cid": function(frm, cdt, cdn){
+		var child  = locals[cdt][cdn];
 
+		frappe.call({
+			method: "frappe.client.get_value",
+			args: {doctype: "Muster Roll Employee", fieldname: ["person_name", "rate_per_day", "rate_per_hour"],
+					filters: {
+								name: child.existing_cid
+					}},
+			callback: function(r){
+				frappe.model.set_value(cdt, cdn, "person_name", r.message.person_name);
+				frappe.model.set_value(cdt, cdn, "rate_per_day", r.message.rate_per_day);
+				frappe.model.set_value(cdt, cdn, "rate_per_hour", r.message.rate_per_hour);
+			}
+		})
+	},	
+})

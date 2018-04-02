@@ -175,7 +175,7 @@ def get_data():
 				},
 				{
 					"type": "report",
-					"name": "Property Plant & Equipment",
+					"name": "Property Plant and Equipment",
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				},

@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 import json
 from frappe.model.document import Document
-
+from frappe.utils import nowdate
 
 class ProjectMusterRollTool(Document):
 	pass
@@ -34,13 +34,25 @@ def get_employees(project, current_project=None):
 
 
 @frappe.whitelist()
-def transfer(employee_list, project):
+def transfer(employee_list, project, date_of_transfer):
+	if not date_of_transfer:
+		frappe.throw("Date of Transfer is Mandatory")
 	employee_list = json.loads(employee_list)
 	for employee in employee_list:
-		attendance = frappe.get_doc("Muster Roll Employee", employee['name'])
+		mr = frappe.get_doc("Muster Roll Employee", employee['name'])
 		branch, cc = frappe.db.get_value("Project", project, ['branch', 'cost_center'])
 		if branch and cc:
-			attendance.project = project
-			attendance.branch = branch
-			attendance.cost_center = cc
-			attendance.save()
+			mr.project = project
+			mr.branch = branch
+			mr.cost_center = cc
+			mr.date_of_transfer = date_of_transfer
+			try:
+				mr.save()
+			except Exception as e:
+                                frappe.throw("For MR Employee: <b style='color: red;'>{0}({1})</b>".format(mr.person_name, mr.name))
+
+	frappe.msgprint("Successfully transferred following MR to {0}".format(project))
+        for e in employee_list:
+                frappe.msgprint("{0} ({1})".format(e['person_name'], e['name']))
+
+

@@ -7,23 +7,23 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-28 09:51:05.065875", 
+ "modified": "2018-04-02 15:03:14.583637", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
- "name": "Property Plant & Equipment", 
+ "name": "Property Plant and Equipment", 
  "owner": "Administrator", 
  "ref_doctype": "GL Entry", 
- "report_name": "Property Plant & Equipment", 
+ "report_name": "Property Plant and Equipment", 
  "report_type": "Script Report", 
  "roles": [
   {
    "role": "Administrator"
   }, 
   {
-   "role": "Accounts Manager"
+   "role": "Asset Manager"
   }, 
   {
-   "role": "Asset Manager"
+   "role": "Accounts Manager"
   }
  ]
 }
