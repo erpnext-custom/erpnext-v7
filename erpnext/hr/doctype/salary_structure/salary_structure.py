@@ -174,7 +174,7 @@ class SalaryStructure(Document):
                 for e in self.earnings:
                         if e.salary_component == 'Basic Pay':
                                 e.amount = flt(new_basic)
-                                basic_pay += flt(new_basic)
+                                basic_pay += round(flt(new_basic), 0)
 				break
 
                 gross_pay = flt(basic_pay)
@@ -282,7 +282,7 @@ def make_salary_slip(source_name, target_doc=None):
 		if m_details.month_start_date < source.from_date or (source.to_date and m_details.month_end_date > source.to_date):
 			for a in source.get('earnings'):
 				if a.salary_component == 'Basic Pay':
-					old_basic = a.amount
+					old_basic = round(flt(a.amount), 0)
 					#Do prorating of salary
 					if m_details.month_start_date < source.from_date and (source.to_date and m_details.month_end_date > source.to_date):
 						actual_days = 1 + cint(date_diff(source.to_date, source.from_date))
@@ -293,7 +293,7 @@ def make_salary_slip(source_name, target_doc=None):
 					#actual_days = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -13)), getdate(employee.date_of_joining)))	
 					#total = 1 + cint(date_diff(get_last_day(add_days(nowdate(), -13)), get_first_day(add_days(nowdate(), -13))))
 					total = m_details.month_days
-					new_basic = flt((flt(actual_days) / flt(total)) * old_basic, 2)
+					new_basic = round(flt((flt(actual_days) / flt(total)) * old_basic, 2), 0)
 					source = update_salary_structure(str(source.employee), flt(new_basic), source.name, old_basic)
 					if not source:
 						frappe.throw("There is either no salary structure or the payroll processing is done before time")

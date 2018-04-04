@@ -67,6 +67,9 @@ class Bonus(Document):
                                         e.date_of_joining,
                                         e.relieving_date,
                                         e.reason_for_resignation as leaving_type,
+					e.salary_mode,
+					e.bank_name,
+					e.bank_ac_no,
                                         datediff(least(ifnull(e.relieving_date,'9999-12-31'),'{2}'),
                                                         greatest(e.date_of_joining,'{1}'))+1 days_worked,
                                         (

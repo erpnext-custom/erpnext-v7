@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-12-14 10:18:55.915199", 
+ "modified": "2018-04-03 17:07:04.889489", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Ageing Report", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Stock User (other)"
+  }, 
+  {
+   "role": "Management"
   }
  ]
 }

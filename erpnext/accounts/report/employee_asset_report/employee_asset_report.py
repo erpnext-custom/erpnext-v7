@@ -70,7 +70,7 @@ def get_columns():
 		  "fieldname": "purchase_date",
 		  "label": "Issued On",
 		  "fieldtype": "Date",
-		  "width": 100
+		  "width": 150
 		},
 		{
 		  "fieldname": "gross_amount",

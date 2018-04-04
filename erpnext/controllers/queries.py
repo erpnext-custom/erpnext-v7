@@ -368,3 +368,12 @@ def get_expense_account(doctype, txt, searchfield, start, page_len, filters):
 			'company': filters.get("company", ""),
 			'txt': "%%%s%%" % frappe.db.escape(txt)
 		})
+
+
+@frappe.whitelist()
+def get_item_uom(doctype, txt, searchfield, start, page_len, filters):
+        if not filters.get("item_code"):
+                frappe.throw("Select Item Code")
+        return frappe.db.sql("select a.name from tabUOM a, `tabUOM Conversion Detail` b where a.name = b.uom and b.parent = %s", filters.get("item_code"))
+
+

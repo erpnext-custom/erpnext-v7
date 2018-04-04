@@ -39,7 +39,7 @@ def get_columns():
                 ("Deputation Allow.") + ":Currency:120",
                 ("Underground Allow.") +":Currency:120",
                 ("Cash Handling Allow. ") +":Currency:120",
-                ("E_Amount") + ":Currency:120",
+                ("Earning Amount") + ":Currency:130",
 		("PF") + ":Currency:120",
 		("Salary Tax")+ ":Currency:120",
 		("Health Contribution") + ":Currency:120",
@@ -52,7 +52,7 @@ def get_columns():
 		("SWS")+":Currency:120",
 		("Salary Saving Scheme") +":Currency:=120",
 		("Other Recoveries") + ":Currency:120",
-		("D_Amount") + ":Currency:120",
+		("Deduction Amount") + ":Currency:130",
 		("Net") + ":Currency:120"
 
 	]

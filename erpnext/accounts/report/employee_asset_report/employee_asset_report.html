@@ -31,26 +31,30 @@
 			<tr>
 				{% for(var i=1, l=report.columns.length; i<l; i++) { %}
 					{% if (filters.employee && (i != 1 && i != 2)) { %}
-						<td>
 							{% var fieldname = report.columns[i].field; %}
 							{% if (!is_null(row[fieldname]) && i == 6) { %}
+								<td  class="text-right">
 								{%= format_currency(row[fieldname], row.currency) %} 
+								</td>
 							{% } %}
 							{% if (!is_null(row[fieldname]) && i != 6) { %}
+								<td>
 								{%= row[fieldname] %}
+								</td>
 							{% } %}
-						</td>
 					{% } %}
 					{% if (!filters.employee) { %}
-						<td>
-							{% var fieldname = report.columns[i].field; %}
-							{% if (!is_null(row[fieldname]) && i == 6) { %}
+						{% var fieldname = report.columns[i].field; %}
+						{% if (!is_null(row[fieldname]) && i == 6) { %}
+							<td  class="text-right">
 								{%= format_currency(row[fieldname], row.currency) %} 
-							{% } %}
-							{% if (!is_null(row[fieldname]) && i != 6) { %}
+							</td>
+						{% } %}
+						{% if (!is_null(row[fieldname]) && i != 6) { %}
+							<td>
 								{%= row[fieldname] %}
-							{% } %}
-						</td>
+							</td>
+						{% } %}
 					{% } %}
 				{% } %}
 			</tr>

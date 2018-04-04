@@ -169,7 +169,11 @@ cur_frm.fields_dict.employee.get_query = function(doc,cdt,cdn) {
 }
 
 frappe.ui.form.on('Salary Detail', {
-	amount: function(frm) {
+	amount: function(frm, cdt, cdn) {
+                d = locals[cdt][cdn]
+                if (d.salary_component == "Basic Pay") {
+                        frappe.model.set_value(cdt, cdn, "amount", Math.round(d.amount))
+                }
 		//++ Ver 20160804.1 Begins added by SSK
 		calculate_others(frm.doc);
 		//-- Ver 20160804.1 Ends		

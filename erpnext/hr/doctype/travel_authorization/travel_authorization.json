@@ -1208,8 +1208,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-03-23 09:40:26.533891", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2018-04-04 16:52:22.817112", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Authorization", 
  "name_case": "", 
@@ -1379,7 +1379,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 

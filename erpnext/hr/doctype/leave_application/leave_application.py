@@ -364,8 +364,11 @@ class LeaveApplication(Document):
 	def notify(self, args):
 		args = frappe._dict(args)
 		from frappe.desk.page.chat.chat import post
-		post(**{"txt": args.message, "contact": args.message_to, "subject": args.subject,
-			"notify": cint(self.follow_via_email)})
+		try:
+			post(**{"txt": args.message, "contact": args.message_to, "subject": args.subject,
+				"notify": cint(self.follow_via_email)})
+		except:
+			pass
 
 	def validate_fiscal_year(self):
                 if not frappe.get_value("Leave Type", self.leave_type, "is_carry_forward"):
@@ -391,10 +394,10 @@ def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 		frappe.throw("Set Reports To Field in Employee")
 	app_list.append(str(approver_id))
 
-	d = frappe.db.get_value("DepartmentDirector", {"department": frappe.get_value("Employee", filters.get("employee"), "department")}, "director")
+	"""d = frappe.db.get_value("DepartmentDirector", {"department": frappe.get_value("Employee", filters.get("employee"), "department")}, "director")
 	if d:
 		app_list.append(str(d))
-	"""ceo = frappe.db.get_value("Employee", {"employee_subgroup": "CEO", "status": "Active"}, "user_id")
+	ceo = frappe.db.get_value("Employee", {"employee_subgroup": "CEO", "status": "Active"}, "user_id")
 	if ceo:
 		app_list.append(str(ceo))
 	"""

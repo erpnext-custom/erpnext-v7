@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-28 16:44:07.892744", 
+ "modified": "2018-04-03 17:05:50.932276", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Sales History Report", 
@@ -28,6 +28,9 @@
   }, 
   {
    "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Management"
   }
  ]
 }

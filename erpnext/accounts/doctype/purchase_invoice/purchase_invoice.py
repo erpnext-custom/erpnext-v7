@@ -48,6 +48,8 @@ class PurchaseInvoice(BuyingController):
 		if not self.is_opening:
 			self.is_opening = 'No'
 
+		self.validate_tds()
+
 		###if self.outstanding_amount:
 		#	outstanding_old = self.outstanding_amount;
 
@@ -77,6 +79,12 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset()
 		self.validate_fixed_asset_account()
 		self.create_remarks()
+
+	def validate_tds(self):
+		if not self.type:
+			self.tds_amount = 0
+			self.base_tds_amount = 0
+			self.tds_account = ""
 
 	def validate_cash(self):
 		if not self.cash_bank_account and flt(self.paid_amount):

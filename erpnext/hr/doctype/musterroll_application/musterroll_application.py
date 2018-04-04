@@ -84,6 +84,7 @@ class MusterRollApplication(Document):
                                         doc.project = self.project
 
                                 try:
+					doc.flags.ignore_permissions = 1
                                         doc.save()
                                 except Exception as e:
                                         frappe.throw(_('<span style="color: red;">Muster Roll Application Row#{0}: For Employee <b>{1}({2})</b></span>').format(a.idx,cid,a.person_name),title="Validation Error")

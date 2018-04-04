@@ -642,3 +642,13 @@ frappe.ui.form.on("Stock Entry Detail", "refresh", function(frm) {
         };
     });
 })
+
+cur_frm.fields_dict['items'].grid.get_field('uom').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        console.log(d.item_code)
+        return {
+                query: "erpnext.controllers.queries.get_item_uom",
+                filters: {'item_code': d.item_code}
+        }
+}
+
