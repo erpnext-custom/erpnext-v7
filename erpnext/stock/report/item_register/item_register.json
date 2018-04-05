@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-12-14 10:21:04.079812", 
- "modified_by": "Administrator", 
+ "modified": "2018-04-05 11:55:35.032562", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Stock", 
  "name": "Item Register", 
  "owner": "Administrator", 
@@ -34,6 +34,12 @@
   }, 
   {
    "role": "Stock User (other)"
+  }, 
+  {
+   "role": "Asset User"
+  }, 
+  {
+   "role": "Asset Manager"
   }
  ]
 }

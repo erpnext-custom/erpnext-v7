@@ -47,7 +47,10 @@ frappe.ui.form.on('Overtime Application', {
 //Overtime Item  Details
 frappe.ui.form.on("Overtime Application Item", {
 	"number_of_hours": function(frm, cdt, cdn) {
-		calculate_time(frm, cdt, cdn)
+		calculate_time(frm, cdt, cdn);
+	},
+	items_remove: function(frm, cdt, cdn) {
+		calculate_time(frm, cdt, cdn);
 	},
 })
 

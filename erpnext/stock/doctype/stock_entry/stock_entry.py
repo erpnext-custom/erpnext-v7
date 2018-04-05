@@ -865,6 +865,3 @@ def get_warehouse_details(args):
 
 	return ret
 
-@frappe.whitelist()
-def get_item_uoms(item):
-	return 1

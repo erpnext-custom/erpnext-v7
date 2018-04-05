@@ -6,6 +6,17 @@ from frappe.utils import flt, cint, now, nowdate, getdate
 from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, add_years
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from datetime import timedelta, date
+from erpnext.custom_utils import get_branch_cc
+
+def pass_ic_se():
+	num = 0
+        ses = frappe.db.sql("select name from `tabStock Entry` where purpose = 'Material Transfer' and docstatus = 1 and posting_date >= '2018-01-01'", as_dict=True)
+        for a in ses:
+                print(a.name)
+                doc = frappe.get_doc("Stock Entry", a.name)
+                frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+                doc.make_gl_entries()
+	print("COMPLETED")
 
 def test():
 	from erpnext.custom_utils import round5

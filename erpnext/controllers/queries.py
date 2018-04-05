@@ -6,6 +6,7 @@ import frappe
 from frappe.desk.reportview import get_match_cond
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils import nowdate
+from erpnext.custom_utils import get_branch_cc
 
 def get_filters_cond(doctype, filters, conditions):
 	if filters:
@@ -376,4 +377,9 @@ def get_item_uom(doctype, txt, searchfield, start, page_len, filters):
                 frappe.throw("Select Item Code")
         return frappe.db.sql("select a.name from tabUOM a, `tabUOM Conversion Detail` b where a.name = b.uom and b.parent = %s", filters.get("item_code"))
 
+@frappe.whitelist()
+def filter_branch_wh(doctype, txt, searchfield, start, page_len, filters):
+        if not filters.get("branch"):
+                frappe.throw("Select Branch First")
+	return frappe.db.sql("select warehouse from `tabCost Center` where name = %s", get_branch_cc(filters.get("branch")))
 

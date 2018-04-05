@@ -9,6 +9,7 @@ import frappe.defaults
 from erpnext.accounts.utils import get_fiscal_year
 from erpnext.accounts.general_ledger import make_gl_entries, delete_gl_entries, process_gl_map
 from erpnext.controllers.accounts_controller import AccountsController
+from erpnext.custom_utils import get_branch_cc
 
 class StockController(AccountsController):
 	def make_gl_entries(self, repost_future_gle=True):
@@ -47,24 +48,65 @@ class StockController(AccountsController):
 						# from warehouse account
 
 						self.check_expense_account(detail)
+				
+						to_cc = detail.cost_center
+                                                if self.doctype == "Stock Entry" and self.purpose == "Material Transfer":
+                                                        to_branch = frappe.db.get_value("Warehouse", detail.t_warehouse, "branch")
+                                                        to_cc = get_branch_cc(to_branch)
+                                                if self.doctype == "Stock Entry" and self.purpose == "Material Transfer" and sle.stock_value_difference > 0:
+                                                        ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+                                                        if not ic_account:
+                                                                frappe.throw("Setup Intra-Company Account in Accounts Settings")
 
-						gl_list.append(self.get_gl_dict({
-							"account": warehouse_account[sle.warehouse]["name"],
-							"against": detail.expense_account,
-							"cost_center": detail.cost_center,
-							"remarks": self.get("remarks") or "Accounting Entry for Stock",
-							"debit": flt(sle.stock_value_difference, 2),
-						}, warehouse_account[sle.warehouse]["account_currency"]))
+                                                        gl_list.append(self.get_gl_dict({
+                                                                "account": warehouse_account[sle.warehouse]["name"],
+                                                                "against": detail.expense_account,
+                                                                "cost_center": to_cc,
+                                                                "remarks": self.get("remarks") or "Accounting Entry for Stock",
+                                                                "debit": flt(sle.stock_value_difference, 2),
+                                                        }, warehouse_account[sle.warehouse]["account_currency"]))
 
-						# to target warehouse / expense account
-						gl_list.append(self.get_gl_dict({
-							"account": detail.expense_account,
-							"against": warehouse_account[sle.warehouse]["name"],
-							"cost_center": detail.cost_center,
-							"remarks": self.get("remarks") or "Accounting Entry for Stock",
-							"credit": flt(sle.stock_value_difference, 2),
-							"project": detail.get("project") or self.get("project")
-						}))
+                                                        # to target warehouse / expense account
+                                                        gl_list.append(self.get_gl_dict({
+                                                                "account": detail.expense_account,
+                                                                "against": warehouse_account[sle.warehouse]["name"],
+                                                                "cost_center": detail.cost_center,
+                                                                "remarks": self.get("remarks") or "Accounting Entry for Stock",
+                                                                "credit": flt(sle.stock_value_difference, 2),
+                                                                "project": detail.get("project") or self.get("project")
+                                                        }))
+
+                                                        gl_list.append(self.get_gl_dict({
+                                                                "account": ic_account,
+                                                                "cost_center": to_cc,
+                                                                "remarks": self.get("remarks") or "Accounting Entry for Stock",
+                                                                "credit": flt(sle.stock_value_difference, 2),
+                                                        }))
+
+                                                        gl_list.append(self.get_gl_dict({
+                                                                "account": ic_account,
+                                                                "cost_center": detail.cost_center,
+                                                                "remarks": self.get("remarks") or "Accounting Entry for Stock",
+                                                                "debit": flt(sle.stock_value_difference, 2),
+                                                        }))
+						else:
+							gl_list.append(self.get_gl_dict({
+								"account": warehouse_account[sle.warehouse]["name"],
+								"against": detail.expense_account,
+								"cost_center": detail.cost_center,
+								"remarks": self.get("remarks") or "Accounting Entry for Stock",
+								"debit": flt(sle.stock_value_difference, 2),
+							}, warehouse_account[sle.warehouse]["account_currency"]))
+
+							# to target warehouse / expense account
+							gl_list.append(self.get_gl_dict({
+								"account": detail.expense_account,
+								"against": warehouse_account[sle.warehouse]["name"],
+								"cost_center": detail.cost_center,
+								"remarks": self.get("remarks") or "Accounting Entry for Stock",
+								"credit": flt(sle.stock_value_difference, 2),
+								"project": detail.get("project") or self.get("project")
+							}))
 					elif sle.warehouse not in warehouse_with_no_account:
 						warehouse_with_no_account.append(sle.warehouse)
 

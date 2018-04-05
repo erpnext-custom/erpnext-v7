@@ -130,9 +130,7 @@ def cancel_draft_doc(doctype, docname):
 		doc.db_set("status", "Cancelled")
 		doc.db_set("workflow_state", "Cancelled")
 	if doctype == "Travel Claim":
-		ta = frappe.db.get_value("Travel Authorization", doc.ta)
-		if ta:
-			ta.db_set("travel_claim", "")
+		doc.db_set("travel_claim", "")
 
 ##
 #  nvl() function added by SHIV on 02/02/2018
@@ -240,3 +238,8 @@ def get_cc_warehouse(branch):
         wh = frappe.db.get_value("Cost Center", cc, "warehouse")
         return {"cc": cc, "wh": wh}	
 
+@frappe.whitelist()
+def get_branch_warehouse(branch):
+        cc = get_branch_cc(branch)
+        wh = frappe.db.get_value("Cost Center", cc, "warehouse")
+        return wh

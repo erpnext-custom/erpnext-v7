@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-02-06 12:28:01.120839", 
- "modified_by": "Administrator", 
+ "modified": "2018-04-05 11:59:37.796494", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Equipment Status Report", 
  "owner": "Administrator", 
@@ -33,6 +33,9 @@
   }, 
   {
    "role": "Regional Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

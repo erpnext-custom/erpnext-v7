@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-17 23:53:16.571078", 
- "modified_by": "Administrator", 
+ "modified": "2018-04-05 11:58:36.672475", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Equipment Expense Report", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

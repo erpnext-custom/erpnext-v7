@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-03 17:05:50.932276", 
- "modified_by": "Administrator", 
+ "modified": "2018-04-05 12:04:14.858254", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Selling", 
  "name": "Sales History Report", 
  "owner": "Administrator", 
@@ -31,6 +31,9 @@
   }, 
   {
    "role": "Management"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

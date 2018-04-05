@@ -606,24 +606,14 @@ frappe.ui.form.on("Stock Entry", "refresh", function(frm) {
             }
         };
     });
+    cur_frm.set_query("from_warehouse", function() {
+        return {
+                query: "erpnext.controllers.queries.filter_branch_wh",
+                filters: {'branch': frm.doc.branch}
+        }
+    });
 })
 
-/*frappe.ui.form.on("Stock Entry", "purpose", function(frm){
-      if (cur_frm.fields_dict.purpose.value == 'Material Issue'){
-         console.log(cur_frm.fields_dict.purpose.value)
-         cur_frm.fields_dict.naming_series.df.options = "Consumable GI\nCapital Inventory GI";
-      }
-      if (cur_frm.fields_dict.purpose.value == 'Material Receipt'){
-         console.log(cur_frm.fields_dict.purpose.value)
-         cur_frm.fields_dict.naming_series.df.options = "Consumable\nCapital Inventory GR\nCoal GR\nDolomite GR\nGypsum GR\nStone GR\nLimestone GR\nBauxite GR\nQuartzite GR";
-      }
-      if (cur_frm.fields_dict.purpose.value == 'Material Transfer'){
-         cur_frm.fields_dict.naming_series.df.options = "Inventory Transfer";
-         console.log(cur_frm.fields_dict.purpose.value)
-      }
-      frm.set_df_property("naming_series", "reqd", true)
-      refresh_field('naming_series');
-}); */
 frappe.ui.form.on("Stock Entry", "items_on_form_rendered", function(frm, grid_row, cdt, cdn) {
                 var row = cur_frm.open_grid_row();
                 if(!row.grid_form.fields_dict.cost_center.value) {
@@ -632,20 +622,18 @@ frappe.ui.form.on("Stock Entry", "items_on_form_rendered", function(frm, grid_ro
                 }
         })
 
-frappe.ui.form.on("Stock Entry Detail", "refresh", function(frm) {
-    cur_frm.set_query("cost_center", function() {
-        return {
+cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(frm, cdt, cdn) {
+	return {
             "filters": {
-		"is_disabled": 0,
-		"is_group": 0
+                "is_disabled": 0,
+                "is_group": 0,
+                "branch": frm.branch
             }
         };
-    });
-})
+}
 
 cur_frm.fields_dict['items'].grid.get_field('uom').get_query = function(frm, cdt, cdn) {
         var d = locals[cdt][cdn];
-        console.log(d.item_code)
         return {
                 query: "erpnext.controllers.queries.get_item_uom",
                 filters: {'item_code': d.item_code}

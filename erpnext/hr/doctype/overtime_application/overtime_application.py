@@ -4,12 +4,14 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
 
 class OvertimeApplication(Document):
 	def validate(self):
 		self.validate_dates()
+		self.calculate_totals()
 
 	def on_submit(self):
 		self.check_status()
@@ -18,7 +20,19 @@ class OvertimeApplication(Document):
 
 	def on_cancel(self):
 		self.check_journal()
-	
+
+	def calculate_totals(self):
+                total_hours  = 0
+                for i in self.items:
+                        total_hours += flt(i.number_of_hours)
+
+                self.total_hours  = flt(total_hours)
+                self.total_amount = flt(total_hours)*flt(self.rate)
+
+                if flt(self.total_hours) <= 0:
+                        frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")
+
+                
 	def check_status(self):
 		if self.status != "Approved":
 			frappe.throw("Only Approved documents can be submitted")
@@ -28,6 +42,9 @@ class OvertimeApplication(Document):
 	##
 	def validate_dates(self):
 		for a in self.items:
+                        if not a.date:
+                                frappe.throw(_("Row#{0} : Data cannot be blank").format(a.idx),title="Invalid Date")
+                                
 			for b in self.items:
 				if a.date == b.date and a.idx != b.idx:
 					frappe.throw("Duplicate Dates in row " + str(a.idx) + " and " + str(b.idx))
