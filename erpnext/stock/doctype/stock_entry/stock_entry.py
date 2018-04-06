@@ -87,6 +87,8 @@ class StockEntry(StockController):
 	def check_item_value(self):
 		if self.items:
 			for a in self.items:
+				if a.issued_to and not a.issue_to_employee:
+					a.issued_to = ''
 				if flt(a.qty) == 0 or flt(a.basic_amount) == 0 or flt(a.amount) == 0:
 					frappe.throw("Either Quantity or Amount is 0 for Item <b>" + str(a.item_name) + "</b>")
 		else:

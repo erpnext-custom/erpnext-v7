@@ -386,7 +386,7 @@ cur_frm.cscript.toggle_related_fields = function(doc) {
 
 	cur_frm.fields_dict["items"].grid.set_column_disp("s_warehouse", doc.purpose!='Material Receipt');
 	cur_frm.fields_dict["items"].grid.set_column_disp("t_warehouse", doc.purpose!='Material Issue');
-	cur_frm.fields_dict["items"].grid.set_column_disp("issued_to", doc.purpose=='Material Issue');
+	cur_frm.fields_dict["items"].grid.set_column_disp("issue_to_employee", doc.purpose=='Material Issue');
 
 	cur_frm.cscript.toggle_enable_bom();
 
