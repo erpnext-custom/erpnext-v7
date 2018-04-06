@@ -22,9 +22,13 @@ frappe.ui.form.on('Direct Payment', {
 		}
 	},
 	"amount": function(frm) {
+		frm.set_value("taxable_amount", parseFloat(frm.doc.amount))
 		calculate_tds(frm);
 	},
 	"tds_percent": function(frm) {
+		calculate_tds(frm);
+	},
+	"taxable_amount": function(frm) {
 		calculate_tds(frm);
 	},
 	"tds_amount": function(frm){
@@ -53,7 +57,7 @@ frappe.ui.form.on('Direct Payment', {
 });
 
 function calculate_tds(frm) {
-	var tds = flt(frm.doc.tds_percent * frm.doc.amount / 100 )
+	var tds = flt(frm.doc.tds_percent * frm.doc.taxable_amount / 100 )
 	frm.set_value("tds_amount", tds)
 	frm.set_value("balance_amount", frm.doc.amount - tds)
 

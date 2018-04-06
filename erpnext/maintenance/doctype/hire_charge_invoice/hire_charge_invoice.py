@@ -55,7 +55,7 @@ class HireChargeInvoice(AccountsController):
 		hire_name = self.ehf_name
 		if cancel:
 			hire_name = self.name
-		advance = frappe.db.sql("select name from `tabJournal Entry` t1, `tabJournal Entry Account` t2 where t1.name = t2.parent and t2.is_advance = 'Yes' and (t1.docstatus = 1 or t1.docstatus = 0) and t2.reference_name = \'" + str(hire_name)  + "\'", as_dict=True)
+		advance = frappe.db.sql("select t1.name from `tabJournal Entry` t1, `tabJournal Entry Account` t2 where t1.name = t2.parent and t2.is_advance = 'Yes' and (t1.docstatus = 1 or t1.docstatus = 0) and t2.reference_name = \'" + str(hire_name)  + "\'", as_dict=True)
 		if advance and not cancel and not self.advances:
 			frappe.msgprint("There is a Advance Payment for this Hire Form. You might want to pull it using 'Get Advances' button")
 		if advance and cancel:
@@ -293,6 +293,49 @@ class HireChargeInvoice(AccountsController):
 				)
                         make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 
+	def refund_of_excess_advance(self):
+		revenue_bank_account = frappe.db.get_value("Branch", self.branch, "revenue_bank_account")
+		if not revenue_bank_account:
+			frappe.throw("Setup Default Revenue Bank Account for your Branch")
+
+		je = frappe.new_doc("Journal Entry")
+		je.flags.ignore_permissions = 1 
+		je.title = "Advance Refund for Hire Charge Form  (" + self.ehf_name + ")"
+		je.voucher_type = 'Bank Entry'
+		je.naming_series = 'Bank Payment Voucher'
+		je.remark = 'Payment against : ' + self.ehf_name;
+		je.posting_date = self.posting_date
+		je.branch = self.branch
+
+		total_amount = 0
+
+		for a in self.advances:
+			if flt(a.actual_advance_amount) > flr(a.allocated_amount):
+				amount = flt(a.actual_advance_amount) - flr(a.allocated_amount)
+				total_amount = total_amount + amount
+				je.append("accounts", {
+						"account": a.advance_account,
+						"party_type": "Customer",
+						"party": self.customer,
+						"reference_type": "Hire Charge Invoice",
+						"reference_name": self.name,
+						"cost_center": a.advance_cost_center,
+						"debit_in_account_currency": flt(amount),
+						"debit": flt(amount),
+					})
+
+		if total_amount > 0:
+			je.append("accounts", {
+					"account": revenue_bank_account,
+					"cost_center": self.cost_center,
+					"credit_in_account_currency": flt(total_amount),
+					"credit": flt(total_amount),
+				})
+
+			je.insert()
+
+			frappe.msgprint("Bill processed to accounts through journal voucher " + je.name)
+
 @frappe.whitelist()
 def get_vehicle_logs(form=None):
 	if form:
@@ -326,49 +369,6 @@ def get_advances(hire_name):
 		return frappe.db.sql("select t1.name, t1.remark, t2.credit_in_account_currency as amount, t2.account as advance_account, t2.cost_center, t2.name as reference_row from `tabJournal Entry` t1, `tabJournal Entry Account` t2 where t1.name = t2.parent and t2.is_advance = 'Yes' and t1.docstatus = 1 and t2.reference_name = \'" + str(hire_name)  + "\'", as_dict=True)
 	else:
 		frappe.throw("Select Equipment Hiring Form first!")
-
-def refund_of_excess_advance(self):
-	revenue_bank_account = frappe.db.get_value("Branch", self.branch, "revenue_bank_account")
-	if not revenue_bank_account:
-		frappe.throw("Setup Default Revenue Bank Account for your Branch")
-
-	je = frappe.new_doc("Journal Entry")
-	je.flags.ignore_permissions = 1 
-	je.title = "Advance Refund for Hire Charge Form  (" + self.ehf_name + ")"
-	je.voucher_type = 'Bank Entry'
-	je.naming_series = 'Bank Payment Voucher'
-	je.remark = 'Payment against : ' + self.ehf_name;
-	je.posting_date = self.posting_date
-	je.branch = self.branch
-
-	total_amount = 0
-
-	for a in self.advances:
-		if flt(a.actual_advance_amount) > flr(a.allocated_amount):
-			amount = flt(a.actual_advance_amount) - flr(a.allocated_amount)
-			total_amount = total_amount + amount
-			je.append("accounts", {
-					"account": a.advance_account,
-					"party_type": "Customer",
-					"party": self.customer,
-					"reference_type": "Hire Charge Invoice",
-					"reference_name": self.name,
-					"cost_center": a.advance_cost_center,
-					"debit_in_account_currency": flt(amount),
-					"debit": flt(amount),
-				})
-
-	if total_amount > 0:
-		je.append("accounts", {
-				"account": revenue_bank_account,
-				"cost_center": self.cost_center,
-				"credit_in_account_currency": flt(total_amount),
-				"credit": flt(total_amount),
-			})
-
-		je.insert()
-
-		frappe.msgprint("Bill processed to accounts through journal voucher " + je.name)
 
 @frappe.whitelist()
 def make_payment_entry(source_name, target_doc=None): 

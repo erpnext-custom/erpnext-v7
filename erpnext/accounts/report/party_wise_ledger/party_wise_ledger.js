@@ -51,6 +51,15 @@ frappe.query_reports["Party Wise Ledger"] = {
 			"default": "Customer"
 		},
 		{
+			"fieldtype": "Break",
+		},
+		{
+			"fieldname":"cost_center",
+			"label": __("Cost Center"),
+			"fieldtype": "Link",
+			"options": "Cost Center"
+		},
+		{
 			"fieldname":"accounts",
 			"label": __("Account"),
 			"fieldtype": "Link",
