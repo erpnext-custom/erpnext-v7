@@ -158,6 +158,7 @@ frappe.ui.form.on("Hiring Approval Details", {
 	},
 	"from_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
+		get_rates(frm, cdt, cdn)
 	},
 	"to_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
@@ -185,10 +186,11 @@ function calculate_time(frm, cdt, cdn) {
 
 function get_rates(frm, cdt, cdn) {
 	doc = locals[cdt][cdn]
-	if (doc.equipment && doc.rate_type) {
+	console.log("UMM: " + doc.from_date)
+	if (doc.equipment && doc.rate_type && doc.from_date) {
 		return frappe.call({
 			method: "erpnext.maintenance.doctype.equipment_hiring_form.equipment_hiring_form.get_hire_rates",
-			args: {"e": doc.equipment, "rtype": doc.rate_type},
+			args: {"e": doc.equipment, "from_date": doc.from_date},
 			callback: function(r) {
 				if(r.message) {
 					if(doc.rate_type == "Without Fuel") {

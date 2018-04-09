@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-04 11:17:44.330380", 
+ "modified": "2018-04-09 17:46:57.725211", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "HR Manager"
+  }, 
+  {
+   "role": "Accounts User"
   }
  ]
 }

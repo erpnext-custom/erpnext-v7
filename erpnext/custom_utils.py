@@ -130,7 +130,9 @@ def cancel_draft_doc(doctype, docname):
 		doc.db_set("status", "Cancelled")
 		doc.db_set("workflow_state", "Cancelled")
 	if doctype == "Travel Claim":
-		doc.db_set("travel_claim", "")
+		if doc.ta:
+			ta = frappe.get_doc("Travel Authorization", doc.ta)
+			ta.db_set("travel_claim", "")
 
 ##
 #  nvl() function added by SHIV on 02/02/2018

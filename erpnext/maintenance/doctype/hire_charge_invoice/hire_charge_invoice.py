@@ -18,6 +18,7 @@ class HireChargeInvoice(AccountsController):
 		self.outstanding_amount = self.balance_amount
 
 	def on_submit(self):
+		self.check_vlogs()
 		self.update_advance_amount();
 		self.update_vlogs(1)
 		if self.owned_by == "CDCL":
@@ -85,6 +86,13 @@ class HireChargeInvoice(AccountsController):
 		if lst:
 			from erpnext.accounts.utils import reconcile_against_document
 			reconcile_against_document(lst)
+
+
+	def check_vlogs(self):
+		for a in self.items:
+			ic = frappe.db.get_value("Vehicle Logbook", a.vehicle_logbook, "invoice_created")			
+			if ic:
+				frappe.throw("Logbook <b>" + str(a.vehicle_logbook) + "</b> has already been invoiced")
 
 	def update_vlogs(self, value):
 		for a in self.items:
@@ -310,8 +318,8 @@ class HireChargeInvoice(AccountsController):
 		total_amount = 0
 
 		for a in self.advances:
-			if flt(a.actual_advance_amount) > flr(a.allocated_amount):
-				amount = flt(a.actual_advance_amount) - flr(a.allocated_amount)
+			if flt(a.actual_advance_amount) > flt(a.allocated_amount):
+				amount = flt(a.actual_advance_amount) - flt(a.allocated_amount)
 				total_amount = total_amount + amount
 				je.append("accounts", {
 						"account": a.advance_account,

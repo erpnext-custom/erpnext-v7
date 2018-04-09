@@ -6,50 +6,59 @@ import frappe
 from frappe import _
 
 def execute(filters=None):
-	columns =get_columns()
-	data =get_data(filters)
+	data = get_data(filters)
+	columns = get_columns(filters)
 	return columns, data
 
-def get_columns():
-	return [
-		("Employee") + ":Link/Employee:120",
-		("TC Name") + ":Link/Travel Claim:120",
-		("Employee Name") + ":data:120",
-		("Designation")+":data:120",
-		("Cost Center") + ":data:160",
-		("Department") + ":data:160",
-		("From Date")+":Date:100",
-		("To Date")+":Date:100",
-		("Claim Month")+":Data:90",
-		("DSA Per Day")+":Currency:120",
-		("Total Claim")+":Currency:120"
+def get_columns(filters):
+	cols = [
+		_("Employee ID") + ":Link/Employee:120",
+		_("Employee Name") + ":Data:120",
+                _("TC Name") + ":Link/Travel Claim:120",
+		_("Designation") + ":Data:120",
+                _("Cost Center") + ":Data:160",
+                _("Department") + ":Data:160",
+                _("From") + ":Date:90",
+                _("To Date") + ":Date:90",
+		_("No Of Days") + ":Float:80",
+		_("Place Type") + ":Data:100",
+		_("Month") + ":Data:80",
+		_("Dsa Per Day") + ":Currency:100",
+		_("Total Claim") + ":Currency:120"
 	]
+	return cols
+
 
 def get_data(filters):
-	query ="""select tc.employee as emp, tc.name as n, tc.employee_name as emp_nam, e.designation as des, e.cost_center as cc, 
-                       	tc.department as dep, min(tci.date) as frm, max(tci.till_date, tci.date) as too, 
-			case month(tc.posting_date) 
-			when 1 then "January" when 2 then "Feb" when 3 then "March" when 4 then "April" when 5 then "May" 
-			when 6 then "June" when 7 then "July" when 8 then "Auguest" when 9 then "September" 
-			when 10 then "October" when 11 then "November"  when 12 then "December" end as mon,
-			tc.dsa_per_day as rate, 
-                        tc.total_claim_amount as claim
-                        from `tabEmployee` e, `tabTravel Claim` tc, `tabTravel Claim Item` tci 
-                        where e.name = tc.employee and tc.name = tci.parent and tc.docstatus = 1"""
+	query ="""
+		select 
+		tc.employee,
+		tc.employee_name, 
+		tc.name, 
+		e.designation, 
+		e.cost_center,
+		tc.department, 
+		min(tci.date), 
+		max((case when tci.halt = 1 then tci.till_date when tci.halt = 0 then tci.date end)) as to_date,
+		sum(tci.no_days), 
+		tc.place_type, 
+		date_format(tc.posting_date,'%M'), 
+		tc.dsa_per_day, 
+		tc.total_claim_amount  
+		from `tabTravel Claim` tc, `tabEmployee` e, `tabTravel Claim Item` tci 
+		where tci.parent = tc.name and e.name = tc.employee
+                and tc.docstatus = 1
+		"""
 	if filters.get("employee"):
 		query += " and tc.employee = \'" + str(filters.employee) + "\'"
 
-	if filters.get("month"):
-		month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov","Dec"].index(filters["month"]) + 1
-  		filters["month"] = month
-  		query += " and month(tc.posting_date) = {0}".format(filters.get("month"))
-
-	if filters.get("fiscal_year"): 
+	if filters.get("from_date") and filters.get("to_date"):
+  		query += " and tc.posting_date between  '{0}' and '{1}'".format(filters.get("from_date"), filters.get("to_date"))
+	if filters.get("fiscal_year"):
 		query += " and year(tc.posting_date) = {0}".format(filters.get("fiscal_year"))
 
 	if filters.get("cost_center"):
 		query += " and e.cost_center = \'" + str(filters.cost_center) + "\'"
-	query += " group by tc.name"
-	#frappe.msgprint("{0}".format(query))
+	query += " group by tc.name, tc.employee, e.designation, tc.department"
+	#frappe.msgprint("This Report is UnderDeveloped")
 	return frappe.db.sql(query)
-
