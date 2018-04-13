@@ -10,14 +10,29 @@ def execute(filters=None):
         return columns, data
 
 def get_data(filters):
-        query = """
-                select ltcd.employee, ltcd.employee_name,  
-                ltcd.branch, ltcd.bank_name, ltcd.bank_ac_no, ltcd.amount 
-                from `tabLeave Travel Concession` ltc, `tabLTC Details` ltcd 
-                where ltcd.parent = ltc.name and ltc.docstatus = 1"""
+	if filters.uinput == "LTC":
+		query =  """select t2.employee, t2.employee_name,
+                t2.branch, t2.bank_name, t2.bank_ac_no, t2.amount
+                from `tabLeave Travel Concession` t1, `tabLTC Details` t2
+                where t2.parent = t1.name and t1.docstatus = 1"""
 
+	if filters.uinput == "PBVA":
+
+		 query = """
+                select t2.employee, t2.employee_name,
+                t2.branch, t2.bank_name, t2.bank_ac_no, t2.balance_amount
+                from `tabPBVA` t1, `tabPBVA Details` t2
+                where t2.parent = t1.name and t1.docstatus = 1"""
+	if filters.uinput == "Bonus":
+
+		  query = """
+                select t2.employee, t2.employee_name,  
+                t2.branch, t2.bank_name, t2.bank_ac_no, t2.balance_amount 
+                from `tabBonus` t1, `tabBonus Details` t2 
+                where t2.parent = t1.name and t1.docstatus = 1"""
+										
         if filters.get("fy"):
-                query += " and ltc.fiscal_year = \'"+ str(filters.fy) + "\'"
+                query += " and t1.fiscal_year = \'"+ str(filters.fy) + "\'"
         return frappe.db.sql(query)
 
 def get_columns():

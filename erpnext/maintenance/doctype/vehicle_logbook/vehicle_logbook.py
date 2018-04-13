@@ -25,7 +25,7 @@ class VehicleLogbook(Document):
 		self.update_consumed()
 		self.calculate_totals()
 		self.update_hire()
-		self.check_tank_capacity()
+		#self.check_tank_capacity()
 	
 	def on_cancel(self):
 		docs = check_uncancelled_linked_doc(self.doctype, self.name)
@@ -106,7 +106,7 @@ class VehicleLogbook(Document):
 								frappe.sendmail(recipients=b.email, sender=None, subject=subject, message=message)
 							except:
 								pass
-						break
+					break
 
 	def check_tank_capacity(self):
 		em = frappe.db.get_value("Equipment", self.equipment, "equipment_model")

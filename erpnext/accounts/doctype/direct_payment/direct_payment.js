@@ -56,10 +56,14 @@ frappe.ui.form.on('Direct Payment', {
 	}
 });
 
+function roundOff(num) {    
+    return +(Math.round(num + "e+2")  + "e-2");
+}
+
 function calculate_tds(frm) {
-	var tds = flt(frm.doc.tds_percent * frm.doc.taxable_amount / 100 )
-	frm.set_value("tds_amount", tds)
-	frm.set_value("balance_amount", frm.doc.amount - tds)
+	var tds = roundOff(parseFloat(frm.doc.tds_percent) * parseFloat(frm.doc.taxable_amount) / 100 );
+	frm.set_value("tds_amount", tds);
+	frm.set_value("balance_amount", frm.doc.amount - tds);
 
 	frappe.call({
 		method: "erpnext.accounts.doctype.direct_payment.direct_payment.get_tds_account",

@@ -65,7 +65,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Branch Fleet Manager",
-					"label": "Assign Fleet Manager for Branches",
+					"label": "Fleet Notification Settings",
 				},
 				{
 					"type": "doctype",

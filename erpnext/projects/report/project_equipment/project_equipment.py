@@ -13,31 +13,34 @@ def execute(filters=None):
 def get_columns():
         return [
                 ("Project name ") + ":Link/project:120",
-		("Branch")+ ":Data:120",
+		("Project Branch")+ ":Data:120",
 		("Cost Center ") + ":Data: 140",
                 ("Equipment No.") + ":Data:100",
                 ("Equipment")+ ":Data:100",
                 ("From Date")+ ":Date:80",
-                ("To Date")+ ":Date:80"
+                ("To Date")+ ":Date:80",
+		("Equipment Branch")+ ":Data:100"
         ]
 
 def get_data(filters):
 
         query =  """
-			select 
+			select distinct 
 				p.project_name, 
 				p.branch,
 				p.cost_center,
 				hd.equipment_number, 
 				hd.equipment,
 				hd.from_date, 
-				hd.to_date
+				hd.to_date,
+				e.branch
 			from 
 				`tabProject` as p, 
 				`tabEquipment Hiring Form` as h, 			
-				`tabHiring Approval Details` hd
+				`tabHiring Approval Details` hd,
+				`tabEquipment` e
 			where h.name= hd.parent
-			and   p.branch = h.branch """
+			and   p.branch = h.branch"""
 
         if filters.get("branch"):
 

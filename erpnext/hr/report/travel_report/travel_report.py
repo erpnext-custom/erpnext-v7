@@ -20,7 +20,7 @@ def get_columns(filters):
                 _("Department") + ":Data:160",
                 _("From") + ":Date:90",
                 _("To Date") + ":Date:90",
-		_("No Of Days") + ":Float:80",
+		_("No Of Days") + ":Int:80",
 		_("Place Type") + ":Data:100",
 		_("Month") + ":Data:80",
 		_("Dsa Per Day") + ":Currency:100",

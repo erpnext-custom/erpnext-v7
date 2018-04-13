@@ -174,6 +174,12 @@ def get_data():
 					"is_query_report": True,
 				},
 				{
+					"type" :"report",
+					"name" : "Equipment Register",
+					"doctype" : "Asset",
+					"is_query_report": True,
+				},
+				{
 					"type": "report",
 					"name": "Property Plant and Equipment",
 					"doctype": "GL Entry",
