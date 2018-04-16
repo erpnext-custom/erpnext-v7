@@ -93,6 +93,8 @@ class OvertimeApplication(Document):
 				"cost_center": cost_center,
 				"debit_in_account_currency": flt(total_amount),
 				"debit": flt(total_amount),
+				"reference_type": self.doctype,
+				"reference_name": self.name
 			})
 
 		je.insert()
