@@ -34,6 +34,7 @@ class Asset(Document):
 		self.set_status()
 
 	def on_cancel(self):
+		self.check_equipment_link()
 		self.validate_cancellation()
 		self.delete_asset_gl_entries()
 		self.delete_depreciation_entries()
@@ -267,6 +268,11 @@ class Asset(Document):
 		if gl_list:
 			for gl in gl_list:
 				frappe.get_doc("Journal Entry", gl.journal_entry).cancel()
+
+	def check_equipment_link(self):
+		eqp = frappe.db.sql("select name from tabEquipment where asset_code = %s", self.name, as_dict=True)
+		if eqp:
+			frappe.throw("Unlink the Asset from Equipment <b>" + str(eqp[0].name) + "</b>")
 
 @frappe.whitelist()
 def make_purchase_invoice(asset, item_code, gross_purchase_amount, company, posting_date, branch):

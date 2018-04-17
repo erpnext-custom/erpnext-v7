@@ -97,7 +97,7 @@ class VehicleLogbook(Document):
 		if interval:
 			for a in xrange(start, end):
 				if (flt(a) % flt(interval)) == 0:
-					mails = frappe.db.sql("select email from `tabBranch Fleet Manager Item` where parent = %s", branch, as_dict=True)
+					mails = frappe.db.sql("select email from `tabRegular Maintenance Item` where parent = %s", branch, as_dict=True)
 					for b in mails:
 						subject = "Regular Maintenance for " + str(self.equipment)
 						message = "It is time to do regular maintenance for equipment " + str(self.equipment) + " since it passed the hour/km reading of " + str(a) 

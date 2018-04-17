@@ -13,6 +13,7 @@ def execute(filters=None):
 
 def get_columns():
 	return [
+		("Doc ID") + ":Link/Consumable Register Entry:120",
 		("Material Code") + ":Link/Item:120",
 		("Material Name") + ":Data:120",
 		("Issue Date") + ":Date:120",
@@ -23,7 +24,7 @@ def get_columns():
 	]
 
 def get_data(filters):
-	query =  "select a.item_code, (select b.item_name from tabItem b where b.item_code = a.item_code) as item_name, a.date, a.issued_to, (select c.employee_name from tabEmployee c where c.name = a.issued_to) as employee_name, a.qty, a.ref_doc from `tabConsumable Register Entry` a  where a.branch = \'" + filters.branch + "\' "
+	query =  "select a.name, a.item_code, (select b.item_name from tabItem b where b.item_code = a.item_code) as item_name, a.date, a.issued_to, (select c.employee_name from tabEmployee c where c.name = a.issued_to) as employee_name, a.qty, a.ref_doc from `tabConsumable Register Entry` a  where a.branch = \'" + filters.branch + "\' "
 	if filters.get("from_date") and filters.get("to_date"):
 		query += " and a.date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 

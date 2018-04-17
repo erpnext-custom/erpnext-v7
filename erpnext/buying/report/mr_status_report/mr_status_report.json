@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-03 12:51:20.591012", 
- "modified_by": "Administrator", 
+ "modified": "2018-04-17 10:51:09.514792", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Buying", 
  "name": "MR Status Report", 
  "owner": "Administrator", 
@@ -18,6 +18,9 @@
  "roles": [
   {
    "role": "Administrator"
+  }, 
+  {
+   "role": "Purchase Master"
   }
  ]
 }

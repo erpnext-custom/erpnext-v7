@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "field:account_number", 
  "beta": 0, 
@@ -199,7 +199,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-03-29 16:16:36.871331", 
+ "modified": "2018-04-16 16:27:48.212388", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Fuelbook", 

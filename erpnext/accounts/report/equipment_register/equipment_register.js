@@ -13,10 +13,9 @@ frappe.query_reports["Equipment Register"] = {
 		},
 		{
 			"fieldname": "fiscal_year",
-			"label": __("Fiscal Year"),
+			"label": __("Purchase Year"),
 			"fieldtype": "Link",
 			"options": "Fiscal Year",
-			"default": frappe.defaults.get_user_default("fiscal_year"),
 		},
 
 		{

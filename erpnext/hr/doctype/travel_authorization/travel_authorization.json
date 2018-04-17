@@ -1208,7 +1208,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-04-06 13:42:23.631220", 
+ "modified": "2018-04-17 23:58:39.852740", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Authorization", 
@@ -1216,7 +1216,7 @@
  "owner": "Administrator", 
  "permissions": [
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
@@ -1318,7 +1318,7 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
@@ -1378,7 +1378,7 @@
    "write": 0
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 

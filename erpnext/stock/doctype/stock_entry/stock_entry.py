@@ -780,18 +780,21 @@ class StockEntry(StockController):
 						if getdate(self.posting_date) > getdate(expiry_date):
 							frappe.throw(_("Batch {0} of Item {1} has expired.").format(item.batch_no, item.item_code))
 
-	def update_consumable_register(self):
-		if self.purpose == "Material Issue":
-			for a in self.items:
-				if frappe.db.get_value("Item", a.item_code, "maintain_in_register"):
-					doc = frappe.new_doc("Consumable Register Entry")
-					doc.branch = self.branch
-					doc.item_code = a.item_code
-					doc.date = self.posting_date
-					doc.issued_to = a.issued_to
-					doc.ref_doc = self.name
-					doc.qty = a.qty
-					doc.insert()
+	def update_consumable_register(self, cancel=False):
+		if cancel:
+			frappe.db.sql("delete from `tabConsumable Register Entry` where ref_doc = %s", self.name)
+		else:
+			if self.purpose == "Material Issue":
+				for a in self.items:
+					if frappe.db.get_value("Item", a.item_code, "maintain_in_register"):
+						doc = frappe.new_doc("Consumable Register Entry")
+						doc.branch = self.branch
+						doc.item_code = a.item_code
+						doc.date = self.posting_date
+						doc.issued_to = a.issued_to
+						doc.ref_doc = self.name
+						doc.qty = a.qty
+						doc.submit()
 
 @frappe.whitelist()
 def get_production_order_details(production_order):
