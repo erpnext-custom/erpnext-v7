@@ -15,6 +15,7 @@ from erpnext.controllers.buying_controller import BuyingController
 from erpnext.manufacturing.doctype.production_order.production_order import get_item_details
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
+from erpnext.custom_utils import check_future_date
 
 # form_grid_templates = {
 # 	"items": "templates/form_grid/material_request_grid.html"
@@ -65,6 +66,7 @@ class MaterialRequest(BuyingController):
 	# Validate
 	# ---------------------
 	def validate(self):
+		check_future_date(self.transaction_date)
 		super(MaterialRequest, self).validate()
 
 		self.validate_schedule_date()

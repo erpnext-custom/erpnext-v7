@@ -162,12 +162,12 @@ class ProjectInvoice(AccountsController):
 
                                         if ti:
                                                 act_quantity = flt(item.original_quantity)-flt(ti.tot_invoice_quantity)
-                                                act_rate     = flt(ti.tot_invoice_rate,0)
-                                                act_amount   = flt(item.original_amount)-flt(ti.tot_invoice_amount,0)
+                                                act_rate     = flt(ti.tot_invoice_rate)
+                                                act_amount   = flt(item.original_amount)-flt(ti.tot_invoice_amount)
 
                                                 uptodate_quantity = flt(ti.tot_invoice_quantity)
-                                                uptodate_rate     = flt(ti.tot_invoice_rate,0)
-                                                uptodate_amount   = flt(ti.tot_invoice_amount,0)
+                                                uptodate_rate     = flt(ti.tot_invoice_rate)
+                                                uptodate_amount   = flt(ti.tot_invoice_amount)
 
                                 self.append("project_invoice_boq",{
                                         "boq_item_name": item.boq_item_name,
@@ -214,18 +214,18 @@ class ProjectInvoice(AccountsController):
 
                                         if ti:
                                                 item.uptodate_quantity = flt(ti.tot_invoice_quantity)
-                                                item.uptodate_rate     = flt(ti.tot_invoice_rate,0)
-                                                item.uptodate_amount   = flt(ti.tot_invoice_amount,0)
+                                                item.uptodate_rate     = flt(ti.tot_invoice_rate)
+                                                item.uptodate_amount   = flt(ti.tot_invoice_amount)
                         
         def default_validations(self):
                 if not self.project:
                         frappe.throw(_("Project cannot be blank. Please generate the invoice from BOQ."), title="Invalid Project")
                         
                 for rec in self.project_invoice_boq:
-                        if flt(rec.invoice_quantity) > flt(rec.act_quantity):
-                                #frappe.msgprint(_("{0}, {1}, {2}").format(rec.boq_item_name, rec.invoice_quantity, rec.act_quantity))
+                        if round(flt(rec.invoice_quantity)) > round(flt(rec.act_quantity)):
+                                #frappe.msgprint(_("{0}, invoice_quantity: {1}, act_quantity: {2}").format(rec.boq_item_name, flt(rec.invoice_quantity), flt(rec.act_quantity)))
                                 frappe.throw(_("Row{0}: Invoice Quantity cannot be greater than Balance Quantity").format(rec.idx))
-                        elif flt(rec.invoice_amount) > flt(rec.act_amount):
+                        elif round(flt(rec.invoice_amount)) > round(flt(rec.act_amount)):
                                 frappe.throw(_("Row{0}: Invoice Amount cannot be greater than Balance Amount").format(rec.idx))
                         elif flt(rec.invoice_quantity) < 0 or flt(rec.invoice_amount) < 0:
                                 frappe.throw(_("Row{0}: Value cannot be in negative.").format(rec.idx))

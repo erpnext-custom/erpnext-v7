@@ -7,10 +7,11 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import cstr, flt, fmt_money, formatdate, getdate
 from frappe.desk.reportview import get_match_cond
-from erpnext.custom_utils import check_uncancelled_linked_doc
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 class EquipmentHiringForm(Document):
 	def validate(self):
+		check_future_date(self.request_date)
 		self.check_date_approval()
 		self.check_duplicate()
 		self.calculate_totals()

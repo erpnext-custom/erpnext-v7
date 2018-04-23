@@ -17,7 +17,7 @@ from erpnext.accounts.general_ledger import make_gl_entries, merge_similar_entri
 from erpnext.accounts.doctype.gl_entry.gl_entry import update_outstanding_amt
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
-from erpnext.custom_utils import check_uncancelled_linked_doc
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -43,6 +43,7 @@ class PurchaseInvoice(BuyingController):
 		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
 	def validate(self):
+		check_future_date(self.posting_date)
 		if not self.buying_cost_center:
 			frappe.throw("Buying Cost Center is Mandatory")
 		if not self.is_opening:

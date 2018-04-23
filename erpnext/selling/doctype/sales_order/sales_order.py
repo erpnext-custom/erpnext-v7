@@ -15,7 +15,7 @@ from erpnext.controllers.recurring_document import month_map, get_next_date
 from erpnext.controllers.selling_controller import SellingController
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
-from erpnext.custom_utils import check_uncancelled_linked_doc
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -31,6 +31,7 @@ class SalesOrder(SellingController):
 		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
 	def validate(self):
+		check_future_date(self.transaction_date)
 		super(SalesOrder, self).validate()
 
 		self.validate_order_type()

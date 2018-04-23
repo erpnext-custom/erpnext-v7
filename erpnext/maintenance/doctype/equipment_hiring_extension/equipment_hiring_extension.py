@@ -28,13 +28,13 @@ class EquipmentHiringExtension(Document):
 				if str(doc.to_date) >= self.extension_date:
 					frappe.throw("Extension Date SHOULD be greater than " + str(doc.to_date) )
 				else:
+					ehf = frappe.get_doc("Equipment Hiring Form", self.ehf_name)
 					if submit:
 						res = frappe.db.get_value("Equipment Reservation Entry", {"equipment": doc.equipment, "ehf_name": doc.parent, "from_date": doc.from_date, "to_date": doc.to_date, "docstatus": 1}, "name")
 						ere = frappe.get_doc("Equipment Reservation Entry", res)
 						ere.db_set("to_date", self.extension_date)
 						doc.db_set("to_date", self.extension_date)
 						
-						ehf = frappe.get_doc("Equipment Hiring Form", self.ehf_name)
 						if ehf.private == 'Private':
 							self.post_journal_entry()
 							frappe.msgprint("Posted an advance amount of "+str(self.total_amount)+" for "+str(self.hours)+" hours")
@@ -43,7 +43,8 @@ class EquipmentHiringExtension(Document):
 						if not self.hours:
 							days = date_diff(self.extension_date, doc.to_date)
 							self.hours = flt(days) * 8
-						self.total_amount = flt(self.hours) * flt(self.rate) 
+						if ehf.private == 'Private':
+							self.total_amount = flt(self.hours) * flt(self.rate) 
 		else:
 			frappe.throw("Corresponding Hire Approved Detail not found")
 

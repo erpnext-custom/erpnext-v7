@@ -6,10 +6,11 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt
-from erpnext.custom_utils import prepare_gl
+from erpnext.custom_utils import prepare_gl, check_future_date
 
 class HSDPayment(Document):
 	def validate(self):
+		check_future_date(self.posting_date)
 		self.validate_allocated_amount()
 
 	def validate_allocated_amount(self):

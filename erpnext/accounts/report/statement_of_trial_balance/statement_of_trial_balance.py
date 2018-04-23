@@ -7,6 +7,7 @@ from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr, rounded
 from erpnext.accounts.report.financial_statements_emines \
 	import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
+from erpnext.accounts.accounts_custom_functions import get_child_cost_centers
 
 value_fields = ("opening_debit", "opening_credit", "debit", "credit", "closing_debit", "closing_credit")
 
@@ -95,8 +96,10 @@ def get_rootwise_opening_balances(filters, report_type):
 		additional_conditions += " and ifnull(voucher_type, '')!='Period Closing Voucher'"
 
         if filters.cost_center:
-                additional_conditions += " and cost_center = %(cost_center)s"
-                
+		cost_centers = get_child_cost_centers(filters.cost_center)
+                additional_conditions += " and cost_center IN %(cost_center)s"
+        else:
+		cost_centers = filters.cost_center 
 	gle = frappe.db.sql("""
 		select
 			account, sum(debit) as opening_debit, sum(credit) as opening_credit
@@ -112,7 +115,7 @@ def get_rootwise_opening_balances(filters, report_type):
 			"from_date": filters.from_date,
 			"report_type": report_type,
 			"year_start_date": filters.year_start_date,
-                        "cost_center": filters.cost_center
+                        "cost_center": cost_centers
 		},
 		as_dict=True)
 

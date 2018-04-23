@@ -18,7 +18,7 @@ from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.utils import get_balance_on, get_account_currency
 from erpnext.setup.utils import get_company_currency
 from erpnext.accounts.party import get_party_account
-from erpnext.custom_utils import generate_receipt_no
+from erpnext.custom_utils import generate_receipt_no, check_future_date
 # Ver 1.0 by SSK on 09/08/2016, Following datetime, make_autoname imports are included
 import datetime
 from frappe.model.naming import make_autoname
@@ -77,6 +77,7 @@ class JournalEntry(AccountsController):
 		generate_receipt_no(self.doctype, self.name, self.branch, fiscal_year)
 
 	def validate(self):
+		check_future_date(self.posting_date)
 		if not self.is_opening:
 			self.is_opening='No'
 		self.clearance_date = None

@@ -17,7 +17,7 @@ from frappe.utils import flt, getdate, get_url, nowdate
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import money_in_words
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.custom_utils import generate_receipt_no
+from erpnext.custom_utils import generate_receipt_no, check_future_date
 
 class ProjectPayment(AccountsController):
 	def __setup__(self):
@@ -34,6 +34,7 @@ class ProjectPayment(AccountsController):
                 self.validate_advance_balance()
 
         def validate(self):
+		check_future_date(self.posting_date)
                 self.set_status()
                 self.set_defaults()
                 self.validate_mandatory_fields()
@@ -121,7 +122,7 @@ class ProjectPayment(AccountsController):
                                                          "debit": flt(tot_advance),
                                                          "debit_in_account_currency": flt(tot_advance),
                                                          "cost_center": self.cost_center,
-                                                         "party_check": 1,
+                                                         "party_check": 1 if adv_gl_det.account_type in ("Payable","Receivable") else 0,
                                                          "party_type": "Customer",
                                                          "party": self.party,
                                                          "account_type": adv_gl_det.account_type,
@@ -148,7 +149,10 @@ class ProjectPayment(AccountsController):
                                                                  "is_advance": "No",
                                                                  "reference_type": "Project Payment",
                                                                  "reference_name": self.name,
-                                                                 "project": self.project
+                                                                 "project": self.project,
+                                                                 "party_check": 1 if ded_gl_det.account_type in ("Payable","Receivable") else 0,
+                                                                 "party_type": "Customer",
+                                                                 "party": self.party
                                                 }, currency.default_currency)
                                         )
 

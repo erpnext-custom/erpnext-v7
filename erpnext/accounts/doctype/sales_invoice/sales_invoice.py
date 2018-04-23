@@ -18,7 +18,7 @@ from erpnext.accounts.doctype.asset.depreciation \
 	import get_disposal_account_and_cost_center, get_gl_entries_on_asset_disposal
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
-from erpnext.custom_utils import check_uncancelled_linked_doc
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -58,6 +58,7 @@ class SalesInvoice(SellingController):
 			self.indicator_title = _("Paid")
 
 	def validate(self):
+		check_future_date(self.posting_date)
 		super(SalesInvoice, self).validate()
 		self.validate_posting_time()
 		self.so_dn_required()

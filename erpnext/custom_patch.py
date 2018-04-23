@@ -6,7 +6,65 @@ from frappe.utils import flt, cint, now, nowdate, getdate
 from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, add_years
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from datetime import timedelta, date
-from erpnext.custom_utils import get_branch_cc
+from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
+
+def migrate_ipol():
+        pols = frappe.db.sql("select name, pol_type from `tabIssue POL` where docstatus = 1 and pol_type in ('Diesel', 'Petrol')", as_dict=True)
+        for a in pols:
+                print(a.name)
+                doc = frappe.get_doc("Issue POL", a.name)
+                if a.pol_type == "Diesel":
+                        doc.db_set("pol_type", '100452')
+                else:
+                        doc.db_set("pol_type", '100699')
+                item = frappe.get_doc("Item", doc.pol_type)
+                doc.db_set("stock_uom" , item.stock_uom)
+                doc.db_set("is_hsd_item" , item.is_hsd_item)
+                doc.db_set("item_name", item.item_name)
+                doc.db_set("posting_date", doc.date)
+                doc.db_set("company", 'Construction Development Corporation Ltd')
+                doc.db_set("posting_time", '17:13:36')
+                doc.db_set("warehouse", get_branch_warehouse(doc.branch))
+                doc.db_set("cost_center", get_branch_cc(doc.branch))
+
+                for b in doc.items:
+                        d = frappe.get_doc("POL Issue Report Item", b.name)
+                        e = frappe.get_doc("Equipment", d.equipment)
+			d.db_set("equipment_branch", e.branch)
+                        d.db_set("equipment_warehouse", get_branch_warehouse(e.branch))
+                        d.db_set("equipment_cost_center", get_branch_cc(e.branch))
+
+
+def migrate_pol():
+        pols = frappe.db.sql("select name, pol_type from `tabPOL` where docstatus = 1 and pol_type in ('Diesel', 'Petrol')", as_dict=True)
+        for a in pols:
+                print(a.name)
+                doc = frappe.get_doc("POL", a.name)
+                if a.pol_type == "Diesel":
+                        doc.db_set("pol_type", '100452')
+                else:
+                        doc.db_set("pol_type", '100699')
+                item = frappe.get_doc("Item", doc.pol_type)
+                doc.db_set("stock_uom" , item.stock_uom)
+                doc.db_set("item_name", item.item_name)
+                #doc.db_set("posting_date", doc.date)
+                doc.db_set("company", 'Construction Development Corporation Ltd')
+                doc.db_set("posting_time", '17:13:36')
+                if doc.book_type == "Common Fuel Book":
+                        doc.db_set("book_type", "Common")
+                else:
+                        doc.db_set("book_type", "Own")
+
+		doc.db_set("warehouse", get_branch_warehouse(doc.branch))
+                eqp = frappe.get_doc("Equipment", doc.equipment)
+                doc.db_set("equipment_category", eqp.equipment_category)
+                doc.db_set("equipment_warehouse", get_branch_warehouse(doc.equipment_branch))
+                doc.db_set("fuelbook", "")
+                doc.db_set("fuelbook_branch", "")
+
+def post_stock():
+	doc = frappe.get_doc("Stock Reconciliation", "SR/000016")
+	doc.update_stock_ledger()
 
 def pass_ic_se():
 	num = 0

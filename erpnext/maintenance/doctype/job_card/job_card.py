@@ -9,10 +9,11 @@ from frappe.utils.data import time_diff_in_hours
 from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
 from frappe.model.mapper import get_mapped_doc
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.custom_utils import check_uncancelled_linked_doc
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 class JobCard(AccountsController):
 	def validate(self):
+		check_future_date(self.posting_date)
 		self.update_breakdownreport()
 		#Amount Segregation
 		cc_amount = {}

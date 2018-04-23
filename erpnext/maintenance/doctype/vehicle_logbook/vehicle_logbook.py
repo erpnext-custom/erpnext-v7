@@ -6,10 +6,11 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate, add_days
-from erpnext.custom_utils import check_uncancelled_linked_doc
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 class VehicleLogbook(Document):
 	def validate(self):
+		check_future_date(self.to_date)
 		self.check_dates()
 		self.check_double_vl()
 		self.check_hire_form()

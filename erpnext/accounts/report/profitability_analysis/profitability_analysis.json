@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-27 18:53:44.114633", 
- "modified_by": "jigme@bt.bt", 
+ "modified": "2018-04-19 14:34:17.395596", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Accounts", 
  "name": "Profitability Analysis", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Regional Manager"
+  }, 
+  {
+   "role": "Projects User"
   }
  ]
 }

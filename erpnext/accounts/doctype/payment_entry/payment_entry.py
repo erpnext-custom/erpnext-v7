@@ -22,7 +22,7 @@ from erpnext.accounts.doctype.journal_entry.journal_entry \
 	import get_average_exchange_rate, get_default_bank_cash_account, get_default_bank_cash_sales_account
 from erpnext.setup.utils import get_exchange_rate
 from erpnext.accounts.general_ledger import make_gl_entries
-from erpnext.custom_utils import generate_receipt_no
+from erpnext.custom_utils import generate_receipt_no, check_future_date
 
 from erpnext.controllers.accounts_controller import AccountsController
 
@@ -55,6 +55,7 @@ class PaymentEntry(AccountsController):
 		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".#####")
 
 	def validate(self):
+		check_future_date(self.posting_date)
 		self.setup_party_account_field()
 		self.set_missing_values()
 		self.validate_payment_type()

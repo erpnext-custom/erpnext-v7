@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-26 10:28:54.359578", 
- "modified_by": "Administrator", 
+ "modified": "2018-04-19 14:34:41.565314", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Accounts", 
  "name": "Statement of Financial Position", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Regional Manager"
+  }, 
+  {
+   "role": "Projects User"
   }
  ]
 }

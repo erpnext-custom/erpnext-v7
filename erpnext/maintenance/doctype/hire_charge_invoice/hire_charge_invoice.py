@@ -8,10 +8,11 @@ from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.custom_utils import check_uncancelled_linked_doc
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 class HireChargeInvoice(AccountsController):
 	def validate(self):
+		check_future_date(self.posting_date)
 		self.check_advances(self.ehf_name)
 		if self.balance_amount < 0:
 			frappe.throw("Balance amount cannot be negative")

@@ -7,10 +7,11 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import getdate, cstr, flt, fmt_money, formatdate, nowdate
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.custom_utils import generate_receipt_no
+from erpnext.custom_utils import generate_receipt_no, check_future_date
 
 class MechanicalPayment(AccountsController):
 	def validate(self):
+		check_future_date(self.posting_date)
 		self.check_amount()
 		self.check_against_out()
 		self.title = "Payment for " + str(self.ref_doc) + " (" + str(self.ref_no) + ")"
