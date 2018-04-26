@@ -581,7 +581,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2018-01-12 11:32:45.244088", 
+ "modified": "2018-04-24 12:42:20.585834", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Material Request", 
@@ -625,7 +625,7 @@
    "role": "Purchase Manager", 
    "set_user_permissions": 0, 
    "share": 0, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 

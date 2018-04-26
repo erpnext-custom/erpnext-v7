@@ -210,7 +210,7 @@ var get_mb_list = function(frm){
 	});	
 }
 
-var	toggle_items_based_on_boq_type = function(frm){
+var toggle_items_based_on_boq_type = function(frm){
 		var invoice_amount_editable = frm.doc.boq_type==="Milestone Based" ? true : false;
 
 		var invoice_quantity_editable = in_list(["Item Based", 

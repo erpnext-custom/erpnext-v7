@@ -23,5 +23,9 @@ frappe.listview_settings['Travel Authorization'] = {
 				return ["Approved", "blue", "docstatus,=,1"];
 			}
 		}
+
+		if(doc.docstatus == 2) {
+			return ["Cancelled", "red", "docstatus,=,2"];
+		}
 	}
 };

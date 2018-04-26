@@ -240,7 +240,7 @@ class Asset(Document):
 				"remark": self.name + " (" + self.asset_name + ") Asset Issued",
 				"user_remark": self.name + " (" + self.asset_name + ") Asset Issued",
 				#"posting_date": self.purchase_date,
-				"posting_date": "2017-08-31",
+				"posting_date": self.purchase_date,
 				"branch": self.branch
 				})
 

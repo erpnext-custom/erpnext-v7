@@ -135,7 +135,6 @@ class ProjectInvoice(AccountsController):
 
                         #frappe.msgprint(_("{0}").format(self.boq))
                         #frappe.msgprint(_("{0}").format(mb_boq))
-                        
                         self.project_invoice_boq = []
                         for item in mb_boq:
                                 act_quantity = flt(item.original_quantity)
