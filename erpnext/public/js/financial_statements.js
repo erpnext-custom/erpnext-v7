@@ -28,7 +28,7 @@ erpnext.financial_statements = {
 				{ "value": "Half-Yearly", "label": __("Half-Yearly") },
 				{ "value": "Yearly", "label": __("Yearly") }
 			],
-			"default": "Monthly",
+			"default": "Yearly",
 			"reqd": 1
 		}
 	],

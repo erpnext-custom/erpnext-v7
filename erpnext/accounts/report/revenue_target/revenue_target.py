@@ -39,6 +39,7 @@ def get_data(filters):
                         where rt.fiscal_year = "{0}"
 			{1}
                         and   rtc.parent     = rt.name
+			and   rt.docstatus   = 1
                         group by cost_center, account, account_code
                         order by cost_center, account, account_code
                 """.format(filters.get("fiscal_year"),cond), as_dict=1)

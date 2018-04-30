@@ -27,3 +27,14 @@ frappe.ui.form.on("Stock Price Template", "from_date", function(frm) {
         validated = false;
     }
 });
+
+frappe.ui.form.on("Stock Price Template", "refresh", function(frm) {
+    cur_frm.set_query("item_code", function() {
+        return {
+            "filters": {
+		"disabled": 0,
+		"item_group": frm.doc.naming_series
+            }
+        };
+    });
+})

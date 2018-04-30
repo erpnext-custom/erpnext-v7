@@ -8,6 +8,16 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def operators():
+	ops = frappe.db.sql("select name from `tabEquipment Operator`", as_dict=True)
+	for a in ops:
+		doc = frappe.get_doc("Equipment Operator", a.name)
+		if doc.employee_type == "Employee":
+			name = frappe.db.get_value("Employee", doc.operator, "employee_name")
+		if doc.employee_type == "Muster Roll Employee":
+			name = frappe.db.get_value("Muster Roll Employee", doc.operator, "person_name")
+		doc.db_set("operator_name", name)
+
 def migrate_ipol():
         pols = frappe.db.sql("select name, pol_type from `tabIssue POL` where docstatus = 1 and pol_type in ('Diesel', 'Petrol')", as_dict=True)
         for a in pols:

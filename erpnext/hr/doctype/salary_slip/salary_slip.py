@@ -294,10 +294,34 @@ class SalarySlip(TransactionBase):
                 '''
                 # Ver 1.0 Ends
                 self.update_deduction_balance()
+
+	def post_sws_entry(self):
+		sws = goods_account = frappe.db.get_single_value("SWS Settings", "salary_component")
+		amount = 0
+		for a in self.deductions:
+			if a.salary_component == sws:
+				amount = a.amount
+		if not amount:
+			return
+
+		doc = frappe.new_doc("SWS Entry")
+		doc.flags.ignore_permissions = 1
+		doc.posting_date = nowdate()
+		doc.branch = self.branch
+		doc.ref_doc = self.name
+		doc.employee = self.employee
+		doc.credit = amount
+		doc.fiscal_year = self.fiscal_year
+		doc.month = self.month
+		doc.submit()
                 
 	def on_cancel(self):
 		self.update_status()
 		self.update_deduction_balance()
+		self.delete_sws_entry()
+
+	def delete_sws_entry(self):
+		frappe.db.sql("delete from `tabSWS Entry` where ref_doc = %s", self.name)
 
         def update_deduction_balance(self):
                 for ssl in self.deductions:
@@ -326,4 +350,5 @@ class SalarySlip(TransactionBase):
 				timesheet.flags.ignore_validate_update_after_submit = True
 				timesheet.set_status()
 				timesheet.save()
+
 

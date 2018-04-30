@@ -14,6 +14,8 @@ class HireChargeInvoice(AccountsController):
 	def validate(self):
 		check_future_date(self.posting_date)
 		self.check_advances(self.ehf_name)
+		if self.total_invoice_amount <= 0:
+			frappe.throw("Total Invoice Amount should be greater than 0")
 		if self.balance_amount < 0:
 			frappe.throw("Balance amount cannot be negative")
 		self.outstanding_amount = self.balance_amount

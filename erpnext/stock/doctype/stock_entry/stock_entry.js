@@ -640,3 +640,4 @@ cur_frm.fields_dict['items'].grid.get_field('uom').get_query = function(frm, cdt
         }
 }
 
+
