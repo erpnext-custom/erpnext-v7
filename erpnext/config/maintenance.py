@@ -124,6 +124,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Equipment POL Transfer",
 				},
+				{
+					"type": "doctype",
+					"name": "HSD Payment",
+					"description": _("Create Payment"),
+				},
 			]
 		},
 		{

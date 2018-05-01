@@ -130,6 +130,11 @@ def get_data():
 					"name": "Mechanical Payment",
 					"description": _("Create Payment"),
 				},
+				{
+					"type": "doctype",
+					"name": "HSD Payment",
+					"description": _("Create Payment"),
+				},
 			]
 		},
 		{
