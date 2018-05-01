@@ -34,6 +34,9 @@ frappe.ui.form.on('Material Request', {
 		}
 	}, */
 	onload: function(frm) {
+		if(!frm.doc.creation_date) {
+			frm.set_value("creation_date", get_today())
+		}
 		// formatter for material request item
 		frm.set_indicator_formatter('item_code',
 			function(doc) { return (doc.qty<=doc.ordered_qty) ? "green" : "orange" })

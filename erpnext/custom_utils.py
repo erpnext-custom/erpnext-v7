@@ -41,6 +41,7 @@ def get_branch_cc(branch):
                 frappe.throw("No Branch Argument Found")
         cc = frappe.db.get_value("Cost Center", {"branch": branch, "is_disabled": 0, "is_group": 0}, "name")
         if not cc:
+		print(branch)
                 frappe.throw(str(branch) + " is not linked to any cost center")
         return cc
 
@@ -252,3 +253,10 @@ def get_branch_warehouse(branch):
         cc = get_branch_cc(branch)
         wh = frappe.db.get_value("Cost Center", cc, "warehouse")
         return wh
+
+def get_cc_customer(cc):
+	customer = frappe.db.get_value("Customer", {"cost_center": cc}, "name")
+	if not customer:
+		frappe.throw("No Customer found for the Cost Center")
+	return customer
+

@@ -251,3 +251,6 @@ body[data-route="pos"] .modal-dialog {
     Display: none;
 }
 
+.media-body {
+	width: 100% !important;
+}

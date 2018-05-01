@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2018-04-05 12:02:21.932188", 
- "modified_by": "payma.wangchuk@cdcl.bt", 
+ "modified": "2018-05-01 14:48:26.318453", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Accounts Receivable", 
  "owner": "Administrator", 
@@ -36,6 +36,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Regional Manager"
   }
  ]
 }

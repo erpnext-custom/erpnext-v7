@@ -3,10 +3,36 @@
 
 frappe.ui.form.on('Issue POL', {
 	onload: function(frm) {
-		if(!frm.doc.date) {
-			frm.set_value("date", get_today())
+		if(!frm.doc.posting_date) {
+			frm.set_value("posting_date", get_today())
 		}
 	},
+
+	refresh: function(frm) {
+		if(frm.doc.docstatus == 1) {
+			cur_frm.add_custom_button(__("Stock Ledger"), function() {
+				frappe.route_options = {
+					voucher_no: frm.doc.name,
+					from_date: frm.doc.posting_date,
+					to_date: frm.doc.posting_date,
+					company: frm.doc.company
+				};
+				frappe.set_route("query-report", "Stock Ledger");
+			}, __("View"));
+
+			cur_frm.add_custom_button(__('Accounting Ledger'), function() {
+				frappe.route_options = {
+					voucher_no: frm.doc.name,
+					from_date: frm.doc.posting_date,
+					to_date: frm.doc.posting_date,
+					company: frm.doc.company,
+					group_by_voucher: false
+				};
+				frappe.set_route("query-report", "General Ledger");
+			}, __("View"));
+		}
+	},
+
 	"items_on_form_rendered": function(frm, grid_row, cdt, cdn) {
 		var row = cur_frm.open_grid_row();
 		/*if(!row.grid_form.fields_dict.pol_type.value) {
@@ -14,18 +40,33 @@ frappe.ui.form.on('Issue POL', {
                 	row.grid_form.fields_dict.pol_type.refresh()
 		}*/
 	},
+
+	"branch": function(frm) {
+		return frappe.call({
+			method: "erpnext.custom_utils.get_cc_warehouse",
+			args: {
+				"branch": frm.doc.branch
+			},
+			callback: function(r) {
+				cur_frm.set_value("cost_center", r.message.cc)
+				cur_frm.set_value("warehouse", r.message.wh)
+				cur_frm.refresh_fields()
+			}
+		})
+	}
 });
 
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
 
 frappe.ui.form.on("Issue POL", "refresh", function(frm) {
-	/*
-	cur_frm.set_query("tanker", function() {
+    	cur_frm.set_query("pol_type", function() {
 		return {
-			filters:[['branch', "=", frm.doc.branch], ['equipment_type', 'in', ['Fuel Tanker','Skid Tank','Barrel']]]
-		}
-	})
-	*/
+		    "filters": {
+			"disabled": 0,
+			"is_pol_item": 1
+		    }
+		};
+	    });
 	
 	cur_frm.set_query("tanker", function() {
 		return {
@@ -46,10 +87,26 @@ frappe.ui.form.on("Issue POL", "refresh", function(frm) {
                 else {
                         return {
                                 filters: {
-                                        'hsd_type': frm.doc.pol_type,
                                         "is_disabled": 0,
                                 }
                         }
                 }
 	}
 })
+
+frappe.ui.form.on("POL Issue Report Item", "equipment", function(doc, cdt, cdn) {
+	doc = locals[cdt][cdn]
+	console.log(doc.equipment_branch)
+	return frappe.call({
+		method: "erpnext.custom_utils.get_cc_warehouse",
+		args: {
+			"branch": doc.equipment_branch
+		},
+		callback: function(r) {
+			frappe.model.set_value(cdt, cdn, "equipment_cost_center", r.message.cc)
+			frappe.model.set_value(cdt, cdn, "equipment_warehouse", r.message.wh)
+			cur_frm.refresh_fields()
+		}
+	})
+})
+

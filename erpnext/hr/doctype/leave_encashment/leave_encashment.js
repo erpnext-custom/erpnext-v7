@@ -40,6 +40,12 @@ frappe.ui.form.on('Leave Encashment', {
 		}
 	},
 
+	application_date: function(frm){
+		frm.trigger("get_le_settings");
+		frm.trigger("get_leave_balance");
+		
+	},
+	
 	balance_before: function(frm){
 		if (frm.doc.balance_before){
 			frm.set_value('balance_after',(frm.doc.balance_before?frm.doc.balance_before:0)-frm.doc.encashed_days);

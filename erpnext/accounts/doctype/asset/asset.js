@@ -152,6 +152,15 @@ frappe.ui.form.on('Asset', {
 		frm.toggle_enable("supplier", frm.doc.is_existing_asset);
 		frm.toggle_reqd("next_depreciation_date", !frm.doc.is_existing_asset);
 	},
+	
+	asset_status: function(frm) {
+		if(frm.doc.asset_status == "Marked for Auction") {
+			cur_frm.set_value("marked_on", get_today())
+		}
+		else {
+			cur_frm.set_value("marked_on", "")
+		}
+	}
 });
 
 frappe.ui.form.on('Depreciation Schedule', {

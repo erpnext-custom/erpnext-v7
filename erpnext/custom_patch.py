@@ -19,7 +19,7 @@ def operators():
 		doc.db_set("operator_name", name)
 
 def migrate_ipol():
-        pols = frappe.db.sql("select name, pol_type from `tabIssue POL` where docstatus = 1 and pol_type in ('Diesel', 'Petrol')", as_dict=True)
+        pols = frappe.db.sql("select name, pol_type from `tabIssue POL` where pol_type in ('Diesel', 'Petrol')", as_dict=True)
         for a in pols:
                 print(a.name)
                 doc = frappe.get_doc("Issue POL", a.name)
@@ -46,7 +46,7 @@ def migrate_ipol():
 
 
 def migrate_pol():
-        pols = frappe.db.sql("select name, pol_type from `tabPOL` where docstatus = 1 and pol_type in ('Diesel', 'Petrol')", as_dict=True)
+        pols = frappe.db.sql("select name, pol_type from `tabPOL` where pol_type in ('Diesel', 'Petrol')", as_dict=True)
         for a in pols:
                 print(a.name)
                 doc = frappe.get_doc("POL", a.name)
@@ -57,7 +57,7 @@ def migrate_pol():
                 item = frappe.get_doc("Item", doc.pol_type)
                 doc.db_set("stock_uom" , item.stock_uom)
                 doc.db_set("item_name", item.item_name)
-                #doc.db_set("posting_date", doc.date)
+                doc.db_set("posting_date", doc.date)
                 doc.db_set("company", 'Construction Development Corporation Ltd')
                 doc.db_set("posting_time", '17:13:36')
                 if doc.book_type == "Common Fuel Book":
