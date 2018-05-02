@@ -48,8 +48,8 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "POL Type",
-					"description": _("POL Types"),
+					"name": "Fuelbook",
+					"description": _("Fuelbook Types"),
 				},
 				{
 					"type": "doctype",

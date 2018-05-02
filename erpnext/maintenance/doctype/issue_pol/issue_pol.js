@@ -96,17 +96,18 @@ frappe.ui.form.on("Issue POL", "refresh", function(frm) {
 
 frappe.ui.form.on("POL Issue Report Item", "equipment", function(doc, cdt, cdn) {
 	doc = locals[cdt][cdn]
-	console.log(doc.equipment_branch)
-	return frappe.call({
-		method: "erpnext.custom_utils.get_cc_warehouse",
-		args: {
-			"branch": doc.equipment_branch
-		},
-		callback: function(r) {
-			frappe.model.set_value(cdt, cdn, "equipment_cost_center", r.message.cc)
-			frappe.model.set_value(cdt, cdn, "equipment_warehouse", r.message.wh)
-			cur_frm.refresh_fields()
-		}
-	})
+	if(doc.equipment_branch) {
+		return frappe.call({
+			method: "erpnext.custom_utils.get_cc_warehouse",
+			args: {
+				"branch": doc.equipment_branch
+			},
+			callback: function(r) {
+				frappe.model.set_value(cdt, cdn, "equipment_cost_center", r.message.cc)
+				frappe.model.set_value(cdt, cdn, "equipment_warehouse", r.message.wh)
+				cur_frm.refresh_fields()
+			}
+		})
+	}
 })
 

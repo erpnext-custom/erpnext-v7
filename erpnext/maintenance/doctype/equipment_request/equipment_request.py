@@ -22,8 +22,8 @@ def make_hire_form(source_name, target_doc=None):
         def update_item(obj, target, source_parent):
 		target.from_time = "0:00"
 		target.to_time = "0:00"
-		delta = obj.to_date - obj.from_date
-		target.total_hours = delta.days * 8
+		target.total_hours = obj.total_hours 
+		target.request_reference = obj.name
 
         def adjust_last_date(source, target):
                 pass
@@ -46,8 +46,8 @@ def make_hire_form(source_name, target_doc=None):
                                 "doctype": "Hiring Approval Details",
                                 "field_map": {
                                 },
-                                "validation": {"approval": ["=", "Accepted"]},
-                                "postprocess": update_item
+                                "postprocess": update_item,
+                                "validation": {"approved": ["=", 0]}
                         },
                 }, target_doc, adjust_last_date)
         return doc

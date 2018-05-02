@@ -53,11 +53,9 @@ class POL(StockController):
 
 	def on_submit(self):
 		if getdate(self.posting_date) > getdate("2018-03-31"):
-			self.check_budget()
 			self.update_stock_ledger()
-			self.update_general_ledger()
-		else:
-			self.post_journal_entry()
+		self.check_budget()
+		self.update_general_ledger()
 
 		if self.direct_consumption:
 			self.consume_pol()

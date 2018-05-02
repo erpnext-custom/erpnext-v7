@@ -30,6 +30,7 @@ class EquipmentHiringForm(Document):
 		self.assign_hire_form_to_equipment()
 		if self.advance_amount > 0:
 			self.post_journal_entry()
+		self.update_equipment_request(1)
 
 	def before_cancel(self):		
 		docs = check_uncancelled_linked_doc(self.doctype, self.name)
@@ -41,6 +42,15 @@ class EquipmentHiringForm(Document):
 	
 		frappe.db.sql("delete from `tabEquipment Reservation Entry` where ehf_name = \'"+ str(self.name) +"\'")	
 		self.db_set("advance_journal", '')
+
+	def on_cancel(self):
+		self.update_equipment_request(0)
+
+	def update_equipment_request(self, status):
+		for a in self.approved_items:
+			if a.request_reference:
+				doc = frappe.get_doc("Equipment Request Item", a.request_reference)
+				doc.db_set("approved", status)
 
 	def check_date_approval(self):
 		for a in self.approved_items:

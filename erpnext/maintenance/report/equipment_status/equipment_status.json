@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-05 11:59:30.587760", 
+ "modified": "2018-05-02 12:27:02.444236", 
  "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Equipment Status", 
@@ -36,6 +36,12 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Projects User"
+  }, 
+  {
+   "role": "Management"
   }
  ]
 }

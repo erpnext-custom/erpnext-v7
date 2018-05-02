@@ -91,7 +91,6 @@ frappe.ui.form.on("POL", "refresh", function(frm) {
 		if(frm.doc.book_type == "Own") {
 			return {
 				"filters": {
-					"docstatus": 1,
 					"name": frm.doc.own_fb
 					}
 				}
@@ -100,7 +99,6 @@ frappe.ui.form.on("POL", "refresh", function(frm) {
 		if(frm.doc.book_type == "Common") {
 			return {
 				"filters": {
-					"docstatus": 1,
 					"supplier": frm.doc.supplier,
 					"type": "Common",
 					"branch": frm.doc.branch
