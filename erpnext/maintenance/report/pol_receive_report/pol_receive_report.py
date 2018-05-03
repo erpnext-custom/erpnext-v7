@@ -15,8 +15,10 @@ def get_columns():
                 ("Equipment ") + ":Link/Equipment:120",
                 ("Equipment No.") + ":Data:120",
                 ("Book Type") + ":Data:120",
+                ("Fuelbook") + ":Data:120",
 		("Supplier") + ":Data:120",
-                ("POL Type")+ ":Data:100",
+                ("Item Code")+ ":Data:100",
+                ("Item Name")+ ":Data:170",
                 ("Date") + ":Date:120",
                 ("Quantity") + ":Data:120",
                 ("Rate") + ":Data:120",
@@ -25,14 +27,14 @@ def get_columns():
 
 def get_data(filters):
 
-        query =  "select p.equipment, p.equipment_number, p.book_type, p.supplier, p.pol_type, p.date, p.qty, p.rate, ifnull(p.total_amount,0) from tabPOL as p where p.docstatus = 1"
+        query =  "select p.equipment, p.equipment_number, p.book_type, p.fuelbook, p.supplier, p.pol_type, p.item_name, p.posting_date, p.qty, p.rate, ifnull(p.total_amount,0) from tabPOL as p where p.docstatus = 1"
 
         if filters.get("branch"):
 		query += " and p.branch = \'"+ str(filters.branch) + "\'"
 
         if filters.get("from_date") and filters.get("to_date"):
 
-                query += " and p.date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+                query += " and p.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 	if filters.get("direct"):
                 query += " and p.direct_consumption = 1"
 	else:

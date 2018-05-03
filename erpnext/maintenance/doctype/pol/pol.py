@@ -56,9 +56,7 @@ class POL(StockController):
 			self.update_stock_ledger()
 		self.check_budget()
 		self.update_general_ledger()
-
-		if self.direct_consumption:
-			self.consume_pol()
+		self.make_pol_entry()
 
 	def check_budget(self):
 		cc = get_branch_cc(self.equipment_branch)
@@ -199,12 +197,8 @@ class POL(StockController):
 
 		self.db_set("jv", "")
 
-		if self.direct_consumption:
-			self.cancel_consumed_pol()
 		self.cancel_budget_entry()
-
-	def cancel_consumed_pol(self):
-		frappe.db.sql("delete from `tabConsumed POL` where reference_type = 'POL' and reference_name = %s", (self.name))
+		self.delete_pol_entry()
 
 	##
 	# Cancel budget check entry
@@ -263,8 +257,9 @@ class POL(StockController):
 		else:
 			frappe.throw("Define POL expense account in Maintenance Setting or Expense Bank in Branch")
 		
-	def consume_pol(self):
-		con = frappe.new_doc("Consumed POL")	
+	def make_pol_entry(self):
+		con = frappe.new_doc("POL Entry")
+		con.flags.ignore_permissions = 1	
 		con.equipment = self.equipment
 		con.pol_type = self.pol_type
 		con.branch = self.branch
@@ -272,6 +267,22 @@ class POL(StockController):
 		con.qty = self.qty
 		con.reference_type = "POL"
 		con.reference_name = self.name
+		con.type = "Receive"
 		con.submit()
+		
+		if self.direct_consumption:
+			con = frappe.new_doc("POL Entry")
+			con.flags.ignore_permissions = 1	
+			con.equipment = self.equipment
+			con.pol_type = self.pol_type
+			con.branch = self.branch
+			con.date = self.posting_date
+			con.qty = self.qty
+			con.reference_type = "POL"
+			con.reference_name = self.name
+			con.type = "Issue"
+			con.submit()
 
+	def delete_pol_entry(self):
+		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", self.name)
 

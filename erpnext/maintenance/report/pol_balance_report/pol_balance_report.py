@@ -4,113 +4,34 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr
-
+from erpnext.maintenance.report.maintenance_report import get_pol_till 
 
 def execute(filters=None):
 	columns = get_columns();
-	queries = construct_query(filters);
-	data = get_data(queries, filters);
+	data = get_data(filters);
 
 	return columns, data
 
-def get_data(query, filters=None):
-	#data = []
-	datas = frappe.db.sql(query, as_dict=True)
+def get_data(filters=None):
+	data = []
+	query = "select e.name, e.branch, e.equipment_number from tabEquipment e, `tabEquipment Type` et where e.equipment_type = et.name and et.is_container = 1"
+	if filters.branch:
+		query += " and e.branch = \'" + str(filters.branch) + "\'"
+		
+	items = frappe.db.sql("select item_code, item_name, stock_uom from tabItem where is_hsd_item = 1 and disabled = 0", as_dict=True)
 
-	'''
-	for d in datas:
-		row = [d.equipment, d.branch, d.pol_type, d.uom, d.opening, d.received, d.issued, flt(d.opening) + flt(d.received) - flt(d.issued)]
-		data.append(row);
-	'''
+	query += " order by e.branch"
 
-	
-	return datas
-
-def construct_query(filters=None):
-	#not_cdcl = dis  = ''
-	if not filters.branch:
-		filters.branch = 'x'
-	
-	query = """
-			select equipment, 
-				branch, 
-				pol_type, uom,
-				SUM(ifnull(opening,0)) opening,
-				SUM(ifnull(received,0)) received,
-				SUM(ifnull(issued,0)) issued,
-				SUM(ifnull(opening,0)+ifnull(received,0)-ifnull(issued,0)) balance
-			FROM (
-			select e.name equipment, 
-				CASE  
-					WHEN '%(branch)s' = 'x' THEN ''
-					ELSE p.branch
-				END as branch, 
-				p.date AS dates, p.pol_type, pt.uom,
-				CASE
-					WHEN p.date < '%(from_date)s' THEN p.qty
-					ELSE 0
-				END AS opening,
-				CASE
-					WHEN p.date >= '%(from_date)s' THEN p.qty
-					ELSE 0
-				END AS received,
-				0 issued
-			FROM  `tabEquipment` e, `tabPOL` p, `tabPOL Type` pt
-			WHERE  e.name = p.equipment
-			AND    e.equipment_type = 'Fuel Tanker'
-			AND    p.pol_type = pt.name
-			AND    p.date <= '%(to_date)s'
-			AND    (
-				'%(branch)s' = 'x'
-				OR
-				p.branch = '%(branch)s'
-				)
-			UNION ALL
-			select e.name equipment, 
-				CASE
-					WHEN '%(branch)s' = 'x' THEN ''
-					ELSE pc.branch
-				END as branch, 
-				pc.date AS dates, pc.pol_type, pt.uom,
-				CASE
-					WHEN pc.date < '%(from_date)s' THEN -1*pc.qty
-					ELSE 0
-				END AS opening,
-				0 received,
-				CASE
-					WHEN pc.date >= '%(from_date)s' THEN pc.qty
-					ELSE 0
-				END AS received
-			FROM   `tabEquipment` e, `tabConsumed POL` pc, `tabPOL Type` pt
-			WHERE  e.name = pc.equipment
-			AND    e.equipment_type = 'Fuel Tanker'
-			AND    pt.name = pc.pol_type
-			AND    pc.date <= '%(to_date)s'
-			AND    (
-				'%(branch)s' = 'x'
-				OR
-				pc.branch = '%(branch)s'
-				)
-			) AS X
-			group by equipment, branch, pol_type, uom
-			""" % {'from_date': str(filters.from_date), 'to_date': str(filters.to_date), 'branch': str(filters.branch)}
-	#frappe.msgprint(_("{0}").format(query))
-	return query;
+	for eq in frappe.db.sql(query, as_dict=True):
+		for item in items:
+			received = get_pol_till("Receive", eq.name, filters.to_date, item.item_code)
+			issued = get_pol_till("Issue", eq.name, filters.to_date, item.item_code)
+			if received or issued:
+				row = [eq.name, eq.equipment_number, eq.branch, item.item_code, item.item_name, item.stock_uom, received, issued, flt(received) - flt(issued)]
+				data.append(row)
+	return data
 
 def get_columns():
-	'''
-	return [
-		("Equipment") + ":Link/Equipment:120",
-		("Branch") + ":Data:120",
-		("POL Type") + ":Data:120",
-		("UOM") + ":Data:90",
-		("Opening Qty") +":Float:120",
-		 ("Recieved") + ":Float:120",
-		("Issued") + ":Float:120",
-		("Balance") + ":Float:120"
-	]
-	'''
-
 	return [
 		{
 			"fieldname": "equipment",
@@ -120,6 +41,12 @@ def get_columns():
 			"width": 100
 		},
 		{
+                        "fieldname": "eq_name",
+                        "label": _("Equipment Name"),
+                        "fieldtype": "Data",
+                        "width": 130
+                },
+		{
                         "fieldname": "branch",
                         "label": _("Branch"),
                         "fieldtype": "Link",
@@ -128,9 +55,15 @@ def get_columns():
                 },
 		{
                         "fieldname": "pol_type",
-                        "label": _("POL Type"),
+                        "label": _("Item Code"),
                         "fieldtype": "Data",
                         "width": 100
+                },
+		{
+                        "fieldname": "pol_name",
+                        "label": _("Item Name"),
+                        "fieldtype": "Data",
+                        "width": 170
                 },
 		{
                         "fieldname": "uom",
@@ -138,12 +71,6 @@ def get_columns():
                         "fieldtype": "Link",
                         "options": "UOM",
                         "width": 60
-                },
-		{
-                        "fieldname": "opening",
-                        "label": _("Opening"),
-                        "fieldtype": "Float",
-                        "width": 100
                 },
 		{
                         "fieldname": "received",

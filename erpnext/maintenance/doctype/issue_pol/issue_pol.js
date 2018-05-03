@@ -81,13 +81,13 @@ frappe.ui.form.on("Issue POL", "refresh", function(frm) {
                         return {
 				"query": "erpnext.maintenance.doctype.issue_pol.issue_pol.equipment_query",
 				filters: {'branch': '%'}
-                                //filters:[['is_disabled', '=', 0], ['equipment_type', 'in', ['Fuel Tanker','Skid Tank','Barrel']]]
                         }
                 }
                 else {
                         return {
                                 filters: {
                                         "is_disabled": 0,
+					"equipment_type": ["not in", ['Skid Tank', 'Barrel']]
                                 }
                         }
                 }

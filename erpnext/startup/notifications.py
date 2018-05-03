@@ -79,6 +79,9 @@ def get_notification_config():
                         "Revenue Target": {"docstatus": 0},
                         "Payment Entry": {"docstatus": 0},
 			"Imprest Receipt": {"docstatus": 0},
-                        "Imprest Recoup" : {"docstatus": 0}
+                        "Imprest Recoup" : {"docstatus": 0},
+			"SWS Application" : {"docstatus": 0},
+			"HSD Payment" : {"docstatus": 0},
+                        "Equipment Request" : {"percent_completed": ("<", "100")}
 		}
 	}

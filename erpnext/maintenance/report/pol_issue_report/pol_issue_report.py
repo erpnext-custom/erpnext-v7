@@ -3,6 +3,8 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe.utils import flt
+from erpnext.maintenance.report.maintenance_report import get_pol_between
 
 def execute(filters=None):
         columns = get_columns()
@@ -14,33 +16,32 @@ def get_columns():
         return [
                 ("Equipment ") + ":Link/Equipment:120",
                 ("Equipment No.") + ":Data:120",
-                ("Operator")+ ":Data:100",
-                ("POL Type") + ":Data:120",
+                ("Item Code") + ":Link/Item:100",
+                ("Item Name") + ":Data:170",
                 ("UoM") + ":Data:120",
                 ("Quantity") + ":Data:120"
         ]
 
 def get_data(filters):
-
-        query =  "select e.name, e.equipment_number, e.current_operator, p.pol_type, (select uom from `tabPOL Type` pt where pt.name = p.pol_type) as uom,sum(p.qty) FROM tabEquipment AS e, `tabConsumed POL` AS p WHERE e.name = p.equipment"
+	data = []
+        query =  "select name, equipment_number FROM tabEquipment WHERE 1"
 
         if filters.get("branch"):
-
-                query += " and p.branch = \'" + str(filters.branch) + "\'"
-
-        if filters.get("from_date") and filters.get("to_date"):
-
-                query += " and p.date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+                query += " and branch = \'" + str(filters.branch) + "\'"
 
         if filters.get("not_cdcl"):
-                query += " and e.not_cdcl = 0"
+                query += " and not_cdcl = 0"
 
-        if filters.get("include_disabled"):
-                query += " "
-        else:
-                query += " and e.is_disabled = 0"
+        if not filters.get("include_disabled"):
+                query += " and is_disabled = 0"
 
-        query += " group by e.name, p.pol_type"
+	items = frappe.db.sql("select item_code, item_name, stock_uom from tabItem where is_pol_item = 1", as_dict=True)
 
-        return frappe.db.sql(query)
+        for eq in frappe.db.sql(query, as_dict=True):
+		for item in items:
+			balance = get_pol_between("Issue", eq.name, filters.from_date, filters.to_date, item.item_code)
+			if balance:
+				row = [eq.name, eq.equipment_number, item.item_code, item.item_name, item.stock_uom, balance]
+				data.append(row)
+	return data
 

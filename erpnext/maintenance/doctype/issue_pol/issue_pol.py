@@ -43,21 +43,21 @@ class IssuePOL(StockController):
 			frappe.throw("Purpose is Missing")
 		if not self.cost_center or not self.warehouse:
 			frappe.throw("Cost Center and Warehouse are Mandatory")
-
+		total_quantity = 0
 		for a in self.items:
 			if not a.equipment_warehouse or not a.equipment_cost_center:
 				frappe.throw("<b>"+str(a.equipment_number) + "</b> does have a Warehouse and Cost Center Defined")
 			if not flt(a.qty) > 0:
 				frappe.throw("Quantity for <b>"+str(a.equipment_number)+"</b> should be greater than 0")
+			total_quantity = flt(total_quantity) + flt(a.qty)
+		self.total_quantity = total_quantity
 
 	def on_submit(self):
 		if not self.items:
 			frappe.throw("Should have a POL Issue Details to Submit")
 
 		self.update_stock_gl_ledger()
-
-		if self.purpose == "Issue":
-			self.consume_pol()
+		self.make_pol_entry()
 
 	def update_stock_gl_ledger(self):
 		sl_entries = []
@@ -194,23 +194,38 @@ class IssuePOL(StockController):
 
 	def on_cancel(self):
 		self.update_stock_gl_ledger()
-		if self.purpose == "Issue":
-			self.cancel_consumed_pol()
+		self.delete_pol_entry()
 
-	def consume_pol(self):
-		for a in self.items:
-			con = frappe.new_doc("Consumed POL")	
-			con.equipment = a.equipment
-			con.branch = self.branch
+	def make_pol_entry(self):
+		if self.tanker:
+			con = frappe.new_doc("POL Entry")
+			con.flags.ignore_permissions = 1
+			con.equipment = self.tanker
 			con.pol_type = self.pol_type
+			con.branch = self.branch
 			con.date = self.posting_date
-			con.qty = a.qty
+			con.qty = self.total_quantity
 			con.reference_type = "Issue POL"
 			con.reference_name = self.name
+			con.type = "Issue"
 			con.submit()
-	
-	def cancel_consumed_pol(self):
-		frappe.db.sql("delete from `tabConsumed POL` where reference_type = 'Issue POL' and reference_name = %s", (self.name))
+
+                if self.purpose == "Transfer":
+			for a in self.items:
+				con = frappe.new_doc("POL Entry")
+				con.flags.ignore_permissions = 1
+				con.equipment = a.equipment
+				con.pol_type = self.pol_type
+				con.branch = a.equipment_branch
+				con.date = self.posting_date
+				con.qty = a.qty
+				con.reference_type = "Issue POL"
+				con.reference_name = self.name
+				con.type = "Receive"
+				con.submit()
+
+	def delete_pol_entry(self):
+		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", self.name)
 
 def equipment_query(doctype, txt, searchfield, start, page_len, filters):
 	if not filters['branch']:

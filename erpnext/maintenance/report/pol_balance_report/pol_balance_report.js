@@ -11,15 +11,8 @@ frappe.query_reports["POL Balance Report"] = {
 			"width": "100",
 		},
 		{
-			"fieldname":"from_date",
-			"label": (" From Date"),
-			"fieldtype": "Date",
-			"width": "80",
-		        "reqd": 1
-		},
-		{
 			"fieldname":"to_date",
-			"label" : ("To Date"),
+			"label" : ("Balance As Of"),
 			"fieldtype": "Date",
 			"width": "80",
 			"reqd" : 1

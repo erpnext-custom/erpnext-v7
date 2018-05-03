@@ -7,9 +7,17 @@ import frappe
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from erpnext.custom_utils import get_branch_cc, get_cc_customer
+from frappe.utils import flt
 
 class EquipmentRequest(Document):
-	pass
+	def validate(self):
+		self.calculate_percent()
+
+	def calculate_percent(self):
+		total_item = len(self.items)
+		per_item = flt(flt(100) / flt(total_item), 2)
+		for a in self.items:
+			a.percent_share = per_item 
 
 @frappe.whitelist()
 def make_hire_form(source_name, target_doc=None):
@@ -24,6 +32,7 @@ def make_hire_form(source_name, target_doc=None):
 		target.to_time = "0:00"
 		target.total_hours = obj.total_hours 
 		target.request_reference = obj.name
+		target.equipment_request = source_parent.name
 
         def adjust_last_date(source, target):
                 pass

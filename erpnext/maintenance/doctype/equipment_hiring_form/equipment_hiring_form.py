@@ -47,10 +47,22 @@ class EquipmentHiringForm(Document):
 		self.update_equipment_request(0)
 
 	def update_equipment_request(self, status):
+		total_percent = 0
+		er = None
 		for a in self.approved_items:
 			if a.request_reference:
 				doc = frappe.get_doc("Equipment Request Item", a.request_reference)
 				doc.db_set("approved", status)
+				total_percent = flt(total_percent) + flt(doc.percent_share)
+				if a.equipment_request:
+					er = a.equipment_request
+		if er:
+			er = frappe.get_doc("Equipment Request", er)
+			if status:
+				total = flt(total_percent) + flt(er.percent_completed)
+			else:
+				total = flt(er.percent_completed) - flt(total_percent) 
+			er.db_set("percent_completed", round(total))
 
 	def check_date_approval(self):
 		for a in self.approved_items:

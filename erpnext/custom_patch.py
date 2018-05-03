@@ -8,6 +8,14 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def migrate_pol_entry():
+	pols = frappe.db.sql("select name from `tabEquipment POL Transfer` where docstatus = 1", as_dict=True)
+	for a in pols:
+		doc = frappe.get_doc("Equipment POL Transfer", a.name)
+		print(a.name)
+		if not doc.pol_type == "N/A":
+			doc.adjust_consumed_pol()
+
 def operators():
 	ops = frappe.db.sql("select name from `tabEquipment Operator`", as_dict=True)
 	for a in ops:

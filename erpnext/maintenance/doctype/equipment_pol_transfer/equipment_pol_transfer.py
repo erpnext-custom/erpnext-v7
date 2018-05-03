@@ -125,7 +125,7 @@ class EquipmentPOLTransfer(Document):
 		if self.from_branch != self.to_branch and getdate(self.posting_date) > getdate("2018-03-31"):
 			self.cancel_budget_entry()
 			self.update_gl_entry()
-		frappe.db.sql("delete from `tabConsumed POL` where reference_name = %s", (self.name))
+		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", (self.name))
 
 	##
 	# Cancel budget check entry
@@ -136,17 +136,18 @@ class EquipmentPOLTransfer(Document):
 	
 	def adjust_consumed_pol(self):
 		if self.from_equipment and self.to_equipment:
-			con = frappe.new_doc("Consumed POL")	
+			con = frappe.new_doc("POL Entry")	
 			con.equipment = self.from_equipment
 			con.branch = self.from_branch
 			con.pol_type = self.pol_type
 			con.date = self.posting_date
-			con.qty = 0 - flt(self.qty)
+			con.qty = flt(self.qty)
 			con.reference_type = "Equipment POL Transfer"
 			con.reference_name = self.name
+			con.type = "Issue"
 			con.submit()
 
-			to = frappe.new_doc("Consumed POL")	
+			to = frappe.new_doc("POL Entry")	
 			to.equipment = self.to_equipment
 			to.branch = self.to_branch
 			to.pol_type = self.pol_type
@@ -154,6 +155,7 @@ class EquipmentPOLTransfer(Document):
 			to.qty = self.qty
 			to.reference_type = "Equipment POL Transfer"
 			to.reference_name = self.name
+			to.type = "Receive"
 			to.submit()
 		else:
 			frappe.throw("Should have both 'From' and 'To' Equipment")

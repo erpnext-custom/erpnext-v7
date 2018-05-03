@@ -3,18 +3,41 @@ import frappe
 from frappe import _
 from frappe.utils import flt, cint,add_days, cstr, flt, getdate, nowdate, rounded, date_diff
 
-def get_pol_received_till(equipment, date, pol_type=None):
-	if not pol_type:
-		pol_type = '%'
+##
+# Both recieved and issued pols can be queried with this
+##
+def get_pol_till(purpose, equipment, date, pol_type):
 	if not equipment or not date:
 		frappe.throw("Equipment and Till Date are Mandatory")
-	
-	pol = frappe.db.sql("select sum(qty) as total from `tabConsumed POL` where equipment = %s and docstatus = 1 and date <= %s and pol_type like %s", (equipment, date, pol_type), as_dict=True)
-	if pol:
-		return pol[0].total
-	else:
-		return 0
+	total = 0
+	query = "select sum(qty) as total from `tabPOL Entry` where docstatus = 1 and type = \'"+str(purpose)+"\' and equipment = \'" + str(equipment) + "\' and date <= \'" + str(date) + "\'"
+	if pol_type:
+		query += " and pol_type = \'" + str(pol_type) + "\'"
+		
+	quantity = frappe.db.sql(query, as_dict=True)
+	if quantity:
+		total = quantity[0].total
+	return total
 
+##
+# Both recieved and issued pols can be queried with this
+##
+def get_pol_between(purpose, equipment, from_date, to_date, pol_type):
+	if not equipment or not from_date or not to_date:
+		frappe.throw("Equipment and From/To Date are Mandatory")
+	total = 0
+	query = "select sum(qty) as total from `tabPOL Entry` where docstatus = 1 and type = \'"+str(purpose)+"\' and equipment = \'" + str(equipment) + "\' and date between \'" + str(from_date) + "\' and \'" + str(to_date) + "\'"
+	if pol_type:
+		query += " and pol_type = \'" + str(pol_type) + "\'"
+		
+	quantity = frappe.db.sql(query, as_dict=True)
+	if quantity:
+		total = quantity[0].total
+	return total
+
+##
+# Get consumed POl as per yardstick
+##
 def get_pol_consumed_till(equipment, date):
 	if not equipment or not date:
                 frappe.throw("Equipment and Till Date are Mandatory")
@@ -66,8 +89,5 @@ def get_employee_expense(equipment, f_date, t_date):
 		# Travel
 
 		#Leave Encashment
-
-	
-
-
+			pass
 

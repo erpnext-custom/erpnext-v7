@@ -7,7 +7,7 @@ frappe.listview_settings['POL'] = {
 	has_indicator_for_draft: 1,
 	get_indicator: function(doc) {
 		if(doc.docstatus==0) {
-			return ["Receive POL Created", "grey", "docstatus,=,0"];
+			return ["Receive POL Created", "darkgrey", "docstatus,=,0"];
 		}
 
 		if(doc.docstatus == 1) {

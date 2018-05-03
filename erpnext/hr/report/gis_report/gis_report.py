@@ -15,8 +15,13 @@ from frappe import msgprint, _
 
 def execute(filters=None):
 	if not filters: filters = {}
-
+        data    = []
+        columns = []
+        
 	data = get_data(filters)
+	if not data:
+                return columns, data
+        
 	columns = get_columns(data)
 
 	return columns, data
@@ -61,10 +66,13 @@ def get_data(filters):
                 		group by t1.employee, t3.employee_name, t1.designation, t3.passport_number,  t3.gis_number, 
 				t1.company, t1.branch, t1.department, t1.division, t1.section, t1.fiscal_year, t1.month
                 """ % conditions, filters)
+
+	'''
 	if not data:
 		msgprint(_("No Data Found for month: ") + cstr(filters.get("month")) +
 			_(" and year: ") + cstr(filters.get("fiscal_year")), raise_exception=1)
-
+        '''
+	
 	return data
 
 def get_conditions(filters):
