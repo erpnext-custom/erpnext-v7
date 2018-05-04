@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 12:28:43.100487", 
+ "modified": "2018-05-04 14:17:58.643127", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Accounts Payable", 
@@ -27,6 +27,21 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Management"
+  }, 
+  {
+   "role": "Regional Manager"
+  }, 
+  {
+   "role": "Projects User"
+  }, 
+  {
+   "role": "Projects GM"
+  }, 
+  {
+   "role": "Projects Readonly"
   }
  ]
 }

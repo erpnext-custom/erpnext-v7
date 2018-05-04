@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2018-05-01 14:48:26.318453", 
+ "modified": "2018-05-04 14:18:21.825717", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Accounts Receivable", 
@@ -39,6 +39,18 @@
   }, 
   {
    "role": "Regional Manager"
+  }, 
+  {
+   "role": "Management"
+  }, 
+  {
+   "role": "Projects User"
+  }, 
+  {
+   "role": "Projects GM"
+  }, 
+  {
+   "role": "Projects Readonly"
   }
  ]
 }

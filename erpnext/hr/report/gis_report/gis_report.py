@@ -36,7 +36,8 @@ def get_columns(data):
 		_("Date Of Joining") + "::100",
 		_("Group") + "::100",
 		_("Grade") + "::60",
-		_("GIS Number") + "::80",
+		_("GIS Number") + "::100",
+                _("Policy Number") + "::100",
 		_("Basic Pay") + ":Currency:120",
         	_("GIS Contribution") + ":Currency:120",
         	_("Company") + ":Link/Branch:120",
@@ -54,7 +55,7 @@ def get_data(filters):
 	conditions, filters = get_conditions(filters)
 	data = frappe.db.sql("""select 
 				t1.employee as n, t3.employee_name, t1.designation, t3.passport_number, 
-				t3.date_of_birth, t3.date_of_joining, t3.employee_group, t1.employee_subgroup, t3.gis_number,
+				t3.date_of_birth, t3.date_of_joining, t3.employee_group, t1.employee_subgroup, t1.gis_number, t1.gis_policy_number,
 				sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0) else 0 end) as basicpay,
 				sum(case when t2.salary_component = 'Group Insurance Scheme' then ifnull(t2.amount,0) else 0 end) as gisamount,
                         	t1.company, t1.branch, t1.department, t1.division, t1.section,t1.fiscal_year, t1.month

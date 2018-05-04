@@ -76,6 +76,11 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 	status: function(){
 		this.frm.toggle_reqd(["relieving_date","reason_for_resignation"],(this.frm.doc.status == 'Left' ? 1:0));
 	},
+	
+	branch: function(){
+		cur_frm.add_fetch('branch', 'gis_policy_number', 'gis_policy_number');
+	},
+	
 	/*
 	department: function(){
 		if(!this.frm.doc.__islocal){

@@ -55,6 +55,9 @@ class Employee(Document):
 			self.approver_name = frappe.db.get_value("Employee", self.reports_to, "employee_name")
 		if self.cost_center:
 			self.branch = frappe.db.get_value("Cost Center", self.cost_center, "branch")
+		if self.branch:
+                        self.gis_policy_number = frappe.db.get_value("Branch", self.branch, "gis_policy_number")
+                        
 		self.validate_date()
 		self.validate_email()
 		self.validate_status()

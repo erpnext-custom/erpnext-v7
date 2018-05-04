@@ -156,3 +156,19 @@ function update_advance_amount(frm) {
 frappe.form.link_formatters['Employee'] = function(value, doc) {
 	return value
 }
+
+/*frappe.ui.form.on("Travel Authorization","before_cancel", function(frm) {
+	var d = frappe.prompt({
+		fieldtype: "Select",
+		fieldname: "cancellation_reason",
+		options: ["Change In Travel Plan","Wrong Data Entry", "Others"],
+		reqd: 1,
+		description: __("*This information shall be used for determining the frequency of TA cancellation")},
+		function(data) {
+			cur_frm.set_value("cancellation_reason",data.cancellation_reason);
+			refresh_many(["cancellation_reason"]);
+		},
+		"Select the REASON why you are cancelling the Travel Authorization", 
+		__("Update")
+	);
+})*/

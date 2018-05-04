@@ -260,3 +260,11 @@ def get_cc_customer(cc):
 		frappe.throw("No Customer found for the Cost Center")
 	return customer
 
+def send_mail_to_role_branch(branch, role, message, subject=None):
+	if not subject:
+		subject = "Message from ERP System"
+	users = frappe.db.sql_list("select a.parent from tabUserRole a, tabDefaultValue b where a.parent = b.parent and b.defvalue = %s and b.defkey = 'Branch' and a.role = %s", (branch, role))
+	try:
+		frappe.sendmail(recipients=users, subject=subject, message=message)
+	except:
+		pass

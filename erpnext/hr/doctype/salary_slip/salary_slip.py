@@ -131,10 +131,12 @@ class SalarySlip(TransactionBase):
 			earnings.amount = self.hour_rate * self.total_working_hours
 
 	def pull_emp_details(self):
-		emp = frappe.db.get_value("Employee", self.employee, ["bank_name", "bank_ac_no"], as_dict=1)
+		emp = frappe.db.get_value("Employee", self.employee, ["bank_name", "bank_ac_no", "gis_number", "gis_policy_number"], as_dict=1)
 		if emp:
-			self.bank_name = emp.bank_name
-			self.bank_account_no = emp.bank_ac_no
+			self.bank_name          = emp.bank_name
+			self.bank_account_no    = emp.bank_ac_no
+			self.gis_number         = emp.gis_number
+			self.gis_policy_number  = emp.gis_policy_number
 
 	def get_leave_details(self, joining_date=None, relieving_date=None, lwp=None):
 		if not self.fiscal_year:
@@ -294,9 +296,10 @@ class SalarySlip(TransactionBase):
                 '''
                 # Ver 1.0 Ends
                 self.update_deduction_balance()
+		self.post_sws_entry()
 
 	def post_sws_entry(self):
-		sws = goods_account = frappe.db.get_single_value("SWS Settings", "salary_component")
+		sws = frappe.db.get_single_value("SWS Settings", "salary_component")
 		amount = 0
 		for a in self.deductions:
 			if a.salary_component == sws:
