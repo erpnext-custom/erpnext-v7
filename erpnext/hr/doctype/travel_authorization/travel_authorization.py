@@ -148,6 +148,8 @@ class TravelAuthorization(Document):
 		line = 0
 		for item in self.get("items"):
 			line = line + 1
+			if item.halt == 1 and not item.till_date:
+				frappe.throw("Till Date is Mandatory for Halt Days on line " + str(line))
 			if date is None:
 				if item.halt == 1:
 					date = item.till_date

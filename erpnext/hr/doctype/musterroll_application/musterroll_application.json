@@ -547,7 +547,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-04-02 21:43:00.343083", 
+ "modified": "2018-05-07 17:06:12.920408", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "MusterRoll Application", 
@@ -672,8 +672,8 @@
    "role": "Muster Roll Creator", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
-   "user_permission_doctypes": "[\"Branch\",\"User\"]", 
+   "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
@@ -697,9 +697,9 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 1, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -713,7 +713,7 @@
    "role": "Projects GM", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }

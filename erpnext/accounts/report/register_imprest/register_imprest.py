@@ -44,7 +44,7 @@ def get_data(filters):
                         modified_by     as modifyby,
                         modified        as modifydt
                 from `tabImprest Receipt`
-                where docstatus = 1
+                where docstatus != 2
                 {0}
                 union all
                 select
@@ -65,7 +65,7 @@ def get_data(filters):
                         modified_by     as modifyby,
                         modified        as modifydt
                 from `tabImprest Recoup`
-                where (docstatus = 1 or workflow_state = 'Waiting Recoupment')
+                where docstatus != 2
                 {0}
                 ) as x
                 order by x.branch, x.tran_date
@@ -83,7 +83,7 @@ def get_conditions(filters):
                 cond.append('imprest_type = "{0}"'.format(filters.get('imprest_type')))
 
         if filters.get('from_date') and filters.get('to_date'):
-                cond.append('entry_date between "{0}" and "{1}"'.format(filters.from_date, filters.to_date))
+                cond.append('date(entry_date) between "{0}" and "{1}"'.format(filters.from_date, filters.to_date))
 
         if cond:
                 return 'and '+str(' and '.join(cond))

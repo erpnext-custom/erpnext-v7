@@ -449,7 +449,7 @@ def get_data():
 			]
 		},
                 {
-			"label": _("Cash Journal"),
+			"label": _("Imprest Management"),
 			"icon": "icon-cog",
 			"items": [
 				{
@@ -459,15 +459,22 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Cash Journal Entry",
-					"description": _("Cash Journal Entry.")
+					"name": "Imprest Receipt",
+					"label": "Receipt Entry",
+					"description": _("Imprest Receipt Entry.")
+				},
+				{
+					"type": "doctype",
+					"name": "Imprest Recoup",
+					"label": "Recoup Entry",
+					"description": _("Imprest Recoup Entry.")
 				},
                                 {
 					"type": "report",
                                         "label": _("Report"),
 					"is_query_report": True,
-					"name": "Imprest Register",
-					"doctype": "Cash Journal Entry"
+					"name": "Register Imprest",
+					"doctype": "Imprest Receipt"
 				},
 			]
 		},
@@ -628,7 +635,7 @@ def get_data():
                                         "type": "report",
                                         "is_query_report": True,
                                         "name": "LTC Process Report",
-                                        "label": _("LTC Process Report"),
+                                        "label": _("LTC, PBVA and Bonus Report"),
                                         "doctype": "Leave Travel Concession"
                                 },
                                 {

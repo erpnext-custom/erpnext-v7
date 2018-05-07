@@ -5,7 +5,8 @@ frappe.query_reports["LTC Process Report"] = {
 	"filters": [
 		{
 			"fieldname": "fy",
-			"label": __("Fiscal Year"),							"fieldtype": "Link",
+			"label": __("Fiscal Year"),							
+			"fieldtype": "Link",
 			"options": "Fiscal Year",
 			"reqd": 1,
 		},

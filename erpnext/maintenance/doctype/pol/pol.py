@@ -54,8 +54,8 @@ class POL(StockController):
 	def on_submit(self):
 		if getdate(self.posting_date) > getdate("2018-03-31"):
 			self.update_stock_ledger()
-		self.check_budget()
 		self.update_general_ledger()
+		self.check_budget()
 		self.make_pol_entry()
 
 	def check_budget(self):
@@ -190,7 +190,7 @@ class POL(StockController):
 	def on_cancel(self):
 		if getdate(self.posting_date) > getdate("2018-03-31"):
 			self.update_stock_ledger()
-			self.update_general_ledger()
+		self.update_general_ledger()
 		docstatus = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
 		if docstatus and docstatus != 2:
 			frappe.throw("Cancel the Journal Entry " + str(self.jv) + " and proceed.")

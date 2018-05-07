@@ -8,16 +8,19 @@ frappe.query_reports["Register Imprest"] = {
 			"label": __("Branch"),
 			"fieldtype": "Link",
 			"options": "Branch",
+			"width": "200",
 		},
 		{
 			"fieldname": "from_date",
 			"label": __("From Date"),
-			"fieldtype": "Date"
+			"fieldtype": "Date",
+			"default": sys_defaults.year_start_date
 		},
 		{
 			"fieldname": "to_date",
 			"label": __("To Date"),
-			"fieldtype": "Date"
+			"fieldtype": "Date",
+			"default": frappe.datetime.get_today()
 		},
 	]
 }

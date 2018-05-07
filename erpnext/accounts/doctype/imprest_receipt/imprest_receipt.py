@@ -25,6 +25,7 @@ class ImprestReceipt(Document):
                 for t in frappe.get_all("Imprest Receipt", ["name"], {"branch": self.branch, "entry_date":("<",self.entry_date),"docstatus":0}):
                         msg = '<b>Reference# : <a href="#Form/Imprest Receipt/{0}">{0}</a></b>'.format(t.name)
                         frappe.throw(_("Found unclosed entries. Previous entries needs to be either closed or cancelled in order to determine opening balance for the current transaction.<br>{0}").format(msg),title="Invalid Operation")
+                update_dependencies(self.branch, self.entry_date)                
         
         def on_cancel(self):
                 update_dependencies(self.branch, self.entry_date)
@@ -90,7 +91,7 @@ def update_dependencies(branch = None, entry_date = None):
                         from `tabImprest Receipt`
                         where branch = '{0}'
                         and entry_date > '{1}'
-                        and docstatus = 1
+                        and docstatus != 2
                         union all
                         select
                                 'Imprest Recoup' as doctype,
@@ -103,7 +104,7 @@ def update_dependencies(branch = None, entry_date = None):
                         from `tabImprest Recoup`
                         where branch = '{0}'
                         and entry_date > '{1}'
-                        and docstatus = 1
+                        and docstatus != 2
                         ) as x
                         order by x.entry_date
         """.format(branch, entry_date), as_dict=1)
@@ -151,14 +152,14 @@ def get_opening_balance(branch = None, docname = None, entry_date = None):
                                 where branch = '{0}'
                                 and name != '{1}'
                                 and entry_date < '{2}'
-                                and docstatus != 2
+                                and docstatus = 1
                                 union all
                                 select -1*ifnull(purchase_amount,0) amount
                                 from `tabImprest Recoup`
                                 where branch = '{0}'
                                 and name != '{1}'
                                 and entry_date < '{2}'
-                                and docstatus != 2
+                                and docstatus = 1
                         ) as x
         """.format(branch,docname,entry_date))
 

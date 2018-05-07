@@ -17,7 +17,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe import msgprint
-from frappe.utils import flt, cint, nowdate, getdate
+from frappe.utils import flt, cint, nowdate, getdate, formatdate
 from erpnext.accounts.utils import get_fiscal_year
 from frappe.utils.data import get_first_day, get_last_day, add_years
 from frappe.desk.form.linked_with import get_linked_doctypes, get_linked_docs
@@ -268,3 +268,12 @@ def send_mail_to_role_branch(branch, role, message, subject=None):
 		frappe.sendmail(recipients=users, subject=subject, message=message)
 	except:
 		pass
+
+def check_account_frozen(posting_date):
+	acc_frozen_upto = frappe.db.get_value('Accounts Settings', None, 'acc_frozen_upto')
+	if acc_frozen_upto:
+		frozen_accounts_modifier = frappe.db.get_value( 'Accounts Settings', None,'frozen_accounts_modifier')
+		if getdate(posting_date) <= getdate(acc_frozen_upto) \
+				and not frozen_accounts_modifier in frappe.get_roles():
+			frappe.throw(_("You are not authorized to add or update entries before {0}").format(formatdate(acc_frozen_upto)))
+

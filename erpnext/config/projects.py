@@ -63,29 +63,6 @@ def get_data():
                                 },
                         ]
                 },
-                {
-                        "label": _("Cash Journal"),
-                        "icon": "icon-pencil",
-                        "items": [
-                                {
-                                        "type": "doctype",
-                                        "name": "Imprest Type",
-                                        "description": _("Imprest Type Master."),
-                                },
-                                {
-                                        "type": "doctype",
-                                        "name": "Cash Journal Entry",
-                                        "description": _("Cash Journal Entries."),
-                                },
-                                {
-					"type": "report",
-                                        "label": _("Report"),
-					"is_query_report": True,
-					"name": "Imprest Register",
-					"doctype": "Cash Journal Entry"
-				},
-                        ]
-                },
 		{
 			"label": _("Manpower Management"),
 			"icon": "icon-facetime-video",

@@ -42,10 +42,6 @@ data = {
 			'label': _('Transactions'),
 			'items': ['Project Advance', 'Project Invoice', 'Project Payment']
 		},
-                {
-			'label': _('Cash Journal'),
-			'items': ['Cash Journal Entry']
-		},
 		{
 			'label': _('Material'),
 			'items': ['Material Request', 'Stock Entry']
