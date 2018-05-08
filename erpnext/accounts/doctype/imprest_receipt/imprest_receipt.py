@@ -22,13 +22,13 @@ class ImprestReceipt(Document):
                 self.validate_amounts()
 
         def on_submit(self):
-                for t in frappe.get_all("Imprest Receipt", ["name"], {"branch": self.branch, "entry_date":("<",self.entry_date),"docstatus":0}):
+                for t in frappe.get_all("Imprest Receipt", ["name"], {"branch": self.branch, "imprest_type": self.imprest_type, "entry_date":("<",self.entry_date),"docstatus":0}):
                         msg = '<b>Reference# : <a href="#Form/Imprest Receipt/{0}">{0}</a></b>'.format(t.name)
                         frappe.throw(_("Found unclosed entries. Previous entries needs to be either closed or cancelled in order to determine opening balance for the current transaction.<br>{0}").format(msg),title="Invalid Operation")
-                update_dependencies(self.branch, self.entry_date)                
+                update_dependencies(self.branch, self.imprest_type, self.entry_date)                
         
         def on_cancel(self):
-                update_dependencies(self.branch, self.entry_date)
+                update_dependencies(self.branch, self.imprest_type, self.entry_date)
                 
         def update_defaults(self):
                 # Update entry_date
@@ -36,7 +36,7 @@ class ImprestReceipt(Document):
                         self.entry_date = now_datetime()
                 
         def update_amounts(self):
-                opening_balance = get_opening_balance(self.branch, self.name, self.entry_date)
+                opening_balance = get_opening_balance(self.branch, self.imprest_type, self.name, self.entry_date)
 
                 if flt(opening_balance) != flt(self.opening_balance):
                         #frappe.msgprint(_("Opening balance has been changed from Nu.{0}/- to Nu.{1}/-").format(flt(self.opening_balance),flt(opening_balance)),title="Change in values")
@@ -55,7 +55,7 @@ class ImprestReceipt(Document):
                         frappe.throw("Receipt amount cannot be empty.",title="Invalid Data")
                         
                 # Validate against imprest limit set under branch
-                imprest_limit = frappe.db.get_value("Branch", self.branch, "imprest_limit")
+                imprest_limit = frappe.db.get_value("Branch Imprest Item", {"parent": self.branch, "imprest_type": self.imprest_type}, "imprest_limit")
 
                 if not imprest_limit:
                         frappe.throw("Please set imprest limit for the branch.", title="Insufficient Balance")
@@ -64,15 +64,19 @@ class ImprestReceipt(Document):
                                 frappe.throw(_("Closing balance cannot exceed imprest limit Nu.{0}/-.").format(flt(imprest_limit)),title="Invalid Data")
 
 
-def update_dependencies(branch = None, entry_date = None):
+def update_dependencies(branch = None, imprest_type = None, entry_date = None):
         # Update dependent transactions
-        trans_list    = []
-        imprest_limit = frappe.db.get_value("Branch", branch, "imprest_limit")
+        trans_list      = []
+        imprest_limit   = frappe.db.get_value("Branch Imprest Item", {"parent": branch, "imprest_type": imprest_type}, "imprest_limit")
+
+        if not imprest_limit:
+                frappe.throw("Please set imprest limit for the branch.", title="Insufficient Balance")
 
         trans = frappe.db.sql("""
                         select
                                 x.doctype,
                                 x.name,
+                                x.imprest_type,
                                 x.entry_date,
                                 x.opening_balance,
                                 x.receipt_amount,
@@ -82,6 +86,7 @@ def update_dependencies(branch = None, entry_date = None):
                         (
                         select
                                 'Imprest Receipt' as doctype,
+                                imprest_type,
                                 name,
                                 cast(entry_date as char) as entry_date,
                                 opening_balance,
@@ -90,11 +95,13 @@ def update_dependencies(branch = None, entry_date = None):
                                 closing_balance
                         from `tabImprest Receipt`
                         where branch = '{0}'
+                        and imprest_type = '{2}'
                         and entry_date > '{1}'
                         and docstatus != 2
                         union all
                         select
                                 'Imprest Recoup' as doctype,
+                                imprest_type,
                                 name,
                                 cast(entry_date as char) as entry_date,
                                 opening_balance,
@@ -103,14 +110,15 @@ def update_dependencies(branch = None, entry_date = None):
                                 closing_balance
                         from `tabImprest Recoup`
                         where branch = '{0}'
+                        and imprest_type = '{2}'
                         and entry_date > '{1}'
                         and docstatus != 2
                         ) as x
                         order by x.entry_date
-        """.format(branch, entry_date), as_dict=1)
+        """.format(branch, entry_date, imprest_type), as_dict=1)
 
         for t in trans:
-                opening_balance = get_opening_balance(branch, t.name, t.entry_date)
+                opening_balance = get_opening_balance(branch, t.imprest_type, t.name, t.entry_date)
                 closing_balance = flt(opening_balance)+flt(t.receipt_amount)-flt(t.purchase_amount)
                 if flt(closing_balance) < 0.0:
                         msg = '<br><b>Reference# : <a href="#Form/{1}/{0}">{0}</a></b>'.format(t.name,t.doctype)
@@ -141,7 +149,7 @@ def update_dependencies(branch = None, entry_date = None):
                 doc.save(ignore_permissions = True)
 
 @frappe.whitelist()
-def get_opening_balance(branch = None, docname = None, entry_date = None):
+def get_opening_balance(branch = None, imprest_type = None, docname = None, entry_date = None):
         entry_date = entry_date if entry_date else now_datetime()
         result = frappe.db.sql("""
                         select sum(amount)
@@ -150,6 +158,7 @@ def get_opening_balance(branch = None, docname = None, entry_date = None):
                                 select ifnull(receipt_amount,0) amount
                                 from `tabImprest Receipt`
                                 where branch = '{0}'
+                                and imprest_type = '{3}'
                                 and name != '{1}'
                                 and entry_date < '{2}'
                                 and docstatus = 1
@@ -157,11 +166,12 @@ def get_opening_balance(branch = None, docname = None, entry_date = None):
                                 select -1*ifnull(purchase_amount,0) amount
                                 from `tabImprest Recoup`
                                 where branch = '{0}'
+                                and imprest_type = '{3}'
                                 and name != '{1}'
                                 and entry_date < '{2}'
                                 and docstatus = 1
                         ) as x
-        """.format(branch,docname,entry_date))
+        """.format(branch, docname, entry_date, imprest_type))
 
         if result:
                 return result[0][0]

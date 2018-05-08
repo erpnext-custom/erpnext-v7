@@ -30,13 +30,13 @@ def get_data(filters):
                         name            as tran_no,
                         entry_date      as tran_date,
                         'Receipt'       as tran_type,
+                        imprest_type    as imprest_type,
                         opening_balance as opening_balance,
                         receipt_amount  as receipt_amount,
                         purchase_amount as purchase_amount,
                         closing_balance as closing_balance,
                         workflow_state  as status,
                         title           as title,
-                        imprest_type    as imprest_type,
                         remarks         as remarks,
                         branch          as branch,
                         owner           as createby,
@@ -51,13 +51,13 @@ def get_data(filters):
                         name            as tran_no,
                         entry_date      as tran_date,
                         'Purchase'      as tran_type,
+                        imprest_type    as imprest_type,
                         opening_balance as opening_balance,
                         receipt_amount  as receipt_amount,
                         purchase_amount as purchase_amount,
                         closing_balance as closing_balance,
                         workflow_state  as status,
                         title           as title,
-                        ""              as imprest_type,
                         remarks         as remarks,
                         branch          as branch,
                         owner           as createby,
@@ -68,7 +68,7 @@ def get_data(filters):
                 where docstatus != 2
                 {0}
                 ) as x
-                order by x.branch, x.tran_date
+                order by x.branch, x.imprest_type, x.tran_date
         """.format(cond), as_dict=1)
         
         return result
@@ -84,7 +84,7 @@ def get_conditions(filters):
 
         if filters.get('from_date') and filters.get('to_date'):
                 cond.append('date(entry_date) between "{0}" and "{1}"'.format(filters.from_date, filters.to_date))
-
+        
         if cond:
                 return 'and '+str(' and '.join(cond))
         else:
@@ -109,6 +109,12 @@ def get_columns():
                         "label": _("Type"),
                         "fieldtype": "Data",
                         "width": 80,
+                },
+                {
+                        "fieldname": "imprest_type",
+                        "label": _("Imprest Type"),
+                        "fieldtype": "Data",
+                        "width": 120,
                 },
                 {
                         "fieldname": "opening_balance",

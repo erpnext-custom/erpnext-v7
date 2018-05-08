@@ -85,6 +85,8 @@ def get_delivered_items(condition):
 
 def get_condition(filters):
 	conditions = ""
+	if filters.get("cost_center"):
+		conditions += " and cost_center = '%s'" % (filters["cost_center"])
 	if filters.get("from_date") and filters.get("to_date"):
 		conditions += " and posting_date between '%s' and '%s'" % (filters["from_date"],filters["to_date"])
 	else:

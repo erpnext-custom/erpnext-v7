@@ -11,6 +11,12 @@ frappe.query_reports["Register Imprest"] = {
 			"width": "200",
 		},
 		{
+			"fieldname": "imprest_type",
+			"label": __("Imprest Type"),
+			"fieldtype": "Link",
+			"options": "Imprest Type",
+		},
+		{
 			"fieldname": "from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",

@@ -57,24 +57,30 @@ frappe.ui.form.on('HSD Payment', {
 	},
 
 	"amount": function(frm) {
-		var total = frm.doc.amount
-		frm.doc.items.forEach(function(d) {
-			var allocated = 0
-			if (total > 0 && total >= d.payable_amount ) {
-				allocated = d.payable_amount
-			}
-			else if(total > 0 && total < d.payable_amount) {
-				allocated = total
-			}
-			else {
-				allocated = 0
-			}
-		
-			d.allocated_amount = allocated
-			d.balance_amount = d.payable_amount - allocated
-			total-=allocated
-		})
-		cur_frm.refresh_field("items")
+		if(frm.doc.amount > frm.doc.actual_amount) {
+			cur_frm.set_value("amount", frm.doc.actual_amount)
+			msgprint("Amount cannot be greater than the Total Payable Amount")
+		}
+		else {
+			var total = frm.doc.amount
+			frm.doc.items.forEach(function(d) {
+				var allocated = 0
+				if (total > 0 && total >= d.payable_amount ) {
+					allocated = d.payable_amount
+				}
+				else if(total > 0 && total < d.payable_amount) {
+					allocated = total
+				}
+				else {
+					allocated = 0
+				}
+			
+				d.allocated_amount = allocated
+				d.balance_amount = d.payable_amount - allocated
+				total-=allocated
+			})
+			cur_frm.refresh_field("items")
+		}
 	}
 });
 

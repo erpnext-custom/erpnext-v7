@@ -36,13 +36,13 @@ frappe.ui.form.on('Imprest Receipt', {
 		// Update Cost Center
 		if(frm.doc.branch){
 			frappe.call({
-				method: 'frappe.client.get',
+				method: 'frappe.client.get_value',
 				args: {
 					doctype: 'Cost Center',
 					filters: {
 						'branch': frm.doc.branch
 					},
-					fields: ['name']
+					fieldname: ['name']
 				},
 				callback: function(r){
 					if(r.message){
@@ -51,7 +51,27 @@ frappe.ui.form.on('Imprest Receipt', {
 					}
 				}
 			});
+			
+			frappe.call({
+				method: 'frappe.client.get_value',
+				args: {
+					doctype: 'Branch Imprest Item',
+					filters: {
+						'parent': frm.doc.branch,
+						'default': 1
+					},
+					fieldname: ['imprest_type']
+				},
+				callback: function(r){
+					if(r.message){
+						cur_frm.set_value("imprest_type", r.message.imprest_type);
+					}
+				}
+			});
 		}
+	},
+	imprest_type: function(frm){
+		update_totals(frm);
 	},
 	amount: function(frm){
 		update_totals(frm);
@@ -59,9 +79,13 @@ frappe.ui.form.on('Imprest Receipt', {
 });
 
 function enable_disable(frm){
+	var other_fields  = ["company","title","branch","imprest_type","remarks","notes","amount"];
+	
 	if(frm.doc.workflow_state == 'Waiting Approval'){
 		if(!in_list(user_roles, "Imprest Manager") && !in_list(user_roles, "Accounts User")){
-			frm.set_df_property("amount", "read_only", 1);
+			other_fields.forEach(function(field_name){
+				frm.set_df_property(field_name,"read_only",1);
+			});
 			frm.disable_save();
 		}
 	}
@@ -80,6 +104,7 @@ var update_totals = function(frm){
 			method: "erpnext.accounts.doctype.imprest_receipt.imprest_receipt.get_opening_balance",
 			args: {
 				"branch": frm.doc.branch,
+				"imprest_type": frm.doc.imprest_type,
 				"docname": frm.doc.name
 			},
 			callback: function(r){

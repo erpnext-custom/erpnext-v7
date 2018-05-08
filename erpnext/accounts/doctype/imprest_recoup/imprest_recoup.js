@@ -88,13 +88,13 @@ frappe.ui.form.on('Imprest Recoup', {
 		// Update Cost Center
 		if(frm.doc.branch){
 			frappe.call({
-				method: 'frappe.client.get',
+				method: 'frappe.client.get_value',
 				args: {
 					doctype: 'Cost Center',
 					filters: {
 						'branch': frm.doc.branch
 					},
-					fields: ['name']
+					fieldname: ['name']
 				},
 				callback: function(r){
 					if(r.message){
@@ -103,7 +103,27 @@ frappe.ui.form.on('Imprest Recoup', {
 					}
 				}
 			});
+			
+			frappe.call({
+				method: 'frappe.client.get_value',
+				args: {
+					doctype: 'Branch Imprest Item',
+					filters: {
+						'parent': frm.doc.branch,
+						'default': 1
+					},
+					fieldname: ['imprest_type']
+				},
+				callback: function(r){
+					if(r.message){
+						cur_frm.set_value("imprest_type", r.message.imprest_type);
+					}
+				}
+			});
 		}
+	},
+	imprest_type: function(frm){
+		update_totals(frm);
 	},
 	select_cheque_lot: function(frm){
 		if(frm.doc.select_cheque_lot){
@@ -170,6 +190,7 @@ var update_totals = function(frm){
 			method: "erpnext.accounts.doctype.imprest_receipt.imprest_receipt.get_opening_balance",
 			args: {
 				"branch": frm.doc.branch,
+				"imprest_type": frm.doc.imprest_type,
 				"docname": frm.doc.name
 			},
 			callback: function(r){
@@ -191,6 +212,7 @@ cur_frm.cscript.custom_before_submit = function(frm){
 
 function enable_disable(frm){
 	var toggle_fields = ["revenue_bank_account","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
+	var other_fields  = ["company","title","branch","imprest_type","remarks","notes"];
 	
 	toggle_fields.forEach(function(field_name){
 		frm.set_df_property(field_name,"read_only",1);
@@ -198,12 +220,20 @@ function enable_disable(frm){
 	
 	if(frm.doc.workflow_state == 'Waiting Approval'){
 		if(!in_list(user_roles, "Imprest Manager") && !in_list(user_roles, "Accounts User")){
-			frm.set_df_property("items", "read_only", 1);
+			other_fields.forEach(function(field_name){
+				frm.set_df_property(field_name,"read_only",1);
+			});
+
+			frm.set_df_property("items", "read_only", 1);			
 			frm.disable_save();
 		}
 	}
 	else if(frm.doc.workflow_state == 'Waiting Recoupment'){
 		if(!in_list(user_roles, "Accounts User")){
+			other_fields.forEach(function(field_name){
+				frm.set_df_property(field_name,"read_only",1);
+			});
+			
 			frm.set_df_property("items", "read_only", 1);
 			frm.disable_save();
 		}

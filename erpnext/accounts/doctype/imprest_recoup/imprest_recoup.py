@@ -18,11 +18,11 @@ class ImprestRecoup(AccountsController):
                 self.validate_amounts()
 
         def on_submit(self):
-                for t in frappe.get_all("Imprest Recoup", ["name"], {"branch": self.branch, "entry_date":("<",self.entry_date),"docstatus":0}):
+                for t in frappe.get_all("Imprest Recoup", ["name"], {"branch": self.branch, "imprest_type": self.imprest_type, "entry_date":("<",self.entry_date),"docstatus":0}):
                         msg = '<b>Reference# : <a href="#Form/Imprest Recoup/{0}">{0}</a></b>'.format(t.name)
                         frappe.throw(_("Found unclosed entries. Previous entries needs to be either closed or cancelled in order to determine opening balance for the current transaction.<br>{0}").format(msg),title="Invalid Operation")
                 self.post_receipt_entry()
-                update_dependencies(self.branch, self.entry_date)
+                update_dependencies(self.branch, self.imprest_type, self.entry_date)
                 self.post_gl_entry()
         
         def on_cancel(self):
@@ -31,7 +31,7 @@ class ImprestRecoup(AccountsController):
                         frappe.throw(_("You need to cancel dependent Imprest Receipt entry first.<br>{0}").format(msg),title="Invalid Operation")
                         
                 self.post_gl_entry()
-                update_dependencies(self.branch, self.entry_date)
+                update_dependencies(self.branch, self.imprest_type, self.entry_date)
                 
         def update_defaults(self):
                 # Update entry_date
@@ -56,7 +56,7 @@ class ImprestRecoup(AccountsController):
                         self.purchase_amount += flt(i.amount)
                 
         def update_amounts(self):
-                opening_balance = get_opening_balance(self.branch, self.name, self.entry_date)
+                opening_balance = get_opening_balance(self.branch, self.imprest_type, self.name, self.entry_date)
                 if flt(opening_balance) != flt(self.opening_balance):
                         #frappe.msgprint(_("Opening balance has been changed from Nu.{0}/- to Nu.{1}/-").format(flt(self.opening_balance),flt(opening_balance)),title="Change in values")
                         self.opening_balance = flt(opening_balance)
@@ -70,9 +70,11 @@ class ImprestRecoup(AccountsController):
                         frappe.throw("Purchase amount cannot be a negative value.",title="Invalid Data")
                 elif not self.purchase_amount:
                         frappe.throw("Purchase amount cannot be empty.",title="Invalid Data")
+                elif flt(self.closing_balance) < 0:
+                        frappe.throw("Closing balance cannot be less than value zero.",title="Invalid Data")
                         
                 # Validate against imprest limit set under branch
-                imprest_limit = frappe.db.get_value("Branch", self.branch, "imprest_limit")
+                imprest_limit = frappe.db.get_value("Branch Imprest Item", {"parent": self.branch, "imprest_type": self.imprest_type}, "imprest_limit")
 
                 if not imprest_limit:
                         frappe.throw("Please set imprest limit for the branch.", title="Insufficient Balance")
@@ -89,6 +91,7 @@ class ImprestRecoup(AccountsController):
                                 "branch": self.branch,
                                 "title": "Recoupment for "+str(self.name),
                                 "entry_date": now_datetime(),
+                                "imprest_type": self.imprest_type,
                                 "amount": flt(self.purchase_amount),
                                 "revenue_bank_account": self.revenue_bank_account,
                                 "pay_to_recd_from": self.pay_to_recd_from,

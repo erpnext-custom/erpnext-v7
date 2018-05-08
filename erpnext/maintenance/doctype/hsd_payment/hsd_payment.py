@@ -94,4 +94,5 @@ class HSDPayment(Document):
 			row = self.append('items', {})
 			row.update(d)
 		self.amount = total_amount
+		self.actual_amount = total_amount
 

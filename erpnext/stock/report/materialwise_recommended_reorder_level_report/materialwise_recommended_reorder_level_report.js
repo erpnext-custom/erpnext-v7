@@ -4,6 +4,13 @@
 frappe.query_reports["Materialwise Recommended Reorder Level Report"] = {
 	"filters": [
 		{
+			"fieldname": "cost_center",
+			"label": __("Cost Center"),
+			"fieldtype": "Link",
+			"options": "Cost Center",
+			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1']]}}
+		},
+		{
 			"fieldname":"from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",
