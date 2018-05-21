@@ -18,8 +18,9 @@ frappe.ui.form.on('Project Invoice', {
 		frm.get_field('project_invoice_mb').grid.editable_fields = [
 			{fieldname: 'entry_name', columns: 2},
 			{fieldname: 'entry_date', columns: 2},
+			{fieldname: 'price_adjustment_amount', columns: 2},
+			{fieldname: 'entry_amount', columns: 2},
 			{fieldname: 'is_selected', columns: 1},
-			{fieldname: 'entry_amount', columns: 2}
 		];
 	},
 
@@ -44,6 +45,7 @@ frappe.ui.form.on('Project Invoice', {
 	
 	refresh: function(frm, cdt, cdn) {
 		frm.trigger("boq_type");
+		frm.trigger("invoice_type");
 		if(frm.doc.__islocal){
 			calculate_totals(frm);
 		}
@@ -86,6 +88,20 @@ frappe.ui.form.on('Project Invoice', {
 		}
 	},
 
+	project: function(frm){
+		cur_frm.add_fetch("project","branch","branch");
+		cur_frm.add_fetch("project","cost_center","cost_center");
+		cur_frm.add_fetch("project","customer","customer");
+			
+		if(frm.doc.invoice_type == "Direct Invoice"){
+			frm.trigger("boq_type");
+		}
+		else {
+			get_mb_list(frm);
+		}
+		calculate_totals(frm);
+	},
+	
 	make_project_payment: function(frm){
 		frappe.model.open_mapped_doc({
 			method: "erpnext.accounts.doctype.project_payment.project_payment.make_project_payment",
@@ -115,6 +131,10 @@ frappe.ui.form.on('Project Invoice', {
 	
 	boq_type: function(frm){
 		toggle_items_based_on_boq_type(frm);
+	},
+	
+	invoice_type: function(frm){
+		frm.set_df_property("price_adjustment_amount","read_only",(frm.doc.invoice_type === 'MB Based Invoice' ? 1 : 0));
 	},
 	
 	get_mb_entries: function(frm, cdt, cdn){
@@ -163,6 +183,10 @@ frappe.ui.form.on("Project Invoice MB",{
 	project_invoice_mb_remove: function(frm, cdt, cdn){
 		calculate_totals(frm);
 	},
+	
+	price_adjustment_amount: function(frm,cdt,cdn){
+		calculate_totals(frm);
+	}
 });
 
 // Custom Functions
@@ -199,6 +223,8 @@ var get_mb_list = function(frm){
 					row.act_invoice_amount 	= parseFloat(mb['total_invoice_amount']);
 					row.act_received_amount = parseFloat(mb['total_received_amount']);
 					row.act_balance_amount 	= parseFloat(mb['total_balance_amount']);
+					row.boq 				= mb['boq'];
+					row.boq_type 			= mb['boq_type'];
 				});
 				cur_frm.refresh();
 			}
@@ -230,7 +256,9 @@ var toggle_items_based_on_boq_type = function(frm){
 var calculate_totals = function(frm){
 	var pi = frm.doc.project_invoice_boq || [];
 	var mb = frm.doc.project_invoice_mb || [];
-	var gross_invoice_amount = 0.0, net_invoice_amount =0.0;
+	var gross_invoice_amount = 0.0, price_adjustment_amount = 0.0, net_invoice_amount =0.0;
+	
+	//frm.enable_save();
 	
 	if(frm.doc.docstatus != 1)
 	{
@@ -247,11 +275,25 @@ var calculate_totals = function(frm){
 			for(var i=0; i<mb.length; i++){
 				if(mb[i].entry_amount && mb[i].is_selected==1){
 					gross_invoice_amount += parseFloat(mb[i].entry_amount);
+					price_adjustment_amount += parseFloat(mb[i].price_adjustment_amount || 0.0);
+
+					/*
+					if((parseFloat(mb[i].price_adjustment_amount || 0.0)+parseFloat(mb[i].entry_amount)) < 0.0){
+						msgprint(__("Row#{0} : Price Adjustment Amount cannot exceed entry amount.",[mb[i].idx]));
+						validated = false;
+						frm.disable_save();
+					}
+					*/
 				}
 			}
+			
+			if(parseFloat(frm.doc.price_adjustment_amount || 0.0) != parseFloat(price_adjustment_amount || 0.0)){
+				cur_frm.set_value("price_adjustment_amount",parseFloat(price_adjustment_amount));
+			}
+
 		}
-		
-		net_invoice_amount = (parseFloat(gross_invoice_amount)+parseFloat(frm.doc.price_adjustment_amount)-parseFloat(frm.doc.advance_recovery)-parseFloat(frm.doc.tds_amount));
+				
+		net_invoice_amount = (parseFloat(gross_invoice_amount)+parseFloat(frm.doc.price_adjustment_amount || 0.0)-parseFloat(frm.doc.advance_recovery || 0.0)-parseFloat(frm.doc.tds_amount || 0.0));
 		cur_frm.set_value("gross_invoice_amount",(gross_invoice_amount));
 		cur_frm.set_value("net_invoice_amount",(net_invoice_amount));
 		cur_frm.set_value("total_balance_amount",(parseFloat(frm.doc.net_invoice_amount || 0)-parseFloat(frm.doc.total_received_amount || 0)));

@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-07 11:01:56.879236", 
- "modified_by": "payma.wangchuk@cdcl.bt", 
+ "modified": "2018-05-17 16:29:46.166088", 
+ "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Equipment", 
  "owner": "Administrator", 
@@ -21,6 +21,9 @@
   }, 
   {
    "role": "Projects User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

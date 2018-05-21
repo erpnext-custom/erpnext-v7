@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-21 19:16:12.278617", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2018-05-15 10:30:02.223794", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Accounts", 
  "name": "Asset Register", 
  "owner": "Administrator", 
@@ -26,22 +26,13 @@
    "role": "Asset User"
   }, 
   {
-   "role": "Accounts User"
+   "role": "Accounts Manager"
   }, 
   {
    "role": "Regional Manager"
   }, 
   {
    "role": "Stock User"
-  }, 
-  {
-   "role": "Projects User"
-  }, 
-  {
-   "role": "Stock User (other)"
-  }, 
-  {
-   "role": "Stock Manager"
   }
  ]
 }

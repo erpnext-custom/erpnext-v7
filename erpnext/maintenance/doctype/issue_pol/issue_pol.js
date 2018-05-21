@@ -17,7 +17,7 @@ frappe.ui.form.on('Issue POL', {
 					to_date: frm.doc.posting_date,
 					company: frm.doc.company
 				};
-				frappe.set_route("query-report", "Stock Ledger");
+				frappe.set_route("query-report", "Stock Ledger Report");
 			}, __("View"));
 
 			cur_frm.add_custom_button(__('Accounting Ledger'), function() {

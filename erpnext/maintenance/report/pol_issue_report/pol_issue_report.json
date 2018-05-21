@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-28 15:56:45.741064", 
- "modified_by": "Administrator", 
+ "modified": "2018-05-15 12:24:31.142882", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "POL Issue Report", 
  "owner": "Administrator", 
@@ -23,10 +23,13 @@
    "role": "Fleet User"
   }, 
   {
-   "role": "Maintenance Common"
+   "role": "Mechanical Master"
   }, 
   {
    "role": "Fleet Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

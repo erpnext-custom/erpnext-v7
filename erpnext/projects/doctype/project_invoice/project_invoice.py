@@ -27,25 +27,17 @@ class ProjectInvoice(AccountsController):
         def on_submit(self):
                 self.update_boq_item()
                 self.update_boq()
-                
-                if self.invoice_type == "MB Based Invoice":
-                        self.update_mb_entries()
-
-                if str(self.invoice_date) > '2017-09-30':
-                        self.make_gl_entries()
+                self.update_mb_entries()
+                self.make_gl_entries()
 
         def before_cancel(self):
                 self.set_status()
 
         def on_cancel(self):
-                if str(self.invoice_date) > '2017-09-30':
-                        self.make_gl_entries()
-                
+                self.make_gl_entries()
                 self.update_boq_item()
                 self.update_boq()
-                
-                if self.invoice_type == "MB Based Invoice":
-                        self.update_mb_entries()
+                self.update_mb_entries()
                 
         def set_status(self):
                 self.status = {
@@ -74,10 +66,14 @@ class ProjectInvoice(AccountsController):
         # This function is create for "MB Based Invoice" where the BOQ Items are actually
         def load_invoice_boq(self):
                 if self.invoice_type == "MB Based Invoice":
-                        mb_list = ",".join(["'" + i.entry_name + "'" if i.is_selected == 1 else "'x'" for i in self.project_invoice_mb])
+                        mb_list  = ",".join(["'" + i.entry_name + "'" if i.is_selected == 1 else "'x'" for i in self.project_invoice_mb])
+                        boq_list = ",".join(["'" + i.boq + "'" if i.is_selected == 1 else "'x'" for i in self.project_invoice_mb])
                         
                         mb_boq = frappe.db.sql("""
-                                        select boq_item_name,
+                                        select
+                                                boq,
+                                                boq_item_name,
+                                                max(boq_code)                    as boq_code,
                                                 max(item)                        as item,
                                                 max(uom)                         as uom,
                                                 max(ifnull(is_group,0))          as is_group,
@@ -93,7 +89,11 @@ class ProjectInvoice(AccountsController):
                                                 sum(flag)                        as flag
                                         from (
                                                 select
-                                                        bi.name as boq_item_name, bi.item, bi.uom,
+                                                        bi.parent         as boq,
+                                                        bi.name           as boq_item_name,
+                                                        bi.boq_code,
+                                                        bi.item,
+                                                        bi.uom,
                                                         bi.is_group,
                                                         0                 as is_selected,
                                                         bi.idx,
@@ -106,10 +106,14 @@ class ProjectInvoice(AccountsController):
                                                         creation,
                                                         2                 as flag
                                                 from `tabBOQ Item` as bi
-                                                where parent = '{0}'
+                                                where parent in ({0})
                                                 union all
                                                 select
-                                                        mb.boq_item_name, mb.item, mb.uom,
+                                                        me.boq            as boq,
+                                                        mb.boq_item_name,
+                                                        0                 as boq_code,
+                                                        mb.item,
+                                                        mb.uom,
                                                         0 as is_group,
                                                         mb.is_selected,
                                                         0 as idx,
@@ -129,12 +133,10 @@ class ProjectInvoice(AccountsController):
                                                 and   me.name = mb.parent
                                                 and   mb.is_selected = 1
                                         ) as a
-                                        group by boq_item_name
-                                        order by idx
-                                        """.format(self.boq, mb_list), as_dict=1)
+                                        group by boq, boq_item_name
+                                        order by boq, idx
+                                        """.format(boq_list, mb_list), as_dict=1)
 
-                        #frappe.msgprint(_("{0}").format(self.boq))
-                        #frappe.msgprint(_("{0}").format(mb_boq))
                         self.project_invoice_boq = []
                         for item in mb_boq:
                                 act_quantity = flt(item.original_quantity)
@@ -144,8 +146,8 @@ class ProjectInvoice(AccountsController):
                                 uptodate_quantity = 0.0
                                 uptodate_rate     = 0.0
                                 uptodate_amount   = 0.0
-                                                
-                                if flt(item.entry_amount) > 0:
+
+                                if not item.is_group:
                                         # Total Invoiced so far (excluding this Invoice)
                                         ti = frappe.db.sql("""
                                                         select
@@ -169,8 +171,11 @@ class ProjectInvoice(AccountsController):
                                                 uptodate_amount   = flt(ti.tot_invoice_amount)
 
                                 self.append("project_invoice_boq",{
+                                        "boq": item.boq,
                                         "boq_item_name": item.boq_item_name,
+                                        "boq_code": item.boq_code,
                                         "item": item.item,
+                                        "is_group": item.is_group,
                                         "uom": item.uom,
                                         "is_selected": item.is_selected,
                                         "original_quantity": item.original_quantity,
@@ -197,7 +202,7 @@ class ProjectInvoice(AccountsController):
                                 item.uptodate_rate     = 0.0
                                 item.uptodate_amount   = 0.0
                                 
-                                if flt(item.invoice_amount) > 0 and item.is_selected:
+                                if not item.is_group:
                                         # Total Invoiced so far (excluding this Invoice)
                                         ti = frappe.db.sql("""
                                                         select
@@ -319,7 +324,7 @@ class ProjectInvoice(AccountsController):
                                                 meb.boq_item_name,
                                                 sum(
                                                         case
-                                                        when '{0}' = 'Milestone Based' then 0
+                                                        when pim.boq_type = 'Milestone Based' then 0
                                                         else
                                                                 case
                                                                 when pim.docstatus < 2 then ifnull(meb.entry_quantity,0)
@@ -334,12 +339,12 @@ class ProjectInvoice(AccountsController):
                                                         end
                                                 ) as entry_amount
                                         from  `tabProject Invoice MB` as pim, `tabMB Entry BOQ` meb
-                                        where pim.parent        = '{1}'
+                                        where pim.parent        = '{0}'
                                         and   pim.is_selected   = 1
                                         and   meb.parent        = pim.entry_name
                                         and   meb.is_selected   = 1
                                         group by meb.boq_item_name
-                                        """.format(self.boq_type, self.name), as_dict=1)
+                                        """.format(self.name), as_dict=1)
 
                         for item in boq_list:
                                 frappe.db.sql("""
@@ -353,34 +358,43 @@ class ProjectInvoice(AccountsController):
                                 """.format(item.boq_item_name, flt(item.entry_quantity), flt(item.entry_amount)))
                         
         def update_boq(self):
-                # Updating `tabBOQ`
-                tot_invoice_amount = flt(self.net_invoice_amount) if self.docstatus < 2 else -1*flt(self.net_invoice_amount)
-                tot_price_adj      = flt(self.price_adjustment_amount) if self.docstatus < 2 else -1*flt(self.price_adjustment_amount)
+                if self.invoice_type == "Direct Invoice":
+                        tot_invoice_amount = flt(self.net_invoice_amount) if self.docstatus < 2 else -1*flt(self.net_invoice_amount)
+                        tot_price_adj      = flt(self.price_adjustment_amount) if self.docstatus < 2 else -1*flt(self.price_adjustment_amount)
 
-                if tot_invoice_amount or tot_price_adj:
-                        base_boq = frappe.get_doc("BOQ", self.boq)
-                        base_boq.db_set('claimed_amount', flt(base_boq.claimed_amount)+flt(tot_invoice_amount))
-                        base_boq.db_set('price_adjustment', flt(base_boq.price_adjustment)+flt(tot_price_adj))
-                        base_boq.db_set('balance_amount', flt(base_boq.balance_amount)+flt(tot_price_adj))
+                        if tot_invoice_amount or tot_price_adj:
+                                boq_doc = frappe.get_doc("BOQ", self.boq)
+                                boq_doc.claimed_amount   = flt(boq_doc.claimed_amount) + flt(tot_invoice_amount)
+                                boq_doc.price_adjustment = flt(boq_doc.price_adjustment) + flt(tot_price_adj)
+                                boq_doc.balance_amount   = flt(boq_doc.balance_amount) + flt(tot_price_adj)
+                                boq_doc.save(ignore_permissions = True)                                
+                else:
+                        for i in self.project_invoice_mb:
+                                if i.is_selected:
+                                        tot_invoice_amount = (flt(i.entry_amount)+flt(i.price_adjustment_amount)) if self.docstatus < 2 else -1*(flt(i.entry_amount)+flt(i.price_adjustment_amount))
+                                        tot_price_adj      = flt(i.price_adjustment_amount) if self.docstatus < 2 else -1*flt(i.price_adjustment_amount)
+
+                                        if tot_invoice_amount or tot_price_adj:
+                                                boq_doc = frappe.get_doc("BOQ", i.boq)
+                                                boq_doc.claimed_amount   = flt(boq_doc.claimed_amount) + flt(tot_invoice_amount)
+                                                boq_doc.price_adjustment = flt(boq_doc.price_adjustment) + flt(tot_price_adj)
+                                                boq_doc.balance_amount   = flt(boq_doc.balance_amount) + flt(tot_price_adj)
+                                                boq_doc.save(ignore_permissions = True)
 
         def update_mb_entries(self):
-                # Updating `tabMB Entry`
-                for mb in self.project_invoice_mb:
-                        if flt(mb.entry_amount) > 0 and mb.is_selected:
-                                entry_amount = flt(mb.entry_amount) if self.docstatus < 2 else -1*flt(mb.entry_amount)
-                                        
-                                frappe.db.sql("""
-                                        update `tabMB Entry`
-                                        set
-                                                total_invoice_amount = ifnull(total_invoice_amount,0) + ifnull({1},0),
-                                                total_balance_amount = ifnull(total_balance_amount,0) - ifnull({1},0),
-                                                status = (case
-                                                                when (ifnull(total_balance_amount,0) - ifnull({1},0)) > 0 then 'Uninvoiced'
-                                                                else 'Invoiced'
-                                                          end)
-                                        where name = '{0}'
-                                        """.format(mb.entry_name, flt(entry_amount)))
-                                        
+                if self.invoice_type == "MB Based Invoice":
+                        for mb in self.project_invoice_mb:
+                                if (flt(mb.entry_amount) > 0 or flt(mb.price_adjustment_amount) != 0.0) and mb.is_selected:
+                                        entry_amount      = -1*flt(mb.entry_amount) if self.docstatus == 2 else flt(mb.entry_amount)
+                                        adjustment_amount = -1*flt(mb.price_adjustment_amount) if self.docstatus == 2 else flt(mb.price_adjustment_amount) 
+
+                                        mb_doc = frappe.get_doc("MB Entry", mb.entry_name)
+                                        mb_doc.total_invoice_amount   = flt(mb_doc.total_invoice_amount) + (flt(entry_amount)+flt(adjustment_amount))
+                                        mb_doc.total_price_adjustment = flt(mb_doc.total_price_adjustment) + flt(adjustment_amount)
+                                        balance_amount                = flt(mb_doc.total_balance_amount) - flt(entry_amount)
+                                        mb_doc.total_balance_amount   = flt(balance_amount)
+                                        mb_doc.status                 = 'Uninvoiced' if flt(balance_amount) > 0 else 'Invoiced'
+                                        mb_doc.save(ignore_permissions = True)                                        
 
 @frappe.whitelist()
 def get_mb_list(project, boq_name, entry_name):

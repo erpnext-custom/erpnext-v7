@@ -28,6 +28,9 @@ frappe.ui.form.on('Equipment', {
 			frm.set_df_property("branch", "read_only", 1)
 			frm.set_df_property("is_disabled", "read_only", 1)
 		}
+		if(!frm.doc.__islocal && in_list(user_roles, "Asset Manager")) {
+			frm.set_df_property("asset_code", "read_only", 0)
+		}
 	},
 	validate: function(frm) {
 		if (frm.doc.operators) {

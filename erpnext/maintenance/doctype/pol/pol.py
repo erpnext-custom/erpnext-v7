@@ -54,7 +54,7 @@ class POL(StockController):
 	def on_submit(self):
 		if getdate(self.posting_date) > getdate("2018-03-31"):
 			self.update_stock_ledger()
-		self.update_general_ledger()
+		self.update_general_ledger(1)
 		self.check_budget()
 		self.make_pol_entry()
 
@@ -119,7 +119,7 @@ class POL(StockController):
 
 		self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 
-	def update_general_ledger(self):
+	def update_general_ledger(self, post=None):
 		gl_entries = []
 		
 		creditor_account = frappe.db.get_value("Company", self.company, "default_payable_account")
@@ -174,7 +174,10 @@ class POL(StockController):
 				)
 
 		from erpnext.accounts.general_ledger import make_gl_entries
-		make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)
+		if post:
+			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)
+		else:
+			return gl_entries
 
 	def get_expense_account(self):
 		if self.direct_consumption:
@@ -190,7 +193,7 @@ class POL(StockController):
 	def on_cancel(self):
 		if getdate(self.posting_date) > getdate("2018-03-31"):
 			self.update_stock_ledger()
-		self.update_general_ledger()
+		self.update_general_ledger(1)
 		docstatus = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
 		if docstatus and docstatus != 2:
 			frappe.throw("Cancel the Journal Entry " + str(self.jv) + " and proceed.")

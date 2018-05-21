@@ -79,16 +79,16 @@ frappe.ui.form.on('Travel Claim', {
 frappe.ui.form.on("Travel Claim Item", {
 	"form_render": function(frm, cdt, cdn) {
 		if (frm.doc.__islocal) {
-		var item = frappe.get_doc(cdt, cdn)
-		if (item.halt == 0) {
-			var df = frappe.meta.get_docfield("Travel Claim Item","distance", cur_frm.doc.name);
-			frappe.model.set_value(cdt, cdn, "distance", "")
-			//df.display = 0;
-		}	
-	
-		if(item.currency != "BTN") {
-			frappe.model.set_value(cdt, cdn, "amount", format_currency(flt(item.amount), item.currency))
-		}
+			var item = frappe.get_doc(cdt, cdn)
+			if (item.halt == 0) {
+				var df = frappe.meta.get_docfield("Travel Claim Item","distance", cur_frm.doc.name);
+				frappe.model.set_value(cdt, cdn, "distance", "")
+				//df.display = 0;
+			}	
+		
+			if(item.currency != "BTN") {
+				frappe.model.set_value(cdt, cdn, "amount", format_currency(flt(item.amount), item.currency))
+			}
 		}
 	},
 	"currency": function(frm, cdt, cdn) {
@@ -118,6 +118,9 @@ frappe.ui.form.on("Travel Claim Item", {
 function do_update(frm, cdt, cdn) {
 	//var item = frappe.get_doc(cdt, cdn)
 	var item = locals[cdt][cdn]
+	if (item.last_day) {
+		item.dsa_percent = 0
+	}
 	var amount = flt((item.dsa_percent/100 * item.dsa) + item.mileage_rate * item.distance)
 	if (item.halt == 1) {
 		amount = flt((item.dsa_percent/100 * item.dsa) * item.no_days)

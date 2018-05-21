@@ -17,7 +17,8 @@ from frappe.utils import flt, getdate, get_url, nowdate
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import money_in_words
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.custom_utils import generate_receipt_no, check_future_date
+from erpnext.custom_utils import generate_receipt_no
+import collections
 
 class ProjectPayment(AccountsController):
 	def __setup__(self):
@@ -34,30 +35,106 @@ class ProjectPayment(AccountsController):
                 self.validate_advance_balance()
 
         def validate(self):
-		check_future_date(self.posting_date)
                 self.set_status()
                 self.set_defaults()
                 self.validate_mandatory_fields()
                 self.validate_allocated_amounts()
-                #frappe.msgprint(_("{0}").format(self.get("project")))
+                self.load_boq_allocation()
 
         def on_submit(self):
                 self.update_invoice_balance()
                 self.update_advance_balance()                
                 self.update_boq_balance()
-                if str(self.posting_date) > '2017-09-30':
-                        self.make_gl_entries()
+                self.make_gl_entries()
 
         def before_cancel(self):
                 self.set_status()
 
         def on_cancel(self):
-                if str(self.posting_date) > '2017-09-30':
-                        self.make_gl_entries()
+                self.make_gl_entries()
                 self.update_invoice_balance()
                 self.update_advance_balance()
                 self.update_boq_balance()
-                
+
+        def load_boq_allocation(self):
+                self.details    = []
+                items           = {}
+                for inv in self.references:
+                        boq            = {}
+                        balance_amount = flt(inv.allocated_amount)
+                        if inv.invoice_type == "MB Based Invoice":
+                                # MB Based Invoice
+                                if flt(inv.allocated_amount) > 0:
+                                        mb_list = frappe.get_all("Project Invoice MB", ["entry_name","boq","boq_type","entry_amount","price_adjustment_amount"], {"parent": inv.reference_name, "is_selected": 1}, order_by="boq, parent")
+                                        det = frappe.db.sql("""
+                                                select concat(boq,'_',invoice_name,'_',entry_name) as `key`, sum(ifnull(allocated_amount,0)) as received_amount
+                                                from `tabProject Payment Detail`
+                                                where parent != '{0}'
+                                                and invoice_name = '{1}'
+                                                and docstatus = 1
+                                                group by concat(boq,'_',invoice_name,'_',entry_name)
+                                        """.format(self.name, inv.reference_name), as_dict=1)
+                                        for d in det:
+                                                if boq.has_key(d.key):
+                                                        boq[d.key] += flt(d.received_amount)
+                                                else:
+                                                        boq.update({d.key : flt(d.received_amount)})
+                                        
+                                        for mb in mb_list:
+                                                allocated_amount = 0.0
+                                                received_amount  = 0.0
+                                                key = str(mb.boq) + "_" + str(inv.reference_name) + "_" + str(mb.entry_name)
+                                                
+                                                if boq.has_key(key):
+                                                        received_amount =  flt(boq[key])
+                                                        
+                                                if (flt(mb.entry_amount)+flt(mb.price_adjustment_amount)-flt(received_amount)) > 0 and flt(balance_amount) > 0:
+                                                        if flt(balance_amount) >= (flt(mb.entry_amount)+flt(mb.price_adjustment_amount)-flt(received_amount)):
+                                                                allocated_amount = (flt(mb.entry_amount) + flt(mb.price_adjustment_amount)-flt(received_amount))
+                                                                balance_amount   = flt(balance_amount) - flt(allocated_amount)
+                                                        else:
+                                                                allocated_amount = flt(balance_amount)
+                                                                balance_amount   = 0.0
+
+                                                                
+                                                        if items.has_key(key):
+                                                                items[key] += flt(allocated_amount)
+                                                        else:
+                                                                items.update({key : flt(allocated_amount)})
+                        else:
+                                # Direct Invoice
+                                if flt(inv.allocated_amount) > 0:
+                                        allocated_amount = flt(balance_amount)
+                                        received_amount  = 0.0
+                                        
+                                        boq = frappe.db.get_value("Project Invoice", inv.reference_name, "boq")
+                                        bal = frappe.db.sql("""
+                                                select sum(ifnull(allocated_amount,0)) as received_amount
+                                                from `tabProject Payment Detail`
+                                                where invoice_name = '{0}'
+                                                and parent != '{1}'
+                                                and docstatus = 1
+                                        """.format(inv.reference_name, self.name), as_dict=1)
+
+                                        if bal:
+                                                received_amount = flt(bal[0].received_amount)
+
+                                        key = str(boq) + "_" + str(inv.reference_name) + "_"
+                                        if (flt(allocated_amount)-flt(received_amount)) > 0:
+                                                if items.has_key(key):
+                                                        items[key] += flt(allocated_amount)
+                                                else:
+                                                        items.update({key : flt(allocated_amount)})
+                        
+                if items:
+                        for key,value in collections.OrderedDict(sorted(items.items())).iteritems():
+                                self.append("details",{
+                                                        "boq": key.split('_')[0],
+                                                        "invoice_name": key.split('_')[1],
+                                                        "entry_name": key.split('_')[2],
+                                                        "allocated_amount": flt(value)
+                                })
+                        
         def set_status(self):
                 self.status = {
                         "0": "Draft",
@@ -76,6 +153,142 @@ class ProjectPayment(AccountsController):
                         if base_project.status in ('Completed','Cancelled'):
                                 frappe.throw(_("Operation not permitted on already {0} Project.").format(base_project.status),title="Project Payment: Invalid Operation")
                         
+        def update_invoice_balance(self):
+                for inv in self.references:
+                        allocated_amount = 0.0
+                        if flt(inv.allocated_amount) > 0:
+                                total_balance_amount = frappe.db.get_value("Project Invoice", inv.reference_name, "total_balance_amount")
+
+                                if flt(total_balance_amount) < flt(inv.allocated_amount) and self.docstatus != 2:
+                                        frappe.throw(_("Invoice#{0} : Allocated amount Nu. {1}/- cannot be more than Invoice Balance Nu. {2}/-").format(inv.reference_name, "{:,.2f}".format(flt(inv.allocated_amount)),"{:,.2f}".format(flt(total_balance_amount))))
+                                else:
+                                        allocated_amount = -1*flt(inv.allocated_amount) if self.docstatus == 2 else flt(inv.allocated_amount)
+
+                                        inv_doc = frappe.get_doc("Project Invoice", inv.reference_name)
+                                        inv_doc.total_received_amount = flt(inv_doc.total_received_amount) + flt(allocated_amount)
+                                        balance_amount                = flt(inv_doc.total_balance_amount) - flt(allocated_amount)
+                                        inv_doc.total_balance_amount  = flt(balance_amount)
+                                        inv_doc.status                = "Unpaid" if flt(balance_amount) > 0 else "Paid"
+                                        inv_doc.save(ignore_permissions = True)
+
+        def update_advance_balance(self):
+                for adv in self.advances:
+                        allocated_amount = 0.0
+                        if flt(adv.allocated_amount) > 0:
+                                balance_amount = frappe.db.get_value("Project Advance", adv.reference_name, "balance_amount")
+
+                                if flt(balance_amount) < flt(adv.allocated_amount) and self.docstatus < 2:
+                                        frappe.throw(_("Advance#{0} : Allocated amount Nu. {1}/- cannot be more than Advance Balance Nu. {2}/-").format(adv.reference_name, "{:,.2f}".format(flt(adv.allocated_amount)),"{:,.2f}".format(flt(balance_amount))))
+                                else:
+                                        allocated_amount = -1*flt(adv.allocated_amount) if self.docstatus == 2 else flt(adv.allocated_amount)
+
+                                        adv_doc = frappe.get_doc("Project Advance", adv.reference_name)
+                                        adv_doc.adjustment_amount = flt(adv_doc.adjustment_amount) + flt(allocated_amount)
+                                        adv_doc.balance_amount    = flt(adv_doc.balance_amount) - flt(allocated_amount)
+                                        adv_doc.save(ignore_permissions = True)
+                                        
+        def update_boq_balance(self):
+                if not self.details:
+                        frappe.throw(_("No BOQs found for update. Please contact the system administrator."),title="Invalid Data")
+                        
+                for d in self.details:
+                        if flt(d.allocated_amount) > 0:
+                                allocated_amount = -1*flt(d.allocated_amount) if self.docstatus == 2 else flt(d.allocated_amount) 
+                                balance_amount   = frappe.db.get_value("BOQ", d.boq, "balance_amount")
+                                
+                                if (flt(balance_amount)-flt(allocated_amount)) < 0:
+                                        msg = '<b>Reference# : <a href="#Form/BOQ/{0}">{0}</a></b>'.format(d.boq)
+                                        frappe.throw(_("Payment cannot exceed total BOQ value. <br/>{0}").format(msg), title="Invalid Data")
+
+                                boq_doc = frappe.get_doc("BOQ", d.boq)
+                                boq_doc.received_amount = flt(boq_doc.received_amount) + flt(allocated_amount)
+                                boq_doc.balance_amount  = flt(boq_doc.balance_amount) - flt(allocated_amount)
+                                boq_doc.save(ignore_permissions = True)
+                                                
+        def validate_invoice_balance(self):
+                for inv in self.references:
+                        if flt(inv.allocated_amount) > 0:
+                                total_balance_amount = frappe.db.get_value("Project Invoice", inv.reference_name, "total_balance_amount")
+                                if flt(total_balance_amount) < flt(inv.allocated_amount):
+                                        frappe.throw(_("<b>Invoice#{0} :</b> Allocated amount Nu. {1}/- cannot be more than Invoice Available Balance Amount Nu. {2}/-").format(inv.reference_name, "{:,.2f}".format(flt(inv.allocated_amount)),"{:,.2f}".format(flt(total_balance_amount))))
+
+        def validate_advance_balance(self):
+                for adv in self.advances:
+                        if flt(adv.allocated_amount) > 0:
+                                balance_amount = frappe.db.get_value("Project Advance", adv.reference_name, "balance_amount")
+                                if flt(balance_amount) < flt(adv.allocated_amount):
+                                        frappe.throw(_("Advance#{0} : Allocated amount Nu. {1}/- cannot be more than advance available balance amount Nu. {2}/-").format(adv.reference_name, "{:,.2f}".format(flt(adv.allocated_amount)),"{:,.2f}".format(flt(total_balance_amount))))                                        
+                
+        def validate_mandatory_fields(self):
+                if not self.project:
+                        frappe.throw(_("Project Cannot be null."), title="Missing Data")
+
+                if not self.branch:
+                        frappe.throw(_("Branch Cannot be null."), title="Missing Data")
+
+                if not self.party:
+                        frappe.throw(_("Customer Cannot be null."), title="Missing Data")
+
+                for ded in self.deductions:
+                       if not ded.account and flt(ded.amount) > 0:
+                               frappe.throw(_("Row#{0} : Please select a valid account under `Other Deductions`.").format(ded.idx), title="Missing Data")
+
+                if not self.tds_account and flt(self.tds_amount) > 0.0:
+                        frappe.throw(_("Please select a valid TDS Account."),title="Missing Data")
+
+        def validate_allocated_amounts(self):
+                tot_adv_amount = 0.0
+                tot_inv_amount = 0.0
+
+                if flt(self.total_amount) <= 0:
+                        frappe.throw(_("Total amount should be more than zero."),title="Invalid Data")
+                        
+                for adv in self.advances:
+                        tot_adv_amount += adv.allocated_amount
+                        if flt(adv.allocated_amount) > flt(adv.total_amount):
+                                frappe.throw(_("Advance#{0} : Allocated amount cannot be more than available balance.").format(adv.reference_name))
+
+                for inv in self.references:
+                        tot_inv_amount += inv.allocated_amount
+                        if flt(inv.allocated_amount) > flt(inv.total_amount):
+                                frappe.throw(_("Invoice#{0} : Allocated amount cannot be more than available balance.").format(inv.reference_name))                        
+
+                if flt(tot_adv_amount) > flt(tot_inv_amount):
+                        frappe.throw(_("Total advance allocated Nu. {0}/- cannot be more than total invoice amount allocated Nu. {1}/-.".format("{:,.2f}".format(flt(tot_adv_amount)), "{:,.2f}".format(flt(tot_inv_amount)))))
+
+                if flt(self.total_amount) > flt(tot_inv_amount):
+                        frappe.throw(_("Total Amount({0}) cannot be more than Total Invoice Amount Allocated({1})").format(flt(self.total_amount),flt(tot_inv_amount)))
+                        
+        def load_references(self):
+                self.references = []
+                for invoice in self.get_references():
+                        self.append("references",{
+                                "reference_doctype": "Project Invoice",
+                                "reference_name": invoice.name,
+                                "total_amount": invoice.total_balance_amount
+                        })
+
+        def load_advances(self):
+                self.advances = []
+                for advance in self.get_advances():
+                        self.append("advances",{
+                                "reference_doctype": "Project Advance",
+                                "reference_name": advance.name,
+                                "total_amount": advance.balance_amount
+                        })
+
+
+        def get_references(self):
+                return frappe.get_all("Project Invoice","*",filters={"project":self.project, "docstatus":1, "total_balance_amount": [">",0]})
+
+        def get_advances(self):
+                return frappe.get_all("Project Advance","*",filters={"project":self.project, "docstatus":1, "balance_amount": [">",0]})
+
+        
+	def get_series(self):
+		fiscal_year = getdate(self.posting_date).year
+		generate_receipt_no(self.doctype, self.name, self.branch, fiscal_year)
+
         def make_gl_entries(self):
                 tot_advance = 0.0
                 
@@ -86,15 +299,15 @@ class ProjectPayment(AccountsController):
                         
                         # Bank Entry
                         if flt(self.paid_amount) > 0:
-                                rev_gl = frappe.db.get_value(doctype="Branch",filters=self.branch,fieldname="revenue_bank_account", as_dict=True)
+                                #rev_gl = frappe.db.get_value(doctype="Branch",filters=self.branch,fieldname="revenue_bank_account", as_dict=True)
 
-                                if not rev_gl.revenue_bank_account:
-                                        frappe.throw("Revenue Bank Account is not defined for the Branch.")
+                                if not self.revenue_bank_account:
+                                        frappe.throw("Please set Revenue Bank Account under Branch master.")
                                         
-                                rev_gl_det = frappe.db.get_value(doctype="Account", filters=rev_gl.revenue_bank_account, fieldname=["account_type"], as_dict=True)
+                                rev_gl_det = frappe.db.get_value(doctype="Account", filters=self.revenue_bank_account, fieldname=["account_type"], as_dict=True)
                                 
                                 gl_entries.append(
-                                        self.get_gl_dict({"account": rev_gl.revenue_bank_account,
+                                        self.get_gl_dict({"account": self.revenue_bank_account,
                                                          "debit": flt(self.paid_amount),
                                                          "debit_in_account_currency": flt(self.paid_amount),
                                                          "cost_center": self.cost_center,
@@ -208,9 +421,9 @@ class ProjectPayment(AccountsController):
                 
                 # Bank Entry
                 if flt(self.paid_amount) > 0:
-                        rev_gl = frappe.db.get_value(doctype="Branch",filters=self.branch,fieldname="revenue_bank_account", as_dict=True)
-                        rev_gl_det = frappe.db.get_value(doctype="Account", filters=rev_gl.revenue_bank_account, fieldname=["account_type"], as_dict=True)
-                        accounts.append({"account": rev_gl.revenue_bank_account,
+                        #rev_gl = frappe.db.get_value(doctype="Branch",filters=self.branch,fieldname="revenue_bank_account", as_dict=True)
+                        rev_gl_det = frappe.db.get_value(doctype="Account", filters=self.revenue_bank_account, fieldname=["account_type"], as_dict=True)
+                        accounts.append({"account": self.revenue_bank_account,
                                          "debit_in_account_currency": flt(self.paid_amount),
                                          "cost_center": self.cost_center,
                                          "party_check": 0,
@@ -297,182 +510,6 @@ class ProjectPayment(AccountsController):
                         })
                 
                         je.submit()
-                        
-        def update_invoice_balance(self):
-                for inv in self.references:
-                        allocated_amount = 0.0
-                        if flt(inv.allocated_amount) > 0:
-                                result = frappe.db.sql("""
-                                                select ifnull(total_balance_amount,0) as total_balance_amount
-                                                from `tabProject Invoice`
-                                                where name = %s
-                                                and docstatus = 1
-                                                """, (inv.reference_name), as_dict=1)[0]
-
-                                if flt(result.total_balance_amount) < flt(inv.allocated_amount) and self.docstatus < 2:
-                                        frappe.throw(_("Invoice#{0} : Allocated amount{1} cannot be more than Invoice Balance({2})").format(inv.reference_name, flt(inv.allocated_amount),flt(result.total_balance_amount)))
-                                else:
-                                        if self.docstatus < 2:
-                                                allocated_amount = flt(inv.allocated_amount)
-                                        else:
-                                                allocated_amount = -1*flt(inv.allocated_amount)
-                                                
-                                        frappe.db.sql("""
-                                                update `tabProject Invoice`
-                                                set total_received_amount = ifnull(total_received_amount,0) + ifnull({0},0),
-                                                        total_balance_amount = ifnull(total_balance_amount,0) - ifnull({1},0),
-                                                        status = case
-                                                                        when (ifnull(total_balance_amount,0) - ifnull({1},0)) > 0 then 'Unpaid'
-                                                                        else 'Paid'
-                                                                 end
-                                                where name = '{2}'
-                                                and docstatus = 1
-                                        """.format(allocated_amount,allocated_amount,inv.reference_name))
-
-        def update_advance_balance(self):
-                for adv in self.advances:
-                        allocated_amount = 0.0
-                        if flt(adv.allocated_amount) > 0:
-                                result = frappe.db.sql("""
-                                                select ifnull(balance_amount,0) as balance_amount
-                                                from `tabProject Advance`
-                                                where name = %s
-                                                and docstatus = 1
-                                                """, (adv.reference_name), as_dict=1)[0]
-
-                                if flt(result.balance_amount) < flt(adv.allocated_amount) and self.docstatus < 2:
-                                        frappe.throw(_("Advance#{0} : Allocated amount{1} cannot be more than Advance Balance({2})").format(adv.reference_name, flt(adv.allocated_amount),flt(result.balance_amount)))
-                                else:
-                                        if self.docstatus < 2:
-                                                allocated_amount = flt(adv.allocated_amount)
-                                        else:
-                                                allocated_amount = -1*flt(adv.allocated_amount)
-                                        
-                                        frappe.db.sql("""
-                                                update `tabProject Advance`
-                                                set adjustment_amount = ifnull(adjustment_amount,0) + ifnull({0},0),
-                                                        balance_amount = ifnull(balance_amount,0) - ifnull({1},0)
-                                                where name = '{2}'
-                                                and docstatus = 1
-                                        """.format(allocated_amount,allocated_amount,adv.reference_name))
-                                        
-        def update_boq_balance(self):
-                for inv in self.references:
-                        allocated_amount = 0.0
-                        
-                        result = frappe.db.sql("""
-                                select boq
-                                from `tabProject Invoice`
-                                where name = '{0}'
-                                and docstatus = 1
-                        """.format(inv.reference_name),as_dict=1)[0]
-
-                        if result.boq:
-                                if self.docstatus < 2:
-                                        allocated_amount = flt(inv.allocated_amount)
-                                else:
-                                        allocated_amount = -1*flt(inv.allocated_amount)
-                                        
-                                frappe.db.sql("""
-                                        update `tabBOQ`
-                                        set received_amount = ifnull(received_amount,0) + ifnull({0},0),
-                                                balance_amount = ifnull(balance_amount,0) -  ifnull({1},0)
-                                        where name = '{2}'
-                                        and docstatus = 1
-                                """.format(allocated_amount, allocated_amount, result.boq))
-                
-        def validate_invoice_balance(self):
-                for inv in self.references:
-                        if flt(inv.allocated_amount) > 0:
-                                result = frappe.db.sql("""
-                                                select ifnull(total_balance_amount,0) as total_balance_amount
-                                                from `tabProject Invoice`
-                                                where name = %s
-                                                and docstatus = 1
-                                                """, (inv.reference_name), as_dict=1)[0]
-
-                                if flt(result.total_balance_amount) < flt(inv.allocated_amount):
-                                        frappe.throw(_("Invoice#{0} : Allocated amount{1} cannot be more than Invoice Available Balance Amount({2})").format(inv.reference_name, flt(inv.allocated_amount),flt(result.total_balance_amount)))
-
-        def validate_advance_balance(self):
-                for adv in self.advances:
-                        if flt(adv.allocated_amount) > 0:
-                                result = frappe.db.sql("""
-                                                select ifnull(balance_amount,0) as balance_amount
-                                                from `tabProject Advance`
-                                                where name = %s
-                                                and docstatus = 1
-                                                """, (adv.reference_name), as_dict=1)[0]
-
-                                if flt(result.balance_amount) < flt(adv.allocated_amount):
-                                        frappe.throw(_("Advance#{0} : Allocated amount{1} cannot be more than Advance Available Balance Amount({2})").format(adv.reference_name, flt(adv.allocated_amount),flt(result.total_balance_amount)))                                        
-                
-        def validate_mandatory_fields(self):
-                if not self.project:
-                        frappe.throw("Project Cannot be null.")
-
-                if not self.branch:
-                        frappe.throw("Branch Cannot be null.")
-
-                if not self.party:
-                        frappe.throw("Customer Cannot be null.")
-
-                for ded in self.deductions:
-                       if not ded.account and flt(ded.amount) > 0:
-                               frappe.throw(_("Row#{0} Account Cannot be null under `Other Deductions`.").format(ded.idx))
-
-                if not self.tds_account and flt(self.tds_amount) > 0.0:
-                        frappe.throw("TDS Account cannot be null.")
-
-        def validate_allocated_amounts(self):
-                tot_adv_amount = 0.0
-                tot_inv_amount = 0.0
-                
-                for adv in self.advances:
-                        tot_adv_amount += adv.allocated_amount
-                        if flt(adv.allocated_amount) > flt(adv.total_amount):
-                                frappe.throw(_("Advance#{0} : Allocated amount cannot be more than available balance.").format(adv.reference_name))
-
-                for inv in self.references:
-                        tot_inv_amount += inv.allocated_amount
-                        if flt(inv.allocated_amount) > flt(inv.total_amount):
-                                frappe.throw(_("Invoice#{0} : Allocated amount cannot be more than available balance.").format(inv.reference_name))                        
-
-                if flt(tot_adv_amount) > flt(tot_inv_amount):
-                        frappe.throw(_("Total Advance Allocated({0}) cannot be more than Total Invoice Amount Allocated({1}).".format(flt(tot_adv_amount), flt(tot_inv_amount))))
-
-                if flt(self.total_amount) > flt(tot_inv_amount):
-                        frappe.throw(_("Total Amount({0}) cannot be more than Total Invoice Amount Allocated({1})").format(flt(self.total_amount),flt(tot_inv_amount)))
-                        
-        def load_references(self):
-                self.references = []
-                for invoice in self.get_references():
-                        self.append("references",{
-                                "reference_doctype": "Project Invoice",
-                                "reference_name": invoice.name,
-                                "total_amount": invoice.total_balance_amount
-                        })
-
-        def load_advances(self):
-                self.advances = []
-                for advance in self.get_advances():
-                        self.append("advances",{
-                                "reference_doctype": "Project Advance",
-                                "reference_name": advance.name,
-                                "total_amount": advance.balance_amount
-                        })
-
-
-        def get_references(self):
-                return frappe.get_all("Project Invoice","*",filters={"project":self.project, "docstatus":1, "total_balance_amount": [">",0]})
-
-        def get_advances(self):
-                return frappe.get_all("Project Advance","*",filters={"project":self.project, "docstatus":1, "balance_amount": [">",0]})
-
-        
-	def get_series(self):
-		fiscal_year = getdate(self.posting_date).year
-		generate_receipt_no(self.doctype, self.name, self.branch, fiscal_year)
 
 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++        
 # Following method is created by SHIV on 05/09/2017

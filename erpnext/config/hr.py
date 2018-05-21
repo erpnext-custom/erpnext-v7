@@ -51,6 +51,11 @@ def get_data():
 					"name": "Muster Roll Employee",
 					"description": _("Muster Roll Employee Data"),
 				},
+				{
+					"type": "doctype",
+					"name": "MusterRoll Application",
+					"label": "Muster Roll Application",
+				},
 				#{
 				#	"type": "doctype",
 				#	"name": "Attendance Tool Others",

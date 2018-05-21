@@ -12,7 +12,7 @@ frappe.ui.form.on('BOQ', {
 			{fieldname: 'uom', columns: 1},
 			{fieldname: 'quantity', columns: 1},
 			{fieldname: 'rate', columns: 1},
-			{fieldname: 'amount', columns: 1}
+			{fieldname: 'amount', columns: 2}
 		];
 	},
 	
@@ -41,6 +41,12 @@ frappe.ui.form.on('BOQ', {
 		}
 		
 		frm.trigger("get_defaults");
+		
+		if(frm.doc.docstatus==1){
+			frm.add_custom_button(__("Adjustment"),function(){frm.trigger("make_boq_adjustment")},
+				__("Make"), "icon-file-alt"
+			);
+		}
 		
 		if(frm.doc.docstatus==1 && parseFloat(frm.doc.claimed_amount) < (parseFloat(frm.doc.total_amount)+parseFloat(frm.doc.price_adjustment))){
 			/*
@@ -82,6 +88,13 @@ frappe.ui.form.on('BOQ', {
 		});
 		*/
 	},
+	make_boq_adjustment: function(frm){
+		frappe.model.open_mapped_doc({
+			method: "erpnext.projects.doctype.boq.boq.make_boq_adjustment",
+			frm: frm
+		});
+	},
+	
 	make_direct_invoice: function(frm){
 		frappe.model.open_mapped_doc({
 			method: "erpnext.projects.doctype.boq.boq.make_direct_invoice",

@@ -32,6 +32,8 @@ def get_columns(data):
 	 	 _("Chassis No.") + "::140",
 	 	_("Engine No.") + "::120",
 	         _("Asset Amount") + " :Currency:100",
+	 	_("Asset Branch") + "::120",
+	 	_("Eqp. Branch") + "::120",
 	 	 		 
 	]
 
@@ -43,7 +45,7 @@ def get_data(filters):
 	        data = """ SELECT a.name, a.old_asset_code, a.serial_number, a.asset_category, a.asset_sub_category,
  (SELECT employee_name FROM tabEmployee AS emp WHERE emp.name = a.issued_to) AS issuedto, a.cost_center, a.purchase_date, a.presystem_issue_date, e.name, e.equipment_number, e.equipment_type, e.equipment_model,
  e.chassis_number, e.engine_number,
-a.gross_purchase_amount FROM tabAsset a,  tabEquipment e
+a.gross_purchase_amount, a.branch, e.branch FROM tabAsset a,  tabEquipment e
 WHERE a.name = e.asset_code """
 
 		if filters.get("fiscal_year"): 

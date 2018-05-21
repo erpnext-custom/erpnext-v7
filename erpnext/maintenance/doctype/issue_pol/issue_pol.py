@@ -56,10 +56,10 @@ class IssuePOL(StockController):
 		if not self.items:
 			frappe.throw("Should have a POL Issue Details to Submit")
 
-		self.update_stock_gl_ledger()
+		self.update_stock_gl_ledger(1, 1)
 		self.make_pol_entry()
 
-	def update_stock_gl_ledger(self):
+	def update_stock_gl_ledger(self, post_gl=None, post_sl=None):
 		sl_entries = []
 		gl_entries = []
 
@@ -186,14 +186,18 @@ class IssuePOL(StockController):
 				sl_entries.reverse()
 
 			if getdate(self.posting_date) > getdate("2018-03-31"):
-				self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+				if post_sl:
+					self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 
 		if gl_entries:
 			from erpnext.accounts.general_ledger import make_gl_entries
-			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
+			if post_gl:
+				make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
+			else:
+				return gl_entries
 
 	def on_cancel(self):
-		self.update_stock_gl_ledger()
+		self.update_stock_gl_ledger(1, 1)
 		self.delete_pol_entry()
 
 	def make_pol_entry(self):

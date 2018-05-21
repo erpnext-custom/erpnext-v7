@@ -48,7 +48,7 @@ class EquipmentHiringExtension(Document):
 							balance_advance = frappe.db.sql("select sum(credit_in_account_currency) as amount from `tabJournal Entry Account` where reference_type = 'Equipment Hiring Form' and reference_name = %s and docstatus = 1 and is_advance = 'Yes'", self.ehf_name, as_dict=True)
 							if balance_advance:
 								self.advance_balance = balance_advance[0].amount
-							self.receivable_amount = flt(self.total_amount) - flt(self.advance_balance)
+							self.receivable_amount = flt(self.total_amount) + flt(self.advance_balance)
 							if flt(self.receivable_amount) <= 0:
 								self.receivable_amount = 0
 		else:
@@ -58,7 +58,7 @@ class EquipmentHiringExtension(Document):
 	# make necessary journal entry
 	##
 	def post_journal_entry(self):
-		if flt(self.receivable_amount) <= 0:
+		if flt(self.total_amount) <= 0:
 			return
 
 		advance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_advance_account")
@@ -81,17 +81,17 @@ class EquipmentHiringExtension(Document):
 					"reference_type": "Equipment Hiring Form",
 					"reference_name": self.ehf_name,
 					"cost_center": self.cost_center,
-					"credit_in_account_currency": flt(self.receivable_amount),
-					"credit": flt(self.receivable_amount),
+					"credit_in_account_currency": flt(self.total_amount),
+					"credit": flt(self.total_amount),
 					"is_advance": 'Yes'
 				})
 
 			je.append("accounts", {
 					"account": revenue_bank,
 					"cost_center": self.cost_center,
-					"debit_in_account_currency": flt(self.receivable_amount),
-					"debit": flt(self.receivable_amount),
+					"debit_in_account_currency": flt(self.total_amount),
+					"debit": flt(self.total_amount),
 				})
 			je.insert()
 			self.db_set("journal", je.name)
-			frappe.msgprint("Posted an advance amount of "+str(self.receivable_amount)+" for "+str(self.hours)+" hours")
+			frappe.msgprint("Posted an advance amount of "+str(self.total_amount)+" for "+str(self.hours)+" hours")

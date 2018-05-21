@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-17 23:02:06.112450", 
- "modified_by": "Administrator", 
+ "modified": "2018-05-15 12:20:02.751727", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Party Wise Billing", 
  "owner": "Administrator", 
@@ -20,13 +20,16 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Maintenance Common"
+   "role": "Mechanical Master"
   }, 
   {
    "role": "Fleet User"
   }, 
   {
    "role": "Fleet Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

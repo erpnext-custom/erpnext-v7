@@ -36,7 +36,7 @@ data = {
 	'transactions': [
 		{
 			'label': _('Project'),
-                        'items': ['Task', 'Timesheet', 'BOQ', 'MB Entry']
+                        'items': ['Task', 'Timesheet', 'BOQ', 'BOQ Adjustment', 'MB Entry']
 		},
                 {
 			'label': _('Transactions'),

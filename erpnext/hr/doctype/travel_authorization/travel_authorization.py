@@ -48,6 +48,8 @@ class TravelAuthorization(Document):
 				frappe.throw("You need to cancel the advance journal entry first!")
 	
 	def on_cancel(self):
+		if not self.cancellation_reason:
+			frappe.throw("Cancellation Reason is Mandatory when Cancelling Travel Authorization")
 		self.cancel_attendance()	
 
 	def create_attendance(self):
@@ -222,9 +224,10 @@ def make_travel_claim(source_name, target_doc=None):
 		target.amount = target.actual_amount
 
 	def adjust_last_date(source, target):
-		target.items[len(target.items) - 1].dsa_percent = 50 
-		target.items[len(target.items) - 1].actual_amount = target.items[len(target.items) - 1].actual_amount / 2
-		target.items[len(target.items) - 1].amount = target.items[len(target.items) - 1].amount / 2
+		target.items[len(target.items) - 1].dsa_percent = 0 
+		target.items[len(target.items) - 1].actual_amount = 0 #target.items[len(target.items) - 1].actual_amount / 2
+		target.items[len(target.items) - 1].amount = 0 #target.items[len(target.items) - 1].amount / 2
+		target.items[len(target.items) - 1].last_day = 1 #target.items[len(target.items) - 1].amount / 2
 
 	doc = get_mapped_doc("Travel Authorization", source_name, {
 			"Travel Authorization": {

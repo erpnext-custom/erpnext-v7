@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-17 23:06:28.189601", 
- "modified_by": "Administrator", 
+ "modified": "2018-05-15 12:27:43.170440", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Job Card Imprest Report", 
  "owner": "Administrator", 
@@ -20,13 +20,16 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Maintenance Common"
+   "role": "Mechanical Master"
   }, 
   {
    "role": "Workshop Manager"
   }, 
   {
    "role": "Workshop User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

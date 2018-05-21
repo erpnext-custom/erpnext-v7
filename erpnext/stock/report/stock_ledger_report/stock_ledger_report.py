@@ -18,6 +18,8 @@ def execute(filters=None):
 
 	for sle in sl_entries:
 		item_detail = item_details[sle.item_code]
+		if sle.voucher_type == "POL":
+			sle.voucher_type = "Receive POL"
 
 		data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group, item_detail.item_sub_group,
 			sle.warehouse,

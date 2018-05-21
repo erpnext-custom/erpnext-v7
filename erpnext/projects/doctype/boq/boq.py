@@ -41,29 +41,53 @@ class BOQ(Document):
 
                 if not self.cost_center:
                         frappe.throw("`Cost Center` cannot be null.")
+
+                if flt(self.total_amount,0) <= 0:
+                        frappe.throw(_("Invalid total amount."), title="Invalid Data")
                         
         def update_defaults(self):
                 item_group = ""
-                self.total_amount    = 0.0
-                self.claimed_amount  = 0.0
-                self.received_amount = 0.0
-                self.balance_amount  = 0.0
+                self.total_amount     = 0.0
+                self.price_adjustment = 0.0
+                self.claimed_amount   = 0.0
+                self.received_amount  = 0.0
+                self.balance_amount   = 0.0
                 
                 for item in self.boq_item:
                         if item.is_group:
-                                item_group = item.item
+                                item_group              = item.item
+                                item.quantity           = 0.0
+                                item.rate               = 0.0
+                                item.amount             = 0.0
+                                item.claimed_quantity   = 0.0
+                                item.claimed_amount     = 0.0
+                                item.booked_quantity    = 0.0
+                                item.booked_amount      = 0.0
+                                item.balance_quantity   = 0.0
+                                item.balance_amount     = 0.0
+                        else:
+                                item.amount           = flt(item.quantity)*flt(item.rate)
+                                item.claimed_quantity = 0.0
+                                item.claimed_amount   = 0.0
+                                item.booked_quantity  = 0.0
+                                item.booked_amount    = 0.0
+                                item.balance_quantity = flt(item.quantity)
+                                item.balance_amount   = flt(item.amount)
 
-                        item.amount = flt(item.quantity)*flt(item.rate)
+                                '''
+                                self.total_amount    += flt(item.amount)
+                                self.claimed_amount  += flt(item.claimed_amount)
+                                self.received_amount += flt(item.received_amount)
+                                self.balance_amount  += (flt(item.amount)-flt(item.received_amount))
+                                '''
+                        
+                                self.total_amount    += flt(item.amount)
+                                self.balance_amount  += flt(item.amount)
 
                         item.parent_item = item_group
-                        item.balance_quantity = flt(item.quantity)
-                        item.balance_amount   = flt(item.amount)
-                        
-                        self.total_amount    += flt(item.amount)
-                        self.claimed_amount  += flt(item.claimed_amount)
-                        self.received_amount += flt(item.received_amount)
-                        self.balance_amount  += (flt(item.amount)-flt(item.received_amount))
-
+                        if flt(item.amount) < 0:
+                                frappe.throw(_("Row#{0} : Invalid amount."),title="Invalid Data")
+                                
                 # Defaults
                 base_project = frappe.get_doc("Project", self.project)
                 
@@ -80,6 +104,12 @@ class BOQ(Document):
                         self.boq_date = today()
 
         def update_project_value(self):
+                if self.total_amount:
+                        pro_doc = frappe.get_doc("Project", self.project)
+                        pro_doc.project_value = flt(pro_doc.project_value)+(-1*(self.total_amount) if self.docstatus==2 else flt(self.total_amount))
+                        pro_doc.save(ignore_permissions = True)
+
+                '''
                 total_amount = 0.0
                 
                 boq = frappe.db.sql("""
@@ -91,12 +121,41 @@ class BOQ(Document):
 
                 if boq:
                         total_amount = flt(boq.total_amount) if boq.total_amount else 0.0
-                        
+
                 frappe.db.sql("""
                         update `tabProject`
                         set project_value = {0}
                         where name = '{1}'
                 """.format(flt(total_amount), self.project))
+                '''
+
+@frappe.whitelist()
+def make_boq_adjustment(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_parent):
+                target_doc.total_amount = 0.0
+                
+        def update_item(source_doc, target_doc, source_parent):
+                pass
+                
+        doclist = get_mapped_doc("BOQ", source_name, {
+                "BOQ": {
+                        "doctype": "BOQ Adjustment",
+                        "field_map": {
+                                "name": "boq"
+                        },
+                        "postprocess": update_master
+                },
+
+                "BOQ Item": {
+                        "doctype": "BOQ Adjustment Item",
+                        "field_map": {
+                                "name": "boq_item_name"
+                        },
+                        "postprocess": update_item
+                }
+        }, target_doc)
+
+        return doclist
         
 @frappe.whitelist()
 def make_direct_invoice(source_name, target_doc=None):

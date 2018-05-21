@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-26 10:28:38.388724", 
- "modified_by": "Administrator", 
+ "modified": "2018-05-15 15:16:43.677048", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Accounts", 
  "name": "Statement of Trial Balance", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Regional Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

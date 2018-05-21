@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-05 11:55:35.032562", 
+ "modified": "2018-05-15 15:26:47.150193", 
  "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Stock", 
  "name": "Item Register", 
@@ -40,6 +40,9 @@
   }, 
   {
    "role": "Asset Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

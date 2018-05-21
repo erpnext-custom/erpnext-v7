@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-03 16:40:47.236224", 
- "modified_by": "Administrator", 
+ "modified": "2018-05-15 12:20:46.901864", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Equipment Performance Report", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Management"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

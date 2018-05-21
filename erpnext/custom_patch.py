@@ -8,6 +8,29 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def asset_cc():
+	assets = frappe.db.sql("select name from tabAsset where docstatus = 1", as_dict=True)
+	for a in assets:
+		doc = frappe.get_doc("Asset", a.name)
+		doc.db_set("cost_center", frappe.db.get_value("Employee", doc.issued_to, "cost_center"))
+		doc.db_set("branch", frappe.db.get_value("Employee", doc.issued_to, "branch"))
+
+def adjust_ipol():
+	pols = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1 and cost_center = 'Construction of 132 KV D/C Transmission Line from Nikachhu to Mangdechhu - CDCL'", as_dict=True)
+	for a in pols:
+		print(str(a.name))
+		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+		pol = frappe.get_doc("Issue POL", a.name)
+		pol.update_stock_gl_ledger(1, 0)
+
+def adjust_pol():
+	pols = frappe.db.sql("select name from tabPOL where fuelbook is not null and docstatus = 1 and cost_center = 'Construction of 132 KV D/C Transmission Line from Nikachhu to Mangdechhu - CDCL'", as_dict=True)
+	for a in pols:
+		print(str(a.name))
+		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+		pol = frappe.get_doc("POL", a.name)
+		pol.update_general_ledger(1)
+
 def migrate_pol_entry():
 	pols = frappe.db.sql("select name from `tabEquipment POL Transfer` where docstatus = 1", as_dict=True)
 	for a in pols:
@@ -876,3 +899,50 @@ def refresh_salary_structure():
                                 print counter,s.name
 				update_salary_structure(doc.employee, flt(a.amount), s.name)
 				break
+
+# /home/frappe/erp bench execute erpnext.custom_patch.update_project_invoice
+# Refreshing fields uptodate_quantity, uptodate_rate, uptodate_amount
+def update_project_invoice():
+        bi = frappe.db.sql("""
+                select t2.name, t2.parent, t1.invoice_date, t2.boq_item_name, t1.modified
+                from `tabProject Invoice BOQ` as t2, `tabProject Invoice` as t1
+                where t2.parent = t1.name
+                and ifnull(t2.is_group,0) = 0
+                and t1.docstatus != 2
+                order by t1.project, t1.invoice_date
+        """, as_dict=1)
+
+        counter = 0
+        for i in bi:
+                counter += 1
+                uptodate_quantity = 0.0
+                uptodate_rate     = 0.0
+                uptodate_amount   = 0.0
+                
+                tot = frappe.db.sql("""
+                        select
+                                sum(ifnull(invoice_quantity,0)) as invoice_quantity,
+                                max(ifnull(invoice_quantity,0)) as invoice_rate,
+                                sum(ifnull(invoice_amount,0))   as invoice_amount
+                        from `tabProject Invoice BOQ` as t2, `tabProject Invoice` as t1
+                        where t2.parent = t1.name
+                        and t2.boq_item_name = '{0}'
+                        and t2.is_selected = 1
+                        and t2.docstatus = 1
+                        and t1.invoice_date <= '{1}'
+                        and t1.modified < '{2}'
+                """.format(i.boq_item_name, i.invoice_date, i.modified), as_dict=1)
+
+                if tot:
+                        uptodate_quantity = flt(tot[0].invoice_quantity)
+                        uptodate_rate     = flt(tot[0].invoice_rate)
+                        uptodate_amount   = flt(tot[0].invoice_amount)
+
+                frappe.db.sql("""
+                        update `tabProject Invoice BOQ`
+                        set uptodate_quantity = {1},
+                                uptodate_rate = {2},
+                                uptodate_amount = {3}
+                        where name = '{0}'
+                """.format(i.name, uptodate_quantity, uptodate_rate, uptodate_amount))
+                print counter

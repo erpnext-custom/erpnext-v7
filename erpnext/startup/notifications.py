@@ -56,6 +56,7 @@ def get_notification_config():
 			"Break Down Report": {"docstatus": 0},
 			"Job Card": {"docstatus": 0},
                         "BOQ": {"docstatus": 0},
+                        "BOQ Adjustment": {"docstatus": 0},
                         "MB Entry": {"docstatus": 0},
                         "Project Advance": {"docstatus": 0},
                         "Project Invoice": {"status": ("in", ("Draft", "Unpaid"))},

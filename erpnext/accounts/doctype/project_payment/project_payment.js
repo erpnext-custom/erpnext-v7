@@ -8,10 +8,15 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
+cur_frm.add_fetch("project", "branch", "branch");
+cur_frm.add_fetch("project", "cost_center", "cost_center");
+cur_frm.add_fetch("project", "customer", "pay_to_recd_from");
+cur_frm.add_fetch("branch","revenue_bank_account","revenue_bank_account");
+
 frappe.ui.form.on('Project Payment', {
 	onload: function(frm, cdt, cdn){
-		if(frm.doc.project){
-			if(frm.doc.docstatus != 1){
+		if(frm.doc.project && frm.doc.__islocal){
+			if(frm.doc.docstatus === 0){
 				get_invoice_list(frm);
 				get_advance_list(frm);
 				assign_items(frm, cdt, cdn);
@@ -40,6 +45,7 @@ frappe.ui.form.on('Project Payment', {
 	},
 	
 	refresh: function(frm, cdt, cdn) {
+		enable_disable(frm);
 		if(frm.doc.docstatus===1){
 			frm.add_custom_button(__('Accounting Ledger'), function(){
 				frappe.route_options = {
@@ -52,7 +58,9 @@ frappe.ui.form.on('Project Payment', {
 				frappe.set_route("query-report", "General Ledger");
 			}, __("View"));
 		} else {
-			assign_items(frm, cdt, cdn);
+			if(frm.doc.docstatus != 2){
+				assign_items(frm, cdt, cdn);
+			}
 		}
 	},
 	
@@ -87,7 +95,6 @@ frappe.ui.form.on('Project Payment', {
 	tds_amount: function(frm, cdt, cdn){
 		assign_items(frm, cdt, cdn);
 		if(!self.tds_account){
-			console.log("inside");
 			set_tds_account(frm);
 		}
 	},
@@ -100,7 +107,32 @@ frappe.ui.form.on('Project Payment', {
 				frm.reload_doc();
 			}
 		});
-	}
+	},
+	
+	select_cheque_lot: function(frm){
+		if(frm.doc.select_cheque_lot){
+			frappe.call({
+				method: "erpnext.accounts.doctype.cheque_lot.cheque_lot.get_cheque_no_and_date",
+				args: {
+				'name': frm.doc.select_cheque_lot
+				},
+				callback: function(r){
+				   if (r.message) {
+					   cur_frm.set_value("cheque_no", r.message[0].reference_no);
+					   cur_frm.set_value("cheque_date", r.message[1].reference_date);
+				   }
+				   }
+			});
+		}
+	},
+	
+	branch: function(frm) {
+		set_revenue_bank_account(frm);
+    },
+	
+	payment_type: function(){
+		enable_disable(frm);
+	},
 });
 
 frappe.ui.form.on("Project Payment Advance",{
@@ -189,6 +221,7 @@ var get_invoice_list = function(frm){
 					var row = frappe.model.add_child(frm.doc, "Project Payment Reference", "references");
 					row.reference_doctype = "Project Invoice";
 					row.reference_name    = inv['name'];
+					row.invoice_type	  = inv['invoice_type'];
 					row.total_amount      = parseFloat(inv['total_balance_amount']);
 					row.allocated_amount  = 0.00;
 				});
@@ -224,6 +257,46 @@ var get_advance_list = function(frm){
 				cur_frm.clear_table("advances");
 				cur_frm.refresh();
 			}
+		}
+	});
+}
+
+function enable_disable(frm){
+	var toggle_fields = ["revenue_bank_account","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
+	
+	toggle_fields.forEach(function(field_name){
+		frm.set_df_property(field_name,"read_only",1);
+	});
+		
+	if(in_list(user_roles, "Accounts Manager") || in_list(user_roles, "Accounts User")){
+		toggle_fields.forEach(function(field_name){
+				frm.set_df_property(field_name,"read_only",0);
+		});
+		frm.toggle_reqd(["revenue_bank_account","pay_to_recd_from", "cheque_no", "cheque_date"], 1);
+	}
+	
+	if(frm.doc.branch && !frm.doc.revenue_bank_account){
+		set_revenue_bank_account(frm);
+	}
+}
+
+function set_revenue_bank_account(frm){
+	frappe.call({
+		method: "frappe.client.get_value",
+		args: {
+				doctype: "Branch",
+				fieldname:"revenue_bank_account",
+				filters: {
+						name: frm.doc.branch
+				}
+		},
+		callback: function(r) {
+				if(r.message.revenue_bank_account) {
+						cur_frm.set_value("revenue_bank_account", r.message.revenue_bank_account)
+				}
+				else {
+						frappe.throw("Setup an Revenue Bank Account in the Branch")
+				}
 		}
 	});
 }

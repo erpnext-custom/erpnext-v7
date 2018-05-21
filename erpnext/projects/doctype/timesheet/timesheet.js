@@ -359,6 +359,8 @@ var calculate_target_quantity_complete = function(frm){
 	
 	cur_frm.set_value("work_quantity_complete",parseFloat(frm.doc.work_quantity)*(parseFloat(total_target_quantity_complete)/(frm.doc.target_quantity || 1)));
 	
+	/*
+	// Commented on 2018/15/05 because child records somehow not getting docstatus=2 even when parent is cancelled.
 	frappe.call({
 			method: "frappe.client.get_list",
 			args: {
@@ -377,7 +379,25 @@ var calculate_target_quantity_complete = function(frm){
 				})
 				cur_frm.set_value("target_quantity_complete", parseFloat(total_target_quantity_complete));
 			}
-	})	
+	});
+	*/
+
+	frappe.call({
+		method: "erpnext.projects.doctype.timesheet.timesheet.get_target_quantity_complete",
+		args: {
+			"docname": frm.doc.name,
+			"task": frm.doc.task
+		},
+		callback: function(r){
+			if(r.message){
+				total_target_quantity_complete += parseFloat(r.message)
+				cur_frm.set_value("target_quantity_complete", parseFloat(total_target_quantity_complete));
+			}
+			else {
+				cur_frm.set_value("target_quantity_complete", parseFloat(total_target_quantity_complete));
+			}
+		}
+	});
 	
 	/*
 	frappe.call({

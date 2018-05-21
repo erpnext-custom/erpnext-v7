@@ -96,7 +96,9 @@ class Timesheet(Document):
 
         def validate_target_quantity(self):
                 curr_balance = 0.0
-                
+
+                prev_balance = get_target_quantity_complete(self.name, self.task)
+                '''
                 result = frappe.db.sql("""
                         select sum(case
                                         when parent != '{0}' then ifnull(target_quantity_complete,0)
@@ -106,11 +108,12 @@ class Timesheet(Document):
                         where task = '{2}'
                         and   docstatus < 2
                 """.format(self.name, self.name, self.task), as_dict=1)[0]
-
+                '''
+                
                 for tl in self.time_logs:
                         curr_balance += flt(tl.target_quantity_complete)
                 
-                if flt(self.target_quantity) < (flt(result.prev_balance)+flt(curr_balance)):
+                if flt(self.target_quantity) < (flt(prev_balance)+flt(curr_balance)):
                         frappe.throw(_("`Total Achieved Value` cannot be more than `Total Target Value`."))
                 
         def reset_time_log_order(self):
@@ -587,3 +590,19 @@ def get_conditions(filters):
 			conditions.append("`%s`.%s = '%s'"%(abbr.get(key), key, filters.get(key)))
 
 	return " and {}".format(" and ".join(conditions)) if conditions else ""
+
+@frappe.whitelist()
+def get_target_quantity_complete(docname = None, task = None):
+        td = frappe.db.sql("""
+                select sum(ifnull(tsd.target_quantity_complete, 0)) as target_quantity_complete
+                from `tabTimesheet Detail` tsd, `tabTimesheet` ts
+                where ts.task = '{0}'
+                and ts.name != '{1}'
+                and ts.docstatus != 2
+                and tsd.parent = ts.name                
+        """.format(task, docname), as_dict=1)
+
+        if td:
+                return flt(td[0].target_quantity_complete)
+        else:
+                return 0.0

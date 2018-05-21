@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-17 23:50:21.568873", 
- "modified_by": "Administrator", 
+ "modified": "2018-05-15 12:27:59.844411", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Workshop Progress Report", 
  "owner": "Administrator", 
@@ -23,7 +23,7 @@
    "role": "Management"
   }, 
   {
-   "role": "Maintenance Common"
+   "role": "Mechanical Master"
   }, 
   {
    "role": "Workshop Manager"
@@ -33,6 +33,9 @@
   }, 
   {
    "role": "Workshop User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

@@ -89,6 +89,7 @@ frappe.ui.form.on("Material Request Item", {
 	"items_add": function(frm, cdt, cdn) {
 		frappe.model.set_value(cdt, cdn, "cost_center_w", frm.doc.temp_cc)
 		frappe.model.set_value(cdt, cdn, "warehouse", frm.doc.temp_wh)
+		frappe.model.set_value(cdt, cdn, "schedule_date", frappe.datetime.add_days(frm.doc.creation_date, 30))
 	}, 
 	"qty": function(frm, doctype, name) {
 			var d = locals[doctype][name];

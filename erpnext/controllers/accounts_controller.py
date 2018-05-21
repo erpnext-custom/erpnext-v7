@@ -258,6 +258,7 @@ class AccountsController(TransactionBase):
 			account_currency = get_account_currency(gl_dict.account)
 
 		if self.doctype not in ["Journal Entry", "Period Closing Voucher", "Payment Entry"]:
+			#frappe.msgprint(str(self.name))
 			self.validate_account_currency(gl_dict.account, account_currency)
 			set_balance_in_account_currency(gl_dict, account_currency, self.get("conversion_rate"), self.company_currency)
 

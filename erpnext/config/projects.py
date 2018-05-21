@@ -29,6 +29,11 @@ def get_data():
 				},
                                 {
 					"type": "doctype",
+					"name": "BOQ Adjustment",
+					"description": _("Adjustments for Bill of Quantities."),
+				},
+                                {
+					"type": "doctype",
 					"name": "MB Entry",
                                         "label": "Measurement Book Entries",
 					"description": _("Measurement Book Entries."),

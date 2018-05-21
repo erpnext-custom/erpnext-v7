@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:06:58.211513", 
+ "modified": "2018-05-17 16:31:30.099404", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project wise Stock Tracking", 
@@ -20,10 +20,13 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Projects Manager"
+   "role": "Projects GM"
   }, 
   {
    "role": "Projects User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }
