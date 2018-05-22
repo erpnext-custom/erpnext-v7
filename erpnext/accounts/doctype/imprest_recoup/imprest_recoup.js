@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-cur_frm.add_fetch("branch","revenue_bank_account","revenue_bank_account");
+cur_frm.add_fetch("branch","expense_bank_account","revenue_bank_account");
 
 frappe.ui.form.on('Imprest Recoup', {
 	setup: function(frm) {

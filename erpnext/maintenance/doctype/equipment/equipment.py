@@ -26,6 +26,12 @@ class Equipment(Document):
 				self.operators[a].end_date = frappe.utils.data.add_days(getdate(self.operators[a + 1].start_date), -1)
 			self.operators[len(self.operators) - 1].end_date = ''
 
+	def validate_asset(self):
+		if self.asset_code:
+			equipments = frappe.db.sql("select name from tabEquipment where asset_code = %s and name != %s", (self.asset_code, self.name), as_dict=True)
+			if equipments:
+				frappe.throw("The Asset is already linked to another equipment")
+	
 @frappe.whitelist()
 def get_yards(equipment):
 	t, m = frappe.db.get_value("Equipment", equipment, ['equipment_type', 'equipment_model'])
@@ -37,3 +43,13 @@ def get_yards(equipment):
 @frappe.whitelist()
 def get_equipments(doctype, txt, searchfield, start, page_len, filters):
 	return frappe.db.sql("select a.equipment as name from `tabHiring Approval Details` a where docstatus = 1 and a.parent = \'"+ str(filters.get("ehf_name")) +"\'")
+
+def sync_branch_asset():
+	objs = frappe.db.sql("select e.name, a.branch from tabEquipment e, tabAsset a where e.asset_code = a.name and e.branch != a.branch", as_dict=True)
+	for a in objs:
+		frappe.db.sql("update tabEquipment set branch = %s where name = %s", (a.branch, a.name))
+
+
+
+
+

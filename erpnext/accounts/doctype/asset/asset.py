@@ -350,4 +350,9 @@ def get_item_details(item_code):
 def get_next_depreciation_date():
 	return calculate_depreciation_date()
 
+def sync_cc_branch():
+	objs = frappe.db.sql("select a.name as asset, c.branch as branch  from tabAsset a, `tabCost Center` c where a.cost_center = c.name and a.branch != c.branch", as_dict=True)
+	for a in objs:
+		frappe.db.sql("update tabAsset set branch = %s where name = %s", (a.branch, a.asset))
+
 

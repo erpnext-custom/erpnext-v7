@@ -168,6 +168,8 @@ scheduler_events = {
 	"hourly": [
 		"erpnext.controllers.recurring_document.create_recurring_documents",
 		"erpnext.stock.doctype.item.item.sync_item_code",
+		"erpnext.accounts.doctype.asset.asset.sync_cc_branch",
+		"erpnext.maintenance.doctype.equipment.equipment.sync_branch_asset",
 		"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"
 	],
 	"daily": [
