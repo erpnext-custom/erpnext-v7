@@ -7,9 +7,10 @@ frappe.ui.form.on("Bank Reconciliation", {
 		frm.add_fetch("bank_account", "account_currency", "account_currency");
 
 		frm.get_field('payment_entries').grid.editable_fields = [
-			{fieldname: 'against_account', columns: 3},
+			{fieldname: 'payment_document', columns: 1},
+			{fieldname: 'against_account', columns: 2},
 			{fieldname: 'amount', columns: 2},
-			{fieldname: 'cheque_number', columns: 3},
+			{fieldname: 'cheque_number', columns: 2},
 			{fieldname: 'clearance_date', columns: 2}
 		];
 	},

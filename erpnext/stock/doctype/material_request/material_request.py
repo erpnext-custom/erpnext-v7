@@ -71,6 +71,7 @@ class MaterialRequest(BuyingController):
 
 		self.validate_schedule_date()
 		self.validate_uom_is_integer("uom", "qty")
+		self.set_urgent_status()
 
 		if not self.status:
 			self.status = "Draft"
@@ -109,9 +110,16 @@ class MaterialRequest(BuyingController):
 	#
 	#	self.title = ', '.join(items)
 
+	def set_urgent_status(self):
+		for a in self.items:
+			if a.urgent_requirement:
+				self.urgent_requirement = "Yes"
+				break
+
 	def on_submit(self):
 		frappe.db.set(self, 'status', 'Submitted')
 		self.update_requested_qty()
+		self.set_urgent_status()
 
 	def check_modified_date(self):
 		mod_db = frappe.db.sql("""select modified from `tabMaterial Request` where name = %s""",

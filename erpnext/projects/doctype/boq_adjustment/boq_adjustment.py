@@ -37,9 +37,16 @@ class BOQAdjustment(Document):
                 
                 for i in self.boq_item:
                         quantity            = 0.0
-                        adjustment_quantity = -1*flt(i.adjustment_quantity) if self.docstatus == 2 else flt(i.adjustment_quantity) 
+                        rate                = 0.0
+
+                        adjustment_quantity = -1*flt(i.adjustment_quantity) if self.docstatus == 2 else flt(i.adjustment_quantity)
                         adjustment_amount   = -1*flt(i.adjustment_amount) if self.docstatus == 2 else flt(i.adjustment_amount)
+                        adjustment_rate     = flt(adjustment_amount)
+                        
                         total_amount       += flt(adjustment_amount) 
+
+                        adjustment_quantity = 0.0 if self.boq_type == "Milestone Based" else flt(adjustment_quantity)
+                        adjustment_rate     = flt(adjustment_amount) if self.boq_type == "Milestone Based" else 0.0
                         
                         i.balance_quantity, i.balance_amount = frappe.db.get_value("BOQ Item", i.boq_item_name, ["balance_quantity","balance_amount"])
                         if (flt(i.balance_amount)+flt(adjustment_amount)) < 0:
@@ -49,20 +56,23 @@ class BOQAdjustment(Document):
                         # Update BOQ Item
                         bi_doc                  = frappe.get_doc("BOQ Item", i.boq_item_name)
                         quantity                = flt(bi_doc.quantity) + flt(adjustment_quantity)
+                        rate                    = flt(bi_doc.rate) + flt(adjustment_rate)
                         bi_doc.amount           = flt(bi_doc.amount) + flt(adjustment_amount)
                         bi_doc.balance_quantity = flt(bi_doc.balance_quantity) + flt(adjustment_quantity)
                         bi_doc.balance_amount   = flt(bi_doc.balance_amount) + flt(adjustment_amount)
                         bi_doc.save(ignore_permissions = True)
                         frappe.db.set_value("BOQ Item", i.boq_item_name, "quantity", quantity)
+                        frappe.db.set_value("BOQ Item", i.boq_item_name, "rate", rate)
 
-                # Update BOQ
-                boq_doc = frappe.get_doc("BOQ", self.boq)
-                boq_doc.total_amount   = flt(boq_doc.total_amount) + flt(total_amount)
-                boq_doc.balance_amount = flt(boq_doc.balance_amount) + flt(total_amount)
-                boq_doc.save(ignore_permissions = True)
+                if total_amount:
+                        # Update BOQ
+                        boq_doc = frappe.get_doc("BOQ", self.boq)
+                        boq_doc.total_amount   = flt(boq_doc.total_amount) + flt(total_amount)
+                        boq_doc.balance_amount = flt(boq_doc.balance_amount) + flt(total_amount)
+                        boq_doc.save(ignore_permissions = True)
 
-                # Update Project
-                pro_doc = frappe.get_doc("Project", self.project)
-                pro_doc.project_value = flt(pro_doc.project_value) + flt(total_amount)
-                pro_doc.save(ignore_permissions = True)
+                        # Update Project
+                        pro_doc = frappe.get_doc("Project", self.project)
+                        pro_doc.project_value = flt(pro_doc.project_value) + flt(total_amount)
+                        pro_doc.save(ignore_permissions = True)
 

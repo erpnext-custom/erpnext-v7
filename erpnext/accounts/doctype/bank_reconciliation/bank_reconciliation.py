@@ -1,5 +1,16 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		  SSK		                   28/05/2016         Added following payments
+                                                                        * HSD Payment,
+                                                                        * Imprest Recoup,
+                                                                        * Mechanical Payment,
+                                                                        * Project Payment added.
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -51,8 +62,60 @@ class BankReconciliation(Document):
 				posting_date ASC, name DESC
 		""".format(condition), 
 		(self.bank_account, self.bank_account, self.bank_account, self.from_date, self.to_date), as_dict=1)
+
+		hsd_entries = frappe.db.sql("""
+                        select
+                                "HSD Payment" as payment_document, name as payment_entry,
+                                cheque__no as cheque_number, cheque_date,
+                                amount,
+                                posting_date, supplier as against_account, clearance_date
+                        from `tabHSD Payment`
+                        where bank_account = '{0}'
+                        and docstatus = 1
+                        and posting_date >= '{1}' and posting_date <= '{2}'
+                        {3}
+                """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+
+		imprest_entries = frappe.db.sql("""
+                        select
+                                "Imprest Recoup" as payment_document, name as payment_entry,
+                                cheque_no as cheque_number, cheque_date,
+                                purchase_amount as amount,
+                                posting_date, branch as against_account, clearance_date
+                        from `tabImprest Recoup`
+                        where revenue_bank_account = '{0}'
+                        and docstatus = 1
+                        and posting_date >= '{1}' and posting_date <= '{2}'
+                        {3}
+                """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+
+		mechanical_entries = frappe.db.sql("""
+                        select
+                                "Mechanical Payment" as payment_document, name as payment_entry,
+                                cheque_no as cheque_number, cheque_date,
+                                net_amount as amount,
+                                posting_date, customer as against_account, clearance_date
+                        from `tabMechanical Payment`
+                        where income_account = '{0}'
+                        and docstatus = 1
+                        and posting_date >= '{1}' and posting_date <= '{2}'
+                        {3}
+                """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+
+		project_entries = frappe.db.sql("""
+                        select
+                                "Project Payment" as payment_document, name as payment_entry,
+                                cheque_no as cheque_number, cheque_date,
+                                paid_amount as amount,
+                                posting_date, party as against_account, clearance_date
+                        from `tabProject Payment`
+                        where revenue_bank_account = '{0}'
+                        and docstatus = 1
+                        and posting_date >= '{1}' and posting_date <= '{2}'
+                        {3}
+                """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 		
-		entries = sorted(list(payment_entries)+list(journal_entries), 
+		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))
 				
 		self.set('payment_entries', [])

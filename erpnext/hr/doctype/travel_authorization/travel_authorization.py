@@ -48,6 +48,8 @@ class TravelAuthorization(Document):
 				frappe.throw("You need to cancel the advance journal entry first!")
 	
 	def on_cancel(self):
+		if self.travel_claim:
+			frappe.throw("Cancel the Travel Claim before cancelling Authorization")
 		if not self.cancellation_reason:
 			frappe.throw("Cancellation Reason is Mandatory when Cancelling Travel Authorization")
 		self.cancel_attendance()	

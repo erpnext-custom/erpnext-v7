@@ -33,6 +33,7 @@ class BreakDownReport(Document):
 			doc.hours = 100
 			doc.place = self.branch
 			doc.from_date = self.date
+			doc.from_time = self.time
 			doc.to_date = add_years(self.date, 1)
 			doc.submit()
 

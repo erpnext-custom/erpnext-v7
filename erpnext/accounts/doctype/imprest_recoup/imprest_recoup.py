@@ -113,12 +113,14 @@ class ImprestRecoup(AccountsController):
                 entries         = {}
                 accounts        = []
                 total_amount    = 0.0
-                rev_gl = frappe.db.get_value(doctype="Branch",filters=self.branch,fieldname="revenue_bank_account", as_dict=True)
                 self.posting_date = nowdate()
 
+                '''
+                rev_gl = frappe.db.get_value(doctype="Branch",filters=self.branch,fieldname="revenue_bank_account", as_dict=True)
                 if not rev_gl.revenue_bank_account:
                         frappe.throw(_("Bank Account GL is not defined in Branch '{0}'.").format(self.branch),title="Data Not found")
-
+                '''
+                
                 for i in self.items:
                         total_amount += flt(i.amount)
                         if not i.budget_account:
@@ -129,7 +131,8 @@ class ImprestRecoup(AccountsController):
                         else:
                                 entries[i.budget_account]  = {"type": "debit", "amount": flt(i.amount)}
 
-                entries[rev_gl.revenue_bank_account] = {"type": "credit", "amount": flt(total_amount)}
+                #entries[rev_gl.revenue_bank_account] = {"type": "credit", "amount": flt(total_amount)}
+                entries[self.revenue_bank_account] = {"type": "credit", "amount": flt(total_amount)}
 
                 for gl in entries:
                         gl_entries.append(

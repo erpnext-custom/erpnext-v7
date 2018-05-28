@@ -401,9 +401,8 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Budget Reappropriation Tool",
-					"description": "Budget Reappropriation",
-					"hide_count": True
+					"name": "Budget Reappropiation",
+					"label": "Budget Reappropiation Tool"
 				},
 				{
 					"type": "report",

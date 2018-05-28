@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-19 15:03:48.194569", 
+ "modified": "2018-05-23 09:36:45.265781", 
  "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Balance Report", 
@@ -36,6 +36,9 @@
   }, 
   {
    "role": "Workshop Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

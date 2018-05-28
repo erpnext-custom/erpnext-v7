@@ -18,6 +18,13 @@ frappe.ui.form.on('BOQ', {
 	
 	refresh: function(frm) {
 		if(!frm.doc.__islocal){
+			if(frappe.model.can_read("BOQ Adjustment")) {
+				frm.add_custom_button(__("Adjustments"), function() {
+					frappe.route_options = {"boq": frm.doc.name}
+					frappe.set_route("List", "BOQ Adjustment");
+				}, __("View"), true);
+			}
+			
 			if(frappe.model.can_read("Project")) {
 				frm.add_custom_button(__("Project"), function() {
 					frappe.route_options = {"name": frm.doc.project}

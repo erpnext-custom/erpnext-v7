@@ -50,11 +50,7 @@ frappe.ui.form.on('BOQ Adjustment', {
 
 frappe.ui.form.on("BOQ Adjustment Item",{	
 	adjustment_quantity: function(frm, cdt, cdn){
-		if(frm.doc.boq_type != "Milestone Based"){
-			calculate_amount(frm, cdt, cdn);
-		} else {
-			frappe.msgprint("Change in quantity for milestone based BOQ will not have any impact on amount, please update the amount aswel.");
-		}
+		calculate_amount(frm, cdt, cdn);
 		calculate_total_amount(frm);
 	},
 	
@@ -62,6 +58,10 @@ frappe.ui.form.on("BOQ Adjustment Item",{
 		calculate_amount(frm, cdt, cdn);
 		calculate_total_amount(frm);
 	},
+	
+	boq_item_remove: function(frm, cdt, cdn){
+		calculate_total_amount(frm);
+	}
 });
 
 var calculate_amount = function(frm, cdt, cdn){
@@ -75,8 +75,13 @@ var calculate_amount = function(frm, cdt, cdn){
 	}
 	else {
 		if(frm.doc.boq_type != "Milestone Based"){
-			amount = parseFloat(child.adjustment_quantity)*parseFloat(child.rate)
+			amount = parseFloat(child.adjustment_quantity)*parseFloat(child.rate);
 			frappe.model.set_value(cdt, cdn, 'adjustment_amount', parseFloat(amount));
+		}
+		else {
+			if(child.adjustment_quantity){
+				frappe.model.set_value(cdt, cdn, 'adjustment_quantity', 0.0);
+			}
 		}
 		
 		if ((parseFloat(child.balance_amount || 0.0)+parseFloat(child.adjustment_amount || 0.0)) < 0) {
