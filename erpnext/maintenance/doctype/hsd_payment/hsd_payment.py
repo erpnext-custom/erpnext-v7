@@ -82,7 +82,7 @@ class HSDPayment(Document):
 	def get_invoices(self):
 		if not self.fuelbook:
 			frappe.throw("Select a Fuelbook to Proceed")
-		query = "select name as pol, pol_type as pol_item_code, outstanding_amount as payable_amount, item_name from tabPOL where docstatus = 1 and outstanding_amount > 0 and fuelbook = %s order by posting_date, posting_time"
+		query = "select name as pol, pol_type as pol_item_code, outstanding_amount as payable_amount, item_name, memo_number from tabPOL where docstatus = 1 and outstanding_amount > 0 and fuelbook = %s order by posting_date, posting_time"
 		entries = frappe.db.sql(query, self.fuelbook, as_dict=True)
 		self.set('items', [])
 

@@ -47,6 +47,11 @@ class StockController(AccountsController):
 				gls_pol = pol.update_general_ledger(0)
 				for a in gls_pol:
 					gl_list.append(a)
+			if self.doctype == "Issue POL":
+				pol = frappe.get_doc("Issue POL", detail.name)
+				gls_pol = pol.update_stock_gl_ledger(1, 1)
+				for a in gls_pol:
+					gl_list.append(a)
 			if sle_list:
 				for sle in sle_list:
 					if warehouse_account.get(sle.warehouse):

@@ -19,9 +19,9 @@ def get_data(filters):
 	#today = frappe.utils.nowdate()
 	#frappe.msgprint("{0}".format(today))
 	query =  """select distinct
-			mr.name as mr_name, date(mr.creation) as mr_cra, date(mr.transaction_date) as tr, mr.workflow_state as mr_status,
-			mr.owner as ownm, 1, mr.material_request_type as mr_typ,
-			po.name as po_name, date(po.creation) as po_cra, date(po.transaction_date) as tr, po.status as po_status,
+			mr.name as mr_name, date(mr.creation) as mr_cra, date(mr.modified) as submit_date, mr.workflow_state as mr_status,
+			mr.owner as ownm, case when mr.material_request_type = "Purchase" then "Yes" WHEN mr.material_request_type in ("Material Issue", "Material Transfer") THEN "No" end as mr_forwarded, mr.material_request_type as mr_typ,
+			po.name as po_name, date(po.creation) as po_cra, date(po.modified) as tr, po.status as po_status,
             po.owner as ownp, po.modified_by as mop,
 			pr.name as pr_name, date(pr.creation) as pr_cra, date(pr.posting_date) as pr_mod1, pr.status as pr_status,
 			pr.owner as onrr, pr.modified_by as mor,

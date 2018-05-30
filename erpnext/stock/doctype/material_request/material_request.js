@@ -13,6 +13,14 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 {% include 'erpnext/buying/doctype/purchase_common/purchase_common.js' %};
 
 frappe.ui.form.on('Material Request', {
+	material_request_type: function(frm) {
+		if(frm.doc.material_request_type == "Purchase") {
+			cur_frm.set_value("purchase_change_date", get_today())
+		}
+		else {
+			cur_frm.set_value("purchase_change_date", "")
+		}
+	},
 	setup: function(frm) {
 		frm.get_field('items').grid.editable_fields = [
 			{fieldname: 'item_code', columns: 2},

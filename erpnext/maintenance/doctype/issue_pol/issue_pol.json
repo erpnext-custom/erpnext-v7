@@ -583,7 +583,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-05-03 15:37:23.215879", 
+ "modified": "2018-05-30 12:56:13.737174", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Issue POL", 
@@ -689,7 +689,7 @@
    "role": "POL User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 

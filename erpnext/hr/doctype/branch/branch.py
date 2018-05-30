@@ -29,8 +29,10 @@ class Branch(Document):
                              emp.save(ignore_permissions = True)
                 '''
 
-                prev_doc = frappe.get_doc(self.doctype, self.name)
-                if prev_doc.gis_policy_number != self.gis_policy_number:
+                
+                #prev_doc = frappe.get_doc(self.doctype, self.name)
+                #if prev_doc.gis_policy_number != self.gis_policy_number:
+                if self.get_db_value("gis_policy_number") != self.gis_policy_number:
                         frappe.db.sql("""
                                 update `tabEmployee`
                                 set gis_policy_number = '{1}'

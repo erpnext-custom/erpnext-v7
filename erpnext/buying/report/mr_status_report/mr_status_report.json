@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-30 11:14:51.640625", 
- "modified_by": "payma.wangchuk@cdcl.bt", 
+ "modified": "2018-04-03 12:51:20.591012", 
+ "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "MR Status Report", 
  "owner": "Administrator", 
@@ -20,25 +20,13 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Purchase Master"
+   "role": "MR Creator"
   }, 
   {
-   "role": "Purchase User"
+   "role": "MR User"
   }, 
   {
-   "role": "Accounts Manager"
-  }, 
-  {
-   "role": "Accounts User"
-  }, 
-  {
-   "role": "Projects User"
-  }, 
-  {
-   "role": "Stock Manager"
-  }, 
-  {
-   "role": "Stock User (other)"
+   "role": "MR Manager"
   }
  ]
 }

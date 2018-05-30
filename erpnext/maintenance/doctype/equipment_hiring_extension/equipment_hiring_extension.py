@@ -42,9 +42,8 @@ class EquipmentHiringExtension(Document):
 						if not self.hours:
 							days = date_diff(self.extension_date, doc.to_date)
 							self.hours = flt(days) * 8
+						self.actual_receivable = flt(self.hours) * flt(self.rate) 
 						if ehf.private == 'Private':
-							if flt(self.total_amount) < flt(self.hours) * flt(self.rate):
-								self.total_amount = flt(self.hours) * flt(self.rate) 
 							balance_advance = frappe.db.sql("select sum(credit_in_account_currency) as amount from `tabJournal Entry Account` where reference_type = 'Equipment Hiring Form' and reference_name = %s and docstatus = 1 and is_advance = 'Yes'", self.ehf_name, as_dict=True)
 							if balance_advance:
 								self.advance_balance = balance_advance[0].amount
