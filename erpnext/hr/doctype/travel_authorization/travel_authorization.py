@@ -80,7 +80,6 @@ class TravelAuthorization(Document):
 
 	def cancel_attendance(self):
 		frappe.db.sql("update tabAttendance set docstatus = 2 where reference_name = %s", (self.name))
-		frappe.db.commit()	
 	
 	def assign_end_date(self):
 		if self.items:

@@ -59,7 +59,7 @@ class IssuePOL(StockController):
 		self.update_stock_gl_ledger(1, 1)
 		self.make_pol_entry()
 
-	def update_stock_gl_ledger(self, post_gl=None, post_sl=None):
+	def update_stock_gl_ledger(self, post_gl=None, post_sl=None, map_rate=None):
 		sl_entries = []
 		gl_entries = []
 
@@ -69,7 +69,9 @@ class IssuePOL(StockController):
 
 		for a in self.items:
 			from erpnext.stock.stock_ledger import get_valuation_rate
-			valuation_rate = get_valuation_rate(self.pol_type, self.warehouse)
+			if not map_rate:
+				map_rate = get_valuation_rate(self.pol_type, self.warehouse)
+                        valuation_rate = flt(a.qty) * flt(map_rate)
 
 			ec = frappe.db.get_value("Equipment", a.equipment, "equipment_category")
 			budget_account = frappe.db.get_value("Equipment Category", ec, "budget_account")
@@ -214,19 +216,18 @@ class IssuePOL(StockController):
 			con.type = "Issue"
 			con.submit()
 
-                if self.purpose == "Transfer":
-			for a in self.items:
-				con = frappe.new_doc("POL Entry")
-				con.flags.ignore_permissions = 1
-				con.equipment = a.equipment
-				con.pol_type = self.pol_type
-				con.branch = a.equipment_branch
-				con.date = self.posting_date
-				con.qty = a.qty
-				con.reference_type = "Issue POL"
-				con.reference_name = self.name
-				con.type = "Receive"
-				con.submit()
+		for a in self.items:
+			con = frappe.new_doc("POL Entry")
+			con.flags.ignore_permissions = 1
+			con.equipment = a.equipment
+			con.pol_type = self.pol_type
+			con.branch = a.equipment_branch
+			con.date = self.posting_date
+			con.qty = a.qty
+			con.reference_type = "Issue POL"
+			con.reference_name = self.name
+			con.type = "Receive"
+			con.submit()
 
 	def delete_pol_entry(self):
 		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", self.name)

@@ -11,8 +11,8 @@ class BudgetReappropiation(Document):
 	def validate(self):
 		for a in self.items:
 			if not flt(a.amount) > 0:
-				frappe.throw("Amoutn should be greater than 0 on row " + str(a.idx))
-			if a.from_account == a.to_account:
+				frappe.throw("Amount should be greater than 0 on row " + str(a.idx))
+			if self.from_cost_center == self.to_cost_center and a.from_account == a.to_account:
 				frappe.throw("From and To Account cannot be same")
 	def on_submit(self):
 		for a in self.items:

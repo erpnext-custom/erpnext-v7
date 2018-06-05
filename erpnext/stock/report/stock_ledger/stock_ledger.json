@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2018-05-11 16:22:48.325453", 
- "modified_by": "Administrator", 
+ "modified": "2018-06-04 16:06:29.910716", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Ledger", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Stock User (other)"
+  }, 
+  {
+   "role": "POL User"
   }
  ]
 }

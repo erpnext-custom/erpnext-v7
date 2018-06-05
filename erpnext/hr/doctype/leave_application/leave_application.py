@@ -139,7 +139,6 @@ class LeaveApplication(Document):
 
 	def cancel_attendance(self):
 		frappe.db.sql("update tabAttendance set docstatus = 2 where reference_name = %s", (self.name))
-		frappe.db.commit()	
 	
 	def validate_dates(self):
 		if self.from_date and self.to_date and (getdate(self.to_date) < getdate(self.from_date)):

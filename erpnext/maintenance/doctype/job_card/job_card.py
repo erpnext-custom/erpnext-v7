@@ -33,13 +33,14 @@ class JobCard(AccountsController):
 		self.outstanding_amount = self.total_amount
 
 	def on_submit(self):
+		self.check_items()
 		if not self.repair_type:
 			frappe.throw("Specify whether the maintenance is Major or Minor")
 		if not self.finish_date:
 			frappe.throw("Please enter Job Out Date")
 		else:
 			self.update_reservation()
-		self.check_items()
+		#self.check_items()
 		if self.owned_by == "Own":
 			self.db_set("outstanding_amount", 0)
 		if self.owned_by == "CDCL":
@@ -259,7 +260,7 @@ class JobCard(AccountsController):
 
 	def update_reservation(self):
 		frappe.db.sql("update `tabEquipment Reservation Entry` set to_date = %s, to_time = %s where docstatus = 1 and ehf_name = %s", (self.finish_date, self.job_out_time, self.break_down_report))
-		frappe.db.commit()
+		#frappe.db.commit()
 
 	##
 	# Update the job card reference on Break Down Report

@@ -24,6 +24,27 @@ frappe.ui.form.on('MusterRoll Application', {
 			};
 		}); 
 	},
+	branch: function(frm){
+		// Update Cost Center
+		if(frm.doc.branch){
+			frappe.call({
+				method: 'frappe.client.get_value',
+				args: {
+					doctype: 'Cost Center',
+					filters: {
+						'branch': frm.doc.branch
+					},
+					fieldname: ['name']
+				},
+				callback: function(r){
+					if(r.message){
+						cur_frm.set_value("cost_center", r.message.name);
+						refresh_field('cost_center');
+					}
+				}
+			});
+		}
+	},
 	get_employees: function(frm) {
 		//load_accounts(frm.doc.company)
 		return frappe.call({

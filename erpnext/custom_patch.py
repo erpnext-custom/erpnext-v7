@@ -8,6 +8,24 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def pol_entry():
+	pols = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1", as_dict=True)
+	for a in pols:
+		print(str(a.name))
+		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", a.name)
+		doc = frappe.get_doc("Issue POL", a.name)
+		doc.make_pol_entry()
+
+def ipol_gl():
+	pols = frappe.db.sql("select distinct p.name from `tabIssue POL` p, `tabGL Entry` g where p.docstatus = 1 and p.name = g.voucher_no", as_dict=True)
+	for a in pols:
+		valuation_rate = frappe.db.sql("select valuation_rate from `tabStock Ledger Entry` where voucher_no = %s limit 1", a.name, as_dict=True)
+		print(str(a.name))
+		if a.name not in ['IPOL180500272']:
+			frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+			pol = frappe.get_doc("Issue POL", a.name)
+			pol.update_stock_gl_ledger(1, 0, round(valuation_rate[0].valuation_rate, 2))
+
 def asset_cc():
 	assets = frappe.db.sql("select name from tabAsset where docstatus = 1", as_dict=True)
 	for a in assets:

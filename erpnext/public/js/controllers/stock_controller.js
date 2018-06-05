@@ -28,7 +28,7 @@ erpnext.stock.StockController = frappe.ui.form.Controller.extend({
 					to_date: me.frm.doc.posting_date,
 					company: me.frm.doc.company
 				};
-				frappe.set_route("query-report", "Stock Ledger");
+				frappe.set_route("query-report", "Stock Ledger Report");
 			}, __("View"));
 		}
 

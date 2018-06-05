@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-05-23 09:34:39.557186", 
+ "modified": "2018-06-04 16:05:44.631135", 
  "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Ledger Report", 
@@ -36,6 +36,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "POL User"
   }
  ]
 }

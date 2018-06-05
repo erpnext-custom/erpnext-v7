@@ -20,3 +20,10 @@ frappe.ui.form.on('Assign Branch', {
 		});
 	}
 });
+
+cur_frm.fields_dict['employee'].get_query = function(doc, dt, dn) {
+       return {
+               filters:{"status": "Active"}
+       }
+}
+

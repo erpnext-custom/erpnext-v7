@@ -6,14 +6,15 @@ from frappe.utils import flt, cint,add_days, cstr, flt, getdate, nowdate, rounde
 ##
 # Both recieved and issued pols can be queried with this
 ##
-def get_pol_till(purpose, equipment, date, pol_type):
+def get_pol_till(purpose, equipment, date, pol_type=None):
 	if not equipment or not date:
 		frappe.throw("Equipment and Till Date are Mandatory")
 	total = 0
 	query = "select sum(qty) as total from `tabPOL Entry` where docstatus = 1 and type = \'"+str(purpose)+"\' and equipment = \'" + str(equipment) + "\' and date <= \'" + str(date) + "\'"
 	if pol_type:
 		query += " and pol_type = \'" + str(pol_type) + "\'"
-		
+	
+
 	quantity = frappe.db.sql(query, as_dict=True)
 	if quantity:
 		total = quantity[0].total
@@ -22,7 +23,7 @@ def get_pol_till(purpose, equipment, date, pol_type):
 ##
 # Both recieved and issued pols can be queried with this
 ##
-def get_pol_between(purpose, equipment, from_date, to_date, pol_type):
+def get_pol_between(purpose, equipment, from_date, to_date, pol_type=None):
 	if not equipment or not from_date or not to_date:
 		frappe.throw("Equipment and From/To Date are Mandatory")
 	total = 0

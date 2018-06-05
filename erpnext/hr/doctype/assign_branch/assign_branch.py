@@ -8,10 +8,15 @@ from frappe.model.document import Document
 
 class AssignBranch(Document):
 	def validate(self):
+		self.check_mandatory()
 		self.check_employee_duplicate()
-		self.assign_name()	
+		#self.assign_name()	
 		self.check_duplicate()
-	
+
+
+	def check_mandatory(self):
+		if not self.user:
+			frappe.throw("User Id is Mandatory")	
 
 	def on_update(self):
 		self.assign_branch()
