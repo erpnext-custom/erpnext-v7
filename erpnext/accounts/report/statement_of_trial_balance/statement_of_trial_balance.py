@@ -139,8 +139,12 @@ def calculate_values(accounts, gl_entries_by_account, opening_balances, filters)
 		"account": None,
 		"account_name": _("Total"),
 		"warn_if_negative": True,
+		"opening_debit": 0.0,
+		"opening_credit": 0.0,
 		"debit": 0.0,
-		"credit": 0.0
+		"credit": 0.0,
+		"closing_debit": 0.0,
+		"closing_credit": 0.0
 	}
 
 	for d in accounts:
@@ -181,7 +185,7 @@ def prepare_data(accounts, filters, total_row, parent_children_map):
 			"to_date": filters.to_date
 		}
 
-		prepare_opening_and_closing(d)
+		prepare_opening_and_closing(d, total_row)
 
 		for key in value_fields:
 			row[key] = flt(d.get(key, 0.0), 3)
@@ -250,7 +254,7 @@ def get_columns():
 		}
 	]
 
-def prepare_opening_and_closing(d):
+def prepare_opening_and_closing(d, total_row):
 	d["closing_debit"] = d["opening_debit"] + d["debit"]
 	d["closing_credit"] = d["opening_credit"] + d["credit"]
 
@@ -269,3 +273,10 @@ def prepare_opening_and_closing(d):
 	else:
 		d["opening_credit"] -= d["opening_debit"]
 		d["opening_debit"] = 0.0
+
+	if str(d.account_name.encode('utf-8')) in ["Asset", "Liabilities", "Equity", "Revenue", "Expense"]:
+                total_row['opening_credit'] = total_row['opening_credit'] + d['opening_credit']
+                total_row['opening_debit'] = total_row['opening_debit'] + d['opening_debit']
+                total_row['closing_credit'] = total_row['closing_credit'] + d['closing_credit']
+                total_row['closing_debit'] = total_row['closing_debit'] + d['closing_debit']
+

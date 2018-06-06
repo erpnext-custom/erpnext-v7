@@ -86,9 +86,11 @@ def validate_expense_against_budget(args):
 			budget_amount = frappe.db.sql("select ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (args.account, args.cost_center, args.fiscal_year), as_dict=True)
 			if budget_amount:
 				consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.docstatus = 1 and cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (args.cost_center, args.account, args.fiscal_year+ "-01-01", args.fiscal_year + "-12-31"), as_dict=True)
+				amount = flt(args.debit) - flt(args.credit)
 				if consumed:
-					if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(args.debit)):
-						frappe.throw("Not enough budget in " + str(args.account) + " under " + str(args.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(args.debit) - flt(budget_amount[0].budget_amount))))
+					amount = flt(amount) + flt(consumed[0].total)
+				if flt(budget_amount[0].budget_amount) < amount:
+					frappe.throw("Not enough budget in " + str(args.account) + " under " + str(args.cost_center) + ". Budget exceeded by " + str((amount - flt(budget_amount[0].budget_amount))))
 			else:
 				frappe.throw("There is no budget in <b>" + str(args.account) + "</b> under <b>" + str(args.cost_center) + "</b>")
 
