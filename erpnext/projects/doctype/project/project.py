@@ -9,6 +9,9 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 2.0		  SHIV		                    02/09/2017         make_advance_payment method is created.
 2.0		  SHIV		                    05/09/2017         make_project_payment method is created.
 2.0               SHIV                              03/11/2017         set_status method is created.
+2.0               SHIV                              07/06/2018         * Allowing role "Project Committee" to change
+                                                                         Branch and Cost Center.
+                                                                         Method: validate_branch_change
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -94,6 +97,9 @@ class Project(Document):
 		self.project_advance_item = []
 		self.project_boq_item = []
 		self.project_invoice_item = []
+
+		# Following method added by SHIV on 03/11/2017
+		self.validate_branch_change()
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.send_welcome_email()
 
@@ -113,7 +119,26 @@ class Project(Document):
 		self.update_task_progress()
 		self.update_project_progress()
 		self.update_group_tasks()
+		# Following method created by SHIV on 07/06/2018
+		self.update_branch_change()
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+
+        def validate_branch_change(self):
+                if self.branch != self.get_db_value("branch"):
+                        for doctype in ["Project Advance", "Project Invoice"]:
+                                for t in frappe.get_all(doctype, ["name"], {"project": self.name, "docstatus":("<",2)}):
+                                        msg = '<b>Reference# {0}: <a href="#Form/{0}/{1}">{1}</a></b>'.format(doctype, t.name)
+                                        frappe.throw(_("Unable to change branch due to dependecies.<br>{0}").format(msg),title="Invalid Operation")
+
+        def update_branch_change(self):
+                for doctype in ["MB Entry", "BOQ Adjustment", "BOQ", "Timesheet", "Task"]:
+                        for t in frappe.get_all(doctype, ["name"], {"project": self.name}):
+                                doc = frappe.get_doc(doctype, t.name)
+                                if self.branch != doc.branch:
+                                        doc.branch      = self.branch
+                                        doc.cost_center = self.cost_center
+                                        doc.save(ignore_permissions = True)
+                                        
 
         def set_status(self):
                 self.docstatus = {

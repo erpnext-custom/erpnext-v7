@@ -23,6 +23,15 @@ from frappe.utils.data import get_first_day, get_last_day, add_years
 from frappe.desk.form.linked_with import get_linked_doctypes, get_linked_docs
 from frappe.model.naming import getseries
 
+#function to get the difference between two dates
+@frappe.whitelist()
+def get_date_diff(start_date, end_date):
+        if start_date is None:
+                return 0
+        elif end_date is None:
+                return 0
+        else:
+                return frappe.utils.data.date_diff(end_date, start_date) + 1;
 
 ##
 # Check for future dates in transactions

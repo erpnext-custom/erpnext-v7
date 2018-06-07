@@ -147,6 +147,10 @@ frappe.ui.form.on("Project", {
 
 			frm.trigger('show_dashboard');
 		}
+		
+		if(frm.doc.docstatus === 0){
+			enable_disable_items(frm);
+		}
 	},
 	
 	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
@@ -228,6 +232,27 @@ frappe.ui.form.on("Project", {
 		}
 		else {
 			cur_frm.set_value("imprest_receivable",parseFloat(frm.doc.imprest_limit || 0.0)-parseFloat(frm.doc.imprest_received || 0.0))
+		}
+	},
+	branch: function(frm){
+		// Update Cost Center
+		if(frm.doc.branch){
+			frappe.call({
+				method: 'frappe.client.get_value',
+				args: {
+					doctype: 'Cost Center',
+					filters: {
+						'branch': frm.doc.branch
+					},
+					fieldname: ['name']
+				},
+				callback: function(r){
+					if(r.message){
+						cur_frm.set_value("cost_center", r.message.name);
+						refresh_field('cost_center');
+					}
+				}
+			});
 		}
 	},
 });
@@ -372,3 +397,20 @@ frappe.ui.form.on("Activity Tasks","is_group", function(frm, cdt, cdn){
 	});
 });
 */
+
+function enable_disable_items(frm){
+	var toggle_fields = ["branch"];
+	
+	if(frm.doc.branch){
+		if(in_list(user_roles, "Project Committee")){
+			toggle_fields.forEach(function(field_name){
+				frm.set_df_property(field_name, "read_only", 0);
+			});
+		}
+		else {
+			toggle_fields.forEach(function(field_name){
+				frm.set_df_property(field_name, "read_only", 1);
+			});
+		}
+	}
+}

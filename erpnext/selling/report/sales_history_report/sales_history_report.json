@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-05 12:04:14.858254", 
+ "modified": "2018-06-07 08:53:52.244212", 
  "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Selling", 
  "name": "Sales History Report", 
@@ -34,6 +34,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Accounts User"
   }
  ]
 }

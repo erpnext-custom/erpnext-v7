@@ -469,3 +469,47 @@ def check_for_cc_group_entries():
                         print i.doctype.ljust(50,' ')+str(":"), c.cc, c.counts
                 
 
+# 2018/06/06, Hap Dorji, Sotck Reconciliation entry didn't take effect on stock balance report for SR/000041
+# /home/frappe/erp bench execute erpnext.temp_patch.update_stock_reconciliation
+def update_stock_reconciliation():
+        items = frappe.db.sql("""
+                select *
+                from `tabStock Ledger Entry`
+                where voucher_type = 'Stock Reconciliation'
+                and voucher_no = 'SR/000041'
+                and docstatus < 2
+                order by posting_date, posting_time
+        """, as_dict=1)
+
+        upd_counter = 0
+        for i in items:
+                diff = 0
+                prev = frappe.db.sql("""
+                        select *
+                        from `tabStock Ledger Entry`
+                        where warehouse = '{0}'
+                        and item_code = '{1}'
+                        and posting_date <= '{2}'
+                        and posting_time < '{3}'
+                        and docstatus < 2
+                        order by posting_date desc, posting_time desc
+                        limit 1
+                """.format(i.warehouse, i.item_code, i.posting_date, i.posting_time), as_dict=1)
+
+                if prev:
+                        diff = flt(i.stock_value,5)-flt(prev[0].stock_value,5)
+                        print 'F',i.item_code, i.stock_value, prev[0].stock_value, flt(i.stock_value_difference,5), flt(diff,5)
+                else:
+                        diff = i.stock_value
+                        print 'N',i.item_code, i.stock_value, flt(i.stock_value_difference,5), flt(diff,5)
+
+                if flt(i.stock_value_difference,5) != flt(diff,5):
+                        print 'updading...'
+                        frappe.db.sql("""
+                                update `tabStock Ledger Entry`
+                                set stock_value_difference = {0}
+                                where name = '{1}'
+                        """.format(diff, i.name))
+                        upd_counter += 1
+
+        print 'Total No.of rows updated: ',upd_counter

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-03 12:51:20.591012", 
+ "modified": "2018-06-07 15:51:01.282830", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "MR Status Report", 
@@ -20,13 +20,7 @@
    "role": "Administrator"
   }, 
   {
-   "role": "MR Creator"
-  }, 
-  {
-   "role": "MR User"
-  }, 
-  {
-   "role": "MR Manager"
+   "role": "Admin"
   }
  ]
 }

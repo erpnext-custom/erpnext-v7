@@ -13,11 +13,17 @@ from erpnext.controllers.stock_controller import StockController
 class POL(StockController):
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.validate_dc()
 		self.set_warehouse()
 		self.validate_data()
 		self.validate_posting_time()
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.validate_item()
+
+	def validate_dc(self):
+		is_container = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type") ,"is_container")
+		if not self.direct_consumption and not is_container:
+			frappe.throw("Non 'Direct Consumption' Receive POL is allowed only for Container Equipments")
 
 	def set_warehouse(self):
 		cc = get_branch_cc(self.equipment_branch)

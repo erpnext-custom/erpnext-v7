@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-12-14 10:26:07.451552", 
- "modified_by": "Administrator", 
+ "modified": "2018-06-07 08:53:24.483913", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Stock", 
  "name": "Supplier-Wise Sales Analytics", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Stock User (other)"
+  }, 
+  {
+   "role": "Accounts User"
   }
  ]
 }

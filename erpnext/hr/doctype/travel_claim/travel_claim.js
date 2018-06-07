@@ -118,9 +118,9 @@ frappe.ui.form.on("Travel Claim Item", {
 function do_update(frm, cdt, cdn) {
 	//var item = frappe.get_doc(cdt, cdn)
 	var item = locals[cdt][cdn]
-	if (item.last_day) {
+	/*if (item.last_day) {
 		item.dsa_percent = 0
-	}
+	} */
 	var amount = flt((item.dsa_percent/100 * item.dsa) + item.mileage_rate * item.distance)
 	if (item.halt == 1) {
 		amount = flt((item.dsa_percent/100 * item.dsa) * item.no_days)
@@ -134,6 +134,7 @@ function do_update(frm, cdt, cdn) {
 			},
 			callback: function(r) {
 				if(r.message) {
+					frappe.model.set_value(cdt, cdn, "exchange_rate", flt(r.message))
 					frappe.model.set_value(cdt, cdn, "actual_amount", flt(r.message) * amount)
 				}
 			}

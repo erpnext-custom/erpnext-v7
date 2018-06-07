@@ -18,6 +18,7 @@ class TravelClaim(Document):
 			self.supervisor_approved_on = ''
 		if self.supervisor_approved_on and not hr_role:
 			frappe.throw("Cannot change records after approval by supervisor")
+		self.check_return_date()
 		self.validate_dates()
 		self.check_approval()
 		self.update_travel_authorization()
@@ -58,6 +59,19 @@ class TravelClaim(Document):
 
 	def on_cancel(self):
 		self.sendmail(self.employee, "Travel Claim Cancelled by HR" + str(self.name), "Your travel claim " + str(self.name) + " has been cancelled by the user")
+
+	def check_return_date(self):
+		dsa_percent = frappe.db.get_single_value("HR Settings", "return_day_dsa")
+                percent = flt(flt(dsa_percent) / 100.0)
+		total_claim_amount = 0
+		for a in self.items:
+			if a.last_day:
+				a.dsa_percent = dsa_percent
+				a.amount = flt(a.amount) * percent
+				a.actual_amount = a.amount * a.exchange_rate
+			total_claim_amount = total_claim_amount + a.actual_amount
+		self.total_claim_amount = total_claim_amount
+		self.balance_amount = self.total_claim_amount + self.extra_claim_amount - self.advance_amount
 
 	def check_double_dates(self):
 		if self.items:

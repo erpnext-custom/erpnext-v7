@@ -7,12 +7,13 @@ frappe.ui.form.on("Bank Reconciliation", {
 		frm.add_fetch("bank_account", "account_currency", "account_currency");
 
 		frm.get_field('payment_entries').grid.editable_fields = [
-			{fieldname: 'payment_document', columns: 1},
+			{fieldname: 'posting_date', columns: 1},
+			{fieldname: 'payment_document', columns: 2},
 			{fieldname: 'against_account', columns: 2},
 			{fieldname: 'amount', columns: 2},
-			{fieldname: 'cheque_number', columns: 2},
-			{fieldname: 'clearance_date', columns: 2}
-		];
+			{fieldname: 'cheque_number', columns: 1},
+			{fieldname: 'clearance_date', columns: 1}
+		]; 
 	},
 
 	onload: function(frm) {
@@ -58,3 +59,5 @@ frappe.ui.form.on("Bank Reconciliation", {
 		});
 	}
 });
+
+

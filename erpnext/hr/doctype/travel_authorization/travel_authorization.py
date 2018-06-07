@@ -219,16 +219,22 @@ def make_travel_claim(source_name, target_doc=None):
 			target.halt_at = ""
 		target.currency = source_parent.currency
 		target.dsa = source_parent.dsa_per_day
-		target.actual_amount = target.dsa
+		if target.currency == "BTN":
+                        target.exchange_rate = 1
+                else:
+                        target.exchange_rate = get_exchange_rate(target.currency, "BTN")
+		target.amount = target.dsa
 		if target.halt:
-			target.actual_amount = flt(target.dsa) * flt(target.no_days)
-		target.amount = target.actual_amount
+			target.amount = flt(target.dsa) * flt(target.no_days)
+		target.actual_amount = target.amount * target.exchange_rate
 
 	def adjust_last_date(source, target):
-		target.items[len(target.items) - 1].dsa_percent = 0 
-		target.items[len(target.items) - 1].actual_amount = 0 #target.items[len(target.items) - 1].actual_amount / 2
-		target.items[len(target.items) - 1].amount = 0 #target.items[len(target.items) - 1].amount / 2
-		target.items[len(target.items) - 1].last_day = 1 #target.items[len(target.items) - 1].amount / 2
+		dsa_percent = frappe.db.get_single_value("HR Settings", "return_day_dsa")
+		percent = flt(dsa_percent) / 100.0
+		target.items[len(target.items) - 1].dsa_percent = dsa_percent
+		target.items[len(target.items) - 1].actual_amount = target.items[len(target.items) - 1].actual_amount * percent
+		target.items[len(target.items) - 1].amount = target.items[len(target.items) - 1].amount * percent
+		target.items[len(target.items) - 1].last_day = 1 
 
 	doc = get_mapped_doc("Travel Authorization", source_name, {
 			"Travel Authorization": {
