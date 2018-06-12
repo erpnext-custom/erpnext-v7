@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 11:19:53.323953", 
- "modified_by": "Administrator", 
+ "modified": "2018-06-08 14:51:31.179340", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Accounts", 
  "name": "Sales Register", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Sales Manager"
+  }, 
+  {
+   "role": "Sales Master"
   }
  ]
 }

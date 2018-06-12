@@ -41,6 +41,8 @@ frappe.ui.form.on('Break Down Report', {
 		// Ver 2.0 Ends
 	},
 	owned_by: function(frm) {
+		cur_frm.set_value("customer", "")
+		cur_frm.set_value("equipment", "")
 		cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'CDCL')
 		cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'CDCL')
 
@@ -64,6 +66,7 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
 	if (frm.doc.owned_by == "Owned") {
 		return {
 		    "filters": {
+			"is_disabled": 0,
 			"branch": frm.doc.branch
 		    }
 		};
@@ -71,6 +74,7 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
 	else if (frm.doc.owned_by == "CDCL"){
 		return {
 		    "filters": {
+			"is_disabled": 0,
 			"branch": frm.doc.customer_branch
 		    }
 		};
@@ -88,7 +92,16 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
     });
 
     cur_frm.set_query("customer", function() {
-	if(frm.doc.owned_by == "Own" || frm.doc.owned_by == "CDCL") {
+	if(frm.doc.owned_by == "Own") {
+		return {
+		    "filters": {
+			"disabled": 0,
+			"cost_center": frm.doc.cost_center,
+			"branch": frm.doc.branch
+		    }
+		};
+	}
+	if(frm.doc.owned_by == "CDCL") {
 		return {
 		    "filters": {
 			"disabled": 0,

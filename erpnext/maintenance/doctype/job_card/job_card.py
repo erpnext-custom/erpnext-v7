@@ -59,11 +59,11 @@ class JobCard(AccountsController):
 		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this job card first!")
 		
-		bdr = frappe.get_doc("Break Down Report", self.break_down_report)
-		bdr.db_set("job_card", "")
 		self.db_set('jv', "")
 
 	def on_cancel(self):
+		bdr = frappe.get_doc("Break Down Report", self.break_down_report)
+		bdr.db_set("job_card", "")
 		if self.owned_by == "Others":
 			self.make_gl_entries()	
 
@@ -149,14 +149,21 @@ class JobCard(AccountsController):
 						"debit_in_account_currency": flt(self.total_amount),
 						"debit": flt(self.total_amount),
 					})
-				je.append("accounts", {
-						"account": ir_account,
-						"reference_type": "Job Card",
-						"reference_name": self.name,
-						"cost_center": self.cost_center,
-						"credit_in_account_currency": flt(self.total_amount),
-						"credit": flt(self.total_amount),
-					})
+				for a in ["Service", "Item"]:
+					account_name = goods_account
+					amount = self.goods_amount
+					if a == "Service":
+						amount = self.services_amount
+						account_name = services_account;
+					if amount != 0:
+						je.append("accounts", {
+								"account": account_name,
+								"reference_type": "Job Card",
+								"reference_name": self.name,
+								"cost_center": self.cost_center,
+								"credit_in_account_currency": flt(amount),
+								"credit": flt(amount),
+							})
 				je.insert()
 
 			else:

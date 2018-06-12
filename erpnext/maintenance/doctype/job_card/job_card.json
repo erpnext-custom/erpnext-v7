@@ -1501,7 +1501,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-06-01 15:23:55.720842", 
+ "modified": "2018-06-08 20:06:47.185784", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Job Card", 
@@ -1550,7 +1550,7 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
@@ -1716,7 +1716,7 @@
    "write": 0
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 

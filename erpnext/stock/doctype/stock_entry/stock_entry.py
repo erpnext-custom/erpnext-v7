@@ -787,6 +787,9 @@ class StockEntry(StockController):
 			if self.purpose == "Material Issue":
 				for a in self.items:
 					if frappe.db.get_value("Item", a.item_code, "maintain_in_register"):
+                                                if not a.issued_to:
+                                                        frappe.throw(_("Row#{0} : <b>`Issued To`</b> is mandatory for item <b>{1} ({2})</b>.".format(a.idx,a.item_name,a.item_code)),title="Missing values")
+                                                        
 						doc = frappe.new_doc("Consumable Register Entry")
 						doc.branch = self.branch
 						doc.item_code = a.item_code

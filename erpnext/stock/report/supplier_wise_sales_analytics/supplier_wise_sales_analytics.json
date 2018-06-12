@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2018-06-07 08:53:24.483913", 
+ "modified": "2018-06-08 14:51:01.683835", 
  "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Stock", 
  "name": "Supplier-Wise Sales Analytics", 
@@ -30,6 +30,15 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Sales Master"
+  }, 
+  {
+   "role": "Sales User"
+  }, 
+  {
+   "role": "Sales Manager"
   }
  ]
 }

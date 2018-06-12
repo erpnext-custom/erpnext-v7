@@ -68,10 +68,10 @@ class TravelClaim(Document):
 			if a.last_day:
 				a.dsa_percent = dsa_percent
 				a.amount = flt(a.amount) * percent
-				a.actual_amount = a.amount * a.exchange_rate
+				a.actual_amount = flt(a.amount) * flt(a.exchange_rate)
 			total_claim_amount = total_claim_amount + a.actual_amount
 		self.total_claim_amount = total_claim_amount
-		self.balance_amount = self.total_claim_amount + self.extra_claim_amount - self.advance_amount
+		self.balance_amount = flt(self.total_claim_amount) + flt(self.extra_claim_amount) - flt(self.advance_amount)
 
 	def check_double_dates(self):
 		if self.items:

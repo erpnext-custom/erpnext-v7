@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate, cint, validate_email_add, today, add_years, date_diff, nowdate
 from frappe.utils.data import get_first_day, get_last_day, add_days
@@ -54,7 +55,9 @@ class MusterRollEmployee(Document):
                                                 "owner": frappe.session.user,
                                                 "creation": nowdate(),
                                                 "modified_by": frappe.session.user,
-                                                "modified": nowdate()
+                                                "modified": nowdate(),
+                                                "reference_doctype": self.temp_doctype,
+                                                "reference_docname": self.temp_docname
                         })
                 else:
                         # Fetching previous document from db
@@ -94,5 +97,7 @@ class MusterRollEmployee(Document):
                                                 "owner": frappe.session.user,
                                                 "creation": nowdate(),
                                                 "modified_by": frappe.session.user,
-                                                "modified": nowdate()
+                                                "modified": nowdate(),
+                                                "reference_doctype": self.temp_doctype,
+                                                "reference_docname": self.temp_docname
                                 })

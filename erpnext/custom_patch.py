@@ -8,6 +8,24 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def list_bb():
+        num = 1
+        for self in frappe.db.sql("select name, owned_by, equipment, branch, customer_branch from `tabBreak Down Report` where docstatus != 2", as_dict=True):
+                if self.owned_by in ['CDCL', 'Own']:
+                                eb = frappe.db.get_value("Equipment", self.equipment, "branch")
+                                if self.owned_by == "Own" and not self.branch == eb:
+                                        print("OWN: " + str(self.name) )
+                                        num = num + 1
+                                if self.owned_by == "CDCL" and not self.customer_branch == eb:
+                                        print("CDCL: " + str(self.name) )
+                                        num = num + 1
+        print(num)
+
+def clean_br():
+	brs = frappe.db.sql("select b.name from `tabBreak Down Report` b, `tabJob Card` j where b.job_card = j.name and j.docstatus = 2 and b.docstatus = 1", as_dict=True)
+	for a in brs:
+		frappe.db.sql("update `tabBreak Down Report` set job_card = '' where name = %s", a.name)
+
 def pol_entry():
 	pols = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1", as_dict=True)
 	for a in pols:

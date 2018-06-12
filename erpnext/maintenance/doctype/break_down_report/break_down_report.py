@@ -13,6 +13,7 @@ from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 class BreakDownReport(Document):
 	def validate(self):
 		check_future_date(self.date)
+		self.validate_equipment()
 
 	def on_submit(self):
 		self.assign_reservation()
@@ -23,6 +24,16 @@ class BreakDownReport(Document):
                         frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
 		frappe.db.sql("delete from `tabEquipment Reservation Entry` where ehf_name = \'"+str(self.name)+"\'")
 	
+	def validate_equipment(self):
+		if self.owned_by in ['CDCL', 'Own']:
+			eb = frappe.db.get_value("Equipment", self.equipment, "branch")
+			if self.owned_by == "Own" and self.branch != eb:
+				frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to your branch")
+			if self.owned_by == "CDCL" and self.customer_branch != eb:
+				frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to <b>" + str(self.customer_branch) + "</b>")
+		else:
+			self.equipment = ""
+
 	def assign_reservation(self):
 		if self.owned_by in ['CDCL', 'Own']:
 			doc = frappe.new_doc("Equipment Reservation Entry")

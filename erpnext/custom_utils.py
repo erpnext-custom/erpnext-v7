@@ -147,6 +147,9 @@ def cancel_draft_doc(doctype, docname):
                 doc.db_set("workflow_state", "Cancelled")
         elif doctype == "Imprest Receipt":
                 doc.db_set("workflow_state", "Cancelled")
+        elif doctype == "Job Card":
+		br = frappe.get_doc("Break Down Report", doc.break_down_report)
+                br.db_set("job_card", "")
         else:
                 pass
                 
