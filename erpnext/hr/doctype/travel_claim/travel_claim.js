@@ -34,7 +34,7 @@ frappe.ui.form.on('Travel Claim', {
 			cur_frm.set_df_property("supervisor_approval", "hidden", 0)
 			cur_frm.set_df_property("claim_status", "hidden", 0)
 		}
-		if (in_list(user_roles, "HR Manager"))  {
+		if (in_list(user_roles, "HR Manager") || in_list(user_roles, "HR Support"))  {
 			cur_frm.set_df_property("hr_approval", "hidden", 0)
 			cur_frm.set_df_property("claim_status", "hidden", 0)
 		}

@@ -258,7 +258,8 @@ class HireChargeInvoice(AccountsController):
                         gl_entries.append(
                                 self.get_gl_dict({
                                        "account": hire_account,
-                                       "against": hire_account,
+				       "against_voucher_type": "Equipment Hiring Form",
+                                       "against": self.ehf_name,
                                        "credit": self.total_invoice_amount,
                                        "credit_in_account_currency": self.total_invoice_amount,
                                        "cost_center": self.cost_center

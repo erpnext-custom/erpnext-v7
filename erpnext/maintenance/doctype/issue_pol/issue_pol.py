@@ -10,6 +10,8 @@ from erpnext.accounts.utils import get_fiscal_year
 from frappe.utils import flt, getdate
 from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, prepare_sl, check_budget_available
 from erpnext.controllers.stock_controller import StockController
+from erpnext.maintenance.report.maintenance_report import get_pol_till
+from erpnext.stock.utils import get_stock_balance
 
 class IssuePOL(StockController):
 	def validate(self):
@@ -55,7 +57,7 @@ class IssuePOL(StockController):
 	def on_submit(self):
 		if not self.items:
 			frappe.throw("Should have a POL Issue Details to Submit")
-
+		self.check_tanker_hsd_balance()
 		self.update_stock_gl_ledger(1, 1)
 		self.make_pol_entry()
 
@@ -68,13 +70,17 @@ class IssuePOL(StockController):
 			frappe.throw(str(self.warehouse) + " is not linked to any account.")
 
 		for a in self.items:
-			from erpnext.stock.stock_ledger import get_valuation_rate
+			#from erpnext.stock.stock_ledger import get_valuation_rate
 			if not map_rate:
-				map_rate = get_valuation_rate(self.pol_type, self.warehouse)
+				stock_qty, map_rate = get_stock_balance(self.pol_type, self.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
+				#map_rate = get_valuation_rate(self.pol_type, self.warehouse)
                         valuation_rate = flt(a.qty) * flt(map_rate)
 
-			ec = frappe.db.get_value("Equipment", a.equipment, "equipment_category")
-			budget_account = frappe.db.get_value("Equipment Category", ec, "budget_account")
+			if self.is_hsd_item:
+				ec = frappe.db.get_v2alue("Equipment", a.equipment, "equipment_category")
+				budget_account = frappe.db.get_value("Equipment Category", ec, "budget_account")
+			else:
+				budget_account = frappe.db.get_value("Item", self.pol_type, "expense_account")
 			if not budget_account:
 				frappe.throw("Set Budget Account in Equipment Category")		
 
@@ -202,7 +208,18 @@ class IssuePOL(StockController):
 		self.update_stock_gl_ledger(1, 1)
 		self.delete_pol_entry()
 
+	def check_tanker_hsd_balance(self):
+		if not self.tanker:
+			return
+		received_till = get_pol_till("Receive", self.tanker, self.posting_date, self.pol_type)
+		issue_till = get_pol_till("Issue", self.tanker, self.posting_date, self.pol_type)
+		balance = flt(received_till) - flt(issue_till)
+		if flt(self.total_quantity) > flt(balance):
+			frappe.throw("Not enough balance in tanker to issue")	
+
 	def make_pol_entry(self):
+		if getdate(self.posting_date) <= getdate("2018-03-31"):
+			return
 		if self.tanker:
 			con = frappe.new_doc("POL Entry")
 			con.flags.ignore_permissions = 1
@@ -214,9 +231,14 @@ class IssuePOL(StockController):
 			con.reference_type = "Issue POL"
 			con.reference_name = self.name
 			con.type = "Issue"
+			con.is_opening = 0
 			con.submit()
 
 		for a in self.items:
+			if self.branch == a.equipment_branch:
+				own = 1
+			else:
+				own = 0
 			con = frappe.new_doc("POL Entry")
 			con.flags.ignore_permissions = 1
 			con.equipment = a.equipment
@@ -226,7 +248,12 @@ class IssuePOL(StockController):
 			con.qty = a.qty
 			con.reference_type = "Issue POL"
 			con.reference_name = self.name
-			con.type = "Receive"
+			con.own_cost_center = own
+			if self.purpose == "Issue":
+				con.type = "Receive"
+			else:
+				con.type = "Stock"
+			con.is_opening = 0
 			con.submit()
 
 	def delete_pol_entry(self):

@@ -17,19 +17,27 @@ def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		if not d.issued_qty:
-			d.issued_qty = 0
+		query = "select sum(id.qty) as issued_qty from `tabAsset Issue Details` id where id.item_code = %s and id.docstatus = 1"
+		if filters.to_date and filters.from_date:
+			query += " and id.issued_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"	
+		if filters.branch:
+			query += " and branch = \'"+str(filters.branch)+"\'"
+		i_qty = frappe.db.sql(query, d.item_code, as_dict=True)[0]
+		if i_qty:
+			issued_qty = i_qty.issued_qty
+		else:
+			issued_qty = 0
 
-		row = [d.item_code, d.item_name, d.total_qty, d.issued_qty, flt(d.total_qty) - flt(d.issued_qty)]
+		row = [d.item_code, d.item_name, d.total_qty, issued_qty, flt(d.total_qty) - flt(issued_qty)]
 		data.append(row);
 	return data
 
 def construct_query(filters=None):
-	query = ""
-	query = "select ae.item_code, (select i.item_name from `tabItem` as i where i.item_code = ae.item_code) as item_name, sum(ae.qty) as total_qty, (select sum(id.qty) from `tabAsset Issue Details` id where id.item_code = ae.item_code and id.docstatus = 1) as issued_qty from `tabAsset Received Entries` as ae where ae.docstatus = 1 "
-
+	query = "select ae.item_code, ae.item_name, ae.qty as total_qty from `tabAsset Received Entries` as ae where ae.docstatus = 1"
 	if filters.to_date and filters.from_date:
-		query = "select ae.item_code, (select i.item_name from `tabItem` as i where i.item_code = ae.item_code) as item_name, ae.qty as total_qty, (select sum(id.qty) from `tabAsset Issue Details` id where id.item_code = ae.item_code and id.docstatus = 1 and id.issued_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\') as issued_qty from `tabAsset Received Entries` as ae where ae.docstatus = 1 and ae.received_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"; 
+		query += " and ae.received_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"; 
+	if filters.branch:
+		query += " and ae.branch = \'"+str(filters.branch)+"\'"
 	
 	query += " group by ae.item_code order by ae.item_code asc"
 	return query;

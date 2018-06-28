@@ -3,8 +3,9 @@ import frappe
 from frappe.model.document import Document
 from frappe import msgprint
 from frappe.utils import flt, cint, now
-from frappe.utils.data import get_first_day, get_last_day, add_years
+from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff, today, get_first_day, get_last_day
 from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+import collections
 
 def adjust_leave_encashment():
         les = frappe.db.sql("select name, encashed_days, employee from `tabLeave Encashment` where docstatus = 1 and application_date between %s and %s", ('2017-01-01', '2017-12-31'), as_dict=True)
@@ -513,3 +514,55 @@ def update_stock_reconciliation():
                         upd_counter += 1
 
         print 'Total No.of rows updated: ',upd_counter
+
+#
+# Updating ref_doc in `tabReappropriation Details` for transactions prior to introduction of submit button on "Budget Reappropiation" screen
+# 2018/06/27
+#
+def update_budget_reappropriation():
+        print 'Creating a dummy reappropriation'
+        doc = frappe.new_doc("Budget Reappropiation")
+        doc.from_cost_center = "Gelephu - CDCL"
+        doc.to_cost_center = "Gelephu - CDCL"
+        doc.fiscal_year = "2018"
+        doc.save(ignore_permissions=True)
+        doc.submit()
+
+def get_monthly_count(from_date, to_date):
+    print from_date, to_date
+    mcount = {}
+    from_month      = str(from_date)[5:7]
+    to_month        = str(to_date)[5:7]
+    from_year       = str(from_date)[:4]
+    to_year         = str(to_date)[:4]
+    from_monthyear  = str(from_year)+str(from_month)
+    to_monthyear    = str(to_year)+str(to_month)
+    
+    for y in range(int(from_year), int(to_year)+1):
+        m_start = from_month if str(y) == str(from_year) else '01'
+        m_end   = to_month if str(y) == str(to_year) else '12'
+                            
+	print 'Year:',y                            
+        for m in range(int(m_start), int(m_end)+1):
+	    print 'Month:',m
+            key          = str(y)+(str(m).rjust(2,str('0')))
+            m_start_date = key[:4]+'-'+key[4:]+'-01'
+            m_start_date = from_date if str(y)+str(m).rjust(2,str('0')) == str(from_year)+str(from_month) else m_start_date
+            m_end_date   = to_date if str(y)+str(m).rjust(2,str('0')) == str(to_year)+str(to_month) else get_last_day(m_start_date)
+	    print str(y)+str(m),str(from_year)+str(from_month),str(to_year)+str(to_month)
+	    print m_start_date, m_end_date
+            if mcount.has_key(key):
+                mcount[key]['local'] += date_diff(m_end_date, m_start_date)+1
+            else:
+                mcount[key] = {'local': date_diff(m_end_date, m_start_date)+1, 'claimed': 0}                                                
+
+    print collections.OrderedDict(sorted(mcount.items()))
+    for k,v in collections.OrderedDict(sorted(mcount.items())).iteritems():
+	print k,v
+
+    keys = [k for k in mcount]
+    print keys
+
+    format_strings = ','.join(['%s'] * len(mcount))
+    print format_strings
+    print "VALUES IN ({0})".format(format_strings) % tuple(keys)

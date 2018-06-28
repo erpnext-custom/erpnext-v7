@@ -4,17 +4,19 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr
-from erpnext.maintenance.report.maintenance_report import get_pol_till 
+from erpnext.maintenance.report.maintenance_report import get_pol_till, get_pol_consumed_till
 
 def execute(filters=None):
-	columns = get_columns();
+	columns = get_columns(filters);
 	data = get_data(filters);
 
 	return columns, data
 
 def get_data(filters=None):
 	data = []
-	query = "select e.name, e.branch, e.equipment_number from tabEquipment e, `tabEquipment Type` et where e.equipment_type = et.name and et.is_container = 1"
+	query = "select e.name, e.branch, e.equipment_number, e.hsd_type, e.equipment_type from tabEquipment e, `tabEquipment Type` et where e.equipment_type = et.name "
+	if not filters.all_equipment:
+		query += " and et.is_container = 1"
 	if filters.branch:
 		query += " and e.branch = \'" + str(filters.branch) + "\'"
 		
@@ -24,15 +26,22 @@ def get_data(filters=None):
 
 	for eq in frappe.db.sql(query, as_dict=True):
 		for item in items:
-			received = get_pol_till("Receive", eq.name, filters.to_date, item.item_code)
-			issued = get_pol_till("Issue", eq.name, filters.to_date, item.item_code)
+			received = issued = 0
+			if filters.all_equipment:
+				if eq.hsd_type == item.item_code:
+					received = get_pol_till("Receive", eq.name, filters.to_date, item.item_code)
+					issued = get_pol_consumed_till(eq.name, filters.to_date)
+			else:
+				received = get_pol_till("Stock", eq.name, filters.to_date, item.item_code)
+				issued = get_pol_till("Issue", eq.name, filters.to_date, item.item_code)
+
 			if received or issued:
-				row = [eq.name, eq.equipment_number, eq.branch, item.item_code, item.item_name, item.stock_uom, received, issued, flt(received) - flt(issued)]
+				row = [eq.name, eq.equipment_number, eq.equipment_type, eq.branch, item.item_code, item.item_name, item.stock_uom, received, issued, flt(received) - flt(issued)]
 				data.append(row)
 	return data
 
-def get_columns():
-	return [
+def get_columns(filters):
+	cols = [
 		{
 			"fieldname": "equipment",
 			"label": _("Equipment"),
@@ -43,6 +52,12 @@ def get_columns():
 		{
                         "fieldname": "eq_name",
                         "label": _("Equipment Name"),
+                        "fieldtype": "Data",
+                        "width": 130
+                },
+		{
+                        "fieldname": "eq_cat",
+                        "label": _("Equipment Type"),
                         "fieldtype": "Data",
                         "width": 130
                 },
@@ -78,16 +93,27 @@ def get_columns():
                         "fieldtype": "Float",
                         "width": 100
                 },
-		{
-                        "fieldname": "issued",
-                        "label": _("Issued"),
-                        "fieldtype": "Float",
-                        "width": 100
-                },
-		{
+	]
+
+	if filters.all_equipment:
+		cols.append({
+				"fieldname": "issued",
+				"label": _("Consumed"),
+				"fieldtype": "Float",
+				"width": 100
+			})
+	else:
+		cols.append({
+				"fieldname": "issued",
+				"label": _("Issued"),
+				"fieldtype": "Float",
+				"width": 100
+			})
+
+	cols.append({
                         "fieldname": "balance",
                         "label": _("Balance"),
                         "fieldtype": "Float",
                         "width": 100
-                },
-	]
+                })
+	return cols

@@ -25,8 +25,10 @@ def get_data(query, filters=None):
 def construct_query(filters=None):
 	query = """select id.serial_number, id.item_code, id.item_name, id.qty, (select e.employee_name from tabEmployee as e where e.name = id.issued_to) as custodian, id.issued_date, id.amount from `tabAsset Issue Details` as id
 	where id.docstatus = 1 and id.issued_date between %s and %s
-	order by id.issued_date asc
 	"""
+	if filters.branch:
+		query += " and branch = \'"+str(filters.branch)+"\'"
+	query += " order by id.issued_date asc"
 	return query;
 
 def validate_filters(filters):

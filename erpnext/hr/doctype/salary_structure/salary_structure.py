@@ -403,30 +403,36 @@ def make_salary_slip(source_name, target_doc=None):
 
 		pf = gis = health = 0.00
                 for d in target.get('deductions'):
-                        #frappe.msgprint(_("{0}").format(d.salary_component))
-                        if d.salary_component == 'PF': 
-				percent = frappe.db.get_single_value("HR Settings", "employee_pf")
-				if not percent:
-					frappe.throw("Setup PF Percent in HR Settings")
-                                pf = round(basic_amt*flt(percent)*0.01);
-				d.amount = pf
-			if d.salary_component == 'Group Insurance Scheme':
-                                gis = flt(get_employee_gis(source.employee))
-				d.amount = gis
-			if d.salary_component == 'Health Contribution': 
-				percent = frappe.db.get_single_value("HR Settings", "health_contribution")
-				if not percent:
-					frappe.throw("Setup Health Contribution Percent in HR Settings")
-                                health = round(gross_amt*flt(percent)*0.01);
-				d.amount = health
+                        if not flt(gross_amt):
+                                d.amount = 0
+                        else:
+                                if d.salary_component == 'PF': 
+                                        percent = frappe.db.get_single_value("HR Settings", "employee_pf")
+                                        if not percent:
+                                                frappe.throw("Setup PF Percent in HR Settings")
+                                        pf = round(basic_amt*flt(percent)*0.01);
+                                        d.amount = pf
+                                if d.salary_component == 'Group Insurance Scheme':
+                                        gis = flt(get_employee_gis(source.employee))
+                                        d.amount = gis
+                                if d.salary_component == 'Health Contribution': 
+                                        percent = frappe.db.get_single_value("HR Settings", "health_contribution")
+                                        if not percent:
+                                                frappe.throw("Setup Health Contribution Percent in HR Settings")
+                                        health = round(gross_amt*flt(percent)*0.01);
+                                        d.amount = health
+
 
 		tax_included = 0
                 for d in target.get('deductions'):
-                        if d.salary_component == 'Salary Tax':
-				if not tax_included:
-					tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
-					d.amount = flt(tax_amt)
-					tax_included = 1
+                        if not flt(gross_amt):
+                                d.amount = 0
+                        else:
+                                if d.salary_component == 'Salary Tax':
+                                        if not tax_included:
+                                                tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
+                                                d.amount = flt(tax_amt)
+                                                tax_included = 1
                 #frappe.msgprint(_("gross_amt: {0}, gis: {1}, pf: {2}, comm_amt: {3}, tax: {4}").format(flt(gross_amt),flt(gis),flt(pf),flt(comm_amt),flt(tax_amt)))                        
 		target.run_method("pull_emp_details")
 		target.run_method("get_leave_details")

@@ -42,17 +42,9 @@ class StockController(AccountsController):
 		
 		for detail in voucher_details:
 			sle_list = sle_map.get(detail.name)
-			if self.doctype == "POL":
-				pol = frappe.get_doc("POL", detail.name)
-				gls_pol = pol.update_general_ledger(0)
-				for a in gls_pol:
-					gl_list.append(a)
-			if self.doctype == "Issue POL":
-				pol = frappe.get_doc("Issue POL", detail.name)
-				gls_pol = pol.update_stock_gl_ledger(1, 1)
-				for a in gls_pol:
-					gl_list.append(a)
-			if sle_list:
+			if self.doctype in ["POL", "Issue POL"]:
+				pass
+			if sle_list and not self.doctype in ["POL", "Issue POL"]:
 				for sle in sle_list:
 					if warehouse_account.get(sle.warehouse):
 						# from warehouse account
@@ -130,17 +122,11 @@ class StockController(AccountsController):
 		if self.doctype == "Stock Reconciliation":
 			return [frappe._dict({ "name": voucher_detail_no, "expense_account": default_expense_account,
 				"cost_center": default_cost_center }) for voucher_detail_no, sle in sle_map.items()]
-		elif self.doctype == "POL":
-			gl_map_pol = []
-			for voucher_detail_no, sle in sle_map.items():
-				pol = frappe.get_doc("POL", voucher_detail_no)
-				exp = frappe.db.get_value("Equipment Category", pol.equipment_category, "budget_account")
-				cc = get_branch_cc(pol.fuelbook_branch)
-				gl_map_pol.append(frappe._dict({ "name": voucher_detail_no, "expense_account": exp, "cost_center": cc }))
-			return gl_map_pol
-		elif self.doctype == "Issue POL":
-			frappe.throw("")
-			pass
+		elif self.doctype in ["Issue POL", "POL"]:
+                        gl_map_pol = []
+                        for voucher_detail_no, sle in sle_map.items():
+                                gl_map_pol.append(frappe._dict({ "name": voucher_detail_no, "expense_account": "", "cost_center": "" }))
+                        return gl_map_pol
 		else:
 			details = self.get("items")
 
@@ -226,7 +212,7 @@ class StockController(AccountsController):
 			make_gl_entries(gl_entries)
 
 	def check_expense_account(self, item):
-		if self.doctype == "POL":
+		if self.doctype in ["POL", "Issue POL"]:
 			return
 		if not item.get("expense_account"):
 			frappe.throw(_("Expense or Difference account is mandatory for Item {0} as it impacts overall stock value").format(item.item_code))
@@ -318,6 +304,8 @@ class StockController(AccountsController):
 def update_gl_entries_after(posting_date, posting_time, for_warehouses=None, for_items=None,
 		warehouse_account=None):
 	def _delete_gl_entries(voucher_type, voucher_no):
+		if voucher_type in ["POL", "Issue POL"]:
+                        return
 		frappe.db.sql("""delete from `tabGL Entry`
 			where voucher_type=%s and voucher_no=%s""", (voucher_type, voucher_no))
 

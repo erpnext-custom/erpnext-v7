@@ -70,6 +70,8 @@ class POL(StockController):
 	def check_budget(self):
 		cc = get_branch_cc(self.equipment_branch)
 		account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
+		if self.is_hsd_item:
+			account = frappe.db.get_value("Item", self.pol_type, "expense_account")
 
 		check_budget_available(cc, account, self.posting_date, self.total_amount)
 		self.consume_budget(cc, account)
@@ -190,9 +192,12 @@ class POL(StockController):
 
 	def get_expense_account(self):
 		if self.direct_consumption:
-			expense_account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
+			if self.is_hsd_item:
+				expense_account = frappe.db.get_value("Item", self.pol_type, "expense_account")
+			else:
+				expense_account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
 			if not expense_account:
-				frappe.throw("Set Budget Account in Equipment Category")		
+				frappe.throw("Set Budget Account in Equipment Category or Item Master")		
 		else:
 			expense_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
 			if not expense_account:
@@ -270,30 +275,59 @@ class POL(StockController):
 			frappe.throw("Define POL expense account in Maintenance Setting or Expense Bank in Branch")
 		
 	def make_pol_entry(self):
+		if getdate(self.posting_date) <= getdate("2018-03-31"):
+                        return
+		container = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type"), "is_container")
+		if self.equipment_branch == self.fuelbook_branch:
+			own = 1
+		else:
+			own = 0
+
 		con = frappe.new_doc("POL Entry")
 		con.flags.ignore_permissions = 1	
 		con.equipment = self.equipment
 		con.pol_type = self.pol_type
-		con.branch = self.branch
+		con.branch = self.equipment_branch
 		con.date = self.posting_date
 		con.qty = self.qty
 		con.reference_type = "POL"
 		con.reference_name = self.name
-		con.type = "Receive"
-		con.submit()
+		con.is_opening = 0
+		con.own_cost_center = own
+		if container:
+			con.type = "Stock"
+			con.submit()
 		
 		if self.direct_consumption:
-			con = frappe.new_doc("POL Entry")
-			con.flags.ignore_permissions = 1	
-			con.equipment = self.equipment
-			con.pol_type = self.pol_type
-			con.branch = self.branch
-			con.date = self.posting_date
-			con.qty = self.qty
-			con.reference_type = "POL"
-			con.reference_name = self.name
-			con.type = "Issue"
-			con.submit()
+			con1 = frappe.new_doc("POL Entry")
+			con1.flags.ignore_permissions = 1	
+			con1.equipment = self.equipment
+			con1.pol_type = self.pol_type
+			con1.branch = self.equipment_branch
+			con1.date = self.posting_date
+			con1.qty = self.qty
+			con1.reference_type = "POL"
+			con1.reference_name = self.name
+			con1.type = "Receive"
+			con1.is_opening = 0
+			con1.own_cost_center = own
+			con1.submit()
+			
+			if container:
+				con2 = frappe.new_doc("POL Entry")
+				con2.flags.ignore_permissions = 1	
+				con2.equipment = self.equipment
+				con2.pol_type = self.pol_type
+				con2.branch = self.equipment_branch
+				con2.date = self.posting_date
+				con2.qty = self.qty
+				con2.reference_type = "POL"
+				con2.reference_name = self.name
+				con2.type = "Issue"
+				con2.is_opening = 0
+				con2.own_cost_center = own
+				con2.submit()
+
 
 	def delete_pol_entry(self):
 		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", self.name)

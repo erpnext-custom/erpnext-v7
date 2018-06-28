@@ -27,12 +27,14 @@ class VehicleLogbook(Document):
 		self.update_consumed()
 		self.calculate_totals()
 		self.update_hire()
+		self.post_equipment_status_entry()
 		#self.check_tank_capacity()
 	
 	def on_cancel(self):
 		docs = check_uncancelled_linked_doc(self.doctype, self.name)
                 if docs != 1:
                         frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
+		frappe.db.sql("delete from `tabEquipment Status Entry` where ehf_name = \'"+str(self.name)+"\'")
 
 	def check_dates(self):
 		if getdate(self.from_date) > getdate(self.to_date):
@@ -43,7 +45,11 @@ class VehicleLogbook(Document):
 			docstatus = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "docstatus")
 			if docstatus != 1:
 				frappe.throw("Cannot create Vehicle Logbook without submitting Hire Form")
-	
+		try:
+			name = frappe.db.sql("select name from `tabHiring Approval Details` where parent = %s and equipment = %s", (self.ehf_name, self.equipment))[0]
+		except:
+			frappe.throw("Make sure the equipment you selected is in the corresponding hire form")	
+
 	def update_operator(self):
 		self.equipment_operator = frappe.db.get_value("Equipment", self.equipment, "current_operator")
 
@@ -90,6 +96,20 @@ class VehicleLogbook(Document):
 			self.check_repair(cint(e.current_hr_reading), cint(self.final_hour))
 			e.db_set("current_hr_reading", flt(self.final_hour))
 
+	def post_equipment_status_entry(self):
+		doc = frappe.new_doc("Equipment Status Entry")
+		doc.flags.ignore_permissions = 1 
+		doc.equipment = self.equipment
+		doc.reason = "Hire"
+		doc.ehf_name = self.name
+		doc.from_date = self.from_date
+		doc.to_date = self.to_date
+		doc.hours = self.total_work_time
+		doc.to_time = self.to_time
+		doc.from_time = self.from_time
+		doc.place = frappe.db.sql("select place from `tabHiring Approval Details` where parent = %s and equipment = %s", (self.ehf_name, self.equipment))[0]
+		doc.submit()
+
 	def calculate_balance(self):
 		self.db_set("closing_balance", flt(self.opening_balance) + flt(self.hsd_received) - flt(self.consumption))
 
@@ -118,7 +138,7 @@ class VehicleLogbook(Document):
 				frappe.msgprint("Closing balance cannot be greater than the tank capacity (" + str(tank) + ")")
 
 	def check_double_vl(self):
-		result = frappe.db.sql("select ehf_name from `tabVehicle Logbook` where equipment = \'" + str(self.equipment) + "\' and docstatus in (1, 0) and (\'" + str(self.from_date) + "\' between from_date and to_date OR \'" + str(self.to_date) + "\' between from_date and to_date)", as_dict=True)
+		result = frappe.db.sql("select ehf_name from `tabVehicle Logbook` where equipment = \'" + str(self.equipment) + "\' and docstatus in (1, 0) and (\'" + str(self.from_date) + "\' between from_date and to_date OR \'" + str(self.to_date) + "\' between from_date and to_date) and name != \'" + str(self.name) + "\'", as_dict=True)
 		if result:
 			if self.from_time and self.to_time:
 				res = frappe.db.sql("select name from `tabVehicle Logbook` where docstatus in (1, 0) and equipment = %s and ehf_name = %s and (%s > from_time or %s < to_time)", (str(self.equipment), str(result[0].ehf_name), str(self.from_time), str(self.to_time)))

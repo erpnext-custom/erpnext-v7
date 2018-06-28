@@ -13,6 +13,7 @@ from erpnext.accounts.general_ledger import make_gl_entries
 
 class ImprestRecoup(AccountsController):
 	def validate(self):
+                self.validate_defaults()
                 self.update_defaults()
                 self.update_amounts()
                 self.validate_amounts()
@@ -32,10 +33,15 @@ class ImprestRecoup(AccountsController):
                         
                 self.post_gl_entry()
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
-                
+
+        def validate_defaults(self):
+                if frappe.db.get_value("Branch Imprest Item", {"parent": self.branch, "imprest_type": self.imprest_type}, "imprest_status") == "Closed":
+                        frappe.throw(_("Entries are not permitted for the closed imprest type <b>`{0}`</b>.").format(self.imprest_type), title="Imprest closed")
+        
         def update_defaults(self):
                 # Update entry_date
-                if not self.entry_date:
+                #if not self.entry_date:
+                if not self.get_db_value("entry_date"):
                         self.entry_date = now_datetime()
 
                 if self.docstatus == 0 and self.workflow_state == "Recouped":

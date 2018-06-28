@@ -43,7 +43,7 @@ def get_data(filters, show_party_name):
 	balances_within_period = get_balances_within_period(filters)
 	
 	data = []
-	total_debit, total_credit = 0, 0
+	tot_op_dr, tot_op_cr, total_debit, total_credit, tot_cl_dr, tot_cl_cr = 0, 0, 0, 0, 0, 0
 	for party in parties:
 		row = { "party": party.name }
 		if show_party_name:
@@ -55,6 +55,9 @@ def get_data(filters, show_party_name):
 			"opening_debit": opening_debit,
 			"opening_credit": opening_credit
 		})
+
+		tot_op_dr += flt(opening_debit)
+		tot_op_cr += flt(opening_credit)
 		
 		# within period
 		debit, credit = balances_within_period.get(party.name, [0, 0])
@@ -73,6 +76,9 @@ def get_data(filters, show_party_name):
 			"closing_debit": closing_debit,
 			"closing_credit": closing_credit
 		})
+
+		tot_cl_dr += flt(closing_debit)
+		tot_cl_cr += flt(closing_credit)
 		
 		row.update({
 			"currency": company_currency
@@ -84,14 +90,18 @@ def get_data(filters, show_party_name):
 		
 		if cint(filters.show_zero_values) or has_value:
 			data.append(row)
-		
+
 	# Add total row
 	if total_debit or total_credit:
 		data.append({
 			"party": "'" + _("Totals") + "'",
+                        "opening_debit": tot_op_dr,
+			"opening_credit": tot_op_cr,
 			"debit": total_debit,
 			"credit": total_credit,
-			"currency": company_currency
+			"currency": company_currency,
+                        "closing_debit": tot_cl_dr,
+			"closing_credit": tot_cl_cr
 		})
 	
 	return data

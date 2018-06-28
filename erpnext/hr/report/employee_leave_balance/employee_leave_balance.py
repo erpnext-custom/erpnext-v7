@@ -10,48 +10,50 @@ from erpnext.hr.doctype.leave_application.leave_application \
 
 def execute(filters=None):
 	leave_types = frappe.db.sql_list("select name from `tabLeave Type` order by name asc")
-	
+
 	columns = get_columns(leave_types)
 	data = get_data(filters, leave_types)
-	
+
 	return columns, data
-	
+
 def get_columns(leave_types):
 	columns = [
-		_("Employee") + ":Link/Employee:150", 
-		_("Employee Name") + "::200", 
-		_("Department") +"::150"
+		_("Employee") + ":Link/Employee:120",
+		_("Employee Name") + "::150",
+		_("Department") +"::150",
+		_("Branch") +"::160",
+
 	]
 
 	for leave_type in leave_types:
 		columns.append(_(leave_type) + " " + _("Taken") + ":Float:160")
 		columns.append(_(leave_type) + " " + _("Balance") + ":Float:160")
-	
+
 	return columns
-	
+
 def get_data(filters, leave_types):
 
 	allocation_records_based_on_to_date = get_leave_allocation_records(filters.to_date)
 
-	active_employees = frappe.get_all("Employee", 
-		filters = { "status": "Active", "company": filters.company}, 
-		fields = ["name", "employee_name", "department"])
-	
+	active_employees = frappe.get_all("Employee",
+		filters = { "status": "Active", "company": filters.company},
+		fields = ["name", "employee_name", "department", "branch"])
+
 	data = []
 	for employee in active_employees:
-		row = [employee.name, employee.employee_name, employee.department]
+		row = [employee.name, employee.employee_name, employee.department, employee.branch]
 
-		for leave_type in leave_types:	
+		for leave_type in leave_types:
 			# leaves taken
-			leaves_taken = get_approved_leaves_for_period(employee.name, leave_type, 
+			leaves_taken = get_approved_leaves_for_period(employee.name, leave_type,
 				filters.from_date, filters.to_date)
-	
+
 			# closing balance
-			closing = get_leave_balance_on(employee.name, leave_type, filters.to_date, 
+			closing = get_leave_balance_on(employee.name, leave_type, filters.to_date,
 				allocation_records_based_on_to_date.get(employee.name, frappe._dict()))
 
 			row += [leaves_taken, closing]
-			
+
 		data.append(row)
-		
+
 	return data

@@ -22,7 +22,7 @@ erpnext.PurchaseAnalytics = frappe.views.TreeGridReport.extend({
 			parent: $(wrapper).find('.layout-main'),
 			page: wrapper.page,
 			doctypes: ["Item", "Item Group", "Supplier", "Supplier Type", "Company", "Fiscal Year",
-				"Purchase Invoice", "Purchase Invoice Item",
+				"Purchase Invoice", "Purchase Invoice Item", "Branch",
 				"Purchase Order", "Purchase Order Item[Purchase Analytics]",
 				"Purchase Receipt", "Purchase Receipt Item[Purchase Analytics]"],
 			tree_grid: { show: true }
@@ -98,6 +98,8 @@ erpnext.PurchaseAnalytics = frappe.views.TreeGridReport.extend({
 			default_value: __("Select Company...")},
 		{fieldtype:"Date", label: __("From Date"), fieldname: "from_date"},
 		{fieldtype:"Date", label: __("To Date"), fieldname: "to_date"},
+		{fieldtype:"Select", fieldname: "branch", label: __("Branch"), link:"Branch",
+                        default_value: __("Select Branch...")},
 		{fieldtype:"Select", label: __("Range"), fieldname: "range",
 			options:[{label: __("Daily"), value: "Daily"}, {label: __("Weekly"), value: "Weekly"},
 				{label: __("Monthly"), value: "Monthly"}, {label: __("Quarterly"), value: "Quarterly"},
@@ -107,7 +109,7 @@ erpnext.PurchaseAnalytics = frappe.views.TreeGridReport.extend({
 		var me = this;
 		this._super();
 
-		this.trigger_refresh_on_change(["value_or_qty", "tree_type", "based_on", "company"]);
+		this.trigger_refresh_on_change(["value_or_qty", "tree_type", "based_on", "company", "branch"]);
 
 		this.show_zero_check()
 		this.setup_chart_check();
@@ -204,10 +206,12 @@ erpnext.PurchaseAnalytics = frappe.views.TreeGridReport.extend({
 		$.each(this.tl[this.based_on], function(i, tl) {
 			if (me.is_default('company') ? true : tl.company === me.company) {
 				var posting_date = dateutil.str_to_obj(tl.posting_date);
-				if (posting_date >= from_date && posting_date <= to_date) {
-					var item = me.item_by_name[tl[me.tree_grid.item_key]] ||
-						me.item_by_name['Not Set'];
-					item[me.column_map[tl.posting_date].field] += (is_val ? tl.base_net_amount : tl.qty);
+				if (me.branch === "Select Branch..." || me.branch === this.branch) {
+					if (posting_date >= from_date && posting_date <= to_date) {
+						var item = me.item_by_name[tl[me.tree_grid.item_key]] ||
+							me.item_by_name['Not Set'];
+						item[me.column_map[tl.posting_date].field] += (is_val ? tl.base_net_amount : tl.qty);
+					}
 				}
 			}
 		});

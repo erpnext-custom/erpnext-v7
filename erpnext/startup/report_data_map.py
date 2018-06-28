@@ -7,6 +7,10 @@ from __future__ import unicode_literals
 # "remember to add indexes!"
 
 data_map = {
+	"Branch": {
+                "columns": ["name"],
+                "conditions": ["is_disabled = 0"]
+        },
 	"Company": {
 		"columns": ["name"],
 		"conditions": ["docstatus < 2"]
@@ -93,7 +97,7 @@ data_map = {
 		"order_by": "name"
 	},
 	"Stock Entry": {
-		"columns": ["name", "purpose"],
+		"columns": ["name", "purpose", "branch"],
 		"conditions": ["docstatus=1"],
 		"order_by": "posting_date, posting_time, name",
 	},
@@ -164,7 +168,7 @@ data_map = {
 		"order_by": "lft"
 	},
 	"Sales Invoice": {
-		"columns": ["name", "customer", "posting_date", "company"],
+		"columns": ["name", "customer", "posting_date", "company", "branch"],
 		"conditions": ["docstatus=1"],
 		"order_by": "posting_date",
 		"links": {
@@ -182,7 +186,7 @@ data_map = {
 		}
 	},
 	"Sales Order": {
-		"columns": ["name", "customer", "transaction_date as posting_date", "company"],
+		"columns": ["name", "customer", "transaction_date as posting_date", "company", "branch"],
 		"conditions": ["docstatus=1"],
 		"order_by": "transaction_date",
 		"links": {
@@ -200,7 +204,7 @@ data_map = {
 		}
 	},
 	"Delivery Note": {
-		"columns": ["name", "customer", "posting_date", "company"],
+		"columns": ["name", "customer", "posting_date", "company", "branch"],
 		"conditions": ["docstatus=1"],
 		"order_by": "posting_date",
 		"links": {
@@ -232,7 +236,7 @@ data_map = {
 		"order_by": "name"
 	},
 	"Purchase Invoice": {
-		"columns": ["name", "supplier", "posting_date", "company"],
+		"columns": ["name", "supplier", "posting_date", "company", "branch"],
 		"conditions": ["docstatus=1"],
 		"order_by": "posting_date",
 		"links": {
@@ -250,7 +254,7 @@ data_map = {
 		}
 	},
 	"Purchase Order": {
-		"columns": ["name", "supplier", "transaction_date as posting_date", "company"],
+		"columns": ["name", "supplier", "transaction_date as posting_date", "company", "branch"],
 		"conditions": ["docstatus=1"],
 		"order_by": "posting_date",
 		"links": {
@@ -268,7 +272,7 @@ data_map = {
 		}
 	},
 	"Purchase Receipt": {
-		"columns": ["name", "supplier", "posting_date", "company"],
+		"columns": ["name", "supplier", "posting_date", "company", "branch"],
 		"conditions": ["docstatus=1"],
 		"order_by": "posting_date",
 		"links": {

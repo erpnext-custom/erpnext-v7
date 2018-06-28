@@ -48,19 +48,33 @@ def validate_filters(filters):
 		filters.to_date = filters.year_end_date
 
 def get_data(filters):
-	query = "select from_cost_center as from_cc, to_cost_center as to_cc, from_account as from_acc, to_account as to_acc, amount, appropriation_on as date from `tabReappropriation Details` where appropriation_on between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"
+	query = """
+		select 
+			t2.from_cost_center 	as from_cc,
+			t2.to_cost_center 	as to_cc, 
+			t2.from_account 	as from_acc, 
+			t2.to_account 		as to_acc, 
+			t2.amount		as amount, 
+			t2.appropriation_on 	as date 
+		from 
+			`tabBudget Reappropiation` as t1,
+			`tabReappropriation Details` as t2
+		where t2.ref_doc = t1.name 
+		and t1.docstatus = 1 
+		and t2.appropriation_on between '{0}' and '{1}'
+		""".format(filters.from_date, filters.to_date)
 
 	if filters.to_cc:
-		query+=" and to_cost_center = \'" + filters.to_cc  + "\'"
+		query+=" and t2.to_cost_center = \'" + filters.to_cc  + "\'"
 
 	if filters.from_cc:
-		query+=" and from_cost_center = \'" + filters.from_cc  + "\'"
+		query+=" and t2.from_cost_center = \'" + filters.from_cc  + "\'"
 
 	if filters.to_acc:
-		query+=" and to_account = \'" + filters.to_acc  + "\'"
+		query+=" and t2.to_account = \'" + filters.to_acc  + "\'"
 
 	if filters.from_acc:
-		query+=" and from_account = \'" + filters.from_acc  + "\'"
+		query+=" and t2.from_account = \'" + filters.from_acc  + "\'"
 
 	app_data = frappe.db.sql(query, as_dict=True)
 

@@ -8,6 +8,46 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_asset():
+	prs = frappe.db.sql("select name from `tabPurchase Receipt` where docstatus = 1", as_dict=True)
+	for a in prs:
+		print(a.name)
+		doc = frappe.get_doc("Purchase Receipt", a.name)
+		doc.delete_asset()
+		doc.update_asset()
+
+def make_status_entry():
+	vls = frappe.db.sql("select name from `tabJob Card` where docstatus = 1", as_dict=True)
+	for a in vls:
+		print(str(a.name))
+		doc = frappe.get_doc("Job Card", a.name)
+		doc.update_reservation()
+
+def make_pol_entry():
+	"""pols = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1", as_dict=True)
+	for a in pols:
+		print(str(a.name))
+		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", a.name)
+		doc = frappe.get_doc("Issue POL", a.name)
+		doc.make_pol_entry()
+	frappe.db.commit()"""
+
+	pols = frappe.db.sql("select name from `tabPOL` where docstatus = 1 and pol_type != 'N/A'", as_dict=True)
+	for a in pols:
+		print(str(a.name))
+		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", a.name)
+		doc = frappe.get_doc("POL", a.name)
+		doc.make_pol_entry() 
+	frappe.db.commit()
+
+	"""pols = frappe.db.sql("select name from `tabEquipment POL Transfer` where docstatus = 1", as_dict=True)
+	for a in pols:
+		print(str(a.name))
+		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", a.name)
+		doc = frappe.get_doc("Equipment POL Transfer", a.name)
+		doc.adjust_consumed_pol() 
+	frappe.db.commit()"""
+
 def list_bb():
         num = 1
         for self in frappe.db.sql("select name, owned_by, equipment, branch, customer_branch from `tabBreak Down Report` where docstatus != 2", as_dict=True):

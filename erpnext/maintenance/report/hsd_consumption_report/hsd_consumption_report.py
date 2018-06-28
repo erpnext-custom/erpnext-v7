@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from frappe.utils.data import get_first_day, get_last_day, add_days
 from frappe.utils import flt, getdate, formatdate, cstr
 from erpnext.maintenance.report.maintenance_report import get_pol_till, get_pol_between, get_pol_consumed_till
 
@@ -18,8 +19,8 @@ def get_data(query, filters=None):
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
 		d.drawn = get_pol_between("Receive", d.name, filters.from_date, filters.to_date, d.hsd_type)
-		received_till = get_pol_till("Receive", d.name, filters.from_date, d.hsd_type)
-		consumed_till = get_pol_consumed_till(d.name, filters.from_date)
+		received_till = get_pol_till("Receive", d.name, add_days(getdate(filters.from_date), -1), d.hsd_type)
+		consumed_till = get_pol_consumed_till(d.name, add_days(getdate(filters.from_date), -1))
 		d.opening = flt(received_till) - flt(consumed_till)
 		d.closing = flt(d.opening) + flt(d.drawn) - flt(d.consumed)
 

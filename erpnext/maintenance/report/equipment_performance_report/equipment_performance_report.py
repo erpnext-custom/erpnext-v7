@@ -164,16 +164,14 @@ def get_data(filters):
 				and   {1}
                     """.format(eq.name,jc_date), as_dict=1)[0]
 
-		#revenue
+		'''#revenue
 		revn = frappe.db.sql("""
-				  select sum(ifnull(id.total_amount,0)) as rev
+				  select id.total_amount as rev
 				  from `tabHire Invoice Details` id, `tabHire Charge Invoice` ci
 				  where ci.name = id.parent
-				  and id.equipment = '{0}'
-			          and {1}
-				  group by id.equipment
-		     """.format(eq.name, rev_date), as_dict=1)
-		#frappe.msgprint("{0}".format(revn))	
+				  and id.equipment = '{0}' and {1}
+				  group by id.equipment """.format(eq.name, rev_date), as_dict=1)
+		#frappe.msgprint("{0}".format(revn))'''	
 	
 		#Insurance
 		ins = frappe.db.sql("""
@@ -190,7 +188,7 @@ def get_data(filters):
 			 	 and id.equipment = '{0}'
 			 	 and {1}
 			 """.format(eq.name, rev_date), as_dict=1)[0]
-				
+		#frappe.msgprint("{0} , {1}".format(eq.name, revn))		
 		#Looping via operator of the equipment to calculate the expensis related to operator
 		c_operator = frappe.db.sql("""
 				select operator,employee_type, start_date, end_date , name
@@ -279,8 +277,8 @@ def get_data(filters):
 				e_amount     += flt(lea.e_amount)
 				gross_pay    += flt(total_sal)
 				#frappe.msgprint(str(pol.rate))
-			total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
-			total_rev    = flt(revn.rev)
+		total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
+		total_rev    = flt(revn.rev)
 		pro_target = 0.0
 		
 		#benchmar

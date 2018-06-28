@@ -4,6 +4,12 @@
 frappe.query_reports["Asset Balance Report"] = {
 	"filters": [
 		{
+			"fieldname": "branch",
+			"label": __("Branch"),
+			"fieldtype": "Link",
+			"options": "Branch"
+		},
+		{
 			"fieldname": "from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",

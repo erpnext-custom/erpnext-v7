@@ -26,7 +26,7 @@ def execute(filters=None):
 		location = ""
 		for day in range(filters["total_days_in_month"]):
 			day = str(day + 1) if day + 1 > 9 else str("0" + str(day + 1))
-			res = frappe.db.sql("select place, reason, hours from `tabEquipment Reservation Entry` where docstatus = 1 and equipment = %s and %s between from_date and to_date order by reason desc", (e.name, str(str(filters.year) + "-" + str(filters.month) + "-" + str(day))), as_dict=True)
+			res = frappe.db.sql("select place, reason, hours from `tabEquipment Status Entry` where docstatus = 1 and equipment = %s and %s between from_date and to_date order by reason desc", (e.name, str(str(filters.year) + "-" + str(filters.month) + "-" + str(day))), as_dict=True)
 			if res:
 				if res[0].place and res[0].reason == "Hire":
 					location = res[0].place

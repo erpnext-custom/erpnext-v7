@@ -43,9 +43,9 @@ class TravelAuthorization(Document):
 
 	def before_cancel(self):
 		if self.advance_journal:
-			jv_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
-			if jv_status and jv_status != 2:
-				frappe.throw("You need to cancel the advance journal entry first!")
+			for t in frappe.get_all("Journal Entry", ["name"], {"name": self.advance_journal, "docstatus": ("<",2)}):
+                                msg = '<b>Reference# : <a href="#Form/Journal Entry/{0}">{0}</a></b>'.format(t.name)
+                                frappe.throw(_("Advance payment for this transaction needs to be cancelled first.<br>{0}").format(msg),title='<div style="color: red;">Not permitted</div>')
 	
 	def on_cancel(self):
 		if self.travel_claim:
@@ -147,26 +147,18 @@ class TravelAuthorization(Document):
 	#Ensure the dates are consistent
 	##
 	def validate_travel_dates(self):
-		date = None
-		line = 0
-		for item in self.get("items"):
-			line = line + 1
-			if item.halt == 1 and not item.till_date:
-				frappe.throw("Till Date is Mandatory for Halt Days on line " + str(line))
-			if date is None:
-				if item.halt == 1:
-					date = item.till_date
-				else:
-					date = item.date
-			else:
-				if item.date != add_days(date, 1):
-					frappe.throw(str(item.date) + " on line " + str(line) + " might be wrongly typed. It should have been " + str(add_days(date, 1)) + ". Kindly check and submit again")
-				else:
-					if item.halt == 1:
-						date = item.till_date
-					else:
-						date = item.date
+		for idx, item in enumerate(self.get("items")):
+                        if item.halt:
+                                if not item.till_date:
+                                        frappe.throw(_("Row#{0} : Till Date is Mandatory for Halt Days.").format(item.idx),title="Invalid Date")
+                        else:
+                                if not item.till_date:
+                                        item.till_date = item.date
 
+                        if idx:
+                                if item.date != add_days(self.items[idx-1].till_date, 1):
+                                        frappe.throw(_("<b>From Date</b> {0} on line {1} might be wrongly typed. It should have been {2}. Kindly check and submit again").format(item.date, item.idx, add_days(self.items[idx-1].till_date, 1)), title="Invalid Date")
+                                
 
 	##
 	# Allow only the approver to submit the document
@@ -198,9 +190,18 @@ class TravelAuthorization(Document):
 			if not end_date:
 				end_date = self.items[len(self.items) - 1].date
 
-			tas = frappe.db.sql("select a.name from `tabTravel Authorization` a, `tabTravel Authorization Item` b where a.employee = %s and a.name != %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date)", (str(self.employee), str(self.name), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)
+			tas = frappe.db.sql("""
+                                select a.name
+                                from `tabTravel Authorization` a, `tabTravel Authorization Item` b
+                                where a.employee = %s
+                                and a.name != %s
+                                and a.docstatus = 1
+                                and a.name = b.parent
+                                and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date)
+                                """, (str(self.employee), str(self.name), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)
 			if tas:
 				frappe.throw("The dates in your current Travel Authorization has already been claimed in " + str(tas[0].name))
+				
 			las = frappe.db.sql("select name from `tabLeave Application` where docstatus = 1 and employee = %s and (from_date between %s and %s or to_date between %s and %s)", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)					
 			if las:
 				frappe.throw("The dates in your current travel authorization has been used in leave application " + str(las[0].name))

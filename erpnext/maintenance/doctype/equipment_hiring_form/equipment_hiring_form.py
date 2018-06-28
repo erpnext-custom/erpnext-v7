@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cstr, flt, fmt_money, formatdate, getdate
 from frappe.desk.reportview import get_match_cond
@@ -106,12 +107,26 @@ class EquipmentHiringForm(Document):
 			if ec:
 				pass
 			else:
+                                '''
 				result = frappe.db.sql("select ehf_name from `tabEquipment Reservation Entry` where equipment = \'" + str(a.equipment) + "\' and docstatus = 1 and (\'" + str(a.from_date) + "\' between from_date and to_date OR \'" + str(a.to_date) + "\' between from_date and to_date)", as_dict=True)
 				if result:
 					if a.from_time and a.to_time:
 						res = frappe.db.sql("select name from `tabEquipment Reservation Entry` where docstatus = 1 and equipment = %s and ( %s between to_time and from_time or %s between to_time and from_time )", (str(a.equipment), str(a.from_time), str(a.to_time)))
 						if res:
 							frappe.throw("The equipment " + str(a.equipment) + " is already in use from by " + str(result[0].ehf_name))
+				'''
+
+				result = frappe.db.sql("""
+                                        select ehf_name
+                                        from `tabEquipment Reservation Entry`
+                                        where equipment = '{0}'
+                                        and docstatus = 1
+                                        and ('{1}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
+                                                or
+                                                '{2}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time))
+                                """.format(a.equipment, str(a.from_date)+' '+str(a.from_time), str(a.to_date)+' '+str(a.to_time)), as_dict=True)
+				for r in result:
+                                        frappe.throw(_("The equipment {0} is already in use from by {1}").format(a.equipment, r.ehf_name))
 		
 	##
 	# make necessary journal entry
@@ -155,11 +170,11 @@ class EquipmentHiringForm(Document):
 def get_hire_rates(e, from_date):
 	e = frappe.get_doc("Equipment", e)
 	#query = "select with_fuel, without_fuel, idle from `tabHire Charge Parameter` where equipment_type = \"" + str(e.equipment_type) + "\" and equipment_model =\"" + str(e.equipment_model) + "\""
-	db_query = "select a.rate_fuel as with_fuel, a.rate_wofuel as without_fuel, a.idle_rate as idle from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = %s and b.equipment_model = %s and %s between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
-	data = frappe.db.sql(db_query, (str(e.equipment_type), str(e.equipment_model), from_date), as_dict=True)
+	db_query = "select a.rate_fuel as with_fuel, a.rate_wofuel as without_fuel, a.idle_rate as idle from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{0}' and b.equipment_model = '{1}' and '{2}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
+	data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, from_date), as_dict=True)
 	#data = frappe.db.sql(query, as_dict=True)
 	if not data:
-		frappe.throw("No Hire Rates has been assigned for equipment type " + str(e.equipment_type) + " and model " + str(e.equipment_model))
+                frappe.throw(_("No Hire Rates has been assigned for equipment type {0} and model {1}").format(e.equipment_type, e.equipment_model), title="No Data Found!")
 	return data	
 
 @frappe.whitelist()

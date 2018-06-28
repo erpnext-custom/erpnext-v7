@@ -71,6 +71,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Tender Hire Rate",
 				},
+				{
+					"type": "doctype",
+					"name": "HSD Adjustment",
+					"description": _("Create Payment"),
+				},
 			]
 		},
 		{

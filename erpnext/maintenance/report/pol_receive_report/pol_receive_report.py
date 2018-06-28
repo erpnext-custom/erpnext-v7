@@ -33,12 +33,12 @@ def get_data(filters):
 		query += " and p.branch = \'"+ str(filters.branch) + "\'"
 
         if filters.get("from_date") and filters.get("to_date"):
-
                 query += " and p.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+
 	if filters.get("direct"):
                 query += " and p.direct_consumption = 1"
-	else:
-		query += " and p.direct_consumption =  p.direct_consumption "
 	
+	if filters.get("own_cc"):
+                query += " and p.fuelbook_branch  = p.equipment_branch"
 	query += " order by p.equipment"
         return frappe.db.sql(query)

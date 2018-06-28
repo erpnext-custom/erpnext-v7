@@ -10,6 +10,17 @@ cur_frm.add_fetch("employee", "branch", "branch")
 cur_frm.add_fetch("employee", "cost_center", "cost_center")
 
 frappe.ui.form.on('Travel Authorization', {
+	setup: function(frm) {
+		//frm.get_docfield("items").allow_bulk_edit = 1;		
+		frm.get_field('items').grid.editable_fields = [
+			{fieldname: 'date', columns: 2},
+			{fieldname: 'from_place', columns: 2},
+			{fieldname: 'to_place', columns: 2},
+			{fieldname: 'halt_at', columns: 2},
+			{fieldname: 'till_date', columns: 2},
+		];
+	},
+	
 	refresh: function(frm) {
 		//show the document status field and submit button
 		if (in_list(user_roles, "Expense Approver") && frappe.session.user == frm.doc.supervisor) {
@@ -27,6 +38,11 @@ frappe.ui.form.on('Travel Authorization', {
 
 		if(frm.doc.docstatus == 1) {
 			frm.toggle_display("document_status", 1);
+		}
+		
+		if(frm.doc.__islocal){
+			frm.set_value("advance_journal", "");
+			frm.set_value("cancellation_reason", "");
 		}
 	},
 	//Auto calculate next date on form render
@@ -106,6 +122,19 @@ frappe.ui.form.on("Travel Authorization Item", {
 	"date": function(frm, cdt, cdn) {
 		var item = locals[cdt][cdn];
 		
+		if (!item.halt) {
+			if (item.date != item.till_date) {
+				frappe.model.set_value(cdt, cdn, "temp_till_date", item.till_date);
+				frappe.model.set_value(cdt, cdn, "till_date", item.date);
+			}
+		} else {
+			if (item.till_date < item.date) {
+				msgprint("Till Date cannot be earlier than From Date");
+				frappe.model.set_value(cdt, cdn, "till_date", "");
+			}
+		}
+		
+		/*
 		if(item.till_date){
 			if (item.till_date >= item.date) {
 				frappe.model.set_value(cdt, cdn, "no_days", 1 + cint(frappe.datetime.get_day_diff(item.till_date, item.date)))
@@ -114,24 +143,46 @@ frappe.ui.form.on("Travel Authorization Item", {
 				msgprint("Till Date cannot be earlier than From Date")
 				frappe.model.set_value(cdt, cdn, "till_date", "")
 			}
+		} else {
+			if(!item.halt) {
+				frappe.model.set_value(cdt, cdn, "till_date", item.date);
+			}
 		}
+		*/
+
 	},
-	
+		
 	"till_date": function(frm, cdt, cdn) {
 		var item = locals[cdt][cdn]
 		if (item.till_date >= item.date) {
 			frappe.model.set_value(cdt, cdn, "no_days", 1 + cint(frappe.datetime.get_day_diff(item.till_date, item.date)))
 		}
 		else {
-			msgprint("Till Date cannot be earlier than From Date")
-			frappe.model.set_value(cdt, cdn, "till_date", "")
+			if(item.till_date) {
+				msgprint("Till Date cannot be earlier than From Date")
+				frappe.model.set_value(cdt, cdn, "till_date", "")
+			}
 		}
 	},
+	
 	"halt": function(frm, cdt, cdn) {
 		var item = locals[cdt][cdn]
+		cur_frm.toggle_reqd("till_date", item.halt);
 		if(!item.halt) {
-			frappe.model.set_value(cdt, cdn, "no_days", 1)
-			frappe.model.set_value(cdt, cdn, "till_date", "")
+			//frappe.model.set_value(cdt, cdn, "no_days", 1)
+			frappe.model.set_value(cdt, cdn, "temp_till_date", item.till_date);
+			frappe.model.set_value(cdt, cdn, "till_date", item.date)
+			frappe.model.set_value(cdt, cdn, "from_place", item.temp_from_place);
+			frappe.model.set_value(cdt, cdn, "to_place", item.temp_to_place);
+			frappe.model.set_value(cdt, cdn, "temp_halt_at", item.halt_at);
+			frappe.model.set_value(cdt, cdn, "halt_at", "");
+		} else {
+			frappe.model.set_value(cdt, cdn, "temp_from_place", item.from_place);
+			frappe.model.set_value(cdt, cdn, "temp_to_place", item.to_place);
+			frappe.model.set_value(cdt, cdn, "from_place", "");
+			frappe.model.set_value(cdt, cdn, "to_place", "");
+			frappe.model.set_value(cdt, cdn, "halt_at", item.temp_halt_at);
+			frappe.model.set_value(cdt, cdn, "till_date", item.temp_till_date);
 		}
 	}
 });

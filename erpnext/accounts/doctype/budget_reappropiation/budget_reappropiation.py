@@ -58,7 +58,8 @@ class BudgetReappropiation(Document):
 		to_cc = self.to_cost_center
 		fiscal_year = self.fiscal_year
 
-		if(self.budget_check(from_cc, from_acc, amount, fiscal_year)):
+		frappe.msgprint(str(from_acc) + " " + str(from_cc) + " ==> " + str(amount))
+		if(self.budget_check(from_cc, from_acc, amount, fiscal_year) or cancel):
 			to_account = self.get_cc_acc_budget(to_cc, to_acc, fiscal_year)
 			from_account = self.get_cc_acc_budget(from_cc, from_acc, fiscal_year)
 
@@ -100,14 +101,14 @@ class BudgetReappropiation(Document):
 				return "DONE"
 
 			elif not to_account:
-				return "Check your TO Cost Center and Account and try again"
+				frappe.throw("Check your TO Cost Center and Account and try again")
 				
 			elif not from_account:
-				return "Check your From Cost Center and Account and try again"
+				frappe.throw("Check your From Cost Center and Account and try again")
 			else:
-				return "Sorry, something happened. Please try again"
+				frappe.throw("Sorry, something happened. Please try again")
 
 		else:
-				return "You don't have enough budget in " + str(from_acc) + " under " + str(from_cc)
+				frappe.throw("You don't have enough budget in " + str(from_acc) + " under " + str(from_cc))
 
 
