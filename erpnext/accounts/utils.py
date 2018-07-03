@@ -494,6 +494,7 @@ def get_outstanding_invoices(party_type, party, account, condition=None):
 			and ((voucher_type = 'Journal Entry'
 					and (against_voucher = '' or against_voucher is null))
 				or (voucher_type not in ('Journal Entry', 'Payment Entry')))
+			and voucher_type not in ('Hire Charge Invoice', 'Job Card', 'Mechanical Payment', 'Project Invoice','Project Payment','HSD Payment','POL')
 		group by voucher_type, voucher_no
 		having (invoice_amount - payment_amount) > 0.005
 		order by posting_date, name""".format(

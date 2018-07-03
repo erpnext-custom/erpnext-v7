@@ -123,7 +123,7 @@ frappe.ui.form.on("Travel Authorization Item", {
 		var item = locals[cdt][cdn];
 		
 		if (!item.halt) {
-			if (item.date != item.till_date) {
+			if (item.date != item.till_date || !item.till_date) {
 				frappe.model.set_value(cdt, cdn, "temp_till_date", item.till_date);
 				frappe.model.set_value(cdt, cdn, "till_date", item.date);
 			}
@@ -170,7 +170,7 @@ frappe.ui.form.on("Travel Authorization Item", {
 		cur_frm.toggle_reqd("till_date", item.halt);
 		if(!item.halt) {
 			//frappe.model.set_value(cdt, cdn, "no_days", 1)
-			frappe.model.set_value(cdt, cdn, "temp_till_date", item.till_date);
+			frappe.model.set_value(cdt, cdn, "temp_till_date", (item.till_date || item.date));
 			frappe.model.set_value(cdt, cdn, "till_date", item.date)
 			frappe.model.set_value(cdt, cdn, "from_place", item.temp_from_place);
 			frappe.model.set_value(cdt, cdn, "to_place", item.temp_to_place);
@@ -182,9 +182,9 @@ frappe.ui.form.on("Travel Authorization Item", {
 			frappe.model.set_value(cdt, cdn, "from_place", "");
 			frappe.model.set_value(cdt, cdn, "to_place", "");
 			frappe.model.set_value(cdt, cdn, "halt_at", item.temp_halt_at);
-			frappe.model.set_value(cdt, cdn, "till_date", item.temp_till_date);
+			frappe.model.set_value(cdt, cdn, "till_date", item.temp_till_date || item.date);
 		}
-	}
+	},
 });
 
 function update_advance_amount(frm) {

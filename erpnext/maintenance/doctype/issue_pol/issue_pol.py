@@ -77,7 +77,7 @@ class IssuePOL(StockController):
                         valuation_rate = flt(a.qty) * flt(map_rate)
 
 			if self.is_hsd_item:
-				ec = frappe.db.get_v2alue("Equipment", a.equipment, "equipment_category")
+				ec = frappe.db.get_value("Equipment", a.equipment, "equipment_category")
 				budget_account = frappe.db.get_value("Equipment Category", ec, "budget_account")
 			else:
 				budget_account = frappe.db.get_value("Item", self.pol_type, "expense_account")
@@ -211,7 +211,7 @@ class IssuePOL(StockController):
 	def check_tanker_hsd_balance(self):
 		if not self.tanker:
 			return
-		received_till = get_pol_till("Receive", self.tanker, self.posting_date, self.pol_type)
+		received_till = get_pol_till("Stock", self.tanker, self.posting_date, self.pol_type)
 		issue_till = get_pol_till("Issue", self.tanker, self.posting_date, self.pol_type)
 		balance = flt(received_till) - flt(issue_till)
 		if flt(self.total_quantity) > flt(balance):

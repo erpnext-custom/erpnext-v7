@@ -39,6 +39,8 @@ class JobCard(AccountsController):
 		if not self.finish_date:
 			frappe.throw("Please enter Job Out Date")
 		else:
+			if self.finish_date < self.posting_date:
+				frappe.throw("Job Out Date should be greater than or equal to Job In Date")
 			self.update_reservation()
 		#self.check_items()
 		if self.owned_by == "Own":

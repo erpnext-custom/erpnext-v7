@@ -143,6 +143,7 @@ class EquipmentPOLTransfer(Document):
 			own = 0
 		if self.from_equipment and self.to_equipment:
 			con = frappe.new_doc("POL Entry")	
+			con.flags.ignore_permissions = 1
 			con.equipment = self.from_equipment
 			con.branch = self.from_branch
 			con.pol_type = self.pol_type
@@ -156,6 +157,7 @@ class EquipmentPOLTransfer(Document):
 			con.submit()
 
 			to = frappe.new_doc("POL Entry")	
+			to.flags.ignore_permissions = 1
 			to.equipment = self.to_equipment
 			to.branch = self.to_branch
 			to.is_opening = 0
