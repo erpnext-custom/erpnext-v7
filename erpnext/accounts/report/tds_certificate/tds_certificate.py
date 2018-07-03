@@ -18,7 +18,7 @@ def get_data(query):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		row = [d.posting_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, d.cheque_number, d.cheque_date, d.receipt_number, d.receipt_date]
+		row = [d.posting_date, flt(d.tds_taxable_amount, 2), d.tds_rate, flt(d.tds_amount, 2), d.cheque_number, d.cheque_date, d.receipt_number, d.receipt_date]
 		data.append(row);
 	
 	return data

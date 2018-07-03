@@ -2,6 +2,9 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('PBVA', {
+	setup: function(frm) {
+		frm.get_docfield("items").allow_bulk_edit = 1;
+	},
 	refresh: function(frm) {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
@@ -20,7 +23,28 @@ frappe.ui.form.on('PBVA', {
 		}
 	},
 	"get_pbva": function(frm) {
-		process_pbva(frm.doc.branch, frm);
+		if(frm.doc.fiscal_year) {
+			cur_frm.set_value("total_amount", 0.0);
+			cur_frm.set_value("tax_amount", 0.0);
+			cur_frm.set_value("net_amount", 0.0);
+			refresh_many(["items", "total_amount", "tax_amount", "net_amount"]);
+			
+			//load_accounts(frm.doc.company)
+			return frappe.call({
+				method: "get_pbva_details",
+				doc: frm.doc,
+				callback: function(r, rt) {
+					frm.refresh_field("items");
+					frm.refresh_fields();
+					calculate_grandtotal(frm);
+				}
+			});
+		}
+		else {
+			msgprint("Select Fiscal Year First")
+		}
+		
+		//process_pbva(frm.doc.branch, frm);
 	}
 });
 
@@ -63,29 +87,55 @@ function process_pbva(branch, frm) {
 }
 
 frappe.ui.form.on("PBVA Details", { 
+	/*
 	"percent": function(frm, cdt, cdn) {
 		calculate_total(frm,cdt,cdn)
 	},
 	"months": function(frm, cdt, cdn) {
 		calculate_total(frm,cdt,cdn)
 	},
+	*/
+	"amount": function(frm, cdt, cdn){
+		calculate_total(frm,cdt,cdn);
+	}
 })
+
+function calculate_grandtotal(frm) {
+	console.log('test');
+	var total = 0.0;
+	var total_tax = 0.0;
+	var net = 0.0
+	frm.doc.items.forEach(function(d) {
+		console.log(d.amount);
+		total 		+= parseFloat(d.amount);
+		total_tax 	+= parseFloat(d.tax_amount);
+		net    		+= parseFloat(d.amount-d.tax_amount)
+	})
+	cur_frm.set_value("total_amount", total);
+	cur_frm.set_value("tax_amount", total_tax);
+	cur_frm.set_value("net_amount", net);
+	
+	refresh_many(["items", "total_amount", "tax_amount", "net_amount"]);
+}
 
 function calculate_total(frm, cdt, cdn) {
 	var item = locals[cdt][cdn]
-	item.amount = flt(item.basic_pay) * (flt(item.percent) / 100) * flt(item.months)
+	//item.amount = flt(item.basic_pay) * (flt(item.percent) / 100) * flt(item.months)
 	item.tax_amount = calculate_tax(flt(item.amount))
 	item.balance_amount = item.amount - item.tax_amount
-	var total = 0;
-	var total_tax = 0;
+	var total = 0.0;
+	var total_tax = 0.0;
+	var net = 0.0
 	frm.doc.items.forEach(function(d) {
-		total += d.amount
-		total_tax += d.tax_amount
+		total 		+= parseFloat(d.amount);
+		total_tax 	+= parseFloat(d.tax_amount);
+		net    		+= parseFloat(d.amount-d.tax_amount)
 	})
-	cur_frm.set_value("total_amount", total)
-	cur_frm.set_value("tax_amount", total_tax)
+	cur_frm.set_value("total_amount", total);
+	cur_frm.set_value("tax_amount", total_tax);
+	cur_frm.set_value("net_amount", net);
 	
-	refresh_many(["items", "total_amount", "tax_amount"]);
+	refresh_many(["items", "total_amount", "tax_amount", "net_amount"]);
 }
 
 function calculate_tax(gross_amt) {

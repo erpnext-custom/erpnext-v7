@@ -6,11 +6,14 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SHIV		                   27/12/2017         Rejected documents made to cancel
+2.0               SHIV                             03/04/2018         Restricting cancellation of Travel Authorization
+                                                                        without cancelling Travel Claim first.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, flt, nowdate, money_in_words
 from erpnext.accounts.utils import get_account_currency, get_fiscal_year
@@ -49,6 +52,13 @@ class TravelAuthorization(Document):
 			if jv_status and jv_status != 2:
 				frappe.throw("You need to cancel the advance journal entry first!")
 
+                # Ver 2.0 Begins, Following coded added by SHIV on 03/04/2018
+		if self.travel_claim:
+                        tc_status = frappe.db.get_value("Travel Claim", self.travel_claim, "docstatus")
+                        if tc_status and tc_status !=2:
+                                frappe.throw(_("You need to cancel the Travel Claim# : {0} first!"),title="Unable to Cancel")
+                # Ver 2.0 Ends
+
         def update_status(self):
                 self.docstatus = 1 if self.document_status == "Rejected" else self.docstatus
                 
@@ -63,7 +73,7 @@ class TravelAuthorization(Document):
 			if not end_date:
 				end_date = self.items[len(self.items) - 1].date
 
-			tas = frappe.db.sql("select a.name from `tabTravel Authorization` a, `tabTravel Authorization Item` b where a.employee = %s and a.name != %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date)", (str(self.employee), str(self.name), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)
+			tas = frappe.db.sql("select a.name from `tabTravel Authorization` a, `tabTravel Authorization Item` b where a.document_status != 'Rejected' and a.employee = %s and a.name != %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date)", (str(self.employee), str(self.name), str(start_date), str(end_date), str(start_date), str(end_date)), as_dict=True)
 			if tas:
 				frappe.throw("The dates in your current Travel Authorization has already been claimed in " + str(tas[0].name))
 

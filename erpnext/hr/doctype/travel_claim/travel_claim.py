@@ -17,7 +17,7 @@ class TravelClaim(Document):
 		self.update_travel_authorization()
 		employee = frappe.db.get_value("Employee", self.employee, "user_id")
 
-		if self.supervisor_approval and (frappe.session.user == self.owner or frappe.session.user == employee):
+		if self.supervisor_approval and frappe.session.user == employee:
 			frappe.throw("Cannot edit once approved by supervisor")
 
 		if frappe.session.user == self.owner or frappe.session.user == employee:
@@ -44,7 +44,7 @@ class TravelClaim(Document):
 
 	def before_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.claim_journal, "docstatus")
-		if cl_status != 2:
+		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the claim journal entry first!")
 		
 		ta = frappe.get_doc("Travel Authorization", self.ta)

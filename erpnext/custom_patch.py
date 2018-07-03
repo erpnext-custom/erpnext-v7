@@ -5,6 +5,32 @@ from frappe import msgprint
 from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
 
+def cancel_dn():
+	sis = frappe.db.sql("select name, posting_date from `tabSales Invoice` where posting_date > '2017-12-31' and docstatus = 1;", as_dict=True)
+	for s in sis:
+		print(s.name)
+		doc = frappe.get_doc("Sales Invoice", s.name)
+		doc.cancel()
+	frappe.db.commit()
+	dns = frappe.db.sql("select name from `tabDelivery Note` where posting_date > %s and docstatus = 1", ('2017-12-31'), as_dict=True)
+	for a in dns:
+		print(a.name)
+		doc = frappe.get_doc("Delivery Note", a.name)
+		doc.cancel()
+
+def update_ss():
+	empl = frappe.db.sql("select name from `tabEmployee`", as_dict=True)
+	for emp in empl:
+		e = frappe.get_doc("Employee", emp.name)
+		ss_name = frappe.db.sql("select name from `tabSalary Structure` where is_active = 'Yes' and employee = %s", (emp.name), as_dict=True)
+		for a in ss_name:
+			ss = frappe.get_doc("Salary Structure", a.name)
+			ss.db_set("branch", e.branch)
+			ss.db_set("department", e.department)
+			ss.db_set("division", e.division)
+			ss.db_set("section", e.section)
+			ss.db_set("designation", e.designation)
+
 def assign_date_ta():
 	tas = frappe.db.sql("select name from `tabTravel Authorization` where travel_claim is null", as_dict=True)
 	for ta in tas:

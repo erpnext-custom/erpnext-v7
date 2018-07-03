@@ -18,9 +18,10 @@ def execute(filters=None):
 	
 def get_columns(leave_types):
 	columns = [
-		_("Employee") + ":Link/Employee:150", 
-		_("Employee Name") + "::200", 
-		_("Department") +"::150"
+		_("Employee") + ":Link/Employee:100", 
+		_("Employee Name") + "::200",
+                _("Branch") + ":Link/Branch:200",
+		_("Department") +":Link/Department:150"
 	]
 
 	for leave_type in leave_types:
@@ -35,11 +36,11 @@ def get_data(filters, leave_types):
 
 	active_employees = frappe.get_all("Employee", 
 		filters = { "status": "Active", "company": filters.company}, 
-		fields = ["name", "employee_name", "department"])
+		fields = ["name", "employee_name", "branch", "department"])
 	
 	data = []
 	for employee in active_employees:
-		row = [employee.name, employee.employee_name, employee.department]
+		row = [employee.name, employee.employee_name, employee.branch, employee.department]
 
 		for leave_type in leave_types:	
 			# leaves taken

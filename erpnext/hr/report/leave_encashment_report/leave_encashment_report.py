@@ -26,7 +26,7 @@ def get_columns(data):
 		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140",
                 _("Transaction No") + ":Link/Leave Encashment:140", _("Date") + "::80", 
                 _("TPN No") + ":Link/Leave Encashment:80",
-                _("Accounts Entry") + ":Link/Journal Entry:120",
+                _("Accounts Entry") + "::120",
                 _("Gross Amount") + ":Currency:140", _("Tax Amount") + ":Currency:140", _("Net Amount") + ":Currency:140",
                 _("Remarks") + "::140",
                 _("Balance Before") + "::80", _("Days Encashed") + "::80", _("Balance After") + "::80",

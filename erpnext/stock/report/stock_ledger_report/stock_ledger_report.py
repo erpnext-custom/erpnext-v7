@@ -24,7 +24,7 @@ def execute(filters=None):
 			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
 			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
 			sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
-			sle.vehicle_no, sle.transporter_name, sle.company])
+			sle.vehicle_no, sle.transporter_name, sle.customer, sle.company])
 			
 	return columns, data
 
@@ -33,7 +33,7 @@ def get_columns():
 		_("Warehouse") + ":Link/Warehouse:100",
 		_("Stock UOM") + ":Link/UOM:100", _("Qty") + ":Float:50", _("Balance Qty") + ":Float:100",
 		_("Incoming Rate") + ":Currency:110", _("MAP") + ":Currency:110", _("Balance Value") + ":Currency:110",
-		_("Transaction Type") + "::110", _("Transaction No.") + ":Dynamic Link/"+_("Voucher Type")+":100", _("Vehicle No") + ":Data:100", _("Transporter") + ":Data:100", _("Company") + ":Link/Company:100"
+		_("Transaction Type") + "::110", _("Transaction No.") + ":Dynamic Link/"+_("Transaction Type")+":100", _("Vehicle No") + ":Data:100", _("Transporter") + ":Data:100", _("Customer") + ":Data:100", _("Company") + ":Link/Company:100"
 	]
 
 def get_stock_ledger_entries(filters):
@@ -41,6 +41,7 @@ def get_stock_ledger_entries(filters):
 			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
 			stock_value, voucher_type, voucher_no, batch_no, serial_no, 
 			CASE voucher_type WHEN 'Stock Entry' THEN (select vehicle_no from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select lr_no from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as vehicle_no, 
+			CASE voucher_type WHEN 'Delivery Note' THEN (select customer from `tabDelivery Note` where name = voucher_no) ELSE '' END as customer, 
 			CASE voucher_type WHEN 'Stock Entry' THEN (select transporter_name from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select transporter_name1 from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as transporter_name, company
 		from `tabStock Ledger Entry`
 		where company = %(company)s and

@@ -19,7 +19,12 @@ def get_data(query, filters=None):
 	datas = frappe.db.sql(query, as_dict=True);
 	t_basic = t_allowance = t_gross = t_income = t_nppf = t_gis = t_taxable = t_tds = t_health = 0
 	for d in datas:
-		allowance = round(flt(d.gross_pay) - flt(d.basic_pay) - (flt(d.comm_all) / 2), 2)
+		# Following line is removed for time being, needs to be kept back once the salary tax 
+		# calculation is taken care after 50% of Communication Allowace
+		# by SHIV on 09/01/2018
+
+		#allowance = round(flt(d.gross_pay) - flt(d.basic_pay) - (flt(d.comm_all) / 2), 2)
+		allowance = round(flt(d.gross_pay) - flt(d.basic_pay), 2)
 		taxable = flt(d.gross_pay) - flt(d.nppf) - flt(d.gis)
 		row = [get_month(d.month), "Salary", d.basic_pay, allowance, d.gross_pay, d.gross_pay, d.nppf,d.gis, taxable, d.tds, d.health, d.receipt_number, d.receipt_date]
 		t_basic += flt(d.basic_pay)

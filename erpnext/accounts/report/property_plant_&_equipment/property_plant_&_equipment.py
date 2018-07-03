@@ -16,20 +16,17 @@ def execute(filters=None):
 def get_accounts(filters):
 	data = []
 	for a in frappe.db.sql("SELECT a.name, b.fixed_asset_account as fa, b.accumulated_depreciation_account as acc, b.depreciation_expense_account as dep from `tabAsset Category` a, `tabAsset Category Account` b where a.name = b.parent", as_dict=True):
-		gross_opening = get_values(a.fa, filters.to_date, filters.from_date, filters.cost_center, opening=True)
-		gross = get_values(a.fa, filters.to_date, filters.from_date, filters.cost_center)
-		dep_opening = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center, opening=True)
-		dep = get_values(a.dep, filters.to_date, filters.from_date, filters.cost_center)
-
-		gross_opening = gross_opening[0]
-		gross = gross[0]
-		dep_opening = dep_opening[0]
-		dep = dep[0]
+		gross_opening = get_values(a.fa, filters.to_date, filters.from_date, filters.cost_center, opening=True)[0]
+		gross = get_values(a.fa, filters.to_date, filters.from_date, filters.cost_center)[0]
+		dep_opening = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center, opening=True)[0]
+		acc_dep = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center)[0]
+		dep = get_values(a.dep, filters.to_date, filters.from_date, filters.cost_center)[0]
 
 		g_open = flt(gross_opening.debit) - flt(gross_opening.credit)
 		g_total = g_open + flt(gross.debit) - flt(gross.credit)
 		d_open = -1 * (flt(dep_opening.debit) - flt(dep_opening.credit))
-		d_total = d_open + flt(dep.debit) - flt(dep.credit)
+		dep_adjust = flt(dep.credit) + flt(acc_dep.debit)
+		d_total = d_open + flt(dep.debit) - flt(dep.credit) - flt(dep_adjust)
 
 		row = {
 			"asset_category": a.name,
@@ -39,7 +36,7 @@ def get_accounts(filters):
 			"gross_total": g_total,
 			"dep_opening": d_open,
 			"dep_addition": dep.debit,
-			"dep_adjustment": dep.credit,
+			"dep_adjustment": dep_adjust,
 			"dep_total": d_total,
 			"net_block": flt(g_total) - flt(d_total) 
 		}

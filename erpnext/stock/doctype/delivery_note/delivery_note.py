@@ -99,6 +99,7 @@ class DeliveryNote(SellingController):
 
 	def validate(self):
 		super(DeliveryNote, self).validate()
+		self.lr_date = self.posting_date
 		self.set_status()
 		self.so_required()
 		self.validate_proj_cust()

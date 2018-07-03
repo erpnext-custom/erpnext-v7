@@ -29,12 +29,12 @@ frappe.ui.form.on("Leave Application", {
 			frm.trigger("calculate_total_days");
 		}
 		
-		if(!frm.doc.__islocal && in_list(user_roles, "Approver")){
+		if(!frm.doc.__islocal && in_list(user_roles, "Leave Approver")){
 			if(frappe.session.user == frm.doc.leave_approver){
-				frm.toggle_display("status", true);
+				cur_frm.toggle_display("status", true);
 			}
 			else{
-				frm.toggle_display("status", false);
+				cur_frm.toggle_display("status", false);
 			}
 		}
 		else{
@@ -67,6 +67,7 @@ frappe.ui.form.on("Leave Application", {
 		if (cint(frm.doc.half_day)==1) {
 			frm.set_value("to_date", frm.doc.from_date);
 		}
+		frm.trigger("get_leave_balance")
 		frm.trigger("calculate_total_days");
 	},
 
@@ -85,7 +86,7 @@ frappe.ui.form.on("Leave Application", {
 				method: "erpnext.hr.doctype.leave_application.leave_application.get_leave_balance_on",
 				args: {
 					employee: frm.doc.employee,
-					date: frm.doc.from_date || frappe.datetime.get_today(),
+					ason_date: frm.doc.from_date || frappe.datetime.get_today(),
 					leave_type: frm.doc.leave_type,
 					consider_all_leaves_in_the_allocation_period: true
 				},

@@ -52,7 +52,7 @@ frappe.ui.form.on('Leave Encashment', {
 				method: "erpnext.hr.doctype.leave_application.leave_application.get_leave_balance_on",
 				args: {
 					employee: frm.doc.employee,
-					date: frm.doc.application_date,
+					ason_date: frm.doc.application_date,
 					leave_type: frm.doc.leave_type,
 					consider_all_leaves_in_the_allocation_period: true
 				},
