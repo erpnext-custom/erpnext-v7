@@ -45,11 +45,14 @@ class HSDPayment(Document):
 				if doc.docstatus != 1:
 					frappe.throw("<b>"+ str(doc.name) +"</b> is not a submitted Issue POL Transaction")
 				if not cancel:
-					doc.db_set("paid_amount", a.allocated_amount)
+					paid_amount = flt(doc.paid_amount) + flt(a.allocated_amount)
+					if paid_amount > flt(doc.total_amount):
+						frappe.throw("Paid Amount cannot be greater than the Total Amount")
+					doc.db_set("paid_amount", paid_amount)
 					doc.db_set("outstanding_amount", a.balance_amount)	
 				else:
-					doc.db_set("paid_amount", doc.total_amount - doc.outstanding_amount)
-					doc.db_set("outstanding_amount", doc.outstanding_amount + a.allocated_amount)	
+					doc.db_set("paid_amount", flt(doc.paid_amount) - flt(a.allocated_amount))
+					doc.db_set("outstanding_amount", flt(doc.outstanding_amount) + flt(a.allocated_amount))	
 
 	def update_general_ledger(self):
 		gl_entries = []

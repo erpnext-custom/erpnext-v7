@@ -8,6 +8,12 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def adjust_hsd_outstanding():
+	ols = frappe.db.sql("select pol from `tabHSD Payment Item` where parent = 'HSDP1805002'", as_dict=True)
+	for a in ols:
+		print(a.pol)
+		frappe.db.sql("update `tabPOL` set paid_amount = '' where name = %s", a.pol)
+
 def update_asset():
 	prs = frappe.db.sql("select name from `tabPurchase Receipt` where docstatus = 1", as_dict=True)
 	for a in prs:

@@ -184,7 +184,7 @@ class TravelClaim(Document):
                                 i.days_allocated = 0 if i.last_day and not lastday_dsa_percent else i.no_days 
 
         def update_amounts(self):
-                dsa_per_day         = flt(frappe.db.get_value("Employee Grade", self.grade, "dsa"))
+                #dsa_per_day         = flt(frappe.db.get_value("Employee Grade", self.grade, "dsa"))
                 lastday_dsa_percent = frappe.db.get_single_value("HR Settings", "return_day_dsa")
                 total_claim_amount  = 0
                 exchange_rate       = 0
@@ -192,7 +192,8 @@ class TravelClaim(Document):
                 
                 for i in self.get("items"):
                         exchange_rate      = 1 if i.currency == company_currency else get_exchange_rate(i.currency, company_currency)
-                        i.dsa              = flt(dsa_per_day)
+                        #i.dsa             = flt(dsa_per_day)
+                        i.dsa              = flt(i.dsa) 
                         i.dsa_percent      = lastday_dsa_percent if i.last_day else i.dsa_percent
                         i.amount           = (flt(i.days_allocated)*(flt(i.dsa)*flt(i.dsa_percent)/100)) + (flt(i.mileage_rate) * flt(i.distance))
                         i.actual_amount    = flt(i.amount) * flt(exchange_rate)
