@@ -12,8 +12,11 @@ class AssetMovement(Document):
 		self.validate_asset()
 		if self.target_warehouse:
 			self.validate_warehouses()
+			self.target_user_id = None
+			self.target_custodian = None
 		if self.target_custodian:
 			self.validate_custodian()
+			self.target_user_id = frappe.db.get_value("Employee", self.target_custodian, "user_id")
 			self.target_cost_center = ""	
 	
 	def validate_asset(self):
@@ -108,3 +111,4 @@ class AssetMovement(Document):
 		if equipment:
 			doc = frappe.get_doc("Equipment", equipment)
 			doc.db_set("branch", frappe.db.get_value("Cost Center", cc, "branch"))
+

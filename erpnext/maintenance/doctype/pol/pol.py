@@ -21,9 +21,12 @@ class POL(StockController):
 		self.validate_item()
 
 	def validate_dc(self):
-		is_container = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type") ,"is_container")
+		is_container, no_own_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type") , ["is_container", "no_own_tank"])
 		if not self.direct_consumption and not is_container:
 			frappe.throw("Non 'Direct Consumption' Receive POL is allowed only for Container Equipments")
+
+		if self.direct_consumption and no_own_tank:
+                        frappe.throw("Direct Consumption not permitted for Equipments without own Tank")
 
 	def set_warehouse(self):
 		cc = get_branch_cc(self.equipment_branch)
@@ -70,7 +73,7 @@ class POL(StockController):
 	def check_budget(self):
 		cc = get_branch_cc(self.equipment_branch)
 		account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
-		if self.is_hsd_item:
+		if not self.is_hsd_item:
 			account = frappe.db.get_value("Item", self.pol_type, "expense_account")
 
 		check_budget_available(cc, account, self.posting_date, self.total_amount)

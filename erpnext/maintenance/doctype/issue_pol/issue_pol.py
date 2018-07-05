@@ -47,6 +47,9 @@ class IssuePOL(StockController):
 			frappe.throw("Cost Center and Warehouse are Mandatory")
 		total_quantity = 0
 		for a in self.items:
+			no_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", a.equipment, "equipment_type"), "no_own_tank")
+			if no_tank and self.purpose == "Issue":
+				frappe.throw("Cannot Issue to Equipments without own tank " + str(a.equipment))
 			if not a.equipment_warehouse or not a.equipment_cost_center:
 				frappe.throw("<b>"+str(a.equipment_number) + "</b> does have a Warehouse and Cost Center Defined")
 			if not flt(a.qty) > 0:
@@ -215,7 +218,7 @@ class IssuePOL(StockController):
 		issue_till = get_pol_till("Issue", self.tanker, self.posting_date, self.pol_type)
 		balance = flt(received_till) - flt(issue_till)
 		if flt(self.total_quantity) > flt(balance):
-			frappe.throw("Not enough balance in tanker to issue")	
+			frappe.throw("Not enough balance in tanker to issue. The balance is " + str(balance))	
 
 	def make_pol_entry(self):
 		if getdate(self.posting_date) <= getdate("2018-03-31"):

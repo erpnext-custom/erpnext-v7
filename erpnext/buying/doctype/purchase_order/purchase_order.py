@@ -57,12 +57,18 @@ class PurchaseOrder(BuyingController):
 		#self.validate_budget()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", ["qty", "required_qty"])
+		self.validate_asset_brand()
 
 		self.validate_with_previous_doc()
 		self.validate_for_subcontracting()
 		self.validate_minimum_order_qty()
 		self.create_raw_materials_supplied("supplied_items")
 		self.set_received_qty_for_drop_ship_items()
+
+	def validate_asset_brand(self):
+		for a in self.items:
+			if a.item_group == "Fixed Asset" and (not a.brand_name or not a.model_name):
+				frappe.throw("Brand and Model is Mandatory for Fixed Asset")
 
 	def validate_with_previous_doc(self):
 		super(PurchaseOrder, self).validate_with_previous_doc({

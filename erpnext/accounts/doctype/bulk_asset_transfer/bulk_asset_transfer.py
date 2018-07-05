@@ -7,6 +7,12 @@ import frappe
 from frappe.model.document import Document
 
 class BulkAssetTransfer(Document):
+	def validate(self):
+		if self.purpose == "Custodian":
+			self.custodian_id = frappe.db.get_value("Employee", self.custodian, "user_id")
+		else:
+			self.custodian_id = None
+
 	def on_cancel(self):
 		for a in self.items:
 			doc = frappe.get_doc("Asset", a.asset_code)
