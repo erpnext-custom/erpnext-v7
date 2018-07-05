@@ -477,6 +477,9 @@ cur_frm.cscript.item_code = function(doc, cdt, cdn) {
 						if (k == 'item_group') {
 							item_group = v
 						}
+						else if (k == 'uom') {
+							//don't populate the uom 
+						}
 						else {
 							d[k] = v;
 						}

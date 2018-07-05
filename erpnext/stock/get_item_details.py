@@ -158,7 +158,7 @@ def get_basic_details(args, item):
 		"batch_no": None,
 		"item_tax_rate": json.dumps(dict(([d.tax_type, d.tax_rate] for d in
 			item.get("taxes")))),
-		"uom": item.stock_uom,
+		## DONT POPULATE THE UOM BY DEFAULT"uom": item.stock_uom,
 		"min_order_qty": flt(item.min_order_qty) if args.doctype == "Material Request" else "",
 		"conversion_factor": 1.0,
 		"qty": args.qty or 1.0,
