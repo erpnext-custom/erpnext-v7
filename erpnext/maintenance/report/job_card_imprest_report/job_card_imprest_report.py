@@ -18,7 +18,7 @@ def get_columns():
 		("Posting Date") + ":Date:120",
 		("Material Code")+ ":Data:100",
 		("Material name") + ":Data:120",
-		("Amount") + ":Data:120"
+		("Amount") + ":Currency:120"
 	]
 
 def get_data(filters):

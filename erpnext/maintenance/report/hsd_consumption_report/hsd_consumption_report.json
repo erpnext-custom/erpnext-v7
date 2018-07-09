@@ -1,5 +1,5 @@
 {
- "add_total_row": 0, 
+ "add_total_row": 1, 
  "apply_user_permissions": 1, 
  "creation": "2017-08-24 10:55:43.345520", 
  "disabled": 0, 
@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-05-15 12:20:17.061435", 
- "modified_by": "payma.wangchuk@cdcl.bt", 
+ "modified": "2018-07-09 16:32:55.795138", 
+ "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "HSD Consumption Report", 
  "owner": "Administrator", 

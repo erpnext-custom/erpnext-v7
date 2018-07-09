@@ -18,6 +18,14 @@ frappe.query_reports["MR Status Report"] = {
 			"options": "Fiscal Year",
 			"default": sys_defaults.fiscal_year,
 		},
+		{
+                        "fieldname":"cost_center",
+                        "label": __("Cost Center"),
+                        "fieldtype": "Link",
+                        "options": "Branch",
+                        "default": frappe.session.user.cost_center,
+                },
+
 
 	]
 }

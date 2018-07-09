@@ -185,7 +185,7 @@ def get_data(filters):
 						and   {1}
 					""".format(co.operator, le_date), as_dict=1)[0]
 
-
+				#frappe.msgprint("{0}".format(lea))
 
 				cem = frappe.db.sql("""
 						select employee, gross_pay, start_date, end_date
@@ -230,19 +230,19 @@ def get_data(filters):
 				travel_claim += flt(tc.travel_claim)
 				e_amount     += flt(lea.e_amount) 
 				gross_pay    += flt(total_sal)
-		        total_exp = 	(flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(reg.r_amount)+flt(jc.services_amount)+ travel_claim+e_amount + gross_pay
+		        total_exp = 	((flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(reg.r_amount)+flt(jc.services_amount)+ travel_claim+e_amount + gross_pay)
 		data.append((	eq.branch,
 				eq.name,
 				eq.equipment_number,
 				eq.equipment_type,
-				flt(vl.consumption)*flt(pol.rate),
-				flt(ins.insurance)+flt(reg.r_amount),
-				flt(jc.goods_amount),
-				flt(jc.services_amount), 
-				gross_pay,
-				e_amount,
-				travel_claim,
-				total_exp))
+				round(flt(vl.consumption)*flt(pol.rate),2),
+				round(flt(ins.insurance)+flt(reg.r_amount),2),
+				round(flt(jc.goods_amount),2),
+				round(flt(jc.services_amount),2), 
+				round(gross_pay,2),
+				round(e_amount,2),
+				round(travel_claim,2),
+				round(total_exp,2)))
 #	frappe.msgprint(str(data))
     	return tuple(data)
 #    return tuple()
@@ -259,7 +259,7 @@ def get_columns(filters):
                 ("Services Amount") + ":Float:120",
 		("Gross Pay") + ":Float:120",
 		("Leave Encashment") + ":Currency:120",
-		("Travel Claim") + ":Currency:120",
-		("Total Expense") + ":Currency:120"
+		("Travel Claim") + ":Float:120",
+		("Total Expense") + ":Float:120"
 	]
 	return cols

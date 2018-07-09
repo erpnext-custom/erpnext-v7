@@ -177,7 +177,7 @@ class TravelClaim(Document):
                                                 if lapsed:
                                                         counter += 1
                                                         frappe.msgprint(_("Row#{0}: You have crossed the DSA({4} days) limit by {1} days for the month {2}-{3}").format(i.idx, int(lapsed), months[int(str(k)[4:])-1], str(k)[:4],max_days_per_month))
-                                                        i.remarks = str(i.remarks)+"{3}) {0} Days lapsed for the month {1}-{2}\n".format(int(lapsed), months[int(str(k)[4:])-1], str(k)[:4], counter)
+                                                        i.remarks = str(i.remarks)+"{3}) {0} Day(s) lapsed for the month {1}-{2}\n".format(int(lapsed), months[int(str(k)[4:])-1], str(k)[:4], counter)
                 else:
                         for i in self.get("items"):
                                 i.remarks        = ""

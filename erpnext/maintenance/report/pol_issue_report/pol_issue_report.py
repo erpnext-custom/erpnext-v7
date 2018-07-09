@@ -19,7 +19,7 @@ def get_columns():
                 ("Item Code") + ":Link/Item:100",
                 ("Item Name") + ":Data:170",
                 ("UoM") + ":Data:120",
-                ("Quantity") + ":Data:120"
+                ("Quantity") + ":Float:120"
         ]
 
 def get_data(filters):

@@ -218,6 +218,7 @@ def set_missing_values(source, target_doc):
 
 def update_item(obj, target, source_parent):
 	target.conversion_factor = 1
+	target.uom = None
 	target.qty = flt(obj.qty) - flt(obj.ordered_qty)
 	target.stock_qty = target.qty
 	if obj.item_group == "Fixed Asset":
@@ -376,6 +377,7 @@ def make_stock_entry(source_name, target_doc=None):
 		qty = flt(obj.qty) - flt(obj.ordered_qty) \
 			if flt(obj.qty) > flt(obj.ordered_qty) else 0
 		target.qty = qty
+		target.uom = None
 		target.transfer_qty = qty
 		target.conversion_factor = 1
 

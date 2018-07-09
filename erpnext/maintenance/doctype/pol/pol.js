@@ -112,7 +112,7 @@ frappe.ui.form.on("POL", "refresh", function(frm) {
         return {
             "filters": {
 		"disabled": 0,
-		"is_hsd_item": 1
+		"is_pol_item": 1
             }
         };
     });

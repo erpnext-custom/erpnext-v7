@@ -1,5 +1,5 @@
 {%
-	if (report.columns.length > 8) {
+	if (report.columns.length > 9) {
 		frappe.throw(__("Too many columns. Export the report and print it using a spreadsheet application."));
 	}
 %}
@@ -44,7 +44,10 @@
 				<td>
 					<span style="padding-left: {%= cint(data[j].indent) * 2 %}em">{%= row.account_name %}</span>
 				</td>
-				{% for(var i=2, l=report.columns.length; i<l; i++) { %}
+				<td>
+					<span style="padding-left: {%= cint(data[j].indent) * 2 %}em">{%= row.account_code %}</span>
+				</td>
+				{% for(var i=3, l=report.columns.length; i<l; i++) { %}
 					<td class="text-right">
 						{% var fieldname = report.columns[i].field; %}
 						{% if (!is_null(row[fieldname])) { %}

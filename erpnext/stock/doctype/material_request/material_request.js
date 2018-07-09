@@ -12,6 +12,8 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 
 {% include 'erpnext/buying/doctype/purchase_common/purchase_common.js' %};
 
+cur_frm.add_fetch("item_code", "stock_uom", "uom")
+
 frappe.ui.form.on('Material Request', {
 	material_request_type: function(frm) {
 		if(frm.doc.material_request_type == "Purchase") {

@@ -14,18 +14,38 @@ def execute(filters=None):
     data = get_data(filters)
     return columns, data
 
+def get_conditions(filters):
+        conditions = ""
+        if filters.get("month"):
+                month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+                        "Dec"].index(filters["month"]) + 1
+                filters["month"] = month
+                conditions += " month(mr.creation_date) = {0}".format(filters["month"])
+
+        if filters.get("fiscal_year"): conditions += " and year(mr.creation) = {0}".format(filters.get("fiscal_year"))
+	if filters.get("cost_center"): conditions += " and mr.branch =  '{0}'".format(filters.get("cost_center"))
+        conditions += " and mr.workflow_state  != 'Cancelled'"
+        conditions += " and case when rq.status IS NOT NULL then rq.status != 'Cancelled' else 1 =1 end"
+        conditions += " and case when po.docstatus IS NOT NULL then po.docstatus != 2 else 1 =1 end"
+        conditions += " and case when pr.status IS NOT NULL then pr.status != 'Cancelled' else 1 =1 end"
+        conditions += " and case when pi.docstatus IS NOT NULL then pi.docstatus != 2 else 1 =1 end"
+        #and ifnull(1 =1, pi.docstatus != 2)"
+        return conditions, filters
+
 def get_data(filters):
     #today = frappe.utils.nowdate()
     #frappe.msgprint("{0}".format(today))
     conditions, filters = get_conditions(filters)
     query = frappe.db.sql("""select distinct
-			mr.name as mr_name, mr.creation_date as mr_cra,
+			mr.name as mr_name, concat_ws('-', mr.branch,'CDCL'), mr.creation_date as mr_cra,
 			case when mr.workflow_state != 'Draft' then mr.transaction_date else '' end as tr, mr.workflow_state as mr_status,
 			mr.owner as ownm, case when mr.workflow_state = 'Approved' and mr.material_request_type = "Purchase"  then
 			mr.transaction_date else '' end as ftp, mr.material_request_type as mr_typ,
+			rq.name, date(rq.creation), case when rq.status = "Submitted" then rq.transaction_date else '' end as rq_date,
+			rq.status, rq.owner,
 			po.name as po_name, po.creation as po_cra, case when po.docstatus = !0  then po.transaction_date else '' end as tr1,
 			po.status as po_status,
-                        po.owner as ownp, po.modified_by as mop,
+			po.owner as ownp, po.modified_by as mop,
 			pr.name as pr_name, pr.creation as pr_cra, case when pr.status != 'Draft' then pr.posting_date else '' end as pr_mod1, pr.status as pr_status,
 			pr.owner as onrr, pr.modified_by as mor,
 			pi.name as pi_name, pi.creation as pi_cra, case when pi.docstatus != 0 then pi.posting_date else '' end as pi_modi,
@@ -39,43 +59,33 @@ def get_data(filters):
 			end as pi_status,
 			pi.owner as owni, pi.modified_by as moii
 			from `tabMaterial Request` mr
+			left join  `tabRequest for Quotation Item` rqi on rqi.material_request = mr.name 
+			left join `tabRequest for Quotation` rq on rq.name = rqi.parent 
 			left join  `tabPurchase Order Item` poi on poi.material_request = mr.name
             left join `tabPurchase Order` po on po.name = poi.parent
             left join `tabPurchase Receipt Item` pri on pri.purchase_order = po.name
             left join `tabPurchase Receipt` pr on pr.name = pri.parent
             left join `tabPurchase Invoice Item` pii on pii.purchase_receipt = pr.name
             left join `tabPurchase Invoice` pi on pi.name = pii.parent
-			where {0}""".format(conditions))
-    #frappe.msgprint("{0}".format(query))
+			where {0} order by mr.creation_date desc""".format(conditions))
+    #frappe.msgprint(query)
     return query
-def get_conditions(filters):
-	conditions = ""
-	if filters.get("month"):
-		month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
-			"Dec"].index(filters["month"]) + 1
-		filters["month"] = month
-		frappe.msgprint(month)
-		conditions += " month(mr.creation_date) = {0}".format(filters["month"])
-
-	if filters.get("fiscal_year"): conditions += " and year(mr.creation) = {0}".format(filters.get("fiscal_year"))
-
-	conditions += " and mr.workflow_state  != 'Cancelled'"
-	conditions += " and case when po.docstatus IS NOT NULL then po.docstatus != 2 else 1 =1 end"
-	conditions += " and case when pr.status IS NOT NULL then pr.status != 'Cancelled' else 1 =1 end"
-	conditions += " and case when pi.docstatus IS NOT NULL then pi.docstatus != 2 else 1 =1 end"
-
-	#and ifnull(1 =1, pi.docstatus != 2)"
-	return conditions, filters
 
 def get_columns(filters):
         cols = [
                 ("MR Name") + ":Link/Material Request:120",
+		("MR Cost Center") + ":Data:160",
 		        ("MR Create Date") + ":Date:100",
                 ("MR Submit Date") + ":Date:110",
                 ("Mr Status") + ":Data:100",
 		        ("MR Owner") + ":Link/User:140",
-		        ("Forward To Procurment") + ":Data:100",
+		        ("Forward To Procurment") + ":Date:100",
                 ("MR Type") + ":Data:120",
+		("RFQ Name") + ":Link/Request For Quotation:100",
+		("RFQ Create Date") + ":Date:100",
+		("RFQ Submit Date") + ":Date:100",
+		("RFQ Status") + ":Data:100",
+		("RFQ Owner") + ":Data:100",
                 ("PO Name") + ":Link/Purchase Order:120",
                 ("PO Create Date") + ":Date:100",
 		        ("PO Submit Date") + ":Date:100",
