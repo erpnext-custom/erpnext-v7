@@ -64,12 +64,12 @@ class POL(StockController):
 			frappe.throw(str(self.item_name) + " is not a HSD item")
 
 	def on_submit(self):
+		self.check_budget()
 		if getdate(self.posting_date) > getdate("2018-03-31"):
 			self.update_stock_ledger()
 		self.update_general_ledger(1)
-		self.check_budget()
 		self.make_pol_entry()
-
+	
 	def check_budget(self):
 		cc = get_branch_cc(self.equipment_branch)
 		account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
@@ -196,9 +196,10 @@ class POL(StockController):
 	def get_expense_account(self):
 		if self.direct_consumption:
 			if self.is_hsd_item:
-				expense_account = frappe.db.get_value("Item", self.pol_type, "expense_account")
-			else:
 				expense_account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
+			else:
+				expense_account = frappe.db.get_value("Item", self.pol_type, "expense_account")
+
 			if not expense_account:
 				frappe.throw("Set Budget Account in Equipment Category or Item Master")		
 		else:

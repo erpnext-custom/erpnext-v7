@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-09 15:56:49.188715", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-10 16:51:02.058856", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Accounts", 
  "name": "Budget Consumption Report", 
  "owner": "Administrator", 
@@ -36,6 +36,9 @@
   }, 
   {
    "role": "HR Master"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

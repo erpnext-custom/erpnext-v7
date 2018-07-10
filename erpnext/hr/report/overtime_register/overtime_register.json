@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-16 10:57:25.210896", 
- "modified_by": "payma.wangchuk@cdcl.bt", 
+ "modified": "2018-07-10 14:26:56.588413", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Overtime Register", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Project Supervisor"
   }
  ]
 }

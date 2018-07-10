@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-05-17 16:31:39.473396", 
+ "modified": "2018-07-10 14:45:00.412837", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "BOQ Register", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Project Supervisor"
   }
  ]
 }

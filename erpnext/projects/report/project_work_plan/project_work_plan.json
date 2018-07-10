@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-05-17 16:30:20.528748", 
+ "modified": "2018-07-10 14:44:27.793429", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Work Plan", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Project Supervisor"
   }
  ]
 }

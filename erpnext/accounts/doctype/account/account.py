@@ -29,6 +29,7 @@ class Account(Document):
 	def validate(self):
 		if frappe.local.flags.allow_unverified_charts:
 			return
+		self.check_duplicate_account_code()
 		self.validate_parent()
 		self.validate_root_details()
 		self.validate_group_or_ledger()
@@ -38,6 +39,13 @@ class Account(Document):
 		self.validate_frozen_accounts_modifier()
 		self.validate_balance_must_be_debit_or_credit()
 		self.validate_account_currency()
+
+	def check_duplicate_account_code(self):
+		if self.account_code:
+			dup = frappe.db.sql("select name from tabAccount where account_code = %s and name != %s", (self.account_code, self.name), as_dict=True)
+			if dup:
+				frappe.throw("Account Code already assigned to <b>" + str(dup[0].name) + "</b>")
+			
 
 	def validate_parent(self):
 		"""Fetch Parent Details and validate parent account"""

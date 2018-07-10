@@ -30,8 +30,9 @@ def get_conditions(filters):
 		jc_date 	 = get_dates(filters, "jc", "finish_date")
 		insurance_date   = get_dates(filters, "ins", "insured_date")
 		operator_date    = get_dates(filters, "op", "start_date", "end_date")
-		tc_date		 = get_dates(filters, "tc", "posting_date")		
-		le_date		 = get_dates(filters, "le", "encashed_date")
+		tc_date		 = get_dates(filters, "tc", "posting_date")
+		# encashed_date changed to application_date as this field is empty and not fetching any value on 10/7/2018		
+		le_date		 = get_dates(filters, "le", "application_date")
 		ss_date		 = get_dates(filters, "ss", "start_date", "ifnull(end_date,curdate())")
 		reg_date	 = get_dates(filters, "reg", "registration_date")
 		mr_date		 = get_dates(filters, "mr_pay", "from_date", "to_date")

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2018-05-04 14:17:58.643127", 
+ "modified": "2018-07-10 14:27:57.545499", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Accounts Payable", 
@@ -42,6 +42,9 @@
   }, 
   {
    "role": "Projects Readonly"
+  }, 
+  {
+   "role": "Project Supervisor"
   }
  ]
 }

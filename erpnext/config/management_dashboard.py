@@ -119,6 +119,12 @@ def get_data():
 					"name": "purchase-analytics",
 					"label": "Purchase Analytics"
 				},
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "MR Status Report",
+                                        "doctype": "Buying"
+                                }
 			]
 		},
 		{

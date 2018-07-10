@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 18:29:01.931281", 
+ "modified": "2018-07-10 14:43:20.973607", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "General Ledger", 
@@ -29,7 +29,10 @@
    "role": "Projects User"
   }, 
   {
-   "role": "Projects Manager"
+   "role": "Projects GM"
+  }, 
+  {
+   "role": "Project Supervisor"
   }
  ]
 }

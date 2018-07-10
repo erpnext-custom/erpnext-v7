@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-05-17 16:29:46.166088", 
+ "modified": "2018-07-10 14:31:06.828079", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Equipment", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Project Supervisor"
   }
  ]
 }
