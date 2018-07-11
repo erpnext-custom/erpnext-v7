@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2018-07-10 14:43:20.973607", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-11 09:51:15.394206", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Accounts", 
  "name": "General Ledger", 
  "owner": "Administrator", 
@@ -33,6 +33,9 @@
   }, 
   {
    "role": "Project Supervisor"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

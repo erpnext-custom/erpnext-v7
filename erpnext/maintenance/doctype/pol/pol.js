@@ -78,6 +78,15 @@ function calculate_total(frm) {
 }	
 
 frappe.ui.form.on("POL", "refresh", function(frm) {
+    cur_frm.set_query("cost_center", function() {
+        return {
+            "filters": {
+		"is_disabled": 0,
+		"is_group": 0
+            }
+        };
+    });
+
     cur_frm.set_query("equipment", function() {
         return {
             "filters": {

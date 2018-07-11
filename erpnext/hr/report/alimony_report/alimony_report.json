@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-28 09:54:27.099206", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-11 09:25:55.045232", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "Alimony Report", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

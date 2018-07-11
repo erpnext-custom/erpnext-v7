@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-26 10:29:07.488427", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-11 09:26:16.816777", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Accounts", 
  "name": "Statement of Cash Flow", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Regional Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

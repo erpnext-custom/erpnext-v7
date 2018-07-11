@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-13 10:57:36.553047", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-11 09:26:44.526501", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "Adhoc Recoveries", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "HR Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

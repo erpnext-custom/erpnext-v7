@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-01-26 13:57:09.047192", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-11 09:32:53.318150", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "Loan Report", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

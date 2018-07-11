@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 13:15:35.951101", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-11 09:55:31.153707", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "Employee Due Date Report", 
  "owner": "Administrator", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "HR User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

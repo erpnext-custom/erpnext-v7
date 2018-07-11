@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-03-09 10:58:51.456219", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-11 09:27:59.079852", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "House Rent Report", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

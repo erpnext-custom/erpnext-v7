@@ -479,6 +479,7 @@ cur_frm.cscript.item_code = function(doc, cdt, cdn) {
 						}
 						else if (k == 'uom') {
 							//don't populate the uom 
+							d[k] = null
 						}
 						else {
 							d[k] = v;

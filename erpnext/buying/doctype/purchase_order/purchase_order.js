@@ -335,6 +335,7 @@ frappe.ui.form.on("Purchase Order Item", "item_code", function(frm, cdt, cdn) {
         callback: function(r)  {
              if(r.message) {
                    frappe.model.set_value(cdt, cdn, "budget_account", r.message)
+		   frappe.model.set_value(cdt, cdn, "uom", null)
              }
         }
    })
@@ -347,6 +348,7 @@ cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc
 			'company': doc.company,
 			"is_group": 0,
 			"is_disabled": 0,
+			"branch": doc.branch
 		}
 	}
 }

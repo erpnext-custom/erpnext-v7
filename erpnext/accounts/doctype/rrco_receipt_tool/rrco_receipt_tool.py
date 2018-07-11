@@ -35,6 +35,7 @@ def mark_invoice(branch=None, invoice_list=None, receipt_number=None, receipt_da
 	invoice_list = json.loads(invoice_list)
 	for invoice in invoice_list:
 		rrco = frappe.new_doc("RRCO Receipt Entries")
+		rrco.flags.ignore_permissions = 1
 		rrco.purchase_invoice = invoice['name']
 		rrco.receipt_date = str(receipt_date)
 		rrco.receipt_number = str(receipt_number)
@@ -50,6 +51,7 @@ def updateSalaryTDS(branch=None, month=None, fiscal_year=None, receipt_number=No
 		frappe.throw("RRCO Receipt and date has been already assigned for the given month and fiscal year")
 	else:
 		rrco = frappe.new_doc("RRCO Receipt Entries")
+		rrco.flags.ignore_permissions = 1
 		rrco.fiscal_year = str(fiscal_year)
 		rrco.month = str(month)
 		rrco.receipt_date = str(receipt_date)
@@ -68,6 +70,7 @@ def updateBonus(branch=None, purpose=None, fiscal_year=None, receipt_number=None
 		frappe.throw("RRCO Receipt and date has been already assigned for the given fiscal year for Annual Bonus")
 	else:
 		rrco = frappe.new_doc("RRCO Receipt Entries")
+		rrco.flags.ignore_permissions = 1
 		rrco.purpose = str(purpose)
 		rrco.fiscal_year = str(fiscal_year)
 		rrco.receipt_date = str(receipt_date)
@@ -86,6 +89,7 @@ def updatePBVA(branch=None, purpose=None, fiscal_year=None, receipt_number=None,
 		frappe.throw("RRCO Receipt and date has been already assigned for the given fiscal year for PBVA")
 	else:
 		rrco = frappe.new_doc("RRCO Receipt Entries")
+		rrco.flags.ignore_permissions = 1
 		rrco.purpose = str(purpose)
 		rrco.fiscal_year = str(fiscal_year)
 		rrco.receipt_date = str(receipt_date)

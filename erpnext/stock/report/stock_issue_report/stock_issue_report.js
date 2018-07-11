@@ -36,5 +36,13 @@ frappe.query_reports["Stock Issue Report"] = {
 			"options": "Warehouse"
 		},
 
+		{
+			"fieldname": "item_code",
+			"label": __("Material Code"),
+			"fieldtype": "Link",
+			"width": "80",
+			"options": "Item"
+		},
+
 	]
 }

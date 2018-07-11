@@ -47,6 +47,7 @@ class EmployeeBenefits(Document):
 				"credit": flt(total_amount),
 			})
 		je.insert()
+		self.journal = je.name
 
 	def update_employee(self):
 		emp = frappe.get_doc("Employee", self.employee)
@@ -62,4 +63,12 @@ class EmployeeBenefits(Document):
 			doc.s_b_currency = a.amount
 			doc.save()
 		emp.save()	
+
+	def on_cancel(self):
+		self.check_journal()
+
+	def check_journal(self):
+		docs = frappe.db.sql("select parent from `tabJournal Entry Account` where reference_name = %s and docstatus != 2", self.name, as_dict=True)
+		if docs:
+			frappe.throw("Cancel Journal Entry <b>" + str(docs[0].parent) + "</b> before cancelling this document")
 

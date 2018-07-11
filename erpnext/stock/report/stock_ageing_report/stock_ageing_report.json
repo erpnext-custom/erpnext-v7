@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-03 17:07:04.889489", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-11 09:25:24.900359", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Ageing Report", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Management"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

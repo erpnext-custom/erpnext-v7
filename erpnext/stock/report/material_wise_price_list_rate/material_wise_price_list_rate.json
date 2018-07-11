@@ -8,8 +8,8 @@
  "idx": 0, 
  "is_standard": "Yes", 
  "json": "{\"filters\":[],\"columns\":[[\"name\",\"Item Price\"],[\"price_list\",\"Item Price\"],[\"item_code\",\"Item Price\"],[\"item_name\",\"Item Price\"],[\"item_description\",\"Item Price\"],[\"price_list_rate\",\"Item Price\"],[\"buying\",\"Item Price\"],[\"selling\",\"Item Price\"],[\"currency\",\"Item Price\"]],\"sort_by\":\"Item Price.modified\",\"sort_order\":\"desc\",\"sort_by_next\":null,\"sort_order_next\":\"desc\"}", 
- "modified": "2017-12-14 10:24:27.896995", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-11 10:00:01.984227", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Material-wise Price List Rate", 
  "owner": "Administrator", 
@@ -29,6 +29,9 @@
   }, 
   {
    "role": "Stock User (other)"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

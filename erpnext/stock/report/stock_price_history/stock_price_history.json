@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-12-06 21:43:00.658149", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-11 10:00:32.114957", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Price History", 
  "owner": "Administrator", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Sales User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }
