@@ -8,12 +8,15 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def adjust_pol_entry_1():
+	pol = frappe.get_doc("POL", "POL180500576")
+	frappe.db.sql("delete from `tabPOL Entry` where reference_name = 'POL180500576'")
+	pol.make_pol_entry()
+
 def adjust_dc_pol():
 	pols = frappe.db.sql("select p.name, p.qty, e.equipment_type, p.posting_date, p.equipment_warehouse from tabPOL p, tabEquipment e, `tabEquipment Type` et where p.equipment = e.name and e.equipment_type = et.name and direct_consumption = 0 and et.is_container = 0 and posting_date > '2018-03-31' and p.docstatus = 1 ", as_dict=True)
 	for a in pols:
-		if a.name in ['POL180500576', 'POL180500492', 'POL180500491', 'POL180500490', 'POL180500456', 'POL180500458']:
-			pass
-		else:	
+		if a.name in ['POL180500492', 'POL180500491', 'POL180500490', 'POL180500456']:
 			print(str(a.name))
 			frappe.db.sql("delete from `tabStock Ledger Entry` where voucher_no = %s", a.name)
 			frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", a.name)
@@ -23,6 +26,17 @@ def adjust_dc_pol():
 			doc.update_stock_ledger()
 			doc.make_pol_entry()
 			frappe.db.commit()
+		else:	
+			pass
+			"""print(str(a.name))
+			frappe.db.sql("delete from `tabStock Ledger Entry` where voucher_no = %s", a.name)
+			frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", a.name)
+			frappe.db.sql("update `tabPOL` set direct_consumption = 1 where name = %s", a.name)
+			doc = frappe.get_doc("POL", a.name)
+			doc.direct_consumption = 1
+			doc.update_stock_ledger()
+			doc.make_pol_entry()
+			frappe.db.commit()"""
 
 def adjust_hsd_outstanding():
 	ols = frappe.db.sql("select pol from `tabHSD Payment Item` where parent = 'HSDP1805002'", as_dict=True)

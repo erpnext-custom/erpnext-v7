@@ -38,8 +38,14 @@ frappe.query_reports["HSD Consumption Report"] = {
                         "label": ("Include Disbaled Equipments"),
                         "fieldtype": "Check",
                         "default": 0
-                }
+                },
 
+		{
+                        "fieldname": "own_cc",
+                        "label": ("Include Issued/Received from Own Cost Center"),
+                        "fieldtype": "Check",
+                        "default": 0
+                }
 
 	]
 }

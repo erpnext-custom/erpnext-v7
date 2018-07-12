@@ -39,7 +39,10 @@ def get_data(filters):
 
         for eq in frappe.db.sql(query, as_dict=True):
 		for item in items:
-			balance = get_pol_between("Issue", eq.name, filters.from_date, filters.to_date, item.item_code)
+			own_cc = 0
+			if filters.get("own_cc"):
+				own_cc = 1
+			balance = get_pol_between("Issue", eq.name, filters.from_date, filters.to_date, item.item_code, own_cc)
 			if balance:
 				row = [eq.name, eq.equipment_number, item.item_code, item.item_name, item.stock_uom, balance]
 				data.append(row)

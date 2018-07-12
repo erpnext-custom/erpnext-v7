@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt
+from frappe.utils import flt, cint
 from erpnext.accounts.report.financial_statements_emines import (get_period_list, get_columns, get_data)
 
 def execute(filters=None):
@@ -70,13 +70,13 @@ def check_opening_balance(asset, liability, equity):
 	# Check if previous year balance sheet closed
 	opening_balance = 0
 	if asset:
-		opening_balance = flt(asset[0].get("opening_balance", 0))
+		opening_balance = flt(asset[0].get("opening_balance", 0), 2)
 	if liability:
-		opening_balance -= flt(liability[0].get("opening_balance", 0))
+		opening_balance -= flt(liability[0].get("opening_balance", 0), 2)
 	if equity:
-		opening_balance -= flt(asset[0].get("opening_balance", 0))
+		opening_balance -= flt(equity[0].get("opening_balance", 0), 2)
 
-	if opening_balance:
+	if cint(opening_balance):
 		return _("Previous Financial Year is not closed")
 
 

@@ -37,6 +37,12 @@ frappe.query_reports["POL Issue Report"] = {
                         "label": ("Include Disbaled Equipments"),
                         "fieldtype": "Check",
                         "default": 0
+                },
+		{
+                        "fieldname": "own_cc",
+                        "label": ("Include Only Received/Issued from Own Branch"),
+                        "fieldtype": "Check",
+                        "default": 0
                 }
 	]
 }

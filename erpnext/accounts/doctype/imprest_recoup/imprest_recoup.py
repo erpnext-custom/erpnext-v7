@@ -47,6 +47,8 @@ class ImprestRecoup(AccountsController):
                 if self.docstatus == 0 and self.workflow_state == "Recouped":
                         self.workflow_state = "Waiting Recoupment"
 
+		self.posting_date = nowdate()
+
                 # Update items
                 self.purchase_amount = 0.0
                 for i in self.items:
@@ -119,7 +121,7 @@ class ImprestRecoup(AccountsController):
                 entries         = {}
                 accounts        = []
                 total_amount    = 0.0
-                self.posting_date = nowdate()
+                #self.posting_date = nowdate()
 
                 '''
                 rev_gl = frappe.db.get_value(doctype="Branch",filters=self.branch,fieldname="revenue_bank_account", as_dict=True)

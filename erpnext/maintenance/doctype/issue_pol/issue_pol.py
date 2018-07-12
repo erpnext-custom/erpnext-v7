@@ -60,6 +60,7 @@ class IssuePOL(StockController):
 	def on_submit(self):
 		if not self.items:
 			frappe.throw("Should have a POL Issue Details to Submit")
+		self.validate_data()
 		self.check_tanker_hsd_balance()
 		self.update_stock_gl_ledger(1, 1)
 		self.make_pol_entry()

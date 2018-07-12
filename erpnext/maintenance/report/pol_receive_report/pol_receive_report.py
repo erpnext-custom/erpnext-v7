@@ -5,29 +5,48 @@ from __future__ import unicode_literals
 import frappe
 
 def execute(filters=None):
-        columns = get_columns()
+        columns = get_columns(filters)
         data = get_data(filters)
 
         return columns, data
     
-def get_columns():
-        return [
-                ("Equipment ") + ":Link/Equipment:120",
-                ("Equipment No.") + ":Data:120",
-                ("Book Type") + ":Data:120",
-                ("Fuelbook") + ":Data:120",
-		("Supplier") + ":Data:120",
-                ("Item Code")+ ":Data:100",
-                ("Item Name")+ ":Data:170",
-                ("Date") + ":Date:120",
-                ("Quantity") + ":Data:120",
-                ("Rate") + ":Data:120",
-                ("Amount") + ":Currency:120"
-        ]
+def get_columns(filters):
+	if not filters.get("own_cc"):
+		return [
+			("Equipment ") + ":Link/Equipment:120",
+			("Equipment No.") + ":Data:120",
+			("Book Type") + ":Data:120",
+			("Fuelbook") + ":Data:120",
+			("Received From") + ":Link/Branch:120",
+			("Supplier") + ":Data:120",
+			("Item Code")+ ":Data:100",
+			("Item Name")+ ":Data:170",
+			("Date") + ":Date:120",
+			("Quantity") + ":Data:120",
+			("Rate") + ":Data:120",
+			("Amount") + ":Currency:120"
+		]
+	else:
+		return [
+			("Equipment ") + ":Link/Equipment:120",
+			("Equipment No.") + ":Data:120",
+			("Book Type") + ":Data:120",
+			("Fuelbook") + ":Data:120",
+			("Supplier") + ":Data:120",
+			("Item Code")+ ":Data:100",
+			("Item Name")+ ":Data:170",
+			("Date") + ":Date:120",
+			("Quantity") + ":Data:120",
+			("Rate") + ":Data:120",
+			("Amount") + ":Currency:120"
+		]
 
 def get_data(filters):
 
-        query =  "select p.equipment, p.equipment_number, p.book_type, p.fuelbook, p.supplier, p.pol_type, p.item_name, p.posting_date, p.qty, p.rate, ifnull(p.total_amount,0) from tabPOL as p where p.docstatus = 1"
+	if not filters.get("own_cc"):
+		query =  "select p.equipment, p.equipment_number, p.book_type, p.fuelbook, p.fuelbook_branch, p.supplier, p.pol_type, p.item_name, p.posting_date, p.qty, p.rate, ifnull(p.total_amount,0) from tabPOL as p where p.docstatus = 1"
+	else:
+		query =  "select p.equipment, p.equipment_number, p.book_type, p.fuelbook, p.supplier, p.pol_type, p.item_name, p.posting_date, p.qty, p.rate, ifnull(p.total_amount,0) from tabPOL as p where p.docstatus = 1"
 
         if filters.get("branch"):
 		query += " and p.branch = \'"+ str(filters.branch) + "\'"

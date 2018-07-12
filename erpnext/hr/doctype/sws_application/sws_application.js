@@ -12,6 +12,9 @@ frappe.ui.form.on('SWS Application', {
 });
 
 cur_frm.fields_dict['items'].grid.get_field('reference_document').get_query = function(frm, cdt, cdn) {
+	if (!frm.employee) {
+                frm.employee = "dhskhfgskhfgsfhksfsjhbaf"
+        }
         return {
                 filters: {
                         "parent": frm.employee
