@@ -13,6 +13,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.model.mapper import get_mapped_doc
 from frappe.utils import flt, getdate, get_url, today
 
 class RevenueTarget(Document):
@@ -20,7 +21,8 @@ class RevenueTarget(Document):
                 self.validate_mandatory()
 
         def validate_mandatory(self):
-                tot_target_amount = 0.0
+                tot_target_amount     = 0.0
+                tot_adjustment_amount = 0.0
                 
                 for item in self.revenue_target_account:
                         if flt(item.target_amount) < 0.0:
@@ -32,8 +34,39 @@ class RevenueTarget(Document):
                         if not item.account_code:
                                 item.account_code = frappe.db.get_value("Account", item.account, "account_code")
 
-                        tot_target_amount += flt(item.target_amount)
+                        tot_target_amount     += flt(item.target_amount)
+                        tot_adjustment_amount += flt(item.adjustment_amount)
 
-                self.tot_target_amount = tot_target_amount
+                self.tot_target_amount     = tot_target_amount
+                self.tot_adjustment_amount = tot_adjustment_amount
+                self.tot_net_target_amount = flt(tot_target_amount) + flt(tot_adjustment_amount)
                 
 
+@frappe.whitelist()
+def make_adjustment_entry(source_name, target_doc=None):
+        doc = get_mapped_doc("Revenue Target", source_name, {
+                "Revenue Target": {
+                        "doctype": "Revenue Target Adjustment",
+                        "validation": {
+                                "docstatus": ["=", 1]
+                        },
+                        "field_map": [
+                                ["name", "revenue_target"],
+                                ["tot_net_target_amount", "tot_target_amount"]
+                        ]
+                },
+                "Revenue Target Account": {
+                        "doctype": "Revenue Target Adjustment Account",
+                        "field_map": [
+                                ["parent", "revenue_target"],
+                                ["name", "revenue_target_item"],
+                                ["net_target_amount", "target_amount"],
+                                ["cost_center", "original_cost_center"],
+                                ["account", "original_account"],
+                                ["account_code", "original_account_code"],
+                                ["net_target_amount", "original_target_amount"]
+                        ]
+                }
+        }, target_doc)
+
+        return doc

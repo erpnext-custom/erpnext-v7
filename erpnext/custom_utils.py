@@ -291,3 +291,9 @@ def check_account_frozen(posting_date):
 				and not frozen_accounts_modifier in frappe.get_roles():
 			frappe.throw(_("You are not authorized to add or update entries before {0}").format(formatdate(acc_frozen_upto)))
 
+       
+def sendmail(recipent, subject, message, sender=None):
+	try:
+		frappe.sendmail(recipients=recipent, sender=None, subject=subject, message=message)
+	except:
+		pass

@@ -17,7 +17,13 @@ class VehicleLogbook(Document):
 		self.check_duplicate()
 		self.update_consumed()
 		self.calculate_totals()
-		self.update_operator()	
+		self.update_operator()
+		self.check_consumed()	
+
+	def check_consumed(self):
+		if self.include_hour or self.include_km:
+			if flt(self.consumption) <= 0:
+				frappe.throw("Total consumption cannot be zero or less")
 
 	def on_update(self):
 		self.calculate_balance()

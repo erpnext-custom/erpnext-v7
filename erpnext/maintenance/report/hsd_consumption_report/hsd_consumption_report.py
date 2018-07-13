@@ -24,6 +24,8 @@ def get_data(query, filters=None):
 		d.drawn = get_pol_between("Receive", d.name, filters.from_date, filters.to_date, d.hsd_type, own_cc)
 		received_till = get_pol_till("Receive", d.name, add_days(getdate(filters.from_date), -1), d.hsd_type, own_cc)
 		consumed_till = get_pol_consumed_till(d.name, add_days(getdate(filters.from_date), -1))
+		consumed_till_end = get_pol_consumed_till(d.name, filters.to_date)
+		d.consumed = flt(consumed_till_end) - flt(consumed_till)
 		d.opening = flt(received_till) - flt(consumed_till)
 		d.closing = flt(d.opening) + flt(d.drawn) - flt(d.consumed)
 
@@ -54,7 +56,7 @@ def construct_query(filters):
 		query += " and e.branch = \'" + str(filters.branch) + "\'"
 
 	if filters.get("from_date") and filters.get("to_date"):
-		 query += " and vl.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' and vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+		 query += " and (vl.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' or vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\')"
 
 	if filters.get("not_cdcl"):
                query += " and e.not_cdcl = 0"

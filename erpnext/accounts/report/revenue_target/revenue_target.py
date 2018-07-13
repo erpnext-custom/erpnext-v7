@@ -22,9 +22,11 @@ def get_conditions(filters):
 
 def get_data(filters):
         data = []
-        tot_target_amount   = 0.0
-        tot_achieved_amount = 0.0
-        tot_balance_amount  = 0.0
+        tot_target_amount     = 0.0
+        tot_adjustment_amount = 0.0
+        tot_net_target_amount = 0.0
+        tot_achieved_amount   = 0.0
+        tot_balance_amount   = 0.0
         
 	cond = get_conditions(filters)
         
@@ -34,6 +36,8 @@ def get_data(filters):
                                 rtc.account,
                                 rtc.account_code,
                                 sum(ifnull(rtc.target_amount,0)) as target_amount,
+                                sum(ifnull(rtc.adjustment_amount,0)) as adjustment_amount,
+                                sum(ifnull(rtc.net_target_amount,0)) as net_target_amount,
                                 0 as achieved_amount
                         from `tabRevenue Target Account` as rtc, `tabRevenue Target` as rt
                         where rt.fiscal_year = "{0}"
@@ -74,17 +78,21 @@ def get_data(filters):
                         achieved_amount = flt(a.achieved_amount)
 
                 t["achieved_amount"] = flt(achieved_amount)
-                t["balance_amount"]  = flt(t.target_amount)-flt(achieved_amount)
-                t["achievement"]     = (flt(achieved_amount)/flt(t.target_amount if t.target_amount else 1))*100
+                t["balance_amount"]  = flt(t.net_target_amount)-flt(achieved_amount)
+                t["achievement"]     = (flt(achieved_amount)/flt(t.net_target_amount if t.net_target_amount else 1))*100
 
-                tot_target_amount   += flt(t.target_amount)
-                tot_achieved_amount += flt(achieved_amount)
+                tot_target_amount     += flt(t.target_amount)
+                tot_adjustment_amount += flt(t.adjustment_amount)
+                tot_net_target_amount += flt(t.net_target_amount)
+                tot_achieved_amount   += flt(achieved_amount)
                 
                 data.append(t)
 
         data.append({
                 "account": "TOTAL",
                 "target_amount": flt(tot_target_amount),
+                "adjustment_amount": flt(tot_adjustment_amount),
+                "net_target_amount": flt(tot_net_target_amount),
                 "achieved_amount": flt(tot_achieved_amount),
                 "balance_amount": flt(tot_target_amount)-flt(tot_achieved_amount),
                 "achievement": (flt(tot_achieved_amount)/flt(tot_target_amount if tot_target_amount else 1))*100
@@ -116,7 +124,19 @@ def get_columns():
                 },
                 {
                         "fieldname": "target_amount",
-                        "label": _("Target Amount"),
+                        "label": _("Initial Target"),
+                        "fieldtype": "Currency",
+                        "width": 130
+                },
+                {
+                        "fieldname": "adjustment_amount",
+                        "label": _("Adjustments"),
+                        "fieldtype": "Currency",
+                        "width": 130
+                },
+                {
+                        "fieldname": "net_target_amount",
+                        "label": _("Final Target"),
                         "fieldtype": "Currency",
                         "width": 130
                 },

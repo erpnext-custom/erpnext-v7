@@ -77,8 +77,10 @@ def get_data(filters):
         else:
                dis  = " and is_disabled != 1 " 
         equipments = frappe.db.sql("""
-                                select name, branch, equipment_number, equipment_type, equipment_model
-                                from `tabEquipment` where 
+                                select e.name, e.branch,e.equipment_number, e.equipment_type,
+								 eo.operator_name as operator, e.equipment_model
+                             from tabEquipment as e
+                             left join `tabEquipment Operator` as eo on e.name= eo.parent where 
                                 {0} {1} {2} order by branch, name
                         """.format(not_cdcll, branch_cond, dis), as_dict=1)
 
@@ -236,6 +238,7 @@ def get_data(filters):
 				eq.name,
 				eq.equipment_number,
 				eq.equipment_type,
+				eq.operator,
 				round(flt(vl.consumption)*flt(pol.rate),2),
 				round(flt(ins.insurance)+flt(reg.r_amount),2),
 				round(flt(jc.goods_amount),2),
@@ -254,6 +257,7 @@ def get_columns(filters):
                 ("ID") + ":Link/Equipment:120",
 		("Registration No") + ":Data:120",
 		("Equipment Type") + ":Data:120",
+		("Operator/Driver") + ":Data:120",
                 ("HSD Consumption") + ":Float:120",
                 ("Insurance") + ":Float:120",
                 ("Goods Amount") + ":Float:120",

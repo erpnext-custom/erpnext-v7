@@ -6,18 +6,32 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
-from erpnext.custom_utils import get_branch_cc, get_cc_customer
+from erpnext.custom_utils import sendmail, get_branch_cc, get_cc_customer
 from frappe.utils import flt
 
 class EquipmentRequest(Document):
 	def validate(self):
+		self.check_branch()
 		self.calculate_percent()
+
+	def check_branch(self):
+		if self.branch == self.sbranch:
+			frappe.throw("Requesting and Supplier Branch cannot be same.")
 
 	def calculate_percent(self):
 		total_item = len(self.items)
 		per_item = flt(flt(100) / flt(total_item), 2)
 		for a in self.items:
 			a.percent_share = per_item 
+
+	def on_submite(self):
+		self.sendmailtorm()
+
+	def sendmailtorm(self):
+         	mails = frappe.db.sql("select email from `tabBranch Fleet Manager Item` where parent = %s", self.sbranch, as_dict=True)
+	        for a in mails:
+			message = "Equipment Request " + str(self.name) + " has been submitted to your office from " + str(self.branch)
+			sendmail(recipients=a.email, sender=None, subject="Equipment Request Notification", message=message)
 
 @frappe.whitelist()
 def make_hire_form(source_name, target_doc=None):

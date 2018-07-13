@@ -5,6 +5,17 @@ cur_frm.add_fetch("employee", "employee_name", "employee_name")
 cur_frm.add_fetch("employee", "branch", "branch")
 
 frappe.ui.form.on('Overtime Application', {
+	refresh: function(frm) {
+		if (frm.doc.payment_jv && frappe.model.can_read("Journal Entry")) {
+			cur_frm.add_custom_button(__('Bank Entries'), function() {
+				frappe.route_options = {
+					"Journal Entry Account.reference_type": me.frm.doc.doctype,
+					"Journal Entry Account.reference_name": me.frm.doc.name,
+				};
+				frappe.set_route("List", "Journal Entry");
+			}, __("View"));
+		}
+	},
 	onload: function(frm) {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())

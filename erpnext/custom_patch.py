@@ -8,6 +8,13 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def set_equipment_type():
+	pols = frappe.db.sql("select name, equipment from tabPOL", as_dict=True)
+	for a in pols:
+		print(a.equipment)
+		et = frappe.db.get_value("Equipment", a.equipment, "equipment_type")
+		frappe.db.sql("update tabPOL set equipment_type = %s and name = %s", (et, a.name))	
+
 def adjust_pol_entry_1():
 	pol = frappe.get_doc("POL", "POL180500576")
 	frappe.db.sql("delete from `tabPOL Entry` where reference_name = 'POL180500576'")

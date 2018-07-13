@@ -56,12 +56,12 @@ class POL(StockController):
 				frappe.throw("Fuelbook (<b>" + str(self.fuelbook) + "</b>) is not registered to <b>" + str(self.equipment) + "</b>")
 
 	def validate_item(self):
-		is_stock, is_hsd = frappe.db.get_value("Item", self.pol_type, ["is_stock_item", "is_hsd_item"])
+		is_stock, is_hsd, is_pol = frappe.db.get_value("Item", self.pol_type, ["is_stock_item", "is_hsd_item", "is_pol_item"])
 		if not is_stock:
 			frappe.throw(str(self.item_name) + " is not a stock item")
 
-		if not is_hsd:
-			frappe.throw(str(self.item_name) + " is not a HSD item")
+		if not is_hsd and not is_pol:
+			frappe.throw(str(self.item_name) + " is not a HSD/POL item")
 
 	def on_submit(self):
 		self.validate_dc()

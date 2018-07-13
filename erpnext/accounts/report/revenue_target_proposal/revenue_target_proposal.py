@@ -14,7 +14,7 @@ def execute(filters=None):
 def get_data(filters, grand_total):
 	data = []
 	cc_amount = {}
-	all_data = frappe.db.sql("select ra.account, ra.account_code, ra.cost_center, ra.target_amount from `tabRevenue Target Account` ra, `tabRevenue Target` rt where ra.parent = rt.name and rt.fiscal_year = %s order by ra.account_code", filters.fiscal_year, as_dict=True) 
+	all_data = frappe.db.sql("select ra.account, ra.account_code, ra.cost_center, ra.net_target_amount as target_amount from `tabRevenue Target Account` ra, `tabRevenue Target` rt where ra.parent = rt.name and rt.fiscal_year = %s order by ra.account_code", filters.fiscal_year, as_dict=True) 
 	#frappe.msgprint("{0}".format(all_data))
 	for a in all_data:
 		acc = str(a.account).rstrip(" - CDCL").replace(' ', '_').strip().lower().encode('utf-8')
@@ -55,7 +55,7 @@ def get_columns(filters):
 			"width": 100
 		},
 	]
-	ccs = frappe.db.sql("select ra.cost_center, sum(ra.target_amount) as grand_total from `tabRevenue Target Account` ra, `tabRevenue Target` rt where ra.parent = rt.name and rt.docstatus < 2 and rt.fiscal_year = %s group by ra.cost_center order by ra.cost_center ASC", filters.fiscal_year, as_dict=True)
+	ccs = frappe.db.sql("select ra.cost_center, sum(ra.net_target_amount) as grand_total from `tabRevenue Target Account` ra, `tabRevenue Target` rt where ra.parent = rt.name and rt.docstatus < 2 and rt.fiscal_year = %s group by ra.cost_center order by ra.cost_center ASC", filters.fiscal_year, as_dict=True)
 	for cc in ccs:
 		cc_key = str(cc.cost_center).rstrip(" - CDCL").replace(' ', '_').strip().lower().encode('utf-8')
 		row = {}
