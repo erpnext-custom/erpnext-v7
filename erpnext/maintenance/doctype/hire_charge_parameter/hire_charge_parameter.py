@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import getdate
+from frappe.utils.data import nowdate, add_years, add_days, date_diff
 
 class HireChargeParameter(Document):
 	def before_save(self):
@@ -13,6 +14,16 @@ class HireChargeParameter(Document):
 			item.idx = i
 
 	def validate(self):
+                self.set_dates()
+                self.set_parameter_values()
+
+        def set_dates(self):
+                to_date = add_years(nowdate(), 100)
+                for a in reversed(self.items):
+                        a.to_date = to_date
+                        to_date = add_days(a.from_date, -1)
+
+	def set_parameter_values(self):
 		p = frappe.db.sql("select name from `tabHire Charge Parameter` where equipment_type = %s and equipment_model = %s and name != %s", (str(self.equipment_type), str(self.equipment_model), str(self.name)), as_dict=True)
 		if p:
 			frappe.throw("Hire Charges for the equipment type and model already exists. Update " + str(p[0].name))

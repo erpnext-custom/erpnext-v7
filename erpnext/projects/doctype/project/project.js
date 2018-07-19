@@ -402,7 +402,7 @@ function enable_disable_items(frm){
 	var toggle_fields = ["branch"];
 	
 	if(frm.doc.branch){
-		if(in_list(user_roles, "Project Committee")){
+		if(in_list(user_roles, "CPBD")){
 			toggle_fields.forEach(function(field_name){
 				frm.set_df_property(field_name, "read_only", 0);
 			});

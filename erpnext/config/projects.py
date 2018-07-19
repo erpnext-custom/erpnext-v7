@@ -175,6 +175,12 @@ def get_data():
 					"name": "Project Manpower",
 					"doctype": "Project"
 				},
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Project Equipment",
+                                        "doctype": "Project"
+                                },
                                 {
 					"type": "report",
 					"is_query_report": True,

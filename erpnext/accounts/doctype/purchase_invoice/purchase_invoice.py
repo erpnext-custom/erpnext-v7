@@ -116,7 +116,8 @@ class PurchaseInvoice(BuyingController):
 		if not default_currency:
 			throw(_('Please enter default currency in Company Master'))
 		if (self.currency == default_currency and flt(self.conversion_rate) != 1.00) or not self.conversion_rate or (self.currency != default_currency and flt(self.conversion_rate) == 1.00):
-			throw(_("Conversion rate cannot be 0 or 1"))
+			if self.currency != 'INR':
+				throw(_("Conversion rate cannot be 0 or 1"))
 
 	def validate_credit_to_acc(self):
 		account = frappe.db.get_value("Account", self.credit_to,

@@ -377,6 +377,18 @@ def get_data():
                     			"is_query_report": True,
 					"doctype": "Bank Guarantee"
 				},
+				 {
+                                        "type": "doctype",
+                                        "name": "Fixed Deposit",
+                                },
+                                {
+                                        "type": "report",
+                                        "name": "Fixed Deposit Report",
+                                        "is_query_report": True,
+                                        "doctype": "Fixed Deposit"
+                                },
+                        
+
 			]
 		},
 		{

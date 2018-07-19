@@ -46,6 +46,9 @@ class VehicleLogbook(Document):
 		if getdate(self.from_date) > getdate(self.to_date):
 			frappe.throw("From Date cannot be smaller than To Date")
 
+		if getdate(self.from_date).month != getdate(self.to_date).month:
+                        frappe.throw("From Date and To Date should be in the same month")
+
 	def check_hire_form(self):
 		if self.ehf_name:
 			docstatus = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "docstatus")

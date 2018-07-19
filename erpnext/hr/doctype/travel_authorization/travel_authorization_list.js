@@ -20,7 +20,7 @@ frappe.listview_settings['Travel Authorization'] = {
 				return ["Claimed", "green", "docstatus,=,1|travel_claim,>,0"];
 			}
 			else {
-				return ["Approved", "blue", "docstatus,=,1|travel_claim,<,0"];
+				return ["Approved", "blue", "docstatus,=,1"];
 			}
 		}
 

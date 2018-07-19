@@ -22,6 +22,11 @@ class TravelAuthorization(Document):
                 self.check_double_dates()
 		self.assign_end_date()
 
+	def create_copy(self):
+		self.details = []
+		for a in self.items:
+			self.append("details", {"date": a.date, "halt": a.halt, "till_date": a.till_date, "no_days": a.no_days, "from_place": a.from_place, "halt_at": a.halt_at})
+
 	def on_update(self):
 		self.set_dsa_rate()
 		self.check_double_dates()
@@ -31,6 +36,14 @@ class TravelAuthorization(Document):
 			self.sendmail(frappe.db.get_value("Employee", {"user_id": self.supervisor}, "name"), "Travel Authorization Requested", str(self.employee_name) + " has requested you to verify and sign a travel authorization")
 		elif self.document_status == "Rejected":
 			self.sendmail(self.employee, "Travel Authorization Rejected" + str(self.name), "Following remarks has been added by the supervisor: \n" + str(self.reason))
+
+	def before_submit(self):
+		self.create_copy()
+
+	def create_copy(self):
+		self.details = []
+		for a in self.items:
+			self.append("details", {"date": a.date, "halt": a.halt, "till_date": a.till_date, "no_days": a.no_days, "from_place": a.from_place, "halt_at": a.halt_at})
 
 	def on_submit(self):
 		#self.check_double_dates()
@@ -53,6 +66,15 @@ class TravelAuthorization(Document):
 		if not self.cancellation_reason:
 			frappe.throw("Cancellation Reason is Mandatory when Cancelling Travel Authorization")
 		self.cancel_attendance()	
+
+	def on_update_after_submit(self):
+		if self.travel_claim:
+			frappe.throw("Cannot change once claim is created")
+		self.validate_travel_dates()
+                self.check_double_dates()
+                self.assign_end_date()
+		self.cancel_attendance()
+		self.create_attendance()
 
 	def create_attendance(self):
 		d = getdate(self.items[0].date)
@@ -79,7 +101,7 @@ class TravelAuthorization(Document):
 			attendance.submit()
 
 	def cancel_attendance(self):
-		frappe.db.sql("update tabAttendance set docstatus = 2 where reference_name = %s", (self.name))
+		frappe.db.sql("delete from tabAttendance where reference_name = %s", (self.name))
 	
 	def assign_end_date(self):
 		if self.items:

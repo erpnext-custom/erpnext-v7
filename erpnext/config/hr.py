@@ -139,6 +139,11 @@ def get_data():
 					"description":_("Allocate leaves for the year."),
 					"hide_count": True
 				},
+                                {
+					"type": "doctype",
+					"name": "Leave Adjustment",
+					"label": _("Leave Adjustment Tool"),
+				},
 			]
 		},
 		{

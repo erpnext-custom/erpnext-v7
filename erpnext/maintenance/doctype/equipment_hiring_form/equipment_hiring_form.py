@@ -188,7 +188,7 @@ def get_diff_hire_rates(tr):
 @frappe.whitelist()
 def get_rates(form, equipment):
 	if form and equipment:
-		return frappe.db.sql("select rate_type, rate, idle_rate, from_date, to_date, from_time, to_time from `tabHiring Approval Details` where docstatus = 1 and parent = \'" + str(form) + "\' and equipment = \'" + str(equipment) + "\'", as_dict=True)
+		return frappe.db.sql("select place, rate_type, rate, idle_rate, from_date, to_date, from_time, to_time from `tabHiring Approval Details` where docstatus = 1 and parent = \'" + str(form) + "\' and equipment = \'" + str(equipment) + "\'", as_dict=True)
 
 @frappe.whitelist()
 def update_status(name):

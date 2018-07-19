@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-10 14:31:06.828079", 
+ "modified": "2018-07-18 08:59:10.466316", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Equipment", 
@@ -27,6 +27,18 @@
   }, 
   {
    "role": "Project Supervisor"
+  }, 
+  {
+   "role": "Projects GM"
+  }, 
+  {
+   "role": "Fleet Manager"
+  }, 
+  {
+   "role": "Fleet User"
+  }, 
+  {
+   "role": "Regional Manager"
   }
  ]
 }

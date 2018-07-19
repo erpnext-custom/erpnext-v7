@@ -6,7 +6,8 @@ import frappe
 from frappe import _
 from frappe.utils.data import get_first_day, get_last_day, add_days
 from frappe.utils import flt, getdate, formatdate, cstr
-from erpnext.maintenance.report.maintenance_report import get_pol_till, get_pol_between, get_pol_consumed_till
+from erpnext.maintenance.report.maintenance_report import get_km_till, get_hour_till, get_pol_till, \
+	get_pol_between, get_pol_consumed_till
 
 def execute(filters=None):
 	columns = get_columns()
@@ -28,15 +29,19 @@ def get_data(query, filters=None):
 		d.consumed = flt(consumed_till_end) - flt(consumed_till)
 		d.opening = flt(received_till) - flt(consumed_till)
 		d.closing = flt(d.opening) + flt(d.drawn) - flt(d.consumed)
+		d.open_km = get_km_till(d.name, add_days(getdate(filters.from_date), -1))
+		d.open_hr = get_hour_till(d.name, add_days(getdate(filters.from_date), -1))
+		d.close_km = get_km_till(d.name, filters.to_date)
+		d.close_hr = get_hour_till(d.name, filters.to_date)
 
-		row = [d.name, d.ty, d.no, d.br, ("{0}" '/' "{1}".format(d.mink, d.minh)), ("{0}" '/' "{1}".format(d.maxk,d.maxh)), round(d.maxk-d.mink,2), round(d.maxh-d.minh,2),
+		row = [d.name, d.ty, d.no, d.place, ("{0}" '/' "{1}".format(d.open_km, d.open_hr)), ("{0}" '/' "{1}".format(d.close_km,d.close_hr)), round(d.close_km-d.open_km,2), round(d.close_hr-d.open_hr,2),
 		round(flt(d.drawn),2), round(flt(d.opening),2), round((flt(d.drawn)+flt(d.opening)),2),
 		d.yskm, d.yshour, round(d.consumed,2), round(flt(d.closing),2), flt(d.cap), round(flt(d.rate),2), round((flt(d.rate)*flt(d.consumed)),2)]
 		data.append(row);
 	return data
 	#KM and Hour value is changed from consumption_km and consumption_hours to diference between the final and initial after discussing with Project Lead
 def construct_query(filters):
-	query = """select e.name as name, e.equipment_type as ty, e.equipment_number as no, e.branch br, MIN(vl.initial_km)  AS mink, MAX(vl.final_km) AS maxk, MIN(vl.initial_hour) as minh, MAX(vl.final_hour) as maxh, vl.consumption_km as ckm, vl.consumption_hours as ch,
+	query = """select e.name as name, e.equipment_type as ty, e.equipment_number as no, e.branch br, vl.place, 
 	(select (sum(pol.qty*pol.rate)/sum(pol.qty)) from tabPOL pol where pol.branch = e.branch and pol.docstatus = 1 and pol.pol_type = e.hsd_type) as rate, e.hsd_type,
 	(select em.tank_capacity from  `tabEquipment Model` em where em.name = e.equipment_model) as cap,
 	CASE
@@ -46,9 +51,7 @@ def construct_query(filters):
 	CASE
 	WHEN vl.ys_hours THEN vl.ys_hours
 	else 0
-	end as yshour,
-	sum(vl.distance_km) as km,
-	sum(vl.consumption) as consumed
+	end as yshour
 	from `tabEquipment` e, `tabVehicle Logbook` vl where e.equipment_number = vl.equipment_number
 	and vl.docstatus = 1"""  %{"from_date": str(filters.from_date), "to_date": str(filters.to_date),"branch": str(filters.branch)}
 

@@ -3,10 +3,10 @@
 
 frappe.query_reports["Project Equipment"] = {
 	"filters": [
-		{	"fieldname":"branch",
-                        "label": ("Branch"),
+		{	"fieldname":"project",
+                        "label": ("Project"),
                         "fieldtype": "Link",
-                        "options": "Branch",
+                        "options": "Project",
                         "width": "100",
                   
 		},

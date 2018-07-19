@@ -39,6 +39,13 @@ frappe.query_reports["Revenue Target"] = {
 				"label": __("Cost Center"),
 				"fieldtype": "Link",
 				"options": "Cost Center"
-			}
+			},
+			{
+				"fieldname": "groupby",
+				"label": __("Group By "),
+				"fieldtype": "Select",
+				"options": ["All", "Group by Cost Center", "Group by Account"],
+				"default": "All"
+            },
 	],
 }

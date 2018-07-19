@@ -54,3 +54,13 @@ frappe.ui.form.on("Hire Charge Parameter", "refresh", function(frm) {
         };
     });
 })
+
+frappe.ui.form.on('Hire Charge Item', {
+        before_items_remove: function(frm, cdt, cdn) {
+                doc = locals[cdt][cdn]
+                if(!doc.__islocal) {
+                        frappe.throw("Cannot delete saved Items")
+                }
+        }
+})
+

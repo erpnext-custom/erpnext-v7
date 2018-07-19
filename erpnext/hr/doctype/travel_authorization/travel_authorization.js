@@ -19,6 +19,13 @@ frappe.ui.form.on('Travel Authorization', {
 			{fieldname: 'halt_at', columns: 2},
 			{fieldname: 'till_date', columns: 2},
 		];
+		frm.get_field('details').grid.editable_fields = [
+			{fieldname: 'date', columns: 2},
+			{fieldname: 'from_place', columns: 2},
+			{fieldname: 'to_place', columns: 2},
+			{fieldname: 'halt_at', columns: 2},
+			{fieldname: 'till_date', columns: 2},
+		];
 	},
 	
 	refresh: function(frm) {
@@ -44,6 +51,8 @@ frappe.ui.form.on('Travel Authorization', {
 			frm.set_value("advance_journal", "");
 			frm.set_value("cancellation_reason", "");
 		}
+		
+		cur_frm.set_df_property("items", "read_only", frm.doc.travel_claim ? 1 : 0)
 	},
 	//Auto calculate next date on form render
 	"items_on_form_rendered": function(frm, grid_row, cdt, cdn) {

@@ -26,6 +26,7 @@ frappe.ui.form.on('Vehicle Logbook', {
 						cur_frm.set_value("to_date", r.message[0].to_date)
 						cur_frm.set_value("from_time", r.message[0].from_time)
 						cur_frm.set_value("to_time", r.message[0].to_time)
+						cur_frm.set_value("place", r.message[0].place)
 						cur_frm.refresh_fields()
 					}
 				}

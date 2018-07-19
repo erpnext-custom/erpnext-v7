@@ -62,7 +62,8 @@ erpnext.cheque_print.view_cheque_print = function(frm) {
 	frappe.call({
 		method: "erpnext.accounts.doctype.cheque_print_template.cheque_print_template.create_or_update_cheque_print_format",
 		args:{
-			"template_name": frm.doc.name
+			"template_name": frm.doc.name,
+			"doctype_name": frm.doc.doctype_name
 		},
 		callback: function(r) {
 			if (!r.exe && !frm.doc.has_print_format) {

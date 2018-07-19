@@ -154,6 +154,7 @@ def prepare_data(accounts, balance_must_be, period_list, company_currency):
 			"account_name": d.account_name,
 			"account_code": d.account_code,
 			"account": d.name,
+			"is_group": d.is_group,
 			"parent_account": d.parent_account,
 			"indent": flt(d.indent),
 			"year_start_date": year_start_date,
@@ -221,7 +222,7 @@ def add_total_row(out, root_type, balance_must_be, period_list, company_currency
 		out.append({})
 
 def get_accounts(company, root_type):
-	return frappe.db.sql("""select name, account_code, parent_account, lft, rgt, root_type, report_type, account_name from `tabAccount`
+	return frappe.db.sql("""select is_group, name, account_code, parent_account, lft, rgt, root_type, report_type, account_name from `tabAccount`
 		where company=%s and root_type=%s order by lft""", (company, root_type), as_dict=True)
 
 def filter_accounts(accounts, depth=10):
