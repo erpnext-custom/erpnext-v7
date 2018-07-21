@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-23 14:32:55.755255", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-21 12:09:08.404700", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Buying", 
  "name": "Asset Balance Report", 
  "owner": "Administrator", 
@@ -27,6 +27,15 @@
   }, 
   {
    "role": "Asset User"
+  }, 
+  {
+   "role": "Projects User"
+  }, 
+  {
+   "role": "Stock User"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

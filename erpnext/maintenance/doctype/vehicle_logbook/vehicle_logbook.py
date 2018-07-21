@@ -14,6 +14,7 @@ class VehicleLogbook(Document):
 		self.check_dates()
 		self.check_double_vl()
 		self.check_hire_form()
+		##self.check_hire_rate()
 		self.check_duplicate()
 		self.update_consumed()
 		self.calculate_totals()
@@ -24,6 +25,27 @@ class VehicleLogbook(Document):
 		if self.include_hour or self.include_km:
 			if flt(self.consumption) <= 0:
 				frappe.throw("Total consumption cannot be zero or less")
+
+	def check_hire_rate(self):
+                based_on = frappe.db.get_single_value("Mechanical Settings", "hire_rate_based_on")
+                if not based_on:
+                        frappe.throw("Set the <b>Hire Rate Based On</b> in <b>Mechanical Settings</b>")
+
+                e = frappe.get_doc("Equipment", self.equipment)
+
+                db_query = "select a.rate_fuel, a.rate_wofuel, a.idle_rate, a.yard_hours, a.yard_distance from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{0}' and b.equipment_model = '{1}' and '{2}' between a.from_date and ifnull(a.to_date, now()) and '{3}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
+                data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, self.from_date, self.to_date), as_dict=True)
+                if not data:
+                        frappe.throw("There is either no Hire Charge defined or your logbook period overlaps with the Hire Charge period.")
+                if based_on == "Hire Charge Parameter" and not self.tender_hire_rate:
+                        if self.rate_type == "With Fuel":
+                                self.work_rate = data[0].rate_fuel
+                                self.idle_rate = data[0].idle_rate
+                        if self.rate_type == "Without Fuel":
+                                self.work_rate = data[0].rate_wofuel
+                                self.idle_rate = data[0].idle_rate
+                self.ys_km = data[0].yard_distance
+                self.ys_hours = data[0].yard_hours
 
 	def on_update(self):
 		self.calculate_balance()
@@ -87,6 +109,12 @@ class VehicleLogbook(Document):
 				total_i += flt(a.idle_time)
 			self.total_work_time = total_w
 			self.total_idle_time = total_i
+
+		if self.include_km:
+			self.consumption_km = flt(self.ys_km) * flt(self.distance_km)
+
+		if self.include_hour:
+			self.consumption_hours = flt(self.ys_hours) * flt(self.total_work_time)
 		
 		self.consumption = flt(self.other_consumption) + flt(self.consumption_hours) + flt(self.consumption_km)
 		self.closing_balance = flt(self.hsd_received) + flt(self.opening_balance) - flt(self.consumption)

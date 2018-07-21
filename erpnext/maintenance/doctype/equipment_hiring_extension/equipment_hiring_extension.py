@@ -39,6 +39,7 @@ class EquipmentHiringExtension(Document):
 							self.post_journal_entry()
 					else:
 						self.rate = doc.rate
+						##self.check_hire_rate(doc)
 						if not self.hours:
 							days = date_diff(self.extension_date, doc.to_date)
 							self.hours = flt(days) * 8
@@ -52,6 +53,26 @@ class EquipmentHiringExtension(Document):
 								self.receivable_amount = 0
 		else:
 			frappe.throw("Corresponding Hire Approved Detail not found")
+
+	def check_hire_rate(self, doc):
+                based_on = frappe.db.get_single_value("Mechanical Settings", "hire_rate_based_on")
+                if not based_on:
+                        frappe.throw("Set the <b>Hire Rate Based On</b> in <b>Mechanical Settings</b>")
+
+                if based_on == "Equipment Hiring Form" or doc.tender_hire_rate:
+                        self.rate = doc.rate
+                        return
+
+                e = frappe.get_doc("Equipment", self.equipment)
+
+                db_query = "select a.rate_fuel, a.rate_wofuel, a.idle_rate, a.yard_hours, a.yard_distance from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{0}' and b.equipment_model = '{1}' and '{2}' between a.from_date and ifnull(a.to_date, now()) and '{3}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
+                data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, doc.to_date, self.tender_hire_rate), as_dict=True)
+                if not data:
+                        frappe.throw("There is either no Hire Charge defined or your logbook period overlaps with the Hire Charge period.")
+                if doc.rate_type == "With Fuel":
+                        self.rate = data[0].rate_fuel
+                if doc.rate_type == "Without Fuel":
+                        self.rate = data[0].rate_wofuel
 
 	##
 	# make necessary journal entry

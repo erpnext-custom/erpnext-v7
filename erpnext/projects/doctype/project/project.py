@@ -89,7 +89,7 @@ class Project(Document):
 		self.validate_target_quantity()
 		self.validate_work_quantity()
 		self.validate_imprest()
-		if self.status == 'Ongoing':
+		if self.status in ('Planning','Ongoing'):
                         self.sync_activity_tasks()
                         self.sync_additional_tasks()
 		self.activity_tasks = []
@@ -113,7 +113,7 @@ class Project(Document):
 		# Following 2 lines added by SHIV on 2017/08/11
 		self.load_activity_tasks()
 		self.load_additional_tasks()
-		if self.status == 'Ongoing':
+		if self.status in ('Planning','Ongoing'):
                         self.sync_activity_tasks()
                         self.sync_additional_tasks()
 		self.update_task_progress()
@@ -127,8 +127,8 @@ class Project(Document):
                 if self.branch != self.get_db_value("branch"):
                         for doctype in ["Project Advance", "Project Invoice"]:
                                 for t in frappe.get_all(doctype, ["name"], {"project": self.name, "docstatus":("<",2)}):
-                                        msg = '<b>Reference# {0}: <a href="#Form/{0}/{1}">{1}</a></b>'.format(doctype, t.name)
-                                        frappe.throw(_("Unable to change branch due to dependecies.<br>{0}").format(msg),title="Invalid Operation")
+                                        msg = '<b>Reference# <a href="#Form/{0}/{1}">{0}: {1}</a></b>'.format(doctype, t.name)
+                                        frappe.throw(_("Change of branch not permitted.<br>{0}").format(msg),title="Dependencies found")
 
         def update_branch_change(self):
                 for doctype in ["MB Entry", "BOQ Adjustment", "BOQ", "Timesheet", "Task"]:
@@ -142,10 +142,11 @@ class Project(Document):
 
         def set_status(self):
                 self.docstatus = {
+                      "Planning": 0,
                       "Ongoing": 0,
                       "Completed": 1,
                       "Cancelled": 2
-                }[str(self.status) or "Ongoing"]
+                }[str(self.status) or "Planning"]
 
         def validate_imprest(self):
                 if flt(self.imprest_limit) < 0:

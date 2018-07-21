@@ -9,7 +9,10 @@ from erpnext.hr.doctype.leave_application.leave_application \
 
 
 def execute(filters=None):
-	leave_types = frappe.db.sql_list("select name from `tabLeave Type` order by name asc")
+	if filters.leave_type:
+		leave_types = frappe.db.sql_list("select name from `tabLeave Type` where name = %s order by name asc", filters.leave_type)
+	else:
+		leave_types = frappe.db.sql_list("select name from `tabLeave Type` order by name asc")
 
 	columns = get_columns(leave_types)
 	data = get_data(filters, leave_types)

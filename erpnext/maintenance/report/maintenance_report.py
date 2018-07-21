@@ -69,29 +69,4 @@ def get_hour_till(equipment, date):
 	else:
 		return 0	
 
-def get_employee_expense(equipment, f_date, t_date):
-	if not equipment or not f_date or not t_date:
-                frappe.throw("Equipment and From/Till Date are Mandatory")
-
-	operators = frappe.db.sql("""
-			select operator, employee_type, start_date, end_date
-			from `tabEquipment Operator`
-			where parent = '{0}' 
-			and   docstatus < 2
-			and   (start_date between {1} and {2} OR end_date between {3} and {4})
-		""".format(equipment, f_date, t_date, f_date, t_date), as_dict=1)
-
-	for a in operators:
-		prorate_fraction = 1
-		if getdate(f_date) < getdate(a.start_date) and getdate(t_date) > getdate(a.end_date):
-		# Pay
-
-		# Bonus
-
-		# PBVA
-
-		# Travel
-
-		#Leave Encashment
-			pass
 

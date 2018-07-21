@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-09 16:32:55.795138", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-20 15:41:19.578927", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Maintenance", 
  "name": "HSD Consumption Report", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Projects User"
   }
  ]
 }

@@ -42,7 +42,7 @@ def get_data(query, filters=None):
 	#KM and Hour value is changed from consumption_km and consumption_hours to diference between the final and initial after discussing with Project Lead
 def construct_query(filters):
 	query = """select e.name as name, e.equipment_type as ty, e.equipment_number as no, e.branch br, vl.place, 
-	(select (sum(pol.qty*pol.rate)/sum(pol.qty)) from tabPOL pol where pol.branch = e.branch and pol.docstatus = 1 and pol.pol_type = e.hsd_type) as rate, e.hsd_type,
+	(select (sum(pol.qty*pol.rate)/sum(pol.qty)) from tabPOL pol where pol.branch = vl.branch and pol.docstatus = 1 and pol.pol_type = e.hsd_type) as rate, e.hsd_type,
 	(select em.tank_capacity from  `tabEquipment Model` em where em.name = e.equipment_model) as cap,
 	CASE
 	WHEN vl.ys_km THEN vl.ys_km
