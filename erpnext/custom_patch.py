@@ -8,12 +8,33 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+
+def link_consumed_committed():
+	con = frappe.db.sql("select name, pii_name from `tabConsumed Budget` where docstatus = 1", as_dict=True)
+	for a in con:
+		if a.pii_name:
+			try:
+				doc = frappe.get_doc("Purchase Invoice Item", a.pii_name)
+				if doc:
+					print(doc.po_detail)
+					frappe.db.sql("update `tabConsumed Budget` set poi_name = %s where name = %s", (doc.po_detail, a.name))
+			except:
+				pass
+
+def adjust_pol_journal():
+	pols = frappe.db.sql("select name from tabPOL where docstatus = 1 and direct_consumption = 1 and posting_date > '2017-12-31'", as_dict=True)
+	for a in pols:
+		print(a.name)
+		doc = frappe.get_doc("POL", a.name)
+		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+		doc.update_general_ledger(1)
+
 def set_equipment_type():
 	pols = frappe.db.sql("select name, equipment from tabPOL", as_dict=True)
 	for a in pols:
 		print(a.equipment)
 		et = frappe.db.get_value("Equipment", a.equipment, "equipment_type")
-		frappe.db.sql("update tabPOL set equipment_type = %s and name = %s", (et, a.name))	
+		frappe.db.sql("update tabPOL set equipment_type = %s where name = %s", (et, a.name))	
 
 def adjust_pol_entry_1():
 	pol = frappe.get_doc("POL", "POL180500576")

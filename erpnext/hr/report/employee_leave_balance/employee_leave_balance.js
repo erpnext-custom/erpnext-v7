@@ -42,6 +42,15 @@ frappe.query_reports["Employee Leave Balance"] = {
                         "label": __("Employee"),
                         "fieldtype": "Link",
                         "options": "Employee",
+			"get_query": function() {
+				var branch = frappe.query_report.filters_by_name.branch.get_value();
+				if(branch) {
+					return {"doctype": "Employee", "filters": {"branch": branch, "status": "Active"}}
+				}
+				else {
+					return {"doctype": "Employee", "filters": {"status": "Active"}}
+				}
+			}
                 }
 	]
 }

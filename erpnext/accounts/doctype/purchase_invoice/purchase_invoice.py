@@ -787,6 +787,7 @@ class PurchaseInvoice(BuyingController):
 						"po_no": self.name,
 						"po_date": po_date,
 						"amount": amount,
+						"poi_name": item.po_detail,
 						"pii_name": item.name,
 						"item_code": item.item_code,
 						"com_ref": item.purchase_order,

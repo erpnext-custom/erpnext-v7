@@ -36,6 +36,8 @@ def get_data(query, filters):
 		supplement = flt(d.supplement)
 		if committed != 0:
 			committed-=consumed
+			if committed < 0:
+				committed = 0
 		
 		available = flt(d.initial_budget) + flt(adjustment) + flt(d.supplement) - consumed - committed
 		row = {

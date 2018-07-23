@@ -272,11 +272,10 @@ class PurchaseOrder(BuyingController):
 	# Update the Committedd Budget for checking budget availability
 	##
 	def commit_budget(self):
-		for a in self.items:
+                for a in self.items:
+			amount = a.base_amount
 			if a.base_net_amount:
 				amount = a.base_net_amount
-			else:
-				amount = a.base_amount
 
 			bud_obj = frappe.get_doc({
 				"doctype": "Committed Budget",
@@ -296,24 +295,13 @@ class PurchaseOrder(BuyingController):
 	# Check budget availability in the budget head
 	##
 	def check_budget_available(self):
-		net_additional_charges = 0
-		if self.total_add_ded:
-			net_additional_charges = flt(self.total_add_ded) / flt(self.total)
-	
-		for a in self.items:
-			check_budget_available(a.cost_center, a.budget_account, self.transaction_date, flt(a.amount) + (flt(net_additional_charges) * flt(a.amount)))
-			"""action = frappe.db.sql("select action_if_annual_budget_exceeded as action from tabBudget where docstatus = 1 and cost_center = \'" + str(a.cost_center) + "\' and fiscal_year = " + str(self.transaction_date)[0:4] + " ", as_dict=True)
-			if action and action[0].action == "Ignore":
-				pass
-			else:
-				budget_amount = frappe.db.sql("select ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (a.budget_account, a.cost_center, str(self.transaction_date)[0:4]), as_dict=True)
-				if budget_amount:
-					consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (a.cost_center, a.budget_account, str(self.transaction_date)[0:4] + "-01-01", str(self.transaction_date)[0:4] + "-12-31"), as_dict=True)
-					if consumed:
-						if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(a.amount) + (flt(net_additional_charges) * flt(a.amount))):
-							frappe.throw("Not enough budget in " + str(a.budget_account) + " under " + str(a.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(a.amount) + (flt(net_additional_charges) * flt(a.amount)) - flt(budget_amount[0].budget_amount))))
-				else:
-					frappe.throw("There is no budget in " + str(a.budget_account) + " under " + str(a.cost_center))"""
+		budgets = frappe.db.sql("select cost_center, budget_account, sum(base_net_amount) as base_net_amount, sum(base_amount) as base_amount from `tabPurchase Order Item` where parent = %s group by cost_center, budget_account", self.name, as_dict=True)	
+		for a in budgets:
+			amount = a.base_amount
+			if a.base_net_amount:
+				amount = a.base_net_amount
+			check_budget_available(a.cost_center, a.budget_account, self.transaction_date, amount)
+
 
 	##
 	# Cancel budget check entry
