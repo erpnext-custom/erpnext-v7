@@ -105,3 +105,5 @@ cur_frm.fields_dict['operators'].grid.get_field('operator').get_query = function
 		}
 	}
 }
+
+

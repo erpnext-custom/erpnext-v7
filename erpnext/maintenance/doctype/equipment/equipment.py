@@ -25,6 +25,14 @@ class Equipment(Document):
 			for a in range(len(self.operators)-1):
 				self.operators[a].end_date = frappe.utils.data.add_days(getdate(self.operators[a + 1].start_date), -1)
 			self.operators[len(self.operators) - 1].end_date = ''
+		self.set_name()
+
+	def set_name(self):
+		for a in self.operators:
+			if a.employee_type == "Employee":
+				a.operator_name = frappe.db.get_value("Employee", a.operator, "employee_name")
+			if a.employee_type == "Muster Roll Employee":
+				a.operator_name = frappe.db.get_value("Muster Roll Employee", a.operator, "person_name")
 
 	def validate_asset(self):
 		if self.asset_code:

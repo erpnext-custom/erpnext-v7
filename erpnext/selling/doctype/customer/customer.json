@@ -957,8 +957,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-06-07 17:57:19.658371", 
- "modified_by": "Administrator", 
+ "modified": "2018-07-24 16:03:58.871616", 
+ "modified_by": "sangay.dorji2695@bt.bt", 
  "module": "Selling", 
  "name": "Customer", 
  "name_case": "Title Case", 
@@ -998,7 +998,7 @@
    "print": 1, 
    "read": 1, 
    "report": 1, 
-   "role": "Project Committee", 
+   "role": "CPBD", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
@@ -1305,7 +1305,7 @@
    "write": 1
   }
  ], 
- "quick_entry": 1, 
+ "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
  "search_fields": "customer_name,customer_group,territory", 

@@ -18,6 +18,7 @@ from erpnext.hr.doctype.leave_application.leave_application import get_approved_
 # Ver 1.0 Begins added by SSK on 22/08/2016, Following line is added
 from erpnext.hr.doctype.leave_encashment.leave_encashment import get_le_settings
 # Ver 1.0 Ends
+from erpnext.custom_utils import round5
 
 class OverlapError(frappe.ValidationError): pass
 class BackDatedAllocationError(frappe.ValidationError): pass
@@ -50,7 +51,11 @@ class LeaveAllocation(Document):
 
 	def validate_new_leaves_allocated_value(self):
 		"""validate that leave allocation is in multiples of 0.5"""
-		pass
+		self.new_leaves_allocated = round5(self.new_leaves_allocated)
+		balance = self.new_leaves_allocated
+		if self.carry_forward:
+			balance = round5(self.new_leaves_allocated) + round5(self.carry_forwarded_leaves)
+		self.total_leaves_allocated = round5(balance)
 		#if flt(self.new_leaves_allocated) % 0.5:
 		#	frappe.throw(_("Leaves must be allocated in multiples of 0.5"), ValueMultiplierError)
 

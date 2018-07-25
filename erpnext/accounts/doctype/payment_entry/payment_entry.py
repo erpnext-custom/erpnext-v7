@@ -408,6 +408,7 @@ class PaymentEntry(AccountsController):
 				"party_type": self.party_type,
 				"party": self.party,
 				"against": against_account,
+				"cost_center": self.pl_cost_center,
 				"account_currency": self.party_account_currency
 			})
 			

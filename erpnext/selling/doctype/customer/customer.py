@@ -44,6 +44,11 @@ class Customer(TransactionBase):
 		self.flags.is_new_doc = self.is_new()
 		validate_party_accounts(self)
 		self.status = get_party_status(self)
+		self.check_id_required()
+
+	def check_id_required(self):
+		if self.customer_group == "Domestic" and not self.customer_id:
+			frappe.throw("CID or License No is mandatory for domestic customers")
 
 	def update_lead_status(self):
 		if self.lead_name:

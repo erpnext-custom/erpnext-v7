@@ -9,6 +9,21 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
 
+def set_cc_kilikhar():
+	gls = frappe.db.sql("select a.advance_cost_center, b.name from `tabSales Invoice Advance` a, `tabGL Entry` b where a.docstatus = 1 and a.parent = b.voucher_no and a.advance_account = b.against", as_dict=True)
+	for a in gls:
+		frappe.db.sql("update `tabGL Entry` set cost_center = %s where name = %s", (a.advance_cost_center, a.name))
+		print(a.name)
+
+def set_operator_name():
+	ops = frappe.db.sql("select parent, name, operator, employee_type from `tabEquipment Operator` where operator_name is null", as_dict=True)
+	for a in ops:
+		if a.employee_type == "Employee":
+			name = frappe.db.get_value("Employee", a.operator, "employee_name")
+		else:
+			name = frappe.db.get_value("Muster Roll Employee", a.operator, "person_name")
+		frappe.db.sql("update `tabEquipment Operator` set operator_name = %s where name = %s", (name, a.name))
+
 def link_consumed_committed():
 	con = frappe.db.sql("select name, pii_name from `tabConsumed Budget` where docstatus = 1", as_dict=True)
 	for a in con:

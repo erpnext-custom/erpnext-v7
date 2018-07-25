@@ -584,6 +584,7 @@ class PurchaseInvoice(BuyingController):
 						if self.party_account_currency==self.company_currency else self.write_off_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
+					"cost_center": self.write_off_cost_center
 				}, self.party_account_currency)
 			)
 			if self.write_off_account == "Retention Money - SMCL":
