@@ -115,11 +115,11 @@ def get_data(filters):
                     """.format(eq.name,jc_date), as_dict=1)[0]
 
 		#Insurance
+		# ir.docstatus = 1 removed as its not submitable
 		ins = frappe.db.sql("""
 			 	select sum(ifnull(id.insured_amount,0)) as insurance  
 				from `tabInsurance Details` id,	`tabInsurance and Registration` ir 
 				where id.parent = ir.name and ir.equipment = '{0}'
-				and   ir.docstatus = 1
 				and   {1}
 			 """.format(eq.name, insurance_date), as_dict=1)[0]
 		#Reg fee

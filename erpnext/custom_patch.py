@@ -9,6 +9,43 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
 
+def logbook_consumption_others():
+	logs = frappe.db.sql("select l.name from `tabVehicle Logbook` l, `tabEquipment Hiring Form` e where l.ehf_name = e.name and e.private != 'CDCL' and l.rate_type = 'Without Fuel' and l.consumption > 0 and l.docstatus = 1", as_dict=True)
+	for a in logs:
+		print(a.name)
+
+def logbook_cunsumption():
+	logs = frappe.db.sql("select l.name from `tabVehicle Logbook` l, `tabEquipment Hiring Form` e where l.ehf_name = e.name and e.private = 'CDCL' and l.consumption = 0 and l.docstatus = 1", as_dict=True)
+	both = km = time = none = 0
+	for a in logs:
+		log = frappe.get_doc("Vehicle Logbook", a.name)
+		if log.total_work_time and log.distance_km:
+			#print("Both: " + str(log.name))
+			if log.ys_km and log.ys_hours:
+				both = both + 1
+				print(a.name)
+			elif log.ys_km:
+				km = km + 1
+			elif log.ys_hours:
+				time = time + 1
+			else:
+				none = none + 1
+		elif log.total_work_time:
+			time = time + 1
+			#print("TIME: " + str(log.name))
+		elif log.distance_km:
+			km = km + 1
+			#print("KM: " + str(log.name))
+		else:
+			none = none + 1
+			print(a.name)
+	print("BOTH: " + str(both) + "    KM: " + str(km) + "     HOUR: " + str(time) + "    None: " + str(none))
+
+def check_double_pol():
+	pols = frappe.db.sql("select p.name from tabPOL p, `tabJournal Entry` j where p.docstatus = 1 and p.jv is not null and j.docstatus = 1 and p.jv = j.name", as_dict=True)
+	for a in pols:
+		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+
 def set_cc_kilikhar():
 	gls = frappe.db.sql("select a.advance_cost_center, b.name from `tabSales Invoice Advance` a, `tabGL Entry` b where a.docstatus = 1 and a.parent = b.voucher_no and a.advance_account = b.against", as_dict=True)
 	for a in gls:
@@ -1101,3 +1138,25 @@ def update_project_invoice():
                         where name = '{0}'
                 """.format(i.name, uptodate_quantity, uptodate_rate, uptodate_amount))
                 print counter
+
+# /home/frappe/erp bench execute erpnext.custom_patch.add_mr_creator_role
+# Adding back MR Creator role, 2018/07/26
+def add_mr_creator_role():
+        li = frappe.db.sql("""
+                select distinct(t1.owner) as owner
+                from `tabMaterial Request` as t1
+                where t1.creation >= '2018-03-01'
+                and not exists(select 1
+                               from `tabUserRole` as t2
+                               where t2.parent = t1.owner
+                               and t2.role = 'MR Creator')
+        """, as_dict=1)
+        
+        counter = 0
+        for i in li:
+                counter += 1
+                user = frappe.get_doc("User", i.owner)
+                user.flags.ignore_permissions = True
+                user.add_roles("MR Creator")
+                print counter, i.owner
+        

@@ -54,6 +54,7 @@
    "oldfieldname": "conversion_factor", 
    "oldfieldtype": "Float", 
    "permlevel": 0, 
+   "precision": "3", 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
@@ -74,7 +75,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2016-07-11 03:28:09.626948", 
+ "modified": "2018-07-26 17:08:01.245398", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "UOM Conversion Detail", 
@@ -83,5 +84,7 @@
  "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
+ "sort_order": "ASC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

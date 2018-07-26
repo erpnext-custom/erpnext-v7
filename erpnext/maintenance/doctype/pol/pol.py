@@ -9,12 +9,14 @@ from frappe.utils import cstr, flt, fmt_money, formatdate, nowtime, getdate
 from erpnext.accounts.utils import get_fiscal_year
 from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, prepare_sl, check_budget_available
 from erpnext.controllers.stock_controller import StockController
+from erpnext.maintenance.maintenance_utils import get_without_fuel_hire
 
 class POL(StockController):
 	def validate(self):
 		check_future_date(self.posting_date)
 		self.validate_dc()
 		self.set_warehouse()
+		self.check_on_dry_hire()
 		self.validate_data()
 		self.validate_posting_time()
 		self.validate_uom_is_integer("stock_uom", "qty")
@@ -34,6 +36,18 @@ class POL(StockController):
 		if not equipment_warehouse:
 			frappe.throw("No Warehouse is linked with Cost Center <b>" + str(cc) + "</b>")
 		self.equipment_warehouse = equipment_warehouse
+
+	def check_on_dry_hire(self):
+                record = get_without_fuel_hire(self.equipment, self.posting_date, self.posting_time)
+                if record:
+                        data = record[0]
+                        self.hiring_cost_center = data.cc
+                        self.hiring_branch =  data.br
+                        self.hiring_warehouse = frappe.db.get_value("Cost Center", data.cc, "warehouse")
+                else:
+                        self.hiring_cost_center = None
+                        self.hiring_branch =  None
+                        self.hiring_warehouse = None
 
 	def validate_data(self):
 		if not self.fuelbook_branch or not self.equipment_branch:
@@ -66,6 +80,7 @@ class POL(StockController):
 	def on_submit(self):
 		self.validate_dc()
 		self.validate_data()
+		self.check_on_dry_hire()
 		self.check_budget()
 		if getdate(self.posting_date) > getdate("2018-03-31"):
 			self.update_stock_ledger()
@@ -73,7 +88,10 @@ class POL(StockController):
 		self.make_pol_entry()
 	
 	def check_budget(self):
-		cc = get_branch_cc(self.equipment_branch)
+		if self.hiring_cost_center:
+                        cc = self.hiring_cost_center
+                else:
+                        cc = get_branch_cc(self.equipment_branch)
 		account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
 		if not self.is_hsd_item:
 			account = frappe.db.get_value("Item", self.pol_type, "expense_account")
@@ -114,11 +132,16 @@ class POL(StockController):
 		consume.submit()
 
 	def update_stock_ledger(self):
+		if self.hiring_warehouse:
+                        wh = self.hiring_warehouse
+                else:
+                        wh = self.equipment_warehouse
+
 		sl_entries = []
 		sl_entries.append(prepare_sl(self, 
 				{
 					"actual_qty": flt(self.qty), 
-					"warehouse": self.equipment_warehouse, 
+					"warehouse": wh, 
 					"incoming_rate": round(flt(self.total_amount) / flt(self.qty) , 2)
 				}))
 
@@ -126,7 +149,7 @@ class POL(StockController):
 			sl_entries.append(prepare_sl(self,
 					{
 						"actual_qty": -1 * flt(self.qty), 
-						"warehouse": self.equipment_warehouse, 
+						"warehouse": wh, 
 						"incoming_rate": 0
 					}))
  
@@ -144,7 +167,10 @@ class POL(StockController):
 
 		expense_account = self.get_expense_account()
 
-		cost_center = get_branch_cc(self.equipment_branch)
+		if self.hiring_cost_center:
+                        cost_center = self.hiring_cost_center
+                else:
+                        cost_center = get_branch_cc(self.equipment_branch)
 
 		gl_entries.append(
 			prepare_gl(self, {"account": expense_account,
@@ -166,12 +192,17 @@ class POL(StockController):
 					})
 			)
 
-		if self.equipment_branch != self.fuelbook_branch:
+		if self.hiring_branch:
+                        comparing_branch = self.hiring_branch
+                else:
+                        comparing_branch = self.equipment_branch
+
+		if comparing_branch != self.fuelbook_branch:
 			ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
 			if not ic_account:
 				frappe.throw("Setup Intra-Company Account in Accounts Settings")
 
-			customer_cc = get_branch_cc(self.equipment_branch)
+			customer_cc = get_branch_cc(comparing_branch)
 
 			gl_entries.append(
 				prepare_gl(self, {"account": ic_account,

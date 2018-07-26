@@ -42,7 +42,7 @@ frappe.query_reports["HSD Consumption Report"] = {
 
 		{
                         "fieldname": "own_cc",
-                        "label": ("Include Issued/Received from Own Cost Center Only"),
+                        "label": ("Show Issued/Received from Own Branch Only"),
                         "fieldtype": "Check",
                         "default": 0
                 }

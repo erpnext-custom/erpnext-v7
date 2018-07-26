@@ -12,6 +12,7 @@ from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, p
 from erpnext.controllers.stock_controller import StockController
 from erpnext.maintenance.report.maintenance_report import get_pol_till
 from erpnext.stock.utils import get_stock_balance
+from erpnext.maintenance.maintenance_utils import get_without_fuel_hire
 
 class IssuePOL(StockController):
 	def validate(self):
@@ -21,6 +22,7 @@ class IssuePOL(StockController):
 		self.validate_data()
 		self.validate_posting_time()
 		self.validate_uom_is_integer("stock_uom", "qty")
+		self.check_on_dry_hire()
 
 	def validate_branch(self):
 		if self.purpose == "Issue" and self.is_hsd_item and not self.tanker:
@@ -57,10 +59,24 @@ class IssuePOL(StockController):
 			total_quantity = flt(total_quantity) + flt(a.qty)
 		self.total_quantity = total_quantity
 
+	def check_on_dry_hire(self):
+                for a in self.items:
+                        record = get_without_fuel_hire(a.equipment, self.posting_date, self.posting_time)
+                        if record:
+                                data = record[0]
+                                a.hiring_cost_center = data.cc
+                                a.hiring_branch =  data.br
+                                a.hiring_warehouse = frappe.db.get_value("Cost Center", data.cc, "warehouse")
+                        else:
+                                a.hiring_cost_center = None
+                                a.hiring_branch =  None
+                                a.hiring_warehouse = None
+
 	def on_submit(self):
 		if not self.items:
 			frappe.throw("Should have a POL Issue Details to Submit")
 		self.validate_data()
+		self.check_on_dry_hire()
 		self.check_tanker_hsd_balance()
 		self.update_stock_gl_ledger(1, 1)
 		self.make_pol_entry()
@@ -75,6 +91,21 @@ class IssuePOL(StockController):
 
 		for a in self.items:
 			#from erpnext.stock.stock_ledger import get_valuation_rate
+			if a.hiring_branch:
+                                comparing_branch = a.hiring_branch
+                        else:
+                                comparing_branch = a.equipment_branch
+
+                        if a.hiring_cost_center:
+                                cc = a.hiring_cost_center
+                        else:
+                                cc = a.equipment_cost_center
+
+                        if a.hiring_warehouse:
+                                wh = a.hiring_warehouse
+                        else:
+                                wh = a.equipment_warehouse
+
 			if not map_rate:
 				stock_qty, map_rate = get_stock_balance(self.pol_type, self.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
 				#map_rate = get_valuation_rate(self.pol_type, self.warehouse)
@@ -108,12 +139,12 @@ class IssuePOL(StockController):
 					prepare_gl(self, {"account": budget_account,
 							 "debit": flt(valuation_rate),
 							 "debit_in_account_currency": flt(valuation_rate),
-							 "cost_center": a.equipment_cost_center,
+							 "cost_center": cc,
 							})
 					)
 				
 				#Do IC Accounting Entry if different branch
-				if a.equipment_branch != self.branch:
+				if comparing_branch != self.branch:
 					ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
 					if not ic_account:
 						frappe.throw("Setup Intra-Company Account in Accounts Settings")
@@ -130,12 +161,12 @@ class IssuePOL(StockController):
 						prepare_gl(self, {"account": ic_account,
 								 "credit": flt(valuation_rate),
 								 "credit_in_account_currency": flt(valuation_rate),
-								 "cost_center": a.equipment_cost_center,
+								 "cost_center": cc,
 								})
 						)
 					
 			else : #Transfer only if different warehouse
-				if a.equipment_warehouse != self.warehouse:
+				if wh != self.warehouse:
 					#Stock Ledger Entries
 					sl_entries.append(prepare_sl(self, 
 							{
@@ -147,17 +178,17 @@ class IssuePOL(StockController):
 					sl_entries.append(prepare_sl(self,
 							{
 								"actual_qty": flt(a.qty), 
-								"warehouse": a.equipment_warehouse, 
+								"warehouse": wh, 
 								"incoming_rate": valuation_rate
 							}))
 
 				#Do IC Accounting Entry if different branch
-				if a.equipment_branch != self.branch:
+				if comparing_branch != self.branch:
 					ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
 					if not ic_account:
 						frappe.throw("Setup Intra-Company Account in Accounts Settings")
 
-					twh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": a.equipment_warehouse}, "name")
+					twh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": wh}, "name")
 					if not twh_account:
 						frappe.throw(str(self.warehouse) + " is not linked to any account.")
 
@@ -173,7 +204,7 @@ class IssuePOL(StockController):
 						prepare_gl(self, {"account": twh_account,
 								 "debit": flt(valuation_rate),
 								 "debit_in_account_currency": flt(valuation_rate),
-								 "cost_center": a.equipment_cost_center,
+								 "cost_center": cc,
 								})
 						)
 
@@ -189,7 +220,7 @@ class IssuePOL(StockController):
 						prepare_gl(self, {"account": ic_account,
 								 "credit": flt(valuation_rate),
 								 "credit_in_account_currency": flt(valuation_rate),
-								 "cost_center": a.equipment_cost_center,
+								 "cost_center": cc,
 								})
 						)
 

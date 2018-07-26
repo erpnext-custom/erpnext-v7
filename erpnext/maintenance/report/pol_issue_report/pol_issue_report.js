@@ -40,7 +40,7 @@ frappe.query_reports["POL Issue Report"] = {
                 },
 		{
                         "fieldname": "own_cc",
-                        "label": ("Include Only Received/Issued from Own Branch"),
+                        "label": ("Show Only Received/Issued from Own Branch"),
                         "fieldtype": "Check",
                         "default": 0
                 }

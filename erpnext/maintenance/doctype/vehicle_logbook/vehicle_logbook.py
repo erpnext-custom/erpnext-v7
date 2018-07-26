@@ -54,6 +54,7 @@ class VehicleLogbook(Document):
 		self.check_double_vl()
 		self.update_consumed()
 		self.calculate_totals()
+		self.check_consumption()
 		self.update_hire()
 		self.post_equipment_status_entry()
 		#self.check_tank_capacity()
@@ -183,6 +184,11 @@ class VehicleLogbook(Document):
 					frappe.throw("The logbook for the same equipment, date, and time has been created at " + str(result[0].ehf_name))
 			else:
 				frappe.throw("The logbook for the same equipment, date, and time has been created at " + str(result[0].ehf_name))
+
+	def check_consumption(self):
+		customer = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "private")
+		if customer == "CDCL" and not self.consumption_km and not self.consumption_hours and not self.consumption:
+			frappe.throw("Consumption is mandatory for Internal Use")
 
 @frappe.whitelist()
 def get_opening(equipment, from_date, to_date, pol_type):
