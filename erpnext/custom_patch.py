@@ -10,36 +10,48 @@ from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
 
 def logbook_consumption_others():
-	logs = frappe.db.sql("select l.name from `tabVehicle Logbook` l, `tabEquipment Hiring Form` e where l.ehf_name = e.name and e.private != 'CDCL' and l.rate_type = 'Without Fuel' and l.consumption > 0 and l.docstatus = 1", as_dict=True)
+	logs = frappe.db.sql("select l.name from `tabVehicle Logbook` l, `tabEquipment Hiring Form` e where l.ehf_name = e.name and e.private != 'CDCL' and l.rate_type = 'Without Fuel' and l.consumption > 0 and l.docstatus = 1 and l.from_date > '2018-03-31'", as_dict=True)
 	for a in logs:
 		print(a.name)
 
 def logbook_cunsumption():
-	logs = frappe.db.sql("select l.name from `tabVehicle Logbook` l, `tabEquipment Hiring Form` e where l.ehf_name = e.name and e.private = 'CDCL' and l.consumption = 0 and l.docstatus = 1", as_dict=True)
+	logs = frappe.db.sql("select l.name, l.branch from `tabVehicle Logbook` l, `tabEquipment Hiring Form` e where l.ehf_name = e.name and e.private = 'CDCL' and l.consumption = 0 and l.docstatus = 1 and l.from_date > '2018-03-31'", as_dict=True)
+	#logs = frappe.db.sql("select l.name, l.branch from `tabVehicle Logbook` l, `tabEquipment Hiring Form` e where l.ehf_name = e.name and e.private = 'CDCL' and l.consumption = 0 and l.docstatus = 1 ", as_dict=True)
 	both = km = time = none = 0
 	for a in logs:
+		distance = hours = consump = 0
 		log = frappe.get_doc("Vehicle Logbook", a.name)
+		if not log.ys_km and not log.ys_hours:
+			print("BOTH: " + a.name + " : " + log.branch)
+			print(frappe.db.get_value("Equipment", log.equipment, ['equipment_type', 'equipment_model']))
 		if log.total_work_time and log.distance_km:
 			#print("Both: " + str(log.name))
 			if log.ys_km and log.ys_hours:
-				both = both + 1
-				print(a.name)
+				distance = log.distance_km * log.ys_km
+				hours = log.total_work_time * log.ys_hours
 			elif log.ys_km:
-				km = km + 1
+				distance = log.distance_km * log.ys_km
 			elif log.ys_hours:
-				time = time + 1
+				hours = log.total_work_time * log.ys_hours
 			else:
-				none = none + 1
+				distance = log.distance_km * log.ys_km
+				hours = log.total_work_time * log.ys_hours
 		elif log.total_work_time:
-			time = time + 1
-			#print("TIME: " + str(log.name))
+			hours = log.total_work_time * log.ys_hours
 		elif log.distance_km:
-			km = km + 1
-			#print("KM: " + str(log.name))
+			distance = log.distance_km * log.ys_km
 		else:
-			none = none + 1
-			print(a.name)
-	print("BOTH: " + str(both) + "    KM: " + str(km) + "     HOUR: " + str(time) + "    None: " + str(none))
+			distance = log.distance_km * log.ys_km
+			hours = log.total_work_time * log.ys_hours
+		consump = log.other_consumption + hours + distance
+		if distance > 0 and hours > 0:
+			pass #print("BOTH: " + a.name + " : " + log.branch)
+		elif distance > 0:
+			frappe.db.sql("update `tabVehicle Logbook` set include_km = 1, consumption_km = %s, consumption = %s where name = %s", (distance, consump, log.name))
+		elif hours > 0:
+			frappe.db.sql("update `tabVehicle Logbook` set include_hour = 1, consumption_hours = %s, consumption = %s where name = %s", (hours, consump, log.name))
+		else:
+			pass #print("NONE: " + a.name + " : " + log.branch)
 
 def check_double_pol():
 	pols = frappe.db.sql("select p.name from tabPOL p, `tabJournal Entry` j where p.docstatus = 1 and p.jv is not null and j.docstatus = 1 and p.jv = j.name", as_dict=True)

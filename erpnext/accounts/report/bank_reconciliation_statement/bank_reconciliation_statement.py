@@ -144,9 +144,62 @@ def get_entries(filters):
 			and ifnull(clearance_date, '4000-01-01') > %(report_date)s
 	""", filters, as_dict=1)
 
-	return sorted(list(payment_entries)+list(journal_entries), 
-			key=lambda k: k['posting_date'] or getdate(nowdate()))
-			
+	hsd_entries = frappe.db.sql("""
+		select
+			"HSD Payment" as payment_document, name as payment_entry,
+			amount as credit, 0 as debit,
+			cheque__no as reference_no, cheque_date as ref_date,
+			posting_date, supplier as against_account, clearance_date, 'BTN' as account_currency
+		from `tabHSD Payment`
+		where bank_account = %(account)s
+		and docstatus = 1
+		and posting_date <= %(report_date)s 
+		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+	""", filters, as_dict=1)
+
+	imprest_entries = frappe.db.sql("""
+		select
+			"Imprest Recoup" as payment_document, name as payment_entry,
+			cheque_no as reference_no, cheque_date as ref_date,
+			purchase_amount as credit, 0 as debit,
+			posting_date, branch as against_account, clearance_date, 'BTN' as account_currency
+		from `tabImprest Recoup`
+		where revenue_bank_account = %(account)s
+		and docstatus = 1
+		and posting_date <= %(report_date)s 
+		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+	""", filters, as_dict=1)
+
+	mechanical_entries = frappe.db.sql("""
+		select
+			"Mechanical Payment" as payment_document, name as payment_entry,
+			cheque_no as reference_no, cheque_date as ref_date,
+			net_amount as debit, 0 as credit,
+			posting_date, customer as against_account, clearance_date, 'BTN' as account_currency
+		from `tabMechanical Payment`
+		where income_account = %(account)s
+		and docstatus = 1
+		and posting_date <= %(report_date)s 
+		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+	""", filters, as_dict=1)
+
+	project_entries = frappe.db.sql("""
+		select
+			"Project Payment" as payment_document, name as payment_entry,
+			cheque_no as reference_no, cheque_date as ref_date,
+			paid_amount as debit, 0 as credit,
+			posting_date, party as against_account, clearance_date, 'BTN' as account_currency
+		from `tabProject Payment`
+		where revenue_bank_account = %(account)s
+		and docstatus = 1
+		and posting_date <= %(report_date)s 
+		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+	""", filters, as_dict=1)
+	
+	return sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries), 
+		key=lambda k: k['posting_date'] or getdate(nowdate()))
+
+		
 def get_amounts_not_reflected_in_system(filters):
 	je_amount = frappe.db.sql("""
 		select sum(jvd.debit_in_account_currency - jvd.credit_in_account_currency)

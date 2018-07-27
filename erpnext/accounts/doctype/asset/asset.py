@@ -20,6 +20,7 @@ class Asset(Document):
 		self.name = make_autoname('ASSET.YY.MM.#####')
 
 	def validate(self):
+		self.check_asset_values()
 		self.status = self.get_status()
 		self.validate_item()
 		self.set_missing_values()
@@ -28,6 +29,10 @@ class Asset(Document):
 		self.validate_expected_value_after_useful_life()
 		# Validate depreciation related accounts
 		get_depreciation_accounts(self)
+
+	def check_asset_values(self):
+                if (flt(self.residual_value) + flt(self.opening_accumulated_depreciation) + flt(self.expected_value_after_useful_life)) > flt(self.gross_purchase_amount):
+                        frappe.throw("Gross Amount should be >= (Opening + Useful Life + Residual)")
 
 	def on_submit(self):
 		self.make_asset_gl_entry();

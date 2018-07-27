@@ -272,7 +272,7 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-01-04 11:18:35.418081", 
+ "modified": "2018-07-27 16:07:21.679926", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Supplementary Budget Tool", 
@@ -298,26 +298,6 @@
    "share": 1, 
    "submit": 0, 
    "write": 1
-  }, 
-  {
-   "amend": 0, 
-   "apply_user_permissions": 0, 
-   "cancel": 0, 
-   "create": 1, 
-   "delete": 0, 
-   "email": 1, 
-   "export": 0, 
-   "if_owner": 0, 
-   "import": 0, 
-   "permlevel": 0, 
-   "print": 1, 
-   "read": 1, 
-   "report": 0, 
-   "role": "Accounts Manager", 
-   "set_user_permissions": 0, 
-   "share": 1, 
-   "submit": 0, 
-   "write": 1
   }
  ], 
  "quick_entry": 1, 
@@ -325,5 +305,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

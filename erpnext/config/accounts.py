@@ -407,9 +407,8 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Supplementary Budget Tool",
-					"description": "Supplementary Budget",
-					"hide_count": True
+					"name": "Supplementary Budget",
+					"label": "Supplementary Budget Tool"
 				},
 				{
 					"type": "doctype",

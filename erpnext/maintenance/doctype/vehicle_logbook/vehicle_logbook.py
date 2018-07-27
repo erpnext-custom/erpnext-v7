@@ -189,6 +189,8 @@ class VehicleLogbook(Document):
 		customer = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "private")
 		if customer == "CDCL" and not self.consumption_km and not self.consumption_hours and not self.consumption:
 			frappe.throw("Consumption is mandatory for Internal Use")
+		if customer != "CDCL" and (self.consumption_km > 0 or self.consumption_hours > 0) and self.rate_type == "Without Fuel":
+			frappe.throw("Should not have consumption when on dry hire to outside customers")
 
 @frappe.whitelist()
 def get_opening(equipment, from_date, to_date, pol_type):

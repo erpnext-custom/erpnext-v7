@@ -128,7 +128,6 @@ def get_data(filters):
 				from `tabRegistration Details` rd, `tabInsurance and Registration` i  
 				where rd.parent = i.name  
 				and i.equipment = '{0}'
-                                and   i.docstatus = 1
                                 and   {1}
 			""".format(eq.name, reg_date), as_dict=1)[0]
 			
@@ -259,7 +258,7 @@ def get_columns(filters):
 		("Equipment Type") + ":Data:120",
 		("Operator/Driver") + ":Data:120",
                 ("HSD Consumption") + ":Float:120",
-                ("Insurance") + ":Float:120",
+                ("Tax & Insurance") + ":Float:120",
                 ("Goods Amount") + ":Float:120",
                 ("Services Amount") + ":Float:120",
 		("Gross Pay") + ":Float:120",
