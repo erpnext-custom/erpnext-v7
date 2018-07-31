@@ -38,7 +38,7 @@ def make_depreciation_entry(asset_name, date=None):
 
 	asset = frappe.get_doc("Asset", asset_name)
 	
-	if asset.status == "Scrapped":
+	if asset.status in ["Scrapped", "Sold"]:
 		frappe.throw("Can not make depreciation for scrapped assets")
 
 	fixed_asset_account, accumulated_depreciation_account, depreciation_expense_account = \

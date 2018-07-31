@@ -67,6 +67,15 @@ frappe.ui.form.on('Asset', {
 			}
 			frm.trigger("show_graph");
 		}
+		if(frm.doc.docstatus===1){
+			frm.add_custom_button(__('Journal Entry'), function(){
+				frappe.route_options = {
+					"Journal Entry Account.reference_type": me.frm.doc.doctype,
+					"Journal Entry Account.reference_name": me.frm.doc.name,
+				};
+				frappe.set_route("List", "Journal Entry");
+			}, __("View"));
+		}
 	},
 
 	show_graph: function(frm) {

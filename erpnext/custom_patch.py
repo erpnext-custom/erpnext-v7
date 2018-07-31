@@ -9,6 +9,37 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
 
+def get_asset_list():
+	li = frappe.db.sql("select a.gross_purchase_amount, a.name, a.asset_account, b.fixed_asset_account from tabAsset a, `tabAsset Category Account` b where a.asset_category = b.parent and a.asset_account != b.fixed_asset_account", as_dict=True)
+	for a in li:
+		print(a.name + "  :  " + a.asset_account + " ==> " + a.fixed_asset_account + "   ::: " + str(a.gross_purchase_amount))
+
+	"""assets = frappe.db.sql("select a.name, a.asset_category, b.account from tabAsset a, `tabJournal Entry Account` b where b.debit > 0 and a.name = b.reference_name and (b.account not like '%Depreciation%' and b.account not like '%Amortization%')", as_dict=True)
+	for a in assets:
+		as_cat = frappe.db.sql("select fixed_asset_account from `tabAsset Category Account` where parent = %s", a.asset_category, as_dict=True)
+		entry = as_cat[0].fixed_asset_account
+		if a.account != entry:
+			print(a.name + "  :  " + a.account + " ==> " + entry)
+	"""
+
+def move_bulk_asset_movement():
+	ams = frappe.db.sql("select name, creation from `tabBulk Asset Transfer`", as_dict=True)
+	for a in ams:
+		print(a.name + " : " + str(getdate(a.creation)))
+		frappe.db.sql("update `tabBulk Asset Transfer` set posting_date = %s, company = %s where name = %s", (str(getdate(a.creation)), "Construction Development Corporation Ltd", a.name))
+
+def move_asset_movement():
+	ams = frappe.db.sql("select name, transaction_date, reason from `tabAsset Movement`", as_dict=True)
+	for a in ams:
+		frappe.db.sql("update `tabAsset Movement` set posting_date = %s, remarks = %s where name = %s", (a.transaction_date, a.reason, a.name))
+
+def adjust_km_consumption():
+	vlogs = frappe.db.sql("select name, ys_km, distance_km, consumption_km from `tabVehicle Logbook` where consumption_km = distance_km * ys_km and consumption_km != 0", as_dict=True)
+	for a in vlogs:
+		#total = flt(a.distance_km) / flt(a.ys_km)
+		#frappe.db.sql("update `tabVehicle Logbook` set consumption_km = %s, consumption = %s where name = %s", (total, total, a.name))
+		print(a.name)
+
 def logbook_consumption_others():
 	logs = frappe.db.sql("select l.name from `tabVehicle Logbook` l, `tabEquipment Hiring Form` e where l.ehf_name = e.name and e.private != 'CDCL' and l.rate_type = 'Without Fuel' and l.consumption > 0 and l.docstatus = 1 and l.from_date > '2018-03-31'", as_dict=True)
 	for a in logs:
@@ -22,36 +53,39 @@ def logbook_cunsumption():
 		distance = hours = consump = 0
 		log = frappe.get_doc("Vehicle Logbook", a.name)
 		if not log.ys_km and not log.ys_hours:
-			print("BOTH: " + a.name + " : " + log.branch)
-			print(frappe.db.get_value("Equipment", log.equipment, ['equipment_type', 'equipment_model']))
+			pass
 		if log.total_work_time and log.distance_km:
 			#print("Both: " + str(log.name))
 			if log.ys_km and log.ys_hours:
-				distance = log.distance_km * log.ys_km
+				distance = log.distance_km / log.ys_km
 				hours = log.total_work_time * log.ys_hours
 			elif log.ys_km:
-				distance = log.distance_km * log.ys_km
+				distance = log.distance_km / log.ys_km
 			elif log.ys_hours:
 				hours = log.total_work_time * log.ys_hours
 			else:
-				distance = log.distance_km * log.ys_km
+				distance = log.distance_km / log.ys_km
 				hours = log.total_work_time * log.ys_hours
 		elif log.total_work_time:
 			hours = log.total_work_time * log.ys_hours
 		elif log.distance_km:
-			distance = log.distance_km * log.ys_km
+			distance = log.distance_km / log.ys_km
 		else:
-			distance = log.distance_km * log.ys_km
+			distance = log.distance_km / log.ys_km
 			hours = log.total_work_time * log.ys_hours
 		consump = log.other_consumption + hours + distance
 		if distance > 0 and hours > 0:
-			pass #print("BOTH: " + a.name + " : " + log.branch)
+			tp, mo = frappe.db.get_value("Equipment", log.equipment, ['equipment_type', 'equipment_model'])	
+			if tp not in ['Jack Hammer', 'Rock Breaker']:
+				print("BOTH: " + a.name + " : " + log.branch)
 		elif distance > 0:
 			frappe.db.sql("update `tabVehicle Logbook` set include_km = 1, consumption_km = %s, consumption = %s where name = %s", (distance, consump, log.name))
 		elif hours > 0:
 			frappe.db.sql("update `tabVehicle Logbook` set include_hour = 1, consumption_hours = %s, consumption = %s where name = %s", (hours, consump, log.name))
 		else:
-			pass #print("NONE: " + a.name + " : " + log.branch)
+			tp, mo = frappe.db.get_value("Equipment", log.equipment, ['equipment_type', 'equipment_model'])	
+			if tp not in ['Jack Hammer', 'Rock Breaker']:
+				print("NONE: " + a.name + " : " + log.branch)
 
 def check_double_pol():
 	pols = frappe.db.sql("select p.name from tabPOL p, `tabJournal Entry` j where p.docstatus = 1 and p.jv is not null and j.docstatus = 1 and p.jv = j.name", as_dict=True)

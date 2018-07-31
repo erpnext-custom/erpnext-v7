@@ -5,11 +5,12 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SSK		                   08/08/2016         DocumentNaming standard is introduced
-1.0               SSK                              15/08/2016         Introducing Loss Tolerance for Sales
-1.0               SSK                              22/09/2016         get_default_bank_cash_sales_account is introduced.
-2.0               SHIV                             03/01/2018         *Following fields introduced
+1.0		  SHIV		                    08/08/2016         DocumentNaming standard is introduced
+1.0               SHIV                              15/08/2016         Introducing Loss Tolerance for Sales
+1.0               SHIV                              22/09/2016         get_default_bank_cash_sales_account is introduced.
+2.0               SHIV                              03/01/2018         *Following fields introduced
                                                                         party_currency, party_exchange_rate, party_paid_amount
+2.0               SHIV                              31/07/2018         Fields party_type, party added under deductions
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -535,6 +536,13 @@ class PaymentEntry(AccountsController):
                                         amount = flt(d.amount)
 	
 				account_type = frappe.db.get_value("Account", d.account, "account_type")
+
+                                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                                # Following code added by SHIV on 31/07/2018
+				if account_type != "Payable" and account_type != "Receivable" and d.party:
+                                        frappe.throw(_("Row#{0} : Party is not allowed against Non-payable or Non-receivable accounts.").format(d.idx), title="Invalid Data")
+				# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+				
 				if account_type == "Payable" or account_type == "Receivable":
 					gl_entries.append(
 						self.get_gl_dict({
@@ -544,8 +552,8 @@ class PaymentEntry(AccountsController):
 							dr_or_cr_cur: amount,
                                                         dr_or_cr: amount,
 							"cost_center": d.cost_center,
-							"party_type": self.party_type,
-							"party": self.party
+							"party_type": d.party_type,
+							"party": d.party
 						})
 					)
 				else:

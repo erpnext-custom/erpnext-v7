@@ -38,8 +38,8 @@ class EquipmentHiringExtension(Document):
 						if ehf.private == 'Private':
 							self.post_journal_entry()
 					else:
-						self.rate = doc.rate
-						##self.check_hire_rate(doc)
+						#self.rate = doc.rate
+						self.check_hire_rate(doc)
 						if not self.hours:
 							days = date_diff(self.extension_date, doc.to_date)
 							self.hours = flt(days) * 8

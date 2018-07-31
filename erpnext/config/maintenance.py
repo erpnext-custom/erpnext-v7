@@ -80,10 +80,6 @@ def get_data():
 					"name": "HSD Adjustment",
 					"description": _("Create Payment"),
 				},
-				{
-                                        "type": "doctype",
-                                        "name": "Mechanical Settings",
-                                },
 			]
 		},
 		{

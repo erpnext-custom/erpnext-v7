@@ -609,7 +609,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-07-05 10:17:47.439119", 
+ "modified": "2018-07-31 14:44:15.901092", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Leave Encashment", 
@@ -694,7 +694,7 @@
    "role": "HR User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 

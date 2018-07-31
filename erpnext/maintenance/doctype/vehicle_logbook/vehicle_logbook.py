@@ -14,7 +14,7 @@ class VehicleLogbook(Document):
 		self.check_dates()
 		self.check_double_vl()
 		self.check_hire_form()
-		##self.check_hire_rate()
+		self.check_hire_rate()
 		self.check_duplicate()
 		self.update_consumed()
 		self.calculate_totals()
@@ -52,6 +52,7 @@ class VehicleLogbook(Document):
 
 	def on_submit(self):
 		self.check_double_vl()
+		self.check_hire_rate()
 		self.update_consumed()
 		self.calculate_totals()
 		self.check_consumption()
@@ -112,7 +113,8 @@ class VehicleLogbook(Document):
 			self.total_idle_time = total_i
 
 		if self.include_km:
-			self.consumption_km = flt(self.ys_km) * flt(self.distance_km)
+			if flt(self.ys_km) > 0:
+				self.consumption_km = flt(self.distance_km) / flt(self.ys_km)
 
 		if self.include_hour:
 			self.consumption_hours = flt(self.ys_hours) * flt(self.total_work_time)
@@ -186,11 +188,31 @@ class VehicleLogbook(Document):
 				frappe.throw("The logbook for the same equipment, date, and time has been created at " + str(result[0].ehf_name))
 
 	def check_consumption(self):
+		no_own_fuel_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type"), "no_own_tank")
+		if no_own_fuel_tank:
+			return
 		customer = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "private")
-		if customer == "CDCL" and not self.consumption_km and not self.consumption_hours and not self.consumption:
-			frappe.throw("Consumption is mandatory for Internal Use")
-		if customer != "CDCL" and (self.consumption_km > 0 or self.consumption_hours > 0) and self.rate_type == "Without Fuel":
-			frappe.throw("Should not have consumption when on dry hire to outside customers")
+		if customer == "CDCL":
+			if flt(self.consumption_km) == 0 and flt(self.consumption_hours) == 0 and flt(self.consumption) == 0:
+				self.check_condition()	
+		else:
+			if self.rate_type == "Without Fuel":
+				if flt(self.consumption_km) > 0 or flt(self.consumption_hours) > 0:
+					frappe.throw("Should not have consumption when on dry hire to outside customers")
+			else:
+				if flt(self.consumption_km) == 0 and flt(self.consumption_hours) == 0 and flt(self.consumption) == 0:
+					self.check_condition()	
+
+	def check_condition(self):
+		if self.include_km or self.include_hour:
+			if self.include_km and self.initial_km == self.final_km:
+				pass
+			elif self.include_hour and self.initial_hour == self.final_hour:
+				pass
+			else:
+				frappe.throw("Consumption is Mandatory")
+		else:
+			frappe.throw("Consumption is Mandatory")
 
 @frappe.whitelist()
 def get_opening(equipment, from_date, to_date, pol_type):

@@ -21,7 +21,13 @@ class TravelAuthorization(Document):
 		self.validate_travel_dates()
                 self.check_double_dates()
 		self.assign_end_date()
+		self.validate_advance()
 
+        def validate_advance(self):
+                self.advance_amount     = 0 if not self.need_advance else self.advance_amount
+                self.advance_amount_nu  = 0 if not self.need_advance else self.advance_amount_nu
+                self.advance_journal    = "" if self.docstatus == 0 else self.advance_journal
+        
 	def create_copy(self):
 		self.details = []
 		for a in self.items:

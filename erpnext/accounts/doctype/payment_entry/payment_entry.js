@@ -1,5 +1,13 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		          SHIV		                        31/07/2018         Fields party_type, party added under deductions
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
+
 {% include "erpnext/public/js/controllers/accounts.js" %}
 
 frappe.ui.form.on('Payment Entry', {
@@ -72,6 +80,16 @@ frappe.ui.form.on('Payment Entry', {
 			}
 		});
 
+		// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+		// Following coded added by SHIV on 31/07/2018
+		frm.set_query("party_type", "deductions", function(){
+			return {
+				filters: {"name": ["in", ["Customer", "Supplier","Employee"]]}
+			}
+		});
+		// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+
+		
 		frm.set_query("reference_doctype", "references", function() {
 			if (frm.doc.party_type=="Customer") {
 				var doctypes = ["Sales Order", "Sales Invoice", "Journal Entry"];
@@ -804,7 +822,16 @@ frappe.ui.form.on('Payment Entry Deduction', {
 
 	deductions_remove: function(frm) {
 		frm.events.set_difference_amount(frm);
+	},
+
+	// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+	// Following code added by SHIV on 31/07/2018
+	deductions_add: function(frm, cdt, cdn){
+		var child = locals[cdt][cdn];
+		frappe.model.set_value(cdt, cdn, "party_type", frm.doc.party_type);
+		frappe.model.set_value(cdt, cdn, "party", frm.doc.party);
 	}
+	// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 })
 
 

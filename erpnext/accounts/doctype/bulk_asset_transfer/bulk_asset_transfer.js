@@ -9,6 +9,18 @@ cur_frm.add_fetch("current_custodian", "employee_name", "c_custodian_name")
 
 frappe.ui.form.on('Bulk Asset Transfer', {
 	refresh: function(frm) {
+		if(frm.doc.docstatus == 1) {
+			cur_frm.add_custom_button(__('Accounting Ledger'), function() {
+				frappe.route_options = {
+					voucher_no: frm.doc.name,
+					from_date: frm.doc.posting_date,
+					to_date: frm.doc.posting_date,
+					company: frm.doc.company,
+					group_by_voucher: false
+				};
+				frappe.set_route("query-report", "General Ledger");
+			}, __("View"));
+		}
 	},
 	get_assets: function(frm) {
 		return frappe.call({

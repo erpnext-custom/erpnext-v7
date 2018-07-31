@@ -27,8 +27,16 @@ def get_columns():
 	]	
 
 def get_data(filters):
-	query = """ select branch, bank, fd_number, principal, rate, i_amount, total_amount, start_date, end_date, status, overdaft from `tabFixed Deposit`"""
+	query = """ select branch, bank, fd_number, principal, rate, i_amount, total_amount, start_date, end_date, status, overdaft from `tabFixed Deposit` where docstatus=1 """
 	
+	if filters.get("branch"):
+		query += " and branch = \'"+ str(filters.get("branch")) + "\'"
+
+	if filters.get("from_date") and filters.get("to_date"):
+		query += " and start_date between \'" + str(filters.get("from_date")) + "\' and \'" + str(filters.get("to_date")) +"\'"
+                query += " and end_date between \'" + str(filters.get("from_date")) + "\' and \'" + str(filters.get("to_date")) +"\'"
+
+	'''
 	if filters.get("branch"):
 		query += " where branch = \'"+ str(filters.get("branch")) + "\'"
 
@@ -41,7 +49,7 @@ def get_data(filters):
 			query += " where start_date between \'" + str(filters.get("from_date")) + "\' and \'" + str(filters.get("to_date")) +"\'"
 
                 	query += " and end_date between \'" + str(filters.get("from_date")) + "\' and \'" + str(filters.get("to_date")) +"\'"
-				
+	'''
 	#frappe.msgprint(query) 
 	return frappe.db.sql(query)
 
