@@ -7,6 +7,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from erpnext.accounts.utils import make_asset_transfer_gl
+from frappe.utils import getdate, nowdate
 
 class AssetMovement(Document):
 	def validate(self):
@@ -15,8 +16,14 @@ class AssetMovement(Document):
 			self.validate_warehouses()
 		if self.target_custodian:
 			self.validate_custodian()
-			self.target_cost_center = ""	
-	
+			self.target_cost_center = None
+			self.target_custodian_cost_center = frappe.db.get_value("Employee", self.target_custodian, "cost_center")	
+		if self.target_cost_center:
+			if self.target_cost_center == self.current_cost_center:
+				frappe.throw("Target and Source Cost Center cannot be same.")
+			self.target_custodian = None
+			self.target_custodian_cost_center = None
+
 	def validate_asset(self):
 		status, company = frappe.db.get_value("Asset", self.asset, ["status", "company"])
 		if status in ("Draft", "Scrapped", "Sold"):
@@ -40,15 +47,21 @@ class AssetMovement(Document):
 			frappe.throw(_("Source and Target Custodian cannot be same"))
 	
 	def on_submit(self):
+		if not self.target_custodian and not self.target_cost_center:
+			frappe.throw("Target Custodian or Cost Center is Mandatory")
 		if self.target_warehouse:
 			self.set_latest_warehouse_in_asset()
 		if self.target_custodian:
 			self.set_latest_custodian_in_asset()
+			if self.target_custodian_cost_center != self.current_cost_center:		
+				pass
+				#make_asset_transfer_gl(self, self.asset, self.posting_date, self.current_cost_center, new_cc)
 		if self.target_cost_center:	
 			self.set_latest_cc_in_asset()
 			#make_asset_transfer_gl(self, self.asset, self.posting_date, self.current_cost_center, self.target_cost_center)
 		
 	def on_cancel(self):
+		self.check_depreciation_done()
 		if self.target_warehouse:
 			self.set_latest_warehouse_in_asset()
 		if self.target_custodian:
@@ -56,6 +69,18 @@ class AssetMovement(Document):
 		if self.target_cost_center:	
 			self.set_latest_cc_in_asset()
 		self.cancel_gl_entries()
+
+	def check_depreciation_done(self):
+		if self.target_custodian:
+			if self.target_custodian_cost_center != self.current_cost_center:		
+				self.check_gls()
+		if self.target_cost_center:	
+			self.check_gls()
+
+	def check_gls(self):
+		jes = frappe.db.sql("select name from `tabJournal Entry` je, `tabJournal Entry Account` jea where je.name = jea.parent and jea.reference_name = %s and je.posting_date between %s and %s", (self.asset, self.posting_date, getdate(nowdate())), as_dict=True)
+		for a in jes:
+			frappe.throw("Cannot cancel since asset depreciations had already taken place")
 
 	def cancel_gl_entries(self):
 		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", self.name)
@@ -85,7 +110,7 @@ class AssetMovement(Document):
 			custodian = frappe.db.sql("""select source_custodian from `tabAsset Movement`
 				where asset=%s and docstatus=2 and company=%s
 				order by posting_date asc limit 1""", (self.asset, self.company))[0][0]
-		
+	
 		frappe.db.set_value("Asset", self.asset, "issued_to", custodian)
 		frappe.db.set_value("Asset", self.asset, "cost_center", frappe.db.get_value("Employee", custodian, "cost_center"))
 		frappe.db.set_value("Asset", self.asset, "branch", frappe.db.get_value("Employee", custodian, "branch"))

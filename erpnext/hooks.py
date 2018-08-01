@@ -170,6 +170,7 @@ scheduler_events = {
 		"erpnext.stock.doctype.item.item.sync_item_code",
 		"erpnext.accounts.doctype.asset.asset.sync_cc_branch",
 		#"erpnext.maintenance.doctype.equipment.equipment.sync_branch_asset",
+		"erpnext.selling.doctype.customer.customer.check_cc_branch",
 		"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"
 	],
 	"daily": [

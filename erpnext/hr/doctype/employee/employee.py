@@ -158,6 +158,9 @@ class Employee(Document):
                                 })
         
 	def update_user_permissions(self):
+		if self.branch != self.get_db_value("branch") and  self.user_id:
+			frappe.permissions.remove_user_permission("Branch", self.get_db_value("branch"), self.user_id)           
+
 		frappe.permissions.add_user_permission("Employee", self.name, self.user_id)
 		frappe.permissions.set_user_permission_if_allowed("Company", self.company, self.user_id)
 		#Add Branch Permission to User

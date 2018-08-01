@@ -8,6 +8,31 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def adjust_asset_gl():
+	ams = frappe.db.sql("select name from `tabAsset Movement` where docstatus = 1", as_dict=True)
+	cc = cu = 0
+	for a in ams:
+		doc = frappe.get_doc("Asset Movement", a.name)
+		if doc.target_cost_center:
+			if doc.target_cost_center != doc.current_cost_center:
+				deps = frappe.db.sql("select accumulated_depreciation_amount from `tabDepreciation Schedule` where parent = %s and schedule_date < %s order by schedule_date desc limit 1", (doc.asset, doc.posting_date),  as_dict=1)
+				if deps:
+					print(str(doc.posting_date) + " ||| " + str(doc.name) + " : " + str(doc.asset) + " ===> " + str(deps[0].accumulated_depreciation_amount))
+				else:
+					asset = frappe.get_doc("Asset", doc.asset)
+					print(str(doc.posting_date) + " ||| " + str(doc.name) + " : " + str(doc.asset) + " ---> " + str(asset.opening_accumulated_depreciation))
+		if doc.target_custodian:
+			cu = cu + 1
+			#print("CU: " + str(a.name)) 
+	print("CU: " + str(cu) + "    CC: " + str(cc))
+
+
+def branch_access_list():
+	bl = frappe.db.sql("select count(1) as count, parent from tabDefaultValue where defkey = 'Branch' group by parent having count > 1", as_dict=True)
+	for a in bl:
+		ab = frappe.db.sql("select 1 from `tabAssign Branch` where user = %s", a.parent, as_dict=1)
+		if not ab:
+			print(a)
 
 def get_asset_list():
 	li = frappe.db.sql("select a.gross_purchase_amount, a.name, a.asset_account, b.fixed_asset_account from tabAsset a, `tabAsset Category Account` b where a.asset_category = b.parent and a.asset_account != b.fixed_asset_account", as_dict=True)

@@ -221,3 +221,12 @@ def get_credit_limit(customer, company):
 		credit_limit = frappe.db.get_value("Company", company, "credit_limit")
 
 	return flt(credit_limit)
+
+##
+# Run from hooks to correct the data
+##
+def check_cc_branch():
+	cus_list = frappe.db.sql("select name, cost_center, branch from tabCustomer where (branch is null and cost_center is not null) or (branch is not null and cost_center is null)", as_dict=True)
+	for a in cus_list:
+		frappe.db.sql("update tabCustomer set cost_center = null, branch = null where name = %s", a.name)
+
