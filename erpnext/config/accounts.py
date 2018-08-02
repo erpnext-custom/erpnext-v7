@@ -207,6 +207,30 @@ def get_data():
 				},
 			]
 		},
+                {
+			"label": _("Tools"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Cheque Lot",
+					"label": "Create Cheque Lot",
+					"description": "Creation of Cheque Lot",
+					"hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "RRCO Receipt Tool",
+					"description": "Enter RRCO Receipts in Bulk",
+					"hide_count": True
+				},
+                                {
+					"type": "doctype",
+					"name": "Salary Remittance",
+					"description": "Bulk document generator for Salary Remittance",
+					"hide_count": True
+				},
+			]
+		},
 		{
 			"label": _("Taxes and Registers"),
 			"items": [
@@ -229,13 +253,6 @@ def get_data():
 					"is_query_report": True
 				},
 				{
-					"type": "doctype",
-					"name": "Cheque Lot",
-					"label": "Create Cheque Lot",
-					"description": "Creation of Cheque Lot",
-					"hide_count": True
-				},
-				{
 					"type": "report",
 					"name": "TDS Certificate",
 					"label": "Generate TDS Certificate",
@@ -248,12 +265,6 @@ def get_data():
 					"label": "Generate TDS Challan",
 					"doctype": "Purchase Invoice",
 					"is_query_report": True
-				},
-				{
-					"type": "doctype",
-					"name": "RRCO Receipt Tool",
-					"description": "Enter RRCO Receipts in Bulk",
-					"hide_count": True
 				},
 				{
 					"type": "report",

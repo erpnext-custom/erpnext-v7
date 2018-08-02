@@ -145,26 +145,29 @@ class ProcessMRPayment(Document):
 		je.remark = 'Payment against : ' + self.name;
 		je.posting_date = self.posting_date
 		je.branch = self.branch
-		total_amount = self.total_overall_amount
+		total_amount = flt(self.total_overall_amount)
 
+                '''
 		if self.total_health_amount and self.employee_type == "GEP Employee":
 			total_amount -= flt(self.total_health_amount)
-
+                '''
+                
+                total_amount = flt(self.wages_amount,2) + flt(self.ot_amount,2) - flt(self.total_health_amount,2)
+                
 		je.append("accounts", {
 				"account": expense_bank_account,
 				"cost_center": self.cost_center,
-				"credit_in_account_currency": flt(total_amount),
-				"credit": flt(total_amount),
+				"credit_in_account_currency": flt(total_amount,2),
+				"credit": flt(total_amount,2),
 			})
-	
 		if self.ot_amount:	
 			je.append("accounts", {
 					"account": ot_account,
 					"reference_type": "Process MR Payment",
 					"reference_name": self.name,
 					"cost_center": self.cost_center,
-					"debit_in_account_currency": flt(self.ot_amount),
-					"debit": flt(self.ot_amount),
+					"debit_in_account_currency": flt(self.ot_amount,2),
+					"debit": flt(self.ot_amount,2),
 				})
 
 		if self.wages_amount:
@@ -177,8 +180,8 @@ class ProcessMRPayment(Document):
 						"reference_type": "Process MR Payment",
 						"reference_name": self.name,
 						"cost_center": self.cost_center,
-						"credit_in_account_currency": flt(self.total_health_amount),
-						"credit": flt(self.total_health_amount),
+						"credit_in_account_currency": flt(self.total_health_amount,2),
+						"credit": flt(self.total_health_amount,2),
 					})
 
 			je.append("accounts", {
@@ -186,13 +189,12 @@ class ProcessMRPayment(Document):
 					"reference_type": "Process MR Payment",
 					"reference_name": self.name,
 					"cost_center": self.cost_center,
-					"debit_in_account_currency": flt(self.wages_amount),
-					"debit": flt(self.wages_amount),
+					"debit_in_account_currency": flt(self.wages_amount,2),
+					"debit": flt(self.wages_amount,2),
 				})
 
 		je.insert()
 		self.db_set("payment_jv", je.name)
-
 		
 		if self.total_health_amount and self.employee_type == "GEP Employee":
 			health_account = frappe.db.get_value("Salary Component", "Health Contribution", "gl_head")
@@ -212,15 +214,15 @@ class ProcessMRPayment(Document):
 					"reference_type": "Process MR Payment",
 					"reference_name": self.name,
 					"cost_center": self.cost_center,
-					"debit_in_account_currency": flt(self.total_health_amount),
-					"debit": flt(self.total_health_amount),
+					"debit_in_account_currency": flt(self.total_health_amount,2),
+					"debit": flt(self.total_health_amount,2),
 				})
 
 			hjv.append("accounts", {
 					"account": expense_bank_account,
 					"cost_center": self.cost_center,
-					"credit_in_account_currency": flt(self.total_health_amount),
-					"credit": flt(self.total_health_amount),
+					"credit_in_account_currency": flt(self.total_health_amount,2),
+					"credit": flt(self.total_health_amount,2),
 				})
 			hjv.insert()
 			

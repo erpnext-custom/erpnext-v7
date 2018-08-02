@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-11 09:26:16.816777", 
+ "modified": "2018-08-02 14:20:59.479018", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Accounts", 
  "name": "Statement of Cash Flow", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

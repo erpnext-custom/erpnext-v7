@@ -9,22 +9,38 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
 def adjust_asset_gl():
-	ams = frappe.db.sql("select name from `tabAsset Movement` where docstatus = 1", as_dict=True)
-	cc = cu = 0
+	#ams = frappe.db.sql("select name from `tabAsset Movement` where docstatus = 1 ", as_dict=True)
+	ams = frappe.db.sql("select name from `tabAsset Movement` where docstatus = 1 and posting_date > '2017-12-31'", as_dict=True)
+	cc = 0
 	for a in ams:
 		doc = frappe.get_doc("Asset Movement", a.name)
-		if doc.target_cost_center:
-			if doc.target_cost_center != doc.current_cost_center:
-				deps = frappe.db.sql("select accumulated_depreciation_amount from `tabDepreciation Schedule` where parent = %s and schedule_date < %s order by schedule_date desc limit 1", (doc.asset, doc.posting_date),  as_dict=1)
-				if deps:
-					print(str(doc.posting_date) + " ||| " + str(doc.name) + " : " + str(doc.asset) + " ===> " + str(deps[0].accumulated_depreciation_amount))
-				else:
-					asset = frappe.get_doc("Asset", doc.asset)
-					print(str(doc.posting_date) + " ||| " + str(doc.name) + " : " + str(doc.asset) + " ---> " + str(asset.opening_accumulated_depreciation))
-		if doc.target_custodian:
-			cu = cu + 1
-			#print("CU: " + str(a.name)) 
-	print("CU: " + str(cu) + "    CC: " + str(cc))
+		if ((doc.target_cost_center and doc.target_cost_center != doc.current_cost_center) or (doc.target_custodian and doc.current_cost_center != doc.target_custodian_cost_center)):
+			cc = cc + 1
+			do_gl_adjustment(doc.asset, doc.posting_date, doc.name)
+			"""deps = frappe.db.sql("select accumulated_depreciation_amount from `tabDepreciation Schedule` where parent = %s and schedule_date < %s order by schedule_date desc limit 1", (doc.asset, doc.posting_date),  as_dict=1)
+			if deps:
+				print(str(doc.posting_date) + " ||| " + str(doc.name) + " : " + str(doc.asset) + " ===> " + str(deps[0].accumulated_depreciation_amount))
+			else:
+				asset = frappe.get_doc("Asset", doc.asset)
+				print(str(doc.posting_date) + " ||| " + str(doc.name) + " : " + str(doc.asset) + " ---> " + str(asset.opening_accumulated_depreciation))
+			"""
+	bam = frappe.db.sql("select name from `tabBulk Asset Transfer` where docstatus = 1 and posting_date > '2017-12-31'", as_dict=1)
+	for a in bam:
+		doc = frappe.get_doc("Bulk Asset Transfer", a.name)
+		for b in doc.items:
+			if b.cost_center != doc.custodian_cost_center:
+				cc = cc + 1
+				do_gl_adjustment(str(b.asset_code), doc.posting_date, doc.name)
+
+	print(cc)
+
+def do_gl_adjustment(asset_code, posting_date, name):
+	deps = frappe.db.sql("select accumulated_depreciation_amount from `tabDepreciation Schedule` where parent = %s and schedule_date < %s order by schedule_date desc limit 1", (asset_code, posting_date),  as_dict=1)
+	if deps:
+		print(str(posting_date) + " ||| " + str(name) + " : " + str(asset_code) + " ===> " + str(deps[0].accumulated_depreciation_amount))
+	else:
+		asset = frappe.get_doc("Asset", asset_code)
+		print(str(posting_date) + " ||| " + str(name) + " : " + str(asset_code) + " ---> " + str(asset.opening_accumulated_depreciation))
 
 
 def branch_access_list():

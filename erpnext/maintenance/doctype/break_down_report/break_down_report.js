@@ -63,7 +63,7 @@ cur_frm.add_fetch("equipment", "equipment_number", "equipment_number");
 
 frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
     cur_frm.set_query("equipment", function() {
-	if (frm.doc.owned_by == "Owned") {
+	if (frm.doc.owned_by == "Own") {
 		return {
 		    "filters": {
 			"is_disabled": 0,

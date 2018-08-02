@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-10 14:41:43.268470", 
- "modified_by": "Administrator", 
+ "modified": "2018-08-02 14:19:44.378497", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Accounts", 
  "name": "Statement of Financial Position", 
  "owner": "Administrator", 
@@ -39,6 +39,9 @@
   }, 
   {
    "role": "Project Supervisor"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }
