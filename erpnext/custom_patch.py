@@ -8,6 +8,15 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_table():
+        tables = frappe.db.sql("SELECT table_name FROM information_schema.tables where table_schema='4915427b5860138f'", as_dict=True)
+        for a in tables:
+                try:    
+                        frappe.db.sql("ALTER TABLE `"+str(a.table_name)+"` ADD COLUMN submission datetime(6)")
+                        print(a.table_name)
+                except: 
+                        pass
+
 def adjust_asset_gl():
 	#ams = frappe.db.sql("select name from `tabAsset Movement` where docstatus = 1 ", as_dict=True)
 	ams = frappe.db.sql("select name from `tabAsset Movement` where docstatus = 1 and posting_date > '2017-12-31'", as_dict=True)

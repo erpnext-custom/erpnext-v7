@@ -3,11 +3,18 @@
 
 # ERPNext - web based ERP (http://erpnext.com)
 # For license information, please see license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		  SHIV		                   03/08/2018         New fields submitted, submitted_by introduced
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
 
-from frappe.utils import cstr, flt, getdate, new_line_sep
+from frappe.utils import cstr, flt, getdate, new_line_sep, today, nowdate, now_datetime
 from frappe import msgprint, _
 from frappe.model.mapper import get_mapped_doc
 from erpnext.stock.stock_balance import update_bin_qty, get_indented_qty
@@ -76,6 +83,13 @@ class MaterialRequest(BuyingController):
 		if not self.status:
 			self.status = "Draft"
 
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following code added by SHIV on 2018/08/03
+		if self.docstatus == 0:
+                        self.submitted_by = "" if self.submitted_by else self.submitted_by
+                        self.submitted    = "" if self.submitted else self.submitted
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+
                 self.docstatus = 2 if self.workflow_state == "Rejected" else self.docstatus
                 
 		from erpnext.controllers.status_updater import validate_status
@@ -116,6 +130,13 @@ class MaterialRequest(BuyingController):
 				self.urgent_requirement = "Yes"
 				break
 
+        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+        # Following code added by SHIV on 2018/08/03
+        def before_submit(self):
+                self.submitted_by     = frappe.session.user
+                self.submitted        = now_datetime()
+        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+                
 	def on_submit(self):
 		frappe.db.set(self, 'status', 'Submitted')
 		self.update_requested_qty()

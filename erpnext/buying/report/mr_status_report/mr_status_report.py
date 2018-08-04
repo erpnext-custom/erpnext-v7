@@ -36,38 +36,71 @@ def get_data(filters):
     #today = frappe.utils.nowdate()
     #frappe.msgprint("{0}".format(today))
     conditions, filters = get_conditions(filters)
-    query = frappe.db.sql("""select distinct
-			mr.name as mr_name, concat_ws('-', mr.branch,'CDCL'), mr.creation_date as mr_cra,
-			case when mr.workflow_state != 'Draft' then mr.transaction_date else '' end as tr, mr.workflow_state as mr_status,
-			mr.owner as ownm, case when mr.workflow_state = 'Approved' and mr.material_request_type = "Purchase"  then
-			mr.transaction_date else '' end as ftp, mr.material_request_type as mr_typ,
-			rq.name, date(rq.creation), case when rq.status = "Submitted" then rq.transaction_date else '' end as rq_date,
-			rq.status, rq.owner,
-			po.name as po_name, po.creation as po_cra, case when po.docstatus = !0  then po.transaction_date else '' end as tr1,
-			po.status as po_status,
-			po.owner as ownp, po.modified_by as mop,
-			pr.name as pr_name, pr.creation as pr_cra, case when pr.status != 'Draft' then pr.posting_date else '' end as pr_mod1, pr.status as pr_status,
-			pr.owner as onrr, pr.modified_by as mor,
-			pi.name as pi_name, pi.creation as pi_cra, case when pi.docstatus != 0 then pi.posting_date else '' end as pi_modi,
+    query = frappe.db.sql("""
+            select distinct
+			mr.name                             as mr_name,
+			concat_ws('-', mr.branch,'CDCL')    as mr_cost_center,
+			mr.creation_date                    as mr_create_date,
+			date(mr.submitted)                  as mr_submit_date,
+			mr.workflow_state                   as mr_status,
+			mr.owner                            as mr_owner,
 			case
-			when pi.is_return = 1 then "Return"
-			when pi.is_return =  0 and pi.outstanding_amount > 0 and pi.docstatus = 1 and datediff(pi.due_date, curdate())<0 then "Overdue"
-			when  pi.is_return =  0 and pi.outstanding_amount > 0 and pi.docstatus = 1 and datediff(pi.due_date, curdate()) >= 0 then "Unpaid"
-			when pi.is_return = 0 and pi.outstanding_amount = 0 and pi.docstatus = 1 then "Paid"
-			when pi.docstatus = 0 then "Draft"
-			when pi.docstatus = 2 then "Cancelled"
-			end as pi_status,
-			pi.owner as owni, pi.modified_by as moii
-			from `tabMaterial Request` mr
-			left join  `tabRequest for Quotation Item` rqi on rqi.material_request = mr.name 
-			left join `tabRequest for Quotation` rq on rq.name = rqi.parent 
-			left join  `tabPurchase Order Item` poi on poi.material_request = mr.name
+                            when mr.workflow_state = 'Approved' and mr.material_request_type = "Purchase" then mr.purchase_change_date
+                            else ''
+                        end                                 as forwarded_to_procurement,
+			mr.material_request_type            as mr_type,
+			rq.name                             as rq_name,
+			date(rq.creation)                   as rq_create_date,
+			case
+                            when rq.docstatus = 1 then date(rq.modified)
+                            else ''
+                        end                                 as rq_submit_date,
+			rq.status                           as rq_status,
+			rq.owner                            as rq_owner,
+			po.name                             as po_name,
+			date(po.creation)                   as po_create_date,
+			case
+                            when po.docstatus = 1 then date(po.modified)
+                            else ''
+                        end                                 as po_submit_date,
+			po.status                           as po_status,
+			po.owner                            as po_owner,
+			po.modified_by                      as po_modified_by,
+			pr.name                             as pr_name,
+			date(pr.creation)                   as pr_create_date,
+			case
+                            when pr.docstatus = 1 then date(pr.modified)
+                            else ''
+                        end                                 as pr_submit_date,
+			pr.status                           as pr_status,
+			pr.owner                            as pr_owner,
+			pr.modified_by                      as pr_modified_by,
+			pi.name                             as pi_name,
+			date(pi.creation)                   as pi_create_date,
+			case
+                            when pi.docstatus = 1 then date(pi.modified)
+                            else ''
+                        end                                 as pi_submit_date,
+			case
+                            when pi.is_return = 1 then "Return"
+                            when pi.is_return = 0 and pi.outstanding_amount > 0 and pi.docstatus = 1 and datediff(pi.due_date, curdate())<0 then "Overdue"
+                            when pi.is_return = 0 and pi.outstanding_amount > 0 and pi.docstatus = 1 and datediff(pi.due_date, curdate()) >= 0 then "Unpaid"
+                            when pi.is_return = 0 and pi.outstanding_amount = 0 and pi.docstatus = 1 then "Paid"
+                            when pi.docstatus = 0 then "Draft"
+                            when pi.docstatus = 2 then "Cancelled"
+			end                                 as pi_status,
+			pi.owner                            as pi_owner,
+			pi.modified_by                      as pi_modified_by
+	    from `tabMaterial Request` mr
+	    left join `tabRequest for Quotation Item` rqi on rqi.material_request = mr.name 
+	    left join `tabRequest for Quotation` rq on rq.name = rqi.parent
+            left join `tabPurchase Order Item` poi on poi.material_request = mr.name
             left join `tabPurchase Order` po on po.name = poi.parent
             left join `tabPurchase Receipt Item` pri on pri.purchase_order = po.name
             left join `tabPurchase Receipt` pr on pr.name = pri.parent
             left join `tabPurchase Invoice Item` pii on pii.purchase_receipt = pr.name
             left join `tabPurchase Invoice` pi on pi.name = pii.parent
-			where {0} order by mr.creation_date desc""".format(conditions))
+	    where {0} order by mr.creation_date desc""".format(conditions))
     #frappe.msgprint(query)
     return query
 
@@ -77,7 +110,7 @@ def get_columns(filters):
 		("MR Cost Center") + ":Data:160",
 		        ("MR Create Date") + ":Date:100",
                 ("MR Submit Date") + ":Date:110",
-                ("Mr Status") + ":Data:100",
+                ("MR Status") + ":Data:100",
 		        ("MR Owner") + ":Link/User:140",
 		        ("Forward To Procurment") + ":Date:100",
                 ("MR Type") + ":Data:120",
