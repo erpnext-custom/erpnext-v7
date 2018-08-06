@@ -12,7 +12,7 @@ def update_table():
         tables = frappe.db.sql("SELECT table_name FROM information_schema.tables where table_schema='4915427b5860138f'", as_dict=True)
         for a in tables:
                 try:    
-                        frappe.db.sql("ALTER TABLE `"+str(a.table_name)+"` ADD COLUMN submission datetime(6)")
+                        frappe.db.sql("ALTER TABLE `"+str(a.table_name)+"` ADD COLUMN submitted_by varchar(140)")
                         print(a.table_name)
                 except: 
                         pass
@@ -25,32 +25,109 @@ def adjust_asset_gl():
 		doc = frappe.get_doc("Asset Movement", a.name)
 		if ((doc.target_cost_center and doc.target_cost_center != doc.current_cost_center) or (doc.target_custodian and doc.current_cost_center != doc.target_custodian_cost_center)):
 			cc = cc + 1
-			do_gl_adjustment(doc.asset, doc.posting_date, doc.name)
-			"""deps = frappe.db.sql("select accumulated_depreciation_amount from `tabDepreciation Schedule` where parent = %s and schedule_date < %s order by schedule_date desc limit 1", (doc.asset, doc.posting_date),  as_dict=1)
-			if deps:
-				print(str(doc.posting_date) + " ||| " + str(doc.name) + " : " + str(doc.asset) + " ===> " + str(deps[0].accumulated_depreciation_amount))
+			if doc.target_cost_center:
+				to_cc = doc.target_cost_center
 			else:
-				asset = frappe.get_doc("Asset", doc.asset)
-				print(str(doc.posting_date) + " ||| " + str(doc.name) + " : " + str(doc.asset) + " ---> " + str(asset.opening_accumulated_depreciation))
-			"""
+				to_cc = doc.target_custodian_cost_center
+			do_gl_adjustment(doc, doc.asset, doc.posting_date, doc.name, doc.current_cost_center, to_cc)
+
 	bam = frappe.db.sql("select name from `tabBulk Asset Transfer` where docstatus = 1 and posting_date > '2017-12-31'", as_dict=1)
 	for a in bam:
 		doc = frappe.get_doc("Bulk Asset Transfer", a.name)
 		for b in doc.items:
 			if b.cost_center != doc.custodian_cost_center:
 				cc = cc + 1
-				do_gl_adjustment(str(b.asset_code), doc.posting_date, doc.name)
+				do_gl_adjustment(doc, str(b.asset_code), doc.posting_date, doc.name, b.cost_center, doc.custodian_cost_center)
 
 	print(cc)
+	frappe.throw("STOP")
 
-def do_gl_adjustment(asset_code, posting_date, name):
+def do_gl_adjustment(self, asset_code, posting_date, name, from_cc, to_cc):
+	asset = frappe.get_doc("Asset", asset_code)
 	deps = frappe.db.sql("select accumulated_depreciation_amount from `tabDepreciation Schedule` where parent = %s and schedule_date < %s order by schedule_date desc limit 1", (asset_code, posting_date),  as_dict=1)
 	if deps:
-		print(str(posting_date) + " ||| " + str(name) + " : " + str(asset_code) + " ===> " + str(deps[0].accumulated_depreciation_amount))
+		accumulated_dep = deps[0].accumulated_depreciation_amount
 	else:
-		asset = frappe.get_doc("Asset", asset_code)
-		print(str(posting_date) + " ||| " + str(name) + " : " + str(asset_code) + " ---> " + str(asset.opening_accumulated_depreciation))
+		accumulated_dep = asset.opening_accumulated_depreciation
+	
+	ic_amount = flt(asset.gross_purchase_amount) - flt(accumulated_dep)
 
+	accumulated_dep_account = frappe.db.sql("select accumulated_depreciation_account from `tabAsset Category Account` where parent = %s", asset.asset_category, as_dict=True)[0].accumulated_depreciation_account
+	ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+	if not ic_account:
+		frappe.throw("Setup Intra Company Accounts under Accounts Settings")
+
+	from erpnext.accounts.general_ledger import make_gl_entries
+	from erpnext.custom_utils import prepare_gl
+
+	gl_entries = []
+	gl_entries.append(
+		prepare_gl(self, {
+		       "account":  asset.asset_account,
+		       "credit": asset.gross_purchase_amount,
+		       "credit_in_account_currency": asset.gross_purchase_amount,
+		       "against_voucher": asset.name,
+		       "against_voucher_type": "Asset",
+		       "cost_center": from_cc,
+		})
+	)
+	gl_entries.append(
+		prepare_gl(self, {
+		       "account":  asset.asset_account,
+		       "debit": asset.gross_purchase_amount,
+		       "debit_in_account_currency": asset.gross_purchase_amount,
+		       "against_voucher": asset.name,
+		       "against_voucher_type": "Asset",
+		       "cost_center": to_cc,
+		})
+	)
+
+	if accumulated_dep:
+		gl_entries.append(
+			prepare_gl(self, {
+			       "account": accumulated_dep_account,
+			       "debit": accumulated_dep,
+			       "debit_in_account_currency": accumulated_dep,
+			       "against_voucher": asset.name,
+			       "against_voucher_type": "Asset",
+			       "cost_center": from_cc,
+			})
+		)
+		gl_entries.append(
+			prepare_gl(self, {
+			       "account": accumulated_dep_account,
+			       "credit": accumulated_dep,
+			       "credit_in_account_currency": accumulated_dep,
+			       "against_voucher": asset.name,
+			       "against_voucher_type": "Asset",
+			       "cost_center": to_cc,
+			})
+		)
+
+	if ic_amount:
+		gl_entries.append(
+			prepare_gl(self, {
+			       "account": ic_account,
+			       "debit": ic_amount,
+			       "debit_in_account_currency": ic_amount,
+			       "against_voucher": asset.name,
+			       "against_voucher_type": "Asset",
+			       "cost_center": from_cc,
+			})
+		)
+		gl_entries.append(
+			prepare_gl(self, {
+			       "account": ic_account,
+			       "credit": ic_amount,
+			       "credit_in_account_currency": ic_amount,
+			       "against_voucher": asset.name,
+			       "against_voucher_type": "Asset",
+			       "cost_center": to_cc,
+			})
+		)
+
+	print(asset.name)
+	make_gl_entries(gl_entries, cancel=0, update_outstanding="No", merge_entries=False)
 
 def branch_access_list():
 	bl = frappe.db.sql("select count(1) as count, parent from tabDefaultValue where defkey = 'Branch' group by parent having count > 1", as_dict=True)

@@ -582,7 +582,7 @@ def get_children():
 
 	return acc
 
-def make_asset_transfer_gl(self, asset, date, from_cc, to_cc):
+def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=True):
 	if from_cc == to_cc:
 		frappe.throw("From Cost Center and To Cost Center cannot be the same")
 	if getdate(date) > getdate(nowdate()):
@@ -593,7 +593,9 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc):
 		frappe.throw("The asset has been depreciated beyond the transfer date. Please change the transfer date and try again")	
 
 	asset = frappe.get_doc("Asset", asset)
+	
 	accumulated_dep = flt(asset.gross_purchase_amount) - flt(asset.value_after_depreciation)
+	
 	accumulated_dep_account = frappe.db.sql("select accumulated_depreciation_account from `tabAsset Category Account` where parent = %s", asset.asset_category, as_dict=True)[0].accumulated_depreciation_account
 	ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
 	if not ic_account:

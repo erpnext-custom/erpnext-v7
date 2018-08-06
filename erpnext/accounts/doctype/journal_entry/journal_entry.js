@@ -5,6 +5,8 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		          SHIV		   04/09/2017                            * Added "Project Advance" to Reference Type
+2.0               SHIV         06/08/2018                            * Filtering bank accounts for "Journal Entry" as per
+																		support ticket# 867
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
@@ -610,6 +612,14 @@ $.extend(erpnext.journal_entry, {
 				account_currency: frappe.get_doc(":Company", frm.doc.company).default_currency
 			});
 		}
+		// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+		// Following code added by SHIV on 06/08/2018
+		if(frm.doc.voucher_type === 'Journal Entry'){
+			$.extend(filters, {
+				account_type: ["!=", "Bank"]
+			});
+		}
+		// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		return { filters: filters };
 	}
 });
