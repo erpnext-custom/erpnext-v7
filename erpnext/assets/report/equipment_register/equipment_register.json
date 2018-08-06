@@ -1,0 +1,59 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2018-04-10 16:47:51.108132", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2018-08-06 20:23:33.371126", 
+ "modified_by": "Administrator", 
+ "module": "Assets", 
+ "name": "Equipment Register", 
+ "owner": "Administrator", 
+ "ref_doctype": "Asset", 
+ "report_name": "Equipment Register", 
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Asset User"
+  }, 
+  {
+   "role": "Asset Manager"
+  }, 
+  {
+   "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "Projects User"
+  }, 
+  {
+   "role": "Management"
+  }, 
+  {
+   "role": "Fleet Manager"
+  }, 
+  {
+   "role": "Fleet User"
+  }, 
+  {
+   "role": "Regional Manager"
+  }, 
+  {
+   "role": "Workshop Manager"
+  }, 
+  {
+   "role": "Project Supervisor"
+  }, 
+  {
+   "role": "Auditor"
+  }
+ ]
+}

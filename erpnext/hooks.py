@@ -168,7 +168,7 @@ scheduler_events = {
 	"hourly": [
 		"erpnext.controllers.recurring_document.create_recurring_documents",
 		"erpnext.stock.doctype.item.item.sync_item_code",
-		"erpnext.accounts.doctype.asset.asset.sync_cc_branch",
+		"erpnext.assets.doctype.asset.asset.sync_cc_branch",
 		#"erpnext.maintenance.doctype.equipment.equipment.sync_branch_asset",
 		"erpnext.selling.doctype.customer.customer.check_cc_branch",
 		"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"
@@ -180,7 +180,7 @@ scheduler_events = {
 		"erpnext.accounts.doctype.fiscal_year.fiscal_year.auto_create_fiscal_year",
 		"erpnext.hr.doctype.employee.employee.send_birthday_reminders",
 		"erpnext.projects.doctype.task.task.set_tasks_as_overdue",
-		"erpnext.accounts.doctype.asset.depreciation.post_depreciation_entries",
+		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
 		"erpnext.hr.doctype.officiating_employee.officiating_employee.check_off_exp",
 		"erpnext.maintenance.maintenance_utils.check_hire_end",
 		"erpnext.hr.hr_custom_functions.post_earned_leaves",

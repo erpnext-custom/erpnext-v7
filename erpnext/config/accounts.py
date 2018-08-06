@@ -3,33 +3,7 @@ from frappe import _
 
 def get_data():
 	return [
-		{
-			"label": _("Accounts"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Journal Entry",
-					"description": _("Accounting journal entries.")
-				},
-				{
-					"type": "doctype",
-					"name": "Direct Payment",
-					"description": _("Direct Payment")
-				},
-				{
-					"type": "doctype",
-					"name": "Period Closing Voucher",
-					"description": _("Close Balance Sheet and book Profit or Loss.")
-				},
-                                {
-					"type": "report",
-					"name": "Voucher Summary",
-					"doctype": "Journal Entry",
-					"is_query_report": True,
-				},
-			]
-		},
-		{
+                {
 			"label": _("Company"),
 			"items": [
 				{
@@ -58,6 +32,69 @@ def get_data():
 					"name": "Branch",
 					"description": _("List of Branches"),
 				},                                
+			]
+		},
+                {
+			"label": _("Account Settings"),
+			"icon": "icon-cog",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Accounts Settings",
+					"description": _("Default settings for accounting transactions.")
+				},
+				{
+					"type": "doctype",
+					"name": "HR Accounts Settings",
+					"description": _("Account Settings for HR Accounting")
+				},
+                                				{
+					"type": "doctype",
+					"name": "Employee Benefit Type",
+                                        "description": _("Employee Benefit Types e.g., Transfer and Retirement")
+				},
+				{
+					"type": "doctype",
+					"name": "Maintenance Accounts Settings",
+					"description": _("Account Settings for Maintenance Accounting")
+				},
+				{
+					"type": "doctype",
+					"name": "Projects Accounts Settings",
+					"description": _("Account Settings for Projects Accounting")
+				},
+				{
+					"type": "doctype",
+					"name": "Sales Accounts Settings",
+					"description": _("Account Settings for Sales Accounting")
+				},
+			]
+		},
+		{
+			"label": _("Accounts"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Journal Entry",
+					"description": _("Accounting journal entries.")
+				},
+				{
+					"type": "doctype",
+					"name": "Direct Payment",
+					"description": _("Direct Payment")
+				},
+				{
+					"type": "doctype",
+					"name": "Period Closing Voucher",
+					"description": _("Close Balance Sheet and book Profit or Loss.")
+				},
+                                {
+					"type": "report",
+					"name": "Voucher Summary",
+					"doctype": "Journal Entry",
+					"is_query_report": True,
+                                        "style": {"color":"red"}
+				},
 			]
 		},
 		{
@@ -137,73 +174,33 @@ def get_data():
 				},
 			]
 		},
-		{
-			"label": _("Asset Management"),
+                {
+			"label": _("Imprest Management"),
+			"icon": "icon-cog",
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Asset",
+					"name": "Imprest Type",
+					"description": _("Imprest Types.")
 				},
 				{
 					"type": "doctype",
-					"name": "Asset Modifier Tool",
-					"description": "Asset Addition Tool",
-					"label": "Asset Addition Tool",
-					"hide_count": True
+					"name": "Imprest Receipt",
+					"label": "Receipt Entry",
+					"description": _("Imprest Receipt Entry.")
 				},
 				{
 					"type": "doctype",
-					"name": "Asset Category",
+					"name": "Imprest Recoup",
+					"label": "Recoup Entry",
+					"description": _("Imprest Recoup Entry.")
 				},
-				{
+                                {
 					"type": "report",
-					"name": "Asset Depreciation Ledger",
-					"doctype": "Asset",
+                                        "label": _("Report"),
 					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Asset Depreciations and Balances",
-					"doctype": "Asset",
-					"is_query_report": True,
-				},
-				{
-					"type": "doctype",
-					"name": "Asset Movement",
-					"description": _("Transfer an asset from one warehouse to another")
-				},
-				{
-					"type": "report",
-					"name": "Asset Register",
-					"doctype": "Asset",
-					"is_query_report": True,
-				},
-				{
-					"type" :"report",
-					"name" : "Equipment Register",
-					"doctype" : "Asset",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Property Plant and Equipment",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-					"type": "doctype",
-					"name": "Insurance and Registration",
-					"description": _("Insurance and Registration details for equipments")
-				},
-				{
-					"type": "report",
-					"name": "Employee Asset Report",
-					"doctype": "Asset",
-					"is_query_report": True,
-				},
-				{
-					"type": "doctype",
-					"name": "Bulk Asset Transfer",
+					"name": "Register Imprest",
+					"doctype": "Imprest Receipt"
 				},
 			]
 		},
@@ -388,7 +385,7 @@ def get_data():
                     			"is_query_report": True,
 					"doctype": "Bank Guarantee"
 				},
-				 {
+				{
                                         "type": "doctype",
                                         "name": "Fixed Deposit",
                                 },
@@ -398,105 +395,6 @@ def get_data():
                                         "is_query_report": True,
                                         "doctype": "Fixed Deposit"
                                 },
-                        
-
-			]
-		},
-		{
-			"label": _("Budget"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Budget",
-					"description": _("Define budget for a financial year.")
-				},
-				{
-					"type": "report",
-					"name": "Budget Consumption Report",
-					"is_query_report": True,
-					"doctype": "GL Entry"
-				},
-				{
-					"type": "doctype",
-					"name": "Supplementary Budget",
-					"label": "Supplementary Budget Tool"
-				},
-				{
-					"type": "doctype",
-					"name": "Budget Reappropiation",
-					"label": "Budget Reappropiation Tool"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Supplementary Budget Report",
-					"doctype": "Supplementary Details"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Budget Reappropriation Report",
-					"doctype": "Reappropriation Details"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Committed Budget Report",
-					"doctype": "Committed Budget"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Budget Proposal",
-					"doctype": "Budget"
-				},
-				{
-					"type": "doctype",
-					"name": "Revenue Target",
-				},
-				{
-					"type": "report",
-					"label": _("Revenue Achievement"),
-					"is_query_report": True,
-					"name": "Revenue Target",
-					"doctype": "Revenue Target",
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Revenue Target Proposal",
-					"doctype": "Revenue Target"
-				},
-			]
-		},
-                {
-			"label": _("Imprest Management"),
-			"icon": "icon-cog",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Imprest Type",
-					"description": _("Imprest Types.")
-				},
-				{
-					"type": "doctype",
-					"name": "Imprest Receipt",
-					"label": "Receipt Entry",
-					"description": _("Imprest Receipt Entry.")
-				},
-				{
-					"type": "doctype",
-					"name": "Imprest Recoup",
-					"label": "Recoup Entry",
-					"description": _("Imprest Recoup Entry.")
-				},
-                                {
-					"type": "report",
-                                        "label": _("Report"),
-					"is_query_report": True,
-					"name": "Register Imprest",
-					"doctype": "Imprest Receipt"
-				},
 			]
 		},
 		{
@@ -530,44 +428,53 @@ def get_data():
 					"doctype": "Exchange Rate History",
 					"is_query_report": True
 				},
-				{
-					"type": "doctype",
-					"name": "Employee Benefit Type",
-				},
 			]
 		},
 		{
-			"label": _("Account Settings"),
-			"icon": "icon-cog",
+			"label": _("Other Reports"),
+			"icon": "icon-table",
 			"items": [
 				{
-					"type": "doctype",
-					"name": "Accounts Settings",
-					"description": _("Default settings for accounting transactions.")
+					"type": "report",
+					"name": "Gross Profit",
+					"doctype": "Sales Invoice",
+					"is_query_report": True
 				},
 				{
-					"type": "doctype",
-					"name": "HR Accounts Settings",
-					"description": _("Account Settings for HR Accounting")
+					"type": "report",
+					"name": "Payment Period Based On Invoice Date",
+					"is_query_report": True,
+					"doctype": "Journal Entry"
 				},
 				{
-					"type": "doctype",
-					"name": "Maintenance Accounts Settings",
-					"description": _("Account Settings for Maintenance Accounting")
+					"type": "report",
+					"name": "Item-wise Sales Register",
+					"is_query_report": True,
+					"doctype": "Sales Invoice",
+					"label":"Materialwise Sales Register"
 				},
 				{
-					"type": "doctype",
-					"name": "Projects Accounts Settings",
-					"description": _("Account Settings for Projects Accounting")
+					"type": "report",
+					"name": "Item-wise Purchase Register",
+					"is_query_report": True,
+					"doctype": "Purchase Invoice",
+					"label":"Materialwise Purchase Register"
 				},
 				{
-					"type": "doctype",
-					"name": "Sales Accounts Settings",
-					"description": _("Account Settings for Sales Accounting")
+					"type": "report",
+					"name": "Accounts Receivable Summary",
+					"doctype": "Sales Invoice",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "Accounts Payable Summary",
+					"doctype": "Purchase Invoice",
+					"is_query_report": True
 				},
 			]
 		},
-		{
+                {
 			"label": _("Salary Reports"),
 			"icon": "icon-list",
 			"items": [
@@ -683,50 +590,6 @@ def get_data():
                                 }
 
 
-			]
-		},
-		{
-			"label": _("Other Reports"),
-			"icon": "icon-table",
-			"items": [
-				{
-					"type": "report",
-					"name": "Gross Profit",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Payment Period Based On Invoice Date",
-					"is_query_report": True,
-					"doctype": "Journal Entry"
-				},
-				{
-					"type": "report",
-					"name": "Item-wise Sales Register",
-					"is_query_report": True,
-					"doctype": "Sales Invoice",
-					"label":"Materialwise Sales Register"
-				},
-				{
-					"type": "report",
-					"name": "Item-wise Purchase Register",
-					"is_query_report": True,
-					"doctype": "Purchase Invoice",
-					"label":"Materialwise Purchase Register"
-				},
-				{
-					"type": "report",
-					"name": "Accounts Receivable Summary",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Accounts Payable Summary",
-					"doctype": "Purchase Invoice",
-					"is_query_report": True
-				},
 			]
 		},
 	]

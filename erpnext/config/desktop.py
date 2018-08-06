@@ -277,4 +277,20 @@ def get_data():
 			"icon": "octicon octicon-broadcast",
 			"type": "module",
 		},
+		{
+                        "module_name": "Assets",
+                        "color": "#4286f4",
+                        "icon": "octicon octicon-database",
+                        "hidden": 1,
+                        "label": _("Asset Management"),
+                        "type": "module"
+                },
+                {
+                        "module_name": "Budget",
+                        "color": "#4286f4",
+                        "icon": "octicon octicon-keyboard",
+                        "hidden": 1,
+                        "label": _("Budget Management"),
+                        "type": "module"
+                },
 	]

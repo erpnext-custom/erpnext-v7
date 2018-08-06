@@ -6,7 +6,7 @@ import frappe
 from frappe.utils import flt, cstr, cint
 from frappe import _
 from frappe.model.meta import get_field_precision
-from erpnext.accounts.doctype.budget.budget import validate_expense_against_budget
+from erpnext.budget.doctype.budget.budget import validate_expense_against_budget
 from frappe import msgprint
 
 class StockAccountInvalidTransaction(frappe.ValidationError): pass

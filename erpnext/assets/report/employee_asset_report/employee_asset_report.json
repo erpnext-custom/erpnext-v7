@@ -1,0 +1,33 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2016-09-01 10:53:08.963372", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2018-08-06 20:23:03.495996", 
+ "modified_by": "Administrator", 
+ "module": "Assets", 
+ "name": "Employee Asset Report", 
+ "owner": "Administrator", 
+ "query": "", 
+ "ref_doctype": "Asset", 
+ "report_name": "Employee Asset Report", 
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Employee"
+  }, 
+  {
+   "role": "Asset Manager"
+  }, 
+  {
+   "role": "Asset User"
+  }
+ ]
+}
