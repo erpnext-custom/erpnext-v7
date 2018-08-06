@@ -17,6 +17,9 @@ class TravelAuthorization(Document):
 	def validate(self):
 		if not self.branch:
 			frappe.throw("Setup Branch in Emplpoyee Information and try again")
+		
+		if frappe.db.get_value("Employee", self.employee, "user_id") == self.supervisor:
+                        frappe.throw(_("Invalid supervisor"), title="Invalid Data")
 
 		self.validate_travel_dates()
                 self.check_double_dates()

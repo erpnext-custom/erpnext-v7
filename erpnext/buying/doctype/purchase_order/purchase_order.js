@@ -379,4 +379,13 @@ cur_frm.fields_dict['items'].grid.get_field('uom').get_query = function(frm, cdt
         }
 }
 
+frappe.ui.form.on("Purchase Order","onload", function(frm, cdt, cdn) {
+        var df = frappe.meta.get_docfield("Purchase Order Item","budget_account", cur_frm.doc.name);
+        if(in_list(user_roles, "Purchase Master")) {
+                df.read_only = 0;
+        }
+        else {
+                df.read_only = 1;
+        }       
+}); 
 

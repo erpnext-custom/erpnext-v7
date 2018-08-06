@@ -8,6 +8,8 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 2.0		  SHIV		                   03/08/2018         New fields submitted, submitted_by introduced
+2.0		  SHIV		                   03/08/2018         Removed code for submitted, submitted_by as it is
+                                                                        taken care in frappe template itself.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -84,12 +86,17 @@ class MaterialRequest(BuyingController):
 			self.status = "Draft"
 
                 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following code commented by SHIV on 2018/08/06
+                '''
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
                 # Following code added by SHIV on 2018/08/03
 		if self.docstatus == 0:
                         self.submitted_by = "" if self.submitted_by else self.submitted_by
                         self.submitted    = "" if self.submitted else self.submitted
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-
+                '''
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+                
                 self.docstatus = 2 if self.workflow_state == "Rejected" else self.docstatus
                 
 		from erpnext.controllers.status_updater import validate_status
@@ -131,12 +138,17 @@ class MaterialRequest(BuyingController):
 				break
 
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+        # Following code commented by SHIV on 2018/08/06
+        '''
+        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         # Following code added by SHIV on 2018/08/03
         def before_submit(self):
                 self.submitted_by     = frappe.session.user
                 self.submitted        = now_datetime()
         # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-                
+        '''
+        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+        
 	def on_submit(self):
 		frappe.db.set(self, 'status', 'Submitted')
 		self.update_requested_qty()

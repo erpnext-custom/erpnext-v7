@@ -272,6 +272,12 @@ def get_branch_warehouse(branch):
         wh = frappe.db.get_value("Cost Center", cc, "warehouse")
         return wh
 
+@frappe.whitelist()
+def kick_users():
+        from frappe.sessions import clear_all_sessions
+        clear_all_sessions()
+        frappe.msgprint("Kicked All Out!")
+
 def get_cc_customer(cc):
 	customer = frappe.db.get_value("Customer", {"cost_center": cc}, "name")
 	if not customer:
