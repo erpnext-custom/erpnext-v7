@@ -41,7 +41,7 @@ def get_data(filters):
 			mr.name                             as mr_name,
 			concat_ws('-', mr.branch,'CDCL')    as mr_cost_center,
 			mr.creation_date                    as mr_create_date,
-			date(mr.submitted)                  as mr_submit_date,
+			date(mr.submission)                 as mr_submit_date,
 			mr.workflow_state                   as mr_status,
 			mr.owner                            as mr_owner,
 			case
@@ -51,36 +51,24 @@ def get_data(filters):
 			mr.material_request_type            as mr_type,
 			rq.name                             as rq_name,
 			date(rq.creation)                   as rq_create_date,
-			case
-                            when rq.docstatus = 1 then date(rq.modified)
-                            else ''
-                        end                                 as rq_submit_date,
+			date(rq.submission)                 as rq_submit_date,
 			rq.status                           as rq_status,
 			rq.owner                            as rq_owner,
 			po.name                             as po_name,
 			date(po.creation)                   as po_create_date,
-			case
-                            when po.docstatus = 1 then date(po.modified)
-                            else ''
-                        end                                 as po_submit_date,
+			date(po.submission)                 as po_submit_date,
 			po.status                           as po_status,
 			po.owner                            as po_owner,
 			po.modified_by                      as po_modified_by,
 			pr.name                             as pr_name,
 			date(pr.creation)                   as pr_create_date,
-			case
-                            when pr.docstatus = 1 then date(pr.modified)
-                            else ''
-                        end                                 as pr_submit_date,
+			date(pr.submission)                 as pr_submit_date,
 			pr.status                           as pr_status,
 			pr.owner                            as pr_owner,
 			pr.modified_by                      as pr_modified_by,
 			pi.name                             as pi_name,
 			date(pi.creation)                   as pi_create_date,
-			case
-                            when pi.docstatus = 1 then date(pi.modified)
-                            else ''
-                        end                                 as pi_submit_date,
+			date(pi.submission)                 as pi_submit_date,
 			case
                             when pi.is_return = 1 then "Return"
                             when pi.is_return = 0 and pi.outstanding_amount > 0 and pi.docstatus = 1 and datediff(pi.due_date, curdate())<0 then "Overdue"

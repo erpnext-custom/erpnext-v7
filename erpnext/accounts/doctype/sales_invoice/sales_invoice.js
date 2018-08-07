@@ -295,7 +295,17 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 			this.frm.set_value("void_amount", this.frm.doc.void_rate * .01 * (this.frm.doc.total + this.frm.doc.total_loading_amount))
 		}
 		this.frm.refresh_fields();
-	}
+	},
+
+	"discount_or_cost_amount": function(frm) {
+                cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges))
+                cur_frm.refresh_field("discount_amount")
+        },
+
+        "transportation_charges": function(frm) {
+                cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges))
+                cur_frm.refresh_field("discount_amount")
+        }
 });
 
 // for backward compatibility: combine new and previous states

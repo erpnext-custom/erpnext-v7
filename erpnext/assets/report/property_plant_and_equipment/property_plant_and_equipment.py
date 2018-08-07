@@ -25,8 +25,9 @@ def get_accounts(filters):
 		g_open = flt(gross_opening.debit) - flt(gross_opening.credit)
 		g_total = g_open + flt(gross.debit) - flt(gross.credit)
 		d_open = -1 * (flt(dep_opening.debit) - flt(dep_opening.credit))
-		dep_adjust = flt(dep.credit) + flt(acc_dep.debit)
-		d_total = d_open + flt(dep.debit) - flt(dep_adjust)
+		dep_adjust = flt(acc_dep.debit)
+		dep_addition = flt(acc_dep.credit)
+		d_total = d_open + dep_addition - flt(dep_adjust)
 
 		row = {
 			"asset_category": a.name,
@@ -35,7 +36,7 @@ def get_accounts(filters):
 			"gross_adjustment": gross.credit,
 			"gross_total": g_total,
 			"dep_opening": d_open,
-			"dep_addition": dep.debit,
+			"dep_addition": dep_addition,
 			"dep_adjustment": dep_adjust,
 			"dep_total": d_total,
 			"net_block": flt(g_total) - flt(d_total) 

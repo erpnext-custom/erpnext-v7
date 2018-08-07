@@ -122,7 +122,16 @@ erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend(
 
 	reopen_delivery_note : function() {
 		cur_frm.cscript.update_status("Submitted")
-	}
+	},
+	"discount_or_cost_amount": function(frm) {
+                cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges))
+                cur_frm.refresh_field("discount_amount")
+        },
+
+        "transportation_charges": function(frm) {
+                cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges))
+                cur_frm.refresh_field("discount_amount")
+        }
 
 });
 

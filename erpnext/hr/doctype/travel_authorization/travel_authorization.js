@@ -34,13 +34,18 @@ frappe.ui.form.on('Travel Authorization', {
 			frm.toggle_display("document_status", frm.doc.docstatus==0);
 			frm.toggle_reqd("document_status", frm.doc.docstatus==0);
 		}
-		if (frm.doc.docstatus == 1 && !frm.doc.travel_claim && frm.doc.end_date_auth < get_today() && frm.doc.document_status == "Approved") {
+		
+		if (frm.doc.docstatus == 1 && !frm.doc.travel_claim && frm.doc.document_status == "Approved") {
 			frm.add_custom_button("Create Travel Claim", function() {
-				frappe.model.open_mapped_doc({
-					method: "erpnext.hr.doctype.travel_authorization.travel_authorization.make_travel_claim",
-					frm: cur_frm
-				})
-			});
+				if(frm.doc.end_date_auth < get_today()){
+					frappe.model.open_mapped_doc({
+						method: "erpnext.hr.doctype.travel_authorization.travel_authorization.make_travel_claim",
+						frm: cur_frm
+					})
+				} else {
+					frappe.msgprint(__('Claim is allowed only after travel completion date i.e., {0}', [frm.doc.end_date_auth]));
+				}
+			}).addClass((frm.doc.end_date_auth < get_today()) ? "btn-success" : "btn-danger");
 		}
 
 		if(frm.doc.docstatus == 1) {

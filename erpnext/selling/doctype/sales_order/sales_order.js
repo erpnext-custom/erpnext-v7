@@ -32,6 +32,15 @@ frappe.ui.form.on("Sales Order", {
 			}
 		}*/
 	},
+	"discount_or_cost_amount": function(frm) {
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges))
+		cur_frm.refresh_field("discount_amount")
+	},
+
+	"transportation_charges": function(frm) {
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges))
+		cur_frm.refresh_field("discount_amount")
+	}
 });
 
 /*
@@ -301,10 +310,16 @@ frappe.ui.form.on("Sales Order", "refresh", function(frm) {
 
 //Set select option for "Initial Stock Templates"
 cur_frm.fields_dict['selling_price_template'].get_query = function(doc, dt, dn) {
+  /*
   return {
      query: "erpnext.stock.doctype.stock_price_template.stock_price_template.get_template_list",
      filters: { naming_series: doc.naming_series, posting_date: doc.transaction_date, purpose: 'Sales' },
      searchfield: ["template_name", "from_date", "to_date"]
+  };
+  */
+  return {
+     query: "erpnext.stock.doctype.stock_price_template.stock_price_template.get_template_list",
+     filters: { naming_series: doc.naming_series, posting_date: doc.transaction_date, purpose: 'Sales' }
   };
 }
 

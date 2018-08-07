@@ -81,7 +81,8 @@ class TravelAuthorization(Document):
 			frappe.throw("Cannot change once claim is created")
 		self.validate_travel_dates()
                 self.check_double_dates()
-                self.assign_end_date()
+                #self.assign_end_date()
+                self.db_set("end_date_auth", self.items[len(self.items) - 1].date)
 		self.cancel_attendance()
 		self.create_attendance()
 

@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		  SSK		                   07/08/2018         Code changed to take work with search fileds
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe import _
+from frappe.desk.reportview import get_match_cond
 
 class StockPriceTemplate(Document):
 	pass
@@ -28,6 +36,9 @@ def get_template_list(doctype, txt, searchfield, start, page_len, filters):
 		""".format(filters['posting_date'],filters['naming_series'],filters['purpose']))
 		'''
 
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following code commented and subsequent added by SHIV on 2018/08/07
+                '''
 		res = frappe.db.sql("""
 			select
 				name,
@@ -46,9 +57,52 @@ def get_template_list(doctype, txt, searchfield, start, page_len, filters):
 				group by item_code
 			)
 		""".format(filters['posting_date'],filters['naming_series'],filters['purpose']))
+                '''
 
+                res = frappe.db.sql("""
+			select 
+				name,
+				template_name,
+				rate_amount,
+				from_date,
+				to_date,
+				item_code,
+				item_name
+			from `tabStock Price Template` 
+			where %(posting_date)s between from_date and to_date 
+			and naming_series = %(naming_series)s 
+			and docstatus = 1 
+			and purpose= %(purpose)s
+			and (
+                                {key} like %(txt)s
+                                or
+                                template_name like %(txt)s
+                                or
+                                item_code like %(txt)s
+                        )
+                        {mcond}
+			order by
+                                if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
+                                if(locate(%(_txt)s, template_name), locate(%(_txt)s, template_name), 99999),
+                                if(locate(%(_txt)s, item_code), locate(%(_txt)s, item_code), 99999),
+                                idx desc,
+                                creation desc
+                        limit %(start)s, %(page_len)s
+		""".format(**{
+                                'key': searchfield,
+                                'mcond': get_match_cond(doctype)
+                }),
+                {
+			"txt": "%%%s%%" % txt,
+			"_txt": txt.replace("%", ""),
+			"start": start,
+			"page_len": page_len,
+                        "posting_date": filters['posting_date'],
+                        "naming_series": filters['naming_series'],
+                        "purpose": filters['purpose']
+		})
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
-		#frappe.msgprint(_("{0}").format(res))
 		return res;
 	
 

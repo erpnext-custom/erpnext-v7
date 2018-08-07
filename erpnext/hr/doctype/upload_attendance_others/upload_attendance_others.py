@@ -162,6 +162,7 @@ def upload():
 
 	from frappe.utils.csvutils import check_record, import_doc
 
+	frappe.msgprint("Started Parsing")
 	for i, row in enumerate(rows[4:]):
 		if not row: continue
 		try:
@@ -214,4 +215,5 @@ def upload():
 		frappe.db.rollback()
 	else:
 		frappe.db.commit()
+		frappe.msgprint("DONE")
 	return {"messages": ret, "error": error}
