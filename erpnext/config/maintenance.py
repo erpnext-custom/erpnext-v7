@@ -2,34 +2,9 @@ from frappe import _
 def get_data():
 	return [
 		{
-			"label": _("Maintenance Transaction"),
+			"label": _("Master Data"),
 			"icon": "icon-star",
 			"items": [
-				{
-					"type": "doctype",
-					"name": "Break Down Report",
-					"description": _("Break Down Reports"),
-				},
-				{
-					"type": "doctype",
-					"name": "Job Card",
-					"description": _("Create Job Card"),
-				},
-				{
-					"type": "doctype",
-					"name": "Mechanical Payment",
-					"description": _("Create Payment"),
-				},
-			]
-		},
-		{
-			"label": _("Mechanical Service Master"),
-			"icon": "icon-star",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Mechanical Settings",
-				},
 				{
 					"type": "doctype",
 					"name": "Equipment",
@@ -61,6 +36,16 @@ def get_data():
 					"label": "Services List",
 					"description": _("Services"),
 				},
+			]
+		},
+		{
+			"label": _("Settings and Tools"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Mechanical Settings",
+				},
 				{
 					"type": "doctype",
 					"name": "Hire Charge Parameter",
@@ -78,6 +63,27 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "HSD Adjustment",
+					"description": _("Create Payment"),
+				},
+			]
+		},
+		{
+			"label": _("Maintenance Transaction"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Break Down Report",
+					"description": _("Break Down Reports"),
+				},
+				{
+					"type": "doctype",
+					"name": "Job Card",
+					"description": _("Create Job Card"),
+				},
+				{
+					"type": "doctype",
+					"name": "Mechanical Payment",
 					"description": _("Create Payment"),
 				},
 			]
@@ -210,6 +216,12 @@ def get_data():
 					"label": "Equipment Status (Details)",
 					"doctype": "Equipment"
 				},
+			]
+		},
+		{
+			"label": _("POL Reports"),
+			"icon": "icon-star",
+			"items": [
 				{
 					"type": "report",
 					"is_query_report": True,

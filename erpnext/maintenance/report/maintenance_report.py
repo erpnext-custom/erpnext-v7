@@ -6,11 +6,11 @@ from frappe.utils import flt, cint,add_days, cstr, flt, getdate, nowdate, rounde
 ##
 # Both recieved and issued pols can be queried with this
 ##
-def get_pol_till(purpose, equipment, date, pol_type=None, own_cc=None):
-	if not equipment or not date:
+def get_pol_till(purpose, equipment, posting_date, pol_type=None, own_cc=None, posting_time="24:00"):
+	if not equipment or not posting_date:
 		frappe.throw("Equipment and Till Date are Mandatory")
 	total = 0
-	query = "select sum(qty) as total from `tabPOL Entry` where docstatus = 1 and type = \'"+str(purpose)+"\' and equipment = \'" + str(equipment) + "\' and date <= \'" + str(date) + "\'"
+	query = "select sum(qty) as total from `tabPOL Entry` where docstatus = 1 and type = \'"+str(purpose)+"\' and equipment = \'" + str(equipment) + "\' and concat(date, ' ' , posting_time) <= \'" + str(posting_date) + " " + str(posting_time) + "\'"
 	if pol_type:
 		query += " and pol_type = \'" + str(pol_type) + "\'"
 	if own_cc:
@@ -42,10 +42,10 @@ def get_pol_between(purpose, equipment, from_date, to_date, pol_type=None, own_c
 ##
 # Get consumed POl as per yardstick
 ##
-def get_pol_consumed_till(equipment, date):
-	if not equipment or not date:
+def get_pol_consumed_till(equipment, posting_date, posting_time="24:00"):
+	if not equipment or not posting_date:
                 frappe.throw("Equipment and Till Date are Mandatory")
-	pol = frappe.db.sql("select sum(consumption) as total from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s", (equipment, date), as_dict=True)
+	pol = frappe.db.sql("select sum(consumption) as total from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and concat(to_date, ' ', to_time) <= %s", (equipment, str(posting_date) + " " + str(posting_time)), as_dict=True)
 	if pol:
 		return pol[0].total
 	else:

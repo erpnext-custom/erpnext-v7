@@ -52,7 +52,8 @@ def make_adjustment_entry(source_name, target_doc=None):
                         },
                         "field_map": [
                                 ["name", "revenue_target"],
-                                ["tot_net_target_amount", "tot_target_amount"]
+                                ["tot_net_target_amount", "tot_target_amount"],
+                                [0, "tot_adjustment_amount"]
                         ]
                 },
                 "Revenue Target Account": {
@@ -61,6 +62,7 @@ def make_adjustment_entry(source_name, target_doc=None):
                                 ["parent", "revenue_target"],
                                 ["name", "revenue_target_item"],
                                 ["net_target_amount", "target_amount"],
+                                [0, "adjustment_amount"],
                                 ["cost_center", "original_cost_center"],
                                 ["account", "original_account"],
                                 ["account_code", "original_account_code"],

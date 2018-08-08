@@ -326,6 +326,7 @@ class POL(StockController):
 		con.pol_type = self.pol_type
 		con.branch = self.equipment_branch
 		con.date = self.posting_date
+		con.posting_time = self.posting_time
 		con.qty = self.qty
 		con.reference_type = "POL"
 		con.reference_name = self.name
@@ -342,6 +343,7 @@ class POL(StockController):
 			con1.pol_type = self.pol_type
 			con1.branch = self.equipment_branch
 			con1.date = self.posting_date
+			con1.posting_time = self.posting_time
 			con1.qty = self.qty
 			con1.reference_type = "POL"
 			con1.reference_name = self.name
@@ -357,6 +359,7 @@ class POL(StockController):
 				con2.pol_type = self.pol_type
 				con2.branch = self.equipment_branch
 				con2.date = self.posting_date
+				con2.posting_time = self.posting_time
 				con2.qty = self.qty
 				con2.reference_type = "POL"
 				con2.reference_name = self.name

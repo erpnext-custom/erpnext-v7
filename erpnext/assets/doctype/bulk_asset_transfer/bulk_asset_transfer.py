@@ -7,6 +7,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from erpnext.accounts.utils import make_asset_transfer_gl
+from erpnext.assets.asset_utils import check_valid_asset_transfer
 
 class BulkAssetTransfer(Document):
 	def on_submit(self):
@@ -17,17 +18,19 @@ class BulkAssetTransfer(Document):
 			frappe.throw("The custodian doesn't have Cost Center and Branch defined in Employee Master")
 
 		for a in self.items:
+			check_valid_asset_transfer(a.asset_code, self.posting_date)
 			doc = frappe.get_doc("Asset", a.asset_code)
 			doc.db_set("issued_to", self.custodian)
-			doc.db_set("cost_center", self.custodian_cost_center)
-			doc.db_set("branch", self.custodian_branch)
-
-			equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code, "docstatus": 1}, "name")
-			if equipment:
-				doc = frappe.get_doc("Equipment", equipment)
-				doc.db_set("branch", self.custodian_branch)
 
 			if a.cost_center != self.custodian_cost_center:
+				doc.db_set("cost_center", self.custodian_cost_center)
+				doc.db_set("branch", self.custodian_branch)
+				equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code, "docstatus": 1}, "name")
+				if equipment:
+					equip = frappe.get_doc("Equipment", equipment)
+					equip.branch = self.custodian_branch
+					equip.save()
+					#doc.db_set("branch", self.custodian_branch)
 				pass #make_asset_transfer_gl(self, a.asset_code, self.posting_date, a.cost_center, self.custodian_cost_center)
 
 	def get_assets(self):
@@ -51,15 +54,18 @@ class BulkAssetTransfer(Document):
 
 	def reverse_asset_assignment(self):
 		for a in self.items:
+			check_valid_asset_transfer(a.asset_code, self.posting_date)
 			doc = frappe.get_doc("Asset", a.asset_code)
 			doc.db_set("issued_to", a.custodian)
-			doc.db_set("cost_center", a.cost_center)
-			doc.db_set("branch", frappe.db.get_value("Cost Center", a.cost_center, "branch"))
 
-			equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code, "docstatus": 1}, "name")
-			if equipment:
-				doc = frappe.get_doc("Equipment", equipment)
+			if a.cost_center != self.custodian_cost_center:
+				doc.db_set("cost_center", a.cost_center)
 				doc.db_set("branch", frappe.db.get_value("Cost Center", a.cost_center, "branch"))
+				equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code, "docstatus": 1}, "name")
+				if equipment:
+					equip = frappe.get_doc("Equipment", equipment)
+					equip.branch = frappe.db.get_value("Cost Center", a.cost_center, "branch")
+					equip.save()
 
 	def delete_gl_entries(self):
 		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", self.name)

@@ -8,6 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from erpnext.accounts.utils import make_asset_transfer_gl
 from frappe.utils import getdate, nowdate
+from erpnext.assets.asset_utils import check_valid_asset_transfer
 
 class AssetMovement(Document):
 	def validate(self):
@@ -47,6 +48,7 @@ class AssetMovement(Document):
 			frappe.throw(_("Source and Target Custodian cannot be same"))
 	
 	def on_submit(self):
+		check_valid_asset_transfer(self.asset, self.posting_date)
 		if not self.target_custodian and not self.target_cost_center:
 			frappe.throw("Target Custodian or Cost Center is Mandatory")
 		if self.target_warehouse:
@@ -61,13 +63,14 @@ class AssetMovement(Document):
 			#make_asset_transfer_gl(self, self.asset, self.posting_date, self.current_cost_center, self.target_cost_center)
 		
 	def on_cancel(self):
+		check_valid_asset_transfer(self.asset, self.posting_date)
 		self.check_depreciation_done()
 		if self.target_warehouse:
 			self.set_latest_warehouse_in_asset()
 		if self.target_custodian:
-			self.set_latest_custodian_in_asset()
+			self.set_latest_custodian_in_asset(True)
 		if self.target_cost_center:	
-			self.set_latest_cc_in_asset()
+			self.set_latest_cc_in_asset(True)
 		self.cancel_gl_entries()
 
 	def check_depreciation_done(self):
@@ -99,45 +102,57 @@ class AssetMovement(Document):
 		
 		frappe.db.set_value("Asset", self.asset, "warehouse", warehouse)
 	
-	def set_latest_custodian_in_asset(self):
-		latest_movement_entry = frappe.db.sql("""select target_custodian from `tabAsset Movement`
-			where asset=%s and docstatus=1 and company=%s
-			order by posting_date desc limit 1""", (self.asset, self.company))
-		
-		if latest_movement_entry:
-			custodian = latest_movement_entry[0][0]
+	def set_latest_custodian_in_asset(self, cancel=None):
+		#latest_movement_entry = frappe.db.sql("""select target_custodian from `tabAsset Movement`
+		#	where asset=%s and docstatus=1 and company=%s
+		#	order by posting_date desc limit 1""", (self.asset, self.company))
+		#
+		#if latest_movement_entry:
+		#	custodian = latest_movement_entry[0][0]
+		#else:
+		#	custodian = frappe.db.sql("""select source_custodian from `tabAsset Movement`
+		#		where asset=%s and docstatus=2 and company=%s
+		#		order by posting_date asc limit 1""", (self.asset, self.company))[0][0]
+		if cancel:
+			custodian = self.source_custodian	
 		else:
-			custodian = frappe.db.sql("""select source_custodian from `tabAsset Movement`
-				where asset=%s and docstatus=2 and company=%s
-				order by posting_date asc limit 1""", (self.asset, self.company))[0][0]
-	
-		frappe.db.set_value("Asset", self.asset, "issued_to", custodian)
-		frappe.db.set_value("Asset", self.asset, "cost_center", frappe.db.get_value("Employee", custodian, "cost_center"))
-		frappe.db.set_value("Asset", self.asset, "branch", frappe.db.get_value("Employee", custodian, "branch"))
-		
-		equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
-		if equipment:
-			doc = frappe.get_doc("Equipment", equipment)
-			doc.db_set("branch", frappe.db.get_value("Employee", custodian, "branch"))
+			custodian = self.target_custodian
 
-	def set_latest_cc_in_asset(self):
-		latest_movement_entry = frappe.db.sql("""select target_cost_center from `tabAsset Movement`
-			where asset=%s and docstatus=1 and company=%s
-			order by posting_date desc limit 1""", (self.asset, self.company))
+		frappe.db.set_value("Asset", self.asset, "issued_to", custodian)
 		
-		if latest_movement_entry:
-			cc = latest_movement_entry[0][0]
+		if self.current_cost_center != self.target_custodian_cost_center:
+			frappe.db.set_value("Asset", self.asset, "cost_center", frappe.db.get_value("Employee", custodian, "cost_center"))
+			frappe.db.set_value("Asset", self.asset, "branch", frappe.db.get_value("Employee", custodian, "branch"))
+			
+			equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
+			if equipment:
+				equip = frappe.get_doc("Equipment", equipment)
+				equip.branch = frappe.db.get_value("Employee", custodian, "branch")
+				equip.save()
+
+	def set_latest_cc_in_asset(self, cancel=None):
+		#latest_movement_entry = frappe.db.sql("""select target_cost_center from `tabAsset Movement`
+		#	where asset=%s and docstatus=1 and company=%s
+		#	order by posting_date desc limit 1""", (self.asset, self.company))
+		#
+		#if latest_movement_entry:
+		#	cc = latest_movement_entry[0][0]
+		#else:
+		#	cc = frappe.db.sql("""select current_cost_center from `tabAsset Movement`
+		#		where asset=%s and docstatus=2 and company=%s
+		#		order by posting_date asc limit 1""", (self.asset, self.company))[0][0]
+		if cancel:
+			cc = self.current_cost_center
 		else:
-			cc = frappe.db.sql("""select current_cost_center from `tabAsset Movement`
-				where asset=%s and docstatus=2 and company=%s
-				order by posting_date asc limit 1""", (self.asset, self.company))[0][0]
-		
+			cc = self.target_cost_center
+
 		frappe.db.set_value("Asset", self.asset, "cost_center", cc)
 		frappe.db.set_value("Asset", self.asset, "branch", frappe.db.get_value("Cost Center", cc, "branch"))
 
 		equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
 		if equipment:
-			doc = frappe.get_doc("Equipment", equipment)
-			doc.db_set("branch", frappe.db.get_value("Cost Center", cc, "branch"))
+			equip = frappe.get_doc("Equipment", equipment)
+			equip.branch =  frappe.db.get_value("Cost Center", cc, "branch")
+			equip.save()
 
 

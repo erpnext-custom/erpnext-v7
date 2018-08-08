@@ -121,6 +121,7 @@ class ImprestRecoup(AccountsController):
                 entries         = {}
                 accounts        = []
                 total_amount    = 0.0
+                account_type    = frappe.db.get_value("Account", self.settlement_account, "account_type") if not self.settlement_account_type else self.settlement_account_type
                 #self.posting_date = nowdate()
 
                 '''
@@ -140,7 +141,19 @@ class ImprestRecoup(AccountsController):
                                 entries[i.budget_account]  = {"type": "debit", "amount": flt(i.amount)}
 
                 #entries[rev_gl.revenue_bank_account] = {"type": "credit", "amount": flt(total_amount)}
-                entries[self.revenue_bank_account] = {"type": "credit", "amount": flt(total_amount)}
+                if self.final_settlement:
+                        if not self.settlement_account:
+                                frappe.throw(_("Settlement Account cannot be blank for final settlement."), title="Missing Data")
+
+                        if account_type != "Payable" and account_type != "Receivable" and self.party:
+                                frappe.throw(_("Party is not allowed against Non-payable or Non-receivable accounts."), title="Invalid Data")
+
+                        if (account_type == "Payable" or account_type == "Receivable") and not self.party:
+                                frappe.throw(_("Party is mandatory."), title="Missing Data")
+
+                        entries[self.settlement_account] = {"type": "credit", "amount": flt(total_amount)}
+                else:
+                        entries[self.revenue_bank_account] = {"type": "credit", "amount": flt(total_amount)}
 
                 for gl in entries:
                         gl_entries.append(
@@ -152,7 +165,10 @@ class ImprestRecoup(AccountsController):
                                        "voucher_type": self.doctype,
                                        "cost_center": self.cost_center,
                                        "company": self.company,
-                                       "remarks": self.branch
+                                       "remarks": self.branch,
+                                       "against": self.party or self.pay_to_recd_from,
+                                       "party_type": self.party_type if self.final_settlement and entries[gl]["type"] == "credit" else "",
+                                       "party": self.party if self.final_settlement and entries[gl]["type"] == "credit" else ""
                                 })
                         )
                 

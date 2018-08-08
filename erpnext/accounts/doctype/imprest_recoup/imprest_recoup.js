@@ -2,6 +2,7 @@
 // For license information, please see license.txt
 
 cur_frm.add_fetch("branch","expense_bank_account","revenue_bank_account");
+cur_frm.add_fetch("settlement_account","account_type","settlement_account_type");
 
 frappe.ui.form.on('Imprest Recoup', {
 	setup: function(frm) {
@@ -80,6 +81,12 @@ frappe.ui.form.on('Imprest Recoup', {
 				]
 			}
 		});
+		
+		cur_frm.set_query("party_type", function(){
+			return {
+				filters: {"name": ["in", ["Customer", "Supplier","Employee"]]}
+			}
+		});
 	},
 	branch: function(frm){
 		// Update totals
@@ -141,6 +148,21 @@ frappe.ui.form.on('Imprest Recoup', {
 			});
 		}
 	},
+	final_settlement: function(frm){
+		enable_disable(frm);
+	},
+	settlement_account: function(frm){
+		enable_disable(frm);
+	},
+	settlement_account_type: function(frm){
+		enable_disable(frm);
+	},
+	party_type: function(frm){
+		enable_disable(frm);
+	},
+	party: function(frm){
+		enable_disable(frm);
+	}
 });
 
 frappe.ui.form.on('Imprest Recoup Item',{
@@ -211,7 +233,7 @@ cur_frm.cscript.custom_before_submit = function(frm){
 */
 
 function enable_disable(frm){
-	var toggle_fields = ["revenue_bank_account","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
+	var toggle_fields = ["final_settlement","settlement_account","party_type","party","revenue_bank_account","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
 	var other_fields  = ["company","title","branch","imprest_type","remarks","notes"];
 	
 	toggle_fields.forEach(function(field_name){
@@ -242,7 +264,20 @@ function enable_disable(frm){
 				frm.set_df_property(field_name,"read_only",0);
 			});
 			
-			frm.toggle_reqd(["revenue_bank_account","pay_to_recd_from", "cheque_no", "cheque_date"], 1);
+			if(frm.doc.final_settlement){
+				frm.toggle_reqd(["settlement_account"], 1);
+				frm.toggle_display(["settlement_account","party_type", "party"], 1);
+				frm.toggle_reqd(["revenue_bank_account","pay_to_recd_from", "cheque_no", "cheque_date"], 0);
+			} else {
+				frm.toggle_reqd(["settlement_account","party_type", "party"], 0);
+				frm.toggle_display(["settlement_account","party_type", "party"], 0);
+				frm.toggle_reqd(["revenue_bank_account","pay_to_recd_from", "cheque_no", "cheque_date"], 1);
+			}
+			
+			frm.toggle_reqd(["party_type", "party"], 0);
+			if(frm.doc.settlement_account_type && (frm.doc.settlement_account_type === "Payable" || frm.doc.settlement_account_type === "Receivable")){
+				frm.toggle_reqd(["party_type", "party"], 1);
+			}
 		}
 	}
 	else {

@@ -4,7 +4,7 @@ from frappe import _
 def get_data():
 	return [
 		{
-			"label": _("Stock Transactions"),
+			"label": _("Transactions"),
 			"items": [
 				{
 					"type": "doctype",
@@ -34,7 +34,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Stock Master"),
+			"label": _("Master Data"),
 			"items": [
 				{
 					"type": "doctype",
@@ -87,7 +87,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Stock Tools"),
+			"label": _("Tools"),
 			"icon": "icon-wrench",
 			"items": [
 				{
@@ -115,7 +115,7 @@ def get_data():
 			]
 		},
                 {
-			"label": _("Stock Reports"),
+			"label": _("Reports"),
 			"items": [
                                 {
 					"type": "report",

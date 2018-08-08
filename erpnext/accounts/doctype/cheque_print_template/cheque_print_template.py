@@ -20,6 +20,8 @@ class ChequePrintTemplate(Document):
 
 @frappe.whitelist()
 def create_or_update_cheque_print_format(template_name, doctype_name=''):
+        party = ""
+        amount = ""
         if not doctype_name:
                 frappe.throw(_("Please select a valid doctype."))
                 
@@ -42,6 +44,13 @@ def create_or_update_cheque_print_format(template_name, doctype_name=''):
                 'YYYY-MM-DD': 'YYYY-MM-dd',
                 'DDMMYYYY': 'ddMMYYYY'
         }[doc.date_formats]
+
+        if doc.doctype_name == "Payment Entry":
+                party = "doc.party"
+        elif doc.doctype_name == "HSD Payment":
+                party = "doc.supplier"
+        else:
+                party = "doc.pay_to_recd_from"
 
 	cheque_print.html = """
 <div style="position: relative; top:{starting_position_from_top_edge}cm; font-size:15px;">
@@ -74,6 +83,10 @@ def create_or_update_cheque_print_format(template_name, doctype_name=''):
 				<!-- {{frappe.utils.money_in_words(doc.base_paid_amount or doc.base_received_amount)}} -->
 				{{%- if doc.doctype == 'Payment Entry' -%}}
                                         {{{{frappe.utils.money_in_words(doc.base_paid_amount or doc.base_received_amount)[3:]}}}}
+                                {{%- elif doc.doctype == 'Imprest Recoup' -%}}
+                                        {{{{frappe.utils.money_in_words(doc.purchase_amount)[3:]}}}}
+                                {{%- elif doc.doctype == 'HSD Payment' -%}}
+                                        {{{{frappe.utils.money_in_words(doc.amount)[3:]}}}}
 				{{%- else -%}}
                                         {{% set total_amount = [0] %}}
                                         {{%- for row in doc.accounts -%}}
@@ -90,6 +103,10 @@ def create_or_update_cheque_print_format(template_name, doctype_name=''):
 			{{%- if doc.doctype == 'Payment Entry' -%}}
                                 <!-- {{{{doc.get_formatted("base_paid_amount") or doc.get_formatted("base_received_amount")}}}} -->
                                 {{{{ '{{0:,.2f}}'.format(doc.base_paid_amount) if doc.base_paid_amount else '{{0:,.2f}}'.format(doc.base_received_amount) }}}}
+                        {{%- elif doc.doctype == 'Imprest Recoup' -%}}
+                                {{{{ '{{0:,.2f}}'.format(doc.purchase_amount) }}}}
+                        {{%- elif doc.doctype == 'HSD Payment' -%}}
+                                {{{{ '{{0:,.2f}}'.format(doc.amount) }}}}
                         {{%- else -%}}
                                 {{{{ '{{0:,.2f}}'.format(total_amount[0]) }}}}
                         {{%- endif -%}}
@@ -120,12 +137,12 @@ def create_or_update_cheque_print_format(template_name, doctype_name=''):
 		amt_in_figures_from_left_edge= doc.amt_in_figures_from_left_edge,
 		signatory_from_top_edge= doc.signatory_from_top_edge,
 		signatory_from_left_edge= doc.signatory_from_left_edge,
-                party= 'doc.party' if doc.doctype_name == 'Payment Entry' else 'doc.pay_to_recd_from',
+                party= party,
                 date_formats= date_formats,
                 date_letter_spacing= doc.date_letter_spacing
 	)
 	# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-	
+
 	cheque_print.save(ignore_permissions=True)
 	
 	frappe.db.set_value("Cheque Print Template", template_name, "has_print_format", 1)

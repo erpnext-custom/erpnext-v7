@@ -148,6 +148,7 @@ class EquipmentPOLTransfer(Document):
 			con.branch = self.from_branch
 			con.pol_type = self.pol_type
 			con.date = self.posting_date
+			con.posting_time = self.posting_time
 			con.qty = -1 * flt(self.qty)
 			con.reference_type = "Equipment POL Transfer"
 			con.reference_name = self.name
@@ -163,6 +164,7 @@ class EquipmentPOLTransfer(Document):
 			to.is_opening = 0
 			to.pol_type = self.pol_type
 			to.date = self.posting_date
+			to.posting_time = self.posting_time
 			to.qty = self.qty
 			to.reference_type = "Equipment POL Transfer"
 			to.reference_name = self.name

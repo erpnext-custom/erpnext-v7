@@ -4,7 +4,7 @@ from frappe import _
 def get_data():
 	return [
 		{
-			"label": _("Selling - Transactions"),
+			"label": _("Transactions"),
 			"icon": "icon-star",
 			"items": [
 				{
@@ -31,7 +31,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Selling Master"),
+			"label": _("Master Data"),
 			"items": [
 				{
 					"type": "doctype",
@@ -60,7 +60,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Selling Reports"),
+			"label": _("Reports"),
 			"icon": "icon-list",
 			"items": [
 				#{

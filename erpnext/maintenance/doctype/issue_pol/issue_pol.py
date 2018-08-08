@@ -262,6 +262,7 @@ class IssuePOL(StockController):
 			con.pol_type = self.pol_type
 			con.branch = self.branch
 			con.date = self.posting_date
+			con.posting_time = self.posting_time
 			con.qty = self.total_quantity
 			con.reference_type = "Issue POL"
 			con.reference_name = self.name
@@ -280,6 +281,7 @@ class IssuePOL(StockController):
 			con.pol_type = self.pol_type
 			con.branch = a.equipment_branch
 			con.date = self.posting_date
+			con.posting_time = self.posting_time
 			con.qty = a.qty
 			con.reference_type = "Issue POL"
 			con.reference_name = self.name
