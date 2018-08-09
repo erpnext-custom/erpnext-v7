@@ -23,7 +23,7 @@ def get_data(query, filters=None):
 		if filters.own_cc:
 			own_cc = 1
 		d.drawn = get_pol_between("Receive", d.name, filters.from_date, filters.to_date, d.hsd_type, own_cc)
-		received_till = get_pol_till("Receive", d.name, add_days(getdate(filters.from_date), -1), d.hsd_type, own_cc)
+		received_till = get_pol_till("Receive", d.name, add_days(getdate(filters.from_date), -1), d.hsd_type)
 		consumed_till = get_pol_consumed_till(d.name, add_days(getdate(filters.from_date), -1))
 		consumed_till_end = get_pol_consumed_till(d.name, filters.to_date)
 		d.consumed = flt(consumed_till_end) - flt(consumed_till)

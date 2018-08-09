@@ -11,6 +11,7 @@ from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 class VehicleLogbook(Document):
 	def validate(self):
 		check_future_date(self.to_date)
+		self.set_data()
 		self.check_dates()
 		self.check_double_vl()
 		self.check_hire_form()
@@ -20,6 +21,12 @@ class VehicleLogbook(Document):
 		self.calculate_totals()
 		self.update_operator()
 		self.check_consumed()	
+
+	def set_data(self):
+		if not self.ehf_name:
+			frappe.throw("Equipment Hire Form is mandatory")
+		self.customer_type = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "private")
+		self.customer = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "customer")
 
 	def check_consumed(self):
 		if self.include_hour or self.include_km:
@@ -191,8 +198,7 @@ class VehicleLogbook(Document):
 		no_own_fuel_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type"), "no_own_tank")
 		if no_own_fuel_tank:
 			return
-		customer = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "private")
-		if customer == "CDCL":
+		if self.customer_type == "CDCL":
 			if flt(self.consumption_km) == 0 and flt(self.consumption_hours) == 0 and flt(self.consumption) == 0:
 				self.check_condition()	
 		else:

@@ -14,6 +14,7 @@ from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 class JobCard(AccountsController):
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.validate_owned_by()
 		if self.finish_date:
 			check_future_date(self.finish_date)
 		self.update_breakdownreport()
@@ -32,7 +33,14 @@ class JobCard(AccountsController):
 		self.total_amount = flt(self.services_amount) + flt(self.goods_amount)
 		self.outstanding_amount = self.total_amount
 
+	def validate_owned_by(self):
+		if self.owned_by == "CDCL" and self.cost_center == self.customer_cost_center:
+			self.owned_by = "Own"
+			self.customer_cost_center = None
+			self.customer_branch = None
+
 	def on_submit(self):
+		self.validate_owned_by()
 		self.check_items()
 		if not self.repair_type:
 			frappe.throw("Specify whether the maintenance is Major or Minor")

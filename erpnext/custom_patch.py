@@ -8,6 +8,12 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_vl():
+	vls = frappe.db.sql("select name, ehf_name from `tabVehicle Logbook`", as_dict=1)
+	for a in vls:
+		doc = frappe.get_doc("Equipment Hiring Form", a.ehf_name)
+		print(doc.name)
+		frappe.db.sql("update `tabVehicle Logbook` set customer_type = %s, customer = %s where name = %s", (doc.private, doc.customer, a.name))
 
 def update_hcp():
 	hcps = frappe.db.sql("select name from `tabHire Charge Parameter`", as_dict=1)

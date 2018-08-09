@@ -83,7 +83,7 @@ def get_notification_config():
                         "Imprest Recoup" : {"docstatus": 0},
 			"SWS Application" : {"docstatus": 0},
 			"HSD Payment" : {"docstatus": 0},
-                        "Equipment Request" : {"percent_completed": ("<", "100")},
+                        "Equipment Request" : {"percent_completed": ("<", "100"), "docstatus": 1},
                         "Revenue Target Adjustment": {"docstatus": 0}
 		}
 	}

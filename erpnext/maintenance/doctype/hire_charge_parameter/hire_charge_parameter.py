@@ -18,8 +18,9 @@ class HireChargeParameter(Document):
                 self.set_parameter_values()
 
         def set_dates(self):
-                to_date = add_years(nowdate(), 100)
-                for a in reversed(self.items):
+		rates = reversed(self.items)
+                to_date = rates[0].to_date
+                for a in rates:
                         a.to_date = to_date
                         to_date = add_days(a.from_date, -1)
 

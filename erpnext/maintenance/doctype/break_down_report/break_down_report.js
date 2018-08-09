@@ -105,7 +105,8 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
 		return {
 		    "filters": {
 			"disabled": 0,
-			"customer_group": "Internal"
+			"customer_group": "Internal",
+			"branch": ["!=", frm.doc.branch]
 		    }
 		};
 	}

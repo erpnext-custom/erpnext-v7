@@ -52,7 +52,7 @@ def get_data(filters=None):
 		fuel_balance = flt(received) - flt(consumed_till)
 		#frappe.throw(_(" Test : {0}".format(eq.reference_name)))	
 		
-		row = [eq.date, eq.posting_time, eq.branch, eq.equipment, equipment[0]['equipment_number'], item[0]['item_name'], item[0]['stock_uom'], eq.qty, balance, fuel_balance, eq.type, eq.name, dc]
+		row = [eq.date, eq.posting_time, eq.branch, eq.equipment, equipment[0]['equipment_number'], item[0]['item_name'], item[0]['stock_uom'], eq.qty, balance, fuel_balance, eq.type, eq.reference_name, dc, eq.reference_type]
 		data.append(row)
 		
 
@@ -80,7 +80,7 @@ def get_data(filters=None):
 		vconsumed_till = get_pol_consumed_till(vl.equipment, vl.to_date)
 		vfuel_balance = flt(vreceived) - flt(vconsumed_till)
 		# frappe.throw(_(" Test : {0}".format(vl)))
-		row = [vl.to_date, vl.to_time, vl.branch, vl.equipment, vequipment[0]['equipment_number'], vitem[0]['item_name'], vitem[0]['stock_uom'], vl.qty, vbalance, vfuel_balance, "VL", vl.name, "No"]
+		row = [vl.to_date, vl.to_time, vl.branch, vl.equipment, vequipment[0]['equipment_number'], vitem[0]['item_name'], vitem[0]['stock_uom'], vl.qty, vbalance, vfuel_balance, "Consumed", vl.name, "No", "Vehicle Logbook"]
 		data.append(row)
 		data = sorted(data, key=itemgetter(0,1))
 		#data.sort(key=lambda r:(r[0],[1]))
@@ -123,7 +123,7 @@ def get_columns():
 		{
 			"fieldname": "item",
 			"label": _("Item Name"),
-			"fieldtype": "Data"
+			"fieldtype": "Data",
 			"width": 130
 		},
 		{
@@ -160,7 +160,7 @@ def get_columns():
 			"fieldname": "transaction",
 			"label": _("Transaction No"),
 			"fieldtype": "Link",
-			"options": "Issue POL"
+			"options": "",
 			"width": 100
 		},
 		{
@@ -169,5 +169,11 @@ def get_columns():
 			"fieldtype": "Data",
 			"width": 50
 		},
+                {
+			"fieldname": "reference_type",
+			"label": _("Reference"),
+			"fieldtype": "Data",
+			"width": 100
+		}
 	]
 
