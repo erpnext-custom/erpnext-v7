@@ -3,7 +3,16 @@
 
 frappe.ui.form.on('Vehicle Logbook', {
 	refresh: function(frm) {
-		
+		total_ro = 1
+		to_ro = 0
+		if (frm.doc.docstatus == 1) {
+			total_ro = 0
+			to_ro = 1
+		}
+		cur_frm.set_df_property("total_work_time", "read_only", total_ro);
+		cur_frm.set_df_property("distance_km", "read_only", total_ro);
+		cur_frm.set_df_property("final_hour", "read_only", to_ro);
+		cur_frm.set_df_property("final_km", "read_only", to_ro);
 	},
 	"vlogs_on_form_rendered": function(frm, grid_row, cdt, cdn) {
 		var row = cur_frm.open_grid_row();
@@ -50,13 +59,17 @@ frappe.ui.form.on('Vehicle Logbook', {
 		}
 	},
 	"final_km": function(frm) {
-		calculate_distance_km(frm)
+		if(frm.doc.docstatus = 0) {
+			calculate_distance_km(frm)
+		}
 	},
 	"initial_km": function(frm) {
 		calculate_distance_km(frm)
 	},
 	"final_hour": function(frm) {
-		calculate_work_hour(frm)
+		if(frm.doc.docstatus = 0) {
+			calculate_work_hour(frm)
+		}
 	},
 	"initial_hour": function(frm) {
 		calculate_work_hour(frm)
@@ -78,6 +91,10 @@ frappe.ui.form.on('Vehicle Logbook', {
 		}
 	},
 	"total_work_time": function(frm) {
+		if(frm.doc.docstatus == 1) {
+			calculate_work_hour(frm)
+			cur_frm.refresh_fields()
+		}
 		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.include_hour) {
 			cur_frm.set_value("consumption_hours", frm.doc.total_work_time * frm.doc.ys_hours)
 			cur_frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
@@ -85,6 +102,10 @@ frappe.ui.form.on('Vehicle Logbook', {
 		}
 	},
 	"distance_km": function(frm) {
+		if(frm.doc.docstatus == 1) {
+			calculate_distance_km(frm)
+			cur_frm.refresh_fields()
+		}
 		if(frm.doc.distance_km && frm.doc.ys_km && frm.doc.include_km) {
 			cur_frm.set_value("consumption_km", frm.doc.distance_km / frm.doc.ys_km)
 			cur_frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
@@ -138,7 +159,7 @@ frappe.ui.form.on('Vehicle Logbook', {
 
 	consumption_hours: function(frm) {
 		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.include_hour) {
-			frm.set_value("consumption", frm.doc.other_consumption + frm.doc.consumption_km + frm.doc.consumption_hours)
+			frm.set_value("consumption", flt(frm.doc.other_consumption) + flt(frm.doc.consumption_km) + flt(frm.doc.consumption_hours))
 			cur_frm.refresh_field("consumption")
 			calculate_closing(frm)
 		}
@@ -155,32 +176,45 @@ function calculate_closing(frm) {
 }
 
 function calculate_distance_km(frm) {
-	if(frm.doc.final_km > frm.doc.initial_km) {
-		cur_frm.set_value("distance_km", frm.doc.final_km - frm.doc.initial_km)
-		frm.refresh_fields()
-	}
-	else {
-		cur_frm.set_value("distance_km", "0")
-		frm.refresh_fields()
-		if(frm.doc.final_km) {
-			frappe.msgprint("Final KM should be greater than Initial KM")
+	if(frm.doc.docstatus == 0) {
+		if(flt(frm.doc.final_km) > flt(frm.doc.initial_km)) {
+			cur_frm.set_value("distance_km", flt(frm.doc.final_km) - flt(frm.doc.initial_km))
+			frm.refresh_fields()
 		}
+		else {
+			cur_frm.set_value("distance_km", "0")
+			frm.refresh_fields()
+			if(frm.doc.final_km) {
+				frappe.msgprint("Final KM should be greater than Initial KM")
+			}
+		}
+	}
+	if(frm.doc.docstatus == 1) {
+		cur_frm.set_value("final_km", flt(frm.doc.distance_km) + flt(frm.doc.initial_km))
+		cur_frm.refresh_fields()
 	}
 }
 
 function calculate_work_hour(frm) {
-	if(frm.doc.final_hour > frm.doc.initial_hour) {
-		cur_frm.set_value("total_work_time", frm.doc.final_hour - frm.doc.initial_hour)
-		frm.refresh_fields()
-	}
-	else {
-		cur_frm.set_value("total_work_time", "0")
-		frm.refresh_fields()
-		if(frm.doc.final_hour) {
-			frappe.msgprint("Final Hour should be greater than Initial Hour")
+	if(frm.doc.docstatus == 0) {
+		if(flt(frm.doc.final_hour) > flt(frm.doc.initial_hour)) {
+			cur_frm.set_value("total_work_time", flt(frm.doc.final_hour) - flt(frm.doc.initial_hour))
+			frm.refresh_fields()
+		}
+		else {
+			cur_frm.set_value("total_work_time", "0")
+			frm.refresh_fields()
+			if(frm.doc.final_hour) {
+				frappe.msgprint("Final Hour should be greater than Initial Hour")
+			}
 		}
 	}
+	if(frm.doc.docstatus == 1) {
+		cur_frm.set_value("final_hour", flt(frm.doc.total_work_time) + flt(frm.doc.initial_hour))
+		cur_frm.refresh_fields()
+	}
 }
+
 
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
 cur_frm.add_fetch("equipment", "hsd_type", "pol_type")

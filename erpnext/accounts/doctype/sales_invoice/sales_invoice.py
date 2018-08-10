@@ -645,7 +645,7 @@ class SalesInvoice(SellingController):
 								"credit": item.normal_loss_amt,
 								"credit_in_account_currency": item.normal_loss_amt \
 									if account_currency==self.company_currency else (item.normal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
-								#"cost_center": item.cost_center
+								"cost_center": item.cost_center,
 								"against_voucher": self.return_against if cint(self.is_return) else self.name,
 								"against_voucher_type": self.doctype
 							}, account_currency)
@@ -678,7 +678,7 @@ class SalesInvoice(SellingController):
 								"credit": item.abnormal_loss_amt,
 								"credit_in_account_currency": item.abnormal_loss_amt \
 									if account_currency==self.company_currency else (item.abnormal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
-								#"cost_center": item.cost_center
+								"cost_center": item.cost_center,
 								"against_voucher": self.return_against if cint(self.is_return) else self.name,
 								"against_voucher_type": self.doctype
 							}, account_currency)
@@ -716,6 +716,7 @@ class SalesInvoice(SellingController):
 								"against_voucher_type": self.doctype,
 								"remark": remark,
 								"remarks": remark,
+								"cost_center": item.cost_center
 							}, account_currency)
 						)
 

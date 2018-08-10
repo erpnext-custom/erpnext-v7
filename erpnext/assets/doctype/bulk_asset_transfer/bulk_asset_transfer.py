@@ -13,12 +13,18 @@ class BulkAssetTransfer(Document):
 	def on_submit(self):
 		self.update_asset()
 
-	def update_asset(self):
+	def before_submit(self):
 		if not self.custodian or not self.custodian_cost_center or not self.custodian_branch:
 			frappe.throw("The custodian doesn't have Cost Center and Branch defined in Employee Master")
 
 		for a in self.items:
 			check_valid_asset_transfer(a.asset_code, self.posting_date)
+
+	def update_asset(self):
+		if not self.custodian or not self.custodian_cost_center or not self.custodian_branch:
+			frappe.throw("The custodian doesn't have Cost Center and Branch defined in Employee Master")
+
+		for a in self.items:
 			doc = frappe.get_doc("Asset", a.asset_code)
 			doc.db_set("issued_to", self.custodian)
 

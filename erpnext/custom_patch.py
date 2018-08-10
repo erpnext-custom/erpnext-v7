@@ -1353,4 +1353,22 @@ def add_mr_creator_role():
                 user.flags.ignore_permissions = True
                 user.add_roles("MR Creator")
                 print counter, i.owner
-        
+
+#
+# by SHIV on 2018/08/10
+# Updating to_date in production from backup taken on 2018/08/08 12:00PM        
+#
+def update_hire_charge_parameter():
+	li = frappe.db.sql("""
+		select *
+		from `tabHire Charge Item_temp` as t1
+		where exists(select 1
+				from `tabHire Charge Item_bkup20180810` as t2
+				where t2.name = t1.name
+				and date_format(t2.modified,'%H:%i') = '14:24') 
+	""", as_dict=1)
+
+	counter = 0
+	for i in li:
+		counter += 1
+		print counter, i.name

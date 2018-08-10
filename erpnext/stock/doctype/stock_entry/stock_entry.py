@@ -103,6 +103,9 @@ class StockEntry(StockController):
 		if self.purpose in ("Manufacture", "Repack") and not self.difference_account:
 			self.difference_account = frappe.db.get_value("Company", self.company, "default_expense_account")
 
+		if self.purpose == "Material Receipt" and not self.initial_stock_templates:
+			frappe.throw("Price Template is Mandatory for Stock Receipts")
+
 	def set_transfer_qty(self):
 		for item in self.get("items"):
 			if not flt(item.qty):

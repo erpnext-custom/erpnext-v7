@@ -46,9 +46,11 @@ class AssetMovement(Document):
 		
 		if self.source_custodian == self.target_custodian:
 			frappe.throw(_("Source and Target Custodian cannot be same"))
+
+	def before_submit(self):
+		check_valid_asset_transfer(self.asset, self.posting_date)
 	
 	def on_submit(self):
-		check_valid_asset_transfer(self.asset, self.posting_date)
 		if not self.target_custodian and not self.target_cost_center:
 			frappe.throw("Target Custodian or Cost Center is Mandatory")
 		if self.target_warehouse:
@@ -61,7 +63,7 @@ class AssetMovement(Document):
 		if self.target_cost_center:	
 			self.set_latest_cc_in_asset()
 			#make_asset_transfer_gl(self, self.asset, self.posting_date, self.current_cost_center, self.target_cost_center)
-		
+	
 	def on_cancel(self):
 		check_valid_asset_transfer(self.asset, self.posting_date)
 		self.check_depreciation_done()

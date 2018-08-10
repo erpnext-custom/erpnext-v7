@@ -619,7 +619,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-07-17 16:01:57.709097", 
+ "modified": "2018-08-10 09:30:40.051201", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Fixed Deposit", 
@@ -647,7 +647,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
@@ -667,7 +667,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
