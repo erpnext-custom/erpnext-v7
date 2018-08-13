@@ -72,6 +72,7 @@ def get_template_list(doctype, txt, searchfield, start, page_len, filters):
 			where %(posting_date)s between from_date and to_date 
 			and naming_series = %(naming_series)s 
 			and docstatus = 1 
+			and is_disabled = 0 
 			and purpose= %(purpose)s
 			and (
                                 {key} like %(txt)s

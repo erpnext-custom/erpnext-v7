@@ -19,9 +19,17 @@ class HireChargeInvoice(AccountsController):
 		if self.balance_amount < 0:
 			frappe.throw("Balance amount cannot be negative")
 		self.outstanding_amount = self.balance_amount
+		self.set_advance_data()
+
+	def set_advance_data(self):
+		for a in self.advances:
+			a.balance_advance_amount = flt(a.actual_advance_amount) - flt(a.allocated_amount)
+			if flt(a.balance_advance_amount) < 0:
+				frappe.throw("Allocated Amount should be smaller than Advance Available")
 
 	def on_submit(self):
 		self.check_vlogs()
+		self.set_advance_data()
 		self.update_advance_amount();
 		self.update_vlogs(1)
 		if self.owned_by == "CDCL":

@@ -37,7 +37,7 @@ class BulkAssetTransfer(Document):
 					equip.branch = self.custodian_branch
 					equip.save()
 					#doc.db_set("branch", self.custodian_branch)
-				pass #make_asset_transfer_gl(self, a.asset_code, self.posting_date, a.cost_center, self.custodian_cost_center)
+				make_asset_transfer_gl(self, a.asset_code, self.posting_date, a.cost_center, self.custodian_cost_center)
 
 	def get_assets(self):
 		if not self.purpose:

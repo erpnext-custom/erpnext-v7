@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cstr, flt, fmt_money, formatdate, getdate
+from frappe.utils import cstr, flt, fmt_money, formatdate, getdate, get_datetime
 from frappe.desk.reportview import get_match_cond
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
@@ -115,6 +115,8 @@ class EquipmentHiringForm(Document):
 						if res:
 							frappe.throw("The equipment " + str(a.equipment) + " is already in use from by " + str(result[0].ehf_name))
 				'''
+				from_datetime = str(get_datetime(str(a.from_date) + ' ' + str(a.from_time)))
+				to_datetime = str(get_datetime(str(a.to_date) + ' ' + str(a.to_time)))
 
 				result = frappe.db.sql("""
                                         select ehf_name
@@ -123,8 +125,11 @@ class EquipmentHiringForm(Document):
                                         and docstatus = 1
                                         and ('{1}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
                                                 or
-                                                '{2}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time))
-                                """.format(a.equipment, str(a.from_date)+' '+str(a.from_time), str(a.to_date)+' '+str(a.to_time)), as_dict=True)
+                                                '{2}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
+						or
+						('{3}' <= concat(from_date,' ',from_time) and '{4}' >= concat(to_date,' ',to_time))
+					)
+                                """.format(a.equipment, from_datetime, to_datetime, from_datetime, to_datetime), as_dict=True)
 				for r in result:
                                         frappe.throw(_("The equipment {0} is already in use from by {1}").format(a.equipment, r.ehf_name))
 		

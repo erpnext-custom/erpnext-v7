@@ -58,11 +58,10 @@ class AssetMovement(Document):
 		if self.target_custodian:
 			self.set_latest_custodian_in_asset()
 			if self.target_custodian_cost_center != self.current_cost_center:		
-				pass
-				#make_asset_transfer_gl(self, self.asset, self.posting_date, self.current_cost_center, new_cc)
+				make_asset_transfer_gl(self, self.asset, self.posting_date, self.current_cost_center, self.target_custodian_cost_center)
 		if self.target_cost_center:	
 			self.set_latest_cc_in_asset()
-			#make_asset_transfer_gl(self, self.asset, self.posting_date, self.current_cost_center, self.target_cost_center)
+			make_asset_transfer_gl(self, self.asset, self.posting_date, self.current_cost_center, self.target_cost_center)
 	
 	def on_cancel(self):
 		check_valid_asset_transfer(self.asset, self.posting_date)
@@ -83,7 +82,7 @@ class AssetMovement(Document):
 			self.check_gls()
 
 	def check_gls(self):
-		jes = frappe.db.sql("select name from `tabJournal Entry` je, `tabJournal Entry Account` jea where je.name = jea.parent and jea.reference_name = %s and je.posting_date between %s and %s", (self.asset, self.posting_date, getdate(nowdate())), as_dict=True)
+		jes = frappe.db.sql("select je.name from `tabJournal Entry` je, `tabJournal Entry Account` jea where je.name = jea.parent and jea.reference_name = %s and je.posting_date between %s and %s", (self.asset, self.posting_date, getdate(nowdate())), as_dict=True)
 		for a in jes:
 			frappe.throw("Cannot cancel since asset depreciations had already taken place")
 

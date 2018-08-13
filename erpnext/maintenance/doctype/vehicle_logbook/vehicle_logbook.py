@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, cint, getdate, add_days
+from frappe.utils import flt, cint, getdate, add_days, get_datetime
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 class VehicleLogbook(Document):
@@ -185,14 +185,13 @@ class VehicleLogbook(Document):
 				frappe.msgprint("Closing balance cannot be greater than the tank capacity (" + str(tank) + ")")
 
 	def check_double_vl(self):
-		result = frappe.db.sql("select ehf_name from `tabVehicle Logbook` where equipment = \'" + str(self.equipment) + "\' and docstatus in (1, 0) and (\'" + str(self.from_date) + "\' between from_date and to_date OR \'" + str(self.to_date) + "\' between from_date and to_date) and name != \'" + str(self.name) + "\'", as_dict=True)
-		if result:
-			if self.from_time and self.to_time:
-				res = frappe.db.sql("select name from `tabVehicle Logbook` where docstatus in (1, 0) and equipment = %s and ehf_name = %s and (%s > from_time or %s < to_time)", (str(self.equipment), str(result[0].ehf_name), str(self.from_time), str(self.to_time)))
-				if res:
-					frappe.throw("The logbook for the same equipment, date, and time has been created at " + str(result[0].ehf_name))
-			else:
-				frappe.throw("The logbook for the same equipment, date, and time has been created at " + str(result[0].ehf_name))
+		from_datetime = str(get_datetime(str(self.from_date) + ' ' + str(self.from_time)))
+                to_datetime = str(get_datetime(str(self.to_date) + ' ' + str(self.to_time)))
+
+                query = "select ehf_name from `tabVehicle Logbook` where equipment = '{equipment}' and docstatus in (1, 0) and ('{from_date}' between concat(from_date, ' ', from_time) and concat(to_date, ' ', to_time) OR '{to_date}' between concat(from_date, ' ', from_time) and concat(to_date, ' ', to_time) OR ( '{from_date}' <= concat(from_date, ' ', from_time) AND '{to_date}' >= concat(to_date, ' ', to_time) )) and name != '{vl_name}'" .format(from_date=from_datetime, to_date=to_datetime, vl_name=self.name, equipment=self.equipment)
+                result = frappe.db.sql(query, as_dict=1)
+		for a in result:
+			frappe.throw("The logbook for the same equipment, date, and time has been created at " + str(a.ehf_name))
 
 	def check_consumption(self):
 		no_own_fuel_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type"), "no_own_tank")

@@ -8,6 +8,13 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def hire_balance_advance():
+	advs = frappe.db.sql("select parent, name, actual_advance_amount, allocated_amount from `tabHire Invoice Advance`", as_dict=1)
+	for a in advs:
+		bal = flt(a.actual_advance_amount) - flt(a.allocated_amount)
+		print(a.parent)
+		frappe.db.sql("update `tabHire Invoice Advance` set balance_advance_amount = %s where name = %s", (bal, a.name))
+
 def update_vl():
 	vls = frappe.db.sql("select name, ehf_name from `tabVehicle Logbook`", as_dict=1)
 	for a in vls:
@@ -61,11 +68,10 @@ def adjust_asset_gl():
 				do_gl_adjustment(doc, str(b.asset_code), doc.posting_date, doc.name, b.cost_center, doc.custodian_cost_center)
 
 	print(cc)
-	frappe.throw("STOP")
 
 def do_gl_adjustment(self, asset_code, posting_date, name, from_cc, to_cc):
 	asset = frappe.get_doc("Asset", asset_code)
-	deps = frappe.db.sql("select accumulated_depreciation_amount from `tabDepreciation Schedule` where parent = %s and schedule_date < %s order by schedule_date desc limit 1", (asset_code, posting_date),  as_dict=1)
+	deps = frappe.db.sql("select accumulated_depreciation_amount from `tabDepreciation Schedule` where parent = %s and schedule_date <= %s order by schedule_date desc limit 1", (asset_code, posting_date),  as_dict=1)
 	if deps:
 		accumulated_dep = deps[0].accumulated_depreciation_amount
 	else:
