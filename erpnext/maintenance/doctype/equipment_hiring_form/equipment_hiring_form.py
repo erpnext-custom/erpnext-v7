@@ -16,6 +16,12 @@ class EquipmentHiringForm(Document):
 		self.check_date_approval()
 		self.check_duplicate()
 		self.calculate_totals()
+	
+	def validate_date(self, a):
+                from_date = get_datetime(str(a.from_date) + ' ' + str(a.from_time))
+                to_date = get_datetime(str(a.to_date) + ' ' + str(a.to_time))
+                if to_date < from_date:
+                        frappe.throw("From Date/Time cannot be greater than To Date/Time")
 
 	def before_submit(self):
 		if self.private == "Private" and self.advance_amount <= 0:
@@ -67,8 +73,7 @@ class EquipmentHiringForm(Document):
 
 	def check_date_approval(self):
 		for a in self.approved_items:
-			if getdate(a.to_date) < getdate(a.from_date):
-				frappe.throw("To Date cannot be smaller than From Date for Equipment <b>" + str(a.equipment) + "</b>")
+			self.validate_date(a)
 
 	def check_duplicate(self):
 		for a in self.approved_items:

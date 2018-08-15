@@ -822,6 +822,13 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		if bank_amount:
 			paid_amount = bank_amount
 
+	if dt == "Sales Invoice":
+                bank_acc = frappe.db.get_value("Branch", doc.branch, "revenue_bank_account")
+        elif dt == "Purchase Invoice":
+                bank_acc = frappe.db.get_value("Branch", doc.branch, "expense_bank_account")
+        else:
+                bank_acc = bank.account
+
 	pe = frappe.new_doc("Payment Entry")
 	pe.payment_type = payment_type
 	pe.company = doc.company
@@ -829,8 +836,8 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	pe.mode_of_payment = doc.get("mode_of_payment")
 	pe.party_type = party_type
 	pe.party = doc.get(scrub(party_type))
-	pe.paid_from = party_account if payment_type=="Receive" else bank.account
-	pe.paid_to = party_account if payment_type=="Pay" else bank.account
+	pe.paid_from = party_account if payment_type=="Receive" else bank_acc
+	pe.paid_to = party_account if payment_type=="Pay" else bank_acc
 	pe.paid_from_account_currency = party_account_currency \
 		if payment_type=="Receive" else bank.account_currency
 	pe.paid_to_account_currency = party_account_currency if payment_type=="Pay" else bank.account_currency

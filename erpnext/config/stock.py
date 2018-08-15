@@ -71,6 +71,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Warehouse",
+					"route": "Tree/Warehouse",
 					"description": _("Where items are stored."),
 				},
 				{

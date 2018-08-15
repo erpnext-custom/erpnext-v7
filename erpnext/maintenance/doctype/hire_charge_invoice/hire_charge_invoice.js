@@ -125,11 +125,15 @@ frappe.ui.form.on('Hire Invoice Advance', {
 
 function calculate_advance_total(frm) {
 	var total = 0;
+	var bal_total = 0;
 	frm.doc.advances.forEach(function(d) { 
 		total += d.allocated_amount
+		bal_total += d.balance_advance_amount
 	})
 	frm.set_value("advance_amount", total)
+	frm.set_value("balance_advance_amount", bal_total)
 	frm.refresh_field("advance_amount")
+	frm.refresh_field("balance_advance_amount")
 }
 	
 function get_vehicle_logs(form) {

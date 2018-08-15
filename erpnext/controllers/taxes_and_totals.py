@@ -485,11 +485,17 @@ class calculate_taxes_and_totals(object):
 						- flt(self.doc.base_write_off_amount)+ flt(self.doc.total_loading_amount * self.doc.conversion_rate) - flt(self.doc.void_amount * self.doc.conversion_rate), self.doc.precision("grand_total"))
 		else:
 			if self.doc.party_account_currency == self.doc.currency:
-				total_amount_to_pay = flt(self.doc.grand_total  - self.doc.total_advance 
+				tds_amount = 0
+				if self.doc.doctype == "Purchase Invoice":
+					tds_amount = self.doc.tds_amount
+				total_amount_to_pay = flt(self.doc.grand_total  - self.doc.total_advance - tds_amount
 					- flt(self.doc.write_off_amount), self.doc.precision("grand_total"))
 			else:
+				tds_amount = 0
+				if self.doc.doctype == "Purchase Invoice":
+					tds_amount = self.doc.base_tds_amount
 				total_amount_to_pay = flt(flt(self.doc.grand_total *
-					self.doc.conversion_rate, self.doc.precision("grand_total")) - self.doc.total_advance
+					self.doc.conversion_rate, self.doc.precision("grand_total")) - self.doc.total_advance - tds_amount 
 						- flt(self.doc.base_write_off_amount), self.doc.precision("grand_total"))
 
 		if self.doc.doctype == "Sales Invoice":

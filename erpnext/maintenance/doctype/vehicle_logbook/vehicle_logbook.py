@@ -11,6 +11,7 @@ from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 class VehicleLogbook(Document):
 	def validate(self):
 		check_future_date(self.to_date)
+		self.validate_date()
 		self.set_data()
 		self.check_dates()
 		self.check_double_vl()
@@ -21,6 +22,12 @@ class VehicleLogbook(Document):
 		self.calculate_totals()
 		self.update_operator()
 		self.check_consumed()	
+	
+	def validate_date(self):
+                from_date = get_datetime(str(self.from_date) + ' ' + str(self.from_time))
+                to_date = get_datetime(str(self.to_date) + ' ' + str(self.to_time))
+                if to_date < from_date:
+                        frappe.throw("From Date/Time cannot be greater than To Date/Time")
 
 	def set_data(self):
 		if not self.ehf_name:
@@ -44,13 +51,14 @@ class VehicleLogbook(Document):
                 data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, self.from_date, self.to_date), as_dict=True)
                 if not data:
                         frappe.throw("There is either no Hire Charge defined or your logbook period overlaps with the Hire Charge period.")
-                if based_on == "Hire Charge Parameter" and not self.tender_hire_rate:
-                        if self.rate_type == "With Fuel":
-                                self.work_rate = data[0].rate_fuel
-                                self.idle_rate = data[0].idle_rate
-                        if self.rate_type == "Without Fuel":
-                                self.work_rate = data[0].rate_wofuel
-                                self.idle_rate = data[0].idle_rate
+                if based_on == "Hire Charge Parameter":
+			name = frappe.db.sql("select ha.name, ha.tender_hire_rate as thr from `tabHiring Approval Details` ha, `tabEquipment Hiring Form` h where ha.parent = h.name and h.docstatus = 1 and ha.equipment = %s and h.name = %s", (str(self.equipment), str(self.ehf_name)), as_dict=True)
+			if name and name[0]['thr'] == 0:
+				self.idle_rate = data[0].idle_rate
+				if self.rate_type == "With Fuel":
+					self.work_rate = data[0].rate_fuel
+				if self.rate_type == "Without Fuel":
+					self.work_rate = data[0].rate_wofuel
                 self.ys_km = data[0].yard_distance
                 self.ys_hours = data[0].yard_hours
 

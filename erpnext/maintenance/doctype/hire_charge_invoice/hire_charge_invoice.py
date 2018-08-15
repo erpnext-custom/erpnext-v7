@@ -22,10 +22,16 @@ class HireChargeInvoice(AccountsController):
 		self.set_advance_data()
 
 	def set_advance_data(self):
+		advance_amount = 0
+		balance_amount = 0
 		for a in self.advances:
 			a.balance_advance_amount = flt(a.actual_advance_amount) - flt(a.allocated_amount)
 			if flt(a.balance_advance_amount) < 0:
 				frappe.throw("Allocated Amount should be smaller than Advance Available")
+			advance_amount = flt(advance_amount) + flt(a.allocated_amount)
+			balance_amount = flt(balance_amount) + flt(a.balance_advance_amount)
+		self.advance_amount = advance_amount
+		self.balance_advance_amount = balance_amount
 
 	def on_submit(self):
 		self.check_vlogs()

@@ -8,6 +8,17 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def adjust_advance_balance():
+	advances = frappe.db.sql("select name from `tabHire Charge Invoice`", as_dict=1)
+	for a in advances:
+		doc = frappe.get_doc("Hire Charge Invoice", a.name)
+		total = 0
+		for b in doc.advances:
+			total = flt(total) + flt(b.balance_advance_amount)
+		if total != 0:
+			print(str(a.name) + " ==> " + str(total))
+			frappe.db.sql("update `tabHire Charge Invoice` set balance_advance_amount = %s where name = %s", (total, a.name))
+
 def hire_balance_advance():
 	advs = frappe.db.sql("select parent, name, actual_advance_amount, allocated_amount from `tabHire Invoice Advance`", as_dict=1)
 	for a in advs:

@@ -82,6 +82,7 @@ def get_template_list(doctype, txt, searchfield, start, page_len, filters):
                                 item_code like %(txt)s
                         )
                         {mcond}
+			group by item_code, naming_series, purpose
 			order by
                                 if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
                                 if(locate(%(_txt)s, template_name), locate(%(_txt)s, template_name), 99999),

@@ -11,8 +11,8 @@ data = {
 		'Purchase Invoice': 'return_against'
 	},
 	'internal_links': {
-		'Purchase Order': ['items', 'sales_order'],
-		'Purchase Receipt': ['items', 'delivery_note'],
+		'Purchase Order': ['items', 'purchase_order'],
+		'Purchase Receipt': ['items', 'purchase_receipt'],
 	},
 	'transactions': [
 		{
