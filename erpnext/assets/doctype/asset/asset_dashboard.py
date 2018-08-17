@@ -4,11 +4,12 @@ data = {
 	'fieldname': 'asset_code',
 	'non_standard_fieldnames': {
 		'Asset Movement': 'asset',
+		'Sales Invoice': 'asset',
 	},
 	'transactions': [
 		{
-			'label': _('Equipment'),
-			'items': ['Equipment']
+			'label': _('Related Data'),
+			'items': ['Equipment', 'Sales Invoice']
 		},
 		{
 			'label': _('Asset Movement'),

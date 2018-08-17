@@ -12,6 +12,7 @@ from erpnext.assets.asset_utils import check_valid_asset_transfer
 
 class AssetMovement(Document):
 	def validate(self):
+		self.assign_data()
 		self.validate_asset()
 		if self.target_warehouse:
 			self.validate_warehouses()
@@ -24,6 +25,10 @@ class AssetMovement(Document):
 				frappe.throw("Target and Source Cost Center cannot be same.")
 			self.target_custodian = None
 			self.target_custodian_cost_center = None
+
+	def assign_data(self):
+		self.source_custodian = frappe.db.get_value("Asset", self.asset, "issued_to")
+		self.current_cost_center = frappe.db.get_value("Asset", self.asset, "cost_center")
 
 	def validate_asset(self):
 		status, company = frappe.db.get_value("Asset", self.asset, ["status", "company"])
@@ -48,6 +53,7 @@ class AssetMovement(Document):
 			frappe.throw(_("Source and Target Custodian cannot be same"))
 
 	def before_submit(self):
+		self.assign_data()
 		check_valid_asset_transfer(self.asset, self.posting_date)
 	
 	def on_submit(self):

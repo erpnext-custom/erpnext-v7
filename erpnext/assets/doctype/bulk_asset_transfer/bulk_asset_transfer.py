@@ -10,12 +10,25 @@ from erpnext.accounts.utils import make_asset_transfer_gl
 from erpnext.assets.asset_utils import check_valid_asset_transfer
 
 class BulkAssetTransfer(Document):
+	def validate_data(self):
+		self.custodian_cost_center = frappe.db.get_value("Employee", self.custodian, "cost_center")
+		self.custodian_branch = frappe.db.get_value("Employee", self.custodian, "branch")
+
+		for a in self.items:
+			a.custodian, a.cost_center = frappe.db.get_value("Asset", a.asset_code, ["issued_to", "cost_center"])
+			if self.purpose == "Custodian" and self.current_custodian != a.custodian:
+				frappe.throw("Asset data ("+str(a.asset_code)+") had changed since you created the document. Pull the assets again")
+			if self.purpose == "Cost Center" and self.cost_center != a.cost_center:
+				frappe.throw("Asset data ("+str(a.asset_code)+") had changed since you created the document. Pull the assets again")
+
 	def on_submit(self):
 		self.update_asset()
 
 	def before_submit(self):
 		if not self.custodian or not self.custodian_cost_center or not self.custodian_branch:
 			frappe.throw("The custodian doesn't have Cost Center and Branch defined in Employee Master")
+
+		self.validate_data()
 
 		for a in self.items:
 			check_valid_asset_transfer(a.asset_code, self.posting_date)

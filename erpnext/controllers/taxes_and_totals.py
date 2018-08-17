@@ -493,7 +493,7 @@ class calculate_taxes_and_totals(object):
 			else:
 				tds_amount = 0
 				if self.doc.doctype == "Purchase Invoice":
-					tds_amount = self.doc.base_tds_amount
+					tds_amount = flt(self.doc.base_tds_amount)
 				total_amount_to_pay = flt(flt(self.doc.grand_total *
 					self.doc.conversion_rate, self.doc.precision("grand_total")) - self.doc.total_advance - tds_amount 
 						- flt(self.doc.base_write_off_amount), self.doc.precision("grand_total"))

@@ -225,7 +225,7 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "POL Stock Ledger",
+					"name": "POL Ledger",
 					"doctype": "POL Entry"
 				},
 				{

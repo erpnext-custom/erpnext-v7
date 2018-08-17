@@ -4,9 +4,10 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, getdate, formatdate, cstr
+from frappe.utils import flt, getdate, formatdate, cstr, get_datetime
 from erpnext.maintenance.report.maintenance_report import get_pol_till, get_pol_consumed_till
 from operator import itemgetter, attrgetter
+import datetime
 
 def execute(filters=None):
 	columns = get_columns();
@@ -59,8 +60,8 @@ def get_data(filters=None):
 		else:
 			dc = "No"
 			receiving_branch = "NA"
-
-		received = get_pol_till("Receive", eq.equipment, eq.date, eq.pol_type)
+#		get_pol_till(purpose, equipment, posting_date, pol_type=None, own_cc=None, posting_time="24:00"):
+		received = get_pol_till("Receive", eq.equipment, eq.date, eq.pol_type )
 		equipment = frappe.db.sql("select e.name, e.branch, e.equipment_number as equipment_number, et.is_container as is_container from tabEquipment e, `tabEquipment Type` et where e.equipment_type = et.name and e.name = \'" + str(eq.equipment) + "\'", as_dict=True)	
 		#frappe.throw(_(" Test : {0}".format(equipment[0]['is_container'])))	
 		if equipment[0]['is_container'] == 1:
@@ -72,9 +73,7 @@ def get_data(filters=None):
 
 		consumed_till = get_pol_consumed_till(eq.equipment, eq.date)
 		fuel_balance = flt(received) - flt(consumed_till)
-		#frappe.throw(_(" Test : {0}".format(eq.reference_name)))	
-		
-		row = [eq.date, eq.posting_time, eq.branch, eq.equipment, equipment[0]['equipment_number'], item[0]['item_name'], item[0]['stock_uom'], eq.qty, balance, fuel_balance, eq.type, eq.reference_type, eq.reference_name,dc, receiving_branch]
+		row = [get_datetime(str(eq.date) + " " + str(eq.posting_time)), eq.branch, eq.equipment, equipment[0]['equipment_number'], item[0]['item_name'], eq.qty, fuel_balance, balance, eq.type, eq.reference_type, eq.reference_name, receiving_branch, dc]
 		data.append(row)
 		
 
@@ -89,41 +88,41 @@ def get_data(filters=None):
 	query1 += " order by `to_date`"
 	
 	for vl in frappe.db.sql(query1, as_dict=True):
-		vitem = frappe.db.sql("select item_code, item_name, stock_uom from tabItem where `name`= \'" + str(vl.pol_type) + "\'", as_dict=True)
-		vequipment = frappe.db.sql("select e.name, e.branch, e.equipment_number as equipment_number, et.is_container as is_container from tabEquipment e, `tabEquipment Type` et where e.equipment_type = et.name and e.name = \'" + str(vl.equipment) + "\'", as_dict=True)	
-		vreceived = get_pol_till("Receive", vl.equipment, vl.to_date, vl.pol_type)
+#		vitem = frappe.db.sql("select item_code, item_name, stock_uom from tabItem where `name`= \'" + str(vl.pol_type) + "\'", as_dict=True)
+		vequipment = frappe.db.sql("select e.name, e.branch, e.equipment_number as equipment_number, e.hsd_type as pol_type, et.is_container as is_container from tabEquipment e, `tabEquipment Type` et where e.equipment_type = et.name and e.name = \'" + str(vl.equipment) + "\'", as_dict=True)	
+		epol_type = vequipment[0]['pol_type']
+		
+		vitem = frappe.db.sql("select item_code, item_name, stock_uom from tabItem where `name`= \'" + str(epol_type) + "\'", as_dict=True)
+		vreceived = get_pol_till("Receive", vl.equipment, vl.to_date, epol_type)
 		if vequipment[0]['is_container'] == 1:
-			vstock = get_pol_till("Stock", vl.equipment, vl.to_date,vl.pol_type)
-			vissued = get_pol_till("Issue", vl.equipment, vl.to_date, vl.pol_type)
+			vstock = get_pol_till("Stock", vl.equipment, vl.to_date, epol_type)
+			vissued = get_pol_till("Issue", vl.equipment, vl.to_date, epol_type)
 			vbalance = flt(vstock) - flt(vissued)
 		else:
 			vbalance = 0
 
-		vconsumed_till = get_pol_consumed_till(vl.equipment, vl.to_date)
+		vconsumed_till = get_pol_consumed_till(vl.equipment, vl.to_date, vl.to_time)
 		vfuel_balance = flt(vreceived) - flt(vconsumed_till)
-		# frappe.throw(_(" Test : {0}".format(vl)))
-		row = [vl.to_date, vl.to_time, vl.branch, vl.equipment, vequipment[0]['equipment_number'], vitem[0]['item_name'], vitem[0]['stock_uom'], vl.qty, vbalance, vfuel_balance, "Consumed", "Vehicle Logbook", vl.name, "No", "NA"]
+		row = [get_datetime(str(vl.to_date) + " " + str(vl.to_time)), vl.branch, vl.equipment, vequipment[0]['equipment_number'], vitem[0]['item_name'], vl.consumption, vfuel_balance, vbalance, "Consumed", "Vehicle Logbook", vl.name, vl.branch, "No"]
 		data.append(row)
-		data = sorted(data, key=itemgetter(0,1))
+		data = sorted(data, key=itemgetter(0))
 		#data.sort(key=lambda r:(r[0],[1]))
 	return data
 
 def get_columns():
 	return [
-		("Date") + ":Date:100",
-		("Time") + ":Time:100",
+		("Date & Time") + ":Date:140",
 		("Branch") + ":Data:120",
 		("Equipment") + ":Link/Equipment:100",
-		("equipment No.") + ":Data:100",
+		("Equipment No.") + ":Data:100",
 		("Item Name") + ":Data:130",
-		("Item UoM") + ":Data:50",
-		("Qty") + ":Float:50",
-		("Tanker Balance") + ":Float:100",
+		("Qty") + ":Float:80",
 		("Fuel Tank Balance") + ":Float:100",
-		("Purpose") + ":Data:100",
+		("Tanker Balance") + ":Float:100",
+		("Purpose") + ":Data:90",
 		("Reference") + ":Data:100",
-		("Transaction No.") + ":Dynamic Link/"+_("Reference")+":100",
-		("Direct Consumption") + ":Data:50",
-		("Transaction Branch") + ":Data:100"
+		("Transaction No.") + ":Dynamic Link/"+_("Reference")+":120",
+		("Transaction Branch") + ":Data:130",
+		("Direct Consumption") + "Data:50"
 	]
 
