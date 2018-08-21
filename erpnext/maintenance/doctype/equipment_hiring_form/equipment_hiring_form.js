@@ -178,7 +178,6 @@ function calculate_time(frm, cdt, cdn) {
 
 function get_rates(frm, cdt, cdn) {
 	doc = locals[cdt][cdn]
-	console.log("UMM: " + doc.from_date)
 	if (doc.equipment && doc.rate_type && doc.from_date) {
 		return frappe.call({
 			method: "erpnext.maintenance.doctype.equipment_hiring_form.equipment_hiring_form.get_hire_rates",

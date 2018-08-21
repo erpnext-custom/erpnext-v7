@@ -30,50 +30,28 @@ def get_data(filters=None):
 	# get_pol_till(purpose, equipment, date, pol_type=None)
 	for eq in frappe.db.sql(query, as_dict=True):
 		item = frappe.db.sql("select item_code, item_name, stock_uom from tabItem where `name`= \'" + str(eq.pol_type) + "\'", as_dict=True)
-	#	if eq.reference_type == "POL":
-	#		direct_consumption = frappe.db.sql("select direct_consumption from tabPOL where `name` = \'" + str(eq.reference_name) + "\'", as_dict=True)
-	#		if direct_consumption[0]['direct_consumption'] == 1:
-	#			dc = "Yes"
-	#		else:
-	#			dc = "No"
-	#	else:
-	#		dc = "No"
-		
+	
+		branch = frappe.db.get_value(eq.reference_type, eq.reference_name, "branch")
+		dc = "No"
 		if eq.reference_type == "POL":
-			dtls = frappe.db.sql("select direct_consumption, branch as rec_branch from tabPOL where `name` = \'" + str(eq.reference_name) + "\'", as_dict=True)
-			if dtls[0]['direct_consumption'] == 1:
+			pol = frappe.get_doc(eq.reference_type, eq.reference_name)
+			if pol.direct_consumption:
 				dc = "Yes"
-			else:
-				dc = "No"
-			receiving_branch = dtls[0]['rec_branch']
-		elif eq.reference_type == "Issue POL":
-			if eq.type == "Receive":
-				dtls = frappe.db.sql("select branch as rec_branch from `tabIssue POL` where `name` = \'" + str(eq.reference_name) + "\'", as_dict=True)
-				receiving_branch = dtls[0]['rec_branch']
-			else:
-				receiving_branch = "NA"
-			dc = "No"
-		elif eq.reference_type == "Equipment POL Transfer":
-			dtls = frappe.db.sql("select from_branch as rec_branch from `tabEquipment POL Transfer` where `name` = \'" + str(eq.reference_name) + "\'", as_dict=True)
-			receiving_branch = dtls[0]['rec_branch']
-			dc = "No"
-		else:
-			dc = "No"
-			receiving_branch = "NA"
+	
 #		get_pol_till(purpose, equipment, posting_date, pol_type=None, own_cc=None, posting_time="24:00"):
-		received = get_pol_till("Receive", eq.equipment, eq.date, eq.pol_type )
+		received = get_pol_till("Receive", eq.equipment, eq.date, eq.pol_type, posting_time=eq.posting_time )
 		equipment = frappe.db.sql("select e.name, e.branch, e.equipment_number as equipment_number, et.is_container as is_container from tabEquipment e, `tabEquipment Type` et where e.equipment_type = et.name and e.name = \'" + str(eq.equipment) + "\'", as_dict=True)	
 		#frappe.throw(_(" Test : {0}".format(equipment[0]['is_container'])))	
 		if equipment[0]['is_container'] == 1:
-			stock = get_pol_till("Stock", eq.equipment, eq.date, eq.pol_type)
-			issued = get_pol_till("Issue", eq.equipment, eq.date, eq.pol_type)
+			stock = get_pol_till("Stock", eq.equipment, eq.date, eq.pol_type, posting_time=eq.posting_time)
+			issued = get_pol_till("Issue", eq.equipment, eq.date, eq.pol_type, posting_time=eq.posting_time)
 			balance = flt(stock) - flt(issued)
 		else:
 			balance = 0
 
-		consumed_till = get_pol_consumed_till(eq.equipment, eq.date)
+		consumed_till = get_pol_consumed_till(eq.equipment, eq.date, eq.posting_time)
 		fuel_balance = flt(received) - flt(consumed_till)
-		row = [get_datetime(str(eq.date) + " " + str(eq.posting_time)), eq.branch, eq.equipment, equipment[0]['equipment_number'], item[0]['item_name'], eq.qty, fuel_balance, balance, eq.type, eq.reference_type, eq.reference_name, receiving_branch, dc]
+		row = [get_datetime(str(eq.date) + " " + str(eq.posting_time)), eq.branch, eq.equipment, equipment[0]['equipment_number'], item[0]['item_name'], eq.qty, fuel_balance, balance, eq.type, eq.reference_type, eq.reference_name, branch, dc]
 		data.append(row)
 		
 
@@ -93,10 +71,10 @@ def get_data(filters=None):
 		epol_type = vequipment[0]['pol_type']
 		
 		vitem = frappe.db.sql("select item_code, item_name, stock_uom from tabItem where `name`= \'" + str(epol_type) + "\'", as_dict=True)
-		vreceived = get_pol_till("Receive", vl.equipment, vl.to_date, epol_type)
+		vreceived = get_pol_till("Receive", vl.equipment, vl.to_date, epol_type, posting_time= vl.to_time)
 		if vequipment[0]['is_container'] == 1:
-			vstock = get_pol_till("Stock", vl.equipment, vl.to_date, epol_type)
-			vissued = get_pol_till("Issue", vl.equipment, vl.to_date, epol_type)
+			vstock = get_pol_till("Stock", vl.equipment, vl.to_date, epol_type, posting_time= vl.to_time)
+			vissued = get_pol_till("Issue", vl.equipment, vl.to_date, epol_type, posting_time= vl.to_time)
 			vbalance = flt(vstock) - flt(vissued)
 		else:
 			vbalance = 0
