@@ -92,7 +92,8 @@ def validate_expense_against_budget(args):
 				if flt(budget_amount[0].budget_amount) < amount:
 					frappe.throw("Not enough budget in " + str(args.account) + " under " + str(args.cost_center) + ". Budget exceeded by " + str((amount - flt(budget_amount[0].budget_amount))))
 			else:
-				frappe.throw("There is no budget in <b>" + str(args.account) + "</b> under <b>" + str(args.cost_center) + "</b>")
+				if flt(args.debit):
+					frappe.throw("There is no budget in <b>" + str(args.account) + "</b> under <b>" + str(args.cost_center) + "</b>")
 
 
 def compare_expense_with_budget(args, cost_center, budget_amount, action_for, action):

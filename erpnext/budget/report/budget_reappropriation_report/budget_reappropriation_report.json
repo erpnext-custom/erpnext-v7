@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-08-06 21:05:24.835562", 
- "modified_by": "Administrator", 
+ "modified": "2018-08-24 12:59:26.990443", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Budget", 
  "name": "Budget Reappropriation Report", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Regional Manager"
   }
  ]
 }
