@@ -41,7 +41,9 @@ frappe.ui.form.on('Budget', {
 			callback: function(r, rt) {
 				frm.refresh_field("accounts");
 				frm.refresh_fields();
-			}
+			},
+			freeze: true,
+			freeze_message: "Loading Expense Accounts..... Please Wait"
 		});
 	}
 });

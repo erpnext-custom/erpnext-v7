@@ -8,6 +8,7 @@ from frappe import _
 from frappe.utils import flt, getdate, add_months, get_last_day, fmt_money
 from frappe.model.naming import make_autoname
 from frappe.model.document import Document
+from erpnext.custom_utils import check_budget_available
 
 class BudgetError(frappe.ValidationError): pass
 class DuplicateBudgetError(frappe.ValidationError): pass
@@ -72,13 +73,15 @@ class Budget(Document):
 
 def validate_expense_against_budget(args):
 	args = frappe._dict(args)
-	action = frappe.db.sql("select action_if_annual_budget_exceeded as action from tabBudget where cost_center=%s and fiscal_year = %s and docstatus = 1", (args.cost_center, args.fiscal_year), as_dict=True)
 	if args.against_voucher_type == 'Asset':
 		pass
-	elif action and action[0].action == 'Ignore':
-		pass
 	elif frappe.db.get_value("Account", {"name": args.account, "root_type": "Expense"}) or frappe.db.get_value("Account", {"name": args.account, "root_type": "Asset", "account_type": "Fixed Asset"}):
-		if args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Goods Manufacture - CDCL', 'Expenses Included In Valuation - CDCL', 'Increase or Decrease in Stock - CDCL', 'Stock Adjustment - CDCL', 'Discount alllowed - CDCL', 'Gain or Loss on Sale of Asset - CDCL', 'Gain or Loss on Sale of Inventory - CDCL', 'Gain or Loss on Foreign Exchange - CDCL']:
+		if args.debit_in_account_currency:
+                        check_budget_available(args.cost_center, args.account, args.posting_date, flt(args.debit_in_account_currency))
+	else:
+		pass
+
+		"""if args.account in ['Normal Loss - SMCL', 'Abnormal Loss - SMCL', 'Cost of Goods Manufacture - CDCL', 'Expenses Included In Valuation - CDCL', 'Increase or Decrease in Stock - CDCL', 'Stock Adjustment - CDCL', 'Discount alllowed - CDCL', 'Gain or Loss on Sale of Asset - CDCL', 'Gain or Loss on Sale of Inventory - CDCL', 'Gain or Loss on Foreign Exchange - CDCL']:
 			pass
 		elif str(frappe.db.get_value("Account", args.account, "parent_account")) == "Depreciation & Amortisation - SMCL":
 			pass
@@ -94,7 +97,7 @@ def validate_expense_against_budget(args):
 			else:
 				if flt(args.debit):
 					frappe.throw("There is no budget in <b>" + str(args.account) + "</b> under <b>" + str(args.cost_center) + "</b>")
-
+			"""
 
 def compare_expense_with_budget(args, cost_center, budget_amount, action_for, action):
 	actual_expense = get_actual_expense(args, cost_center)

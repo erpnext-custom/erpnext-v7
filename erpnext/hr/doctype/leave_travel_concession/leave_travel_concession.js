@@ -31,7 +31,9 @@ frappe.ui.form.on('Leave Travel Concession', {
 				callback: function(r, rt) {
 					frm.refresh_field("items");
 					frm.refresh_fields();
-				}
+				},
+				freeze: true,
+				freeze_message: "Loading Employee Details..... Please Wait"
 			});
 		}
 		else {

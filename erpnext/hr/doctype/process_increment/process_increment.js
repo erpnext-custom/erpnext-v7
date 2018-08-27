@@ -12,7 +12,7 @@ cur_frm.cscript.display_activity_log = function(msg) {
 	}
 }
 
-//Create Increment
+/*/Create Increment
 //-----------------------
 cur_frm.cscript.create_increment = function(doc, cdt, cdn) {
 	cur_frm.cscript.display_activity_log("");
@@ -54,10 +54,75 @@ cur_frm.cscript.submit_increment = function(doc, cdt, cdn) {
 
 		return $c('runserverobj', args={'method':'submit_increment','docs':doc},callback);
 	});
-}
+} */
 
 frappe.ui.form.on('Process Increment', {
 	refresh: function(frm) {
 		frm.disable_save();
-	}
+	},
+
+	"remove_increment": function(frm) {
+		// clear all in locals
+		if(locals["Salary Increment"]) {
+			$.each(locals["Salary Increment"], function(name, d) {
+				frappe.model.remove_from_locals("Salary Increment", name);
+			});
+		}
+
+		return frappe.call({
+			method: "remove_increment",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.refresh_fields();
+				if (r.message)
+					cur_frm.cscript.display_activity_log(r.message);
+			},
+			freeze: true,
+			freeze_message: "Removing Increments.... Please Wait",
+		});
+        },
+
+	"create_increment": function(frm) {
+		// clear all in locals
+		if(locals["Salary Increment"]) {
+			$.each(locals["Salary Increment"], function(name, d) {
+				frappe.model.remove_from_locals("Salary Increment", name);
+			});
+		}
+
+		return frappe.call({
+			method: "create_increment",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.refresh_fields();
+				if (r.message)
+					cur_frm.cscript.display_activity_log(r.message);
+			},
+			freeze: true,
+			freeze_message: "Creating Increments.... Please Wait",
+		});
+        },
+
+	"submit_increment": function(frm) {
+                frappe.confirm(__("Do you really want to Submit all Salary Increment for month {0} and year {1}", [frm.doc.month, frm.doc.fiscal_year]), function() {
+			// clear all in locals
+			if(locals["Salary Increment"]) {
+				$.each(locals["Salary Increment"], function(name, d) {
+					frappe.model.remove_from_locals("Salary Increment", name);
+				});
+			}
+
+                        return frappe.call({
+                                method: "submit_increment",
+                                doc: frm.doc,
+                                callback: function(r, rt) {
+                                        frm.refresh_fields();
+                                        if (r.message)
+                                                cur_frm.cscript.display_activity_log(r.message);
+                                },
+                                freeze: true,
+                                freeze_message: "Submitting Increments.... Please Wait",
+                        });
+                })
+        },
 });

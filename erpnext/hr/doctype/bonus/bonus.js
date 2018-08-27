@@ -63,7 +63,9 @@ frappe.ui.form.on('Bonus', {
 				callback: function(r, rt) {
 					frm.refresh_field("items");
 					frm.refresh_fields();
-				}
+				},
+				freeze: true,
+                                freeze_message: "Loading Details..... Please Wait"
 			});
 		}
 		else {

@@ -29,7 +29,9 @@ frappe.ui.form.on('Bulk Asset Transfer', {
 			callback: function(r, rt) {
 				frm.refresh_field("items");
 				frm.refresh_fields();
-			}
+			},
+			freeze: true,
+                        freeze_message: "Loading Asset Details..... Please Wait"
 		});
 	}
 });

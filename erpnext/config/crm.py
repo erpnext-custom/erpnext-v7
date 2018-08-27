@@ -1,7 +1,8 @@
 from frappe import _
 
 def get_data():
-	return [
+	return [{"label": "","items":[]}]
+"""	return [
 		{
 			"label": _("Sales Pipeline"),
 			"icon": "icon-star",
@@ -147,3 +148,4 @@ def get_data():
 			]
 		},
 	]
+"""
