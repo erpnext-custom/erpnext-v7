@@ -682,9 +682,7 @@ class PurchaseInvoice(BuyingController):
 			)
 
 	def on_cancel(self):
-		docs = check_uncancelled_linked_doc(self.doctype, self.name)
-                if docs != 1:
-                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
+		check_uncancelled_linked_doc(self.doctype, self.name)
 		self.check_for_closed_status()
 
 		self.update_status_updater_args()

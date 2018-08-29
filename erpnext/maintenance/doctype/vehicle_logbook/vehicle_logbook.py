@@ -76,9 +76,7 @@ class VehicleLogbook(Document):
 		#self.check_tank_capacity()
 	
 	def on_cancel(self):
-		docs = check_uncancelled_linked_doc(self.doctype, self.name)
-                if docs != 1:
-                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
+		check_uncancelled_linked_doc(self.doctype, self.name)
 		frappe.db.sql("delete from `tabEquipment Status Entry` where ehf_name = \'"+str(self.name)+"\'")
 
 	def check_dates(self):

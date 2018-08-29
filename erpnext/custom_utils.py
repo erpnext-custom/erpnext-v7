@@ -69,8 +69,7 @@ def check_uncancelled_linked_doc(doctype, docname):
         for docs in linked_docs:
                 for doc in linked_docs[docs]:
                         if doc['docstatus'] < 2:
-                                return [docs, doc['name']]
-        return 1
+				frappe.throw("There is an uncancelled " + str(frappe.get_desk_link(docs, doc['name']))+ " linked with this document")
 
 def get_year_start_date(date):
 	return str(date)[0:4] + "-01-01"

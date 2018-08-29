@@ -209,9 +209,7 @@ class PurchaseOrder(BuyingController):
 		self.commit_budget()
 
 	def on_cancel(self):
-		docs = check_uncancelled_linked_doc(self.doctype, self.name)
-                if docs != 1:
-                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
+		check_uncancelled_linked_doc(self.doctype, self.name)
 		if self.is_against_so():
 			self.update_status_updater()
 

@@ -18,18 +18,18 @@ def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, (filters.from_date, filters.to_date), as_dict=True);
 	for d in datas:
-		row = [d.item_code, d.item_name, d.serial_number, d.equipment_type, d.equipment_model, d.reg_number, d.brand, d.engine_no,
+		row = [d.entry_date, d.item_code, d.item_name, d.serial_number, d.equipment_type, d.equipment_model, d.reg_number, d.brand, d.engine_no,
 			d.chesis_no, d.qty, d.custodian, d.issued_date, d.amount]
 		data.append(row);
 	return data
 
 def construct_query(filters=None):
-	query = """select id.serial_number, id.item_code, id.item_name, id.qty,id.serial_number, 
+	query = """select id.serial_number, id.entry_date, id.item_code, id.item_name, id.qty,id.serial_number, 
 			id.equipment_type, id.equipment_model, id.reg_number, id.brand, id.engine_no, id.chesis_no,
 			(select e.employee_name from tabEmployee as e where e.name = id.issued_to) as custodian, 
 			id.issued_date, id.amount from `tabAsset Issue Details` as id
-			where id.docstatus = 1 and id.issued_date between %s and %s
-			order by id.issued_date asc
+			where id.docstatus = 1 and id.entry_date between %s and %s
+			order by id.creation asc
 			"""
 	return query;
 
@@ -70,6 +70,12 @@ def validate_filters(filters):
 
 def get_columns():
 	return [
+		{
+		  "fieldname": "entry_date",
+		  "label": "Entry Date",
+		  "fieldtype": "Date",
+		  "width": 100
+		},
 		{
 		  "fieldname": "item_code",
 		  "label": "Material Code",
