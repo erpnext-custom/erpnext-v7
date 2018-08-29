@@ -33,7 +33,7 @@ def get_data(query, filters=None):
 	return data
 
 def construct_query(filters=None):
-	query = "select ae.item_code, ae.item_name, ae.qty as total_qty from `tabAsset Received Entries` as ae where ae.docstatus = 1"
+	query = "select ae.item_code, ae.item_name, sum(ae.qty) as total_qty from `tabAsset Received Entries` as ae where ae.docstatus = 1"
 	if filters.to_date and filters.from_date:
 		query += " and ae.received_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"; 
 	if filters.branch:
