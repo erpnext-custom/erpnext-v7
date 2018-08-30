@@ -9,7 +9,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Company",
-					"description": _("Company (not Customer or Supplier) master.")
+					"description": _("Company (not Customer or Supplier) master."),
 				},
 				{
 					"type": "doctype",
@@ -87,6 +87,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Period Closing Voucher",
 					"description": _("Close Balance Sheet and book Profit or Loss.")
+				},
+				{
+					"type": "linebreak",
+					"name": "linebreak"
 				},
                                 {
 					"type": "report",
@@ -226,6 +230,13 @@ def get_data():
 					"description": "Bulk document generator for Salary Remittance",
 					"hide_count": True
 				},
+				 {
+                                        "type": "doctype",
+                                        "name": "Fund Requisition",
+                                        "description": "Fund Requisition from Regions",
+                                        "hide_count": True
+                                },
+
 			]
 		},
 		{
@@ -363,6 +374,14 @@ def get_data():
                     			"label": _("Update Bank Transaction Dates"),
 					"description": _("Update bank payment dates with journals.")
 				},
+                                {
+					"type": "doctype",
+					"name": "Bank Guarantee",
+				},
+                                {
+                                        "type": "doctype",
+                                        "name": "Fixed Deposit",
+                                },
                 		{
 					"type": "report",
 					"name": "Bank Reconciliation Statement",
@@ -376,19 +395,11 @@ def get_data():
 					"doctype": "Journal Entry"
 				},
                 		{
-					"type": "doctype",
-					"name": "Bank Guarantee",
-				},
-                		{
 					"type": "report",
 					"name": "Bank Guarantee Report",
                     			"is_query_report": True,
 					"doctype": "Bank Guarantee"
 				},
-				{
-                                        "type": "doctype",
-                                        "name": "Fixed Deposit",
-                                },
                                 {
                                         "type": "report",
                                         "name": "Fixed Deposit Report",

@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "field:mode_of_payment", 
  "beta": 0, 
  "creation": "2012-12-04 17:49:20", 
@@ -32,7 +32,7 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 1, 
+   "reqd": 0, 
    "search_index": 0, 
    "set_only_once": 0, 
    "unique": 0
@@ -101,8 +101,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-01 17:34:23.184173", 
- "modified_by": "Administrator", 
+ "modified": "2018-08-30 08:10:18.212104", 
+ "modified_by": "siva@bt.bt", 
  "module": "Accounts", 
  "name": "Mode of Payment", 
  "owner": "harshada@webnotestech.com", 
@@ -192,5 +192,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

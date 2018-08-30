@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "field:title", 
  "beta": 0, 
  "creation": "2013-01-10 16:34:08", 
@@ -201,8 +201,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-05-01 11:20:58.367342", 
- "modified_by": "Administrator", 
+ "modified": "2018-08-30 09:24:20.569526", 
+ "modified_by": "thukten.dendup@bt.bt", 
  "module": "Accounts", 
  "name": "Purchase Taxes and Charges Template", 
  "owner": "wasim@webnotestech.com", 
@@ -251,7 +251,8 @@
  "quick_entry": 1, 
  "read_only": 0, 
  "read_only_onload": 0, 
- "sort_order": "ASC", 
+ "sort_field": "modified", 
+ "sort_order": "DESC", 
  "track_changes": 0, 
  "track_seen": 0
 }

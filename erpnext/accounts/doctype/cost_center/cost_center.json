@@ -1,7 +1,7 @@
 {
  "allow_copy": 1, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "field:cost_center_name", 
  "beta": 0, 
  "creation": "2013-01-23 19:57:17", 
@@ -361,8 +361,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2018-08-09 15:06:50.395619", 
- "modified_by": "Administrator", 
+ "modified": "2018-08-30 07:54:29.425634", 
+ "modified_by": "siva@bt.bt", 
  "module": "Accounts", 
  "name": "Cost Center", 
  "owner": "Administrator", 
@@ -815,6 +815,7 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "search_fields": "parent_cost_center, is_group", 
+ "sort_field": "modified", 
  "sort_order": "ASC", 
  "track_changes": 1, 
  "track_seen": 0

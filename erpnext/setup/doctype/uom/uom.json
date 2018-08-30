@@ -99,8 +99,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-08-29 08:52:57.225912", 
- "modified_by": "thukten.dendup@bt.bt", 
+ "modified": "2018-08-30 07:37:57.920889", 
+ "modified_by": "siva@bt.bt", 
  "module": "Setup", 
  "name": "UOM", 
  "owner": "Administrator", 
@@ -309,7 +309,7 @@
  "quick_entry": 1, 
  "read_only": 0, 
  "read_only_onload": 0, 
- "sort_order": "DESC", 
+ "sort_order": "ASC", 
  "track_changes": 1, 
  "track_seen": 0
 }
