@@ -615,6 +615,7 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 		       "cost_center": from_cc,
 		})
 	)
+
 	gl_entries.append(
 		prepare_gl(self, {
 		       "account":  asset.asset_account,
@@ -625,26 +626,29 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 		       "cost_center": to_cc,
 		})
 	)
-	gl_entries.append(
-		prepare_gl(self, {
-		       "account": accumulated_dep_account,
-		       "debit": accumulated_dep,
-		       "debit_in_account_currency": accumulated_dep,
-		       "against_voucher": asset.name,
-		       "against_voucher_type": "Asset",
-		       "cost_center": from_cc,
-		})
-	)
-	gl_entries.append(
-		prepare_gl(self, {
-		       "account": accumulated_dep_account,
-		       "credit": accumulated_dep,
-		       "credit_in_account_currency": accumulated_dep,
-		       "against_voucher": asset.name,
-		       "against_voucher_type": "Asset",
-		       "cost_center": to_cc,
-		})
-	)
+
+	if flt(accumulated_dep_account) > 0:
+		gl_entries.append(
+			prepare_gl(self, {
+			       "account": accumulated_dep_account,
+			       "debit": accumulated_dep,
+			       "debit_in_account_currency": accumulated_dep,
+			       "against_voucher": asset.name,
+			       "against_voucher_type": "Asset",
+			       "cost_center": from_cc,
+			})
+		)
+		gl_entries.append(
+			prepare_gl(self, {
+			       "account": accumulated_dep_account,
+			       "credit": accumulated_dep,
+			       "credit_in_account_currency": accumulated_dep,
+			       "against_voucher": asset.name,
+			       "against_voucher_type": "Asset",
+			       "cost_center": to_cc,
+			})
+		)
+
 	gl_entries.append(
 		prepare_gl(self, {
 		       "account": ic_account,
@@ -655,6 +659,7 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 		       "cost_center": from_cc,
 		})
 	)
+
 	gl_entries.append(
 		prepare_gl(self, {
 		       "account": ic_account,

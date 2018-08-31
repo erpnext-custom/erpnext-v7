@@ -9,18 +9,19 @@ frappe.ui.form.on('Vehicle Logbook', {
 			total_ro = 0
 			to_ro = 1
 		}
-		cur_frm.set_df_property("total_work_time", "read_only", total_ro);
-		cur_frm.set_df_property("distance_km", "read_only", total_ro);
+		cur_frm.set_df_property("total_work_time", "read_only", to_ro);
+		cur_frm.set_df_property("distance_km", "read_only", to_ro);
 		cur_frm.set_df_property("final_hour", "read_only", to_ro);
 		cur_frm.set_df_property("final_km", "read_only", to_ro);
+		frappe.meta.get_docfield("Vehicle Log", "distance", cur_frm.doc.name).read_only = 0;
 	},
-	"vlogs_on_form_rendered": function(frm, grid_row, cdt, cdn) {
-		var row = cur_frm.open_grid_row();
-		if(!row.grid_form.fields_dict.operator.value) {
-			row.grid_form.fields_dict.operator.set_value(frm.doc.equipment_operator)
-                	row.grid_form.fields_dict.operator.refresh()
-		}
-	},
+//	"vlogs_on_form_rendered": function(frm, grid_row, cdt, cdn) {
+//		var row = cur_frm.open_grid_row();
+//		if(!row.grid_form.fields_dict.operator.value) {
+//			row.grid_form.fields_dict.operator.set_value(frm.doc.equipment_operator)
+  //              	row.grid_form.fields_dict.operator.refresh()
+//		}
+//	},
 	"equipment": function(frm) {
 		if(frm.doc.ehf_name && frm.doc.equipment) {
 			frappe.call({
@@ -66,14 +67,14 @@ frappe.ui.form.on('Vehicle Logbook', {
 	"initial_km": function(frm) {
 		calculate_distance_km(frm)
 	},
-	"final_hour": function(frm) {
-		if(!frm.doc.docstatus == 1) {
-			calculate_work_hour(frm)
-		}
-	},
-	"initial_hour": function(frm) {
-		calculate_work_hour(frm)
-	},
+	//"final_hour": function(frm) {
+	//	if(!frm.doc.docstatus == 1) {
+	//		calculate_work_hour(frm)
+	//	}
+	//},
+	//"initial_hour": function(frm) {
+	//	calculate_work_hour(frm)
+	//},
 	"to_date": function(frm) {
 		if(frm.doc.from_date > frm.doc.to_date) {
 			frappe.msgprint("From Date cannot be greater than To Date")
@@ -90,9 +91,16 @@ frappe.ui.form.on('Vehicle Logbook', {
 			get_openings(frm.doc.equipment, frm.doc.from_date, frm.doc.to_date, frm.doc.pol_type)
 		}
 	},
-	"total_work_time": function(frm) {
+	"total_work_time": function(frm){
+		if(frm.doc.total_work_time){
+			cur_frm.set_value("final_hour", parseFloat(frm.doc.total_work_time) + parseFloat(frm.doc.initial_hour))
+			cur_frm.refresh_fields()
+		}
+
 		if(frm.doc.docstatus == 1) {
 			calculate_work_hour(frm)
+			//cur_frm.set_df_property("total_work_time", "read_only", frm.doc.total_work_time ? 0 : 1);
+
 			cur_frm.refresh_fields()
 		}
 		if(frm.doc.total_work_time && frm.doc.ys_hours && frm.doc.include_hour) {
@@ -102,6 +110,10 @@ frappe.ui.form.on('Vehicle Logbook', {
 		}
 	},
 	"distance_km": function(frm) {
+		if(frm.doc.distance_km){
+			cur_frm.set_value("final_km", flt(frm.doc.distance_km) + flt(frm.doc.initial_km))
+			cur_frm.refresh_fields()
+		}
 		if(frm.doc.docstatus == 1) {
 			calculate_distance_km(frm)
 			cur_frm.refresh_fields()
@@ -132,6 +144,7 @@ frappe.ui.form.on('Vehicle Logbook', {
 			cur_frm.set_value("consumption", flt(frm.doc.other_consumption) + flt(frm.doc.consumption_km) + flt(frm.doc.consumption_hours))
 			cur_frm.refresh_fields()
 		}
+	
 		if(frm.doc.distance_km && frm.doc.ys_km && frm.doc.include_km) {
 			cur_frm.set_value("consumption_km", frm.doc.distance_km / frm.doc.ys_km)
 			cur_frm.set_value("consumption", flt(frm.doc.other_consumption) + flt(frm.doc.consumption_km) + flt(frm.doc.consumption_hours))
@@ -209,7 +222,7 @@ function calculate_work_hour(frm) {
 			}
 		}
 	}
-	if(frm.doc.docstatus == 1) {
+	if(frm.doc.docstatus ==11111111111 ) {
 		cur_frm.set_value("final_hour", flt(frm.doc.total_work_time) + flt(frm.doc.initial_hour))
 		cur_frm.refresh_fields()
 	}
@@ -223,6 +236,10 @@ cur_frm.add_fetch("operator", "employee_name", "driver_name")
 
 //Vehicle Log Item  Details
 frappe.ui.form.on("Vehicle Log", {
+	"work_date": function(frm, cdt, cdn) {
+		date_check(frm, cdt, cdn)
+	},
+
 	"from_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
 	},
@@ -236,12 +253,50 @@ frappe.ui.form.on("Vehicle Log", {
 		calculate_time(frm, cdt, cdn)
 	},
 	"idle_time": function(frm, cdt, cdn) {
+		check(frm, cdt, cdn)
 		total_time(frm, cdt, cdn)
+		//cur_frm.field_dict.vlogs.grid.toggle_reqd("idle_time", 1)
 	},
 	"work_time": function(frm, cdt, cdn) {
+		check(frm, cdt, cdn)
 		total_time(frm, cdt, cdn)
-        }
+        },
+	"distance": function(frm, cdt, cdn) {
+		check(frm, cdt, cdn)
+		total_time(frm, cdt, cdn)
+		//if (!distance){
+		//frappe.model.set_value(cdt, cdn, "distance", 0)}
+	},
 })
+function check(frm,cdt, cdn){
+	var a = locals[cdt][cdn]
+		if(a.idle_time && a.idle_time < 0 || a.idle_time > 24){
+                        frappe.msgprint ("Idle Time cannot be negative nor it can be more then 24 hours")
+                }
+                if(a.work_time && a.work_time < 0 || a.work_time > 24){
+                        frappe.msgprint("Work Time cannot be negative nor it can be more then 24 hours")
+		}
+		if(a.distance && a.distance < 0){
+			frappe.msgprint("Distance cannot be negative")
+                }
+	}
+
+function date_check(frm, cdt, cdn){
+	var a = locals[cdt][cdn]
+		console.log(a.work_date)
+		if (a.work_date && a.work_date < frm.doc.from_date || a.work_date > frm.doc.to_date){
+			frappe.model.set_value(cdt, cdn, "work_date", "" )
+			frappe.msgprint ("Work Date must be between From Date and To Date")
+		
+	}
+		frm.doc.vlogs.forEach(function(d){
+			if (a.name != d.name && d.work_date == a.work_date){
+				frappe.model.set_value(cdt, cdn,"work_date", "")
+				frappe.msgprint ("Cannot have VLB entry for same date")
+			}
+		});
+	
+	}	
 
 function get_openings(equipment, from_date, to_date, pol_type) {
 	if (equipment && from_date && to_date && pol_type) {
@@ -262,19 +317,25 @@ function get_openings(equipment, from_date, to_date, pol_type) {
 }
 
 function total_time(frm, cdt, cdn) {
-	var total_idle = total_work = 0;
+	var total_idle = total_work = total_distance = 0;
 	frm.doc.vlogs.forEach(function(d) {
 		if(d.idle_time) { 
 			total_idle += d.idle_time
 		}
 		if(d.work_time) {
 			total_work += d.work_time
-		}	
+		}
+		if(d.distance){
+			total_distance += d.distance
+		}
+	
 	})
 	frm.set_value("total_idle_time", total_idle)
 	frm.set_value("total_work_time", total_work)
+	frm.set_value("distance_km", total_distance)
 	cur_frm.refresh_field("total_work_time")
 	cur_frm.refresh_field("total_idle_time")
+	cur_frm.refresh_field("distance_km")
 }
 
 function calculate_time(frm, cdt, cdn) {

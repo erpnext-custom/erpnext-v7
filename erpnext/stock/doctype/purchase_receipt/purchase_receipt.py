@@ -148,6 +148,78 @@ class PurchaseReceipt(BuyingController):
 		#self.consume_budget()
 		self.update_asset()
 
+		if self.is_return:
+			self.adjust_return()
+			self.update_bill_status()
+
+	def adjust_return(self):
+		for d in self.get("items"):
+			if not d.purchase_order_item:
+				frappe.throw("Purchase Return not created correctly")
+			received_qty, returned_qty, qty = frappe.db.get_value("Purchase Order Item", d.purchase_order_item, ["received_qty", "returned_qty", "qty"])
+			if received_qty + returned_qty > qty:
+				frappe.throw("Cannot Return more than Received Items")
+			if received_qty < 0:
+				frappe.throw("Cannot Return more than Received Items")
+			if returned_qty > flt(qty):
+				frappe.throw("Cannot Return more than Received Items")
+ 
+			"""new_received = flt(received_qty) - flt(d.qty)
+			new_returned = flt(returned_qty) + flt(d.qty)
+			if self.docstatus == 2:
+				new_received = flt(received_qty) + flt(d.qty)
+				new_returned = flt(returned_qty) - flt(d.qty)
+
+			frappe.throw("RECE: " + str(received_qty) + "   :::  RETURNED " + str(returned_qty))
+			frappe.throw("RECE: " + str(new_received) + "   :::  RETURNED " + str(new_returned)) 
+
+			if new_received < 0:
+				frappe.throw("Cannot Return more than Received Items")
+			if new_returned > flt(qty):
+				frappe.throw("Cannot Return more than Received Items") """
+
+			#frappe.db.sql("update `tabPurchase Order Item` set received_qty = %s, returned_qty = %s where name = %s", (received_qty, returned_qty, d.purchase_order_item))			
+
+	def update_bill_status(self):
+		updated_pr = []
+
+		pr_doc = frappe.get_doc("Purchase Receipt", self.return_against)
+		total_bill_amount = total = 0
+		for a in pr_doc.get("items"):
+			billed_amt = frappe.db.sql("select amount from `tabPurchase Receipt Item` where purchase_order_item = %s and parent = %s", (a.purchase_order_item, self.name))
+			billed_amt = billed_amt and billed_amt[0][0] or 0
+
+			bill_amount = flt(a.billed_amt) - flt(billed_amt)
+			if self.docstatus == 2:
+				bill_amount = flt(a.billed_amt) + flt(billed_amt)
+
+			a.billed_amt = bill_amount
+			total_bill_amount += bill_amount
+			total += a.amount
+			frappe.db.set_value("Purchase Receipt Item", a.name, "billed_amt", bill_amount)
+
+		frappe.db.set_value("Purchase Receipt", self.return_against, "per_billed", total_bill_amount/total * 100)
+
+                """for d in self.get("items"):
+                        if d.purchase_order_item:
+				billed_amt = frappe.db.sql("select billed_amt, name from `tabPurchase Receipt Item` where purchase_order_item = %s and parent = %s", (d.purchase_order_item, self.return_against))			
+				pr_name = billed_amt and billed_amt[0][1]
+				billed_amt = billed_amt and billed_amt[0][0] or 0
+				
+				billed_amt = flt(billed_amt) + (-1 * flt(d.amount))
+				if self.docstatus == 2:
+					billed_amt = flt(billed_amt) - flt(d.amount)
+
+                                #frappe.db.set_value("Purchase Receipt Item", pr_name, "billed_amt", billed_amt)
+				frappe.db.sql("update `tabPurchase Receipt Item` set billed_amt = %s where name = %s", (billed_amt, pr_name))
+                                updated_pr.append(self.return_against)
+			else:
+				frappe.throw("Invalid Purchase Receipt Return")
+
+                for pr in set(updated_pr):
+                        frappe.get_doc("Purchase Receipt", pr).update_billing_percentage()
+		"""
+
 	def check_next_docstatus(self):
 		submit_rv = frappe.db.sql("""select t1.name
 			from `tabPurchase Invoice` t1,`tabPurchase Invoice Item` t2
@@ -157,9 +229,7 @@ class PurchaseReceipt(BuyingController):
 			frappe.throw(_("Purchase Invoice {0} is already submitted").format(self.submit_rv[0][0]))
 
 	def on_cancel(self):
-		docs = check_uncancelled_linked_doc(self.doctype, self.name)
-                if docs != 1:
-                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
+		check_uncancelled_linked_doc(self.doctype, self.name)
 		pc_obj = frappe.get_doc('Purchase Common')
 
 		self.check_for_closed_status(pc_obj)
@@ -184,6 +254,10 @@ class PurchaseReceipt(BuyingController):
 		self.update_stock_ledger()
 		self.make_gl_entries_on_cancel()
 		self.delete_asset()
+
+		if self.is_return:
+			self.adjust_return()
+			self.update_bill_status()
 
 	##
 	# Update sonsumed budget with the amount
@@ -458,6 +532,7 @@ def update_billed_amount_based_on_po(po_detail, update_modified=True):
 def make_purchase_invoice(source_name, target_doc=None):
 	from frappe.model.mapper import get_mapped_doc
 	invoiced_qty_map = get_invoiced_qty_map(source_name)
+	returned_qty_map = get_returned_qty_map(source_name)
 
 	def set_missing_values(source, target):
 		if len(target.get("items")) == 0:
@@ -469,7 +544,7 @@ def make_purchase_invoice(source_name, target_doc=None):
 		doc.run_method("calculate_taxes_and_totals")
 
 	def update_item(source_doc, target_doc, source_parent):
-		target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0)
+		target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0) + returned_qty_map.get(source_doc.name, 0)
 		cat = frappe.db.get_value("Item", source_doc.item_code, "item_group")
 		if cat == 'Fixed Asset':
                         # Ver 2.0 Begins, following line is commented and replaced by subsequen by SHIV on 2018/08/28
@@ -520,6 +595,18 @@ def get_invoiced_qty_map(purchase_receipt):
 			invoiced_qty_map[pr_detail] += qty
 
 	return invoiced_qty_map
+
+def get_returned_qty_map(purchase_receipt):
+	returned_qty_map = {}
+
+	for purchase_order_item, name in frappe.db.sql("select purchase_order_item, name from `tabPurchase Receipt Item` where parent = %s", purchase_receipt):
+		returned_qty = frappe.db.sql("select sum(pri.received_qty) as qty from `tabPurchase Receipt Item` pri, `tabPurchase Receipt` pr where pr.name = pri.parent and pr.return_against = %s and pri.purchase_order_item = %s and pr.docstatus = 1 group by pri.purchase_order_item", (purchase_receipt, purchase_order_item), as_dict=True)
+		if returned_qty:
+			if not returned_qty_map.get(name):
+				returned_qty_map[name] = 0
+			returned_qty_map[name] += flt(returned_qty[0].qty)
+	return returned_qty_map
+
 
 @frappe.whitelist()
 def make_purchase_return(source_name, target_doc=None):

@@ -296,8 +296,8 @@ class BuyingController(StockController):
 				if self.rejected_warehouse:
 					d.rejected_warehouse = self.rejected_warehouse
 
-				if not d.rejected_warehouse:
-					frappe.throw(_("Row #{0}: Rejected Warehouse is mandatory against rejected Item {1}").format(d.idx, d.item_code))
+				"""if not d.rejected_warehouse:
+					frappe.throw(_("Row #{0}: Rejected Warehouse is mandatory against rejected Item {1}").format(d.idx, d.item_code))"""
 
 	# validate accepted and rejected qty
 	def validate_accepted_rejected_qty(self):
@@ -346,13 +346,13 @@ class BuyingController(StockController):
 						})
 					sl_entries.append(sle)
 
-				if flt(d.rejected_qty) > 0:
+				"""if flt(d.rejected_qty) > 0:
 					sl_entries.append(self.get_sl_entries(d, {
 						"warehouse": d.rejected_warehouse,
 						"actual_qty": flt(d.rejected_qty) * flt(d.conversion_factor),
 						"serial_no": cstr(d.rejected_serial_no).strip(),
 						"incoming_rate": 0.0
-					}))
+					}))"""
 
 		self.make_sl_entries_for_supplier_warehouse(sl_entries)
 		self.make_sl_entries(sl_entries, allow_negative_stock=allow_negative_stock,

@@ -748,6 +748,13 @@ class PurchaseInvoice(BuyingController):
 				billed_amt = frappe.db.sql("""select sum(amount) from `tabPurchase Invoice Item`
 					where pr_detail=%s and docstatus=1""", d.pr_detail)
 				billed_amt = billed_amt and billed_amt[0][0] or 0
+
+				returned_amt = frappe.db.sql("""select sum(pri.amount) from `tabPurchase Receipt Item` pri, `tabPurchase Receipt` pr
+					where pr.name = pri.parent and pr.docstatus = 1 and pr.return_against = %s and purchase_order_item = %s
+					""", (d.purchase_receipt, d.po_detail))
+				returned_amt = returned_amt and returned_amt[0][0] or 0
+
+				billed_amt -= returned_amt
 				frappe.db.set_value("Purchase Receipt Item", d.pr_detail, "billed_amt", billed_amt, update_modified=update_modified)
 				updated_pr.append(d.purchase_receipt)
 			elif d.po_detail:

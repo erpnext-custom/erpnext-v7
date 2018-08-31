@@ -287,12 +287,18 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 			})		
 			this.frm.set_value("total_loading_amount", qty * this.frm.doc.rate_per_unit)
 		}
+		else {
+			this.frm.set_value("total_loading_amount", 0)
+		}
 		this.frm.refresh_fields();
 	},
 	
 	void_rate: function() {
 		if(this.frm.doc.void_rate) {
 			this.frm.set_value("void_amount", this.frm.doc.void_rate * .01 * (this.frm.doc.total + this.frm.doc.total_loading_amount))
+		}
+		else {
+			this.frm.set_value("void_amount", 0)
 		}
 		this.frm.refresh_fields();
 	},

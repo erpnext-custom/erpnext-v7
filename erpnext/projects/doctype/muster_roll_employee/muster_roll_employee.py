@@ -11,7 +11,12 @@ from frappe.utils.data import get_first_day, get_last_day, add_days
 
 class MusterRollEmployee(Document):
 	def validate(self):
-		self.calculate_rates()
+		#self.calculate_rates()
+		self.cal_rates()
+		if len(self.musterroll) > 1:
+			for a in range(len(self.musterroll)-1):
+				self.musterroll[a].to_date = frappe.utils.data.add_days(getdate(self.musterroll[a + 1].from_date), -1)
+
 		self.check_status()
 		self.populate_work_history()
 		self.update_user_permissions()
@@ -31,9 +36,14 @@ class MusterRollEmployee(Document):
                         frappe.permissions.add_user_permission("Company", self.company, self.user_id)
                         frappe.permissions.add_user_permission("Branch", self.branch, self.user_id)
                 
-	def calculate_rates(self):
-		if not self.rate_per_hour:
-			self.rate_per_hour = (flt(self.rate_per_day) * 1.5) / 8
+	#def calculate_rates(self):
+	#	if not self.rate_per_hour:
+	#		self.rate_per_hour = (flt(self.rate_per_day) * 1.5) / 8
+
+	def cal_rates(self):
+			for a in self.get('musterroll'):
+				if a.rate_per_day:
+					a.rate_per_hour = (flt(a.rate_per_day) * 1.5) / 8	
 
 	def check_status(self):
                 if self.status == "Left" and self.separation_date:

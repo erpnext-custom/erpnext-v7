@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate, add_days, get_datetime
-from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date, get_date_diff
 
 class VehicleLogbook(Document):
 	def validate(self):
@@ -15,14 +15,26 @@ class VehicleLogbook(Document):
 		self.set_data()
 		self.check_dates()
 		self.check_double_vl()
+		self.check_branch()
 		self.check_hire_form()
 		self.check_hire_rate()
 		self.check_duplicate()
 		self.update_consumed()
 		self.calculate_totals()
 		self.update_operator()
-		self.check_consumed()	
+		self.check_consumed()
+		#self.vlogs_check()
 	
+	def check_branch(self):
+		if self.branch != frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "branch"):
+			frappe.throw("VLB branch should be same as Equipment Hiring Form branch.")
+	
+	def vlogs_check(self):
+		b = get_date_diff(self.from_date, self.to_date);
+		if len(self.vlogs) != b:
+		
+				frappe.throw(("Fill in all the VLB entries between '{0}' and '{1}'.").format(self.from_date, self.to_date))
+
 	def validate_date(self):
                 from_date = get_datetime(str(self.from_date) + ' ' + str(self.from_time))
                 to_date = get_datetime(str(self.to_date) + ' ' + str(self.to_time))
@@ -51,14 +63,14 @@ class VehicleLogbook(Document):
                 data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, self.from_date, self.to_date), as_dict=True)
                 if not data:
                         frappe.throw("There is either no Hire Charge defined or your logbook period overlaps with the Hire Charge period.")
-                if based_on == "Hire Charge Parameter":
-			name = frappe.db.sql("select ha.name, ha.tender_hire_rate as thr from `tabHiring Approval Details` ha, `tabEquipment Hiring Form` h where ha.parent = h.name and h.docstatus = 1 and ha.equipment = %s and h.name = %s", (str(self.equipment), str(self.ehf_name)), as_dict=True)
-			if name and name[0]['thr'] == 0:
-				self.idle_rate = data[0].idle_rate
-				if self.rate_type == "With Fuel":
-					self.work_rate = data[0].rate_fuel
-				if self.rate_type == "Without Fuel":
-					self.work_rate = data[0].rate_wofuel
+		if based_on == "Hire Charge Parameter":
+                        name = frappe.db.sql("select ha.name, ha.tender_hire_rate as thr from `tabHiring Approval Details` ha, `tabEquipment Hiring Form` h where ha.parent = h.name and h.docstatus = 1 and ha.equipment = %s and h.name = %s", (str(self.equipment), str(self.ehf_name)), as_dict=True)
+                        if name and name[0]['thr'] == 0:
+                                self.idle_rate = data[0].idle_rate
+                                if self.rate_type == "With Fuel":
+                                        self.work_rate = data[0].rate_fuel
+                                if self.rate_type == "Without Fuel":
+                                        self.work_rate = data[0].rate_wofuel
                 self.ys_km = data[0].yard_distance
                 self.ys_hours = data[0].yard_hours
 
@@ -74,9 +86,17 @@ class VehicleLogbook(Document):
 		self.update_hire()
 		self.post_equipment_status_entry()
 		#self.check_tank_capacity()
+		self.vlogs_check()
+	
+	def vlogs_check(self):
+                b = get_date_diff(self.from_date, self.to_date);
+                if len(self.vlogs) != b:
+			frappe.throw(("Fill in all the VLB entries between '{0}' and '{1}'.").format(self.from_date, self.to_date))
 	
 	def on_cancel(self):
-		check_uncancelled_linked_doc(self.doctype, self.name)
+		docs = check_uncancelled_linked_doc(self.doctype, self.name)
+                if docs != 1:
+                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
 		frappe.db.sql("delete from `tabEquipment Status Entry` where ehf_name = \'"+str(self.name)+"\'")
 
 	def check_dates(self):
@@ -100,11 +120,20 @@ class VehicleLogbook(Document):
 		self.equipment_operator = frappe.db.get_value("Equipment", self.equipment, "current_operator")
 
 	def check_duplicate(self):		
+		for row in self.vlogs:
+			if row.work_date and row.work_date < self.from_date or row.work_date > self.to_date:
+				frappe.throw ("Work Date should be between From Date and To Date")
+			if row.work_time and row.work_time < 0 or row.work_time > 24:
+                                frappe.throw("Work Time cannot be negative, It should not be more then 24 hours also.") 
+			if row.idle_time and row.idle_time < 0 or row.idle_time > 24:
+                                frappe.throw("Idle Time cannot be negative, It should not be more then 24 hours also.") 
+			if row.distance and row.distance < 0:
+				frappe.throw("Distance Cannot be negative value")
 		for a in self.vlogs:
 			for b in self.vlogs:
-				if a.date == b.date and a.idx != b.idx:
+				if a.work_date == b.work_date and a.idx != b.idx:
 					frappe.throw("Duplicate Dates in Vehicle Logs in row " + str(a.idx) + " and " + str(b.idx))
-
+		
 	def update_consumed(self):
 		pol_type = frappe.db.get_value("Equipment", self.equipment, "hsd_type")
 		closing = frappe.db.sql("select closing_balance, to_date from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s order by to_date desc limit 1", (self.equipment, self.from_date), as_dict=True)
@@ -150,18 +179,26 @@ class VehicleLogbook(Document):
 			e.db_set("current_hr_reading", flt(self.final_hour))
 
 	def post_equipment_status_entry(self):
-		doc = frappe.new_doc("Equipment Status Entry")
-		doc.flags.ignore_permissions = 1 
-		doc.equipment = self.equipment
-		doc.reason = "Hire"
-		doc.ehf_name = self.name
-		doc.from_date = self.from_date
-		doc.to_date = self.to_date
-		doc.hours = self.total_work_time
-		doc.to_time = self.to_time
-		doc.from_time = self.from_time
-		doc.place = frappe.db.sql("select place from `tabHiring Approval Details` where parent = %s and equipment = %s", (self.ehf_name, self.equipment))[0]
-		doc.submit()
+		place = frappe.db.sql("select place from `tabHiring Approval Details` where parent = %s and equipment =%s", (self.ehf_name, self.equipment))[0]
+		for a in self.vlogs:
+			"""if workdates:
+				workdates = workdates + ", " + a.work_date
+			else:
+				workdates = a.work_date"""
+		
+			doc = frappe.new_doc("Equipment Status Entry")
+	
+			doc.flags.ignore_permissions = 1 
+			doc.equipment = self.equipment
+			doc.reason = "Hire"
+			doc.ehf_name = self.name
+			doc.from_date = a.work_date
+			doc.to_date = a.work_date
+			doc.hours = self.total_work_time
+			doc.to_time = self.to_time
+			doc.from_time = self.from_time
+			doc.place = place 
+			doc.submit()
 
 	def calculate_balance(self):
 		self.db_set("closing_balance", flt(self.opening_balance) + flt(self.hsd_received) - flt(self.consumption))

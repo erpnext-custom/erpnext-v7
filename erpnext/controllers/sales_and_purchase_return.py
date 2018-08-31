@@ -146,6 +146,7 @@ def make_return_doc(doctype, source_name, target_doc=None):
 		doc.is_return = 1
 		doc.return_against = source.name
 		doc.ignore_pricing_rule = 1
+		doc.naming_series = source.naming_series
 		if doctype == "Sales Invoice":
 			doc.is_pos = 0
 
@@ -168,6 +169,7 @@ def make_return_doc(doctype, source_name, target_doc=None):
 		if doctype == "Purchase Receipt":
 			target_doc.received_qty = -1* source_doc.qty
 			target_doc.purchase_order = source_doc.purchase_order
+			target_doc.purchase_order_item = source_doc.purchase_order_item
 		elif doctype == "Purchase Invoice":
 			target_doc.received_qty = -1* source_doc.qty
 			target_doc.purchase_order = source_doc.purchase_order
