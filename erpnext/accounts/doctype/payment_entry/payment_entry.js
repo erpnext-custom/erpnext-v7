@@ -828,8 +828,8 @@ frappe.ui.form.on('Payment Entry Deduction', {
 	// Following code added by SHIV on 31/07/2018
 	deductions_add: function(frm, cdt, cdn){
 		var child = locals[cdt][cdn];
-		frappe.model.set_value(cdt, cdn, "party_type", frm.doc.party_type);
-		frappe.model.set_value(cdt, cdn, "party", frm.doc.party);
+		//frappe.model.set_value(cdt, cdn, "party_type", frm.doc.party_type);
+		//frappe.model.set_value(cdt, cdn, "party", frm.doc.party);
 	}
 	// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 })

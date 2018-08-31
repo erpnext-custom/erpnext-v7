@@ -31,7 +31,11 @@ def get_dtls(month, fiscal_year):
 
 	data=[]
 	li = frappe.db.sql( """
-		select sd.salary_component, sd.institution_name, sum(sd.amount) as amount, t.message
+		select sd.salary_component, sd.institution_name, 
+		case 
+		when sd.salary_component = 'PF' then 2*sum(sd.amount) 
+		else sum(sd.amount) end as amount,
+			 t.message
 			from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Remittance Template`  t
 			where ss.name = sd.parent and t.salary_component = sd.salary_component
 			and sd.parenttype = 'Salary Slip'
