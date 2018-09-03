@@ -143,6 +143,8 @@ function get_vehicle_logs(form) {
 		args: {
 			"form": form,
 		},
+		freeze: true,
+		freeze_message: "Loading Logbook Data...... Please Wait",
 		callback: function(r) {
 			if(r.message) {
 				var total_invoice_amount = 0;

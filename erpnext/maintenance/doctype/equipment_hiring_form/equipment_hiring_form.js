@@ -52,7 +52,13 @@ frappe.ui.form.on('Equipment Hiring Form', {
 	},
 	"total_hiring_amount": function(frm) {
 		if(frm.doc.docstatus != 1 && frm.doc.private == "Private") {
-			frm.set_value("advance_amount", frm.doc.total_hiring_amount)
+		/*	frm.set_value("advance_required", frm.doc.total_hiring_amount);
+			if(frm.doc.prev_advance_balance > 0){
+				frm.set_value("advance_amount", frm.doc.advance_required - frm.doc.prev_advance_balance);
+			}else{
+				frm.set_value("advance_amount", frm.doc.advance_required);				
+			}*/
+			frm.set_value("advance_amount", frm.doc.total_hiring_amount);	
 		}
 	},
 	"private": function(frm) {
@@ -60,6 +66,22 @@ frappe.ui.form.on('Equipment Hiring Form', {
 		cur_frm.toggle_reqd("customer_branch", frm.doc.private == 'CDCL')
 		cur_frm.toggle_reqd("advance_amount", frm.doc.private == 'Private')
 	},
+
+/*	"advance_required": function(frm) {
+		if(frm.doc.prev_advance_balance > 0){
+			frm.set_value("advance_amount", frm.doc.advance_required - frm.doc.prev_advance_balance);
+		}else{
+			frm.set_value("advance_amount", frm.doc.advance_required);				
+		}	
+
+	},	
+	"get_advance_balance": function(frm) {
+		get_advance_balance(frm);
+		if(frm.doc.advance_required > 0)
+			frm.set_value("advance_amount", frm.doc.advance_required - frm.doc.prev_advance_balance);
+		else
+			frm.set_value("advance_amount", -frm.doc.prev_advance_balance);
+	} */	
 });
 
 cur_frm.add_fetch("tc_name", "terms", "terms")
@@ -338,5 +360,48 @@ cur_frm.fields_dict['approved_items'].grid.get_field('tender_hire_rate').get_que
 		['Tender Hire Rate', 'to_date', '>=', get_today()],
 		['Tender Hire Rate', 'equipment_type', '=', d.equipment_type]
 		]
+	}
+}
+
+function get_advance_balance(form) {
+	if(form.doc.branch && form.doc.private && form.doc.customer)
+	{
+		frappe.call({
+			method: "erpnext.maintenance.doctype.equipment_hiring_form.equipment_hiring_form.get_advance_balance",
+			async: false,
+			args: {
+				"branch": form.doc.branch,
+				"customer": form.doc.customer
+			},
+			callback: function(r){
+				if(r.message){
+					var total_amount = 0;
+					cur_frm.clear_table("balance_advance_details");
+					r.message.forEach(function(dtl) {
+						console.log(dtl);
+				        var row = frappe.model.add_child(cur_frm.doc, "Equipment Hiring Advance", "balance_advance_details");
+						row.reference_row = dtl['name'];
+						row.amount = dtl['amount'];
+						row.party = dtl['party'];
+						row.reference_type = dtl['ref_type'];
+						row.reference_name = dtl['ref_name'];
+						row.cost_center = dtl['cost_center'];
+						row.posting_date = dtl['posting_date'];
+						row.journal = dtl['journal'];
+						refresh_field("balance_advance_details");
+						total_amount += row.amount;
+					});
+					cur_frm.set_value("prev_advance_balance", total_amount);
+					cur_frm.refresh();
+				}
+				else {
+					frappe.msgprint("No Advances found!")
+				}
+			}
+		});
+	}
+	else
+	{
+		frappe.msgprint("Selection of either Branch and Customer must be missing");
 	}
 }
