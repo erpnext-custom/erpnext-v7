@@ -27,7 +27,7 @@ def get_columns():
 
 def get_data(filters):
 
-	query = ("""select hic.branch, hic.customer, hic.name, hid.equipment, hid.equipment_number, hid. work_rate, hid.idle_rate,
+	query = ("""select distinct hic.branch, hic.customer, hic.name, hid.equipment, hid.equipment_number, hid. work_rate, hid.idle_rate,
 CASE hic.owned_by
 	WHEN 'Private' THEN SUM(hid.total_amount)
 	END as Private,
@@ -41,14 +41,16 @@ CASE hic.owned_by
 
 END AS CDCL,
 SUM(hid.total_amount) 
-from `tabHire Charge Invoice` as hic, `tabHire Invoice Details` as hid, `tabEquipment` e
-where hic.name = hid.parent and hid.equipment = e.name and hic.docstatus = 1 """)
+from `tabHire Charge Invoice` as hic, `tabHire Invoice Details` as hid, `tabEquipment` e, `tabEquipment History` eh
+where hic.name = hid.parent and hid.equipment = e.name and eh.parent = e.name and hic.docstatus = 1 """)
 
 	if filters.get("branch"):
 		query += " and hic.branch = \'" + str(filters.branch) + "\'"
 
 	if filters.get("from_date") and filters.get("to_date"):
 		query += " and hic.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+		query += "and (('{0}' between eh.from_date and ifnull(eh.to_date, now())) or ( '{1}' between eh.from_date and ifnull(eh.to_date, now())))".format(filters.get("from_date"), filters.get("to_date"))
+
 	if filters.get("not_cdcl"):
                 query += " and e.not_cdcl = 0"
 	if filters.get("include_disabled"):

@@ -167,7 +167,12 @@ def make_return_doc(doctype, source_name, target_doc=None):
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.qty = -1* source_doc.qty
 		if doctype == "Purchase Receipt":
-			target_doc.received_qty = -1* source_doc.qty
+			received = frappe.db.sql("select sum(pri.received_qty) from `tabPurchase Receipt` pr, `tabPurchase Receipt Item` pri where pri.parent = pr.name and pri.purchase_order_item = %s and pr.return_against = %s and pr.docstatus = 1 ", (source_doc.purchase_order_item, source_parent.name))
+                        received = received and received[0][0] or 0
+
+			received = flt(source_doc.received_qty) + received
+			target_doc.qty = -1 * received
+			target_doc.received_qty = -1 * received
 			target_doc.purchase_order = source_doc.purchase_order
 			target_doc.purchase_order_item = source_doc.purchase_order_item
 		elif doctype == "Purchase Invoice":

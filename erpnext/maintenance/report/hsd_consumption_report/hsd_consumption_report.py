@@ -4,72 +4,80 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils.data import get_first_day, get_last_day, add_days
 from frappe.utils import flt, getdate, formatdate, cstr
-from erpnext.maintenance.report.maintenance_report import get_km_till, get_hour_till, get_pol_till, \
-	get_pol_between, get_pol_consumed_till
+from erpnext.maintenance.report.maintenance_report import get_pol_till, get_pol_between, get_pol_consumed_till
 
 def execute(filters=None):
 	columns = get_columns()
-	query = construct_query(filters)
-	data = get_data(query, filters)
+	#query = construct_query(filters)
+	data = get_data(filters)
 
 	return columns,data
-def get_data(query, filters=None):
+
+def get_data(filters):
 	data = []
-	datas = frappe.db.sql(query, as_dict=True);
-	for d in datas:
-		own_cc = 0
-		if filters.own_cc:
-			own_cc = 1
-		d.drawn = get_pol_between("Receive", d.name, filters.from_date, filters.to_date, d.hsd_type, own_cc)
-		received_till = get_pol_till("Receive", d.name, add_days(getdate(filters.from_date), -1), d.hsd_type)
-		consumed_till = get_pol_consumed_till(d.name, add_days(getdate(filters.from_date), -1), filter_dry=own_cc)
-		consumed_till_end = get_pol_consumed_till(d.name, filters.to_date, filter_dry=own_cc)
-		d.consumed = flt(consumed_till_end) - flt(consumed_till)
-		d.opening = flt(received_till) - flt(consumed_till)
-		d.closing = flt(d.opening) + flt(d.drawn) - flt(d.consumed)
-		d.open_km = get_km_till(d.name, add_days(getdate(filters.from_date), -1))
-		d.open_hr = get_hour_till(d.name, add_days(getdate(filters.from_date), -1))
-		d.close_km = get_km_till(d.name, filters.to_date)
-		d.close_hr = get_hour_till(d.name, filters.to_date)
-
-		row = [d.name, d.ty, d.no, d.place, ("{0}" '/' "{1}".format(d.open_km, d.open_hr)), ("{0}" '/' "{1}".format(d.close_km,d.close_hr)), round(d.close_km-d.open_km,2), round(d.close_hr-d.open_hr,2),
-		round(flt(d.drawn),2), round(flt(d.opening),2), round((flt(d.drawn)+flt(d.opening)),2),
-		d.yskm, d.yshour, round(d.consumed,2), round(flt(d.closing),2), flt(d.cap), round(flt(d.rate),2), round((flt(d.rate)*flt(d.consumed)),2)]
-		data.append(row);
-	return data
-	#KM and Hour value is changed from consumption_km and consumption_hours to diference between the final and initial after discussing with Project Lead
-def construct_query(filters):
-	query = """select e.name as name, e.equipment_type as ty, e.equipment_number as no, e.branch br, vl.place, 
-	(select (sum(pol.qty*pol.rate)/sum(pol.qty)) from tabPOL pol where pol.branch = vl.branch and pol.docstatus = 1 and pol.pol_type = e.hsd_type) as rate, e.hsd_type,
-	(select em.tank_capacity from  `tabEquipment Model` em where em.name = e.equipment_model) as cap,
-	CASE
-	WHEN vl.ys_km THEN vl.ys_km
-	else 0
-	end as yskm,
-	CASE
-	WHEN vl.ys_hours THEN vl.ys_hours
-	else 0
-	end as yshour
-	from `tabEquipment` e, `tabVehicle Logbook` vl where e.equipment_number = vl.equipment_number
-	and vl.docstatus = 1"""  %{"from_date": str(filters.from_date), "to_date": str(filters.to_date),"branch": str(filters.branch)}
-
 	if filters.get("branch"):
-		query += " and e.branch = \'" + str(filters.branch) + "\'"
+                branch_cond =  " and eh.branch = \'" + str(filters.branch) + "\'"
+        else:
+                branch_cond = " and eh.branch = eh.branch" 
 
 	if filters.get("from_date") and filters.get("to_date"):
-		 query += " and (vl.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' or vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\')"
+                vl_date = " and vl.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' and vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 
-	if filters.get("not_cdcl"):
-               query += " and e.not_cdcl = 0"
-	if filters.get("include_disabled"):
-                query += " "
+		eh_cond = " and (('{1}' between eh.from_date and ifnull(eh.to_date, now())) or ('{1}' between eh.from_date and ifnull(eh.to_date, now())))".format(filters.get("from_date"), filters.get("to_date"))
+        if filters.get("not_cdcl"):
+               not_cdcll = " and e.not_cdcl = 0"
+
+        if filters.get("include_disabled"):
+                dis = " "
         else:
-                query += " and e.is_disabled = 0"
+                dis = " and e.is_disabled = 0"
+	if filters.get("category"):
+		cat = " and e.equipment_category = '{0}'".format(filters.get("category"))
+	else: cat = " and e.equipment_category = e.equipment_category"
 
-	query += " GROUP BY e.equipment_number "
-	return query
+       	#query += " GROUP BY e.equipment_number, eh.branch "
+	datas = ''
+	query = ''
+	equipments = frappe.db.sql("""
+                        select e.name as name, eh.branch as branch, e.hsd_type, e.equipment_number as equipment_number, 
+                                        e.equipment_type as equipment_type, e.hsd_type, e.equipment_model as equipment_model
+                                        from `tabEquipment` e, `tabEquipment History` eh 
+                                        where eh.parent = e.name
+                                        {0} {1} {2} {3} {4}
+                                         group by eh.branch, eh.parent order by eh.branch, eh.parent
+                                """.format(not_cdcll, branch_cond, dis, eh_cond, cat), as_dict = True, debug =1)
+	for eq in equipments:
+		query = """ select '{0}' as name, '{1}' as ty, '{2}' as no, '{3}' as br, vl.branch, ifnull(MIN(vl.initial_km),0)  AS mink, ifnull(MAX(vl.final_km),0) AS maxk, ifnull(MIN(vl.initial_hour),0) as minh, 
+                	ifnull(MAX(vl.final_hour),0) as maxh, ifnull(vl.consumption_km,0) as ckm, ifnull(vl.consumption_hours,0) as ch,
+                	(select ifnull((sum(pol.qty*pol.rate)/sum(pol.qty)),0) from tabPOL pol 
+                        where pol.branch = '{3}' and pol.docstatus = 1 and pol.pol_type = '{4}') as rate,
+                	(select em.tank_capacity from  `tabEquipment Model` em where em.name = '{5}') as cap, 
+                	CASE
+			WHEN vl.ys_km THEN vl.ys_km
+			else 0
+			end as yskm,
+			CASE
+			WHEN vl.ys_hours THEN vl.ys_hours
+			else 0
+			end as yshour,
+			ifnull(sum(vl.distance_km),0) as km,
+			ifnull(sum(vl.consumption),0) as consumed from
+			`tabVehicle Logbook` vl where vl.equipment_number = '{2}' {6} and
+			vl.docstatus = 1""".format(eq.name, eq.equipment_type, eq.equipment_number, eq.branch, eq.hsd_type, eq.equipment_model, vl_date)
+		datas = frappe.db.sql(query, as_dict=1)
+		for d in datas:
+                	d.drawn = get_pol_between("Receive", d.name, filters.from_date, filters.to_date, d.hsd_type)
+                	received_till = get_pol_till("Receive", d.name, filters.from_date, d.hsd_type)
+                	consumed_till = get_pol_consumed_till(d.name, filters.from_date)
+                	d.opening = flt(received_till) - flt(consumed_till)
+                	d.closing = flt(d.opening) + flt(d.drawn) - flt(d.consumed)
+
+                	row = [d.name, d.ty, d.no, d.br, ("{0} / {1}".format(d.mink, d.minh)), ("{0} / {1}".format(d.maxk,d.maxh)), round(flt(d.maxk)-flt(d.mink),2), round(flt(d.maxh)-flt(d.minh),2),
+                round(flt(d.drawn),2), round(flt(d.opening),2), round((flt(d.drawn)+flt(d.opening)),2),
+                d.yskm, d.yshour, round(d.consumed,2), round(flt(d.closing),2), flt(d.cap), round(flt(d.rate),2), round((flt(d.rate)*flt(d.consumed)),2)]
+                	data.append(row)
+	return data
 
 def get_columns():
 	cols = [
@@ -77,17 +85,17 @@ def get_columns():
 		("Equipment Type.") + ":data:120",
 		("Registration No") + ":data:120",
 		("Location")+":data:120",
-		("Initial KM/H")+":data:100",
-		("Final KM/H")+":data:100",
+		("Initial KM/H Reading")+":data:100",
+		("Final KM/H Reading")+":data:100",
 		("KM")+":data:100",
 		("Hour")+":data:100",
 		("HSD Drawn(L)")+":data:100",
-		("Prev Bal(L)")+":data:100",
+		("Previous Balance(L)")+":data:100",
 		("Total HSD(L)")+":data:100",
 		("Per KM")+":data:110",
 		("Per Hour")+":data:110",
 		("HSD Consumption(L)")+":data:110",
-		("Closing Bal(L)")+":data:110",
+		("Closing Balance(L)")+":data:110",
 		("Tank Capacity")+":data:110",
 		("Rate(Nu.)")+":currency:100",
 		("Amount(Nu.)")+":Currency:100",

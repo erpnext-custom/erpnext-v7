@@ -3,7 +3,15 @@
 
 frappe.ui.form.on('Asset Modifier Tool', {
 	refresh: function(frm) {
-			frm.disable_save();
+		frm.disable_save();
+		cur_frm.set_query("asset", function() {
+			return {
+			    "filters": {
+				"docstatus": 1,
+				"status": ["in", ["Partially Depreciated", "Fully Depreciated", "Submitted"]]
+			    }
+			};
+		    });
 	},
 
 	update_asset_value: function(frm) {

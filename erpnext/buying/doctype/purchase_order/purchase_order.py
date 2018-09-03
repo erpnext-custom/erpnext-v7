@@ -307,6 +307,14 @@ class PurchaseOrder(BuyingController):
 	def cancel_budget_entry(self):
 		frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
 
+	def update_per_received(self):
+		frappe.db.sql(""" update `tabPurchase Order`
+				set per_received = round((select sum(if(qty > ifnull(received_qty, 0),
+					ifnull(received_qty, 0), qty)) / sum(qty) *100
+				from `tabPurchase Order Item`
+				where parent = %(name)s), 2)
+				where name = %(name)s """, {"name": self.name})
+
 @frappe.whitelist()
 def close_or_unclose_purchase_orders(names, status):
 	if not frappe.has_permission("Purchase Order", "write"):

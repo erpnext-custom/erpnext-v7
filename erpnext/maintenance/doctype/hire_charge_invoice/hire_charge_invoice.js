@@ -193,7 +193,9 @@ function get_vehicle_logs(form) {
 									total_invoice_amount += (row.amount_idle + row.amount_work)
 								})
 							}
-						}
+						},
+						freeze: true,
+						freeze_message: "Getting Logbook Details.... Please Wait"
 					});
 				});
 

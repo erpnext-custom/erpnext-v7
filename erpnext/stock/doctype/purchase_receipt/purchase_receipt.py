@@ -131,11 +131,11 @@ class PurchaseReceipt(BuyingController):
 		# Set status as Submitted
 		frappe.db.set(self, 'status', 'Submitted')
 
-		self.update_prevdoc_status()
-		self.update_billing_status()
-
-		if not self.is_return:
+		self.update_po_detail()
+		if self.is_return:
+			self.update_bill_status_pr()
 			purchase_controller.update_last_purchase_rate(self, 1)
+		self.update_billing_status()
 
 		# Updating stock ledger should always be called after updating prevdoc status,
 		# because updating ordered qty in bin depends upon updated ordered qty in PO
@@ -148,45 +148,61 @@ class PurchaseReceipt(BuyingController):
 		#self.consume_budget()
 		self.update_asset()
 
-		if self.is_return:
-			self.adjust_return()
-			self.update_bill_status()
+	def update_po_detail(self):
+		updated_po = []
 
-	def adjust_return(self):
 		for d in self.get("items"):
 			if not d.purchase_order_item:
 				frappe.throw("Purchase Return not created correctly")
-			received_qty, returned_qty, qty = frappe.db.get_value("Purchase Order Item", d.purchase_order_item, ["received_qty", "returned_qty", "qty"])
-			if received_qty + returned_qty > qty:
-				frappe.throw("Cannot Return more than Received Items")
-			if received_qty < 0:
-				frappe.throw("Cannot Return more than Received Items")
-			if returned_qty > flt(qty):
-				frappe.throw("Cannot Return more than Received Items")
- 
-			"""new_received = flt(received_qty) - flt(d.qty)
-			new_returned = flt(returned_qty) + flt(d.qty)
-			if self.docstatus == 2:
+			received_qty = returned_qty = qty = 0
+			qtys = frappe.db.sql("select received_qty, returned_qty, qty from `tabPurchase Order Item` where name = %s", d.purchase_order_item, as_dict=1)
+			if qtys:
+				received_qty = qtys[0].received_qty
+				returned_qty = qtys[0].returned_qty
+				qty = qtys[0].qty
+
+			if self.is_return:
 				new_received = flt(received_qty) + flt(d.qty)
 				new_returned = flt(returned_qty) - flt(d.qty)
+				if self.docstatus == 2:
+					new_received = flt(received_qty) - flt(d.qty)
+					new_returned = flt(returned_qty) + flt(d.qty)
+			else:
+				new_received = flt(received_qty) + flt(d.qty)
+				new_returned = flt(returned_qty) - flt(d.qty) 
+				if self.docstatus == 2:
+					new_received = flt(received_qty) - flt(d.qty)
+					new_returned = flt(returned_qty) + flt(d.qty)
+				if flt(returned_qty) == 0:
+					new_returned = 0 
 
-			frappe.throw("RECE: " + str(received_qty) + "   :::  RETURNED " + str(returned_qty))
-			frappe.throw("RECE: " + str(new_received) + "   :::  RETURNED " + str(new_returned)) 
-
+			if new_received + new_returned > qty:
+				frappe.throw("Cannot Return more than Received Items")
 			if new_received < 0:
 				frappe.throw("Cannot Return more than Received Items")
 			if new_returned > flt(qty):
-				frappe.throw("Cannot Return more than Received Items") """
+				frappe.throw("Cannot Return more than Received Items") 
 
-			#frappe.db.sql("update `tabPurchase Order Item` set received_qty = %s, returned_qty = %s where name = %s", (received_qty, returned_qty, d.purchase_order_item))			
+			frappe.db.sql("update `tabPurchase Order Item` set received_qty = %s, returned_qty = %s where name = %s", (new_received, new_returned, d.purchase_order_item))			
 
-	def update_bill_status(self):
+			if d.purchase_order:
+				updated_po.append(d.purchase_order)
+	
+		for po in set(updated_po):
+			po = frappe.get_doc("Purchase Order", po)
+			po.update_per_received()
+			po.set_status()	
+
+	##
+	# Update the billed amount of original PR if return
+	##
+	def update_bill_status_pr(self):
 		updated_pr = []
 
 		pr_doc = frappe.get_doc("Purchase Receipt", self.return_against)
 		total_bill_amount = total = 0
 		for a in pr_doc.get("items"):
-			billed_amt = frappe.db.sql("select amount from `tabPurchase Receipt Item` where purchase_order_item = %s and parent = %s", (a.purchase_order_item, self.name))
+			billed_amt = frappe.db.sql("select sum(pri.amount) from `tabPurchase Receipt` pr, `tabPurchase Receipt Item` pri where pri.parent = pr.name and pri.purchase_order_item = %s and pr.return_against = %s and (pr.docstatus = 1 or (pr.docstatus = 0 and pr.name = %s))", (a.purchase_order_item, self.return_against, self.name))
 			billed_amt = billed_amt and billed_amt[0][0] or 0
 
 			bill_amount = flt(a.billed_amt) - flt(billed_amt)
@@ -198,8 +214,7 @@ class PurchaseReceipt(BuyingController):
 			total += a.amount
 			frappe.db.set_value("Purchase Receipt Item", a.name, "billed_amt", bill_amount)
 
-		frappe.db.set_value("Purchase Receipt", self.return_against, "per_billed", total_bill_amount/total * 100)
-
+	
                 """for d in self.get("items"):
                         if d.purchase_order_item:
 				billed_amt = frappe.db.sql("select billed_amt, name from `tabPurchase Receipt Item` where purchase_order_item = %s and parent = %s", (d.purchase_order_item, self.return_against))			
@@ -243,21 +258,17 @@ class PurchaseReceipt(BuyingController):
 
 		frappe.db.set(self,'status','Cancelled')
 
-		self.update_prevdoc_status()
-		self.update_billing_status()
-
-		if not self.is_return:
+		self.update_po_detail()
+		if self.is_return:
+			self.update_bill_status_pr()
 			pc_obj.update_last_purchase_rate(self, 0)
+		self.update_billing_status()
 
 		# Updating stock ledger should always be called after updating prevdoc status,
 		# because updating ordered qty in bin depends upon updated ordered qty in PO
 		self.update_stock_ledger()
 		self.make_gl_entries_on_cancel()
 		self.delete_asset()
-
-		if self.is_return:
-			self.adjust_return()
-			self.update_bill_status()
 
 	##
 	# Update sonsumed budget with the amount
@@ -499,7 +510,7 @@ def update_billed_amount_based_on_po(po_detail, update_modified=True):
 	billed_against_po = billed_against_po and billed_against_po[0][0] or 0
 
 	# Get all Delivery Note Item rows against the Sales Order Item row
-	pr_details = frappe.db.sql("""select pr_item.name, pr_item.amount, pr_item.parent
+	pr_details = frappe.db.sql("""select pr_item.name, pr_item.amount, pr_item.parent, pr_item.purchase_order_item
 		from `tabPurchase Receipt Item` pr_item, `tabPurchase Receipt` pr
 		where pr.name=pr_item.parent and pr_item.purchase_order_item=%s
 			and pr.docstatus=1 and pr.is_return = 0
@@ -511,6 +522,13 @@ def update_billed_amount_based_on_po(po_detail, update_modified=True):
 		billed_amt_agianst_pr = frappe.db.sql("""select sum(amount) from `tabPurchase Invoice Item`
 			where pr_detail=%s and docstatus=1""", pr_item.name)
 		billed_amt_agianst_pr = billed_amt_agianst_pr and billed_amt_agianst_pr[0][0] or 0
+
+		returned_amt = frappe.db.sql("""select sum(pri.amount) from `tabPurchase Receipt Item` pri, `tabPurchase Receipt` pr
+                                        where pr.name = pri.parent and pr.docstatus = 1 and pr.return_against = %s and purchase_order_item = %s
+                                        """, (pr_item.parent, pr_item.purchase_order_item))
+		returned_amt = returned_amt and returned_amt[0][0] or 0
+		
+		billed_amt_agianst_pr -= returned_amt
 
 		# Distribute billed amount directly against PO between PRs based on FIFO
 		if billed_against_po and billed_amt_agianst_pr < pr_item.amount:

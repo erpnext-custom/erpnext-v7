@@ -64,6 +64,8 @@ def update_value(sch_name, dep_amount, accu_dep, income, accu_income):
 def change_value(asset=None, value=None, start_date=None, credit_account=None, asset_account=None):
 	if(asset and value and start_date <= nowdate()):
 		asset_obj = frappe.get_doc("Asset", asset)
+		if asset_obj.status not in ("Partially Depreciated", "Fully Depreciated", "Submitted"):
+			frappe.throw("Invalid Asset")
 		if asset_obj and asset_obj.docstatus == 1:
 			#Make GL Entries for additional values and update gross_amount (rate)
 			asset_obj.db_set("additional_value", flt(asset_obj.additional_value) + flt(value))
