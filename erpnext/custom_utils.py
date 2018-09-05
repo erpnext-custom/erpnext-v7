@@ -248,8 +248,8 @@ def check_budget_available(cost_center, budget_account, transaction_date, amount
         if budget_amount and budget_amount[0].action == "Ignore":
                 pass 
         else:
-		"""if budget_amount and budget_amount[0].budget_check == "Ignore":
-                        return"""
+		if budget_amount and budget_amount[0].budget_check == "Ignore":
+                        return
                 if budget_amount:
                         committed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31"), as_dict=True)
                         consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabConsumed Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31"), as_dict=True)

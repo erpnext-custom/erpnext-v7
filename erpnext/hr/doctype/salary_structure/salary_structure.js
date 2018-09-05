@@ -95,6 +95,7 @@ cur_frm.cscript['Make Salary Slip'] = function() {
 }
 
 cur_frm.cscript.employee = function(doc, dt, dn){
+	console.log('employee');
 	if (doc.employee){
 		//++ Ver 20160804.1 Begins added by SSK
 		// GIS
@@ -105,7 +106,7 @@ cur_frm.cscript.employee = function(doc, dt, dn){
 			},
 			callback: function(r){
 				if (r.message){
-					calc_gis_amt = Math.round(r.message[0][0]);
+					calc_gis_amt = Math.round(parseFloat(r.message));
 				}
 			}
 		});

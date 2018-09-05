@@ -226,6 +226,12 @@ def get_data():
 					"description": "Bulk document generator for Salary Remittance",
 					"hide_count": True
 				},
+				{
+					"type": "doctype",
+					"name": "Fund Requisition",
+					"description": "Fund Requisition",
+					"hide_count": True
+				},
 			]
 		},
 		{

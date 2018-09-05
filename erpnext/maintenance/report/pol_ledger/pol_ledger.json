@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-08-16 10:35:24.686854", 
- "modified_by": "Administrator", 
+ "modified": "2018-09-05 15:39:58.528441", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "POL Ledger", 
  "owner": "Administrator", 
@@ -24,6 +24,12 @@
   }, 
   {
    "role": "POL User"
+  }, 
+  {
+   "role": "Fleet Manager"
+  }, 
+  {
+   "role": "Fleet User"
   }
  ], 
  "submitted_by": ""

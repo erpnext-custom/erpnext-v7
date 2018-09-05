@@ -1,0 +1,19 @@
+{
+ "creation": "2018-09-05 17:45:22.698271", 
+ "css": "table {\n    margin: 0 auto; /* or margin: 0 auto 0 auto */\n    width: 90%;\n    line-height: 1;\n  }\n\n#main {\n   margin-left: 20px;\n   margin-right: 20px;\n}\n@media all {\n   div .printedby {\n       position: fixed;\n       bottom: 0;\n       text-align: center;\n       font-size: xx-small;\n       width: 100% !important;\n   }\n}", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "Fund Requisition", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div class=\"page-break\">\n<div id=\"header-html\" class=\"hidden-pdf\">\n    {%- if letter_head and not no_letterhead -%}\n        <div class=\"letter-head\">\n            {{ letter_head }}\n        </div>\n    {%- endif -%}\n</div>\n\n\n<div id=\"footer-html\" class=\"visible-pdf\">\n    {% if not no_letterhead and footer %}\n        <div class=\"letter-head-footer\">\n        {{ footer }}\n        </div>\n    {% endif %}\n\n    <p class=\"text-center small page-number visible-pdf\">\n        {{ _(\"Page {0} of {1}\").format('<span class=\"page\"></span>', '<span class=\"topage\"></span>') }}\n    </p>\n</div>\n<div class=\"print-heading\">\n<div  style=\"text-align: center;\">\n<h3>FUND REQUISITION</h3>\n<h5><u>\n\n\t{{ doc.branch }}\n\n</u></h5>\n\n</div>\n<div>\n <table class = \"table1\" style=\"margin-top: 20px; text-align:justify;font-size:small; width:100% \">\n<tr>\n<td style=\"width:30%;\"><strong>Reference:</strong></td>\n<td style=\"width:45%;\">{{ doc.reference }}</td>\n<td style=\"width:10%;\"><strong>Date:</strong></td>\n<td style=\"width:15%;\">{{ doc.posting_date }}</td>\n</tr>\n<tr>\n<td><strong>Cost Center:</strong></td>\n<td>{{ doc.cost_center }}</td>\n</tr>\n<tr>\n<td><strong>Requesting Bank Account:</strong></td>\n<td>{{ doc.bank }}</td>\n</tr>\n</table>\n\n<table class=\"table table-bordered\" style=\"margin-top: 15px;\">\n  <tbody>\n\t<tr>\n\t\t<th>Sl.</th>\n\t\t<th>Account</th>\n\t\t<th> Amount</th>\n\t\t{%- if doc.items[0].remarks -%}\n\t\t<th>Remarks </th>\n\t\t{%- endif -%}\n\t</tr>\n\t{%- for row in doc.items -%}\n\t<tr>\n\t\t<td style=\"width: 5%; text-align= center;\">{{ row.idx }}</td>\n\t\t<td style=\"width: 40%; text-align= center;\">{{ row.accounts }}</td>\n\t\t<td style=\"width: 15%; text-align= right; \">{{ frappe.format_value(row.amount, {\"fieldtype\":\"Currency\"}) }}</td>\n\t\t{%- if doc.items[0].remarks -%}\n\t\t<td style = \"width: 10%; text-align= left; \">{{row.remarks}}</td>\n\t\t{%- endif -%}\n\t</tr>\n\t{%- endfor -%}\n<tr>\n\t\t\t\t\t<td style=\"text-align:right;\" colspan=\"2\"><b>Total Amount:</b></td>\n\t\t\t\t\t<td style=\"text-align= right;\"><b>{{doc.get_formatted(\"total_amount\", doc)}}</b></td>\n\n\t\t\t\t</tr>\n\n</table>\n\n<div style=\"float: left; width: 100%; font-size: small\">\n   <div><strong>In Words: </strong>{{ (frappe.utils.money_in_words(doc.total_amount))[3:] }} </div>\n</div>\n<table>\n<div style=\"padding-top:30px; clear: both;\">\n{%- if doc.items[0].remarks -%}\n{{doc.remarks }}\n{%- endif -%}\n</div>\n </table>\n<div style=\"padding-top:100px; clear: both;\">\n\n<div style=\"padding-top: 80px; width: 33%; float: right; text-align:center;\">(Authorized Signatory) </div>\n</div>\n\n\n<div style=\"padding-top: 100px; clear: both;\">\n<div class=\"printedby\">This print is system generated and should be considered VALID only with appropriate seal and/or signature. <br>  Printed by {{ frappe.user }} on {{ frappe.utils.nowdate()  }} at {{ frappe.utils.nowtime() }}</div>\n", 
+ "idx": 0, 
+ "modified": "2018-09-05 17:49:52.875372", 
+ "modified_by": "Administrator", 
+ "name": "Fund Requisition", 
+ "owner": "Administrator", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes"
+}

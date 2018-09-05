@@ -14,8 +14,8 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 			frappe.call({
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.updateSalaryTDS",
 				args: {
+					"purpose": frm.doc.purpose,
 					"month": frm.doc.month,
-					"branch": frm.doc.branch,
 					"fiscal_year": frm.doc.fiscal_year,
 					"receipt_number":frm.doc.receipt_number,
 					"receipt_date":frm.doc.receipt_date,
@@ -27,7 +27,9 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 						msgprint("TDS Receipt details updated")
 						cur_frm.set_df_property("update_receipt_date", "read_only", 1)	
 					}
-				}
+				},
+				freeze: true,
+				freeze_message: "Updating Records....Please Wait"
 			})
 		}
 		else {
@@ -41,7 +43,6 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.updateBonus",
 				args: {
 					"purpose": frm.doc.purpose,
-					"branch": frm.doc.branch,
 					"fiscal_year": frm.doc.bonus_and_pbva_fy,
 					"receipt_number":frm.doc.receipt_number,
 					"receipt_date":frm.doc.receipt_date,
@@ -53,7 +54,9 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 						msgprint("TDS Receipt details updated")
 						cur_frm.set_df_property("update_bonus", "read_only", 1)	
 					}
-				}
+				},
+				freeze: true,
+				freeze_message: "Updating Records....Please Wait"
 			})
 		}
 		else {
@@ -66,14 +69,15 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 			frappe.call({
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.updatePBVA",
 				args: {
-					"month": frm.doc.purpose,
-					"branch": frm.doc.branch,
+					"purpose": frm.doc.purpose,
 					"fiscal_year": frm.doc.bonus_and_pbva_fy,
 					"receipt_number":frm.doc.receipt_number,
 					"receipt_date":frm.doc.receipt_date,
 					"cheque_number":frm.doc.cheque_no,
 					"cheque_date":frm.doc.cheque_date
 				},
+				freeze: true,
+				freeze_message: "Updating Records....Please Wait",
 				callback: function(r) {
 					if(r.message == "DONE") {
 						msgprint("TDS Receipt details updated")
