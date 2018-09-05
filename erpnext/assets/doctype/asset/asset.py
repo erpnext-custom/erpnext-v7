@@ -196,8 +196,10 @@ class Asset(Document):
 	def delete_depreciation_entries(self):
 		for d in self.get("schedules"):
 			if d.journal_entry:
-				frappe.get_doc("Journal Entry", d.journal_entry).cancel()
-				d.db_set("journal_entry", None)
+				je = frappe.get_doc("Journal Entry", d.journal_entry)
+                                if je.docstatus == 1:
+                                        je.cancel()
+                                d.db_set("journal_entry", None)
 
 		self.db_set("value_after_depreciation",
 			(flt(self.gross_purchase_amount) - flt(self.opening_accumulated_depreciation)))
