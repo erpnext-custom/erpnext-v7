@@ -25,8 +25,10 @@ def get_data(filters=None):
 	if filters.branch:
 		query += " and branch = \'" + str(filters.branch) + "\'"
 
-	query += " order by `date`"
+	if filters.equipment:
+		query += " and equipment = \'" + str(filters.equipment) + "\'"
 
+	query += " order by `date`"
 	# get_pol_till(purpose, equipment, date, pol_type=None)
 	for eq in frappe.db.sql(query, as_dict=True):
 		item = frappe.db.sql("select item_code, item_name, stock_uom from tabItem where `name`= \'" + str(eq.pol_type) + "\'", as_dict=True)
@@ -71,6 +73,9 @@ def get_data(filters=None):
 	if filters.branch:
 		query1 += " and branch = \'" + str(filters.branch) + "\'"
 
+	if filters.equipment:
+		query1 += " and equipment = \'" + str(filters.equipment) + "\'"
+
 	query1 += " order by `to_date`"
 	
 	for vl in frappe.db.sql(query1, as_dict=True):
@@ -91,7 +96,8 @@ def get_data(filters=None):
 		vfuel_balance = flt(vreceived) - flt(vconsumed_till)
 		row = [get_datetime(str(vl.to_date) + " " + str(vl.to_time)), vl.branch, vl.equipment, vequipment[0]['equipment_number'], vitem[0]['item_name'], -vl.consumption, vfuel_balance, vbalance, "Consumed", "Vehicle Logbook", vl.name, vl.branch, "No"]
 		data.append(row)
-		data = sorted(data, key=itemgetter(0))
+
+	data = sorted(data, key=itemgetter(0))
 		#data.sort(key=lambda r:(r[0],[1]))
 	return data
 

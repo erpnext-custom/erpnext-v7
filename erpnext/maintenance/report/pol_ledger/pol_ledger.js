@@ -24,7 +24,14 @@ frappe.query_reports["POL Ledger"] = {
 			"fieldtype": "Date",
 			"width": "80",
 			"reqd":1
-		}
+		},
+		{	
+			"fieldname": "equipment",
+			"label": ("Equipment"),
+			"fieldtype": "Link",
+			"options": "Equipment",
+			"width": "100",
+		},
 	],
 	"formatter":function (row, cell, value, columnDef, dataContext, default_formatter) {
                 value = default_formatter(row, cell, value, columnDef, dataContext);

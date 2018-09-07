@@ -14,7 +14,9 @@ class HSDAdjustment(Document):
 
 	def check_mandatory_fields(self):
 		for a in self.items:
-			e_no, hsd_type = frappe.db.get_value("Equipment", a.equipment, ["equipment_number", "hsd_type"])
+			e_no, hsd_type, branch = frappe.db.get_value("Equipment", a.equipment, ["equipment_number", "hsd_type", "branch"])
+			if branch != self.branch:
+				frappe.throw("Equipment <b>"+str(a.equipment)+"</b> doesn't belong to " + str(self.branch))
 			a.equipment_number = e_no
 			a.hsd_type = hsd_type
 			if not hsd_type:

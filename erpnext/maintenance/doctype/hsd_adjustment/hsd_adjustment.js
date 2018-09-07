@@ -18,3 +18,12 @@ frappe.ui.form.on('HSD Adjustment', {
 		});
 	}
 });
+
+cur_frm.fields_dict['items'].grid.get_field('equipment').get_query = function(frm, cdt, cdn) {
+	return {
+		"filters": {
+			"branch": frm.branch
+		    } 
+	}
+}
+
