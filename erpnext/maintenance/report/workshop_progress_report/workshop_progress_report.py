@@ -12,8 +12,10 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		("Job No.") + ":Link/Job Card:120",
+		("Job Card #") + ":Link/Job Card:120",
 		("Repair Type") + ":data:120",
+		("Job In Date") + ":date:100",
+		("Job Out Date") + ":date:100",
 		("Description") + ":data:300",
 		("Equipment No")+":data:150",
 		("Amount")+":Currency:150",
@@ -23,12 +25,12 @@ def get_columns():
 	]
 
 def get_data(filters):
-	query ="""select jc.name, jc.repair_type, (select group_concat(jci.job_name separator ',') from `tabJob Card Item` jci where jci.parent = jc.name) as description, jc.equipment_number, jc.total_amount, (select group_concat(ma.employee_name separator ',') from `tabMechanic Assigned` ma where ma.parent = jc.name ), jc.customer from `tabJob Card` AS jc, `tabBreak Down Report` AS bdr WHERE bdr.name = jc.break_down_report and jc.docstatus = '1'"""
+	query ="""select jc.name, jc.repair_type, jc.posting_date, jc.finish_date, (select group_concat(jci.job_name separator ', ') from `tabJob Card Item` jci where jci.parent = jc.name) as description, jc.equipment_number, jc.total_amount, (select group_concat(ma.employee_name separator ', ') from `tabMechanic Assigned` ma where ma.parent = jc.name ), jc.customer from `tabJob Card` AS jc, `tabBreak Down Report` AS bdr WHERE bdr.name = jc.break_down_report and jc.docstatus = '1'"""
 	if filters.get("branch"):
 		query += " and jc.branch = \'" + str(filters.branch) + "\'"
 
 	if filters.get("from_date") and filters.get("to_date"):
-		query += " and jc.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+		query += " and jc.finish_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 
 	if filters.get("customer"):
 		query += " and jc.owned_by = \'" + str(filters.customer) + "\'"

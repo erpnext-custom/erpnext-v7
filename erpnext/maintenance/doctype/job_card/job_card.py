@@ -4,9 +4,10 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils.data import time_diff_in_hours
-from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
+from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate, get_datetime
 from frappe.model.mapper import get_mapped_doc
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
@@ -17,6 +18,9 @@ class JobCard(AccountsController):
 		self.validate_owned_by()
 		if self.finish_date:
 			check_future_date(self.finish_date)
+                        if get_datetime(self.finish_date + " " + self.job_out_time) < get_datetime(self.posting_date + " " + self.job_in_time):
+                                frappe.throw(_("Job out date cannot be earlier than job in date."),title="Invalid Data")
+
 		self.update_breakdownreport()
 		#Amount Segregation
 		cc_amount = {}
@@ -47,8 +51,8 @@ class JobCard(AccountsController):
 		if not self.finish_date:
 			frappe.throw("Please enter Job Out Date")
 		else:
-			if self.finish_date < self.posting_date:
-				frappe.throw("Job Out Date should be greater than or equal to Job In Date")
+                        if get_datetime(self.finish_date + " " + self.job_out_time) < get_datetime(self.posting_date + " " + self.job_in_time):
+                                frappe.throw(_("Job out date cannot be earlier than job in date."),title="Invalid Data")
 			self.update_reservation()
 		#self.check_items()
 		if self.owned_by == "Own":
@@ -121,7 +125,7 @@ class JobCard(AccountsController):
 			je.voucher_type = 'Maintenance Invoice'
 			je.naming_series = 'Maintenance Invoice'
 			je.remark = 'Payment against : ' + self.name;
-			je.posting_date = self.posting_date
+			je.posting_date = self.finish_date
 			je.branch = self.branch
 
 			if self.owned_by == "CDCL":

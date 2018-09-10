@@ -43,6 +43,7 @@ class HSDAdjustment(Document):
 			con.pol_type = a.hsd_type
 			con.branch = self.branch
 			con.date = self.date
+			con.posting_time = self.posting_time
 			con.qty = qty
 			con.reference_type = "HSD Adjustment"
 			con.reference_name = self.name

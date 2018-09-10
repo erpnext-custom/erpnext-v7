@@ -66,7 +66,7 @@ class EquipmentHiringExtension(Document):
                 e = frappe.get_doc("Equipment", self.equipment)
 
                 db_query = "select a.rate_fuel, a.rate_wofuel, a.idle_rate, a.yard_hours, a.yard_distance from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{0}' and b.equipment_model = '{1}' and '{2}' between a.from_date and ifnull(a.to_date, now()) and '{3}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
-                data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, doc.to_date, self.tender_hire_rate), as_dict=True)
+                data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, doc.to_date, self.extension_date), as_dict=True)
                 if not data:
                         frappe.throw("There is either no Hire Charge defined or your logbook period overlaps with the Hire Charge period.")
                 if doc.rate_type == "With Fuel":

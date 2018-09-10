@@ -8,6 +8,19 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def check_hsd():
+	hsds = frappe.db.sql("select name from `tabHSD Adjustment` where docstatus = 1", as_dict=1)
+	for a in hsds:
+		doc = frappe.get_doc("HSD Adjustment", a.name)
+		for b in doc.items:
+			e_branch = frappe.db.get_value("Equipment", b.equipment, "branch")
+			if a.branch != e_branch:
+				pol = frappe.db.sql("select name from `tabPOL Entry` where equipment = %s and reference_name = %s", (b.equipment, a.name))
+				pol = pol and pol[0][0] or None
+				if pol:
+					print(str(pol) + " ==> " + str(e_branch))
+					frappe.db.sql("update `tabPOL Entry` set branch = %s where name = %s", (e_branch, pol))
+
 def adjust_advance_balance():
 	advances = frappe.db.sql("select name from `tabHire Charge Invoice`", as_dict=1)
 	for a in advances:

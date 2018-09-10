@@ -202,8 +202,10 @@ class TravelClaim(Document):
                 self.total_claim_amount = flt(total_claim_amount)
                 self.balance_amount     = flt(self.total_claim_amount) + flt(self.extra_claim_amount) - flt(self.advance_amount)
 
+		'''
                 if flt(self.balance_amount) < 0:
                         frappe.throw(_("Balance Amount cannot be a negative value."), title="Invalid Amount")
+		'''
                 
 	def check_return_date(self):
                 pass
@@ -320,6 +322,9 @@ class TravelClaim(Document):
 	
 		#Set a reference to the claim journal entry
 		self.db_set("claim_journal", je.name)
+		if flt(self.balance_amount) < 0:
+			frappe.msgprint(_("Advance balance amount Nu.{0}/- is receivable from employee {1}({2})").format("{0:,.2f}".format(flt(self.advance_amount)-flt(total_amt)),self.employee_name,self.employee))
+
 	
 	##
 	# Update the claim reference on travel authorization
