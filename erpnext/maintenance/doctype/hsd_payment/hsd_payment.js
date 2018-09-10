@@ -48,7 +48,9 @@ frappe.ui.form.on('HSD Payment', {
 				callback: function(r, rt) {
 					frm.refresh_field("items");
 					frm.refresh_fields();
-				}
+				},
+				freeze: true,
+				freeze_message: "Fetching Invoices...Please Wait"
 			});
 		}
 		else {

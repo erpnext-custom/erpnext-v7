@@ -17,11 +17,5 @@ frappe.query_reports["POL Balance Report"] = {
 			"width": "80",
 			"reqd" : 1
 		},          
-		{
-			"fieldname":"all_equipment",
-			"label" : ("Tank Balance of All Equipments"),
-			"fieldtype": "Check",
-			"default": 0
-		}
 	]
 }

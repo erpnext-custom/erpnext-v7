@@ -12,7 +12,9 @@ frappe.ui.form.on('HSD Adjustment', {
 			callback: function(r, rt) {
 				frm.refresh_field("items");
 				frm.refresh_fields();
-			}
+			},
+			freeze: true,
+			freeze_message: "Loading Equipment Data.... Please Wait!"
 		});
 	}
 });

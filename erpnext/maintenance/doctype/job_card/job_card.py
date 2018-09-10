@@ -10,6 +10,8 @@ from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
 from frappe.model.mapper import get_mapped_doc
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.maintenance.maintenance_utils import get_equipment_ba
+from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class JobCard(AccountsController):
 	def validate(self):
@@ -132,6 +134,11 @@ class JobCard(AccountsController):
 				if not ir_account:
 					frappe.throw("Setup Internal Revenue Account in Maintenance Accounts Settings")	
 
+				if not self.equipment:
+					frappe.throw("Equipment is Mandatory")
+				ba = get_equipment_ba(self.equipment)
+				default_ba = get_default_ba()
+
 				je.append("accounts", {
 						"account": maintenance_account,
 						"reference_type": "Job Card",
@@ -139,6 +146,7 @@ class JobCard(AccountsController):
 						"cost_center": self.customer_cost_center,
 						"debit_in_account_currency": flt(self.total_amount),
 						"debit": flt(self.total_amount),
+						"business_activity": ba
 					})
 				je.append("accounts", {
 						"account": ic_account,
@@ -147,6 +155,7 @@ class JobCard(AccountsController):
 						"cost_center": self.customer_cost_center,
 						"credit_in_account_currency": flt(self.total_amount),
 						"credit": flt(self.total_amount),
+						"business_activity": default_ba
 					})
 				je.append("accounts", {
 						"account": ic_account,
@@ -155,6 +164,7 @@ class JobCard(AccountsController):
 						"cost_center": self.cost_center,
 						"debit_in_account_currency": flt(self.total_amount),
 						"debit": flt(self.total_amount),
+						"business_activity": default_ba
 					})
 				for a in ["Service", "Item"]:
 					account_name = goods_account
@@ -170,6 +180,7 @@ class JobCard(AccountsController):
 								"cost_center": self.cost_center,
 								"credit_in_account_currency": flt(amount),
 								"credit": flt(amount),
+								"business_activity": ba
 							})
 				je.insert()
 
@@ -222,6 +233,7 @@ class JobCard(AccountsController):
                         from erpnext.accounts.general_ledger import make_gl_entries
                         gl_entries = []
                         self.posting_date = self.finish_date
+			ba = get_default_ba()
 
 			goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
 			services_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_services_account")
@@ -243,7 +255,8 @@ class JobCard(AccountsController):
                                        "debit_in_account_currency": self.total_amount,
                                        "against_voucher": self.name,
                                        "against_voucher_type": self.doctype,
-                                       "cost_center": self.cost_center
+                                       "cost_center": self.cost_center,
+				       "business_activity": ba
                                 }, self.currency)
                         )
 
@@ -254,6 +267,7 @@ class JobCard(AccountsController):
 					       "against": self.customer,
 					       "credit": self.goods_amount,
 					       "credit_in_account_currency": self.goods_amount,
+					       "business_activity": ba,
 					       "cost_center": self.cost_center
 					}, self.currency)
 				)
@@ -264,6 +278,7 @@ class JobCard(AccountsController):
 					       "against": self.customer,
 					       "credit": self.services_amount,
 					       "credit_in_account_currency": self.services_amount,
+					       "business_activity": ba,
 					       "cost_center": self.cost_center
 					}, self.currency)
 				)

@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-10 14:24:26.443376", 
- "modified_by": "Administrator", 
+ "modified": "2018-05-21 14:56:24.092507", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Equipment Status", 
  "owner": "Administrator", 
@@ -45,9 +45,6 @@
   }, 
   {
    "role": "Accounts Manager"
-  }, 
-  {
-   "role": "Project Supervisor"
   }
  ]
 }

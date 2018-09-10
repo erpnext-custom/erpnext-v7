@@ -9,17 +9,20 @@ from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.maintenance.maintenance_utils import get_equipment_ba
+from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class HireChargeInvoice(AccountsController):
 	def validate(self):
 		check_future_date(self.posting_date)
 		self.check_advances(self.ehf_name)
+		self.set_advance_data()
+		self.set_discount_data()
+		self.set_amount()
 		if self.total_invoice_amount <= 0:
 			frappe.throw("Total Invoice Amount should be greater than 0")
 		if self.balance_amount < 0:
 			frappe.throw("Balance amount cannot be negative")
-		self.outstanding_amount = self.balance_amount
-		self.set_advance_data()
 
 	def set_advance_data(self):
 		advance_amount = 0
@@ -32,6 +35,21 @@ class HireChargeInvoice(AccountsController):
 			balance_amount = flt(balance_amount) + flt(a.balance_advance_amount)
 		self.advance_amount = advance_amount
 		self.balance_advance_amount = balance_amount
+
+	def set_discount_data(self):
+		discount_amount = 0
+		total_amount = 0
+		for a in self.items:
+			if flt(a.discount_amount) < 0 or flt(a.discount_amount) > flt(a.total_amount):
+				frappe.throw("Discount Amount should be smaller than Total Aamount")
+			discount_amount = flt(discount_amount) + flt(a.discount_amount)
+			total_amount = flt(total_amount) + flt(a.total_amount)
+		self.discount_amount = discount_amount
+		self.total_invoice_amount = total_amount
+
+	def set_amount(self):
+		self.balance_amount = flt(self.total_invoice_amount) - flt(self.advance_amount) - flt(self.discount_amount)
+		self.outstanding_amount = self.balance_amount
 
 	def on_submit(self):
 		self.check_vlogs()
@@ -140,6 +158,8 @@ class HireChargeInvoice(AccountsController):
 		if not discount_account:
 			frappe.throw("Setup Discount Account in Maintenance Accounts Settings")
 
+		default_ba = get_default_ba()
+
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
 		je.title = "Hire Charge Invoice (" + self.name + ")"
@@ -151,14 +171,26 @@ class HireChargeInvoice(AccountsController):
 
 		if self.owned_by == "CDCL":
 			customer_cost_center = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "customer_cost_center")
-			je.append("accounts", {
-					"account": hea_account,
-					"reference_type": "Hire Charge Invoice",
-					"reference_name": self.name,
-					"cost_center": customer_cost_center,
-					"debit_in_account_currency": flt(self.total_invoice_amount),
-					"debit": flt(self.total_invoice_amount),
-				})
+			for a in self.items:
+				equip_ba = get_equipment_ba(a.equipment)
+				je.append("accounts", {
+						"account": hea_account,
+						"reference_type": "Hire Charge Invoice",
+						"reference_name": self.name,
+						"cost_center": customer_cost_center,
+						"debit_in_account_currency": flt(a.total_amount),
+						"debit": flt(a.total_amount),
+						"business_activity": equip_ba
+					})
+				je.append("accounts", {
+						"account": hr_account,
+						"reference_type": "Hire Charge Invoice",
+						"reference_name": self.name,
+						"cost_center": self.cost_center,
+						"credit_in_account_currency": flt(a.total_amount),
+						"credit": flt(a.total_amount),
+						"business_activity": equip_ba
+					})
 			je.append("accounts", {
 					"account": ic_account,
 					"reference_type": "Hire Charge Invoice",
@@ -166,6 +198,7 @@ class HireChargeInvoice(AccountsController):
 					"cost_center": customer_cost_center,
 					"credit_in_account_currency": flt(self.total_invoice_amount),
 					"credit": flt(self.total_invoice_amount),
+					"business_activity": default_ba
 				})
 			je.append("accounts", {
 					"account": ic_account,
@@ -174,66 +207,11 @@ class HireChargeInvoice(AccountsController):
 					"cost_center": self.cost_center,
 					"debit_in_account_currency": flt(self.total_invoice_amount),
 					"debit": flt(self.total_invoice_amount),
+					"business_activity": default_ba
 				})
-			je.append("accounts", {
-					"account": hr_account,
-					"reference_type": "Hire Charge Invoice",
-					"reference_name": self.name,
-					"cost_center": self.cost_center,
-					"credit_in_account_currency": flt(self.total_invoice_amount),
-					"credit": flt(self.total_invoice_amount),
-				})
+
 			je.insert()
 
-		else:		
-			if self.total_invoice_amount > 0:
-				je.append("accounts", {
-						"account": hire_account,
-						"reference_type": "Hire Charge Invoice",
-						"reference_name": self.name,
-						"cost_center": self.cost_center,
-						"credit_in_account_currency": flt(self.total_invoice_amount),
-						"credit": flt(self.total_invoice_amount),
-					})
-
-			if self.advance_amount > 0:
-				je.append("accounts", {
-						"account": advance_account,
-						"party_type": "Customer",
-						"party": self.customer,
-						"reference_type": "Hire Charge Invoice",
-						"reference_name": self.name,
-						"cost_center": self.cost_center,
-						"debit_in_account_currency": flt(self.advance_amount),
-						"debit": flt(self.advance_amount),
-					})
-
-			if self.discount_amount > 0:
-				je.append("accounts", {
-						"account": discount_account,
-						"party_type": "Customer",
-						"party": self.customer,
-						"reference_type": "Hire Charge Invoice",
-						"reference_name": self.name,
-						"cost_center": self.cost_center,
-						"debit_in_account_currency": flt(self.discount_amount),
-						"debit": flt(self.discount_amount),
-					})
-
-			if self.balance_amount > 0:
-				je.append("accounts", {
-						"account": receivable_account,
-						"party_type": "Customer",
-						"party": self.customer,
-						"reference_type": "Hire Charge Invoice",
-						"reference_name": self.name,
-						"cost_center": self.cost_center,
-						"debit_in_account_currency": flt(self.balance_amount),
-						"debit": flt(self.balance_amount),
-					})
-
-			je.submit()
-			
 		self.db_set("invoice_jv", je.name)
 
 
@@ -254,29 +232,51 @@ class HireChargeInvoice(AccountsController):
                         gl_entries = []
                         self.posting_date = self.posting_date
 
+			default_ba = get_default_ba()
+
 			receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
 			if not receivable_account:
 				frappe.throw("Setup Reveivable Account in Maintenance Accounts Settings")
+
 			advance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_advance_account")
 			if not advance_account:
 				frappe.throw("Setup Advance Account in Maintenance Accounts Settings")
+
 			hire_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_account")
 			if not hire_account:
 				frappe.throw("Setup Hire Account in Maintenance Accounts Settings")
+
 			discount_account = frappe.db.get_single_value("Maintenance Accounts Settings", "discount_account")
 			if not discount_account:
 				frappe.throw("Setup Discount Account in Maintenance Accounts Settings")
-                        
-                        gl_entries.append(
-                                self.get_gl_dict({
-                                       "account": hire_account,
-				       "against_voucher_type": "Equipment Hiring Form",
-                                       "against": self.ehf_name,
-                                       "credit": self.total_invoice_amount,
-                                       "credit_in_account_currency": self.total_invoice_amount,
-                                       "cost_center": self.cost_center
-                                }, self.currency)
-                        )
+            
+			            
+			for a in self.items:
+				equip_ba = get_equipment_ba(a.equipment)
+
+				gl_entries.append(
+					self.get_gl_dict({
+					       "account": hire_account,
+					       "against_voucher_type": "Equipment Hiring Form",
+					       "against": self.ehf_name,
+					       "credit": a.total_amount,
+					       "credit_in_account_currency": a.total_amount,
+					       "cost_center": self.cost_center,
+					       "business_activity": equip_ba
+					}, self.currency)
+				)
+
+				if a.discount_amount:
+					gl_entries.append(
+						self.get_gl_dict({
+						       "account": discount_account,
+						       "against": self.customer,
+						       "debit": a.discount_amount,
+						       "debit_in_account_currency": a.discount_amount,
+						       "cost_center": self.cost_center,
+						       "business_activity": equip_ba
+						}, self.currency)
+					)
 
 			if self.advance_amount:
 				gl_entries.append(
@@ -287,20 +287,11 @@ class HireChargeInvoice(AccountsController):
 					       "party": self.customer,
 					       "debit": self.advance_amount,
 					       "debit_in_account_currency": self.advance_amount,
-					       "cost_center": self.cost_center
+					       "cost_center": self.cost_center,
+					       "business_activity": default_ba
 					}, self.currency)
 				)
 
-			if self.discount_amount:
-				gl_entries.append(
-					self.get_gl_dict({
-					       "account": discount_account,
-					       "against": self.customer,
-					       "debit": self.discount_amount,
-					       "debit_in_account_currency": self.discount_amount,
-					       "cost_center": self.cost_center
-					}, self.currency)
-				)
 			if self.balance_amount:
 				gl_entries.append(
 					self.get_gl_dict({
@@ -312,7 +303,8 @@ class HireChargeInvoice(AccountsController):
 					       "against_voucher_type": self.doctype,
 					       "debit": self.balance_amount,
 					       "debit_in_account_currency": self.balance_amount,
-					       "cost_center": self.cost_center
+					       "cost_center": self.cost_center,
+					       "business_activity": default_ba
 					}, self.currency)
 				)
                         make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)

@@ -8,6 +8,7 @@ from frappe.model.document import Document
 from frappe.utils import getdate, cstr, flt, fmt_money, formatdate, nowdate
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import generate_receipt_no, check_future_date
+from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class MechanicalPayment(AccountsController):
 	def validate(self):
@@ -52,6 +53,8 @@ class MechanicalPayment(AccountsController):
 		if not receivable_account:
 			frappe.throw("Setup Default Receivable Account in Maintenance Setting")
 
+		ba = get_default_ba()
+
 		gl_entries = []
 		gl_entries.append(
 			self.get_gl_dict({"account": self.income_account,
@@ -61,6 +64,7 @@ class MechanicalPayment(AccountsController):
 					 "party_check": 1,
 					 "reference_type": self.ref_doc,
 					 "reference_name": self.ref_no,
+					 "business_activity": ba,
 					 "remarks": self.remarks
 					})
 			)
@@ -74,6 +78,7 @@ class MechanicalPayment(AccountsController):
 						 "party_check": 1,
 						 "reference_type": self.ref_doc,
 						 "reference_name": self.ref_no,
+						 "business_activity": ba,
 						 "remarks": self.remarks
 						})
 				)
@@ -88,6 +93,7 @@ class MechanicalPayment(AccountsController):
 					 "party": self.customer,
 					 "reference_type": self.ref_doc,
 					 "reference_name": self.ref_no,
+					 "business_activity": ba,
 					 "remarks": self.remarks
 					})
 			)

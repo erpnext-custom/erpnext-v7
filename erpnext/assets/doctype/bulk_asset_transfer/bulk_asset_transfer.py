@@ -8,6 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from erpnext.accounts.utils import make_asset_transfer_gl
 from erpnext.assets.asset_utils import check_valid_asset_transfer
+from erpnext.assets.doctype.asset_movement.asset_movement import save_equipment
 
 class BulkAssetTransfer(Document):
 	def validate_data(self):
@@ -49,6 +50,7 @@ class BulkAssetTransfer(Document):
 					equip = frappe.get_doc("Equipment", equipment)
 					equip.branch = self.custodian_branch
 					equip.save()
+					#save_equipment(equipment, self.custodian_branch, self.posting_date, self.name, "Submit")
 					#doc.db_set("branch", self.custodian_branch)
 				make_asset_transfer_gl(self, a.asset_code, self.posting_date, a.cost_center, self.custodian_cost_center)
 
@@ -78,13 +80,15 @@ class BulkAssetTransfer(Document):
 			doc.db_set("issued_to", a.custodian)
 
 			if a.cost_center != self.custodian_cost_center:
+				branch = frappe.db.get_value("Cost Center", a.cost_center, "branch")
 				doc.db_set("cost_center", a.cost_center)
-				doc.db_set("branch", frappe.db.get_value("Cost Center", a.cost_center, "branch"))
-				equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code, "docstatus": 1}, "name")
+				doc.db_set("branch", branch)
+				equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code}, "name")
 				if equipment:
 					equip = frappe.get_doc("Equipment", equipment)
-					equip.branch = frappe.db.get_value("Cost Center", a.cost_center, "branch")
+					equip.branch = branch
 					equip.save()
+					#save_equipment(equipment, branch, self.posting_date, self.name, "Cancel")
 
 	def delete_gl_entries(self):
 		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", self.name)

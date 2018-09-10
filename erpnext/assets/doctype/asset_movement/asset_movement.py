@@ -122,20 +122,26 @@ class AssetMovement(Document):
 		#		order by posting_date asc limit 1""", (self.asset, self.company))[0][0]
 		if cancel:
 			custodian = self.source_custodian	
+			purpose = "Cancel"
+                        cost_center = self.current_cost_center
 		else:
 			custodian = self.target_custodian
+			purpose = "Submit"
+                        cost_center = self.target_custodian_cost_center
 
 		frappe.db.set_value("Asset", self.asset, "issued_to", custodian)
 		
 		if self.current_cost_center != self.target_custodian_cost_center:
+			branch = frappe.db.get_value("Cost Center", cost_center, "branch")
 			frappe.db.set_value("Asset", self.asset, "cost_center", frappe.db.get_value("Employee", custodian, "cost_center"))
-			frappe.db.set_value("Asset", self.asset, "branch", frappe.db.get_value("Employee", custodian, "branch"))
+			frappe.db.set_value("Asset", self.asset, "branch", branch)
 			
 			equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
 			if equipment:
 				equip = frappe.get_doc("Equipment", equipment)
-				equip.branch = frappe.db.get_value("Employee", custodian, "branch")
+				equip.branch = branch
 				equip.save()
+				#save_equipment(equipment, branch, self.posting_date, self.name, purpose)
 
 	def set_latest_cc_in_asset(self, cancel=None):
 		#latest_movement_entry = frappe.db.sql("""select target_cost_center from `tabAsset Movement`
@@ -150,16 +156,25 @@ class AssetMovement(Document):
 		#		order by posting_date asc limit 1""", (self.asset, self.company))[0][0]
 		if cancel:
 			cc = self.current_cost_center
+			purpose = "Cancel"
 		else:
 			cc = self.target_cost_center
+			purpose = "Submit"
 
+		branch = frappe.db.get_value("Cost Center", cc, "branch")
 		frappe.db.set_value("Asset", self.asset, "cost_center", cc)
-		frappe.db.set_value("Asset", self.asset, "branch", frappe.db.get_value("Cost Center", cc, "branch"))
+		frappe.db.set_value("Asset", self.asset, "branch", branch)
 
 		equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
 		if equipment:
 			equip = frappe.get_doc("Equipment", equipment)
-			equip.branch =  frappe.db.get_value("Cost Center", cc, "branch")
+			equip.branch =  branch
 			equip.save()
+			#save_equipment(equipment, branch, self.posting_date, self.name, purpose)
 
+def save_equipment(equipment, branch, posting_date, ref_doc, purpose):
+	equip = frappe.get_doc("Equipment", equipment)
+	equip.branch = branch
+	equip.create_equipment_history(branch, posting_date, ref_doc, purpose)
+	equip.save()
 

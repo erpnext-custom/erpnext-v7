@@ -17,9 +17,7 @@ exclude_from_linked_with = True
 class GLEntry(Document):
 	def validate(self):
 		self.flags.ignore_submit_comment = True
-		#avoid party check for salary
-		if self.party_check:
-			self.check_mandatory()
+		self.check_mandatory()
 		self.pl_must_have_cost_center()
 		self.check_pl_account()
 		self.validate_cost_center()
@@ -40,14 +38,15 @@ class GLEntry(Document):
 					self.against_voucher)
 
 	def check_mandatory(self):
-		mandatory = ['account','voucher_type','voucher_no','company']
+		mandatory = ['account','voucher_type','voucher_no','company', 'cost_center', 'business_activity']
 		for k in mandatory:
 			if not self.get(k):
 				frappe.throw(_("{0} is required").format(_(self.meta.get_label(k))))
 
 		account_type = frappe.db.get_value("Account", self.account, "account_type")
 		if account_type in ["Receivable", "Payable"] and not (self.party_type and self.party):
-			frappe.throw(_("Party Type and Party is required for Receivable / Payable account {0}").format(self.account))
+			if self.party_check:
+				frappe.throw(_("Party Type and Party is required for Receivable / Payable account {0}").format(self.account))
 
 		# Zero value transaction is not allowed
 		if not (flt(self.debit) or flt(self.credit)):

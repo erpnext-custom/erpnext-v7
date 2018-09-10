@@ -9,6 +9,7 @@ from erpnext.accounts.utils import get_fiscal_year
 from frappe.utils import flt, getdate, nowdate
 from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, check_budget_available
 from erpnext.stock.stock_ledger import get_valuation_rate
+from erpnext.maintenance.maintenance_utils import get_without_fuel_hire, get_equipment_ba
 
 class EquipmentPOLTransfer(Document):
 	def validate(self):
@@ -90,6 +91,7 @@ class EquipmentPOLTransfer(Document):
 					 "credit": flt(valuation_rate),
 					 "credit_in_account_currency": flt(valuation_rate),
 					 "cost_center": from_cc,
+					 "business_activity": get_equipment_ba(self.from_equipment)
 					})
 			)
 
@@ -98,6 +100,7 @@ class EquipmentPOLTransfer(Document):
 					 "debit": flt(valuation_rate),
 					 "debit_in_account_currency": flt(valuation_rate),
 					 "cost_center": to_cc,
+					 "business_activity": get_equipment_ba(self.to_equipment)
 					})
 			)
 
@@ -106,6 +109,7 @@ class EquipmentPOLTransfer(Document):
 					 "debit": flt(valuation_rate),
 					 "debit_in_account_currency": flt(valuation_rate),
 					 "cost_center": from_cc,
+					 "business_activity": get_equipment_ba(self.from_equipment)
 					})
 			)
 
@@ -114,6 +118,7 @@ class EquipmentPOLTransfer(Document):
 					 "credit": flt(valuation_rate),
 					 "credit_in_account_currency": flt(valuation_rate),
 					 "cost_center": to_cc,
+					 "business_activity": get_equipment_ba(self.to_equipment)
 					})
 			)
 

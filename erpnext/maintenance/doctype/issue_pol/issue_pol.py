@@ -12,7 +12,7 @@ from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, p
 from erpnext.controllers.stock_controller import StockController
 from erpnext.maintenance.report.maintenance_report import get_pol_till
 from erpnext.stock.utils import get_stock_balance
-from erpnext.maintenance.maintenance_utils import get_without_fuel_hire
+from erpnext.maintenance.maintenance_utils import get_without_fuel_hire, get_equipment_ba
 
 class IssuePOL(StockController):
 	def validate(self):
@@ -132,6 +132,7 @@ class IssuePOL(StockController):
 							 "credit": flt(valuation_rate),
 							 "credit_in_account_currency": flt(valuation_rate),
 							 "cost_center": self.cost_center,
+							 "business_activity": get_equipment_ba(self.tanker)
 							})
 					)
 
@@ -140,6 +141,7 @@ class IssuePOL(StockController):
 							 "debit": flt(valuation_rate),
 							 "debit_in_account_currency": flt(valuation_rate),
 							 "cost_center": cc,
+							 "business_activity": get_equipment_ba(a.equipment)
 							})
 					)
 				
@@ -154,6 +156,7 @@ class IssuePOL(StockController):
 								 "debit": flt(valuation_rate),
 								 "debit_in_account_currency": flt(valuation_rate),
 								 "cost_center": self.cost_center,
+								 "business_activity": get_equipment_ba(self.tanker)
 								})
 						)
 
@@ -162,6 +165,7 @@ class IssuePOL(StockController):
 								 "credit": flt(valuation_rate),
 								 "credit_in_account_currency": flt(valuation_rate),
 								 "cost_center": cc,
+								 "business_activity": get_equipment_ba(a.equipment)
 								})
 						)
 					
@@ -197,6 +201,7 @@ class IssuePOL(StockController):
 								 "credit": flt(valuation_rate),
 								 "credit_in_account_currency": flt(valuation_rate),
 								 "cost_center": self.cost_center,
+								 "business_activity": get_equipment_ba(self.tanker)
 								})
 						)
 
@@ -205,6 +210,7 @@ class IssuePOL(StockController):
 								 "debit": flt(valuation_rate),
 								 "debit_in_account_currency": flt(valuation_rate),
 								 "cost_center": cc,
+								 "business_activity": get_equipment_ba(a.equipment)
 								})
 						)
 
@@ -213,6 +219,7 @@ class IssuePOL(StockController):
 								 "debit": flt(valuation_rate),
 								 "debit_in_account_currency": flt(valuation_rate),
 								 "cost_center": self.cost_center,
+								 "business_activity": get_equipment_ba(self.tanker)
 								})
 						)
 
@@ -221,6 +228,7 @@ class IssuePOL(StockController):
 								 "credit": flt(valuation_rate),
 								 "credit_in_account_currency": flt(valuation_rate),
 								 "cost_center": cc,
+								 "business_activity": get_equipment_ba(a.equipment)
 								})
 						)
 
@@ -228,9 +236,8 @@ class IssuePOL(StockController):
 			if self.docstatus == 2:
 				sl_entries.reverse()
 
-			if getdate(self.posting_date) > getdate("2018-03-31"):
-				if post_sl:
-					self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+			if post_sl:
+				self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 
 		if gl_entries:
 			from erpnext.accounts.general_ledger import make_gl_entries

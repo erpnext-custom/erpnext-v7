@@ -23,7 +23,8 @@ from erpnext.accounts.doctype.journal_entry.journal_entry \
 	import get_average_exchange_rate, get_default_bank_cash_account, get_default_bank_cash_sales_account
 from erpnext.setup.utils import get_exchange_rate
 from erpnext.accounts.general_ledger import make_gl_entries
-from erpnext.custom_utils import generate_receipt_no, check_future_date
+from erpnext.custom_utils import generate_receipt_no, check_future_date, get_branch_cc
+from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 from erpnext.controllers.accounts_controller import AccountsController
 
@@ -85,6 +86,8 @@ class PaymentEntry(AccountsController):
 		self.update_advance_paid()
 							
 	def set_missing_values(self):
+		if not self.business_activity:
+			self.business_activity = get_default_ba() 
 		if self.payment_type == "Internal Transfer":
 			for field in ("party", "party_balance", "total_allocated_amount", 
 				"base_total_allocated_amount", "unallocated_amount"):
@@ -120,8 +123,7 @@ class PaymentEntry(AccountsController):
 		self.party_account_currency = self.paid_from_account_currency \
 			if self.payment_type=="Receive" else self.paid_to_account_currency
 			
-		self.set_missing_ref_details()
-			
+		self.set_missing_ref_details()			
 	
 	def set_missing_ref_details(self):
 		for d in self.get("references"):
@@ -410,6 +412,7 @@ class PaymentEntry(AccountsController):
 				"party": self.party,
 				"against": against_account,
 				"cost_center": self.pl_cost_center,
+				"business_activity": self.business_activity,
 				"account_currency": self.party_account_currency
 			})
 			
@@ -429,6 +432,7 @@ class PaymentEntry(AccountsController):
 				gle.update({
 					"against_voucher_type": d.reference_doctype,
 					"against_voucher": d.reference_name,
+					"business_activity": self.business_activity,
 					"cost_center": cc
 				})
 				
@@ -471,6 +475,7 @@ class PaymentEntry(AccountsController):
 							"against": self.party if self.payment_type=="Pay" else self.paid_to,
 							"credit_in_account_currency": self.paid_amount + total_deductions,
 							"credit": self.base_paid_amount + total_deductions,
+							"business_activity": self.business_activity,
 							"cost_center": self.pl_cost_center
 						})
 					)
@@ -484,6 +489,7 @@ class PaymentEntry(AccountsController):
 						"against": self.party if self.payment_type=="Pay" else self.paid_to,
 						"credit_in_account_currency": self.paid_amount + total_deductions,
 						"credit": self.base_paid_amount + total_deductions,
+						"business_activity": self.business_activity,
 						"cost_center": self.pl_cost_center
 					})
 				)
@@ -500,6 +506,7 @@ class PaymentEntry(AccountsController):
 							#"debit": self.base_received_amount,
 							"debit_in_account_currency": self.actual_receivable_amount - total_deductions,
 							"debit": self.actual_receivable_amount - total_deductions,
+							"business_activity": self.business_activity,
 							"cost_center": self.pl_cost_center
 						})
 					)
@@ -515,6 +522,7 @@ class PaymentEntry(AccountsController):
 						#"debit": self.base_received_amount
 						"debit_in_account_currency": self.actual_receivable_amount - total_deductions,
 						"debit": self.actual_receivable_amount - total_deductions,
+						"business_activity": self.business_activity,
 						"cost_center": self.pl_cost_center
 					})
 				)
@@ -552,6 +560,7 @@ class PaymentEntry(AccountsController):
 							dr_or_cr_cur: amount,
                                                         dr_or_cr: amount,
 							"cost_center": d.cost_center,
+							"business_activity": self.business_activity,
 							"party_type": d.party_type,
 							"party": d.party
 						})
@@ -564,6 +573,7 @@ class PaymentEntry(AccountsController):
 							"against": self.party or self.paid_from,
 							dr_or_cr_cur: amount,
                                                         dr_or_cr: amount,
+							"business_activity": self.business_activity,
 							"cost_center": d.cost_center
 						})
 					)
@@ -579,6 +589,7 @@ class PaymentEntry(AccountsController):
 							"against": self.party if self.payment_type=="Receive" else self.paid_from,
 							"debit_in_account_currency": self.tds_amount,
 							"debit": self.tds_amount,
+							"business_activity": self.business_activity,
 							"cost_center": self.pl_cost_center
 						})
 					)
@@ -822,10 +833,15 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		if bank_amount:
 			paid_amount = bank_amount
 
+	ba = get_default_ba()
+	cc = get_branch_cc(doc.branch)
 	if dt == "Sales Invoice":
                 bank_acc = frappe.db.get_value("Branch", doc.branch, "revenue_bank_account")
+		ba = doc.business_activity
         elif dt == "Purchase Invoice":
                 bank_acc = frappe.db.get_value("Branch", doc.branch, "expense_bank_account")
+		ba = doc.business_activity
+		cc = doc.buying_cost_center
         else:
                 bank_acc = bank.account
 
@@ -845,6 +861,8 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	pe.received_amount = received_amount
 	pe.actual_receivable_amount = received_amount
 	pe.branch = doc.branch	
+	pe.business_activity = ba
+	pe.pl_cost_center = cc
 
         # Ver 2.0 Begins, Following code added SHIV on 03/01/2018
         if party_currency and bank.account_currency:

@@ -12,6 +12,7 @@ from erpnext.controllers.recurring_document import convert_to_recurring, validat
 from erpnext.controllers.sales_and_purchase_return import validate_return
 from erpnext.accounts.party import get_party_account_currency, validate_party_frozen_disabled
 from erpnext.exceptions import InvalidCurrency
+from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 force_item_fields = ("item_group", "barcode", "brand", "stock_uom")
 
@@ -59,6 +60,12 @@ class AccountsController(TransactionBase):
 
 		if self.doctype == 'Purchase Invoice':
 			self.validate_paid_amount()
+	
+	def check_ba(self):
+                if not self.business_activity:
+                        self.business_activity = get_default_ba()
+                        if not self.business_activity:
+                                frappe.throw("Business Activity is Mandatory. Set up a default BA and try again")
 
 	def validate_paid_amount(self):
 		if hasattr(self, "is_pos") or hasattr(self, "is_paid"):
@@ -295,7 +302,8 @@ class AccountsController(TransactionBase):
 				"advance_amount": flt(d.amount),
 				"allocated_amount": flt(d.amount) if d.against_order else 0,
 				"advance_account": d.advance_account,
-				"advance_cost_center": d.cost_center
+				"advance_cost_center": d.cost_center,
+				"advance_business_activity": d.business_activity
 			})
 
 	def get_advance_entries(self, include_unallocated=True):
@@ -668,7 +676,7 @@ def get_advance_journal_entries(party_type, party, party_account, amount_field,
 	journal_entries = frappe.db.sql("""
 		select
 			"Journal Entry" as reference_type, t1.name as reference_name,
-			t1.remark as remarks, t2.{0} as amount, t2.name as reference_row,
+			t1.remark as remarks, t2.{0} as amount, t2.name as reference_row, t2.business_activity,
 			t2.reference_name as against_order, t2.account as advance_account, t2.cost_center
 		from
 			`tabJournal Entry` t1, `tabJournal Entry Account` t2
@@ -699,9 +707,9 @@ def get_advance_payment_entries(party_type, party, party_account,
 
 		payment_entries_against_order = frappe.db.sql("""
 			select
-				"Payment Entry" as reference_type, t1.name as reference_name,
-				t1.remarks, t2.allocated_amount as amount, t2.name as reference_row,
-				t2.reference_name as against_order, t1.posting_date, t1.{1} as advance_account
+				"Payment Entry" as reference_type, t1.name as reference_name, t1.business_activity,
+				t2.allocated_amount as amount, t2.name as reference_row, t1.pl_cost_center as cost_center,
+				t2.reference_name as against_order, t1.posting_date, t1.{1} as advance_account, t1.remarks
 			from `tabPayment Entry` t1, `tabPayment Entry Reference` t2
 			where
 				t1.name = t2.parent and t1.payment_type = %s

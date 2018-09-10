@@ -16,47 +16,52 @@ def execute(filters=None):
 	return columns, data
 
 def get_conditions(filters):
-	branch = consumption_date = rate_date = jc_date = insurance_date = rev_date = bench_date = tc_date = operator_date = le_date = ss_date= not_cdcl = disable = mr_date= ""
+	branch_cond = consumption_date = rate_date = jc_date = insurance_date = rev_date = bench_date = tc_date = operator_date = le_date = ss_date= not_cdcll = dis = mr_date= ""
+
 	if filters.get("branch"):
-		branch += str(filters.branch)
-	if filters.get("not_cdcl"):
-                not_cdcl  += "0"
+                branch_cond = " and eh.branch = \'"+str(filters.branch)+"\'"
+        else:
+                branch_cond = " and eh.branch like '%' "
 
-	if filters.get("include_disabled"):
-                disable  += "is_disabled"
-        '''else:
-                disable  += "0"'''
+        if filters.get("not_cdcl"):
+                not_cdcll = " and not_cdcl = 0"
+        else:
+                not_cdcll = " and not_cdcl like '%' "
 
-	consumption_date = get_dates(filters, "vl", "from_date", "to_date")
-	rate_date 	 = get_dates(filters, "pol", "date")
-	jc_date 	 = get_dates(filters, "jc", "posting_date", "finish_date")
-	insurance_date   = get_dates(filters, "ins", "insured_date")
-	operator_date    = get_dates(filters, "op", "start_date", "end_date")
-	tc_date		 = get_dates(filters, "tc", "posting_date")
-	le_date		 = get_dates(filters, "le", "encashed_date")
-	ss_date		 = get_dates(filters, "ss", "start_date", "ifnull(end_date,curdate())")
-	rev_date	 = get_dates(filters, "revn", "ci.posting_date")
-	bench_date       = get_dates(filters, "benchmark", "hi.from_date", "hi.to_date")
-	mr_date		 = get_dates(filters, "mr_pay", "from_date", "to_date")
-	return branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable, mr_date
+        if filters.get("include_disabled"):
+               dis = " and is_disabled like '%' "
+        else:
+               dis  = " and is_disabled != 1 "
+
+
+	consumption_date  = get_dates(filters, "vl", "from_date", "to_date")
+	rate_date 	  = get_dates(filters, "pol", "date")
+	jc_date	 	  = get_dates(filters, "jc", "posting_date", "finish_date")
+	insurance_date    = get_dates(filters, "ins", "id.insured_date")
+	reg_date          = get_dates(filters, "reg", "rd.registration_date")
+	operator_date     = get_dates(filters, "op", "start_date", "end_date")
+	tc_date	      	  = get_dates(filters, "tc", "posting_date")
+	le_date		  = get_dates(filters, "le", "encashed_date")
+	ss_date           = get_dates(filters, "ss", "start_date", "ifnull(end_date,curdate())")
+	rev_date          = get_dates(filters, "revn", "ci.posting_date")
+	bench_date        = get_dates(filters, "benchmark", "hi.from_date", "hi.to_date")
+	mr_date           = get_dates(filters, "mr_pay", "from_date", "to_date")
+	return branch_cond, consumption_date, rate_date, jc_date, insurance_date, reg_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcll, dis, mr_date
 
 def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	cond1 = ""
 	cond2 = ""
+	eh_cond = ""
 	from_date,to_date,no_of_months, from_date1, to_date1, ra = get_date_conditions(filters)
-	
 	if from_date_column:
 		cond1 = ("{0} between '%(from_date)s'  and '%(to_date)s'").format(from_date_column)
-
 	if to_date_column:
 		if module in ("op","ss", "benchmark"):
 			cond2 = str(" or {0} between '%(from_date)s' and '%(to_date)s'").format(to_date_column)
 		else:
 			cond2 = str("and {0} between '%(from_date)s' and '%(to_date)s'").format(to_date_column)
-
 	cond1 = cond1 % {"from_date": from_date, "to_date": to_date}
 	cond2 = cond2 % {"from_date": from_date, "to_date": to_date}
-
 	return "({0} {1})".format(cond1, cond2)
 
 def get_date_conditions(filters):
@@ -105,36 +110,41 @@ def get_date_conditions(filters):
 		no_of_months = 12
 		ra = [1,2,3,4,5,6,7,8,9,10,11,12]
 		#for i in ra:
-		#	from_date1, to_date1, no_of_months1 = calc_dates(i,i)		
-	return from_date, to_date, no_of_months, from_date1, to_date1, ra 
-
-'''def calc_dates_tw(filters):
-	def calc_dates_two(from_date, to_date):
-		from_date1 = getdate(filters.get("fy") + "-" + str(from_month) + "-" + "01")
-		to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(to_month) + "-" + "01"))
-		return from_date1, to_date1'''
+		#	from_date1, to_date1, no_of_months1 = calc_dates(i,i)
+	return from_date, to_date, no_of_months, from_date1, to_date1, ra
 
 
 def get_data(filters):
-	branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable, mr_date  =  get_conditions(filters)
+	branch_cond, consumption_date, rate_date, jc_date, insurance_date, reg_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcll, dis, mr_date  =  get_conditions(filters)
+	from_date, to_date, no_of_months, from_date1, to_date1, ra  = get_date_conditions(filters)
+	frappe.msgprint("fr,: '{0}' to: {1}".format(from_date, to_date))
 	data = []
-	branch_cond = " branch = '{0}'".format(branch) if branch else "branch = branch"
-	not_cdcll = " where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else "where not_cdcl = not_cdcl"
-	dis	= " is_disabled = {0}".format(disable) if disable else "is_disabled = 0"
-	#if disable else "is_disabled = is_disabled"
-	#branch_cond = " where branch = '{0}'".format(branch) if branch else ""
-	from_date = to_date = no_of_month = get_date_conditions(filters)
-	#frappe.msgprint("dis {0}".format(dis))
-	#frappe.msgprint("not cd {0}".format(not_cdcll))
-	equipments = frappe.db.sql("""
-                                select name, branch, equipment_number, equipment_type, equipment_model
-                                from `tabEquipment`
-				{0} and 
-				{1} and 
-				{2}
-				order by branch, name
-                        """.format(not_cdcll, branch_cond, dis), as_dict=1)
- 
+	if filters.get("branch"):
+                branch_cond = " and eh.branch = \'"+str(filters.branch)+"\'"
+        else:
+                branch_cond = " and eh.branch like '%' "
+
+        if filters.get("not_cdcl"):
+                not_cdcll = " and not_cdcl = 0"
+        else:
+                not_cdcll = " and not_cdcl like '%' "
+
+        if filters.get("include_disabled"):
+               dis = " and is_disabled like '%' "
+        else:
+               dis  = " and is_disabled != 1 "
+	
+	query = """
+		select e.name as name, eh.branch as branch, e.equipment_number as equipment_number, 
+			e.equipment_type as equipment_type, e.equipment_model as equipment_model
+			from `tabEquipment` e, `tabEquipment History` eh 
+			where eh.parent = e.name
+			{0} {1} {2} 
+			and ('{3}' between eh.from_date and ifnull(eh.to_date, now())
+			or '{4}' between eh.from_date and ifnull(eh.to_date, now()))
+			 group by eh.branch, eh.parent order by eh.branch, eh.parent
+	""".format(not_cdcll, branch_cond, dis, from_date, to_date)
+        equipments = frappe.db.sql(query, as_dict=1)
    	for eq in equipments:
 
                 # `tabVehicle Logbook`
@@ -143,9 +153,8 @@ def get_data(filters):
                         	from `tabVehicle Logbook`
                         	where equipment = '{0}'
                         	and   docstatus = 1
-				and   {1}
-                    """.format(eq.name,consumption_date), as_dict=1)[0]
-
+				and   {1} and  branch = '{2}'
+                    """.format(eq.name,consumption_date, eq.branch), as_dict=1)[0]
                 # `tabPOL`
             	pol = frappe.db.sql("""
                             	select (sum(qty*rate)/sum(qty)) as rate
@@ -161,44 +170,42 @@ def get_data(filters):
                             	from `tabJob Card`
                             	where equipment = '{0}'
                             	and   docstatus = 1
-				and   {1}
-                    """.format(eq.name,jc_date), as_dict=1)[0]
+				and   {1} and branch = '{2}'
+                    """.format(eq.name,jc_date, eq.branch), as_dict=1)[0]
 
-		'''#revenue
-		revn = frappe.db.sql("""
-				  select id.total_amount as rev
-				  from `tabHire Invoice Details` id, `tabHire Charge Invoice` ci
-				  where ci.name = id.parent
-				  and id.equipment = '{0}' and {1}
-				  group by id.equipment """.format(eq.name, rev_date), as_dict=1)
-		#frappe.msgprint("{0}".format(revn))'''	
-	
 		#Insurance
 		ins = frappe.db.sql("""
 			 	select sum(ifnull(id.insured_amount,0)) as insurance
 				from `tabInsurance Details` id,	`tabInsurance and Registration` ir
 				where id.parent = ir.name and ir.equipment = '{0}'
-				and   ir.docstatus = 1
 				and   {1}
 			 """.format(eq.name, insurance_date), as_dict=1)[0]
+		#Reg fee
+                reg = frappe.db.sql("""
+                                select sum(ifnull(rd.registration_amount,0)) as r_amount
+                                from `tabRegistration Details` rd, `tabInsurance and Registration` i  
+                                where rd.parent = i.name  
+                                and i.equipment = '{0}'
+                                and   {1}
+                        """.format(eq.name, reg_date), as_dict=1)[0]
+
+		
 		#Revenue from Hire of Equipments
-		revn = frappe.db.sql("""
-			 	 select sum(ifnull(id.total_amount, 0)) as rev from `tabHire Invoice Details` id, `tabHire Charge Invoice` ci
-			 	 where ci.name = id.parent
-			 	 and id.equipment = '{0}'
-			 	 and {1}
-			 """.format(eq.name, rev_date), as_dict=1)[0]
-		#frappe.msgprint("{0} , {1}".format(eq.name, revn))		
+                revn = frappe.db.sql("""
+                                 select sum(ifnull(id.total_amount, 0)) as rev from `tabHire Invoice Details` id, `tabHire Charge Invoice` ci
+                                 where ci.name = id.parent
+                                 and id.equipment = '{0}'
+                                 and {1}
+                         """.format(eq.name, rev_date), as_dict=1)[0]
+
+				
 		#Looping via operator of the equipment to calculate the expensis related to operator
 		c_operator = frappe.db.sql("""
-				select operator,employee_type, start_date, end_date , name
-				from `tabEquipment Operator` eo
-				where eo.parent = '{0}'
-				and   eo.docstatus < 2
-			""".format(eq.name), as_dict=1)
-			#	and   {1}
-			#""".format(eq.name, operator_date), as_dict=1)
-
+                                select eo.operator, eo.employee_type, eo.start_date, eo.end_date , eo.name, eh.branch 
+                                from `tabEquipment Operator` eo, `tabEquipment History` eh
+                                where eo.parent = '{0}' and eo.parent = eh.parent and eh.branch = '{1}'
+                                and   eo.docstatus < 2
+                        """.format(eq.name, eq.branch), as_dict=1)
 		travel_claim = 0.0
 		e_amount     = 0.0
 		gross_pay    = 0.0
@@ -277,8 +284,8 @@ def get_data(filters):
 				e_amount     += flt(lea.e_amount)
 				gross_pay    += flt(total_sal)
 				#frappe.msgprint(str(pol.rate))
-		total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
-		total_rev    = flt(revn.rev)
+			total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(reg.r_amount) + flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
+			total_rev    = flt(revn.rev)
 		pro_target = 0.0
 		
 		#benchmar
@@ -289,7 +296,7 @@ def get_data(filters):
                                where hi.parent = hp.name 
                                and hp.equipment_type = '{0}'
 			       and hp.equipment_model = '{1}'
-			""".format(eq.equipment_type, eq.equipment_model), as_dict=1)
+			""".format(eq.equipment_type, eq.equipment_model), as_dict=1, debug =1)
 
 		rate = []
 		bench = []

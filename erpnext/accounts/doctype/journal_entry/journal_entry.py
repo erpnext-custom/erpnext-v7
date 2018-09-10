@@ -478,7 +478,8 @@ class JournalEntry(AccountsController):
                                                         "remarks": self.remark,
                                                         "cost_center": d.cost_center,
                                                         "project": d.project,
-                                                        "party_check": 1 
+                                                        "party_check": 1,
+							"business_activity": d.business_activity, 
                                                 })
                                         )
                                 else:
@@ -498,6 +499,7 @@ class JournalEntry(AccountsController):
                                                         "remarks": self.remark,
                                                         "cost_center": d.cost_center,
                                                         "project": d.project,
+							"business_activity": d.business_activity, 
                                                         "party_check": d.party_check
                                                 })
                                         )                                        

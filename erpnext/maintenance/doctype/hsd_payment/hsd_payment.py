@@ -7,6 +7,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import flt
 from erpnext.custom_utils import prepare_gl, check_future_date
+from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class HSDPayment(Document):
 	def validate(self):
@@ -61,11 +62,14 @@ class HSDPayment(Document):
 		if not creditor_account:
 			frappe.throw("Set Default Payable Account in Company")
 
+		default_ba =  get_default_ba()
+
 		gl_entries.append(
 			prepare_gl(self, {"account": self.bank_account,
 					 "credit": flt(self.amount),
 					 "credit_in_account_currency": flt(self.amount),
 					 "cost_center": self.cost_center,
+					 "business_activity": default_ba
 					})
 			)
 
@@ -76,6 +80,7 @@ class HSDPayment(Document):
 					 "cost_center": self.cost_center,
 					 "party_type": "Supplier",
 					 "party": self.supplier,
+					 "business_activity": default_ba
 					})
 			)
 

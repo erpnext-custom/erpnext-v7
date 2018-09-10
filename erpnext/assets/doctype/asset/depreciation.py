@@ -62,6 +62,7 @@ def make_depreciation_entry(asset_name, date=None):
 				"credit_in_account_currency": d.depreciation_amount,
 				"reference_type": "Asset",
 				"reference_name": asset.name,
+				"business_activity": asset.business_activity, 
 				"cost_center": depreciation_cost_center
 			})
 
@@ -70,6 +71,7 @@ def make_depreciation_entry(asset_name, date=None):
 				"debit_in_account_currency": d.depreciation_amount,
 				"reference_type": "Asset",
 				"reference_name": asset.name,
+				"business_activity": asset.business_activity, 
 				"cost_center": depreciation_cost_center
 			})
 
@@ -142,7 +144,8 @@ def scrap_asset(asset_name, scrap_date):
 	for entry in get_gl_entries_on_asset_disposal(asset):
 		entry.update({
 			"reference_type": "Asset",
-			"reference_name": asset_name
+			"reference_name": asset_name,
+			"business_activity": asset.business_activity,
 		})
 		je.append("accounts", entry)
 
@@ -180,12 +183,14 @@ def get_gl_entries_on_asset_disposal(asset, selling_amount=0):
 			"account": fixed_asset_account,
 			"credit_in_account_currency": asset.gross_purchase_amount,
 			"credit": asset.gross_purchase_amount,
+			"business_activity": asset.business_activity,
                         "cost_center": asset.cost_center
 		},
 		{
 			"account": accumulated_depr_account,
 			"debit_in_account_currency": accumulated_depr_amount,
 			"debit": accumulated_depr_amount,
+			"business_activity": asset.business_activity,
                         "cost_center": asset.cost_center
 		}
 	]
@@ -197,6 +202,7 @@ def get_gl_entries_on_asset_disposal(asset, selling_amount=0):
 		gl_entries.append({
 			"account": disposal_account,
 			"cost_center": depreciation_cost_center,
+			"business_activity": asset.business_activity,
 			debit_or_credit: abs(profit_amount),
 			debit_or_credit + "_in_account_currency": abs(profit_amount)
 		})

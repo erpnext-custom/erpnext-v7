@@ -9,6 +9,7 @@ from frappe.model.document import Document
 from frappe.utils import cstr, flt, fmt_money, formatdate, getdate, get_datetime
 from frappe.desk.reportview import get_match_cond
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class EquipmentHiringForm(Document):
 	def validate(self):
@@ -165,6 +166,7 @@ class EquipmentHiringForm(Document):
 		revenue_bank = frappe.db.get_value("Branch", self.branch, "revenue_bank_account")
 
 		if revenue_bank and advance_account:
+			ba = get_equipment_ba()
 			je = frappe.new_doc("Journal Entry")
 			je.flags.ignore_permissions = 1 
 			je.title = "Advance for Equipment Hire (" + self.name + ")"
@@ -183,7 +185,8 @@ class EquipmentHiringForm(Document):
 					"cost_center": self.cost_center,
 					"credit_in_account_currency": flt(self.advance_amount),
 					"credit": flt(self.advance_amount),
-					"is_advance": 'Yes'
+					"is_advance": 'Yes',
+					"business_activity": get_default_ba()
 				})
 
 			je.append("accounts", {
@@ -191,6 +194,7 @@ class EquipmentHiringForm(Document):
 					"cost_center": self.cost_center,
 					"debit_in_account_currency": flt(self.advance_amount),
 					"debit": flt(self.advance_amount),
+					"business_activity": get_default_ba()
 				})
 			je.insert()
 			self.db_set("advance_journal", je.name)

@@ -60,6 +60,7 @@ class SalesInvoice(SellingController):
 	def validate(self):
 		check_future_date(self.posting_date)
 		super(SalesInvoice, self).validate()
+		self.check_ba()
 		self.validate_posting_time()
 		self.so_dn_required()
 		self.validate_proj_cust()
@@ -102,6 +103,7 @@ class SalesInvoice(SellingController):
 			frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype,
 			 	self.company, self.base_grand_total, self)
 
+		self.check_ba()
 		self.check_prev_docstatus()
 
 		if self.is_return:
@@ -569,7 +571,8 @@ class SalesInvoice(SellingController):
 						if self.party_account_currency==self.company_currency else grand_total,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
-                                        "cost_center": cost_center_gl.name
+                                        "cost_center": cost_center_gl.name,
+					"business_activity": self.business_activity,
 				}, self.party_account_currency)
 			)
 		
@@ -599,6 +602,7 @@ class SalesInvoice(SellingController):
 					fixed_asset_gl_entries = get_gl_entries_on_asset_disposal(asset, item.base_net_amount)
 					for gle in fixed_asset_gl_entries:
 						gle["against"] = self.customer
+						gle["business_activity"] = asset.business_activity
 						gl_entries.append(self.get_gl_dict(gle))
 
 					asset.db_set("disposal_date", self.posting_date)
@@ -612,7 +616,8 @@ class SalesInvoice(SellingController):
 							"credit": item.base_net_amount,
 							"credit_in_account_currency": item.base_net_amount \
 								if account_currency==self.company_currency else item.net_amount,
-							"cost_center": item.cost_center
+							"cost_center": item.cost_center,
+							"business_activity": item.business_activity,
 						}, account_currency)
 					)
 					
@@ -631,6 +636,7 @@ class SalesInvoice(SellingController):
 								"debit_in_account_currency": item.normal_loss_amt \
 									if account_currency==self.company_currency else (item.normal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
 								"cost_center": item.cost_center,
+								"business_activity": item.business_activity,
 							}, account_currency)
 						)
 					
@@ -644,6 +650,7 @@ class SalesInvoice(SellingController):
 								"credit_in_account_currency": item.normal_loss_amt \
 									if account_currency==self.company_currency else (item.normal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
 								"cost_center": item.cost_center,
+								"business_activity": item.business_activity,
 								"against_voucher": self.return_against if cint(self.is_return) else self.name,
 								"against_voucher_type": self.doctype
 							}, account_currency)
@@ -664,6 +671,7 @@ class SalesInvoice(SellingController):
 								"debit_in_account_currency": item.abnormal_loss_amt \
 									if account_currency==self.company_currency else (item.abnormal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
 								"cost_center": item.cost_center,
+								"business_activity": item.business_activity,
 							}, account_currency)
 						)
 					
@@ -677,6 +685,7 @@ class SalesInvoice(SellingController):
 								"credit_in_account_currency": item.abnormal_loss_amt \
 									if account_currency==self.company_currency else (item.abnormal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
 								"cost_center": item.cost_center,
+								"business_activity": item.business_activity,
 								"against_voucher": self.return_against if cint(self.is_return) else self.name,
 								"against_voucher_type": self.doctype
 							}, account_currency)
@@ -697,6 +706,7 @@ class SalesInvoice(SellingController):
 								"credit_in_account_currency": excess_amount \
 									if account_currency==self.company_currency else (excess_amount * self.conversion_rate, self.precision("grand_total")) ,
 								"cost_center": item.cost_center,
+								"business_activity": item.business_activity,
 								"remark": remark,
 								"remarks": remark,
 							}, account_currency)
@@ -714,6 +724,7 @@ class SalesInvoice(SellingController):
 								"against_voucher_type": self.doctype,
 								"remark": remark,
 								"remarks": remark,
+								"business_activity": item.business_activity,
 								"cost_center": item.cost_center
 							}, account_currency)
 						)
@@ -725,6 +736,7 @@ class SalesInvoice(SellingController):
 								"credit": flt(self.rate_per_unit * item.delivered_qty * self.conversion_rate) ,
 								"credit_in_account_currency": flt(self.rate_per_unit * item.delivered_qty * self.conversion_rate) \
 									if self.party_account_currency==self.company_currency else flt(self.rate_per_unit * item.delivered_qty),
+								"business_activity": item.business_activity,
 								"cost_center": item.cost_center
 							}, self.party_account_currency)
 						)
@@ -739,6 +751,7 @@ class SalesInvoice(SellingController):
 								"debit": flt(self.void_rate * .01 * flt(item.amount + flt(self.rate_per_unit * item.delivered_qty)) * self.conversion_rate) ,
 								"debit_in_account_currency": flt(self.void_rate * .01 * (item.amount + flt(self.rate_per_unit * item.delivered_qty)) * self.conversion_rate) \
 									if self.party_account_currency==self.company_currency else flt(self.void_rate * .01 * (item.amount + flt(self.rate_per_unit * item.delivered_qty))),
+								"business_activity": item.business_activity,
 								"cost_center": item.cost_center
 							}, self.party_account_currency)
 						)
@@ -823,6 +836,7 @@ class SalesInvoice(SellingController):
 						if self.party_account_currency==self.company_currency else self.write_off_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
+					"business_activity": self.business_activity,
 					"cost_center": self.write_off_cost_center
 				}, self.party_account_currency)
 			)
@@ -833,6 +847,7 @@ class SalesInvoice(SellingController):
 					"debit": self.base_write_off_amount,
 					"debit_in_account_currency": self.base_write_off_amount \
 						if write_off_account_currency==self.company_currency else self.write_off_amount,
+					"business_activity": self.business_activity,
 					"cost_center": self.write_off_cost_center
 				}, write_off_account_currency)
 			)
@@ -857,6 +872,7 @@ class SalesInvoice(SellingController):
 					"credit_in_account_currency": allocated_amount, 
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
+					"business_activity": a.advance_business_activity,
 					"cost_center": a.advance_cost_center
 				}, advance_account_currency)
 			)
@@ -868,6 +884,7 @@ class SalesInvoice(SellingController):
 					"against": self.customer,
 					"debit": allocated_amount,
 					"debit_in_account_currency": allocated_amount,
+					"business_activity": a.advance_business_activity,
 					"cost_center": a.advance_cost_center
 				}, advance_account_currency)
 			)
@@ -884,6 +901,7 @@ class SalesInvoice(SellingController):
 					"credit_in_account_currency": flt(self.total_loading_amount * self.conversion_rate) \
 						if self.party_account_currency==self.company_currency else self.total_loading_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
+					"business_activity": self.business_activity,
 					"against_voucher_type": self.doctype
 				}, self.party_account_currency)
 			)
@@ -904,6 +922,7 @@ class SalesInvoice(SellingController):
 						if self.party_account_currency==self.company_currency else self.total_loading_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
+					"business_activity": self.business_activity,
 					"cost_center": self.items[0].cost_center
 				}, self.party_account_currency)
 			)

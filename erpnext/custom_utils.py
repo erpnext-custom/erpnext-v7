@@ -50,7 +50,6 @@ def get_branch_cc(branch):
                 frappe.throw("No Branch Argument Found")
         cc = frappe.db.get_value("Cost Center", {"branch": branch, "is_disabled": 0, "is_group": 0}, "name")
         if not cc:
-		print(branch)
                 frappe.throw(str(branch) + " is not linked to any cost center")
         return cc
 
@@ -240,7 +239,7 @@ def prepare_gl(d, args):
 # Check budget availability in the budget head
 ##
 def check_budget_available(cost_center, budget_account, transaction_date, amount):
-	if str(frappe.db.get_value("Account", budget_account, "budget_check")) == "Ignore":
+	if frappe.db.get_value("Account", budget_account, "budget_check"):
                 return
         budget_amount = frappe.db.sql("select b.action_if_annual_budget_exceeded as action, ba.budget_check, ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (budget_account, cost_center, str(transaction_date)[0:4]), as_dict=True)
 	

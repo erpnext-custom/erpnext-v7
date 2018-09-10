@@ -35,6 +35,7 @@ class DirectPayment(Document):
 					"party": self.supplier,
 					"debit_in_account_currency": flt(self.amount),
 					"debit": flt(self.amount),
+					"business_activity": self.business_activity
 				})
 		else:
 			je.append("accounts", {
@@ -44,6 +45,7 @@ class DirectPayment(Document):
 					"cost_center": self.cost_center,
 					"debit_in_account_currency": flt(self.amount),
 					"debit": flt(self.amount),
+					"business_activity": self.business_activity
 				})
 		
 		je.append("accounts", {
@@ -53,6 +55,7 @@ class DirectPayment(Document):
 				"cost_center": self.cost_center,
 				"credit_in_account_currency": flt(self.balance_amount),
 				"credit": flt(self.balance_amount),
+				"business_activity": self.business_activity
 			})
 		
 		je.append("accounts", {
@@ -62,6 +65,7 @@ class DirectPayment(Document):
 				"cost_center": self.cost_center,
 				"credit_in_account_currency": flt(self.tds_amount),
 				"credit": flt(self.tds_amount),
+				"business_activity": self.business_activity
 			})
 
 		je.insert()

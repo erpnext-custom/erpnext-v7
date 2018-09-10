@@ -91,7 +91,7 @@ def get_columns(filters):
 	columns += [
 		_("Voucher Type") + "::120", _("Voucher No") + ":Dynamic Link/"+_("Voucher Type")+":160",
 		_("Against Account") + "::120", _("Party Type") + "::80", _("Party") + "::150",
-		_("Cost Center") + ":Link/Cost Center:100",
+		_("Cost Center") + ":Link/Cost Center:120", _("Business Activity") + ":Link/Business Activity:120",
 		_("Remarks") + "::400"
 	]
 
@@ -118,7 +118,7 @@ def get_gl_entries(filters):
 		select
 			posting_date, account, party_type, party,
 			sum(debit) as debit, sum(credit) as credit,
-			voucher_type, voucher_no, cost_center,
+			voucher_type, voucher_no, cost_center, business_activity,
 			remarks, against, is_opening {select_fields}
 		from `tabGL Entry`
 		where docstatus = 1 and company=%(company)s {conditions}
@@ -294,7 +294,7 @@ def get_result_as_list(data, filters):
 			row += [d.get("debit_in_account_currency"), d.get("credit_in_account_currency")]
 
 		row += [d.get("voucher_type"), d.get("voucher_no"), d.get("against"),
-			d.get("party_type"), d.get("party"), d.get("cost_center"), d.get("remarks")
+			d.get("party_type"), d.get("party"), d.get("cost_center"), d.get("business_activity"), d.get("remarks")
 		]
 
 		result.append(row)

@@ -613,6 +613,7 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 		       "against_voucher": asset.name,
 		       "against_voucher_type": "Asset",
 		       "cost_center": from_cc,
+		       "business_activity": asset.business_activity
 		})
 	)
 
@@ -624,6 +625,7 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 		       "against_voucher": asset.name,
 		       "against_voucher_type": "Asset",
 		       "cost_center": to_cc,
+		       "business_activity": asset.business_activity
 		})
 	)
 
@@ -636,6 +638,7 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 			       "against_voucher": asset.name,
 			       "against_voucher_type": "Asset",
 			       "cost_center": from_cc,
+			       "business_activity": asset.business_activity
 			})
 		)
 		gl_entries.append(
@@ -646,6 +649,7 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 			       "against_voucher": asset.name,
 			       "against_voucher_type": "Asset",
 			       "cost_center": to_cc,
+			       "business_activity": asset.business_activity
 			})
 		)
 
@@ -657,6 +661,7 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 		       "against_voucher": asset.name,
 		       "against_voucher_type": "Asset",
 		       "cost_center": from_cc,
+		       "business_activity": asset.business_activity
 		})
 	)
 
@@ -668,7 +673,9 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 		       "against_voucher": asset.name,
 		       "against_voucher_type": "Asset",
 		       "cost_center": to_cc,
+		       "business_activity": asset.business_activity
 		})
 	)
 
 	make_gl_entries(gl_entries, cancel=0, update_outstanding="No", merge_entries=False)
+

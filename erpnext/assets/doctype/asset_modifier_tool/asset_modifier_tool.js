@@ -23,12 +23,13 @@ frappe.ui.form.on('Asset Modifier Tool', {
 					"value": frm.doc.value,
 					"start_date": frm.doc.addition_date,
 					"credit_account": frm.doc.credit_account,
-					"asset_account": frm.doc.asset_account
+					"asset_account": frm.doc.asset_account,
+					"remarks": frm.doc.remarks
 				},
 				callback: function(r) {
 					if(r.message == "DONE") {
 						cur_frm.set_df_property("update_asset_value", "read_only", 1)
-						msgprint("An amount of Nu. " + frm.doc.amount + " has been added to " + frm.doc.asset )
+						msgprint("An amount of Nu. " + parseFloat(frm.doc.value) + " has been added to " + frm.doc.asset )
 					}
 					else {
 						msgprint(r.message)

@@ -9,7 +9,8 @@ from frappe.utils import cstr, flt, fmt_money, formatdate, nowtime, getdate
 from erpnext.accounts.utils import get_fiscal_year
 from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, prepare_sl, check_budget_available
 from erpnext.controllers.stock_controller import StockController
-from erpnext.maintenance.maintenance_utils import get_without_fuel_hire
+from erpnext.maintenance.maintenance_utils import get_without_fuel_hire, get_equipment_ba
+from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class POL(StockController):
 	def validate(self):
@@ -82,8 +83,7 @@ class POL(StockController):
 		self.validate_data()
 		self.check_on_dry_hire()
 		self.check_budget()
-		if getdate(self.posting_date) > getdate("2018-03-31"):
-			self.update_stock_ledger()
+		self.update_stock_ledger()
 		self.update_general_ledger(1)
 		self.make_pol_entry()
 	
@@ -172,11 +172,15 @@ class POL(StockController):
                 else:
                         cost_center = get_branch_cc(self.equipment_branch)
 
+		ba = get_equipment_ba(self.equipment)
+		default_ba = get_default_ba()
+
 		gl_entries.append(
 			prepare_gl(self, {"account": expense_account,
 					 "debit": flt(self.total_amount),
 					 "debit_in_account_currency": flt(self.total_amount),
 					 "cost_center": cost_center,
+					 "business_activity": ba
 					})
 			)
 
@@ -189,6 +193,7 @@ class POL(StockController):
 					 "party": self.supplier,
 					 "against_voucher": self.name,
                                          "against_voucher_type": self.doctype,
+					 "business_activity": default_ba
 					})
 			)
 
@@ -209,6 +214,7 @@ class POL(StockController):
 						 "credit": flt(self.total_amount),
 						 "credit_in_account_currency": flt(self.total_amount),
 						 "cost_center": customer_cc,
+						 "business_activity": default_ba
 						})
 				)
 
@@ -217,6 +223,7 @@ class POL(StockController):
 						 "debit": flt(self.total_amount),
 						 "debit_in_account_currency": flt(self.total_amount),
 						 "cost_center": self.cost_center,
+						 "business_activity": default_ba
 						})
 				)
 
@@ -242,8 +249,7 @@ class POL(StockController):
 		return expense_account
 
 	def on_cancel(self):
-		if getdate(self.posting_date) > getdate("2018-03-31"):
-			self.update_stock_ledger()
+		self.update_stock_ledger()
 		self.update_general_ledger(1)
 		docstatus = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
 		if docstatus and docstatus != 2:
@@ -278,6 +284,8 @@ class POL(StockController):
 		if not expense_bank_account:
  			frappe.throw("No Default Payable Account set in Company")
 
+		ba = get_equipment_ba(a.equipment) 
+
 		if expense_bank_account and pol_account:
 			je = frappe.new_doc("Journal Entry")
 			je.flags.ignore_permissions = 1 
@@ -295,6 +303,7 @@ class POL(StockController):
 					"reference_name": self.name,
 					"debit_in_account_currency": flt(self.total_amount),
 					"debit": flt(self.total_amount),
+					"business_activity": ba
 				})
 
 			je.append("accounts", {
@@ -304,6 +313,7 @@ class POL(StockController):
 					"party": self.supplier,
 					"credit_in_account_currency": flt(self.total_amount),
 					"credit": flt(self.total_amount),
+					"business_activity": ba
 				})
 
 			je.insert()

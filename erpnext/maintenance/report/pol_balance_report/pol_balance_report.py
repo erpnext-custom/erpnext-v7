@@ -4,44 +4,36 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr
-from erpnext.maintenance.report.maintenance_report import get_pol_till, get_pol_consumed_till
+from erpnext.maintenance.report.maintenance_report import get_pol_till 
 
 def execute(filters=None):
-	columns = get_columns(filters);
+	columns = get_columns();
 	data = get_data(filters);
 
 	return columns, data
 
 def get_data(filters=None):
 	data = []
-	query = "select e.name, e.branch, e.equipment_number, e.hsd_type, e.equipment_type from tabEquipment e, `tabEquipment Type` et where e.equipment_type = et.name "
-	if not filters.all_equipment:
-		query += " and et.is_container = 1"
+	cond = "('{0}' between eh.from_date and ifnull(eh.to_date, now()))".format(filters.get("to_date"))
+	query = "select e.name, eh.branch, e.equipment_number from tabEquipment e, `tabEquipment Type` et, `tabEquipment History` eh  where e.equipment_type = et.name and et.is_container = 1 and e.name = eh.parent and {0}".format(cond)
 	if filters.branch:
-		query += " and e.branch = \'" + str(filters.branch) + "\'"
+		query += " and eh.branch = \'" + str(filters.branch) + "\'"
 		
 	items = frappe.db.sql("select item_code, item_name, stock_uom from tabItem where is_hsd_item = 1 and disabled = 0", as_dict=True)
 
-	query += " order by e.branch"
-
+	query += " order by eh.branch"
+	frappe.msgprint("{0}".format(query))
 	for eq in frappe.db.sql(query, as_dict=True):
 		for item in items:
-			received = issued = 0
-			if filters.all_equipment:
-				if eq.hsd_type == item.item_code:
-					received = get_pol_till("Receive", eq.name, filters.to_date, item.item_code)
-					issued = get_pol_consumed_till(eq.name, filters.to_date)
-			else:
-				received = get_pol_till("Stock", eq.name, filters.to_date, item.item_code)
-				issued = get_pol_till("Issue", eq.name, filters.to_date, item.item_code)
-
+			received = get_pol_till("Receive", eq.name, filters.to_date, item.item_code)
+			issued = get_pol_till("Issue", eq.name, filters.to_date, item.item_code)
 			if received or issued:
-				row = [eq.name, eq.equipment_number, eq.equipment_type, eq.branch, item.item_code, item.item_name, item.stock_uom, received, issued, flt(received) - flt(issued)]
+				row = [eq.name, eq.equipment_number, eq.branch, item.item_code, item.item_name, item.stock_uom, received, issued, flt(received) - flt(issued)]
 				data.append(row)
 	return data
 
-def get_columns(filters):
-	cols = [
+def get_columns():
+	return [
 		{
 			"fieldname": "equipment",
 			"label": _("Equipment"),
@@ -52,12 +44,6 @@ def get_columns(filters):
 		{
                         "fieldname": "eq_name",
                         "label": _("Equipment Name"),
-                        "fieldtype": "Data",
-                        "width": 130
-                },
-		{
-                        "fieldname": "eq_cat",
-                        "label": _("Equipment Type"),
                         "fieldtype": "Data",
                         "width": 130
                 },
@@ -93,27 +79,16 @@ def get_columns(filters):
                         "fieldtype": "Float",
                         "width": 100
                 },
-	]
-
-	if filters.all_equipment:
-		cols.append({
-				"fieldname": "issued",
-				"label": _("Consumed"),
-				"fieldtype": "Float",
-				"width": 100
-			})
-	else:
-		cols.append({
-				"fieldname": "issued",
-				"label": _("Issued"),
-				"fieldtype": "Float",
-				"width": 100
-			})
-
-	cols.append({
+		{
+                        "fieldname": "issued",
+                        "label": _("Issued"),
+                        "fieldtype": "Float",
+                        "width": 100
+                },
+		{
                         "fieldname": "balance",
                         "label": _("Balance"),
                         "fieldtype": "Float",
                         "width": 100
-                })
-	return cols
+                },
+	]

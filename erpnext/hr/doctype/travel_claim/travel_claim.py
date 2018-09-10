@@ -282,6 +282,7 @@ class TravelClaim(Document):
 				"cost_center": cost_center,
 				"debit_in_account_currency": flt(total_amt),
 				"debit": flt(total_amt),
+				"business_activity": self.business_activity,
 			})
 		
 		advance_amt = flt(self.advance_amount)
@@ -303,6 +304,7 @@ class TravelClaim(Document):
 				"cost_center": cost_center,
 				"credit_in_account_currency": advance_amt,
 				"credit": advance_amt,
+				"business_activity": self.business_activity,
 			})
 
 
@@ -314,6 +316,7 @@ class TravelClaim(Document):
 					"cost_center": cost_center,
 					"credit_in_account_currency": bank_amt,
 					"credit": bank_amt,
+					"business_activity": self.business_activity,
 				})
 
 		je.insert()

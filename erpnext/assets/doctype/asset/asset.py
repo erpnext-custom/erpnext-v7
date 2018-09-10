@@ -35,6 +35,7 @@ class Asset(Document):
                         frappe.throw("Gross Amount should be >= (Opening + Useful Life + Residual)")
 
 	def on_submit(self):
+		self.make_opening_accumulated_gl_entry()
 		self.make_asset_gl_entry();
 		self.set_status()
 
@@ -196,7 +197,9 @@ class Asset(Document):
 	def delete_depreciation_entries(self):
 		for d in self.get("schedules"):
 			if d.journal_entry:
-				frappe.get_doc("Journal Entry", d.journal_entry).cancel()
+				je = frappe.get_doc("Journal Entry", d.journal_entry)
+                                if je.docstatus == 1:
+                                        je.cancel()
 				d.db_set("journal_entry", None)
 
 		self.db_set("value_after_depreciation",
@@ -235,6 +238,46 @@ class Asset(Document):
 		else:
 			return 0
 
+	def make_opening_accumulated_gl_entry(self):
+		"""
+			1. There is a mistake in getting the account by using the method below. 
+			2. Method and variable Names has to be descriptive
+		"""
+		accumulated_account = frappe.db.get_value(doctype="Asset Category",filters=self.item_code,fieldname="accumulated_depreciation_account", as_dict=True)
+		#accumulated_account = accumulated_account and accumulated_account[0].accumulated_depreciation_account or None
+
+		if self.opening_accumulated_depreciation:
+			je = frappe.new_doc("Journal Entry")
+			je.flags.ignore_permissions = 1
+			je.update({
+				"voucher_type": "Journal Entry",
+				"company": self.company,
+				"remark": self.name + " (" + self.asset_name + " ) Asset Issued",
+				"user_remark": self.name + "(" + self.asset_name + ") Asset Issued",
+				"posting_date": self.purchase_date,
+				"branch": self.branch
+				})
+			#credit
+			je.append("account", {
+				"account" : accumulated_account, 
+				"credit_in_account_currency": self.opening_accumulated_depreciation,
+                                "reference_type": "Asset",
+                                "reference_name": self.name,
+				"business_activity": self.business_activity,
+                                "cost_center": self.cost_center
+                                })
+			#debit account update
+                        je.append("accounts", {
+                                "account": self.credit_account,
+                                "debit_in_account_currency": self.opening_accumulated_depreciation,
+                                "reference_type": "Asset",
+                                "reference_name": self.name,
+				"business_activity": self.business_activity,
+                                "cost_center": self.cost_center
+                                })
+                        je.submit();
+
+
 	def make_asset_gl_entry(self):
 		if self.gross_purchase_amount:
 			je = frappe.new_doc("Journal Entry")
@@ -255,6 +298,7 @@ class Asset(Document):
 				"credit_in_account_currency": self.gross_purchase_amount,
 				"reference_type": "Asset",
 				"reference_name": self.name,
+				"business_activity": self.business_activity,
 				"cost_center": self.cost_center
 				})
 
@@ -264,6 +308,7 @@ class Asset(Document):
 				"debit_in_account_currency": self.gross_purchase_amount,
 				"reference_type": "Asset",
 				"reference_name": self.name,
+				"business_activity": self.business_activity,
 				"cost_center": self.cost_center
 				})
 			je.submit();
@@ -279,6 +324,12 @@ class Asset(Document):
 		if eqp:
 			frappe.throw("Unlink the Asset from Equipment <b>" + str(eqp[0].name) + "</b>")
 
+def get_asset_ba(asset):
+	doc = frappe.get_doc("Asset", asset)
+	if not doc.business_activity:
+		frappe.throw("Business Activity in Asset is Mandatory")
+	return doc.business_activity
+
 @frappe.whitelist()
 def make_purchase_invoice(asset, item_code, gross_purchase_amount, company, posting_date, branch):
 	pi = frappe.new_doc("Purchase Invoice")
@@ -286,6 +337,7 @@ def make_purchase_invoice(asset, item_code, gross_purchase_amount, company, post
 	pi.currency = frappe.db.get_value("Company", company, "default_currency")
 	pi.posting_date = posting_date
 	pi.branch = branch
+	pi.business_activity = get_asset_ba(asset)
 	pi.append("items", {
 		"item_code": item_code,
 		"is_fixed_asset": 1,
@@ -293,6 +345,7 @@ def make_purchase_invoice(asset, item_code, gross_purchase_amount, company, post
 		"expense_account": get_fixed_asset_account(asset),
 		"qty": 1,
 		"price_list_rate": gross_purchase_amount,
+		"business_activity": get_asset_ba(asset),
 		"rate": gross_purchase_amount
 	})
 	pi.set_missing_values()
@@ -308,12 +361,14 @@ def make_sales_invoice(asset, item_code, company, branch):
 	si.title = "Sale of Asset " + str(asset)
 	si.naming_series = 'Fixed Asset'
 	si.selling_price_list = "Standard Selling"
+	si.business_activity = get_asset_ba(asset)
 	si.append("items", {
 		"item_code": item_code,
 		"is_fixed_asset": 1,
 		"asset": asset,
 		"income_account": disposal_account,
 		"cost_center": depreciation_cost_center,
+		"business_activity": get_asset_ba(asset),
 		"qty": 1
 	})
 	si.set_missing_values()

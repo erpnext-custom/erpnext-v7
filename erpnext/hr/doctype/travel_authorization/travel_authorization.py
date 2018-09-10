@@ -151,12 +151,14 @@ class TravelAuthorization(Document):
 					"cost_center": cost_center,
 					"debit_in_account_currency": flt(self.advance_amount_nu),
 					"debit": flt(self.advance_amount_nu),
+					"business_activity": self.business_activity,
 					"is_advance": "Yes"
 				})
 
 				je.append("accounts", {
 					"account": expense_bank_account,
 					"cost_center": cost_center,
+					"business_activity": self.business_activity,
 					"credit_in_account_currency": flt(self.advance_amount_nu),
 					"credit": flt(self.advance_amount_nu),
 				})

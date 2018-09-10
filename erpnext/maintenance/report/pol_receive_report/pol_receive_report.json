@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-20 15:21:10.141748", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2018-05-15 12:25:03.419791", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "POL Receive Report", 
  "owner": "Administrator", 
@@ -27,9 +27,6 @@
   }, 
   {
    "role": "Auditor"
-  }, 
-  {
-   "role": "Projects User"
   }
  ]
 }

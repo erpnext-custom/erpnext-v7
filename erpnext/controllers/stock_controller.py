@@ -50,7 +50,7 @@ class StockController(AccountsController):
 						# from warehouse account
 
 						self.check_expense_account(detail)
-				
+
 						to_cc = detail.cost_center
                                                 if self.doctype == "Stock Entry" and self.purpose == "Material Transfer":
                                                         to_branch = frappe.db.get_value("Warehouse", detail.t_warehouse, "branch")
@@ -64,6 +64,7 @@ class StockController(AccountsController):
                                                                 "account": warehouse_account[sle.warehouse]["name"],
                                                                 "against": detail.expense_account,
                                                                 "cost_center": to_cc,
+                                                                "business_activity": detail.business_activity,
                                                                 "remarks": self.get("remarks") or "Accounting Entry for Stock",
                                                                 "debit": flt(sle.stock_value_difference, 2),
                                                         }, warehouse_account[sle.warehouse]["account_currency"]))
@@ -73,6 +74,7 @@ class StockController(AccountsController):
                                                                 "account": detail.expense_account,
                                                                 "against": warehouse_account[sle.warehouse]["name"],
                                                                 "cost_center": detail.cost_center,
+                                                                "business_activity": detail.business_activity,
                                                                 "remarks": self.get("remarks") or "Accounting Entry for Stock",
                                                                 "credit": flt(sle.stock_value_difference, 2),
                                                                 "project": detail.get("project") or self.get("project")
@@ -81,6 +83,7 @@ class StockController(AccountsController):
                                                         gl_list.append(self.get_gl_dict({
                                                                 "account": ic_account,
                                                                 "cost_center": to_cc,
+                                                                "business_activity": detail.business_activity,
                                                                 "remarks": self.get("remarks") or "Accounting Entry for Stock",
                                                                 "credit": flt(sle.stock_value_difference, 2),
                                                         }))
@@ -88,6 +91,7 @@ class StockController(AccountsController):
                                                         gl_list.append(self.get_gl_dict({
                                                                 "account": ic_account,
                                                                 "cost_center": detail.cost_center,
+                                                                "business_activity": detail.business_activity,
                                                                 "remarks": self.get("remarks") or "Accounting Entry for Stock",
                                                                 "debit": flt(sle.stock_value_difference, 2),
                                                         }))
@@ -96,6 +100,7 @@ class StockController(AccountsController):
 								"account": warehouse_account[sle.warehouse]["name"],
 								"against": detail.expense_account,
 								"cost_center": detail.cost_center,
+                                                                "business_activity": detail.business_activity,
 								"remarks": self.get("remarks") or "Accounting Entry for Stock",
 								"debit": flt(sle.stock_value_difference, 2),
 							}, warehouse_account[sle.warehouse]["account_currency"]))
@@ -105,6 +110,7 @@ class StockController(AccountsController):
 								"account": detail.expense_account,
 								"against": warehouse_account[sle.warehouse]["name"],
 								"cost_center": detail.cost_center,
+                                                                "business_activity": detail.business_activity,
 								"remarks": self.get("remarks") or "Accounting Entry for Stock",
 								"credit": flt(sle.stock_value_difference, 2),
 								"project": detail.get("project") or self.get("project")

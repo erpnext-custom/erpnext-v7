@@ -26,7 +26,7 @@ def execute(filters=None):
 		location = ""
 		for day in range(filters["total_days_in_month"]):
 			day = str(day + 1) if day + 1 > 9 else str("0" + str(day + 1))
-			res = frappe.db.sql("select place, reason, hours from `tabEquipment Status Entry` where docstatus = 1 and equipment = %s and %s between from_date and to_date order by reason desc", (e.name, str(str(filters.year) + "-" + str(filters.month) + "-" + str(day))), as_dict=True)
+			res = frappe.db.sql("select place, reason, hours from `tabEquipment Reservation Entry` where docstatus = 1 and equipment = %s and %s between from_date and to_date order by reason desc", (e.name, str(str(filters.year) + "-" + str(filters.month) + "-" + str(day))), as_dict=True)
 			if res:
 				if res[0].place and res[0].reason == "Hire":
 					location = res[0].place
@@ -87,17 +87,17 @@ def get_filters(filters):
 	return filters
 
 def get_equipment_details(filters):
-	query = "select name, equipment_number, equipment_type from `tabEquipment` where is_disabled != 1 and branch = \'"+str(filters.branch)+"\'"
+	query = "select e.name, e.equipment_number, e.equipment_type from `tabEquipment` e,  `tabEquipment History` eh where e.name  = eh.parent and e.is_disabled != 1 and eh.branch = \'"+str(filters.branch)+"\'"
 	if filters.equipment_type:
-		query += " and equipment_type = \'"+ str(filters.equipment_type) +"\'"
+		query += " and e.equipment_type = \'"+ str(filters.equipment_type) +"\'"
 	
 	if filters.get("not_cdcl"):
-                query += " and not_cdcl = 0"
+                query += " and e.not_cdcl = 0"
 
 	if filters.get("include_disabled"):
                 query += " "
         else:
-                query += " and is_disabled = 0"
+                query += " and e.is_disabled = 0"
 
 	return frappe.db.sql(query, as_dict=1)
 

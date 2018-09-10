@@ -31,12 +31,6 @@ frappe.query_reports["POL Receive Report"] = {
                         "fieldtype": "Check",
                         "default": 0
                 },
-		{
-                        "fieldname": "own_cc",
-                        "label": ("Show Own CC Issue/Receive Only"),
-                        "fieldtype": "Check",
-                        "default": 0
-                },
 
 	]
 }

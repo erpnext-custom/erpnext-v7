@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import getdate
+from frappe.utils import flt, getdate, cint, today, add_years, date_diff, nowdate
 
 class Equipment(Document):
 	def before_save(self):
@@ -20,19 +21,51 @@ class Equipment(Document):
 		if not self.equipment_number:
 			self.equipment_number = self.name
 
-	#def on_update(self):
 		if len(self.operators) > 1:
 			for a in range(len(self.operators)-1):
 				self.operators[a].end_date = frappe.utils.data.add_days(getdate(self.operators[a + 1].start_date), -1)
 			self.operators[len(self.operators) - 1].end_date = ''
-		self.set_name()
 
-	def set_name(self):
-		for a in self.operators:
-			if a.employee_type == "Employee":
-				a.operator_name = frappe.db.get_value("Employee", a.operator, "employee_name")
-			if a.employee_type == "Muster Roll Employee":
-				a.operator_name = frappe.db.get_value("Muster Roll Employee", a.operator, "person_name")
+		if self.is_disabled == 1:
+			last_row = self.equipment_history[len(self.equipment_history) - 1]
+			if not last_row.to_date:
+				last_row.to_date = getdate(nowdate())
+			
+	def create_equipment_history(self, branch, on_date, ref_doc, purpose):
+		from_date = on_date
+		if purpose == "Cancel":
+			to_remove = []
+			for a in self.equipment_history:
+				if a.reference_document == ref_doc:
+					to_remove.append(a)
+		
+			[self.remove(d) for d in to_remove]
+			self.set_to_date()
+			return
+				
+                if not self.equipment_history:
+                        self.append("equipment_history",{
+                                                "branch": self.branch,
+                                                "from_date": from_date,
+						"reference_document": ref_doc
+                        })
+		else:
+			#doc = frappe.get_doc(self.doctype,self.name)
+			ln = len(self.equipment_history)-1
+			if self.branch != self.equipment_history[ln].branch:
+				self.append("equipment_history",{
+						"branch": self.branch,
+						"from_date": from_date,
+						"reference_document": ref_doc
+			})
+		self.set_to_date()
+
+	def set_to_date(self):
+		if len(self.equipment_history) > 1:
+                        for a in range(len(self.equipment_history)-1):
+                                self.equipment_history[a].to_date = frappe.utils.data.add_days(getdate(self.equipment_history[a + 1].from_date), -1)
+		else:
+			self.equipment_history[0].to_date = None
 
 	def validate_asset(self):
 		if self.asset_code:
@@ -56,8 +89,5 @@ def sync_branch_asset():
 	objs = frappe.db.sql("select e.name, a.branch from tabEquipment e, tabAsset a where e.asset_code = a.name and e.branch != a.branch", as_dict=True)
 	for a in objs:
 		frappe.db.sql("update tabEquipment set branch = %s where name = %s", (a.branch, a.name))
-
-
-
 
 

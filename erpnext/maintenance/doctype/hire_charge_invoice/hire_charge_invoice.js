@@ -16,7 +16,6 @@ frappe.ui.form.on('Hire Charge Invoice', {
 			}, __("View"));
 		}
 
-		frm.set_df_property("discount_amount", "read_only", frm.doc.owned_by == "CDCL")
 		if (frm.doc.invoice_jv && frappe.model.can_read("Journal Entry")) {
 			cur_frm.add_custom_button(__('Bank Entries'), function() {
 				frappe.route_options = {
@@ -109,6 +108,20 @@ frappe.ui.form.on("Hire Charge Invoice", "refresh", function(frm) {
     });
 })
 
+frappe.ui.form.on('Hire Invoice Details', {
+	"discount_amount": function(frm, cdt, cdn) {
+		var item = locals[cdt][cdn]
+		if(item.discount_amount >= 0 && item.discount_amount <= item.total_amount) {
+			calculate_discount_total(frm)
+		}
+		else {
+			frappe.msgprint("Discount Amount should be between 0 and Total amount")
+			frm.set_value("discount_amount", 0)
+			frm.refresh_field("discount_amount")
+		}
+	}
+})
+
 frappe.ui.form.on('Hire Invoice Advance', {
 	"allocated_amount": function(frm, cdt, cdn) {
 		var item = locals[cdt][cdn]
@@ -134,6 +147,15 @@ function calculate_advance_total(frm) {
 	frm.set_value("balance_advance_amount", bal_total)
 	frm.refresh_field("advance_amount")
 	frm.refresh_field("balance_advance_amount")
+}
+
+function calculate_discount_total(frm) {
+	var total = 0;
+	frm.doc.items.forEach(function(d) { 
+		total += d.discount_amount
+	})
+	frm.set_value("discount_amount", total)
+	frm.refresh_field("discount_amount")
 }
 	
 function get_vehicle_logs(form) {

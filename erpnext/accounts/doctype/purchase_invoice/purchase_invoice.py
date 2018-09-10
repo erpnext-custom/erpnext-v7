@@ -49,6 +49,7 @@ class PurchaseInvoice(BuyingController):
 		if not self.is_opening:
 			self.is_opening = 'No'
 
+		self.check_ba()
 		self.validate_tds()
 
 		###if self.outstanding_amount:
@@ -283,6 +284,7 @@ class PurchaseInvoice(BuyingController):
 						.format(item.purchase_receipt))
 
 	def on_submit(self):
+		self.check_ba()
 		self.check_prev_docstatus()
 		self.update_status_updater_args()
 
@@ -377,6 +379,7 @@ class PurchaseInvoice(BuyingController):
 				self.get_gl_dict({
 					"account": self.credit_to,
 					"cost_center": self.buying_cost_center,
+					"business_activity": self.business_activity,
 					"party_type": "Supplier",
 					"party": self.supplier,
 					"against": self.against_expense_account,
@@ -412,6 +415,7 @@ class PurchaseInvoice(BuyingController):
 							"debit": warehouse_debit_amount,
 							"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 							"cost_center": item.cost_center,
+							"business_activity": item.business_activity,
 							"project": item.project
 						}, account_currency)
 					)
@@ -422,6 +426,7 @@ class PurchaseInvoice(BuyingController):
 							"account": expenses_included_in_valuation,
 							"against": item.expense_account,
 							"cost_center": item.cost_center,
+							"business_activity": item.business_activity,
 							"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 							"credit": flt(item.landed_cost_voucher_amount),
 							"project": item.project
@@ -434,6 +439,7 @@ class PurchaseInvoice(BuyingController):
 							"account": supplier_warehouse_account,
 							"against": item.expense_account,
 							"cost_center": item.cost_center,
+							"business_activity": item.business_activity,
 							"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 							"credit": flt(item.rm_supp_cost)
 						}, warehouse_account[self.supplier_warehouse]["account_currency"]))
@@ -447,6 +453,7 @@ class PurchaseInvoice(BuyingController):
 								item.precision("base_net_amount")) if account_currency==self.company_currency
 								else flt(item.net_amount, item.precision("net_amount"))),
 							"cost_center": item.cost_center,
+							"business_activity": item.business_activity,
 							"project": item.project
 						}, account_currency)
 					)
@@ -489,7 +496,8 @@ class PurchaseInvoice(BuyingController):
 						dr_or_cr + "_in_account_currency": tax.base_tax_amount_after_discount_amount \
 							if account_currency==self.company_currency \
 							else tax.tax_amount_after_discount_amount,
-						"cost_center": tax.cost_center
+						"cost_center": tax.cost_center,
+						"business_activity": self.business_activity,
 					}, account_currency)
 				)
 			# accumulate valuation tax
@@ -518,6 +526,7 @@ class PurchaseInvoice(BuyingController):
 					self.get_gl_dict({
 						"account": self.expenses_included_in_valuation,
 						"cost_center": cost_center,
+						"business_activity": self.business_activity,
 						"against": self.supplier,
 						"credit": applicable_amount,
 						"remarks": self.remarks or "Accounting Entry for Stock"
@@ -532,6 +541,7 @@ class PurchaseInvoice(BuyingController):
 					self.get_gl_dict({
 						"account": self.expenses_included_in_valuation,
 						"cost_center": cost_center,
+						"business_activity": self.business_activity,
 						"against": self.supplier,
 						"credit": amount,
 						"remarks": self.remarks or "Accounting Entry for Stock"
@@ -584,6 +594,7 @@ class PurchaseInvoice(BuyingController):
 						if self.party_account_currency==self.company_currency else self.write_off_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
+					"business_activity": self.business_activity,
 					"cost_center": self.write_off_cost_center
 				}, self.party_account_currency)
 			)
@@ -598,6 +609,7 @@ class PurchaseInvoice(BuyingController):
 						"credit_in_account_currency": self.base_write_off_amount \
 							if write_off_account_currency==self.company_currency else self.write_off_amount,
 						"cost_center": self.write_off_cost_center,
+						"business_activity": self.business_activity,
 						"remarks": "Retention amount deducted from Bill"
 					})
 				)
@@ -609,6 +621,7 @@ class PurchaseInvoice(BuyingController):
 						"credit": flt(self.base_write_off_amount),
 						"credit_in_account_currency": self.base_write_off_amount \
 							if write_off_account_currency==self.company_currency else self.write_off_amount,
+						"business_activity": self.business_activity,
 						"cost_center": self.write_off_cost_center
 					})
 				)	
@@ -631,6 +644,7 @@ class PurchaseInvoice(BuyingController):
 					"credit": flt(self.base_tds_amount),
 					"credit_in_account_currency": self.base_tds_amount \
 						if tds_account_currency==self.company_currency else self.tds_amount,
+					"business_activity": self.business_activity,
 					"cost_center": self.buying_cost_center
 				})
 			)
@@ -646,6 +660,7 @@ class PurchaseInvoice(BuyingController):
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
 					"cost_center": self.buying_cost_center,
+					"business_activity": self.business_activity,
 				}, tds_account_currency)
 			)
 		
@@ -664,7 +679,8 @@ class PurchaseInvoice(BuyingController):
 					"party": self.supplier,
 					"credit": allocated_amount,
 					"credit_in_account_currency": allocated_amount, 
-					"cost_center": a.advance_cost_center
+					"cost_center": a.advance_cost_center,
+					"business_activity": a.advance_business_activity
 				})
 			)
 			gl_entries.append(
@@ -677,7 +693,8 @@ class PurchaseInvoice(BuyingController):
 					"debit_in_account_currency": a.allocated_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
-					"cost_center": a.advance_cost_center
+					"cost_center": a.advance_cost_center,
+					"business_activity": a.advance_business_activity
 				}, advance_account_currency)
 			)
 
