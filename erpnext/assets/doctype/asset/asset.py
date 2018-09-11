@@ -243,9 +243,9 @@ class Asset(Document):
 			1. There is a mistake in getting the account by using the method below. 
 			2. Method and variable Names has to be descriptive
 		"""
-		accumulated_account = frappe.db.get_value(doctype="Asset Category",filters=self.item_code,fieldname="accumulated_depreciation_account", as_dict=True)
-		#accumulated_account = accumulated_account and accumulated_account[0].accumulated_depreciation_account or None
-
+		accumulated_account = frappe.db.get_all("Asset Category Account","accumulated_depreciation_account",{"parent":self.asset_category},order_by="idx", as_list=1)
+		accumulated_account = accumulated_account[0][0] if accumulated_account else ""
+		#frappe.msgprint(_("{0}").format(accumulated_account))
 		if self.opening_accumulated_depreciation:
 			je = frappe.new_doc("Journal Entry")
 			je.flags.ignore_permissions = 1
@@ -258,7 +258,7 @@ class Asset(Document):
 				"branch": self.branch
 				})
 			#credit
-			je.append("account", {
+			je.append("accounts", {
 				"account" : accumulated_account, 
 				"credit_in_account_currency": self.opening_accumulated_depreciation,
                                 "reference_type": "Asset",

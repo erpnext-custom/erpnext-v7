@@ -17,6 +17,9 @@ frappe.listview_settings['Hire Charge Invoice'] = {
 			else if(doc.outstanding_amount == 0) {
 				return ["Payment Received", "green", "docstatus,=,1|outstanding_amount,=,0|owned_by,!=,CDCL"];
 			}
+			else if(doc.outstanding_amount != 0 && doc.outstanding_amount < doc.balance_amount) {
+                                return ["Partially Received", "blue", "docstatus,=,1|outstanding_amount,!=,0|outstanding_amount,>,0|owned_by,=,Others"];
+                        }
 			else {
 				return ["Invoice Raised", "blue", "docstatus,=,1|outstanding_amount,>,0|owned_by,!=,CDCL"];
 			}

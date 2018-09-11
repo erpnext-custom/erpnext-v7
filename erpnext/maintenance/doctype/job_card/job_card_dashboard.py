@@ -2,7 +2,7 @@
 from frappe import _
 
 data = {
-	'fieldname': 'ref_no',
+	'fieldname': 'reference_name',
 	'transactions': [
 		{
 			'label': _('Related'),

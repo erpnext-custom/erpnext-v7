@@ -371,15 +371,22 @@ def get_min_items(name):
 def make_payment_entry(source_name, target_doc=None): 
 	def update_docs(obj, target, source_parent):
 		target.posting_date = nowdate()
-		target.ref_doc = "Job Card"
-		target.net_amount = obj.total_amount
-		target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
+		target.payment_for = "Job Card"
+                target.net_amount = obj.outstanding_amount
+                target.actual_amount = obj.outstanding_amount
+                target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
+
+                target.append("items", {
+                        "reference_type": "Job Card",
+                        "reference_name": obj.name,
+                        "outstanding_amount": obj.outstanding_amount,
+                        "allocated_amount": obj.outstanding_amount
+                })
 	
 	doc = get_mapped_doc("Job Card", source_name, {
 			"Job Card": {
 				"doctype": "Mechanical Payment",
 				"field_map": {
-					"name": "ref_no",
 					"outstanding_amount": "receivable_amount",
 				},
 				"postprocess": update_docs,

@@ -38,7 +38,7 @@ frappe.ui.form.on('Travel Authorization', {
 		
 		if (frm.doc.docstatus == 1 && !frm.doc.travel_claim && frm.doc.document_status == "Approved") {
 			frm.add_custom_button("Create Travel Claim", function() {
-				if(frm.doc.end_date_auth > get_today()){
+				if(frm.doc.end_date_auth < get_today()){
 					frappe.model.open_mapped_doc({
 						method: "erpnext.hr.doctype.travel_authorization.travel_authorization.make_travel_claim",
 						frm: cur_frm

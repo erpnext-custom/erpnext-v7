@@ -25,6 +25,9 @@ frappe.listview_settings['Job Card'] = {
 			else if(doc.outstanding_amount == 0) {
 				return ["Payment Received", "green", "docstatus,=,1|outstanding_amount,=,0|owned_by,=,Others"];
 			}
+			else if(doc.outstanding_amount != 0 && doc.outstanding_amount < doc.total_amount) {
+                                return ["Partially Received", "blue", "docstatus,=,1|outstanding_amount,!=,0|outstanding_amount,>,0|owned_by,=,Others"];
+                        }
 			else {
 				return ["Invoice Raised", "blue", "docstatus,=,1|outstanding_amount,>,0|owned_by,=,Others"];
 			}

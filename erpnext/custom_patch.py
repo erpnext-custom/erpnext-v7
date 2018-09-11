@@ -8,6 +8,28 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_mech():
+        ml = frappe.db.sql("select name from `tabMechanical Payment` where docstatus = 1 and payment_for is null and name = 'MP18090001'", as_dict=1)
+        for a in ml:
+                doc = frappe.get_doc("Mechanical Payment", a.name)
+                print(doc.name)
+		frappe.db.sql("update `tabMechanical Payment` set payment_for = %s where name = %s", (doc.ref_doc, doc.name))
+                dc = frappe.new_doc("Mechanical Payment Item")
+                dc.reference_type = doc.ref_doc
+                dc.reference_name = doc.ref_no
+                dc.outstanding_amount = doc.receivable_amount
+                dc.allocated_amount = doc.receivable_amount
+                dc.parent = doc.name
+                dc.parenttype = "Mechanical Payment"
+                dc.parentfield = "items"
+                dc.owner = doc.owner
+                dc.creation = doc.creation
+                dc.modified_by = doc.modified_by
+                dc.modified = doc.modified
+                dc.docstatus = doc.docstatus
+                dc.submit()
+                dc.idx = 1
+
 def adjust_advance_balance():
 	advances = frappe.db.sql("select name from `tabHire Charge Invoice`", as_dict=1)
 	for a in advances:

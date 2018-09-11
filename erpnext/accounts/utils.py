@@ -256,7 +256,7 @@ def update_reference_in_journal_entry(d, jv_obj):
 	if d['allocated_amount'] < d['unadjusted_amount']:
 		jvd = frappe.db.sql("""
 			select cost_center, balance, against_account, is_advance,
-				account_type, exchange_rate, account_currency
+				account_type, exchange_rate, account_currency, business_activity
 			from `tabJournal Entry Account` where name = %s
 		""", d['voucher_detail_no'], as_dict=True)
 
@@ -286,6 +286,7 @@ def update_reference_in_journal_entry(d, jv_obj):
 		ch.reference_name = original_reference_name
 		ch.is_advance = cstr(jvd[0]["is_advance"])
 		ch.docstatus = 1
+		ch.business_activity = jvd[0]['business_activity']
 
 	# will work as update after submit
 	jv_obj.flags.ignore_validate_update_after_submit = True

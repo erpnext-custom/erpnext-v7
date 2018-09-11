@@ -166,7 +166,6 @@ class EquipmentHiringForm(Document):
 		revenue_bank = frappe.db.get_value("Branch", self.branch, "revenue_bank_account")
 
 		if revenue_bank and advance_account:
-			ba = get_equipment_ba()
 			je = frappe.new_doc("Journal Entry")
 			je.flags.ignore_permissions = 1 
 			je.title = "Advance for Equipment Hire (" + self.name + ")"

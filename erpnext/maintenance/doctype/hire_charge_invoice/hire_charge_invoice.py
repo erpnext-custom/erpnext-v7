@@ -113,6 +113,7 @@ class HireChargeInvoice(AccountsController):
 					'unadjusted_amount' : flt(d.actual_advance_amount),
 					'allocated_amount' : flt(d.allocated_amount),
 					'exchange_rate': 1,
+					'business_activity': get_default_ba()
 				})
 				lst.append(args)
 
@@ -390,15 +391,22 @@ def get_advances(hire_name):
 def make_payment_entry(source_name, target_doc=None): 
 	def update_docs(obj, target, source_parent):
 		target.posting_date = nowdate()
-		target.ref_doc = "Hire Charge Invoice"
-		target.net_amount = obj.outstanding_amount
-		target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
+		target.payment_for = "Hire Charge Invoice"
+                target.net_amount = obj.outstanding_amount
+                target.actual_amount = obj.outstanding_amount
+                target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
+
+                target.append("items", {
+                        "reference_type": "Hire Charge Invoice",
+                        "reference_name": obj.name,
+                        "outstanding_amount": obj.outstanding_amount,
+                        "allocated_amount": obj.outstanding_amount
+                })
 	
 	doc = get_mapped_doc("Hire Charge Invoice", source_name, {
 			"Hire Charge Invoice": {
 				"doctype": "Mechanical Payment",
 				"field_map": {
-					"name": "ref_no",
 					"outstanding_amount": "receivable_amount",
 				},
 				"postprocess": update_docs,
