@@ -45,12 +45,9 @@ class BulkAssetTransfer(Document):
 			if a.cost_center != self.custodian_cost_center:
 				doc.db_set("cost_center", self.custodian_cost_center)
 				doc.db_set("branch", self.custodian_branch)
-				equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code, "docstatus": 1}, "name")
+				equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code}, "name")
 				if equipment:
-					equip = frappe.get_doc("Equipment", equipment)
-					equip.branch = self.custodian_branch
-					equip.save()
-					#save_equipment(equipment, self.custodian_branch, self.posting_date, self.name, "Submit")
+					save_equipment(equipment, self.custodian_branch, self.posting_date, self.name, "Submit")
 					#doc.db_set("branch", self.custodian_branch)
 				make_asset_transfer_gl(self, a.asset_code, self.posting_date, a.cost_center, self.custodian_cost_center)
 
@@ -85,10 +82,7 @@ class BulkAssetTransfer(Document):
 				doc.db_set("branch", branch)
 				equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code}, "name")
 				if equipment:
-					equip = frappe.get_doc("Equipment", equipment)
-					equip.branch = branch
-					equip.save()
-					#save_equipment(equipment, branch, self.posting_date, self.name, "Cancel")
+					save_equipment(equipment, branch, self.posting_date, self.name, "Cancel")
 
 	def delete_gl_entries(self):
 		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", self.name)

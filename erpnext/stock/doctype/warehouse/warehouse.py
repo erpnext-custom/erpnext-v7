@@ -281,6 +281,8 @@ def add_node():
 		name_field: frappe.form_dict['name_field'],
 		parent_field: parent,
 		"is_group": frappe.form_dict['is_group'],
+		"branch": frappe.form_dict['branch'],
+		"create_account_under": frappe.form_dict['create_account_under'],
 		"company": company
 	})
 

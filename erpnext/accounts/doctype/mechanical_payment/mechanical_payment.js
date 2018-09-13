@@ -53,7 +53,6 @@ frappe.ui.form.on('Mechanical Payment', {
 	},
 
 	"receivable_amount": function(frm) {
-		console.log("INSIDE")
 		if(frm.doc.receivable_amount > frm.doc.actual_amount) {
 			cur_frm.set_value("receivable_amount", frm.doc.actual_amount)
 			msgprint("Receivable Amount cannot be greater than the Total Payable Amount")

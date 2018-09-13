@@ -16,6 +16,10 @@ class AssetMovement(Document):
 		self.validate_asset()
 		if self.target_warehouse:
 			self.validate_warehouses()
+		if self.target_business_activity:
+			self.target_cost_center = None
+			self.target_custodian = None
+
 		if self.target_custodian:
 			self.validate_custodian()
 			self.target_cost_center = None
@@ -29,6 +33,7 @@ class AssetMovement(Document):
 	def assign_data(self):
 		self.source_custodian = frappe.db.get_value("Asset", self.asset, "issued_to")
 		self.current_cost_center = frappe.db.get_value("Asset", self.asset, "cost_center")
+		self.current_business_activity = frappe.db.get_value("Asset", self.asset, "business_activity")	
 
 	def validate_asset(self):
 		status, company = frappe.db.get_value("Asset", self.asset, ["status", "company"])
@@ -54,13 +59,19 @@ class AssetMovement(Document):
 
 	def before_submit(self):
 		self.assign_data()
-		check_valid_asset_transfer(self.asset, self.posting_date)
+		if not self.target_business_activity:
+			check_valid_asset_transfer(self.asset, self.posting_date)
 	
 	def on_submit(self):
+		if self.target_business_activity:
+			set_business_activity(self.asset, self.current_business_activity, self.target_business_activity, True)
+			return
+
 		if not self.target_custodian and not self.target_cost_center:
 			frappe.throw("Target Custodian or Cost Center is Mandatory")
 		if self.target_warehouse:
 			self.set_latest_warehouse_in_asset()
+
 		if self.target_custodian:
 			self.set_latest_custodian_in_asset()
 			if self.target_custodian_cost_center != self.current_cost_center:		
@@ -70,6 +81,10 @@ class AssetMovement(Document):
 			make_asset_transfer_gl(self, self.asset, self.posting_date, self.current_cost_center, self.target_cost_center)
 	
 	def on_cancel(self):
+		if self.target_business_activity:
+			set_business_activity(self.asset, self.current_business_activity, self.target_business_activity, False)
+			return
+
 		check_valid_asset_transfer(self.asset, self.posting_date)
 		self.check_depreciation_done()
 		if self.target_warehouse:
@@ -138,10 +153,7 @@ class AssetMovement(Document):
 			
 			equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
 			if equipment:
-				equip = frappe.get_doc("Equipment", equipment)
-				equip.branch = branch
-				equip.save()
-				#save_equipment(equipment, branch, self.posting_date, self.name, purpose)
+				save_equipment(equipment, branch, self.posting_date, self.name, purpose)
 
 	def set_latest_cc_in_asset(self, cancel=None):
 		#latest_movement_entry = frappe.db.sql("""select target_cost_center from `tabAsset Movement`
@@ -167,10 +179,20 @@ class AssetMovement(Document):
 
 		equipment = frappe.db.get_value("Equipment", {"asset_code": self.asset}, "name")
 		if equipment:
-			equip = frappe.get_doc("Equipment", equipment)
-			equip.branch =  branch
-			equip.save()
-			#save_equipment(equipment, branch, self.posting_date, self.name, purpose)
+			save_equipment(equipment, branch, self.posting_date, self.name, purpose)
+
+def set_business_activity(asset, source_ba, target_ba, submit):
+	ba = source_ba
+	if submit:
+		ba = target_ba	
+	asset = frappe.get_doc("Asset", asset)
+	if not submit and target_ba != asset.business_activity:
+		frappe.throw("Business Area Already Changed after this Transaction")
+	asset.db_set("business_activity" , ba)
+	equipment = frappe.db.get_value("Equipment", {"asset_code": asset.name}, "name")
+	if equipment:
+		equip = frappe.get_doc("Equipment", equipment)
+		equip.db_set("business_activity", ba)
 
 def save_equipment(equipment, branch, posting_date, ref_doc, purpose):
 	equip = frappe.get_doc("Equipment", equipment)

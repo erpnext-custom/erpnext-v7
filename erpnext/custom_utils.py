@@ -128,33 +128,6 @@ def get_user_info(user=None, employee=None, cost_center=None):
 # Ver 2.0 Ends
 
 ##
-# Cancelling draft documents
-##
-@frappe.whitelist()
-def cancel_draft_doc(doctype, docname):
-        doc = frappe.get_doc(doctype, docname)
-        doc.db_set("docstatus", 2)
-	if doctype == "Material Request":
-		doc.db_set("status", "Cancelled")
-		doc.db_set("workflow_state", "Cancelled")
-	elif doctype == "Travel Claim":
-		if doc.ta:
-			ta = frappe.get_doc("Travel Authorization", doc.ta)
-			ta.db_set("travel_claim", "")
-	elif doctype == "Imprest Recoup":
-                doc.db_set("workflow_state", "Cancelled")
-        elif doctype == "Imprest Receipt":
-                doc.db_set("workflow_state", "Cancelled")
-        elif doctype == "Job Card":
-		br = frappe.get_doc("Break Down Report", doc.break_down_report)
-                br.db_set("job_card", "")
-        elif doctype == "Overtime Application":
-                doc.db_set("workflow_state", "Cancelled")
-        else:
-                pass
-                
-
-##
 #  nvl() function added by SHIV on 02/02/2018
 ##
 def nvl(val1, val2):
@@ -247,8 +220,8 @@ def check_budget_available(cost_center, budget_account, transaction_date, amount
         if budget_amount and budget_amount[0].action == "Ignore":
                 pass 
         else:
-		"""if budget_amount and budget_amount[0].budget_check == "Ignore":
-                        return"""
+		if budget_amount and budget_amount[0].budget_check == "Ignore":
+                        return
                 if budget_amount:
                         committed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31"), as_dict=True)
                         consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabConsumed Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31"), as_dict=True)
@@ -267,12 +240,16 @@ def check_budget_available(cost_center, budget_account, transaction_date, amount
 def get_cc_warehouse(branch):
         cc = get_branch_cc(branch)
         wh = frappe.db.get_value("Cost Center", cc, "warehouse")
+	if not wh:
+		frappe.throw("No warehosue linked with your branch or cost center")
         return {"cc": cc, "wh": wh}	
 
 @frappe.whitelist()
 def get_branch_warehouse(branch):
         cc = get_branch_cc(branch)
         wh = frappe.db.get_value("Cost Center", cc, "warehouse")
+	if not wh:
+		frappe.throw("No warehosue linked with your branch or cost center")
         return wh
 
 @frappe.whitelist()

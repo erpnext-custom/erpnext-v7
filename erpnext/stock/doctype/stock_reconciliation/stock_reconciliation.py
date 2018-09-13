@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 import frappe.defaults
 from frappe import msgprint, _
-from frappe.utils import cstr, flt, cint
+from frappe.utils import cstr, flt, cint, get_datetime
 from erpnext.stock.stock_ledger import update_entries_after
 from erpnext.controllers.stock_controller import StockController
 from erpnext.stock.utils import get_stock_balance
@@ -29,12 +29,27 @@ class StockReconciliation(StockController):
 		self.validate_expense_account()
 
 	def on_submit(self):
+		posting_date = str(get_datetime(str(self.posting_date) + ' ' + str(self.posting_time)))
 		self.update_stock_ledger()
 		self.make_gl_entries()
+		
+		for a in self.items:
+			self.repost_issue_pol(a, posting_date)
 
 	def on_cancel(self):
+		posting_date = str(get_datetime(str(self.posting_date) + ' ' + str(self.posting_time)))
 		self.delete_and_repost_sle()
 		self.make_gl_entries_on_cancel()
+
+		for a in self.items:
+			self.repost_issue_pol(a, posting_date)
+
+	def repost_issue_pol(self, a, posting_date):
+		ipols = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1 and concat(posting_date,' ',posting_time) > %s and pol_type = %s and warehouse = %s", (posting_date, a.item_code, a.warehouse), as_dict=1)
+		for a in ipols:
+			frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+			doc = frappe.get_doc("Issue POL", a.name)
+			doc.update_stock_gl_ledger(post_gl=True)
 
 	def remove_items_with_no_change(self):
 		"""Remove items if qty or rate is not changed"""
@@ -224,8 +239,11 @@ class StockReconciliation(StockController):
 		if not self.cost_center:
 			msgprint(_("Please enter Cost Center"), raise_exception=1)
 
+		if not self.business_activity:
+			msgprint(_("Please enter Business Activity"), raise_exception=1)
+
 		return super(StockReconciliation, self).get_gl_entries(warehouse_account,
-			self.expense_account, self.cost_center)
+			self.expense_account, self.cost_center, self.business_activity)
 
 	def validate_expense_account(self):
 		if not cint(frappe.defaults.get_global_default("auto_accounting_for_stock")):

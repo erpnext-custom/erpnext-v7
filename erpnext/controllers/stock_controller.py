@@ -29,13 +29,13 @@ class StockController(AccountsController):
 					warehouse_account)
 
 	def get_gl_entries(self, warehouse_account=None, default_expense_account=None,
-			default_cost_center=None):
+			default_cost_center=None, default_business_activity=None):
 
 		if not warehouse_account:
 			warehouse_account = get_warehouse_account()
 
 		sle_map = self.get_stock_ledger_details()
-		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map)
+		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map, default_business_activity)
 
 		gl_list = []
 		warehouse_with_no_account = []
@@ -124,10 +124,10 @@ class StockController(AccountsController):
 
 		return process_gl_map(gl_list)
 
-	def get_voucher_details(self, default_expense_account, default_cost_center, sle_map):
+	def get_voucher_details(self, default_expense_account, default_cost_center, sle_map, default_business_activity=None):
 		if self.doctype == "Stock Reconciliation":
 			return [frappe._dict({ "name": voucher_detail_no, "expense_account": default_expense_account,
-				"cost_center": default_cost_center }) for voucher_detail_no, sle in sle_map.items()]
+				"cost_center": default_cost_center, "business_activity": default_business_activity }) for voucher_detail_no, sle in sle_map.items()]
 		elif self.doctype in ["Issue POL", "POL"]:
                         gl_map_pol = []
                         for voucher_detail_no, sle in sle_map.items():

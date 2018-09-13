@@ -77,6 +77,22 @@ def get_data():
 			"hidden": 1
 		},
 		{
+                        "module_name": "Assets",
+                        "color": "#5d0960",
+                        "icon": "octicon octicon-tag",
+                        "hidden": 1,
+                        "label": _("Asset Management"),
+                        "type": "module"
+                },
+                {
+                        "module_name": "Budget",
+                        "color": "#76841b",
+                        "icon": "icon-money",
+                        "hidden": 1,
+                        "label": _("Budget Management"),
+                        "type": "module"
+                },
+		{
 			"module_name": "Stock",
 			"color": "#f39c12",
 			"icon": "icon-truck",
@@ -95,7 +111,7 @@ def get_data():
 			"module_name": "Selling",
 			"color": "#1abc9c",
 			"icon": "icon-tag",
-			"icon": "octicon octicon-tag",
+			"icon": "octicon octicon-credit-card",
 			"type": "module",
 			"hidden": 1
 		},
@@ -274,23 +290,15 @@ def get_data():
 		{
 			"module_name": "Management Dashboard",
 			"color": "#c0392b",
-			"icon": "octicon octicon-broadcast",
+			"icon": "octicon octicon-dashboard",
 			"type": "module",
 		},
-		{
-                        "module_name": "Assets",
-                        "color": "#4286f4",
-                        "icon": "octicon octicon-database",
-                        "hidden": 1,
-                        "label": _("Asset Management"),
-                        "type": "module"
-                },
                 {
-                        "module_name": "Budget",
-                        "color": "#4286f4",
-                        "icon": "octicon octicon-keyboard",
+                        "module_name": "Production",
+                        "color": "#1449c4",
+                        "icon": "octicon octicon-beaker",
                         "hidden": 1,
-                        "label": _("Budget Management"),
+                        "label": _("Production"),
                         "type": "module"
                 },
 	]
