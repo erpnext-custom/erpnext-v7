@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "field:id_card", 
  "beta": 0, 
  "creation": "2017-07-30 05:58:20.744527", 
@@ -945,7 +945,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-07-20 12:15:49.724522", 
+ "modified": "2018-09-13 13:13:57.553503", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Muster Roll Employee", 

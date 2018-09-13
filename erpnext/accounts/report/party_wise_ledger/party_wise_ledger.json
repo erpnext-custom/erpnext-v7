@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-17 23:21:03.797377", 
- "modified_by": "Administrator", 
+ "modified": "2018-09-13 10:04:50.672361", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Accounts", 
  "name": "Party Wise Ledger", 
  "owner": "Administrator", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Regional Manager"
   }
  ]
 }

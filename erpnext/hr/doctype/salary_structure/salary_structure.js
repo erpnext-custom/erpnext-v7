@@ -194,7 +194,11 @@ frappe.ui.form.on('Salary Detail', {
 		calculate_others(frm.doc);
 		//-- Ver 20160804.1 Ends
 		calculate_totals(frm.doc);
-	}
+	},
+	total_deductible_amount: function(frm, cdt, cdn){
+		d = locals[cdt][cdn];
+		frappe.model.set_value(cdt, cdn, "total_outstanding_amount", parseFloat(d.total_deductible_amount || 0.0)-parseFloat(d.total_deducted_amount || 0.0));
+	},
 })
 
 //++ Ver 20160803.1 Begins, calculate_totals2 is added by SSK on 03/08/2016
