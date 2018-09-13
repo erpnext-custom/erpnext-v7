@@ -215,7 +215,7 @@ class Asset(Document):
 				"voucher_type": "Journal Entry",
 				"company": self.company,
 				"remark": self.name + " (" + self.asset_name + ") Asset Issued",
-				"user_remark": self.name + " (" + self.asset_name + ") Asset Issued",
+				"user_remark": self.remarks if self.remarks else self.name + " (" + self.asset_name + ") Asset Issued",
 				"posting_date": self.purchase_date
 				})
 

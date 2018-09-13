@@ -556,7 +556,7 @@ frappe.ui.form.on("Stock Entry", "purpose", function(frm){
       }
       if (cur_frm.fields_dict.purpose.value == 'Material Receipt'){
          console.log(cur_frm.fields_dict.purpose.value)
-         cur_frm.fields_dict.naming_series.df.options = "Consumable GR\nCapital Inventory GR\nCoal GR\nDolomite GR\nGypsum GR\nStone GR\nLimestone GR\nBauxite GR\nQuartzite GR";
+         cur_frm.fields_dict.naming_series.df.options = "Consumable GR\nCapital Inventory GR\nCoal GR\nDolomite GR\nGypsum GR\nStone GR\nLimestone GR\nBauxite GR\nQuartzite GR\nTalc GR";
       }
       if (cur_frm.fields_dict.purpose.value == 'Material Transfer'){
          cur_frm.fields_dict.naming_series.df.options = "Inventory Transfer";

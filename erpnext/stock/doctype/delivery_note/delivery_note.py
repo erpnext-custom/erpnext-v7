@@ -13,6 +13,7 @@ from erpnext.controllers.selling_controller import SellingController
 from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -202,6 +203,7 @@ class DeliveryNote(SellingController):
 		self.make_gl_entries()
 
 	def on_cancel(self):
+		check_uncancelled_linked_doc(self.doctype, self.name)
 		self.check_close_sales_order("against_sales_order")
 		self.check_next_docstatus()
 

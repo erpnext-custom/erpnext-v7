@@ -15,13 +15,13 @@ class AssetModifierTool(Document):
 ##
 # Make GL Entry for the additional cost
 ##
-def make_gl_entry(asset_account, credit_account, value, asset, start_date):
+def make_gl_entry(asset_account, credit_account, value, asset, start_date, remarks):
 	je = frappe.new_doc("Journal Entry")
 	je.update({
 		"voucher_type": "Journal Entry",
 		"company": asset.company,
 		"remark": "Value (" + str(value) +" ) added to " + asset.name + " (" + asset.asset_name + ") ",
-		"user_remark": "Value (" + str(value) +" ) added to " + asset.name + " (" + asset.asset_name + ") ",
+		"user_remark": remarks if remarks else "Value (" + str(value) +" ) added to " + asset.name + " (" + asset.asset_name + ") ",
 		"posting_date": start_date
 		})
 
@@ -58,14 +58,14 @@ def update_value(sch_name, dep_amount, accu_dep, income, accu_income):
 # Method call from client to perform asset value addition
 ##
 @frappe.whitelist()
-def change_value(asset=None, value=None, start_date=None, credit_account=None, asset_account=None):
+def change_value(asset=None, value=None, start_date=None, credit_account=None, asset_account=None, remarks=None):
 	if(asset and value and start_date <= nowdate()):
 		asset_obj = frappe.get_doc("Asset", asset)
 		if asset_obj and asset_obj.docstatus == 1:
 			#Make GL Entries for additional values and update gross_amount (rate)
 			asset_obj.db_set("additional_value", flt(asset_obj.additional_value) + flt(value))
 			asset_obj.db_set("gross_purchase_amount", flt(flt(asset_obj.gross_purchase_amount) + flt(value)))
-			make_gl_entry(asset_account, credit_account, value, asset_obj, start_date)
+			make_gl_entry(asset_account, credit_account, value, asset_obj, start_date, remarks)
 			
 			#Get dep. schedules which had not yet happened
 			schedules = frappe.db.get_all("Depreciation Schedule", order_by="schedule_date", filters = {"parent": asset_obj.name, "schedule_date": [">=", start_date]},fields={"name", "schedule_date", "journal_entry", "depreciation_amount", "accumulated_depreciation_amount", "depreciation_income_tax","accumulated_depreciation_income_tax"})

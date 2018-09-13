@@ -213,7 +213,7 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Reports"),
+			"label": _("Salary Reports"),
 			"icon": "icon-list",
 			"items": [
                                 {
@@ -257,6 +257,18 @@ def get_data():
                                         "label": _("Salary Tax & Health Contribution Report"),
 					"doctype": "Salary Slip"
 				},
+			]
+		},
+                {
+			"label": _("Other Reports"),
+			"icon": "icon-list",
+			"items": [
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Employee Salary Structure",
+					"doctype": "Salary Structure"
+				},
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -293,7 +305,7 @@ def get_data():
 					"name": "Salary Tax Report",
                                         "label": "RRCO Tax Slab Details",
 					"doctype": "Salary Tax"
-				},
+				}
 			]
-		},
+		}
 	]
