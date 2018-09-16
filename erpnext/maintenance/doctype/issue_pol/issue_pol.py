@@ -34,13 +34,8 @@ class IssuePOL(StockController):
 		if self.tanker and self.branch != frappe.db.get_value("Equipment", self.tanker, "branch"):
 			frappe.throw("Selected Branch and Equipment Branch does not match")
 
-	def populate_data(self):
-		cc = get_branch_cc(self.branch)
-		self.cost_center = cc
-		warehouse = frappe.db.get_value("Cost Center", cc, "warehouse")
-		if not warehouse:
-			frappe.throw(str(cc) + " is not linked to any Warehouse")
-		self.warehouse = warehouse
+	def validate_warehouse(self):
+		self.validate_warehouse_branch(self.branch, self.warehouse)
 
 	def validate_data(self):
 		if not self.purpose:

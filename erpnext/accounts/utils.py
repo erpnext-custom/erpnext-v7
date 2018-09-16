@@ -167,7 +167,7 @@ def add_cc(args=None):
 		cc.parent_cost_center = args.get("parent")
 
 	cc.old_parent = ""
-	cc.insert()
+	cc.save()
 	return cc.name
 
 def reconcile_against_document(args):

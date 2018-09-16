@@ -4,15 +4,160 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
-from erpnext.custom_utils import get_cc_warehouse
+from frappe.utils import cstr, flt, fmt_money, formatdate, nowtime, getdate
+from erpnext.accounts.utils import get_fiscal_year
+from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, prepare_sl, check_budget_available
+from erpnext.controllers.stock_controller import StockController
+from erpnext.stock.utils import get_stock_balance
 
-class Production(Document):
+class Production(StockController):
 	def validate(self):
-		self.set_default_values()
+		check_future_date(self.posting_date)
+		self.validate_warehouse()
+		self.validate_items()
+		self.validate_posting_time()
 
-	def set_default_values(self):
-		obj = get_cc_warehouse(self.branch)
-		self.warehouse = obj['wh']
-		self.cost_center = obj['cc']
+	def validate_warehouse(self):
+		self.validate_warehouse_branch(self.warehouse, self.branch)
+
+	def validate_items(self):
+		prod_items = self.get_production_items()
+		for item in self.get("raw_materials"):
+			if item.item_code not in prod_items:
+				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
+			if flt(item.qty) <= 0:
+				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
+
+		for item in self.get("items"):
+			if item.item_code not in prod_items:
+				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
+			if flt(item.qty) <= 0:
+				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
+			if flt(item.cop) <= 0:
+				frappe.throw(_("COP for <b>{0}</b> cannot be zero or less").format(item.item_code))
+
+	def on_submit(self):
+		self.assign_default_dummy()
+		self.make_products_ledgers()
+		#Budget CHeck
+		self.make_raw_material_stock_ledger()
+		self.make_raw_material_gl_entry()
+		frappe.throw("STOP")
+
+	def assign_default_dummy(self):
+		self.pol_type = None
+		self.stock_uom = None 
+
+	def make_products_ledgers(self):
+		sl_entries = []
+		gl_entries = []
+
+		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
+		if not wh_account:
+			frappe.throw(str(self.warehouse) + " is not linked to any account.")
+		
+		for a in self.items:
+			sl_entries.append(prepare_sl(self,
+				{
+					"stock_uom": a.uom,
+					"item_code": a.item_code,
+					"actual_qty": a.qty,
+					"warehouse": self.warehouse,
+					"incoming_rate": flt(a.cop, 2)
+				}))
+
+			amount = flt(a.qty) * flt(a.cop)
+
+			budget_account = frappe.db.get_value("Item", a.item_code, "expense_account")
+			if not budget_account:
+				frappe.throw("Set Budget Account in Item Master")		
+
+			gl_entries.append(
+				prepare_gl(self, {"account": wh_account,
+						 "credit": flt(amount),
+						 "credit_in_account_currency": flt(amount),
+						 "cost_center": self.cost_center,
+						 "business_activity": self.business_activity
+						})
+				)
+
+			gl_entries.append(
+				prepare_gl(self, {"account": budget_account,
+						 "debit": flt(amount),
+						 "debit_in_account_currency": flt(amount),
+						 "cost_center": self.cost_center,
+						 "business_activity": self.business_activity
+						})
+				)
+
+		if sl_entries: 
+			if self.docstatus == 2:
+				sl_entries.reverse()
+
+			self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+
+		if gl_entries:
+			from erpnext.accounts.general_ledger import make_gl_entries
+			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
+
+
+	def make_raw_material_stock_ledger(self):
+		sl_entries = []
+
+		for a in self.raw_materials:
+			sl_entries.append(prepare_sl(self,
+				{
+					"stock_uom": a.uom,
+					"item_code": a.item_code,
+					"actual_qty": -1 * flt(a.qty),
+					"warehouse": self.warehouse,
+					"incoming_rate": 0
+				}))
+
+		if sl_entries: 
+			if self.docstatus == 2:
+				sl_entries.reverse()
+
+			self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+
+	def make_raw_material_gl_entry(self):
+		gl_entries = []
+
+		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
+		if not wh_account:
+			frappe.throw(str(self.warehouse) + " is not linked to any account.")
+
+		for a in self.raw_materials:
+			stock_qty, map_rate = get_stock_balance(a.item_code, self.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
+                        amount = flt(a.qty) * flt(map_rate)
+
+			budget_account = frappe.db.get_value("Item", a.item_code, "expense_account")
+			if not budget_account:
+				frappe.throw("Set Budget Account in Item Master")		
+
+			gl_entries.append(
+				prepare_gl(self, {"account": wh_account,
+						 "credit": flt(amount),
+						 "credit_in_account_currency": flt(amount),
+						 "cost_center": self.cost_center,
+						 "business_activity": self.business_activity
+						})
+				)
+
+			gl_entries.append(
+				prepare_gl(self, {"account": budget_account,
+						 "debit": flt(amount),
+						 "debit_in_account_currency": flt(amount),
+						 "cost_center": self.cost_center,
+						 "business_activity": self.business_activity
+						})
+				)
+
+		if gl_entries:
+			from erpnext.accounts.general_ledger import make_gl_entries
+			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
+
+
 

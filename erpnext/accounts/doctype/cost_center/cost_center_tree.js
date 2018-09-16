@@ -20,8 +20,7 @@ frappe.treeview_settings["Cost Center"] = {
 	],
 	fields:[
 		{fieldtype:'Data', fieldname:'cost_center_name', label:__('New Cost Center Name'), reqd:true},
-		{fieldtype:'Link', fieldname:'branch', options:'Branch', label:__('Branch'), reqd:true},
-		{fieldtype:'Check', fieldname:'is_group', label:__('Is Group'),
+		{fieldtype:'Check', fieldname:'is_group', label:__('Is Group'), default: 0,
 			description:__('Further cost centers can be made under Groups but entries can be made against non-Groups')}
 	]
 }

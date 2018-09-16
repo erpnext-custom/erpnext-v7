@@ -440,6 +440,19 @@ class AccountsController(TransactionBase):
 
 		return stock_items
 
+	def get_production_items(self):
+		prod_items = []
+		pro_codes = list(set(item.item_code for item in self.get("items")))
+		raw_codes = list(set(item.item_code for item in self.get("raw_materials")))
+		item_codes = list(set(pro_codes + raw_codes))
+
+		if item_codes:
+			prod_items = [r[0] for r in frappe.db.sql("""select name
+				from `tabItem` where name in (%s) and is_production_item=1""" % \
+				(", ".join((["%s"]*len(item_codes))),), item_codes)]
+
+		return prod_items
+
 	def set_total_advance_paid(self):
 		if self.doctype == "Sales Order":
 			dr_or_cr = "credit_in_account_currency"

@@ -812,3 +812,9 @@ def sync_item_code():
 		#stock entry
 		frappe.db.sql("update `tabMaterial Request Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
 		frappe.db.sql("update `tabStock Entry Detail` set item_code = %s where item_code = %s", (item.item_code, item.name))
+
+
+@frappe.whitelist()
+def get_item_list():
+	return frappe.db.sql("select item_code as value from tabItem where item_group = 'Sales Product'", as_dict=1)
+

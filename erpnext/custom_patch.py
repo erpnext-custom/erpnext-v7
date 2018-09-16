@@ -8,6 +8,23 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def move_cc_branch():
+	ccs = frappe.db.sql("select name, branch from `tabCost Center` where branch is not null", as_dict=1)
+	for cc in ccs:
+		print(cc.branch)
+		if cc.branch:
+			b = frappe.get_doc("Branch", cc.branch)
+			b.db_set("cost_center", cc.name)
+
+def update_equipment_history():
+	equ = frappe.db.sql("select name from `tabEquipment`", as_dict =1)
+	for eq in equ:
+		print(eq)
+		doc = frappe.get_doc("Equipment", eq.name)
+                doc.save()
+                frappe.db.commit()
+
+
 def update_mech():
         ml = frappe.db.sql("select name from `tabMechanical Payment` where docstatus = 1 and payment_for is null and name = 'MP18090001'", as_dict=1)
         for a in ml:

@@ -1,8 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
-cur_frm.add_fetch("cost_center", "branch", "branch")
-cur_frm.add_fetch("cost_center", "warehouse", "warehouse")
+cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("fuelbook", "branch", "fuelbook_branch")
 cur_frm.add_fetch("equipment", "fuelbook", "own_fb")
 cur_frm.add_fetch("pol_type", "item_name", "item_name")
@@ -125,4 +124,32 @@ frappe.ui.form.on("POL", "refresh", function(frm) {
             }
         };
     });
+
+  cur_frm.set_query("warehouse", function() {
+	return {
+	    "filters": {
+		"branch": frm.doc.branch,
+		"disabled": 0
+	    }
+	};
+    });
+
+  cur_frm.set_query("equipment_warehouse", function() {
+	return {
+	    "filters": {
+		"branch": frm.doc.equipment_branch,
+		"disabled": 0
+	    }
+	};
+    });
+
+  cur_frm.set_query("hiring_warehouse", function() {
+	return {
+	    "filters": {
+		"branch": frm.doc.hiring_branch,
+		"disabled": 0
+	    }
+	};
+    });
+
 })

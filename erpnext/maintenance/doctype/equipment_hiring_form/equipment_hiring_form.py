@@ -9,7 +9,6 @@ from frappe.model.document import Document
 from frappe.utils import cstr, flt, fmt_money, formatdate, getdate, get_datetime
 from frappe.desk.reportview import get_match_cond
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
-from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class EquipmentHiringForm(Document):
 	def validate(self):
@@ -26,6 +25,11 @@ class EquipmentHiringForm(Document):
 			dtl = frappe.db.sql(query, as_dict=True)
 			if dtl[0]['count'] > 0:
 				frappe.throw("There are previous advance balance. Please fetch those advances");
+		else:
+			if self.advance_required <= self.prev_advance_balance:
+				self.advance_amount = 0.00
+		if self.advance_required < self.total_hiring_amount:
+			frappe.throw("Advance required cannot be lesser than Total Hiring Amount");
 
 	def validate_date(self, a):
 		from_date = get_datetime(str(a.from_date) + ' ' + str(a.from_time))
@@ -50,27 +54,72 @@ class EquipmentHiringForm(Document):
 		self.update_equipment_request(1)
 		self.update_journal()
 
-	def before_cancel(self):		
-		docs = check_uncancelled_linked_doc(self.doctype, self.name)
-                if docs != 1:
-                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
-		cl_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
-		if cl_status and cl_status != 2:
-			frappe.throw("You need to cancel the journal entry related to this job card first!")
-	
-		frappe.db.sql("delete from `tabEquipment Reservation Entry` where ehf_name = \'"+ str(self.name) +"\'")	
-		self.db_set("advance_journal", '')
-		for a in self.balance_advance_details:
-			frappe.db.sql("UPDATE `tabJournal Entry Account` SET `reference_name` = \'" + str(a.reference_name) + "\' WHERE name = \'" + str(a.reference_row) + "\'")
+	def before_cancel(self):
+		if  len(self.get("balance_advance_details")) > 0 and self.advance_amount <= 0:			
+			for a in self.balance_advance_details:
+				frappe.db.sql("UPDATE `tabJournal Entry Account` SET `reference_name` = \'" + str(a.reference_name) + "\' WHERE name = \'" + str(a.reference_row) + "\'")
+				# delete_gl_entries(gl_entries=None, voucher_type="Journal Entry", voucher_no=a.jv_name, adv_adj=False, update_outstanding="Yes")
+				#frappe.db.sql("""DELETE from `tabEquipment Hiring Advance` where reference_name=%s and reference_row=%s""", (a.reference_name, a.reference_row))
 
+		elif self.advance_amount > 0:
+			docs = check_uncancelled_linked_doc(self.doctype, self.name)
+	                if docs != 1:
+	                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
+			cl_status = frappe.db.get_value("Journal Entry", self.advance_journal, "docstatus")
+			if cl_status and cl_status != 2:
+				frappe.throw("You need to cancel the journal entry related to this job card first!")
+		
+			frappe.db.sql("delete from `tabEquipment Reservation Entry` where ehf_name = \'"+ str(self.name) +"\'")	
+			self.db_set("advance_journal", '')
+
+			if  len(self.get("balance_advance_details")) > 0:
+				for a in self.balance_advance_details:
+					frappe.db.sql("UPDATE `tabJournal Entry Account` SET `reference_name` = \'" + str(a.reference_name) + "\' WHERE name = \'" + str(a.reference_row) + "\'")
+					frappe.db.sql("""DELETE from `tabEquipment Hiring Advance` where reference_name=%s and reference_row=%s""", (a.reference_name, a.reference_row))
 
 	def on_cancel(self):
 		self.update_equipment_request(0)
 	
 	def update_journal(self):
-		for a in self.balance_advance_details:
-			frappe.db.sql("UPDATE `tabJournal Entry Account` SET `reference_name` = \'" + str(self.name) + "\' WHERE name = \'" + str(a.reference_row) + "\'")
-
+		lst = []
+		for d in self.balance_advance_details:
+			# Check of Journal is open or already submited with other EHF
+			previouslySubmitted = frappe.db.sql("SELECT eh.name as ehf_name from `tabEquipment Hiring Advance` as ha \
+			INNER JOIN `tabEquipment Hiring Form` as eh on ha.parent = eh.name \
+			WHERE ha.reference_row = \'" + str(d.jv_name) + "\' and eh.docstatus = '1'", as_dict=True)
+			if len(previouslySubmitted) > 0:
+				frappe.throw(_("Hiring Advance of Reference %s is already open in Hiring Form %s").format(d.reference_row, previouslySubmitted[0]['ehf_name']))
+			else:				
+				# Insert a new entry with credit amount as allocated amount and Reference Name (EHF Name)
+				# Update the existing record with new amount ( a.amount - a.allocated_amount)
+				if flt(d.amount) > flt(d.allocated_amount) and d.allocated_amount > 0:
+					credit_amount = flt(d.amount) - flt(d.allocated_amount)				
+					args = frappe._dict({
+						'voucher_type': 'Journal Entry',
+						'voucher_no' : d.jv_name,
+						'voucher_detail_no' : d.reference_row,
+						'against_voucher_type' : self.doctype,
+						'against_voucher'  : self.name,
+						'account' : d.advance_account,
+						'party_type': "Customer",
+						'party': self.customer,
+						'is_advance' : 'Yes',
+						'dr_or_cr' : "credit_in_account_currency",
+						'unadjusted_amount' : flt(d.amount),
+						'allocated_amount' : flt(d.allocated_amount),
+						'exchange_rate': 1,
+					})
+					lst.append(args)
+					if lst:
+						from erpnext.accounts.utils import reconcile_against_document
+						reconcile_against_document(lst)
+				# Update the record with new reference name (EHF Name)	
+				elif flt(d.amount) == flt(d.allocated_amount):
+					frappe.db.sql("UPDATE `tabJournal Entry Account` SET `reference_name` = \'" + str(self.name) + "\' WHERE name = \'" + str(d.reference_row) + "\'")
+				elif flt(d.allocated_amount) <= 0:
+					frappe.db.sql("""DELETE from `tabEquipment Hiring Advance` where reference_name=%s and reference_row=%s""", (d.reference_name, d.reference_row))
+				else:
+					throw(_("Allocated amount ( {0} ) cannot be greater than Advance amount ( {1} )").format(d.allocated_amount, d.amount))
 
 	def update_equipment_request(self, status):
 		total_percent = 0
@@ -184,8 +233,7 @@ class EquipmentHiringForm(Document):
 					"cost_center": self.cost_center,
 					"credit_in_account_currency": flt(self.advance_amount),
 					"credit": flt(self.advance_amount),
-					"is_advance": 'Yes',
-					"business_activity": get_default_ba()
+					"is_advance": 'Yes'
 				})
 
 			je.append("accounts", {
@@ -193,7 +241,6 @@ class EquipmentHiringForm(Document):
 					"cost_center": self.cost_center,
 					"debit_in_account_currency": flt(self.advance_amount),
 					"debit": flt(self.advance_amount),
-					"business_activity": get_default_ba()
 				})
 			je.insert()
 			self.db_set("advance_journal", je.name)
@@ -295,26 +342,15 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
 def get_advance_balance(branch, customer):	
 	if branch and customer:
 		data = []
-		query = "select e.name as journal, a.name as name, a.credit as amount, a.party as party, \
+		query = "select e.name as journal, a.account as ad_account, a.name as name, a.credit as amount, a.party as party, \
 		a.reference_type as ref_type, \
 			a.reference_name as ref_name, a.cost_center as cc, e.posting_date as \
 			posting_date from `tabJournal Entry` as e, `tabJournal Entry Account` as a \
 			where e.name = a.parent and e.branch = \'" + str(branch) + "\' and e.docstatus = '1' and a.party = \'" + str(customer) + "\' \
-			and a.reference_type='Equipment Hiring Form'"
-		for a in frappe.db.sql(query, as_dict=True):
-			# frappe.throw(_(" Test : {0}".format(a.amount)))
-			# row = [a.name, a.amount, a.party, a.ref_type, a.ref_name, a.cc]
-			ehform = frappe.db.sql("SELECT docstatus, payment_completed FROM `tabEquipment Hiring Form` \
-				WHERE name = \'"+ str(a.ref_name) +"\'", as_dict=True)
-			if ehform[0]['docstatus'] == 1 and ehform[0]['payment_completed'] == 1:
-				invoicecharge = frappe.db.sql("SELECT  count(*) as count \
-					FROM `tabHire Invoice Advance` as a \
-					INNER JOIN `tabHire Charge Invoice` as c on a.parent=c.name \
-					INNER JOIN `tabEquipment Hiring Form` as eq on c.ehf_name = eq.name \
-					WHERE a.reference_row = \'" + str(a.name) + "\' \
-					and eq.docstatus = '1' and eq.payment_completed = '1'", as_dict=True);
-				if invoicecharge[0]['count'] < 1:
-					data.append({"journal":a.journal, "name":a.name, "amount":a.amount, "party":a.party, "ref_type":a.ref_type, "ref_name":a.ref_name, "cost_center":a.cc, "posting_date":a.posting_date})
+			and a.reference_type='Equipment Hiring Form' and exists (SELECT 1 FROM `tabEquipment Hiring Form` ie \
+			WHERE ie.name = a.reference_name and ie.docstatus = 1 and ie.payment_completed = 1)"
+		for a in frappe.db.sql(query, as_dict=True):				
+			data.append({"jv_name":a.journal, "advance_account":a.ad_account, "name":a.name, "amount":a.amount, "party":a.party, "ref_type":a.ref_type, "ref_name":a.ref_name, "cost_center":a.cc, "posting_date":a.posting_date})
 		return data
 	else:
 		frappe.throw("Select Equipment Hiring Form first!")

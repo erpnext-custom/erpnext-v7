@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils.nestedset import NestedSet
+from frappe.utils import cint
 
 class CostCenter(NestedSet):
 	nsm_parent_field = 'parent_cost_center'
@@ -16,9 +17,23 @@ class CostCenter(NestedSet):
 
 	def validate(self):
 		self.validate_mandatory()
-		self.create_customer()
-		self.check_ware_house()
-		self.check_cost_center()
+		#self.check_cost_center()
+
+	def on_update(self):
+		self.create_branch()
+
+	def create_branch(self):
+		if cint(self.is_group) == 1 or cint(self.branch_created) == 1:
+			return
+		company = frappe.defaults.get_defaults().company
+		b = frappe.new_doc("Branch")
+		b.branch = self.cost_center_name.strip()
+		b.cost_center = self.name
+		b.address = "N.A"
+		b.expense_bank_account = frappe.db.get_value("Company", company, "default_bank_account")
+		b.save()
+		self.create_customer(b.name)
+		self.db_set("branch_created", 1)
 
 	def check_cost_center(self):
                 if self.is_group:
@@ -105,27 +120,25 @@ class CostCenter(NestedSet):
 		else:
 			super(CostCenter, self).after_rename(olddn, newdn, merge)
 
-	def create_customer(self):
-		if self.name and self.branch and not self.is_group:
+	def create_customer(self, branch):
+		if self.name and branch and not self.is_group:
 			cus = frappe.db.get_value("Customer", {"cost_center": self.name}, "name")
 			if not cus:
 				doc = frappe.new_doc("Customer")
 				doc.flags.ignore_permissions = 1
-				doc.customer_name = str(self.name).strip().rstrip(" -CDCL").encode('utf-8')
+				doc.customer_name = str(self.cost_center_name.strip()).encode('utf-8')
 				doc.customer_type = "Domestic Customer"
 				doc.customer_group = "Internal"
 				doc.territory = "Bhutan"
 				doc.cost_center = self.name
-				doc.branch = self.branch
+				doc.branch = branch
 				doc.save()
 			if cus:
 				customer = frappe.get_doc("Customer", cus)
 				customer.flags.ignore_permissions = 1
-				customer.branch = self.branch
+				customer.branch = branch
 				customer.save()
 
-			if cus and self.is_disabled:
-				doc = frappe.get_doc("Customer", cus)
-				doc.flags.ignore_permissions = 1
-				doc.db_set("disabled", 1)
+				if self.is_disabled:
+					customer.db_set("disabled", 1)
 

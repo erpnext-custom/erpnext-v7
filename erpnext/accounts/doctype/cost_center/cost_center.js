@@ -78,10 +78,12 @@ cur_frm.cscript.convert_to_group = function(doc, cdt, cdn) {
 	});
 }
 
-cur_frm.fields_dict.branch.get_query = function(doc) {
+/*cur_frm.fields_dict.branch.get_query = function(doc) {
 	return{
 		filters:{
 			'is_disabled': 0,
 		}
 	}
 }
+*/
+

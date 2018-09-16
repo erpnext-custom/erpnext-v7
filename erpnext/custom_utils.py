@@ -48,10 +48,8 @@ def check_future_date(date):
 def get_branch_cc(branch):
         if not branch:
                 frappe.throw("No Branch Argument Found")
-        cc = frappe.db.get_value("Cost Center", {"branch": branch, "is_disabled": 0, "is_group": 0}, "name")
-        if not cc:
-                frappe.throw(str(branch) + " is not linked to any cost center")
-        return cc
+	doc = frappe.get_doc("Branch", branch)
+        return doc.cost_center
 
 ##
 # Rounds to the nearest 5 with precision of 1 by default

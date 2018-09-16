@@ -16,8 +16,8 @@ class POL(StockController):
 	def validate(self):
 		check_future_date(self.posting_date)
 		self.validate_dc()
-		self.set_warehouse()
 		self.check_on_dry_hire()
+		self.validate_warehouse()
 		self.validate_data()
 		self.validate_posting_time()
 		self.validate_uom_is_integer("stock_uom", "qty")
@@ -31,12 +31,11 @@ class POL(StockController):
 		if self.direct_consumption and no_own_tank:
                         frappe.throw("Direct Consumption not permitted for Equipments without own Tank")
 
-	def set_warehouse(self):
-		cc = get_branch_cc(self.equipment_branch)
-		equipment_warehouse = frappe.db.get_value("Cost Center", cc, "warehouse")
-		if not equipment_warehouse:
-			frappe.throw("No Warehouse is linked with Cost Center <b>" + str(cc) + "</b>")
-		self.equipment_warehouse = equipment_warehouse
+	def validate_warehouse(self):
+		self.validate_warehouse_branch(self.warehouse, self.branch)
+		self.validate_warehouse_branch(self.equipment_warehouse, self.equipment_branch)
+		if self.hiring_branch:
+			self.validate_warehouse_branch(self.hiring_warehouse, self.hiring_branch)
 
 	def check_on_dry_hire(self):
                 record = get_without_fuel_hire(self.equipment, self.posting_date, self.posting_time)
@@ -44,7 +43,6 @@ class POL(StockController):
                         data = record[0]
                         self.hiring_cost_center = data.cc
                         self.hiring_branch =  data.br
-                        self.hiring_warehouse = frappe.db.get_value("Cost Center", data.cc, "warehouse")
                 else:
                         self.hiring_cost_center = None
                         self.hiring_branch =  None

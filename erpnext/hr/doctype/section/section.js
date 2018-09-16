@@ -19,11 +19,3 @@ cur_frm.fields_dict['s_name'].get_query = function(doc, dt, dn) {
        }
 }
 
-cur_frm.fields_dict.cost_center.get_query = function(doc) {
-	return{
-		filters:{
-			'is_group': 0,
-			'is_disabled': 0,
-		}
-	}
-}
