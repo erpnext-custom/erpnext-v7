@@ -98,7 +98,7 @@ cur_frm.fields_dict['operators'].grid.get_field('operator').get_query = function
 	}
 }
 
-frappe.ui.form.on('Equipment History', {
+/*frappe.ui.form.on('Equipment History', {
         before_equipment_history_remove: function(frm, cdt, cdn) {
                 doc = locals[cdt][cdn]
                 if(!doc.__islocal) {
@@ -106,4 +106,4 @@ frappe.ui.form.on('Equipment History', {
                 }
         }
 })
-
+*/

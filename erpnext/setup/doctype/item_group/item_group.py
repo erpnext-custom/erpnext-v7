@@ -23,9 +23,15 @@ class ItemGroup(NestedSet, WebsiteGenerator):
 		self.name = self.item_group_name
 
 	def validate(self):
+		self.validate_base()
 		super(ItemGroup, self).validate()
 		self.make_route()
-
+	
+	def validate_base(self):
+		if self.item_code_base:
+			if not self.item_code_base.isdigit():
+				frappe.throw("Item Code Base can only be numbers")
+	
 	def on_update(self):
 		NestedSet.on_update(self)
 		WebsiteGenerator.on_update(self)

@@ -7,8 +7,9 @@ import frappe
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 
-class Class(Document):
-	def autoname(self):
-		self.name = "Class " + str(self.class_category)
+class TimberClass(Document):
+	def validate(self):
+		pass
+
 
 

@@ -34,18 +34,24 @@ class Item(WebsiteGenerator):
 			self.set_onload("asset_exists", True if asset else False)
 
 	def autoname(self):
-		if frappe.db.get_default("item_naming_by")=="Naming Series":
-			if self.variant_of:
-				if not self.item_code:
-					self.item_code = make_variant_item_code(self.variant_of, self)
-			else:
-				from frappe.model.naming import make_autoname
-				self.item_code = make_autoname(self.naming_series+'.#####')
-		elif not self.item_code:
+		if not self.item_code:
+			self.item_code = self.get_current_item_code()
+		if not self.item_code:
 			msgprint(_("Item Code is mandatory because Item is not automatically numbered"), raise_exception=1)
 
 		self.item_code = strip(self.item_code)
 		self.name = self.item_code
+		self.set_item_name()
+
+	def get_current_item_code(self):
+		item_code = frappe.db.sql("""select item_code from tabItem where item_group=%s order by item_code desc limit 1;""", self.item_group);
+		if item_code:
+			return str(int(item_code[0][0]) + 1);
+		else:
+			base = frappe.db.get_value("Item Group", self.item_group, "item_code_base")
+			if not base:
+				frappe.throw("Setup Item Code Base in Item Group")
+			return str(base)
 
 	def before_insert(self):
 		if not self.description:
@@ -92,6 +98,12 @@ class Item(WebsiteGenerator):
 			self.old_website_item_groups = frappe.db.sql_list("""select item_group
 				from `tabWebsite Item Group`
 				where parentfield='website_item_groups' and parenttype='Item' and parent=%s""", self.name)
+
+	def set_item_name(self):
+		if self.is_production_item and self.species:
+			self.item_name = str(self.species) + " " + str(self.item_sub_group)
+			for a in frappe.db.sql("select name from tabItem where item_name = %s and name != %s", (self.item_name, self.name), as_dict=1):
+				frappe.throw("Material with same species and sub-group already created")
 
 	def on_update(self):
 		super(Item, self).on_update()

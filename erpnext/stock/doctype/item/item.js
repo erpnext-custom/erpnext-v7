@@ -2,6 +2,10 @@
 // License: GNU General Public License v3. See license.txt
 
 frappe.provide("erpnext.item");
+cur_frm.add_fetch('item_group', 'default_income_account', 'income_account');
+cur_frm.add_fetch('item_group', 'default_expense_account', 'expense_account');
+cur_frm.add_fetch('item_group', 'default_cost_center', 'buying_cost_center');
+cur_frm.add_fetch('item_group', 'default_cost_center', 'selling_cost_center');
 
 frappe.ui.form.on("Item", {
 	onload: function(frm) {
@@ -369,7 +373,7 @@ cur_frm.add_fetch('tax_type', 'tax_rate', 'tax_rate');
 //custom Scripts
 //Auto populate material code
 cur_frm.cscript.item_group = function(doc) {
-    cur_frm.call({
+    /*cur_frm.call({
         method: "erpnext.stock.stock_custom_functions.get_current_item_code",
         args: {
              item_group: doc.item_group
@@ -377,7 +381,7 @@ cur_frm.cscript.item_group = function(doc) {
         callback: function(r) {
              cur_frm.set_value("item_code", r.message.toString());
         }
-   });
+   }); */
    /*if (doc.item_group != 'All Item Groups') {
      cur_frm.fields_dict['expense_account'].get_query = function(doc) {
         return {

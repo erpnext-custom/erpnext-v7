@@ -10,5 +10,24 @@ def get_data():
 					"name": "Production",
 				},
 			]
-		}
+		},
+		{
+			"label": _("Master Data"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Timber Class",
+				},
+				{
+					"type": "doctype",
+					"name": "Timber Species",
+				},
+				{
+					"type": "doctype",
+					"name": "Item",
+					"label": "Material"
+				},
+			]
+		},
 	]
