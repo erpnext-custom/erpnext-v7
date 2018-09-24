@@ -8,6 +8,47 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def check_pol_branch():
+	pols = frappe.db.sql("select name from tabPOL where docstatus = 1", as_dict=1)
+	for a in pols:
+		p = frappe.get_doc("POL", a.name)
+		try:
+			cc = get_branch_cc(p.branch)
+			if p.cost_center != cc:
+				print(a.name)
+		except:
+			pass
+
+def check_pol_account():
+	pols = frappe.db.sql("select name from tabPOL where direct_consumption = 0 and docstatus = 1 and equipment_warehouse != warehouse and jv is null", as_dict=1)
+	for a in pols:
+		p = frappe.get_doc("POL", a.name)
+		print(p.name)
+
+def cancel_bdr():
+	bdrs = frappe.db.sql("select count")
+
+def update_mech():
+        ml = frappe.db.sql("select name from `tabMechanical Payment` where docstatus = 0 and payment_for is null", as_dict=1)
+        for a in ml:
+                doc = frappe.get_doc("Mechanical Payment", a.name)
+                print(doc.name)
+                frappe.db.sql("update `tabMechanical Payment` set payment_for = %s where name = %s", (doc.ref_doc, doc.name))
+                dc = frappe.new_doc("Mechanical Payment Item")
+                dc.reference_type = doc.ref_doc
+                dc.reference_name = doc.ref_no
+                dc.outstanding_amount = doc.receivable_amount
+                dc.allocated_amount = doc.receivable_amount
+                dc.parent = doc.name
+                dc.parenttype = "Mechanical Payment"
+                dc.parentfield = "items"
+                dc.owner = doc.owner
+                dc.creation = doc.creation
+                dc.modified_by = doc.modified_by
+                dc.modified = doc.modified
+                dc.docstatus = doc.docstatus
+                dc.insert()
+
 def check_hsd():
 	hsds = frappe.db.sql("select name from `tabHSD Adjustment` where docstatus = 1", as_dict=1)
 	for a in hsds:

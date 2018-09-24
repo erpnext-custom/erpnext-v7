@@ -236,9 +236,14 @@ class POL(StockController):
 			if not expense_account:
 				frappe.throw("Set Budget Account in Equipment Category or Item Master")		
 		else:
-			expense_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
-			if not expense_account:
-				frappe.throw(str(self.warehouse) + " is not linked to any account.")
+			if self.hiring_warehouse:
+                                wh = self.hiring_warehouse
+                        else:
+                                wh = self.equipment_warehouse
+                        expense_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": wh}, "name")
+                        if not expense_account:
+                                frappe.throw(str(wh) + " is not linked to any account.")
+
 		return expense_account
 
 	def on_cancel(self):

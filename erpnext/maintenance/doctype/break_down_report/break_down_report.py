@@ -77,7 +77,7 @@ def make_job_card(source_name, target_doc=None):
 					"date": "break_down_report_date"
 				},
 				"postprocess": update_date,
-				"validation": {"docstatus": ["=", 1]}
+				"validation": {"docstatus": ["=", 1], "job_card": ["is", None]}
 			},
 		}, target_doc)
 	return doc

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-08-02 14:24:03.064808", 
+ "modified": "2018-09-24 10:13:57.244478", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Accounts", 
  "name": "Statement of Comprehensive Income", 
@@ -42,6 +42,15 @@
   }, 
   {
    "role": "CPBD"
+  }, 
+  {
+   "role": "Fleet User"
+  }, 
+  {
+   "role": "Workshop User"
+  }, 
+  {
+   "role": "HR User"
   }
  ]
 }
