@@ -68,11 +68,12 @@ class JobCard(AccountsController):
 		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this job card first!")
 		
-		self.db_set('jv', "")
+		self.db_set('jv', None)
 
 	def on_cancel(self):
 		bdr = frappe.get_doc("Break Down Report", self.break_down_report)
-		bdr.db_set("job_card", "")
+		if bdr.job_card == self.name:
+			bdr.db_set("job_card", None)
 		if self.owned_by == "Others":
 			self.make_gl_entries()	
 

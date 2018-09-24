@@ -431,6 +431,8 @@ class Item(WebsiteGenerator):
 		if self.has_serial_no == 0 and self.serial_no_series:
 			self.serial_no_series = None
 
+		if self.species and not self.is_production_item:
+			frappe.throw("Species can only be assigned for Production Items")
 
 	def check_for_active_boms(self):
 		if self.default_bom:

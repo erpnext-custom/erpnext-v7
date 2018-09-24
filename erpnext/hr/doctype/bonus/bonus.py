@@ -193,6 +193,6 @@ class Bonus(Document):
 		if jv != 2:
 			frappe.throw("Can not cancel Bonus Entry without canceling the corresponding journal entry " + str(self.journal_entry))
 		else:
-			self.db_set("journal_entry", "")
+			self.db_set("journal_entry", None)
 
 

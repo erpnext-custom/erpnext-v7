@@ -12,8 +12,18 @@ frappe.ui.form.on('Production', {
                 }
 	},
 
-	refresh: function(frm) {
-
+	setup: function(frm) {
+		frm.get_field('raw_materials').grid.editable_fields = [
+			{fieldname: 'item_code', columns: 3},
+			{fieldname: 'qty', columns: 2},
+			{fieldname: 'uom', columns: 1},
+		]
+		frm.get_field('items').grid.editable_fields = [
+			{fieldname: 'item_code', columns: 3},
+			{fieldname: 'qty', columns: 2},
+			{fieldname: 'uom', columns: 1},
+			{fieldname: 'cop', columns: 2},
+		]
 	}
 });
 

@@ -40,10 +40,20 @@ class Production(StockController):
 
 	def on_submit(self):
 		self.assign_default_dummy()
+		self.check_budget()
 		self.make_products_ledgers()
-		#Budget CHeck
 		self.make_raw_material_stock_ledger()
 		self.make_raw_material_gl_entry()
+		self.make_production_entry()
+		frappe.throw("STOP")
+
+	def on_cancel(self):
+		self.assign_default_dummy()
+		self.make_products_ledgers()
+		self.make_raw_material_stock_ledger()
+		self.make_raw_material_gl_entry()
+		self.delete_production_entry()
+		self.delete_budget_entry()
 		frappe.throw("STOP")
 
 	def assign_default_dummy(self):
@@ -159,5 +169,35 @@ class Production(StockController):
 			from erpnext.accounts.general_ledger import make_gl_entries
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
 
+
+	def check_budget(self):
+		pass
+
+	def make_production_entry(self):
+		for a in self.items:
+			doc = frappe.new_doc("Production Entry")
+			doc.flags.ignore_permissions = 1
+			doc.item_code = a.item_code
+			doc.item_name = a.item_name
+			doc.qty = a.qty
+			doc.uom = a.uom
+			doc.cop = a.uom
+			doc.company = self.company
+			doc.currency = self.currency
+			doc.business_activity = self.business_activity
+			doc.branch = self.branch
+			doc.cost_center = self.cost_center
+			doc.warehouse = self.warehouse
+			doc.posting_date = str(self.posting_date) + " " + str(self.posting_time)
+			doc.ref_doc = self.name
+			doc.submit()
+
+	def delete_production_entry(self):
+		frappe.db.sql("delete from `tabProduction Entry` where ref_doc = %s", self.name)
+
+
+	def delete_budget_entry(self):
+		frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
+		frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 
 
