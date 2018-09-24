@@ -35,6 +35,7 @@ class StockReconciliation(StockController):
 		
 		for a in self.items:
 			self.repost_issue_pol(a, posting_date)
+			self.repost_production_gl(a, posting_date)
 
 	def on_cancel(self):
 		posting_date = str(get_datetime(str(self.posting_date) + ' ' + str(self.posting_time)))
@@ -43,6 +44,7 @@ class StockReconciliation(StockController):
 
 		for a in self.items:
 			self.repost_issue_pol(a, posting_date)
+			self.repost_production_gl(a, posting_date)
 
 	def repost_issue_pol(self, a, posting_date):
 		ipols = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1 and concat(posting_date,' ',posting_time) > %s and pol_type = %s and warehouse = %s", (posting_date, a.item_code, a.warehouse), as_dict=1)
@@ -50,6 +52,14 @@ class StockReconciliation(StockController):
 			frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
 			doc = frappe.get_doc("Issue POL", a.name)
 			doc.update_stock_gl_ledger(post_gl=True)
+
+	def repost_production_gl(self, a, posting_date):
+		prods = frappe.db.sql("select a.name from `tabProduction` a, `tabProduction Material Item` b where a.name = b.parent and a.docstatus = 1 and concat(a.posting_date,' ',a.posting_time) > %s and b.item_code = %s and a.warehouse = %s group by a.name", (posting_date, a.item_code, a.warehouse), as_dict=1)
+		for a in prods:
+			frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+			doc = frappe.get_doc("Production", a.name)
+			doc.make_products_gl_entry()
+			doc.make_raw_material_gl_entry()
 
 	def remove_items_with_no_change(self):
 		"""Remove items if qty or rate is not changed"""

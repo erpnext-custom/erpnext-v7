@@ -41,7 +41,8 @@ class Production(StockController):
 	def on_submit(self):
 		self.assign_default_dummy()
 		self.check_budget()
-		self.make_products_ledgers()
+		self.make_products_sl_entry()
+		self.make_products_gl_entry()
 		self.make_raw_material_stock_ledger()
 		self.make_raw_material_gl_entry()
 		self.make_production_entry()
@@ -49,7 +50,8 @@ class Production(StockController):
 
 	def on_cancel(self):
 		self.assign_default_dummy()
-		self.make_products_ledgers()
+		self.make_products_sl_entry()
+		self.make_products_gl_entry()
 		self.make_raw_material_stock_ledger()
 		self.make_raw_material_gl_entry()
 		self.delete_production_entry()
@@ -60,14 +62,9 @@ class Production(StockController):
 		self.pol_type = None
 		self.stock_uom = None 
 
-	def make_products_ledgers(self):
+	def make_products_sl_entry(self):
 		sl_entries = []
-		gl_entries = []
 
-		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
-		if not wh_account:
-			frappe.throw(str(self.warehouse) + " is not linked to any account.")
-		
 		for a in self.items:
 			sl_entries.append(prepare_sl(self,
 				{
@@ -78,6 +75,21 @@ class Production(StockController):
 					"incoming_rate": flt(a.cop, 2)
 				}))
 
+		if sl_entries: 
+			if self.docstatus == 2:
+				sl_entries.reverse()
+
+			self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+
+
+	def make_products_gl_entry(self):
+		gl_entries = []
+
+		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
+		if not wh_account:
+			frappe.throw(str(self.warehouse) + " is not linked to any account.")
+		
+		for a in self.items:
 			amount = flt(a.qty) * flt(a.cop)
 
 			budget_account = frappe.db.get_value("Item", a.item_code, "expense_account")
@@ -101,12 +113,6 @@ class Production(StockController):
 						 "business_activity": self.business_activity
 						})
 				)
-
-		if sl_entries: 
-			if self.docstatus == 2:
-				sl_entries.reverse()
-
-			self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 
 		if gl_entries:
 			from erpnext.accounts.general_ledger import make_gl_entries
