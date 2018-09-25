@@ -40,13 +40,11 @@ class Production(StockController):
 
 	def on_submit(self):
 		self.assign_default_dummy()
-		self.check_budget()
 		self.make_products_sl_entry()
 		self.make_products_gl_entry()
 		self.make_raw_material_stock_ledger()
 		self.make_raw_material_gl_entry()
 		self.make_production_entry()
-		frappe.throw("STOP")
 
 	def on_cancel(self):
 		self.assign_default_dummy()
@@ -55,8 +53,6 @@ class Production(StockController):
 		self.make_raw_material_stock_ledger()
 		self.make_raw_material_gl_entry()
 		self.delete_production_entry()
-		self.delete_budget_entry()
-		frappe.throw("STOP")
 
 	def assign_default_dummy(self):
 		self.pol_type = None
@@ -88,27 +84,25 @@ class Production(StockController):
 		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
 		if not wh_account:
 			frappe.throw(str(self.warehouse) + " is not linked to any account.")
-		
+		expense_account = frappe.db.get_value("Company", self.company, "default_production_account")
+		if not expense_account:
+			frappe.throw("Setup <b>Default Production Account</b> in Company")
 		for a in self.items:
 			amount = flt(a.qty) * flt(a.cop)
 
-			budget_account = frappe.db.get_value("Item", a.item_code, "expense_account")
-			if not budget_account:
-				frappe.throw("Set Budget Account in Item Master")		
-
 			gl_entries.append(
 				prepare_gl(self, {"account": wh_account,
-						 "credit": flt(amount),
-						 "credit_in_account_currency": flt(amount),
+						 "debit": flt(amount),
+						 "debit_in_account_currency": flt(amount),
 						 "cost_center": self.cost_center,
 						 "business_activity": self.business_activity
 						})
 				)
 
 			gl_entries.append(
-				prepare_gl(self, {"account": budget_account,
-						 "debit": flt(amount),
-						 "debit_in_account_currency": flt(amount),
+				prepare_gl(self, {"account": expense_account,
+						 "credit": flt(amount),
+						 "credit_in_account_currency": flt(amount),
 						 "cost_center": self.cost_center,
 						 "business_activity": self.business_activity
 						})
@@ -149,8 +143,8 @@ class Production(StockController):
 			stock_qty, map_rate = get_stock_balance(a.item_code, self.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
                         amount = flt(a.qty) * flt(map_rate)
 
-			budget_account = frappe.db.get_value("Item", a.item_code, "expense_account")
-			if not budget_account:
+			expense_account = frappe.db.get_value("Item", a.item_code, "expense_account")
+			if not expense_account:
 				frappe.throw("Set Budget Account in Item Master")		
 
 			gl_entries.append(
@@ -163,7 +157,7 @@ class Production(StockController):
 				)
 
 			gl_entries.append(
-				prepare_gl(self, {"account": budget_account,
+				prepare_gl(self, {"account": expense_account,
 						 "debit": flt(amount),
 						 "debit_in_account_currency": flt(amount),
 						 "cost_center": self.cost_center,
@@ -175,10 +169,6 @@ class Production(StockController):
 			from erpnext.accounts.general_ledger import make_gl_entries
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
 
-
-	def check_budget(self):
-		pass
-
 	def make_production_entry(self):
 		for a in self.items:
 			doc = frappe.new_doc("Production Entry")
@@ -187,7 +177,7 @@ class Production(StockController):
 			doc.item_name = a.item_name
 			doc.qty = a.qty
 			doc.uom = a.uom
-			doc.cop = a.uom
+			doc.cop = a.cop
 			doc.company = self.company
 			doc.currency = self.currency
 			doc.business_activity = self.business_activity
@@ -202,8 +192,5 @@ class Production(StockController):
 		frappe.db.sql("delete from `tabProduction Entry` where ref_doc = %s", self.name)
 
 
-	def delete_budget_entry(self):
-		frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
-		frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 
 

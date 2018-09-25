@@ -76,6 +76,13 @@ frappe.query_reports["General Ledger"] = {
 				return party_type;
 			}
 		},
+		 {
+                        "fieldname":"business_activity",
+                        "label": __("Business Activity"),
+                        "fieldtype": "Link",
+                        "options": "Business Activity",
+                },
+
 		{
 			"fieldname":"group_by_voucher",
 			"label": __("Group by Voucher"),

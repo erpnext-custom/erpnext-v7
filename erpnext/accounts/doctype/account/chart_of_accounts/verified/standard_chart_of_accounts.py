@@ -60,7 +60,7 @@ def get():
 					"account_type": "Fixed Asset"
 				},
 	            _("Accumulated Depreciation"): {
-	            	"account_type": "Accumulated Depreciation"
+	            	"account_type": ""
 	            }
 	        },
 	        _("Investments"): {

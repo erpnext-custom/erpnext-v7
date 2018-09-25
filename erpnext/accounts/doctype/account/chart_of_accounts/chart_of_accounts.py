@@ -45,7 +45,8 @@ def create_charts(chart_name, company):
 						account.flags.ignore_mandatory = True
 						
 					account.flags.ignore_permissions = True
-					
+
+					frappe.msgprint(str(account.account_name) + " ==> " + str(child))					
 					account.insert()
 
 					accounts.append(account_name_in_db)

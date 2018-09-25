@@ -64,6 +64,9 @@ class Company(Document):
 				frappe.throw(_("Cannot change company's default currency, because there are existing transactions. Transactions must be cancelled to change the default currency."))
 
 	def on_update(self):
+		if not frappe.db.get_value("Cost Center", {"is_group": 0, "company": self.name}):
+			self.create_default_cost_center()
+
 		if not frappe.db.sql("""select name from tabAccount
 				where company=%s and docstatus<2 limit 1""", self.name):
 			if not frappe.local.flags.ignore_chart_of_accounts:
@@ -71,9 +74,6 @@ class Company(Document):
 				self.create_default_warehouses()
 
 				self.install_country_fixtures()
-
-		if not frappe.db.get_value("Cost Center", {"is_group": 0, "company": self.name}):
-			self.create_default_cost_center()
 
 		if not frappe.local.flags.ignore_chart_of_accounts:
 			self.set_default_accounts()
@@ -107,7 +107,8 @@ class Company(Document):
 						"company": self.name,
 						"parent_warehouse": "{0} - {1}".format(_("All Warehouses"), self.abbr) \
 							if not wh_detail["is_group"] else "",
-						"create_account_under": stock_group
+						"create_account_under": stock_group,
+						"branch": "Main"
 					})
 					warehouse.flags.ignore_permissions = True
 					warehouse.insert()
@@ -174,7 +175,7 @@ class Company(Document):
 
 			if cc.get("cost_center_name") == self.name:
 				cc_doc.flags.ignore_mandatory = True
-			cc_doc.insert()
+			cc_doc.save()
 
 		frappe.db.set(self, "cost_center", _("Main") + " - " + self.abbr)
 		frappe.db.set(self, "round_off_cost_center", _("Main") + " - " + self.abbr)

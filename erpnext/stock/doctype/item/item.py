@@ -41,7 +41,6 @@ class Item(WebsiteGenerator):
 
 		self.item_code = strip(self.item_code)
 		self.name = self.item_code
-		self.set_item_name()
 
 	def get_current_item_code(self):
 		item_code = frappe.db.sql("""select item_code from tabItem where item_group=%s order by item_code desc limit 1;""", self.item_group);
@@ -73,6 +72,7 @@ class Item(WebsiteGenerator):
 		if not self.description:
 			self.description = self.item_name
 
+		self.set_item_name()
 		self.validate_uom()
 		self.add_default_uom_in_conversion_factor_table()
 		self.validate_conversion_factor()
