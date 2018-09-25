@@ -13,7 +13,7 @@ from erpnext.stock.stock_balance import update_bin_qty, get_ordered_qty
 from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
-from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date, check_budget_available
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -267,15 +267,12 @@ class PurchaseOrder(BuyingController):
 	# Check budget availability in the budget head
 	##
 	def check_budget_available(self):
-		for a in self.items:
-			budget_amount = frappe.db.sql("select ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (a.budget_account, a.cost_center, str(self.transaction_date)[0:4]), as_dict=True)
-			if budget_amount:
-				consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (a.cost_center, a.budget_account, str(self.transaction_date)[0:4] + "-01-01", str(self.transaction_date)[0:4] + "-12-31"), as_dict=True)
-				if consumed:
-					if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(a.amount)):
-						frappe.throw("Not enough budget in " + str(a.budget_account) + " under " + str(a.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(a.amount) - flt(budget_amount[0].budget_amount))))
-			else:
-				frappe.throw("There is no budget in " + str(a.budget_account) + " under " + str(a.cost_center))
+		budgets = frappe.db.sql("select cost_center, budget_account, sum(base_net_amount) as base_net_amount, sum(base_amount) as base_amount from `tabPurchase Order Item` where parent = %s group by cost_center, budget_account", self.name, as_dict=True)
+		for a in budgets:
+			amount = a.base_amount
+			if a.base_net_amount:
+				amount = a.base_net_amount
+			check_budget_available(a.cost_center, a.budget_account, self.transaction_date, amount)
 
 	##
 	# Cancel budget check entry

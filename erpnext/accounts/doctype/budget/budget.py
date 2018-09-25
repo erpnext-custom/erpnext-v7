@@ -8,6 +8,7 @@ from frappe import _
 from frappe.utils import flt, getdate, add_months, get_last_day, fmt_money
 from frappe.model.naming import make_autoname
 from frappe.model.document import Document
+from erpnext.custom_utils import check_budget_available
 
 class BudgetError(frappe.ValidationError): pass
 class DuplicateBudgetError(frappe.ValidationError): pass
@@ -59,18 +60,10 @@ def validate_expense_against_budget(args):
 		elif str(frappe.db.get_value("Account", args.account, "parent_account")) == "Depreciation & Amortisation - SMCL":
 			pass
 		else:
-			budget_amount = frappe.db.sql("select ba.budget_amount, b.action_if_annual_budget_exceeded as action from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (args.account, args.cost_center, args.fiscal_year), as_dict=True)
-			ig_or_stop = budget_amount and budget_amount[0].action or None
-			if ig_or_stop == "Ignore":
-				return
-			if budget_amount:
-				consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.docstatus = 1 and cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (args.cost_center, args.account, args.fiscal_year+ "-01-01", args.fiscal_year + "-12-31"), as_dict=True)
-				if consumed:
-					if flt(budget_amount[0].budget_amount) < (flt(consumed[0].total) + flt(args.debit)):
-						if flt(args.debit) > 0:
-							frappe.throw("Not enough budget in " + str(args.account) + " under " + str(args.cost_center) + ". Budget exceeded by " + str((flt(consumed[0].total) + flt(args.debit) - flt(budget_amount[0].budget_amount))))
+			if args.debit_in_account_currency:
+				check_budget_available(args.cost_center, args.account, args.posting_date, flt(args.debit_in_account_currency))
 			else:
-				frappe.throw("There is no budget in " + str(args.account) + " under " + str(args.cost_center))
+				pass
 
 
 def compare_expense_with_budget(args, cost_center, budget_amount, action_for, action):
