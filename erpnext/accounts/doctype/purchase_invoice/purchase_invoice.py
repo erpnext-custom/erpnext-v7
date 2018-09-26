@@ -808,6 +808,7 @@ class PurchaseInvoice(BuyingController):
 						"account": expense,
 						"cost_center": item.cost_center,
 						"po_no": self.name,
+						"company": self.company,
 						"po_date": po_date,
 						"amount": amount,
 						"poi_name": item.po_detail,

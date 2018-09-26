@@ -20,6 +20,7 @@ class IssuePOL(StockController):
 		self.validate_branch()
 		self.populate_data()
 		self.validate_data()
+		self.validate_branch()
 		self.validate_posting_time()
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.check_on_dry_hire()
@@ -33,6 +34,9 @@ class IssuePOL(StockController):
 
 		if self.tanker and self.branch != frappe.db.get_value("Equipment", self.tanker, "branch"):
 			frappe.throw("Selected Branch and Equipment Branch does not match")
+
+	def populate_data(self):
+		self.cost_center = get_branch_cc(self.branch)
 
 	def validate_warehouse(self):
 		self.validate_warehouse_branch(self.branch, self.warehouse)
@@ -260,6 +264,7 @@ class IssuePOL(StockController):
 		if self.tanker:
 			con = frappe.new_doc("POL Entry")
 			con.flags.ignore_permissions = 1
+			con.company = self.company
 			con.equipment = self.tanker
 			con.pol_type = self.pol_type
 			con.branch = self.branch
@@ -280,6 +285,7 @@ class IssuePOL(StockController):
 			con = frappe.new_doc("POL Entry")
 			con.flags.ignore_permissions = 1
 			con.equipment = a.equipment
+			con.company = self.company
 			con.pol_type = self.pol_type
 			con.branch = a.equipment_branch
 			con.date = self.posting_date

@@ -96,6 +96,7 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 					bud_obj = frappe.get_doc({
 						"doctype": "Committed Budget",
 						"account": entry.account,
+						"company": entry.company,
 						"cost_center": entry.cost_center,
 						"po_no": entry.voucher_no,
 						"po_date": entry.posting_date,
@@ -109,6 +110,7 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 					con_obj = frappe.get_doc({
 						"doctype": "Consumed Budget",
 						"account": entry.account,
+						"company": entry.company,
 						"cost_center": entry.cost_center,
 						"po_no": entry.voucher_no,
 						"po_date": entry.posting_date,

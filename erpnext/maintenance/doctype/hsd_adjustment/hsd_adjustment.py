@@ -36,7 +36,8 @@ class HSDAdjustment(Document):
                         qty = flt(actual_receive) - flt(received)
 	
 			con = frappe.new_doc("POL Entry")
-			con.flags.ignore_permissions = 1	
+			con.flags.ignore_permissions = 1
+			con.company = self.company	
 			con.equipment = a.equipment
 			con.pol_type = a.hsd_type
 			con.branch = self.branch

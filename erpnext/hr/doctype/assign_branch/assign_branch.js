@@ -3,6 +3,7 @@
 
 cur_frm.add_fetch("employee", "user_id", "user")
 cur_frm.add_fetch("employee", "branch", "current_branch")
+cur_frm.add_fetch("employee", "company", "company")
 
 frappe.ui.form.on('Assign Branch', {
 	refresh: function(frm) {

@@ -165,6 +165,7 @@ class EquipmentHiringForm(Document):
 			doc.flags.ignore_permissions = 1 
 			doc.equipment = a.equipment
 			doc.reason = "Hire"
+			doc.company = self.company
 			doc.ehf_name = self.name
 			doc.place = a.place
 			doc.from_date = a.from_date

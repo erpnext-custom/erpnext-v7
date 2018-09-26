@@ -210,7 +210,7 @@ class Company(Document):
 				where exists(select name from tabBudget
 					where name=`tabBudget Account`.parent and company = %s)""", self.name)
 
-			for doctype in ["Account", "Cost Center", "Budget", "Party Account"]:
+			for doctype in ["Account", "Cost Center", "Budget", "Party Account", "Branch"]:
 				frappe.db.sql("delete from `tab{0}` where company = %s".format(doctype), self.name)
 
 		if not frappe.db.get_value("Stock Ledger Entry", {"company": self.name}):

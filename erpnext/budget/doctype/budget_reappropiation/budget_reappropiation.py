@@ -89,6 +89,7 @@ class BudgetReappropiation(Document):
 				app_details.amount = amount
 				app_details.appropriation_on = nowdate()
 				app_details.ref_doc = self.name
+				app_details.company = self.company
 				app_details.submit()
 			
 			return "DONE"

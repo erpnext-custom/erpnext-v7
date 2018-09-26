@@ -25,6 +25,7 @@ class AssignBranch(Document):
 		if self.employee:
 			emp = frappe.get_doc("Employee", self.employee)
 			self.user = emp.user_id
+			self.company = emp.company
 			self.current_branch = emp.branch
 		else:
 			frappe.throw("Employee ID is Mandatory")

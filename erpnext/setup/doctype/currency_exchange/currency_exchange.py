@@ -24,6 +24,8 @@ class CurrencyExchange(Document):
 		doc.to_currency = self.to_currency
 		doc.exchange_rate = self.exchange_rate
 		doc.date = frappe.utils.nowdate()
+		doc.company = self.company
+		doc.flags.ignore_permissions = 1
 		doc.submit()
 
 

@@ -63,6 +63,7 @@ class SupplementaryBudget(Document):
 				supp_details.to_cc = to_cc
 				supp_details.to_acc = to_acc
 				supp_details.amount = amount
+				supp_details.company = self.company
 				supp_details.posted_date = nowdate()
 				supp_details.ref_doc = self.name
 				supp_details.submit()

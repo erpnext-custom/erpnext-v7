@@ -282,6 +282,7 @@ class PurchaseOrder(BuyingController):
 				"po_no": self.name,
 				"po_date": self.transaction_date,
 				"amount": amount,
+				"company": self.company,
 				"item_code": a.item_code,
 				"poi_name": a.name,
 				"date": frappe.utils.nowdate()

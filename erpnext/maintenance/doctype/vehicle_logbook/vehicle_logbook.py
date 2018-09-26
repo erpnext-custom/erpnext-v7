@@ -187,9 +187,9 @@ class VehicleLogbook(Document):
 				workdates = a.work_date"""
 		
 			doc = frappe.new_doc("Equipment Status Entry")
-	
 			doc.flags.ignore_permissions = 1 
 			doc.equipment = self.equipment
+			doc.company = self.company
 			doc.reason = "Hire"
 			doc.ehf_name = self.name
 			doc.from_date = a.work_date

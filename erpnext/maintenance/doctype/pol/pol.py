@@ -340,6 +340,7 @@ class POL(StockController):
 		con.date = self.posting_date
 		con.posting_time = self.posting_time
 		con.qty = self.qty
+		con.company = self.company
 		con.reference_type = "POL"
 		con.reference_name = self.name
 		con.is_opening = 0
@@ -351,6 +352,7 @@ class POL(StockController):
 		if self.direct_consumption:
 			con1 = frappe.new_doc("POL Entry")
 			con1.flags.ignore_permissions = 1	
+			con1.company = self.company
 			con1.equipment = self.equipment
 			con1.pol_type = self.pol_type
 			con1.branch = self.equipment_branch
@@ -367,6 +369,7 @@ class POL(StockController):
 			if container:
 				con2 = frappe.new_doc("POL Entry")
 				con2.flags.ignore_permissions = 1	
+				con2.company = self.company
 				con2.equipment = self.equipment
 				con2.pol_type = self.pol_type
 				con2.branch = self.equipment_branch

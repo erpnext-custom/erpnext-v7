@@ -58,6 +58,7 @@ class SWSApplication(Document):
 		doc.posting_date = self.posting_date
 		doc.branch = self.branch
 		doc.ref_doc = self.name
+		doc.company = self.company
 		doc.employee = self.employee
 		doc.debit = self.total_amount
 		doc.submit()
