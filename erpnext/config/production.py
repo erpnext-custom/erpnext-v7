@@ -9,12 +9,20 @@ def get_data():
 					"type": "doctype",
 					"name": "Production",
 				},
+				{
+					"type": "doctype",
+					"name": "Marking List",
+				},
 			]
 		},
 		{
 			"label": _("Master Data"),
 			"icon": "icon-star",
 			"items": [
+				{
+					"type": "doctype",
+					"name": "FMU",
+				},
 				{
 					"type": "doctype",
 					"name": "Timber Class",

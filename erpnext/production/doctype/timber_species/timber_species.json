@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "field:species", 
  "beta": 0, 
@@ -149,7 +149,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-09-24 06:58:16.641862", 
+ "modified": "2018-09-27 09:47:53.884642", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Timber Species", 

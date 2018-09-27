@@ -67,20 +67,17 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 		});
 	},
 	
-	cost_center: function(){
-		if(!this.frm.doc.__islocal){
-			cur_frm.set_value("date_of_transfer",frappe.datetime.nowdate());
-			refresh_many(["date_of_transfer"]);
-			validate_prev_doc(this.frm,__("Please select date of transfer to new cost center"));		
-		}
-	},
-	
 	status: function(){
 		this.frm.toggle_reqd(["relieving_date","reason_for_resignation"],(this.frm.doc.status == 'Left' ? 1:0));
 	},
 	
 	branch: function(){
 		cur_frm.add_fetch('branch', 'gis_policy_number', 'gis_policy_number');
+		if(!this.frm.doc.__islocal){
+			cur_frm.set_value("date_of_transfer",frappe.datetime.nowdate());
+			refresh_many(["date_of_transfer"]);
+			validate_prev_doc(this.frm,__("Please select date of transfer to new cost center"));		
+		}
 	},
 	
 	/*
@@ -133,7 +130,7 @@ cur_frm.cscript = new erpnext.hr.EmployeeController({frm: cur_frm});
        }
 }*/
 
-cur_frm.add_fetch("cost_center", "branch", "branch")
+cur_frm.add_fetch("branch", "cost_center", "cost_center")
 
 cur_frm.fields_dict['division'].get_query = function(doc, dt, dn) {
        return {

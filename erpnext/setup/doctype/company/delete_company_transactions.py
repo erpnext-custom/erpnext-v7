@@ -56,15 +56,14 @@ def delete_company_transactions(company_name):
         dt_list = frappe.db.sql_list("""
                         select name
                         from `tabDocType`
-                        where module in ('Accounts','Buying','CRM','HR','Maintenance','Manufacturing','Projects','Schools','Selling','Stock')
+                        where module in ('Accounts','Buying','CRM','HR','Maintenance','Manufacturing','Projects','Schools','Selling','Stock', 'Assets', 'Budget', 'Production', 'Management Dashboard')
                         order by module, name
                         """)        
         for doctype in dt_list:
-                if doctype not in ("Fiscal Year", "Fiscal Year Company", "Blood Group", "Department",
-                        "Designation", "Division", "Dzongkhags", "Employee Group", "Employment Type",
-                        "Expense Claim Type", "Financial Institution", "Financial Schemes", "Gewogs",
-                        "HR Settings", "Leave Encashment Settings", "Leave Type", "Salary Component",
-                        "Salary Tax", "Salary Tax Item", "Section", "Type of Training", "Villages",
+                if doctype not in ("Fiscal Year", "Fiscal Year Company", "Blood Group",
+                        "Financial Institution", "Financial Schemes", "Gewogs",
+                        "HR Settings", "Leave Encashment Settings", "Leave Type", 
+                        "Salary Tax", "Salary Tax Item", "Villages",
                         "Activity Type", "Industry Type"):
 
                         delete_for_doctype_all(doctype)

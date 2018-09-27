@@ -20,7 +20,7 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.utilities.transaction_base import delete_events
 from erpnext.custom_utils import get_year_start_date, get_year_end_date, round5
 from frappe.utils.data import get_first_day, get_last_day, add_days
-
+from frappe.utils import cint, flt
 
 class EmployeeUserDisabledError(frappe.ValidationError):
 	pass
@@ -35,10 +35,12 @@ class Employee(Document):
 			if naming_method == 'Naming Series':
 				if not self.date_of_joining:
 					frappe.throw("Date of Joining not Set!")
-				naming_series = "CDCL" + str(getdate(self.date_of_joining).year)[2:4]	
+				abbr = frappe.db.get_value("Company", self.company, "abbr")
+				naming_series = str(abbr) + "." + str(getdate(self.date_of_joining).year)[2:4]	
 				x = make_autoname(str(naming_series) + '.###')
 				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
-				eid = x[:6] + y[:2] + x[6:9]
+				start_id = cint(len(str(abbr))) + 2
+				eid = x[:start_id] + y[:2] + x[start_id:start_id + 3]
 				self.name = eid
 				self.yearid = x
 			elif naming_method == 'Employee Number':
@@ -53,8 +55,7 @@ class Employee(Document):
 		self.employee = self.name
 		if self.reports_to:
 			self.approver_name = frappe.db.get_value("Employee", self.reports_to, "employee_name")
-		if self.cost_center:
-			self.branch = frappe.db.get_value("Cost Center", self.cost_center, "branch")
+		self.cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 		if self.branch:
                         self.gis_policy_number = frappe.db.get_value("Branch", self.branch, "gis_policy_number")
                         
@@ -86,7 +87,8 @@ class Employee(Document):
 		if self.user_id:
 			self.update_user()
 			self.update_user_permissions()
-		self.post_casual_leave()
+		#REMOVE WHEN FINAL
+		#self.post_casual_leave()
 
         # Following method introducted by SHIV on 04/10/2017
         def populate_work_history(self):

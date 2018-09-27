@@ -69,14 +69,26 @@ class HSDPayment(Document):
 
 		default_ba =  get_default_ba()
 
-		gl_entries.append(
-			prepare_gl(self, {"account": self.bank_account,
+		if final_settlement ==1:
+			gl_entries.append(
+				prepare_gl(self, {"account": self.bank_account,
 					 "credit": flt(self.amount),
 					 "credit_in_account_currency": flt(self.amount),
 					 "cost_center": self.cost_center,
-					 "business_activity": default_ba
+					"party_type": "Supplier",
+                                         "party": self.supplier,
+					"business_activity": default_ba
 					})
-			)
+				)
+		else:
+			 gl_entries.append(
+                                prepare_gl(self, {"account": self.bank_account,
+                                         "credit": flt(self.amount),
+                                         "credit_in_account_currency": flt(self.amount),
+                                         "cost_center": self.cost_center,
+                                         "business_activity": default_ba
+                                        })
+                                )
 
 		gl_entries.append(
 			prepare_gl(self, {"account": creditor_account,

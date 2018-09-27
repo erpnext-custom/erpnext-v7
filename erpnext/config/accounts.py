@@ -29,6 +29,10 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Business Activity",
+				},                                
+				{
+					"type": "doctype",
 					"name": "Branch",
 					"description": _("List of Branches"),
 				},                                
