@@ -11,7 +11,7 @@ data = {
 		},
 		{
 			'label': _('Payroll'),
-			'items': ['Salary Structure', 'Salary Slip', 'Timesheet']
+			'items': ['Salary Structure', 'Salary Slip', 'Salary Increment', 'Timesheet']
 		},
 		{
 			'label': _('Expense'),

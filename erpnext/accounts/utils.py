@@ -625,7 +625,7 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 		       "cost_center": to_cc,
 		})
 	)
-	if flt(accumulated_dep_account) > 0:
+	if flt(accumulated_dep) > 0:
 		gl_entries.append(
 			prepare_gl(self, {
 			       "account": accumulated_dep_account,

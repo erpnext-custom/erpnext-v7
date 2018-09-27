@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-09-05 15:39:58.528441", 
+ "modified": "2018-09-27 13:41:26.052000", 
  "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "POL Ledger", 
@@ -30,6 +30,12 @@
   }, 
   {
    "role": "Fleet User"
+  }, 
+  {
+   "role": "Regional Manager"
+  }, 
+  {
+   "role": "Accounts Manager"
   }
  ], 
  "submitted_by": ""

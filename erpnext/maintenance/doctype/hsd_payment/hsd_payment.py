@@ -66,13 +66,24 @@ class HSDPayment(Document):
 		if not creditor_account:
 			frappe.throw("Set Default Payable Account in Company")
 
-		gl_entries.append(
-			prepare_gl(self, {"account": self.bank_account,
+		if self.final_settlement ==1:
+			gl_entries.append(
+				prepare_gl(self, {"account": self.bank_account,
 					 "credit": flt(self.amount),
 					 "credit_in_account_currency": flt(self.amount),
 					 "cost_center": self.cost_center,
+					"party_type": "Supplier",
+                                         "party": self.supplier,
 					})
 			)
+		else:
+			gl_entries.append(
+                                prepare_gl(self, {"account": self.bank_account,
+                                         "credit": flt(self.amount),
+                                         "credit_in_account_currency": flt(self.amount),
+                                         "cost_center": self.cost_center,
+                                        })
+                        )
 
 		gl_entries.append(
 			prepare_gl(self, {"account": creditor_account,

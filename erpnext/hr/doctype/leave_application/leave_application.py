@@ -214,6 +214,9 @@ class LeaveApplication(Document):
 			self.total_leave_days = get_number_of_leave_days(self.employee, self.leave_type,
 				self.from_date, self.to_date, self.half_day)
 
+			if self.total_leave_days and self.include_half_day:
+                                self.total_leave_days -= 0.5
+
 			if self.total_leave_days == 0:
 				frappe.throw(_("The day(s) on which you are applying for leave are holidays. You need not apply for leave."))
 
