@@ -10,8 +10,10 @@ from frappe.utils import flt
 class MarkingList(Document):
 	def validate(self):
 		self.validate_items()
-		self.calculate_total()
 
+	def on_update(self):
+		self.calculate_total()
+		
 	def validate_items(self):
 		for a in self.items:
 			if not flt(a.qty) > 0:
@@ -20,16 +22,35 @@ class MarkingList(Document):
 				frappe.throw("Diameter cannot be zero or less")
 
 	def calculate_total(self):
-		records = frappe.db.sql("select b.class as timber_class, sum(a.qty)*35.315 as total_quantity from `tabMarking List Item` a, `tabTimber Class` b where a.species = b.name and a.parent = %s group by b.class", self.name, as_dict=1)
+		records = frappe.db.sql("select b.class as timber_class, sum(a.qty) as qty_m3, b.timber_type from `tabMarking List Item` a, `tabTimber Species` b where a.species = b.name and a.parent = %s group by b.class, b.timber_type", self.name, as_dict=1)
 		self.set('aggregate_items', [])
+		frappe.db.sql("delete from `tabMarking List Aggregate` where parent = %s", self.name)
 
 		total_amount = 0
                 for d in records:
+			d.qty_cft = d.qty_m3 * 35.315
+			if d.timber_type == "Conifer":
+				d.log_percent = 60
+				d.firewood_percent = 40
+			else:
+				d.log_percent = 40
+				d.firewood_percent = 60
+			
+			#Change this to get from class
+			d.log_rate = 12
+			d.firewood_rate = 10
+
+			d.log_amount = d.qty_cft * d.log_rate * flt(d.log_percent)/100 
+			d.firewood_amount = d.qty_m3 * d.firewood_rate * flt(d.firewood_percent)/100 
+			
+			d.royalty_amount = d.log_amount + d.firewood_amount
+			total_amount += d.royalty_amount
+	
                         row = self.append('aggregate_items', {})
                         row.update(d)
-			total_amount += d.total_quantity
+			row.save()
 
-		self.total_amount = total_amount
+		self.db_set("total_amount", total_amount)
 		frappe.reload_doctype(self.doctype)
 
 	def on_submit(self):
@@ -55,8 +76,8 @@ class MarkingList(Document):
 			frappe.throw("Setup Default Royalty Account in Production Account Settings")	
 
 		bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
-		#if not bank_account:
-		#	frappe.throw("Setup Expense Bank Account in Branch")	
+		if not bank_account:
+			frappe.throw("Setup Expense Bank Account in Branch")	
 
 		je.append("accounts", {
 				"account": royalty_account,
@@ -77,10 +98,7 @@ class MarkingList(Document):
 				"credit": flt(self.total_amount),
 				"business_activity": self.business_activity
 			})
-		#je.save()
-		#self.db_set("journal_entry", je.name)
-		self.journal_entry = "ISNIDE"
+		je.save()
+		self.db_set("journal_entry", je.name)
 		frappe.reload_doctype(self.doctype)
-		#frappe.reload_doc(frappe.db.get_value("Doctype", self.doctype, "module"), self.doctype, self.name, 1)
-		frappe.msgprint("RELOAD")		
 

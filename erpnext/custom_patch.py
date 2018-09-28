@@ -8,6 +8,14 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, ge
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def migrate_species():
+	for a in frappe.db.sql("select name, is_conifer from `tabTimber Species`", as_dict=1):
+		if a.is_conifer:
+			t = "Conifer" 
+		else:
+			t = "Broadleaf" 
+		frappe.db.sql("update `tabTimber Species` set timber_type = %s where name = %s", (t, a.name))
+
 def delete_users():
 	for a in frappe.db.sql("select name from tabUser where btl != 1", as_dict=1):
 		doc = frappe.get_doc("User", a.name)

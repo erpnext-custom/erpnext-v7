@@ -11,8 +11,9 @@ frappe.ui.form.on('Marking List', {
 			{fieldname: 'qty', columns: 3},
 		]
 		frm.get_field('aggregate_items').grid.editable_fields = [
-			{fieldname: 'species', columns: 4},
-			{fieldname: 'total_quantity', columns: 3},
+			{fieldname: 'timber_class', columns: 3},
+			{fieldname: 'timber_type', columns: 3},
+			{fieldname: 'qty_cft', columns: 3},
 		]
 	},
 	onload: function(frm) {
