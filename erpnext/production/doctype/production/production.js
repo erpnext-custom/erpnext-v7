@@ -62,6 +62,14 @@ frappe.ui.form.on("Production", "refresh", function(frm) {
             }
         };
     });
+    cur_frm.set_query("location", function() {
+        return {
+            "filters": {
+                "branch": frm.doc.branch,
+		"is_disabled": 0
+            }
+        };
+    });
 })
 
 cur_frm.fields_dict['raw_materials'].grid.get_field('item_code').get_query = function(frm, cdt, cdn) {

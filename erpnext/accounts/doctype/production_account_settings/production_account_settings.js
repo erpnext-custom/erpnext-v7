@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('FMU', {
+frappe.ui.form.on('Production Account Settings', {
 	refresh: function(frm) {
 
 	}

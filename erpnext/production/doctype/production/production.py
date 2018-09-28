@@ -84,9 +84,11 @@ class Production(StockController):
 		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
 		if not wh_account:
 			frappe.throw(str(self.warehouse) + " is not linked to any account.")
-		expense_account = frappe.db.get_value("Company", self.company, "default_production_account")
+
+		expense_account = frappe.db.get_value("Production Account Settings", self.company, "default_production_account")
 		if not expense_account:
-			frappe.throw("Setup <b>Default Production Account</b> in Company")
+                        frappe.throw("Setup Default Production Account in Production Account Settings")
+
 		for a in self.items:
 			amount = flt(a.qty) * flt(a.cop)
 
@@ -182,6 +184,7 @@ class Production(StockController):
 			doc.currency = self.currency
 			doc.business_activity = self.business_activity
 			doc.branch = self.branch
+			doc.location = self.location
 			doc.cost_center = self.cost_center
 			doc.warehouse = self.warehouse
 			doc.posting_date = str(self.posting_date) + " " + str(self.posting_time)

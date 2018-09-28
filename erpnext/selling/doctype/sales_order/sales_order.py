@@ -407,9 +407,9 @@ def make_delivery_note(source_name, target_doc=None):
 		target.qty = flt(source.qty) - flt(source.delivered_qty)
 		expense_account,is_prod = frappe.db.get_value("Item", source.item_code, ["expense_account", "is_production_item"])
 		if is_prod:
-			expense_account = frappe.db.get_value("Company", self.company, "default_production_account")
+			expense_account = frappe.db.get_value("Production Account Settings", self.company, "default_production_account")
 			if not expense_account:
-				frappe.throw("Setup <b>Default Production Account</b> in Company")
+				frappe.throw("Setup Default Production Account in Production Account Settings")
 		target.expense_account = expense_account
 
 	target_doc = get_mapped_doc("Sales Order", source_name, {

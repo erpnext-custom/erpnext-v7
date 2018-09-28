@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 import unittest
 
-# test_records = frappe.get_test_records('FMU')
+# test_records = frappe.get_test_records('Location')
 
-class TestFMU(unittest.TestCase):
+class TestLocation(unittest.TestCase):
 	pass

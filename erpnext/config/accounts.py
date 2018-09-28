@@ -72,6 +72,10 @@ def get_data():
 					"name": "Sales Accounts Settings",
 					"description": _("Account Settings for Sales Accounting")
 				},
+				{
+					"type": "doctype",
+					"name": "Production Account Settings",
+				},
 			]
 		},
 		{
