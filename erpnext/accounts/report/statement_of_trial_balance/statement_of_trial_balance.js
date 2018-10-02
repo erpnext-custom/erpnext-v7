@@ -54,6 +54,12 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1']]}}
 		},
 		{
+			"fieldname":"business_activity",
+			"label": __("Business Activity"),
+			"fieldtype": "Link",
+			"options": "Business Activity",
+	},
+		{
 			"fieldname": "with_period_closing_entry",
 			"label": __("Period Closing Entry"),
 			"fieldtype": "Check",

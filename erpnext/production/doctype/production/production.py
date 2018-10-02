@@ -15,6 +15,7 @@ from erpnext.stock.utils import get_stock_balance
 class Production(StockController):
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.check_cop()
 		self.validate_warehouse()
 		self.validate_items()
 		self.validate_posting_time()
@@ -38,7 +39,19 @@ class Production(StockController):
 			if flt(item.cop) <= 0:
 				frappe.throw(_("COP for <b>{0}</b> cannot be zero or less").format(item.item_code))
 
+	def check_cop(self):
+		for a in self.items:
+			branch = frappe.db.sql("select 1 from `tabCOP Branch` where parent = %s and branch = %s", (a.price_template, self.branch))
+			if not branch:
+				frappe.throw("Selected COP is not defined for your Branch")
+
+			cop = frappe.db.sql("select cop_amount from `tabCOP Rate Item` where parent = %s and item_sub_group = %s", (a.price_template, str(frappe.db.get_value("Item", a.item_code, "item_sub_group"))), as_dict=1)
+			if not cop:
+				frappe.throw("COP Rate is not defined for your Item")
+			a.cop = cop[0].cop_amount
+
 	def on_submit(self):
+		self.check_cop()
 		self.assign_default_dummy()
 		self.make_products_sl_entry()
 		self.make_products_gl_entry()

@@ -4,63 +4,38 @@ from frappe.model.document import Document
 from frappe import msgprint
 from frappe.utils import flt, cint, now, nowdate, getdate
 from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, add_years
-from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+#from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
-def migrate_species():
-	for a in frappe.db.sql("select name, is_conifer from `tabTimber Species`", as_dict=1):
-		if a.is_conifer:
-			t = "Conifer" 
-		else:
-			t = "Broadleaf" 
-		frappe.db.sql("update `tabTimber Species` set timber_type = %s where name = %s", (t, a.name))
-
-def delete_users():
-	for a in frappe.db.sql("select name from tabUser where btl != 1", as_dict=1):
-		doc = frappe.get_doc("User", a.name)
-		print a.name
-		doc.delete()
-		frappe.db.commit()
-
-def update_equipment_history():
-        equ = frappe.db.sql("select name from `tabEquipment`", as_dict =1)
-        for eq in equ:
-                print(eq)
-                doc = frappe.get_doc("Equipment", eq.name)
-                #doc.business_activity = 'Test BA'
-                doc.save()
-
-def move_cc_branch():
-	ccs = frappe.db.sql("select name, branch from `tabCost Center` where branch is not null", as_dict=1)
-	for cc in ccs:
-		print(cc.branch)
-		if cc.branch:
-			b = frappe.get_doc("Branch", cc.branch)
-			b.db_set("cost_center", cc.name)
-
-
 def update_mech():
-        ml = frappe.db.sql("select name from `tabMechanical Payment` where docstatus = 1 and payment_for is null and name = 'MP18090001'", as_dict=1)
-        for a in ml:
-                doc = frappe.get_doc("Mechanical Payment", a.name)
-                print(doc.name)
+	ml = frappe.db.sql("select name from `tabMechanical Payment` where docstatus = 1 and payment_for is null", as_dict=1)
+	for a in ml:
+		doc = frappe.get_doc("Mechanical Payment", a.name)
+		print(doc.name)
 		frappe.db.sql("update `tabMechanical Payment` set payment_for = %s where name = %s", (doc.ref_doc, doc.name))
-                dc = frappe.new_doc("Mechanical Payment Item")
-                dc.reference_type = doc.ref_doc
-                dc.reference_name = doc.ref_no
-                dc.outstanding_amount = doc.receivable_amount
-                dc.allocated_amount = doc.receivable_amount
-                dc.parent = doc.name
-                dc.parenttype = "Mechanical Payment"
-                dc.parentfield = "items"
-                dc.owner = doc.owner
-                dc.creation = doc.creation
-                dc.modified_by = doc.modified_by
-                dc.modified = doc.modified
-                dc.docstatus = doc.docstatus
-                dc.submit()
-                dc.idx = 1
+		dc = frappe.new_doc("Mechanical Payment Item")
+		dc.reference_type = doc.ref_doc
+		dc.reference_name = doc.ref_no
+		dc.outstanding_amount = doc.receivable_amount
+		dc.allocated_amount = doc.receivable_amount
+		dc.parent = doc.name
+		dc.parenttype = "Mechanical Payment"
+		dc.parentfield = "items"
+		dc.owner = doc.owner
+		dc.creation = doc.creation
+		dc.modified_by = doc.modified_by
+		dc.modified = doc.modified
+		dc.docstatus = doc.docstatus
+		dc.submit()
+
+def update_equipment():
+        els = frappe.db.sql("select name from tabEquipment", as_dict=1)
+        for a in els:
+                print a.name
+                doc = frappe.get_doc("Equipment", a.name)
+                doc.save()
+                frappe.db.commit()
 
 def adjust_advance_balance():
 	advances = frappe.db.sql("select name from `tabHire Charge Invoice`", as_dict=1)
@@ -233,13 +208,13 @@ def get_asset_list():
 	for a in li:
 		print(a.name + "  :  " + a.asset_account + " ==> " + a.fixed_asset_account + "   ::: " + str(a.gross_purchase_amount))
 
-	"""assets = frappe.db.sql("select a.name, a.asset_category, b.account from tabAsset a, `tabJournal Entry Account` b where b.debit > 0 and a.name = b.reference_name and (b.account not like '%Depreciation%' and b.account not like '%Amortization%')", as_dict=True)
+	assets = frappe.db.sql("select a.name, a.asset_category, b.account from tabAsset a, `tabJournal Entry Account` b where b.debit > 0 and a.name = b.reference_name and (b.account not like '%Depreciation%' and b.account not like '%Amortization%')", as_dict=True)
 	for a in assets:
 		as_cat = frappe.db.sql("select fixed_asset_account from `tabAsset Category Account` where parent = %s", a.asset_category, as_dict=True)
 		entry = as_cat[0].fixed_asset_account
 		if a.account != entry:
 			print(a.name + "  :  " + a.account + " ==> " + entry)
-	"""
+	
 
 def move_bulk_asset_movement():
 	ams = frappe.db.sql("select name, creation from `tabBulk Asset Transfer`", as_dict=True)
@@ -373,7 +348,6 @@ def adjust_dc_pol():
 			frappe.db.commit()
 		else:	
 			pass
-			"""print(str(a.name))
 			frappe.db.sql("delete from `tabStock Ledger Entry` where voucher_no = %s", a.name)
 			frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", a.name)
 			frappe.db.sql("update `tabPOL` set direct_consumption = 1 where name = %s", a.name)
@@ -381,7 +355,7 @@ def adjust_dc_pol():
 			doc.direct_consumption = 1
 			doc.update_stock_ledger()
 			doc.make_pol_entry()
-			frappe.db.commit()"""
+			frappe.db.commit()
 
 def adjust_hsd_outstanding():
 	ols = frappe.db.sql("select pol from `tabHSD Payment Item` where parent = 'HSDP1805002'", as_dict=True)
@@ -405,13 +379,13 @@ def make_status_entry():
 		doc.update_reservation()
 
 def make_pol_entry():
-	"""pols = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1", as_dict=True)
+	pols = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1", as_dict=True)
 	for a in pols:
 		print(str(a.name))
 		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", a.name)
 		doc = frappe.get_doc("Issue POL", a.name)
 		doc.make_pol_entry()
-	frappe.db.commit()"""
+	frappe.db.commit()
 
 	pols = frappe.db.sql("select name from `tabPOL` where docstatus = 1 and pol_type != 'N/A'", as_dict=True)
 	for a in pols:
@@ -421,13 +395,13 @@ def make_pol_entry():
 		doc.make_pol_entry() 
 	frappe.db.commit()
 
-	"""pols = frappe.db.sql("select name from `tabEquipment POL Transfer` where docstatus = 1", as_dict=True)
+	pols = frappe.db.sql("select name from `tabEquipment POL Transfer` where docstatus = 1", as_dict=True)
 	for a in pols:
 		print(str(a.name))
 		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", a.name)
 		doc = frappe.get_doc("Equipment POL Transfer", a.name)
 		doc.adjust_consumed_pol() 
-	frappe.db.commit()"""
+	frappe.db.commit()
 
 def list_bb():
         num = 1
@@ -1301,11 +1275,11 @@ def el_allocation(employee=None):
                 cf = flt(i.carry_forwarded_leaves)+5.0 if flt(i.carry_forwarded_leaves)+5.0 <= 60.0 else 60.0
                 ta = flt(i.total_leaves_allocated)+5.0 if flt(i.total_leaves_allocated)+5.0 <= 60.0 else 60.0
                 
-                frappe.db.sql("""
+                frappe.db.sql(
                                 update `tabLeave Allocation`
                                 set carry_forwarded_leaves = {0}, total_leaves_allocated = {1}
                                 where name = '{2}'
-                        """.format(flt(cf), flt(ta), i.name))
+                        .format(flt(cf), flt(ta), i.name))
         '''
 
         counter = 0
@@ -1337,11 +1311,11 @@ def el_allocation(employee=None):
 
                         print cf, ta
 
-                        frappe.db.sql("""
+                        frappe.db.sql(
                                 update `tabLeave Allocation`
                                 set carry_forwarded_leaves = {0}, total_leaves_allocated = {1}
                                 where name = '{2}'
-                        """.format(flt(cf), flt(ta), a.name))
+                        .format(flt(cf), flt(ta), a.name))
                         '''
 
 # /home/frappe/erp bench execute erpnext.custom_patch.refresh_salary_structure
@@ -1443,3 +1417,46 @@ def update_hire_charge_parameter():
 	for i in li:
 		counter += 1
 		print counter, i.name
+
+#
+# by SHIV on 2018/08/15
+# Populating Family Details default record for all the active employees
+#
+def populate_family_details():
+        counter = 0
+        for t in frappe.get_all("Employee", ["name","employee_name","gender","date_of_birth","passport_number","dzongkhag","gewog","village"], {"status":"Active"}):
+                if not frappe.db.exists("Employee Family Details", {"parent": t.name, "relationship": "Self"}):
+                        counter += 1
+                        print counter, t.name
+                        doc = frappe.get_doc("Employee", t.name)
+                        row = doc.append("employee_family_details",{})
+                        row.relationship  = "Self"
+                        row.full_name     = t.employee_name
+                        row.gender        = t.gender
+                        row.date_of_birth = t.date_of_birth
+                        row.cid_no        = t.passport_number
+                        row.district_name = t.dzongkhag
+                        row.city_name     = t.gewog
+                        row.village_name  = t.village
+                        row.save()
+        print 'Done adding rows....'
+
+"""
+        Author: SHIV
+        Date: 2018/09/27
+        Purpose: This method will update all the payment method fields with default value from
+                        salary components.
+"""
+def update_sst_payment_methods():
+        counter = 0
+        for i in frappe.db.sql("select * from `tabSalary Component` where field_value is not null", as_dict=True):
+                counter += 1
+                print counter, i.name
+                frappe.db.sql("""
+                        update `tabSalary Structure`
+                        set {0} = '{1}'
+                """.format(i.field_method, i.payment_method))
+
+        frappe.db.sql("update `tabSalary Structure` set temporary_transfer_allowance_method = 'Percent' where temporary_transfer_allowance > 0 and lumpsum_temp_transfer_amount = 0")
+        frappe.db.sql("update `tabSalary Structure` set temporary_transfer_allowance_method = 'Lumpsum' where temporary_transfer_allowance = 0 and lumpsum_temp_transfer_amount > 0;");
+        print 'Done updating.....'

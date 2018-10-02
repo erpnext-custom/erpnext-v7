@@ -146,9 +146,8 @@ def get_data():
 				},
 				{
 					"type" : "doctype",
-					"name": "Stock Price Template",
-					"description": _("Price Template for Mines Products"),
-					"label": _("COP/ Sales Price Template"),
+					"name": "Selling Price",
+					"label": _("Selling Price Settings"),
 				},
 			]
 		},

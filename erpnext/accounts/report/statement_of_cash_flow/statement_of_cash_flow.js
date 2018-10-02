@@ -13,6 +13,12 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 		"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1']]}}
 	},
 	{
+		"fieldname":"business_activity",
+		"label": __("Business Activity"),
+		"fieldtype": "Link",
+		"options": "Business Activity",
+},
+	{
 		"fieldname": "accumulated_values",
 		"label": __("Accumulated Values"),
 		"fieldtype": "Check",

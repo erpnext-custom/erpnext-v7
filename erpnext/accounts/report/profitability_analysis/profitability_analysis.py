@@ -35,7 +35,7 @@ def get_data(accounts, filters, based_on):
 
 	gl_entries_by_account = {}
 
-	set_gl_entries_by_account(filters.get("company"), filters.get("from_date"),
+	set_gl_entries_by_account(filters.get("company"), filters.get("business_activity"), filters.get("from_date"),
 		filters.get("to_date"), based_on, gl_entries_by_account, ignore_closing_entries=not flt(filters.get("with_period_closing_entry")))
 
 	total_row = calculate_values(accounts, gl_entries_by_account, filters)
@@ -163,7 +163,7 @@ def get_columns(filters):
 		}
 	]
 
-def set_gl_entries_by_account(company, from_date, to_date, based_on, gl_entries_by_account,
+def set_gl_entries_by_account(company, business_activity, from_date, to_date, based_on, gl_entries_by_account,
 		ignore_closing_entries=False):
 	"""Returns a dict like { "account": [gl entries], ... }"""
 	additional_conditions = []
@@ -173,7 +173,10 @@ def set_gl_entries_by_account(company, from_date, to_date, based_on, gl_entries_
 
 	if from_date:
 		additional_conditions.append("and posting_date >= %(from_date)s")
-
+	if business_activity:
+                additional_conditions.append(" and business_activity = '{0}'".format(business_activity))
+        else:
+                additional_conditions.append(" and 1 = 1 ")
 	gl_entries = frappe.db.sql("""select posting_date, {based_on} as based_on, debit, credit, 
 		is_opening, (select root_type from `tabAccount` where name = account) as type
 		from `tabGL Entry` where company=%(company)s

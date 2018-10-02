@@ -14,6 +14,13 @@ frappe.query_reports["Statement of Comprehensive Income"]["filters"].push(
 		"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1']]}}
 	},
 	{
+		"fieldname":"business_activity",
+		"label": __("Business Activity"),
+		"fieldtype": "Link",
+		"options": "Business Activity",
+	},
+	{"fieldtype": "Break"},
+	{
 		"fieldname": "accumulated_values",
 		"label": __("Accumulated Values"),
 		"fieldtype": "Check",

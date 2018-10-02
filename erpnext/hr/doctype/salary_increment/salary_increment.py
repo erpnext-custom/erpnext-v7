@@ -11,7 +11,7 @@ from frappe.model.naming import make_autoname
 from frappe import _
 from frappe import msgprint
 import datetime
-from erpnext.hr.hr_custom_functions import  update_salary_structure
+#from erpnext.hr.hr_custom_functions import  update_salary_structure
 
 class SalaryIncrement(Document):
         def autoname(self):
@@ -22,9 +22,17 @@ class SalaryIncrement(Document):
 		self.validate_increment()
 
 	def on_submit(self):
-		if self.docstatus == 1:
-			update_salary_structure(self.employee, self.new_basic, self.salary_structure)
+                self.update_increment(self.new_basic)
 
+        def on_cancel(self):
+                self.update_increment(self.old_basic)
+                
+        def update_increment(self, amount=0):
+                if self.salary_structure and amount:
+                        sst = frappe.get_doc("Salary Structure", self.salary_structure)
+                        sst.update_salary_structure(amount)
+                        sst.save(ignore_permissions = True)
+        
         def validate_dates(self):
 		cur_year = getdate(nowdate()).year
 		cur_month= getdate(nowdate()).month
@@ -47,127 +55,14 @@ class SalaryIncrement(Document):
 		where employee = '%s'
 		and fiscal_year = '%s'
 		and month = '%s'
+		and salary_structure = '%s'
 		and docstatus = 1
-		""" % (self.employee, self.fiscal_year, self.month))
+		""" % (self.employee, self.fiscal_year, self.month, self.salary_structure))
 
 		if inc_list:
 			frappe.msgprint("Salary Increment is already processed for Employee '{0} {1}'\
 					for the Month: {2} and Year: {3}".format(self.employee, self.employee_name, \
 					self.month, self.fiscal_year))
-
-	def update_salary_structure_not_used(self, employee, new_basic):
-
-		sal_struc_name = frappe.db.sql("""
-		select name
-		from `tabSalary Structure` st
-		where st.employee = '%s'
-		and is_active = 'Yes'
-		and now() between ifnull(from_date,'0000-00-00') and ifnull(to_date,'2050-12-31')
-		order by ifnull(from_date,'0000-00-00') desc 
-		limit 1
-		""" % (self.employee))
-		
-		sst = ""
-		if sal_struc_name and new_basic > 0:
-			sst = frappe.get_doc("Salary Structure", sal_struc_name[0][0])
-			if sst:
-                                gross_pay = 0.00
-                                deductions = 0.00
-
-                                #Earnings
-                                for e in sst.earnings:
-                                        if e.salary_component == "Basic Pay":
-                                                e.db_set('amount',new_basic,update_modified=True)
-                                                gross_pay += new_basic
-                                        elif sst.eligible_for_corporate_allowance and e.salary_component == 'Corporate Allowance':
-                                                calc_amt = 0
-                                                calc_amt = round(new_basic*flt(sst.ca)*0.01)
-                                                e.db_set('amount',calc_amt,update_modified=True)
-                                                gross_pay += calc_amt
-                                        elif sst.eligible_for_contract_allowance and e.salary_component == 'Contract Allowance':
-                                                calc_amt = 0
-                                                calc_amt = round(new_basic*flt(sst.contract_allowance)*0.01)
-                                                e.db_set('amount',calc_amt,update_modified=True)
-                                                gross_pay += calc_amt
-                                        elif sst.eligible_for_communication_allowance and e.salary_component == 'Communication Allowance':
-                                                calc_amt = 0
-                                                calc_amt = round(flt(sst.communication_allowance))			
-                                                e.db_set('amount',calc_amt,update_modified=True)
-                                                gross_pay += calc_amt
-                                        elif sst.eligible_for_psa and e.salary_component == 'PSA':
-                                                calc_amt = 0
-                                                calc_amt = round(new_basic*flt(sst.psa)*0.01)
-                                                e.db_set('amount',calc_amt,update_modified = True)
-                                                gross_pay += calc_amt
-                                        elif sst.eligible_for_mpi and e.salary_component == 'MPI':
-                                                calc_amt = 0
-                                                calc_amt = round(new_basic*flt(sst.mpi)*0.01)
-                                                e.db_set('amount',calc_amt,update_modified = True)
-                                                gross_pay += calc_amt
-                                        elif sst.eligible_for_officiating_allowance and e.salary_component == 'Officiating Allowance':
-                                                calc_amt = 0
-                                                calc_amt = round(new_basic*flt(sst.officiating_allowance)*0.01)
-                                                e.db_set('amount',calc_amt,update_modified = True)
-                                                gross_pay += calc_amt
-                                        elif sst.eligible_for_temporary_transfer_allowance and e.salary_component == 'Temporary Transfer Allowance':
-                                                calc_amt = 0
-                                                calc_amt = (new_basic*flt(sst.temporary_transfer_allowance)*0.01)
-                                                e.db_set('amount',calc_amt,update_modified = True)
-                                                gross_pay += calc_amt
-                                        elif sst.eligible_for_fuel_allowances and e.salary_component == 'Fuel Allowance':
-                                                calc_amt = 0
-                                                calc_amt = round(flt(sst.fuel_allowances))
-                                                e.db_set('amount',calc_amt,update_modified = True)
-                                                gross_pay += calc_amt
-                                        else:
-                                                gross_pay += e.amount
-
-                                company_det = get_company_pf('2016')
-                                employee_gis = get_employee_gis(sst.employee)
-                                
-                                # Deductions
-                                for d in sst.deductions:
-                                        if d.salary_component == 'Group Insurance Scheme':
-                                                calc_gis_amt = 0
-                                                calc_gis_amt = flt(employee_gis[0][0])
-                                                d.db_set('amount',calc_gis_amt,update_modified = True)
-                                                deductions += calc_gis_amt
-                                        elif d.salary_component == 'PF':
-						percent = frappe.db.get_single_value("HR Settings", "employee_pf")
-						if not percent:
-							frappe.throw("Setup PF Percent in HR Settings")
-                                                calc_pf_amt = 0;
-                                                calc_pf_amt = round(new_basic * flt(percent) * 0.01);
-                                                d.db_set('amount',calc_pf_amt,update_modified = True)
-                                                deductions += calc_pf_amt
-                                        elif d.salary_component == 'Salary Tax':
-                                                calc_tds_amt = 0;
-                                        else:
-                                                deductions += d.amount
-
-
-                                if gross_pay:
-                                        for d in sst.deductions:
-                                                if d.salary_component == 'Salary Tax':
-                                                        calc_tds_amt = 0;
-                                                        calc_tds_amt = get_salary_tax(gross_pay-calc_pf_amt-calc_gis_amt)
-                                                        d.db_set('amount',calc_tds_amt,update_modified = True)
-                                                        deductions += calc_tds_amt
-                                        	
-						if d.salary_component == 'Health Contribution':
-							percent = frappe.db.get_single_value("HR Settings", "health_contribution")
-							if not percent:
-								frappe.throw("Setup Health Contribution Percent in HR Settings")
-							calc_health_amt = 0;
-                                                	calc_health_amt = round(gross_pay * flt(percent) * 0.01);
-                                                	d.db_set('amount',calc_health_amt,update_modified = True)
-                                                	deductions += calc_health_amt
-
-                                sst.db_set('total_earning',flt(gross_pay),update_modified = True)
-                                sst.db_set('total_deduction',flt(deductions),update_modified = True)
-                                sst.db_set('net_pay',flt(flt(gross_pay)-flt(deductions)),update_modified = True)
-                                
-                                sst.save()
 
 @frappe.whitelist()
 def get_employee_payscale(employee, gradecd, fiscal_year, month):

@@ -34,9 +34,7 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 				"options": "Fiscal Year",
 				"reqd": 1,
 			},
-			{
-				"fieldtype": "Break",
-			},
+			
 			{
 				"fieldname": "from_date",
 				"label": __("From Date"),
@@ -54,11 +52,20 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 				"reqd": 1,
 			},
 			{
+				"fieldtype": "Break",
+			},
+			{
 				"fieldname": "cost_center",
 				"label": __("Cost Center"),
 				"fieldtype": "Link",
 				"options": "Cost Center",
 			},
+			{
+				"fieldname":"business_activity",
+				"label": __("Business Activity"),
+				"fieldtype": "Link",
+				"options": "Business Activity",
+		},
 		],
 		//"formatter": erpnext.financial_statements.formatter,
 		"formatter": function(row, cell, value, columnDef, dataContext, default_formatter) {

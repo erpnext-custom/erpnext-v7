@@ -3,7 +3,6 @@
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("item_code", "item_name", "item_name")
 cur_frm.add_fetch("item_code", "stock_uom", "uom")
-cur_frm.add_fetch("price_template", "rate_amount", "cop")
 
 frappe.ui.form.on('Production', {
 	onload: function(frm) {
@@ -50,7 +49,7 @@ frappe.ui.form.on('Production', {
 			}, __("View"));
 		}
 
-	}
+	},
 });
 
 frappe.ui.form.on("Production", "refresh", function(frm) {
@@ -72,6 +71,25 @@ frappe.ui.form.on("Production", "refresh", function(frm) {
     });
 })
 
+frappe.ui.form.on("Production Product Item", { 
+	"price_template": function(frm, cdt, cdn) {
+		d = locals[cdt][cdn]
+		frappe.call({
+			method: "erpnext.production.doctype.cost_of_production.cost_of_production.get_cop_amount",
+			args: {
+				"cop": d.price_template,
+				"branch": cur_frm.doc.branch,
+				"item_code": d.item_code,
+				"posting_date": cur_frm.doc.posting_date 
+			},
+			callback: function(r) {
+				frappe.model.set_value(cdt, cdn, "cop", r.message)
+				cur_frm.refresh_field("cop")
+			}
+		})
+	}
+})
+
 cur_frm.fields_dict['raw_materials'].grid.get_field('item_code').get_query = function(frm, cdt, cdn) {
 	return {
             filters: {
@@ -90,5 +108,12 @@ cur_frm.fields_dict['items'].grid.get_field('item_code').get_query = function(fr
         };
 }
 
+cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+                query: "erpnext.controllers.queries.get_cop_list",
+                filters: {'item_code': d.item_code, 'posting_date': frm.posting_date, 'branch': frm.branch}
+        }
+}
 
 

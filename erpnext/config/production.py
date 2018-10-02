@@ -36,6 +36,10 @@ def get_data():
 					"name": "Item",
 					"label": "Material"
 				},
+				{
+					"type": "doctype",
+					"name": "Cost of Production",
+				},
 			]
 		},
 	]

@@ -149,6 +149,9 @@ frappe.ui.form.on("Travel Authorization Item", {
 			}
 		}
 		
+		if (item.till_date >= item.date) {
+                        frappe.model.set_value(cdt, cdn, "no_days", 1 + cint(frappe.datetime.get_day_diff(item.till_date, item.date)))
+                }
 		/*
 		if(item.till_date){
 			if (item.till_date >= item.date) {

@@ -14,9 +14,10 @@ def execute(filters=None):
 		show_zero = 0
 	period_list = get_period_list(filters.fiscal_year, filters.periodicity)
 
-	asset = get_data(filters.cost_center, filters.company, "Asset", "Debit", period_list, only_current_fiscal_year=False, show_zero_values=show_zero)
-	liability = get_data(filters.cost_center,filters.company, "Liability", "Credit", period_list, only_current_fiscal_year=False, show_zero_values=show_zero)
-	equity = get_data(filters.cost_center,filters.company, "Equity", "Credit", period_list, only_current_fiscal_year=False, show_zero_values=show_zero)
+	#added filters.business_activity	
+	asset = get_data(filters.cost_center, filters.business_activity, filters.company, "Asset", "Debit", period_list, only_current_fiscal_year=False, show_zero_values=show_zero)
+	liability = get_data(filters.cost_center, filters.business_activity, filters.company, "Liability", "Credit", period_list, only_current_fiscal_year=False, show_zero_values=show_zero)
+	equity = get_data(filters.cost_center,filters.business_activity, filters.company, "Equity", "Credit", period_list, only_current_fiscal_year=False, show_zero_values=show_zero)
 
 	provisional_profit_loss = get_provisional_profit_loss(asset, liability, equity,
 		period_list, filters.company)

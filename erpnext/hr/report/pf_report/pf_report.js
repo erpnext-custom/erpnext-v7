@@ -36,8 +36,24 @@ frappe.query_reports["PF Report"] = {
                         "label": __("Tier"),
                         "fieldtype": "Select",
                         "options":[" ", 1, 2],
-
+                },
+		{
+                        "fieldname":"test",
+                        "label": __("Test"),
+                        "fieldtype": "Select",
+                        "options": [] 
                 },
 	
-	]
+	],
+	onload: function(report) {
+		select = $('div[data-fieldname="test"]').children()
+		frappe.call({
+			method: "erpnext.hr.doctype.employee.employee.get_list",
+			callback: function(r) {
+				$.each(r.message, function(i, j) {
+					select.append($('<option>', {value: i, text: j}))
+				})
+			}
+		})
+	}
 }

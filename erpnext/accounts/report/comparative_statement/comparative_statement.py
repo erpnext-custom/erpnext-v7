@@ -37,19 +37,19 @@ def get_data(filters):
 	comparing_gls = {}
 	open_comparing_gls = {}
 	ignore_closing_entries = True
-
+	#added business_activiry 
 	if filters.report == "Financial Position":
 		ignore_closing_entries = False
-		open_reporting_gls = set_gl_entries_by_account(filters.cost_center, filters.company, '1900-01-01',
+		open_reporting_gls = set_gl_entries_by_account(filters.cost_center, filters.business_activity, filters.company, '1900-01-01',
 			filters.rep_to_date, min_lft, max_rgt, open_reporting_gls, ignore_closing_entries, open_date=filters.rep_from_date)
-		open_comparing_gls = set_gl_entries_by_account(filters.cost_center, filters.company, '1900-01-01',
+		open_comparing_gls = set_gl_entries_by_account(filters.cost_center, filters.business_activity, filters.company, '1900-01-01',
 			filters.com_to_date, min_lft, max_rgt, open_comparing_gls, ignore_closing_entries, open_date=filters.com_from_date)
 	else:
 		ignore_closing_entries = True
 
-	reporting_gls = set_gl_entries_by_account(filters.cost_center, filters.company, filters.rep_from_date,
+	reporting_gls = set_gl_entries_by_account(filters.cost_center, filters.business_activity, filters.company, filters.rep_from_date,
 		filters.rep_to_date, min_lft, max_rgt, reporting_gls, ignore_closing_entries)
-	comparing_gls = set_gl_entries_by_account(filters.cost_center, filters.company, filters.com_from_date,
+	comparing_gls = set_gl_entries_by_account(filters.cost_center, filters.business_activity, filters.company, filters.com_from_date,
 		filters.com_to_date, min_lft, max_rgt, comparing_gls, ignore_closing_entries)
 	total_row = calculate_values(accounts, reporting_gls, comparing_gls, open_reporting_gls, open_comparing_gls, filters)
 	accumulate_values_into_parents(accounts, accounts_by_name)

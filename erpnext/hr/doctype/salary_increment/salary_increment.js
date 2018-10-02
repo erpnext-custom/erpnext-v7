@@ -2,8 +2,8 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Salary Increment', {
-	refresh: function(frm) {
-		if (!frm.doc.fiscal_year){
+	onload: function(frm){
+		if(frm.doc.__islocal){
 			frm.set_value("fiscal_year", sys_defaults.fiscal_year);
 		}
 	},

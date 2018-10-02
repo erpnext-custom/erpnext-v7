@@ -1,6 +1,7 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
+
 cur_frm.cscript.display_activity_log = function(msg) {
 	if(!cur_frm.ss_html)
 		cur_frm.ss_html = $a(cur_frm.fields_dict['activity_log'].wrapper,'div');
@@ -82,6 +83,48 @@ frappe.ui.form.on("Process Payroll", {
 		frm.disable_save();
 	},
 
+	create_salary_slip: function(frm){
+		var head_log="", body_log="";
+		if(!cur_frm.ss_html)
+			cur_frm.ss_html = $a(cur_frm.fields_dict['activity_log'].wrapper,'div');
+		head_log = '<div class="container"><h4>'+__("Activity Log:")+'</h4><table class="table">';
+		frm.set_value("progress", "");
+		frm.refresh_field("progress");
+		return frappe.call({
+			method: "get_emp_list",
+			doc: frm.doc,
+			callback: function(r, rt){
+				if(r.message){
+					var counter=0;
+					r.message.forEach(function(rec) {
+						counter += 1;
+						frm.set_value("progress", counter+"/"+r.message.length+" salary slip(s) created successfully ["+Math.round((counter/r.message.length)*100)+"% completed]");
+						frm.refresh_field("progress");
+						frm.refresh_field("activity_log");
+						
+						cur_frm.call({
+							method: "create_sal_slip",
+							doc: frm.doc,
+							args: {"employee": rec.name, "cost_center": rec.cost_center},
+							callback: function(r2, rt2){
+								body_log = r2.message+body_log
+								cur_frm.ss_html.innerHTML = head_log+body_log
+							},
+							freeze: true,
+						});
+					});
+				} else {
+					body_log = "No employee for the above selected criteria OR salary slip(s) already created";
+					msgprint(body_log);
+					cur_frm.ss_html.innerHTML = head_log+body_log;
+				}
+			},
+			freeze: true,
+			freeze_message: "Processing Salary.... Please Wait!!!",
+		});
+		cur_frm.ss_html.innerHTML += '</table></div>';
+	},
+	/*
 	"create_salary_slip": function(frm) {
                 return frappe.call({
                         method: "create_sal_slip",
@@ -94,52 +137,118 @@ frappe.ui.form.on("Process Payroll", {
                         freeze: true,
                         freeze_message: "Processing Salary.... Please Wait",
                 });
-        },
+    },
+	*/
+	"remove_salary_slip": function(frm) {
+                return frappe.call({
+                        method: "remove_sal_slip",
+                        doc: frm.doc,
+                        callback: function(r, rt) {
+                                frm.refresh_fields();
+                                if (r.message)
+                                        cur_frm.cscript.display_activity_log(r.message);
+                        },
+                        freeze: true,
+                        freeze_message: "Removing Salary.... Please Wait!!!",
+                });
+    },
+	/* WORK IN PROGRESS
+	submit_salary_slip: function(frm) {
+		frappe.confirm(__("Do you really want to Submit all Salary Slip for month {0} and year {1}", [frm.doc.month, frm.doc.fiscal_year]), function() {
+				var head_log="", body_log="";
+				if(!cur_frm.ss_html)
+					cur_frm.ss_html = $a(cur_frm.fields_dict['activity_log'].wrapper,'div');
+				head_log = '<div class="container"><h4>'+__("Activity Log:")+'</h4><table class="table">';
+				frm.set_value("progress", "");
+				frm.refresh_field("progress");
+		
+				if(locals["Salary Slip"]) {
+						$.each(locals["Salary Slip"], function(name, d) {
+								frappe.model.remove_from_locals("Salary Slip", name);
+						});
+				}
 
-	"submit_salary_slip": function(frm) {
-                frappe.confirm(__("Do you really want to Submit all Salary Slip for month {0} and year {1}", [frm.doc.month, frm.doc.fiscal_year]), function() {
-                        if(locals["Salary Slip"]) {
-                                $.each(locals["Salary Slip"], function(name, d) {
-                                        frappe.model.remove_from_locals("Salary Slip", name);
-                                });
-                        }
+				return frappe.call({
+					method: "get_sal_slip_list",
+					doc: frm.doc,
+					callback: function(r, rt) {
+						frm.refresh_fields();
+						if(r.message){
+							var counter=0;
+							r.message.forEach(function(rec) {
+								counter += 1;
+								frm.set_value("progress", counter+"/"+r.message.length+" salary slip(s) submitted successfully ["+Math.round((counter/r.message.length)*100)+"% completed]");
+								frm.refresh_field("progress");
+								frm.refresh_field("activity_log");
+								
+								cur_frm.call({
+									method: "create_sal_slip",
+									doc: frm.doc,
+									args: {"employee": rec.name, "cost_center": rec.cost_center},
+									callback: function(r2, rt2){
+										body_log = r2.message+body_log
+										cur_frm.ss_html.innerHTML = head_log+body_log
+									},
+									freeze: true,
+								});
+							});
+						} else {
+							body_log = "No employee for the above selected criteria OR salary slip(s) already created";
+							msgprint(body_log);
+							cur_frm.ss_html.innerHTML = head_log+body_log;
+						}
+					},
+					freeze: true,
+					freeze_message: "Submitting Salary.... Please Wait!!!",
+				});
+		})
+    },
+	*/
+	
+	submit_salary_slip: function(frm) {
+		frappe.confirm(__("Do you really want to Submit all Salary Slip for month {0} and year {1}", [frm.doc.month, frm.doc.fiscal_year]), function() {
+				if(locals["Salary Slip"]) {
+						$.each(locals["Salary Slip"], function(name, d) {
+								frappe.model.remove_from_locals("Salary Slip", name);
+						});
+				}
 
-                        return frappe.call({
-                                method: "submit_salary_slip",
-                                doc: frm.doc,
-                                callback: function(r, rt) {
-                                        frm.refresh_fields();
-                                        if (r.message)
-                                                cur_frm.cscript.display_activity_log(r.message);
-                                },
-                                freeze: true,
-                                freeze_message: "Submitting Salary.... Please Wait",
-                        });
-                })
-            },
+				return frappe.call({
+						method: "submit_salary_slip",
+						doc: frm.doc,
+						callback: function(r, rt) {
+								frm.refresh_fields();
+								if (r.message)
+										cur_frm.cscript.display_activity_log(r.message);
+						},
+						freeze: true,
+						freeze_message: "Submitting Salary.... Please Wait!!!",
+				});
+		})
+    },
 
-	"accounts_posting": function(frm) {
-                frappe.confirm(__("Do you really want to Submit all Salary Slip for month {0} and year {1}", [frm.doc.month, frm.doc.fiscal_year]), function() {
-                        if(locals["Salary Slip"]) {
-                                $.each(locals["Salary Slip"], function(name, d) {
-                                        frappe.model.remove_from_locals("Salary Slip", name);
-                                });
-                        }
+	accounts_posting: function(frm) {
+		frappe.confirm(__("Do you really want to Submit all Salary Slip for month {0} and year {1}", [frm.doc.month, frm.doc.fiscal_year]), function() {
+				if(locals["Salary Slip"]) {
+						$.each(locals["Salary Slip"], function(name, d) {
+								frappe.model.remove_from_locals("Salary Slip", name);
+						});
+				}
 
-                        return frappe.call({
-                                method: "make_journal_entry1",
-                                doc: frm.doc,
-                                callback: function(r, rt) {
-                                        frm.refresh_fields();
-                                        if (r.message)
-                                                cur_frm.cscript.display_activity_log(r.message);
-                                },
-                                freeze: true,
-                                freeze_message: "Posting Journal.... Please Wait",
-                        });
-                })
-            }
-})
+				return frappe.call({
+						method: "make_journal_entry1",
+						doc: frm.doc,
+						callback: function(r, rt) {
+								frm.refresh_fields();
+								if (r.message)
+										cur_frm.cscript.display_activity_log(r.message);
+						},
+						freeze: true,
+						freeze_message: "Posting Journal.... Please Wait!!!",
+				});
+		})
+	}
+});
 
 
 //custom Scripts

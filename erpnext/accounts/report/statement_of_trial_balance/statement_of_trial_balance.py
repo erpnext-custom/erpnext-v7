@@ -60,15 +60,14 @@ def get_data(filters):
 		return None
 
 	accounts, accounts_by_name, parent_children_map = filter_accounts(accounts)
-
 	min_lft, max_rgt = frappe.db.sql("""select min(lft), max(rgt) from `tabAccount`
 		where company=%s""", (filters.company,))[0]
 
 	gl_entries_by_account = {}
 
-	set_gl_entries_by_account(filters.cost_center, filters.company, filters.from_date,
+	#added the parameter filters.business_activity, returns gl_entries_by_account
+	set_gl_entries_by_account(filters.cost_center, filters.business_activity, filters.company, filters.from_date,
 		filters.to_date, min_lft, max_rgt, gl_entries_by_account, ignore_closing_entries=not flt(filters.with_period_closing_entry))
-
 	opening_balances = get_opening_balances(filters)
 
 	total_row = calculate_values(accounts, gl_entries_by_account, opening_balances, filters)
@@ -90,22 +89,30 @@ def get_opening_balances(filters):
 
 def get_rootwise_opening_balances(filters, report_type):
 	additional_conditions = " and posting_date >= %(year_start_date)s" \
-		if report_type == "Profit and Loss" else ""
+		if report_type == "Profit and Loss" else " "
 
 	if not flt(filters.with_period_closing_entry):
 		additional_conditions += " and ifnull(voucher_type, '')!='Period Closing Voucher'"
 
-        if filters.cost_center:
-		cost_centers = get_child_cost_centers(filters.cost_center)
-                additional_conditions += " and cost_center IN %(cost_center)s"
+	 #added business_activity filter
+	if filters.business_activity:
+                additional_conditions += " and business_activity = '{0}'".format(filters.business_activity)
         else:
+                additional_conditions += " and 1 = 1 "
+	
+    	if filters.cost_center:
+		cost_centers = get_child_cost_centers(filters.cost_center)
+       		additional_conditions += " and cost_center IN %(cost_center)s"
+    
+	else:
 		cost_centers = filters.cost_center 
+	
 	gle = frappe.db.sql("""
 		select
 			account, sum(debit) as opening_debit, sum(credit) as opening_credit
 		from `tabGL Entry`
 		where
-			company=%(company)s 
+			company=%(company)s
 			{additional_conditions}
 			and (posting_date < %(from_date)s or ifnull(is_opening, 'No') = 'Yes')
 			and account in (select name from `tabAccount` where report_type=%(report_type)s)
@@ -117,12 +124,11 @@ def get_rootwise_opening_balances(filters, report_type):
 			"year_start_date": filters.year_start_date,
                         "cost_center": cost_centers
 		},
-		as_dict=True)
+		as_dict=True, debug =1)
 
 	opening = frappe._dict()
 	for d in gle:
 		opening.setdefault(d.account, d)
-
 	return opening
 
 def calculate_values(accounts, gl_entries_by_account, opening_balances, filters):

@@ -28,16 +28,6 @@ class ProcessIncrement(Document):
                 increment_date  = str(self.fiscal_year)+'-'+str(self.month)+'-01'
                 ### Ver 2.0 Ends
                 
-                '''
-                increment_month = ''
-                if self.month == '01':
-                        increment_month = 'January'
-                elif self.month == '07':
-                        increment_month = 'July'
-                else:
-                        frappe.throw(_("Increment cycle can only be processed for January/July."))
-                '''
-
 		emp_list = frappe.db.sql("""
 			select
                                 t1.name, t1.employee_subgroup, t1.company, t1.branch,
@@ -60,7 +50,6 @@ class ProcessIncrement(Document):
 			   and t2.is_active = 'Yes'
 		%s """% (increment_date, increment_date, increment_month,cond),as_dict=True)
 
-		#frappe.msgprint(str(emp_list))
 		return emp_list
 
 	def get_filter_condition(self):
@@ -95,7 +84,6 @@ class ProcessIncrement(Document):
 		emp_list = self.get_emp_list()
 		si_list = []
 		for emp in emp_list:
-                        #frappe.msgprint(_("Employee: {0}, Grade: {1}").format(emp.name, emp.employee_subgroup))
 			if not frappe.db.sql("""select name from `tabSalary Increment`
 					where docstatus!= 2 and employee = %s and month = %s and fiscal_year = %s and company = %s
 					""", (emp.name, self.month, self.fiscal_year, self.company)) and flt(emp.no_of_months) >= 3:

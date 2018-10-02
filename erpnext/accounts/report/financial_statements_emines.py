@@ -88,7 +88,7 @@ def get_label(periodicity, from_date, to_date):
 
 	return label
 
-def get_data(cost_center, company, root_type, balance_must_be, period_list,
+def get_data(cost_center, business_activity, company, root_type, balance_must_be, period_list,
 		accumulated_values=1, only_current_fiscal_year=True, ignore_closing_entries=False, show_zero_values=False):
 	accounts = get_accounts(company, root_type)
 	if not accounts:
@@ -102,7 +102,7 @@ def get_data(cost_center, company, root_type, balance_must_be, period_list,
 	for root in frappe.db.sql("""select lft, rgt from tabAccount
 			where root_type=%s and ifnull(parent_account, '') = ''""", root_type, as_dict=1):
 
-		set_gl_entries_by_account(cost_center, company,
+		set_gl_entries_by_account(cost_center, business_activity, company,
 			period_list[0]["year_start_date"] if only_current_fiscal_year else None,
 			period_list[-1]["to_date"],
 			root.lft, root.rgt,
@@ -265,7 +265,9 @@ def sort_root_accounts(roots):
 
 	roots.sort(compare_roots)
 
-def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft, root_rgt, gl_entries_by_account,
+#added parameter business_activity
+
+def set_gl_entries_by_account(cost_center, business_activity, company, from_date, to_date, root_lft, root_rgt, gl_entries_by_account,
 		ignore_closing_entries=False, open_date=None):
 	"""Returns a dict like { "account": [gl entries], ... }"""
 	additional_conditions = []
@@ -275,6 +277,17 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 
 	#if from_date:
 	#	additional_conditions.append("and posting_date >= %(from_date)s")
+	
+	'''if business_activity:
+		ba = " business_activity =   {0}".format(business_activity)
+	else:
+		ba = " 1 = 1 "
+		
+	frappe.msgprint("ba : {0}".format(ba))'''
+	if business_activity:
+                additional_conditions.append(" and business_activity = '{0}'".format(business_activity))
+        else:
+                additional_conditions.append(" and 1 = 1 ")
 
 	if from_date and to_date:
 		if open_date:
@@ -297,7 +310,8 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 				"lft": root_lft,
 				"rgt": root_rgt
 			},
-			as_dict=True)
+			as_dict=True, debug =1)
+
 	else:
 		cost_centers = get_child_cost_centers(cost_center);
 		additional_conditions.append("and cost_center IN %(cost_center)s")
@@ -315,7 +329,7 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 				"lft": root_lft,
 				"rgt": root_rgt
 			},
-			as_dict=True)
+			as_dict=True, debug = 1)
 
 	for entry in gl_entries:
 		gl_entries_by_account.setdefault(entry.account, []).append(entry)

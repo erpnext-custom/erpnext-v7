@@ -383,3 +383,14 @@ def filter_branch_wh(doctype, txt, searchfield, start, page_len, filters):
                 frappe.throw("Select Branch First")
 	return frappe.db.sql("select warehouse from `tabCost Center` where name = %s", get_branch_cc(filters.get("branch")))
 
+def get_cop_list(doctype, txt, searchfield, start, page_len, filters):
+        if not filters.get("branch") or not filters.get("item_code") or not filters.get("posting_date"):
+                frappe.throw("Select Item Code or Branch or Posting Date")
+	item_sub_group = frappe.db.get_value("Item", filters.get("item_code"), "item_sub_group")
+	if not item_sub_group:
+		frappe.db.sql("No Item Sub Group Assigned")
+	return frappe.db.sql("select a.parent from `tabCOP Branch` a, `tabCOP Rate Item` b where a.parent = b.parent and a.branch = %s and b.item_sub_group = %s and exists (select 1 from `tabCost of Production` where name = a.parent and %s between from_date and to_date)", (filters.get("branch"), str(item_sub_group), filters.get("posting_date")))
+
+
+
+

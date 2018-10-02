@@ -4,7 +4,13 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-2.0		  SSK		                   04/10/2017         Auto populating internal_work_history 
+2.0		  SHIV		                   04/10/2017         Auto populating internal_work_history
+2.0               SHIV                             15/08/2018         Auto populating employee_family_details
+2.0               SHIV                             03/09/2018         Following changes made
+                                                                        1) retirement_age moved from "HR Settings" to
+                                                                                "Employee Group" master.
+                                                                        2) health_contribution, employee_pf, employer_pf
+                                                                                moved from "HR Settings" to "Employment Group"
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -20,7 +26,7 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.utilities.transaction_base import delete_events
 from erpnext.custom_utils import get_year_start_date, get_year_end_date, round5
 from frappe.utils.data import get_first_day, get_last_day, add_days
-from frappe.utils import cint, flt
+
 
 class EmployeeUserDisabledError(frappe.ValidationError):
 	pass
@@ -35,12 +41,10 @@ class Employee(Document):
 			if naming_method == 'Naming Series':
 				if not self.date_of_joining:
 					frappe.throw("Date of Joining not Set!")
-				abbr = frappe.db.get_value("Company", self.company, "abbr")
-				naming_series = str(abbr) + "." + str(getdate(self.date_of_joining).year)[2:4]	
+				naming_series = "NRDCL" + str(getdate(self.date_of_joining).year)[2:4]	
 				x = make_autoname(str(naming_series) + '.###')
 				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
-				start_id = cint(len(str(abbr))) + 2
-				eid = x[:start_id] + y[:2] + x[start_id:start_id + 3]
+				eid = x[:7] + y[:2] + x[7:10]
 				self.name = eid
 				self.yearid = x
 			elif naming_method == 'Employee Number':
@@ -55,7 +59,8 @@ class Employee(Document):
 		self.employee = self.name
 		if self.reports_to:
 			self.approver_name = frappe.db.get_value("Employee", self.reports_to, "employee_name")
-		self.cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
+		if self.cost_center:
+			self.branch = frappe.db.get_value("Cost Center", self.cost_center, "branch")
 		if self.branch:
                         self.gis_policy_number = frappe.db.get_value("Branch", self.branch, "gis_policy_number")
                         
@@ -76,8 +81,10 @@ class Employee(Document):
 				frappe.permissions.remove_user_permission(
 					"Employee", self.name, existing_user_id)
 
-		# Following method introducted by SHIV on 04/10/2017
+		# Following method introduced by SHIV on 04/10/2017
 		self.populate_work_history()
+		# Following method introduced by SHIV on 15/08/2018
+		self.populate_family_details()
     
 	def before_save(self):
 		if self.branch != self.get_db_value("branch") and  self.user_id:
@@ -87,8 +94,7 @@ class Employee(Document):
 		if self.user_id:
 			self.update_user()
 			self.update_user_permissions()
-		#REMOVE WHEN FINAL
-		#self.post_casual_leave()
+		self.post_casual_leave()
 
         # Following method introducted by SHIV on 04/10/2017
         def populate_work_history(self):
@@ -158,7 +164,28 @@ class Employee(Document):
                                                         "modified_by": frappe.session.user,
                                                         "modified": nowdate()
                                 })
-        
+
+        def populate_family_details(self):
+                exists = sum(1 if i.relationship == "Self" else 0 for i in self.employee_family_details)
+                #if not self.employee_family_details or not frappe.db.exists("Employee Family Details", {"parent": self.name, "relationship": "Self"}):
+                if not exists:
+                        self.append("employee_family_details",{
+                                                "relationship": "Self",
+                                                "full_name": self.employee_name,
+                                                "gender": self.gender,
+                                                "date_of_birth": self.date_of_birth,
+                                                "cid_no": self.passport_number,
+                                                "district_name": self.dzongkhag,
+                                                "city_name": self.gewog,
+                                                "village_name": self.village,
+                                                "owner": frappe.session.user,
+                                                "creation": nowdate(),
+                                                "modified_by": frappe.session.user,
+                                                "modified": nowdate()
+                        })
+                else:
+                        pass
+                
 	def update_user_permissions(self):
 		if self.branch != self.get_db_value("branch") and  self.user_id:
 			frappe.permissions.remove_user_permission("Branch", self.get_db_value("branch"), self.user_id)           
@@ -319,15 +346,23 @@ def get_timeline_data(doctype, name):
 			group by att_date''', name))
 
 @frappe.whitelist()
-def get_retirement_date(date_of_birth=None, employment_type=None):
+def get_retirement_date(date_of_birth=None, employee_group=None):
 	import datetime
 	ret = {}
-	if date_of_birth and employment_type:
+	if date_of_birth and employee_group:
 		try:
+                        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                        # Following code commented by SHIV on 2018/09/05
+                        '''
 			if employment_type in ['Executive','Chief Executive Officer']:
 				retirement_age = int(frappe.db.get_single_value("HR Settings", "contract_retirement_age") or 60)
 			else:
 				retirement_age = int(frappe.db.get_single_value("HR Settings", "retirement_age") or 58)
+			'''
+                        # Following code added by SHIV on 2018/09/05
+                        retirement_age = int(frappe.db.get_value("Employee Group", employee_group, "retirement_age"))
+                        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+                        
 			dt = add_years(getdate(date_of_birth),retirement_age)
 			ret = {'date_of_retirement': dt.strftime('%Y-%m-%d')}
 		except ValueError:
