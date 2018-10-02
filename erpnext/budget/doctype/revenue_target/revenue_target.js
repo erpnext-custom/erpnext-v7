@@ -52,7 +52,19 @@ frappe.ui.form.on('Revenue Target', {
 				frappe.set_route("query-report", "Revenue Target");
 			}
 		);
-	}
+	},
+	
+	get_accounts: function(frm){
+                return frappe.call({
+                        method: "get_accounts",
+                        doc: frm.doc,
+                        callback: function(r, rt){
+                                frm.refresh_field("revenue_target_account");
+                                frm.refresh_fields();
+                        }
+                });
+        },
+
 });
 
 frappe.ui.form.on('Revenue Target Account',{

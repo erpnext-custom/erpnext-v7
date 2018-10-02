@@ -112,7 +112,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "depends_on": "eval:doc.owned_by=='Others'", 
@@ -1551,7 +1551,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-09-26 11:49:57.519755", 
+ "modified": "2018-09-28 11:36:24.801653", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Job Card", 

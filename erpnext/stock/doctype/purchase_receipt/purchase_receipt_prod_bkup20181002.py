@@ -1,13 +1,6 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-2.0		  SHIV		                   28/08/2018         Accounting entry for Fixed Asset during purchase receipt
-                                                                        added.
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
+
 from __future__ import unicode_literals
 import frappe
 
@@ -235,12 +228,6 @@ class PurchaseReceipt(BuyingController):
 		stock_rbnb = self.get_company_default("stock_received_but_not_billed")
 		expenses_included_in_valuation = self.get_company_default("expenses_included_in_valuation")
 
-                # Ver 2.0 Beings, Following code added by SHIV on 2018/08/28
-                stock_arbnb = self.get_company_default("stock_asset_received_but_not_billed")
-                stock_rbnb_currency  = get_account_currency(stock_rbnb) if stock_rbnb else ""
-                stock_arbnb_currency = get_account_currency(stock_arbnb) if stock_arbnb else ""
-                # Ver 2.0 Ends
-
 		gl_entries = []
 		warehouse_with_no_account = []
 		negative_expense_to_be_booked = 0.0
@@ -321,31 +308,7 @@ class PurchaseReceipt(BuyingController):
 				elif d.warehouse not in warehouse_with_no_account or \
 					d.rejected_warehouse not in warehouse_with_no_account:
 						warehouse_with_no_account.append(d.warehouse)
-                        elif d.item_code and frappe.db.exists("Item", {"name": d.item_code, "is_fixed_asset": 1}):
-                        # Entry for Assets
-                        # Ver 2.0, elif condition added by SHIV on 2018/08/28                                
-                                if stock_arbnb and stock_rbnb:
-                                        gl_entries.append(self.get_gl_dict({
-                                                "account": stock_arbnb,
-                                                "against": stock_rbnb,
-                                                "cost_center": d.cost_center,
-                                                "remarks": self.get("remarks") or _("Accounting Entry for Asset"),
-                                                "debit": flt(d.base_net_amount, d.precision("base_net_amount")),
-						"debit_in_account_currency": flt(d.base_net_amount, d.precision("base_net_amount")) \
-							if stock_arbnb_currency==self.company_currency else flt(d.net_amount, d.precision("net_amount")),
-                                                "project": d.project
-                                        }, stock_arbnb_currency))
 
-                                        gl_entries.append(self.get_gl_dict({
-                                                "account": stock_rbnb,
-                                                "cost_center": d.cost_center,
-                                                "remarks": self.get("remarks") or _("Accounting Entry"),
-                                                "credit": flt(d.base_net_amount, d.precision("base_net_amount")),
-						"credit_in_account_currency": flt(d.base_net_amount, d.precision("base_net_amount")) \
-							if stock_rbnb_currency==self.company_currency else flt(d.net_amount, d.precision("net_amount")),
-                                                "project": d.project
-                                        }, stock_rbnb_currency))
-                        
 		# Cost center-wise amount breakup for other charges included for valuation
 		valuation_tax = {}
 		for tax in self.get("taxes"):
@@ -470,10 +433,7 @@ def make_purchase_invoice(source_name, target_doc=None):
 		target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0)
 		cat = frappe.db.get_value("Item", source_doc.item_code, "item_group")
 		if cat == 'Fixed Asset':
-			# Ver 2.0 Begins, following line is commented and replaced by subsequen by SHIV on 2018/08/28
-			#expense_account = source_parent.get_company_default("stock_asset_received_but_not_billed")
-			expense_account = source_parent.get_company_default("stock_received_but_not_billed")
-			# Ver 2.0 Ends
+			expense_account = source_parent.get_company_default("stock_asset_received_but_not_billed")
 			if not expense_account:
 				frappe.throw("Setup Stock Asset Received But Not Billed in Company Setting")
 			target_doc.expense_account = expense_account

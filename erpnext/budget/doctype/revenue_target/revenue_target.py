@@ -41,7 +41,15 @@ class RevenueTarget(Document):
                 self.tot_adjustment_amount = tot_adjustment_amount
                 self.tot_net_target_amount = flt(tot_target_amount) + flt(tot_adjustment_amount)
                 
+	def get_accounts(self):
+                query = "select name as account, account_code from tabAccount where account_type in (\'Income Account\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes')"
+                entries = frappe.db.sql(query, as_dict=True)
+                self.set('revenue_target_account', [])
 
+                for d in entries:
+                        d.initial_budget = 0
+                        row = self.append('revenue_target_account', {})
+                        row.update(d)
 @frappe.whitelist()
 def make_adjustment_entry(source_name, target_doc=None):
         doc = get_mapped_doc("Revenue Target", source_name, {
