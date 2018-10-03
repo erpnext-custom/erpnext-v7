@@ -22,8 +22,6 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.stock.stock_balance import update_bin_qty, get_indented_qty
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.manufacturing.doctype.production_order.production_order import get_item_details
-from frappe.model.naming import make_autoname
-from erpnext.custom_autoname import get_auto_name
 from erpnext.custom_utils import check_future_date
 
 # form_grid_templates = {
@@ -31,9 +29,6 @@ from erpnext.custom_utils import check_future_date
 # }
 
 class MaterialRequest(BuyingController):
-	def autoname(self):
-		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
-
 	def get_feed(self):
 		return _("{0}: {1}").format(self.status, self.material_request_type)
 

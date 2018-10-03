@@ -39,7 +39,7 @@ from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.document import Document
 from erpnext.hr.utils import set_employee_name
-from erpnext.hr.hr_custom_functions import get_month_details, get_employee_group_settings, get_salary_tax
+from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settings, get_salary_tax
 from erpnext.accounts.accounts_custom_functions import get_number_of_days
 from erpnext.custom_utils import nvl
 from frappe.desk.reportview import get_match_cond
@@ -196,7 +196,7 @@ class SalaryStructure(Document):
                 
                 basic_pay = comm_allowance = gis_amt = pf_amt = health_cont_amt = tax_amt = 0 
                 total_earning = total_deduction = net_pay = 0
-                settings      = get_employee_group_settings(self.employee)
+                settings      = get_payroll_settings(self.employee)
                 tbl_list      = {'earnings': 'Earning', 'deductions': 'Deduction'}
 
                 for ed in ['earnings','deductions']:
@@ -293,7 +293,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                 gross_amt = 0.00
 		comm_amt  = 0.00
 		basic_amt = 0.00               
-                settings  = get_employee_group_settings(source.employee)
+                settings  = get_payroll_settings(source.employee)
 		m_details = get_month_details(target_doc.fiscal_year, target_doc.month)
 
                 target.gross_pay = 0
@@ -360,11 +360,12 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                                 outstanding_amt = flt(d.total_outstanding_amount) - flt(amount)
 
                                 # Leave without pay
-                                calc_amount = 0
-                                if d.depends_on_lwp:
-                                        calc_amount = round(flt(amount)*flt(payment_days)/flt(days_in_month))
-                                else:
-                                        calc_amount = round(flt(amount)*(flt(working_days)/flt(days_in_month)))
+                                calc_amount = flt(amount)
+                                if key == "earnings":
+                                        if d.depends_on_lwp:
+                                                calc_amount = round(flt(amount)*flt(payment_days)/flt(days_in_month))
+                                        else:
+                                                calc_amount = round(flt(amount)*(flt(working_days)/flt(days_in_month)))
                                 
                                 calc_map.setdefault(key,[]).append({
                                         'salary_component'         : d.salary_component,

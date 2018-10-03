@@ -285,3 +285,8 @@ def sendmail(recipent, subject, message, sender=None):
 		frappe.sendmail(recipients=recipent, sender=None, subject=subject, message=message)
 	except:
 		pass
+
+def get_settings_value(setting_dt, company, field_name):
+	value = frappe.db.sql("select {0} from `tab{1}` where company = '{2}'".format(field_name, setting_dt, company))
+	return value and value[0][0] or None
+

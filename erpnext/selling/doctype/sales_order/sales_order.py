@@ -15,7 +15,7 @@ from erpnext.controllers.recurring_document import month_map, get_next_date
 from erpnext.controllers.selling_controller import SellingController
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
-from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date, get_settings_value
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -407,7 +407,7 @@ def make_delivery_note(source_name, target_doc=None):
 		target.qty = flt(source.qty) - flt(source.delivered_qty)
 		expense_account,is_prod = frappe.db.get_value("Item", source.item_code, ["expense_account", "is_production_item"])
 		if is_prod:
-			expense_account = frappe.db.get_value("Production Account Settings", self.company, "default_production_account")
+			expense_account = get_settings_value("Production Account Settings", self.company, "default_production_account")
 			if not expense_account:
 				frappe.throw("Setup Default Production Account in Production Account Settings")
 		target.expense_account = expense_account

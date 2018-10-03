@@ -39,9 +39,6 @@ class PurchaseInvoice(BuyingController):
 			'overflow_type': 'billing'
 		}]
 	
-	def autoname(self):
-		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
-
 	def validate(self):
 		check_future_date(self.posting_date)
 		if not self.buying_cost_center:

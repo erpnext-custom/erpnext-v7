@@ -42,9 +42,6 @@ class PurchaseOrder(BuyingController):
 			'overflow_type': 'order'
 		}]
 
-	def autoname(self):
-                self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
-
 	def validate(self):
 		check_future_date(self.transaction_date)
 		super(PurchaseOrder, self).validate()

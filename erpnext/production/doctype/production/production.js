@@ -69,6 +69,15 @@ frappe.ui.form.on("Production", "refresh", function(frm) {
             }
         };
     });
+    cur_frm.set_query("adhoc_production", function() {
+        return {
+            "filters": {
+                "branch": frm.doc.branch,
+                "location": frm.doc.location,
+		"is_disabled": 0
+            }
+        };
+    });
 })
 
 frappe.ui.form.on("Production Product Item", { 

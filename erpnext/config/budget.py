@@ -23,13 +23,10 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Supplementary Budget",
-					"description": "Supplementary Budget",
-					"hide_count": True
 				},
 				{
 					"type": "doctype",
 					"name": "Budget Reappropiation",
-					"label": "Budget Reappropiation Tool"
 				},
 			]
 		},

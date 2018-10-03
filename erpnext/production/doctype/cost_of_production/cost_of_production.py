@@ -13,6 +13,7 @@ class CostofProduction(Document):
 
 	def on_update(self):
 		self.check_duplicate_entries()
+		self.check_duplicate_settings()
 
 	def check_cop_rate(self):
 		for a in self.item_rates:
@@ -27,6 +28,19 @@ class CostofProduction(Document):
 		cops = frappe.db.sql("select item_sub_group, count(item_sub_group) as num from `tabCOP Rate Item` where parent = %s group by item_sub_group having num > 1", self.name, as_dict=1)
 		for a in cops:
 			frappe.throw("Item Sub Group <b>" + str(a.item_sub_group) + "</b> has been defined more than once")
+
+	def check_duplicate_settings(self):
+		#Check branch duplicate
+		item_list = []
+		for a in self.item_rates:
+			item_list.append(a.item_sub_group)
+
+		for a in frappe.db.sql("select a.branch, count(a.branch) as num, b.name from `tabCOP Branch` a, `tabCost of Production` b where a.parent = b.name and %s between b.from_date and b.to_date or %s between b.from_date and b.to_date group by branch having num > 1", (self.from_date, self.to_date), as_dict=1):
+			#check for Item duplicate
+			doc = frappe.get_doc("Cost of Production", a.name)
+			for b in doc.item_rates:
+				if b.item_sub_group in item_list:
+					frappe.throw("<b>"+str(b.item_sub_group)+"</b> already defined for the same period in <b>"+str(a.name)+"</b>")
 
 @frappe.whitelist()
 def get_cop_amount(cop, branch, posting_date, item_code):

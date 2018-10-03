@@ -6,15 +6,18 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt
+from erpnext.custom_utils import check_future_date, get_branch_cc, get_settings_value
 
 class MarkingList(Document):
 	def validate(self):
+		check_future_date(self.posting_date)
 		self.validate_items()
 
 	def on_update(self):
 		self.calculate_total()
 		
 	def validate_items(self):
+		self.cost_center = get_branch_cc(self.branch)
 		for a in self.items:
 			if not flt(a.qty) > 0:
 				frappe.throw("Volume cannot be zero or less")
@@ -30,15 +33,18 @@ class MarkingList(Document):
                 for d in records:
 			d.qty_cft = d.qty_m3 * 35.315
 			if d.timber_type == "Conifer":
-				d.log_percent = 60
-				d.firewood_percent = 40
+				d.log_percent = get_settings_value("Production Settings", self.company, "log_percent_conifer")
+				d.firewood_percent = get_settings_value("Production Settings", self.company, "firewood_percent_conifer")
 			else:
-				d.log_percent = 40
-				d.firewood_percent = 60
+				d.log_percent = get_settings_value("Production Settings", self.company, "log_percent_broadleaf")
+				d.firewood_percent = get_settings_value("Production Settings", self.company, "firewood_percent_broadleaf")
 			
 			#Change this to get from class
-			d.log_rate = 12
-			d.firewood_rate = 10
+			royalty_rates = frappe.db.sql("select log_rate, firewood_rate from `tabRoyal Rate` where %s between from_date and ifnull(to_date, now()) and parent = %s", (self.posting_date, d.timber_class), as_dict=1)
+			if not royalty_rates:
+				frappe.throw("Royalty Rate not defined. Please define in Timber Class")
+			d.log_rate = flt(royalty_rates[0].log_rate)
+			d.firewood_rate = flt(royalty_rates[0].firewood_rate)
 
 			d.log_amount = d.qty_cft * d.log_rate * flt(d.log_percent)/100 
 			d.firewood_amount = d.qty_m3 * d.firewood_rate * flt(d.firewood_percent)/100 
@@ -50,6 +56,8 @@ class MarkingList(Document):
                         row.update(d)
 			row.save()
 
+		if total_amount <= 0:
+			frappe.throw("Total Royalty Amount cannot be zero or less")
 		self.db_set("total_amount", total_amount)
 		frappe.reload_doctype(self.doctype)
 

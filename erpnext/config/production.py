@@ -25,6 +25,10 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Adhoc Production",
+				},
+				{
+					"type": "doctype",
 					"name": "Timber Class",
 				},
 				{
@@ -36,9 +40,19 @@ def get_data():
 					"name": "Item",
 					"label": "Material"
 				},
+			]
+		},
+		{
+			"label": _("Settings"),
+			"icon": "icon-star",
+			"items": [
 				{
 					"type": "doctype",
 					"name": "Cost of Production",
+				},
+				{
+					"type": "doctype",
+					"name": "Production Settings",
 				},
 			]
 		},

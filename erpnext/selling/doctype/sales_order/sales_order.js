@@ -9,10 +9,10 @@ frappe.ui.form.on("Sales Order", {
 			return erpnext.queries.warehouse(frm.doc);
 		});
 		
-		if(!frm.doc.selling_price_list) {
+		/*if(!frm.doc.selling_price_list) {
 			//set default price list
 			frm.set_value("selling_price_list", "Standard Selling")
-		}
+		}*/
 
 		// formatter for material request item
 		frm.set_indicator_formatter('item_code',
@@ -357,6 +357,15 @@ cur_frm.cscript.selling_price_template = function(doc) {
 	       frappe.meta.get_docfield("Sales Order Item", "item_code", cur_frm.doc.name).read_only = 1;
 	       refresh_field("items");
 	}
+}
+
+//Added dynamic fetch to list only the relevent selling_price template
+cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+                query: "erpnext.controllers.queries.get_selling_price_list",
+                filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch}
+        }
 }
 
 

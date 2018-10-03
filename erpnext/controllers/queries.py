@@ -392,5 +392,9 @@ def get_cop_list(doctype, txt, searchfield, start, page_len, filters):
 	return frappe.db.sql("select a.parent from `tabCOP Branch` a, `tabCOP Rate Item` b where a.parent = b.parent and a.branch = %s and b.item_sub_group = %s and exists (select 1 from `tabCost of Production` where name = a.parent and %s between from_date and to_date)", (filters.get("branch"), str(item_sub_group), filters.get("posting_date")))
 
 
-
+#added the query to select custom selling price
+def get_selling_price_list(doctype, branch, transaction_date, item_code, filters, a = None):
+	frappe.msgprint("this is called")
+	if not filters.get("branch") or not filters.get("item_code") or not filters.get("transaction_date"):
+                frappe.throw("Select Item Code or Branch or Posting Date")
 

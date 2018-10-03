@@ -8,7 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cstr, flt, fmt_money, formatdate, nowtime, getdate
 from erpnext.accounts.utils import get_fiscal_year
-from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, prepare_sl, check_budget_available
+from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, prepare_sl, check_budget_available, get_settings_value
 from erpnext.controllers.stock_controller import StockController
 from erpnext.stock.utils import get_stock_balance
 
@@ -16,9 +16,16 @@ class Production(StockController):
 	def validate(self):
 		check_future_date(self.posting_date)
 		self.check_cop()
+		self.validate_data()
 		self.validate_warehouse()
 		self.validate_items()
 		self.validate_posting_time()
+
+	def validate_data(self):
+		if self.production_type == "Adhoc" and not self.adhoc_production:
+			frappe.throw("Select Adhoc Production to Proceed")
+		if self.production_type == "Planned":
+			self.adhoc_production = None
 
 	def validate_warehouse(self):
 		self.validate_warehouse_branch(self.warehouse, self.branch)
@@ -49,6 +56,8 @@ class Production(StockController):
 			if not cop:
 				frappe.throw("COP Rate is not defined for your Item")
 			a.cop = cop[0].cop_amount
+			if flt(a.cop) <= 0:
+				frappe.throw("COP Cannot be zero or less")
 
 	def on_submit(self):
 		self.check_cop()
@@ -98,7 +107,7 @@ class Production(StockController):
 		if not wh_account:
 			frappe.throw(str(self.warehouse) + " is not linked to any account.")
 
-		expense_account = frappe.db.get_value("Production Account Settings", self.company, "default_production_account")
+		expense_account = get_settings_value("Production Account Settings", self.company, "default_production_account")
 		if not expense_account:
                         frappe.throw("Setup Default Production Account in Production Account Settings")
 
@@ -202,6 +211,8 @@ class Production(StockController):
 			doc.warehouse = self.warehouse
 			doc.posting_date = str(self.posting_date) + " " + str(self.posting_time)
 			doc.ref_doc = self.name
+			doc.production_type = self.production_type
+			doc.adhoc_production = self.adhoc_production
 			doc.submit()
 
 	def delete_production_entry(self):

@@ -55,9 +55,6 @@ class PurchaseReceipt(BuyingController):
 			'extra_cond': """ and exists (select name from `tabPurchase Receipt` where name=`tabPurchase Receipt Item`.parent and is_return=1)"""
 		}]
 
-	def autoname(self):
-		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
-
 	def validate(self):
 		check_future_date(self.posting_date)
 		super(PurchaseReceipt, self).validate()

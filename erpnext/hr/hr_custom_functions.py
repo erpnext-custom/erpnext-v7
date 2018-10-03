@@ -13,10 +13,101 @@ Version          Author            CreatedOn          ModifiedOn          Remark
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, cint, getdate, date_diff
+from frappe.utils import flt, cint, getdate, date_diff, nowdate
 from frappe.utils.data import get_first_day, get_last_day, add_days
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
 import json
+import logging
+
+# ++++++++++++++++++++ VER#2.0#CDCL#886 BEGINS ++++++++++++++++++++
+# VER#2.0#CDCL#886: Following method introduced by SHIV on 02/10/2018
+def post_leave_credits(today=None):
+        '''
+                This method allocates leaves in bulk as per the leave credits defined in Employee Group master.
+                It is mainly used for allocating monthly and yearly leave credits automatically through hooks.py.
+                However, it can also be used for allocating manually if in case the automatic allocation failed
+                for some reason.
+
+                To run manually: Just pass the first day of the month as follows. Given example allocates all
+                        leaves except Earned Leave for the month and year of date passed. Where as 
+
+                        EXAMPLE:
+                        bench execute erpnext.hr.hr_custom_functions.post_leave_credits --args "'2019-01-01',"
+        '''
+
+        # Logging
+        logging.basicConfig(format='%(asctime)s|%(name)s|%(levelname)s|%(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
+        logger = logging.getLogger(__name__)
+        
+        today      = getdate(today) if today else getdate(nowdate())
+        start_date = ''
+        end_date   = ''
+
+        first_day_of_month = 1 if today.day == 1 else 0
+        first_day_of_year  = 1 if today.day == 1 and today.month == 1 else 0
+
+        if first_day_of_month or first_day_of_year:
+                elist = frappe.db.sql("""
+                        select t1.name, t1.employee_name,
+                                t2.leave_type, t2.credits_per_month,
+                                t2.credits_per_year,
+                                t3.is_carry_forward
+                        from `tabEmployee` as t1, `tabEmployee Group Item` as t2, `tabLeave Type` as t3
+                        where t1.status = 'Active'
+                        and t1.employee_group = t2.parent
+                        and (t2.credits_per_month > 0 or t2.credits_per_year > 0)
+                        and t3.name = t2.leave_type
+                        order by t1.name, t2.leave_type
+                """, as_dict=1)
+
+                for e in elist:
+                        leave_allocation = []
+                        if first_day_of_month and flt(e.credits_per_month) > 0:
+                                # For Earned Leaved monthly credits are given for previous month
+                                if e.leave_type == "Earned Leave":
+                                        start_date = get_first_day(add_days(today, -20))
+                                        end_date   = get_last_day(start_date)
+                                else:
+                                        start_date = get_first_day(today)
+                                        end_date = get_last_day(today)
+
+                                leave_allocation.append({
+                                        'from_date': str(start_date),
+                                        'to_date': str(end_date),
+                                        'new_leaves_allocated': flt(e.credits_per_month)
+                                })
+
+                        if first_day_of_year and flt(e.credits_per_year) > 0:
+                                start_date = get_year_start_date(add_days(today,10))
+                                end_date   = get_year_end_date(start_date)
+
+                                leave_allocation.append({
+                                        'from_date': str(start_date),
+                                        'to_date': str(end_date),
+                                        'new_leaves_allocated': flt(e.credits_per_year)
+                                })
+
+                        for la in leave_allocation:
+                                if not frappe.db.exists("Leave Allocation", {"employee": e.name, "leave_type": e.leave_type, "from_date": la['from_date'], "to_date": la['to_date'], "docstatus": ("<",2)}):
+                                        try:
+                                                doc = frappe.new_doc("Leave Allocation")
+                                                doc.employee             = e.name
+                                                doc.employee_name        = e.employee_name
+                                                doc.leave_type           = e.leave_type
+                                                doc.from_date            = la['from_date']
+                                                doc.to_date              = la['to_date']
+                                                doc.carry_forward        = cint(e.is_carry_forward)
+                                                doc.new_leaves_allocated = flt(la['new_leaves_allocated'])
+                                                doc.submit()
+                                                logger.info("{0}|{1}|{2}|{3}|{4}".format("SUCCESS",e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
+                                        except Exception as ex:
+                                                logger.exception("{0}|{1}|{2}|{3}|{4}".format("FAILED",e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
+                                else:
+                                        logger.warning("{0}|{1}|{2}|{3}|{4}".format("ALREADY ALLOCATED",e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
+        else:
+                logger.info("Date {0} is neither beginning of the month nor year".format(str(today)))
+                return 0
+# +++++++++++++++++++++ VER#2.0#CDCL#886 ENDS +++++++++++++++++++++
 
 ##
 # Post casual leave on the first day of every month
@@ -144,7 +235,7 @@ def get_employee_gis(employee):
 
 # VER#2.0#CDCL#886: Following code is added by SHIV on 06/09/2018
 @frappe.whitelist()
-def get_employee_group_settings(employee=None):
+def get_payroll_settings(employee=None):
         settings = {}
         if employee:
                 settings = frappe.db.sql("""
