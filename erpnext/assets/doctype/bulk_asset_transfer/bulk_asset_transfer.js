@@ -35,3 +35,27 @@ frappe.ui.form.on('Bulk Asset Transfer', {
 		});
 	}
 });
+
+cur_frm.fields_dict['items'].grid.get_field('asset_code').get_query = function(frm, cdt, cdn) {
+        if(frm.purpose == "Cost Center") {
+                return {
+                        filters: [
+                        ['Asset', 'cost_center', '=', frm.cost_center],
+                        ]
+                }
+        }
+        else if(frm.purpose == "Custodian") {
+                return {
+                        filters: [
+                        ['Asset', 'issued_to', '=', frm.current_custodian],
+                        ]
+                }
+        }
+	else {
+		return {
+			filters: [
+				["Asset", 'cost_center', '=', "NOTFOUND"]
+			]
+		}
+	}
+}
