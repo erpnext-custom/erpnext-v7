@@ -359,15 +359,32 @@ cur_frm.cscript.selling_price_template = function(doc) {
 	}
 }
 
-//Added dynamic fetch to list only the relevent selling_price template
+//auto list the price_templates based on branch, transaction_date, item_code
 cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = function(frm, cdt, cdn) {
         var d = locals[cdt][cdn];
         return {
-                query: "erpnext.controllers.queries.get_selling_price_list",
+                query: "erpnext.controllers.queries.price_template_list",
                 filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch}
         }
 }
 
 
-
-
+// on_selection of price_template, auto load the seling rate for items
+frappe.ui.form.on("Sales Order Item", {
+        "price_template": function(frm, cdt, cdn) {
+                d = locals[cdt][cdn]
+                frappe.call({
+                        method: "erpnext.production.doctype.selling_price.selling_price.get_selling_rate",
+                        args: {
+                                "price_list": d.price_template,
+                                "branch": cur_frm.doc.branch,
+                                "item_code": d.item_code,
+                                "transaction_date": cur_frm.doc.transaction_date
+                        },
+                        callback: function(r) {
+                                frappe.model.set_value(cdt, cdn, "price_list_rate", r.message)
+                                cur_frm.refresh_field("price_list_rate")
+                        }
+                })
+        }
+})

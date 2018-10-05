@@ -41,10 +41,10 @@ class Employee(Document):
 			if naming_method == 'Naming Series':
 				if not self.date_of_joining:
 					frappe.throw("Date of Joining not Set!")
-				naming_series = "NRDCL" + str(getdate(self.date_of_joining).year)[2:4]	
+				naming_series = "CDCL" + str(getdate(self.date_of_joining).year)[2:4]	
 				x = make_autoname(str(naming_series) + '.###')
 				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
-				eid = x[:7] + y[:2] + x[7:10]
+				eid = x[:6] + y[:2] + x[6:9]
 				self.name = eid
 				self.yearid = x
 			elif naming_method == 'Employee Number':
@@ -67,6 +67,8 @@ class Employee(Document):
 		self.validate_date()
 		self.validate_email()
 		self.validate_status()
+		# Following method introduced by SHIV on 04/10/2018
+		self.validate_employment()
 		self.validate_employee_leave_approver()
 		self.validate_reports_to()
 	
@@ -96,6 +98,13 @@ class Employee(Document):
 			self.update_user_permissions()
 		self.post_casual_leave()
 
+        def validate_employment(self):
+                if not frappe.db.exists("Employment Type Item", {"parent": self.employment_type,"employee_group": self.employee_group}):
+                        frappe.throw(_("Employee group `<b>{0}</b>` does not fall under employment type `<b>{1}</b>`").format(self.employee_group, self.employment_type),title="Invalid Data")
+                        
+                if not frappe.db.exists("Employee Grade", {"name": self.employee_subgroup,"employee_group": self.employee_group}):
+                        frappe.throw(_("Employee grade `<b>{0}</b>` does not fall under employee group `<b>{1}</b>`").format(self.employee_subgroup, self.employee_group),title="Invalid Data")
+        
         # Following method introducted by SHIV on 04/10/2017
         def populate_work_history(self):
                 if not self.internal_work_history:
@@ -313,6 +322,7 @@ class Employee(Document):
 		delete_events(self.doctype, self.name)
 
 	def post_casual_leave(self):
+                
 		if not self.casual_leave_allocated:
 			date = getdate(self.date_of_joining)
 			start = date;
@@ -447,3 +457,9 @@ def get_holiday_list_for_employee(employee, raise_exception=True):
 		frappe.throw(_('Please set a default Holiday List for Branch {0} or Company {1}').format(branch, company))
 
 	return holiday_list
+
+def get_employee_groups(doctype, txt, searchfield, start, page_len, filters):
+        return frappe.db.sql("""select employee_group
+                from `tabEmployment Type Item`
+                where parent = '{0}'
+                """.format(filters.get("employment_type")))

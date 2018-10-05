@@ -1,6 +1,8 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
+cur_frm.add_fetch("target_custodian", "user_id", "target_user_id")
+
 frappe.ui.form.on('Asset Movement', {
 	refresh: function(frm) {
 		if(frm.doc.docstatus == 1) {

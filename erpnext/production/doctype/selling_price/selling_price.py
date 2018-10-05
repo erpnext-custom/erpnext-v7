@@ -65,3 +65,19 @@ def get_cop_amount(cop, branch, posting_date, item_code):
 	return cop_amount and flt(cop_amount[0].cop_amount) or 0.0
 
 
+@frappe.whitelist()
+def get_selling_rate(price_list, branch, item_code, transaction_date):
+        if not branch or not item_code or not transaction_date:
+                frappe.throw("Select Item Code or Branch or Posting Date")
+        item_species = frappe.db.get_value("Item", item_code, "species")
+        doc = frappe.get_doc("Timber Species", item_species)
+        rate = frappe.db.sql("""
+                        select case when b.price_based_on = 'Item' and b.particular = '{0}' and 
+                        b.parent = '{1}' and b.particular = '{0}'
+                        then b.selling_price
+                        when b.price_based_on = 'Timber Class' and b.parent = '{1}' and b.particular = '{2}' and b.timber_type = '{3}'
+                        then b.selling_price
+                        end as rate
+                        from `tabSelling Price Rate` b  where b.parent = '{1}'""".format(item_code, price_list, doc.timber_class, doc.timber_type), debug =1)
+        return rate
+

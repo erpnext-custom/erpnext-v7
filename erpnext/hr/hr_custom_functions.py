@@ -21,19 +21,26 @@ import logging
 
 # ++++++++++++++++++++ VER#2.0#CDCL#886 BEGINS ++++++++++++++++++++
 # VER#2.0#CDCL#886: Following method introduced by SHIV on 02/10/2018
-def post_leave_credits(today=None):
-        '''
-                This method allocates leaves in bulk as per the leave credits defined in Employee Group master.
-                It is mainly used for allocating monthly and yearly leave credits automatically through hooks.py.
-                However, it can also be used for allocating manually if in case the automatic allocation failed
-                for some reason.
+def post_leave_credits(today=None, employee=None):
+        """
+           :param today: First day of the month
+           :param employee: Employee id for individual allocation
+           
+           This method allocates leaves in bulk as per the leave credits defined in Employee Group master.
+           It is mainly used for allocating monthly and yearly leave credits automatically through hooks.py.
+           However, it can also be used for allocating manually if in case the automatic allocation failed
+           for some reason.
 
-                To run manually: Just pass the first day of the month as follows. Given example allocates all
-                        leaves except Earned Leave for the month and year of date passed. Where as 
+           To run manually: Just pass the first day of the month to this method as argument. Following example
+                   allocates monthly credits for the period from '2019-01-01' till '2019-01-31', and yearly
+                   credits for the period from '2019-01-01' till '2019-12-31' as defined in Employee Group
+                   master for all the leave types except `Earned Leave`. Monthly credits for `Earned Leave`
+                   are allocated for the previous month i.e from '2018-12-01' till '2018-12-31'.
 
-                        EXAMPLE:
+                   Example:
+                        # Executing from console
                         bench execute erpnext.hr.hr_custom_functions.post_leave_credits --args "'2019-01-01',"
-        '''
+        """
 
         # Logging
         logging.basicConfig(format='%(asctime)s|%(name)s|%(levelname)s|%(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
@@ -45,23 +52,43 @@ def post_leave_credits(today=None):
 
         first_day_of_month = 1 if today.day == 1 else 0
         first_day_of_year  = 1 if today.day == 1 and today.month == 1 else 0
-
+                
         if first_day_of_month or first_day_of_year:
+                cond = "and t1.employee = '{0}' ".format(employee) if employee else ""
                 elist = frappe.db.sql("""
-                        select t1.name, t1.employee_name,
-                                t2.leave_type, t2.credits_per_month,
-                                t2.credits_per_year,
-                                t3.is_carry_forward
+                        select
+                                t1.name, t1.employee_name, t1.date_of_joining,
+                                (
+                                case
+                                        when day(t1.date_of_joining) > 1 and day(t1.date_of_joining) <= 15
+                                        then timestampdiff(MONTH,t1.date_of_joining,'{0}')+1 
+                                        else timestampdiff(MONTH,t1.date_of_joining,'{0}')       
+                                end
+                                ) as no_of_months,
+                                t2.leave_type, t2.credits_per_month, t2.credits_per_year,
+                                t3.is_carry_forward,
+                                t3.is_prorated
                         from `tabEmployee` as t1, `tabEmployee Group Item` as t2, `tabLeave Type` as t3
                         where t1.status = 'Active'
+                        {1}
                         and t1.employee_group = t2.parent
                         and (t2.credits_per_month > 0 or t2.credits_per_year > 0)
                         and t3.name = t2.leave_type
                         order by t1.name, t2.leave_type
-                """, as_dict=1)
+                """.format(str(today),cond), as_dict=1)
 
+                counter = 0
                 for e in elist:
+                        counter += 1
                         leave_allocation = []
+                        credits_per_month = 0
+                        credits_per_year = 0
+                        
+                        if flt(e.no_of_months) <= 0:
+                                logger.error("{0}|{1}|{2}|{3}|{4}".format("NOT QUALIFIED",counter,e.name,e.employee_name,e.leave_type))
+                                continue
+
+                        # Monthly credits
                         if first_day_of_month and flt(e.credits_per_month) > 0:
                                 # For Earned Leaved monthly credits are given for previous month
                                 if e.leave_type == "Earned Leave":
@@ -69,7 +96,7 @@ def post_leave_credits(today=None):
                                         end_date   = get_last_day(start_date)
                                 else:
                                         start_date = get_first_day(today)
-                                        end_date = get_last_day(today)
+                                        end_date   = get_last_day(start_date)
 
                                 leave_allocation.append({
                                         'from_date': str(start_date),
@@ -77,8 +104,9 @@ def post_leave_credits(today=None):
                                         'new_leaves_allocated': flt(e.credits_per_month)
                                 })
 
+                        # Yearly credits
                         if first_day_of_year and flt(e.credits_per_year) > 0:
-                                start_date = get_year_start_date(add_days(today,10))
+                                start_date = get_year_start_date(today)
                                 end_date   = get_year_end_date(start_date)
 
                                 leave_allocation.append({
@@ -99,14 +127,15 @@ def post_leave_credits(today=None):
                                                 doc.carry_forward        = cint(e.is_carry_forward)
                                                 doc.new_leaves_allocated = flt(la['new_leaves_allocated'])
                                                 doc.submit()
-                                                logger.info("{0}|{1}|{2}|{3}|{4}".format("SUCCESS",e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
+                                                logger.info("{0}|{1}|{2}|{3}|{4}|{5}".format("SUCCESS",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
                                         except Exception as ex:
-                                                logger.exception("{0}|{1}|{2}|{3}|{4}".format("FAILED",e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
+                                                logger.exception("{0}|{1}|{2}|{3}|{4}|{5}".format("FAILED",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
                                 else:
-                                        logger.warning("{0}|{1}|{2}|{3}|{4}".format("ALREADY ALLOCATED",e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
+                                        logger.warning("{0}|{1}|{2}|{3}|{4}|{5}".format("ALREADY ALLOCATED",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
         else:
                 logger.info("Date {0} is neither beginning of the month nor year".format(str(today)))
                 return 0
+        
 # +++++++++++++++++++++ VER#2.0#CDCL#886 ENDS +++++++++++++++++++++
 
 ##
@@ -240,18 +269,17 @@ def get_payroll_settings(employee=None):
         if employee:
                 settings = frappe.db.sql("""
                         select
-                                a.employee_group,
-                                a.name employee_grade,
-                                a.gis,
-                                c.health_contribution,
-                                c.employee_pf,
-                                c.employer_pf
-                        from `tabEmployee Grade` a, `tabEmployee` b, `tabEmployee Group` c
-                        where b.employee = '{0}'
-                        and c.name = b.employee_group
-                        and a.employee_group = b.employee_group
-                        and a.name = b.employee_subgroup
-                        limit 1
+                                e.employee_group,
+                                e.employee_subgroup,
+                                d.gis,
+                                g.health_contribution,
+                                g.employee_pf,
+                                g.employer_pf
+                        from `tabEmployee` e, `tabEmployee Group` g, `tabEmployee Grade` d
+                        where e.name = '{0}'
+                        and g.name = e.employee_group
+                        and d.employee_group = g.name
+                        and d.name = e.employee_subgroup
                 """.format(employee), as_dict=True);
         settings = settings[0] if settings else settings
         return settings

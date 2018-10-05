@@ -40,6 +40,7 @@ frappe.ui.form.on('Budget', {
 			doc: frm.doc,
 			callback: function(r, rt) {
 				frm.refresh_field("accounts");
+				frm.refresh_field("total_royalty");
 				frm.refresh_fields();
 			},
 			freeze: true,

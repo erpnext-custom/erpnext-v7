@@ -389,12 +389,26 @@ def get_cop_list(doctype, txt, searchfield, start, page_len, filters):
 	item_sub_group = frappe.db.get_value("Item", filters.get("item_code"), "item_sub_group")
 	if not item_sub_group:
 		frappe.db.sql("No Item Sub Group Assigned")
-	return frappe.db.sql("select a.parent from `tabCOP Branch` a, `tabCOP Rate Item` b where a.parent = b.parent and a.branch = %s and b.item_sub_group = %s and exists (select 1 from `tabCost of Production` where name = a.parent and %s between from_date and to_date)", (filters.get("branch"), str(item_sub_group), filters.get("posting_date")))
-
+	return frappe.db.sql("select a.parent, b.item_sub_group, b.cop_amount from `tabCOP Branch` a, `tabCOP Rate Item` b where a.parent = b.parent and a.branch = %s and b.item_sub_group = %s and exists (select 1 from `tabCost of Production` where name = a.parent and %s between from_date and to_date)", (filters.get("branch"), str(item_sub_group), filters.get("posting_date")))
 
 #added the query to select custom selling price
-def get_selling_price_list(doctype, branch, transaction_date, item_code, filters, a = None):
-	frappe.msgprint("this is called")
-	if not filters.get("branch") or not filters.get("item_code") or not filters.get("transaction_date"):
+
+def price_template_list(doctype,txt, searchfield, start, page_len, filters):
+        if not filters.get("branch") or not filters.get("item_code") or not filters.get("transaction_date"):
                 frappe.throw("Select Item Code or Branch or Posting Date")
+        item_species = frappe.db.get_value("Item", filters.get("item_code"), "species")
+        doc = frappe.get_doc("Timber Species", item_species)
+        price_list = frappe.db.sql("""
+                        select  case when (b.price_based_on = 'Item' and b.particular = '{0}' 
+                        and a.parent = b.parent and a.branch = '{1}')
+                        then b.parent
+                        when (b.price_based_on = 'Timber Class' and a.parent = b.parent and a.branch = '{1}'
+                         and b.particular = '{2}' and b.timber_type = '{3}')
+                         then b.parent 
+                         end as template_list                          
+                        from `tabSelling Price Branch` a, `tabSelling Price Rate` b 
+                        where a.parent = b.parent and b.parent is not null and 
+                        exists (select 1 from `tabSelling Price` where name = a.parent and '{4}' between from_date and to_date and b.parent IS NOT NULL)
+                """.format(filters.get("item_code"), filters.get("branch"), doc.timber_class, doc.timber_type, filters.get("transaction_date")), debug =1)
+        return price_list
 

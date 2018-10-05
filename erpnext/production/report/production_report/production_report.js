@@ -4,7 +4,7 @@
 frappe.query_reports["Production Report"] = {
 	"filters": [
 		{
-			"Fieldname": "branch",
+			"fieldname": "branch",
 			"label": ("Branch"),
 			"fieldtype": "Link",
  			"options": "Branch",
@@ -20,6 +20,13 @@ frappe.query_reports["Production Report"] = {
 			"label": __("To Date"),
 			"fieldtype": "Date",
 			"default": frappe.defaults.get_user_default("year_end_date"),
+		},
+		{	"fieldname": "uinput",
+			"label":("Production Type"),
+			"fieldtype" : "Select",
+			"width" :"80",
+			"options": ["Planned","Adhoc"],
+			"reqd" : 1
 		},
 	]
 }

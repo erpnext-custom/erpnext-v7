@@ -6,14 +6,11 @@ cur_frm.add_fetch("branch", "cost_center", "cost_center")
 frappe.ui.form.on('Marking List', {
 	setup: function(frm) {
 		frm.get_field('items').grid.editable_fields = [
-			{fieldname: 'species', columns: 4},
+			{fieldname: 'species', columns: 2},
+			{fieldname: 'timber_class', columns: 2},
 			{fieldname: 'diameter', columns: 2},
-			{fieldname: 'qty', columns: 3},
-		]
-		frm.get_field('aggregate_items').grid.editable_fields = [
-			{fieldname: 'timber_class', columns: 3},
-			{fieldname: 'timber_type', columns: 3},
-			{fieldname: 'qty_cft', columns: 3},
+			{fieldname: 'qty_m3', columns: 2},
+			{fieldname: 'qty_cft', columns: 2},
 		]
 	},
 	onload: function(frm) {

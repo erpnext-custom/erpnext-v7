@@ -34,7 +34,9 @@ def get_columns():
 	]
 
 def get_data(filters):
-	query =  "Select pe.branch, pe.cost_center, pe.location, pe.warehouse, pe.item_name, pe.item_code, i.item_group, i.item_sub_group, i.species,(select ts.class from `tabTimber Species`as ts where ts.name = i.species) as class, pe.uom,sum(pe.qty) as quantity, pe.cop, pe.posting_date, pe.business_activity, pe.company from `tabProduction Entry` as  pe, tabItem i where pe.docstatus =1 and pe.item_code = i.item_code"
+		
+	query =  "Select pe.branch, pe.cost_center, pe.location, pe.warehouse, pe.item_name, pe.item_code, i.item_group, i.item_sub_group, i.species,(select ts.class from `tabTimber Species`as ts where ts.name = i.species) as class, pe.uom,sum(pe.qty) as quantity, pe.cop, pe.posting_date, pe.business_activity, pe.company from `tabProduction Entry` as  pe, tabItem i where pe.docstatus =1 and pe.item_code = i.item_code and pe.production_type = \'"+ str(filters.uinput) +"\'"
+	
 	if filters.get("branch"):
 		query += " and pe.branch = \'"+ str(filters.branch) + "\'"
 	if filters.get("from_date") and filters.get("to_date"):

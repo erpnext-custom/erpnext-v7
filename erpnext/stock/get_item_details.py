@@ -210,7 +210,8 @@ def get_price_list_rate(args, item_doc, out):
 	meta = frappe.get_meta(args.parenttype or args.doctype)
 
 	if meta.get_field("currency"):
-		validate_price_list(args)
+		#validate price list is commented 
+		#validate_price_list(args)
 		validate_conversion_rate(args, meta)
 
 		price_list_rate = get_price_list_rate_for(args.price_list, item_doc.name)

@@ -197,6 +197,8 @@ class SalaryStructure(Document):
                 basic_pay = comm_allowance = gis_amt = pf_amt = health_cont_amt = tax_amt = 0 
                 total_earning = total_deduction = net_pay = 0
                 settings      = get_payroll_settings(self.employee)
+                settings      = settings if settings else {}
+                
                 tbl_list      = {'earnings': 'Earning', 'deductions': 'Deduction'}
 
                 for ed in ['earnings','deductions']:
@@ -228,7 +230,7 @@ class SalaryStructure(Document):
                                                 if m['name'] == ed_item.salary_component and not self.get(m['field_name']):
                                                         del_list.append(ed_item)
                         [self.remove(d) for d in del_list]
-                        
+
                         # Calculating Earnings and Deductions based on preferences and values set
                         for m in sst_map[ed]:
                                 calc_amt = 0

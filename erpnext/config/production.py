@@ -13,6 +13,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Marking List",
 				},
+				{
+					"type": "doctype",
+					"name": "Royalty Payment",
+				},
 			]
 		},
 		{
@@ -54,6 +58,19 @@ def get_data():
 					"type": "doctype",
 					"name": "Production Settings",
 				},
+			]
+		},
+		{
+                        "label": _("Reports"),
+                        "icon": "icon-list",
+                        "items": [
+                                {
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Production Report",
+                                        "doctype": "Production"
+                                },
+
 			]
 		},
 	]
