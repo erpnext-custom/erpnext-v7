@@ -55,7 +55,7 @@ class Budget(Document):
 					frappe.msgprint("Account <b>" + str(d.account) + "</b> not found on system")
 	#Populate Budget Accounts with Expense and Fixed Asset Accounts
 	def get_accounts(self):
-		query = "select name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes')"
+		query = "select name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes') order by account_code ASC"
 		entries = frappe.db.sql(query, as_dict=True)
 		self.set('accounts', [])
 

@@ -19,7 +19,7 @@ class AssetMovement(Document):
 		if self.target_custodian:
 			self.validate_custodian()
 			self.target_cost_center = None
-			self.target_custodian_cost_center = frappe.db.get_value("Employee", self.target_custodian, "cost_center")	
+			self.target_custodian_cost_center, self.target_user_id = frappe.db.get_value("Employee", self.target_custodian, ["cost_center", "user_id"])	
 		if self.target_cost_center:
 			if self.target_cost_center == self.current_cost_center:
 				frappe.throw("Target and Source Cost Center cannot be same.")

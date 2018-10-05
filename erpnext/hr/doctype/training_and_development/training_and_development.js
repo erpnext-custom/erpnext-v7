@@ -19,6 +19,26 @@ frappe.ui.form.on("Training And Development", "end_date", function(frm) {
 	}
 });
 
+frappe.ui.form.on("Training Fees", {
+        "dsa_amount": function(frm, cdt, cdn){
+                var child = locals[cdt][cdn];
+                var dsa_percent;
+                var amount;
+                if(child.dsa_amount > 0){
+                        dsa_percent=(child.dsa_percentage > 0)? child.dsa_percentage : 100;
+                        amount = (dsa_percent/100) * child.dsa_amount;
+                        frappe.model.set_value(child.doctype, child.name, "amount", amount);
+                }
+        },
+        "dsa_percentage": function(frm, cdt, cdn){
+                var child = locals[cdt][cdn];
+                var dsa_percent, amount;
+                dsa_percent = (child.dsa_percentage > 0)?child.dsa_percentage:100;
+                amount = (child.dsa_percentage/100) * child.dsa_amount;
+                frappe.model.set_value(child.doctype, child.name, "amount", amount);
+        }
+});
+
 cur_frm.cscript.start_date = function(doc) {
 	cur_frm.call({
 		method: "erpnext.hr.hr_custom_functions.get_date_diff",
