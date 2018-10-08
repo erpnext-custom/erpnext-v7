@@ -39,12 +39,21 @@ class Production(StockController):
 				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
 
 		for item in self.get("items"):
+			item.item_name, item.item_group, item.item_sub_group = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group"])
+
 			if item.item_code not in prod_items:
 				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
 			if flt(item.qty) <= 0:
 				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
 			if flt(item.cop) <= 0:
 				frappe.throw(_("COP for <b>{0}</b> cannot be zero or less").format(item.item_code))
+		
+			if self.production_type == "Planned":
+				continue
+			reading_required, par, min_val, max_val = frappe.db.get_value("Item Sub Group", item.item_sub_group, ["reading_required", "reading_parameter", "minimum_value", "maximum_value"])
+			if reading_required:
+				if not flt(min_val) <= flt(item.reading) <=  flt(max_val):
+					frappe.throw("<b>{0}</b> reading should be between {1} and {2} for {3} for Adhoc Production".format(par, frappe.bold(min_val), frappe.bold(max_val), frappe.bold(item.item_code)))
 
 	def check_cop(self):
 		for a in self.items:
@@ -59,9 +68,11 @@ class Production(StockController):
 			if flt(a.cop) <= 0:
 				frappe.throw("COP Cannot be zero or less")
 
-	def on_submit(self):
-		self.check_cop()
+	def before_submit(self):
 		self.assign_default_dummy()
+		self.check_cop()
+
+	def on_submit(self):
 		self.make_products_sl_entry()
 		self.make_products_gl_entry()
 		self.make_raw_material_stock_ledger()

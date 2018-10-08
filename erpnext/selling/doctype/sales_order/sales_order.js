@@ -308,21 +308,14 @@ frappe.ui.form.on("Sales Order", "refresh", function(frm) {
     });
 })
 
+/*
 //Set select option for "Initial Stock Templates"
 cur_frm.fields_dict['selling_price_template'].get_query = function(doc, dt, dn) {
-  /*
-  return {
-     query: "erpnext.stock.doctype.stock_price_template.stock_price_template.get_template_list",
-     filters: { naming_series: doc.naming_series, posting_date: doc.transaction_date, purpose: 'Sales' },
-     searchfield: ["template_name", "from_date", "to_date"]
-  };
-  */
   return {
      query: "erpnext.stock.doctype.stock_price_template.stock_price_template.get_template_list",
      filters: { naming_series: doc.naming_series, posting_date: doc.transaction_date, purpose: 'Sales' }
   };
 }
-
 //Auto add items based on the values created in the "Initial Stock Template" Setting
 cur_frm.cscript.selling_price_template = function(doc) {
     cur_frm.call({
@@ -358,6 +351,7 @@ cur_frm.cscript.selling_price_template = function(doc) {
 	       refresh_field("items");
 	}
 }
+*/
 
 //auto list the price_templates based on branch, transaction_date, item_code
 cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = function(frm, cdt, cdn) {
@@ -383,8 +377,14 @@ frappe.ui.form.on("Sales Order Item", {
                         },
                         callback: function(r) {
                                 frappe.model.set_value(cdt, cdn, "price_list_rate", r.message)
+                                frappe.model.set_value(cdt, cdn, "rate", r.message)
                                 cur_frm.refresh_field("price_list_rate")
+                                cur_frm.refresh_field("rate")
                         }
                 })
-        }
+        },
+
+	"item_code": function(frm, cdt, cdn) {
+		frappe.model.set_value(cdt, cdn, "price_template", "") 
+}
 })

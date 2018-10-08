@@ -21,7 +21,7 @@ import logging
 
 # ++++++++++++++++++++ VER#2.0#CDCL#886 BEGINS ++++++++++++++++++++
 # VER#2.0#CDCL#886: Following method introduced by SHIV on 02/10/2018
-def post_leave_credits(today=None, employee=None):
+def post_leave_credits(today=None):
         """
            :param today: First day of the month
            :param employee: Employee id for individual allocation
@@ -54,7 +54,6 @@ def post_leave_credits(today=None, employee=None):
         first_day_of_year  = 1 if today.day == 1 and today.month == 1 else 0
                 
         if first_day_of_month or first_day_of_year:
-                cond = "and t1.employee = '{0}' ".format(employee) if employee else ""
                 elist = frappe.db.sql("""
                         select
                                 t1.name, t1.employee_name, t1.date_of_joining,
@@ -66,16 +65,15 @@ def post_leave_credits(today=None, employee=None):
                                 end
                                 ) as no_of_months,
                                 t2.leave_type, t2.credits_per_month, t2.credits_per_year,
-                                t3.is_carry_forward,
-                                t3.is_prorated
+                                t3.is_carry_forward
                         from `tabEmployee` as t1, `tabEmployee Group Item` as t2, `tabLeave Type` as t3
                         where t1.status = 'Active'
-                        {1}
+                        and t1.date_of_joining <= '{0}'
                         and t1.employee_group = t2.parent
                         and (t2.credits_per_month > 0 or t2.credits_per_year > 0)
                         and t3.name = t2.leave_type
                         order by t1.name, t2.leave_type
-                """.format(str(today),cond), as_dict=1)
+                """.format(str(today)), as_dict=1)
 
                 counter = 0
                 for e in elist:

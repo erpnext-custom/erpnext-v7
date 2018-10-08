@@ -29,7 +29,7 @@ class TravelAuthorization(Document):
         def validate_advance(self):
                 self.advance_amount     = 0 if not self.need_advance else self.advance_amount
                 self.advance_amount_nu  = 0 if not self.need_advance else self.advance_amount_nu
-                self.advance_journal    = "" if self.docstatus == 0 else self.advance_journal
+                self.advance_journal    = None if self.docstatus == 0 else self.advance_journal
         
 	def create_copy(self):
 		self.details = []

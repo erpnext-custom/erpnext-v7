@@ -58,6 +58,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Production Settings",
 				},
+				{
+					"type": "doctype",
+					"name": "Adhoc Royalty Setting",
+				},
 			]
 		},
 		{

@@ -20,6 +20,8 @@ frappe.ui.form.on('Royalty Payment', {
 			doc: frm.doc,
 			callback: function(r, rt) {
 				frm.refresh_field("planned_items");
+				frm.refresh_field("adhoc_temp_items");
+				frm.refresh_field("adhoc_items");
 				frm.refresh_fields();
 			},
 			freeze: true,

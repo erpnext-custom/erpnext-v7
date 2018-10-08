@@ -5,6 +5,12 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.utils import flt
 
 class ItemSubGroup(Document):
-	pass
+	def validate(self):
+		if self.reading_required:
+			if not self.reading_parameter:
+				frappe.throw("Reading Parameter is Mandatory")
+			if flt(self.minimum_value) > flt(self.maximum_value):
+				frappe.throw("Invalid Min and Max Acceptable Values")

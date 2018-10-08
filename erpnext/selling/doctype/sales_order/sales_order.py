@@ -26,10 +26,10 @@ class WarehouseRequired(frappe.ValidationError): pass
 class SalesOrder(SellingController):
 	def __init__(self, arg1, arg2=None):
 		super(SalesOrder, self).__init__(arg1, arg2)
-	
-	def autoname(self):
-		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
+	def before_save(self):
+		self.get_selling_rate()
+	
 	def validate(self):
 		check_future_date(self.transaction_date)
 		super(SalesOrder, self).validate()
@@ -43,7 +43,7 @@ class SalesOrder(SellingController):
 		self.validate_for_items()
 		self.validate_warehouse()
 		self.validate_drop_ship()
-
+	
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 		make_packing_list(self)
 
@@ -257,9 +257,13 @@ class SalesOrder(SellingController):
 	def on_update(self):
 		pass
 
+	def before_submit(self):
+		self.get_selling_rate()
+
 	def before_update_after_submit(self):
 		self.validate_drop_ship()
 		self.validate_supplier_after_submit()
+		#self.get_selling_rate()
 
 	def validate_supplier_after_submit(self):
 		"""Check that supplier is the same after submit if PO is already made"""
@@ -316,6 +320,20 @@ class SalesOrder(SellingController):
 		mcount = month_map[reference_doc.recurring_type]
 		self.set("delivery_date", get_next_date(reference_doc.delivery_date, mcount,
 						cint(reference_doc.repeat_on_day_of_month)))
+	
+	def get_selling_rate(self):
+		for item in self.items:
+			if not self.branch or not item.item_code or not self.transaction_date:
+				frappe.throw("Select Item Code or Branch or Posting Date")
+			rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}'""".format(item.price_template, item.item_code), as_dict =1)
+			if not rate:
+				species = frappe.db.get_value("Item", item.item_code, "species")
+				if species:
+					timber_class, timber_type = frappe.db.get_value("Timber Species", species, ["timber_class", "timber_type"])
+					rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}'""".format(item.price_template, timber_class, timber_type), as_dict =1)
+			rate = rate and rate[0].rate or 0.0		
+			if item.rate != rate:
+				frappe.throw("Selling Rate had changed since you last pulled. Please pull again")
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context

@@ -69,15 +69,14 @@ def get_cop_amount(cop, branch, posting_date, item_code):
 def get_selling_rate(price_list, branch, item_code, transaction_date):
         if not branch or not item_code or not transaction_date:
                 frappe.throw("Select Item Code or Branch or Posting Date")
-        item_species = frappe.db.get_value("Item", item_code, "species")
-        doc = frappe.get_doc("Timber Species", item_species)
-        rate = frappe.db.sql("""
-                        select case when b.price_based_on = 'Item' and b.particular = '{0}' and 
-                        b.parent = '{1}' and b.particular = '{0}'
-                        then b.selling_price
-                        when b.price_based_on = 'Timber Class' and b.parent = '{1}' and b.particular = '{2}' and b.timber_type = '{3}'
-                        then b.selling_price
-                        end as rate
-                        from `tabSelling Price Rate` b  where b.parent = '{1}'""".format(item_code, price_list, doc.timber_class, doc.timber_type), debug =1)
-        return rate
+	rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}'""".format(price_list, item_code), as_dict =1)
+	
+	if not rate:
+                species = frappe.db.get_value("Item", item_code, "species")
+                #frappe.msgprint("{0}".format(doc.name))
+                if species:
+                        timber_class, timber_type = frappe.db.get_value("Timber Species", species, ["timber_class", "timber_type"])
+                        rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}'""".format(price_list, timber_class, timber_type), as_dict =1)
+                        #frappe.msgprint("yes rate {0}".format(rate))
+        return rate and flt(rate[0].rate) or 0.0
 

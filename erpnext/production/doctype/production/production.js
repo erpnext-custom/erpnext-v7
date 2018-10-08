@@ -96,6 +96,11 @@ frappe.ui.form.on("Production Product Item", {
 				cur_frm.refresh_field("cop")
 			}
 		})
+	},
+
+	"item_code": function(frm, cdt, cdn) {
+		cur_frm.add_fetch("item_code", "item_group", "item_group")
+		cur_frm.add_fetch("item_code", "item_sub_group", "item_sub_group")
 	}
 })
 

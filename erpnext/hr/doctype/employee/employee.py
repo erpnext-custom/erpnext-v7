@@ -33,6 +33,28 @@ class EmployeeUserDisabledError(frappe.ValidationError):
 
 
 class Employee(Document):
+        def autoname(self):
+		naming_method = frappe.db.get_value("HR Settings", None, "emp_created_by")
+		if not naming_method:
+			throw(_("Please setup Employee Naming System in Human Resource > HR Settings"))
+		else:
+			if naming_method == 'Naming Series':
+				if not self.date_of_joining:
+					frappe.throw("Date of Joining not Set!")
+				abbr = frappe.db.get_value("Company", self.company, "abbr")
+				naming_series = str(abbr) + "." + str(getdate(self.date_of_joining).year)[2:4]	
+				x = make_autoname(str(naming_series) + '.###')
+				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
+				start_id = cint(len(str(abbr))) + 2
+				eid = x[:start_id] + y[:2] + x[start_id:start_id + 3]
+				self.name = eid
+				self.yearid = x
+			elif naming_method == 'Employee Number':
+				self.name = self.employee_number
+
+		self.employee = self.name
+		
+        """
 	def autoname(self):
 		naming_method = frappe.db.get_value("HR Settings", None, "emp_created_by")
 		if not naming_method:
@@ -51,6 +73,7 @@ class Employee(Document):
 				self.name = self.employee_number
 
 		self.employee = self.name
+        """
 
 	def validate(self):
 		from erpnext.controllers.status_updater import validate_status
@@ -59,10 +82,9 @@ class Employee(Document):
 		self.employee = self.name
 		if self.reports_to:
 			self.approver_name = frappe.db.get_value("Employee", self.reports_to, "employee_name")
-		if self.cost_center:
-			self.branch = frappe.db.get_value("Cost Center", self.cost_center, "branch")
 		if self.branch:
                         self.gis_policy_number = frappe.db.get_value("Branch", self.branch, "gis_policy_number")
+			self.cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
                         
 		self.validate_date()
 		self.validate_email()
@@ -96,7 +118,7 @@ class Employee(Document):
 		if self.user_id:
 			self.update_user()
 			self.update_user_permissions()
-		self.post_casual_leave()
+		#self.post_casual_leave()
 
         def validate_employment(self):
                 if not frappe.db.exists("Employment Type Item", {"parent": self.employment_type,"employee_group": self.employee_group}):
@@ -322,7 +344,39 @@ class Employee(Document):
 		delete_events(self.doctype, self.name)
 
 	def post_casual_leave(self):
-                
+                if not cint(self.casual_leave_allocated):
+                        credits_per_year = frappe.db.get_value("Employee Group Item", {"parent": self.employee_group, "leave_type": 'Casual Leave'}, "credits_per_year")
+
+                        if flt(credits_per_year):
+                                from_date = getdate(self.date_of_joining)
+                                to_date = get_year_end_date(from_date);
+
+                                no_of_months = frappe.db.sql("""
+                                        select (
+                                                case
+                                                        when day('{0}') > 1 and day('{0}') <= 15
+                                                        then timestampdiff(MONTH,'{0}','{1}')+1 
+                                                        else timestampdiff(MONTH,'{0}','{1}')       
+                                                end
+                                                ) as no_of_months
+                                """.format(str(self.date_of_joining),str(add_days(to_date,1))))[0][0]
+
+                                new_leaves_allocated = round5((flt(no_of_months)/12)*flt(credits_per_year))
+                                new_leaves_allocated = new_leaves_allocated if new_leaves_allocated <= flt(credits_per_year) else flt(credits_per_year)
+
+                                if flt(new_leaves_allocated):
+                                        la = frappe.new_doc("Leave Allocation")
+                                        la.employee = self.employee
+                                        la.employee_name = self.employee_name
+                                        la.leave_type = "Casual Leave"
+                                        la.from_date = str(from_date)
+                                        la.to_date = str(to_date)
+                                        la.carry_forward = cint(0)
+                                        la.new_leaves_allocated = flt(new_leaves_allocated)
+                                        la.submit()
+                                        self.db_set("casual_leave_allocated", 1)
+			                
+                '''
 		if not self.casual_leave_allocated:
 			date = getdate(self.date_of_joining)
 			start = date;
@@ -346,7 +400,8 @@ class Employee(Document):
 			if flt(leave_amount) > 0:
 				la.submit()
 			self.db_set("casual_leave_allocated", 1)
-
+                '''
+                
 def get_timeline_data(doctype, name):
 	'''Return timeline for attendance'''
 	return dict(frappe.db.sql('''select unix_timestamp(att_date), count(*)
