@@ -44,7 +44,6 @@ class FundRequisition(Document):
 	def post_journal_entry(self):
 		expense_bank_account = self.bank
 	 	expense_bank_account1 =self.bank_account
-		ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
 
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
@@ -74,26 +73,31 @@ class FundRequisition(Document):
 				"credit_in_account_currency": flt(self.total_amount),
 				"credit": flt(self.total_amount),
 					})
+			
+			allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+			if allow_inter_company_transaction:
+				ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+				if not ic_account:
+					frappe.throw("Setup Intra-Company Account in Accounts Settings")
+				je.append("accounts", {
+					"account": ic_account,
+					"business_activity": self.business_activity,
+					"reference_name": self.name,
+					"reference_type": "Fund Requisition",
+					"cost_center": self.cost_center,
+					"credit_in_account_currency": flt(self.total_amount),
+					"credit": flt(self.total_amount),
+						})
 
-			je.append("accounts", {
-				"account": ic_account,
-				"business_activity": self.business_activity,
-				"reference_name": self.name,
-				"reference_type": "Fund Requisition",
-				"cost_center": self.cost_center,
-				"credit_in_account_currency": flt(self.total_amount),
-				"credit": flt(self.total_amount),
-					})
-
-			je.append("accounts", {
-				"account": ic_account,	
-				"business_activity": self.business_activity,
-				"reference_name": self.name,
-				"reference_type": "Fund Requisition",
-				"cost_center": self.issuing_cost_center,
-				"debit_in_account_currency": flt(self.total_amount),
-				"debit": flt(self.total_amount),
-					})
+				je.append("accounts", {
+					"account": ic_account,	
+					"business_activity": self.business_activity,
+					"reference_name": self.name,
+					"reference_type": "Fund Requisition",
+					"cost_center": self.issuing_cost_center,
+					"debit_in_account_currency": flt(self.total_amount),
+					"debit": flt(self.total_amount),
+						})
 
 			je.save()
 		else:

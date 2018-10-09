@@ -146,9 +146,6 @@ class HireChargeInvoice(AccountsController):
 		hire_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_account")
 		if not hire_account:
 			frappe.throw("Setup Hire Account in Maintenance Accounts Settings")
-		ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
-		if not ic_account:
-			frappe.throw("Setup Intra-Company Account in Accounts Settings")
 		hr_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_internal_account")
 		if not hr_account:
 			frappe.throw("Setup Hire Revenue Internal Account in Maintenance Accounts Settings")
@@ -192,24 +189,30 @@ class HireChargeInvoice(AccountsController):
 						"credit": flt(a.total_amount),
 						"business_activity": equip_ba
 					})
-			je.append("accounts", {
-					"account": ic_account,
-					"reference_type": "Hire Charge Invoice",
-					"reference_name": self.name,
-					"cost_center": customer_cost_center,
-					"credit_in_account_currency": flt(self.total_invoice_amount),
-					"credit": flt(self.total_invoice_amount),
-					"business_activity": default_ba
-				})
-			je.append("accounts", {
-					"account": ic_account,
-					"reference_type": "Hire Charge Invoice",
-					"reference_name": self.name,
-					"cost_center": self.cost_center,
-					"debit_in_account_currency": flt(self.total_invoice_amount),
-					"debit": flt(self.total_invoice_amount),
-					"business_activity": default_ba
-				})
+			
+			allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+			if allow_inter_company_transaction:
+				ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+				if not ic_account:
+					frappe.throw("Setup Intra-Company Account in Accounts Settings")
+				je.append("accounts", {
+						"account": ic_account,
+						"reference_type": "Hire Charge Invoice",
+						"reference_name": self.name,
+						"cost_center": customer_cost_center,
+						"credit_in_account_currency": flt(self.total_invoice_amount),
+						"credit": flt(self.total_invoice_amount),
+						"business_activity": default_ba
+					})
+				je.append("accounts", {
+						"account": ic_account,
+						"reference_type": "Hire Charge Invoice",
+						"reference_name": self.name,
+						"cost_center": self.cost_center,
+						"debit_in_account_currency": flt(self.total_invoice_amount),
+						"debit": flt(self.total_invoice_amount),
+						"business_activity": default_ba
+					})
 
 			je.insert()
 

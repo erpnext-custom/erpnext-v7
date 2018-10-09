@@ -334,6 +334,8 @@ class SalesOrder(SellingController):
 			rate = rate and rate[0].rate or 0.0		
 			if item.rate != rate:
 				frappe.throw("Selling Rate had changed since you last pulled. Please pull again")
+			if item.rate <= 0.0 or item.amount <= 0.0:
+				frappe.throw("Rate and Amount must be greater than 0")
 
 def get_list_context(context=None):
 	from erpnext.controllers.website_list_for_contact import get_list_context
@@ -425,7 +427,7 @@ def make_delivery_note(source_name, target_doc=None):
 		target.qty = flt(source.qty) - flt(source.delivered_qty)
 		expense_account,is_prod = frappe.db.get_value("Item", source.item_code, ["expense_account", "is_production_item"])
 		if is_prod:
-			expense_account = get_settings_value("Production Account Settings", self.company, "default_production_account")
+			expense_account = get_settings_value("Production Account Settings", source_parent.company, "default_production_account")
 			if not expense_account:
 				frappe.throw("Setup Default Production Account in Production Account Settings")
 		target.expense_account = expense_account

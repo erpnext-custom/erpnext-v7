@@ -46,6 +46,9 @@ class Asset(Document):
 		self.delete_depreciation_entries()
 		self.set_status()
 
+	def on_update_after_submit(self):
+                self.set_status()
+
 	def validate_item(self):
 		item = frappe.db.get_value("Item", self.item_code,
 			["is_fixed_asset", "is_stock_item", "disabled"], as_dict=1)
@@ -209,7 +212,13 @@ class Asset(Document):
 		'''Get and update status'''
 		if not status:
 			status = self.get_status()
-		self.db_set("status", status)
+		disable_depreciation = 0
+                if status not in ["Submitted", "Partially Depreciated"]:
+                        disable_depreciation = 1
+                if self.asset_status in ["Auctioned", "Marked for Auction"]:
+                        disable_depreciation = 1
+                self.db_set("status", status)
+                self.db_set("disable_depreciation", disable_depreciation)
 
 	def get_status(self):
 		'''Returns status based on whether it is draft, submitted, scrapped or depreciated'''

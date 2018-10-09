@@ -172,27 +172,31 @@ def do_gl_adjustment(self, asset_code, posting_date, name, from_cc, to_cc):
 		)
 
 	if ic_amount:
-		gl_entries.append(
-			prepare_gl(self, {
-			       "account": ic_account,
-			       "debit": ic_amount,
-			       "debit_in_account_currency": ic_amount,
-			       "against_voucher": asset.name,
-			       "against_voucher_type": "Asset",
-			       "cost_center": from_cc,
-			})
-		)
-		gl_entries.append(
-			prepare_gl(self, {
-			       "account": ic_account,
-			       "credit": ic_amount,
-			       "credit_in_account_currency": ic_amount,
-			       "against_voucher": asset.name,
-			       "against_voucher_type": "Asset",
-			       "cost_center": to_cc,
-			})
-		)
-
+		allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+		if allow_inter_company_transaction:
+			ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+			if not ic_account:
+				frappe.throw("Setup Intra-Company Account in Accounts Settings")
+			gl_entries.append(
+				prepare_gl(self, {
+				       "account": ic_account,
+				       "debit": ic_amount,
+				       "debit_in_account_currency": ic_amount,
+				       "against_voucher": asset.name,
+				       "against_voucher_type": "Asset",
+				       "cost_center": from_cc,
+				})
+			)
+			gl_entries.append(
+				prepare_gl(self, {
+				       "account": ic_account,
+				       "credit": ic_amount,
+				       "credit_in_account_currency": ic_amount,
+				       "against_voucher": asset.name,
+				       "against_voucher_type": "Asset",
+				       "cost_center": to_cc,
+				})
+			)
 	print(asset.name)
 	make_gl_entries(gl_entries, cancel=0, update_outstanding="No", merge_entries=False)
 

@@ -146,27 +146,28 @@ class IssuePOL(StockController):
 				
 				#Do IC Accounting Entry if different branch
 				if comparing_branch != self.branch:
-					ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
-					if not ic_account:
-						frappe.throw("Setup Intra-Company Account in Accounts Settings")
+					allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+					if allow_inter_company_transaction:
+						ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+						if not ic_account:
+							frappe.throw("Setup Intra-Company Account in Accounts Settings")
+						gl_entries.append(
+							prepare_gl(self, {"account": ic_account,
+									 "debit": flt(valuation_rate),
+									 "debit_in_account_currency": flt(valuation_rate),
+									 "cost_center": self.cost_center,
+									 "business_activity": get_equipment_ba(self.tanker)
+									})
+							)
 
-					gl_entries.append(
-						prepare_gl(self, {"account": ic_account,
-								 "debit": flt(valuation_rate),
-								 "debit_in_account_currency": flt(valuation_rate),
-								 "cost_center": self.cost_center,
-								 "business_activity": get_equipment_ba(self.tanker)
-								})
-						)
-
-					gl_entries.append(
-						prepare_gl(self, {"account": ic_account,
-								 "credit": flt(valuation_rate),
-								 "credit_in_account_currency": flt(valuation_rate),
-								 "cost_center": cc,
-								 "business_activity": get_equipment_ba(a.equipment)
-								})
-						)
+						gl_entries.append(
+							prepare_gl(self, {"account": ic_account,
+									 "credit": flt(valuation_rate),
+									 "credit_in_account_currency": flt(valuation_rate),
+									 "cost_center": cc,
+									 "business_activity": get_equipment_ba(a.equipment)
+									})
+							)
 					
 			else : #Transfer only if different warehouse
 				if wh != self.warehouse:
@@ -187,10 +188,6 @@ class IssuePOL(StockController):
 
 				#Do IC Accounting Entry if different branch
 				if comparing_branch != self.branch:
-					ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
-					if not ic_account:
-						frappe.throw("Setup Intra-Company Account in Accounts Settings")
-
 					twh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": wh}, "name")
 					if not twh_account:
 						frappe.throw(str(self.warehouse) + " is not linked to any account.")
@@ -213,23 +210,28 @@ class IssuePOL(StockController):
 								})
 						)
 
-					gl_entries.append(
-						prepare_gl(self, {"account": ic_account,
-								 "debit": flt(valuation_rate),
-								 "debit_in_account_currency": flt(valuation_rate),
-								 "cost_center": self.cost_center,
-								 "business_activity": get_equipment_ba(self.tanker)
-								})
-						)
+					allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+					if allow_inter_company_transaction:
+						ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+						if not ic_account:
+							frappe.throw("Setup Intra-Company Account in Accounts Settings")
+						gl_entries.append(
+							prepare_gl(self, {"account": ic_account,
+									 "debit": flt(valuation_rate),
+									 "debit_in_account_currency": flt(valuation_rate),
+									 "cost_center": self.cost_center,
+									 "business_activity": get_equipment_ba(self.tanker)
+									})
+							)
 
-					gl_entries.append(
-						prepare_gl(self, {"account": ic_account,
-								 "credit": flt(valuation_rate),
-								 "credit_in_account_currency": flt(valuation_rate),
-								 "cost_center": cc,
-								 "business_activity": get_equipment_ba(a.equipment)
-								})
-						)
+						gl_entries.append(
+							prepare_gl(self, {"account": ic_account,
+									 "credit": flt(valuation_rate),
+									 "credit_in_account_currency": flt(valuation_rate),
+									 "cost_center": cc,
+									 "business_activity": get_equipment_ba(a.equipment)
+									})
+							)
 
 		if sl_entries: 
 			if self.docstatus == 2:

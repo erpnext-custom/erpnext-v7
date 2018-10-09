@@ -201,29 +201,31 @@ class POL(StockController):
                         comparing_branch = self.equipment_branch
 
 		if comparing_branch != self.fuelbook_branch:
-			ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
-			if not ic_account:
-				frappe.throw("Setup Intra-Company Account in Accounts Settings")
+			allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+			if allow_inter_company_transaction:
+				ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+				if not ic_account:
+					frappe.throw("Setup Intra-Company Account in Accounts Settings")
 
-			customer_cc = get_branch_cc(comparing_branch)
+				customer_cc = get_branch_cc(comparing_branch)
 
-			gl_entries.append(
-				prepare_gl(self, {"account": ic_account,
-						 "credit": flt(self.total_amount),
-						 "credit_in_account_currency": flt(self.total_amount),
-						 "cost_center": customer_cc,
-						 "business_activity": default_ba
-						})
-				)
+				gl_entries.append(
+					prepare_gl(self, {"account": ic_account,
+							 "credit": flt(self.total_amount),
+							 "credit_in_account_currency": flt(self.total_amount),
+							 "cost_center": customer_cc,
+							 "business_activity": default_ba
+							})
+					)
 
-			gl_entries.append(
-				prepare_gl(self, {"account": ic_account,
-						 "debit": flt(self.total_amount),
-						 "debit_in_account_currency": flt(self.total_amount),
-						 "cost_center": self.cost_center,
-						 "business_activity": default_ba
-						})
-				)
+				gl_entries.append(
+					prepare_gl(self, {"account": ic_account,
+							 "debit": flt(self.total_amount),
+							 "debit_in_account_currency": flt(self.total_amount),
+							 "cost_center": self.cost_center,
+							 "business_activity": default_ba
+							})
+					)
 
 		from erpnext.accounts.general_ledger import make_gl_entries
 		if post:
