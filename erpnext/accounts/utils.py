@@ -598,9 +598,6 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 	accumulated_dep = flt(asset.gross_purchase_amount) - flt(asset.value_after_depreciation)
 	
 	accumulated_dep_account = frappe.db.sql("select accumulated_depreciation_account from `tabAsset Category Account` where parent = %s", asset.asset_category, as_dict=True)[0].accumulated_depreciation_account
-	ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
-	if not ic_account:
-		frappe.throw("Setup Intra Company Accounts under Accounts Settings")
 
 	from erpnext.accounts.general_ledger import make_gl_entries
 	from erpnext.custom_utils import prepare_gl
@@ -653,30 +650,96 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 			       "business_activity": asset.business_activity
 			})
 		)
+	allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+	if allow_inter_company_transaction:
+		ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+		if not ic_account:
+			frappe.throw("Setup Intra Company Accounts under Accounts Settings")
+		gl_entries.append(
+			prepare_gl(self, {
+			       "account": ic_account,
+			       "debit": asset.value_after_depreciation,
+			       "debit_in_account_currency": asset.value_after_depreciation,
+			       "against_voucher": asset.name,
+			       "against_voucher_type": "Asset",
+			       "cost_center": from_cc,
+			       "business_activity": asset.business_activity
+			})
+		)
 
-	gl_entries.append(
-		prepare_gl(self, {
-		       "account": ic_account,
-		       "debit": asset.value_after_depreciation,
-		       "debit_in_account_currency": asset.value_after_depreciation,
-		       "against_voucher": asset.name,
-		       "against_voucher_type": "Asset",
-		       "cost_center": from_cc,
-		       "business_activity": asset.business_activity
-		})
-	)
-
-	gl_entries.append(
-		prepare_gl(self, {
-		       "account": ic_account,
-		       "credit": asset.value_after_depreciation,
-		       "credit_in_account_currency": asset.value_after_depreciation,
-		       "against_voucher": asset.name,
-		       "against_voucher_type": "Asset",
-		       "cost_center": to_cc,
-		       "business_activity": asset.business_activity
-		})
-	)
+		gl_entries.append(
+			prepare_gl(self, {
+			       "account": ic_account,
+			       "credit": asset.value_after_depreciation,
+			       "credit_in_account_currency": asset.value_after_depreciation,
+			       "against_voucher": asset.name,
+			       "against_voucher_type": "Asset",
+			       "cost_center": to_cc,
+			       "business_activity": asset.business_activity
+			})
+		)
 
 	make_gl_entries(gl_entries, cancel=0, update_outstanding="No", merge_entries=False)
+
+
+##
+#Return all the child cost centers of the current cost center
+##
+def get_child_cost_centers(current_cs=None):
+	allchilds = []
+	allcs = []
+	cs_name = cs_par_name = "";
+
+	if current_cs:
+	  #Get all cost centers
+	  allcs = frappe.db.sql("SELECT name, parent_cost_center FROM `tabCost Center`", as_dict=True);
+	  #get the current cost center name
+	  query ="SELECT name, parent_cost_center FROM `tabCost Center` where name = \"" + current_cs + "\";";
+	  current = frappe.db.sql(query, as_dict=True);
+
+	  if(current):
+	    for a in current:
+    		cs_name = a['name'];
+    		cs_par_name = a['parent_cost_center'];
+
+	    #loop through the cost centers to search for the child cost centers
+	    allchilds.append(cs_name);
+	    for b in allcs:
+    		for c in allcs:
+    		      if(c['parent_cost_center'] in allchilds):
+        			 if(c['name'] not in allchilds):
+        			    allchilds.append(c['name']);
+
+	return allchilds;
+
+##
+#Return all the child accounts of the current accounts
+##
+def get_child_accounts(current_acc=None):
+	allchilds = []
+	allacc = []
+	acc_name = acc_parent_name = "";
+
+	if current_acc:
+	  #Get all cost centers
+	  allacc = frappe.db.sql("SELECT name, parent_account FROM `tabAccount`", as_dict=True);
+	  #get the current cost center name
+	  query ="SELECT name, parent_account FROM `tabAccount` where name = \"" + current_acc + "\";";
+	  current = frappe.db.sql(query, as_dict=True);
+
+	  if(current):
+	    for a in current:
+    		acc_name = a['name'];
+    		acc_parent_name = a['parent_account'];
+
+	    #loop through the cost centers to search for the child cost centers
+	    allchilds.append(acc_name);
+
+	    for b in allacc:
+    		for c in allacc:
+    		      if(c['parent_account'] in allchilds):
+        			 if(c['name'] not in allchilds):
+        			    allchilds.append(c['name']);
+
+	return allchilds;
 

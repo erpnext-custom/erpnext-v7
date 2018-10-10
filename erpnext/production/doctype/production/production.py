@@ -39,7 +39,7 @@ class Production(StockController):
 				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
 
 		for item in self.get("items"):
-			item.item_name, item.item_group, item.item_sub_group = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group"])
+			item.item_name, item.item_group, item.item_sub_group, item.timber_species = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group", "species"])
 
 			if item.item_code not in prod_items:
 				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
@@ -210,6 +210,8 @@ class Production(StockController):
 			doc.flags.ignore_permissions = 1
 			doc.item_code = a.item_code
 			doc.item_name = a.item_name
+			doc.item_group = a.item_group
+			doc.item_sub_group = a.item_sub_group
 			doc.qty = a.qty
 			doc.uom = a.uom
 			doc.cop = a.cop
@@ -224,6 +226,9 @@ class Production(StockController):
 			doc.ref_doc = self.name
 			doc.production_type = self.production_type
 			doc.adhoc_production = self.adhoc_production
+			doc.timber_species = a.timber_species
+			if a.timber_species:
+				doc.timber_class, doc.timber_type = frappe.db.get_value("Timber Species", a.timber_species, ["timber_class", "timber_type"])
 			doc.submit()
 
 	def delete_production_entry(self):

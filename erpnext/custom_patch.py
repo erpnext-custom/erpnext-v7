@@ -8,6 +8,20 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_production():
+	for a in frappe.db.sql("select name from `tabProduction`", as_dict=1):
+		doc = frappe.get_doc("Production", a.name)
+		doc.delete_production_entry()
+		doc.make_production_entry()
+		"""for item in doc.items:
+			item_name, item_group, item_sub_group, timber_species = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group", "species"])
+			i = frappe.get_doc("Production Product Item", item.name)
+			i.db_set("item_name", item_name)
+			i.db_set("item_group", item_group)
+			i.db_set("item_sub_group", item_sub_group)
+			i.db_set("timber_species", timber_species)
+		"""
+
 def update_mech():
 	ml = frappe.db.sql("select name from `tabMechanical Payment` where docstatus = 1 and payment_for is null", as_dict=1)
 	for a in ml:

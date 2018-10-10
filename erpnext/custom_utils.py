@@ -251,6 +251,10 @@ def get_branch_warehouse(branch):
         return wh
 
 @frappe.whitelist()
+def get_branch_from_cost_center(cost_center):
+        return frappe.db.get_value("Branch", {"cost_center": cost_center}, "name")
+
+@frappe.whitelist()
 def kick_users():
         from frappe.sessions import clear_all_sessions
         clear_all_sessions()

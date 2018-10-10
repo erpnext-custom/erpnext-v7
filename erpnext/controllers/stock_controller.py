@@ -56,10 +56,6 @@ class StockController(AccountsController):
                                                         to_branch = frappe.db.get_value("Warehouse", detail.t_warehouse, "branch")
                                                         to_cc = get_branch_cc(to_branch)
                                                 if self.doctype == "Stock Entry" and self.purpose == "Material Transfer" and sle.stock_value_difference > 0:
-                                                        ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
-                                                        if not ic_account:
-                                                                frappe.throw("Setup Intra-Company Account in Accounts Settings")
-
                                                         gl_list.append(self.get_gl_dict({
                                                                 "account": warehouse_account[sle.warehouse]["name"],
                                                                 "against": detail.expense_account,
@@ -80,21 +76,25 @@ class StockController(AccountsController):
                                                                 "project": detail.get("project") or self.get("project")
                                                         }))
 
-                                                        gl_list.append(self.get_gl_dict({
-                                                                "account": ic_account,
-                                                                "cost_center": to_cc,
-                                                                "business_activity": detail.business_activity,
-                                                                "remarks": self.get("remarks") or "Accounting Entry for Stock",
-                                                                "credit": flt(sle.stock_value_difference, 2),
-                                                        }))
-
-                                                        gl_list.append(self.get_gl_dict({
-                                                                "account": ic_account,
-                                                                "cost_center": detail.cost_center,
-                                                                "business_activity": detail.business_activity,
-                                                                "remarks": self.get("remarks") or "Accounting Entry for Stock",
-                                                                "debit": flt(sle.stock_value_difference, 2),
-                                                        }))
+							allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+							if allow_inter_company_transaction:
+								ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+								if not ic_account:
+									frappe.throw("Setup Intra-Company Account in Accounts Settings")
+								gl_list.append(self.get_gl_dict({
+									"account": ic_account,
+									"cost_center": to_cc,
+									"business_activity": detail.business_activity,
+									"remarks": self.get("remarks") or "Accounting Entry for Stock",
+									"credit": flt(sle.stock_value_difference, 2),
+								}))
+								gl_list.append(self.get_gl_dict({
+									"account": ic_account,
+									"cost_center": detail.cost_center,
+									"business_activity": detail.business_activity,
+									"remarks": self.get("remarks") or "Accounting Entry for Stock",
+									"debit": flt(sle.stock_value_difference, 2),
+								}))
 						else:
 							gl_list.append(self.get_gl_dict({
 								"account": warehouse_account[sle.warehouse]["name"],

@@ -56,7 +56,7 @@ class HireChargeInvoice(AccountsController):
 		self.set_advance_data()
 		self.update_advance_amount();
 		self.update_vlogs(1)
-		if self.owned_by == "CDCL":
+		if self.owned_by == "Own Company":
 			self.post_journal_entry()
 			self.db_set("outstanding_amount", 0)
 		else:
@@ -66,7 +66,7 @@ class HireChargeInvoice(AccountsController):
 		self.check_close()
 
 	def on_cancel(self):
-		if self.owned_by != "CDCL":
+		if self.owned_by != "Own Company":
 			self.make_gl_entries()
 			#self.make_gl_entries_on_cancel()
 		check_uncancelled_linked_doc(self.doctype, self.name)
@@ -167,7 +167,7 @@ class HireChargeInvoice(AccountsController):
 		je.posting_date = self.posting_date
 		je.branch = self.branch
 
-		if self.owned_by == "CDCL":
+		if self.owned_by == "Own Company":
 			customer_cost_center = frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "customer_cost_center")
 			for a in self.items:
 				equip_ba = get_equipment_ba(a.equipment)

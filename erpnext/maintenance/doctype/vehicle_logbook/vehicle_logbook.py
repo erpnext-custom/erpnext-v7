@@ -240,7 +240,7 @@ class VehicleLogbook(Document):
 		no_own_fuel_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type"), "no_own_tank")
 		if no_own_fuel_tank:
 			return
-		if self.customer_type == "CDCL":
+		if self.customer_type == "Own Company":
 			if flt(self.consumption_km) == 0 and flt(self.consumption_hours) == 0 and flt(self.consumption) == 0:
 				self.check_condition()	
 		else:
