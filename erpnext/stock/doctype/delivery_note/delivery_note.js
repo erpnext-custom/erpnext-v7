@@ -258,16 +258,15 @@ if (sys_defaults.auto_accounting_for_stock) {
 		refresh_field("items");
 	}
 
-	cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc) {
-		return {
+}
 
-			filters: {
-				'company': doc.company,
-				"is_group": 0,
-				"is_disabled": 0,
-			}
-		}
-	}
+//cost Center
+cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+                query: "erpnext.controllers.queries.filter_branch_cost_center",
+                filters: {'branch': frm.branch}
+        }
 }
 
 //custom Scripts

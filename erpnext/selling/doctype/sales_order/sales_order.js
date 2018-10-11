@@ -163,6 +163,19 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 						}
 					})
 				}, __("Get items from"));
+			
+			cur_frm.add_custom_button(__('Product Requisition'),
+                                function() {
+                                        erpnext.utils.map_current_doc({
+                                                method: "erpnext.selling.doctype.product_requisition.product_requisition.make_sales_order",
+                                                source_doctype: "Product Requisition",
+                                                get_query_filters: {
+                                                        docstatus: 1,
+                                                        company: cur_frm.doc.company
+                                                }
+                                        })
+                                }, __("Get items from"));
+
 		}
 
 		this.order_type(doc);

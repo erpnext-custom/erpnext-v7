@@ -98,7 +98,7 @@ frappe.ui.form.on("Equipment Hiring Advance", {
 
 cur_frm.add_fetch("tc_name", "terms", "terms")
 
-cur_frm.add_fetch("cost_center", "branch", "branch")
+cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("customer", "location", "address")
 cur_frm.add_fetch("customer", "telephone_and_fax", "contact_number")
 

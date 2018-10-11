@@ -28,8 +28,9 @@ class EquipmentHiringForm(Document):
 		else:
 			if self.advance_required <= self.prev_advance_balance:
 				self.advance_amount = 0.00
-		if self.advance_required < self.total_hiring_amount:
-			frappe.throw("Advance required cannot be lesser than Total Hiring Amount");
+		if self.private == "Private":
+			if self.advance_required < self.total_hiring_amount:
+				frappe.throw("Advance required cannot be lesser than Total Hiring Amount");
 
 	def validate_date(self, a):
 		from_date = get_datetime(str(a.from_date) + ' ' + str(a.from_time))

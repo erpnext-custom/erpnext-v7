@@ -832,3 +832,10 @@ def sync_item_code():
 def get_item_list():
 	return frappe.db.sql("select item_code as value from tabItem where item_group = 'Sales Product'", as_dict=1)
 
+@frappe.whitelist()
+def get_sub_category(parent):
+	options=[]
+	for d in frappe.db.sql("select sub_category_name as value from `tabAsset Sub Category` where parent=%s", parent, as_dict=True):
+		options.append(d['value'])
+	
+	return options

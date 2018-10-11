@@ -342,16 +342,14 @@ frappe.ui.form.on("Purchase Order Item", "item_code", function(frm, cdt, cdn) {
 })
 
 //cost Center
-cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc) {
-	return {
-		filters: {
-			'company': doc.company,
-			"is_group": 0,
-			"is_disabled": 0,
-			"branch": doc.branch
-		}
-	}
+cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+                query: "erpnext.controllers.queries.filter_branch_cost_center",
+                filters: {'branch': frm.branch}
+        }
 }
+
 
 frappe.ui.form.on("Purchase Order", "items_on_form_rendered", function(frm, grid_row, cdt, cdn) {
                 var row = cur_frm.open_grid_row();

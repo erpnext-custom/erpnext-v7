@@ -97,6 +97,24 @@ frappe.ui.form.on("Item", {
 			frm.set_value("is_stock_item", 0);
 		}
 	},
+	
+	'asset_category': function(frm) {
+		select = $('div[data-fieldname="asset_sub_category"]').children()
+		frappe.call({
+			method: "erpnext.stock.doctype.item.item.get_sub_category",
+			args: {
+				'parent': frm.doc.asset_category
+			},
+			callback: function(r) {
+				if(r.message) {
+				 	$.each(r.message, function(i, j) {
+                                		console.log("i: " + i); console.log("j: "+j);
+                                    		select.append($('<option>', {value: j, text: j}))
+                            		})
+				}
+			}
+		}); 
+	},
 
 	page_name: frappe.utils.warn_page_name_change,
 

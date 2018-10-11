@@ -28,8 +28,8 @@ frappe.query_reports["Goods Return and Rejected Report"] = {
                         "fieldname" : "uinput",
                         "label": ("Options"),
                         "fieldtype": "Select",
-                        "options": ["", "Rejected", "Returned"],
-                        "default": "",
+                        "options": ["Rejected", "Returned"],
+                        "default": "Rejected",
                 },
         ]
 }

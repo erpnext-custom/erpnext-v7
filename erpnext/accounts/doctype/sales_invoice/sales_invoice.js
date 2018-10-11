@@ -675,3 +675,14 @@ frappe.ui.form.on("Sales Invoice","items_on_form_rendered", function(frm, grid_r
         }
    })
 })
+
+
+//cost Center
+cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+                query: "erpnext.controllers.queries.filter_branch_cost_center",
+                filters: {'branch': frm.branch}
+        }
+}
+

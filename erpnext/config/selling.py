@@ -14,6 +14,13 @@ def get_data():
 					"description": _("Quotes to Leads or Customers."),
 				},
 				{
+                                        "type": "doctype",
+                                        "name": "Product Requisition",
+                                        "label": "Product Requisition",
+                                        "description": _("Customer Requisition For Products"),
+                                },
+
+				{
 					"type": "doctype",
 					"name": "Sales Order",
 					"description": _("Confirmed orders from Customers."),

@@ -24,8 +24,8 @@ def get_columns(filters):
                         ("Rate") + ":Currency:100",
                         ("Amount") + ":Currency:120",
                         ]
-        elif filters.uinput == "Rejected":
-                cols= [
+        else:
+               cols= [
                         ("Purchase Reciept #") + ":Link/Purchase Receipt:120",
                         ("Branch.") + ":Data:120",
                         ("Date") + ":Date:100",
@@ -37,40 +37,18 @@ def get_columns(filters):
                         ("Rate") + ":Currency:100",
                         ("Amount") + ":Currency:120",
                        ]
-	else:
-                cols=[
-                        ("Purchase Reciept #") + ":Link/Purchase Receipt:120",
-                        ("Branch.") + ":Data:120",
-                        ("Date") + ":Date:100",
-                        ("Supplier ") + ":Data:180",
-                        ("Item Code.") + ":Data:120",
-                        ("Item Name") + ":Data:170",
-                        ("UoM") + ":Data:70",
-                        ("Returned Qty") + ":Int:90",
-                        ("Rejected Qty") + ":Int:90",
-                        ("Rate") + ":Currency:100",
-                        ("Amount") + ":Currency:120",
-                       ]
-
-        return cols
+	return cols
 
 def get_data(filters):
         if filters.uinput == "Rejected":
                 query = """ select pr.name, pr.branch, pr.posting_date, pr.supplier,  pri.item_code,
-                                pri.item_name, pri.uom, pri.rejected_qty, pri.rate, pri.amount
+                                pri.item_name, pri.uom, pri.rejected_qty, pri.rate, pri.rejected_qty*pri.rate as amount
                                 from `tabPurchase Receipt Item`  pri, `tabPurchase Receipt` as pr
                                 where pri.parent = pr.name
-                                and pr.is_return = '1' """
-        elif filters.uinput == "Returned":
-                query = """ select pr.name, pr.branch, pr.posting_date, pr.supplier,  pri.item_code,
-                                pri.item_name, pri.uom, pri.received_qty, pri.rate, pri.amount
-                                from `tabPurchase Receipt Item`  pri, `tabPurchase Receipt` as pr
-                                where pri.parent = pr.name
-                                and pr.is_return = '1' """
-
+                                and pri.docstatus = 1 """
         else:
-                query = """ select pr.name, pr.branch, pr.posting_date, pr.supplier,  pri.item_code,
-                                pri.item_name, pri.uom, pri.received_qty, pri.rejected_qty, pri.rate, pri.amount
+		query = """ select pr.name, pr.branch, pr.posting_date, pr.supplier,  pri.item_code,
+                                pri.item_name, pri.uom, pri.received_qty, pri.rate, pri.received_qty*pri.rate as amount
                                 from `tabPurchase Receipt Item`  pri, `tabPurchase Receipt` as pr
                                 where pri.parent = pr.name
                                 and pr.is_return = '1' """

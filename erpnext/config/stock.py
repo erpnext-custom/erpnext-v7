@@ -183,7 +183,13 @@ def get_data():
 					"is_query_report": True,
 					"name": "Materialwise Recommended Reorder Level Report",
 					"doctype": "Item",
-				}
+				},
+				  {
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Goods Return and Rejected Report",
+                                        "doctype": "Purchase Receipt",
+                                }
 			]
 		},
 	]

@@ -627,21 +627,19 @@ frappe.ui.form.on("Stock Entry", "items_on_form_rendered", function(frm, grid_ro
                 }
         })
 
-cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(frm, cdt, cdn) {
-	return {
-            "filters": {
-                "is_disabled": 0,
-                "is_group": 0,
-                "branch": frm.branch
-            }
-        };
-}
-
 cur_frm.fields_dict['items'].grid.get_field('uom').get_query = function(frm, cdt, cdn) {
         var d = locals[cdt][cdn];
         return {
                 query: "erpnext.controllers.queries.get_item_uom",
                 filters: {'item_code': d.item_code}
+        }
+}
+
+cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+                query: "erpnext.controllers.queries.filter_branch_cost_center",
+                filters: {'branch': frm.branch}
         }
 }
 

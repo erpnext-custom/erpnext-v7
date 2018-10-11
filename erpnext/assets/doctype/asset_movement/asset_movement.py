@@ -9,6 +9,7 @@ from frappe.model.document import Document
 from erpnext.accounts.utils import make_asset_transfer_gl
 from frappe.utils import getdate, nowdate
 from erpnext.assets.asset_utils import check_valid_asset_transfer
+from erpnext.custom_utils import get_branch_from_cost_center
 
 class AssetMovement(Document):
 	def validate(self):
@@ -29,6 +30,7 @@ class AssetMovement(Document):
 				frappe.throw("Target and Source Cost Center cannot be same.")
 			self.target_custodian = None
 			self.target_custodian_cost_center = None
+		#frappe.throw(_("target Custodian {0} , target cost center  {1}").format(self.target_custodian, self.target_cost_center))
 
 	def assign_data(self):
 		self.source_custodian = frappe.db.get_value("Asset", self.asset, "issued_to")
@@ -41,7 +43,7 @@ class AssetMovement(Document):
 			frappe.throw(_("{0} asset cannot be transferred").format(status))
 			
 		if company != self.company:
-			frappe.throw(_("Asset {0} does not belong to company {1}").format(self.asset, self.company))
+			frappe.throw(_("asset {0} does not belong to company {1}").format(self.asset, self.company))
 			
 	def validate_warehouses(self):
 		if not self.source_warehouse:
@@ -147,7 +149,7 @@ class AssetMovement(Document):
 		frappe.db.set_value("Asset", self.asset, "issued_to", custodian)
 		
 		if self.current_cost_center != self.target_custodian_cost_center:
-			branch = frappe.db.get_value("Cost Center", cost_center, "branch")
+			branch = get_branch_from_cost_center(cost_center)
 			frappe.db.set_value("Asset", self.asset, "cost_center", frappe.db.get_value("Employee", custodian, "cost_center"))
 			frappe.db.set_value("Asset", self.asset, "branch", branch)
 			
@@ -173,7 +175,7 @@ class AssetMovement(Document):
 			cc = self.target_cost_center
 			purpose = "Submit"
 
-		branch = frappe.db.get_value("Cost Center", cc, "branch")
+		branch = get_branch_from_cost_center(cc)
 		frappe.db.set_value("Asset", self.asset, "cost_center", cc)
 		frappe.db.set_value("Asset", self.asset, "branch", branch)
 

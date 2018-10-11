@@ -347,7 +347,7 @@ frappe.ui.form.on("Material Request Item", "item_code", function(frm, cdt, cdn) 
 })
 
 //cost Center
-cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc) {
+/*cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc) {
 	return {
 		filters: {
 			'company': doc.company,
@@ -355,7 +355,16 @@ cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc
 			"is_disabled": 0,
 		}
 	}
-} 
+} */
+//cost Center
+cur_frm.fields_dict['items'].grid.get_field('cost_center_w').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+                query: "erpnext.controllers.queries.filter_branch_cost_center",
+                filters: {'branch': frm.branch}
+        }
+}
+
 
 /*
 // Shiv, 25/12/2017 test not working

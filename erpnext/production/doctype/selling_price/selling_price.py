@@ -23,6 +23,7 @@ class SellingPrice(Document):
 			if a.price_based_on == "Item":
 				a.item_name = frappe.db.get_value("Item", a.particular, "item_group")
 				a.timber_type = None
+				a.item_sub_group = None
 			else:
 				a.item_name = None
 
@@ -31,7 +32,7 @@ class SellingPrice(Document):
 		for a in branches:
 			frappe.throw("Branch <b>" + str(a.branch) + "</b> has been defined more than once")
 
-		sps = frappe.db.sql("select particular, timber_type, count(particular) as num from `tabSelling Price Rate` where parent = %s group by particular, timber_type having num > 1", self.name, as_dict=1)
+		sps = frappe.db.sql("select particular, timber_type, item_sub_group, count(particular) as num from `tabSelling Price Rate` where parent = %s group by particular, timber_type, item_sub_group  having num > 1", self.name, as_dict=1)
 		for a in sps:
 			if a.timber_type:
 				frappe.throw("<b>" + str(a.particular) + "/" + str(a.timber_type) + "</b> has been defined more than once")

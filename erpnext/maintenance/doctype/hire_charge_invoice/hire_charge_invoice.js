@@ -92,7 +92,7 @@ function calculate_balance(frm) {
 
 cur_frm.add_fetch("ehf_name","customer","customer")
 cur_frm.add_fetch("ehf_name","private","owned_by")
-cur_frm.add_fetch("cost_center","branch","branch")
+cur_frm.add_fetch("branch", "cost_center", "cost_center")
 //cur_frm.add_fetch("ehf_name","advance_amount","advance_amount")
 
 

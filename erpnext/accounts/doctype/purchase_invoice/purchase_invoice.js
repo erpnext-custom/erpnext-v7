@@ -439,3 +439,13 @@ function doUpdates(doc) {
          cur_frm.set_value("base_tds_amount", (doc.tds_rate/100 ) * doc.tds_taxable_amount * doc.conversion_rate);
     }
 }
+
+//cost Center
+cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+                query: "erpnext.controllers.queries.filter_branch_cost_center",
+                filters: {'branch': frm.branch}
+        }
+}
+

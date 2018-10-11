@@ -9,6 +9,7 @@ from frappe.model.document import Document
 from erpnext.accounts.utils import make_asset_transfer_gl
 from erpnext.assets.asset_utils import check_valid_asset_transfer
 from erpnext.assets.doctype.asset_movement.asset_movement import save_equipment
+from erpnext.custom_utils import get_branch_from_cost_center
 
 class BulkAssetTransfer(Document):
 	def validate_data(self):
@@ -77,7 +78,7 @@ class BulkAssetTransfer(Document):
 			doc.db_set("issued_to", a.custodian)
 
 			if a.cost_center != self.custodian_cost_center:
-				branch = frappe.db.get_value("Cost Center", a.cost_center, "branch")
+				branch = get_branch_from_cost_center(a.cost_center)
 				doc.db_set("cost_center", a.cost_center)
 				doc.db_set("branch", branch)
 				equipment = frappe.db.get_value("Equipment", {"asset_code": a.asset_code}, "name")

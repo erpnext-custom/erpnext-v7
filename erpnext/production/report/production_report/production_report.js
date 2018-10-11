@@ -181,6 +181,15 @@ frappe.query_reports["Production Report"] = {
 			}
 		},
 		{
+			"fieldname": "timber_type",
+			"label":("Timber Type"),
+			"fieldtype" : "Select",
+			"width" :"80",
+			"options": ["All", "Conifer","Broadleaf"],
+			"default": "All",
+			"reqd" : 1
+		},
+		{
 			"fieldname": "show_aggregate",
 			"label": ("Show Aggregate Data"),
 			"fieldtype": "Check",

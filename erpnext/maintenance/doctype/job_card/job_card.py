@@ -36,8 +36,8 @@ class JobCard(AccountsController):
 		self.outstanding_amount = self.total_amount
 
 	def validate_owned_by(self):
-		if self.owned_by == "CDCL" and self.cost_center == self.customer_cost_center:
-			self.owned_by = "Own"
+		if self.owned_by == "Own Company" and self.cost_center == self.customer_cost_center:
+			self.owned_by = "Own Branch"
 			self.customer_cost_center = None
 			self.customer_branch = None
 
@@ -53,9 +53,9 @@ class JobCard(AccountsController):
 				frappe.throw("Job Out Date should be greater than or equal to Job In Date")
 			self.update_reservation()
 		#self.check_items()
-		if self.owned_by == "Own":
+		if self.owned_by == "Own Branch":
 			self.db_set("outstanding_amount", 0)
-		if self.owned_by == "CDCL":
+		if self.owned_by == "Own Company":
 			self.post_journal_entry()
 			self.db_set("outstanding_amount", 0)
 		if self.owned_by == "Others":
@@ -127,7 +127,7 @@ class JobCard(AccountsController):
 			je.posting_date = self.posting_date
 			je.branch = self.branch
 
-			if self.owned_by == "CDCL":
+			if self.owned_by == "Own Company":
 				ir_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_internal_account")
 				if not ir_account:
 					frappe.throw("Setup Internal Revenue Account in Maintenance Accounts Settings")	
@@ -207,7 +207,7 @@ class JobCard(AccountsController):
 								"credit": flt(amount),
 							})
 
-				if self.owned_by == "Own":
+				if self.owned_by == "Own Branch":
 					je.append("accounts", {
 							"account": maintenance_account,
 							"reference_type": "Job Card",

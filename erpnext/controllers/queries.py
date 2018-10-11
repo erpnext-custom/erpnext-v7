@@ -381,7 +381,14 @@ def get_item_uom(doctype, txt, searchfield, start, page_len, filters):
 def filter_branch_wh(doctype, txt, searchfield, start, page_len, filters):
         if not filters.get("branch"):
                 frappe.throw("Select Branch First")
-	return frappe.db.sql("select warehouse from `tabCost Center` where name = %s", get_branch_cc(filters.get("branch")))
+	return frappe.db.sql("select name from `tabWarehouse` where branch = %s and disabled = 0", filters.get("branch"))
+
+
+@frappe.whitelist()
+def filter_branch_cost_center(doctype, txt, searchfield, start, page_len, filters):
+        if not filters.get("branch"):
+                frappe.throw("Select Branch First")
+	return frappe.db.sql("select cost_center from `tabBranch` where name = %s", filters.get("branch"))
 
 def get_cop_list(doctype, txt, searchfield, start, page_len, filters):
         if not filters.get("branch") or not filters.get("item_code") or not filters.get("posting_date"):
