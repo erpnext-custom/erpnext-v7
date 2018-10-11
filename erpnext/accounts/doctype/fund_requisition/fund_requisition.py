@@ -26,7 +26,7 @@ class FundRequisition(Document):
 		
 		cl_status = frappe.db.get_value("Journal Entry", self.reference, "docstatus")
 		if cl_status != 2:
-			frappe.throw("You need to cancel the journal entry related to this job card first!")
+			frappe.throw("You need to cancel the journal entry related to this fund requsition first!")
 		
 		self.db_set('reference', "")
 

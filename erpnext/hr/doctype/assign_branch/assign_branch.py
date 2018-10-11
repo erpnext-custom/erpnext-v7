@@ -23,7 +23,7 @@ class AssignBranch(Document):
 	
 	def assign_name(self):
 		if self.employee:
-			emp = frappe.get_doc("Employee", self.employee)
+			emp = frappe.get_doc(self.employee_type, self.employee)
 			self.user = emp.user_id
 			self.current_branch = emp.branch
 		else:
