@@ -140,13 +140,14 @@ frappe.ui.form.on('Asset', {
 	},
 
 	item_code: function(frm) {
-		if(frm.doc.item_code) {
+	/*	if(frm.doc.item_code) {
 			frappe.call({
 				method: "erpnext.assets.doctype.asset.asset.get_item_details",
 				args: {
 					item_code: frm.doc.item_code
 				},
 				callback: function(r, rt) {
+					console.log(r.message);
 					if(r.message) {
 						$.each(r.message, function(field, value) {
 							frm.set_value(field, value);
@@ -154,9 +155,31 @@ frappe.ui.form.on('Asset', {
 					}
 				}
 			})
-		}
-	},
+		} */
+		/*if(frm.doc.asset_category && frm.doc.asset_sub_category){
+			frappe.call({
+			    'method': 'frappe.client.get',
+			    'args': {
+				'doctype': 'Asset Sub Category',
+				'filters': {
+				    'parent': frm.doc.asset_category,
+				    'sub_category_name': frm.doc.asset_sub_category
+				  },
+				'fields':['total_number_of_depreciations','depreciation_percent']
+				},
+			       callback: function(r){
+				   if (r.message) {
+				       cur_frm.set_value("asset_depreciation_percent", r.message.depreciation_percent);
+				       cur_frm.set_value("total_number_of_depreciations", r.message.total_number_of_depreciations);
+				   }
+				}
+			});
+		}else{
+			frappe.msgprint("Item is not mapped with Asset and Sub asset Category");
+		}  */
 
+	},
+		
 	is_existing_asset: function(frm) {
 		frm.toggle_enable("supplier", frm.doc.is_existing_asset);
 		frm.toggle_reqd("next_depreciation_date", !frm.doc.is_existing_asset);
@@ -341,58 +364,78 @@ cur_frm.add_fetch("issued_to", "branch", "branch");
 //Set next depreciation date as the last day of the month
 cur_frm.cscript.onload = function(doc) {
 
-frappe.call({
-    'method': 'erpnext.assets.doctype.asset.asset.get_next_depreciation_date',
-    'args': {
-        },
-       callback: function(r){
-           if (r.message) {
-                 if(doc.next_depreciation_date) {}
-                 else {
-                      cur_frm.set_value("next_depreciation_date", r.message);
-                      //cur_frm.set_df_property("next_depreciation_date", "hidden", true);
-                 }
-           }
-       }
-});
+	frappe.call({
+	    'method': 'erpnext.assets.doctype.asset.asset.get_next_depreciation_date',
+	    'args': {
+		},
+	       callback: function(r){
+		   if (r.message) {
+			 if(doc.next_depreciation_date) {}
+			 else {
+			      cur_frm.set_value("next_depreciation_date", r.message);
+			      //cur_frm.set_df_property("next_depreciation_date", "hidden", true);
+			 }
+		   }
+	       }
+	});
 
 }
 
+cur_frm.cscript.asset_sub_category = function(doc) {
+	frappe.call({
+	    'method': 'frappe.client.get',
+	    'args': {
+		'doctype': 'Asset Sub Category',
+		'filters': {
+		    'parent': doc.asset_category,
+		    'sub_category_name': doc.asset_sub_category
+		  },
+		'fields':['total_number_of_depreciations','depreciation_percent']
+		},
+	       callback: function(r){
+		   if (r.message) {
+		       cur_frm.set_value("asset_depreciation_percent", r.message.depreciation_percent);
+		       cur_frm.set_value("total_number_of_depreciations", r.message.total_number_of_depreciations);		   
+		   }
+		}
+	});
+}
 //Set Depreciation rate based on asset category
 cur_frm.cscript.asset_category = function(doc) {
-
-frappe.call({
-    'method': 'frappe.client.get',
-    'args': {
-        'doctype': 'Asset Category',
-        'filters': {
-            'asset_category_name': doc.asset_category
-          },
-        'fields':['depreciation_percent']
-        },
-       callback: function(r){
-           if (r.message) {
-               cur_frm.set_value("asset_depreciation_percent", r.message.depreciation_percent);
-frappe.call({
-    'method': 'frappe.client.get',
-    'args': {
-        'doctype': 'Asset Category Account',
-        'filters': {
-            'parent': doc.asset_category
-          },
-        'fields':['fixed_asset_account', 'credit_account']
-        },
-       callback: function(r){
-           if (r.message) {
-               cur_frm.set_value("asset_account", r.message.fixed_asset_account);
-               cur_frm.set_value("credit_account", r.message.credit_account);
-           }
-       }
-});
-
-           }
-       }
-});
+/*	frappe.call({
+	    'method': 'frappe.client.get',
+	    'args': {
+		'doctype': 'Asset Sub Category',
+		'filters': {
+		    'parent': doc.asset_category,
+		    'sub_category_name': doc.asset_sub_category
+		  },
+		'fields':['total_number_of_depreciations','depreciation_percent']
+		},
+	       callback: function(r){
+		   if (r.message) {
+		       cur_frm.set_value("asset_depreciation_percent", r.message.depreciation_percent);
+		       cur_frm.set_value("total_number_of_depreciations", r.message.total_number_of_depreciations);		   
+		   }
+		}
+	});
+*/	
+	frappe.call({
+	    'method': 'frappe.client.get',
+	    'args': {
+		'doctype': 'Asset Category Account',
+		'filters': {
+		    'parent': doc.asset_category
+		  },
+		'fields':['fixed_asset_account', 'credit_account']
+		},
+	       callback: function(r){
+		   if (r.message) {
+		       cur_frm.set_value("asset_account", r.message.fixed_asset_account);
+		       cur_frm.set_value("credit_account", r.message.credit_account);
+		   }
+	       }
+	});
 
 };
 

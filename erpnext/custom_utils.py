@@ -294,3 +294,12 @@ def get_settings_value(setting_dt, company, field_name):
 	value = frappe.db.sql("select {0} from `tab{1}` where company = '{2}'".format(field_name, setting_dt, company))
 	return value and value[0][0] or None
 
+###
+# get_production_groups(group):
+###
+def get_production_groups(group):
+	if not group:
+		frappe.throw("Invalid Production Group")
+	groups = []
+	return groups
+

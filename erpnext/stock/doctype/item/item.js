@@ -98,22 +98,12 @@ frappe.ui.form.on("Item", {
 		}
 	},
 	
-	'asset_category': function(frm) {
-		select = $('div[data-fieldname="asset_sub_category"]').children()
-		frappe.call({
-			method: "erpnext.stock.doctype.item.item.get_sub_category",
-			args: {
-				'parent': frm.doc.asset_category
-			},
-			callback: function(r) {
-				if(r.message) {
-				 	$.each(r.message, function(i, j) {
-                                		console.log("i: " + i); console.log("j: "+j);
-                                    		select.append($('<option>', {value: j, text: j}))
-                            		})
-				}
+	asset_category: function() {
+		cur_frm.fields_dict['asset_sub_category'].get_query = function(doc, dt, dn){
+			return {
+					filters:{"parent":doc.asset_category}	
 			}
-		}); 
+		}
 	},
 
 	page_name: frappe.utils.warn_page_name_change,
@@ -448,3 +438,12 @@ frappe.ui.form.on("Item", "refresh", function(frm) {
         };
     });*/ 
 })
+
+cur_frm.set_query("asset_sub_category", function(frm) {
+        return {
+            "filters": {
+                "parent": frm.doc.asset_category,
+            }
+        };
+    });
+

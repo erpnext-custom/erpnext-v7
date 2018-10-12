@@ -62,6 +62,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Adhoc Royalty Setting",
 				},
+				{
+					"type": "doctype",
+					"name": "Production Group",
+				},
 			]
 		},
 		{
@@ -72,6 +76,12 @@ def get_data():
                                         "type": "report",
                                         "is_query_report": True,
                                         "name": "Production Report",
+                                        "doctype": "Production"
+                                },
+                                {
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Production Progress Report",
                                         "doctype": "Production"
                                 },
 

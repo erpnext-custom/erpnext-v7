@@ -2,8 +2,9 @@
 # For license information, please see license.txt
 from __future__ import unicode_literals
 import frappe
-from erpnext.accounts.utils import get_child_cost_centers
+from erpnext.accounts.utils import get_child_cost_centers, get_period_date
 from frappe.utils import flt
+from erpnext.custom_utils import get_production_groups
 
 def execute(filters=None):
 	columns = get_columns(filters)
@@ -62,38 +63,11 @@ def get_conditions(filters):
 
 	condition = " and pe.branch in {0} ".format(tuple(all_branch))
 
-	if filters.production_type != "All":
-		condition += " and pe.production_type = '{0}'".format(filters.production_type)
-
-	if filters.timber_type != "All":
-		condition += " and pe.timber_type = '{0}'".format(filters.timber_type)
-
 	if filters.location:
 		condition += " and pe.location = '{0}'".format(filters.location)
 
-	if filters.adhoc_production:
-		condition += " and pe.adhoc_production = '{0}'".format(filters.adhoc_production)
-
-	if filters.item_group:
-		condition += " and pe.item_group = '{0}'".format(filters.item_group)
-
-	if filters.item_sub_group:
-		condition += " and pe.item_sub_group = '{0}'".format(filters.item_sub_group)
-
-	if filters.item:
-		condition += " and pe.item_code = '{0}'".format(filters.item)
-
-	if filters.from_date and filters.to_date:
-		condition += " and pe.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
-
-	if filters.timber_species:
-		condition += " and pe.timber_species = '{0}'".format(filters.timber_species)
-
-	if filters.timber_class:
-		condition += " and pe.timber_class = '{0}'".format(filters.timber_class)
-
-	if filters.warehouse:
-		condition += " and pe.warehouse = '{0}'".format(filters.warehouse)
+	filters.from_date, filters.to_date = get_period_date(filters.fiscal_year, filters.report_period)
+	condition += " and posting_date between '{0}' and '{1}'".format(filters.from_date, filters.from_date)
 
 	return condition
 

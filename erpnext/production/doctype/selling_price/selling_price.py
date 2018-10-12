@@ -27,33 +27,38 @@ class SellingPrice(Document):
 			else:
 				a.item_name = None
 
-	def check_duplicate_entries(self):
-		branches = frappe.db.sql("select branch, count(branch) as num from `tabSelling Price Branch` where parent = %s group by branch having num > 1", self.name, as_dict=1)
-		for a in branches:
-			frappe.throw("Branch <b>" + str(a.branch) + "</b> has been defined more than once")
 
-		sps = frappe.db.sql("select particular, timber_type, item_sub_group, count(particular) as num from `tabSelling Price Rate` where parent = %s group by particular, timber_type, item_sub_group  having num > 1", self.name, as_dict=1)
-		for a in sps:
-			if a.timber_type:
-				frappe.throw("<b>" + str(a.particular) + "/" + str(a.timber_type) + "</b> has been defined more than once")
-			else:
-				frappe.throw("<b>" + str(a.particular) + "</b> has been defined more than once")
+	def check_duplicate_entries(self):
+                branches = frappe.db.sql("select branch, count(branch) as num from `tabSelling Price Branch` where parent = %s group by branch having num > 1", self.name, as_dict=1)
+                for a in branches:
+                        frappe.throw("Branch <b>" + str(a.branch) + "</b> has been defined more than once")
+
+                sps = frappe.db.sql("select particular, timber_type, item_sub_group, count(particular) as num from `tabSelling Price Rate` where parent = %s group by particular, timber_type, item_sub_group  having num > 1", self.name, as_dict=1)
+                for a in sps:
+                        if a.timber_type and a.item_sub_group:
+                                frappe.throw("<b>" + str(a.particular) + "/" + str(a.timber_type) +  "/" + str(a.item_sub_group) + "</b> has been defined more than once")
+                        else:
+                                frappe.throw("<b>" + str(a.particular) + "</b> has been defined more than once")
+
+	
+
 
 	def check_duplicate_settings(self):
-		#Check branch duplicate
-		item_list = []
-		for a in self.item_rates:
-			item_list.append(str(a.particular) + "/" + str(a.timber_type))
+                #Check branch duplicate
+                item_list = []
+                for a in self.item_rates:
+                        item_list.append(str(a.particular) + "/" + str(a.timber_type) + "/" + str(a.item_sub_group))
 
-		for a in frappe.db.sql("select a.branch, count(a.branch) as num, b.name from `tabSelling Price Branch` a, `tabSelling Price` b where a.parent = b.name and %s between b.from_date and b.to_date or %s between b.from_date and b.to_date group by branch having num > 1", (self.from_date, self.to_date), as_dict=1):
-			#check for Item duplicate
-			doc = frappe.get_doc("Selling Price", a.name)
-			for b in doc.item_rates:
-				if str(b.particular) + "/" + str(b.timber_type) in item_list:
-					if b.timber_type:
-						frappe.throw("<b>"+str(b.particular) + "/" + str(b.timber_type) + "</b> already defined for the same period in <b>"+str(a.name)+"</b>")
-					else:
-						frappe.throw("<b>"+str(b.particular) + "</b> already defined for the same period in <b>"+str(a.name)+"</b>")
+                for a in frappe.db.sql("select a.branch, count(a.branch) as num, b.name from `tabSelling Price Branch` a, `tabSelling Price` b where a.parent = b.name and %s between b.from_date and b.to_date or %s between b.from_date and b.to_date group by branch having num > 1", (self.from_date, self.to_date), as_dict=1):
+                        #check for Item duplicate
+                        doc = frappe.get_doc("Selling Price", a.name)
+                        for b in doc.item_rates:
+                                if str(b.particular) + "/" + str(b.timber_type) + "/" + str(b.item_sub_group) in item_list:
+                                        if b.timber_type and b.item_sub_group:
+                                                frappe.throw("<b>"+str(b.particular) + "/" + str(b.timber_type) + "/" + str(b.item_sub_group)+ "</b> already defined for the same period in <b>"+str(a.name)+"</b>")
+                                        else:
+                                                frappe.throw("<b>"+str(b.particular) + "</b> already defined for the same period in <b>"+str(a.name)+"</b>")
+
 
 @frappe.whitelist()
 def get_cop_amount(cop, branch, posting_date, item_code):
@@ -76,8 +81,9 @@ def get_selling_rate(price_list, branch, item_code, transaction_date):
                 species = frappe.db.get_value("Item", item_code, "species")
                 #frappe.msgprint("{0}".format(doc.name))
                 if species:
+			item_sub_group = frappe.db.get_value("Item", item_code, "item_sub_group")
                         timber_class, timber_type = frappe.db.get_value("Timber Species", species, ["timber_class", "timber_type"])
-                        rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}'""".format(price_list, timber_class, timber_type), as_dict =1)
+                        rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group = '{3}'""".format(price_list, timber_class, timber_type, item_sub_group), as_dict =1)
                         #frappe.msgprint("yes rate {0}".format(rate))
         return rate and flt(rate[0].rate) or 0.0
 
