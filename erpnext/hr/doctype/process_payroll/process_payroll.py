@@ -22,29 +22,33 @@ from erpnext.hr.hr_custom_functions import get_month_details
 
 class ProcessPayroll(Document):
 
-	def get_emp_list(self):
-		"""
-			Returns list of active employees based on selected criteria
-			and for which salary structure exists
-		"""
+	def get_emp_list(self, process_type=None):
 		cond = self.get_filter_condition()
-		cond += self.get_joining_releiving_condition()
 
-		emp_list = frappe.db.sql("""
-			select distinct t1.name, t1.cost_center
-			from `tabEmployee` t1, `tabSalary Structure` t2
-			where t1.docstatus!=2 and t2.docstatus != 2
-			and ifnull(t2.salary_slip_based_on_timesheet,0) = 0
-			and t1.name = t2.employee
-			and not exists(select 1
-                                        from `tabSalary Slip` as t3
-                                        where t3.employee = t1.name
-                                        and t3.docstatus != 2
-                                        and t3.fiscal_year = '{0}'
-                                        and t3.month = '{1}')
-                        {2}
-                        order by t1.cost_center, t1.name
-		""".format(self.fiscal_year, self.month, cond), as_dict=True)
+		if process_type == "create":
+                        cond += self.get_joining_releiving_condition()
+                        emp_list = frappe.db.sql("""
+                                select t1.name
+                                from `tabEmployee` t1
+                                where not exists(select 1
+                                                from `tabSalary Slip` as t3
+                                                where t3.employee = t1.name
+                                                and t3.docstatus != 2
+                                                and t3.fiscal_year = '{0}'
+                                                and t3.month = '{1}')
+                                {2}
+                                order by t1.branch, t1.name
+                        """.format(self.fiscal_year, self.month, cond), as_dict=True)
+                else:
+                        emp_list = frappe.db.sql("""
+                                select t1.name
+                                from `tabSalary Slip` as t1
+                                where t1.fiscal_year = '{0}'
+                                and t1.month = '{1}'
+                                and t1.docstatus = 0
+                                {2}
+                                order by t1.branch, t1.name
+                        """.format(self.fiscal_year, self.month, cond), as_dict=True)
 
 		return emp_list
 
@@ -58,15 +62,13 @@ class ProcessPayroll(Document):
 
 		return cond
 
-
 	def get_joining_releiving_condition(self):
 		m = get_month_details(self.fiscal_year, self.month)
 		cond = """
 			and ifnull(t1.date_of_joining, '0000-00-00') <= '%(month_end_date)s'
 			and ifnull(t1.relieving_date, '%(month_end_date)s') >= '%(month_start_date)s'
-			and t2.from_date <= '%(month_end_date)s'
-			and ifnull(t2.to_date,'%(month_end_date)s') >= '%(month_start_date)s'
 		""" % m
+		
 		return cond
 
 	def check_mandatory(self):
@@ -74,33 +76,44 @@ class ProcessPayroll(Document):
 			if not self.get(f):
 				frappe.throw(_("Please set {0}").format(f))
 
-        def create_sal_slip(self, employee=None, cost_center=None):
-		"""
-			Creates salary slip for selected employees if already not created
-		"""
-
+        # Created by SHIV on 2018/10/15
+        def process_salary(self, process_type=None, name=None):
 		self.check_permission('write')
-		ss_list = []
-		if employee:
-			ss = frappe.get_doc({
-				"doctype": "Salary Slip",
-				"salary_slip_based_on_timesheet": 0,
-				"fiscal_year": self.fiscal_year,
-				"cost_center": cost_center,
-				"employee": employee,
-				"month": self.month,
-				"company": self.company,
-			})
-			ss.insert()
-			ss_list.append(ss.name)
-                        #return self.create_log(ss_list)
-			#return "<tr><td>"+self.format_as_links(ss_list)[0]+"</td></tr>"
-			format_string = 'href="#Form/Salary Slip/{0}"'.format(ss.name)
-			return '<tr><td><a {0}>{1}</a></td><td><a {0}>{2}</a></td><td>{3}</td></tr>'.format(format_string, ss.name, frappe.db.get_value("Salary Slip", ss.name, "employee_name"), cost_center)
-			
-		return employee
+		msg = ""
+		
+		if name:
+                        try:
+                                if process_type == "create":
+                                        ss = frappe.get_doc({
+                                                "doctype": "Salary Slip",
+                                                "salary_slip_based_on_timesheet": 0,
+                                                "fiscal_year": self.fiscal_year,
+                                                "employee": name,
+                                                "month": self.month,
+                                                "company": self.company,
+                                        })
+                                        ss.insert()
+                                        msg = "Created Successfully"
+                                else:
+                                        if process_type == "remove":
+                                                ss = frappe.get_doc("Salary Slip", name)
+                                                ss_list = frappe.db.sql("delete from `tabSalary Slip Item` where parent='{0}'".format(name))
+                                                ss_list = frappe.db.sql("delete from `tabSalary Detail` where parent='{0}'".format(name))
+                                                ss_list = frappe.db.sql("delete from `tabSalary Slip` where name='{0}'".format(name))
+                                                frappe.db.commit()
+                                                msg = "Removed Successfully"
+                                        else:
+                                                ss = frappe.get_doc("Salary Slip", name)
+                                                ss.submit()
+                                                msg = "Submitted Successfully"
+                                if ss:
+                                        format_string = 'href="#Form/Salary Slip/{0}"'.format(ss.name)
+                                        return '<tr><td><a {0}>{1}</a></td><td><a {0}>{2}</a></td><td>{3}</td><td>{4}</td></tr>'.format(format_string, ss.name, ss.employee_name, msg, ss.branch)
+                        except Exception, e:
+                                return '<div style="color:red;">Error: {0}</div>'.format(str(e))
+                                
+		return name
 
-	'''
 	def create_sal_slip(self):
 		"""
 			Creates salary slip for selected employees if already not created
@@ -128,32 +141,7 @@ class ProcessPayroll(Document):
 
 		frappe.msgprint(_("Creating salary slips completed successfully."))
 		return self.create_log(ss_list)
-        '''
 	
-        def remove_sal_slip(self):
-		cond = ''
-		log  = "No employee for the above selected criteria OR salary slip(s) already submitted"
-		self.progress = ""
-		for f in ['company', 'employee']:
-			if self.get(f):
-				cond += " and " + f + " = '" + self.get(f).replace("'", "\'") + "'"
-                
-                ss_list = frappe.db.sql("""
-                                delete from `tabSalary Slip`
-                                where fiscal_year = '%s'
-                                and month = '%s'
-                                and docstatus = 0
-                                %s
-                                """ % (self.fiscal_year, self.month, cond))
-                res = frappe.db.sql("select row_count() as rowcount", as_dict=True)[0]
-                frappe.db.commit()
-                if res.rowcount:
-                        log = "Total {0} salary slip(s) removed successfully".format(res.rowcount)
-
-                frappe.msgprint(log)
-                return log
-
-        '''
         def remove_sal_slip(self):
 		cond = ''
 		log = ''
@@ -184,7 +172,6 @@ class ProcessPayroll(Document):
 
                 frappe.msgprint(_(log))
                 return log                
-        '''
         
 	def create_log(self, ss_list):
 		log = "<p>" + _("No employee for the above selected criteria OR salary slip already created") + "</p>"
@@ -192,24 +179,6 @@ class ProcessPayroll(Document):
 			log = "<b>" + _("Salary Slip Created") + "</b>\
 			<br><br>%s" % '<br>'.join(self.format_as_links(ss_list))
 		return log
-
-        ''' WORK IN PROGRESS
-	def get_sal_slip_list(self):
-		"""
-			Returns list of salary slips based on selected criteria
-			which are not submitted
-		"""
-		cond = self.get_filter_condition()
-		ss_list = frappe.db.sql("""
-			select t1.name, t1.cost_center from `tabSalary Slip` t1
-			where t1.docstatus = 0
-			and month = '{0}'
-			and fiscal_year = '{1}'
-			{2}
-			order by t1.cost_center, t1.name
-		""".format(self.month, self.fiscal_year, cond), as_dict=True)
-		return ss_list
-        '''
 
 	def get_sal_slip_list(self):
 		"""
@@ -243,7 +212,7 @@ class ProcessPayroll(Document):
 
                 frappe.msgprint(_("Salary slips submitted successfully."))
 		return self.create_submit_log(ss_list, not_submitted_ss)
-
+        
 	def create_submit_log(self, all_ss, not_submitted_ss):
 		log = ''
 		if not all_ss:

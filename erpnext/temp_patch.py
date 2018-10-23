@@ -2,10 +2,12 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe import msgprint
-from frappe.utils import flt, cint, now
+from frappe.utils import flt, cint, now, getdate
 from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff, today, get_first_day, get_last_day
-from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+#from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
+from frappe.model.naming import make_autoname
 
 def adjust_leave_encashment():
         les = frappe.db.sql("select name, encashed_days, employee from `tabLeave Encashment` where docstatus = 1 and application_date between %s and %s", ('2017-01-01', '2017-12-31'), as_dict=True)
@@ -566,3 +568,15 @@ def get_monthly_count(from_date, to_date):
     format_strings = ','.join(['%s'] * len(mcount))
     print format_strings
     print "VALUES IN ({0})".format(format_strings) % tuple(keys)
+
+def employee_id_check():
+    counter2 = 0
+    ylist = frappe.db.sql("select year(date_of_joining) years from `tabEmployee` group by year(date_of_joining) order by years",as_dict=True)
+    for y in ylist:
+         counter = 0
+         elist = frappe.db.sql("select date_of_joining,name,employee_name,earlier_id from `tabEmployee` where year(date_of_joining) = '{0}' order by date_of_joining".format(y.years),as_dict=True)
+         for e in elist:
+              counter += 1
+              if cint(e.name[-3:]) != cint(counter):
+		   counter2 += 1
+                   print counter2, e.date_of_joining, counter, e.name, e.employee_name, e.earlier_id

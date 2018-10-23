@@ -263,7 +263,7 @@ class Asset(Document):
 				"company": self.company,
 				"remark": self.name + " (" + self.asset_name + " ) Asset Issued",
 				"user_remark": self.name + "(" + self.asset_name + ") Asset Issued",
-				"posting_date": self.purchase_date,
+				"posting_date": self.posting_date if self.posting_date else self.purchase_date,
 				"branch": self.branch
 				})
 			#credit
@@ -297,7 +297,7 @@ class Asset(Document):
 				"remark": self.name + " (" + self.asset_name + ") Asset Issued",
 				"user_remark": self.name + " (" + self.asset_name + ") Asset Issued",
 				#"posting_date": self.purchase_date,
-				"posting_date": self.purchase_date,
+				"posting_date": self.posting_date if self.posting_date else self.purchase_date,
 				"branch": self.branch
 				})
 
@@ -401,7 +401,7 @@ def transfer_asset(args):
 
 @frappe.whitelist()
 def get_item_details(item_code):
-	asset_category = frappe.db.get_value("Item", item_code, "asset_category")
+	asset_category, asset_sub_category = frappe.db.get_value("Item", item_code, ["asset_category","asset_sub_category"])
 
 	if not asset_category:
 		frappe.throw(_("Please enter Asset Category in Item {0}").format(item_code))
@@ -410,7 +410,8 @@ def get_item_details(item_code):
 		["depreciation_method", "total_number_of_depreciations", "frequency_of_depreciation"], as_dict=1)
 
 	ret.update({
-		"asset_category": asset_category
+		"asset_category": asset_category,
+		"asset_sub_category": asset_sub_category
 	})
 
 	return ret

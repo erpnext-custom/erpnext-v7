@@ -52,53 +52,41 @@ frappe.ui.form.on('Equipment Hiring Form', {
 	},
 	"total_hiring_amount": function(frm) {
 		if(frm.doc.docstatus != 1 && frm.doc.private == "Private") {
-			frm.set_value("advance_required", frm.doc.total_hiring_amount);
-			calculate_advance_amount(frm);
+		/*	frm.set_value("advance_required", frm.doc.total_hiring_amount);
+			if(frm.doc.prev_advance_balance > 0){
+				frm.set_value("advance_amount", frm.doc.advance_required - frm.doc.prev_advance_balance);
+			}else{
+				frm.set_value("advance_amount", frm.doc.advance_required);				
+			}*/
+			frm.set_value("advance_amount", frm.doc.total_hiring_amount);	
 		}
 	},
 	"private": function(frm) {
-		cur_frm.toggle_reqd("customer_cost_center", frm.doc.private == 'Own Company')
-		cur_frm.toggle_reqd("customer_branch", frm.doc.private == 'Own Company')
+		cur_frm.toggle_reqd("customer_cost_center", frm.doc.private == 'CDCL')
+		cur_frm.toggle_reqd("customer_branch", frm.doc.private == 'CDCL')
 		cur_frm.toggle_reqd("advance_amount", frm.doc.private == 'Private')
 	},
-	"prev_advance_balance": function(frm) {
-		calculate_advance_amount(frm);	
-	},
-	"advance_required": function(frm) {
-		calculate_advance_amount(frm);
+
+/*	"advance_required": function(frm) {
+		if(frm.doc.prev_advance_balance > 0){
+			frm.set_value("advance_amount", frm.doc.advance_required - frm.doc.prev_advance_balance);
+		}else{
+			frm.set_value("advance_amount", frm.doc.advance_required);				
+		}	
+
 	},	
 	"get_advance_balance": function(frm) {
 		get_advance_balance(frm);
-		calculate_advance_amount(frm);
-		
-	}	
-});
-
-function calculate_advance_amount(frm){
-	var ad_required = (frm.doc.advance_required > 0)?frm.doc.advance_required:0;
-	var prev_amount = (frm.doc.prev_advance_balance > 0)?frm.doc.prev_advance_balance:0; 
-	if(ad_required > prev_amount)
-		frm.set_value("advance_amount",ad_required - prev_amount);
-	else
-		frm.set_value("advance_amount",0);
-}
-
-frappe.ui.form.on("Equipment Hiring Advance", {
-	"allocated_amount": function(frm, cdt, cdn){
-		var child = locals[cdt][cdn];
-		var total_balance = 0;
-		frm.doc.balance_advance_details.forEach(function(d){
-			if(d.allocated_amount > 0){
-				total_balance += d.allocated_amount; 
-			}
-		});
-		cur_frm.set_value("prev_advance_balance", total_balance);
-	}
+		if(frm.doc.advance_required > 0)
+			frm.set_value("advance_amount", frm.doc.advance_required - frm.doc.prev_advance_balance);
+		else
+			frm.set_value("advance_amount", -frm.doc.prev_advance_balance);
+	} */	
 });
 
 cur_frm.add_fetch("tc_name", "terms", "terms")
 
-cur_frm.add_fetch("branch", "cost_center", "cost_center")
+cur_frm.add_fetch("cost_center", "branch", "branch")
 cur_frm.add_fetch("customer", "location", "address")
 cur_frm.add_fetch("customer", "telephone_and_fax", "contact_number")
 
@@ -306,7 +294,7 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 		};
 	});
 	cur_frm.set_query("customer", function() {
-		if(frm.doc.private == "Own Company") {
+		if(frm.doc.private == "CDCL") {
 			return {
 			    "filters": {
 				"disabled": 0,
@@ -399,10 +387,11 @@ function get_advance_balance(form) {
 						row.reference_name = dtl['ref_name'];
 						row.cost_center = dtl['cost_center'];
 						row.posting_date = dtl['posting_date'];
-						row.jv_name = dtl['jv_name'];
-						row.advance_account = dtl['advance_account'];
-						refresh_field("balance_advance_details");						
+						row.journal = dtl['journal'];
+						refresh_field("balance_advance_details");
+						total_amount += row.amount;
 					});
+					cur_frm.set_value("prev_advance_balance", total_amount);
 					cur_frm.refresh();
 				}
 				else {

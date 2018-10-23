@@ -301,5 +301,7 @@ def get_production_groups(group):
 	if not group:
 		frappe.throw("Invalid Production Group")
 	groups = []
+	for a in frappe.db.sql("select item_sub_group from `tabProduction Group Item` where parent = %s", group, as_dict=1):
+		groups.append(str(a.item_sub_group))
 	return groups
 

@@ -49,13 +49,50 @@ def validate_filters(filters):
 
 def get_data(filters):
 	#query = "select asset_sub_category, asset_status, income_tax_opening_depreciation_amount as iopening, opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, equipment_number, serial_number, old_asset_code, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, value_after_depreciation, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date < \'" + str(filters.from_date) + "\' and gl.docstatus = 1) as opening_amount, (select sum(debit) from `tabGL Entry` as gl where gl.against_voucher = ass.name and gl.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\' and gl.docstatus = 1) as depreciation_amount, (select sum(ds.depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\' and ds.docstatus = 1) as depreciation_income_tax, (select sum(ds.depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date < \'" + str(filters.from_date) + "\' and ds.docstatus = 1) as opening_income from tabAsset as ass where ass.docstatus = 1 and ass.status != 'Scrapped'"
-	query = "select status, residual_value, expected_value_after_useful_life, asset_sub_category, asset_status, income_tax_opening_depreciation_amount as iopening, opening_accumulated_depreciation, asset_quantity_, name, asset_name, asset_category, equipment_number, serial_number, old_asset_code, presystem_issue_date, (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as issued_to, cost_center, purchase_date, gross_purchase_amount, value_after_depreciation, (select gl.accumulated_depreciation_amount from `tabDepreciation Schedule` as gl where gl.parent = ass.name and gl.schedule_date < \'" + str(filters.from_date) + "\' and gl.docstatus = 1 and gl.journal_entry is not null order by gl.schedule_date desc limit 1) as opening_amount, (select gl.accumulated_depreciation_amount from `tabDepreciation Schedule` as gl where gl.parent = ass.name and gl.schedule_date <= \'" + str(filters.to_date) + "\' and gl.docstatus = 1 and gl.journal_entry is not null order by gl.schedule_date desc limit 1) as depreciation_amount, (select sum(ds.depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\' and ds.docstatus = 1) as depreciation_income_tax, (select sum(ds.depreciation_income_tax) from `tabDepreciation Schedule` as ds where ds.parent = ass.name and ds.schedule_date < \'" + str(filters.from_date) + "\' and ds.docstatus = 1) as opening_income from tabAsset as ass where ass.docstatus = 1 and ass.status not in ('Scrapped', 'Sold')"
+	query = """
+                select
+                        a.status, a.residual_value, a.expected_value_after_useful_life, a.asset_sub_category,
+                        a.brand, a.model, a.asset_status, a.income_tax_opening_depreciation_amount as iopening,
+                        a.opening_accumulated_depreciation, a.asset_quantity_, i.stock_uom as stock_uom, a.name, a.asset_name,
+                        a.asset_category, a.equipment_number, a.serial_number, a.old_asset_code, a.presystem_issue_date,
+                        a.issued_to,e.employee_name as employee_name, e.designation as designation,
+                        a.cost_center, a.purchase_date, a.gross_purchase_amount, a.value_after_depreciation,
+                        (select gl.accumulated_depreciation_amount
+                                from `tabDepreciation Schedule` as gl
+                                where gl.parent = a.name
+                                and gl.schedule_date < '{0}'
+                                and gl.docstatus = 1
+                                and gl.journal_entry is not null
+                                order by gl.schedule_date desc limit 1) as opening_amount,
+                        (select gl.accumulated_depreciation_amount
+                                from `tabDepreciation Schedule` as gl
+                                where gl.parent = a.name
+                                and gl.schedule_date <= '{1}'
+                                and gl.docstatus = 1
+                                and gl.journal_entry is not null
+                                order by gl.schedule_date desc limit 1) as depreciation_amount,
+                        (select sum(ds.depreciation_income_tax)
+                                from `tabDepreciation Schedule` as ds
+                                where ds.parent = a.name
+                                and ds.schedule_date between '{0}' and '{1}'
+                                and ds.docstatus = 1) as depreciation_income_tax,
+                        (select sum(ds.depreciation_income_tax)
+                                from `tabDepreciation Schedule` as ds
+                                where ds.parent = a.name
+                                and ds.schedule_date < '{0}'
+                                and ds.docstatus = 1) as opening_income
+                from tabAsset as a
+                left join tabEmployee as e on e.name = a.issued_to
+                left join tabItem as i on i.name = a.item_code
+                where a.docstatus = 1
+                and a.status not in ('Scrapped', 'Sold')
+        """.format(str(filters.from_date), str(filters.to_date))
 
 	if filters.cost_center:
-		query+=" and ass.cost_center = \'" + filters.cost_center + "\'"
+		query+=" and a.cost_center = \'" + filters.cost_center + "\'"
 
 	if filters.asset_category:
-		query+=" and ass.asset_category = \'" + filters.asset_category + "\'"
+		query+=" and a.asset_category = \'" + filters.asset_category + "\'"
 
 	asset_data = frappe.db.sql(query, as_dict=True)
 
@@ -105,13 +142,18 @@ def get_data(filters):
 			row = {
 				"asset_code": a.name,
 				"asset_name": a.asset_name,
-				"serial_number": a.serial_number,
 				"asset_category": a.asset_category,
 				"asset_sub_category": a.asset_sub_category,
+                                "brand": a.brand,
+                                "model": a.model,
+                                "serial_number": a.serial_number,
 				"issued_to": a.issued_to,
+				"employee_name": a.employee_name,
+				"designation": a.designation,
 				"cost_center": a.cost_center,
 				"date_of_issue": a.purchase_date,
 				"qty": a.asset_quantity_,
+                                "uom": a.stock_uom,
 				"amount": a.gross_purchase_amount,
 				"actual_depreciation": flt(actual_dep, 3),
 				"opening": flt(opening, 3),
@@ -148,31 +190,55 @@ def get_columns():
 			"width": 200
 		},
 		{
-			"fieldname": "serial_number",
-			"label": _("Serial Number"),
-			"fieldtype": "Data",
-			"width": 200
-		},
-		{
 			"fieldname": "asset_category",
 			"label": _("Asset Category"),
 			"fieldtype": "Link",
 			"options":"Asset Category",
-			"width": 200
+			"width": 120
 		},
 		{
 			"fieldname": "asset_sub_category",
 			"label": _("Sub Category"),
 			"fieldtype": "Link",
 			"options":"Item Sub Group",
-			"width": 200
+			"width": 120
+		},
+                {
+			"fieldname": "brand",
+			"label": _("Brand"),
+			"fieldtype": "Data",
+			"width": 120
+		},
+                {
+			"fieldname": "model",
+			"label": _("Model"),
+			"fieldtype": "Data",
+			"width": 120
+		},
+                {
+			"fieldname": "serial_number",
+			"label": _("Serial Number"),
+			"fieldtype": "Data",
+			"width": 120
 		},
 		{
 			"fieldname": "issued_to",
 			"label": _("Issued To"),
 			"fieldtype": "Data",
-			"width": 150
+			"width": 100
 		},
+		 {
+                        "fieldname": "employee_name",
+                        "label": _("Employee Name"),
+                        "fieldtype": "Data",
+                        "width": 150
+                },
+		 {
+                        "fieldname": "designation",
+                        "label": _("Designation"),
+                        "fieldtype": "Data",
+                        "width": 150
+                },
 		{
 			"fieldname": "cost_center",
 			"label": _("Cost Center"),
@@ -192,6 +258,14 @@ def get_columns():
 			"fieldtype": "Data",
 			"width": 100
 		},
+                {
+			"fieldname": "uom",
+			"label": _("UOM"),
+			"fieldtype": "Link",
+                        "options": "UOM",
+			"width": 80
+		},
+
 		{
 			"fieldname": "amount",
 			"label": _("Gross Amount"),
@@ -256,12 +330,6 @@ def get_columns():
 		{
                         "fieldname": "asset_status",
                         "label": _("Asset Status"),
-                        "fieldtype": "data",
-                        "width": 120
-                },
-		{
-                        "fieldname": "residual_value",
-                        "label": _("Residual Value"),
                         "fieldtype": "data",
                         "width": 120
                 },

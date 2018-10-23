@@ -9,21 +9,30 @@ frappe.ui.form.on('Salary Increment', {
 	},
 	
 	employee: function(frm){
+		/*
 		if (frm.doc.employee) {
 			frm.trigger("get_employee_payscale");
 		}
+		*/
+		get_employee_payscale(frm.doc);
 	},
 	
 	fiscal_year: function(frm){
+		/*
 		if (frm.doc.fiscal_year){
 			frm.trigger("get_employee_payscale");
 		}
+		*/
+		get_employee_payscale(frm.doc);
 	},
 	
 	month: function(frm){
+		/*
 		if (frm.doc.month){
 			frm.trigger("get_employee_payscale");
 		}
+		*/
+		get_employee_payscale(frm.doc);
 	},
 	
 	
@@ -36,6 +45,7 @@ frappe.ui.form.on('Salary Increment', {
 		}
 	},
 	
+	/*
 	get_employee_payscale: function(frm){
 		if(frm.doc.employee && frm.doc.employee_subgroup && frm.doc.fiscal_year && frm.doc.month){
 			frappe.call({
@@ -58,4 +68,12 @@ frappe.ui.form.on('Salary Increment', {
 			});			
 		}
 	}
+	*/
 });
+
+var get_employee_payscale = function(doc){
+	cur_frm.call({
+		method: "get_employee_payscale",
+		doc: doc
+	});
+}

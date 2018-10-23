@@ -17,30 +17,43 @@ frappe.ui.form.on("Leave Allocation", {
 	},
 
 	employee: function(frm) {
-		frm.trigger("calculate_total_leaves_allocated");
+		//frm.trigger("calculate_total_leaves_allocated");								// Commented by SHIV on 2018/10/15
+		get_leave_balance(frm.doc);														// Added by SHIV on 2018/10/15
 	},
 
+	// Following function added by SHIV on 2018/10/15
+	from_date: function(frm){
+		get_leave_balance(frm.doc);
+	},
+	
 	leave_type: function(frm) {
-		frm.trigger("calculate_total_leaves_allocated");
+		//frm.trigger("calculate_total_leaves_allocated");								// Commented by SHIV on 2018/10/15
+		get_leave_balance(frm.doc);														// Added by SHIV on 2018/10/15
 	},
 
 	carry_forward: function(frm) {
-		frm.trigger("calculate_total_leaves_allocated");
+		//frm.trigger("calculate_total_leaves_allocated");								// Commented by SHIV on 2018/10/15
+		get_leave_balance(frm.doc);														// Added by SHIV on 2018/10/15
 	},
 
 	carry_forwarded_leaves: function(frm) {
 		//frm.set_value("total_leaves_allocated",
 		//	flt(frm.doc.carry_forwarded_leaves) + flt(frm.doc.new_leaves_allocated));
-		frm.trigger("calculate_total_leaves_allocated");
+		//frm.trigger("calculate_total_leaves_allocated");								// Commented by SHIV on 2018/10/15
+		get_leave_balance(frm.doc);														// Added by SHIV on 2018/10/15
 	},
 
 	new_leaves_allocated: function(frm) {
 		//frm.set_value("total_leaves_allocated",
 		//	flt(frm.doc.carry_forwarded_leaves) + flt(frm.doc.new_leaves_allocated));
-		frm.trigger("calculate_total_leaves_allocated");
+		//frm.trigger("calculate_total_leaves_allocated");								// Commented by SHIV on 2018/10/15
+		get_leave_balance(frm.doc);														// Added by SHIV on 2018/10/15
 	},
 
+	// Following code commented by SHIV on 2018/10/15
+	/*
 	calculate_total_leaves_allocated: function(frm) {
+
 		frm.trigger("get_le_settings");
 		
 		if (cint(frm.doc.carry_forward) == 1 && frm.doc.leave_type && frm.doc.employee) {
@@ -100,4 +113,13 @@ frappe.ui.form.on("Leave Allocation", {
 			}
 		});
 	}
+	*/
 })
+
+// Following function created by SHIV on 2018/10/15
+var get_leave_balance = function(doc){
+	cur_frm.call({
+		method: "set_total_leaves_allocated",
+		doc: doc
+	});
+}

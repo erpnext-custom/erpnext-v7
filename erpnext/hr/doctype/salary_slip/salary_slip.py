@@ -31,36 +31,40 @@ class SalarySlip(TransactionBase):
                 self.name = make_autoname(self.employee + '/SSL/' + self.fiscal_year + self.month + '/.#####')
 
 	def validate(self):
+                set_employee_name(self)
 		self.validate_dates()
 		self.check_existing()
 		self.set_month_dates()
-		# Commented
+		#Commented by SHIV on 2018/09/28
 		'''
 		if not (len(self.get("earnings")) or len(self.get("deductions"))):
 			self.get_emp_and_leave_details()
 		else:
 			self.get_leave_details(lwp = self.leave_without_pay)
 		'''
-		self.get_emp_and_leave_details()        #Added
+		self.get_emp_and_leave_details()        #Added by SHIV on 2018/09/28
 
+                #Following code commented by SHIV on 2018/10/15
+                '''
 		if self.salary_slip_based_on_timesheet or not self.net_pay:
 			self.calculate_net_pay()
+                '''
 
+                self.calculate_net_pay()                #Added by SHIV on 2018/10/15
+                self.validate_amounts()                 #Added by SHIV on 2018/10/15
 		company_currency = get_company_currency(self.company)
 		self.total_in_words = money_in_words(self.rounded_total, company_currency)
-
-		set_employee_name(self)
 
 	def validate_dates(self):
 		if date_diff(self.end_date, self.start_date) < 0:
 			frappe.throw(_("To date cannot be before From date"))
 
 	def get_emp_and_leave_details(self):
-                payment_days = 0                #Added
+                payment_days = 0                #Added by SHIV on 2018/09/28
 		if self.employee:
 			self.set("earnings", [])
 			self.set("deductions", [])
-			self.set("items", [])   # Added
+			self.set("items", [])   #Added by SHIV on 2018/09/28
 			self.set_month_dates()
 			self.validate_dates()
 			self.yearmonth = str(self.fiscal_year)+str(self.month)
@@ -105,8 +109,8 @@ class SalarySlip(TransactionBase):
  
 		if not struct:
 			self.salary_structure = None
-			frappe.throw(_('No active or default Salary Structure found for employee <a href="#Form/Employee/{0}">{0}</a> for the given dates')
-				.format(self.employee), title=_('Salary Structure Missing'))
+			frappe.throw(_('No active or default Salary Structure found for employee <a href="#Form/Employee/{0}">{0} {1}</a> for the given dates')
+				.format(self.employee, self.employee_name), title=_('Salary Structure Missing'))
 		return struct 
 
 	def pull_sal_struct(self, ss_doc, calc_days):                
@@ -296,12 +300,11 @@ class SalarySlip(TransactionBase):
 
 		return holidays
 
-        #Added
+        #Added by SHIV on 2018/09/28
 	def calculate_lwp(self, holidays, start_date, end_date):
 		lwp = 0
 		for d in range(cint(getdate(start_date).day)-1,cint(getdate(end_date).day)):
 			dt = add_days(cstr(self.start_date), d)
-			#frappe.msgprint(_("{0}").format(dt))
 			if dt not in holidays:
 				leave = frappe.db.sql("""
 					select t1.name, t1.half_day
@@ -316,7 +319,7 @@ class SalarySlip(TransactionBase):
 					lwp = cint(leave[0][1]) and (lwp + 0.5) or (lwp + 1)
 		return lwp
 
-        #Commented
+        #Commented by SHIV on 2018/09/28
         '''
 	def calculate_lwp(self, holidays, working_days):
 		lwp = 0
@@ -344,8 +347,7 @@ class SalarySlip(TransactionBase):
 						and employee = %s and name != %s""",
 						(self.month, self.fiscal_year, self.employee, self.name))
 			if ret_exist:
-				self.employee = ''
-				frappe.throw(_("Salary Slip of employee {0} already created for this period").format(self.employee))
+				frappe.throw(_('Salary Slip already created for employee <a href="#Form/Employee/{0}">{0} {1}</a>').format(self.employee, self.employee_name))
 		else:
 			for data in self.timesheets:
 				if frappe.db.get_value('Timesheet', data.time_sheet, 'status') == 'Payrolled':
@@ -395,6 +397,11 @@ class SalarySlip(TransactionBase):
 		self.net_pay = flt(self.gross_pay) - flt(self.total_deduction)
 		self.rounded_total = rounded(self.net_pay,
 			self.precision("net_pay") if disable_rounded_total else 0)
+
+        #Added by SHIV on 2018/10/15
+        def validate_amounts(self):
+		if flt(self.net_pay) < 0:
+                        frappe.throw(_('Net pay cannot be a negative value for employee <a href="#Form/Employee/{0}">{0} {1}</a>').format(self.employee, self.employee_name),title="Invalid Data")
 
 	def on_submit(self):
 		self.update_status(self.name)

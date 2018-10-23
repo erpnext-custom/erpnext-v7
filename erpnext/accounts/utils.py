@@ -686,7 +686,7 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 #Return all the child cost centers of the current cost center
 ##
 def get_child_cost_centers(current_cs=None):
-	allchilds = []
+	allchilds = [str('DUMMY') ]
 	allcs = []
 	cs_name = cs_par_name = "";
 
@@ -703,12 +703,12 @@ def get_child_cost_centers(current_cs=None):
     		cs_par_name = a['parent_cost_center'];
 
 	    #loop through the cost centers to search for the child cost centers
-	    allchilds.append(cs_name);
+	    allchilds.append(str(cs_name));
 	    for b in allcs:
     		for c in allcs:
     		      if(c['parent_cost_center'] in allchilds):
         			 if(c['name'] not in allchilds):
-        			    allchilds.append(c['name']);
+        			    allchilds.append(str(c['name']));
 
 	return allchilds;
 
@@ -750,12 +750,12 @@ def get_period_date(fiscal_year, period):
 	if not period or not fiscal_year:
 		frappe.throw("Either Fiscal Year or Report Period is missing") 
 
-	from_date, to_date = "00-00-0000"
 	from_date, to_date = frappe.db.get_value("Report Period", period, ["from_date", "to_date"])
 	if from_date and to_date:
 		from_date = str(fiscal_year) + str(from_date)
 		to_date = str(fiscal_year) + str(to_date)
-	return from_date, to_date
-
+		return from_date, to_date
+	else:
+		frappe.throw("Report Period Not Defined Properly")
 
 
