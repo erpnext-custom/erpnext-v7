@@ -566,3 +566,4 @@ def get_monthly_count(from_date, to_date):
     format_strings = ','.join(['%s'] * len(mcount))
     print format_strings
     print "VALUES IN ({0})".format(format_strings) % tuple(keys)
+

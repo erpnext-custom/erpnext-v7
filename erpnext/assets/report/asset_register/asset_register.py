@@ -62,11 +62,12 @@ def get_data(filters):
 	data = []
 
 	if asset_data:
-		total_actual_dep = 0.00;
-		total_net = 0.00;
-		total_opening = 0.00;
-		total_net_income = 0.00;
-		total_income = 0.00;
+                total_gross = 0.00
+		total_actual_dep = 0.00
+		total_net = 0.00
+		total_opening = 0.00
+		total_net_income = 0.00
+		total_income = 0.00
 
 		for a in asset_data:
 			"""if flt(a.depreciation_amount) >= flt(a.gross_purchase_amount):
@@ -95,7 +96,8 @@ def get_data(filters):
 			net_useful_life = flt(a.gross_purchase_amount) - flt(actual_dep) - flt(opening)  
 
 			net_income_tax = flt(a.gross_purchase_amount) - flt(a.iopening) - flt(a.depreciation_income_tax) - flt(a.opening_income)
-			
+
+			total_gross += flt(a.gross_purchase_amount)
 			total_net += flt(net_useful_life, 3)
 			total_actual_dep += flt(actual_dep, 3)
 			total_income += flt(a.depreciation_income_tax, 3)
@@ -129,7 +131,7 @@ def get_data(filters):
 				"status": a.status
 			}
 			data.append(row)
-		row = {"actual_depreciation": flt(total_actual_dep, 3), "net_useful_life": flt(total_net, 3), "opening": total_opening, "net_income_tax": total_net_income, "dep_income_tax": total_income}
+		row = {"amount": flt(total_gross, 3), "actual_depreciation": flt(total_actual_dep, 3), "net_useful_life": flt(total_net, 3), "opening": total_opening, "net_income_tax": total_net_income, "dep_income_tax": total_income}
 		data.append(row)
 	
 	return data

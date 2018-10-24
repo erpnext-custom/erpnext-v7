@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-09-25 15:37:08.578492", 
+ "modified": "2018-10-13 10:52:40.477885", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Buying", 
  "name": "Purchase History Report", 
@@ -16,5 +16,9 @@
  "ref_doctype": "Purchase Order", 
  "report_name": "Purchase History Report", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "CPBD"
+  }
+ ]
 }

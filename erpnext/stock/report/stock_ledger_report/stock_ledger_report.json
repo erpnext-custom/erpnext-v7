@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-06-21 15:32:38.355319", 
- "modified_by": "Administrator", 
+ "modified": "2018-10-13 11:13:33.699204", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Ledger Report", 
  "owner": "Administrator", 
@@ -39,6 +39,9 @@
   }, 
   {
    "role": "POL User"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

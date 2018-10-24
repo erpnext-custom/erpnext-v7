@@ -179,7 +179,7 @@ class IssuePOL(StockController):
 							{
 								"actual_qty": flt(a.qty), 
 								"warehouse": wh, 
-								"incoming_rate": valuation_rate
+								"incoming_rate": flt(map_rate)
 							}))
 
 				#Do IC Accounting Entry if different branch
