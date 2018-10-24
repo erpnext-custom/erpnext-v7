@@ -19,6 +19,7 @@ def post_depreciation_entries(date=None):
 	if not date:
 		date = today()
 	for asset in get_depreciable_assets(date):
+		print(str(asset))
 		make_depreciation_entry(asset, date)
 		frappe.db.commit()
 
@@ -26,7 +27,8 @@ def get_depreciable_assets(date):
 	return frappe.db.sql_list("""select a.name
 		from tabAsset a, `tabDepreciation Schedule` ds
 		where a.name = ds.parent and a.docstatus=1 and ds.schedule_date<=%s
-			and a.disable_depreciation = 0 
+			and a.disable_depreciation = 0
+			and ds.depreciation_amount > 0 
 			and ifnull(ds.journal_entry, '')=''""", date)
 
 @frappe.whitelist()
@@ -39,6 +41,7 @@ def make_depreciation_entry(asset_name, date=None):
 	asset = frappe.get_doc("Asset", asset_name)
 
 	if asset.disable_depreciation:
+		print(str(asset.name))
                 frappe.throw("Depreciation disabled for this asset")	
 
 	fixed_asset_account, accumulated_depreciation_account, depreciation_expense_account = \

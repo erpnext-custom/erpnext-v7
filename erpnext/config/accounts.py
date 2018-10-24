@@ -244,7 +244,12 @@ def get_data():
                                         "description": "Fund Requisition from Regions",
                                         "hide_count": True
                                 },
-
+				{
+                                        "type": "doctype",
+                                        "name": "Opening Invoice Creation Tool",
+                                        "description": "Opening Invoice Creation Tool",
+                                        "hide_count": True
+                                },
 			]
 		},
 		{

@@ -52,7 +52,7 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Cost of Production",
+					"name": "Production Group",
 				},
 				{
 					"type": "doctype",
@@ -60,11 +60,15 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Cost of Production",
+				},
+				{
+					"type": "doctype",
 					"name": "Adhoc Royalty Setting",
 				},
 				{
 					"type": "doctype",
-					"name": "Production Group",
+					"name": "Production Target",
 				},
 			]
 		},

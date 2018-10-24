@@ -746,11 +746,14 @@ def get_child_accounts(current_acc=None):
 ###
 # Return From/To Date from Report Period
 ###
-def get_period_date(fiscal_year, period):
+def get_period_date(fiscal_year, period, cumulative=None):
 	if not period or not fiscal_year:
 		frappe.throw("Either Fiscal Year or Report Period is missing") 
 
-	from_date, to_date = frappe.db.get_value("Report Period", period, ["from_date", "to_date"])
+	values = ["from_date", "to_date"]
+	if cumulative:
+		values = ["c_from_date", "c_to_date"]
+	from_date, to_date = frappe.db.get_value("Report Period", period, values)
 	if from_date and to_date:
 		from_date = str(fiscal_year) + str(from_date)
 		to_date = str(fiscal_year) + str(to_date)

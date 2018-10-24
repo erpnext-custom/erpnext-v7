@@ -29,7 +29,6 @@ frappe.query_reports["Production Progress Report"] = {
 			"on_change": function(query_report) {
 				var cost_center = query_report.get_values().cost_center;
 				query_report.filters_by_name.branch.set_input(null);
-				query_report.filters_by_name.location.set_input(null);
 				query_report.trigger_refresh();
 				if (!cost_center) {
 					return;
@@ -59,16 +58,6 @@ frappe.query_reports["Production Progress Report"] = {
 			}
 		},
 		{
-			"fieldname": "location",
-			"label": ("Location"),
-			"fieldtype": "Link",
- 			"options": "Location",
-			"get_query": function() {
-				var branch = frappe.query_report.filters_by_name.branch.get_value();
-				return {"doctype": "Location", "filters": {"branch": branch, "is_disabled": 0}}
-			}
-		},
-		{
 			"fieldtype": "Break"
 		},
 		{
@@ -92,5 +81,11 @@ frappe.query_reports["Production Progress Report"] = {
  			"options": "Production Group",
 			"reqd": 1
 		},
+		{
+			"fieldname": "cumulative",
+			"label": "Cumulative",
+			"fieldtype": "Check",
+			"default": 0
+		}
 	]
 }

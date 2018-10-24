@@ -34,7 +34,7 @@ def add_header(w):
 	w.writerow(["Please DO NOT change the template headings"])
 	w.writerow([""])
 	#w.writerow(["Employee", "Employee Name", "Basic", "Corporate", "Contract", "Communication", "Fuel", "Underground", "Shift", "PSA", "PDA", "Deputation", "Officiating", "Scarcity", "Difficulty", "High Altitude", "Cash Handling", "Component 1", "Amount 1", "Scheme 1", "Bank 1", "Number 1",  "Component 2", "Amount 2", "Scheme 2", "Bank 2", "Number 2", "Component 3", "Amount 3", "Scheme 3", "Bank 3", "Number 3"])
-	w.writerow(["Employee", "Employee Name", "Basic", "Corporate", "Contract", "Communication", "Fuel", "Shift", "PSA", "PDA", "Deputation", "Officiating", "Scarcity", "Difficulty", "High Altitude", "Cash Handling", "Component 1", "Amount 1", "Scheme 1", "Bank 1", "Number 1",  "Component 2", "Amount 2", "Scheme 2", "Bank 2", "Number 2", "Component 3", "Amount 3", "Scheme 3", "Bank 3", "Number 3"])
+	w.writerow(["Employee", "Employee Name", "Basic", "Corporate", "Contract", "Communication", "Fuel", "Shift", "PSA", "PDA", "Deputation", "Officiating", "Scarcity", "Difficulty", "High Altitude", "Cash Handling", "Component 1", "Amount 1", "Scheme 1", "Bank 1", "Number 1",  "Component 2", "Amount 2", "Scheme 2", "Bank 2", "Number 2", "Component 3", "Amount 3", "Scheme 3", "Bank 3", "Number 3", "Component 4", "Amount 4", "Scheme 4", "Bank 4", "Number 4", "Component 5", "Amount 5", "Scheme 5", "Bank 5", "Number 5", "Component 6", "Amount 6", "Scheme 6", "Bank 6", "Number 6", "Component 7", "Amount 7", "Scheme 7", "Bank 7", "Number 7", "Component 8", "Amount 8", "Scheme 8", "Bank 8", "Number 8", "Component 9", "Amount 9", "Scheme 9", "Bank 9", "Number 9", "Component 10", "Amount 10", "Scheme 10", "Bank 10", "Number 10"])
 	return w
 
 @frappe.whitelist()
@@ -66,9 +66,13 @@ def upload():
 		try:
 			ear = ded = 0
 			sws_amount = flt(frappe.db.get_value("Salary Component", "SWS", "default_amount"))
-			doc = frappe.new_doc("Salary Structure")
 			ret.append("Row#{0}: {1}, {2}".format(i+1,d.employee,d.employee_name))
 			if d.employee:
+                                if not frappe.db.exists("Salary Structure", {"employee": d.employee}):
+                                        doc = frappe.new_doc("Salary Structure")
+                                else:
+                                        ret.append("Salary Structure already created for " + str(d.employee))
+                                        continue
 				emp = frappe.get_doc("Employee", d.employee)
 				doc.employee = d.employee
 				doc.is_active = 'Yes'
@@ -183,7 +187,7 @@ def upload():
 
 				if d.amount_1:
                                         if d.component_1 == 'Staff Welfare Loan' and not d.number_1:
-                                                d.number_1 = '123'
+                                                d.number_1 = 'Nil'
                                                 
 					if d.bank_1 and d.scheme_1 and d.component_1 and d.number_1:
 						doc.append("deductions",{"salary_component": str(d.component_1), "amount": flt(d.amount_1), "institution_name": str(d.bank_1), "reference_type": str(d.scheme_1), "reference_number": str(d.number_1)})	
@@ -191,7 +195,7 @@ def upload():
 
 				if d.amount_2:
                                         if d.component_2 == 'Staff Welfare Loan' and not d.number_2:
-                                                d.number_2 = '123'
+                                                d.number_2 = 'Nil'
                                         
 					if d.bank_2 and d.scheme_2 and d.component_2 and d.number_2:
 						doc.append("deductions",{"salary_component": str(d.component_2), "amount": flt(d.amount_2), "institution_name": str(d.bank_2), "reference_type": str(d.scheme_2), "reference_number": str(d.number_2)})	
@@ -199,12 +203,68 @@ def upload():
 
 				if d.amount_3:
                                         if d.component_3 == 'Staff Welfare Loan' and not d.number_3:
-                                                d.number_3 = '123'
+                                                d.number_3 = 'Nil'
                                         
 					if d.bank_3 and d.scheme_3 and d.component_3 and d.number_3:
 						doc.append("deductions",{"salary_component": str(d.component_3), "amount": flt(d.amount_3), "institution_name": str(d.bank_3), "reference_type": str(d.scheme_3), "reference_number": str(d.number_3)})	
 						ded += flt(d.amount_3)
 
+                                if d.amount_4:
+                                        if d.component_4 == 'Staff Welfare Loan' and not d.number_4:
+                                                d.number_4 = 'Nil'
+                                        
+					if d.bank_4 and d.scheme_4 and d.component_4 and d.number_4:
+						doc.append("deductions",{"salary_component": str(d.component_4), "amount": flt(d.amount_4), "institution_name": str(d.bank_4), "reference_type": str(d.scheme_4), "reference_number": str(d.number_4)})	
+						ded += flt(d.amount_4)
+
+				if d.amount_5:
+                                        if d.component_5 == 'Staff Welfare Loan' and not d.number_5:
+                                                d.number_5 = 'Nil'
+                                        
+					if d.bank_5 and d.scheme_5 and d.component_5 and d.number_5:
+						doc.append("deductions",{"salary_component": str(d.component_5), "amount": flt(d.amount_5), "institution_name": str(d.bank_5), "reference_type": str(d.scheme_5), "reference_number": str(d.number_5)})	
+						ded += flt(d.amount_5)
+
+				if d.amount_6:
+                                        if d.component_6 == 'Staff Welfare Loan' and not d.number_6:
+                                                d.number_6 = 'Nil'
+                                        
+					if d.bank_6 and d.scheme_6 and d.component_6 and d.number_6:
+						doc.append("deductions",{"salary_component": str(d.component_6), "amount": flt(d.amount_6), "institution_name": str(d.bank_6), "reference_type": str(d.scheme_6), "reference_number": str(d.number_6)})	
+						ded += flt(d.amount_6)
+
+				if d.amount_7:
+                                        if d.component_7 == 'Staff Welfare Loan' and not d.number_7:
+                                                d.number_7 = 'Nil'
+                                        
+					if d.bank_7 and d.scheme_7 and d.component_7 and d.number_7:
+						doc.append("deductions",{"salary_component": str(d.component_7), "amount": flt(d.amount_7), "institution_name": str(d.bank_7), "reference_type": str(d.scheme_7), "reference_number": str(d.number_7)})	
+						ded += flt(d.amount_7)
+
+				if d.amount_8:
+                                        if d.component_8 == 'Staff Welfare Loan' and not d.number_8:
+                                                d.number_8 = 'Nil'
+                                        
+					if d.bank_8 and d.scheme_8 and d.component_8 and d.number_8:
+						doc.append("deductions",{"salary_component": str(d.component_8), "amount": flt(d.amount_8), "institution_name": str(d.bank_8), "reference_type": str(d.scheme_8), "reference_number": str(d.number_8)})	
+						ded += flt(d.amount_8)
+
+				if d.amount_9:
+                                        if d.component_9 == 'Staff Welfare Loan' and not d.number_9:
+                                                d.number_9 = 'Nil'
+                                        
+					if d.bank_9 and d.scheme_9 and d.component_9 and d.number_9:
+						doc.append("deductions",{"salary_component": str(d.component_9), "amount": flt(d.amount_9), "institution_name": str(d.bank_9), "reference_type": str(d.scheme_9), "reference_number": str(d.number_9)})	
+						ded += flt(d.amount_9)
+
+				if d.amount_10:
+                                        if d.component_10 == 'Staff Welfare Loan' and not d.number_10:
+                                                d.number_10 = 'Nil'
+                                        
+					if d.bank_10 and d.scheme_10 and d.component_10 and d.number_10:
+						doc.append("deductions",{"salary_component": str(d.component_10), "amount": flt(d.amount_10), "institution_name": str(d.bank_10), "reference_type": str(d.scheme_10), "reference_number": str(d.number_10)})	
+						ded += flt(d.amount_10)
+						
 				doc.append("deductions",{"salary_component": "SWS", "amount": sws_amount})	
 				ded += sws_amount
 				

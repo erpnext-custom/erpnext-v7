@@ -253,11 +253,11 @@ def get_data():
 					"name": "HR Settings",
 					"description": _("Settings for HR Module")
 				},
-				{
-					"type": "doctype",
-					"name": "Leave Encashment Settings",
-					"description": _("Leave Encashment Settings"),
-				},                                
+				#{
+				#	"type": "doctype",
+				#	"name": "Leave Encashment Settings",
+				#	"description": _("Leave Encashment Settings"),
+				#},                                
 				{
 					"type": "doctype",
 					"name": "Department Director",

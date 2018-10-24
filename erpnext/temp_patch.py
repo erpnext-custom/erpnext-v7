@@ -580,3 +580,13 @@ def employee_id_check():
               if cint(e.name[-3:]) != cint(counter):
 		   counter2 += 1
                    print counter2, e.date_of_joining, counter, e.name, e.employee_name, e.earlier_id
+
+def cancel_asset():
+    li = frappe.db.sql("select name from `tabAsset` where name between '{0}' and '{1}'".format('ASSET181003692','ASSET181003756'), as_dict=True)	
+    for i in li:
+         doc = frappe.get_doc("Asset",i.name)
+	 try:
+	     doc.cancel()
+	     print i.name, 'Cancelled successfully...'
+         except Exception, e:
+             print i.name, 'Something went wrong'

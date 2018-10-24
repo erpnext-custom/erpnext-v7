@@ -42,7 +42,7 @@ class TravelAuthorization(Document):
 		if frappe.session.user != self.supervisor:
 			if self.document_status == "Rejected":
 				self.db_set("document_status", "")
-			self.sendmail(frappe.db.get_value("Employee", {"user_id": self.supervisor}, "name"), "Travel Authorization Requested", str(self.employee_name) + " has requested you to verify and sign a travel authorization")
+			self.sendmail(frappe.db.get_value("Employee", {"user_id": self.supervisor}, "name"), "Travel Authorization Requested", str(self.employee_name) + " has requested you to verify and sign a " + str(frappe.get_desk_link("Travel Authorization", self.name)))
 		elif self.document_status == "Rejected":
 			self.sendmail(self.employee, "Travel Authorization Rejected" + str(self.name), "Following remarks has been added by the supervisor: \n" + str(self.reason))
 
@@ -61,7 +61,7 @@ class TravelAuthorization(Document):
 		self.check_status()
 		self.check_advance()
 		self.create_attendance()
-		self.sendmail(self.employee, "Travel Authorization Approved" + str(self.name), "Your travel authorization has been approved by the supervisor")
+		self.sendmail(self.employee, "Travel Authorization Approved" + str(self.name), "Your " + str(frappe.get_desk_link("Travel Authorization", self.name)) + " has been approved by the supervisor")
 
 	def before_cancel(self):
 		if self.advance_journal:
