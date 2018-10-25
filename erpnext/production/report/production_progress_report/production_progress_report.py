@@ -8,11 +8,15 @@ from erpnext.custom_utils import get_production_groups
 from erpnext.production.doctype.production_target.production_target import get_target_value
 
 def execute(filters=None):
-	filters.is_company = frappe.db.get_value("Cost Center", filters.cost_center, "is_company")
+	build_filters(filters)
 	columns = get_columns(filters)
 	data = get_data(filters)
 
 	return columns, data
+
+def build_filters(filters):
+	filters.is_company = frappe.db.get_value("Cost Center", filters.cost_center, "is_company")
+	filters.from_date, filters.to_date = get_period_date(filters.fiscal_year, filters.report_period, filters.cumulative)
 
 def get_data(filters):
 	data = []
@@ -29,18 +33,18 @@ def get_data(filters):
 
 	for a in frappe.db.sql(query, as_dict=1):
 		if filters.branch:
-			target = get_target_value(a.location, filters.production_group, filters.fiscal_year, True)
+			target = get_target_value(a.location, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date, True)
 			row = [a.location, target]
 			cond = " and location = '{0}'".format(a.location)
 		else:
 			if filters.is_company:
-				target = get_target_value(a.region, filters.production_group, filters.fiscal_year)
+				target = get_target_value(a.region, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
 				all_ccs = get_child_cost_centers(a.region)
 				cond = " and cost_center in {0} ".format(tuple(all_ccs))	
 				a.region = str(a.region).replace(abbr, "")
 				row = [a.region, target]
 			else:
-				target = get_target_value(a.cost_center, filters.production_group, filters.fiscal_year)
+				target = get_target_value(a.cost_center, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
 				row = [a.branch, target]
 				cond = " and cost_center = '{0}'".format(a.cost_center)
 	
@@ -89,8 +93,8 @@ def get_filter_conditions(filters):
 	if filters.location:
 		condition += " and pe.location = '{0}'".format(filters.location)
 
-	filters.from_date, filters.to_date = get_period_date(filters.fiscal_year, filters.report_period, filters.cumulative)
-	condition += " and pe.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+	if filters.from_date and filters.to_date:
+		condition += " and pe.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
 
 	return condition
 

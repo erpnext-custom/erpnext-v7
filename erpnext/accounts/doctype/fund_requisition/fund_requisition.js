@@ -4,7 +4,15 @@
 //cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on('Fund Requisition', {
-
+	onload: function(frm) {
+		frm.fields_dict['items'].grid.get_field('accounts').get_query = function(){
+                        return{
+                                filters: {
+                                        'is_group': 0
+                                }
+                        }
+                };
+		},
 	refresh: function(frm){
 		/*cur_frm.set_df_property("issuing_cost_center", "hidden", 1)
 		cur_frm.set_df_property("bank_account", "hidden", 1)

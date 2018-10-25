@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt, getdate
 from erpnext.accounts.utils import get_child_cost_centers
 
 class ProductionTarget(Document):
@@ -28,7 +28,7 @@ class ProductionTarget(Document):
 		for a in self.items:
 			a.quantity = flt(a.quarter1) + flt(a.quarter2) + flt(a.quarter3) + flt(a.quarter4)
 
-def get_target_value(cost_center, production_group, fiscal_year, is_location=None):
+def get_target_value(cost_center, production_group, fiscal_year, from_date, to_date, is_location=None):
 	if not cost_center or not production_group or not fiscal_year:
 		frappe.throw("Value Missing")
 
@@ -38,11 +38,72 @@ def get_target_value(cost_center, production_group, fiscal_year, is_location=Non
 		all_ccs = get_child_cost_centers(cost_center)
 		cond = " a.cost_center in {0}".format(tuple(all_ccs))
 
-	query = "select sum(quantity) as total from `tabProduction Target` a, `tabProduction Target Item` b where a.name = b.parent and {0} and a.fiscal_year = '{1}' and b.production_group = '{2}'".format(cond, fiscal_year, production_group)
+	query = "select sum(quantity) as total, sum(quarter1) as q1, sum(quarter2) as q2, sum(quarter3) as q3, sum(quarter4) as q4 from `tabProduction Target` a, `tabProduction Target Item` b where a.name = b.parent and {0} and a.fiscal_year = '{1}' and b.production_group = '{2}'".format(cond, fiscal_year, production_group)
 
 	qty = frappe.db.sql(query, as_dict=True)
-	qty = qty and qty[0].total or 0
-	return qty
+
+	q1 = qty and qty[0].q1 or 0
+	q2 = qty and qty[0].q2 or 0
+	q3 = qty and qty[0].q3 or 0
+	q4 = qty and qty[0].q4 or 0
+	
+	return get_propotional_target(from_date, to_date, q1, q2, q3, q4)
+
+def get_propotional_target(from_date, to_date, q1, q2, q3, q4):
+	#Determine the target
+	from_month = getdate(from_date).month
+	try:
+		to_month = getdate(to_date).month
+	except:
+		to_date = to_date.replace("29", "28")
+		to_month = getdate(to_date).month
+
+	if from_month == to_month:
+		if from_month in (1,2,3):
+			target = q1 / 3
+		elif from_month in (4, 5, 6):
+			target = q2 / 3
+		elif from_month in (7, 8, 9):
+			target = q3 / 3
+		elif from_month in (10, 11, 12):
+			target = q4 / 3
+		else:
+			frappe.throw("INVALID DATA RECEIVED")
+	else:
+		if from_month == 1 and to_month == 12:
+			target = q1 + q2 + q3 + q4
+		elif from_month == 1 and to_month == 3:
+			target = q1
+		elif from_month == 4 and to_month == 6:
+			target = q2
+		elif from_month == 7 and to_month == 9:
+			target = q3
+		elif from_month == 10 and to_month == 12:
+			target = q4
+		elif from_month == 1 and to_month == 6:
+			target = q1 + q2
+		elif from_month == 7 and to_month == 12:
+			target = q3 + q4
+		elif from_month == 1 and to_month == 9:
+			target = q1 + q2 + q3
+		elif from_month == 1 and to_month == 2:	
+			target = (q1 / 3) * 2
+		elif from_month == 1 and to_month == 4:	
+			target = q1 + q2 / 3
+		elif from_month == 1 and to_month == 5:	
+			target = q1 + (q2 / 3) * 2
+		elif from_month == 1 and to_month == 7:	
+			target = q1 + q2 + q3 / 3
+		elif from_month == 1 and to_month == 8:	
+			target = q1 + q2 + (q3 / 3) * 2
+		elif from_month == 1 and to_month == 10:	
+			target = q1 + q2 + q3 + q4 / 3
+		elif from_month == 1 and to_month == 11:	
+			target = q1 + q2 + q3 + (q4 / 3) * 2
+		else:
+			frappe.throw("INVALID DATA RECEIVED")
+	return target
+
 
 
 

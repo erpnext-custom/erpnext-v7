@@ -28,6 +28,14 @@ frappe.ui.form.on('Revenue Target', {
 				}
 			}
 		}
+		 cur_frm.set_query("cost_center", function(){
+                        return {
+                                "filters": [
+                                        ["is_group","=", "0"]
+                                        
+                                ]
+                        }
+                });
 	},
 	refresh: function(frm) {
 		if(frm.doc.docstatus === 1){

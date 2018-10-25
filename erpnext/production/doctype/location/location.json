@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "field:location_name", 
  "beta": 0, 
@@ -222,7 +222,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-09-28 03:57:51.785528", 
+ "modified": "2018-10-25 10:32:21.203422", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Location", 
