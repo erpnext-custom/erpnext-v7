@@ -33,18 +33,18 @@ def get_data(filters):
 
 	for a in frappe.db.sql(query, as_dict=1):
 		if filters.branch:
-			target = get_target_value(a.location, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date, True)
+			target = get_target_value("Production", a.location, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date, True)
 			row = [a.location, target]
 			cond = " and location = '{0}'".format(a.location)
 		else:
 			if filters.is_company:
-				target = get_target_value(a.region, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
+				target = get_target_value("Production", a.region, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
 				all_ccs = get_child_cost_centers(a.region)
 				cond = " and cost_center in {0} ".format(tuple(all_ccs))	
 				a.region = str(a.region).replace(abbr, "")
 				row = [a.region, target]
 			else:
-				target = get_target_value(a.cost_center, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
+				target = get_target_value("Production", a.cost_center, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
 				row = [a.branch, target]
 				cond = " and cost_center = '{0}'".format(a.cost_center)
 	
@@ -52,9 +52,9 @@ def get_data(filters):
 		for b in get_production_groups(filters.production_group):
 			qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))
 			qty = qty and qty[0][0] or 0
-			row.append(qty)
+			row.append(rounded(qty, 2))
 			total += flt(qty)
-		row.insert(2, total)
+		row.insert(2, rounded(total, 2))
 		if target == 0:
 			target = 1
 		row.insert(3, rounded(100 * total/target, 2))
@@ -75,9 +75,6 @@ def get_group_by(filters):
 
 def get_order_by(filters):
 	return " order by region, location"
-
-def get_list(filters):
-	query = "select "
 
 def get_cc_conditions(filters):
 	if not filters.cost_center:

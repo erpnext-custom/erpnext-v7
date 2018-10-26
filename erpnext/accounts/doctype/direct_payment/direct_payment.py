@@ -5,9 +5,12 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, cint
+from frappe.utils import flt, cint, getdate, get_datetime, get_url, nowdate, now_datetime, money_in_words
+from erpnext.accounts.general_ledger import make_gl_entries
+from frappe import _
+from erpnext.controllers.accounts_controller import AccountsController
 
-class DirectPayment(Document):
+class DirectPayment(AccountsController):
 	def validate(self):
 		if self.payment_type == "Receive":
 			inter_company = frappe.db.get_value("Customer", self.customer, "inter_company")
@@ -44,7 +47,8 @@ class DirectPayment(Document):
 							'party_type': 'Customer',						
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date
+							"posting_date": self.posting_date,
+							"business_activity": self.business_activity
 							})
 						)
 				else:
@@ -58,7 +62,8 @@ class DirectPayment(Document):
 							"cost_center": self.cost_center,
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date
+							"posting_date": self.posting_date,
+							"business_activity": self.business_activity
 							})
 						)
 				if self.tds_amount > 0:
@@ -72,7 +77,8 @@ class DirectPayment(Document):
 							"cost_center": self.cost_center,
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date
+							"posting_date": self.posting_date,
+							"business_activity": self.business_activity
 							})
 						)
 				account_type1 = frappe.db.get_value("Account", self.credit_account, "account_type") or ""
@@ -89,7 +95,8 @@ class DirectPayment(Document):
 							'party_type': 'Customer',					
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date						
+							"posting_date": self.posting_date,
+							"business_activity": self.business_activity				
 							})
 						)
 				else:
@@ -103,7 +110,8 @@ class DirectPayment(Document):
 							"cost_center": self.cost_center,
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date						
+							"posting_date": self.posting_date,
+							"business_activity": self.business_activity					
 							})
 						)
 			else:
@@ -121,7 +129,8 @@ class DirectPayment(Document):
 							'party_type': 'Supplier',						
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date
+							"posting_date": self.posting_date,
+							"business_activity": self.business_activity
 							})
 						)
 				else:
@@ -135,7 +144,8 @@ class DirectPayment(Document):
 							"cost_center": self.cost_center,						
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date
+							"posting_date": self.posting_date,
+							"business_activity": self.business_activity
 							})
 						)
 				if self.tds_amount > 0:
@@ -149,7 +159,8 @@ class DirectPayment(Document):
 							"cost_center": self.cost_center,
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date
+							"posting_date": self.posting_date,
+							"business_activity": self.business_activity
 							})
 						)
 				account_type1 = frappe.db.get_value("Account", self.credit_account, "account_type") or ""
@@ -166,7 +177,8 @@ class DirectPayment(Document):
 							'party_type': 'Supplier',
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date
+							"posting_date": self.posting_date,
+							"business_activity": self.business_activity
 							})
 						)
 				else:
@@ -180,7 +192,8 @@ class DirectPayment(Document):
 							"cost_center": self.cost_center,
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date
+							"posting_date": self.posting_date,
+							"business_activity": self.business_activity
 							})
 						)
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)

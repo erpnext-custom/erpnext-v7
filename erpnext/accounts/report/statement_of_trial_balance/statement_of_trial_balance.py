@@ -124,7 +124,7 @@ def get_rootwise_opening_balances(filters, report_type):
 			"year_start_date": filters.year_start_date,
                         "cost_center": cost_centers
 		},
-		as_dict=True, debug =1)
+		as_dict=True, debug = 0)
 
 	opening = frappe._dict()
 	for d in gle:

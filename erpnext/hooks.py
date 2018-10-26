@@ -129,7 +129,8 @@ dump_report_map = "erpnext.startup.report_data_map.data_map"
 before_tests = "erpnext.setup.utils.before_tests"
 
 standard_queries = {
-	"Business Activity": "erpnext.accounts.doctype.business_activity.business_activity.get_ba_list"
+	"Business Activity": "erpnext.accounts.doctype.business_activity.business_activity.get_ba_list",
+	"Item Group": "erpnext.setup.doctype.item_group.item_group.get_item_groups",
 }
 
 doc_events = {

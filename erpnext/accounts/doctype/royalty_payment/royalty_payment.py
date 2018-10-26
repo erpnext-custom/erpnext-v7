@@ -54,7 +54,7 @@ class RoyaltyPayment(Document):
 			if not self.adhoc_production or not self.from_date or not self.to_date:
 				frappe.throw("Adhoc Production, From Date and To Date are Mandatory")
 
-			entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
+			entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, b.qty_in_no from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
 			self.set('adhoc_temp_items', [])
 			frappe.db.sql("delete from `tabRoyalty Adhoc Temp` where parent = %s", self.name)
 
@@ -63,6 +63,8 @@ class RoyaltyPayment(Document):
 				if d[0].based_on == "Item Sub Group":
 					d[0].par_name = frappe.db.get_value(d[0].based_on, d[0].particular, "reading_parameter")
 				d[0].qty = a.qty
+				if a.item_sub_group == "Pole":
+					d[0].qty = a.qty_in_no
 				d[0].uom = a.uom
 				d[0].reference_document = a.name
 				d[0].amount = a.qty * d[0].royalty_rate

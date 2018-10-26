@@ -205,6 +205,7 @@ class LeaveEncashment(Document):
                         "reference_type": "Leave Encashment",
                         "reference_name": self.name,
                         "cost_center": cost_center,
+			"business_activity": employee.business_activity,
                 })
 
                 je.append("accounts", {
@@ -214,6 +215,7 @@ class LeaveEncashment(Document):
                         "reference_type": "Leave Encashment",
                         "reference_name": self.name,
                         "cost_center": cost_center,
+			"business_activity": employee.business_activity,
                 })
 
                 je.append("accounts", {
@@ -222,6 +224,7 @@ class LeaveEncashment(Document):
                         "credit": (flt(basic_pay)-flt(salary_tax)),
                         "reference_type": "Leave Encashment",
                         "reference_name": self.name,
+			"business_activity": employee.business_activity,
                         "cost_center": cost_center
                 })
                 je.insert()

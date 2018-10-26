@@ -3,6 +3,8 @@
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("item_code", "item_name", "item_name")
 cur_frm.add_fetch("item_code", "stock_uom", "uom")
+cur_frm.add_fetch("item_code", "item_group", "item_group")
+cur_frm.add_fetch("item_code", "item_sub_group", "item_sub_group")
 
 frappe.ui.form.on('Production', {
 	onload: function(frm) {
@@ -99,8 +101,8 @@ frappe.ui.form.on("Production Product Item", {
 	},
 
 	"item_code": function(frm, cdt, cdn) {
-		cur_frm.add_fetch("item_code", "item_group", "item_group")
-		cur_frm.add_fetch("item_code", "item_sub_group", "item_sub_group")
+		frappe.model.set_value(cdt, cdn, "production_type", frm.doc.production_type)
+		cur_frm.refresh_fields()
 	}
 })
 

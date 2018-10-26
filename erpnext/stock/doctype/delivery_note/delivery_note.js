@@ -269,6 +269,17 @@ cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(
         }
 }
 
+cur_frm.fields_dict['items'].grid.get_field('location').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+	if (frm.branch) {
+		return {
+			filters: {'branch': frm.branch, "is_disabled": 0}
+		}
+	}
+	else {
+		frappe.throw("Branch is Mandatory")
+	}
+}
 //custom Scripts
 /*frappe.ui.form.on("Delivery Note", "onload", function(frm) {
 	cur_frm.set_query("transporter_name1", function() {

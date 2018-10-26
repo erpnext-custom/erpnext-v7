@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, getdate
+from frappe.utils import flt, getdate, rounded
 from erpnext.accounts.utils import get_child_cost_centers
 
 class ProductionTarget(Document):
@@ -20,15 +20,23 @@ class ProductionTarget(Document):
 		for a in dups:
 			frappe.throw("Update {0} to set your targets".format(frappe.get_desk_link("Production Target", a.name)))
 
-		dups = frappe.db.sql("select production_group, count(1) as num from `tabProduction Target Item` where parent = %s group by production_group having num > 1", self.name, as_dict=True)
-		for a in dups:
-			frappe.throw("Can set only one target for {0}".format(a.production_group))
+		prod = frappe.db.sql("select production_group, count(1) as num from `tabProduction Target Item` where parent = %s group by production_group having num > 1", self.name, as_dict=True)
+		for a in prod:
+			frappe.throw("Can set only one target for {0} in Production Target".format(frappe.bold(a.production_group)))
+
+		dis = frappe.db.sql("select production_group, count(1) as num from `tabDisposal Target Item` where parent = %s group by production_group having num > 1", self.name, as_dict=True)
+		for a in dis:
+			frappe.throw("Can set only one target for {0} in Disposal Target".format(frappe.bold(a.production_group)))
 
 	def calculate_value(self):
 		for a in self.items:
 			a.quantity = flt(a.quarter1) + flt(a.quarter2) + flt(a.quarter3) + flt(a.quarter4)
+		for a in self.disposal:
+			a.quantity = flt(a.quarter1) + flt(a.quarter2) + flt(a.quarter3) + flt(a.quarter4)
 
-def get_target_value(cost_center, production_group, fiscal_year, from_date, to_date, is_location=None):
+def get_target_value(which, cost_center, production_group, fiscal_year, from_date, to_date, is_location=None):
+	if not which or which not in ("Production", "Disposal"):
+		frappe.throw("You should specify whether the target is for Production or Disposal")
 	if not cost_center or not production_group or not fiscal_year:
 		frappe.throw("Value Missing")
 
@@ -38,7 +46,7 @@ def get_target_value(cost_center, production_group, fiscal_year, from_date, to_d
 		all_ccs = get_child_cost_centers(cost_center)
 		cond = " a.cost_center in {0}".format(tuple(all_ccs))
 
-	query = "select sum(quantity) as total, sum(quarter1) as q1, sum(quarter2) as q2, sum(quarter3) as q3, sum(quarter4) as q4 from `tabProduction Target` a, `tabProduction Target Item` b where a.name = b.parent and {0} and a.fiscal_year = '{1}' and b.production_group = '{2}'".format(cond, fiscal_year, production_group)
+	query = "select sum(quantity) as total, sum(quarter1) as q1, sum(quarter2) as q2, sum(quarter3) as q3, sum(quarter4) as q4 from `tabProduction Target` a, `tab{0} Target Item` b where a.name = b.parent and {1} and a.fiscal_year = '{2}' and b.production_group = '{3}'".format(which, cond, fiscal_year, production_group)
 
 	qty = frappe.db.sql(query, as_dict=True)
 
@@ -102,7 +110,7 @@ def get_propotional_target(from_date, to_date, q1, q2, q3, q4):
 			target = q1 + q2 + q3 + (q4 / 3) * 2
 		else:
 			frappe.throw("INVALID DATA RECEIVED")
-	return target
+	return rounded(target, 2)
 
 
 

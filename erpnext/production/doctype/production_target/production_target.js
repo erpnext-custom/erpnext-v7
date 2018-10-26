@@ -2,8 +2,6 @@
 // For license information, please see license.txt
 
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
-cur_frm.add_fetch("fiscal_year","year_start_date","from_date");
-cur_frm.add_fetch("fiscal_year","year_end_date","to_date");
 
 frappe.ui.form.on("Production Target",{ 
 	refresh:  function(frm){
@@ -23,6 +21,21 @@ frappe.ui.form.on("Production Target", "refresh", function(frm) {
 });
 
 frappe.ui.form.on("Production Target Item", {
+	"quarter1": function(frm, cdt, cdn) {
+		calculate_total(frm, cdt, cdn)
+	},
+	"quarter2": function(frm, cdt, cdn) {
+		calculate_total(frm, cdt, cdn)
+	},
+	"quarter3": function(frm, cdt, cdn) {
+		calculate_total(frm, cdt, cdn)
+	},
+	"quarter4": function(frm, cdt, cdn){
+		calculate_total(frm, cdt, cdn)
+	}
+});
+
+frappe.ui.form.on("Disposal Target Item", {
 	"quarter1": function(frm, cdt, cdn) {
 		calculate_total(frm, cdt, cdn)
 	},

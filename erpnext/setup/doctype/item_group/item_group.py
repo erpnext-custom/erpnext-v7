@@ -9,7 +9,7 @@ from frappe.utils.nestedset import NestedSet
 from frappe.website.website_generator import WebsiteGenerator
 from frappe.website.render import clear_cache
 from frappe.website.doctype.website_slideshow.website_slideshow import get_slideshow
-
+from frappe.desk.reportview import build_match_conditions
 
 class ItemGroup(NestedSet, WebsiteGenerator):
 	nsm_parent_field = 'parent_item_group'
@@ -153,3 +153,20 @@ def invalidate_cache_for(doc, item_group=None):
 		d = frappe.get_doc("Item Group", d.name)
 		if d.route:
 			clear_cache(d.route)
+
+#Show only child item groups
+def get_item_groups(doctype, txt, searchfield, start, page_len, filters):
+	fields = ["name"]
+
+	match_conditions = build_match_conditions("Item Group")
+	match_conditions = "and {}".format(match_conditions) if match_conditions else ""
+
+	return frappe.db.sql("""select %s from `tabItem Group` where is_group = 0 
+		and (%s like %s or name like %s)
+		{match_conditions}
+		order by
+		case when name like %s then 0 else 1 end,
+		name limit %s, %s""".format(match_conditions=match_conditions) %
+		(", ".join(fields), searchfield, "%s", "%s", "%s", "%s", "%s"),
+		("%%%s%%" % txt, "%%%s%%" % txt, "%%%s%%" % txt, start, page_len))
+

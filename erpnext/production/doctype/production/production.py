@@ -39,6 +39,7 @@ class Production(StockController):
 				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
 
 		for item in self.get("items"):
+			item.production_type = self.production_type
 			item.item_name, item.item_group, item.item_sub_group, item.timber_species = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group", "species"])
 
 			if item.item_code not in prod_items:
@@ -50,6 +51,8 @@ class Production(StockController):
 		
 			if self.production_type == "Planned":
 				continue
+			if item.item_sub_group == "Pole" and flt(item.qty_in_no) <= 0:
+				frappe.throw("Number of Poles is required for Adhoc Loggings")
 			reading_required, par, min_val, max_val = frappe.db.get_value("Item Sub Group", item.item_sub_group, ["reading_required", "reading_parameter", "minimum_value", "maximum_value"])
 			if reading_required:
 				if not flt(min_val) <= flt(item.reading) <=  flt(max_val):

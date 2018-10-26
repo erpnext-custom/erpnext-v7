@@ -310,7 +310,7 @@ def set_gl_entries_by_account(cost_center, business_activity, company, from_date
 				"lft": root_lft,
 				"rgt": root_rgt
 			},
-			as_dict=True, debug =1)
+			as_dict=True)
 
 	else:
 		cost_centers = get_child_cost_centers(cost_center);
@@ -329,7 +329,7 @@ def set_gl_entries_by_account(cost_center, business_activity, company, from_date
 				"lft": root_lft,
 				"rgt": root_rgt
 			},
-			as_dict=True, debug = 1)
+			as_dict=True)
 
 	for entry in gl_entries:
 		gl_entries_by_account.setdefault(entry.account, []).append(entry)
