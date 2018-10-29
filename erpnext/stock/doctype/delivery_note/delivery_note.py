@@ -376,6 +376,7 @@ def make_sales_invoice(source_name, target_doc=None):
 					target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0) + a.qty
 		else:
 			target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0)
+		target_doc.name_tolerance = "Default"
 
 	doc = get_mapped_doc("Delivery Note", source_name, 	{
 		"Delivery Note": {

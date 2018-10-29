@@ -105,9 +105,10 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 						}
 				}
 
-				// delivery note
+				// delivery note and payment
 				if(flt(doc.per_delivered, 2) < 100 && ["Sales", "Shopping Cart"].indexOf(doc.order_type)!==-1 && allow_delivery) {
 					cur_frm.add_custom_button(__('Delivery'), this.make_delivery_note, __("Make"));
+					cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_payment_entry, __("Make"));
 					cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 				}
 

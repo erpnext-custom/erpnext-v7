@@ -5,6 +5,7 @@ from frappe import msgprint
 from frappe.utils import flt, cint, now, nowdate, getdate
 from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, add_years
 #from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settings, get_salary_tax
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
@@ -1478,3 +1479,19 @@ def update_sst_payment_methods():
         frappe.db.sql("update `tabSalary Structure` set temporary_transfer_allowance_method = 'Percent' where temporary_transfer_allowance > 0 and lumpsum_temp_transfer_amount = 0")
         frappe.db.sql("update `tabSalary Structure` set temporary_transfer_allowance_method = 'Lumpsum' where temporary_transfer_allowance = 0 and lumpsum_temp_transfer_amount > 0;");
         print 'Done updating.....'
+
+"""
+        Author: SHIV
+        Date: 2018/10/29
+        Purpose: This method will update all the salary structures with sws.
+"""
+def update_sst_grade():
+        counter = 0
+        for i in frappe.db.sql("select sst.name,sst.employee,e.employee_subgroup from `tabSalary Structure` as sst, `tabEmployee` as e where e.name = sst.employee", as_dict=True):
+                counter += 1
+                settings = get_payroll_settings(i.employee)
+                doc = frappe.get_doc("Salary Structure", i.name)
+                doc.employee_grade = i.employee_subgroup
+                doc.eligible_for_sws = 1 if flt(settings.get("sws_contribution")) else 0
+                doc.save()
+                print counter,i.employee,i.name 

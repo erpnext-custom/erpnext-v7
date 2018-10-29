@@ -88,11 +88,14 @@ class StockEntry(StockController):
 		if self.items:
 			for a in self.items:
 				if a.issued_to and not a.issue_to_employee:
-					a.issued_to = ''
+					a.issued_to = None 
 				if flt(a.qty) == 0 or flt(a.basic_amount) == 0 or flt(a.amount) == 0:
 					frappe.throw("Either Quantity or Amount is 0 for Item <b>" + str(a.item_name) + "</b>")
+				if self.purpose == "Material Issue" and frappe.db.get_value("Item Group", a.item_group, "return_needed"):
+					if not a.old_item_returned or not a.old_item_detail:
+						frappe.throw("Old Item should be returned before issuing new item")
 		else:
-			frappe.throw("Stock Entry shoould have an Item Entry")
+			frappe.throw("Stock Entry should have an Item Entry")
 
 	def validate_purpose(self):
 		valid_purposes = ["Material Issue", "Material Receipt", "Material Transfer", "Material Transfer for Manufacture",
@@ -103,8 +106,9 @@ class StockEntry(StockController):
 		if self.purpose in ("Manufacture", "Repack") and not self.difference_account:
 			self.difference_account = frappe.db.get_value("Company", self.company, "default_expense_account")
 
-		if self.purpose == "Material Receipt" and not self.initial_stock_templates:
-			frappe.throw("Price Template is Mandatory for Stock Receipts")
+		#this code is commented
+		'''if self.purpose == "Material Receipt" and not self.initial_stock_templates:
+			frappe.throw("Price Template is Mandatory for Stock Receipts")'''
 
 	def set_transfer_qty(self):
 		for item in self.get("items"):

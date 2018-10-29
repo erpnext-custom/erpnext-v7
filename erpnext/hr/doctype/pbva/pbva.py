@@ -17,7 +17,8 @@ class PBVA(Document):
 		cc_amount = {}
 		for a in self.items:
 			tax = get_salary_tax(a.amount)
-			cc = frappe.db.get_value("Employee", a.employee, "cost_center")
+			cost_center, ba = frappe.db.get_value("Employee", a.employee, ["cost_center", "business_activity"])
+			cc = str(str(cost_center) + ":" + str(ba))
 			if cc_amount.has_key(cc):
 				cc_amount[cc]['amount'] = cc_amount[cc]['amount'] + a.amount
 				cc_amount[cc]['tax'] = cc_amount[cc]['tax'] + a.tax_amount
@@ -70,25 +71,29 @@ class PBVA(Document):
 			frappe.throw("Setup Expense Bank Account for your branch")
 		
 		for key in cc_amount.keys():
+			values = key.split(":")
 			je.append("accounts", {
 					"account": pbva_account,
 					"reference_type": "PBVA",
 					"reference_name": self.name,
-					"cost_center": key,
+					"cost_center": values[0],
+					"business_activity": values[1],
 					"debit_in_account_currency": flt(cc_amount[key]['amount']),
 					"debit": flt(cc_amount[key]['amount']),
 				})
 		
 			je.append("accounts", {
 					"account": expense_bank_account,
-					"cost_center": key,
+					"cost_center": values[0],
+					"business_activity": values[1],
 					"credit_in_account_currency": flt(cc_amount[key]['balance_amount']),
 					"credit": flt(cc_amount[key]['balance_amount']),
 				})
 			
 			je.append("accounts", {
 					"account": tax_account,
-					"cost_center": key,
+					"cost_center": values[0],
+					"business_activity": values[1],
 					"credit_in_account_currency": flt(cc_amount[key]['tax']),
 					"credit": flt(cc_amount[key]['tax']),
 				})
@@ -99,10 +104,10 @@ class PBVA(Document):
 
 	def on_cancel(self):
 		jv = frappe.db.get_value("Journal Entry", self.journal_entry, "docstatus")
-		if jv != 2:
+		if jv and jv != 2:
 			frappe.throw("Can not cancel PBVA without canceling the corresponding journal entry " + str(self.journal_entry))
 		else:
-			self.db_set("journal_entry", "")
+			self.db_set("journal_entry", None)
 
 
 	#@frappe.whitelist()

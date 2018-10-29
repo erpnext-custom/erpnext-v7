@@ -15,9 +15,12 @@ def execute(filters=None):
 
 def get_data(filters):
 	data = []
-        #conditions = get_conditions(filters)
+	#conditions = get_conditions(filters)
         #group_by = get_group_by(filters)
         #order_by = get_order_by(filters)
+        '''query = frappe.db.sql(""" select so.name, so.customer, soi.qty, soi.rate, soi.amount,soi.item_code, soi.item_name, so.transaction_date, soi.prod_req
+                     from `tabSales Order` so,  `tabSales Order Item` soi 
+                    where so.name = soi.parent  and  so.docstatus = 1 and {0} {1} {2}.format(conditions, group_by, order_by), as_dict =1)'''
 	query = frappe.db.sql("""
 			select so.name, so.customer, soi.qty, soi.rate, soi.amount, 
 			soi.item_code, soi.item_name, so.transaction_date, 
@@ -28,11 +31,10 @@ def get_data(filters):
 			where so.name = soi.parent  and  so.docstatus = 1
 		""", as_dict = 1);
 	for d in query:
-		frappe.msgprint(" name : {0}".format(d.product_requisition))
 		#Customer Details
 		cust = frappe.db.sql("""
 			select customer_id, customer_type, mobile_no from `tabCustomer` where name = '{0}'""".format(d.customer), as_dict =1)[0]
-		frappe.msgprint("{0}".format(cust.customer_type))
+		
 		#Product Requisition Details
 		prd = frappe.db.sql("""
 				select pr.applicant_contact, pr.applicant_name, pr.construction_type, pr.current_dzongkha, pr.current_resident, 
@@ -40,11 +42,7 @@ def get_data(filters):
 				pr.remarks, pr.start_date, pr.tharm from `tabProduct Requisition` pr, `tabProduct Requisition Item` pri  
 				where pr.name = pri.parent and 
 				pr.name = '{0}'""".format(d.product_requisition), as_dict =1)
-		if not prd:
-			prd.applicant_contact = prd.applicant_name = prd.construction_type = prd.current_dzongkha = prd.current_resident = \
-                        prd.destination_dzongkha = prd.end_date =  prd.is_new_customer = prd.location = prd.no_of_story = prd.others = prd.qty = \
-                        prd.remarks =  prd.start_date =  prd.tharm = 0.0
-
+		
 		#Delivery Details
 		dnd = frappe.db.sql("""
 			select dn.contact_no,dn.drivers_name, dn.transportation_charges, dn.vehicle 
@@ -55,10 +53,9 @@ def get_data(filters):
 		sid = frappe.db.sql("""
 			select si.name from `tabSales Invoice` si, `tabSales Invoice Item` sii 
 			where si.name = sii.parent and sii.sales_order = '{0}'""".format(d.name), as_dict =1)
-		frappe.msgprint("{0}".format(prd.qty))
-		data.append((d.name, d.customer, d.customer, cust.customer_type, cust.customer_id, cust.mobile_no, d.item_name, prd.qty, d.qty, 
+		data.append((d.name, d.customer, d.customer, cust.customer_type, cust.customer_id, cust.mobile_no, d.item_name, 'prd.qty', d.qty, 
 		'flt(prd.qty - d.qty)', d.rate, d.amount, 'sid.name', 'prd.destination_dzongkha', 'prd.tharm', 'prd.construction_type', 'prd.start_date, prd.end_date', d.transaction_date, 'prd.location', 'dnd.vehicle', 'capavity', 'total', 'dnd.drivers_name', 'dnd.contact_no', 'prd.current_resident', 'prd.current_dzongkha', 'prd.no_of_story', 'dnd.transportation_charges', 'total_tc', 'total_tc_amount'))
-		return tuple(data)
+		return data
 	 
 '''def get_group_by(filters):
         if filters.show_aggregate:
@@ -152,7 +149,7 @@ def get_columns(filters):
 		{ "fieldname": "total_amount", "label": "Total Amount", "fieldtype": "Currency", "width": 100}
 	]
 
-	if filters.item_group == "Timber Products":
+	'''if filters.item_group == "Timber Products":
 		columns.insert(4, {
 			"fieldname": "timber_class",
 			"label": "Class",
@@ -172,7 +169,7 @@ def get_columns(filters):
 			"label": "Type",
 			"fieldtype": "Data",
 			"width": 100
-		})
+		})'''
 	
 	return columns
 

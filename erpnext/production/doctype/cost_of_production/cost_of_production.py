@@ -35,12 +35,15 @@ class CostofProduction(Document):
 		for a in self.item_rates:
 			item_list.append(a.item_sub_group)
 
-		for a in frappe.db.sql("select a.branch, count(a.branch) as num, b.name from `tabCOP Branch` a, `tabCost of Production` b where a.parent = b.name and %s between b.from_date and b.to_date or %s between b.from_date and b.to_date group by branch having num > 1", (self.from_date, self.to_date), as_dict=1):
+		branch_list = [str(d.branch) for d in self.get("item_branch")]
+		branch_list.append(str("DUMMY"))
+
+		for a in frappe.db.sql("select a.branch, b.name from `tabCOP Branch` a, `tabCost of Production` b where a.parent = b.name and b.name != %s and a.branch in {0} and (%s between b.from_date and b.to_date or %s between b.from_date and b.to_date or  (%s > b.from_date and %s < b.to_date) or (%s < b.from_date and %s > b.to_date))".format(tuple(branch_list)), (self.name, self.from_date, self.to_date, self.from_date, self.to_date, self.from_date, self.to_date), as_dict=1):
 			#check for Item duplicate
 			doc = frappe.get_doc("Cost of Production", a.name)
 			for b in doc.item_rates:
 				if b.item_sub_group in item_list:
-					frappe.throw("<b>"+str(b.item_sub_group)+"</b> already defined for the same period in <b>"+str(a.name)+"</b>")
+					frappe.throw("<b>"+str(b.item_sub_group)+"</b> already defined for the same period in <b>"+str(frappe.get_desk_link(self.doctype, a.name))+"</b>")
 
 @frappe.whitelist()
 def get_cop_amount(cop, branch, posting_date, item_code):

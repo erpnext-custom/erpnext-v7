@@ -9,6 +9,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 																			warehouse.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
+cur_frm.add_fetch("item_code", "item_group", "item_group")
 
 frappe.provide("erpnext.stock");
 

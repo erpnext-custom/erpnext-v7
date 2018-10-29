@@ -29,8 +29,8 @@ def execute(filters=None):
                 else:
                         status = "Inactive"
                         
-		row = [ss.employee, ss.employee_name,
-                        ss.bank_name, ss.bank_account_no, 
+		row = [ss.employee, ss.employee_name, 
+                       ss.bank_name, ss.bank_account_no, 
 			ss.company, ss.branch, ss.department,
                         ss.division, ss.section, ss.designation, 
                         status,
@@ -56,13 +56,20 @@ def execute(filters=None):
 	
 def get_columns(salary_structures):
 	columns = [
-		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140",
-		_("Bank Name")+ "::80", _("Bank A/C#")+"::100", 
+		_("Employee") + ":Link/Employee:80",
+		 _("Employee Name") + "::140",
+	
+		_("Bank Name")+ "::80",
+		 _("Bank A/C#")+"::100", 
 		_("Company") + ":Link/Company:120",
-                _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120", _("Division") + ":Link/Division:120",
-                _("Section") + ":Link/Section:120", _("Designation") + ":Link/Designation:120",
+                _("Branch") + ":Link/Branch:120",
+		 _("Department") + ":Link/Department:120",
+		 _("Division") + ":Link/Division:120",
+                _("Section") + ":Link/Section:120",	
+		 _("Designation") + ":Link/Designation:120",
 		_("Status") + "::100",
-                _("From Date") + ":Date:80", _("To Date") + ":Date:80"
+                _("From Date") + ":Date:80",
+		 _("To Date") + ":Date:80"
 	]
 	earning_types = []
 	ded_types     = []
@@ -82,9 +89,11 @@ def get_columns(salary_structures):
                         (', '.join(['%s']*len(salary_structures))), tuple([d.name for d in salary_structures]))
 		
         columns = columns + [(e + ":Currency:120") for e in earning_types] + \
-                        ["Arrear Amount:Currency:120", "Leave Encashment Amount:Currency:150", 
+                        ["Arrear Amount:Currency:120",
+			 "Leave Encashment Amount:Currency:150", 
                         "Gross Pay:Currency:120"] + [(d + ":Currency:120") for d in ded_types] + \
-                        ["Total Deduction:Currency:120", "Net Pay:Currency:120"]
+                        ["Total Deduction:Currency:120",
+			 "Net Pay:Currency:120"]
 
 	return columns, earning_types, ded_types
 	
@@ -109,7 +118,7 @@ def get_conditions(filters):
 	
 	if filters.get("company"): conditions += " and t1.company = %(company)s"
 	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"
-
+	if filters.get("grade"): conditions += " and t2.employee_subgroup = %(grade)s"
 	if status:
                 conditions += " and t1.is_active = '{0}'".format(status)
 	

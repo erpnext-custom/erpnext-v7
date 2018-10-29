@@ -258,12 +258,12 @@ def get_data():
 				#	"name": "Leave Encashment Settings",
 				#	"description": _("Leave Encashment Settings"),
 				#},                                
-				{
-					"type": "doctype",
-					"name": "Department Director",
-					"label": "Department\'s Director",
-					"description": _("Assign Directors to Departments")
-				},
+				#{
+				#	"type": "doctype",
+				#	"name": "Department Director",
+				#	"label": "Department\'s Director",
+				#	"description": _("Assign Directors to Departments")
+				#},
 				{
 					"type": "doctype",
 					"name": "Assign Branch",

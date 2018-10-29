@@ -10,7 +10,22 @@ frappe.query_reports["Production Target Report"] = {
                         "options": "Company",
                         "default": frappe.defaults.get_user_default("Company"),
                         "reqd": 1
-                }, 
+                },
+		{
+			"fieldname": "fiscal_year",
+			"label": __("Fiscal Year"),
+			"fieldtype": "Link",
+			"options": "Fiscal Year",
+			"reqd": 1,
+		}, 
+		{
+                        "fieldname": "uinput",
+                        "label": ("Options"),
+                        "fieldtype": "Select",
+                        "options": ["Production", "Disposal"],
+                        "reqd" : 1,
+                },
+
 		{
                         "fieldname": "cost_center",
                         "label": ("Parent Branch"),
@@ -69,14 +84,6 @@ frappe.query_reports["Production Target Report"] = {
                                 var branch = frappe.query_report.filters_by_name.branch.get_value();
                                 return {"doctype": "Location", "filters": {"branch": branch, "is_disabled": 0}}
                         }
-                },
-			
-		{
-                        "fieldname": "uinput",
-                        "label": ("Options"),
-                        "fieldtype": "Select",
-			"options": ["Production", "Sales"],
-			"reqd" : 1,
-                },
+                }
 	]
 }

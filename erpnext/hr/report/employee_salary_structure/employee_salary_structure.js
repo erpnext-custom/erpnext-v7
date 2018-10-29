@@ -22,6 +22,12 @@ frappe.query_reports["Employee Salary Structure"] = {
 			"fieldtype": "Select",
 			"options": "All\nActive\nInactive",
 			"default": "Active"
+		},
+		{
+			"fieldname": "grade",
+			"label": __("Grade"),
+			"fieldtype": "Link",
+			"options": "Employee Grade"
 		}
 	]
 }

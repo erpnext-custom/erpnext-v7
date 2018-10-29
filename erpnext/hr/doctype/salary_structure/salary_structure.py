@@ -85,6 +85,7 @@ class SalaryStructure(Document):
                 self.employee_name = emp.employee_name
 		self.branch = emp.branch
 		self.designation = emp.designation
+		self.employee_grade = emp.employee_subgroup
 		self.department = emp.department
                 self.division = emp.division
                 self.section = emp.section
@@ -173,6 +174,7 @@ class SalaryStructure(Document):
 			self.db_set("department", doc.department)
 			self.db_set("division", doc.division)
 			self.db_set("section", doc.section)
+			self.db_set("employee_grade", doc.employee_subgroup)
 			self.db_set("designation", doc.designation)
 
 	def check_multiple_active(self):
@@ -245,7 +247,11 @@ class SalaryStructure(Document):
                                                 total_earning += calc_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
                                 else:
-                                        if self.get(m['field_name']) and m['name'] == 'Group Insurance Scheme':
+                                        if self.get(m['field_name']) and m['name'] == 'SWS':
+                                                sws_amt = round(flt(settings.get("sws_contribution")))
+                                                calc_amt = sws_amt
+                                                calc_map.append({'salary_component': m['name'], 'amount': flt(sws_amt)})
+                                        elif self.get(m['field_name']) and m['name'] == 'Group Insurance Scheme':
                                                 gis_amt  = round(flt(settings.get("gis")))
                                                 calc_amt = gis_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': flt(gis_amt)})
@@ -399,11 +405,14 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                 gross_amt += (flt(target.arrear_amount) + flt(target.leave_encashment_amount))
 
                 # Calculating PF, Group Insurance Scheme, Health Contribution
-		pf = gis = health = 0.00
+		sws = pf = gis = health = 0.00
 		for d in calc_map['deductions']:
                         if not flt(gross_amt):
                                 d['amount'] = 0
                         else:
+                                if d['salary_component'] == 'SWS':
+                                        sws = flt(settings.get("sws_contribution"));
+                                        d['amount'] = sws
                                 if d['salary_component'] == 'PF':
                                         percent = flt(settings.get("employee_pf"))
                                         pf = round(basic_amt*flt(percent)*0.01);

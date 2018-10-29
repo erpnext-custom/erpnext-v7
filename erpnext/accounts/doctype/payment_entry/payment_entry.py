@@ -697,8 +697,9 @@ def get_party_details(company, party_type, party, date):
 	if not frappe.db.exists(party_type, party):
 		frappe.throw(_("Invalid {0}: {1}").format(party_type, party))
 		
-	party_account = get_party_account(party_type, party, company)
+	#party_account = get_party_account(party_type, party, company)
 	
+	party_account = frappe.db.get_single_value("Accounts Settings", "advance_from_customer")
 	account_currency = get_account_currency(party_account)
 	account_balance = get_balance_on(party_account, date)
 	party_balance = get_balance_on(party_type=party_type, party=party)

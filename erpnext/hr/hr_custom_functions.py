@@ -269,6 +269,7 @@ def get_payroll_settings(employee=None):
                         select
                                 e.employee_group,
                                 e.employee_subgroup,
+                                d.sws_contribution,
                                 d.gis,
                                 g.health_contribution,
                                 g.employee_pf,

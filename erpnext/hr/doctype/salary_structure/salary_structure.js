@@ -104,6 +104,9 @@ frappe.ui.form.on('Salary Structure', {
 	eligible_for_mpi: function(frm){
 		calculate_others(frm.doc);
 	},
+	eligible_for_sws: function(frm){
+		calculate_others(frm.doc);
+	},
 	eligible_for_gis: function(frm){
 		calculate_others(frm.doc);
 	},

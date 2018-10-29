@@ -100,6 +100,14 @@ class CostCenter(NestedSet):
 		else:
 			self.is_group = 1
 			self.save()
+			branch = frappe.db.sql("select name from tabBranch where cost_center = %s", self.name, as_dict=1)
+			if branch:
+				doc = frappe.get_doc("Branch", branch[0].name)
+				doc.delete()
+			customer = frappe.db.sql("select name from tabCustomer where cost_center = %s", self.name, as_dict=1)
+			if customer:
+				doc = frappe.get_doc("Customer", customer[0].name)
+				doc.delete()
 			return 1
 
 	def check_gle_exists(self):

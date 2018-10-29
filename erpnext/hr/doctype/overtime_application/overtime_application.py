@@ -61,7 +61,7 @@ class OvertimeApplication(Document):
 	# Post journal entry
 	##
 	def post_journal_entry(self):	
-		cost_center = frappe.db.get_value("Employee", self.employee, "cost_center")
+		cost_center, ba = frappe.db.get_value("Employee", self.employee, ["cost_center", "business_activity"])
 		ot_account = frappe.db.get_single_value("HR Accounts Settings", "overtime_account")
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
 		if not cost_center:
@@ -84,6 +84,7 @@ class OvertimeApplication(Document):
 		je.append("accounts", {
 				"account": expense_bank_account,
 				"cost_center": cost_center,
+				"business_activity": ba,
 				"credit_in_account_currency": flt(total_amount),
 				"credit": flt(total_amount),
 			})
@@ -91,6 +92,7 @@ class OvertimeApplication(Document):
 		je.append("accounts", {
 				"account": ot_account,
 				"cost_center": cost_center,
+				"business_activity": ba,
 				"debit_in_account_currency": flt(total_amount),
 				"debit": flt(total_amount),
 				"reference_type": self.doctype,
