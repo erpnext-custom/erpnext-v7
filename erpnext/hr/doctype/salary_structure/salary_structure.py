@@ -82,14 +82,16 @@ class SalaryStructure(Document):
         
 	def get_employee_details(self):
                 emp = frappe.get_doc("Employee", self.employee)
-                self.employee_name = emp.employee_name
-		self.branch = emp.branch
-		self.designation = emp.designation
-		self.employee_grade = emp.employee_subgroup
-		self.department = emp.department
-                self.division = emp.division
-                self.section = emp.section
-		self.backup_employee = self.employee
+                self.employee_name      = emp.employee_name
+		self.branch             = emp.branch
+		self.designation        = emp.designation
+		self.employment_type    = emp.employment_type
+		self.employee_group     = emp.employee_group
+		self.employee_grade     = emp.employee_subgroup
+		self.department         = emp.department
+                self.division           = emp.division
+                self.section            = emp.section
+		self.backup_employee    = self.employee
 				
 	def get_ss_values(self,employee):
 		basic_info = frappe.db.sql("""select bank_name, bank_ac_no
@@ -174,6 +176,8 @@ class SalaryStructure(Document):
 			self.db_set("department", doc.department)
 			self.db_set("division", doc.division)
 			self.db_set("section", doc.section)
+			self.db_set("employment_type", doc.employment_type)
+			self.db_set("employee_group", doc.employee_group)
 			self.db_set("employee_grade", doc.employee_subgroup)
 			self.db_set("designation", doc.designation)
 

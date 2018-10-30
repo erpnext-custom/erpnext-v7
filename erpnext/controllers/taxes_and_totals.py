@@ -178,9 +178,12 @@ class calculate_taxes_and_totals(object):
 			self.doc.net_total += item.net_amount
 			self.doc.base_net_total += item.base_net_amount
 			if self.doc.doctype in ['Purcahse Receipt', 'Purchase Invoice']:
-				self.doc.total_tax_amount += item.tx_amount
-				self.doc.base_tax_amount += item.base_tx_amount
-
+                                # Ver 3.0 Begins, following two line replaced by subsequent, by SHIV on 2018/10/30
+				#self.doc.total_tax_amount += item.tx_amount
+				#self.doc.base_tax_amount += item.base_tx_amount
+				self.doc.total_tax_amount = flt(self.doc.total_tax_amount) + flt(item.tx_amount)
+				self.doc.base_tax_amount = flt(self.doc.base_tax_amount) + flt(item.base_tx_amount)
+				# Ver 3.0 Ends
 
 		self.doc.round_floats_in(self.doc, ["total", "base_total", "net_total", "base_net_total"])
 		if self.doc.doctype in ['Purcahse Receipt', 'Purchase Invoice']:

@@ -11,6 +11,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 2.0               SHIV                              03/01/2018         *Following fields introduced
                                                                         party_currency, party_exchange_rate, party_paid_amount
 2.0               SHIV                              31/07/2018         Fields party_type, party added under deductions
+3.0               SHIV                              30/10/2018         Fetching cost_center from Branch master unlike cdcl.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -395,9 +396,8 @@ class PaymentEntry(AccountsController):
 		self.add_bank_gl_entries(gl_entries)
 		self.add_tds_gl_entries(gl_entries)
 		self.add_deductions_gl_entries(gl_entries)
-
 		make_gl_entries(gl_entries, cancel=cancel, adv_adj=adv_adj)
-		
+
 	def add_party_gl_entries(self, gl_entries):
 		if self.party_account:
 			if self.payment_type=="Receive":
@@ -426,8 +426,10 @@ class PaymentEntry(AccountsController):
 					else:
 						cc  = self.pl_cost_center
                                 else:
-                                        cc  = frappe.db.get_value(doctype="Cost Center",filters={"branch": inv.branch},fieldname="name", as_dict=False)
-
+                                        # Ver 3.0 Begins, following line replaced by subsequent, by SHIV on 2018/10/30
+                                        #cc  = frappe.db.get_value(doctype="Cost Center",filters={"branch": inv.branch},fieldname="name", as_dict=False)
+                                        cc  = frappe.db.get_value(doctype="Branch",filters={"name": inv.branch},fieldname="cost_center", as_dict=False)
+                                        # Ver 3.0 Ends
 				gle = party_gl_dict.copy()
 				gle.update({
 					"against_voucher_type": d.reference_doctype,
@@ -697,9 +699,8 @@ def get_party_details(company, party_type, party, date):
 	if not frappe.db.exists(party_type, party):
 		frappe.throw(_("Invalid {0}: {1}").format(party_type, party))
 		
-	#party_account = get_party_account(party_type, party, company)
+	party_account = get_party_account(party_type, party, company)
 	
-	party_account = frappe.db.get_single_value("Accounts Settings", "advance_from_customer")
 	account_currency = get_account_currency(party_account)
 	account_balance = get_balance_on(party_account, date)
 	party_balance = get_balance_on(party_type=party_type, party=party)
@@ -710,6 +711,7 @@ def get_party_details(company, party_type, party, date):
 		"party_balance": party_balance,
 		"account_balance": account_balance
 	}
+
 
 @frappe.whitelist()	
 def get_account_details(account, date):
@@ -788,7 +790,10 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 		# Ver 2.0 Begins, Following code added by SHIV on 03/01/2018
 		party_currency      = doc.get("currency")
 		# Ver 2.0 Ends
-		
+	#### Added by Thukten Dendup ####		
+	elif dt == "Sales Order":
+		party_account = frappe.db.get_single_value("Accounts Settings", "advance_from_customer")
+	#### End ######
 	else:
 		party_account = get_party_account(party_type, doc.get(party_type.lower()), doc.company)
 		

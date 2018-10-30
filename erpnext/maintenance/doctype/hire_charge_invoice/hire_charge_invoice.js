@@ -173,7 +173,12 @@ function get_vehicle_logs(form) {
 				        var row = frappe.model.add_child(cur_frm.doc, "Hire Invoice Details", "items");
 					row.vehicle_logbook = logbook['name']
 					row.equipment_number = logbook['equipment_number']
-					row.total_work_hours = logbook['total_work_time']
+					if (row.rate_type == "Cft - Broadleaf" || row.rate_type == "Cft - Conifer") {
+						row.total_work_hours = logbook['total_cft']
+					}
+					else {
+						row.total_work_hours = logbook['total_work_time']
+					}
 					row.total_idle_hours = logbook['total_idle_time']
 					row.equipment = logbook['equipment']
 					row.rate_type = logbook['rate_type']

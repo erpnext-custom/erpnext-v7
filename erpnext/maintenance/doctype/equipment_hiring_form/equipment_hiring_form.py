@@ -39,7 +39,6 @@ class EquipmentHiringForm(Document):
 		if not self.approved_items:
 			frappe.throw("Cannot submit hiring form without Approved Items")
 
-	def before_submit(self):
 		self.check_equipment_free()
 
 	def on_submit(self):
@@ -197,7 +196,7 @@ class EquipmentHiringForm(Document):
 def get_hire_rates(e, from_date):
 	e = frappe.get_doc("Equipment", e)
 	#query = "select with_fuel, without_fuel, idle from `tabHire Charge Parameter` where equipment_type = \"" + str(e.equipment_type) + "\" and equipment_model =\"" + str(e.equipment_model) + "\""
-	db_query = "select a.rate_fuel as with_fuel, a.rate_wofuel as without_fuel, a.idle_rate as idle from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{0}' and b.equipment_model = '{1}' and '{2}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
+	db_query = "select a.rate_fuel as with_fuel, a.rate_wofuel as without_fuel, a.idle_rate as idle, a.cft_rate_bf, a.cft_rate_co from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{0}' and b.equipment_model = '{1}' and '{2}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
 	data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, from_date), as_dict=True)
 	#data = frappe.db.sql(query, as_dict=True)
 	if not data:
@@ -206,7 +205,7 @@ def get_hire_rates(e, from_date):
 
 @frappe.whitelist()
 def get_diff_hire_rates(tr):
-	query = "select with_fuel, without_fuel, idle_rate as idle from `tabTender Hire Rate` where name = \"" + str(tr) + "\""
+	query = "select with_fuel, without_fuel, idle_rate as idle, cft_rate_bf, cft_rate_co from `tabTender Hire Rate` where name = \"" + str(tr) + "\""
 	data = frappe.db.sql(query, as_dict=True)
 	if not data:
 		frappe.throw("No Hire Rates has been assigned")

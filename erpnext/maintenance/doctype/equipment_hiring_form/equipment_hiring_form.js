@@ -6,6 +6,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
 		if(frm.doc.private == "Private") {
 			cur_frm.set_df_property("advance_amount", "reqd", 1)
 		}
+
 		if (frm.doc.advance_journal && frappe.model.can_read("Journal Entry")) {
 			cur_frm.add_custom_button(__('Bank Entries'), function() {
 				frappe.route_options = {
@@ -15,12 +16,14 @@ frappe.ui.form.on('Equipment Hiring Form', {
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
 		}
+
 		cur_frm.add_custom_button(__('Logbooks'), function() {
 			frappe.route_options = {
 				"Vehicle Logbook.ehf_name": me.frm.doc.name,
 			};
 			frappe.set_route("List", "Vehicle Logbook");
 		}, __("View"));
+
 		cur_frm.add_custom_button(__('Invoices'), function() {
 			frappe.route_options = {
 				"Hire Charge Invoice.ehf_name": me.frm.doc.name,
@@ -34,6 +37,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
 			}, __("Status"));
 		}
 	},
+
 	onload: function(frm) {
 		if (!frm.doc.request_date) {
 			frm.set_value("request_date", get_today());
@@ -62,8 +66,8 @@ frappe.ui.form.on('Equipment Hiring Form', {
 		}
 	},
 	"private": function(frm) {
-		cur_frm.toggle_reqd("customer_cost_center", frm.doc.private == 'CDCL')
-		cur_frm.toggle_reqd("customer_branch", frm.doc.private == 'CDCL')
+		cur_frm.toggle_reqd("customer_cost_center", frm.doc.private == 'Own Company')
+		cur_frm.toggle_reqd("customer_branch", frm.doc.private == 'Own Company')
 		cur_frm.toggle_reqd("advance_amount", frm.doc.private == 'Private')
 	},
 
@@ -140,19 +144,7 @@ frappe.ui.form.on("Hiring Approval Details", {
 	"rate": function(frm, cdt, cdn) {
 		calculate_amount(frm, cdt, cdn)
 	},
-	"rate1": function(frm, cdt, cdn) {
-		calculate_amount(frm, cdt, cdn)
-	},
-	"rate2": function(frm, cdt, cdn) {
-		calculate_amount(frm, cdt, cdn)
-	},
-	"rate3": function(frm, cdt, cdn) {
-		calculate_amount(frm, cdt, cdn)
-	},
-	"rate4": function(frm, cdt, cdn) {
-		calculate_amount(frm, cdt, cdn)
-	},
-	"rate5": function(frm, cdt, cdn) {
+	"cft_qty": function(frm, cdt, cdn) {
 		calculate_amount(frm, cdt, cdn)
 	},
 	"total_hours": function(frm, cdt, cdn) {
@@ -166,9 +158,15 @@ frappe.ui.form.on("Hiring Approval Details", {
 	},
 	"equipment": function(frm, cdt, cdn) {
 		get_rates(frm, cdt, cdn)
+		calculate_amount(frm, cdt, cdn)
 	},
 	"rate_type": function(frm, cdt, cdn) {
 		get_rates(frm, cdt, cdn)
+		doc = locals[cdt][cdn]
+		if (doc.rate_type == "Cft - Broadleaf" || doc.rate_type == "Cft - Conifer") {
+			cur_frm.fields_dict.approved_items.grid.toggle_reqd("cft_qty", true)
+		}
+		calculate_amount(frm, cdt, cdn)
 	},
 	"equipment": function(frm, cdt, cdn) {
 		doc = locals[cdt][cdn]
@@ -177,6 +175,7 @@ frappe.ui.form.on("Hiring Approval Details", {
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("rate", doc.equipment)
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("idle_rate", doc.equipment)
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("place", doc.equipment)
+		calculate_amount(frm, cdt, cdn)
 	},
 	"from_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
@@ -209,8 +208,14 @@ function get_rates(frm, cdt, cdn) {
 					if(doc.rate_type == "Without Fuel") {
 						frappe.model.set_value(cdt, cdn, "rate", r.message[0].without_fuel)
 					}
-					else {
+					else if (doc.rate_type == "With Fuel") {
 						frappe.model.set_value(cdt, cdn, "rate", r.message[0].with_fuel)
+					}
+					else if(doc.rate_type == "Cft - Broadleaf") {
+						frappe.model.set_value(cdt, cdn, "rate", r.message[0].cft_rate_bf)
+					}
+					else if(doc.rate_type == "Cft - Conifer") {
+						frappe.model.set_value(cdt, cdn, "rate", r.message[0].cft_rate_co)
 					}
 					frappe.model.set_value(cdt, cdn, "idle_rate", r.message[0].idle)
 				}				
@@ -231,8 +236,16 @@ function get_diff_rates(frm, cdt, cdn) {
 					if(doc.rate_type == "Without Fuel") {
 						frappe.model.set_value(cdt, cdn, "rate", r.message[0].without_fuel)
 					}
-					else {
+					else if (doc.rate_type == "With Fuel") {
 						frappe.model.set_value(cdt, cdn, "rate", r.message[0].with_fuel)
+					}
+					else if(doc.rate_type == "Cft - Broadleaf") {
+						frappe.model.set_value(cdt, cdn, "rate", r.message[0].cft_rate_bf)
+					}
+					else if(doc.rate_type == "Cft - Conifer") {
+						frappe.model.set_value(cdt, cdn, "rate", r.message[0].cft_rate_co)
+					}
+					else {
 					}
 					frappe.model.set_value(cdt, cdn, "idle_rate", r.message[0].idle)
 				}				
@@ -253,8 +266,13 @@ function calculate_total(frm) {
 
 function calculate_amount(frm, cdt, cdn) {
 	var item = locals[cdt][cdn]
-	if(item.rate && item.total_hours) {
-		grand_amount = item.rate * item.total_hours
+	if(item.rate) {
+		if (item.rate_type == "Cft - Broadleaf" || item.rate_type == "Cft - Conifer") {
+			grand_amount = item.rate * item.cft_qty
+		}
+		else {
+			grand_amount = item.rate * item.total_hours
+		}
 		if(item.rate1) {
 			grand_amount += item.rate1 * item.total_hours
 		}
@@ -294,7 +312,7 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 		};
 	});
 	cur_frm.set_query("customer", function() {
-		if(frm.doc.private == "CDCL") {
+		if(frm.doc.private == "Own Company") {
 			return {
 			    "filters": {
 				"disabled": 0,

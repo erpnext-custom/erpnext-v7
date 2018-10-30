@@ -132,7 +132,7 @@ class OpeningInvoiceCreationTool(Document):
 
 	def get_invoice_dict(self, row=None):
 		def get_item_dict():
-			default_uom = frappe.db.get_single_value("Stock Settings", "stock_uom") or _("Nos")
+			default_uom = frappe.db.get_single_value("Stock Settings", "stock_uom") or _("No")
 			
 			# Following code commented by SHIV on 2018/10/24
 			"""
@@ -159,6 +159,9 @@ class OpeningInvoiceCreationTool(Document):
 				"description": row.item_name or "Opening Invoice Item",
 				income_expense_account_field: row.temporary_opening_account,
 				"cost_center": row.cost_center,
+                                "business_activity": row.business_activity,
+                                "name_tolerance": "Default",
+                                "loss_method": "Quantity in Flat",
 			})
 
 		if not row:
@@ -186,13 +189,27 @@ class OpeningInvoiceCreationTool(Document):
 			"currency": frappe.db.get_value("Company", self.company, "default_currency"),
 		})
 
+                # Ver 3.0 Begins, changes made by SHIV on 2018/10/30
+                # Following code commented by SHIV on 2018/10/30
+                '''
+                if self.invoice_type == "Sales":
+			args["is_pos"] = 0
+                '''
+                
+                # Following code added by SHIV on 2018/10/30
 		if self.invoice_type == "Sales":
 			args["is_pos"] = 0
-			# Following added by SHIV on 2018/10/24
-			args["branch"] = branch
-			args["title"] = row.item_name
 			args["sales_invoice_date"] = row.posting_date
-
+                else:
+                        args["buying_cost_center"] = row.cost_center
+                        args["bill_no"] = row.item_name
+                        args["bill_date"] = row.posting_date
+                        
+                args["branch"] = branch
+		args["title"] = row.item_name
+		args["naming_series"] = row.invoice_series
+                # Ver 3.0 Ends
+                
 		return args
 
 @frappe.whitelist()

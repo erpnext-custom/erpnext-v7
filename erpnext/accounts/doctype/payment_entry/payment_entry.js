@@ -28,12 +28,12 @@ frappe.ui.form.on('Payment Entry', {
 
 		var party_account_type = frm.doc.party_type=="Customer" ? "Receivable" : "Payable";
 
-/*		frm.set_query("paid_from", function() {
+	/*	frm.set_query("paid_from", function() {
 			/*var account_types = in_list(["Pay", "Internal Transfer"], frm.doc.payment_type) ?
 				["Bank", "Cash"] : party_account_type;
 			Show both payables and receivable accounts
 			*/
-/*			var account_types = ["Payable","Receivable", "Bank", "Cash"]
+	/*		var account_types = ["Payable","Receivable", "Bank", "Cash"]
 
 			return {
 				filters: {
@@ -42,8 +42,8 @@ frappe.ui.form.on('Payment Entry', {
 					"company": frm.doc.company
 				}
 			}
-		});
-*/
+		}); */
+
 		frm.set_query("paid_to", function() {
 			/*var account_types = in_list(["Receive", "Internal Transfer"], frm.doc.payment_type) ?
 	 			["Bank", "Cash"] : party_account_type;
@@ -884,7 +884,7 @@ frappe.ui.form.on("Payment Entry", "onload", function(frm) {
 
       //make pay_to_recd_from editable
          frm.toggle_reqd("pay_to_recd_from", 1);
-      }
+      } 
 
 })
 

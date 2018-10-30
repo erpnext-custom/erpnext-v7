@@ -57,7 +57,7 @@
    "print_hide_if_no_value": 0, 
    "read_only": 1, 
    "report_hide": 0, 
-   "reqd": 1, 
+   "reqd": 0, 
    "search_index": 1, 
    "set_only_once": 0, 
    "unique": 0
@@ -2143,7 +2143,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2018-09-10 05:11:40.728703", 
+ "modified": "2018-10-30 05:13:28.741870", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Sales Invoice Item", 

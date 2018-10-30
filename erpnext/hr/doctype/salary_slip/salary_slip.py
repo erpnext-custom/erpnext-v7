@@ -149,6 +149,9 @@ class SalarySlip(TransactionBase):
 		self.bank_account_no    = emp.bank_ac_no
 		self.gis_number         = emp.gis_number
 		self.gis_policy_number  = emp.gis_policy_number
+		self.employment_type    = emp.employment_type
+		self.employee_group     = emp.employee_group
+		self.employee_grade     = emp.employee_subgroup
 			
         def get_leave_details(self, joining_date=None, relieving_date=None, ss_doc=None, lwp=None):
                 days_in_month= 0

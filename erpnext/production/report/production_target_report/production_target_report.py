@@ -3,9 +3,12 @@
 
 from __future__ import unicode_literals
 import frappe
+from erpnext.accounts.utils import get_child_cost_centers, get_period_date
+
 
 def execute(filters=None):
-        columns = get_columns(filters)
+       
+	columns = get_columns(filters)
         data = get_data(filters)
 
         return columns, data
@@ -18,22 +21,23 @@ def get_columns(filters):
         	]
 	else:
 		cols=[
-			("Sales Group") + ":Data:140",
-			("Sales Qty") + ":Data:90"
+			("Disposal Group") + ":Data:140",
+			("Disposal Qty") + ":Data:97"
 		]
-	return cols
+	return cols 
 
 def get_data(filters):
+	all_ccs = get_child_cost_centers(filters.cost_center)
+
 	if not filters.uinput:
 		return []
-	query = "select pdi.production_group, pdi.quantity from `tab{0} Target Item` pdi, `tabProduction Target` pt where pt.name = pdi.parent".format(filters.uinput) 
+	query = "select pdi.production_group, sum(pdi.quantity) from `tab{0} Target Item` pdi, `tabProduction Target` pt where pt.name = pdi.parent".format(filters.uinput) 
 
-	#CHECK BRA|NCH
-	#IF BRANCH THEN UNIT ., THEREFORE USE =
-	#ELSE, PARENT CC, THEREFORE USE IN
-	if filters.get("cost_center"):
+	if filters.get("branch"):
 		query += " and pt.cost_center = \'" + str(filters.cost_center) + "\'"	
-	
+	else:	
+		query += " and pt.cost_center in {0} ".format(tuple(all_ccs))
+			
 	if filters.get("location"):
 		query += " and pt.location = \'" + str(filters.location) + "\'"
 	if filters.get("fiscal_year"):

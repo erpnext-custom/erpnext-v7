@@ -1487,10 +1487,12 @@ def update_sst_payment_methods():
 """
 def update_sst_grade():
         counter = 0
-        for i in frappe.db.sql("select sst.name,sst.employee,e.employee_subgroup from `tabSalary Structure` as sst, `tabEmployee` as e where e.name = sst.employee", as_dict=True):
+        for i in frappe.db.sql("select sst.name,sst.employee,e.employment_type,e.employee_group,e.employee_subgroup from `tabSalary Structure` as sst, `tabEmployee` as e where e.name = sst.employee", as_dict=True):
                 counter += 1
                 settings = get_payroll_settings(i.employee)
                 doc = frappe.get_doc("Salary Structure", i.name)
+                doc.employment_type = i.employment_type
+                doc.employee_group = i.employee_group
                 doc.employee_grade = i.employee_subgroup
                 doc.eligible_for_sws = 1 if flt(settings.get("sws_contribution")) else 0
                 doc.save()
