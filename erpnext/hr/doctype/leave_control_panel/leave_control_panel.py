@@ -33,7 +33,7 @@ class LeaveControlPanel(Document):
 			.format(condition=condition_str), tuple(values))
                 '''
                 # Following code added
-                e = frappe.db.sql("select name from tabEmployee where status='Active' and date_of_joining =< '{from_date}' {condition}"
+                e = frappe.db.sql("select name from tabEmployee where status='Active' and date_of_joining <= '{from_date}' {condition}"
 			.format(condition=condition_str, from_date=self.from_date), tuple(values))
                 # Ver 2.1 Ends
                 

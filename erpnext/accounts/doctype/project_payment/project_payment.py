@@ -40,6 +40,7 @@ class ProjectPayment(AccountsController):
                 self.validate_mandatory_fields()
                 self.validate_allocated_amounts()
                 self.load_boq_allocation()
+		self.clearance_date = None
 
         def on_submit(self):
                 self.update_invoice_balance()
@@ -51,6 +52,9 @@ class ProjectPayment(AccountsController):
                 self.set_status()
 
         def on_cancel(self):
+		if self.clearance_date:
+                        frappe.throw("Already done bank reconciliation.")
+
                 self.make_gl_entries()
                 self.update_invoice_balance()
                 self.update_advance_balance()
