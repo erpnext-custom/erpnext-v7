@@ -13,6 +13,7 @@ class HSDPayment(Document):
 	def validate(self):
 		check_future_date(self.posting_date)
 		self.validate_allocated_amount()
+		self.clearance_date = None
 
 	def validate_allocated_amount(self):
 		if not self.amount > 0:
@@ -41,6 +42,9 @@ class HSDPayment(Document):
 		self.update_general_ledger()
 
 	def on_cancel(self):
+		if self.clearance_date:
+			frappe.throw("Already done bank reconciliation.")
+		
 		self.adjust_outstanding(cancel=True)
 		self.update_general_ledger()
 	

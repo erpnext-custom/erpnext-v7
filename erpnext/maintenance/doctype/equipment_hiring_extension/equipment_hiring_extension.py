@@ -41,8 +41,12 @@ class EquipmentHiringExtension(Document):
 						#self.rate = doc.rate
 						self.check_hire_rate(doc)
 						if not self.hours:
-							days = date_diff(self.extension_date, doc.to_date)
-							self.hours = flt(days) * 8
+							if doc.rate_type in ("Cft - Broadleaf", "Cft - Conifer"):
+								frappe.throw("Estimated Cft is Mandatory")
+							else:
+								days = date_diff(self.extension_date, doc.to_date)
+								self.hours = flt(days) * 8
+
 						self.actual_receivable = flt(self.hours) * flt(self.rate) 
 						if ehf.private == 'Private':
 							balance_advance = frappe.db.sql("select sum(credit_in_account_currency) as amount from `tabJournal Entry Account` where reference_type = 'Equipment Hiring Form' and reference_name = %s and docstatus = 1 and is_advance = 'Yes'", self.ehf_name, as_dict=True)

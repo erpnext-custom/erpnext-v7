@@ -120,6 +120,12 @@ def get_data():
 					"name": "sales-analytics",
 					"label": "Sales Analytics"
 				},
+				{
+					"type": "report",
+					"name": "Advance Report",
+					"doctype": "Payment Entry",
+					"is_query_report": True,
+				},
 			]
 		},
 		{

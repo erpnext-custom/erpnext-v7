@@ -726,7 +726,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 1, 
+   "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "business_activity", 
@@ -1727,7 +1727,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-10-30 10:49:09.979906", 
+ "modified": "2018-11-02 04:20:38.363391", 
  "modified_by": "Administrator", 
  "module": "Assets", 
  "name": "Asset", 

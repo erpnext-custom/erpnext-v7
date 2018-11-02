@@ -19,6 +19,7 @@ from frappe import msgprint
 from frappe.model.document import Document
 from frappe.utils import cint, flt, nowdate, money_in_words
 from erpnext.hr.hr_custom_functions import get_month_details
+from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class ProcessPayroll(Document):
 
@@ -258,19 +259,31 @@ class ProcessPayroll(Document):
         # Ver20180403 added by SSK, account rules
         #
         def get_account_rules(self):
+                '''
+                        ---------------------------------------------------------------------------------
+                        type            Dr            Cr               voucher_type
+                        ------------    ------------  -------------    ----------------------------------
+                        to payables     earnings      deductions       journal entry (journal voucher)
+                                                      net pay
+                        to bank         net pay       bank             bank entry (bank payment voucher)
+                        remittance      deductions    bank             bank entry (bank payment voucher)
+                        ---------------------------------------------------------------------------------
+                '''
                 # Default Accounts
                 default_bank_account    = frappe.db.get_value("Branch", self.branch,"expense_bank_account")
                 default_payable_account = frappe.db.get_single_value("HR Accounts Settings", "salary_payable_account")
                 default_gpf_account     = frappe.db.get_single_value("HR Accounts Settings", "employee_contribution_pf")
+                default_business_activity = get_default_ba()
                 salary_component_pf     = "PF"
-
+                
                 # Filters
                 cond = self.get_filter_condition()
                 
                 # Salary Details
-                cc = frappe.db.sql("""
+                result = frappe.db.sql("""
                         select
                                 t1.cost_center             as cost_center,
+                                t1.business_activity       as business_activity,
                                 (case
                                         when sc.type = 'Earning' then sc.type
                                         else ifnull(sc.clubbed_component,sc.name)
@@ -304,7 +317,7 @@ class ProcessPayroll(Document):
                           {2}
                           and sd.parent      = t1.name
                           and sc.name        = sd.salary_component
-                        group by t1.cost_center,
+                        group by t1.cost_center, t1.business_activity,
                                 (case when sc.type = 'Earning' then sc.type else ifnull(sc.clubbed_component,sc.name) end),
                                 sc.type,
                                 (case when sc.type = 'Earning' then 0 else ifnull(sc.is_remittable,0) end),
@@ -312,12 +325,15 @@ class ProcessPayroll(Document):
                                 (case when ifnull(sc.make_party_entry,0) = 1 then 'Payable' else 'Other' end),
                                 (case when ifnull(sc.make_party_entry,0) = 1 then 'Employee' else 'Other' end),
                                 (case when ifnull(sc.make_party_entry,0) = 1 then t1.employee else 'Other' end)
-                        order by t1.cost_center, sc.type, sc.name
+                        order by t1.cost_center, t1.business_activity, sc.type, sc.name
                 """.format(self.fiscal_year, self.month, cond),as_dict=1)
 
                 posting        = frappe._dict()
                 cc_wise_totals = frappe._dict()
-                for rec in cc:
+                payables_totals= frappe._dict()
+                remit_totals   = frappe._dict()
+                # Business Activity wise
+                for rec in result:
                         # Cost Center wise net payables
                         amount = (-1*flt(rec.amount) if rec.component_type == 'Deduction' else flt(rec.amount))
                         if cc_wise_totals.has_key(rec.cost_center):
@@ -325,19 +341,29 @@ class ProcessPayroll(Document):
                         else:
                                 cc_wise_totals[rec.cost_center]  = amount
 
-                        # To Payables
+                        # Payables Details
                         posting.setdefault("to_payables",[]).append({
                                 "account"        : rec.gl_head,
                                 "credit_in_account_currency" if rec.component_type == 'Deduction' else "debit_in_account_currency": flt(rec.amount),
                                 "against_account": default_payable_account,
                                 "cost_center"    : rec.cost_center,
+                                "business_activity": rec.business_activity,
                                 "party_check"    : 0,
                                 "account_type"   : rec.account_type if rec.party_type == "Employee" else "",
                                 "party_type"     : rec.party_type if rec.party_type == "Employee" else "",
                                 "party"          : rec.party if rec.party_type == "Employee" else "" 
                         }) 
-                                
-                        # Remittance
+
+                        # Payables Totals
+                        if payables_totals.has_key(rec.cost_center):
+                                if payables_totals[rec.cost_center].has_key(rec.business_activity):
+                                        payables_totals[rec.cost_center][rec.business_activity] += amount
+                                else:
+                                        payables_totals[rec.cost_center][rec.business_activity]  = amount
+                        else:
+                                payables_totals.setdefault(rec.cost_center,frappe._dict()).setdefault(rec.business_activity,flt(amount))
+                                        
+                        # Remittance Details
                         if rec.is_remittable and rec.component_type == 'Deduction':
                                 remit_amount    = 0
                                 remit_gl_list   = [rec.gl_head,default_gpf_account] if rec.salary_component == salary_component_pf else [rec.gl_head]
@@ -348,37 +374,60 @@ class ProcessPayroll(Document):
                                                 "account"       : r,
                                                 "debit_in_account_currency" : flt(rec.amount),
                                                 "cost_center"   : rec.cost_center,
+                                                "business_activity": rec.business_activity,
                                                 "party_check"   : 0,
                                                 "account_type"   : rec.account_type if rec.party_type == "Employee" else "",
                                                 "party_type"     : rec.party_type if rec.party_type == "Employee" else "",
                                                 "party"          : rec.party if rec.party_type == "Employee" else "" 
                                         })
                                         
-                                posting.setdefault(rec.salary_component,[]).append({
+                                # Remittance Totals
+                                if remit_totals.has_key(rec.cost_center):
+                                        if remit_totals[rec.cost_center].has_key(rec.salary_component):
+                                                remit_totals[rec.cost_center][rec.salary_component] += flt(remit_amount)
+                                        else:
+                                                remit_totals[rec.cost_center][rec.salary_component]  = flt(remit_amount)
+                                else:
+                                        remit_totals.setdefault(rec.cost_center,frappe._dict()).setdefault(rec.salary_component,flt(remit_amount))
+
+
+                # Payables Totals
+                for cc,ba in payables_totals.iteritems():
+                        for key,value in ba.iteritems():
+                                posting.setdefault("to_payables",[]).append({
+                                        "account"       : default_payable_account,
+                                        "credit_in_account_currency" : value,
+                                        "cost_center"   : cc,
+                                        "business_activity": key,
+                                        "party_check"   : 0
+                                })
+
+                # Remittance Totals
+                for cc,sc in remit_totals.iteritems():
+                        for key,value in sc.iteritems():
+                                posting.setdefault(key,[]).append({
                                         "account"       : default_bank_account,
-                                        "credit_in_account_currency" : flt(remit_amount),
-                                        "cost_center"   : rec.cost_center,
+                                        "credit_in_account_currency" : value,
+                                        "cost_center"   : cc,
+                                        "business_activity": default_business_activity,
                                         "party_check"   : 0
                                 })
 
                 # To Bank
                 for key,value in cc_wise_totals.iteritems():
-                        posting.setdefault("to_bank",[]).append({
-                                "account"       : default_payable_account,
-                                "debit_in_account_currency": value,
-                                "cost_center"   : key,
-                                "party_check"   : 0
-                        })
+                        for ba,ba_amount in payables_totals[key].iteritems():
+                                posting.setdefault("to_bank",[]).append({
+                                        "account"       : default_payable_account,
+                                        "debit_in_account_currency": ba_amount,
+                                        "cost_center"   : key,
+                                        "business_activity": ba,
+                                        "party_check"   : 0
+                                })
                         posting.setdefault("to_bank",[]).append({
                                 "account"       : default_bank_account,
                                 "credit_in_account_currency": value,
                                 "cost_center"   : key,
-                                "party_check"   : 0
-                        })
-                        posting.setdefault("to_payables",[]).append({
-                                "account"       : default_payable_account,
-                                "credit_in_account_currency" : value,
-                                "cost_center"   : key,
+                                "business_activity": default_business_activity,
                                 "party_check"   : 0
                         })
 

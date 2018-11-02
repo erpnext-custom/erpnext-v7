@@ -53,6 +53,15 @@ frappe.ui.form.on("Equipment", "refresh", function(frm) {
             }
         };
     });
+    cur_frm.set_query("hsd_type", function() {
+        return {
+            "filters": {
+		"is_pol_item": 1,
+		"is_hsd_item": 1,
+		"disabled": 0
+            }
+        };
+    });
     cur_frm.set_query("equipment_type", function() {
         return {
             "filters": {

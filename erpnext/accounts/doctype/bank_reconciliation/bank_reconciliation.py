@@ -37,7 +37,7 @@ class BankReconciliation(Document):
 			select 
 				"Journal Entry" as payment_document, t1.name as payment_entry, 
 				t1.cheque_no as cheque_number, t1.cheque_date, 
-				abs(t2.debit_in_account_currency - t2.credit_in_account_currency) as amount, 
+				sum(abs(t2.debit_in_account_currency - t2.credit_in_account_currency)) as amount, 
 				t1.posting_date, t2.against_account, t1.clearance_date
 			from
 				`tabJournal Entry` t1, `tabJournal Entry Account` t2
@@ -45,6 +45,7 @@ class BankReconciliation(Document):
 				t2.parent = t1.name and t2.account = %s and t1.docstatus=1
 				and t1.posting_date >= %s and t1.posting_date <= %s 
 				and ifnull(t1.is_opening, 'No') = 'No' {0}
+			group by t1.name, t1.cheque_no, t1.cheque_date, t1.posting_date, t2.against_account, t1.clearance_date
 			order by t1.posting_date ASC, t1.name DESC
 		""".format(condition), (self.bank_account, self.from_date, self.to_date), as_dict=1)
 				
@@ -132,7 +133,20 @@ class BankReconciliation(Document):
                 """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 		# Ver 2.0 Ends
 		
-		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries), 
+		direct_payment_entries = frappe.db.sql("""
+                        select
+                                "Direct Payment" as payment_document, name as payment_entry,
+                                cheque_no as cheque_number, cheque_date,
+                                net_amount as amount,
+                                posting_date, party as against_account, clearance_date
+                        from `tabDirect Payment`
+                        where (debit_account = '{0}' or credit_account = '{1}')
+                        and docstatus = 1
+                        and posting_date >= '{2}' and posting_date <= '{3}'
+                        {4}
+                """.format(self.bank_account, self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+
+		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))
 				
 		self.set('payment_entries', [])

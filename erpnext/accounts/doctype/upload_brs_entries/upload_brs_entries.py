@@ -61,6 +61,7 @@ def upload():
 		row_idx = i + 3
 		d = frappe._dict(zip(columns, row))
 		d["doctype"] = "BRS Entries"
+		d["company"] = frappe.defaults.get_user_default("Company")
 
 		try:
 			check_record(d)

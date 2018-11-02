@@ -15,6 +15,7 @@ class MechanicalPayment(AccountsController):
 		check_future_date(self.posting_date)
 		self.validate_allocated_amount()
 		self.set_missing_values()
+		self.clearance_date = None
 
 	def set_missing_values(self):
 		self.cost_center = get_branch_cc(self.branch)
@@ -61,6 +62,9 @@ class MechanicalPayment(AccountsController):
 		self.update_ref_doc()
 
 	def on_cancel(self):	
+		if self.clearance_date:
+			frappe.throw("Already done bank reconciliation.")
+		
 		self.make_gl_entry()
 		self.update_ref_doc(cancel=1)
 

@@ -148,9 +148,13 @@ def get_data():
                                         "is_query_report": True,
                                         "name": "MR Status Report",
                                         "doctype": "Material Request"
-                                }
-
-
+                                },
+				{
+					"type": "report",
+					"name": "Advance Report",
+					"doctype": "Payment Entry",
+					"is_query_report": True,
+				},
 			]
 		},
 		{

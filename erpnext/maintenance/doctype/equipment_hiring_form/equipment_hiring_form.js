@@ -90,7 +90,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
 
 cur_frm.add_fetch("tc_name", "terms", "terms")
 
-cur_frm.add_fetch("cost_center", "branch", "branch")
+cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("customer", "location", "address")
 cur_frm.add_fetch("customer", "telephone_and_fax", "contact_number")
 
@@ -156,15 +156,14 @@ frappe.ui.form.on("Hiring Approval Details", {
 	"grand_total": function(frm, cdt, cdn) {
 		calculate_total(frm)
 	},
-	"equipment": function(frm, cdt, cdn) {
-		get_rates(frm, cdt, cdn)
-		calculate_amount(frm, cdt, cdn)
-	},
 	"rate_type": function(frm, cdt, cdn) {
 		get_rates(frm, cdt, cdn)
 		doc = locals[cdt][cdn]
 		if (doc.rate_type == "Cft - Broadleaf" || doc.rate_type == "Cft - Conifer") {
 			cur_frm.fields_dict.approved_items.grid.toggle_reqd("cft_qty", true)
+		}
+		else {
+			cur_frm.fields_dict.approved_items.grid.toggle_reqd("cft_qty", false)
 		}
 		calculate_amount(frm, cdt, cdn)
 	},
@@ -175,17 +174,22 @@ frappe.ui.form.on("Hiring Approval Details", {
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("rate", doc.equipment)
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("idle_rate", doc.equipment)
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("place", doc.equipment)
+		get_rates(frm, cdt, cdn)
 		calculate_amount(frm, cdt, cdn)
 	},
 	"from_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
 		get_rates(frm, cdt, cdn)
+		calculate_amount(frm, cdt, cdn)
 	},
 	"to_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
+		get_rates(frm, cdt, cdn)
+		calculate_amount(frm, cdt, cdn)
 	},
 	"tender_hire_rate": function(frm, cdt, cdn) {
 		get_diff_rates(frm, cdt, cdn)	
+		calculate_amount(frm, cdt, cdn)
 	}
 })
 

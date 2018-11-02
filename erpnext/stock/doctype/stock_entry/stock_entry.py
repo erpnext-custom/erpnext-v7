@@ -87,6 +87,7 @@ class StockEntry(StockController):
 	def check_item_value(self):
 		if self.items:
 			for a in self.items:
+				a.item_group = frappe.db.get_value("Item", a.item_code, "item_group")
 				if a.issued_to and not a.issue_to_employee:
 					a.issued_to = None 
 				if flt(a.qty) == 0 or flt(a.basic_amount) == 0 or flt(a.amount) == 0:

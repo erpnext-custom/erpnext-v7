@@ -16,15 +16,14 @@ class DirectPayment(AccountsController):
 			inter_company = frappe.db.get_value("Customer", self.customer, "inter_company")
 			if inter_company == 0:
 				frappe.throw(_("Selected Customer {0} is not inter company ".format(self.customer)))
+		self.clearance_date = None
 
-#		branch_name = frappe.db.get_value("Cost Center", self.cost_center, "branch")
-#		if branch_name != self.branch:
-#			frappe.throw(_("Branch {0} and Cost Center {1} doest not belong to each other".format(self.customer)))
-	
 	def on_submit(self):
 		self.post_gl_entry()
 
 	def on_cancel(self):
+		if self.clearance_date:
+			frappe.throw("Already done bank reconciliation.")
 		self.post_gl_entry()
 
 	def post_gl_entry(self):

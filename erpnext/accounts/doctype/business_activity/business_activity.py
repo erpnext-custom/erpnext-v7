@@ -17,6 +17,8 @@ class BusinessActivity(Document):
 def get_default_ba():
 	default_ba = frappe.db.sql("select name from `tabBusiness Activity` where is_default = 1", as_dict=1)
 	default_ba = default_ba and default_ba[0].name or None	
+	if not default_ba:
+		frappe.throw("Define a default Business Activity")
 	return default_ba	
 
 #Show only not disabled business activities

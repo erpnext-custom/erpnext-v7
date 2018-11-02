@@ -3,81 +3,6 @@ from frappe import _
 
 def get_data():
 	return [
-                {
-			"label": _("Company"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Company",
-					"description": _("Company (not Customer or Supplier) master."),
-				},
-				{
-					"type": "doctype",
-					"name": "Account",
-					"icon": "icon-sitemap",
-					"label": _("Chart of Accounts"),
-					"route": "Tree/Account",
-					"description": _("Tree of financial accounts."),
-				},
-				{
-					"type": "doctype",
-					"name": "Cost Center",
-					"icon": "icon-sitemap",
-					"label": _("Chart of Cost Centers"),
-					"route": "Tree/Cost Center",
-					"description": _("Tree of financial Cost Centers."),
-				},
-				{
-					"type": "doctype",
-					"name": "Business Activity",
-				},                                
-				{
-					"type": "doctype",
-					"name": "Branch",
-					"description": _("List of Branches"),
-				},                                
-			]
-		},
-                {
-			"label": _("Account Settings"),
-			"icon": "icon-cog",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Accounts Settings",
-					"description": _("Default settings for accounting transactions.")
-				},
-				{
-					"type": "doctype",
-					"name": "HR Accounts Settings",
-					"description": _("Account Settings for HR Accounting")
-				},
-                                				{
-					"type": "doctype",
-					"name": "Employee Benefit Type",
-                                        "description": _("Employee Benefit Types e.g., Transfer and Retirement")
-				},
-				{
-					"type": "doctype",
-					"name": "Maintenance Accounts Settings",
-					"description": _("Account Settings for Maintenance Accounting")
-				},
-				{
-					"type": "doctype",
-					"name": "Projects Accounts Settings",
-					"description": _("Account Settings for Projects Accounting")
-				},
-				{
-					"type": "doctype",
-					"name": "Sales Accounts Settings",
-					"description": _("Account Settings for Sales Accounting")
-				},
-				{
-					"type": "doctype",
-					"name": "Production Account Settings",
-				},
-			]
-		},
 		{
 			"label": _("Accounts"),
 			"items": [
@@ -369,7 +294,20 @@ def get_data():
 					"name": "Intra Company Report",
 					"doctype": "GL Entry",
 					"is_query_report": True,
-				}
+				},
+				{
+					"type": "report",
+					"name": "Advance Report",
+					"doctype": "Payment Entry",
+					"is_query_report": True,
+				},
+				{
+					"type": "report",
+					"name": "Inter Company Transaction Report",
+					"doctype": "Account",
+					"is_query_report": True,
+				},
+				
 			]
 		},
 		{
@@ -419,39 +357,6 @@ def get_data():
                                         "is_query_report": True,
                                         "doctype": "Fixed Deposit"
                                 },
-			]
-		},
-		{
-			"label": _("Setup"),
-			"icon": "icon-cog",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Fiscal Year",
-					"description": _("Financial / accounting year.")
-				},
-				{
-					"type": "doctype",
-					"name": "Currency",
-					"description": _("Enable / disable currencies.")
-				},
-				{
-					"type": "doctype",
-					"name": "Currency Exchange",
-					"description": _("Currency exchange rate master.")
-				},
-				{
-					"type": "doctype",
-					"name":"Mode of Payment",
-					"description": _("e.g. Bank, Cash, Credit Card")
-				},
-				{
-					"type": "report",
-					"name": "Exchange Report",
-					"label": "Exchange Rate History",
-					"doctype": "Exchange Rate History",
-					"is_query_report": True
-				},
 			]
 		},
 		{
@@ -508,6 +413,58 @@ def get_data():
 					"name": "Monthly Salary Register",
 					"doctype": "Salary Slip"
 				},
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Summarized Salary Report",
+                                        "doctype": "Salary Slip"
+                                },
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Earning Report",
+					"doctype": "Salary Slip"
+				},
+				{
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Salary Payable Report",
+                                        "label": _("Salary Payable Report"),
+                                        "doctype": "Salary Slip"
+                                },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "LTC Process Report",
+                                        "label": _("LTC, PBVA and Bonus Report"),
+                                        "doctype": "Leave Travel Concession"
+                                },
+                                {
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Staff Welfare Scheme",
+                                        "label": _("Staff Welfare Scheme"),
+                                        "doctype": "Salary Slip"
+                                },
+				{
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Adhoc Recoveries",
+                                        "label": _("Adhoc Recoveries"),
+                                        "doctype": "Salary Slip"
+                                },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Travel Report",
+                                        "doctype": "Travel Claim"
+                                }
+			]
+		},
+                {
+			"label": _("Salary Remittance Report"),
+			"icon": "icon-list",
+			"items": [
                                 {
 					"type": "report",
 					"is_query_report": True,
@@ -526,7 +483,7 @@ def get_data():
                                         "type": "report",
                                         "is_query_report": True,
                                         "name": "Alimony Report",
-                                        "label": _("AlimonyReport"),
+                                        "label": _("Alimony Report"),
                                         "doctype": "Salary Slip"
                                 },
 
@@ -551,25 +508,12 @@ def get_data():
                                         "label": _("Salary Tax & Health Contribution Report"),
 					"doctype": "Salary Slip"
 				},
-				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Summarized Salary Report",
-                                        "doctype": "Salary Slip"
-                                },
-
                                 {
-					"type": "report",
-					"is_query_report": True,
-					"name": "Earning Report",
-					"doctype": "Salary Slip"
-				},
-				{
                                         "type" : "report",
                                         "is_query_report": True,
-                                        "name": "Salary Payable Report",
-                                        "label": _("Salary Payable Report"),
-                                        "doctype": "Salary Slip"
+                                        "name": "House Rent Report",
+                                        "label": _("House Rent Report"),
+                                        "doctype": "Salary Slip",
                                 },
 				{
                                         "type" : "report",
@@ -578,42 +522,114 @@ def get_data():
                                         "label": _("Other Recoveries"),
                                         "doctype": "Salary Slip"
                                 },
-				 {
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "LTC Process Report",
-                                        "label": _("LTC, PBVA and Bonus Report"),
-                                        "doctype": "Leave Travel Concession"
-                                },
-                                {
-                                        "type" : "report",
-                                        "is_query_report": True,
-                                        "name": "House Rent Report",
-                                        "label": _("House Rent Report"),
-                                        "doctype": "Salary Slip",
-                                },
-                                 {
-                                        "type" : "report",
-                                        "is_query_report": True,
-                                        "name": "Staff Welfare Scheme",
-                                        "label": _("Staff Welfare Scheme"),
-                                        "doctype": "Salary Slip"
-                                },
-				 {
-                                        "type" : "report",
-                                        "is_query_report": True,
-                                        "name": "Adhoc Recoveries",
-                                        "label": _("Adhoc Recoveries"),
-                                        "doctype": "Salary Slip"
-                                },
+			]
+		},
+                {
+			"label": _("Company"),
+			"items": [
 				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Travel Report",
-                                        "doctype": "Travel Claim"
-                                }
-
-
+					"type": "doctype",
+					"name": "Company",
+					"description": _("Company (not Customer or Supplier) master."),
+				},
+				{
+					"type": "doctype",
+					"name": "Account",
+					"icon": "icon-sitemap",
+					"label": _("Chart of Accounts"),
+					"route": "Tree/Account",
+					"description": _("Tree of financial accounts."),
+				},
+				{
+					"type": "doctype",
+					"name": "Cost Center",
+					"icon": "icon-sitemap",
+					"label": _("Chart of Cost Centers"),
+					"route": "Tree/Cost Center",
+					"description": _("Tree of financial Cost Centers."),
+				},
+				{
+					"type": "doctype",
+					"name": "Business Activity",
+				},                                
+				{
+					"type": "doctype",
+					"name": "Branch",
+					"description": _("List of Branches"),
+				},                                
+			]
+		},
+                {
+			"label": _("Account Settings"),
+			"icon": "icon-cog",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Accounts Settings",
+					"description": _("Default settings for accounting transactions.")
+				},
+				{
+					"type": "doctype",
+					"name": "HR Accounts Settings",
+					"description": _("Account Settings for HR Accounting")
+				},
+                                				{
+					"type": "doctype",
+					"name": "Employee Benefit Type",
+                                        "description": _("Employee Benefit Types e.g., Transfer and Retirement")
+				},
+				{
+					"type": "doctype",
+					"name": "Maintenance Accounts Settings",
+					"description": _("Account Settings for Maintenance Accounting")
+				},
+				{
+					"type": "doctype",
+					"name": "Projects Accounts Settings",
+					"description": _("Account Settings for Projects Accounting")
+				},
+				{
+					"type": "doctype",
+					"name": "Sales Accounts Settings",
+					"description": _("Account Settings for Sales Accounting")
+				},
+				{
+					"type": "doctype",
+					"name": "Production Account Settings",
+				},
+			]
+		},
+		{
+			"label": _("Setup"),
+			"icon": "icon-cog",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Fiscal Year",
+					"description": _("Financial / accounting year.")
+				},
+				{
+					"type": "doctype",
+					"name": "Currency",
+					"description": _("Enable / disable currencies.")
+				},
+				{
+					"type": "doctype",
+					"name": "Currency Exchange",
+					"description": _("Currency exchange rate master.")
+				},
+				{
+					"type": "doctype",
+					"name":"Mode of Payment",
+					"description": _("e.g. Bank, Cash, Credit Card")
+				},
+				{
+					"type": "report",
+					"name": "Exchange Report",
+					"label": "Exchange Rate History",
+					"doctype": "Exchange Rate History",
+					"is_query_report": True
+				},
 			]
 		},
 	]

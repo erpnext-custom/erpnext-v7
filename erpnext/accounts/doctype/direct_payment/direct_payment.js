@@ -5,13 +5,15 @@ frappe.ui.form.on('Direct Payment', {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
 		}
-		cur_frm.set_query("customer", function() {
-			return {
-				"filters": {
-					"inter_company": 1
+		if (frm.doc.party_type == "Customer"){
+			cur_frm.set_query("party", function() {
+				return {
+					"filters": {
+						"inter_company": 1
+					}
 				}
-			}
-    	});
+			 });
+		}
 	if(frm.doc.docstatus===1){
 		frm.add_custom_button(__('Accounting Ledger'), function(){
 			frappe.route_options = {
@@ -27,9 +29,18 @@ frappe.ui.form.on('Direct Payment', {
 	},
 
 	"payment_type": function(frm){
-		cur_frm.set_df_property("customer", "reqd", (frm.doc.payment_type == "Receive")? 1:0);
-        	cur_frm.set_df_property("supplier", "reqd", (frm.doc.payment_type == "Payment")? 1:0);
-
+        	frm.set_value("party_type", (frm.doc.payment_type == "Payment")? "Supplier": "Customer");
+		
+		if (frm.doc.party_type == "Customer"){
+			cur_frm.set_query("party", function() {
+				return {
+					"filters": {
+						"inter_company": 1
+					}
+				}
+			 });
+		}
+		
         	if(frm.doc.payment_type == "Receive"){
 			frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'revenue_bank_account',
 			function(d) {

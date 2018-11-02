@@ -31,7 +31,7 @@ class HireChargeParameter(Document):
 			self.db_set("without_fuel", self.items[len(self.items) - 1].rate_wofuel)	
 			self.db_set("with_fuel", self.items[len(self.items) - 1].rate_fuel)	
 			self.db_set("idle", self.items[len(self.items) - 1].idle_rate)	
-			self.db_set("cft_rate_bf", self.items[len(self.items) - 1].cft_rate_bl)	
+			self.db_set("cft_rate_bf", self.items[len(self.items) - 1].cft_rate_bf)	
 			self.db_set("cft_rate_co", self.items[len(self.items) - 1].cft_rate_co)	
 			self.db_set("lph", self.items[len(self.items) - 1].yard_hours)	
 			self.db_set("kph", self.items[len(self.items) - 1].yard_distance)	

@@ -92,6 +92,7 @@ class SalaryStructure(Document):
                 self.division           = emp.division
                 self.section            = emp.section
 		self.backup_employee    = self.employee
+		self.business_activity  = emp.business_activity
 				
 	def get_ss_values(self,employee):
 		basic_info = frappe.db.sql("""select bank_name, bank_ac_no
@@ -180,6 +181,7 @@ class SalaryStructure(Document):
 			self.db_set("employee_group", doc.employee_group)
 			self.db_set("employee_grade", doc.employee_subgroup)
 			self.db_set("designation", doc.designation)
+			sekf.db_set("business_activity", doc.business_activity)
 
 	def check_multiple_active(self):
 		if self.is_active == 'Yes':
