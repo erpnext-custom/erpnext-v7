@@ -94,6 +94,13 @@ def get_data():
                                         "name": "Production Target Report",
                                         "doctype": "Production Target"
                                 },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Sales Report",
+                                        "label": "Sales Report",
+                                        "doctype": "Sales Order"
+                                }
 
 
 			]

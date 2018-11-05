@@ -9,6 +9,15 @@ frappe.ui.form.on('HSD Payment', {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
 		}
+
+		cur_frm.set_query("bank_account", function(){
+			return {
+				"filters": [
+					["is_group", "=", "0"]
+					
+				]
+			}
+		});
 	},
 
 	refresh: function(frm) {

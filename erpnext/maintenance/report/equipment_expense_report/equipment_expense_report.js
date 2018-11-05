@@ -28,7 +28,7 @@ frappe.query_reports["Equipment Expense Report"] = {
 		},
 		{		
                         "fieldname": "not_cdcl",
-                        "label": ("Include Only CDCL Equipments"),
+                        "label": ("Include OWN Equipments Only"),
                         "fieldtype": "Check",
                         "default": 1
                 },

@@ -34,9 +34,10 @@ frappe.query_reports["HSD Consumption Report"] = {
 			"width": "80",
 			"reqd":1
 		},
+
 		{		
                         "fieldname": "not_cdcl",
-                        "label": ("Include Only CDCL Equipments"),
+                        "label": ("Include OWN Equipments Only"),
                         "fieldtype": "Check",
                         "default": 1
                 },
@@ -48,12 +49,12 @@ frappe.query_reports["HSD Consumption Report"] = {
                         "default": 0
                 },
 
-		{
+		/*{
                         "fieldname": "own_cc",
                         "label": ("Show Issued/Received from Own Branch Only"),
                         "fieldtype": "Check",
-                        "default": 0
-                }
+                        "default": 0,
+                }*/
 
 	]
 }

@@ -36,9 +36,10 @@ class MusterRollEmployee(Document):
                         frappe.permissions.add_user_permission("Company", self.company, self.user_id)
                         frappe.permissions.add_user_permission("Branch", self.branch, self.user_id)
                 
-	#def calculate_rates(self):
-	#	if not self.rate_per_hour:
-	#		self.rate_per_hour = (flt(self.rate_per_day) * 1.5) / 8
+	def calculate_rates(self):
+                if not self.rate_per_hour:
+                        self.rate_per_hour = (flt(self.rate_per_day) * 1.5) / 8
+
 
 	def cal_rates(self):
 			for a in self.get('musterroll'):
@@ -61,6 +62,7 @@ class MusterRollEmployee(Document):
                         self.append("internal_work_history",{
                                                 "branch": self.branch,
                                                 "cost_center": self.cost_center,
+                                                "business_activity": self.business_activity,
                                                 "from_date": self.joining_date,
                                                 "owner": frappe.session.user,
                                                 "creation": nowdate(),
@@ -103,6 +105,7 @@ class MusterRollEmployee(Document):
                                 self.append("internal_work_history",{
                                                 "branch": self.branch,
                                                 "cost_center": self.cost_center,
+                                                "business_activity": self.business_activity,
                                                 "from_date": self.date_of_transfer,
                                                 "owner": frappe.session.user,
                                                 "creation": nowdate(),

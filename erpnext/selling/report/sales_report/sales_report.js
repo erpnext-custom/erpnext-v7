@@ -192,10 +192,11 @@ frappe.query_reports["Sales Report"] = {
                         "reqd" : 1
                 },
                 {
-                        "fieldname": "show_aggregate",
-                        "label": ("Show Aggregate Data"),
-                        "fieldtype": "Check",
-                        "default": 1,
+                        "fieldname": "group_by",
+                        "label": ("Group By"),
+                        "fieldtype": "Select",
+                        "options": ["Sales Order", "Delivery Note"],
+			"default": "Sales Order"
                 },
         ]
 }

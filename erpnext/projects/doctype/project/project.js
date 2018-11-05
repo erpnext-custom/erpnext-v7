@@ -10,7 +10,11 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
-cur_frm.add_fetch("cost_center", "branch", "branch")
+// Ver 3.0 Begins, by SHIV on 2018/11/05
+// Following line commented by SHIV on 2018/11/05
+//cur_frm.add_fetch("cost_center", "branch", "branch")
+cur_frm.add_fetch("branch","cost_center","cost_center");
+// Ver 3.0 Ends
 cur_frm.add_fetch("customer", "image", "customer_image" );
 cur_frm.add_fetch("customer", "customer_details", "customer_address" );
 
@@ -234,6 +238,8 @@ frappe.ui.form.on("Project", {
 			cur_frm.set_value("imprest_receivable",parseFloat(frm.doc.imprest_limit || 0.0)-parseFloat(frm.doc.imprest_received || 0.0))
 		}
 	},
+	// Ver 3.0, Begins, following code commented by SHIV on 2018/11/05
+	/*
 	branch: function(frm){
 		// Update Cost Center
 		if(frm.doc.branch){
@@ -255,6 +261,8 @@ frappe.ui.form.on("Project", {
 			});
 		}
 	},
+	*/
+	// Ver 3.0 Ends
 });
 
 frappe.ui.form.on("Project Task", {

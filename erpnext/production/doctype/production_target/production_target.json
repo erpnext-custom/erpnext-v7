@@ -326,7 +326,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-10-30 10:20:59.817436", 
+ "modified": "2018-11-05 19:06:44.853085", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Production Target", 
@@ -457,7 +457,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 1, 
+   "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 

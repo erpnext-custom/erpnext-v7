@@ -1,8 +1,8 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-cur_frm.add_fetch("project", "branch", "branch")
-cur_frm.add_fetch("project", "cost_center", "cost_center")
-cur_frm.add_fetch("cost_center", "branch", "branch")
+//cur_frm.add_fetch("project", "branch", "branch")
+//cur_frm.add_fetch("project", "cost_center", "cost_center")
+//cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on('Process MR Payment', {
 	setup: function(frm) {
@@ -33,9 +33,14 @@ frappe.ui.form.on('Process MR Payment', {
 	},
 
 	project: function(frm) {
-		cur_frm.set_df_property("cost_center", "read_only", frm.doc.project ? 1 : 0) 
+		//cur_frm.set_df_property("cost_center", "read_only", frm.doc.project ? 1 : 0) 
+		update_details(frm.doc);
 	},
 
+	cost_center: function(frm){
+		update_details(frm.doc);
+	},
+	
 	load_records: function(frm) {
 		cur_frm.set_df_property("load_records", "disabled",  true);
 		//msgprint ("Processing wages.............")
@@ -60,9 +65,14 @@ frappe.ui.form.on('Process MR Payment', {
 	}
 });
 
+var update_details = function(doc){
+	cur_frm.call({
+		method: "update_details",
+		doc: doc
+	});
+}
+
 function get_records(employee_type, fiscal_year, month, from_date, to_date, cost_center, branch, dn) {
-	cur_frm.clear_table("items");
-	cur_frm.refresh_field("items");
 	frappe.call({
 		method: "erpnext.projects.doctype.process_mr_payment.process_mr_payment.get_records",
 		args: {
@@ -75,17 +85,13 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 			"employee_type": employee_type,
 			"dn": dn
 		},
-		refresh: function(frm) {
-			console.log("ISNIDE")
-		},
-		freeze: 1,
-		freeze_message: "Processing.....Please Wait",
 		callback: function(r) {
 			if(r.message) {
 				var total_overall_amount = 0;
 				var ot_amount = 0; 
 				var wages_amount = 0;
-				//cur_frm.clear_table("items");
+				console.log(r.message)
+				cur_frm.clear_table("items");
 				r.message.forEach(function(mr) {
 					if(mr['number_of_days'] > 0 || mr['number_of_hours'] > 0) {
 						var row = frappe.model.add_child(cur_frm.doc, "MR Payment Item", "items");
@@ -94,10 +100,15 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						row.employee 		= mr['name'];
 						row.person_name 	= mr['person_name'];
 						row.id_card 		= mr['id_card'];
+						row.business_activity = mr['business_activity'];
 						row.fiscal_year 	= fiscal_year;
 						row.month 			= month;
 						row.number_of_days 	= mr['number_of_days'];
+						row.daily_rate 		= mr['rate_per_day'];
 						row.number_of_hours = mr['number_of_hours'];
+						row.hourly_rate 	= mr['rate_per_hour'];
+						row.total_ot_amount = row.number_of_hours * row.hourly_rate;
+						row.total_wage 		= row.daily_rate * row.number_of_days;
 						
 						if(mr['type'] == 'GEP Employee'){
 							row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
@@ -108,11 +119,6 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 							if((parseFloat(row.total_wage) > parseFloat(mr['salary']))||(parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days']))){
 								row.total_wage = parseFloat(mr['salary']);
 							}
-						} else {
-							//row.daily_rate 	= mr['rate_per_day'];
-							//row.hourly_rate 	= mr['rate_per_hour'];
-							row.total_ot_amount = mr['total_ot'];
-							row.total_wage 		= mr['total_wage'];
 						}
 						
 						/*

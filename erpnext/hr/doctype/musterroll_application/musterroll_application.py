@@ -41,11 +41,20 @@ class MusterRollApplication(Document):
                                 cid = a.citizenship_id if not a.is_existing else a.existing_cid
 				frappe.throw(_("Row#{0} : Approval Status cannot be empty for <b>" + str(a.person_name)+"("+str(cid) + ")</b>").format(a.idx),title="Missing Value")	
 
+        def update_requesting_info(self):
+                if self.project:
+                        self.branch = frappe.db.get_value("Project", self.project, "branch")
+                        self.cost_center = frappe.db.get_value("Project", self.project, "cost_center")
+                elif self.branch:
+                        self.cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
+                else:
+                        self.branch = frappe.db.get_value("Branch", {"cost_center": self.cost_center}, "name")
+        
 	def get_employees(self):
 		if not self.from_project:
 			frappe.throw("Select From Project Before Clicking the button")
 
-		query = "select name as existing_cid, person_name, rate_per_day, rate_per_hour from `tabMuster Roll Employee` where project = %s and status = 'Active'"
+		query = "select name as existing_cid, person_name, rate_per_day, rate_per_hour, business_activity from `tabMuster Roll Employee` where project = %s and status = 'Active'"
 
 		#query = "select name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes')"
 		entries = frappe.db.sql(query, self.from_project, as_dict=True)
@@ -104,8 +113,9 @@ class MusterRollApplication(Document):
                                 doc.cost_center   = self.cost_center 
                                 doc.rate_per_day  = a.rate_per_day
                                 doc.rate_per_hour = a.rate_per_hour
-                                doc.company       = "Construction Development Corporation Ltd"
+                                doc.company       = self.company
                                 doc.id_card       = cid
+                                doc.business_activity = a.business_activity
 
                                 if self.project:
                                         doc.project = self.project

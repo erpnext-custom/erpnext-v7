@@ -78,6 +78,13 @@ def get_data():
 				#	"label": "Materialwise Sales History"
 				#},
 				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Sales Report",
+                                        "label": "Sales Report",
+                                        "doctype": "Sales Order"
+                                },
+				{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Quotation Trends",

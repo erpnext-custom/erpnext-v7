@@ -27,7 +27,7 @@ frappe.query_reports["Party Wise Billing"] = {
 
 			{
                         "fieldname": "not_cdcl",
-                        "label": ("Include Only CDCL Equipments"),
+                        "label": ("Include only NRDCL Equipments"),
                         "fieldtype": "Check",
                         "default": 1
                 	},

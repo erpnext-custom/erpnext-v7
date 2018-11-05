@@ -21,7 +21,7 @@ def get_columns():
 		("Idle Rate") +":Currency:100",
 		("Private")+":Currency:100",
 		("Others") +":Currency:100",
-		("CDCL") +":Currency:100",
+		("Own Company") +":Currency:100",
 		("Amount") + ":Currency:150"
 	]
 
@@ -36,10 +36,10 @@ CASE hic.owned_by
 
 	END AS Others,
 CASE hic.owned_by
-	WHEN 'CDCL' THEN 
+	WHEN 'Own Company' THEN 
 	SUM(hid.total_amount)
 
-END AS CDCL,
+END AS own,
 SUM(hid.total_amount) 
 from `tabHire Charge Invoice` as hic, `tabHire Invoice Details` as hid, `tabEquipment` e, `tabEquipment History` eh
 where hic.name = hid.parent and hid.equipment = e.name and eh.parent = e.name and hic.docstatus = 1 """)

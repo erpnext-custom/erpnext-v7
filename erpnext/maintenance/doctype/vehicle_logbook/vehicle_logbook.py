@@ -162,6 +162,8 @@ class VehicleLogbook(Document):
 		
 		self.consumption = flt(self.other_consumption) + flt(self.consumption_hours) + flt(self.consumption_km)
 		self.closing_balance = flt(self.hsd_received) + flt(self.opening_balance) - flt(self.consumption)
+		self.final_hour = flt(self.initial_hour) + flt(self.total_work_time)
+		self.final_km = flt(self.initial_km) + flt(self.distance_km)
 
 	def update_hire(self):
 		if self.ehf_name:

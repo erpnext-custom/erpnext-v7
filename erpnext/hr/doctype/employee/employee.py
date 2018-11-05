@@ -133,6 +133,7 @@ class Employee(Document):
                         self.append("internal_work_history",{
                                                 "branch": self.branch,
                                                 "cost_center": self.cost_center,
+                                                "business_activity": self.business_activity,
                                                 "department": self.department,
                                                 "designation": self.designation,
                                                 "from_date": self.date_of_joining,
@@ -175,6 +176,7 @@ class Employee(Document):
                                 self.append("internal_work_history",{
                                                 "branch": self.branch,
                                                 "cost_center": self.cost_center,
+                                                "business_activity": self.business_activity,
                                                 "department": self.department,
                                                 "designation": self.designation,
                                                 "from_date": self.date_of_transfer,
@@ -187,6 +189,7 @@ class Employee(Document):
                                 self.append("internal_work_history",{
                                                         "branch": self.branch,
                                                         "cost_center": self.cost_center,
+                                                        "business_activity": self.business_activity,
                                                         "department": self.department,
                                                         "designation": self.designation,
                                                         "from_date": self.date_of_joining,

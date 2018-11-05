@@ -94,10 +94,6 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Equipment Request",
-				},
-				{
-					"type": "doctype",
 					"name": "Equipment Hiring Form",
 					"description": _("Equipment Hiring Form"),
 				},

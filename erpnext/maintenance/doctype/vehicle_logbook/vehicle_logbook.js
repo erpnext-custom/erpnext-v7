@@ -65,6 +65,7 @@ frappe.ui.form.on('Vehicle Logbook', {
 		}
 	},
 	"initial_km": function(frm) {
+		cur_frm.set_value("final_km", parseFloat(frm.doc.initial_km) + parseFloat(frm.doc.distance_km))
 		calculate_distance_km(frm)
 	},
 	//"final_hour": function(frm) {
@@ -72,9 +73,10 @@ frappe.ui.form.on('Vehicle Logbook', {
 	//		calculate_work_hour(frm)
 	//	}
 	//},
-	//"initial_hour": function(frm) {
+	"initial_hour": function(frm) {
+		cur_frm.set_value("final_hour", parseFloat(frm.doc.initial_hour) + parseFloat(frm.doc.total_work_time))
 	//	calculate_work_hour(frm)
-	//},
+	},
 	"to_date": function(frm) {
 		if(frm.doc.from_date > frm.doc.to_date) {
 			frappe.msgprint("From Date cannot be greater than To Date")

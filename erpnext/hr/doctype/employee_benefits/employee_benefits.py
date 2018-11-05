@@ -38,6 +38,7 @@ class EmployeeBenefits(Document):
 					"cost_center": emp.cost_center,
 					"debit_in_account_currency": flt(a.amount),
 					"debit": flt(a.amount),
+					"business_activity": emp.business_activity,
 				})
 			total_amount = flt(total_amount) + flt(a.amount)
 		je.append("accounts", {
@@ -45,6 +46,7 @@ class EmployeeBenefits(Document):
 				"cost_center": emp.cost_center,
 				"credit_in_account_currency": flt(total_amount),
 				"credit": flt(total_amount),
+				"business_activity": emp.business_activity,
 			})
 		je.insert()
 		self.journal = je.name

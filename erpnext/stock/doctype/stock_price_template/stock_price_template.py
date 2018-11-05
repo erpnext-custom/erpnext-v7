@@ -122,7 +122,7 @@ def get_item_rate(tran_type, item_code, tran_date):
         elif tran_type == 'COP':
                 table_name = 'tabStock Price Template Buying'
         else:
-                frappe.throw(_("Transaction should be eaither of COP or Sales."),title="Wrong Transaction")
+                frappe.throw(_("Transaction should be either of COP or Sales."),title="Wrong Transaction")
                 
         result = frappe.db.sql("""
                         select

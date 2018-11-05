@@ -3,6 +3,24 @@
 cur_frm.add_fetch("branch", "revenue_bank_account", "income_account")
 
 frappe.ui.form.on('Mechanical Payment', {
+	onload: function(frm) {
+		cur_frm.set_query("income_account", function(){
+			return {
+				"filters": [
+					["is_group", "=", "0"],
+					
+				]
+			}
+		});
+		cur_frm.set_query("tds_account", function(){
+			return {
+				"filters": [
+					["is_group", "=", "0"],
+					
+				]
+			}
+		});	
+	},
 	refresh: function(frm) {
 		if(frm.doc.docstatus===1){
 			frm.add_custom_button(__('Accounting Ledger'), function(){

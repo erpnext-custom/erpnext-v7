@@ -21,8 +21,9 @@ class CostCenter(NestedSet):
 		self.validate_company()
 
 	def validate_company(self):
-		for a in frappe.db.sql("select name from `tabCost Center` where is_company = 1 and name != %s", self.name, as_dict=1):
-			frappe.throw("{0} already made company cost center".format(a.name))
+		if self.is_company:
+			for a in frappe.db.sql("select name from `tabCost Center` where is_company = 1 and name != %s", self.name, as_dict=1):
+				frappe.throw("{0} already made company cost center".format(a.name))
 
 	def on_update(self):
 		self.create_branch()

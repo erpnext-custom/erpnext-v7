@@ -134,7 +134,7 @@ def get_data():
 				},
                                 {
 					"type": "report",
-                                        "label": _("Report"),
+                                        "label": _("Imprest Register"),
 					"is_query_report": True,
 					"name": "Register Imprest",
 					"doctype": "Imprest Receipt"
@@ -304,6 +304,7 @@ def get_data():
 				{
 					"type": "report",
 					"name": "Inter Company Transaction Report",
+					"label": "DHI Company Report",
 					"doctype": "Account",
 					"is_query_report": True,
 				},

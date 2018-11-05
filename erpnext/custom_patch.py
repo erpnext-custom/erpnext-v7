@@ -9,6 +9,13 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_emp():
+	for a in frappe.db.sql("select name from tabEmployee where docstatus = 0", as_dict=1):
+		print(str(a.name))
+		doc = frappe.get_doc("Employee", a.name)
+		doc.user_id = doc.company_email
+		doc.save()
+
 def update_se_ig():
 	for a in frappe.db.sql("select name, item_code from `tabStock Entry Detail`", as_dict=1):
 		item = frappe.get_doc("Item", a.item_code)
