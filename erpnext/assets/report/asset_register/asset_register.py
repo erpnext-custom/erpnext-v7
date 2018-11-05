@@ -278,7 +278,7 @@ def get_columns():
 		{
                         "fieldname": "residual_value",
                         "label": _("Residual Value"),
-                        "fieldtype": "data",
+                        "fieldtype": "Currency",
                         "width": 120
                 },
 		{

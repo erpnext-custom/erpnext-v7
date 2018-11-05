@@ -41,6 +41,15 @@ class MusterRollApplication(Document):
                                 cid = a.citizenship_id if not a.is_existing else a.existing_cid
 				frappe.throw(_("Row#{0} : Approval Status cannot be empty for <b>" + str(a.person_name)+"("+str(cid) + ")</b>").format(a.idx),title="Missing Value")	
 
+        def update_requesting_info(self):
+                if self.project:
+                        self.branch = frappe.db.get_value("Project", self.project, "branch")
+                        self.cost_center = frappe.db.get_value("Project", self.project, "cost_center")
+                elif self.branch:
+                        self.cost_center = frappe.db.get_value("Cost Center", {"branch": self.branch}, "name")
+                else:
+                        self.branch = frappe.db.get_value("Cost Center", self.cost_center, "branch")
+        
 	def get_employees(self):
 		if not self.from_project:
 			frappe.throw("Select From Project Before Clicking the button")

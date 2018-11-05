@@ -24,6 +24,9 @@ frappe.ui.form.on('MusterRoll Application', {
 			};
 		}); 
 	},
+	// Ver 3.0 Begins, by SHIV on 2018/11/03
+	// Following code commented by SHIV on 2018/11/03
+	/*
 	branch: function(frm){
 		// Update Cost Center
 		if(frm.doc.branch){
@@ -45,6 +48,18 @@ frappe.ui.form.on('MusterRoll Application', {
 			});
 		}
 	},
+	*/
+	// Follwoing code added by SHIV on 2018/11/03
+	branch: function(frm){
+		update_requesting_info(frm.doc);
+	},
+	cost_center: function(frm){
+		update_requesting_info(frm.doc);
+	},
+	project: function(frm){
+		update_requesting_info(frm.doc);
+	},
+	// Ver 3.0 Ends
 	get_employees: function(frm) {
 		//load_accounts(frm.doc.company)
 		return frappe.call({
@@ -58,6 +73,15 @@ frappe.ui.form.on('MusterRoll Application', {
 	}
 
 });
+
+// Ver 3.0 Begins, Following code added by SHIV on 2018/11/03
+var update_requesting_info = function(doc){
+	cur_frm.call({
+		method: "update_requesting_info",
+		doc: doc
+	});
+}
+// Ver 3.0 Ends
 
 frappe.ui.form.on('MusterRoll Application Item', {
 	"rate_per_day": function(frm, cdt, cdn) {
