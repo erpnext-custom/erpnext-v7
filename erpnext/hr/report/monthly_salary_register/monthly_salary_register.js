@@ -4,12 +4,11 @@
 frappe.query_reports["Monthly Salary Register"] = {
 	"filters": [
 		{
-			"fieldname":"month",
-			"label": __("Month"),
-			"fieldtype": "Select",
-			"options": "\nJan\nFeb\nMar\nApr\nMay\nJun\nJul\nAug\nSep\nOct\nNov\nDec",
-			"default": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", 
-				"Dec"][frappe.datetime.str_to_obj(frappe.datetime.get_today()).getMonth()],
+			"fieldname":"company",
+			"label": __("Company"),
+			"fieldtype": "Link",
+			"options": "Company",
+			"default": frappe.defaults.get_user_default("Company")
 		},
 		{
 			"fieldname":"fiscal_year",
@@ -19,18 +18,34 @@ frappe.query_reports["Monthly Salary Register"] = {
 			"default": sys_defaults.fiscal_year,
 		},
 		{
-			"fieldname":"employee",
-			"label": __("Employee"),
-			"fieldtype": "Link",
-			"options": "Employee"
+			"fieldname":"month",
+			"label": __("Month"),
+			"fieldtype": "Select",
+			"options": "\nJan\nFeb\nMar\nApr\nMay\nJun\nJul\nAug\nSep\nOct\nNov\nDec",
+			"default": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", 
+				"Dec"][frappe.datetime.str_to_obj(frappe.datetime.get_today()).getMonth()],
 		},
 		{
-			"fieldname":"company",
-			"label": __("Company"),
-			"fieldtype": "Link",
-			"options": "Company",
-			"default": frappe.defaults.get_user_default("Company")
-		},
+                        "fieldname":"division",
+                        "label": __("Division"),
+                        "fieldtype": "Link",
+                        "options": "Division",
+                },
+                {
+                        "fieldname":"employee",
+                        "label": __("Employee"),
+                        "fieldtype": "Link",
+                        "options": "Employee",
+			"get_query": function() {
+				var branch = frappe.query_report.filters_by_name.branch.get_value();
+				if(branch) {
+					return {"doctype": "Employee", "filters": {"branch": branch, "status": "Active"}}
+				}
+				else {
+					return {"doctype": "Employee", "filters": {"status": "Active"}}
+				}
+			}
+                },
 		{
 			"fieldname": "process_status",
 			"label": __("Status"),

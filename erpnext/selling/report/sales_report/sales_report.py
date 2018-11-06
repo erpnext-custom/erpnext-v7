@@ -20,22 +20,23 @@ def get_data(filters):
 		dni_loc = " and 1 =1"
 
 	cond = get_conditions(filters)
-	#frappe.msgprint("{0}".format(cond))
+	so, dn = get_group_by(filters)
+	#frappe.msgprint("so {0}".format(group_by))
 	order_by = get_order_by(filters)
 	query = frappe.db.sql(""" select* from (select *from 
-	(select so.name as so_name , so.customer, so.customer_name, soi.qty as qty_approved, soi.rate, soi.amount, soi.item_code, 
+	(select so.name as so_name , so.customer, so.customer_name, sum(soi.qty) as qty_approved, soi.rate, soi.amount, soi.item_code, 
 	soi.name as soi_name, soi.item_name, soi.item_group,
 	so.transaction_date, soi.product_requisition from
-        `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0} {2}) as so_detail
+        `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0}) as so_detail
 	inner join
 	(select dn.name, dn.contact_no, dn.drivers_name, dn.transportation_charges, dn.vehicle, dni.location, dni.so_detail as dni_name, 
 	dni.name as dni_detail, dni.against_sales_invoice from `tabDelivery Note` dn, `tabDelivery Note Item` dni
-        where dn.name = dni.parent and dn.docstatus =1 {1}) as dn_detail
+        where dn.name = dni.parent and dn.docstatus =1) as dn_detail
 	on so_detail.soi_name = dn_detail.dni_name) as dt
 	inner join
-	(select si.name, sii.dn_detail, sii.qty as sii_qty, sii.rate as sii_rate, sii.amount as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1) 
-	as si_detail 
-	on dt.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, order_by), as_dict = True)
+	(select si.name, sii.dn_detail, sii.delivery_note, sum(sii.qty) as sii_qty, sii.rate as sii_rate, sii.amount as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1) 
+	as si_detail
+	on dt.dni_detail = si_detail.dn_detail""".format(cond, dni_loc), as_dict = True, debug =1)
 	for d in query:
 		#customer detail
 		cust = get_customer(filter, d.customer)
@@ -88,12 +89,13 @@ def get_customer(filters, cond):
                         select name, customer_type, mobile_no, customer_name, customer_id from `tabCustomer` where name = '{0}'
 			""".format(cond), as_dict =1, debug =1)[0]
 
-'''def get_group_by(filters):
-	if filters.show_aggregate:
-		group_by = " group by so.branch, pri.item_code"
-	else:
-		group_by = ""
-	return group_by'''
+def get_group_by(filters):
+	so = dn = ""
+	if filters.group_by == 'Sales Order':
+		so = " group by so_detail.so_name"
+	if filters.group_by == 'Delivery Note':
+		dn = " group by sii.delivery_note"
+	return so, dn
 
 def get_order_by(filters):
 	return " order by so.name"
@@ -201,30 +203,6 @@ def get_columns(filters):
 		},	
 			
 		{
-		  "fieldname": "vehicle_no",
-		  "label": "Vehicle No",
-		  "fieldtype": "Data",
-		  "width": 100
-		},
-		{
-		  "fieldname": "drivers_name",
-		  "label": "Drivers Name",
-		  "fieldtype": "Data",
-		  "width": 130
-		},
-		{
-		  "fieldname": "drivers_contact",
-		  "label": "Drivers Contact",
-		  "fieldtype": "Data",
-		  "width": 130
-		},	
-		{
-		  "fieldname": "transportation_charges",
-		  "label": "Transportation Charges",
-		  "fieldtype": "Float",
-		  "width": 150
-		},
-		 {
                   "fieldname": "qty",
                   "label": "Qty",
                   "fieldtype": "Int",
@@ -245,12 +223,37 @@ def get_columns(filters):
                 },
                 {
                   "fieldname": "receipt_no",
-                  "label": "Money Receipt No",
+                  "label": "Sales Invoice No",
                   "fieldtype": "Link",
                   "options": "Sales Invoice",
                   "width": 120
                 }
 	]
+
+	''' {
+                  "fieldname": "vehicle_no",
+                  "label": "Vehicle No",
+                  "fieldtype": "Data",
+                  "width": 100
+                },
+                {
+                  "fieldname": "drivers_name",
+                  "label": "Drivers Name",
+                  "fieldtype": "Data",
+                  "width": 130
+                },
+                {
+                  "fieldname": "drivers_contact",
+                  "label": "Drivers Contact",
+                  "fieldtype": "Data",
+                  "width": 130
+                },
+                {i
+                  "fieldname": "transportation_charges",
+                  "label": "Transportation Charges",
+                  "fieldtype": "Float",
+                  "width": 150
+                },'''
 
     	if filters.item_group == "Timber Products":
 		columns.insert(4, {

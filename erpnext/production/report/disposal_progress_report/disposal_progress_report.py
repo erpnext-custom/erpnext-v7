@@ -48,12 +48,18 @@ def get_data(filters):
 				cond = " and dni.cost_center = '{0}'".format(a.cost_center)
 	
 		total = 0
+		amt = 0
+
 		for b in get_production_groups(filters.production_group):
 		#	qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))
-			qty = frappe.db.sql("Select sum(dni.qty) from `tabDelivery Note` dn INNER JOIN `tabDelivery Note Item` dni on dn.name = dni.parent INNER JOIN `tabItem` i on dni.item_code = i.item_code where 1=1 {0} and i.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))	
+			qty = frappe.db.sql("Select sum(dni.qty), sum(dni.amount)  from `tabDelivery Note` dn INNER JOIN `tabDelivery Note Item` dni on dn.name = dni.parent INNER JOIN `tabItem` i on dni.item_code = i.item_code where 1=1 {0} and i.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))	
+			amt = qty and qty[0][1] or 0
 			qty = qty and qty[0][0] or 0
 			row.append(rounded(qty, 2))
+			
 			total += flt(qty)
+			amt += flt(amt)
+		row.append(amt)
 		row.insert(2, rounded(total, 2))
 		if target == 0:
 			target = 1
@@ -106,6 +112,8 @@ def get_columns(filters):
 
 	for a in get_production_groups(filters.production_group):
 		columns.append(str(str(a) + ":Float:100"))
+		
+	columns.append("Sales Amount:Currency:120")
 	
 	return columns
 

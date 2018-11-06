@@ -33,7 +33,7 @@ frappe.query_reports["Equipment Hire Report"] = {
 		},
 		{
 			"fieldname": "not_cdcl",
-			"label": ("Include OWN Equipments only"),
+			"label": ("Include Only Own Company"),
 			"fieldtype": "Check",
 			"default": 1
 		},

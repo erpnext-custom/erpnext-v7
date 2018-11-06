@@ -11,11 +11,26 @@ frappe.query_reports["Employee Salary Structure"] = {
 			"default": frappe.defaults.get_user_default("Company")
 		},
 		{
-			"fieldname":"employee",
-			"label": __("Employee"),
-			"fieldtype": "Link",
-			"options": "Employee"
-		},
+                        "fieldname":"branch",
+                        "label": __("Branch"),
+                        "fieldtype": "Link",
+                        "options": "Branch",
+                },
+                {
+                        "fieldname":"employee",
+                        "label": __("Employee"),
+                        "fieldtype": "Link",
+                        "options": "Employee",
+			"get_query": function() {
+				var branch = frappe.query_report.filters_by_name.branch.get_value();
+				if(branch) {
+					return {"doctype": "Employee", "filters": {"branch": branch, "status": "Active"}}
+				}
+				else {
+					return {"doctype": "Employee", "filters": {"status": "Active"}}
+				}
+			}
+                },
 		{
 			"fieldname": "status",
 			"label": __("Status"),

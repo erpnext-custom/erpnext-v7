@@ -4,6 +4,13 @@
 frappe.query_reports["Inter Company Transaction Report"] = {
 	"filters": [
 		{
+			"fieldname":"company",
+			"label": __("Company"),
+			"fieldtype": "Link",
+			"options": "Company",
+			"default": frappe.defaults.get_user_default("Company")
+		},
+		{
 			"fieldname":"party",
 			"label": __("Party"),
 			"fieldtype": "Select",

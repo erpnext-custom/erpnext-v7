@@ -3,6 +3,7 @@
 cur_frm.add_fetch("branch", "expense_bank_account", "bank_account")
 cur_frm.add_fetch("fuelbook", "supplier", "supplier")
 cur_frm.add_fetch("branch", "expense_bank_account", "bank_account")
+cur_frm.add_fetch("branch", "cost_center", "cost_center")
 
 frappe.ui.form.on('HSD Payment', {
 	onload: function(frm) {
@@ -34,19 +35,6 @@ frappe.ui.form.on('HSD Payment', {
 			}, __("View"));
 		}
 
-	},
-
-	"branch": function(frm) {
-		return frappe.call({
-			method: "erpnext.custom_utils.get_cc_warehouse",
-			args: {
-				"branch": frm.doc.branch
-			},
-			callback: function(r) {
-				cur_frm.set_value("cost_center", r.message.cc)
-				cur_frm.refresh_fields()
-			}
-		})
 	},
 
 	"get_pol_invoices": function(frm) {

@@ -28,7 +28,7 @@ frappe.query_reports["POL Issue Report"] = {
 		
 		{
                         "fieldname": "not_cdcl",
-                        "label": ("Include Only NRDCL Equipments"),
+                        "label": ("Include Own Equipments Only"),
                         "fieldtype": "Check",
                         "default": 1
                 },

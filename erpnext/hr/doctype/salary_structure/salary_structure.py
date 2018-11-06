@@ -181,7 +181,7 @@ class SalaryStructure(Document):
 			self.db_set("employee_group", doc.employee_group)
 			self.db_set("employee_grade", doc.employee_subgroup)
 			self.db_set("designation", doc.designation)
-			sekf.db_set("business_activity", doc.business_activity)
+			self.db_set("business_activity", doc.business_activity)
 
 	def check_multiple_active(self):
 		if self.is_active == 'Yes':

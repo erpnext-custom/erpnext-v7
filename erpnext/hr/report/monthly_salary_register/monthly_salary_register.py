@@ -116,6 +116,7 @@ def get_conditions(filters):
 	if filters.get("fiscal_year"): conditions += " and fiscal_year = %(fiscal_year)s"
 	if filters.get("company"): conditions += " and company = %(company)s"
 	if filters.get("employee"): conditions += " and employee = %(employee)s"
+	if filters.get("division"): conditions += " and division = %(division)s"
 	
         if filters.get("process_status") == "All":
                 conditions += " and docstatus = docstatus"

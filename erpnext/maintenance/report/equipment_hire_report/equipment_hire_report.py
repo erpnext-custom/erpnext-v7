@@ -27,7 +27,7 @@ def get_columns():
 		("Idle Hour")+ ":data:80",
        		("Idle Rate")+":Currency:150",
 		("Idle Amount") + ":Currency:150",
-		("CDCL")+":Currency:150",
+		("Own Company")+":Currency:150",
 		("Private")+":Currency:150",
 		("Others")+":Currency:150",
 		("Total Hire Charge")+":Currency:150",
@@ -55,7 +55,7 @@ def get_data(filters):
         END,
         sum(hid.total_idle_hours), hid.idle_rate, sum(hid.amount_idle),
         CASE hci.owned_by
-        WHEN 'CDCL' THEN (select sum(hid.total_amount))
+        WHEN 'Own Company' THEN (select sum(hid.total_amount))
         END,
         CASE hci.owned_by
         WHEN 'Private' THEN (select sum(hid.total_amount))

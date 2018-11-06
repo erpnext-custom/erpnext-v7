@@ -118,6 +118,7 @@ def get_conditions(filters):
 	
 	if filters.get("company"): conditions += " and t1.company = %(company)s"
 	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"
+	if filters.get("branch"): conditions += " and t1.branch = %(branch)s"
 	if filters.get("grade"): conditions += " and t2.employee_subgroup = %(grade)s"
 	if status:
                 conditions += " and t1.is_active = '{0}'".format(status)

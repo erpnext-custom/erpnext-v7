@@ -91,6 +91,12 @@ def get_data():
 				{
                                         "type": "report",
                                         "is_query_report": True,
+                                        "name": "Disposal Progress Report",
+                                        "doctype": "Production"
+                                },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
                                         "name": "Production Target Report",
                                         "doctype": "Production Target"
                                 },
