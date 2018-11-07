@@ -172,7 +172,8 @@ class ImprestRecoup(AccountsController):
                                        "remarks": self.branch,
                                        "against": self.party or self.pay_to_recd_from,
                                        "party_type": self.party_type if self.final_settlement and entries[gl]["type"] == "credit" else "",
-                                       "party": self.party if self.final_settlement and entries[gl]["type"] == "credit" else ""
+                                       "party": self.party if self.final_settlement and entries[gl]["type"] == "credit" else "",
+                                       "business_activity": self.business_activity
                                 })
                         )
                 

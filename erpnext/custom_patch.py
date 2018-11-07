@@ -1509,3 +1509,20 @@ def update_sst_grade():
                 doc.eligible_for_sws = 1 if flt(settings.get("sws_contribution")) else 0
                 doc.save()
                 print counter,i.employee,i.name 
+
+def remove_users():
+        counter = 0
+        for e in frappe.db.sql("select name, user_id from `tabEmployee` where docstatus=0 order by name", as_dict=True):
+                counter += 1
+                emp = frappe.get_doc("Employee", e.name)
+                emp.user_id = None
+                emp.company_email = None
+                emp.save()
+                print counter,e.name, e.user_id, "Removed successfully...."
+
+        counter = 0
+        for u in frappe.db.sql("select name from `tabUser` where ifnull(btl,0)= 0 order by name", as_dict=True):
+                counter += 1
+                user = frappe.get_doc("User", u.name)
+                user.delete()
+                print counter, u.name, "Removed successfully...."

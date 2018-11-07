@@ -30,6 +30,7 @@ def get_data(filters):
 	#query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region, sum(qty) as total_qty from `tabProduction Entry` pe RIGHT JOIN `tabCost Center` cc ON cc.name = pe.cost_center where 1 = 1 {0} {1} {2} {3}".format(cc_condition, conditions, group_by, order_by)
 
 	query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region from `tabProduction Target` pe, `tabCost Center` cc where cc.name = pe.cost_center and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
+	amt = 0
 	for a in frappe.db.sql(query, as_dict=1):
 		if filters.branch:
 			target = get_target_value("Disposal", a.location, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date, True)
@@ -48,11 +49,10 @@ def get_data(filters):
 				cond = " and dni.cost_center = '{0}'".format(a.cost_center)
 	
 		total = 0
-		amt = 0
 
 		for b in get_production_groups(filters.production_group):
 		#	qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))
-			qty = frappe.db.sql("Select sum(dni.qty), sum(dni.amount)  from `tabDelivery Note` dn INNER JOIN `tabDelivery Note Item` dni on dn.name = dni.parent INNER JOIN `tabItem` i on dni.item_code = i.item_code where 1=1 {0} and i.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))	
+			qty = frappe.db.sql("Select sum(dni.qty), sum(dni.amount)  from `tabDelivery Note` dn INNER JOIN `tabDelivery Note Item` dni on dn.name = dni.parent where 1=1 {0} and dni.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))	
 			amt = qty and qty[0][1] or 0
 			qty = qty and qty[0][0] or 0
 			row.append(rounded(qty, 2))

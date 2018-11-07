@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt,cint
 from erpnext.custom_utils import prepare_gl, check_future_date
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
@@ -73,7 +73,7 @@ class HSDPayment(Document):
 
 		default_ba =  get_default_ba()
 
-		if final_settlement ==1:
+		if cint(self.final_settlement) ==1:
 			gl_entries.append(
 				prepare_gl(self, {"account": self.bank_account,
 					 "credit": flt(self.amount),

@@ -20,11 +20,11 @@ def get_data(filters):
 		dni_loc = " and 1 =1"
 
 	cond = get_conditions(filters)
-	so, dn = get_group_by(filters)
-	#frappe.msgprint("so {0}".format(group_by))
+	qty, group = get_group_by(filters)
+	#frappe.msgprint("so {0}, {1}".format(qty, group))
 	order_by = get_order_by(filters)
-	query = frappe.db.sql(""" select* from (select *from 
-	(select so.name as so_name , so.customer, so.customer_name, sum(soi.qty) as qty_approved, soi.rate, soi.amount, soi.item_code, 
+	query = frappe.db.sql("""select *from 
+	(select so.name as so_name , so.customer, so.customer_name, soi.qty as qty_approved, soi.rate, soi.amount, soi.item_code, 
 	soi.name as soi_name, soi.item_name, soi.item_group,
 	so.transaction_date, soi.product_requisition from
         `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0}) as so_detail
@@ -32,11 +32,11 @@ def get_data(filters):
 	(select dn.name, dn.contact_no, dn.drivers_name, dn.transportation_charges, dn.vehicle, dni.location, dni.so_detail as dni_name, 
 	dni.name as dni_detail, dni.against_sales_invoice from `tabDelivery Note` dn, `tabDelivery Note Item` dni
         where dn.name = dni.parent and dn.docstatus =1) as dn_detail
-	on so_detail.soi_name = dn_detail.dni_name) as dt
+	on so_detail.soi_name = dn_detail.dni_name
 	inner join
-	(select si.name, sii.dn_detail, sii.delivery_note, sum(sii.qty) as sii_qty, sii.rate as sii_rate, sii.amount as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1) 
+	(select si.name, sii.dn_detail, sii.sales_order, sii.delivery_note, {2} as sii_qty, sii.rate as sii_rate, sii.amount as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1 {3}) 
 	as si_detail
-	on dt.dni_detail = si_detail.dn_detail""".format(cond, dni_loc), as_dict = True, debug =1)
+	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group), as_dict = True, debug =1)
 	for d in query:
 		#customer detail
 		cust = get_customer(filter, d.customer)
@@ -45,8 +45,8 @@ def get_data(filters):
 			"sales_order": d.so_name, "posting_date": d.transaction_date, "customer": cust.name, "customer_name": cust.customer_name, 
 			"customer_type": cust.customer_type, "customer_id": cust.customer_id, "customer_contact": cust.mobile_no, 
 			"item_code": d.item_code, "item_name": d.item_name, "qty_approved": d.qty_approved,
-			"qty": d.sii_qty,  "rate": d.sii_rate, 
-			"amount": d.sii_amount, "receipt_no": d.name, "vehicle_no": d.vehicle, "drivers_name": d.drivers_name, 
+			"qty": d.sii_qty,  "rate": d.sii_rate,  "amount": flt(d.sii_qty) * flt(d.sii_rate), "receipt_no": d.name, 
+			"delivered_qty": d.sii_qty, "vehicle_no": d.vehicle, "drivers_name": d.drivers_name, 
 			"drivers_contact": d.contact_no, "transportation_charges": d.transportation_charges
 			}
 		
@@ -61,7 +61,7 @@ def get_data(filters):
 			pr = get_prod_req(filters, d.product_requisition)
 			row["applicant_name"] = pr.applicant_name,
 			row["qty_required"] = pr.qty_required,
-			row["balance_qty"] = flt(d.qty_approved) - flt(pr.qty_required),
+			row["balance_qty"] = flt(d.qty_approved) - flt(d.sii_qty),
 			row["dest_dzongkha"] = pr.destination_dzongkha,
 			row["plot"] = pr.tharm,
 			row["construction_type"] = pr.construction_type,
@@ -90,12 +90,12 @@ def get_customer(filters, cond):
 			""".format(cond), as_dict =1, debug =1)[0]
 
 def get_group_by(filters):
-	so = dn = ""
+	group_by = " "
+	qty = 'sii.qty'
 	if filters.group_by == 'Sales Order':
-		so = " group by so_detail.so_name"
-	if filters.group_by == 'Delivery Note':
-		dn = " group by sii.delivery_note"
-	return so, dn
+		group_by = " group by sii.sales_order"
+		qty = " sum(sii.qty)"
+	return qty, group_by
 
 def get_order_by(filters):
 	return " order by so.name"
@@ -204,7 +204,7 @@ def get_columns(filters):
 			
 		{
                   "fieldname": "qty",
-                  "label": "Qty",
+                  "label": "Invoiced Qty",
                   "fieldtype": "Int",
                   "width": 90
                 },
@@ -221,39 +221,42 @@ def get_columns(filters):
                   "fieldtype": "Currency",
                   "width": 110
                 },
-                {
+	]
+
+	if filters.group_by == 'Delivery Note':
+		columns.insert(11,{
                   "fieldname": "receipt_no",
                   "label": "Sales Invoice No",
                   "fieldtype": "Link",
                   "options": "Sales Invoice",
                   "width": 120
-                }
-	]
+                })
 
-	''' {
+	if filters.group_by == 'Delivery Note' and filters.item_group == 'Mineral Products':
+		 columns.insert(8,{
                   "fieldname": "vehicle_no",
                   "label": "Vehicle No",
                   "fieldtype": "Data",
                   "width": 100
-                },
-                {
+                 })
+                 columns.insert(9,{
                   "fieldname": "drivers_name",
                   "label": "Drivers Name",
                   "fieldtype": "Data",
                   "width": 130
-                },
-                {
+                 })
+                 columns.insert(10, {
                   "fieldname": "drivers_contact",
                   "label": "Drivers Contact",
                   "fieldtype": "Data",
                   "width": 130
-                },
-                {i
+                 })
+                 columns.insert(11, {
                   "fieldname": "transportation_charges",
                   "label": "Transportation Charges",
                   "fieldtype": "Float",
                   "width": 150
-                },'''
+                 })
 
     	if filters.item_group == "Timber Products":
 		columns.insert(4, {
@@ -327,30 +330,36 @@ def get_columns(filters):
                   "width": 90
                 })
 		columns.insert(16,{
+                  "fieldname": "delivered_qty",
+                  "label": "Delivered Qty",
+                  "fieldtype": "Data",
+                  "width": 90
+                })
+		columns.insert(17,{
                   "fieldname": "balance_qty",
                   "label": "Balance Qty",
                   "fieldtype": "Data",
                   "width": 90
                 })
-        	columns.insert(17,{
+        	columns.insert(18,{
 		  "fieldname": "dest_dzongkha",
 		  "label": "Destination Dzongkha",
 		  "fieldtype": "Data",
 		  "width": 150
 		})
-        	columns.insert(18, {	
+        	columns.insert(19, {	
 		  "fieldname": "current_address",
 		  "label": "Current Residential Address",
 		  "fieldtype": "Data",
 		  "width": 150
 		})
-		columns.insert(19, {
+		columns.insert(20, {
 		  "fieldname": "current_dzo",
 		  "label": "Current Residential Dzongkha",
 		  "fieldtype": "Data",
 		  "width": 150
 		})
-		columns.insert(20, {
+		columns.insert(21, {
 		  "fieldname": "no_of_story",
 		  "label": "No Of Story",
 		  "fieldtype": "Data",

@@ -35,6 +35,9 @@ frappe.ui.form.on('Imprest Receipt', {
 		
 		// Update Cost Center
 		if(frm.doc.branch){
+			// Ver 3.0 Begins, by SHIV on 2018/11/06
+			// Following code commented by SHIV on 2018/11/06
+			/*
 			frappe.call({
 				method: 'frappe.client.get_value',
 				args: {
@@ -51,7 +54,25 @@ frappe.ui.form.on('Imprest Receipt', {
 					}
 				}
 			});
-			
+			*/
+			// Following code added by SHIV on 2018/11/06
+			frappe.call({
+				method: 'frappe.client.get_value',
+				args: {
+					doctype: 'Branch',
+					filters: {
+						'name': frm.doc.branch
+					},
+					fieldname: ['cost_center']
+				},
+				callback: function(r){
+					if(r.message){
+						cur_frm.set_value("cost_center", r.message.cost_center);
+						refresh_field('cost_center');
+					}
+				}
+			});
+			// Ver 3.0 Ends
 			frappe.call({
 				method: 'frappe.client.get_value',
 				args: {

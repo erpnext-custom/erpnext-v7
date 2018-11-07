@@ -185,7 +185,7 @@ def get_basic_details(args, item):
 			if not out[d[1]] or (company and args.company != company):
 				out[d[1]] = frappe.db.get_value("Company", args.company, d[2]) if d[2] else None
 
-	for fieldname in ("item_name", "item_group", "barcode", "brand", "stock_uom"):
+	for fieldname in ("item_name", "item_group","item_sub_group", "barcode", "brand", "stock_uom"):
 		out[fieldname] = item.get(fieldname)
 
 	return out

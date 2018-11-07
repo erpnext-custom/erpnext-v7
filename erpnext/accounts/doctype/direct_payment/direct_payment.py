@@ -13,9 +13,9 @@ from erpnext.controllers.accounts_controller import AccountsController
 class DirectPayment(AccountsController):
 	def validate(self):
 		if self.payment_type == "Receive":
-			inter_company = frappe.db.get_value("Customer", self.customer, "inter_company")
+			inter_company = frappe.db.get_value("Customer", self.party, "inter_company")
 			if inter_company == 0:
-				frappe.throw(_("Selected Customer {0} is not inter company ".format(self.customer)))
+				frappe.throw(_("Selected Customer {0} is not inter company ".format(self.party)))
 		self.clearance_date = None
 
 	def on_submit(self):
@@ -42,7 +42,7 @@ class DirectPayment(AccountsController):
 							"voucher_no": self.name,
 							"voucher_type": self.doctype,
 							"cost_center": self.cost_center,
-							'party': self.customer,
+							'party': self.party,
 							'party_type': 'Customer',						
 							"company": self.company,
 							"remarks": self.remarks,
@@ -90,7 +90,7 @@ class DirectPayment(AccountsController):
 							"voucher_no": self.name,
 							"voucher_type": self.doctype,
 							"cost_center": self.cost_center,
-							'party': self.customer,
+							'party': self.party,
 							'party_type': 'Customer',					
 							"company": self.company,
 							"remarks": self.remarks,
@@ -124,7 +124,7 @@ class DirectPayment(AccountsController):
 							"voucher_no": self.name,
 							"voucher_type": self.doctype,
 							"cost_center": self.cost_center,
-							'party': self.supplier,
+							'party': self.party,
 							'party_type': 'Supplier',						
 							"company": self.company,
 							"remarks": self.remarks,
@@ -172,7 +172,7 @@ class DirectPayment(AccountsController):
 							"voucher_no": self.name,
 							"voucher_type": self.doctype,
 							"cost_center": self.cost_center,
-							'party': self.supplier,
+							'party': self.party,
 							'party_type': 'Supplier',
 							"company": self.company,
 							"remarks": self.remarks,

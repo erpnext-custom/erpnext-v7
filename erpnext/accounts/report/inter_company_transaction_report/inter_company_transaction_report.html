@@ -14,25 +14,72 @@
                         {% } %}
                 </tr>
         </thead>
-        <tbody>
-                {% for(var j=0, k=data.length; j<k; j++) { %}
-                        {%
-                                var row = data[j]
-                        %}
-                        <tr>
-                                {% for(var i=1, l=report.columns.length; i<l; i++) { %}
-                                        <td class="text-right">
-                                                {% var fieldname = report.columns[i].field; %}
-                                                {% if (!is_null(row[fieldname])) { %}
-                                                        {%= format_currency(row[fieldname]) %}
-							{% if ( i == 4) { %}
-								%
-							{% } %}
-                                                {% } %}
-                                        </td>
-                                {% } %}
-                        </tr>
-                {% } %}
+	 <tbody>
+		{% for(var i=0, l=data.length; i<l; i++) { %}
+			<tr>
+			    <td>{%= data[i][__("Reference")] %}</td>
+			    <td>{%= data[i][__("Reference No")] %}</td>
+			    <td>{%= data[i][__("Sales Inv. No.")] %}</td>
+			    <td>{%= data[i][__("Sales Inv. Date")] %}</td>
+			    <td>{% if(!is_null(data[i][__("Sales Amount")])) { %}
+					{%= format_currency(data[i][__("Sales Amount")],data[i]["currency"]) %}
+				{% } %}	
+			    </td>
+			    <td>{% if(!is_null(data[i][__("Received")])) { %}
+					  {%= format_currency(data[i][__("Received")],data[i]["currency"]) %}
+				{% } %}
+			    </td>
+			    <td>{% if(!is_null(data[i][__("Receivable")])) { %}
+					{%= format_currency(data[i][__("Receivable")],data[i]["currency"]) %}
+			     {% } %}
+			    </td>
+			    <td>{% if(!is_null(data[i][__("Payment Inv. No")])) { %}
+					{%= data[i][__("Payment Inv. No")] %}
+				 {% } %}
+			    </td>
+			    <td>{% if(!is_null(data[i][__("Inv. Date")])) { %}
+					{%= data[i][__("Inv. Date")] %}
+				 {% } %}
+			    </td>
+			    <td>{% if(!is_null(data[i][__("Payment Amount")])) { %}
+					{%= format_currency(data[i][__("Payment Amount")],data[i]["currency"]) %}
+				 {% } %}
+			    </td>
+			    <td>{% if(!is_null(data[i][__("Paid")])) { %}
+					{%= format_currency(data[i][__("Paid")],data[i]["currency"]) %}
+				 {% } %}
+			    </td>
+			    <td>{% if(!is_null(data[i][__("Payable")])) { %}
+					{%= format_currency(data[i][__("Payable")],data[i]["currency"]) %}
+				 {% } %}
+			    </td>
+			    <td>{% if(!is_null(data[i][__("Advance Received")])) { %}
+					{%= format_currency(data[i][__("Advance Received")],data[i]["currency"]) %}
+				 {% } %}
+			    </td>
+			    <td>{% if(!is_null(data[i][__("Rec. Adjusted")])) { %}
+					    {%= format_currency(data[i][__("Rec. Adjusted")],data[i]["currency"]) %}
+			        {% } %}
+			   	</td>
+			   	<td>{% if(!is_null(data[i][__("Rec. Balance")])) { %}
+					    {%= format_currency(data[i][__("Rec. Balance")],data[i]["currency"]) %}
+			    	 {% } %}
+			   	</td>
+			   	<td>{% if(!is_null(data[i][__("Advance Paid")])) { %}
+					    {%= format_currency(data[i][__("Advance Paid")],data[i]["currency"]) %}
+				     {% } %}
+			   	</td>
+
+				<td>{% if(!is_null(data[i][__("Pay. Adjusted")])) { %}
+				    {%= format_currency(data[i][__("Pay. Adjusted")],data[i]["currency"]) %}
+			     	{% } %}
+				</td>
+				<td>{% if(!is_null(data[i][__("Pay. Balance")])) { %}
+				    {%= format_currency(data[i][__("Pay. Balance")],data[i]["currency"]) %}
+			     	{% } %}
+				</td>
+			</tr>
+		{% } %}
         </tbody>
 </table>
 
