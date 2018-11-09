@@ -56,7 +56,7 @@ class RoyaltyPayment(Document):
 
 			entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, b.qty_in_no from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
 			self.set('adhoc_temp_items', [])
-			frappe.db.sql("delete from `tabRoyalty Adhoc Temp` where parent = %s", self.name)
+			frappe.db.sql("delete from `tabRoyalty Adhoc Temp` where parent = %s or parent like '%New Royalty Payment%'", self.name)
 
 			for a in entries:
 				d = self.get_adhoc_royalty(a.item_code, a.reading)
@@ -75,7 +75,7 @@ class RoyaltyPayment(Document):
 
 			entries = frappe.db.sql("select based_on, particular, timber_class, royalty_rate as rate, from_reading, to_reading, sum(qty) as quantity, uom, sum(amount) as amount, par_name from `tabRoyalty Adhoc Temp` where parent = %s group by particular, timber_class, royalty_rate, from_reading, to_reading order by particular", self.name, as_dict=1)
 			self.set('adhoc_items', [])
-			frappe.db.sql("delete from `tabRoyalty Payment Adhoc` where parent = %s", self.name)
+			frappe.db.sql("delete from `tabRoyalty Payment Adhoc` where parent = %s or parent like '%New Royalty Payment%'", self.name)
 
 			total_royalty = 0
 			for a in entries:

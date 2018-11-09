@@ -25,10 +25,10 @@ class FundRequisition(Document):
 	def before_cancel(self):
 		
 		cl_status = frappe.db.get_value("Journal Entry", self.reference, "docstatus")
-		if cl_status != 2:
+		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry related to this fund requisition first!")
 		
-		self.db_set('reference', "")
+		self.db_set('reference', None)
 
 	def on_submit(self):
 		if(self.reference):

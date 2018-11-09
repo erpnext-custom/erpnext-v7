@@ -306,10 +306,7 @@ class PurchaseInvoice(BuyingController):
 
 		self.update_project()
 		self.update_fixed_asset()
-		# Ver 3.0, Begins, following line commented temporarily by SHIV on 2018/10/31 for the purpose of using Opening Invoice Creation Tool
-		#	this needs to be uncommented after the work is done by dorji
-		#self.consume_budget()
-		# Ver 3.0, Ends
+		self.consume_budget()
 		self.update_rrco_receipt()
 
 	def update_fixed_asset(self):
