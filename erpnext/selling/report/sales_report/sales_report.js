@@ -198,5 +198,11 @@ frappe.query_reports["Sales Report"] = {
                         "options": ["Sales Order", "Delivery Note"],
 			"default": "Sales Order"
                 },
+		 {
+                        "fieldname": "show_detail",
+                        "label": ("Show Detail"),
+                        "fieldtype": "Check",
+                        "default": 0
+                }
         ]
 }

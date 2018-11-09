@@ -36,7 +36,7 @@ def get_data(filters):
 	inner join
 	(select si.name, sii.dn_detail, sii.sales_order, sii.delivery_note, {2} as sii_qty, sii.rate as sii_rate, sii.amount as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1 {3}) 
 	as si_detail
-	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group), as_dict = True, debug =1)
+	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group), as_dict = True)
 	for d in query:
 		#customer detail
 		cust = get_customer(filter, d.customer)
@@ -45,8 +45,8 @@ def get_data(filters):
 			"sales_order": d.so_name, "posting_date": d.transaction_date, "customer": cust.name, "customer_name": cust.customer_name, 
 			"customer_type": cust.customer_type, "customer_id": cust.customer_id, "customer_contact": cust.mobile_no, 
 			"item_code": d.item_code, "item_name": d.item_name, "qty_approved": d.qty_approved,
-			"qty": d.sii_qty,  "rate": d.sii_rate,  "amount": flt(d.sii_qty) * flt(d.sii_rate), "receipt_no": d.name, 
-			"delivered_qty": d.sii_qty, "vehicle_no": d.vehicle, "drivers_name": d.drivers_name, 
+			"qty": flt(d.sii_qty),  "rate": flt(d.sii_rate),  "amount": flt(d.sii_qty) * flt(d.sii_rate), "receipt_no": d.name, 
+			"delivered_qty": flt(d.sii_qty), "vehicle_no": d.vehicle, "drivers_name": d.drivers_name, 
 			"drivers_contact": d.contact_no, "transportation_charges": d.transportation_charges
 			}
 		
@@ -60,7 +60,7 @@ def get_data(filters):
 		if d.product_requisition and filters.item_group == 'Mineral Products':
 			pr = get_prod_req(filters, d.product_requisition)
 			row["applicant_name"] = pr.applicant_name,
-			row["qty_required"] = pr.qty_required,
+			row["qty_required"] = flt(pr.qty_required),
 			row["balance_qty"] = flt(d.qty_approved) - flt(d.sii_qty),
 			row["dest_dzongkha"] = pr.destination_dzongkha,
 			row["plot"] = pr.tharm,
@@ -205,7 +205,7 @@ def get_columns(filters):
 		{
                   "fieldname": "qty",
                   "label": "Invoiced Qty",
-                  "fieldtype": "Int",
+                  "fieldtype": "Float",
                   "width": 90
                 },
 

@@ -18,9 +18,9 @@ def execute(filters=None):
 		"section_header": _("Cash Flow from Operations"),
 		"account_types": [
 			{"account_type": "Depreciation", "label": _("Depreciation during the year")},
-			{"account_type": "Receivable", "label": _("Increase/Decrease in Accounts Receivable")},
-			{"account_type": "Payable", "label": _("Increase/Decrease in Accounts Payable")},
-			{"account_type": "Warehouse", "label": _("Increase/Decrease in Inventory")}
+			{"account_type": "Receivable", "label": _("Change in Accounts Receivable")},
+			{"account_type": "Payable", "label": _("Change in Accounts Payable")},
+			{"account_type": "Stock", "label": _("Change in Inventory")}
 		]
 	}
 
@@ -29,7 +29,7 @@ def execute(filters=None):
 		"section_footer": _("Net Cash from Investing"),
 		"section_header": _("Cash Flow from Investing"),
 		"account_types": [
-			{"account_type": "Fixed Asset", "label": _("Increase/Decrease in Fixed Asset")}
+			{"account_type": "Fixed Asset", "label": _("Change in Fixed Asset")}
 		]
 	}
 

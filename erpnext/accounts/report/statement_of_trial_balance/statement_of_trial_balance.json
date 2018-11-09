@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-08-02 14:23:19.570722", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2018-11-08 12:35:47.614110", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Statement of Trial Balance", 
  "owner": "Administrator", 
@@ -35,7 +35,7 @@
    "role": "Auditor"
   }, 
   {
-   "role": "CPBD"
+   "role": "Project Committee"
   }
  ]
 }

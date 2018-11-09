@@ -21,7 +21,7 @@ class SellingPrice(Document):
 				frappe.throw("Selling Rate should be greater than 0 for <b>" + str(a.particular) + "</b>")
 
 			if a.price_based_on == "Item":
-				a.item_name = frappe.db.get_value("Item", a.particular, "item_group")
+				a.item_name = frappe.db.get_value("Item", a.particular, "item_name")
 				a.timber_type = None
 				a.item_sub_group = None
 			else:

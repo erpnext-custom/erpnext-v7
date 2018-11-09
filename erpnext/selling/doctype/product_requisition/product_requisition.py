@@ -30,9 +30,6 @@ def make_sales_order(source_name, target_doc=None):
 				"customer": "customer",
 				"name": "po_no",
 				"posting_date":"po_date",
-                                "current_resident": "customer_address",
-				"location": "shipping_address_name",
-				"applicant_name" :"contact_person",
 				"currency": "price_list_currency"
                         },
                         "validation": {

@@ -124,14 +124,11 @@ frappe.ui.form.on('Direct Payment', {
 			});
 		}
 	},
-
-	"supplier": function(frm) {
-		frm.set_value("pay_to_recd_from", frm.doc.supplier);
-	},
-	"customer": function(frm) {
-		frm.set_value("pay_to_recd_from", frm.doc.customer);
-	}
+	"party": function(frm) {
+		frm.set_value("pay_to_recd_from", frm.doc.party);
+	}	
 });
+
 function roundOff(num) {    
     return +(Math.round(num + "e+2")  + "e-2");
 }
@@ -158,3 +155,33 @@ function calculate_tds(frm) {
 		}
 	})
 }
+
+frappe.ui.form.on("Direct Payment", "onload", function(frm){
+	cur_frm.set_query("select_cheque_lot", function(){
+		return 	{
+			"filters":[
+				["status", "!=", "Used"],
+				["docstatus", "=", "1"],
+				["branch", "=", frm.doc.branch]
+			]
+		}
+
+	});
+});
+
+frappe.ui.form.on("Direct Payment", "select_cheque_lot", function(frm){
+	if(frm.doc.select_cheque_lot) {
+		frappe.call({
+			method: "erpnext.accounts.doctype.cheque_lot.cheque_lot.get_cheque_no_and_date",
+			args: {
+				'name': frm.doc.select_cheque_lot
+			},
+			callback: function(r){
+				if(r.message) {
+					cur_frm.set_value("cheque_no", r.message[0].reference_no);
+					cur_frm.set_value("cheque_date", r.message[1].reference_date);
+				}
+			}
+		});	
+	}
+});

@@ -69,7 +69,7 @@ class Asset(Document):
 					self.set(field, value)
 
 		self.value_after_depreciation = (flt(self.gross_purchase_amount) -
-			flt(self.opening_accumulated_depreciation))
+			flt(self.opening_accumulated_depreciation)) - flt(self.residual_value)
 
 	def validate_asset_values(self):
 		if flt(self.expected_value_after_useful_life) >= flt(self.gross_purchase_amount):

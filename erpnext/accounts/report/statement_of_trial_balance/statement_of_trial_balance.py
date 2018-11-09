@@ -168,7 +168,6 @@ def calculate_values(accounts, gl_entries_by_account, opening_balances, filters)
 		total_row["debit"] += d["debit"]
 		total_row["credit"] += d["credit"]
 
-
 	return total_row
 
 def accumulate_values_into_parents(accounts, accounts_by_name):
@@ -280,7 +279,7 @@ def prepare_opening_and_closing(d, total_row):
 		d["opening_credit"] -= d["opening_debit"]
 		d["opening_debit"] = 0.0
 
-	if str(d.account_name.encode('utf-8')) in ["Asset", "Liabilities", "Equity", "Revenue", "Expense"]:
+	if str(d.account_name.encode('utf-8')) in ["Assets", "Liabilities", "Equity", "Revenue", "Expenses"]:
                 total_row['opening_credit'] = total_row['opening_credit'] + d['opening_credit']
                 total_row['opening_debit'] = total_row['opening_debit'] + d['opening_debit']
                 total_row['closing_credit'] = total_row['closing_credit'] + d['closing_credit']
