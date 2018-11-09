@@ -44,7 +44,7 @@ def get_data(filters):
 		row = {
 			"sales_order": d.so_name, "posting_date": d.transaction_date, "customer": cust.name, "customer_name": cust.customer_name, 
 			"customer_type": cust.customer_type, "customer_id": cust.customer_id, "customer_contact": cust.mobile_no, 
-			"item_code": d.item_code, "item_name": d.item_name, "qty_approved": d.qty_approved,
+			"item_code": d.item_code, "item_name": d.item_name, "qty_approved": flt(d.qty_approved),
 			"qty": flt(d.sii_qty),  "rate": flt(d.sii_rate),  "amount": flt(d.sii_qty) * flt(d.sii_rate), "receipt_no": d.name, 
 			"delivered_qty": flt(d.sii_qty), "vehicle_no": d.vehicle, "drivers_name": d.drivers_name, 
 			"drivers_contact": d.contact_no, "transportation_charges": d.transportation_charges
@@ -87,7 +87,7 @@ def get_prod_req(filters, cond):
 def get_customer(filters, cond):
 	return frappe.db.sql("""
                         select name, customer_type, mobile_no, customer_name, customer_id from `tabCustomer` where name = '{0}'
-			""".format(cond), as_dict =1, debug =1)[0]
+			""".format(cond), as_dict =1)[0]
 
 def get_group_by(filters):
 	group_by = " "
@@ -218,7 +218,7 @@ def get_columns(filters):
                 {
                   "fieldname": "amount",
                   "label": "Amount",
-                  "fieldtype": "Currency",
+                  "fieldtype": "Float",
                   "width": 110
                 },
 	]

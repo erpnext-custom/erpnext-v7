@@ -30,7 +30,7 @@ def execute(filters=None):
 def get_data(filters, show_party_name):
 	#party_name_field = "customer_name" if filters.get("party_type")=="Customer" else "supplier_name"
 	#Party type to be shown in the report Kinley Tsheirng
-	party_name_field = "customer_name" if filters.get("party_type")=="Customer" else "supplier_name" if filters.get("party_type")=="Supplier" else "employee_name"
+	party_name_field = "customer_name" if filters.get("party_type")=="Customer" else "supplier_name" if filters.get("party_type")=="Supplier" else "employee_name" if filters.get("party_type")=="Employee" else "name"
 	if not filters.get("inter_company"):
 		parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
 	elif filters.get("party_type") == "Employee":

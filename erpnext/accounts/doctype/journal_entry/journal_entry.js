@@ -126,7 +126,7 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 
 		me.frm.set_query("party_type", "accounts", function(doc, cdt, cdn) {
 			return {
-				filters: {"name": ["in", ["Customer", "Supplier","Employee"]]}
+				filters: {"name": ["in", ["Customer", "Supplier","Employee","Equipment"]]}
 			}
 		});
 

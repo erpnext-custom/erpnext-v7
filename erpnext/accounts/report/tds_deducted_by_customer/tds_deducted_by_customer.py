@@ -32,6 +32,7 @@ def get_data(filters):
 		cond1 = " and pe.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"
 		cond2 = " and pp.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"
 		cond3 = " and mp.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"	
+		cond4 = " and dp.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"	
 
 	#frappe.msgprint(query)
-	return frappe.db.sql(query.format(cond1,cond2,cond3))
+	return frappe.db.sql(query.format(cond1,cond2,cond3,cond4))
