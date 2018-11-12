@@ -1526,3 +1526,15 @@ def remove_users():
                 user = frappe.get_doc("User", u.name)
                 user.delete()
                 print counter, u.name, "Removed successfully...."
+
+def assign_role_approver():
+	for e in frappe.db.sql("select distinct(reports_to) as employee from `tabEmployee`", as_dict=True):
+		emp = frappe.get_doc("Employee", e.employee)
+		if emp.user_id:
+			user = frappe.get_doc("User", emp.user_id)
+			user.flags.ignore_permissions = True
+			user.remove_roles("Approver")
+                	user.add_roles("Approver")
+			print "Success", emp.employee
+		else:
+			print "Failed", emp.employee

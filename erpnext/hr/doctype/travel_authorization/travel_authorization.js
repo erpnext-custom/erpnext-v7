@@ -36,7 +36,7 @@ frappe.ui.form.on('Travel Authorization', {
 			frm.toggle_reqd("document_status", frm.doc.docstatus==0);
 		}
 		
-		if (frm.doc.docstatus == 1 && !frm.doc.travel_claim && frm.doc.document_status == "Approved") {
+		if (frm.doc.docstatus == 1 && !frm.doc.travel_claim && frm.doc.workflow_state == "Approved") {
 			frm.add_custom_button("Create Travel Claim", function() {
 				if(frm.doc.end_date_auth < get_today()){
 					frappe.model.open_mapped_doc({

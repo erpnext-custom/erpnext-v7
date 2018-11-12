@@ -12,8 +12,26 @@ import collections
 from erpnext.hr.doctype.travel_authorization.travel_authorization import get_exchange_rate
 
 class TravelClaim(Document):
+	def get_status(self):
+                if self.workflow_state =="Verified By Supervisor":
+                        self.supervisor_approval = 1
+			self.seupervisor_approved_on = nowdate()
+                elif self.workflow_state == "Approved":
+                        self.hr_approval =1
+			self.hr_approved_on = nowdate()
+                elif self.workflow_state == "Rejected":
+                        self.hr_approval =0
+                        self.supervisor_approval =0
+                        self.seupervisor_approved_on = None
+			self.hr_approved_on = None
+                else:
+                        self.hr_approval =0
+                        self.supervisor_approval =0
+                        self.supervisor_approved_on = None
+			self.hr_approved_on = None
 
 	def validate(self):
+		self.get_status()
 		hr_role = frappe.db.get_value("UserRole", {"parent": frappe.session.user, "role": "HR User"}, "role")
 		if frappe.session.user == self.supervisor and not self.supervisor_approval:
 			self.db_set("supervisor_approved_on", '')
@@ -43,8 +61,9 @@ class TravelClaim(Document):
 		self.check_double_dates()
 
 	def on_submit(self):
+		self.get_status()
 		self.validate_submitter()
-		self.check_status()
+		#self.check_status()
 		self.post_journal_entry()
 		self.update_travel_authorization()
 

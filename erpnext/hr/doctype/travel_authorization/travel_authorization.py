@@ -13,6 +13,13 @@ from frappe.model.mapper import get_mapped_doc
 from datetime import timedelta
 
 class TravelAuthorization(Document):
+	def get_status(self):
+                if self.workflow_state == "Draft":
+                        self.document_status = ""
+                if self.workflow_state == "Rejected":
+                        self.document_status = "Rejected"
+                if self.workflow_state == "Approved":
+                        self.document_status = "Approved"
 
 	def validate(self):
 		if not self.branch:
@@ -21,6 +28,7 @@ class TravelAuthorization(Document):
 		if frappe.db.get_value("Employee", self.employee, "user_id") == self.supervisor:
                         frappe.throw(_("Invalid supervisor"), title="Invalid Data")
 
+		self.get_status()
 		self.validate_travel_dates()
                 self.check_double_dates()
 		self.assign_end_date()
@@ -55,6 +63,7 @@ class TravelAuthorization(Document):
 			self.append("details", {"date": a.date, "halt": a.halt, "till_date": a.till_date, "no_days": a.no_days, "from_place": a.from_place, "halt_at": a.halt_at})
 
 	def on_submit(self):
+		self.get_status()
 		#self.check_double_dates()
 		self.validate_submitter()
 		self.validate_travel_dates()
@@ -174,6 +183,7 @@ class TravelAuthorization(Document):
 	def check_status(self):
 		if self.document_status == "Rejected":
 			frappe.throw("Rejected Documents cannot be submitted")
+		return
 		if not self.document_status == "Approved":
 			frappe.throw("Only Approved Documents can be submitted")
 			
