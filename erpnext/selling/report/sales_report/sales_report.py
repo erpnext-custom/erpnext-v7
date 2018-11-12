@@ -24,7 +24,7 @@ def get_data(filters):
 	#frappe.msgprint("so {0}, {1}".format(qty, group))
 	order_by = get_order_by(filters)
 	query = frappe.db.sql("""select *from 
-	(select so.name as so_name , so.customer, so.customer_name, soi.qty as qty_approved, soi.rate, soi.amount, soi.item_code, 
+	(select so.name as so_name , so.customer, so.customer_name, so.branch, soi.qty as qty_approved, soi.rate, soi.item_code, 
 	soi.name as soi_name, soi.item_name, soi.item_group,
 	so.transaction_date, soi.product_requisition from
         `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0}) as so_detail
@@ -34,22 +34,23 @@ def get_data(filters):
         where dn.name = dni.parent and dn.docstatus =1) as dn_detail
 	on so_detail.soi_name = dn_detail.dni_name
 	inner join
-	(select si.name, sii.dn_detail, sii.sales_order, sii.delivery_note, {2} as sii_qty, sii.rate as sii_rate, sii.amount as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1 {3}) 
+	(select si.name, sii.dn_detail, (select item_sub_group from tabItem where item_code = sii.item_code group by item_sub_group) as item_sub, sii.sales_order, sii.delivery_note, {2} as sii_qty, sii.rate as sii_rate, sii.amount as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1 {3}) 
 	as si_detail
-	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group), as_dict = True)
+	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group), as_dict = True, debug =1)
+	agg_qty = agg_amount = qty = rate = amount =  qty_required  = qty_approved = balance_qty = delivered_qty = transportation_charges = 0.0
+	row = {}
 	for d in query:
 		#customer detail
 		cust = get_customer(filter, d.customer)
-		#frappe.msgprint("{0}".format(d.item_group))
 		row = {
 			"sales_order": d.so_name, "posting_date": d.transaction_date, "customer": cust.name, "customer_name": cust.customer_name, 
 			"customer_type": cust.customer_type, "customer_id": cust.customer_id, "customer_contact": cust.mobile_no, 
 			"item_code": d.item_code, "item_name": d.item_name, "qty_approved": flt(d.qty_approved),
 			"qty": flt(d.sii_qty),  "rate": flt(d.sii_rate),  "amount": flt(d.sii_qty) * flt(d.sii_rate), "receipt_no": d.name, 
 			"delivered_qty": flt(d.sii_qty), "vehicle_no": d.vehicle, "drivers_name": d.drivers_name, 
-			"drivers_contact": d.contact_no, "transportation_charges": d.transportation_charges
-			}
-		
+			"drivers_contact": d.contact_no, "transportation_charges": d.transportation_charges, "agg_qty": flt(d.sii_qty),
+			"agg_amount": flt(d.sii_amount), "agg_branch": d.branch, "agg_location": d.location, "item_sub_group": d.item_sub
+			}	
 
 		if filters.item_group == 'Timber Products':
 			tim = get_timber_detail(filters, d.item_code) 
@@ -71,8 +72,22 @@ def get_data(filters):
 			row["current_address"] = pr.current_resident,
 			row["current_dzo"] = pr.current_dzongkha,
 			row["no_of_story"] = pr.no_of_story
+			qty_required += flt(pr.qty_required)
 		data.append(row)
-	return data
+		agg_qty += flt(d.sii_qty)
+		agg_amount += flt(d.sii_amount)
+		qty +=  flt(d.sii_qty)  
+		rate +=  flt(d.sii_rate)
+		amount += flt(d.sii_qty) * flt(d.sii_rate)
+		qty_approved += flt(d.qty_approved)
+		delivered_qty =+ flt(d.sii_qty)
+		balance_qty += flt(d.qty_approved) - flt(d.sii_qty)
+		transportation_charges += flt(d.transportation_charges)
+		row = { "agg_qty": agg_qty, "agg_amount": agg_amount, "qty": qty, "rate": rate, "amount": amount, 
+		"qty_approved": qty_approved, "qty_required": qty_required, "qty_approved": qty_approved, "delivered_qty": delivered_qty,
+                "balance_qty":  balance_qty, "transportation_charges": transportation_charges, "agg_branch": "'Total'", "sales_order": "'Total'"}
+	data.append(row)
+	return tuple(data)
 
 def get_timber_detail(filters, cond):
 	return frappe.db.sql(""" select i.item_code, i.item_group, ts.species as spc, ts.timber_type, ts.timber_class
@@ -95,6 +110,9 @@ def get_group_by(filters):
 	if filters.group_by == 'Sales Order':
 		group_by = " group by sii.sales_order"
 		qty = " sum(sii.qty)"
+	if filters.aggrigate:
+		group_by = " group by item_sub, si.branch"
+		qty = " sum(sii.qty)"
 	return qty, group_by
 
 def get_order_by(filters):
@@ -103,7 +121,6 @@ def get_order_by(filters):
 def get_conditions(filters):
 	if not filters.cost_center:
 		return " and so.docstatus = 10"
-
 	all_ccs = get_child_cost_centers(filters.cost_center)
 	if not all_ccs:
 		return " and so.docstatus = 10"
@@ -113,7 +130,6 @@ def get_conditions(filters):
 		branch = frappe.db.sql("select name from tabBranch where cost_center = %s", a, as_dict=1)
 		if branch:
 			all_branch.append(str(branch[0].name))
-
 	condition = " and so.branch in {0} ".format(tuple(all_branch))
 	if filters.from_date and filters.to_date:
         	condition += " and so.transaction_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
@@ -218,7 +234,7 @@ def get_columns(filters):
                 {
                   "fieldname": "amount",
                   "label": "Amount",
-                  "fieldtype": "Float",
+                  "fieldtype": "Currency",
                   "width": 110
                 },
 	]
@@ -254,7 +270,7 @@ def get_columns(filters):
                  columns.insert(11, {
                   "fieldname": "transportation_charges",
                   "label": "Transportation Charges",
-                  "fieldtype": "Float",
+                  "fieldtype": "Currency",
                   "width": 150
                  })
 
@@ -326,7 +342,7 @@ def get_columns(filters):
 		columns.insert(15, {
                   "fieldname": "qty_approved",
                   "label": "Qty Approved",
-                  "fieldtype": "Int",
+                  "fieldtype": "Data",
                   "width": 90
                 })
 		columns.insert(16,{
@@ -365,5 +381,40 @@ def get_columns(filters):
 		  "fieldtype": "Data",
 		  "width": 100
 		})
+		
+	if filters.aggrigate == 1:
+		columns = [
+		{
+                  "fieldname": "agg_branch",
+                  "label": "Branch",
+                  "fieldtype": "data",
+                  "width": 100
+                },
+		{
+                  "fieldname": "agg_location",
+                  "label": "Location",
+                  "fieldtype": "data",
+                  "width": 100
+                },
+
+		{
+                  "fieldname": "item_sub_group",
+                  "label": "Item Sub Group",
+                  "fieldtype": "data",
+                  "width": 100
+                },
+                {
+                  "fieldname": "agg_qty",
+                  "label": "Sales Qty",
+                  "fieldtype": "Float",
+                  "width": 90
+                },
+                {
+                  "fieldname": "agg_amount",
+                  "label": "Amount",
+                  "fieldtype": "Currency",
+                  "width": 100
+                }
+		]
 
 	return columns
