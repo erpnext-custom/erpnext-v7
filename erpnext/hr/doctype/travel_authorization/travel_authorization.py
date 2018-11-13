@@ -81,8 +81,8 @@ class TravelAuthorization(Document):
 	def on_cancel(self):
 		if self.travel_claim:
 			frappe.throw("Cancel the Travel Claim before cancelling Authorization")
-		if not self.cancellation_reason:
-			frappe.throw("Cancellation Reason is Mandatory when Cancelling Travel Authorization")
+		#if not self.cancellation_reason:
+		#	frappe.throw("Cancellation Reason is Mandatory when Cancelling Travel Authorization")
 		self.cancel_attendance()	
 
 	def on_update_after_submit(self):

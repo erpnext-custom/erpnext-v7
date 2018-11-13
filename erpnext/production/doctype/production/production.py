@@ -183,7 +183,7 @@ class Production(StockController):
 
 			expense_account = frappe.db.get_value("Item", a.item_code, "expense_account")
 			if not expense_account:
-				frappe.throw("Set Budget Account in Item Master")		
+				frappe.throw("Set Budget Account in {0}".format(frappe.get_desk_link("Item", a.item_code)))		
 
 			gl_entries.append(
 				prepare_gl(self, {"account": wh_account,

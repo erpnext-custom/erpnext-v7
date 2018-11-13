@@ -9,6 +9,18 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+#
+def populate_wh_branch():
+        counter = 0
+	for t in frappe.db.sql("select name, branch from tabWarehouse", as_dict=1):
+		counter += 1
+		print t.branch, t.name
+		doc = frappe.get_doc("Warehouse", t.name)
+		row = doc.append("items",{})
+		row.branch = t.branch
+		row.save()
+print 'Done adding rows....'
+
 def update_emp():
 	for a in frappe.db.sql("select name from tabEmployee where docstatus = 0", as_dict=1):
 		print(str(a.name))

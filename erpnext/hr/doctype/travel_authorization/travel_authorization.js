@@ -241,3 +241,54 @@ frappe.form.link_formatters['Employee'] = function(value, doc) {
 		__("Update")
 	);
 })*/
+
+frappe.ui.form.on("Travel Authorization", "after_save", function(frm, cdt, cdn){
+        if(in_list(user_roles, "Approver")){
+                if (frm.doc.workflow_state && frm.doc.workflow_state.indexOf("Rejected") >= 0){
+                        frappe.prompt([
+                                {
+                                        fieldtype: 'Small Text',
+                                        reqd: true,
+                                        fieldname: 'reason'
+                                }],
+                                function(args){
+                                        validated = true;
+                                        frappe.call({
+                                                method: 'frappe.core.doctype.communication.email.make',
+                                                args: {
+                                                        doctype: frm.doctype,
+                                                        name: frm.docname,
+                                                        subject: format(__('Reason for {0}'), [frm.doc.workflow_state]),
+                                                        content: args.reason,
+                                                        send_mail: false,
+                                                        send_me_a_copy: false,
+                                                        communication_medium: 'Other',
+                                                        sent_or_received: 'Sent'
+                                                },
+                                                callback: function(res){
+                                                        if (res && !res.exc){
+                                                                frappe.call({
+                                                                        method: 'frappe.client.set_value',
+                                                                        args: {
+                                                                                doctype: frm.doctype,
+                                                                                name: frm.docname,
+                                                                                fieldname: 'reason',
+                                                                                value: frm.doc.reason ?
+                                                                                        [frm.doc.reason, '['+String(frappe.session.user)+' '+String(frappe.datetime.nowdate())+']'+' : '+String(args.reason)].join('\n') : frm.doc.workflow_state
+                                                                        },
+                                                                        callback: function(res){
+                                                                                if (res && !res.exc){
+                                                                                        frm.reload_doc();
+                                                                                }
+                                                                        }
+                                                                });
+}
+                                                }
+                                        });
+                                },
+                                __('Reason for ') + __(frm.doc.workflow_state),
+                                __('Save')
+                        )
+                }
+        }
+});
