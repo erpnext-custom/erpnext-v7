@@ -574,7 +574,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-11-13 12:54:22.300566", 
+ "modified": "2018-11-13 15:26:52.093908", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Branch", 
@@ -599,6 +599,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }, 
   {

@@ -237,10 +237,7 @@ def check_budget_available(cost_center, budget_account, transaction_date, amount
 @frappe.whitelist()
 def get_cc_warehouse(branch):
         cc = get_branch_cc(branch)
-        wh = frappe.db.get_value("Cost Center", cc, "warehouse")
-	if not wh:
-		frappe.throw("No warehosue linked with your branch or cost center")
-        return {"cc": cc, "wh": wh}	
+        return {"cc": cc, "wh": None}	
 
 @frappe.whitelist()
 def get_branch_warehouse(branch):

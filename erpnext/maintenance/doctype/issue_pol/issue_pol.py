@@ -65,7 +65,6 @@ class IssuePOL(StockController):
                                 data = record[0]
                                 a.hiring_cost_center = data.cc
                                 a.hiring_branch =  data.br
-                                a.hiring_warehouse = frappe.db.get_value("Cost Center", data.cc, "warehouse")
                         else:
                                 a.hiring_cost_center = None
                                 a.hiring_branch =  None
@@ -76,9 +75,15 @@ class IssuePOL(StockController):
 			frappe.throw("Should have a POL Issue Details to Submit")
 		self.validate_data()
 		self.check_on_dry_hire()
+		self.check_dry_hire_wh()
 		self.check_tanker_hsd_balance()
 		self.update_stock_gl_ledger(1, 1)
 		self.make_pol_entry()
+
+	def check_dry_hire_wh(self):
+                for a in self.items:
+			if a.hiring_branch and not a.hiring_warehouse:
+				frappe.throw("Select hiring warehouse for row {0}".format(a.idx))
 
 	def update_stock_gl_ledger(self, post_gl=None, post_sl=None, map_rate=None):
 		sl_entries = []

@@ -145,6 +145,7 @@ class DeliveryNote(SellingController):
 			return
 
 		for d in self.get('items'):
+			self.validate_warehouse_branch(d.warehouse, self.branch)
 			e = [d.item_code, d.description, d.warehouse, d.against_sales_order or d.against_sales_invoice, d.batch_no or '']
 			f = [d.item_code, d.description, d.against_sales_order or d.against_sales_invoice]
 

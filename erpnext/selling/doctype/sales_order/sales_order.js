@@ -5,11 +5,11 @@
 
 frappe.ui.form.on("Sales Order", {
 	onload: function(frm) {
-		erpnext.queries.setup_queries(frm, "Warehouse", function() {
+		/*erpnext.queries.setup_queries(frm, "Warehouse", function() {
 			return erpnext.queries.warehouse(frm.doc);
 		});
 		
-		/*if(!frm.doc.selling_price_list) {
+		if(!frm.doc.selling_price_list) {
 			//set default price list
 			frm.set_value("selling_price_list", "Standard Selling")
 		}*/
@@ -376,6 +376,14 @@ cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = functi
         }
 }
 
+
+cur_frm.fields_dict['items'].grid.get_field('warehouse').get_query = function(frm, cdt, cdn) {
+	item = locals[cdt][cdn]
+	return {
+		"query": "erpnext.controllers.queries.filter_branch_wh",
+		filters: {'branch': frm.branch}
+	}
+}
 
 // on_selection of price_template, auto load the seling rate for items
 frappe.ui.form.on("Sales Order Item", {

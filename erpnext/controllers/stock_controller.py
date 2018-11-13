@@ -53,7 +53,7 @@ class StockController(AccountsController):
 
 						to_cc = detail.cost_center
                                                 if self.doctype == "Stock Entry" and self.purpose == "Material Transfer":
-                                                        to_branch = frappe.db.get_value("Warehouse", detail.t_warehouse, "branch")
+                                                        to_branch = frappe.db.get_value("Stock Entry", detail.parent, "branch")
                                                         to_cc = get_branch_cc(to_branch)
                                                 if self.doctype == "Stock Entry" and self.purpose == "Material Transfer" and sle.stock_value_difference > 0:
                                                         gl_list.append(self.get_gl_dict({
@@ -312,8 +312,11 @@ class StockController(AccountsController):
 			frappe.throw("Branch is Mandatory")
 		if not warehouse:
 			frappe.throw("Warehouse is Mandatory")
-		if branch != frappe.db.get_value("Warehouse", warehouse, "branch"):
-			frappe.throw("Warehouse <b>" + str(warehouse) + "</b> doesn't belong to <b>" + str(branch) + "</b>")
+		branches = frappe.db.sql("select parent from `tabWarehouse Branch` where branch = %s", branch, as_dict=1)
+		for a in branches:
+			if a.parent == warehouse:
+				return
+		frappe.throw("Warehouse <b>" + str(warehouse) + "</b> doesn't belong to <b>" + str(branch) + "</b>")
 
 def update_gl_entries_after(posting_date, posting_time, for_warehouses=None, for_items=None,
 		warehouse_account=None):

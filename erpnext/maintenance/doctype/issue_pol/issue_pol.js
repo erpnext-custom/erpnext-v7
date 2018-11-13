@@ -1,6 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
+cur_frm.add_fetch("equipment_branch", "cost_center", "equipment_cost_center")
 
 frappe.ui.form.on('Issue POL', {
 	onload: function(frm) {
@@ -42,19 +43,6 @@ frappe.ui.form.on('Issue POL', {
 		}*/
 	},
 
-	"branch": function(frm) {
-		return frappe.call({
-			method: "erpnext.custom_utils.get_cc_warehouse",
-			args: {
-				"branch": frm.doc.branch
-			},
-			callback: function(r) {
-				//cur_frm.set_value("cost_center", r.message.cc)
-				cur_frm.set_value("warehouse", r.message.wh)
-				cur_frm.refresh_fields()
-			}
-		})
-	}
 });
 
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
@@ -94,30 +82,45 @@ frappe.ui.form.on("Issue POL", "refresh", function(frm) {
                 }
 	}
 
-	    cur_frm.set_query("warehouse", function() {
+	cur_frm.set_query("warehouse", function() {
 		return {
-		    "filters": {
-			"branch": frm.doc.branch,
-			"disabled": 0
-		    }
-		};
+			query: "erpnext.controllers.queries.filter_branch_wh",
+			filters: {'branch': frm.doc.branch}
+		}
 	    });
+
+	frm.fields_dict['items'].grid.get_field('equipment_warehouse').get_query = function(doc, cdt, cdn) {
+		item = locals[cdt][cdn]
+		return {
+			"query": "erpnext.controllers.queries.filter_branch_wh",
+			filters: {'branch': item.equipment_branch}
+		}
+	}
+
+	frm.fields_dict['items'].grid.get_field('hiring_warehouse').get_query = function(doc, cdt, cdn) {
+		item = locals[cdt][cdn]
+		return {
+			"query": "erpnext.controllers.queries.filter_branch_wh",
+			filters: {'branch': item.hiring_branch}
+		}
+	}
+
 })
 
 frappe.ui.form.on("POL Issue Report Item", "equipment", function(doc, cdt, cdn) {
-	doc = locals[cdt][cdn]
-	if(doc.equipment_branch) {
+	item = locals[cdt][cdn]
+	if(item.equipment_branch) {
 		return frappe.call({
 			method: "erpnext.custom_utils.get_cc_warehouse",
 			args: {
-				"branch": doc.equipment_branch
+				"branch": item.equipment_branch
 			},
 			callback: function(r) {
 				frappe.model.set_value(cdt, cdn, "equipment_cost_center", r.message.cc)
-				frappe.model.set_value(cdt, cdn, "equipment_warehouse", r.message.wh)
 				cur_frm.refresh_fields()
 			}
 		})
 	}
 })
+
 

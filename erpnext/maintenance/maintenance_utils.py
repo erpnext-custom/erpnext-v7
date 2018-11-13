@@ -29,7 +29,7 @@ def check_hire_end():
 
 
 def get_without_fuel_hire(equipment, posting_date, posting_time):
-	records = frappe.db.sql("select a.customer_cost_center as cc, a.customer_branch as br from `tabHiring Approval Details` b, `tabEquipment Hiring Form` a where a.name = b.parent and a.private = 'CDCL' and b.equipment = %s and b.rate_type = 'Without Fuel' and %s between concat(b.from_date, ' ', b.from_time) and concat(b.to_date, ' ', b.to_time) and a.docstatus = 1", (equipment, str(posting_date) + " " + str(posting_time)), as_dict=True)
+	records = frappe.db.sql("select a.customer_cost_center as cc, a.customer_branch as br from `tabHiring Approval Details` b, `tabEquipment Hiring Form` a where a.name = b.parent and a.private = 'Own Company' and b.equipment = %s and b.rate_type = 'Without Fuel' and %s between concat(b.from_date, ' ', b.from_time) and concat(b.to_date, ' ', b.to_time) and a.docstatus = 1", (equipment, str(posting_date) + " " + str(posting_time)), as_dict=True)
 	return records 
 
 def get_equipment_ba(equipment):

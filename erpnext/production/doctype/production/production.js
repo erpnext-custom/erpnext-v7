@@ -57,12 +57,11 @@ frappe.ui.form.on('Production', {
 frappe.ui.form.on("Production", "refresh", function(frm) {
     cur_frm.set_query("warehouse", function() {
         return {
-            "filters": {
-                "branch": frm.doc.branch,
-		"disabled": 0
-            }
-        };
+                query: "erpnext.controllers.queries.filter_branch_wh",
+                filters: {'branch': frm.doc.branch}
+        }
     });
+
     cur_frm.set_query("location", function() {
         return {
             "filters": {

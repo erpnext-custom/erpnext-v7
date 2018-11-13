@@ -12,9 +12,9 @@ frappe.ui.form.on('Delivery Note', 'onload', function(frm) {
 			return (doc.docstatus==1 || doc.qty<=doc.actual_qty) ? "green" : "orange"
 		})
 
-	erpnext.queries.setup_queries(frm, "Warehouse", function() {
+	/*erpnext.queries.setup_queries(frm, "Warehouse", function() {
 		return erpnext.queries.warehouse(frm.doc);
-	});
+	}); */
 })
 
 erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend({
@@ -267,6 +267,14 @@ cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(
                 query: "erpnext.controllers.queries.filter_branch_cost_center",
                 filters: {'branch': frm.branch}
         }
+}
+
+cur_frm.fields_dict['items'].grid.get_field('warehouse').get_query = function(doc, cdt, cdn) {
+        item = locals[cdt][cdn]
+        return {
+                query: "erpnext.controllers.queries.filter_branch_wh",
+                filters: {'branch': doc.branch}
+        }       
 }
 
 cur_frm.fields_dict['items'].grid.get_field('location').get_query = function(frm, cdt, cdn) {

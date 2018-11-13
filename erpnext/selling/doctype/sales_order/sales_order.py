@@ -321,14 +321,15 @@ class SalesOrder(SellingController):
 	
 	def get_selling_rate(self):
 		for item in self.items:
+			item_sub_group = None
 			if not self.branch or not item.item_code or not self.transaction_date:
 				frappe.throw("Select Item Code or Branch or Posting Date")
 			rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}'""".format(item.price_template, item.item_code), as_dict =1)
 			if not rate:
-				species = frappe.db.get_value("Item", item.item_code, "species")
+				species,item_sub_group = frappe.db.get_value("Item", item.item_code, ["species","item_sub_group"])
 				if species:
 					timber_class, timber_type = frappe.db.get_value("Timber Species", species, ["timber_class", "timber_type"])
-					rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}'""".format(item.price_template, timber_class, timber_type), as_dict =1)
+					rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}'""".format(item.price_template, timber_class, timber_type,item_sub_group), as_dict =1)
 			rate = rate and rate[0].rate or 0.0		
 			if item.rate != rate:
 				frappe.throw("Selling Rate had changed since you last pulled. Please pull again")
