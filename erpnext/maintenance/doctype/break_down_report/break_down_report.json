@@ -812,8 +812,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-10-10 07:36:51.284803", 
- "modified_by": "thukten.dendup@bt.bt", 
+ "modified": "2018-11-14 11:31:00.134468", 
+ "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Break Down Report", 
  "name_case": "", 
@@ -823,7 +823,7 @@
    "amend": 0, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
-   "create": 0, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -836,9 +836,9 @@
    "role": "Workshop User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Branch\"]", 
-   "write": 0
+   "write": 1
   }, 
   {
    "amend": 0, 
@@ -947,7 +947,7 @@
    "amend": 0, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
-   "create": 0, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -960,9 +960,9 @@
    "role": "Workshop Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Branch\"]", 
-   "write": 0
+   "write": 1
   }
  ], 
  "quick_entry": 0, 

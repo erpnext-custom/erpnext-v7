@@ -4,6 +4,15 @@
 //cur_frm.add_fetch("cost_center", "branch", "branch")
 
 frappe.ui.form.on('Fund Requisition', {
+	setup: function(frm) {
+		frm.get_docfield("items").allow_bulk_edit = 1;		
+		frm.get_field('items').grid.editable_fields = [
+			{fieldname: 'accounts', columns: 4},
+			{fieldname: 'amount', columns: 2},
+			{fieldname: 'remarks', columns: 4},
+		];
+	},
+
 	onload: function(frm) {
 		frm.fields_dict['items'].grid.get_field('accounts').get_query = function(){
                         return{

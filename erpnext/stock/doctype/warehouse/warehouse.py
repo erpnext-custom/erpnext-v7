@@ -29,8 +29,12 @@ class Warehouse(NestedSet):
 	def validate(self):
 		if self.email_id:
 			validate_email_add(self.email_id, True)
-
+		
 		self.update_parent_account()
+
+	def validate_branch(self):
+		for a in frappe.db.sql("select branch, count(1) from `tabWarehouse Branch` where parent = %s group by branch having count(1) > 1", self.name, as_dict=1):
+			frappe.throw("{0} appears more than once".format(a.branch))
 
 	def update_parent_account(self):
 		if not getattr(self, "__islocal", None) \
@@ -49,6 +53,7 @@ class Warehouse(NestedSet):
 					acc_doc.save()
 
 	def on_update(self):
+		self.validate_branch()
 		self.create_account_head()
 		self.update_nsm_model()
 
@@ -281,7 +286,6 @@ def add_node():
 		name_field: frappe.form_dict['name_field'],
 		parent_field: parent,
 		"is_group": frappe.form_dict['is_group'],
-		"branch": frappe.form_dict['branch'],
 		"create_account_under": frappe.form_dict['create_account_under'],
 		"company": company
 	})
