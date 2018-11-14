@@ -135,7 +135,7 @@ frappe.ui.form.on("POL", "refresh", function(frm) {
   cur_frm.set_query("equipment_warehouse", function() {
         return {
                 query: "erpnext.controllers.queries.filter_branch_wh",
-                filters: {'branch': frm.doc.frm.doc.equipment_branch}
+                filters: {'branch': frm.doc.equipment_branch}
         }
     });
 

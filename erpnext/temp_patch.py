@@ -590,3 +590,10 @@ def cancel_asset():
 	     print i.name, 'Cancelled successfully...'
          except Exception, e:
              print i.name, 'Something went wrong'
+
+def test123():
+    li = frappe.db.get_values("Employee", {"employee_subgroup":"F16"}, ["employee_name","designation","date_of_joining"], as_dict=1)
+    print len(li),li
+    for i in li:
+    	print i
+

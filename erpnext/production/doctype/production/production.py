@@ -57,6 +57,8 @@ class Production(StockController):
 			if reading_required:
 				if not flt(min_val) <= flt(item.reading) <=  flt(max_val):
 					frappe.throw("<b>{0}</b> reading should be between {1} and {2} for {3} for Adhoc Production".format(par, frappe.bold(min_val), frappe.bold(max_val), frappe.bold(item.item_code)))
+			else:
+				item.reading = 0
 
 	def check_cop(self):
 		for a in self.items:

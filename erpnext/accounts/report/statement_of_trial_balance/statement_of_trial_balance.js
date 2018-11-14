@@ -75,6 +75,10 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 			"label": __("Expand All"),
 			"fieldtype": "Check",
 			"default": 0,
+			"on_change": function(report) {
+				console.log(this)
+				console.log(report)
+			}
 		},
 	],
 	"formatter": erpnext.financial_statements.formatter,
@@ -82,8 +86,5 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 	"name_field": "account",
 	"parent_field": "parent_account",
 	"initial_depth": 3,
-	"on_refresh": function(report) {
-		console.log(this.initial_depth)
-	}
    }
 });

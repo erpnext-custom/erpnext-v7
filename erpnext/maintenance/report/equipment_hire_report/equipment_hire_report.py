@@ -106,5 +106,5 @@ def get_data(filters):
 	if filters.get("customer"):
 		query += " and hci.customer = \'" + str(filters.customer) + "\'"
 	query += " group by hid.equipment, hci.ehf_name"
-	frappe.msgprint(query)
+	#frappe.msgprint(query)
 	return frappe.db.sql(query)
