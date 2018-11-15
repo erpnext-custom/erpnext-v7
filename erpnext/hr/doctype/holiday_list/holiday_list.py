@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 import json
-from frappe.utils import  cint, getdate, formatdate
+from frappe.utils import  cint, getdate, formatdate, nowdate
 from frappe import throw, _
 from frappe.model.document import Document
 
@@ -17,6 +17,19 @@ class HolidayList(Document):
 	def on_update(self):	
 		self.assign_branch()	
 
+        def show_branch_list(self):
+                msg = ""
+                for b in frappe.db.sql("select name from `tabBranch` where holiday_list is null and ifnull(is_disabled,0) = 0 order by name", as_dict=True):
+                        msg += "<tr><td>{0}</td></tr>".format(b.name)
+
+                if msg:
+                        msg = '<table><tr><th>Branch Name</th></tr>'+msg+'</table>'
+                        msg = "* Following list of branches not assigned with any holiday list</br></br>"+msg
+                else:
+                        msg = "All branches are assigned with holiday list"
+
+                frappe.msgprint(_("{0}").format(msg))
+                
 	def assign_branch(self):
 		if self.branches:
 			for branch in self.branches:
@@ -25,6 +38,15 @@ class HolidayList(Document):
 				doc.holiday_list = self.name
 				doc.save(ignore_permissions = True)
 
+                # Ver 3.0, Begins
+                # Following code added by SHIV on 2018/11/15 
+                for b in frappe.db.sql("select name from `tabBranch` where holiday_list='{0}'".format(self.name),as_dict=True):
+                        if not frappe.db.exists("Holiday List Branch", {"parent": self.name, "branch": b.name}):
+                                doc = frappe.get_doc("Branch", b.name)
+				doc.holiday_list = None
+				doc.save(ignore_permissions = True)
+                # Ver 3.0, Ends
+                
 	def get_weekly_off_dates(self):
 		self.validate_values()
 		date_list = self.get_weekly_off_date_list(self.from_date, self.to_date)
@@ -41,6 +63,9 @@ class HolidayList(Document):
 
 
 	def validate_days(self):
+                if not (getdate(self.from_date) <= getdate(nowdate()) <= getdate(self.to_date)):
+                        frappe.throw(_("Entries for past and future fiscal years not permitted."), title="Invalid Data")
+                        
 		if self.from_date > self.to_date:
 			throw(_("To Date cannot be before From Date"))
 

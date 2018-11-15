@@ -25,6 +25,9 @@ class RevenueTarget(Document):
                 tot_adjustment_amount = 0.0
                 
                 for item in self.revenue_target_account:
+			if item.cost_center != self.cost_center:
+				frappe.throw("Cost Center doesn't match on row {0}".format(item.idx))
+
                         if flt(item.target_amount) < 0.0:
                                 frappe.throw(_("Row#{0}: Target Amount cannot be a negative value.").format(item.idx), title="Invalid Value")
 
@@ -43,14 +46,18 @@ class RevenueTarget(Document):
                 self.tot_net_target_amount = flt(tot_target_amount) + flt(tot_adjustment_amount)
                 
 	def get_accounts(self):
+		if not self.cost_center:
+			frappe.throw("Select Cost Center first!")
                 query = "select name as account, account_code from tabAccount where account_type in (\'Income Account\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes')"
                 entries = frappe.db.sql(query, as_dict=True)
                 self.set('revenue_target_account', [])
 
                 for d in entries:
-                        d.initial_budget = 0
+			d.cost_center = self.cost_center
+                        d.target_amount = 0
                         row = self.append('revenue_target_account', {})
                         row.update(d)
+
 @frappe.whitelist()
 def make_adjustment_entry(source_name, target_doc=None):
         doc = get_mapped_doc("Revenue Target", source_name, {

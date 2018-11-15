@@ -109,7 +109,7 @@ frappe.ui.form.on("POL", "refresh", function(frm) {
 				"filters": {
 					"supplier": frm.doc.supplier,
 					"type": "Common",
-					"branch": frm.doc.branch
+					//"branch": frm.doc.branch
 					}
 				}
 		}

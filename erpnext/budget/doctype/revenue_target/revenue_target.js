@@ -8,12 +8,13 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
+cur_frm.add_fetch("branch", "cost_center", "cost_center")
+
 frappe.ui.form.on('Revenue Target', {
 	setup: function(frm){
 		frm.get_docfield("revenue_target_account").allow_bulk_edit = 1;
 		
 		frm.get_field("revenue_target_account").grid.editable_fields = [
-			{fieldname: 'cost_center', columns: 2},
 			{fieldname: 'account', columns: 2},
 			{fieldname: 'account_code', columns: 2},
 			{fieldname: 'target_amount', columns: 2},
@@ -69,8 +70,6 @@ frappe.ui.form.on('Revenue Target', {
 			callback: function(r, rt){
 				frm.refresh_field("revenue_target_account");
 				frm.refresh_fields();
-				cur_frm.set_value("cost_center", frm.doc.cost_center);
-
 			}
 		});
 	},

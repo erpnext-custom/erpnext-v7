@@ -59,11 +59,14 @@ class MarkingList(Document):
 				continue
 
 			#Change this to get from class
-			royalty_rates = frappe.db.sql("select log_rate, firewood_rate from `tabRoyal Rate` where %s between from_date and ifnull(to_date, now()) and parent = %s", (self.posting_date, d.timber_class), as_dict=1)
+			royalty_rates = frappe.db.sql("select log_rate, fw_soft_rate, fw_hard_rate from `tabRoyal Rate` where %s between from_date and ifnull(to_date, now()) and parent = %s", (self.posting_date, d.timber_class), as_dict=1)
 			if not royalty_rates:
 				frappe.throw("Royalty Rate not defined. Please define in Timber Class")
 			d.log_rate = flt(royalty_rates[0].log_rate)
-			d.firewood_rate = flt(royalty_rates[0].firewood_rate)
+			if d.timber_type == "Conifer":
+				d.firewood_rate = flt(royalty_rates[0].fw_soft_rate)
+			else:
+				d.firewood_rate = flt(royalty_rates[0].fw_hard_rate)
 
 			d.log_amount = d.qty_cft * d.log_rate * flt(d.log_percent)/100 
 			d.firewood_amount = d.qty_m3 * d.firewood_rate * flt(d.firewood_percent)/100 

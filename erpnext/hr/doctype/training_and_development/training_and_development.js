@@ -1,12 +1,13 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-
+/*
 cur_frm.add_fetch('employee_name','department','department');
 cur_frm.add_fetch('employee_name','division','division');
 cur_frm.add_fetch('employee_name','section','section');
 cur_frm.add_fetch('employee_name','employee_group','employee_group');
 cur_frm.add_fetch('employee_name','employee_subgroup','employee_subgroup');
 cur_frm.add_fetch('employee_name','designation','designation');
+*/
 
 frappe.ui.form.on("Training And Development", "end_date", function(frm) {
 	if (frm.doc.end_date < get_today()) {

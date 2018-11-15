@@ -46,8 +46,8 @@ class RoyaltyPayment(Document):
 				total_cft += d.qty_cft
 				log_amount += d.log_amount
 				timber_amount += d.firewood_amount 
-				total_log = d.qty_cft * d.log_percent / 100
-				total_timber = d.qty_m3 * d.firewood_percent / 100
+				total_log += d.qty_cft * d.log_percent / 100
+				total_timber += d.qty_m3 * d.firewood_percent / 100
 
 			self.set_total(total_royalty, total_m3, total_cft, log_amount, timber_amount, total_log, total_timber)
 		else:
