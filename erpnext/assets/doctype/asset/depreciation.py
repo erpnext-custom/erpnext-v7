@@ -78,7 +78,7 @@ def make_depreciation_entry(asset_name, date=None):
 			je.submit()
 
 			d.db_set("journal_entry", je.name)
-			value_after_dep = flt(asset.gross_purchase_amount) - flt(d.accumulated_depreciation_amount)
+			value_after_dep = flt(asset.gross_purchase_amount) - flt(d.accumulated_depreciation_amount) - flt(asset.residual_value)
 
 	asset.db_set("value_after_depreciation", value_after_dep)
 	asset.set_status()

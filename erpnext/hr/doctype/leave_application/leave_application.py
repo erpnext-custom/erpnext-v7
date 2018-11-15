@@ -19,7 +19,7 @@ from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
 from erpnext.hr.doctype.employee_leave_approver.employee_leave_approver import get_approver_list
 # Ver 1.0 Begins added by SSK on 20/08/2016, Following line is added
 #from datetime import date as mod_date
-from erpnext.hr.doctype.leave_encashment.leave_encashment import get_le_settings
+#from erpnext.hr.doctype.leave_encashment.leave_encashment import get_le_settings
 # Ver 1.0 Ends
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
 from datetime import timedelta, date
@@ -31,10 +31,18 @@ class LeaveApproverIdentityError(frappe.ValidationError): pass
 
 from frappe.model.document import Document
 class LeaveApplication(Document):
-	def get_feed(self):
-		return _("{0}: From {0} of type {1}").format(self.status, self.employee_name, self.leave_type)
+	
+	def get_status(self):
+		if self.workflow_state == "Rejected":
+			self.status = "Rejected"
+		if self.workflow_state == "Approved":
+			self.status= "Approved"	
 
+	"""def get_feed(self):
+		return _("{0}: From {0} of type {1}").format(self.status, self.employee_name, self.leave_type)
+        """
 	def validate(self):
+		self.get_status()
 		self.branch = frappe.db.get_value("Employee", self.employee, "branch")
 		self.cost_center = frappe.db.get_value("Employee", self.employee, "cost_center")
 		self.validate_dates_ta()
@@ -139,6 +147,7 @@ class LeaveApplication(Document):
 
 	def cancel_attendance(self):
 		frappe.db.sql("update tabAttendance set docstatus = 2 where reference_name = %s", (self.name))
+		frappe.db.commit()	
 	
 	def validate_dates(self):
 		if self.from_date and self.to_date and (getdate(self.to_date) < getdate(self.from_date)):
@@ -215,7 +224,7 @@ class LeaveApplication(Document):
 				self.from_date, self.to_date, self.half_day)
 
 			if self.total_leave_days and self.include_half_day:
-                                self.total_leave_days -= 0.5
+				self.total_leave_days -= 0.5
 
 			if self.total_leave_days == 0:
 				frappe.throw(_("The day(s) on which you are applying for leave are holidays. You need not apply for leave."))
@@ -428,6 +437,7 @@ def get_number_of_leave_days(employee, leave_type, from_date, to_date, half_day=
 		return 0.5
 
 	number_of_days = date_diff(to_date, from_date) + 1
+
 	if not frappe.db.get_value("Leave Type", leave_type, "include_holiday"):
 		number_of_days = flt(number_of_days) - flt(get_holidays(employee, from_date, to_date))
 
@@ -483,7 +493,8 @@ def get_leave_balance_on(employee, leave_type, ason_date, allocation_records=Non
                 balance      = flt(allocation.total_leaves_allocated) - flt(leaves_taken)
                 
                 if leave_type == 'Earned Leave':
-                        le = get_le_settings()
+                        #le = get_le_settings()         # Line commented by SHIV on 2018/10/12
+                        le = frappe.get_doc("Employee Group",frappe.db.get_value("Employee",employee,"employee_group")) # Line added by SHIV on 2018/10/12
                         if flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken)) > flt(le.encashment_lapse):
                                 balance = flt(le.encashment_lapse)
         else:

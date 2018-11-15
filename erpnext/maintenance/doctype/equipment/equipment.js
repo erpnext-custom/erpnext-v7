@@ -41,7 +41,7 @@ frappe.ui.form.on('Equipment', {
                 }
 		if(!frm.doc.__islocal && in_list(user_roles, "Asset Manager")) {
 			cur_frm.set_df_property("asset_code", "read_only", 0)
-                        cur_frm.set_df_property("fuelbook", "read_only", 1)
+                        cur_frm.set_df_property("fuelbook", "read_only", 0)
                         cur_frm.set_df_property("branch", "read_only", 1)
                         frm.set_df_property("is_disabled", "read_only", 0)
                         var df = frappe.meta.get_docfield("Equipment Operator", "operator", cur_frm.doc.name);

@@ -20,9 +20,9 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 			}
 		});
 		//cur_frm.set_value("date_of_transfer",frappe.datetime.nowdate());
-		//refresh_many(["date_of_transfer"]);	
+		//refresh_many(["date_of_transfer"]);
 		this.frm.set_indicator_formatter('full_name',
-			function(doc) { return doc.dead ? "red" : "green" })
+                        function(doc) { return doc.dead ? "red" : "green" })
 	},
 
 	refresh: function() {
@@ -33,10 +33,10 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 	date_of_birth: function() {
 		return cur_frm.call({
 			method: "get_retirement_date",
-			args: {date_of_birth: this.frm.doc.date_of_birth, employment_type: this.frm.doc.employment_type}
+			args: {date_of_birth: this.frm.doc.date_of_birth, employee_group: this.frm.doc.employee_group}
 		});
 	},
-
+	
 	salutation: function() {
 		if(this.frm.doc.salutation) {
 			this.frm.set_value("gender", {
@@ -53,17 +53,35 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 		});
 	},
 
-	/*employment_type: function() {
+	employment_type: function() {
+		/*
 		return cur_frm.call({
 			method: "get_retirement_date",
 			args: {date_of_birth: this.frm.doc.date_of_birth, employment_type: this.frm.doc.employment_type}
 		});
-	},*/
+		*/
+		this.frm.set_value('employee_group',"");
+		this.frm.set_query("employee_group", function(doc) {
+			return {
+				query:"erpnext.hr.doctype.employee.employee.get_employee_groups",
+				filters:{
+					employment_type: doc.employment_type
+				}
+			}
+		});
+	},
 
 	employee_group: function() {
+		this.frm.set_value('employee_subgroup',"");
+		cur_frm.fields_dict['employee_subgroup'].get_query = function(doc, dt, dn) {
+		   return {
+				   filters:{"employee_group": doc.employee_group}
+		   }
+		}
+		
 		return cur_frm.call({
 			method: "get_retirement_date",
-			args: {date_of_birth: this.frm.doc.date_of_birth, employment_type: this.frm.doc.employee_group}
+			args: {date_of_birth: this.frm.doc.date_of_birth, employee_group: this.frm.doc.employee_group}
 		});
 	},
 	
@@ -95,7 +113,7 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 			validate_prev_doc(this.frm,__("Please select date of effect for designation change"));		
 		}
 	},
-	*/
+	*/	
 });
 
 function validate_prev_doc(frm, title){
@@ -104,8 +122,6 @@ function validate_prev_doc(frm, title){
 				args: {doctype: frm.doctype, docname: frm.docname, col_list: "cost_center,branch"},
 				callback: function(r) {
 					if(frm.doc.cost_center && (frm.doc.cost_center !== r.message.cost_center)){
-						console.log(frm);
-						console.log(r);
 						var d = frappe.prompt({
 							fieldtype: "Date",
 							fieldname: "date_of_transfer",
@@ -135,6 +151,12 @@ cur_frm.cscript = new erpnext.hr.EmployeeController({frm: cur_frm});
 
 cur_frm.add_fetch("cost_center", "branch", "branch")
 
+cur_frm.fields_dict['designation'].get_query = function(doc, dt, dn) {
+   return {
+		   filters:{"employee_group": doc.employee_group}
+   }
+}
+
 cur_frm.fields_dict['division'].get_query = function(doc, dt, dn) {
        return {
                //filters:{"dpt_name": doc.department} // Ver20160703.1 commented by SSK
@@ -146,18 +168,6 @@ cur_frm.fields_dict['section'].get_query = function(doc, dt, dn) {
        return {
                //filters:{"d_name": doc.division} //Ver20160703.1 commented by SSK
                filters:{"d_name": doc.division, "dpt_name": doc.department} //Ver20160703.1 added by SSK
-       }
-}
-
-cur_frm.fields_dict['employee_subgroup'].get_query = function(doc, dt, dn) {
-       return {
-               filters:{"employee_group": doc.employee_group}
-       }
-}
-
-cur_frm.fields_dict['designation'].get_query = function(doc, dt, dn) {
-       return {
-               filters:{"employee_group": doc.employee_group}
        }
 }
 
@@ -181,3 +191,4 @@ cur_frm.fields_dict['village'].get_query = function(doc, dt, dn) {
                filters:{"gewog": doc.gewog}
        }
 }
+

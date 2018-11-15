@@ -16,7 +16,7 @@ from frappe.model.document import Document
 from erpnext.hr.utils import set_employee_name
 from erpnext.hr.doctype.leave_application.leave_application import get_approved_leaves_for_period
 # Ver 1.0 Begins added by SSK on 22/08/2016, Following line is added
-from erpnext.hr.doctype.leave_encashment.leave_encashment import get_le_settings
+#from erpnext.hr.doctype.leave_encashment.leave_encashment import get_le_settings
 # Ver 1.0 Ends
 from erpnext.custom_utils import round5
 
@@ -32,8 +32,8 @@ class LeaveAllocation(Document):
 		self.validate_new_leaves_allocated_value()
 		self.validate_allocation_overlap()
 		self.validate_back_dated_allocation()
-		self.validate_total_leaves_allocated()		
 		self.set_total_leaves_allocated()
+		self.validate_total_leaves_allocated()		
 		set_employee_name(self)
 
 	def on_update_after_submit(self):
@@ -61,7 +61,8 @@ class LeaveAllocation(Document):
 
 	def validate_allocation_overlap(self):
 		leave_allocation = frappe.db.sql("""
-			select name from `tabLeave Allocation`
+			select name, from_date, to_date
+			from `tabLeave Allocation`
 			where employee=%s and leave_type=%s and docstatus=1
 			and to_date >= %s and from_date <= %s""", 
 			(self.employee, self.leave_type, self.from_date, self.to_date))
@@ -91,22 +92,29 @@ class LeaveAllocation(Document):
 
 		# Ver 1.0 Begins added by SSK on 22/08/2016, following block is added
 		if self.leave_type == 'Earned Leave' :
-                        le = get_le_settings()
+                        #le = get_le_settings()                                                                                 # Line commented by SHIV on 2018/10/12
+                        le = frappe.get_doc("Employee Group",frappe.db.get_value("Employee",self.employee,"employee_group"))    # Line added by SHIV on 2018/10/12
                         if flt(self.total_leaves_allocated) > flt(le.encashment_lapse):
-                                frappe.msgprint(_("Earned Leave Balance {0}/{1} for Employee:{2} is lapsed.")\
+                                frappe.msgprint(_("Earned Leave Balance {0}/{1} for Employee: {2} is lapsed.")\
                                         .format((flt(self.total_leaves_allocated)-flt(le.encashment_lapse)),flt(self.total_leaves_allocated),self.employee))
                                 self.total_leaves_allocated = le.encashment_lapse
 		# Ver 1.0 Ends
 
-		
-		if not self.total_leaves_allocated:
+                # Following code commented by SHIV on 2018/10/15
+                """
+		if not flt(self.total_leaves_allocated):
 			frappe.throw(_("Total leaves allocated is mandatory"))
+		"""
 
 	def validate_total_leaves_allocated(self):
 		# Adding a day to include To Date in the difference
 		date_difference = date_diff(self.to_date, self.from_date) + 1
 		if flt(date_difference) < flt(self.new_leaves_allocated):
 			frappe.throw(_("Total allocated leaves are more than days in the period"), OverAllocationError)
+
+                # Following code added by SHIV on 2018/10/15
+		if not flt(self.total_leaves_allocated):
+			frappe.throw(_("Total leaves allocated is mandatory"))
 			
 	def validate_against_leave_applications(self):
 		leaves_taken = get_approved_leaves_for_period(self.employee, self.leave_type, 

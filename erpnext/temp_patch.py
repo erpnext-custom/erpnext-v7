@@ -4,7 +4,8 @@ from frappe.model.document import Document
 from frappe import msgprint
 from frappe.utils import flt, cint, now
 from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff, today, get_first_day, get_last_day
-from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+#from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 
 def adjust_leave_encashment():

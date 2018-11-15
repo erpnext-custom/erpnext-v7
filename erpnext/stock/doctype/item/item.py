@@ -797,6 +797,7 @@ def check_stock_uom_with_bin(item, stock_uom):
 
 @frappe.whitelist()
 def sync_item_code():
+	return
 	items = frappe.db.sql("select name, item_code from tabItem where name != item_code", as_dict=True)
 	for item in items:
 		#Purchase Cycle

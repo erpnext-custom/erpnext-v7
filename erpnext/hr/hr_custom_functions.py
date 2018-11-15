@@ -1,12 +1,140 @@
 # Copyright (c) 2016, Druk Holding & Investments Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
+'''
+---------------------------------------------------------------------------------------------------------------------------
+Version          Author            CreatedOn          ModifiedOn          Remarks
+------------ ---------------  ------------------ -------------------  -----------------------------------------------------
+2.0#CDCL#886      SSK	          06/09/2018                          Moved retirement_age, health_contribution, employee_pf,
+                                                                         employer_pf from "HR Settings" to "Employee Group"
+---------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
+
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, cint, getdate, date_diff
+from frappe.utils import flt, cint, getdate, date_diff, nowdate
 from frappe.utils.data import get_first_day, get_last_day, add_days
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
+import json
+import logging
+
+# ++++++++++++++++++++ VER#2.0#CDCL#886 BEGINS ++++++++++++++++++++
+# VER#2.0#CDCL#886: Following method introduced by SHIV on 02/10/2018
+def post_leave_credits(today=None):
+        """
+           :param today: First day of the month
+           :param employee: Employee id for individual allocation
+           
+           This method allocates leaves in bulk as per the leave credits defined in Employee Group master.
+           It is mainly used for allocating monthly and yearly leave credits automatically through hooks.py.
+           However, it can also be used for allocating manually if in case the automatic allocation failed
+           for some reason.
+
+           To run manually: Just pass the first day of the month to this method as argument. Following example
+                   allocates monthly credits for the period from '2019-01-01' till '2019-01-31', and yearly
+                   credits for the period from '2019-01-01' till '2019-12-31' as defined in Employee Group
+                   master for all the leave types except `Earned Leave`. Monthly credits for `Earned Leave`
+                   are allocated for the previous month i.e from '2018-12-01' till '2018-12-31'.
+
+                   Example:
+                        # Executing from console
+                        bench execute erpnext.hr.hr_custom_functions.post_leave_credits --args "'2019-01-01',"
+        """
+
+        # Logging
+        logging.basicConfig(format='%(asctime)s|%(name)s|%(levelname)s|%(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
+        logger = logging.getLogger(__name__)
+        
+        today      = getdate(today) if today else getdate(nowdate())
+        start_date = ''
+        end_date   = ''
+
+        first_day_of_month = 1 if today.day == 1 else 0
+        first_day_of_year  = 1 if today.day == 1 and today.month == 1 else 0
+                
+        if first_day_of_month or first_day_of_year:
+                elist = frappe.db.sql("""
+                        select
+                                t1.name, t1.employee_name, t1.date_of_joining,
+                                (
+                                case
+                                        when day(t1.date_of_joining) > 1 and day(t1.date_of_joining) <= 15
+                                        then timestampdiff(MONTH,t1.date_of_joining,'{0}')+1 
+                                        else timestampdiff(MONTH,t1.date_of_joining,'{0}')       
+                                end
+                                ) as no_of_months,
+                                t2.leave_type, t2.credits_per_month, t2.credits_per_year,
+                                t3.is_carry_forward
+                        from `tabEmployee` as t1, `tabEmployee Group Item` as t2, `tabLeave Type` as t3
+                        where t1.status = 'Active'
+                        and t1.date_of_joining <= '{0}'
+                        and t1.employee_group = t2.parent
+                        and (t2.credits_per_month > 0 or t2.credits_per_year > 0)
+                        and t3.name = t2.leave_type
+                        order by t1.name, t2.leave_type
+                """.format(str(today)), as_dict=1)
+
+                counter = 0
+                for e in elist:
+                        counter += 1
+                        leave_allocation = []
+                        credits_per_month = 0
+                        credits_per_year = 0
+                        
+                        if flt(e.no_of_months) <= 0:
+                                logger.error("{0}|{1}|{2}|{3}|{4}".format("NOT QUALIFIED",counter,e.name,e.employee_name,e.leave_type))
+                                continue
+
+                        # Monthly credits
+                        if first_day_of_month and flt(e.credits_per_month) > 0:
+                                # For Earned Leaved monthly credits are given for previous month
+                                if e.leave_type == "Earned Leave":
+                                        start_date = get_first_day(add_days(today, -20))
+                                        end_date   = get_last_day(start_date)
+                                else:
+                                        start_date = get_first_day(today)
+                                        end_date   = get_last_day(start_date)
+
+                                leave_allocation.append({
+                                        'from_date': str(start_date),
+                                        'to_date': str(end_date),
+                                        'new_leaves_allocated': flt(e.credits_per_month)
+                                })
+
+                        # Yearly credits
+                        if first_day_of_year and flt(e.credits_per_year) > 0:
+                                start_date = get_year_start_date(today)
+                                end_date   = get_year_end_date(start_date)
+
+                                leave_allocation.append({
+                                        'from_date': str(start_date),
+                                        'to_date': str(end_date),
+                                        'new_leaves_allocated': flt(e.credits_per_year)
+                                })
+
+                        for la in leave_allocation:
+                                if not frappe.db.exists("Leave Allocation", {"employee": e.name, "leave_type": e.leave_type, "from_date": la['from_date'], "to_date": la['to_date'], "docstatus": ("<",2)}):
+                                        try:
+                                                doc = frappe.new_doc("Leave Allocation")
+                                                doc.employee             = e.name
+                                                doc.employee_name        = e.employee_name
+                                                doc.leave_type           = e.leave_type
+                                                doc.from_date            = la['from_date']
+                                                doc.to_date              = la['to_date']
+                                                doc.carry_forward        = cint(e.is_carry_forward)
+                                                doc.new_leaves_allocated = flt(la['new_leaves_allocated'])
+                                                doc.submit()
+                                                logger.info("{0}|{1}|{2}|{3}|{4}|{5}".format("SUCCESS",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
+                                        except Exception as ex:
+                                                logger.exception("{0}|{1}|{2}|{3}|{4}|{5}".format("FAILED",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
+                                else:
+                                        logger.warning("{0}|{1}|{2}|{3}|{4}|{5}".format("ALREADY ALLOCATED",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
+        else:
+                logger.info("Date {0} is neither beginning of the month nor year".format(str(today)))
+                return 0
+        
+# +++++++++++++++++++++ VER#2.0#CDCL#886 ENDS +++++++++++++++++++++
 
 ##
 # Post casual leave on the first day of every month
@@ -92,10 +220,13 @@ def get_salary_tax(gross_amt):
                         tax_amount = 0
 
         return tax_amount
-		
+
+# ++++++++++++++++++++ VER#2.0#CDCL#886 BEGINS ++++++++++++++++++++
+# VER#2.0#CDCL#886: Following code is commented by SHIV on 06/09/2018
+'''		
 # Ver 1.0 added by SSK on 03/08/2016, Fetching PF component
 @frappe.whitelist()
-def get_company_pf(fiscal_year=None):
+def get_company_pf(fiscal_year=None, employee=None):
 	employee_pf = frappe.db.get_single_value("HR Settings", "employee_pf")
 	if not employee_pf:
 		frappe.throw("Setup Employee PF in HR Settings")
@@ -127,256 +258,30 @@ def get_employee_gis(employee):
                 return result[0][0]
         else:
                 return 0.0
+'''
 
+# VER#2.0#CDCL#886: Following code is added by SHIV on 06/09/2018
 @frappe.whitelist()
-def update_salary_structure(employee, new_basic, sal_struc_name=None, actual_basic=None):
-	#sal_struc_name = frappe.db.sql("""
-	#select name
-	#from `tabSalary Structure` st
-	#where st.employee = '%s'
-	#and is_active = 'Yes'
-	#and now() between ifnull(from_date,'0000-00-00') and ifnull(to_date,'2050-12-31')
-	#order by ifnull(from_date,'0000-00-00') desc 
-	#limit 1
-	#""" % (employee))	
-
-	sst = ""
-	if sal_struc_name and new_basic > 0:
-		#sst = frappe.get_doc("Salary Structure", sal_struc_name[0][0])
-		sst = frappe.get_doc("Salary Structure", sal_struc_name)
-		if sst:
-			gross_pay = 0.00
-			deductions = 0.00
-			comm_amt = 0.00
-
-			#Earnings
-			for e in sst.earnings:
-				per_or_lum = frappe.db.get_value("Salary Component", e.salary_component, "payment_method")
-				if e.salary_component == "Basic Pay":
-					e.db_set('amount',new_basic,update_modified=True)
-					gross_pay += new_basic
-				elif e.salary_component == 'Corporate Allowance':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.ca)*0.01)
-					else:
-						calc_amt = round(flt(sst.ca))
-
-					calc_amt = calc_amt if sst.eligible_for_corporate_allowance else 0
-					
-					e.db_set('amount',calc_amt,update_modified=True)
-					gross_pay += calc_amt					
-				elif e.salary_component == 'Contract Allowance':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.contract_allowance)*0.01)
-					else:
-						calc_amt = round(flt(sst.contract_allowance))
-
-					calc_amt = calc_amt if sst.eligible_for_contract_allowance else 0
-					
-					e.db_set('amount',calc_amt,update_modified=True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'Communication Allowance':
-					calc_amt = 0
-					comm_amt = round(flt(sst.communication_allowance))
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.communication_allowance)*0.01)
-					else:
-						calc_amt = round(flt(sst.communication_allowance))
-
-					calc_amt = calc_amt if sst.eligible_for_communication_allowance else 0
-					comm_amt = calc_amt
-					
-					e.db_set('amount',calc_amt,update_modified=True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'Underground Allowance':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.underground)*0.01)
-					else:
-						calc_amt = round(flt(sst.underground))
-
-					calc_amt = calc_amt if sst.eligible_for_underground else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'Shift Allowance':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.shift)*0.01)
-					else:
-						calc_amt = round(flt(sst.shift))
-
-					calc_amt = calc_amt if sst.eligible_for_shift else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'Difficult Area Allowance':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.difficulty)*0.01)
-					else:
-						calc_amt = round(flt(sst.difficulty))
-
-					calc_amt = calc_amt if sst.eligible_for_difficulty else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'High Altitude Allowance':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.high_altitude)*0.01)
-					else:
-						calc_amt = round(flt(sst.high_altitude))
-
-					calc_amt = calc_amt if sst.eligible_for_high_altitude else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'PDA':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.pda)*0.01)
-					else:
-						calc_amt = round(flt(sst.pda))
-
-					calc_amt = calc_amt if sst.eligible_for_pda else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'PSA':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.psa)*0.01)
-					else:
-						calc_amt = round(flt(sst.psa))
-
-					calc_amt = calc_amt if sst.eligible_for_psa else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'Deputation Allowance':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.deputation)*0.01)
-					else:
-						calc_amt = round(flt(sst.deputation))
-
-					calc_amt = calc_amt if sst.eligible_for_deputation else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'Scarcity Allowance':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.scarcity)*0.01)
-					else:
-						calc_amt = round(flt(sst.scarcity))
-
-					calc_amt = calc_amt if sst.eligible_for_scarcity else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'MPI':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.mpi)*0.01)
-					else:
-						calc_amt = round(flt(sst.mpi))
-
-					calc_amt = calc_amt if sst.eligible_for_mpi else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'Officiating Allowance':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.officiating_allowance)*0.01)
-					else:
-						calc_amt = round(flt(sst.officiating_allowance))
-
-					calc_amt = calc_amt if sst.eligible_for_officiating_allowance else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				elif e.salary_component == 'Temporary Transfer Allowance':
-					calc_amt = 0
-					if per_or_lum == "Percent": 
-						calc_amt = round(new_basic*flt(sst.temporary_transfer_allowance)*0.01)
-					else:
-						calc_amt = round(flt(sst.temporary_transfer_allowance))
-
-					calc_amt = calc_amt if sst.eligible_for_temporary_transfer_allowance else 0
-					
-					e.db_set('amount',calc_amt,update_modified = True)
-					gross_pay += calc_amt
-				else:
-					gross_pay += e.amount
-
-			employee_gis = frappe.db.sql("""select a.gis
-				from `tabEmployee Grade` a, `tabEmployee` b
-				where b.employee = %s
-				and b.employee_group = a.employee_group
-				and b.employee_subgroup = a.employee_subgroup
-				limit 1
-				""",sst.employee);
-			
-			# Deductions
-			calc_gis_amt    = 0
-			calc_pf_amt     = 0
-			calc_tds_amt    = 0
-			calc_health_amt = 0
-			
-			for d in sst.deductions:
-				if d.salary_component == 'Group Insurance Scheme':
-					calc_gis_amt = 0
-					calc_gis_amt = flt(employee_gis[0][0])
-					calc_gis_amt = calc_gis_amt if sst.eligible_for_gis else 0
-					d.db_set('amount',calc_gis_amt,update_modified = True)
-					deductions += calc_gis_amt
-				elif d.salary_component == 'PF':
-					percent = frappe.db.get_single_value("HR Settings", "employee_pf")
-					if not percent:
-						frappe.throw("Setup Employee PF in HR Settings")
-					calc_pf_amt = 0;
-					calc_pf_amt = round(new_basic * flt(percent) * 0.01);
-					calc_pf_amt = calc_pf_amt if sst.eligible_for_pf else 0
-					d.db_set('amount',calc_pf_amt,update_modified = True)
-					deductions += calc_pf_amt
-				elif d.salary_component == 'Salary Tax' or d.salary_component == 'Health Contribution':
-					calc_tds_amt = 0;
-				else:
-					deductions += d.amount
-
-
-			if gross_pay:
-				for d in sst.deductions:
-					if d.salary_component == 'Salary Tax':
-						calc_tds_amt = 0;
-						calc_tds_amt = get_salary_tax(gross_pay-calc_pf_amt-calc_gis_amt-(0.5 * comm_amt))
-						d.db_set('amount',calc_tds_amt,update_modified = True)
-						deductions += calc_tds_amt
-					
-					if d.salary_component == 'Health Contribution':
-						percent = frappe.db.get_single_value("HR Settings", "health_contribution")
-						if not percent:
-							frappe.throw("Setup Health Contribution Percent in HR Settings")
-						calc_health_amt = 0;
-						calc_health_amt = round(gross_pay * flt(percent) * 0.01);
-						calc_health_amt = calc_health_amt if sst.eligible_for_health_contribution else 0
-						d.db_set('amount',calc_health_amt,update_modified = True)
-						deductions += calc_health_amt
-
-			sst.db_set('total_earning',flt(gross_pay),update_modified = True)
-			sst.db_set('total_deduction',flt(deductions),update_modified = True)
-			sst.db_set('net_pay',flt(flt(gross_pay)-flt(deductions)),update_modified = True)
-			if actual_basic:
-				sst.actual_basic = actual_basic
-
-			sst.save()
-			return sst
-
+def get_payroll_settings(employee=None):
+        settings = {}
+        if employee:
+                settings = frappe.db.sql("""
+                        select
+                                e.employee_group,
+                                e.employee_subgroup,
+                                d.gis,
+                                g.health_contribution,
+                                g.employee_pf,
+                                g.employer_pf
+                        from `tabEmployee` e, `tabEmployee Group` g, `tabEmployee Grade` d
+                        where e.name = '{0}'
+                        and g.name = e.employee_group
+                        and d.employee_group = g.name
+                        and d.name = e.employee_subgroup
+                """.format(employee), as_dict=True);
+        settings = settings[0] if settings else settings
+        return settings
+# +++++++++++++++++++++ VER#2.0#CDCL#886 ENDS +++++++++++++++++++++
 
 @frappe.whitelist()
 def get_month_details(year, month):
@@ -398,4 +303,3 @@ def get_month_details(year, month):
 		})
 	else:
 		frappe.throw(_("Fiscal Year {0} not found").format(year))
-		

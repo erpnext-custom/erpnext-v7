@@ -257,7 +257,6 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
                         where e.equipment_type = %(equipment_type)s
                         and e.branch = %(branch)s
                         and e.is_disabled != 1
-                        and e.not_cdcl = 0
                         and (
                                 {key} like %(txt)s
                                 or

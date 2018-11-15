@@ -7,12 +7,10 @@ import frappe
 from frappe.utils import flt
 from frappe.model.document import Document
 from erpnext.hr.doctype.leave_application.leave_application import get_leave_balance_on
-from erpnext.hr.doctype.leave_encashment.leave_encashment import get_le_settings
-from erpnext.custom_utils import check_future_date
+#from erpnext.hr.doctype.leave_encashment.leave_encashment import get_le_settings
 
 class LeaveAdjustment(Document):
 	def validate(self):
-		check_future_date(self.adjustment_date)
 		self.validate_leave_balance()
 
 	def check_mandatory(self):
@@ -35,11 +33,12 @@ class LeaveAdjustment(Document):
 		self.adjust_leave(1)
 
 	def adjust_leave(self, cancel=0):
-		le = get_le_settings()
+		#le = get_le_settings()                         #Commented by SHIV on 2018/10/16
 		for a in self.items:
 			if flt(a.difference) == 0:
 				pass
 			else:
+                                le = frappe.get_doc("Employee Group",frappe.db.get_value("Employee",a.employee,"employee_group")) # Line added by SHIV on 2018/10/16
 				las = frappe.db.sql("select name from `tabLeave Allocation` where employee = %s and leave_type = %s and to_date >= %s", (a.employee, self.leave_type, self.adjustment_date), as_dict=True)
 				for l in las:
 					doc = frappe.get_doc("Leave Allocation", l.name)

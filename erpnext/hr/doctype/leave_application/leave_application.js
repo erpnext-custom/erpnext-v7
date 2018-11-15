@@ -26,7 +26,7 @@ frappe.ui.form.on("Leave Application", {
         }		
 	},
 
-	refresh: function(frm) {
+	/*refresh: function(frm) {
 		if (frm.is_new()) {
 			frm.set_value("status", "Open");
 			frm.trigger("calculate_total_days");
@@ -43,7 +43,7 @@ frappe.ui.form.on("Leave Application", {
 		else{
 			frm.toggle_display("status", false);
 		}
-	},
+	},*/
 
 	leave_approver: function(frm) {
 		if(frm.doc.leave_approver){
@@ -208,4 +208,98 @@ frappe.ui.form.on("Leave Application", "onload", function(frm) {
              }
           });
     }
+});
+
+function toggle_form_fields(frm, fields, flag){
+        fields.forEach(function(field_name){
+                frm.set_df_property(field_name, "read_only", flag);
+        });
+
+        if(flag){
+                frm.disable_save();
+        } else {
+                frm.enable_save();
+        }
+}
+
+function enable_disable(frm){
+        var toggle_fields = [];
+        var meta = frappe.get_meta(frm.doctype);
+
+        for(var i=0; i<meta.fields.length; i++){
+                if(meta.fields[i].hidden === 0 && meta.fields[i].read_only === 0 && meta.fields[i].allow_on_submit === 0){
+                        toggle_fields.push(meta.fields[i].fieldname);
+                }
+        }
+       
+        toggle_form_fields(frm, toggle_fields, 1);
+
+        if(frm.doc.__islocal){
+                toggle_form_fields(frm, toggle_fields, 0);
+        }
+        else {
+            if(in_list(user_roles, "Employee") && (frm.doc.workflow_state.indexOf("Draft") >= 0 || frm.doc.workflow_state.indexOf("Rejected") >= 0)) {                         if (frappe.session.user == frm.doc.owner){
+                                           	toggle_form_fields(frm, toggle_fields, 0);
+                         	                    }                                                                     	                                    }
+                                                               	                                                    
+                                                            	                                                                    
+           
+                                                                 	                                                                                    // Request Approver
+                                                                   	                                                                                                    if(in_list(user_roles, "Approver") && frm.doc.workflow_state.indexOf("Waiting Approval") >= 0){
+                                                                  	                                                                                                                        if (frappe.session.user != frm.doc.owner){
+                                                                   	                                                                                                                                            	toggle_form_fields(frm, toggle_fields, 0);
+                                                                   	                                                                                                          }
+                                                                      	                                                                                            }
+                  }
+	}
+
+frappe.ui.form.on("Leave Application", "after_save", function(frm, cdt, cdn){
+        if(in_list(user_roles, "Approver")){
+                if (frm.doc.workflow_state && frm.doc.workflow_state.indexOf("Rejected") >= 0){
+                        frappe.prompt([
+                                {
+                                        fieldtype: 'Small Text',
+                                        reqd: true,
+                                        fieldname: 'reason'
+                                }],
+                                function(args){
+                                        validated = true;
+                                        frappe.call({
+                                                method: 'frappe.core.doctype.communication.email.make',
+                                                args: {
+                                                        doctype: frm.doctype,
+                                                        name: frm.docname,
+                                                        subject: format(__('Reason for {0}'), [frm.doc.workflow_state]),
+                                                        content: args.reason,
+                                                        send_mail: false,
+                                                        send_me_a_copy: false,
+                                                        communication_medium: 'Other',
+                                                        sent_or_received: 'Sent'
+                                                },
+                                                callback: function(res){
+                                                        if (res && !res.exc){
+                                                                frappe.call({
+                                                                        method: 'frappe.client.set_value',
+                                                                        args: {
+                                                                                doctype: frm.doctype,
+                                                                                name: frm.docname,
+                                                                                fieldname: 'reason',
+                                                                                value: frm.doc.reason ?
+                                                                                        [frm.doc.reason, '['+String(frappe.session.user)+' '+String(frappe.datetime.nowdate())+']'+' : '+String(args.reason)].join('\n') : frm.doc.workflow_state
+                                                                        },
+                                                                        callback: function(res){
+                                                                                if (res && !res.exc){
+                                                                                        frm.reload_doc();
+                                                                                }
+                                                                        }
+                                                                });
+}
+                                                }
+                                        });
+                                },
+                                __('Reason for ') + __(frm.doc.workflow_state),
+                                __('Save')
+                        )
+                }
+        }
 });

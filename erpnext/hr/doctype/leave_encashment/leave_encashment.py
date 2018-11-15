@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.utils import cint, cstr, date_diff, flt, formatdate, getdate, get_link_to_form, \
-	comma_or, get_fullname, nowdate, money_in_words
+	comma_or, get_fullname, nowdate, money_in_words, today
 from frappe import msgprint, _
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
@@ -13,6 +13,7 @@ from datetime import *
 from erpnext.hr.doctype.salary_structure.salary_structure import get_salary_tax
 from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_bank_cash_account
 #from dateutil.relativedelta import *
+from erpnext.hr.doctype.leave_application.leave_application import get_leave_balance_on
 
 class OverlapError(frappe.ValidationError): pass
 class InsufficientError(frappe.ValidationError): pass
@@ -28,9 +29,10 @@ class LeaveEncashment(Document):
                 self.name = make_autoname(self.employee+"/LE/"+monthyear+"/.#####")
         
         def validate(self):
-		self.branch = frappe.db.get_value("Employee", self.employee, "branch")
+		#self.branch = frappe.db.get_value("Employee", self.employee, "branch")         #Commented by SHIV on 2018/10/15
                 self.validate_leave_application()
-                self.validate_balances()
+                self.get_leave_balance()                                                        #Added by SHIV on 2018/10/15
+                self.validate_balances()                                                        #Commented by SHIV on 2018/10/12
                 
         def on_submit(self):
 		self.adjust_leave()
@@ -93,16 +95,16 @@ class LeaveEncashment(Document):
 
         def validate_balances(self):
                 msg = ''
-                le = get_le_settings()
-               
-                if flt(self.balance_before if self.balance_before else 0) < flt(le.encashment_min if le.encashment_min else 0):
+                #le = get_le_settings()                                                                         # Line commented by SHIV on 2018/10/15
+                le = frappe.get_doc("Employee Group",frappe.db.get_value("Employee",self.employee,"employee_group")) # Line added by SHIV on 2018/10/15
+                if flt(self.balance_before) < flt(le.encashment_min):
                         msg = "Minimum leave balance {0} required to encash.".format(le.encashment_min)
-                elif flt(self.balance_after if self.balance_after else 0.00) < 0.00:
-                        msg = "Insufficient Leave Balance"
+
+                if flt(self.balance_after) < 0:
+                        msg = "Insufficient leave balance"
 
                 if msg:
-                      #frappe.throw(_("{0}").format(msg), InsufficientError)
-                      frappe.throw(_("{0}").format(msg))  
+                      frappe.throw(_("{0}").format(msg), InsufficientError)
 
         def get_current_year_dates(self):
                 from_date = date(date.today().year,1,1).strftime('%Y-%m-%d')
@@ -124,6 +126,33 @@ class LeaveEncashment(Document):
                         frappe.throw(_("No Active Salary Structure found for the employee."))
                         
                 return salary_struc_list[0][0]
+
+        # Following method created by SHIV on 2018/10/12
+        def update_employee_details(self):
+                self.encashed_days      = 0
+                self.balance_before     = 0
+                self.balance_after      = 0
+
+                if self.employee:                
+                        doc = frappe.get_doc("Employee", self.employee)
+                        self.employee_name      = doc.employee_name
+                        self.employment_type    = doc.employment_type
+                        self.employee_group     = doc.employee_group
+                        self.employee_subgroup  = doc.employee_subgroup
+                        self.branch             = doc.branch
+                        self.cost_center        = doc.cost_center
+                        self.department         = doc.department
+                        self.division           = doc.division
+                        self.section            = doc.section
+                                
+        # Following method created by SHIV on 2018/10/12
+        def get_leave_balance(self):
+                self.update_employee_details()
+                if self.employee:
+                        group_doc = frappe.get_doc("Employee Group", self.employee_group)
+                        self.encashed_days  = group_doc.encashment_days
+                        self.balance_before = get_leave_balance_on(self.employee, self.leave_type, today())
+                        self.balance_after  = flt(self.balance_before) - flt(self.encashed_days)
         
         def post_accounts_entry(self):
                 employee = frappe.get_doc("Employee", self.employee)
@@ -200,7 +229,9 @@ class LeaveEncashment(Document):
 		self.db_set("encash_journal", je.name)
 		self.db_set("encashment_amount", flt(basic_pay))
 		self.db_set("tax_amount", flt(salary_tax))
-                
+
+# Following code commented by SHIV on 2018/10/12
+'''
 @frappe.whitelist()
 def get_employee_cost_center(emp):
         cost_center = frappe.db.get_value("Employee", emp, "cost_center")
@@ -214,3 +245,5 @@ def get_le_settings(*arg, **kwargs):
                         fieldname = ["encashment_days","encashment_min","encashment_lapse"], as_dict = True)
         
         return le
+
+'''

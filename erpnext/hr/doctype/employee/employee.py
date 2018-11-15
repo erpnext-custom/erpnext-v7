@@ -4,7 +4,13 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-2.0		  SSK		                   04/10/2017         Auto populating internal_work_history 
+2.0		  SHIV		                   04/10/2017         Auto populating internal_work_history
+2.0               SHIV                             15/08/2018         Auto populating employee_family_details
+2.0               SHIV                             03/09/2018         Following changes made
+                                                                        1) retirement_age moved from "HR Settings" to
+                                                                                "Employee Group" master.
+                                                                        2) health_contribution, employee_pf, employer_pf
+                                                                                moved from "HR Settings" to "Employment Group"
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -27,6 +33,28 @@ class EmployeeUserDisabledError(frappe.ValidationError):
 
 
 class Employee(Document):
+        def autoname(self):
+		naming_method = frappe.db.get_value("HR Settings", None, "emp_created_by")
+		if not naming_method:
+			throw(_("Please setup Employee Naming System in Human Resource > HR Settings"))
+		else:
+			if naming_method == 'Naming Series':
+				if not self.date_of_joining:
+					frappe.throw("Date of Joining not Set!")
+				abbr = frappe.db.get_value("Company", self.company, "abbr")
+				naming_series = str(abbr) + "." + str(getdate(self.date_of_joining).year)[2:4]	
+				x = make_autoname(str(naming_series) + '.###')
+				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
+				start_id = cint(len(str(abbr))) + 2
+				eid = x[:start_id] + y[:2] + x[start_id:start_id + 3]
+				self.name = eid
+				self.yearid = x
+			elif naming_method == 'Employee Number':
+				self.name = self.employee_number
+
+		self.employee = self.name
+		
+        """
 	def autoname(self):
 		naming_method = frappe.db.get_value("HR Settings", None, "emp_created_by")
 		if not naming_method:
@@ -45,7 +73,8 @@ class Employee(Document):
 				self.name = self.employee_number
 
 		self.employee = self.name
-
+        """
+        
 	def validate(self):
 		from erpnext.controllers.status_updater import validate_status
 		validate_status(self.status, ["Active", "Left"])
@@ -61,6 +90,8 @@ class Employee(Document):
 		self.validate_date()
 		self.validate_email()
 		self.validate_status()
+		# Following method introduced by SHIV on 04/10/2018
+		self.validate_employment()
 		self.validate_employee_leave_approver()
 		self.validate_reports_to()
 	
@@ -75,8 +106,10 @@ class Employee(Document):
 				frappe.permissions.remove_user_permission(
 					"Employee", self.name, existing_user_id)
 
-		# Following method introducted by SHIV on 04/10/2017
+		# Following method introduced by SHIV on 04/10/2017
 		self.populate_work_history()
+		# Following method introduced by SHIV on 15/08/2018
+		self.populate_family_details()
     
 	def before_save(self):
 		if self.branch != self.get_db_value("branch") and  self.user_id:
@@ -88,6 +121,13 @@ class Employee(Document):
 			self.update_user_permissions()
 		self.post_casual_leave()
 
+        def validate_employment(self):
+                if not frappe.db.exists("Employment Type Item", {"parent": self.employment_type,"employee_group": self.employee_group}):
+                        frappe.throw(_("Employee group `<b>{0}</b>` does not fall under employment type `<b>{1}</b>`").format(self.employee_group, self.employment_type),title="Invalid Data")
+                        
+                if not frappe.db.exists("Employee Grade", {"name": self.employee_subgroup,"employee_group": self.employee_group}):
+                        frappe.throw(_("Employee grade `<b>{0}</b>` does not fall under employee group `<b>{1}</b>`").format(self.employee_subgroup, self.employee_group),title="Invalid Data")
+        
         # Following method introducted by SHIV on 04/10/2017
         def populate_work_history(self):
                 if not self.internal_work_history:
@@ -156,7 +196,28 @@ class Employee(Document):
                                                         "modified_by": frappe.session.user,
                                                         "modified": nowdate()
                                 })
-        
+
+        def populate_family_details(self):
+                exists = sum(1 if i.relationship == "Self" else 0 for i in self.employee_family_details)
+                #if not self.employee_family_details or not frappe.db.exists("Employee Family Details", {"parent": self.name, "relationship": "Self"}):
+                if not exists:
+                        self.append("employee_family_details",{
+                                                "relationship": "Self",
+                                                "full_name": self.employee_name,
+                                                "gender": self.gender,
+                                                "date_of_birth": self.date_of_birth,
+                                                "cid_no": self.passport_number,
+                                                "district_name": self.dzongkhag,
+                                                "city_name": self.gewog,
+                                                "village_name": self.village,
+                                                "owner": frappe.session.user,
+                                                "creation": nowdate(),
+                                                "modified_by": frappe.session.user,
+                                                "modified": nowdate()
+                        })
+                else:
+                        pass
+                
 	def update_user_permissions(self):
 		if self.branch != self.get_db_value("branch") and  self.user_id:
 			frappe.permissions.remove_user_permission("Branch", self.get_db_value("branch"), self.user_id)           
@@ -284,6 +345,39 @@ class Employee(Document):
 		delete_events(self.doctype, self.name)
 
 	def post_casual_leave(self):
+                if not cint(self.casual_leave_allocated):
+                        credits_per_year = frappe.db.get_value("Employee Group Item", {"parent": self.employee_group, "leave_type": 'Casual Leave'}, "credits_per_year")
+
+                        if flt(credits_per_year):
+                                from_date = getdate(self.date_of_joining)
+                                to_date = get_year_end_date(from_date);
+
+                                no_of_months = frappe.db.sql("""
+                                        select (
+                                                case
+                                                        when day('{0}') > 1 and day('{0}') <= 15
+                                                        then timestampdiff(MONTH,'{0}','{1}')+1 
+                                                        else timestampdiff(MONTH,'{0}','{1}')       
+                                                end
+                                                ) as no_of_months
+                                """.format(str(self.date_of_joining),str(add_days(to_date,1))))[0][0]
+
+                                new_leaves_allocated = round5((flt(no_of_months)/12)*flt(credits_per_year))
+                                new_leaves_allocated = new_leaves_allocated if new_leaves_allocated <= flt(credits_per_year) else flt(credits_per_year)
+
+                                if flt(new_leaves_allocated):
+                                        la = frappe.new_doc("Leave Allocation")
+                                        la.employee = self.employee
+                                        la.employee_name = self.employee_name
+                                        la.leave_type = "Casual Leave"
+                                        la.from_date = str(from_date)
+                                        la.to_date = str(to_date)
+                                        la.carry_forward = cint(0)
+                                        la.new_leaves_allocated = flt(new_leaves_allocated)
+                                        la.submit()
+                                        self.db_set("casual_leave_allocated", 1)
+			                
+                '''
 		if not self.casual_leave_allocated:
 			date = getdate(self.date_of_joining)
 			start = date;
@@ -307,7 +401,8 @@ class Employee(Document):
 			if flt(leave_amount) > 0:
 				la.submit()
 			self.db_set("casual_leave_allocated", 1)
-
+                '''
+                
 def get_timeline_data(doctype, name):
 	'''Return timeline for attendance'''
 	return dict(frappe.db.sql('''select unix_timestamp(att_date), count(*)
@@ -317,15 +412,23 @@ def get_timeline_data(doctype, name):
 			group by att_date''', name))
 
 @frappe.whitelist()
-def get_retirement_date(date_of_birth=None, employment_type=None):
+def get_retirement_date(date_of_birth=None, employee_group=None):
 	import datetime
 	ret = {}
-	if date_of_birth and employment_type:
+	if date_of_birth and employee_group:
 		try:
+                        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                        # Following code commented by SHIV on 2018/09/05
+                        '''
 			if employment_type in ['Executive','Chief Executive Officer']:
 				retirement_age = int(frappe.db.get_single_value("HR Settings", "contract_retirement_age") or 60)
 			else:
 				retirement_age = int(frappe.db.get_single_value("HR Settings", "retirement_age") or 58)
+			'''
+                        # Following code added by SHIV on 2018/09/05
+                        retirement_age = int(frappe.db.get_value("Employee Group", employee_group, "retirement_age"))
+                        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+                        
 			dt = add_years(getdate(date_of_birth),retirement_age)
 			ret = {'date_of_retirement': dt.strftime('%Y-%m-%d')}
 		except ValueError:
@@ -410,3 +513,9 @@ def get_holiday_list_for_employee(employee, raise_exception=True):
 		frappe.throw(_('Please set a default Holiday List for Branch {0} or Company {1}').format(branch, company))
 
 	return holiday_list
+
+def get_employee_groups(doctype, txt, searchfield, start, page_len, filters):
+        return frappe.db.sql("""select employee_group
+                from `tabEmployment Type Item`
+                where parent = '{0}'
+                """.format(filters.get("employment_type")))

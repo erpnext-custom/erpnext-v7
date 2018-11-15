@@ -4,13 +4,19 @@ from frappe.model.document import Document
 from frappe import msgprint
 from frappe.utils import flt, cint, now, nowdate, getdate, get_datetime
 from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, add_years
-from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+#from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
+from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 from erpnext.accounts.utils import make_asset_transfer_gl
 
 def test():
 	print("IN TEST")
+
+def restore_jc():
+	for a in frappe.db.sql("select a.name, b.stock_entry from `tabJob Card` a, `tabJob Card Item` b where a.name = b.parent and a.docstatus = 1 and b.stock_entry is not null group by b.stock_entry", as_dict=1):
+		print(str(a.name) + " ==> " + str(a.stock_entry))
+		frappe.db.sql("update `tabStock Entry` set job_card = %s where name = %s", (a.name, a.stock_entry))
 
 """def repost_stock_gl():
 	sr = frappe.db.sql("select a.name from `tabStock Reconciliation` a, `tabStock Reconciliation Item` b where a.name = b.parent and b.item_code = '100452' and a.docstatus = 1", as_dict=1)
@@ -32,4 +38,19 @@ def link_pol_je():
 		frappe.db.sql("update tabPOL set jv = %s where name = %s", (d.parent, d.reference_name))
 		print(str(d.reference_name) + " ==> " + str(d.parent))
 """
+
+
+def update_sst_payment_methods():
+        counter = 0
+        for i in frappe.db.sql("select * from `tabSalary Component` where field_value is not null", as_dict=True):
+                counter += 1
+                print counter, i.name
+                frappe.db.sql("""
+                        update `tabSalary Structure`
+                        set {0} = '{1}'
+                """.format(i.field_method, i.payment_method))
+
+        frappe.db.sql("update `tabSalary Structure` set temporary_transfer_allowance_method = 'Percent' where ifnull(temporary_transfer_allowance,0) > 0 and ifnull(lumpsum_temp_transfer_amount,0) = 0")
+        frappe.db.sql("update `tabSalary Structure` set temporary_transfer_allowance_method = 'Lumpsum' where ifnull(temporary_transfer_allowance,0) = 0 and ifnull(lumpsum_temp_transfer_amount,0) > 0;");
+        print 'Done updating.....'
 
