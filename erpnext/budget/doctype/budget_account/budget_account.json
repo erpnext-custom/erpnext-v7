@@ -110,7 +110,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "default": "Stop", 
@@ -394,7 +394,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2018-10-10 13:11:24.540117", 
+ "modified": "2018-11-15 12:56:28.118898", 
  "modified_by": "Administrator", 
  "module": "Budget", 
  "name": "Budget Account", 
