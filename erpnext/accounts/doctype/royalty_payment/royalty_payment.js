@@ -2,6 +2,7 @@
 // For license information, please see license.txt
 
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
+cur_frm.add_fetch("marking_list", "cable_line", "cable_line")
 
 frappe.ui.form.on('Royalty Payment', {
 	onload: function(frm) {
@@ -39,6 +40,7 @@ frappe.ui.form.on("Royalty Payment", "refresh", function(frm) {
 		"docstatus": 1
             }
         };
+	
     });
 
     cur_frm.set_query("location", function() {
