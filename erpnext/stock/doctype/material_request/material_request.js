@@ -45,9 +45,12 @@ frappe.ui.form.on('Material Request', {
 		}
 	}, */
 	onload: function(frm) {
-		if(!frm.doc.creation_date) {
+		/*
+		if(frm.doc.__islocal) {
 			frm.set_value("creation_date", get_today())
 		}
+		*/
+		
 		// formatter for material request item
 		frm.set_indicator_formatter('item_code',
 			function(doc) { return (doc.qty<=doc.ordered_qty) ? "green" : "orange" })
@@ -401,6 +404,7 @@ cur_frm.cscript.onload = function(frm){
 }
 */
 
+
 frappe.ui.form.on("Material Request", "after_save", function(frm, cdt, cdn){
 	if(in_list(user_roles, "MR Manager") || in_list(user_roles, "MR GM") || in_list(user_roles, "MR CEO")){
 		if (frm.doc.workflow_state && frm.doc.workflow_state.indexOf("Rejected") >= 0){
@@ -450,4 +454,11 @@ frappe.ui.form.on("Material Request", "after_save", function(frm, cdt, cdn){
 			)
 		}
 	}
+	
+	/*
+	delete locals[frm.doctype][frm.name];
+	frm.reload_doc();
+	//refresh_field("workflow_state");
+	*/
+	
 });

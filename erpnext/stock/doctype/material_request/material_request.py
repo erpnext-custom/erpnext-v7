@@ -92,7 +92,7 @@ class MaterialRequest(BuyingController):
                 '''
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
                 
-                self.docstatus = 2 if self.workflow_state == "Rejected" else self.docstatus
+                #self.docstatus = 2 if self.workflow_state == "Rejected" else self.docstatus    #temporary SHIV 2018/11/16
                 
 		from erpnext.controllers.status_updater import validate_status
 		validate_status(self.status, ["Draft", "Submitted", "Stopped", "Cancelled"])
@@ -113,11 +113,31 @@ class MaterialRequest(BuyingController):
 			else:
 				self.approver = app
                 '''
-
+                self.validate_item_groups()
+                self.update_approver()
 		# self.validate_qty_against_so()
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated
 		# Though the creation of Material Request from a Production Plan can be rethought to fix this
 
+        def validate_item_groups(self):
+                pass
+                
+        def update_approver(self):
+                # Populating approver
+                app_li = frappe.db.sql("""
+                        select distinct approver
+                        from `tabDocument Approver Item`
+                        where workflow_state = '{0}'
+                        and item_group in ({1})
+                """.format(self.workflow_state, "'"+str("','".join([i.item_group for i in self.get("items")]))+"'"))
+                self.approver = app_li[0][0] if app_li else None
+
+                frappe.msgprint(str(self.get_db_value("workflow_state")))
+                frappe.msgprint(str(self.workflow_state))
+                
+                if len(app_li) > 1:
+                        frappe.throw(_("Multiple approvers found for the item groups"), title="Invalid Data")
+                
 	def set_title(self):
 	#	'''Set title as comma separated list of items'''
 		items = []
@@ -148,6 +168,9 @@ class MaterialRequest(BuyingController):
         # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
 	def on_submit(self):
+                if self.approver and self.approver != frappe.session.user:
+                        frappe.throw(_("Only the approver <b>{0}</b> can approve this document").format(), title="Invalid Operation")
+                        
 		frappe.db.set(self, 'status', 'Submitted')
 		self.update_requested_qty()
 		self.set_urgent_status()
@@ -489,71 +512,3 @@ def get_cc_warehouse(user):
 	wh = frappe.db.get_value("Cost Center", cc, "warehouse")
 	app = frappe.db.get_value("Approver Item", {"cost_center": cc}, "approver")
 	return [cc, wh, app]
-
-@frappe.whitelist()
-def mr_approver_query(doctype, txt, searchfield, start, page_len, filters):
-        frappe.msgprint(_("{0}").format(filters.get("roles")))
-        qry = """
-                select e.user_id,
-                        e.employee_name,
-                        e.designation
-                from `tabEmployee` as e, `tabDocument Approver Item` as d
-                where e.name = d.approver
-                and d.approver_role in {0}
-        """.format(filters.get("roles"))
-        frappe.msgprint(_("{0}").format(qry))
-        
-        '''
-        lists = frappe.db.sql("""
-                select e.user_id,
-                        e.employee_name,
-                        e.designation
-                from `tabEmployee` as e, `tabDocument Approver Item` as d
-                where e.name = d.approver
-        """, {"approver": approver})
-
-        return lists
-        '''
-
-        '''
-        employee = ""
-        user_id  = ""
-	if filters.get("employee"):
-                employee = filters.get("employee")
-                user_id  = frappe.get_value("Employee", filters.get("employee"), "user_id")
-        elif filters.get("user_id"):
-                employee = frappe.get_value("Employee", {"user_id": filters.get("user_id")}, "name")
-                user_id  = filters.get("user_id")
-                
-	approver    = frappe.get_value("Employee", employee, "reports_to")
-	approver_id = frappe.get_value("Employee", approver, "user_id")
-
-	#Check for Officiating Employeee, if so, replace
-	off = frappe.db.sql("""
-                        select officiate
-                        from `tabOfficiating Employee`
-                        where docstatus = 1
-                        and revoked != 1
-                        and CURDATE() between from_date and to_date
-                        and employee = %(employee)s
-        """, {"employee": approver}, as_dict=True)
-	if off:
-                approver    = off[0].officiate	
-
-        # If Supervisor & Approver are the same person
-        role_list = frappe.get_roles(user_id)
-        if filters.get("doctype") == "Overtime Application":
-                if "Request Approver" in role_list:
-                        approver = employee
-
-        # Final Query
-	lists = frappe.db.sql("""
-                select user_id,
-                        employee_name,
-                        designation
-                from tabEmployee
-                where name = %(approver)s
-        """, {"approver": approver})
-
-        return lists
-        '''
