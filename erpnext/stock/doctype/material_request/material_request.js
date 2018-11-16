@@ -75,6 +75,7 @@ frappe.ui.form.on('Material Request', {
 		*/
 		
 		// Ver 3.0 Begins, by SHIV on 2018/11/16
+		// Follwoing code commented by SHIV on 2018/11/16
 		/*
 		if(frm.doc.__islocal) {
 			frappe.call({
@@ -89,7 +90,18 @@ frappe.ui.form.on('Material Request', {
 			});
         }
 		*/
-		
+		//if(in_list(user_roles, "MR Manager") || in_list(user_roles, "MR GM")){
+			frm.set_query("approver", function() {
+				return {
+						query: "erpnext.stock.doctype.material_request.material_request.mr_approver_query",
+						filters: {
+								user_id: frappe.session.user,
+								workflow_state: frm.doc.workflow_state,
+								roles: user_roles
+						}
+				};
+			});
+		//}
 		// Ver 3.0 Ends
 		
 	},
