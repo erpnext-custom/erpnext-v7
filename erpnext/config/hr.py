@@ -30,11 +30,12 @@ def get_data():
 					"hide_count": True
 				},
 				{
-					"type": "doctype",
-					"name": "Training And Development",
-					"label": _("Training & Development Records"),
-					"description": _("Traning & Development Master."),
-				},                  
+                                        "type": "doctype",
+                                        "name": "Training Records",
+                                        "description":_("Training And Development"),
+                                        "label": _("Training And Development")
+                                },
+
 			]
 		},
 		{

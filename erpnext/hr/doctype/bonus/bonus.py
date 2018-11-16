@@ -39,7 +39,9 @@ class Bonus(Document):
 		if self.items:
 			tot = tax = net = 0
 			for a in self.items:
-				a.tax_amount = get_salary_tax(a.amount)
+				a.amount = flt(a.noof_months_granted) * flt(a.basic_pay)
+				if flt(a.amount) > 0:
+					a.tax_amount = get_salary_tax(a.amount)
 				a.balance_amount = flt(a.amount) - flt(a.tax_amount)
 				tot += flt(a.amount)
 				tax += flt(a.tax_amount)

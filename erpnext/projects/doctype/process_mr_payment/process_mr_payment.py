@@ -66,8 +66,8 @@ class ProcessMRPayment(Document):
                 if self.project:
                         self.branch = frappe.db.get_value("Project", self.project, "branch")
                         self.cost_center = frappe.db.get_value("Project", self.project, "cost_center")
-                elif self.cost_center:
-                        self.branch = frappe.db.get_value("Branch", {"cost_center":self.cost_center}, "name")
+                elif self.branch:
+                        self.cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
                 else:
                         pass
         
@@ -104,9 +104,9 @@ class ProcessMRPayment(Document):
 			frappe.throw("Select employee record first!")
 	
 		if not self.branch:
-			frappe.throw("Set Branch before loading employee data")
-		else:
-			query += " and branch = \'" + str(self.branch) + "\'"	
+			frappe.throw("Select branch first!")
+
+		query += " and branch = \'" + str(self.branch) + "\'"	
 			
 		entries = frappe.db.sql(query, as_dict=True)
 		if not entries:

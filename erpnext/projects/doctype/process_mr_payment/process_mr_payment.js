@@ -4,6 +4,10 @@
 //cur_frm.add_fetch("project", "cost_center", "cost_center")
 //cur_frm.add_fetch("cost_center", "branch", "branch")
 
+cur_frm.add_fetch("project", "branch", "branch")
+cur_frm.add_fetch("project", "cost_center", "cost_center")
+cur_frm.add_fetch("branch", "cost_center", "cost_center")
+
 frappe.ui.form.on('Process MR Payment', {
 	setup: function(frm) {
 		frm.get_docfield("items").allow_bulk_edit = 1;
@@ -32,15 +36,6 @@ frappe.ui.form.on('Process MR Payment', {
 		}
 	},
 
-	project: function(frm) {
-		//cur_frm.set_df_property("cost_center", "read_only", frm.doc.project ? 1 : 0) 
-		update_details(frm.doc);
-	},
-
-	cost_center: function(frm){
-		update_details(frm.doc);
-	},
-	
 	load_records: function(frm) {
 		cur_frm.set_df_property("load_records", "disabled",  true);
 		//msgprint ("Processing wages.............")

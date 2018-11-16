@@ -86,6 +86,7 @@ class LeaveApplication(Document):
 			#self.validate_back_dated_application()
 			# notify leave applier about approval
 			self.create_attendance()
+			self.create_leavesummary()
 			self.notify_employee(self.status)
 			immediate_sp = frappe.db.get_value("Employee", frappe.db.get_value("Employee", self.employee, "reports_to"), "user_id")
 			if str(immediate_sp) != str(self.leave_approver):
@@ -97,7 +98,7 @@ class LeaveApplication(Document):
 		self.notify_employee("cancelled")
 		self.cancel_attendance()
 		self.update_for_backdated_applications()
-
+		self.cancel_leavesummary()
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         # Following methods created by SHIV on 2018/02/12
         def validate_backdated_applications(self):
@@ -127,6 +128,25 @@ class LeaveApplication(Document):
                         """.format(leave_days, self.employee, self.leave_type, self.from_date))
         # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
                 
+	def create_leavesummary(self):
+		#create Leave Summary 
+                maintain_in_employee_master = frappe.db.get_value("Leave Type", self.leave_type, "maintain_leave")
+		if maintain_in_employee_master: 
+			emp_obj = frappe.get_doc("Employee", self.employee)
+			emp_obj.flags.ignore_permissions = 1
+			emp_obj.append("leave_summary",{
+							"leave_type": self.leave_type,
+							"posting_date": self.posting_date,
+							"from_date": self.from_date,
+							"to_date": self.to_date,
+							"reference": self.name
+				})
+			emp_obj.save()  
+
+
+	def cancel_leavesummary(self):
+		frappe.db.sql("delete from `tabLeave Summary` where reference = %s", (self.name))
+
 	def create_attendance(self):
 		d = getdate(self.from_date)
 		e = getdate(self.to_date)

@@ -61,8 +61,9 @@ class POL(StockController):
 		if not self.equipment_category:
 			frappe.throw("Equipment Category Missing")
 
-		if self.branch != self.fuelbook_branch:
-			frappe.throw("Transaction Branch and Fuelbook Branch should be same")
+		#commented as the transaction can be to all the branches while fuel book type is common
+			'''if self.branch != self.fuelbook_branch:
+			frappe.throw("Transaction Branch and Fuelbook Branch should be same")'''
 	
 		if self.book_type == "Own":
 			if self.fuelbook != frappe.db.get_value("Equipment", self.equipment, "fuelbook"):

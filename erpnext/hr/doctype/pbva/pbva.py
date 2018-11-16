@@ -38,7 +38,9 @@ class PBVA(Document):
 		if self.items:
 			tot = tax = net = 0
 			for a in self.items:
-				a.tax_amount = get_salary_tax(a.amount)
+				a.amount = flt(a.basic_pay) * flt(a.pbva_percent) * 0.01
+				if flt(a.amount) > 0:
+					a.tax_amount = get_salary_tax(a.amount)
 				a.balance_amount = flt(a.amount) - flt(a.tax_amount)
 				tot += flt(a.amount)
 				tax += flt(a.tax_amount)
@@ -135,7 +137,7 @@ class PBVA(Document):
                                                         greatest(e.date_of_joining,'{1}'))+1 days_worked,
                                         (
                                                 select
-                                                        sd.amount
+                                                        sum(sd.amount) as amount
                                                 from
                                                         `tabSalary Detail` sd,
                                                         `tabSalary Slip` sl,
@@ -144,11 +146,10 @@ class PBVA(Document):
                                                 and sl.employee = e.name
                                                 and sl.salary_structure = ss.name
                                                 and sd.salary_component = 'Basic Pay'
-                                                and sl.actual_basic = 0
                                                 and sl.docstatus = 1
                                                 and ss.eligible_for_pbva = 1
-                                                and sl.fiscal_year <= {0}
-                                                order by sl.month desc limit 1
+                                                and sl.fiscal_year = {0}
+                                                group by sl.employee
                                         ) as basic_pay
                                 from tabEmployee e
                                 where (

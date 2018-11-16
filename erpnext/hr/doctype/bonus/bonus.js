@@ -15,7 +15,7 @@ frappe.ui.form.on('Bonus', {
 		frm.get_field('items').grid.editable_fields = [
 			{fieldname: 'employee_name', columns: 2},
 			{fieldname: 'basic_pay', columns: 2},
-			{fieldname: 'amount', columns: 2},
+			{fieldname: 'noof_months_granted', columns: 2},
 			{fieldname: 'tax_amount', columns: 2},
 			{fieldname: 'balance_amount', columns: 2}
 		];
