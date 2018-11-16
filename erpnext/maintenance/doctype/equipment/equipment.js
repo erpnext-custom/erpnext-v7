@@ -1,6 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 cur_frm.add_fetch("asset_code", "branch", "branch")
+cur_frm.add_fetch("hsd_type", "item_name", "item_name")
 
 frappe.ui.form.on('Equipment', {
 	onload: function(frm) {
