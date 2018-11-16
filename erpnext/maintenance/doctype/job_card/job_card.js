@@ -210,7 +210,6 @@ cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = functi
                 return {
                         filters: [
                         ['Employee', 'is_job_card_employee', '=', 1],
-                        ['Employee', 'branch', '=', frm.branch],
                         ['Employee', 'status', '=', 'Active']
                         ]
                 }
@@ -219,7 +218,6 @@ cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = functi
                 return {
                         filters: [
                         ['GEP Employee', 'list_in_job_card', '=', 1],
-                        ['GEP Employee', 'branch', '=', frm.branch],
                         ['GEP Employee', 'status', '=', 'Active']
                         ]
                 }
@@ -228,7 +226,6 @@ cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = functi
                 return {
                         filters: [
                         ['Muster Roll Employee', 'list_in_job_card', '=', 1],
-                        ['Muster Roll Employee', 'branch', '=', frm.branch],
                         ['Muster Roll Employee', 'status', '=', 'Active']
                         ]
                 }

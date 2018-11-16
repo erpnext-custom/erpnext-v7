@@ -104,12 +104,15 @@ class MaterialRequest(BuyingController):
 		if not self.items:
 			frappe.throw("Cannot save without items in material request")
 
+                # Following code temporarily commented by SHIV on 2018/11/16
+                '''
 		if not self.approver:	
 			app = frappe.db.get_value("Approver Item", {"cost_center": self.temp_cc}, "approver")	
 			if not app:
 				frappe.throw("Setup MR Approver for <b>" + str(self.temp_cc) + "</b> in Document Approver")
 			else:
 				self.approver = app
+                '''
 
 		# self.validate_qty_against_so()
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated
@@ -148,6 +151,46 @@ class MaterialRequest(BuyingController):
 		frappe.db.set(self, 'status', 'Submitted')
 		self.update_requested_qty()
 		self.set_urgent_status()
+
+        def mr_approver_query(doctype, txt, searchfield, start, page_len, filters):
+                if filters.get("employee"):
+                        employee = filters.get("employee")
+                        user_id  = frappe.get_value("Employee", filters.get("employee"), "user_id")
+                elif filters.get("user_id"):
+                        employee = frappe.get_value("Employee", {"user_id": filters.get("user_id")}, "name")
+                        user_id  = filters.get("user_id")
+                        
+                approver    = frappe.get_value("Employee", employee, "reports_to")
+                approver_id = frappe.get_value("Employee", approver, "user_id")
+
+                #Check for Officiating Employeee, if so, replace
+                off = frappe.db.sql("""
+                                select officiate
+                                from `tabOfficiating Employee`
+                                where docstatus = 1
+                                and revoked != 1
+                                and CURDATE() between from_date and to_date
+                                and employee = %(employee)s
+                """, {"employee": approver}, as_dict=True)
+                if off:
+                        approver    = off[0].officiate	
+
+                # If Supervisor & Approver are the same person
+                role_list = frappe.get_roles(user_id)
+                if filters.get("doctype") == "Overtime Application":
+                        if "Request Approver" in role_list:
+                                approver = employee
+
+                # Final Query
+                lists = frappe.db.sql("""
+                        select user_id,
+                                employee_name,
+                                designation
+                        from tabEmployee
+                        where name = %(approver)s
+                """, {"approver": approver})
+
+                return lists
 
 	def check_modified_date(self):
 		mod_db = frappe.db.sql("""select modified from `tabMaterial Request` where name = %s""",

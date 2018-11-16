@@ -13,6 +13,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 {% include 'erpnext/buying/doctype/purchase_common/purchase_common.js' %};
 
 cur_frm.add_fetch("item_code", "stock_uom", "uom")
+cur_frm.add_fetch("branch", "cost_center","temp_cc");
 
 frappe.ui.form.on('Material Request', {
 	material_request_type: function(frm) {
@@ -73,6 +74,8 @@ frappe.ui.form.on('Material Request', {
 		}
 		*/
 		
+		// Ver 3.0 Begins, by SHIV on 2018/11/16
+		/*
 		if(frm.doc.__islocal) {
 			frappe.call({
 					method: "erpnext.custom_utils.get_user_info",
@@ -85,6 +88,10 @@ frappe.ui.form.on('Material Request', {
 					}
 			});
         }
+		*/
+		
+		// Ver 3.0 Ends
+		
 	},
 	refresh: function(frm){
 		// Ver2.0, Following condition is changed by SHIV on 26/11/2017
@@ -92,7 +99,10 @@ frappe.ui.form.on('Material Request', {
 		if(in_list(user_roles, "Stock User")) {
 			frm.set_df_property("material_request_type", "read_only", 0)
 		}
-	}
+	},
+	branch: function(frm){
+		
+	},
 });
 
 frappe.ui.form.on("Material Request Item", {
@@ -378,3 +388,54 @@ cur_frm.cscript.onload = function(frm){
 	}
 }
 */
+
+frappe.ui.form.on("Material Request", "after_save", function(frm, cdt, cdn){
+	if(in_list(user_roles, "MR Manager") || in_list(user_roles, "MR GM") || in_list(user_roles, "MR CEO")){
+		if (frm.doc.workflow_state && frm.doc.workflow_state.indexOf("Rejected") >= 0){
+			frappe.prompt([
+				{
+					fieldtype: 'Small Text',
+					reqd: true,
+					fieldname: 'reason'
+				}],
+				function(args){
+					validated = true;
+					frappe.call({
+						method: 'frappe.core.doctype.communication.email.make',
+						args: {
+							doctype: frm.doctype,
+							name: frm.docname,
+							subject: format(__('Reason for {0}'), [frm.doc.workflow_state]),
+							content: args.reason,
+							send_mail: false,
+							send_me_a_copy: false,
+							communication_medium: 'Other',
+							sent_or_received: 'Sent'
+						},
+						callback: function(res){
+							if (res && !res.exc){
+								frappe.call({
+									method: 'frappe.client.set_value',
+									args: {
+										doctype: frm.doctype,
+										name: frm.docname,
+										fieldname: 'rejection_reason',
+										value: frm.doc.rejection_reason ?
+											[frm.doc.rejection_reason, '['+String(frappe.session.user)+' '+String(frappe.datetime.nowdate())+']'+' : '+String(args.reason)].join('\n') : frm.doc.workflow_state
+									},
+									callback: function(res){
+										if (res && !res.exc){
+											frm.reload_doc();
+										}
+									}
+								});
+							}
+						}
+					});
+				},
+				__('Reason for ') + __(frm.doc.workflow_state),
+				__('Save')
+			)
+		}
+	}
+});
