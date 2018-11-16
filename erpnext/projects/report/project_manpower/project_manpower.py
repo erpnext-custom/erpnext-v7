@@ -42,7 +42,7 @@ def get_data(filters):
                         """.format(filters.get("project")), as_dict=1)
 
         for i in result:
-                if i.employee_type.lower() in ('gep employee','muster roll employee'):
+                if i.employee_type.lower() in ('DES Employee','muster roll employee'):
                         other = frappe.db.sql("""
                                 select
                                         person_name,

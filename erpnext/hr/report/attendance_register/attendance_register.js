@@ -21,7 +21,7 @@ frappe.query_reports["Attendance Register"] = {
 			"fieldname":"employee_type",
 			"label": __("Employee Type"),
 			"fieldtype": "Select",
-			"options": ['Muster Roll Employee', 'GEP Employee'],
+			"options": ['Muster Roll Employee', 'DES Employee'],
 			"reqd": 1
 		},
 		{

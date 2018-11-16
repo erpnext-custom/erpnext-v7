@@ -525,7 +525,7 @@ def raise_production_orders(material_request):
 def get_cc_warehouse(user):
 	cc = frappe.db.get_value("Employee", {"user_id": user}, "cost_center")
 	if not cc:
-		cc = frappe.db.get_value("GEP Employee", {"user_id": user}, "cost_center")
+		cc = frappe.db.get_value("DES Employee", {"user_id": user}, "cost_center")
 	wh = frappe.db.get_value("Cost Center", cc, "warehouse")
 	app = frappe.db.get_value("Approver Item", {"cost_center": cc}, "approver")
 	return [cc, wh, app]

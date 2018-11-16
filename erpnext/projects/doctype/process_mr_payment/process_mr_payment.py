@@ -28,8 +28,8 @@ class ProcessMRPayment(Document):
 				a.total_ot_amount = flt(a.hourly_rate) * flt(a.number_of_hours)
 				a.total_wage = flt(a.daily_rate) * flt(a.number_of_days)
 				
-				if a.employee_type == "GEP Employee":
-                                        salary = frappe.db.get_value("GEP Employee", a.employee, "salary")
+				if a.employee_type == "DES Employee":
+                                        salary = frappe.db.get_value("DES Employee", a.employee, "salary")
                                         if flt(a.total_wage) > flt(salary):
                                                 a.total_wage = flt(salary)
 
@@ -39,7 +39,7 @@ class ProcessMRPayment(Document):
 				a.total_amount = flt(a.total_ot_amount) + flt(a.total_wage)
 				total_ot += flt(a.total_ot_amount)
 				total_wage += flt(a.total_wage)
-				if a.employee_type == "GEP Employee":
+				if a.employee_type == "DES Employee":
 					a.health = flt(a.total_wage) * 0.01
 					a.wage_payable = flt(a.total_wage) - flt(a.health)
 					total_health += flt(a.health)
@@ -48,7 +48,7 @@ class ProcessMRPayment(Document):
 			self.wages_amount = total_wage
 			self.ot_amount = total_ot
 			self.total_overall_amount = total
-			if a.employee_type == "GEP Employee":
+			if a.employee_type == "DES Employee":
 				self.total_health_amount = total_health
 			
 
@@ -96,8 +96,8 @@ class ProcessMRPayment(Document):
                 
 	#Populate Budget Accounts with Expense and Fixed Asset Accounts
 	def load_employee(self):
-		if self.employee_type == "GEP Employee":
-			query = "select 'GEP Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabGEP Employee` where status = 'Active'"
+		if self.employee_type == "DES Employee":
+			query = "select 'DES Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabDES Employee` where status = 'Active'"
 		elif self.employee_type == "Muster Roll Employee":
 			query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabMuster Roll Employee` where status = 'Active'"
 		else:
@@ -139,7 +139,7 @@ class ProcessMRPayment(Document):
 			wage_account = frappe.db.get_single_value("Projects Accounts Settings", "mr_wages_account")
 			if not wage_account:
 				frappe.throw("Setup MR Wages Account in Projects Accounts Settings")
-		elif self.employee_type == "GEP Employee":
+		elif self.employee_type == "DES Employee":
 			ot_account = frappe.db.get_single_value("Projects Accounts Settings", "gep_overtime_account")
 			if not ot_account:
 				frappe.throw("Setup GEP Overtime Account in Projects Accounts Settings")
@@ -160,7 +160,7 @@ class ProcessMRPayment(Document):
 		total_amount = flt(self.total_overall_amount)
 
                 '''
-		if self.total_health_amount and self.employee_type == "GEP Employee":
+		if self.total_health_amount and self.employee_type == "DES Employee":
 			total_amount -= flt(self.total_health_amount)
                 '''
                 
@@ -183,7 +183,7 @@ class ProcessMRPayment(Document):
 				})
 
 		if self.wages_amount:
-			if self.total_health_amount and self.employee_type == "GEP Employee":
+			if self.total_health_amount and self.employee_type == "DES Employee":
 				health_account = frappe.db.get_value("Salary Component", "Health Contribution", "gl_head")
 				if not health_account:
 					frappe.throw("No GL Account for Health Contribution")
@@ -208,7 +208,7 @@ class ProcessMRPayment(Document):
 		je.insert()
 		self.db_set("payment_jv", je.name)
 		
-		if self.total_health_amount and self.employee_type == "GEP Employee":
+		if self.total_health_amount and self.employee_type == "DES Employee":
 			health_account = frappe.db.get_value("Salary Component", "Health Contribution", "gl_head")
 			if not health_account:
 				frappe.throw("No GL Account for Health Contribution")
@@ -257,7 +257,7 @@ class ProcessMRPayment(Document):
 			wage_account = frappe.db.get_single_value("Projects Accounts Settings", "mr_wages_account")
 			if not wage_account:
 				frappe.throw("Setup MR Wages Account in Projects Accounts Settings")
-		elif self.employee_type == "GEP Employee":
+		elif self.employee_type == "DES Employee":
 			ot_account = frappe.db.get_single_value("Projects Accounts Settings", "gep_overtime_account")
 			if not ot_account:
 				frappe.throw("Setup GEP Overtime Account in Projects Accounts Settings")
@@ -558,10 +558,10 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         where a.cost_center = %s
                                         order by a.person_name
                                         """.format(employee_type, fiscal_year, fiscal_month, dn), (str(from_date), str(to_date), str(cost_center), str(branch), str(from_date), str(to_date), str(cost_center), str(branch), str(cost_center)), as_dict=True)
-	elif employee_type == "GEP Employee":
+	elif employee_type == "DES Employee":
 		data = frappe.db.sql("""
                                 select
-                                        'GEP Employee' as type,
+                                        'DES Employee' as type,
                                         a.name,
                                         a.person_name,
                                         a.id_card,
@@ -607,7 +607,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                                 )
                                         ) as number_of_hours,
                                         a.salary
-                                from `tabGEP Employee` a
+                                from `tabDES Employee` a
                                 where a.cost_center = %s
                                 order by a.person_name
                                 """.format(employee_type, fiscal_year, fiscal_month, dn), (str(from_date), str(to_date), str(cost_center), str(branch), str(from_date), str(to_date), str(cost_center), str(branch), str(cost_center)), as_dict=True)

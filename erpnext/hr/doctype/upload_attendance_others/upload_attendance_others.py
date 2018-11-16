@@ -77,7 +77,7 @@ def get_loaded_records(args, start_date, end_date):
                         select
                                 case 
                                     when employee_type = 'Muster Roll Employee' then 'MR'
-                                    when employee_type = 'GEP Employee' then 'GEP'
+                                    when employee_type = 'DES Employee' then 'GEP'
                                     else employee_type
                                 end as employee_type,
                                 employee,
@@ -126,7 +126,7 @@ def get_active_employees(args, start_date, end_date):
                         ge.person_name,
                         iw.branch,
                         iw.cost_center
-		from `tabGEP Employee` as ge, `tabEmployee Internal Work History` as iw
+		from `tabDES Employee` as ge, `tabEmployee Internal Work History` as iw
 		where ge.docstatus < 2
                 and iw.parent = ge.name
                 and iw.branch = '{0}'
@@ -200,7 +200,7 @@ def upload():
                                         if str(row[2]) == "MR":
                                                 doc.employee_type = "Muster Roll Employee"
                                         elif str(row[2]) == "GEP":
-                                                doc.employee_type = "GEP Employee"
+                                                doc.employee_type = "DES Employee"
                                     	
 					#Prevent future dates creation
 					if not getdate(doc.date) > getdate(nowdate()):

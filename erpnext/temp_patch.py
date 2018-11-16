@@ -351,12 +351,12 @@ def grant_permission_all():
                                                 from  `tabUser`
                                                 where `tabUser`.name = `tabEmployee`.user_id)
                                 union all
-                                select company, branch, name as employeecd, user_id, 'GEP Employee' type
-                                 from `tabGEP Employee`
+                                select company, branch, name as employeecd, user_id, 'DES Employee' type
+                                 from `tabDES Employee`
                                  where user_id is not null
                                  and exists(select 1
                                                 from  `tabUser`
-                                                where `tabUser`.name = `tabGEP Employee`.user_id)
+                                                where `tabUser`.name = `tabDES Employee`.user_id)
                                 union all
                                 select company, branch, name as employeecd, user_id, 'Muster Roll Employee' type
                                  from `tabMuster Roll Employee`

@@ -25,7 +25,7 @@
    "label": "Employee Type", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "Employee\nGEP Employee\nMuster Roll Employee", 
+   "options": "Employee\nDES Employee\nMuster Roll Employee", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 

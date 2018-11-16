@@ -49,7 +49,7 @@
    "label": "Employee", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "GEP Employee", 
+   "options": "DES Employee", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 

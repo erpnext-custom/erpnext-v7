@@ -5,7 +5,7 @@ cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("project", "cost_center", "cost_center")
 cur_frm.add_fetch("project", "branch", "branch")
 
-frappe.ui.form.on('GEP Employee', {
+frappe.ui.form.on('DES Employee', {
 	refresh: function(frm) {
 		cur_frm.toggle_reqd("date_of_separation", frm.doc.status == "Left")
 	},
@@ -34,7 +34,7 @@ frappe.ui.form.on('GEP Employee', {
 	},
 });
 
-frappe.ui.form.on("GEP Employee", "refresh", function(frm) {
+frappe.ui.form.on("DES Employee", "refresh", function(frm) {
     cur_frm.set_query("cost_center", function() {
         return {
             "filters": {

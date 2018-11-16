@@ -160,8 +160,8 @@ frappe.ui.form.on("Mechanic Assigned", {
                 }
                 else {
 			var doc_type = "Muster Roll Employee"
-			if(item.employee_type == "GEP Employee") {
-				doc_type = "GEP Employee"
+			if(item.employee_type == "DES Employee") {
+				doc_type = "DES Employee"
 			}
                         frappe.call({
                                 method: "frappe.client.get_value",
@@ -214,11 +214,11 @@ cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = functi
                         ]
                 }
         }
-	else if(d.employee_type == "GEP Employee") {
+	else if(d.employee_type == "DES Employee") {
                 return {
                         filters: [
-                        ['GEP Employee', 'list_in_job_card', '=', 1],
-                        ['GEP Employee', 'status', '=', 'Active']
+                        ['DES Employee', 'list_in_job_card', '=', 1],
+                        ['DES Employee', 'status', '=', 'Active']
                         ]
                 }
 	}

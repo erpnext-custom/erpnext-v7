@@ -86,10 +86,10 @@ def get_user_info(user=None, employee=None, cost_center=None):
                 cost_center = frappe.db.get_value("Employee", {"name": employee}, "cost_center")
                 branch      = frappe.db.get_value("Employee", {"name": employee}, "branch")
 
-                # GEP Employee
+                # DES Employee
                 if not cost_center:
-                        cost_center = frappe.db.get_value("GEP Employee", {"name": employee}, "cost_center")
-                        branch      = frappe.db.get_value("GEP Employee", {"name": employee}, "branch")
+                        cost_center = frappe.db.get_value("DES Employee", {"name": employee}, "cost_center")
+                        branch      = frappe.db.get_value("DES Employee", {"name": employee}, "branch")
 
                 # MR Employee
                 if not cost_center:
@@ -101,10 +101,10 @@ def get_user_info(user=None, employee=None, cost_center=None):
                 cost_center = frappe.db.get_value("Employee", {"user_id": user}, "cost_center")
                 branch      = frappe.db.get_value("Employee", {"user_id": user}, "branch")
 
-                # GEP Employee
+                # DES Employee
                 if not cost_center:
-                        cost_center = frappe.db.get_value("GEP Employee", {"user_id": user}, "cost_center")
-                        branch      = frappe.db.get_value("GEP Employee", {"user_id": user}, "branch")
+                        cost_center = frappe.db.get_value("DES Employee", {"user_id": user}, "cost_center")
+                        branch      = frappe.db.get_value("DES Employee", {"user_id": user}, "branch")
 
                 # MR Employee
                 if not cost_center:

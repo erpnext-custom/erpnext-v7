@@ -22,7 +22,7 @@ class GEPEmployee(Document):
 			self.rate_per_hour = (flt(self.salary) * 1.5) / (30 * 8)
 
 	def check_status(self):
-                # Disabling GEP Employee record after status change to "Left"
+                # Disabling DES Employee record after status change to "Left"
 		if self.status == "Left" and self.date_of_separation:
                         self.docstatus = 1
 
@@ -109,15 +109,15 @@ def update_work_history():
                                 person_name,
                                 date_of_joining,
                                 branch
-                        from `tabGEP Employee` as gep
+                        from `tabDES Employee` as gep
                         where not exists(select 1
                                          from `tabEmployee Internal Work History` as wh
                                          where wh.parent = gep.name
-                                         and   wh.parenttype = 'GEP Employee')
+                                         and   wh.parenttype = 'DES Employee')
                         """, as_dict=1)
 
         for rec in wh_list:
-                wh = frappe.get_doc("GEP Employee", rec.name)
+                wh = frappe.get_doc("DES Employee", rec.name)
 
                 wh.append("internal_work_history", {
                         "branch": rec.branch,

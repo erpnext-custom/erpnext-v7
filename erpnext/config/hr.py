@@ -44,9 +44,9 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "GEP Employee",
+					"name": "DES Employee",
 					"label": "DES Employee",
-					"description": _("GEP Employee records."),
+					"description": _("DES Employee records."),
 				},
 				{
 					"type": "doctype",
