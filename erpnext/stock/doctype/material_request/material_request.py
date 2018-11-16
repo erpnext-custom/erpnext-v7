@@ -104,7 +104,8 @@ class MaterialRequest(BuyingController):
 		if not self.items:
 			frappe.throw("Cannot save without items in material request")
 
-                # Following code temporarily commented by SHIV on 2018/11/16
+                ### Ver 3.0 Begins
+                # Following commented by SHIV on 2018/11/16
                 '''
 		if not self.approver:	
 			app = frappe.db.get_value("Approver Item", {"cost_center": self.temp_cc}, "approver")	
@@ -113,14 +114,37 @@ class MaterialRequest(BuyingController):
 			else:
 				self.approver = app
                 '''
-                self.validate_item_groups()
+                # Following two methods introduced by SHIV on 2018/11/16
+                self.creation_date = nowdate() if not self.creation_date else self.creation_date
+                self.validate_multiple_approvers()
                 self.update_approver()
+                ### Ver 3.0 Ends
+                
 		# self.validate_qty_against_so()
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated
 		# Though the creation of Material Request from a Production Plan can be rethought to fix this
 
-        def validate_item_groups(self):
-                pass
+        def validate_multiple_approvers(self):
+                self.prev_workflow_state = self.get_db_value("workflow_state")
+                self.cur_workflow_state = self.workflow_state
+                
+                multiple_approvers = {}
+                for i in self.get("items"):
+                        app_list = frappe.db.sql("""
+                                select approver
+                                from `tabDocument Approver Item`
+                                where item_group='{0}'
+                                and workflow_state != 'Waiting CEO Approval'
+                        """.format(i.item_group))
+                        for a in app_list:
+                                if multiple_approvers.has_key(str(a)):
+                                        multiple_approvers[str(a)] += 1
+                                else:
+                                        multiple_approvers[str(a)] = 0
+
+                        if len(multiple_approvers) > 1:
+                                frappe.throw(_("Row# {0}: Multiple approvers found").format(i.idx), title="Operation not permitted")
+
                 
         def update_approver(self):
                 # Populating approver
@@ -131,12 +155,6 @@ class MaterialRequest(BuyingController):
                         and item_group in ({1})
                 """.format(self.workflow_state, "'"+str("','".join([i.item_group for i in self.get("items")]))+"'"))
                 self.approver = app_li[0][0] if app_li else None
-
-                frappe.msgprint(str(self.get_db_value("workflow_state")))
-                frappe.msgprint(str(self.workflow_state))
-                
-                if len(app_li) > 1:
-                        frappe.throw(_("Multiple approvers found for the item groups"), title="Invalid Data")
                 
 	def set_title(self):
 	#	'''Set title as comma separated list of items'''

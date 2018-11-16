@@ -407,7 +407,7 @@ cur_frm.cscript.onload = function(frm){
 
 frappe.ui.form.on("Material Request", "after_save", function(frm, cdt, cdn){
 	if(in_list(user_roles, "MR Manager") || in_list(user_roles, "MR GM") || in_list(user_roles, "MR CEO")){
-		if (frm.doc.workflow_state && frm.doc.workflow_state.indexOf("Rejected") >= 0){
+		if (frm.doc.workflow_state && frm.doc.workflow_state.indexOf("Rejected") >= 0 && frm.doc.prev_workflow_state != frm.doc.cur_workflow_state){
 			frappe.prompt([
 				{
 					fieldtype: 'Small Text',

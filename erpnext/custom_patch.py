@@ -10,6 +10,11 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
 #
+def update_equip():
+	for a in frappe.db.sql("select name, hsd_type from tabEquipment where hsd_type is not null", as_dict=1):
+		print a.name, a.hsd_type
+		frappe.db.sql("update tabEquipment set item_name = (select item_name from tabItem where name = '{0}') where name = '{1}'".format(a.hsd_type, a.name))
+
 def populate_wh_branch():
         counter = 0
 	for t in frappe.db.sql("select name, branch from tabWarehouse", as_dict=1):
@@ -19,7 +24,6 @@ def populate_wh_branch():
 		row = doc.append("items",{})
 		row.branch = t.branch
 		row.save()
-print 'Done adding rows....'
 
 def update_emp():
 	for a in frappe.db.sql("select name from tabEmployee where docstatus = 0", as_dict=1):
