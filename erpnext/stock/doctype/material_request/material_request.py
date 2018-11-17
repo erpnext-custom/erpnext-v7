@@ -147,6 +147,9 @@ class MaterialRequest(BuyingController):
 
                 
         def update_approver(self):
+                if self.workflow_state == "Approved":
+                        return
+                
                 # Populating approver
                 app_li = frappe.db.sql("""
                         select distinct approver
@@ -187,7 +190,7 @@ class MaterialRequest(BuyingController):
 
 	def on_submit(self):
                 if self.approver and self.approver != frappe.session.user:
-                        frappe.throw(_("Only the approver <b>{0}</b> can approve this document").format(), title="Invalid Operation")
+                        frappe.throw(_("Only the approver <b>{0}</b> allowed to approve this document").format(self.approver), title="Invalid Operation")
                         
 		frappe.db.set(self, 'status', 'Submitted')
 		self.update_requested_qty()
