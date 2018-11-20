@@ -238,18 +238,18 @@ cur_frm.add_fetch("operator", "employee_name", "driver_name")
 
 //Vehicle Log Item  Details
 frappe.ui.form.on("Vehicle Log", {
-	"vlogs_add": function(frm, cdt, cdn){
-                var cur = locals[cdt][cdn];
-                var vlogs = frm.doc.vlogs || [];
-                if(vlogs[parseInt(vlogs.length)-2] === undefined){
-                        frappe.model.set_value(cdt, cdn, "work_date", frm.doc.from_date);
-                }
-                else {
-                        if(vlogs[parseInt(vlogs.length)-2].work_date){
-                                frappe.model.set_value(cdt, cdn, "work_date", frappe.datetime.add_days(vlogs[parseInt(vlogs.length)-2].work_date,1));
-                        }
-                }
-        },
+	//"vlogs_add": function(frm, cdt, cdn){
+        //      var cur = locals[cdt][cdn];
+          ///      var vlogs = frm.doc.vlogs || [];
+             //   if(vlogs[parseInt(vlogs.length)-2] === undefined){
+               //         frappe.model.set_value(cdt, cdn, "work_date", frm.doc.from_date);
+             //   }
+               // else {
+                 //       if(vlogs[parseInt(vlogs.length)-2].work_date){
+                   //             frappe.model.set_value(cdt, cdn, "work_date", frappe.datetime.add_days(vlogs[parseInt(vlogs.length)-2].work_date,1));
+                   //     }
+               // }
+       // },
 
 	"work_date": function(frm, cdt, cdn) {
 		date_check(frm, cdt, cdn)

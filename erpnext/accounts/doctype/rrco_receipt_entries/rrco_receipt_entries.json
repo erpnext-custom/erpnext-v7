@@ -299,8 +299,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-09-26 10:46:14.684844", 
- "modified_by": "siva@bt.bt", 
+ "modified": "2018-11-17 17:31:31.442741", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Accounts", 
  "name": "RRCO Receipt Entries", 
  "name_case": "", 
@@ -363,7 +363,7 @@
    "role": "Accounts User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }
  ], 

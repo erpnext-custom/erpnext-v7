@@ -7,15 +7,15 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Production",
-				},
-				{
-					"type": "doctype",
 					"name": "Marking List",
 				},
 				{
 					"type": "doctype",
 					"name": "Royalty Payment",
+				},
+                                {
+					"type": "doctype",
+					"name": "Production",
 				},
 			]
 		},

@@ -151,8 +151,8 @@ class PBVA(Document):
                                                 and sl.fiscal_year = {0}
                                                 group by sl.employee
                                         ) as basic_pay
-                                from tabEmployee e
-                                where (
+                                from tabEmployee e, `tabSalary Structure` st
+                                where e.name = st.employee and st.is_active = 'Yes' and st.eligible_for_pbva = 1 and (
                                         ('{3}' = 'Active' and e.date_of_joining <= '{2}' and ifnull(e.relieving_date,'9999-12-31') > '{2}')
                                         or
                                         ('{3}' = 'Left' and ifnull(e.relieving_date,'9999-12-31') between '{1}' and '{2}')
@@ -199,8 +199,9 @@ class PBVA(Document):
 			d.days_worked = cint(d.days_worked) + 1
 			'''
 			d.amount = 0
-			row = self.append('items', {})
-			row.update(d)
+			if flt(d.basic_pay) > 0:
+				row = self.append('items', {})
+				row.update(d)
 
 @frappe.whitelist()
 def get_pbva_percent(employee):

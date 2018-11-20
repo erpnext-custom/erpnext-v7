@@ -376,7 +376,7 @@ def make_sales_invoice(asset, item_code, company, branch):
 		"is_fixed_asset": 1,
 		"asset": asset,
 		"income_account": disposal_account,
-		"cost_center": depreciation_cost_center,
+		"cost_center": frappe.db.get_value("Asset", asset, "cost_center"),
 		"business_activity": get_asset_ba(asset),
 		"qty": 1
 	})

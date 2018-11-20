@@ -29,11 +29,11 @@ class VehicleLogbook(Document):
 		if self.branch != frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "branch"):
 			frappe.throw("VLB branch should be same as Equipment Hiring Form branch.")
 	
-	def vlogs_check(self):
-		b = get_date_diff(self.from_date, self.to_date);
-		if len(self.vlogs) != b:
+	#def vlogs_check(self):
+	#	b = get_date_diff(self.from_date, self.to_date);
+	#	if len(self.vlogs) != b:
 		
-				frappe.throw(("Fill in all the VLB entries between '{0}' and '{1}'.").format(self.from_date, self.to_date))
+	#			frappe.throw(("Fill in all the VLB entries between '{0}' and '{1}'.").format(self.from_date, self.to_date))
 
 	def validate_date(self):
                 from_date = get_datetime(str(self.from_date) + ' ' + str(self.from_time))
@@ -88,10 +88,10 @@ class VehicleLogbook(Document):
 		#self.check_tank_capacity()
 		self.vlogs_check()
 	
-	def vlogs_check(self):
-                b = get_date_diff(self.from_date, self.to_date);
-                if len(self.vlogs) != b:
-			frappe.throw(("Fill in all the VLB entries between '{0}' and '{1}'.").format(self.from_date, self.to_date))
+	#	def vlogs_check(self):
+         #       b = get_date_diff(self.from_date, self.to_date);
+          #      if len(self.vlogs) != b:
+	#		frappe.throw(("Fill in all the VLB entries between '{0}' and '{1}'.").format(self.from_date, self.to_date))
 	
 	def on_cancel(self):
 		check_uncancelled_linked_doc(self.doctype, self.name)

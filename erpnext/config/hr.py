@@ -35,7 +35,12 @@ def get_data():
                                         "description":_("Training And Development"),
                                         "label": _("Training And Development")
                                 },
-
+				 {
+                                        "type": "doctype",
+                                        "name": "Salary Advance",
+                                        "description":_("Salary Advance"),
+                                        "label": _("Salary Advance")
+                                },
 			]
 		},
 		{

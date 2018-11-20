@@ -37,14 +37,14 @@ def get_data(filters):
 
 def get_group_by(filters):
 	if filters.show_aggregate:
-		group_by = " group by branch, location, item_sub_group"
+		group_by = " group by pe.branch, pe.location, pe.item_sub_group"
 	else:
 		group_by = ""
 
 	return group_by
 
 def get_order_by(filters):
-	return " order by region, location, item_group, item_sub_group"
+	return " order by region, pe.location, pe.item_group, pe.item_sub_group"
 
 def get_conditions(filters):
 	if not filters.cost_center:

@@ -8,7 +8,7 @@
  "docstatus": 0, 
  "doctype": "DocType", 
  "document_type": "", 
- "editable_grid": 0, 
+ "editable_grid": 1, 
  "fields": [
   {
    "allow_on_submit": 0, 
@@ -147,7 +147,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2018-09-24 05:46:20.715383", 
+ "modified": "2018-11-18 10:43:13.017115", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Production Material Item", 
