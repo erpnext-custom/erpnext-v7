@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-06-21 15:32:38.355319", 
+ "modified": "2018-11-22 16:54:07.032233", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Ledger Report", 
@@ -39,6 +39,12 @@
   }, 
   {
    "role": "POL User"
+  }, 
+  {
+   "role": "Production User"
+  }, 
+  {
+   "role": "Production Manager"
   }
  ]
 }

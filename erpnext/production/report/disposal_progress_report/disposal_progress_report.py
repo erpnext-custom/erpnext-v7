@@ -49,7 +49,7 @@ def get_data(filters):
 				cond = " and dni.cost_center = '{0}'".format(a.cost_center)
 	
 		total = 0
-
+		total_amt = 0
 		for b in get_production_groups(filters.production_group):
 		#	qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))
 			qty = frappe.db.sql("Select sum(dni.qty), sum(dni.amount)  from `tabDelivery Note` dn INNER JOIN `tabDelivery Note Item` dni on dn.name = dni.parent where 1=1 {0} and dni.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))	
@@ -58,8 +58,8 @@ def get_data(filters):
 			row.append(rounded(qty, 2))
 			
 			total += flt(qty)
-			amt += flt(amt)
-		row.append(amt)
+			total_amt += flt(amt)
+		row.append(total_amt)
 		row.insert(2, rounded(total, 2))
 		if target == 0:
 			target = 1

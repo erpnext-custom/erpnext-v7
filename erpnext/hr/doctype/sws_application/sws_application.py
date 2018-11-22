@@ -8,7 +8,16 @@ from frappe.model.document import Document
 from frappe.utils import flt
 
 class SWSApplication(Document):
+	def get_status(self):
+		if self.workflow_state =="Verified By Supervisor":
+			self.verified =1
+		if self.workflow_state =="Rejected":
+			self.approval_status =="Rejected"
+		if self.workflow_state =="Approved":
+			self.approval_status =="Approved"
+	
 	def validate(self):
+		self.get_status()
 		self.validate_save()
 		self.validate_dead()
 		self.validate_amount()
@@ -34,6 +43,7 @@ class SWSApplication(Document):
 		if self.total_amount <= 0:
 			frappe.throw("Total Amount cannot be 0 or less")
 		self.verify_approvals()
+		self.get_status()
 		self.update_status()
 		self.post_sws_entry()
 	
