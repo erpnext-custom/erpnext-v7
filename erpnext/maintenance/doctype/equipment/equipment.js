@@ -4,7 +4,7 @@ cur_frm.add_fetch("asset_code", "branch", "branch")
 
 frappe.ui.form.on('Equipment', {
 	onload: function(frm) {
-		cur_frm.set_df_property("asset_code", "reqd", 1) 
+		cur_frm.set_df_property("asset_code", "reqd", frm.doc.not_cdcl ? 0 : 1) 
 	},
 	refresh: function(frm) {
 		cur_frm.set_df_property("engine_number", "read_only", frm.doc.engine_number ? 1 : 0)
@@ -16,7 +16,7 @@ frappe.ui.form.on('Equipment', {
 		if(!frm.doc.__islocal && in_list(user_roles, "Asset User")) {
             		cur_frm.set_df_property("asset_code", "read_only", 0)
            		cur_frm.set_df_property("fuelbook", "read_only", 1)
-			cur_frm.set_df_property("branch", "read_only", 1)
+			frm.set_df_property("branch", "read_only", frm.doc.not_cdcl ? 0 : 1)
 			frm.set_df_property("is_disabled", "read_only", 1)	
 			var df = frappe.meta.get_docfield("Equipment Operator", "operator", cur_frm.doc.name);
 			df.read_only = 1;
@@ -42,7 +42,7 @@ frappe.ui.form.on('Equipment', {
 		if(!frm.doc.__islocal && in_list(user_roles, "Asset Manager")) {
 			cur_frm.set_df_property("asset_code", "read_only", 0)
                         cur_frm.set_df_property("fuelbook", "read_only", 0)
-                        cur_frm.set_df_property("branch", "read_only", 1)
+			frm.set_df_property("branch", "read_only", frm.doc.not_cdcl ? 0 : 1)
                         frm.set_df_property("is_disabled", "read_only", 0)
                         var df = frappe.meta.get_docfield("Equipment Operator", "operator", cur_frm.doc.name);
                         df.read_only = 1;
@@ -51,6 +51,7 @@ frappe.ui.form.on('Equipment', {
 			frappe.meta.get_docfield("Equipment Operator", "operator", cur_frm.doc.name).read_only = 0;
                 	frappe.meta.get_docfield("Equipment Operator", "start_date", cur_frm.doc.name).read_only = 0;
    			frappe.meta.get_docfield("Equipment Operator", "end_date", cur_frm.doc.name).read_only = 0;
+			frm.set_df_property("branch", "read_only", frm.doc.not_cdcl ? 0 : 1)
 			
 		}
 	},
