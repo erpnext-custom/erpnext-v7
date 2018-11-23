@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-11 09:56:30.267356", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2018-11-23 13:21:55.222781", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Overtime Register", 
  "owner": "Administrator", 
@@ -33,6 +33,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Unit Manager"
   }
  ]
 }

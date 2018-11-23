@@ -86,12 +86,12 @@ class VehicleLogbook(Document):
 		self.update_hire()
 		self.post_equipment_status_entry()
 		#self.check_tank_capacity()
-		self.vlogs_check()
+		#self.vlogs_check()
 	
-	#	def vlogs_check(self):
-         #       b = get_date_diff(self.from_date, self.to_date);
-          #      if len(self.vlogs) != b:
-	#		frappe.throw(("Fill in all the VLB entries between '{0}' and '{1}'.").format(self.from_date, self.to_date))
+	def vlogs_check(self):
+               b = get_date_diff(self.from_date, self.to_date);
+               if len(self.vlogs) != b:
+			frappe.throw(("Fill in all the VLB entries between '{0}' and '{1}'.").format(self.from_date, self.to_date))
 	
 	def on_cancel(self):
 		check_uncancelled_linked_doc(self.doctype, self.name)
@@ -122,10 +122,10 @@ class VehicleLogbook(Document):
 		for row in self.vlogs:
 			if row.work_date and row.work_date < self.from_date or row.work_date > self.to_date:
 				frappe.throw ("Work Date should be between From Date and To Date")
-			if row.work_time and row.work_time < 0 or row.work_time > 24:
-                                frappe.throw("Work Time cannot be negative, It should not be more then 24 hours also.") 
-			if row.idle_time and row.idle_time < 0 or row.idle_time > 24:
-                                frappe.throw("Idle Time cannot be negative, It should not be more then 24 hours also.") 
+			if row.work_time and row.work_time < 0:
+                                frappe.throw("Work Time cannot be negative value.") 
+			if row.idle_time and row.idle_time < 0:
+                                frappe.throw("Idle Time cannot be negative value.") 
 			if row.distance and row.distance < 0:
 				frappe.throw("Distance Cannot be negative value")
 		for a in self.vlogs:

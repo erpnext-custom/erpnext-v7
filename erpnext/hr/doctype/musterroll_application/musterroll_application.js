@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 cur_frm.add_fetch("project", "cost_center", "cost_center")
-cur_frm.add_fetch("cost_center", "branch", "branch")
+cur_frm.add_fetch("branch", "cost_center", "cost_center")
 
 frappe.ui.form.on('MusterRoll Application', {
 	setup: function(frm) {

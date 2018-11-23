@@ -1,4 +1,4 @@
-cur_frm.add_fetch("cost_center", "branch", "branch")
+cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("project", "cost_center", "cost_center")
 cur_frm.add_fetch("project", "branch", "branch")
 
@@ -17,7 +17,6 @@ frappe.ui.form.on("Project Overtime Tool", {
 
 	project: function(frm) {
 		erpnext.project_overtime_tool.load_employees(frm);
-		cur_frm.set_df_property("cost_center", "read_only", frm.doc.project ? 1 : 0) 
 	},
 
 	date: function(frm) {

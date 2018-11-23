@@ -3,7 +3,7 @@
 
 frappe.ui.form.on('Vehicle Logbook', {
 	refresh: function(frm) {
-		total_ro = 1
+		/*total_ro = 1
 		to_ro = 0
 		if (frm.doc.docstatus == 1) {
 			total_ro = 0
@@ -14,6 +14,7 @@ frappe.ui.form.on('Vehicle Logbook', {
 		cur_frm.set_df_property("final_hour", "read_only", to_ro);
 		cur_frm.set_df_property("final_km", "read_only", to_ro);
 		frappe.meta.get_docfield("Vehicle Log", "distance", cur_frm.doc.name).read_only = 0;
+		*/
 	},
 //	"vlogs_on_form_rendered": function(frm, grid_row, cdt, cdn) {
 //		var row = cur_frm.open_grid_row();
@@ -289,11 +290,11 @@ frappe.ui.form.on("Vehicle Log", {
 })
 function check(frm,cdt, cdn){
 	var a = locals[cdt][cdn]
-		if(a.idle_time && a.idle_time < 0 || a.idle_time > 24){
-                        frappe.msgprint ("Idle Time cannot be negative nor it can be more then 24 hours")
+		if(a.idle_time && a.idle_time < 0){
+                        frappe.msgprint ("Idle Time cannot be negative value.")
                 }
-                if(a.work_time && a.work_time < 0 || a.work_time > 24){
-                        frappe.msgprint("Work Time cannot be negative nor it can be more then 24 hours")
+                if(a.work_time && a.work_time < 0 ){
+                        frappe.msgprint("Work Time cannot be negative value")
 		}
 		if(a.distance && a.distance < 0){
 			frappe.msgprint("Distance cannot be negative")
