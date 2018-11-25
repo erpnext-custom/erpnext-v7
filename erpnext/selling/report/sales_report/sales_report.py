@@ -24,7 +24,7 @@ def get_data(filters):
 	#frappe.msgprint("so {0}, {1}".format(qty, group))
 	order_by = get_order_by(filters)
 	query = frappe.db.sql("""select *from 
-	(select so.name as so_name , so.customer, so.customer_name, so.branch, soi.qty as qty_approved, soi.rate, soi.item_code, 
+	(select so.name as so_name , so.customer, so.customer_name, so.branch, soi.qty as qty_approved, soi.delivered_qty, soi.rate, soi.item_code, 
 	soi.name as soi_name, soi.item_name, soi.item_group,
 	so.transaction_date, soi.product_requisition from
         `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0}) as so_detail
@@ -62,7 +62,7 @@ def get_data(filters):
 			pr = get_prod_req(filters, d.product_requisition)
 			row["applicant_name"] = pr.applicant_name,
 			row["qty_required"] = flt(pr.qty_required),
-			row["balance_qty"] = flt(d.qty_approved) - flt(d.sii_qty),
+			row["balance_qty"] = flt(d.qty_approved) - flt(d.delivered_qty),
 			row["dest_dzongkha"] = pr.destination_dzongkha,
 			row["plot"] = pr.tharm,
 			row["construction_type"] = pr.construction_type,

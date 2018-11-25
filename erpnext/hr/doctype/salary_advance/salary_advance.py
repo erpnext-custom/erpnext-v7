@@ -9,8 +9,7 @@ from frappe.utils import flt,cint,today,nowdate
 
 class SalaryAdvance(Document):
 	def validate(self):
-		self.total_claim = self.basic_pay * self.months
-	
+		self.total_claim = flt(self.basic_pay) * flt(self.months)
 	
 	def on_submit(self):
                 self.post_journal_entry()

@@ -4,6 +4,7 @@ cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("item_code", "item_name", "item_name")
 cur_frm.add_fetch("item_code", "stock_uom", "uom")
 cur_frm.add_fetch("item_code", "item_group", "item_group")
+cur_frm.add_fetch("item_code", "species", "timber_species")
 cur_frm.add_fetch("item_code", "item_sub_group", "item_sub_group")
 
 frappe.ui.form.on('Production', {

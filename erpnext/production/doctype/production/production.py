@@ -211,6 +211,8 @@ class Production(StockController):
 
 	def make_production_entry(self):
 		for a in self.items:
+			if a.is_rejected_item:
+				continue
 			doc = frappe.new_doc("Production Entry")
 			doc.flags.ignore_permissions = 1
 			doc.item_code = a.item_code

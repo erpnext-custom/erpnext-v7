@@ -119,6 +119,9 @@ class Employee(Document):
 			self.update_user()
 			self.update_user_permissions()
 		#self.post_casual_leave()
+		ss = frappe.db.get_value("Salary Structure", {"employee": self.name, "is_active": "Yes"}, "name")
+		if ss:
+			frappe.get_doc("Salary Structure", ss).save()
 
         def validate_employment(self):
                 if not frappe.db.exists("Employment Type Item", {"parent": self.employment_type,"employee_group": self.employee_group}):
