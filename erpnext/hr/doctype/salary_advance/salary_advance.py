@@ -50,7 +50,7 @@ class SalaryAdvance(Document):
 				"business_activity": self.business_activity,
 				"reference_type": "Advance Salary",
 				"reference_name": self.name,
-				"cost_center": self.issuing_cost_center,
+				"cost_center": self.cost_center,
 				"credit_in_account_currency": flt(self.total_claim),
 				"credit": flt(self.total_claim),
 					})
