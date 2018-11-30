@@ -55,7 +55,8 @@ def get_data(filters):
 			t2.from_account 	as from_acc, 
 			t2.to_account 		as to_acc, 
 			t2.amount		as amount, 
-			t2.appropriation_on 	as date 
+			t2.appropriation_on 	as date, 
+			t2.ref_doc	 	as ref_doc
 		from 
 			`tabBudget Reappropiation` as t1,
 			`tabReappropriation Details` as t2
@@ -89,6 +90,7 @@ def get_data(filters):
 				"from_acc": a.from_acc,
 				"amount": a.amount,
 				"date": a.date,
+				"ref_doc": a.ref_doc,
 			}
 			data.append(row)
 	
@@ -135,6 +137,13 @@ def get_columns():
 			"label": _("Amount"),
 			"fieldtype": "Currency",
 			"width": 130
-		}
+		},
+		{
+			"fieldname": "ref_doc",
+			"label": _("Ref Document"),
+			"fieldtype": "Link",
+			"options": "Budget Reappropiation",
+			"width": 200
+		},
 	]
 

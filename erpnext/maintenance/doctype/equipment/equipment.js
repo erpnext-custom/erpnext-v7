@@ -5,6 +5,7 @@ cur_frm.add_fetch("asset_code", "branch", "branch")
 frappe.ui.form.on('Equipment', {
 	onload: function(frm) {
 		cur_frm.set_df_property("asset_code", "reqd", frm.doc.not_cdcl ? 0 : 1) 
+		cur_frm.set_df_property("asset_code", "reqd", frm.doc.equipment_type == "NA" ? 0 : 1) 
 	},
 	refresh: function(frm) {
 		cur_frm.set_df_property("engine_number", "read_only", frm.doc.engine_number ? 1 : 0)
@@ -65,6 +66,9 @@ frappe.ui.form.on('Equipment', {
 	},
 	not_cdcl: function(frm) {
 		cur_frm.toggle_reqd("asset_code", frm.doc.not_cdcl == 0) 
+	},
+	equipment_type: function(frm) {
+		cur_frm.toggle_reqd("asset_code", frm.doc.equipment_type != "NA")
 	}
 });
 

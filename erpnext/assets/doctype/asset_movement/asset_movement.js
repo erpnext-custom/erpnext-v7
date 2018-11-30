@@ -1,6 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 cur_frm.add_fetch("target_custodian", "user_id", "target_user_id")
+cur_frm.add_fetch("target_custodian", "cost_center", "target_custodian_cost_center")
 
 frappe.ui.form.on('Asset Movement', {
 	refresh: function(frm) {
@@ -36,6 +37,21 @@ frappe.ui.form.on('Asset Movement', {
                                          ["Cost Center", "is_disabled", "!=", 1],
                                          ["Cost Center", "is_group", "=", 0]
                                         ]				
+			}
+		})
+	},
+	source_custodian: function(frm) {
+		frappe.call({
+			method: "frappe.client.get_value",
+			args: {
+				doctype: "Employee",
+				fieldname: "employee_name",
+				filters: {name: frm.doc.source_custodian},
+			},
+			callback: function(r) {
+				if(r.message.employee_name) {
+					cur_frm.set_value("source_custodian_name", r.message.employee_name)
+				}
 			}
 		})
 	}

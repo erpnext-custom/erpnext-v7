@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "field:mode_of_payment", 
  "beta": 0, 
  "creation": "2012-12-04 17:49:20", 
@@ -101,7 +101,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-01 17:34:23.184173", 
+ "modified": "2018-11-23 12:35:44.678748", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Mode of Payment", 
@@ -126,6 +126,26 @@
    "share": 1, 
    "submit": 0, 
    "write": 1
+  }, 
+  {
+   "amend": 0, 
+   "apply_user_permissions": 0, 
+   "cancel": 0, 
+   "create": 0, 
+   "delete": 0, 
+   "email": 1, 
+   "export": 1, 
+   "if_owner": 0, 
+   "import": 0, 
+   "permlevel": 0, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "Auditor", 
+   "set_user_permissions": 0, 
+   "share": 1, 
+   "submit": 0, 
+   "write": 0
   }, 
   {
    "amend": 0, 
@@ -192,5 +212,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 0, 
  "track_seen": 0
 }
