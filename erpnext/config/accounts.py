@@ -308,6 +308,13 @@ def get_data():
 					"doctype": "Account",
 					"is_query_report": True,
 				},
+				{
+                                        "type": "report",
+                                        "name": "Royalty Payment Report",
+                                        "label": "Royalty Payment Report",
+                                        "doctype": "Royalty Payment",
+                                        "is_query_report": True,
+                                },
 				
 			]
 		},

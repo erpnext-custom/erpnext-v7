@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-11 09:34:22.655198", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2018-11-28 12:09:32.589733", 
+ "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Material Request Pending for Purchase Order", 
  "owner": "Administrator", 
@@ -28,6 +28,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Unit Manager"
   }
  ]
 }

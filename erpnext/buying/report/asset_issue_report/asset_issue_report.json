@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-12-14 10:27:51.985240", 
+ "modified": "2018-11-28 12:08:38.307605", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Asset Issue Report", 
@@ -31,6 +31,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "Unit Manager"
   }
  ]
 }

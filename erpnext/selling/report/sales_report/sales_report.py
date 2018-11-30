@@ -36,7 +36,7 @@ def get_data(filters):
 	inner join
 	(select si.name, sii.dn_detail, (select item_sub_group from tabItem where item_code = sii.item_code group by item_sub_group) as item_sub, sii.sales_order, sii.delivery_note, {2} as sii_qty, sii.rate as sii_rate, sii.amount as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1 {3}) 
 	as si_detail
-	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group), as_dict = True, debug =1)
+	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group), as_dict = True)
 	agg_qty = agg_amount = qty = rate = amount =  qty_required  = qty_approved = balance_qty = delivered_qty = transportation_charges = 0.0
 	row = {}
 	for d in query:
@@ -52,7 +52,8 @@ def get_data(filters):
 			"agg_amount": flt(d.sii_amount), "agg_branch": d.branch, "agg_location": d.location, "item_sub_group": d.item_sub
 			}	
 
-		if filters.item_group == 'Timber Products':
+		spec = frappe.db.get_value("Item", d.item_code, "species")
+                if filters.item_group == 'Timber Products' and spec != None:
 			tim = get_timber_detail(filters, d.item_code) 
 			row["timber_class"] = tim.timber_class
 			row["timber_species"] = tim.spc

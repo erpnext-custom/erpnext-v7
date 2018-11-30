@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-06-04 16:05:20.791813", 
- "modified_by": "payma.wangchuk@cdcl.bt", 
+ "modified": "2018-11-28 14:15:16.351895", 
+ "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Balance Report", 
  "owner": "Administrator", 
@@ -42,6 +42,9 @@
   }, 
   {
    "role": "POL User"
+  }, 
+  {
+   "role": "Unit Manager"
   }
  ]
 }

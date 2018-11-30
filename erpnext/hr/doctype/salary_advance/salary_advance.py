@@ -12,8 +12,7 @@ class SalaryAdvance(Document):
 		self.total_claim = flt(self.basic_pay) * flt(self.months)
 	
 	def on_submit(self):
-                self.post_journal_entry()
-
+		self.post_journal_entry()
 
 	def get_basic_salary(self):
 		if self.employee:
@@ -48,11 +47,12 @@ class SalaryAdvance(Document):
 		je.append("accounts", {
 				"account": ic_account,
 				"business_activity": self.business_activity,
-				"reference_type": "Advance Salary",
+				"reference_type": "Salary Advance",
 				"reference_name": self.name,
 				"cost_center": self.cost_center,
 				"credit_in_account_currency": flt(self.total_claim),
 				"credit": flt(self.total_claim),
 					})
 			
-		je.save()
+		je.insert()
+		self.db_set("reference", je.name)

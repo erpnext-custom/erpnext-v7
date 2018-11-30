@@ -17,15 +17,18 @@ class EquipmentHiringForm(Document):
 		self.check_date_approval()
 		self.check_duplicate()
 		self.calculate_totals()
-	#	if len(self.balance_advance_details) < 1:
-	#		query = "select count(*) as count from `tabJournal Entry` as e inner join \
-	#			`tabJournal Entry Account` as ea on e.name = ea.parent inner join \
-	#			`tabEquipment Hiring Form` as eq on ea.reference_name = eq.name where \
-	#			e.branch = \'" + str(self.branch) + "\' and ea.party = \'" + str(self.customer) + "\' \
-	#			and eq.payment_completed = 1 and eq.docstatus= 1"
-	#		dtl = frappe.db.sql(query, as_dict=True)
-	#		if dtl[0]['count'] > 0:
-	#			frappe.throw("There are previous advance balance. Please fetch those advances");
+		self.validate_advance_balance()
+
+	def validate_advance_balance(self):
+		if len(self.balance_advance_details) < 1:
+			query = "select count(*) as count from `tabJournal Entry` as e inner join \
+				`tabJournal Entry Account` as ea on e.name = ea.parent inner join \
+				`tabEquipment Hiring Form` as eq on ea.reference_name = eq.name where \
+				e.branch = \'" + str(self.branch) + "\' and ea.party = \'" + str(self.customer) + "\' \
+				and eq.payment_completed = 1 and eq.docstatus= 1"
+			dtl = frappe.db.sql(query, as_dict=True)
+			if dtl[0]['count'] > 0:
+				frappe.throw("There are previous advance balance. Please fetch those advances");
 
 	def validate_date(self, a):
 		from_date = get_datetime(str(a.from_date) + ' ' + str(a.from_time))
@@ -47,7 +50,7 @@ class EquipmentHiringForm(Document):
 		if self.advance_amount > 0:
 			self.post_journal_entry()
 		self.update_equipment_request(1)
-		#self.update_journal()
+		self.update_journal()
 
 	def before_cancel(self):		
 		check_uncancelled_linked_doc(self.doctype, self.name)
@@ -57,8 +60,8 @@ class EquipmentHiringForm(Document):
 	
 		frappe.db.sql("delete from `tabEquipment Reservation Entry` where ehf_name = \'"+ str(self.name) +"\'")	
 		self.db_set("advance_journal", '')
-		#for a in self.balance_advance_details:
-		#	frappe.db.sql("UPDATE `tabJournal Entry Account` SET `reference_name` = \'" + str(a.reference_name) + "\' WHERE name = \'" + str(a.reference_row) + "\'")
+		for a in self.balance_advance_details:
+			frappe.db.sql("UPDATE `tabJournal Entry Account` SET `reference_name` = \'" + str(a.reference_name) + "\' WHERE name = \'" + str(a.reference_row) + "\'")
 
 
 	def on_cancel(self):
@@ -200,6 +203,7 @@ def get_hire_rates(e, from_date):
 	e = frappe.get_doc("Equipment", e)
 	#query = "select with_fuel, without_fuel, idle from `tabHire Charge Parameter` where equipment_type = \"" + str(e.equipment_type) + "\" and equipment_model =\"" + str(e.equipment_model) + "\""
 	db_query = "select a.rate_fuel as with_fuel, a.rate_wofuel as without_fuel, a.idle_rate as idle, a.cft_rate_bf, a.cft_rate_co from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{0}' and b.equipment_model = '{1}' and '{2}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
+
 	data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, from_date), as_dict=True)
 	#data = frappe.db.sql(query, as_dict=True)
 	if not data:

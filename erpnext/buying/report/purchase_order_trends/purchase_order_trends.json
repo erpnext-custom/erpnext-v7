@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2018-07-11 09:33:49.316653", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2018-11-28 12:07:55.607042", 
+ "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Purchase Order Trends", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Unit Manager"
   }
  ]
 }

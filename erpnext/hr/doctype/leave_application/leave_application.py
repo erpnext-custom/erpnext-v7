@@ -402,9 +402,10 @@ class LeaveApplication(Document):
 			pass
 
 	def validate_fiscal_year(self):
-                if not frappe.get_value("Leave Type", self.leave_type, "is_carry_forward"):
-                        if str(self.from_date)[0:4] != str(self.to_date)[0:4]:
-                                frappe.throw("Leave Application cannot overlap fiscal years")
+		if self.leave_type in ["Casual Leave", "Earned Leave"]:
+                	if not frappe.get_value("Leave Type", self.leave_type, "is_carry_forward"):
+                        	if str(self.from_date)[0:4] != str(self.to_date)[0:4]:
+                                	frappe.throw("Leave Application cannot overlap fiscal years")
 
 def daterange(start_date, end_date):
     for n in range(int ((date(end_date) - date(start_date)).days)):

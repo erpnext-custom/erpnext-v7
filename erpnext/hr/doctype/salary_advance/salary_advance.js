@@ -10,7 +10,9 @@ frappe.ui.form.on('Salary Advance', {
 	},
 	months: function(frm){
 			cur_frm.set_value("total_claim", parseFloat(frm.doc.basic_pay) * parseFloat(frm.doc.months));
-			cur_frm.set_value("monthly_deduction", parseFloat(frm.doc.total_claim/12));
+	},
+	deduction_month(frm){
+			cur_frm.set_value("monthly_deduction", parseFloat(frm.doc.total_claim)/ frm.doc.deduction_month);
 	},
 		
 	employee: function(frm) {

@@ -56,12 +56,12 @@ frappe.ui.form.on('Equipment Hiring Form', {
 	},
 	"total_hiring_amount": function(frm) {
 		if(frm.doc.docstatus != 1 && frm.doc.private == "Private") {
-		/*	frm.set_value("advance_required", frm.doc.total_hiring_amount);
+			frm.set_value("advance_required", frm.doc.total_hiring_amount);
 			if(frm.doc.prev_advance_balance > 0){
 				frm.set_value("advance_amount", frm.doc.advance_required - frm.doc.prev_advance_balance);
 			}else{
 				frm.set_value("advance_amount", frm.doc.advance_required);				
-			}*/
+			}
 			frm.set_value("advance_amount", frm.doc.total_hiring_amount);	
 		}
 	},
@@ -71,7 +71,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
 		cur_frm.toggle_reqd("advance_amount", frm.doc.private == 'Private')
 	},
 
-/*	"advance_required": function(frm) {
+	"advance_required": function(frm) {
 		if(frm.doc.prev_advance_balance > 0){
 			frm.set_value("advance_amount", frm.doc.advance_required - frm.doc.prev_advance_balance);
 		}else{
@@ -85,7 +85,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
 			frm.set_value("advance_amount", frm.doc.advance_required - frm.doc.prev_advance_balance);
 		else
 			frm.set_value("advance_amount", -frm.doc.prev_advance_balance);
-	} */	
+	} 	
 });
 
 cur_frm.add_fetch("tc_name", "terms", "terms")

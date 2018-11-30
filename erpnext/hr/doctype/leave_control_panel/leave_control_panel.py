@@ -28,12 +28,12 @@ class LeaveControlPanel(Document):
 
                 # Ver 2.0 Begins, by SHIV on 10/01/2018
                 # Following code commented on 10/01/2018
-                '''
-		e = frappe.db.sql("select name from tabEmployee where status='Active' {condition}"
+		'''e = frappe.db.sql("select name from tabEmployee where status='Active' {condition}"
 			.format(condition=condition_str), tuple(values))
-                '''
+		'''
                 # Following code added
-                e = frappe.db.sql("select name from tabEmployee where status='Active' and date_of_joining =< '{from_date}' {condition}"
+		# changed from =< to <= 30/11/2018
+                e = frappe.db.sql("select name from tabEmployee where status='Active' and date_of_joining <= '{from_date}' {condition}"
 			.format(condition=condition_str, from_date=self.from_date), tuple(values))
                 # Ver 2.1 Ends
                 

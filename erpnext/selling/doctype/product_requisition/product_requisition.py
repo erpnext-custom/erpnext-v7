@@ -9,8 +9,9 @@ from frappe.model.document import Document
 
 class ProductRequisition(Document):
 	def validate(self):
-		if self.start_date > self.end_date:
-			frappe.throw("To Date Cannot Be Greater Then From Date")
+		if self.end_date:
+			if self.start_date > self.end_date:
+				frappe.throw("To Date Cannot Be Greater Then From Date")
 
 @frappe.whitelist()
 def make_sales_order(source_name, target_doc=None):
