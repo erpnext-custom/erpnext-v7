@@ -68,7 +68,7 @@ frappe.ui.form.on('Equipment', {
 		cur_frm.toggle_reqd("asset_code", frm.doc.not_cdcl == 0) 
 	},
 	equipment_type: function(frm) {
-		cur_frm.toggle_reqd("asset_code", frm.doc.equipment_type != "NA")
+		cur_frm.toggle_reqd("asset_code", frm.doc.equipment_type != "Fabrication Product")
 	}
 });
 
