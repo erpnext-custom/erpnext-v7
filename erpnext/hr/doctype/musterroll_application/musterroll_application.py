@@ -21,6 +21,8 @@ class MusterRollApplication(Document):
                 self.remove_mr()
         
         def default_validations(self):
+		if self.project:
+			self.cost_center, self.branch = frappe.db.get_value("Project", self.project, ["cost_center", "branch"])
                 for i in self.items:
                         if not i.joining_date:
                                 frappe.throw(_("Row#{0} : Date of joining is mandatory.").format(i.idx),title="Missing Value")
@@ -113,7 +115,7 @@ class MusterRollApplication(Document):
                                 doc.cost_center   = self.cost_center 
                                 doc.rate_per_day  = a.rate_per_day
                                 doc.rate_per_hour = a.rate_per_hour
-                                doc.company       = "Construction Development Corporation Ltd"
+                                doc.company       = self.company 
                                 doc.id_card       = cid
 
                                 if self.project:
