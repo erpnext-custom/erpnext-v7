@@ -103,6 +103,7 @@ class DeliveryNote(SellingController):
 		self.validate_proj_cust()
 		self.check_close_sales_order("against_sales_order")
 		self.validate_for_items()
+		self.check_transportation_detail()
 		self.validate_warehouse()
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.validate_with_previous_doc()
@@ -113,6 +114,13 @@ class DeliveryNote(SellingController):
 		self.update_current_stock()
 
 		if not self.installation_status: self.installation_status = 'Not Installed'
+
+	
+
+	def check_transportation_detail(self):
+		if self.naming_series == 'Mineral Products':
+			if self.vehicle == None or self.drivers_name == None  or self.contact_no == None:
+				frappe.throw("Transporter Detail Is Mandiatory For Mineral Products")
 
 	def validate_with_previous_doc(self):
 		for fn in (("Sales Order", "against_sales_order", "so_detail"),

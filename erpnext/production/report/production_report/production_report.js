@@ -177,7 +177,7 @@ frappe.query_reports["Production Report"] = {
 				if (!branch) {
 					return
 				}
-				return {"doctype": "Warehouse", "filters": {"disabled": 0}}
+				return {"doctype": "Warehouse", "filters": {"branch": branch, "disabled": 0}}
 			}
 		},
 		{

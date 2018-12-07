@@ -25,7 +25,7 @@ def get_data(filters):
 	order_by = get_order_by(filters)
 	query = frappe.db.sql("""select *from 
 	(select so.name as so_name , so.customer, so.customer_name, so.branch, soi.qty as qty_approved, soi.delivered_qty, soi.rate, soi.item_code, 
-	soi.name as soi_name, soi.item_name, soi.item_group,
+	soi.name as soi_name, soi.item_name, soi.item_group, soi.lot_number as slot_number,
 	so.transaction_date, soi.product_requisition from
         `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0}) as so_detail
 	inner join
@@ -58,6 +58,7 @@ def get_data(filters):
 			row["timber_class"] = tim.timber_class
 			row["timber_species"] = tim.spc
 			row["timber_type"] = tim.timber_type
+			row["lot_number"] = d.slot_number
 
 		if d.product_requisition and filters.item_group == 'Mineral Products':
 			pr = get_prod_req(filters, d.product_requisition)
@@ -296,7 +297,13 @@ def get_columns(filters):
 			"fieldtype": "Data",
 			"width": 100
 		})
-
+		columns.insert(7, {
+			"fieldname": "lot_number",
+			"label": "Lot No.",
+			"fieldtype": "Data",
+			"width": 100
+		})
+		
     	if filters.item_group == "Mineral Products":
 		columns.insert(8, {
 		  "fieldname": "applicant_name",

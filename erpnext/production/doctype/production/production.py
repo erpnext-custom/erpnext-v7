@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cstr, flt, fmt_money, formatdate, nowtime, getdate
+from frappe.utils import cint, cstr, flt, fmt_money, formatdate, nowtime, getdate
 from erpnext.accounts.utils import get_fiscal_year
 from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, prepare_sl, get_settings_value
 from erpnext.controllers.stock_controller import StockController
@@ -59,6 +59,15 @@ class Production(StockController):
 					frappe.throw("<b>{0}</b> reading should be between {1} and {2} for {3} for Adhoc Production".format(par, frappe.bold(min_val), frappe.bold(max_val), frappe.bold(item.item_code)))
 			else:
 				item.reading = 0
+			
+			in_inches = 0
+			f = str(item.reading).split(".")
+			in_inches = cint(f[0]) * 12
+			if len(f) > 1:
+				if cint(f[1]) > 11:
+					frappe.throw("Inches should be smaller than 12 on row {0}".format(item.idx))
+				in_inches += cint(f[1])
+			item.reading_inches = in_inches
 
 	def check_cop(self):
 		for a in self.items:

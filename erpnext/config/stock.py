@@ -121,9 +121,9 @@ def get_data():
                                 {
 					"type": "report",
 					"is_query_report": True,
-					"name": "Items Register",
+					"name": "Items Register Ledger",
 					"doctype": "Consumable Register Entry",
-					"Label": _("Items Register")
+					"Label": _("Items Register Ledger")
 				},
 				{
 					"type": "report",

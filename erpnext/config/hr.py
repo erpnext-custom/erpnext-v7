@@ -39,8 +39,14 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Salary Advance",
                                         "description":_("Salary Advance"),
-                                        "label": _("Salary Advance")
+                                        "label": _("Salary Advance Application")
                                 },
+				{	
+					"type": "doctype",
+                                        "name": "SWS Application",
+                                        "description":_("SWS Application"),
+                                        "label": _("SWS Application")
+				},
 			]
 		},
 		{

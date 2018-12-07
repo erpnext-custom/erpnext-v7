@@ -4,7 +4,7 @@
 frappe.query_reports["Earning Report"] = {
 	"filters": [
 		{
-		"fieldtype" :"branch",
+		"fieldname" :"branch",
 		"label" :("Branch"),
 		"fieldtype" : "Link",
 		"options" : "Branch"

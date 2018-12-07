@@ -79,11 +79,10 @@ def get_data(filters):
 (select SUM(sd.amount) FROM `tabSalary Detail` sd WHERE sd.parent = ss.name AND sd.salary_component = 'Deputation Allowance') AS deputation,
 (select SUM(sd.amount) FROM `tabSalary Detail` sd WHERE sd.parent = ss.name AND sd.salary_component = 'Underground Allowance') AS underground,
 (select SUM(sd.amount) FROM `tabSalary Detail` sd WHERE sd.parent = ss.name AND sd.salary_component = 'Cash Handling Allowance') AS cash_handling
-FROM `tabSalary Slip` ss where ss.docstatus = 1 and ss.branch like %(branch)s and ss.month in %(months)s and ss.fiscal_year = %(fy)s)
+FROM `tabSalary Slip` ss where ss.docstatus = 1 and ss.branch like  %(branch)s and ss.month in %(months)s and ss.fiscal_year = %(fy)s)
 AS tab """)
 
 	query += " group by cost_center "
-	
 	result = frappe.db.sql(query, {"branch":filters.branch, "months": dates, "fy": filters.fiscal_year})
 	#frappe.msgprint(type(result))
 	#frappe.msgprint("{0}".format(result))

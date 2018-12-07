@@ -85,6 +85,9 @@ def get_notification_config():
 			"HSD Payment" : {"docstatus": 0},
 			"Equipment POL Transfer" : {"docstatus": 0},
                         "Equipment Request" : {"percent_completed": ("<", "100"), "docstatus": 1},
-                        "Revenue Target Adjustment": {"docstatus": 0}
+                        "Revenue Target Adjustment": {"docstatus": 0},
+			"Production" : {"docstatus": 0},
+			"Marking List" : {"docstatus": 0},
+			"Royalty Payment" : {"docstatus": 0},
 		}
 	}

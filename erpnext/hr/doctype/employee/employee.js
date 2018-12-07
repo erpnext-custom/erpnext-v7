@@ -103,7 +103,7 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 		cur_frm.add_fetch('branch', 'gis_policy_number', 'gis_policy_number');
 	},
 	
-	/*
+/*	
 	department: function(){
 		if(!this.frm.doc.__islocal){
 			validate_prev_doc(this.frm,__("Please select date of transfer to new department"));		
@@ -115,7 +115,7 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 			validate_prev_doc(this.frm,__("Please select date of effect for designation change"));		
 		}
 	},
-	*/	
+*/	
 });
 
 function validate_prev_doc(frm, title){

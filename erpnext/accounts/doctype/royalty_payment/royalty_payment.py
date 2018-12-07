@@ -54,14 +54,14 @@ class RoyaltyPayment(Document):
 			if not self.adhoc_production or not self.from_date or not self.to_date:
 				frappe.throw("Adhoc Production, From Date and To Date are Mandatory")
 
-			entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, b.qty_in_no from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
+			entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, b.qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
 			self.set('adhoc_temp_items', [])
 			# Following line replaced by subsequent, by SHIV on 2018/11/13
 			#frappe.db.sql("delete from `tabRoyalty Adhoc Temp` where parent = %s or parent like '%New Royalty Payment%'", self.name)
 			frappe.db.sql("delete from `tabRoyalty Adhoc Temp` where parent = %s or parent like %s", (self.name,("%" + "New Royalty Payment" + "%")))
 
 			for a in entries:
-				d = self.get_adhoc_royalty(a.item_code, a.reading)
+				d = self.get_adhoc_royalty(a.item_code, a.reading_inches)
 				if d[0].based_on == "Item Sub Group":
 					d[0].par_name = frappe.db.get_value(d[0].based_on, d[0].particular, "reading_parameter")
 				d[0].qty = a.qty
@@ -100,7 +100,7 @@ class RoyaltyPayment(Document):
 			
 		rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date", (item_code, self.posting_date), as_dict=1)
 		if not rate:
-			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date and timber_class = %s and %s >= from_reading and %s <= to_reading", (sub_group, self.posting_date, timber_class, reading, reading), as_dict=1)
+			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date and timber_class = %s and %s >= from_inch and %s <= to_inch", (sub_group, self.posting_date, timber_class, reading, reading), as_dict=1, debug=1)
 		if not rate:
 			frappe.throw("Royalty Rate for {0} has not been defined in Adhoc Royalty Setting".format(frappe.bold(item_code)))
 		return rate
