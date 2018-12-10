@@ -245,13 +245,13 @@
  "hide_toolbar": 0, 
  "idx": 0, 
  "image_view": 0, 
- "in_create": 0, 
+ "in_create": 1, 
  "in_dialog": 0, 
  "is_submittable": 1, 
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-08-06 20:37:57.657872", 
+ "modified": "2018-12-07 11:28:32.168864", 
  "modified_by": "Administrator", 
  "module": "Budget", 
  "name": "Committed Budget", 
@@ -262,7 +262,7 @@
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 1, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -275,14 +275,14 @@
    "role": "Stock User (other)", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
-   "write": 1
+   "submit": 0, 
+   "write": 0
   }, 
   {
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 1, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -295,14 +295,14 @@
    "role": "Stock User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
-   "write": 1
+   "submit": 0, 
+   "write": 0
   }, 
   {
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 1, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -315,8 +315,8 @@
    "role": "Accounts User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
-   "write": 1
+   "submit": 0, 
+   "write": 0
   }, 
   {
    "amend": 0, 
@@ -342,7 +342,7 @@
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 1, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -355,8 +355,8 @@
    "role": "Sales User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
-   "write": 1
+   "submit": 0, 
+   "write": 0
   }, 
   {
    "amend": 0, 
@@ -396,13 +396,13 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 1
+   "write": 0
   }, 
   {
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 1, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -415,8 +415,8 @@
    "role": "Purchase Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
-   "write": 1
+   "submit": 0, 
+   "write": 0
   }
  ], 
  "quick_entry": 1, 

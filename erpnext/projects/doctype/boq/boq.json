@@ -552,7 +552,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-06-07 17:46:26.874403", 
+ "modified": "2018-12-10 14:21:19.217289", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "BOQ", 
@@ -560,9 +560,9 @@
  "owner": "siva@bt.bt", 
  "permissions": [
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 0, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -573,10 +573,10 @@
    "print": 1, 
    "read": 1, 
    "report": 1, 
-   "role": "Project Committee", 
+   "role": "CPBD", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "write": 1
   }, 
   {

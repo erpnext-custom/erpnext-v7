@@ -268,10 +268,11 @@ class TravelClaim(Document):
 
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
-		je.title = "Travel Claim (" + self.employee_name + "  " + self.name + ")"
+		je.title = "Travel Claim (" + self.employee + " - " + self.employee_name + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
-		je.remark = 'Claim payment against : ' + self.name;
+		je.remark = 'Claim payment for ' + self.employee + "(" + self.employee_name + ")" + " through TC " + self.name;
+		je.user_remark = 'Claim payment for ' + self.employee + "(" + self.employee_name + ")" + " through TC " + self.name;
 		je.posting_date = self.posting_date
 		je.branch = self.branch
 

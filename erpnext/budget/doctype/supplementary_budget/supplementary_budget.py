@@ -60,6 +60,7 @@ class SupplementaryBudget(Document):
 			if self.docstatus == 1:
 				#Add the reappropriation details for record 
 				supp_details = frappe.new_doc("Supplementary Details")
+				supp_details.flags.ignore_permissions = 1
 				supp_details.to_cc = to_cc
 				supp_details.to_acc = to_acc
 				supp_details.amount = amount

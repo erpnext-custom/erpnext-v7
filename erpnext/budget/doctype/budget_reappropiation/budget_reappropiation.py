@@ -82,6 +82,7 @@ class BudgetReappropiation(Document):
 				frappe.db.sql("delete from `tabReappropriation Details` where ref_doc=%s", self.name)
 			else:
 				app_details = frappe.new_doc("Reappropriation Details")
+				app_details.flags.ignore_permissions = 1
 				app_details.from_cost_center = from_cc
 				app_details.to_cost_center = to_cc
 				app_details.from_account = from_acc

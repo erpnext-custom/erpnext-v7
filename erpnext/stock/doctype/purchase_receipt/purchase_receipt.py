@@ -205,6 +205,7 @@ class PurchaseReceipt(BuyingController):
 			item_group = frappe.db.get_value("Item", a.item_code, "item_group")
 			if item_group and item_group == "Fixed Asset":
 				ae = frappe.new_doc("Asset Received Entries")
+				ae.flags.ignore_permissions = 1
 				ae.item_code = a.item_code
 				ae.item_name = a.item_name
 				ae.qty = a.qty

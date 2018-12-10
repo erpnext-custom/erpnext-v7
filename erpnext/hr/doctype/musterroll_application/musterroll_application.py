@@ -7,11 +7,16 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate, get_url, today
+from erpnext.custom_utils import get_branch_cc
 
 class MusterRollApplication(Document):
 	def validate(self):
 		self.default_validations()
-	
+		self.check_branch_cc()
+
+	def check_branch_cc(self):
+		if self.cost_center != get_branch_cc(self.branch):
+			frappe.throw("Your Cost Center and Branch doesn't belong to each other")	
 	def on_submit(self):
 		self.validate_submitter()
 		self.check_status()
@@ -75,7 +80,7 @@ class MusterRollApplication(Document):
                         to_date   = ""
                         
                         cid       = i.citizenship_id if not i.is_existing else i.existing_cid
-                        from_date, to_date = frappe.get_value("Employee Internal Work History", {"parenttype": "Muster Roll Employee", "parent": cid, "reference_docname": self.name}, ["from_date","to_date"])
+                        from_date, to_date = frappe.db.get_value("Employee Internal Work History", {"parenttype": "Muster Roll Employee", "parent": cid, "reference_docname": self.name}, ["from_date","to_date"])
 
                         if from_date:
                                 if not to_date:

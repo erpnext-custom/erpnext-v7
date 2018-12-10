@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt, nowdate
 
 class OvertimeApplication(Document):
 	def validate(self):
@@ -14,7 +14,7 @@ class OvertimeApplication(Document):
 		self.calculate_totals()
 
 	def on_submit(self):
-		self.check_status()
+		#self.check_status()
 		self.validate_submitter()
 		self.post_journal_entry()
 
@@ -41,9 +41,18 @@ class OvertimeApplication(Document):
 	# Dont allow duplicate dates
 	##
 	def validate_dates(self):
+                self.posting_date = nowdate()
+                '''
+                if self.posting_date > nowdate():
+                        frappe.throw(_("Posting date cannot be a future date."), title="Invalid Date")
+                '''
+                
 		for a in self.items:
                         if not a.date:
-                                frappe.throw(_("Row#{0} : Data cannot be blank").format(a.idx),title="Invalid Date")
+                                frappe.throw(_("Row#{0} : Date cannot be blank").format(a.idx),title="Invalid Date")
+
+                        if str(a.date) > str(nowdate()):
+                                frappe.throw(_("Row#{0} : Future dates are not accepted").format(a.idx), title="Invalid Date")
                                 
 			for b in self.items:
 				if a.date == b.date and a.idx != b.idx:

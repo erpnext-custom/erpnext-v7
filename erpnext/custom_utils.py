@@ -343,3 +343,91 @@ def sendmail(recipent, subject, message, sender=None):
 		frappe.sendmail(recipients=recipent, sender=None, subject=subject, message=message)
 	except:
 		pass
+
+#
+# function get_approver() added by SHIV on 2018/07/27
+#
+@frappe.whitelist()
+def get_approver(doctype=None, employee=None, user_id=None):
+	if employee:
+                user_id  = frappe.get_value("Employee", employee, "user_id")
+        elif user_id:
+                employee = frappe.get_value("Employee", {"user_id": user_id}, "name")
+                
+	approver    = frappe.get_value("Employee", employee, "reports_to")
+	approver_id = frappe.get_value("Employee", approver, "user_id")
+
+	#Check for Officiating Employeee, if so, replace
+	off = frappe.db.sql("""
+                        select officiate
+                        from `tabOfficiating Employee`
+                        where docstatus = 1
+                        and revoked != 1
+                        and CURDATE() between from_date and to_date
+                        and employee = %(employee)s
+        """, {"employee": approver}, as_dict=True)
+	if off:
+                approver    = off[0].officiate	
+
+        # If Supervisor & Approver are the same person
+        role_list = frappe.get_roles(user_id)
+        if str(doctype) == "Overtime Application":
+                if "OT Approver" in role_list:
+                        approver = employee
+
+        # Final Query
+	lists = frappe.db.sql("""
+                select user_id,
+                        employee_name,
+                        designation
+                from tabEmployee
+                where name = %(approver)s
+        """, {"approver": approver})
+
+        return lists
+
+
+#
+# function get_approver_query() added by SHIV on 2018/07/27
+#
+@frappe.whitelist()
+def approver_query(doctype, txt, searchfield, start, page_len, filters):
+	if filters.get("employee"):
+                employee = filters.get("employee")
+                user_id  = frappe.get_value("Employee", filters.get("employee"), "user_id")
+        elif filters.get("user_id"):
+                employee = frappe.get_value("Employee", {"user_id": filters.get("user_id")}, "name")
+                user_id  = filters.get("user_id")
+                
+	approver    = frappe.get_value("Employee", employee, "reports_to")
+	approver_id = frappe.get_value("Employee", approver, "user_id")
+
+	#Check for Officiating Employeee, if so, replace
+	off = frappe.db.sql("""
+                        select officiate
+                        from `tabOfficiating Employee`
+                        where docstatus = 1
+                        and revoked != 1
+                        and CURDATE() between from_date and to_date
+                        and employee = %(employee)s
+        """, {"employee": approver}, as_dict=True)
+	if off:
+                approver    = off[0].officiate	
+
+        # If Supervisor & Approver are the same person
+        role_list = frappe.get_roles(user_id)
+        if filters.get("doctype") == "Overtime Application":
+                if "OT Approver" in role_list:
+                        approver = employee
+
+        # Final Query
+	lists = frappe.db.sql("""
+                select user_id,
+                        employee_name,
+                        designation
+                from tabEmployee
+                where name = %(approver)s
+        """, {"approver": approver})
+
+        return lists
+

@@ -189,12 +189,13 @@ class LeaveEncashment(Document):
                 
                 je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
-		je.title = 'Leave Encashment - '+str(employee.employee_name)
+		je.title = 'Leave Encashment for '+str(employee.employee_name) + ' - ' + str(employee.employee)
                 je.voucher_type = 'Bank Entry'
                 je.naming_series = 'Bank Payment Voucher'
                 je.company = employee.company
 		je.branch = self.branch
-                je.remark = 'Payment against Leave Encashment: ' + self.name;
+                je.remark = 'Payment against Leave Encashment: ' + self.name + ' for ' + employee.employee;
+                je.user_remark = 'Payment against Leave Encashment: ' + self.name + ' for ' + employee.employee;
                 je.posting_date = self.application_date
                 je.total_amount_in_words =  money_in_words(flt(basic_pay)-flt(salary_tax))
 

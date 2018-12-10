@@ -852,7 +852,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-04 15:14:45.927326", 
+ "modified": "2018-12-06 17:16:59.602139", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Mining Process", 
@@ -881,7 +881,7 @@
   }
  ], 
  "quick_entry": 1, 
- "read_only": 0, 
+ "read_only": 1, 
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 

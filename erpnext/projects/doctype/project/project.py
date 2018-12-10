@@ -27,6 +27,7 @@ import datetime
 
 # Autonaming is changed, SHIV on 23/10/2017
 from frappe.model.naming import make_autoname
+from erpnext.custom_utils import get_branch_cc
 
 class Project(Document):
         def autoname(self):
@@ -75,6 +76,7 @@ class Project(Document):
 
 	def validate(self):
 		self.validate_dates()
+		self.validate_branch_cc()
 
 		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 		# Follwoing 2 lines are commented by SHIV on 2017/08/11
@@ -102,6 +104,10 @@ class Project(Document):
 		self.validate_branch_change()
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.send_welcome_email()
+
+	def validate_branch_cc(self):
+		if self.cost_center != get_branch_cc(self.branch):
+			frappe.throw("Project\'s branch and cost center doesn't belong to each other")
 
 	def on_update(self):
                 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++

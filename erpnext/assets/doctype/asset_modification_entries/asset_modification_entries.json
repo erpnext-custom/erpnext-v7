@@ -190,13 +190,13 @@
  "hide_toolbar": 0, 
  "idx": 0, 
  "image_view": 0, 
- "in_create": 0, 
+ "in_create": 1, 
  "in_dialog": 0, 
  "is_submittable": 1, 
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-08-21 16:57:50.262339", 
+ "modified": "2018-12-10 14:37:00.977537", 
  "modified_by": "Administrator", 
  "module": "Assets", 
  "name": "Asset Modification Entries", 
@@ -221,7 +221,7 @@
    "set_user_permissions": 0, 
    "share": 0, 
    "submit": 0, 
-   "write": 1
+   "write": 0
   }, 
   {
    "amend": 1, 
