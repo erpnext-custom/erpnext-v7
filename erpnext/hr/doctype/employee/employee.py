@@ -154,7 +154,8 @@ class Employee(Document):
 
                         if (getdate(self.date_of_joining) != prev_doc.date_of_joining) or \
                            (self.status == 'Left' and self.relieving_date) or \
-                           (self.cost_center != prev_doc.cost_center):
+                           (self.cost_center != prev_doc.cost_center) or \
+                           (self.designation != prev_doc.designation):
                                 for wh in self.internal_work_history:
                                         # For change in date_of_joining
                                         if (getdate(self.date_of_joining) != prev_doc.date_of_joining):
@@ -168,7 +169,8 @@ class Employee(Document):
                                                 elif prev_doc.relieving_date:
                                                         if (getdate(prev_doc.relieving_date) == getdate(wh.to_date)):
                                                                 wh.to_date = self.relieving_date
-                                        elif (self.cost_center != prev_doc.cost_center):
+                                        elif (self.cost_center != prev_doc.cost_center) or \
+                                             (self.designation != prev_doc.designation):
                                                 if getdate(self.date_of_transfer) > getdate(today()):
                                                         frappe.throw(_("Date of transfer cannot be a future date."),title="Invalid Date")      
                                                 elif not wh.to_date:
@@ -177,7 +179,8 @@ class Employee(Document):
                                                                 
                                                         wh.to_date = wh.from_date if add_days(getdate(self.date_of_transfer),-1) < getdate(wh.from_date) else add_days(self.date_of_transfer,-1)
                                                 
-                        if (self.cost_center != prev_doc.cost_center):
+                        if (self.cost_center != prev_doc.cost_center) or \
+                           (self.designation != prev_doc.designation):
                                 self.append("internal_work_history",{
                                                 "branch": self.branch,
                                                 "cost_center": self.cost_center,
