@@ -20,6 +20,7 @@ class CurrencyExchange(Document):
 
 	def on_update(self):
 		doc = frappe.new_doc("Exchange Rate History")
+		doc.flags.ignore_permissions=1
 		doc.from_currency = self.from_currency
 		doc.to_currency = self.to_currency
 		doc.exchange_rate = self.exchange_rate

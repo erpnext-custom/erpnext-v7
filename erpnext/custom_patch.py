@@ -13,12 +13,19 @@ from erpnext.accounts.utils import make_asset_transfer_gl
 def test():
 	print("IN TEST")
 
-def restore_jc():
+def cancel_bdr():
+	#for a in frappe.db.sql("select name from `tabBreak Down Report` b where b.docstatus = 1 and b.date < '2018-12-01' and not exists (select 1 from `tabJob Card` j where j.break_down_report = b.name);", as_dict=1):
+	for a in frappe.db.sql("select name from `tabBreak Down Report` b where b.docstatus = 1 and b.date < '2018-12-01' and not exists (select 1 from `tabJob Card` j where j.break_down_report = b.name and j.docstatus in (0, 1));", as_dict=1):
+		print(str(a.name))
+		doc = frappe.get_doc("Break Down Report", a.name)
+		doc.cancel()
+
+"""def restore_jc():
 	for a in frappe.db.sql("select a.name, b.stock_entry from `tabJob Card` a, `tabJob Card Item` b where a.name = b.parent and a.docstatus = 1 and b.stock_entry is not null group by b.stock_entry", as_dict=1):
 		print(str(a.name) + " ==> " + str(a.stock_entry))
 		frappe.db.sql("update `tabStock Entry` set job_card = %s where name = %s", (a.name, a.stock_entry))
 
-"""def repost_stock_gl():
+def repost_stock_gl():
 	sr = frappe.db.sql("select a.name from `tabStock Reconciliation` a, `tabStock Reconciliation Item` b where a.name = b.parent and b.item_code = '100452' and a.docstatus = 1", as_dict=1)
 	for a in sr:
 		print(a.name)
