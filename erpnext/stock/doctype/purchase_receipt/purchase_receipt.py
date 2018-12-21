@@ -119,6 +119,7 @@ class PurchaseReceipt(BuyingController):
 
 	# on submit
 	def on_submit(self):
+		self.check_po_closed()
 		purchase_controller = frappe.get_doc("Purchase Common")
 
 		# Check for Approving Authority
@@ -145,6 +146,12 @@ class PurchaseReceipt(BuyingController):
 		self.make_gl_entries()
 		#self.consume_budget()
 		self.update_asset()
+
+	def check_po_closed(self):
+                for a in self.items:
+                        if a.purchase_order:
+                                if frappe.db.get_value("Purchase Order", a.purchase_order, "status") == "Closed":
+                                        frappe.throw("Cannot modify closed purchase order")
 
 	def update_po_detail(self):
 		updated_po = []

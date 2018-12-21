@@ -110,6 +110,17 @@ frappe.ui.form.on('Payment Entry', {
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);
 		frm.events.show_general_ledger(frm);
+		//Hide cancel button if is bank reconcilled
+		if(frm.doc.clearance_date) {
+			$(document).ready(function(){
+				$(".btn-sm").css("display", "none");
+			});
+		}
+		else {
+			$(document).ready(function(){
+				$(".btn-sm").css("display", "inline");
+			});
+		}
 	},
 
 	hide_unhide_fields: function(frm) {

@@ -281,6 +281,7 @@ class PurchaseInvoice(BuyingController):
 						.format(item.purchase_receipt))
 
 	def on_submit(self):
+		self.check_po_closed()
 		self.check_ba()
 		self.check_prev_docstatus()
 		self.update_status_updater_args()
@@ -308,6 +309,12 @@ class PurchaseInvoice(BuyingController):
 		self.update_fixed_asset()
 		self.consume_budget()
 		self.update_rrco_receipt()
+	
+	def check_po_closed(self):
+                for a in self.items:
+                        if a.purchase_order:
+                                if frappe.db.get_value("Purchase Order", a.purchase_order, "status") == "Closed":
+                                        frappe.throw("Cannot modify closed purchase order")
 
 	def update_fixed_asset(self):
 		for d in self.get("items"):

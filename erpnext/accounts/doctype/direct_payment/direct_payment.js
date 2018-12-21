@@ -45,6 +45,9 @@ frappe.ui.form.on('Direct Payment', {
 		}, __("View"));
 	}
 	},
+	"party_type": function(frm){
+		frm.set_value("party","");	
+	},
 
 	"payment_type": function(frm){
         	frm.set_value("party_type", (frm.doc.payment_type == "Payment")? "Supplier": "Customer");

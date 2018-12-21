@@ -18,6 +18,7 @@ class Production(StockController):
 		self.check_cop()
 		self.validate_data()
 		self.validate_warehouse()
+		self.validate_supplier()
 		self.validate_items()
 		self.validate_posting_time()
 
@@ -26,9 +27,15 @@ class Production(StockController):
 			frappe.throw("Select Adhoc Production to Proceed")
 		if self.production_type == "Planned":
 			self.adhoc_production = None
+		if self.work_type == "Private" and not self.supplier:
+			frappe.throw("Contractor is Mandatory if work type is private")
 
 	def validate_warehouse(self):
 		self.validate_warehouse_branch(self.warehouse, self.branch)
+
+	def validate_supplier(self):
+                if self.work_type == "Private" and not self.supplier:
+                        frappe.throw("Supplier Is Mandiatory For Production Carried Out By Others")
 
 	def validate_items(self):
 		prod_items = self.get_production_items()

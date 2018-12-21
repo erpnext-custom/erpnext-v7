@@ -18,11 +18,25 @@ def execute(filters=None):
 
 
 def get_columns(filters):
-	columns = [_("Reference") + ":Data:100", _("Reference No") + ":Dynamic Link/"+_("Reference")+":100", 
-	_("Sales Inv. No.") + ":Data:100", _("Sales Inv. Date") + ":Date:100", _("Sales Amount") + ":Currency:90", _("Received") + ":Currency:90", _("Receivable") + ":Currency:90", 
-	_("Payment Inv. No") + ":Data:100", _("Inv. Date") + ":Date:100", _("Payment Amount") + ":Currency:90", _("Paid") + ":Currency:90", _("Payable") + ":Currency:90",
-	_("Advance Received") + ":Currency:90", _("Rec. Adjusted") + ":Currency:90", _("Rec. Balance") + ":Currency:90",
-	_("Advance Paid") + ":Currency:90", _("Pay. Adjusted") + ":Currency:90", _("Pay. Balance") + ":Currency:90"]
+	columns = [
+	_("Reference") + ":Data:100",
+	 _("Reference No") + ":Dynamic Link/"+_("Reference")+":100", 
+	_("Sales Inv. No.") + ":Data:100", 
+	_("Sales Inv. Date") + ":Date:100", 
+	_("Sales Amount") + ":Currency:90", 
+	_("Received") + ":Currency:90", 
+	_("Receivable") + ":Currency:90", 
+	_("Payment Inv. No") + ":Data:100", 
+	_("Inv. Date") + ":Date:100", 
+	_("Payment Amount") + ":Currency:90", 
+	_("Paid") + ":Currency:90", 
+	_("Payable") + ":Currency:90",
+	_("Advance Received") + ":Currency:90", 
+	_("Rec. Adjusted") + ":Currency:90", 
+	_("Rec. Balance") + ":Currency:90",
+	_("Advance Paid") + ":Currency:90", 
+	_("Pay. Adjusted") + ":Currency:90", 
+	_("Pay. Balance") + ":Currency:90"]
 	return columns
 
 def get_data(filters):

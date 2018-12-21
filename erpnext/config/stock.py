@@ -101,6 +101,11 @@ def get_data():
 					"name": "stock-analytics",
 					"label": "Stock Analytics"
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "Item Register Tool",
+                                        "label": "Item Register Tool"
+                                },
 			]
 		},
                 {

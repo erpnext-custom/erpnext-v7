@@ -47,7 +47,7 @@ frappe.query_reports["Party Wise Ledger"] = {
 			"fieldname":"party_type",
 			"label": __("Party Type"),
 			"fieldtype": "Select",
-			"options": ["Customer", "Supplier", "Employee", "Equipment"],
+			"options": ["Customer", "Supplier", "Employee"],
 			"default": "Customer"
 		},
 		{
@@ -73,6 +73,11 @@ frappe.query_reports["Party Wise Ledger"] = {
 		{
 			"fieldname":"inter_company",
 			"label": __("DHI Inter Company?"),
+			"fieldtype": "Check",
+		},
+		{
+			"fieldname":"group_by_party",
+			"label": __("Group by party?"),
 			"fieldtype": "Check",
 		}
 	]
