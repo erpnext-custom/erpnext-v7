@@ -311,3 +311,20 @@ def sendmail(recipent, subject, message, sender=None):
 		frappe.sendmail(recipients=recipent, sender=None, subject=subject, message=message)
 	except:
 		pass
+
+def get_settings_value(setting_dt, company, field_name):
+	value = frappe.db.sql("select {0} from `tab{1}` where company = '{2}'".format(field_name, setting_dt, company))
+	return value and value[0][0] or None
+
+###
+# get_production_groups(group):
+###
+def get_production_groups(group):
+	if not group:
+		frappe.throw("Invalid Production Group")
+	groups = []
+	for a in frappe.db.sql("select item_sub_group from `tabProduction Group Item` where parent = %s", group, as_dict=1):
+		groups.append(str(a.item_sub_group))
+	return groups
+
+

@@ -5,6 +5,12 @@ from frappe import msgprint
 from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
 
+def adjust_budget_po():
+	for a in frappe.db.sql("select name, status from `tabPurchase Order` where status = 'Closed' and transaction_date > '2017-12-31' and docstatus = 1", as_dict=1):
+		print(str(a.name) + " ==> " + str(a.status))
+		doc = frappe.get_doc("Purchase Order", a.name)
+		doc.adjust_commit_budget(a.status)
+
 def cancel_dn():
 	sis = frappe.db.sql("select name, posting_date from `tabSales Invoice` where posting_date > '2017-12-31' and docstatus = 1;", as_dict=True)
 	for s in sis:

@@ -75,6 +75,8 @@ class PaymentEntry(AccountsController):
 		self.update_advance_paid()
 		
 	def on_cancel(self):
+		if self.clearance_date:
+			frappe.throw("Already done bank reconciliation.")
 		self.setup_party_account_field()
 		self.make_gl_entries(cancel=1)
 		self.update_advance_paid()

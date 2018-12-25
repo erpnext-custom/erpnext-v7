@@ -266,6 +266,12 @@ def get_data():
                                 {
 					"type": "report",
 					"is_query_report": True,
+					"name": "Travel Report",
+					"doctype": "Travel Claim"
+				},
+                                {
+					"type": "report",
+					"is_query_report": True,
 					"name": "Employee Salary Structure",
 					"doctype": "Salary Structure"
 				},
