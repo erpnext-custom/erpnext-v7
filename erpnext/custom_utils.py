@@ -327,4 +327,19 @@ def get_production_groups(group):
 		groups.append(str(a.item_sub_group))
 	return groups
 
+@frappe.whitelist()
+def get_branch_from_cost_center(cost_center):
+        return frappe.db.get_value("Branch", {"cost_center": cost_center}, "name")
+
+### 
+# get_production_groups(group):
+### 
+def get_production_groups(group): 
+        if not group:
+                frappe.throw("Invalid Production Group")
+        groups = []
+        for a in frappe.db.sql("select item_code from `tabProduction Group Item` where parent = %s", group, as_dict=1):
+                groups.append(str(a.item_code))
+        return groups
+
 
