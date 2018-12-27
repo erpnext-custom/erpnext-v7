@@ -184,6 +184,36 @@ def get_data():
 				}
 			]
 		},
+                {
+                        "label": _("Imprest Management"),
+                        "icon": "icon-cog",
+                        "items": [
+                                {
+                                        "type": "doctype",
+                                        "name": "Imprest Type",
+                                        "description": _("Imprest Types.")
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Imprest Receipt",
+                                        "label": "Receipt Entry",
+                                        "description": _("Imprest Receipt Entry.")
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Imprest Recoup",
+                                        "label": "Recoup Entry",
+                                        "description": _("Imprest Recoup Entry.")
+                                },
+                                {
+                                        "type": "report",
+                                        "label": _("Imprest Register"),
+                                        "is_query_report": True,
+                                        "name": "Register Imprest",
+                                        "doctype": "Imprest Receipt"
+                                },
+                        ]
+                },
 		{
 			"label": _("Accounting Statements"),
 			"items": [

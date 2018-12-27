@@ -1,0 +1,41 @@
+{
+ "add_total_row": 1, 
+ "apply_user_permissions": 1, 
+ "creation": "2017-09-18 12:17:16.602069", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2018-05-15 12:27:59.844411", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
+ "module": "Maintenance", 
+ "name": "Workshop Progress Report", 
+ "owner": "Administrator", 
+ "ref_doctype": "Job Card", 
+ "report_name": "Workshop Progress Report", 
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Management"
+  }, 
+  {
+   "role": "Mechanical Master"
+  }, 
+  {
+   "role": "Workshop Manager"
+  }, 
+  {
+   "role": "Accounts User"
+  }, 
+  {
+   "role": "Workshop User"
+  }, 
+  {
+   "role": "Auditor"
+  }
+ ]
+}

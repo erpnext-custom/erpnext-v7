@@ -48,11 +48,8 @@ def check_future_date(date):
 def get_branch_cc(branch):
         if not branch:
                 frappe.throw("No Branch Argument Found")
-        cc = frappe.db.get_value("Cost Center", {"branch": branch, "is_disabled": 0, "is_group": 0}, "name")
-        if not cc:
-		print(branch)
-                frappe.throw(str(branch) + " is not linked to any cost center")
-        return cc
+        doc = frappe.get_doc("Branch", branch)
+        return doc.cost_center
 
 ##
 # Rounds to the nearest 5 with precision of 1 by default
@@ -80,6 +77,23 @@ def get_year_end_date(date):
 # Ver 2.0 Begins, following method added by SHIV on 28/11/2017
 @frappe.whitelist()
 def get_user_info(user=None, employee=None, cost_center=None):
+        # Ver 2.0.181226 Begins, by SHIV on 2018/12/26
+        # SMCL cost_center, branch are to be fetched from Division master
+        info = {}
+        branch = None
+        cost_center = None
+        
+        if employee:
+                branch, cost_center = frappe.db.get_value("Division", frappe.db.get_value("Employee",{"name":employee},"division"),["branch","cost_center"])
+        elif user:
+                if frappe.db.exists("Employee",{"user_id":user}):
+                        branch, cost_center = frappe.db.get_value("Division", frappe.db.get_value("Employee",{"user_id":user},"division"),["branch","cost_center"])
+
+        info.setdefault('cost_center', cost_center)
+        info.setdefault('branch', branch)
+
+        # Following code commented by SHIV on 2018/12/26
+        '''
         info = {}
         
 	#cost_center,branch = frappe.db.get_value("Employee", {"user_id": user}, ["cost_center", "branch"])
@@ -125,6 +139,8 @@ def get_user_info(user=None, employee=None, cost_center=None):
         info.setdefault('customer', customer)
 	
 	#return [cc, wh, app, cust]
+        '''
+        # Ver 2.0.181226 Ends
         return info
 # Ver 2.0 Ends
 
@@ -267,8 +283,7 @@ def check_budget_available(cost_center, budget_account, transaction_date, amount
 @frappe.whitelist()
 def get_cc_warehouse(branch):
         cc = get_branch_cc(branch)
-        wh = frappe.db.get_value("Cost Center", cc, "warehouse")
-        return {"cc": cc, "wh": wh}	
+        return {"cc": cc, "wh": None}	
 
 @frappe.whitelist()
 def get_branch_warehouse(branch):
