@@ -1,0 +1,19 @@
+{
+ "creation": "2017-08-18 14:17:58.391047", 
+ "css": "@media all {\n   div .printedby {\n       position: fixed;\n       bottom: 0;\n       text-align: center;\n       font-size: xx-small;\n       width: 100% !important;\n   }\n}\ntable {\n    margin: 0 auto; /* or margin: 0 auto 0 auto */\n    width: 90%;\n line-height: auto; \n  }\n\n#main {\n   margin-left: 20px;\n   margin-right: 20px;", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "Job Card", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div class=\"page-break\">\n<div id=\"header-html\" class=\"hidden-pdf\">\n    {%- if letter_head and not no_letterhead -%}\n        <div class=\"letter-head\">\n            {{ letter_head }}\n        </div>\n    {%- endif -%}\n</div>\n\n\n<div id=\"footer-html\" class=\"visible-pdf\">\n    {% if not no_letterhead and footer %}\n        <div class=\"letter-head-footer\">\n        {{ footer }}\n        </div>\n    {% endif %}\n\n    <p class=\"text-center small page-number visible-pdf\">\n        {{ _(\"Page {0} of {1}\").format('<span class=\"page\"></span>', '<span class=\"topage\"></span>') }}\n    </p>\n</div>\n<div class=\"print-heading\">\n<div  style=\"text-align: center;\">\n    \n    <h3> JOB CARD INVOICE</h3>\n<h5><u>{{doc.branch}}</u></h5>\n  </div>\n<div>\n<table class = \"table1\" style=\"margin-top: 1px; text-align:justify;font-size:small; width:100% \">\n<tr>\n<td><strong>Job Card #:</strong></td>\n<td>{{ doc.name}}</td>\n<td><strong>Date:</strong></td>\n<td>{{ frappe.utils.formatdate(doc.posting_date)}}</td>\n</tr>\n<tr>\n<td><strong>Customer:</strong></td>\n<td>{{ doc.customer }}</td>\n</tr>\n<tr>\n</table>\n<table class=\"table table-bordered\" style=\"margin-top: 15px;\">\n  <tbody>\n\t<tr>\n\t\t<th style=\"text-align: center;\">Sr</th>\n\t\t<th style=\"text-align: center;\">Type</th>\n\t\t<th style=\"text-align: center;\">Discription</th>\n\t\t<th class=\"text-right\" style=\"text-align: center;\">Amount Billed</th>\n\t</tr>\n\t{%- for row in doc.items -%}\n\t<tr>\n\t\t<td style=\"width: 3%;\">1</td>\n\t\t<td style=\"width: 15%;\">{{ row.which }}</td>\n\t\t<td style=\"width: 25%; text-align= left; \">{{ row.job_name }}</td>\n\t\t<td style=\"width: 15%; text-align= right;\">{{ frappe.format_value(row.amount, {\"fieldtype\":\"Currency\"}) }}</td>\n\t{%- endfor -%}\n\t</tr>\n\n<tr><td colspan= \"3\" style=\"text-align:right;\"><b>Total Amount</b></td><td colspan= \"2\" style=\"text-align:right;\">{{ frappe.format_value((doc.total_amount), {\"fieldtype\":\"Currency\"})}}</td>\n</tr>\n  </tbody>\n</table>\n\n\n<div style=\"padding-top: 30px; clear: both;\">\n<div style=\"padding-top: 80px; width: 33%; float: left; text-align:center;\">(Mechanic) </div>\n<div style=\"padding-top: 110px; width: 33%; float: left; text-align:center;\">(Manager/Workshop) </div>\n<div style=\"padding-top: 130px; width: 33%; float: right; text-align:center;\">(Acknowleged By) </div>\n</div>\n</div>\n</div>\n</div>\n<div style=\"padding-top: 100px; clear: both;\">\n<div class=\"printedby\">This print is system generated and should be considered VALID only with appropriate seal and/or signature. <br>  Printed by {{ frappe.user }} on {{ frappe.utils.nowdate()  }} at {{ frappe.utils.nowtime() }}</div>\n", 
+ "idx": 0, 
+ "modified": "2018-01-16 16:37:37.728784", 
+ "modified_by": "Administrator", 
+ "name": "Job Card Invoice", 
+ "owner": "Administrator", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes"
+}

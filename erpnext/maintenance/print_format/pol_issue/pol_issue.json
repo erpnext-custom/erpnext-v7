@@ -1,0 +1,19 @@
+{
+ "creation": "2017-08-08 10:51:22.234610", 
+ "css": "@media all {\n   div .printedby {\n       position: fixed;\n       bottom: 0;\n       text-align: right;\n       font-size: xx-small;\n       width: 100% !important;\n   }\n}", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "Issue POL", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div class=\"page-break\">\n\t<div id=\"header-html\" class=\"hidden-pdf\">\n    {%- if letter_head and not no_letterhead -%}\n        <div class=\"letter-head\">\n            {{ letter_head }}\n        </div>\n    {%- endif -%}\n</div>\n\n\n<div id=\"footer-html\" class=\"visible-pdf\">\n    {% if not no_letterhead and footer %}\n        <div class=\"letter-head-footer\">\n        {{ footer }}\n        </div>\n    {% endif %}\n\n    <p class=\"text-center small page-number visible-pdf\">\n        {{ _(\"Page {0} of {1}\").format('<span class=\"page\"></span>', '<span class=\"topage\"></span>') }}\n    </p>\n</div>\n<div class=\"print-heading\">\n\t\t<div  style=\"text-align: center;\">\n<h3>HSD ISSUED SHEET</h3>\n<h5><u>\n{{doc.branch}}\n</u></h5>\n</div\n\n<table class = \"table1\" style=\"margin-top: 1px; text-align:justify;font-size:small; width:100% \">\n\n<tr>\n<td><strong>SL.No:</strong></td>\n<td><b>...................................</b></td>\n</tr>\n<tr>\n<td><strong>HSD Tanker Opening Balance:</strong></td>\n<td><b>...................................</b></td>\n</tr>\n<tr>\n<td><strong>HSD Draw:..................Liters Vide memono:..................&Date {{frappe.utils.formatdate(doc.date)}}</strong></td></tr>\n<tr>\n<div>\n<table class=\"table table-bordered\" style=\"margin-top: 10px; text-align:center;font-size:small\">\n<tr>\n<th>Date</th>\n<th>Equipments/Vehicle No</th>\n<th>HSD Opening Balance(Ltrs)</th>\n<th>HSD Issued(Ltrs)</th>\n<th>HR/KM Cloaked Between two Issues</th>\n<th>Lob book Page</th>\n<th>Name of Operator</th>\n<th>Signature></th>\n</tr>\n<tr height =\"40px\">\n<td>{{frappe.utils.formatdate(doc.date)}}</td>\n<td>{{doc.equipment_number}}</td>\n<td>opening balance</td>\n<td>{{doc.pol_issued}}</td>\n<td>{{doc.from_km_reading - doc.to_km_reading}}</td>\n<td>lob book</td>\n<td>{{doc.operator}}</td>\n<td> </td>\n</tr>\n</table>\n<p>\nHSD issued.....................Liters<br><br>HSD Tanker Closing Balance...............Liters\n</p>\n\n\n<div style=\"padding-top: 80px; width: 33%; float: left; text-align:center;\">(HSD Tanker Driver) </div>\n<div style=\"padding-top: 79px; width: 33%; float: right; text-align:center;\">(AM/Manager(fleet)) </div>\n\n\n\n<div style=\"padding-top: 100px; clear: both;\">\n<div class=\"printedby\">This print is system generated and should be considered VALID only with appropriate seal and/or signature. <br>  Printed by {{ frappe.user }} on {{ frappe.utils.nowdate()  }} at {{ frappe.utils.nowtime() }}</div>\n", 
+ "idx": 0, 
+ "modified": "2018-01-16 16:39:57.069228", 
+ "modified_by": "Administrator", 
+ "name": "POL Issue", 
+ "owner": "tashi.dorji775@bt.bt", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes"
+}

@@ -56,6 +56,11 @@ class SalesInvoice(SellingController):
 			self.indicator_title = _("Paid")
 
 	def validate(self):
+		total = 0
+                for a in self.get("payment_deduction_or_lost"):
+                        total += flt(a.amount)
+                self.charges_total = total
+
 		super(SalesInvoice, self).validate()
 		self.validate_posting_time()
 		self.so_dn_required()
@@ -529,7 +534,8 @@ class SalesInvoice(SellingController):
 		self.make_item_gl_entries(gl_entries)
 		
 		self.make_advance_gl_entry(gl_entries)
-		
+	
+		self.other_charge_gl_entry(gl_entries)	
 		# merge gl entries before adding pos entries
 		gl_entries = merge_similar_entries(gl_entries)
 
@@ -539,6 +545,35 @@ class SalesInvoice(SellingController):
 		self.make_write_off_gl_entry(gl_entries)
 
 		return gl_entries
+
+	def other_charge_gl_entry(self, gl_entries):
+        
+		for a in self.get("payment_deduction_or_lost"):
+                	if flt(a.amount) and a.account:
+                        	accounts = get_account_currency(a.account)
+                        
+                        	gl_entries.append(
+                                	self.get_gl_dict({
+                                        	"account": self.debit_to,
+                                        	"party_type": "Customer",
+                                        	"party": self.customer,
+                                        	"against": accounts,
+                                        	"debit": a.amount,
+                                        	"debit_in_account_currency": a.amount,
+                                        	"against_voucher": self.name,
+                                        	"against_voucher_type": self.doctype,
+                                	}, accounts)
+                        	)
+                        	gl_entries.append(
+                                	self.get_gl_dict({
+                                        	"account": a.account,
+                                        	"credit": a.amount,
+                                        	"credit_in_account_currency": a.amount,
+                                        	"cost_center": a.cost_center
+                                	}, accounts)
+                       	 	)
+
+
 
 	def make_customer_gl_entry(self, gl_entries):
 		if self.grand_total:

@@ -250,6 +250,18 @@ class StockController(AccountsController):
 			"name": self.name,
 		}, update_modified)
 
+        def validate_warehouse_branch(self, warehouse, branch):
+                if not branch:
+                        frappe.throw("Branch is Mandatory")
+                if not warehouse:
+                        frappe.throw("Warehouse is Mandatory")
+                branches = frappe.db.sql("select parent from `tabWarehouse Branch` where branch = %s", branch, as_dict=1)
+                for a in branches:
+                        if a.parent == warehouse:
+                                return
+                frappe.throw("Warehouse <b>" + str(warehouse) + "</b> doesn't belong to <b>" + str(branch) + "</b>")
+
+
 def update_gl_entries_after(posting_date, posting_time, for_warehouses=None, for_items=None,
 		warehouse_account=None):
 	def _delete_gl_entries(voucher_type, voucher_no):

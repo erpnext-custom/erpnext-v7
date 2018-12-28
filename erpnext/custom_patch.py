@@ -238,3 +238,10 @@ def createConsumed():
 			else:
 				print("NOT FOUND")
 			#print(str(i.purchase_order) + " / " + str(i.item_code) + " / " + str(i.amount))
+
+# Ver 2.0 Begins, added by SHIV
+# This method updates all the employees branches in user permissions
+def update_branch_permission():
+        for e in frappe.db.sql("select name, branch, user_id from `tabEmployee` where status = 'Active' and ifnull(user_id,'x') != 'x'",as_dict=True):
+                print e.name, e.branch, e.user_id
+                frappe.permissions.add_user_permission("Branch", e.branch, e.user_id)
