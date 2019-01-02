@@ -29,7 +29,15 @@ frappe.ui.form.on('Travel Claim', {
 		cur_frm.set_df_property("supervisor_approval", "hidden", 1)
 		cur_frm.set_df_property("hr_approval", "hidden", 1)
 		cur_frm.set_df_property("claim_status", "hidden", 1)
-		
+
+		frm.set_query("supervisor", function() {
+                        return {
+                                query: "erpnext.hr.doctype.leave_application.leave_application.get_approvers",
+                                filters: {
+                                        employee: frm.doc.employee
+                                }
+                        };
+                });		
 		/*
 		if (in_list(user_roles, "Approver") && frappe.session.user == frm.doc.supervisor) {
 			cur_frm.set_df_property("supervisor_approval", "hidden", 0)

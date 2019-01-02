@@ -28,9 +28,9 @@ frappe.ui.form.on("Customer", {
 		if(frm.doc.lead_name) frappe.model.clear_doc("Lead", frm.doc.lead_name);
 	},
 
-	"customer_group": function(frm) {
+	/*"customer_group": function(frm) {
 		frm.toggle_reqd("customer_id", frm.doc.customer_group == "Domestic");
-	}
+	}*/
 });
 
 cur_frm.cscript.onload = function(doc, dt, dn) {

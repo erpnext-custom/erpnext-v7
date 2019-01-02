@@ -31,10 +31,11 @@ class MarkingList(Document):
 		self.cost_center = get_branch_cc(self.branch)
 		total_amount = total_qty_m3 = total_qty_cft = log_volume = firewood_volume = 0
 		for d in self.items:
+			d.qty_m3 = flt(d.l_volume)*flt(d.no_of_trees)
 			if not flt(d.qty_m3) > 0:
 				frappe.throw("Volume cannot be zero or less")
-			if not flt(d.diameter) > 0:
-				frappe.throw("Diameter cannot be zero or less")
+			if not d.dbh_range:
+				frappe.throw("Select DBH range")
 
 			doc = frappe.get_doc("Timber Species", d.species)
 			d.timber_type = doc.timber_type

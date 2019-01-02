@@ -25,6 +25,19 @@ def populate_wh_branch():
 		row.branch = t.branch
 		row.save()
 
+def update_customer1():
+        cus = frappe.db.sql("select name from tabCustomer", as_dict=1)
+        count = 0
+        for a in cus:
+                #print a.name
+                count += 1
+		print a.name, count
+                doc = frappe.get_doc("Customer", a.name)
+                doc.customer_id = count
+                doc.save()
+                frappe.db.commit()
+
+
 def update_emp():
 	for a in frappe.db.sql("select name from tabEmployee where docstatus = 0", as_dict=1):
 		print(str(a.name))

@@ -238,10 +238,10 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 0, 
+   "reqd": 1, 
    "search_index": 0, 
    "set_only_once": 0, 
-   "unique": 0
+   "unique": 1
   }, 
   {
    "allow_on_submit": 0, 
@@ -1308,7 +1308,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-11-28 09:45:35.413337", 
+ "modified": "2018-12-26 16:39:47.692273", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Customer", 
@@ -1679,7 +1679,7 @@
  "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
- "search_fields": "customer_name,customer_group,territory", 
+ "search_fields": "customer_name,customer_id,customer_group", 
  "sort_field": "modified", 
  "sort_order": "ASC", 
  "title_field": "customer_name", 

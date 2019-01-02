@@ -133,6 +133,13 @@ def get_data():
 					"doctype": "Payment Entry",
 					"is_query_report": True,
 				},
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Timber Allotment To AWBI",
+                                        "label": "Timber Allotment Report",
+                                        "doctype": "Product Requisition"
+                                },
 			]
 		},
 		{

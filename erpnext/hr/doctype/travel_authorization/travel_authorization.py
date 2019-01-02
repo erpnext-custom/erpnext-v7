@@ -15,7 +15,7 @@ from datetime import timedelta
 class TravelAuthorization(Document):
 	def get_status(self):
                 if self.workflow_state == "Draft":
-                        self.document_status = ""
+                        self.document_status = None
                 if self.workflow_state == "Rejected":
                         self.document_status = "Rejected"
                 if self.workflow_state == "Approved":
@@ -254,14 +254,15 @@ class TravelAuthorization(Document):
 def make_travel_claim(source_name, target_doc=None): 
 	def update_date(obj, target, source_parent):
 		target.posting_date = nowdate()
+		target.supervisor = None
 	
 	def transfer_currency(obj, target, source_parent):
 		if obj.halt:
-			target.from_place = ""
-			target.to_place = ""
+			target.from_place = None
+			target.to_place = None
 		else:
 			target.no_days = 1
-			target.halt_at = ""
+			target.halt_at = None
 		target.currency = source_parent.currency
 		target.dsa = source_parent.dsa_per_day
 		if target.currency == "BTN":
