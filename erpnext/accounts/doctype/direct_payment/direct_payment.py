@@ -9,9 +9,11 @@ from frappe.utils import flt, cint, getdate, get_datetime, get_url, nowdate, now
 from erpnext.accounts.general_ledger import make_gl_entries
 from frappe import _
 from erpnext.controllers.accounts_controller import AccountsController
+from erpnext.custom_utils import check_future_date
 
 class DirectPayment(AccountsController):
 	def validate(self):
+		check_future_date(self.posting_date)
 		if self.payment_type == "Receive":
 			inter_company = frappe.db.get_value("Customer", self.party, "inter_company")
 			if inter_company == 0:
@@ -29,7 +31,6 @@ class DirectPayment(AccountsController):
 	def post_gl_entry(self):
 		gl_entries      = []
 		total_amount    = 0.0
-		self.posting_date = nowdate()
 		if (self.net_amount + self.tds_amount) == self.amount:
 			if self.payment_type == "Receive":
 				account_type = frappe.db.get_value("Account", self.debit_account, "account_type") or ""
@@ -46,7 +47,6 @@ class DirectPayment(AccountsController):
 							'party_type': 'Customer',						
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date,
 							"business_activity": self.business_activity
 							})
 						)
@@ -61,7 +61,6 @@ class DirectPayment(AccountsController):
 							"cost_center": self.cost_center,
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date,
 							"business_activity": self.business_activity
 							})
 						)
@@ -76,7 +75,6 @@ class DirectPayment(AccountsController):
 							"cost_center": self.cost_center,
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date,
 							"business_activity": self.business_activity
 							})
 						)
@@ -94,7 +92,6 @@ class DirectPayment(AccountsController):
 							'party_type': 'Customer',					
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date,
 							"business_activity": self.business_activity				
 							})
 						)
@@ -109,7 +106,6 @@ class DirectPayment(AccountsController):
 							"cost_center": self.cost_center,
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date,
 							"business_activity": self.business_activity					
 							})
 						)
@@ -128,7 +124,6 @@ class DirectPayment(AccountsController):
 							'party_type': 'Supplier',						
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date,
 							"business_activity": self.business_activity
 							})
 						)
@@ -143,7 +138,6 @@ class DirectPayment(AccountsController):
 							"cost_center": self.cost_center,						
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date,
 							"business_activity": self.business_activity
 							})
 						)
@@ -158,7 +152,6 @@ class DirectPayment(AccountsController):
 							"cost_center": self.cost_center,
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date,
 							"business_activity": self.business_activity
 							})
 						)
@@ -176,7 +169,6 @@ class DirectPayment(AccountsController):
 							'party_type': 'Supplier',
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date,
 							"business_activity": self.business_activity
 							})
 						)
@@ -191,7 +183,6 @@ class DirectPayment(AccountsController):
 							"cost_center": self.cost_center,
 							"company": self.company,
 							"remarks": self.remarks,
-							"posting_date": self.posting_date,
 							"business_activity": self.business_activity
 							})
 						)
