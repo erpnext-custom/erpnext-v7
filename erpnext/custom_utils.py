@@ -139,7 +139,7 @@ def generate_receipt_no(doctype, docname, branch, fiscal_year):
 		abbr = frappe.db.get_value("Branch", branch, "abbr")
 		if not abbr:
 			frappe.throw("Set Branch Abbreviation in Branch Master Record")
-		name = str("CDCL/" + str(abbr) + "/" + str(fiscal_year) + "/")
+		name = str("NRDCL/" + str(abbr) + "/" + str(fiscal_year) + "/")
 		current = getseries(name, 4)
 		doc = frappe.get_doc(doctype, docname)
 		doc.db_set("money_receipt_no", current)
