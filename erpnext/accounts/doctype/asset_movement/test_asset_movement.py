@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import now
 import unittest
-from erpnext.accounts.doctype.asset.test_asset import create_asset
+from erpnext.assets.doctype.asset.test_asset import create_asset
 
 
 class TestAssetMovement(unittest.TestCase):

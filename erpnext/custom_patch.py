@@ -4,6 +4,18 @@ from frappe.model.document import Document
 from frappe import msgprint
 from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years
+from erpnext.custom_utils import get_branch_cc
+
+def update_emp_cc():
+	for a in frappe.db.sql("select name, branch from tabEmployee", as_dict=1):
+		#if not get_branch_cc(a.branch):
+		print(str(a.name) + " ==> " + str(a.branch))
+		frappe.db.sql("update tabEmployee set cost_center = %s where name = %s", (get_branch_cc(a.branch), a.name))
+
+def move_asset_movement():
+        ams = frappe.db.sql("select name, transaction_date from `tabAsset Movement`", as_dict=True)
+        for a in ams:
+                frappe.db.sql("update `tabAsset Movement` set posting_date = %s where name = %s", (a.transaction_date, a.name))
 
 def adjust_budget_po():
 	for a in frappe.db.sql("select name, status from `tabPurchase Order` where status = 'Closed' and transaction_date > '2017-12-31' and docstatus = 1", as_dict=1):
