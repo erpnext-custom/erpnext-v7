@@ -62,6 +62,14 @@ frappe.ui.form.on("Production", "refresh", function(frm) {
         }
     });
 
+    cur_frm.set_query("branch", function() {
+        return {
+            "filters": {
+		"is_disabled": 0
+            }
+        };
+    });
+
     cur_frm.set_query("location", function() {
         return {
             "filters": {
