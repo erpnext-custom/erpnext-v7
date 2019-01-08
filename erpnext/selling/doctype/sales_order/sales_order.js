@@ -41,9 +41,28 @@ frappe.ui.form.on("Sales Order", {
 		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges))
 		cur_frm.refresh_field("discount_amount")
 	},
+
 	"loading_cost": function(frm) {
 		cur_frm.set_value("grand_total", flt(frm.doc.grand_total) + flt(frm.doc.loading_cost));
-	}
+	},
+
+	"transportation_rate": function(frm) {
+		cur_frm.set_value("transportation_charges", flt(frm.doc.transportation_rate) * flt(frm.doc.total_distance) * flt(frm.doc.total_quantity))
+		cur_frm.trigger("transportation_charges")
+		cur_frm.refresh_field("transportation_charges")
+	},
+
+	"total_distance": function(frm) {
+		cur_frm.set_value("transportation_charges", flt(frm.doc.transportation_rate) * flt(frm.doc.total_distance) * flt(frm.doc.total_quantity))
+		cur_frm.trigger("transportation_charges")
+		cur_frm.refresh_field("transportation_charges")
+	},
+
+	"total_quantity": function(frm) {
+		cur_frm.set_value("transportation_charges", flt(frm.doc.transportation_rate) * flt(frm.doc.total_distance) * flt(frm.doc.total_quantity))
+		cur_frm.trigger("transportation_charges")
+		cur_frm.refresh_field("transportation_charges")
+	},
 });
 
 /*

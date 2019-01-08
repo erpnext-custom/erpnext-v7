@@ -31,6 +31,7 @@ class SalesOrder(SellingController):
 	def validate(self):
 		check_future_date(self.transaction_date)
 		super(SalesOrder, self).validate()
+		self.calculate_transportation()
 
 		self.validate_order_type()
 		self.validate_delivery_date()
@@ -50,6 +51,15 @@ class SalesOrder(SellingController):
 
 		if not self.billing_status: self.billing_status = 'Not Billed'
 		if not self.delivery_status: self.delivery_status = 'Not Delivered'
+
+	def calculate_transportation(self):
+		total_qty = 0
+		for a in self.items:
+			total_qty += flt(a.qty)
+
+		self.total_quantity = total_qty
+		self.transportation_charges = flt(self.total_quantity) * flt(self.total_distance) * flt(self.transportation_rate)
+		self.discount_amount = flt(self.discount_or_cost_amount) - flt(self.transportation_charges)
 
 	def validate_mandatory(self):
 		# validate transaction date v/s delivery date
