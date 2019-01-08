@@ -1955,7 +1955,7 @@
    "collapsible": 0, 
    "fieldname": "discount_amount", 
    "fieldtype": "Currency", 
-   "hidden": 0, 
+   "hidden": 1, 
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
@@ -4133,18 +4133,18 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2018-12-01 16:45:39.894092", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2019-01-08 18:06:28.630540", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Sales Invoice", 
  "name_case": "Title Case", 
  "owner": "Administrator", 
  "permissions": [
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
-   "create": 0, 
+   "cancel": 1, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -4157,8 +4157,8 @@
    "role": "Asset Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
-   "write": 0
+   "submit": 1, 
+   "write": 1
   }, 
   {
    "amend": 0, 
@@ -4184,7 +4184,7 @@
    "amend": 0, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
-   "create": 1, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -4197,9 +4197,9 @@
    "role": "Accounts User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
-   "write": 1
+   "write": 0
   }, 
   {
    "amend": 0, 

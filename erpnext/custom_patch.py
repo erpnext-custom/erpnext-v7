@@ -9,6 +9,46 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_si():
+	for a in frappe.db.sql("select name, net_total, total_advance from `tabSales Invoice` where posting_date > '2018-12-31' and outstanding_amount > 0", as_dict=1):
+		for b in frappe.db.sql("select name, credit, debit from `tabGL Entry` where voucher_no = %s and account != 'Advance from Customer - NRDCL'", a.name, as_dict=1):	
+			if b.credit and b.credit != a.net_total and b.credit != a.total_advance:
+				print(str(a.name) + " ==> " + str(a.net_total) + " >>> " + str(b.credit))
+				frappe.db.sql("update `tabGL Entry` set credit = %s, credit_in_account_currency = %s where name = %s", (a.net_total, a.net_total, b.name))
+			if b.debit and b.debit != a.net_total and b.debit != a.total_advance:
+				frappe.db.sql("update `tabGL Entry` set debit = %s, debit_in_account_currency = %s where name = %s", (a.net_total, a.net_total, b.name))
+				print(str(b.name) + " " + str(a.name) + " ==> " + str(a.net_total) + " >>> " + str(b.debit))
+				#frappe.db.sql("")
+
+def update_dn():
+	for a in frappe.db.sql("select b.parent, b.name, a.transportation_rate as r, a.total_distance as d, b.qty, b.rate from `tabDelivery Note` a, `tabDelivery Note Item` b where a.name = b.parent and a.transportation_charges > 0 and a.docstatus != 2", as_dict=1):
+		nr = flt(a.r) * flt(a.d)
+		net = nr + flt(a.rate)
+		nt = flt(net) * flt(a.qty)
+		print(str(a.parent) + " ==> " + str(net) + " >>> " + str(nt))
+		frappe.db.sql("update `tabDelivery Note Item` set net_rate = %s, net_amount = %s, base_net_rate = %s, base_net_amount = %s where name = %s", (net, nt, net, nt, a.name))
+
+
+	"""for a in frappe.db.sql("select a.name, a.transportation_charges as tc, a.total from `tabDelivery Note` a where a.transportation_charges > 0 and a.docstatus != 2", as_dict=1):
+		nt = flt(a.tc) + flt(a.total)
+		print(str(a.name) + " ==> " + str(nt))
+		in_word = frappe.utils.money_in_words(nt)
+		frappe.db.sql("update `tabDelivery Note` set net_total = %s, grand_total = %s, in_words = %s where name = %s", (nt, nt, in_word, a.name))	
+
+	for a in frappe.db.sql("select a.discount_or_cost_amount as dc, a.branch, a.name, sum(b.qty) as qty, b.against_sales_order as so from `tabDelivery Note` a, `tabDelivery Note Item` b where a.name = b.parent and a.transportation_charges > 0 and a.docstatus != 2 group by a.name", as_dict=1):
+		d = frappe.get_doc("Sales Order", a.so).total_distance
+		c = flt(d) * flt(a.qty) * 13.23
+		print(str(a.name) + " ==> " + str(c))
+		tdc = flt(a.dc) - flt(c)
+		frappe.db.sql("update `tabDelivery Note` set transportation_rate = %s, total_quantity = %s, total_distance = %s, transportation_charges = %s, discount_amount = %s where name = %s", (13.23, flt(a.qty), flt(round(d, 2)), flt(c), flt(tdc),  a.name))"""
+
+
+def update_so():
+	for a in frappe.db.sql("select a.branch, a.name, a.transportation_charges as tc, sum(b.qty) as qty from `tabSales Order` a, `tabSales Order Item` b where a.name = b.parent and a.transportation_charges > 0 and a.docstatus != 2 group by a.name", as_dict=1):
+		distance = flt(a.tc) / (13.23 * flt(a.qty))
+		print(str(a.name) + " ==> " + str(distance))
+		frappe.db.sql("update `tabSales Order` set transportation_rate = %s, total_quantity = %s, total_distance = %s where name = %s", (13.23, flt(a.qty), flt(round(distance, 2)), a.name))
+
 #
 def update_equip():
 	for a in frappe.db.sql("select name, hsd_type from tabEquipment where hsd_type is not null", as_dict=1):
