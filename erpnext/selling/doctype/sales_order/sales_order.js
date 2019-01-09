@@ -3,6 +3,8 @@
 
 {% include 'erpnext/selling/sales_common.js' %}
 
+cur_frm.add_fetch("rate_template", "rate", "transportation_rate")
+
 frappe.ui.form.on("Sales Order", {
 	onload: function(frm) {
 		/*erpnext.queries.setup_queries(frm, "Warehouse", function() {
@@ -339,6 +341,13 @@ frappe.ui.form.on("Sales Order", "refresh", function(frm) {
         return {
             "filters": {
                 "disabled": 0
+            }
+        };
+    });
+    cur_frm.set_query("rate_template", function() {
+        return {
+            "filters": {
+                "branch": frm.doc.branch
             }
         };
     });

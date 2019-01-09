@@ -63,6 +63,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Loss Tolerance",
 					"description": _("Loss Tolerance Setting"),
+				},
+				{
+					"type": "doctype",
+					"name": "Transportation Rate",
 				}
 			]
 		},
