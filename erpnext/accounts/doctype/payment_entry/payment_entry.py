@@ -844,7 +844,7 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 
 	ba = get_default_ba()
 	cc = get_branch_cc(doc.branch)
-	if dt == "Sales Invoice" or dt == "Sales Order":
+	if dt == "Sales Invoice":
                 bank_acc = frappe.db.get_value("Branch", doc.branch, "revenue_bank_account")
 		ba = doc.business_activity
 	elif dt == "Sales Order":
