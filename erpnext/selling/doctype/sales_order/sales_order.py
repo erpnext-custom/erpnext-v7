@@ -174,6 +174,7 @@ class SalesOrder(SellingController):
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype, self.company, self.base_grand_total, self)
 
 		self.update_prevdoc_status('submit')
+		self.update_product_requisition(action="Submit")
 
 	def on_cancel(self):
 		# Cannot cancel closed SO
@@ -187,6 +188,7 @@ class SalesOrder(SellingController):
 		self.update_prevdoc_status('cancel')
 
 		frappe.db.set(self, 'status', 'Cancelled')
+		self.update_product_requisition(action = 'Cancell')
 
 	def check_credit_limit(self):
 		from erpnext.selling.doctype.customer.customer import check_credit_limit
@@ -272,6 +274,16 @@ class SalesOrder(SellingController):
 		self.validate_drop_ship()
 		self.validate_supplier_after_submit()
 		#self.get_selling_rate()
+
+	def update_product_requisition(self, action):
+		if action == 'Cancell':
+			ref_doc = ''
+		else:
+			ref_doc = self.name
+		
+		if self.po_no:
+			doc = frappe.get_doc("Product Requisition", self.po_no)
+			doc.db_set("so_reference", ref_doc)
 
 	def validate_supplier_after_submit(self):
 		"""Check that supplier is the same after submit if PO is already made"""

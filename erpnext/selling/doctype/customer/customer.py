@@ -24,21 +24,22 @@ class Customer(TransactionBase):
 	def autoname(self):
 		cust_master_name = frappe.defaults.get_global_default('cust_master_name')
 		if cust_master_name == 'Customer Name':
-			self.name = self.get_customer_name()
+			#self.name = self.get_customer_name()
+			self.name = str(self.customer_name) + '(' + str(self.customer_id) + ')'
 		else:
 			if not self.naming_series:
 				frappe.throw(_("Series is mandatory"), frappe.MandatoryError)
 
 			self.name = make_autoname(self.naming_series+'.#####')
 
-	def get_customer_name(self):
+	'''def get_customer_name(self):
 		if frappe.db.get_value("Customer", self.customer_name):
 			count = frappe.db.sql("""select ifnull(max(SUBSTRING_INDEX(name, ' ', -1)), 0) from tabCustomer
 				 where name like %s""", "%{0} - %".format(self.customer_name), as_list=1)[0][0]
 			count = cint(count) + 1
 			return "{0} - {1}".format(self.customer_name, cstr(count))
 
-		return self.customer_name
+		return self.customer_name'''
 
 	def validate(self):
 		self.flags.is_new_doc = self.is_new()

@@ -43,6 +43,10 @@ frappe.ui.form.on("Sales Order", {
 		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges))
 		cur_frm.refresh_field("discount_amount")
 	},
+	"addition_new": function(frm) {
+                cur_frm.set_value("grand_total", flt(frm.doc.addition_new) + flt(frm.doc.grand_total))
+                cur_frm.refresh_field("addition_new")
+        },
 
 	"loading_cost": function(frm) {
 		cur_frm.set_value("grand_total", flt(frm.doc.grand_total) + flt(frm.doc.loading_cost));

@@ -28,6 +28,7 @@ class ImprestRecoup(AccountsController):
                         self.post_receipt_entry()
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
                 self.post_gl_entry()
+                self.consume_budget()
         
         def on_cancel(self):
 		if self.clearance_date:
@@ -39,6 +40,7 @@ class ImprestRecoup(AccountsController):
                         
                 self.post_gl_entry()
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
+		self.cancel_budget_entry()
 
         def validate_defaults(self):
                 if frappe.db.get_value("Branch Imprest Item", {"parent": self.branch, "imprest_type": self.imprest_type}, "imprest_status") == "Closed":
@@ -180,6 +182,45 @@ class ImprestRecoup(AccountsController):
                         )
                 
                 make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
+ 	##
+        # Update the Committedd Budget for checking budget availability
+        ##
+        def consume_budget(self):
+                for i in self.items:
+                        bud_obj = frappe.get_doc({
+                                "doctype": "Committed Budget",
+                                "account": i.budget_account,
+                                "cost_center": self.cost_center,
+                                "po_no": self.name,
+                                "po_date": self.posting_date,
+                                "amount": i.amount,
+                                "poi_name": self.name,
+                                "date": frappe.utils.nowdate()
+                                })
+                        bud_obj.flags.ignore_permissions = 1
+                        bud_obj.submit()
+
+                        consume = frappe.get_doc({
+                                "doctype": "Consumed Budget",
+                                "account": i.budget_account,
+                                "cost_center": self.cost_center,
+                                "po_no": self.name,
+                                "po_date": self.posting_date,
+                                "amount": i.amount,
+                                "pii_name": self.name,
+                                "com_ref": bud_obj.name,
+                                "date": frappe.utils.nowdate()})
+                        consume.flags.ignore_permissions=1
+                        consume.submit()
+
+
+	##
+        # Cancel budget check entry
+        ##
+        def cancel_budget_entry(self):
+                frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
+                frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
+
         
         def post_journal_entry(self):
                 entries         = {}

@@ -76,7 +76,6 @@ def get_data(filters):
 			row["no_of_story"] = pr.no_of_story
 			qty_required += flt(pr.qty_required)
 		data.append(row)
-		agg_qty += flt(d.sii_qty)
 		agg_amount += flt(d.sii_amount)
 		qty +=  flt(d.sii_qty)  
 		rate +=  flt(d.sii_rate)
@@ -85,6 +84,7 @@ def get_data(filters):
 		delivered_qty =+ flt(d.sii_qty)
 		balance_qty += flt(d.qty_approved) - flt(d.sii_qty)
 		transportation_charges += flt(d.transportation_charges)
+		frappe.msgprint("agg: {0}, qt: {1}".format(agg_qty, qty))
 		row = { "agg_qty": agg_qty, "agg_amount": agg_amount, "qty": qty, "rate": rate, "amount": amount, 
 		"qty_approved": qty_approved, "qty_required": qty_required, "qty_approved": qty_approved, "delivered_qty": delivered_qty,
                 "balance_qty":  balance_qty, "transportation_charges": transportation_charges, "agg_branch": "'Total'", "sales_order": "'Total'"}
@@ -155,8 +155,6 @@ def get_conditions(filters):
 	if filters.timber_class:
 		condition += """ and '{0}' in (select ts.timber_class from `tabItem` i, `tabTimber Species` ts where ts.species = i.species 
                 and i.item_code = soi.item_code)""".format(filters.timber_class)
-	'''if filters.timber_type == 'All':
-		condition += " and 1 = 1"'''
 	
 	if filters.timber_type != 'All':
 		condition += """ and '{0}' in (select ts.timber_type from `tabItem` i, `tabTimber Species` ts where ts.species = i.species 
@@ -412,7 +410,7 @@ def get_columns(filters):
                   "width": 100
                 },
                 {
-                  "fieldname": "agg_qty",
+                  "fieldname": "qty",
                   "label": "Sales Qty",
                   "fieldtype": "Float",
                   "width": 90
