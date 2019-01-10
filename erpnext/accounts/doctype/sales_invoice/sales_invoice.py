@@ -95,6 +95,7 @@ class SalesInvoice(SellingController):
 		set_account_for_mode_of_payment(self)
 
 	def on_submit(self):
+		self.check_advance_amount()
 		if not self.recurring_id:
 			frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype,
 			 	self.company, self.base_grand_total, self)
@@ -126,6 +127,12 @@ class SalesInvoice(SellingController):
 			self.update_against_document_in_jv()
 
 		self.update_time_sheet(self.name)
+
+	def check_advance_amount(self):
+		if self.advances and not flt(self.outstanding_amount) == 0:
+			for a in self.advances:
+				if a.advance_amount > a.allocated_amount:
+					frappe.throw("Outstanding Amount should be zero for Sales Invoice with Advance")
 
 	def before_cancel(self):
 		self.update_time_sheet(None)

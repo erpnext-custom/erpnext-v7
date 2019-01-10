@@ -36,7 +36,7 @@ class SalaryAdvance(Document):
 		je.branch = self.branch
 
 		je.append("accounts", {
-				"account":expense_bank_account,
+				"account":ic_account,
 				"business_activity": self.business_activity,
 				"reference_name": self.name,
 				"reference_type": "Salary Advance",
@@ -45,7 +45,7 @@ class SalaryAdvance(Document):
 				"debit": flt(self.total_claim),
 					})
 		je.append("accounts", {
-				"account": ic_account,
+				"account": expense_bank_account,
 				"business_activity": self.business_activity,
 				"reference_type": "Salary Advance",
 				"reference_name": self.name,

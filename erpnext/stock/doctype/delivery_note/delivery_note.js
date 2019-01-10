@@ -131,7 +131,7 @@ erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend(
         "transportation_charges": function(frm) {
 		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
                 cur_frm.refresh_field("discount_amount")
-        }
+        },
 
 	"additional_cost": function(frm) {
 		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))

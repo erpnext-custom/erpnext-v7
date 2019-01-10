@@ -42,6 +42,32 @@ def update_dn():
 		tdc = flt(a.dc) - flt(c)
 		frappe.db.sql("update `tabDelivery Note` set transportation_rate = %s, total_quantity = %s, total_distance = %s, transportation_charges = %s, discount_amount = %s where name = %s", (13.23, flt(a.qty), flt(round(d, 2)), flt(c), flt(tdc),  a.name))"""
 
+def update_consumed_budget_direct_payment():
+        ml = frappe.db.sql("select p.name as name, p.posting_date as posting_date, p.cost_center as cost_center, p.debit_account as budget_account, p.amount as amount  from `tabDirect Payment` p where p.payment_type='payment' and p.name not in (select po_no from `tabConsumed Budget`)", as_dict=1)
+        for a in ml:
+                dc = frappe.new_doc("Committed Budget")
+                dc.account = a.budget_account
+                dc.cost_center = a.cost_center
+                dc.po_no = a.name
+                dc.po_date = a.posting_date
+                dc.amount = a.amount
+                dc.poi_name = a.name
+                dc.date = a.posting_date
+                dc.flags.ignore_permissions=1
+                dc.submit()
+
+                cb = frappe.new_doc("Consumed Budget")
+                cb.account = a.budget_account
+                cb.cost_center = a.cost_center
+                cb.po_no = a.name
+                cb.po_date = a.posting_date
+                cb.amount = a.amount
+                cb.pii_name = a.name,
+                cb.com_ref = dc.name,
+                cb.date = a.posting_date
+                cb.flags.ignore_permissions=1
+                cb.submit()
+
 
 def update_consumed_budget():
         ml = frappe.db.sql("select p.name as name, p.posting_date as posting_date, p.cost_center as cost_center, i.budget_account as budget_account, i.amount as amount  from `tabImprest Recoup` p, `tabImprest Recoup Item` i where p.name = i.parent and p.docstatus = 1 and p.name not in (select po_no from `tabConsumed Budget`)", as_dict=1)

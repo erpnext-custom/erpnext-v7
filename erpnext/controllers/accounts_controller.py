@@ -300,7 +300,7 @@ class AccountsController(TransactionBase):
 				"reference_row": d.reference_row,
 				"remarks": d.remarks,
 				"advance_amount": flt(d.amount),
-				"allocated_amount": flt(d.amount) if d.against_order else 0,
+				"allocated_amount": flt(self.grand_total) if d.against_order else 0,
 				"advance_account": d.advance_account,
 				"advance_cost_center": d.cost_center,
 				"advance_business_activity": d.business_activity
