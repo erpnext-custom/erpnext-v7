@@ -106,7 +106,20 @@ class BankReconciliation(Document):
                         {3}
                 """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 
-		mechanical_entries = frappe.db.sql("""
+                direct_payment_entries = frappe.db.sql("""
+                        select
+                                "Direct Payment" as payment_document, name as payment_entry,
+                                cheque_no as cheque_number, cheque_date,
+                                net_amount as amount,
+                                posting_date, branch as against_account, clearance_date
+                        from `tabDirect Payment`
+                        where '{0}' IN (credit_account, debit_account)
+                        and docstatus = 1
+                        and posting_date between '{1}' and '{2}'
+                        {3}
+                """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+
+		mechanical_entries  = frappe.db.sql("""
                         select
                                 "Mechanical Payment" as payment_document, name as payment_entry,
                                 cheque_no as cheque_number, cheque_date,
@@ -133,18 +146,18 @@ class BankReconciliation(Document):
                 """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 		# Ver 2.0 Ends
 		
-		direct_payment_entries = frappe.db.sql("""
-                        select
-                                "Direct Payment" as payment_document, name as payment_entry,
-                                cheque_no as cheque_number, cheque_date,
-                                net_amount as amount,
-                                posting_date, party as against_account, clearance_date
-                        from `tabDirect Payment`
-                        where (debit_account = '{0}' or credit_account = '{1}')
-                        and docstatus = 1
-                        and posting_date >= '{2}' and posting_date <= '{3}'
-                        {4}
-                """.format(self.bank_account, self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+#		direct_payment_entries = frappe.db.sql("""
+#                        select
+#                                "Direct Payment" as payment_document, name as payment_entry,
+#                                cheque_no as cheque_number, cheque_date,
+#                                net_amount as amount,
+#                                posting_date, party as against_account, clearance_date
+#                        from `tabDirect Payment`
+#                        where (debit_account = '{0}' or credit_account = '{1}')
+#                        and docstatus = 1
+#                        and posting_date >= '{2}' and posting_date <= '{3}'
+#                        {4}
+#                """.format(self.bank_account, self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 
 		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))

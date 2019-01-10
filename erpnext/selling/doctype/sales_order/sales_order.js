@@ -34,22 +34,25 @@ frappe.ui.form.on("Sales Order", {
 			}
 		}*/
 	},
+
 	"discount_or_cost_amount": function(frm) {
-		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges))
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
 		cur_frm.refresh_field("discount_amount")
 	},
 
 	"transportation_charges": function(frm) {
-		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges))
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
 		cur_frm.refresh_field("discount_amount")
 	},
-	"addition_new": function(frm) {
-                cur_frm.set_value("grand_total", flt(frm.doc.addition_new) + flt(frm.doc.grand_total))
-                cur_frm.refresh_field("addition_new")
+
+	"additional_cost": function(frm) {
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
+		cur_frm.refresh_field("discount_amount")
         },
 
 	"loading_cost": function(frm) {
-		cur_frm.set_value("grand_total", flt(frm.doc.grand_total) + flt(frm.doc.loading_cost));
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
+		cur_frm.refresh_field("discount_amount")
 	},
 
 	"transportation_rate": function(frm) {

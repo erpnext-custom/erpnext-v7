@@ -59,7 +59,7 @@ class SalesOrder(SellingController):
 
 		self.total_quantity = total_qty
 		self.transportation_charges = flt(self.total_quantity) * flt(self.total_distance) * flt(self.transportation_rate)
-		self.discount_amount = flt(self.discount_or_cost_amount) - flt(self.transportation_charges)
+		self.discount_amount = flt(self.discount_or_cost_amount) - flt(self.transportation_charges) - flt(self.loading_cost) - flt(self.additional_cost)
 
 	def validate_mandatory(self):
 		# validate transaction date v/s delivery date

@@ -22,11 +22,53 @@ class DirectPayment(AccountsController):
 
 	def on_submit(self):
 		self.post_gl_entry()
+		self.consume_budget()
 
 	def on_cancel(self):
 		if self.clearance_date:
 			frappe.throw("Already done bank reconciliation.")
 		self.post_gl_entry()
+		self.cancel_budget_entry()
+
+	##
+        # Update the Committedd Budget for checking budget availability
+        ##
+        def consume_budget(self):
+                if self.payment_type == "Payment":
+                        bud_obj = frappe.get_doc({
+                                "doctype": "Committed Budget",
+                                "account": self.debit_account,
+                                "cost_center": self.cost_center,
+                                "po_no": self.name,
+                                "po_date": self.posting_date,
+                                "amount": self.amount,
+                                "poi_name": self.name,
+                                "date": frappe.utils.nowdate()
+                                })
+                        bud_obj.flags.ignore_permissions = 1
+                        bud_obj.submit()
+
+                        consume = frappe.get_doc({
+                                "doctype": "Consumed Budget",
+                                "account": self.debit_account,
+                                "cost_center": self.cost_center,
+                                "po_no": self.name,
+                                "po_date": self.posting_date,
+                                "amount": self.amount,
+                                "pii_name": self.name,
+                                "com_ref": bud_obj.name,
+                                "date": frappe.utils.nowdate()})
+                        consume.flags.ignore_permissions=1
+                        consume.submit()
+
+
+
+	##
+        # Cancel budget check entry
+        ##
+        def cancel_budget_entry(self):
+                frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
+                frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 
 	def post_gl_entry(self):
 		gl_entries      = []
