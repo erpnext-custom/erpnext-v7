@@ -4,6 +4,7 @@ data = {
 	'fieldname': 'sales_order',
 	'non_standard_fieldnames': {
 		'Delivery Note': 'against_sales_order',
+		'Payment Entry': 'so_reference',
 	},
 	'internal_links': {
 		'Quotation': ['items', 'prevdoc_docname']
@@ -11,7 +12,7 @@ data = {
 	'transactions': [
 		{
 			'label': _('Fulfillment'),
-			'items': ['Sales Invoice', 'Delivery Note']
+			'items': ['Payment Entry', 'Sales Invoice', 'Delivery Note']
 		},
 		{
 			'label': _('Purchasing'),

@@ -876,6 +876,9 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	pe.business_activity = ba
 	pe.pl_cost_center = cc
 
+	if dt == "Sales Order" or dt == "Purchase Order":
+		pe.so_reference = doc.name
+
         # Ver 2.0 Begins, Following code added SHIV on 03/01/2018
         if party_currency and bank.account_currency:
                 pe.party_currency = party_currency

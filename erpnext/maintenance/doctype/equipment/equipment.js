@@ -12,7 +12,6 @@ frappe.ui.form.on('Equipment', {
 		cur_frm.set_df_property("asset_code", "read_only", frm.doc.asset_code ? 1 : 0)
 		cur_frm.set_df_property("chassis_number", "read_only", frm.doc.chassis_number ? 1 : 0)
 		cur_frm.set_df_property("hsd_type", "read_only", frm.doc.hsd_type ? 1 : 0)
-		cur_frm.set_df_property("branch", "read_only", frm.doc.branch ? 1 : 0)
 		cur_frm.set_df_property("fuelbook", "read_only", frm.doc.fuelbook ? 1 : 0)
 		cur_frm.set_df_property("business_activity", "read_only", frm.doc.business_activity ? 1 : 0)
 		cur_frm.set_df_property("equipment_category", "read_only", frm.doc.equipment_category ? 1 : 0)

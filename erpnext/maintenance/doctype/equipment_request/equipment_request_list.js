@@ -1,5 +1,18 @@
 frappe.listview_settings['Equipment Request'] = {
-        add_fields: ["percent_completed", "docstatus"],
+        add_fields: ["docstatus", "ehf"],
+        get_indicator: function(doc) {
+                if(doc.ehf != "") {
+                        return ["EHF Created", "orange"];
+                }
+                else {
+                        return ["ER Created", "green"];
+                }
+        }
+};
+
+
+/*frappe.listview_settings['Equipment Request'] = {
+        add_fields: ["docstatus", "ehf"],
         get_indicator: function(doc) {
                 if(doc.percent_completed == 0) {
                         return ["Requested", "orange", "docstatus,=,1|percent_completed,=,0"];
@@ -11,5 +24,5 @@ frappe.listview_settings['Equipment Request'] = {
                         return ["Completed", "green", "docstatus,=,1|percent_completed,=,100"];
                 }
         }
-}
+};*/
 

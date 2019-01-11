@@ -197,6 +197,8 @@ def set_business_activity(asset, source_ba, target_ba, submit):
 		equip.db_set("business_activity", ba)
 
 def save_equipment(equipment, branch, posting_date, ref_doc, purpose):
+	if not frappe.db.get_single_value("Accounts Settings", "update_equipment_from_asset"):
+		return
 	equip = frappe.get_doc("Equipment", equipment)
 	equip.branch = branch
 	equip.create_equipment_history(branch, posting_date, ref_doc, purpose)
