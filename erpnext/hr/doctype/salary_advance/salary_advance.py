@@ -9,7 +9,10 @@ from frappe.utils import flt,cint,today,nowdate
 
 class SalaryAdvance(Document):
 	def validate(self):
-		self.total_claim = flt(self.basic_pay) * flt(self.months)
+		self.total_claim = flt(self.basic_pay)*2
+		self.monthly_deduction = flt(self.claim_amount) / self.deduction_month
+		if self.claim_amount > self.total_claim:
+			frappe.throw ("You cannot Claim more than 2 times your basic.")	
 	
 	def on_submit(self):
 		self.post_journal_entry()
@@ -20,7 +23,7 @@ class SalaryAdvance(Document):
 			for d in sst_doc.earnings:
 				if d.salary_component == 'Basic Pay':
 					self.basic_pay = flt(d.amount)
-
+					self.total_claim = flt(d.amount)*2
 		
 	def post_journal_entry(self):
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
@@ -42,7 +45,7 @@ class SalaryAdvance(Document):
 				"reference_type": "Salary Advance",
 				"cost_center": self.cost_center,
 				"debit_in_account_currency": flt(self.total_claim),
-				"debit": flt(self.total_claim),
+				"debit": flt(self.claim_amount),
 					})
 		je.append("accounts", {
 				"account": expense_bank_account,
@@ -51,7 +54,7 @@ class SalaryAdvance(Document):
 				"reference_name": self.name,
 				"cost_center": self.cost_center,
 				"credit_in_account_currency": flt(self.total_claim),
-				"credit": flt(self.total_claim),
+				"credit": flt(self.claim_amount),
 					})
 			
 		je.insert()

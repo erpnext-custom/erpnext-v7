@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cstr, flt, fmt_money, formatdate, getdate, get_datetime
+from frappe.utils import cstr, flt, cint, fmt_money, formatdate, getdate, get_datetime
 from frappe.desk.reportview import get_match_cond
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
@@ -72,7 +72,7 @@ class EquipmentHiringForm(Document):
 			frappe.db.sql("UPDATE `tabJournal Entry Account` SET `reference_name` = \'" + str(self.name) + "\' WHERE name = \'" + str(a.reference_row) + "\'")
 
 
-	def update_equipment_request(self, status):
+	'''def update_equipment_request(self, status):
 		total_percent = 0
 		er = None
 		for a in self.approved_items:
@@ -88,7 +88,17 @@ class EquipmentHiringForm(Document):
 				total = flt(total_percent) + flt(er.percent_completed)
 			else:
 				total = flt(er.percent_completed) - flt(total_percent) 
-			er.db_set("percent_completed", round(total))
+			er.db_set("percent_completed", round(total))'''
+
+	def update_equipment_request(self, action):
+                if action == 'Cancell':
+                        ehf = ''
+                else:
+                        ehf = self.name
+                if self.er_reference:
+                        er = frappe.get_doc("Equipment Request", self.er_reference)
+                        er.db_set("ehf",ehf)
+
 
 	def check_date_approval(self):
 		for a in self.approved_items:
@@ -108,7 +118,17 @@ class EquipmentHiringForm(Document):
 			self.total_hiring_amount = total
 			if self.private == "Private" and not self.advance_amount:
 				self.advance_amount = total
-		
+
+	def get_transactions(self):
+                transactions = frappe.db.sql("""select eri.from_date, eri.to_date, eri.approved_qty, eri.equipment_type, 
+                                eri.rate_type, eri.approved_qty, eri.place from  `tabEquipment Request` er, `tabEquipment Request Item` eri 
+                                where eri.parent = er.name and er.name = '{0}'""".format(self.er_reference), as_dict = 1)
+                self.set('approved_items', [])
+                for d in transactions:
+                        for i in range(cint(d.approved_qty)):
+                                row = self.append('approved_items', {})
+                                row.place = d.place
+                                row.update(d)		
 
 	def assign_hire_form_to_equipment(self):
 		for a in self.approved_items:

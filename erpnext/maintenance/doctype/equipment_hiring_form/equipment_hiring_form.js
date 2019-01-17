@@ -52,6 +52,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
                                         cur_frm.set_value("branch", r.message.branch);
                                 }
                         });
+		get_er_items(frm);
                 }
 	},
 	"total_hiring_amount": function(frm) {
@@ -124,6 +125,18 @@ function calculate_datetime(frm, cdt, cdn) {
 	cur_frm.refresh_field("number_of_hours")
 	cur_frm.refresh_field("number_of_days")
 }
+
+function get_er_items(frm) {
+                return frappe.call({
+                        method: "get_transactions",
+                        doc: frm.doc,
+                        callback: function(r, rt) {
+                                frm.refresh_field("items");
+                                frm.refresh_fields();
+                        },
+                });
+        }
+
 
 //Hiring Approval Details
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")

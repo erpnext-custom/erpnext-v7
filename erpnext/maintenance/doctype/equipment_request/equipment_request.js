@@ -12,7 +12,7 @@ frappe.ui.form.on('Equipment Request', {
 	set_values(frm, cdt, cdn);
 },
 	refresh: function(frm) {
-if (frm.doc.docstatus == 1 && frm.doc.percent_completed < 100 && (!frm.doc.ehf) && (frm.doc.approval_status == 'Available' || frm.doc.approval_status == 'Partially Available')) {
+if (frm.doc.docstatus == 1 && (!frm.doc.ehf) && (frm.doc.approval_status == 'Available' || frm.doc.approval_status == 'Partially Available')) {
                         frm.add_custom_button("Create Equipment Hiring Form", function() {
                                 frappe.model.open_mapped_doc({
                                         method: "erpnext.maintenance.doctype.equipment_request.equipment_request.make_hire_form",

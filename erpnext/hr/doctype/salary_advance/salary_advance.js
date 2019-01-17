@@ -6,17 +6,17 @@ frappe.ui.form.on('Salary Advance', {
 	onload: function(frm){
 		if(!frm.doc.posting_date){
 			frm.set_value("posting_date", get_today());
+	
 		}
 	},
-	months: function(frm){
-			cur_frm.set_value("total_claim", parseFloat(frm.doc.basic_pay) * parseFloat(frm.doc.months));
-	},
+
 	deduction_month(frm){
-			cur_frm.set_value("monthly_deduction", parseFloat(frm.doc.total_claim)/ frm.doc.deduction_month);
+			cur_frm.set_value("monthly_deduction", parseFloat(frm.doc.claim_amount)/ frm.doc.deduction_month);
 	},
 		
 	employee: function(frm) {
 		get_basic_salary(frm.doc);
+		
 	},
 });
 
