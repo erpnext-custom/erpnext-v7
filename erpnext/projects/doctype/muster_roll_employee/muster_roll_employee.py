@@ -89,7 +89,7 @@ class MusterRollEmployee(Document):
                                                                 
                                                         wh.to_date = wh.from_date if add_days(getdate(self.date_of_transfer),-1) < getdate(wh.from_date) else add_days(self.date_of_transfer,-1)
                                                 
-                        if (self.cost_center != prev_doc.cost_center):
+                        if ((self.cost_center != prev_doc.cost_center) or (prev_doc.status == 'Left' and self.status == 'Active')):
                                 self.append("internal_work_history",{
                                                 "branch": self.branch,
                                                 "cost_center": self.cost_center,
