@@ -77,7 +77,7 @@ def updateBonus(purpose=None, fiscal_year=None, receipt_number=None, receipt_dat
 
 @frappe.whitelist()
 def updatePBVA(purpose=None, fiscal_year=None, receipt_number=None, receipt_date=None, cheque_number=None,cheque_date=None):
-	chk_value = frappe.db.get_value("RRCO Receipt Entries", {"fiscal_year": str(fiscal_year), "purpose": str(purpose)})
+	chk_value = frappe.db.get_value("RRCO Receipt Entries", {"fiscal_year": str(fiscal_year), "purpose": str(purpose)}, "name")
 	if chk_value:
 		frappe.throw("RRCO Receipt and date has been already assigned for the given fiscal year for PBVA")
 	else:

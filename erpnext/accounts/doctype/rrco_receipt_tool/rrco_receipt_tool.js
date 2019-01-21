@@ -64,7 +64,7 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 			frappe.call({
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.updatePBVA",
 				args: {
-					"month": frm.doc.purpose,
+					"purpose": frm.doc.purpose,
 					"fiscal_year": frm.doc.bonus_and_pbva_fy,
 					"receipt_number":frm.doc.receipt_number,
 					"receipt_date":frm.doc.receipt_date,

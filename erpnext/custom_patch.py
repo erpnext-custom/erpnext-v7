@@ -3,13 +3,34 @@ import frappe
 from frappe.model.document import Document
 from frappe import msgprint
 from frappe.utils import flt, cint
-from frappe.utils.data import get_first_day, get_last_day, add_years
+from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, add_days
 from erpnext.custom_utils import get_branch_cc
+
+##
+# Post casual leave on the first day of every month
+##
+def post_casual_leaves():
+        start = getdate('2019-01-01')
+        end   = getdate('2019-12-31')
+
+        employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular employees\', \'Contract\')", as_dict=True)
+        for e in employees:
+                la = frappe.new_doc("Leave Allocation")
+                la.employee = e.name
+                la.employee_name = e.employee_name
+                la.leave_type = "Casual Leave"
+                la.from_date = str(start)
+                la.to_date = str(end)
+                la.carry_forward = cint(0)
+                la.new_leaves_allocated = flt(10)
+                la.submit()
+
 
 def update_emp_cc():
 	for a in frappe.db.sql("select name, branch from tabEmployee", as_dict=1):
-		#if not get_branch_cc(a.branch):
-		print(str(a.name) + " ==> " + str(a.branch))
+		"""if not get_branch_cc(a.branch):
+			print(str(a.name) + " ==> " + str(a.branch))
+		"""
 		frappe.db.sql("update tabEmployee set cost_center = %s where name = %s", (get_branch_cc(a.branch), a.name))
 
 def move_asset_movement():

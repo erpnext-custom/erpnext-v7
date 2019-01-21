@@ -139,4 +139,11 @@ cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = functi
         }
 }
 
+cur_frm.fields_dict['items'].grid.get_field('vehicle_no').get_query = function(frm, cdt, cdn) {
+	        var d = locals[cdt][cdn];
+		        return {
+				                query: "erpnext.controllers.queries.get_equipment_no"
+							        };
+}
+
 

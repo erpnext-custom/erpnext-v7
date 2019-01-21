@@ -374,6 +374,12 @@ def get_cop_list(doctype, txt, searchfield, start, page_len, filters):
                 frappe.throw("Select Item Code or Branch or Posting Date")
         return frappe.db.sql("select a.parent, b.item_code, b.cop_amount from `tabCOP Branch` a, `tabCOP Rate Item` b where a.parent = b.parent and a.branch = %s and b.item_code = %s and exists (select 1 from `tabCost of Production` where name = a.parent and %s between from_date and to_date)", (filters.get("branch"), filters.get("item_code"), filters.get("posting_date")))
 
+
+
+#returns equipment_number
+def get_equipment_no(doctype,txt, searchfield, start, page_len, filters):
+	return frappe.db.sql("select equipment_number  from `tabEquipment` where is_disabled != 1")
+
 @frappe.whitelist()
 def filter_branch_wh(doctype, txt, searchfield, start, page_len, filters):
         if not filters.get("branch"):
