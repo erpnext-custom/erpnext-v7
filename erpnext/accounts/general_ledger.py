@@ -226,3 +226,10 @@ def delete_gl_entries(gl_entries=None, voucher_type=None, voucher_no=None,
 		if acc_type == "Expense Account" or acc_type == "Fixed Asset":
 			frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", entry["voucher_no"])
 			frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", entry["voucher_no"])
+
+@frappe.whitelist()
+def get_inter_parties():
+        options=[]
+        for d in frappe.db.sql("SELECT name FROM `tabSupplier` where inter_company ='1' UNION SELECT name FROM `tabCustomer` where inter_company = '1'", as_dict=True):
+                options.append(d['name'])
+        return options

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-09-24 11:23:04.137505", 
+ "modified": "2019-01-14 15:28:10.986962", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Budget", 
  "name": "Budget Consumption Report", 
@@ -51,6 +51,9 @@
   }, 
   {
    "role": "HR User"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

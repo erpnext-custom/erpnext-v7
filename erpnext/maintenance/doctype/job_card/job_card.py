@@ -16,11 +16,11 @@ class JobCard(AccountsController):
 	def validate(self):
 		check_future_date(self.posting_date)
 		self.validate_owned_by()
+		self.validate_job_datetime()
 		if self.finish_date:
 			check_future_date(self.finish_date)
                         if get_datetime(self.finish_date + " " + self.job_out_time) < get_datetime(self.posting_date + " " + self.job_in_time):
                                 frappe.throw(_("Job out date cannot be earlier than job in date."),title="Invalid Data")
-
 		self.update_breakdownreport()
 		#Amount Segregation
 		cc_amount = {}
@@ -43,6 +43,16 @@ class JobCard(AccountsController):
 			self.customer_cost_center = None
 			self.customer_branch = None
 
+	def validate_job_datetime(self):
+                if self.break_down_report_date > self.posting_date:
+                        frappe.throw("The Job Card Date Cannot Be Before Break Down Report Date")
+
+		br_time = frappe.db.get_value("Break Down Report", self.break_down_report, "time")
+		br_date_time = str(self.break_down_report_date + " " + str(br_time))
+		jc_date_time =  str(self.posting_date + " " + self.job_in_time)
+		if get_datetime(br_date_time) > get_datetime(jc_date_time):
+			frappe.throw("The Job Card Time Cannot Be Before Break Down Report Time")
+	
 	def on_submit(self):
 		self.validate_owned_by()
 		self.check_items()
@@ -126,6 +136,7 @@ class JobCard(AccountsController):
 			je.voucher_type = 'Maintenance Invoice'
 			je.naming_series = 'Maintenance Invoice'
 			je.remark = 'Payment against : ' + self.name;
+			#je.posting_date = self.posting_date
 			je.posting_date = self.finish_date
 			je.branch = self.branch
 
@@ -288,7 +299,7 @@ class JobCard(AccountsController):
 	def update_breakdownreport(self):
 		bdr = frappe.get_doc("Break Down Report", self.break_down_report)
 		if bdr.job_card is not None and bdr.job_card != self.name:
-			frappe.throw("Job Card Already Created")
+                        frappe.throw("Job Card Already Created")
 		bdr.db_set("job_card", self.name)
 
 @frappe.whitelist()
@@ -365,16 +376,16 @@ def make_payment_entry(source_name, target_doc=None):
 		target.posting_date = nowdate()
 		target.payment_for = "Job Card"
 		target.net_amount = obj.outstanding_amount
-                target.actual_amount = obj.outstanding_amount
+		target.actual_amount = obj.outstanding_amount
 		target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
-
-		target.append("items", {
-                        "reference_type": "Job Card",
-                        "reference_name": obj.name,
-                        "outstanding_amount": obj.outstanding_amount,
-                        "allocated_amount": obj.outstanding_amount
-                })
 	
+		target.append("items", {
+			"reference_type": "Job Card",
+			"reference_name": obj.name,
+			"outstanding_amount": obj.outstanding_amount,
+			"allocated_amount": obj.outstanding_amount
+		})
+
 	doc = get_mapped_doc("Job Card", source_name, {
 			"Job Card": {
 				"doctype": "Mechanical Payment",
@@ -382,7 +393,7 @@ def make_payment_entry(source_name, target_doc=None):
 					"outstanding_amount": "receivable_amount",
 				},
 				"postprocess": update_docs,
-				"validation": {"docstatus": ["=", 1]}
+				"validation": {"docstatus": ["=", 1], "job_card": ["is", None]}
 			},
 		}, target_doc)
 	return doc

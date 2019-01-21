@@ -71,7 +71,9 @@ class SalaryIncrement(Document):
                 self.employment_type    = doc.employment_type
                 self.employee_group     = doc.employee_group
                 self.employee_subgroup  = doc.employee_subgroup
-                self.date_of_reference  = doc.date_of_joining
+                # Following line commented by SHIV on 2019/01/04
+                # date_of_reference which is used for pro-rating should be salary structures from date
+                #self.date_of_reference  = doc.date_of_joining
                 self.company            = doc.company
                 self.branch             = doc.branch
                 self.department         = doc.department
@@ -102,6 +104,9 @@ class SalaryIncrement(Document):
                         if self.salary_structure:
                                 # Fetching Basic Pay from salary structure
                                 sst_doc = frappe.get_doc("Salary Structure", self.salary_structure)
+                                # Following line added by SHIV on 2019/01/04
+                                # date_of_reference which is used for pro-rating should be salary structures from date
+                                self.date_of_reference = sst_doc.from_date
                                 for d in sst_doc.earnings:
                                         if d.salary_component == 'Basic Pay':
                                                 self.old_basic = flt(d.amount)

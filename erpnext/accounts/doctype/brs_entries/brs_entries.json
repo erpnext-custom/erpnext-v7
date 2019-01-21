@@ -122,7 +122,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-10 15:32:49.607591", 
+ "modified": "2018-12-12 11:49:17.375202", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "BRS Entries", 
@@ -212,7 +212,7 @@
   {
    "amend": 0, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 

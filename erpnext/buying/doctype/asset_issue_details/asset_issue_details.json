@@ -622,7 +622,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-11 17:14:04.611056", 
+ "modified": "2018-12-20 10:49:33.326678", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Asset Issue Details", 
@@ -630,10 +630,10 @@
  "owner": "Administrator", 
  "permissions": [
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
-   "create": 0, 
+   "cancel": 1, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -646,8 +646,8 @@
    "role": "Asset User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
-   "write": 0
+   "submit": 1, 
+   "write": 1
   }, 
   {
    "amend": 0, 
@@ -732,10 +732,10 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
-   "create": 0, 
+   "cancel": 1, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -748,8 +748,8 @@
    "role": "Asset Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
-   "write": 0
+   "submit": 1, 
+   "write": 1
   }, 
   {
    "amend": 0, 

@@ -354,33 +354,13 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-27 21:22:35.130876", 
+ "modified": "2018-12-12 11:34:33.600631", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Offer Letter", 
  "name_case": "", 
  "owner": "Administrator", 
  "permissions": [
-  {
-   "amend": 1, 
-   "apply_user_permissions": 0, 
-   "cancel": 1, 
-   "create": 1, 
-   "delete": 0, 
-   "email": 1, 
-   "export": 1, 
-   "if_owner": 0, 
-   "import": 0, 
-   "permlevel": 0, 
-   "print": 1, 
-   "read": 1, 
-   "report": 1, 
-   "role": "HR Manager", 
-   "set_user_permissions": 0, 
-   "share": 1, 
-   "submit": 1, 
-   "write": 1
-  }, 
   {
    "amend": 1, 
    "apply_user_permissions": 0, 
@@ -408,5 +388,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "applicant_name", 
+ "track_changes": 0, 
  "track_seen": 0
 }

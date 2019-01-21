@@ -36,7 +36,7 @@ def get_data(filters):
 		tc.employee_name, 
 		tc.name, 
 		e.designation, 
-		e.cost_center,
+		c.name,
 		tc.department, 
 		min(tci.date), 
 		max((case when tci.halt = 1 then tci.till_date when tci.halt = 0 then tci.date end)) as to_date,
@@ -45,9 +45,10 @@ def get_data(filters):
 		date_format(tc.posting_date,'%M'), 
 		tc.dsa_per_day, 
 		tc.total_claim_amount  
-		from `tabTravel Claim` tc, `tabEmployee` e, `tabTravel Claim Item` tci 
+		from `tabTravel Claim` tc, `tabEmployee` e, `tabTravel Claim Item` tci, `tabCost Center` c 
 		where tci.parent = tc.name and e.name = tc.employee
                 and tc.docstatus = 1
+                and c.branch = tc.branch
 		"""
 	if filters.get("employee"):
 		query += " and tc.employee = \'" + str(filters.employee) + "\'"
@@ -58,7 +59,7 @@ def get_data(filters):
 		query += " and year(tc.posting_date) = {0}".format(filters.get("fiscal_year"))
 
 	if filters.get("cost_center"):
-		query += " and e.cost_center = \'" + str(filters.cost_center) + "\'"
+		query += " and c.name = \'" + str(filters.cost_center) + "\'"
 	query += " group by tc.name, tc.employee, e.designation, tc.department"
 	#frappe.msgprint("This Report is UnderDeveloped")
 	return frappe.db.sql(query)

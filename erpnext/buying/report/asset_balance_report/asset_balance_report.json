@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-21 12:09:08.404700", 
+ "modified": "2018-12-21 12:32:23.731397", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Buying", 
  "name": "Asset Balance Report", 
@@ -36,6 +36,9 @@
   }, 
   {
    "role": "Stock User (other)"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 14:21:09.135194", 
- "modified_by": "Administrator", 
+ "modified": "2019-01-14 15:55:20.926711", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Issue Register", 
  "owner": "Administrator", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Stock User"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

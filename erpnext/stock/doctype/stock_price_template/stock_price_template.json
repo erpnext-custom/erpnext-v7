@@ -724,8 +724,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-04 15:38:01.458277", 
- "modified_by": "Administrator", 
+ "modified": "2019-01-01 13:49:20.492488", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Price Template", 
  "name_case": "", 
@@ -788,14 +788,14 @@
    "role": "Stock User (other)", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "write": 1
   }, 
   {
    "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 1, 
-   "create": 1, 
+   "cancel": 0, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -848,7 +848,7 @@
    "role": "Stock User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "write": 1
   }
  ], 

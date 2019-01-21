@@ -87,11 +87,11 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 		cur_frm.set_df_property("drop_ship", "hidden", !is_drop_ship);
 
 		if(doc.docstatus == 1 && !in_list(["Closed", "Delivered"], doc.status)) {
-			if (this.frm.has_perm("submit")) {
+			//if (this.frm.has_perm("submit")) {
 				if(flt(doc.per_billed, 2) < 100 || doc.per_received < 100) {
 					cur_frm.add_custom_button(__('Close'), this.close_purchase_order, __("Status"));
 				}
-			}
+			//}
 
 			if(is_drop_ship && doc.status!="Delivered"){
 				cur_frm.add_custom_button(__('Delivered'),
@@ -104,9 +104,9 @@ erpnext.buying.PurchaseOrderController = erpnext.buying.BuyingController.extend(
 		}
 
 		if(doc.docstatus == 1 && in_list(["Closed", "Delivered"], doc.status)) {
-			if (this.frm.has_perm("submit")) {
+			//if (this.frm.has_perm("submit")) {
 				cur_frm.add_custom_button(__('Re-open'), this.unclose_purchase_order, __("Status"));
-			}
+			//}
 		}
 
 		if(flt(doc.per_billed)==0 && doc.status != "Delivered") {

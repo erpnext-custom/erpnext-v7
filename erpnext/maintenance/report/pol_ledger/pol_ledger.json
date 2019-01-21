@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-09-27 13:41:26.052000", 
+ "modified": "2019-01-15 16:00:30.946394", 
  "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Maintenance", 
  "name": "POL Ledger", 
@@ -36,6 +36,15 @@
   }, 
   {
    "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Auditor"
+  }, 
+  {
+   "role": "Stock User (other)"
+  }, 
+  {
+   "role": "Stock User"
   }
  ], 
  "submitted_by": ""

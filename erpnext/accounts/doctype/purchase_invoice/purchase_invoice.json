@@ -3033,8 +3033,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2018-12-10 15:44:08.141117", 
- "modified_by": "Administrator", 
+ "modified": "2019-01-15 09:31:45.855449", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Accounts", 
  "name": "Purchase Invoice", 
  "owner": "Administrator", 
@@ -3061,7 +3061,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 1, 
+   "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -3123,7 +3123,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -3139,6 +3139,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }, 
   {
@@ -3163,7 +3164,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -3179,6 +3180,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
@@ -3225,7 +3227,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -3241,6 +3243,7 @@
    "set_user_permissions": 0, 
    "share": 0, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }, 
   {

@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "field:leave_type_name", 
  "beta": 0, 
  "creation": "2013-02-21 09:55:58", 
@@ -199,7 +199,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-02-20 14:09:43.522102", 
+ "modified": "2019-01-07 15:01:36.132479", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Leave Type", 
@@ -290,6 +290,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

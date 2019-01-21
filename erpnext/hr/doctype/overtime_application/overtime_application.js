@@ -68,7 +68,7 @@ function set_approver(frm) {
 				callback: function(r) {
 					if(r.message.length == 1 && !frm.doc.approver) {
 						frm.set_value("approver", r.message[0][0]);
-						frm.save();
+						//frm.save();
 					}
 				}
 			});

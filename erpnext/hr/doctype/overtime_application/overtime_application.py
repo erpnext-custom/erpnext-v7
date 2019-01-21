@@ -82,10 +82,11 @@ class OvertimeApplication(Document):
 
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
-		je.title = "Payment for Overtime (" + self.employee_name + ")"
+		je.title = "Overtime payment for " + self.employee_name + "(" + self.employee + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
-		je.remark = 'Payment Paid against : ' + self.name;
+		je.remark = 'Payment Paid against : ' + self.name + " for " + self.employee;
+		je.user_remark = 'Payment Paid against : ' + self.name + " for " + self.employee;
 		je.posting_date = self.posting_date
 		total_amount = self.total_amount
 		je.branch = self.branch
@@ -120,4 +121,4 @@ class OvertimeApplication(Document):
 		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry " + str(self.payment_jv) + " first!")
 		
-		self.db_set("payment_jv", "")
+		self.db_set("payment_jv", None)

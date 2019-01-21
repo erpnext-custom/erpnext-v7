@@ -20,10 +20,6 @@ frappe.ui.form.on('Mechanical Payment', {
 
 	},
 
-	"receivable_amount": function(frm) {
-		calculate_totals(frm)
-	},
-
 	"tds_amount": function(frm) {
 		calculate_totals(frm)
 		frm.toggle_reqd("tds_account", frm.doc.tds_amount)
@@ -54,12 +50,12 @@ frappe.ui.form.on('Mechanical Payment', {
 	},
 
 	"receivable_amount": function(frm) {
-		console.log("INSIDE")
 		if(frm.doc.receivable_amount > frm.doc.actual_amount) {
 			cur_frm.set_value("receivable_amount", frm.doc.actual_amount)
 			msgprint("Receivable Amount cannot be greater than the Total Payable Amount")
 		}
 		else {
+			calculate_totals(frm)
 			var total = frm.doc.receivable_amount
 			frm.doc.items.forEach(function(d) {
 				var allocated = 0
@@ -88,7 +84,7 @@ frappe.ui.form.on('Mechanical Payment', {
 
 function calculate_totals(frm) {
 	if (frm.doc.receivable_amount) {
-		frm.set_value("net_amount", frm.doc.receivable_amount - frm.doc.tds_amount)
+		frm.set_value("net_amount", flt(frm.doc.receivable_amount) - flt(frm.doc.tds_amount))
 		cur_frm.refresh_field("net_amount")
 	}
 }

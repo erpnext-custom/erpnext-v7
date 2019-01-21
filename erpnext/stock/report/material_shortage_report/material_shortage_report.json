@@ -8,7 +8,7 @@
  "idx": 0, 
  "is_standard": "Yes", 
  "json": "{\"filters\":[[\"Bin\",\"projected_qty\",\"<\",\"0\"]],\"columns\":[[\"warehouse\",\"Bin\"],[\"item_code\",\"Bin\"],[\"actual_qty\",\"Bin\"],[\"ordered_qty\",\"Bin\"],[\"planned_qty\",\"Bin\"],[\"reserved_qty\",\"Bin\"],[\"projected_qty\",\"Bin\"]],\"sort_by\":\"Bin.projected_qty\",\"sort_order\":\"asc\",\"sort_by_next\":\"\",\"sort_order_next\":\"desc\"}", 
- "modified": "2018-07-11 09:25:00.091445", 
+ "modified": "2019-01-14 15:53:43.881112", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Material Shortage Report", 
@@ -35,6 +35,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

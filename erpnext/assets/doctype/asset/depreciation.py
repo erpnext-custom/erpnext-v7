@@ -197,7 +197,7 @@ def get_gl_entries_on_asset_disposal(asset, selling_amount=0):
 		debit_or_credit = "debit" if profit_amount < 0 else "credit"
 		gl_entries.append({
 			"account": disposal_account,
-			"cost_center": depreciation_cost_center,
+			"cost_center": asset.cost_center, 
 			debit_or_credit: abs(profit_amount),
 			debit_or_credit + "_in_account_currency": abs(profit_amount)
 		})

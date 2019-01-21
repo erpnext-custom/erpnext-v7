@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-08-06 20:22:20.805523", 
- "modified_by": "Administrator", 
+ "modified": "2018-12-21 12:28:47.952096", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Assets", 
  "name": "Asset Depreciations and Balances", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Regional Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

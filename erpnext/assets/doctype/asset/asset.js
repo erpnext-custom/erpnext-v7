@@ -45,9 +45,9 @@ frappe.ui.form.on('Asset', {
 			}
 			if(in_list(user_roles, "Asset User") || in_list(user_roles, "Asset Manager")) {
 				if (in_list(["Submitted", "Partially Depreciated", "Fully Depreciated"], frm.doc.status)) {
-					frm.add_custom_button("Transfer Asset", function() {
+					/*frm.add_custom_button("Transfer Asset", function() {
 						erpnext.asset.transfer_asset(frm);
-					});
+					}); */
 
 					frm.add_custom_button("Scrap Asset", function() {
 						erpnext.asset.scrap_asset(frm);

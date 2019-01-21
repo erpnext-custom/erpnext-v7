@@ -662,7 +662,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-10 14:23:32.412362", 
+ "modified": "2018-12-14 09:46:49.061974", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Timesheet", 
@@ -751,10 +751,10 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 1, 
-   "cancel": 1, 
-   "create": 1, 
+   "cancel": 0, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 

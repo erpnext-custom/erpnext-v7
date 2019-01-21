@@ -765,7 +765,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-10 15:31:14.334117", 
+ "modified": "2018-12-12 11:36:30.189136", 
  "modified_by": "Administrator", 
  "module": "Assets", 
  "name": "Asset", 
@@ -815,7 +815,7 @@
   {
    "amend": 0, 
    "apply_user_permissions": 0, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 0, 
    "delete": 0, 
    "email": 1, 

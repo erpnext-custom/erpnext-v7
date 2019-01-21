@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-11 09:36:31.817221", 
+ "modified": "2019-01-14 15:57:08.835668", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Buying", 
  "name": "Registered Vendors", 
@@ -31,6 +31,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

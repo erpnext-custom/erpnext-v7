@@ -307,6 +307,46 @@ class PurchaseOrder(BuyingController):
 	def cancel_budget_entry(self):
 		frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
 
+	##
+        # Update the Committedd Budget for checking budget availability
+        ##
+        def adjust_commit_budget(self, status):
+                if status != "Closed":
+                        frappe.db.sql("delete from `tabCommitted Budget` where closed = 1 and po_no = %s", self.name)
+                        return
+
+                net_additional_charges = 0
+                if self.total_add_ded:
+                        net_additional_charges = flt(self.total_add_ded) / flt(self.total)
+
+                for a in self.items:
+                        balance_amount = billed_amt = 0
+                        amount = flt(a.amount) + (flt(net_additional_charges) * flt(a.amount))
+                        if flt(self.conversion_rate) != 1:
+                                amount = flt(amount) * flt(self.conversion_rate)
+
+			if a.billed_amt:
+                                billed_amt = flt(a.billed_amt)
+                                if flt(self.conversion_rate) != 1:
+                                        billed_amt = flt(a.billed_amt) * flt(self.conversion_rate)     
+                        balance_amount = amount - billed_amt
+
+                        if flt(balance_amount) > 0:
+                                bud_obj = frappe.get_doc({
+                                        "doctype": "Committed Budget",
+                                        "account": a.budget_account,
+                                        "cost_center": a.cost_center,
+                                        "po_no": self.name,
+                                        "po_date": self.transaction_date,
+                                        "amount": -1 * balance_amount,
+                                        "item_code": a.item_code,
+                                        "poi_name": a.name,
+                                        "date": frappe.utils.nowdate(),
+                                        "closed": 1
+                                        })
+                                bud_obj.flags.ignore_permissions = 1
+                                bud_obj.submit()
+
 @frappe.whitelist()
 def close_or_unclose_purchase_orders(names, status):
 	if not frappe.has_permission("Purchase Order", "write"):
@@ -429,6 +469,7 @@ def update_status(status, name):
 	po = frappe.get_doc("Purchase Order", name)
 	po.update_status(status)
 	po.update_delivered_qty_in_sales_order()
+	po.adjust_commit_budget(status)
 
 @frappe.whitelist()
 def get_budget_account(item_code):

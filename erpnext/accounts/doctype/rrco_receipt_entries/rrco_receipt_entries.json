@@ -273,8 +273,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-10 15:49:31.900469", 
- "modified_by": "Administrator", 
+ "modified": "2019-01-12 10:37:41.691587", 
+ "modified_by": "payma.wangchuk@cdcl.bt", 
  "module": "Accounts", 
  "name": "RRCO Receipt Entries", 
  "name_case": "", 
@@ -377,7 +377,7 @@
    "role": "Accounts User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }
  ], 

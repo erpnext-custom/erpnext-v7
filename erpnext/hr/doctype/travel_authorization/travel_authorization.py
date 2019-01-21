@@ -13,6 +13,13 @@ from frappe.model.mapper import get_mapped_doc
 from datetime import timedelta
 
 class TravelAuthorization(Document):
+	def get_status(self):
+                if self.workflow_state == "Draft":
+                        self.document_status = ""
+                if self.workflow_state == "Rejected":
+                        self.document_status = "Rejected"
+                if self.workflow_state == "Approved":
+                        self.document_status = "Approved"
 
 	def validate(self):
 		if not self.branch:
@@ -21,6 +28,7 @@ class TravelAuthorization(Document):
 		if frappe.db.get_value("Employee", self.employee, "user_id") == self.supervisor:
                         frappe.throw(_("Invalid supervisor"), title="Invalid Data")
 
+		self.get_status()
 		self.validate_travel_dates()
                 self.check_double_dates()
 		self.assign_end_date()
@@ -29,7 +37,7 @@ class TravelAuthorization(Document):
         def validate_advance(self):
                 self.advance_amount     = 0 if not self.need_advance else self.advance_amount
                 self.advance_amount_nu  = 0 if not self.need_advance else self.advance_amount_nu
-                self.advance_journal    = "" if self.docstatus == 0 else self.advance_journal
+                self.advance_journal    = None if self.docstatus == 0 else self.advance_journal
         
 	def create_copy(self):
 		self.details = []
@@ -55,6 +63,7 @@ class TravelAuthorization(Document):
 			self.append("details", {"date": a.date, "halt": a.halt, "till_date": a.till_date, "no_days": a.no_days, "from_place": a.from_place, "halt_at": a.halt_at})
 
 	def on_submit(self):
+		self.get_status()
 		#self.check_double_dates()
 		self.validate_submitter()
 		self.validate_travel_dates()
@@ -72,8 +81,8 @@ class TravelAuthorization(Document):
 	def on_cancel(self):
 		if self.travel_claim:
 			frappe.throw("Cancel the Travel Claim before cancelling Authorization")
-		if not self.cancellation_reason:
-			frappe.throw("Cancellation Reason is Mandatory when Cancelling Travel Authorization")
+		#if not self.cancellation_reason:
+		#	frappe.throw("Cancellation Reason is Mandatory when Cancelling Travel Authorization")
 		self.cancel_attendance()	
 
 	def on_update_after_submit(self):
@@ -151,12 +160,14 @@ class TravelAuthorization(Document):
 					"cost_center": cost_center,
 					"debit_in_account_currency": flt(self.advance_amount_nu),
 					"debit": flt(self.advance_amount_nu),
+	
 					"is_advance": "Yes"
 				})
 
 				je.append("accounts", {
 					"account": expense_bank_account,
 					"cost_center": cost_center,
+					
 					"credit_in_account_currency": flt(self.advance_amount_nu),
 					"credit": flt(self.advance_amount_nu),
 				})
@@ -172,6 +183,7 @@ class TravelAuthorization(Document):
 	def check_status(self):
 		if self.document_status == "Rejected":
 			frappe.throw("Rejected Documents cannot be submitted")
+		return
 		if not self.document_status == "Approved":
 			frappe.throw("Only Approved Documents can be submitted")
 			
@@ -242,14 +254,15 @@ class TravelAuthorization(Document):
 def make_travel_claim(source_name, target_doc=None): 
 	def update_date(obj, target, source_parent):
 		target.posting_date = nowdate()
+		target.supervisor = None
 	
 	def transfer_currency(obj, target, source_parent):
 		if obj.halt:
-			target.from_place = ""
-			target.to_place = ""
+			target.from_place = None
+			target.to_place = None
 		else:
 			target.no_days = 1
-			target.halt_at = ""
+			target.halt_at = None
 		target.currency = source_parent.currency
 		target.dsa = source_parent.dsa_per_day
 		if target.currency == "BTN":

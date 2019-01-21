@@ -30,7 +30,9 @@ frappe.ui.form.on('Direct Payment', {
 		}
 	},
 
-
+	"party_type": function(frm){
+		cur_frm.set_value("party","");
+	},
 	"payment_type": function(frm){
 		cur_frm.set_value("party_type", (frm.doc.payment_type == "Receive")? "Customer":"Supplier");
 		if(frm.doc.party_type == "Customer"){
@@ -113,7 +115,7 @@ function roundOff(num) {
     return +(Math.round(num + "e+2")  + "e-2");
 }
 
-/*function calculate_tds(frm) {
+function calculate_tds(frm) {
 	var tds = roundOff(parseFloat(frm.doc.tds_percent) * parseFloat(frm.doc.taxable_amount) / 100 );
 	frm.set_value("tds_amount", tds);
 	if(tds > 0){
@@ -134,31 +136,7 @@ function roundOff(num) {
 			}
 		}
 	});
-} */
-
-function calculate_tds(frm) {
-        var tds = roundOff(parseFloat(frm.doc.tds_percent) * parseFloat(frm.doc.taxable_amount) / 100 );
-        frm.set_value("tds_amount", tds);
-        if(tds > 0){
-                frm.set_value("net_amount", frm.doc.amount - tds);
-        }else{
-                frm.set_value("net_amount", frm.doc.amount);
-        }
-        frappe.call({
-                method: "erpnext.accounts.doctype.direct_payment.direct_payment.get_tds_account",
-                args: {
-                        percent: frm.doc.tds_percent,
-                        payment_type: frm.doc.payment_type
-                },
-                callback: function(r) {
-                        if(r.message) {
-                                frm.set_value("tds_account", r.message);
-                                cur_frm.refresh_field("tds_account");
-                        }
-                }
-        })
 }
-
 
 
 frappe.ui.form.on("Direct Payment", "onload", function(frm){

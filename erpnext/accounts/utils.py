@@ -646,25 +646,28 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 			       "cost_center": to_cc,
 			})
 		)
-	gl_entries.append(
-		prepare_gl(self, {
-		       "account": ic_account,
-		       "debit": asset.value_after_depreciation,
-		       "debit_in_account_currency": asset.value_after_depreciation,
-		       "against_voucher": asset.name,
-		       "against_voucher_type": "Asset",
-		       "cost_center": from_cc,
-		})
-	)
-	gl_entries.append(
-		prepare_gl(self, {
-		       "account": ic_account,
-		       "credit": asset.value_after_depreciation,
-		       "credit_in_account_currency": asset.value_after_depreciation,
-		       "against_voucher": asset.name,
-		       "against_voucher_type": "Asset",
-		       "cost_center": to_cc,
-		})
-	)
 
+	if flt(asset.value_after_depreciation) > 0:
+		gl_entries.append(
+			prepare_gl(self, {
+			       "account": ic_account,
+			       "debit": asset.value_after_depreciation,
+			       "debit_in_account_currency": asset.value_after_depreciation,
+			       "against_voucher": asset.name,
+			       "against_voucher_type": "Asset",
+			       "cost_center": from_cc,
+			})
+		)
+		gl_entries.append(
+			prepare_gl(self, {
+			       "account": ic_account,
+			       "credit": asset.value_after_depreciation,
+			       "credit_in_account_currency": asset.value_after_depreciation,
+			       "against_voucher": asset.name,
+			       "against_voucher_type": "Asset",
+			       "cost_center": to_cc,
+			})
+		)
+
+	frappe.msgprint(str(gl_entries))
 	make_gl_entries(gl_entries, cancel=0, update_outstanding="No", merge_entries=False)

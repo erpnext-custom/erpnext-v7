@@ -8,6 +8,54 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff,
 from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 
+def add_employee_internal_work_history_record():
+	doc = frappe.get_doc("Muster Roll Employee", "21205002269")
+	row = doc.append("internal_work_history",{})
+	row.branch = "Wangchhu Zam Construction Project"
+	row.cost_center = "Wangchhu Zam Construction Project - CDCL"
+	row.from_date = "2018-12-10"
+	row.save()
+        print 'Done adding rows....'
+
+# Check salary structures for mismatch in total earnings and total deductions
+def validate_salary_structure():
+	counter = 0
+	for sst in frappe.get_all("Salary Structure",fields=["name","employee_name","branch","total_earning","total_deduction"]):
+		tot_earnings = tot_deductions = 0
+
+		tot_earnings, tot_deductions = frappe.db.sql("""
+			select
+				sum(case when parentfield = 'earnings' then ifnull(amount,0) else 0 end) tot_earnings,
+				sum(case when parentfield = 'deductions' then ifnull(amount,0) else 0 end) tot_deductions
+			from `tabSalary Detail`
+			where parenttype = 'Salary Structure'
+			and parent = '{0}'
+		""".format(sst.name), as_dict=False)[0]
+		if flt(sst.total_earning) != flt(tot_earnings) or flt(sst.total_deduction) != flt(tot_deductions):
+			counter += 1
+			#doc = frappe.get_doc("Salary Structure",sst.name)
+			#doc.save()
+			print counter,"|",sst.name,"|",sst.employee_name,"|",sst.branch,"|", flt(sst.total_earning)-flt(tot_earnings),"|",flt( sst.total_deduction)-flt(tot_deductions)
+
+# Check salary slips for mismatch in total earnings and total deductions
+def validate_salary_slip():
+        counter = 0
+        for ss in frappe.get_all("Salary Slip", ["name","employee_name","branch","gross_pay","total_deduction"], {"yearmonth":"201811"}):
+                counter += 1
+                tot_earnings = tot_deductions = 0
+
+                tot_earnings, tot_deductions = frappe.db.sql("""
+                        select
+                                sum(case when parentfield = 'earnings' then ifnull(amount,0) else 0 end) tot_earnings,
+                                sum(case when parentfield = 'deductions' then ifnull(amount,0) else 0 end) tot_deductions
+                        from `tabSalary Detail`
+                        where parenttype = 'Salary Slip'
+                        and parent = '{0}'
+                """.format(ss.name), as_dict=False)[0]
+		#print ss.name,ss.gross_pay,tot_earnings,flt(ss.gross_pay)-flt(tot_earnings),ss.total_deduction,tot_deductions,flt(ss.total_deduction)-flt(tot_deductions)
+                if flt(ss.gross_pay) != flt(tot_earnings) or flt(ss.total_deduction) != flt(tot_deductions):
+                        print counter,"|",ss.name,"|",ss.employee_name,"|",ss.branch,"|", flt(ss.gross_pay)-flt(tot_earnings),"|",flt( ss.total_deduction)-flt(tot_deductions)
+
 def adjust_leave_encashment():
         les = frappe.db.sql("select name, encashed_days, employee from `tabLeave Encashment` where docstatus = 1 and application_date between %s and %s", ('2017-01-01', '2017-12-31'), as_dict=True)
         for le in les:

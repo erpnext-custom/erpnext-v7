@@ -276,6 +276,14 @@ def get_data():
 					"doctype": "Payment Entry",
 					"is_query_report": True
 				},
+				 {
+                                        "type": "report",
+                                        "name": "Money Receipt Issued",
+                                        "label": "Money Receipt Register",
+                                        "doctype": "Payment Entry",
+                                        "is_query_report": True
+                                },
+
 			]
 		},
 		{

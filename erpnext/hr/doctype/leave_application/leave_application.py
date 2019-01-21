@@ -440,6 +440,8 @@ def get_number_of_leave_days(employee, leave_type, from_date, to_date, half_day=
 
 	if not frappe.db.get_value("Leave Type", leave_type, "include_holiday"):
 		number_of_days = flt(number_of_days) - flt(get_holidays(employee, from_date, to_date))
+	else:
+		return number_of_days
 
 	d = from_date
 	half = frappe.db.get_value("Holiday List", get_holiday_list_for_employee(employee), "saturday_half")
@@ -490,6 +492,8 @@ def get_leave_balance_on(employee, leave_type, ason_date, allocation_records=Non
         
         if allocation:
                 leaves_taken = get_approved_leaves_for_period(employee, leave_type, allocation.from_date, ason_date)
+		if leave_type == "Medical Leave":
+			frappe.msgprint(str(leaves_taken))
                 balance      = flt(allocation.total_leaves_allocated) - flt(leaves_taken)
                 
                 if leave_type == 'Earned Leave':
