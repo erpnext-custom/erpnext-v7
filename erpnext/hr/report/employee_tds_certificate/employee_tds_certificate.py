@@ -19,12 +19,12 @@ def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
-		row = [d.month, "Salary", d.basic_pay, round(flt(d.gross_pay) - flt(d.basic_pay) - (flt(d.comm_all) / 2), 2), round(d.gross_pay-(flt(d.comm_all) / 2),2), d.gross_pay, d.nppf,d.gis, flt(d.gross_pay) - flt(d.nppf) - flt(d.gis), d.tds, d.health, d.receipt_number, d.receipt_date]
+		row = [d.month, "Salary", d.basic_pay, round(flt(d.gross_pay) - flt(d.basic_pay) - (flt(d.comm_all) / 2), 2), round(flt(d.gross_pay)-(flt(d.comm_all) / 2),2), round(flt(d.gross_pay)-(flt(d.comm_all) / 2),2), d.nppf,d.gis, flt(d.gross_pay) - flt(d.nppf) - flt(d.gis) - (flt(d.comm_all) / 2), d.tds, d.health, d.receipt_number, d.receipt_date]
 		data.append(row);
 
 	#Leave Encashment 
 	if filters.employee:
-		encash_data = frappe.db.sql("select a.application_date as date, a.encashment_amount, a.tax_amount, r.receipt_number, r.receipt_date from `tabLeave Encashment` a, `tabRRCO Receipt Entries` r where a.name = r.purchase_invoice and a.employee = %s and a.docstatus = 1 and a.application_date between \'" + filters.fiscal_year + "-01-01\' and \'" + filters.fiscal_year + "-12-31\'", filters.employee, as_dict=True) 
+		encash_data = frappe.db.sql("select distinct a.application_date as date, a.encashment_amount, a.tax_amount, r.receipt_number, r.receipt_date from `tabLeave Encashment` a, `tabRRCO Receipt Entries` r where a.name = r.purchase_invoice and a.employee = %s and a.docstatus = 1 and a.application_date between \'" + filters.fiscal_year + "-01-01\' and \'" + filters.fiscal_year + "-12-31\'", filters.employee, as_dict=True) 
 		if encash_data:
 			for a in encash_data:
 				row = [str(a.date)[5:7], "Leave Encashment", a.encashment_amount, 0, a.encashment_amount, a.encashment_amount, 0, 0, a.encashment_amount, a.tax_amount, 0, a.receipt_number, a.receipt_date]
@@ -32,7 +32,7 @@ def get_data(query, filters=None):
 	
 		#Bonus
                 bonus = frappe.db.sql("""
-                                        select b.name, b.fiscal_year, b.posting_date, r.receipt_number, r.receipt_date 
+                                        select distinct b.name, b.fiscal_year, b.posting_date, r.receipt_number, r.receipt_date 
                                         from tabBonus b, `tabRRCO Receipt Entries` r
                                         where b.fiscal_year = r.fiscal_year and b.docstatus = 1 and b.posting_date between %s and %s and r.purpose = 'Annual Bonus' 
                                       """, (str(filters.fiscal_year) + "-01-01", str(filters.fiscal_year) + "-12-31"), as_dict=1)
@@ -48,7 +48,7 @@ def get_data(query, filters=None):
 
 		#PVBA
                 pbva = frappe.db.sql("""
-                                        select b.name, b.fiscal_year, b.posting_date, r.receipt_number, r.receipt_date 
+                                        select distinct b.name, b.fiscal_year, b.posting_date, r.receipt_number, r.receipt_date 
                                         from tabPBVA b, `tabRRCO Receipt Entries` r
                                         where b.fiscal_year = r.fiscal_year and b.docstatus = 1 and b.posting_date between %s and %s and r.purpose = 'PBVA' 
                                       """, (str(filters.fiscal_year) + "-01-01", str(filters.fiscal_year) + "-12-31"), as_dict=1)
