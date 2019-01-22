@@ -1,0 +1,19 @@
+{
+ "creation": "2019-01-22 18:07:42.421290", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "Bonus", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div id=\"main\">\n<div id=\"header-html\" class=\"hidden-pdf\">\n\t\t{%- if letter_head and not no_letterhead -%}\n\t\t\t<div class=\"letter-head\" style=\"width: 100%;\">\n\t\t\t\t{{ letter_head }}\n\t\t\t</div>\n\t\t{%- endif -%}\n</div>\n\n<div style=\"width: 100%;\">\n\t<div style=\"float: left;\">\n\t</div>\n\t\n\t<div style=\"float: right;\">\n\t\tPosting Date : {{ doc.posting_date }}\n\t</div>\n\t\n\t<div style=\"margin:0 auto; width: 40%; text-align: center;\">\n\t\t<h2>Bonus for the Year {{ doc.fiscal_year }}</h2>\n\t</div>\n</div>\n\n<table class=\"table table-bordered\" style=\"margin-top: 15px;\">\n  <tbody>\n\t<tr>\n\t\t<th style=\"text-align: left;\" rowspan=\"2\">Sr</th>\n\t\t<th style=\"text-align: center;\" colspan=\"2\">EMPLOYEE</th>\n\t\t<th style=\"text-align: center;\" colspan=\"2\">BANK</th>\n\t\t<th style=\"text-align: center;\" colspan=\"3\">BONUS DETAILS</th>\n\t</tr>\n\t<tr>\n\t\t<th style=\"text-align: center;\">ID</th>\n\t\t<th style=\"text-align: left;\">Name</th>\n\t\t<th style=\"text-align: center;\">Name</th>\n\t\t<th style=\"text-align: center;\">Account No.</th>\n\t\t<th style=\"text-align: right;\">Bonus Amount (Nu.)</th>\n\t\t<th style=\"text-align: right;\">TDS (Nu.)</th>\n\t\t<th style=\"text-align: right;\">Balance Amount (Nu.)</th>\n\t</tr>\n{%- for row in doc.items -%}\n\t<tr>\n\t\t<td style=\"text-align: left;\">{{ row.idx }}</td>\n\t\t<td style=\"text-align: center;\">{{ row.employee }}</td>\n\t\t<td style=\"text-align: left;\">{{ row.employee_name }}</td>\t\t\t\n\t\t<td style=\"text-align: center;\">{{ row.bank_name }}</td>\t\n\t\t<td style=\"text-align: center;\">{{ row.bank_ac_no }}</td>\n\t\t<td style=\"text-align: right;\">{{ frappe.format_value(row.amount, {\"fieldtype\":\"Currency\"}) }}</td>\n\t\t<td style=\"text-align: right;\">{{ frappe.format_value(row.tax_amount, {\"fieldtype\":\"Currency\"}) }}</td>\n\t\t<td style=\"text-align: right;\">{{ frappe.format_value(row.balance_amount, {\"fieldtype\":\"Currency\"}) }}</td>\n\t</tr>\n\n{%- endfor -%}\n   </tbody>\n</table>\n</div>\n\n<div class=\"printedby\">This print is system generated and should be considered VALID only with appropriate seal and/or signature. <br>  Printed by {{ frappe.user }} on {{ frappe.utils.nowdate()  }} at {{ frappe.utils.nowtime() }}</div>", 
+ "idx": 0, 
+ "modified": "2019-01-22 18:07:42.421290", 
+ "modified_by": "Administrator", 
+ "name": "Bonus", 
+ "owner": "Administrator", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes", 
+ "submitted_by": ""
+}
