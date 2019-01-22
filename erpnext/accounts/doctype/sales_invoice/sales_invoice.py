@@ -888,6 +888,8 @@ class SalesInvoice(SellingController):
 					"debit": allocated_amount,
 					"debit_in_account_currency": allocated_amount,
 					"business_activity": a.advance_business_activity,
+					"against_voucher": self.return_against if cint(self.is_return) else self.name,
+					"against_voucher_type": self.doctype,
 					"cost_center": a.advance_cost_center
 				}, advance_account_currency)
 			)

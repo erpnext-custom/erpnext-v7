@@ -10,8 +10,8 @@ from frappe.utils import flt,cint,today,nowdate
 class SalaryAdvance(Document):
 	def validate(self):
 		self.total_claim = flt(self.basic_pay)*2
-		self.monthly_deduction = flt(self.claim_amount) / self.deduction_month
-		if self.claim_amount > self.total_claim:
+		self.monthly_deduction = flt(self.claim_amount) / flt(self.deduction_month)
+		if flt(self.claim_amount) > flt(self.total_claim):
 			frappe.throw ("You cannot Claim more than 2 times your basic.")	
 	
 	def on_submit(self):

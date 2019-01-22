@@ -54,7 +54,7 @@ class RoyaltyPayment(Document):
 			if not self.adhoc_production or not self.from_date or not self.to_date:
 				frappe.throw("Adhoc Production, From Date and To Date are Mandatory")
 
-			entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, b.qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
+			entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
 			self.set('adhoc_temp_items', [])
 			# Following line replaced by subsequent, by SHIV on 2018/11/13
 			#frappe.db.sql("delete from `tabRoyalty Adhoc Temp` where parent = %s or parent like '%New Royalty Payment%'", self.name)
