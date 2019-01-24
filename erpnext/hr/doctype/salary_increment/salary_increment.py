@@ -134,7 +134,12 @@ class SalaryIncrement(Document):
                                 # Calculating increment
                                 if flt(self.total_months) >= flt(self.minimum_months):
                                         self.calculated_factor    = 1 if flt(self.total_months)/12 >= 1 else round(flt(self.total_months if cint(group_doc.increment_prorated) else 12)/12,2)
-                                        self.calculated_increment = round(((flt(self.old_basic)*flt(self.payscale_increment)*0.01) if self.payscale_increment_method == 'Percent' else flt(self.payscale_increment))*flt(self.calculated_factor))
+                                        
+                                        #self.calculated_increment = round(((flt(self.old_basic)*flt(self.payscale_increment)*0.01) if self.payscale_increment_method == 'Percent' else flt(self.payscale_increment))*flt(self.calculated_factor))
+                                        self.calculated_increment = (flt(self.old_basic)*flt(self.payscale_increment)*0.01) if self.payscale_increment_method == 'Percent' else flt(self.payscale_increment)
+                                        if cint(group_doc.increment_prorated):
+                                                self.calculated_increment = round((flt(self.calculated_increment)/12)*flt(self.total_months))
+                                                
                                         self.increment = flt(self.calculated_increment)
                                         self.new_basic = flt(self.old_basic) + flt(self.increment)
                                 else:
