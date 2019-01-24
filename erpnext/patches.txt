@@ -312,4 +312,3 @@ erpnext.patches.v7_0.set_portal_settings
 erpnext.patches.v7_0.repost_future_gle_for_purchase_invoice
 erpnext.patches.v7_0.fix_duplicate_icons
 erpnext.patches.v7_0.repost_gle_for_pos_sales_return
-execute:frappe.permissions.reset_perms("[Material Request]")
