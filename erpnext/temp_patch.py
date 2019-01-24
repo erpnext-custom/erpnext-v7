@@ -9,6 +9,20 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+# Shiv 2019/01/24, Due to wrong EL settings under employee group ESP, all ESP employees got
+# 30 days EL credited for the year 2019 
+def remove_el():
+	counter = 0
+	for el in frappe.db.sql("select * from `tabLeave Allocation` where leave_type = 'Earned Leave' and from_date = '2019-01-01' and to_date = '2019-12-31'", as_dict=True):
+		counter += 1
+		print el.employee, el.docstatus, el.leave_type, el.carry_forwarded_leaves, el.new_leaves_allocated, el.total_leaves_allocated
+		if el.docstatus == 1:
+			doc = frappe.get_doc("Leave Allocation", el.name)
+			doc.cancel()
+			print 'Cancelled successfully'
+		else:
+			print 'Unable to cancel. docstatus: {0}'.format(el.docstatus)
+
 def adjust_leave_encashment():
         les = frappe.db.sql("select name, encashed_days, employee from `tabLeave Encashment` where docstatus = 1 and application_date between %s and %s", ('2017-01-01', '2017-12-31'), as_dict=True)
         for le in les:

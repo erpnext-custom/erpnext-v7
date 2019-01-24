@@ -196,7 +196,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-10-12 05:00:51.970799", 
+ "modified": "2019-01-22 14:01:20.158549", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Adhoc Royalty Setting", 
@@ -249,6 +249,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }
