@@ -466,7 +466,14 @@ def get_data():
                                         "is_query_report": True,
                                         "name": "Travel Report",
                                         "doctype": "Travel Claim"
+                                },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Salary Payable Report",
+                                        "doctype": "Salary Slip"
                                 }
+
 			]
 		},
                 {

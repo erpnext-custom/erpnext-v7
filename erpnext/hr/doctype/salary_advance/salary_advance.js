@@ -1,22 +1,24 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.ui.form.on('Salary Advance', {
-	
-	onload: function(frm){
-		if(!frm.doc.posting_date){
-			frm.set_value("posting_date", get_today());
-	
-		}
-	},
+cur_frm.add_fetch("employee", "employment_type", "employment_type");
+cur_frm.add_fetch("employee", "employee_group", "employee_group");
+cur_frm.add_fetch("employee", "employee_subgroup", "employee_subgroup");
+cur_frm.add_fetch("employee", "branch", "branch");
+cur_frm.add_fetch("employee", "cost_center", "cost_center");
+cur_frm.add_fetch("employee", "business_activity", "business_activity");
 
-	deduction_month(frm){
-			cur_frm.set_value("monthly_deduction", parseFloat(frm.doc.claim_amount)/ frm.doc.deduction_month);
+frappe.ui.form.on('Salary Advance', {
+	total_claim: function(frm){
+		cur_frm.set_value("monthly_deduction", Math.ceil(parseFloat(frm.doc.total_claim)/ frm.doc.deduction_month));
+	},
+	
+	deduction_month: function(frm){
+		cur_frm.set_value("monthly_deduction", Math.ceil(parseFloat(frm.doc.total_claim)/ frm.doc.deduction_month));
 	},
 		
 	employee: function(frm) {
 		get_basic_salary(frm.doc);
-		
 	},
 });
 

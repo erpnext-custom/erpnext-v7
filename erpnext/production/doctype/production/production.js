@@ -24,7 +24,7 @@ frappe.ui.form.on('Production', {
 			{fieldname: 'item_code', columns: 3},
 			{fieldname: 'qty', columns: 2},
 			{fieldname: 'uom', columns: 1},
-			{fieldname: 'price_template', columns: 2},
+			{fieldname: 'item_sub_group', columns: 2},
 			{fieldname: 'cop', columns: 2},
 		]
 	},

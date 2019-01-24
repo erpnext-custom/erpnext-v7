@@ -23,6 +23,7 @@ from erpnext.hr.doctype.employee_leave_approver.employee_leave_approver import g
 # Ver 1.0 Ends
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
 from datetime import timedelta, date
+from erpnext.hr.doctype.approver_settings.approver_settings import get_final_approver
 
 class LeaveDayBlockedError(frappe.ValidationError): pass
 class OverlapError(frappe.ValidationError): pass
@@ -30,14 +31,24 @@ class InvalidLeaveApproverError(frappe.ValidationError): pass
 class LeaveApproverIdentityError(frappe.ValidationError): pass
 
 from frappe.model.document import Document
+
 class LeaveApplication(Document):
 	
 	def get_status(self):
+		approver = get_final_approver(self.branch)
 		if self.workflow_state == "Rejected":
 			self.status = "Rejected"
 		if self.workflow_state == "Approved":
+			if approver != self.leave_approver:
+				frappe.throw("Only {0} can submit your leave application".format(frappe.bold(approver)))
 			self.status= "Approved"	
-
+		if self.workflow_state == "Verified By Supervisor":
+			if approver != frappe.db.get_value("Employee", self.employee, "user_id"):
+				self.leave_approver = approver
+				self.leave_approver_name = frappe.db.get_value("User", approver, "full_name") 
+		if self.workflow_state in ['Rejected', 'Rejected By Supervisor']:
+			self.leave_approver = frappe.db.get_value("Employee", frappe.db.get_value("Employee", self.employee, "reports_to"), "user_id")
+			self.leave_approver_name = frappe.db.get_value("User", self.leave_approver, "full_name")
 	"""def get_feed(self):
 		return _("{0}: From {0} of type {1}").format(self.status, self.employee_name, self.leave_type)
         """
@@ -315,6 +326,8 @@ class LeaveApplication(Document):
 		leave_approvers = []
 		for a in all_app:
 			leave_approvers.append(a[0])
+
+		leave_approvers.append(get_final_approver(employee.branch))		
 
 		if len(leave_approvers) and self.leave_approver not in leave_approvers:
 			frappe.throw(_("Leave approver must be one of {0}")
