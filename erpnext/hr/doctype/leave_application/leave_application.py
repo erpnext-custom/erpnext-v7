@@ -448,7 +448,7 @@ def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 	"""
 	#Check for Officiating Employeee, if so, replace
 	for a, b in enumerate(app_list):
-		off = frappe.db.sql("select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date and employee = %(employee)s", {"today": nowdate(), "employee": frappe.db.get_value("Employee", {"user_id": app_list[a]}, "name")}, as_dict=True)
+		off = frappe.db.sql("select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date and employee = %(employee)s order by creation desc limit 1", {"today": nowdate(), "employee": frappe.db.get_value("Employee", {"user_id": app_list[a]}, "name")}, as_dict=True)
 		if off:
 			app_list[a] = str(frappe.db.get_value("Employee", off[0].officiate, "user_id"))
 	
