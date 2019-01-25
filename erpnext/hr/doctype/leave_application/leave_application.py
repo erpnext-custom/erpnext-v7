@@ -426,7 +426,7 @@ def daterange(start_date, end_date):
 
 
 @frappe.whitelist()
-def get_approvers(doctype, txt, searchfield, start, page_len, filters):
+def get_approvers(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
 	app_list = []
 	if not filters.get("employee"):
 		frappe.throw(_("Please select Employee Record first."))
