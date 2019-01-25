@@ -101,6 +101,9 @@ frappe.ui.form.on('Salary Structure', {
 	eligible_for_cash_handling: function(frm){
 		calculate_others(frm.doc);
 	},
+	eligible_for_honorarium: function(frm){
+		calculate_others(frm.doc);
+	},
 	eligible_for_mpi: function(frm){
 		calculate_others(frm.doc);
 	},
@@ -170,6 +173,9 @@ frappe.ui.form.on('Salary Structure', {
 	cash_handling: function(frm){
 		calculate_others(frm.doc);
 	},
+	honorarium: function(frm){
+		calculate_others(frm.doc);
+	},
 	// Payment Methods
 	ca_method: function(frm){
 		calculate_others(frm.doc);
@@ -219,6 +225,9 @@ frappe.ui.form.on('Salary Structure', {
 	cash_handling_method: function(frm){
 		calculate_others(frm.doc);
 	},
+	honorarium_method: function(frm){
+		calculate_others(frm.doc);
+	}
 })
 
 frappe.ui.form.on('Salary Detail', {
