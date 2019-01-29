@@ -7,9 +7,11 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, cint, today, nowdate, getdate, get_first_day, add_months
+from erpnext.custom_workflow import validate_workflow_states
 
 class SalaryAdvance(Document):
 	def validate(self):
+                validate_workflow_states(self)
                 self.update_defaults()
 		self.validate_amounts()
                 self.check_duplicates()
@@ -17,7 +19,7 @@ class SalaryAdvance(Document):
 	def on_submit(self):
                 self.update_recovery_details()
                 self.update_salary_structure()
-                self.update_salary_slip()
+                #self.update_salary_slip()
 		self.post_journal_entry()
 
         def on_cancel(self):
@@ -30,8 +32,8 @@ class SalaryAdvance(Document):
                         frappe.throw(_('Unable to cancel as salary is already processed. Reference#<u><a href="#Form/Salary Slip/{0}" target="_blank">{0}</a></u>').format(ssl.parent), title="Invalid Operation")
 
                 self.update_salary_structure(True)
-                self.update_salary_slip(True)
-
+                #self.update_salary_slip(True)
+        
         def update_defaults(self):
                 self.posting_date     = nowdate()
                 self.salary_component = "Salary Advance Deductions" if not self.salary_component else self.salary_component
@@ -59,6 +61,29 @@ class SalaryAdvance(Document):
                         if d.salary_component == self.salary_component and flt(d.total_outstanding_amount) > 0:
                                 frappe.throw(_("Please settle your outstanding amount from previous advance of Nu.{0}/-").format("{:,.2f}".format(d.total_outstanding_amount)), title="Not Permitted")
 
+        def update_recovery_details(self):
+                flag     = 0
+                self.recovery_start_date = get_first_day(self.posting_date)
+
+                ssl = frappe.db.sql("""
+                                        select
+                                                name,
+                                                docstatus,
+                                                str_to_date(concat(yearmonth,"01"),"%Y%m%d") as salary_month
+                                        from `tabSalary Slip`
+                                        where employee = '{0}'
+                                        and str_to_date(concat(yearmonth,"01"),"%Y%m%d") >= '{1}'
+                                        and docstatus != 2
+                                        order by yearmonth desc limit 1
+                """.format(self.employee,str(self.recovery_start_date)),as_dict=True)
+                for ss in ssl:
+                        if not flag:
+                                flat = 1
+                                self.recovery_start_date = add_months(str(ss.salary_month),1)
+                self.db_set("recovery_start_date", self.recovery_start_date)
+
+        # Commented because of permission issue to read salary structure of employees     
+        '''
         def update_recovery_details(self):
                 flag     = 0
                 self.recovery_start_date = get_first_day(self.posting_date)
@@ -97,6 +122,7 @@ class SalaryAdvance(Document):
                                         flat = 1
                                         self.recovery_start_date = add_months(str(ss.salary_month),1)
                 self.db_set("recovery_start_date", self.recovery_start_date)
+        '''
                 
         def update_salary_structure(self, cancel=False):
                 if cancel:
@@ -126,12 +152,13 @@ class SalaryAdvance(Document):
                                 row.working_days            = 0
                                 row.leave_without_pay       = 0
                                 row.payment_days            = 0
-
                                 doc.save(ignore_permissions=True)
                                 self.db_set("salary_structure", doc.name)
                         else:
                                 frappe.throw(_("No active salary structure found for employee {0} {1}").format(self.employee, self.employee_name), title="No Data Found")
 
+        # Commented out because of permission issue to read salary structure
+        '''
         def update_salary_slip(self, cancel=False):
                 ssl = frappe.db.sql("""
                                 select
@@ -147,7 +174,8 @@ class SalaryAdvance(Document):
                 for ss in ssl:
                         doc = frappe.get_doc("Salary Slip", ss.name)
                         doc.save(ignore_permissions=True)
-                
+        '''
+        
 	def get_basic_salary(self):
 		if self.employee:
                         # Get basic pay from the active salary structure

@@ -90,5 +90,6 @@ def get_notification_config():
 			"Production" : {"docstatus": 0},
 			"Marking List" : {"docstatus": 0},
 			"Royalty Payment" : {"docstatus": 0},
+                        "Salary Advance" : {"docstatus": 0},
 		}
 	}
