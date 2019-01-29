@@ -84,6 +84,12 @@ function enable_disable(frm){
 				toggle_form_fields(frm, toggle_fields, 0);
 			}			
 		}
+		
+		if(frm.doc.workflow_state.indexOf("Draft") >= 0 || frm.doc.workflow_state.indexOf("Rejected") >= 0){
+			frm.set_df_property("advance_approver", "hidden", 1);
+			frm.set_df_property("advance_approver_name", "hidden", 1);
+			frm.set_df_property("advance_approver_designation", "hidden", 1);
+		}
 	}
 }
 

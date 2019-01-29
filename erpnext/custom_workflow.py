@@ -34,14 +34,11 @@ def validate_workflow_states(doc):
 
         if doc.doctype == "Salary Advance":
                 ''' employee --> final_approver(branch)/reports_to(final_approver(branch)) '''
-                if workflow_state == "Approved".lower():
-                        if doc.get(document_approver[0]) != frappe.session.user:
-                                frappe.throw(_("Only <b>{0}, {1}</b> can approve this application").format(doc.get(document_approver[2]),doc.get(document_approver[1])), title="Invalid Operation")
-                elif workflow_state == "Rejected".lower():
-                        if doc.get(document_approver[0]) != frappe.session.user:
-                                if workflow_state != doc.get_db_value("workflow_state"):
-                                        frappe.throw(_("Only <b>{0}, {1}</b> can reject this application").format(doc.get(document_approver[2]),doc.get(document_approver[1])), title="Invalid Operation")
-                else:
+                if workflow_state == "Draft".lower():
+                        vars(doc)[document_approver[0]] = employee[0]
+                        vars(doc)[document_approver[1]] = employee[1]
+                        vars(doc)[document_approver[2]] = employee[2]
+                elif workflow_state == "Waiting Approval".lower():
                         if employee[0] == final_approver[0]:
                                 officiating = frappe.db.get_value("Employee", get_officiating_employee(reports_to[3]), ["user_id","employee_name","designation","name"])
                                 vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
@@ -52,6 +49,19 @@ def validate_workflow_states(doc):
                                 vars(doc)[document_approver[0]] = officiating[0] if officiating else final_approver[0]
                                 vars(doc)[document_approver[1]] = officiating[1] if officiating else final_approver[1]
                                 vars(doc)[document_approver[2]] = officiating[2] if officiating else final_approver[2]
+                elif workflow_state == "Approved".lower():
+                        if doc.get(document_approver[0]) != frappe.session.user:
+                                frappe.throw(_("Only <b>{0}, {1}</b> can approve this application").format(doc.get(document_approver[2]),doc.get(document_approver[1])), title="Invalid Operation")
+                elif workflow_state == "Rejected".lower():
+                        if doc.get(document_approver[0]) != frappe.session.user:
+                                if workflow_state != doc.get_db_value("workflow_state"):
+                                        frappe.throw(_("Only <b>{0}, {1}</b> can reject this application").format(doc.get(document_approver[2]),doc.get(document_approver[1])), title="Invalid Operation")
+                        vars(doc)[document_approver[0]] = employee[0]
+                        vars(doc)[document_approver[1]] = employee[1]
+                        vars(doc)[document_approver[2]] = employee[2]
+
+                else:
+                        pass
         else:
                 pass
 
