@@ -6,3 +6,13 @@ frappe.ui.form.on('Tender Hire Rate', {
 
 	}
 });
+
+frappe.ui.form.on("Tender Hire Rate", "refresh", function(frm) {
+    cur_frm.set_query("equipment_model", function() {
+        return {
+            "filters": {
+		"equipment_type": frm.doc.equipment_type,
+            }
+        };
+    });
+})

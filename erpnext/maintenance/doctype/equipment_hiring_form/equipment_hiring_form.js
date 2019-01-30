@@ -203,7 +203,7 @@ function get_rates(frm, cdt, cdn) {
 	if (doc.equipment && doc.rate_type && doc.from_date) {
 		return frappe.call({
 			method: "erpnext.maintenance.doctype.equipment_hiring_form.equipment_hiring_form.get_hire_rates",
-			args: {"e": doc.equipment, "from_date": doc.from_date},
+			args: {"equipment": doc.equipment, "from_date": doc.from_date, "customer": frm.doc.customer},
 			callback: function(r) {
 				if(r.message) {
 					if(doc.rate_type == "Without Fuel") {
@@ -343,7 +343,8 @@ frappe.ui.form.on("Hiring Approval Detail", "refresh", function(frm) {
                 "customer": frm.doc.customer,
 		"equipment_type": frm.doc.equipment_type,
 		"docstatus": 1,
-		"branch": frm.doc.branch
+		"branch": frm.doc.branch,
+		"equipment_model": frm.doc.equipment_model
             }
         };
     });

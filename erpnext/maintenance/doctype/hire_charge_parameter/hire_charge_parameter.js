@@ -25,6 +25,15 @@ frappe.ui.form.on('Hire Charge Parameter', {
 		if(!row.grid_form.fields_dict.idle_rate.value) {
 			row.grid_form.fields_dict.idle_rate.set_value(frm.doc.idle)
 		}
+                if(!row.grid_form.fields_dict.rate_fuel_internal.value) {
+                        row.grid_form.fields_dict.rate_fuel_internal.set_value(frm.doc.with_fuel_internal)
+                }
+                if(!row.grid_form.fields_dict.rate_wofuel_internal.value) {
+                        row.grid_form.fields_dict.rate_wofuel_internal.set_value(frm.doc.without_fuel_internal)
+                }
+                if(!row.grid_form.fields_dict.idle_rate_internal.value) {
+                        row.grid_form.fields_dict.idle_rate_internal.set_value(frm.doc.idle_internal)
+                }
 		if(!row.grid_form.fields_dict.yard_hours.value) {
 			row.grid_form.fields_dict.yard_hours.set_value(frm.doc.lph)
 		}
