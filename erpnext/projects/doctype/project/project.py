@@ -70,10 +70,13 @@ class Project(Document):
 			from `tabTimesheet Detail` where project=%s and docstatus < 2 group by description
 			order by total_days desc''', self.name, as_dict=True))
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-        
+
+        # Commented by SHIV on 2019/01/30, it seems is calling onload twice
+        '''
 	def __setup__(self):
 		self.onload()
-
+        '''
+        
 	def validate(self):
 		self.validate_dates()
 		self.validate_branch_cc()
