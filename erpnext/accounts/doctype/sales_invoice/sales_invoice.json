@@ -4160,8 +4160,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2019-01-24 18:03:00.452319", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2019-01-29 10:41:43.932709", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Sales Invoice", 
  "name_case": "Title Case", 
@@ -4421,6 +4421,6 @@
  "sort_order": "DESC", 
  "timeline_field": "customer", 
  "title_field": "title", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }
