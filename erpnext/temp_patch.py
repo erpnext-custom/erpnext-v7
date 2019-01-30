@@ -9,11 +9,11 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 
 def add_employee_internal_work_history_record():
-	doc = frappe.get_doc("Muster Roll Employee", "21205002269")
+	doc = frappe.get_doc("Muster Roll Employee", "11210002416")
 	row = doc.append("internal_work_history",{})
 	row.branch = "Wangchhu Zam Construction Project"
 	row.cost_center = "Wangchhu Zam Construction Project - CDCL"
-	row.from_date = "2018-12-10"
+	row.from_date = "2019-01-04"
 	row.save()
         print 'Done adding rows....'
 
