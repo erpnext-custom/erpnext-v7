@@ -32,7 +32,7 @@ def get_filters_cond(doctype, filters, conditions):
 
  # searches for active employees
 def employee_query(doctype, txt, searchfield, start, page_len, filters):
-	return frappe.db.sql("""select name, employee_name, designation from `tabEmployee`
+	return frappe.db.sql("""select name, employee_name, designation, branch from `tabEmployee`
 		where status = 'Active'
 			and docstatus < 2
 			and ({key} like %(txt)s

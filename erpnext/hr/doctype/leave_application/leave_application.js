@@ -19,7 +19,12 @@ frappe.ui.form.on("Leave Application", {
 			};
 		});
 
-		frm.set_query("employee", erpnext.queries.employee);
+		//frm.set_query("employee", erpnext.queries.employee);
+		frm.set_query("employee", function() {
+			return {
+				"filters": {"status": "Active"}
+			}
+		});
 
 		if(frm.doc.__islocal) {
 			frm.trigger("get_employee_branch_costcenter");

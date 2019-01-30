@@ -584,6 +584,9 @@ def get_children():
 	return acc
 
 def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=True):
+	if not frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company"):
+		return
+
 	if from_cc == to_cc:
 		frappe.throw("From Cost Center and To Cost Center cannot be the same")
 	if getdate(date) > getdate(nowdate()):
@@ -655,29 +658,30 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 		ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
 		if not ic_account:
 			frappe.throw("Setup Intra Company Accounts under Accounts Settings")
-		gl_entries.append(
-			prepare_gl(self, {
-			       "account": ic_account,
-			       "debit": asset.value_after_depreciation,
-			       "debit_in_account_currency": asset.value_after_depreciation,
-			       "against_voucher": asset.name,
-			       "against_voucher_type": "Asset",
-			       "cost_center": from_cc,
-			       "business_activity": asset.business_activity
-			})
-		)
+		if flt(asset.value_after_depreciation) > 0:
+			gl_entries.append(
+				prepare_gl(self, {
+				       "account": ic_account,
+				       "debit": asset.value_after_depreciation,
+				       "debit_in_account_currency": asset.value_after_depreciation,
+				       "against_voucher": asset.name,
+				       "against_voucher_type": "Asset",
+				       "cost_center": from_cc,
+				       "business_activity": asset.business_activity
+				})
+			)
 
-		gl_entries.append(
-			prepare_gl(self, {
-			       "account": ic_account,
-			       "credit": asset.value_after_depreciation,
-			       "credit_in_account_currency": asset.value_after_depreciation,
-			       "against_voucher": asset.name,
-			       "against_voucher_type": "Asset",
-			       "cost_center": to_cc,
-			       "business_activity": asset.business_activity
-			})
-		)
+			gl_entries.append(
+				prepare_gl(self, {
+				       "account": ic_account,
+				       "credit": asset.value_after_depreciation,
+				       "credit_in_account_currency": asset.value_after_depreciation,
+				       "against_voucher": asset.name,
+				       "against_voucher_type": "Asset",
+				       "cost_center": to_cc,
+				       "business_activity": asset.business_activity
+				})
+			)
 
 	make_gl_entries(gl_entries, cancel=0, update_outstanding="No", merge_entries=False)
 

@@ -52,9 +52,9 @@ class LeaveAllocation(Document):
 	def validate_new_leaves_allocated_value(self):
 		"""validate that leave allocation is in multiples of 0.5"""
 		round_of_leave = frappe.db.get_single_value("HR Settings", "round_of_leave")
-                if round_of_leave:
+		if round_of_leave:
 			self.new_leaves_allocated = round5(self.new_leaves_allocated)
-
+		
 		balance = self.new_leaves_allocated
 		if self.carry_forward and round_of_leave:
 			balance = round5(self.new_leaves_allocated) + round5(self.carry_forwarded_leaves)

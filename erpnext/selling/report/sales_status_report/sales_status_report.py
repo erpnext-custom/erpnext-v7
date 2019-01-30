@@ -17,7 +17,7 @@ def get_data(query, filters):
 		row = [d.pr_name, d.pr_branch, d.pr_creation, d.pr_posting, d.pr_owner, d.pr_is_allotment, d.pr_cons_type,d.pr_docstatus, \
 			d.so_name, d.so_creation, d.so_posting_date, d.so_owner, d.so_status, d.dn_name, d.dn_creation, d.dn_posting, d.dn_owner,\
 			d.dn_status, d.si_name, d.si_creation, d.si_posting, d.si_owner, d.si_status, d.pe_name, d.pe_creation, d.pe_posting,\
-			d.pe_owner,d.pe_status]  
+			d.pe_owner,d.pe_status] 
 		data.append(row)
 	return data
 
@@ -30,6 +30,22 @@ def get_conditions(filters):
        	if filters.get("fiscal_year"): conditions += " and year(pr.creation) = {0}".format(filters.get("fiscal_year"))
         if filters.get("cost_center"): conditions += " and pr.branch =  '{0}'".format(filters.get("cost_center"))
         return conditions
+
+'''def get_conditions(filters):
+        pr_cond = so_cond = dn_cond = si_cond = pe_cond = ""
+        if filters.get("month"):
+                month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov","Dec"].index(filters["month"])
+                mon = month + 1
+                pr_cond += " and month(pr.creation) = {0}".format(mon)
+		so_cond += " and month(pr.creation) = {0}".format(mon)
+		dn_cond += " and month(pr.creation) = {0}".format(mon)
+		si_cond += " and month(pr.creation) = {0}".format(mon)
+		pe_cond += " and month(pr.creation) = {0}".format(mon)
+
+        if filters.get("fiscal_year"): 
+		pr_cond += " and year(pr.creation) = {0}".format(filters.get("fiscal_year"))
+        if filters.get("cost_center"): conditions += " and pr.branch =  '{0}'".format(filters.get("cost_center"))
+        return conditions'''
 
 
 def get_query(filters):

@@ -118,7 +118,7 @@ class Employee(Document):
 		if self.user_id:
 			self.update_user()
 			self.update_user_permissions()
-		#self.post_casual_leave()
+		self.post_casual_leave()
 		ss = frappe.db.get_value("Salary Structure", {"employee": self.name, "is_active": "Yes"}, "name")
 		if ss:
 			doc = frappe.get_doc("Salary Structure", ss)

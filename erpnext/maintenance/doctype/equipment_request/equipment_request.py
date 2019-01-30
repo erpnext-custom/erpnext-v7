@@ -51,7 +51,7 @@ class EquipmentRequest(Document):
 @frappe.whitelist()
 def make_hire_form(source_name, target_doc=None):
         def update_hire_form(obj, target, source_parent):
-                target.private = "CDCL"
+                target.private = "Own Company"
                 target.cost_center = get_branch_cc(obj.sbranch)
 		target.customer = get_cc_customer(target.customer_cost_center)
 		target.branch = obj.sbranch
