@@ -1,0 +1,29 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2019-01-21 17:31:23.545121", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2019-01-21 17:34:49.873099", 
+ "modified_by": "Administrator", 
+ "module": "Assets", 
+ "name": "Asset Movement Register", 
+ "owner": "Administrator", 
+ "ref_doctype": "Asset Movement", 
+ "report_name": "Asset Movement Register", 
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Asset Manager"
+  }, 
+  {
+   "role": "Asset User"
+  }
+ ]
+}

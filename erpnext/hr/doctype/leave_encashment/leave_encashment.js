@@ -4,16 +4,16 @@
 cur_frm.add_fetch('employee','branch','branch');
 
 frappe.ui.form.on('Leave Encashment', {
-	onload: function(frm){
+//	onload: function(frm){
 		//frm.set_query("employee", erpnext.queries.employee);
-		if (!frm.doc.application_date) {
-			frm.set_value("application_date", get_today());
-		}
+//		if (!frm.doc.application_date) {
+//			frm.set_value("application_date", get_today());
+//		}
 
-		if(frm.doc.__islocal){
-			get_leave_balance(frm.doc);
-		}
-	},
+//		if(frm.doc.__islocal){
+//			get_leave_balance(frm.doc);
+//		}
+//	},
 	
 	refresh: function(frm) {
 			if(frm.doc.docstatus == 1 && frappe.model.can_read("Journal Entry")) {
@@ -51,14 +51,14 @@ frappe.ui.form.on('Leave Encashment', {
 		get_leave_balance(frm.doc);
 	},
 
-	application_date: function(frm){
+//	application_date: function(frm){
 		// Following code commented by SHIV on 2018/10/12
 		/*
 		frm.trigger("get_le_settings");
 		frm.trigger("get_leave_balance");
 		*/
-		get_leave_balance(frm.doc);
-	},
+//		get_leave_balance(frm.doc);
+//	},
 	
 	// Following code commented by SHIV on 2018/10/12
 	/*

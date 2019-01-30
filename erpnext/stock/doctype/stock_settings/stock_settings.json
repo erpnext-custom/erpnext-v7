@@ -516,8 +516,8 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-01-01 12:56:47.348710", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2019-01-28 19:50:28.190154", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Stock", 
  "name": "Stock Settings", 
  "owner": "Administrator", 
@@ -526,7 +526,7 @@
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 0, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 0, 
@@ -540,7 +540,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 0
+   "write": 1
   }, 
   {
    "amend": 0, 

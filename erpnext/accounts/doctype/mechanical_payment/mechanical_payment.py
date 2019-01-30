@@ -12,9 +12,13 @@ from erpnext.custom_utils import generate_receipt_no, check_future_date, get_bra
 class MechanicalPayment(AccountsController):
 	def validate(self):
 		check_future_date(self.posting_date)
-		self.validate_allocated_amount()
+		#self.validate_allocated_amount()
+		self.validate_allocated()
 		self.set_missing_values()
 		self.clearance_date = None
+
+        def before_submit(self):
+                self.remove_unallocated_items()
 
 	def set_missing_values(self):
 		self.cost_center = get_branch_cc(self.branch)
@@ -55,6 +59,27 @@ class MechanicalPayment(AccountsController):
 		
 		if self.receivable_amount > self.actual_amount:
 			frappe.throw("Receivable Amount Cannot be grater than Total Outstanding Amount")
+
+        def validate_allocated(self):
+                if not self.receivable_amount > 0:
+                        frappe.throw("Amount should be greater than 0")
+
+                total = 0
+                for d in self.items:
+                        if flt(d.allocated_amount) < 0 or flt(d.allocated_amount) > flt(d.outstanding_amount):
+                                frappe.throw("Allocated Amount should be between zero and Outstanding Amount on row {0}".format(d.idx))
+                        total = flt(total) + flt(d.allocated_amount)
+
+                if total != self.receivable_amount:
+                        frappe.throw("Total Allocated Amount should be equal to Receivable Amount")
+                if self.receivable_amount > self.actual_amount:
+                        frappe.throw("Receivable Amount Cannot be grater than Total Outstanding Amount")
+        def remove_unallocated_items(self):
+                to_remove = []
+                for d in self.items:
+                        if d.allocated_amount == 0:
+                                to_remove.append(d)
+                [self.remove(d) for d in to_remove]
 
 	def on_submit(self):
 		self.make_gl_entry()

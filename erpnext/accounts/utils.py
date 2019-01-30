@@ -669,5 +669,4 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 			})
 		)
 
-	frappe.msgprint(str(gl_entries))
 	make_gl_entries(gl_entries, cancel=0, update_outstanding="No", merge_entries=False)

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-12-21 12:26:22.764429", 
+ "modified": "2019-01-30 09:07:37.420659", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Assets", 
  "name": "Property Plant and Equipment", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Asset User"
   }
  ]
 }

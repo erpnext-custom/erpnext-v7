@@ -132,6 +132,8 @@ class POL(StockController):
 		consume.submit()
 
 	def update_stock_ledger(self):
+		if self.direct_consumption:
+			return
 		if self.hiring_warehouse:
                         wh = self.hiring_warehouse
                 else:

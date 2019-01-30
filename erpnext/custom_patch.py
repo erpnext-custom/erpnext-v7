@@ -3,16 +3,116 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe import msgprint
-from frappe.utils import flt, cint, now, nowdate, getdate, get_datetime,now_datetime
+from frappe.utils import rounded, flt, cint, now, nowdate, getdate, get_datetime,now_datetime
 from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, add_years
 #from erpnext.hr.hr_custom_functions import get_month_details, get_company_pf, get_employee_gis, get_salary_tax, update_salary_structure
 from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 from datetime import timedelta, date
-from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
+from erpnext.custom_utils import get_branch_cc, get_branch_warehouse, prepare_gl
 from erpnext.accounts.utils import make_asset_transfer_gl
 from datetime import datetime
 import os
 import subprocess
+
+def adjust_direct_con():
+	for a in frappe.db.sql("select name from tabPOL where direct_consumption = 1 and docstatus = 1 and posting_date > '2018-03-31'", as_dict=1):
+		print(a.name)
+		self = frappe.get_doc("POL", a.name)
+
+		if self.hiring_warehouse:
+			wh = self.hiring_warehouse
+		else:
+			wh = self.equipment_warehouse
+		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": wh}, "name")
+		if not wh_account:
+			frappe.throw(str(wh) + " is not linked to any account.")
+		cl_account = "Clearing Account - CDCL"
+
+		map_rate = frappe.db.get_value("Stock Ledger Entry", {"voucher_no": a.name, "actual_qty": ["<", 0]}, "valuation_rate")
+		map_amount = flt(map_rate) * flt(self.qty)
+
+		if self.hiring_cost_center:
+			cc = self.hiring_cost_center
+		else:
+			cc = get_branch_cc(self.equipment_branch)
+
+		gl_entries = []
+
+                gl_entries.append(
+                        prepare_gl(self, {"account": wh_account,
+                                         "debit": flt(self.total_amount),
+                                         "debit_in_account_currency": flt(self.total_amount),
+                                         "cost_center": cc,
+                                        })
+                        )
+
+                gl_entries.append(
+                        prepare_gl(self, {"account": cl_account,
+                                         "credit": flt(self.total_amount),
+                                         "credit_in_account_currency": flt(self.total_amount),
+                                         "cost_center": cc,
+                                        })
+                        )
+
+                gl_entries.append(
+                        prepare_gl(self, {"account": cl_account,
+                                         "debit": flt(map_amount),
+                                         "debit_in_account_currency": flt(map_amount),
+                                         "cost_center": cc,
+                                        })
+                        )
+
+                gl_entries.append(
+                        prepare_gl(self, {"account": wh_account,
+                                         "credit": flt(map_amount),
+                                         "credit_in_account_currency": flt(map_amount),
+                                         "cost_center": cc,
+                                        })
+                        )
+		
+                from erpnext.accounts.general_ledger import make_gl_entries
+		make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)
+
+def adjust_sr():
+	#for a in frappe.db.sql("select name from `tabStock Reconciliation` a where docstatus = 1 and posting_date between '2018-01-01' and '2018-12-31' and not exists (select 1 from `tabGL Entry` where voucher_no = a.name)", as_dict=1):
+	print("Starting")
+	frappe.db.sql("delete from `tabGL Entry` where voucher_no = 'SR/000053'")
+	doc = frappe.get_doc("Stock Reconciliation", 'SR/000053')
+	doc.make_gl_entries()
+	print("DONE")
+
+def check_it():
+	for a in frappe.db.sql("select a.name, b.warehouse  from `tabDelivery Note` a, `tabDelivery Note Item` b where a.name = b.parent and a.docstatus = 1 and a.posting_date > '2017-12-31'", as_dict=1):
+		stock = frappe.db.sql("select sum(actual_qty * valuation_rate) as amount from `tabStock Ledger Entry` where voucher_no = %s", a.name, as_dict=1)
+		if stock[0]['amount']:
+			try:
+				stock = rounded(stock[0]['amount'] * -1, 2)
+			except:
+				frappe.throw(str(stock))
+		else:
+			stock = 0
+
+		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": a.warehouse}, "name")
+
+		gl = frappe.db.sql("select credit from `tabGL Entry` where account = %s and voucher_no = %s", (wh_account, a.name), as_dict=1)
+		if gl:
+			gl = gl[0]['credit']
+		else:
+			gl = 0
+
+		diff = flt(stock) - flt(gl)	
+	
+		if diff > 0.5 or diff < -0.5:
+			print(str(a.name) + "  : " + str(stock) + " ==> " + str(gl))
+			#frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+			#doc = frappe.get_doc("Issue POL", a.name)
+			#doc.update_stock_gl_ledger(1, 0)
+
+def adjust_it():
+	name = "IPOL180500322"
+	frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", name)
+	doc = frappe.get_doc("Issue POL", name)
+	doc.update_stock_gl_ledger(1, 0)
 
 def get_stats():
         filename = datetime.now().strftime("%Y%m%d%H%M%S")
