@@ -39,7 +39,8 @@ class LeaveApplication(Document):
 		if self.workflow_state == "Rejected":
 			self.status = "Rejected"
 		if self.workflow_state == "Approved":
-			if approver != self.leave_approver:
+			leave_submitter = frappe.db.get_value("Employee", self.employee, "user_id")
+			if approver != self.leave_approver and leave_submitter != approver:
 				frappe.throw("Only {0} can submit your leave application".format(frappe.bold(approver)))
 			self.status= "Approved"	
 		if self.workflow_state == "Verified By Supervisor":

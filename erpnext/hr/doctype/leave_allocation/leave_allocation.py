@@ -55,13 +55,13 @@ class LeaveAllocation(Document):
 		if round_of_leave:
 			self.new_leaves_allocated = round5(self.new_leaves_allocated)
 		
-		balance = self.new_leaves_allocated
+		balance = flt(self.new_leaves_allocated)
 		if self.carry_forward and round_of_leave:
 			balance = round5(self.new_leaves_allocated) + round5(self.carry_forwarded_leaves)
 		else:
-			balance = self.new_leaves_allocated + self.carry_forwarded_leaves
+			balance = flt(self.new_leaves_allocated) + flt(self.carry_forwarded_leaves)
 
-		self.total_leaves_allocated = balance
+		self.total_leaves_allocated = flt(balance)
 
 		#if flt(self.new_leaves_allocated) % 0.5:
 		#	frappe.throw(_("Leaves must be allocated in multiples of 0.5"), ValueMultiplierError)

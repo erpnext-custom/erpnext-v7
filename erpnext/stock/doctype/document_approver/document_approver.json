@@ -95,7 +95,7 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-11-16 23:57:43.053141", 
+ "modified": "2019-02-04 13:03:32.749980", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Document Approver", 
@@ -126,7 +126,7 @@
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 0, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 0, 
@@ -140,7 +140,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 0
+   "write": 1
   }
  ], 
  "quick_entry": 0, 
