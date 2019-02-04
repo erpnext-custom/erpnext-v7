@@ -19,18 +19,19 @@ class MechanicalPayment(AccountsController):
 
 	def set_missing_values(self):
 		self.cost_center = get_branch_cc(self.branch)
-		if self.tds_amount:
-			self.net_amount = self.receivable_amount - self.tds_amount
-		else:
-			self.net_amount = self.receivable_amount
- 
+		if not self.payment_for == "Transporter Payment":	
+			if self.tds_amount:
+				self.net_amount = self.receivable_amount - self.tds_amount
+			else:
+				self.net_amount = self.receivable_amount
+	 
 		if self.net_amount < 0:
 			frappe.throw("Net Amount cannot be less than Zero")
-		if self.tds_amount < 0:
+		if self.tds_amount < 0 and not self.payment_for == "Transporter Payment":
 			frappe.throw("TDS Amount cannot be less than Zero")
 
 	def validate_allocated_amount(self):
-		if not self.receivable_amount > 0:
+		if not self.receivable_amount > 0 and not self.payment_for == "Transporter Payment":
 			frappe.throw("Amount should be greater than 0")	
 		to_remove = []
 		total = flt(self.receivable_amount)

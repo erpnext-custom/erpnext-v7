@@ -24,6 +24,8 @@ from erpnext.hr.doctype.employee_leave_approver.employee_leave_approver import g
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
 from datetime import timedelta, date
 from erpnext.hr.doctype.approver_settings.approver_settings import get_final_approver
+from erpnext.hr.hr_custom_functions import get_officiating_employee
+from erpnext.custom_workflow import validate_workflow_states
 
 class LeaveDayBlockedError(frappe.ValidationError): pass
 class OverlapError(frappe.ValidationError): pass
@@ -33,27 +35,8 @@ class LeaveApproverIdentityError(frappe.ValidationError): pass
 from frappe.model.document import Document
 
 class LeaveApplication(Document):
-	
-	def get_status(self):
-		approver = get_final_approver(self.branch)
-		if self.workflow_state == "Rejected":
-			self.status = "Rejected"
-		if self.workflow_state == "Approved":
-			if approver != self.leave_approver:
-				frappe.throw("Only {0} can submit your leave application".format(frappe.bold(approver)))
-			self.status= "Approved"	
-		if self.workflow_state == "Verified By Supervisor":
-			if approver != frappe.db.get_value("Employee", self.employee, "user_id"):
-				self.leave_approver = approver
-				self.leave_approver_name = frappe.db.get_value("User", approver, "full_name") 
-		if self.workflow_state in ['Rejected', 'Rejected By Supervisor']:
-			self.leave_approver = frappe.db.get_value("Employee", frappe.db.get_value("Employee", self.employee, "reports_to"), "user_id")
-			self.leave_approver_name = frappe.db.get_value("User", self.leave_approver, "full_name")
-	"""def get_feed(self):
-		return _("{0}: From {0} of type {1}").format(self.status, self.employee_name, self.leave_type)
-        """
 	def validate(self):
-		self.get_status()
+		validate_workflow_states(self)
 		self.branch = frappe.db.get_value("Employee", self.employee, "branch")
 		self.cost_center = frappe.db.get_value("Employee", self.employee, "cost_center")
 		self.validate_dates_ta()
@@ -448,7 +431,8 @@ def get_approvers(doctype=None, txt=None, searchfield=None, start=None, page_len
 	"""
 	#Check for Officiating Employeee, if so, replace
 	for a, b in enumerate(app_list):
-		off = frappe.db.sql("select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date and employee = %(employee)s order by creation desc limit 1", {"today": nowdate(), "employee": frappe.db.get_value("Employee", {"user_id": app_list[a]}, "name")}, as_dict=True)
+		off = get_officiating_employee(frappe.db.get_value("Employee", {"user_id": app_list[a]}, "name"))
+		#off = frappe.db.sql("select officiate from `tabOfficiating Employee` where docstatus = 1 and revoked != 1 and %(today)s between from_date and to_date and employee = %(employee)s order by creation desc limit 1", {"today": nowdate(), "employee": frappe.db.get_value("Employee", {"user_id": app_list[a]}, "name")}, as_dict=True)
 		if off:
 			app_list[a] = str(frappe.db.get_value("Employee", off[0].officiate, "user_id"))
 	

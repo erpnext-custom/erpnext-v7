@@ -138,8 +138,10 @@ class Asset(Document):
 					accumulated_depreciation += flt(depreciation_amount)
 					value_after_depreciation -= flt(depreciation_amount)
 					income_accumulated_depreciation += income_tax_amount
+
+					val = flt(self.residual_value) + flt(accumulated_depreciation) + flt(self.expected_value_after_useful_life)
 					
-					if accumulated_depreciation < self.gross_purchase_amount:
+					if val < self.gross_purchase_amount:
 						self.append("schedules", {
 							"schedule_date": schedule_date,
 							"depreciation_amount": depreciation_amount,
@@ -151,9 +153,9 @@ class Asset(Document):
 						if dep_done == 0:
 							self.append("schedules", {
 								"schedule_date": schedule_date,
-								"depreciation_amount": flt(self.gross_purchase_amount) - flt(accumulated_depreciation) - flt(self.expected_value_after_useful_life) + flt(depreciation_amount),
+								"depreciation_amount": flt(self.gross_purchase_amount) - flt(val) + flt(depreciation_amount),
 								"depreciation_income_tax": income_tax_amount,
-								"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life),
+								"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.residual_value) - flt(self.expected_value_after_useful_life),
 								"accumulated_depreciation_income_tax": income_accumulated_depreciation
 							})
 							dep_done = 1
@@ -165,7 +167,7 @@ class Asset(Document):
 								"schedule_date": schedule_date,
 								"depreciation_amount": 0,
 								"depreciation_income_tax": income_tax_amount,
-								"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life),
+								"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.residual_value) - flt(self.expected_value_after_useful_life),
 								"accumulated_depreciation_income_tax": income_accumulated_depreciation
 							})
 					

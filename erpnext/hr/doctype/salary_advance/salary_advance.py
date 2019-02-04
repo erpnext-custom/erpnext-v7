@@ -39,6 +39,8 @@ class SalaryAdvance(Document):
                 self.salary_component = "Salary Advance Deductions" if not self.salary_component else self.salary_component
                 if self.docstatus < 2:
                         self.reference = None
+                if self.docstatus == 0 and self.workflow_state == "Approved":
+                        self.workflow_state = "Waiting Approval"
 
         def validate_amounts(self):
                 if flt(self.total_claim) > flt(self.max_advance_limit):
