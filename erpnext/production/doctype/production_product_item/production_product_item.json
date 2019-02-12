@@ -505,12 +505,6 @@
    "label": "Transport Payment Done", 
    "length": 0, 
    "no_copy": 0, 
-=======
-   "label": "Vehicle No", 
-   "length": 0, 
-   "no_copy": 0, 
-   "options": "Equipment", 
->>>>>>> d2809437fb579317f10c55bf884818f0c7e82838
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
