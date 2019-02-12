@@ -305,7 +305,8 @@ class JournalEntry(AccountsController):
 		for d in self.get("accounts"):
 			if flt(d.debit > 0): accounts_debited.append(d.party or d.account)
 			if flt(d.credit) > 0: accounts_credited.append(d.party or d.account)
-
+		
+		#frappe.msgprint("d {0}, c {1}".format(accounts_debited,accounts_credited))
 		for d in self.get("accounts"):
 			if flt(d.debit > 0): d.against_account = ", ".join(list(set(accounts_credited)))
 			if flt(d.credit > 0): d.against_account = ", ".join(list(set(accounts_debited)))

@@ -8,6 +8,7 @@
  "custom": 0, 
  "docstatus": 0, 
  "doctype": "DocType", 
+ "document_type": "Document", 
  "editable_grid": 1, 
  "fields": [
   {
@@ -519,6 +520,7 @@
    "label": "Reference", 
    "length": 0, 
    "no_copy": 0, 
+   "options": "", 
    "permlevel": 0, 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
@@ -543,7 +545,7 @@
    "label": "Reference Type", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "\nSales Invoice\nPurchase Invoice\nJournal Entry\nSales Order\nPurchase Order\nExpense Claim\nAsset", 
+   "options": "\nAsset\nBonus\nDirect Payment\nEmployee Benefits\nEquipment Hiring Form\nExpense Claim\nFund Requisition\nHire Charge Invoice\nJob Card\nJournal Entry\nLeave Encashment\nLeave Travel Concession\nOvertime Application\nPBVA\nPOL\nProcess MR Payment\nProject Advance\nProject Payment\nProject Sales\nPurchase Invoice\nPurchase Order\nRoyalty Payment\nSalary Advance\nSales Invoice\nSales Order\nTravel Authorization\nTravel Claim\n", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -694,7 +696,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2016-07-11 03:28:01.575159", 
+ "modified": "2019-02-07 09:26:09.281150", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Journal Entry Account", 

@@ -28,7 +28,24 @@ frappe.ui.form.on('Budget', {
 				}
 			}
 		})
-	}
+	},
+
+
+	get_accounts: function(frm) {
+                //load_accounts(frm.doc.company)
+                return frappe.call({
+                        method: "get_accounts",
+                        doc: frm.doc,
+                        callback: function(r, rt) {
+                                frm.refresh_field("accounts");
+                                frm.refresh_field("total_royalty");
+                                frm.refresh_fields();
+                        },
+                        freeze: true,
+                        freeze_message: "Loading Expense Accounts..... Please Wait"
+                });
+        }
+
 });
 
 //Custom Scripts

@@ -104,6 +104,14 @@ def get_data():
 					"label": _("Stock Balance")
 				},
 				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Stock Issue Report",
+                                        "doctype": "Stock Entry",
+                                        "Label": _("Stock Issue Report")
+                                },
+
+				{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Stock Projected Quantity",

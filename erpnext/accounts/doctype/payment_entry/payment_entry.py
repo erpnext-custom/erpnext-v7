@@ -744,6 +744,9 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	pe.paid_amount = paid_amount
 	pe.received_amount = received_amount
 	
+	if dt == "Sales Order" or dt == "Purchase Order":
+                pe.so_reference = doc.name
+	
 	pe.append("references", {
 		"reference_doctype": dt,
 		"reference_name": dn,

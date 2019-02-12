@@ -3,27 +3,32 @@
 
 # ERPNext - web based ERP (http://erpnext.com)
 # For license information, please see license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		  SHIV		                   03/08/2018         New fields submitted, submitted_by introduced
+2.0		  SHIV		                   03/08/2018         Removed code for submitted, submitted_by as it is
+                                                                        taken care in frappe template itself.
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
 
-from frappe.utils import cstr, flt, getdate, new_line_sep
+from frappe.utils import cstr, flt, getdate, new_line_sep, today, nowdate, now_datetime
 from frappe import msgprint, _
 from frappe.model.mapper import get_mapped_doc
 from erpnext.stock.stock_balance import update_bin_qty, get_indented_qty
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.manufacturing.doctype.production_order.production_order import get_item_details
-from frappe.model.naming import make_autoname
-from erpnext.custom_autoname import get_auto_name
+from erpnext.custom_utils import check_future_date
 
 # form_grid_templates = {
 # 	"items": "templates/form_grid/material_request_grid.html"
 # }
 
 class MaterialRequest(BuyingController):
-	def autoname(self):
-		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
-
 	def get_feed(self):
 		return _("{0}: {1}").format(self.status, self.material_request_type)
 
@@ -65,14 +70,30 @@ class MaterialRequest(BuyingController):
 	# Validate
 	# ---------------------
 	def validate(self):
+		check_future_date(self.transaction_date)
 		super(MaterialRequest, self).validate()
 
 		self.validate_schedule_date()
 		self.validate_uom_is_integer("uom", "qty")
+		self.set_urgent_status()
 
 		if not self.status:
 			self.status = "Draft"
 
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following code commented by SHIV on 2018/08/06
+                '''
+                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+                # Following code added by SHIV on 2018/08/03
+		if self.docstatus == 0:
+                        self.submitted_by = "" if self.submitted_by else self.submitted_by
+                        self.submitted    = "" if self.submitted else self.submitted
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+                '''
+                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+                
+                #self.docstatus = 2 if self.workflow_state == "Rejected" else self.docstatus    #temporary SHIV 2018/11/16
+                
 		from erpnext.controllers.status_updater import validate_status
 		validate_status(self.status, ["Draft", "Submitted", "Stopped", "Cancelled"])
 
@@ -80,12 +101,64 @@ class MaterialRequest(BuyingController):
 		pc_obj.validate_for_items(self)
 
 		self.set_title()
+		if not self.items:
+			frappe.throw("Cannot save without items in material request")
 
-
+                ### Ver 3.0 Begins
+                # Following commented by SHIV on 2018/11/16
+                '''
+		if not self.approver:	
+			app = frappe.db.get_value("Approver Item", {"cost_center": self.temp_cc}, "approver")	
+			if not app:
+				frappe.throw("Setup MR Approver for <b>" + str(self.temp_cc) + "</b> in Document Approver")
+			else:
+				self.approver = app
+                '''
+                # Following two methods introduced by SHIV on 2018/11/16
+                self.creation_date = nowdate() if not self.creation_date else self.creation_date
+                #self.validate_multiple_approvers()
+                #self.update_approver()
+                ### Ver 3.0 Ends
+                
 		# self.validate_qty_against_so()
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated
 		# Though the creation of Material Request from a Production Plan can be rethought to fix this
 
+        '''def validate_multiple_approvers(self):
+                self.prev_workflow_state = self.get_db_value("workflow_state")
+                self.cur_workflow_state = self.workflow_state
+                
+                multiple_approvers = {}
+                for i in self.get("items"):
+                        app_list = frappe.db.sql("""
+                                select approver
+                                from `tabDocument Approver Item`
+                                where item_group='{0}'
+                                and workflow_state != 'Waiting CEO Approval'
+                        """.format(i.item_group))
+                        for a in app_list:
+                                if multiple_approvers.has_key(str(a)):
+                                        multiple_approvers[str(a)] += 1
+                                else:
+                                        multiple_approvers[str(a)] = 0
+
+                        if len(multiple_approvers) > 1:
+                                frappe.throw(_("Row# {0}: Multiple approvers found").format(i.idx), title="Operation not permitted")
+
+                
+        def update_approver(self):
+                if self.workflow_state == "Approved":
+                        return
+                
+                # Populating approver
+                app_li = frappe.db.sql("""
+                        select distinct approver
+                        from `tabDocument Approver Item`
+                        where workflow_state = '{0}'
+                        and item_group in ({1})
+                """.format(self.workflow_state, "'"+str("','".join([i.item_group for i in self.get("items")]))+"'"))
+                self.approver = app_li[0][0] if app_li else None'''
+                
 	def set_title(self):
 	#	'''Set title as comma separated list of items'''
 		items = []
@@ -97,9 +170,31 @@ class MaterialRequest(BuyingController):
 	#
 	#	self.title = ', '.join(items)
 
+	def set_urgent_status(self):
+		for a in self.items:
+			if a.urgent_requirement:
+				self.urgent_requirement = "Yes"
+				break
+
+        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+        # Following code commented by SHIV on 2018/08/06
+        '''
+        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+        # Following code added by SHIV on 2018/08/03
+        def before_submit(self):
+                self.submitted_by     = frappe.session.user
+                self.submitted        = now_datetime()
+        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+        '''
+        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+
 	def on_submit(self):
+		if self.approver and self.approver != frappe.session.user:
+			frappe.throw(_("Only the approver <b>{0}</b> allowed to approve this document").format(self.approver), title="Invalid Operation")
+
 		frappe.db.set(self, 'status', 'Submitted')
 		self.update_requested_qty()
+		self.set_urgent_status()
 
 	def check_modified_date(self):
 		mod_db = frappe.db.sql("""select modified from `tabMaterial Request` where name = %s""",
@@ -198,8 +293,11 @@ def set_missing_values(source, target_doc):
 
 def update_item(obj, target, source_parent):
 	target.conversion_factor = 1
+	target.uom = None
 	target.qty = flt(obj.qty) - flt(obj.ordered_qty)
 	target.stock_qty = target.qty
+	if obj.item_group == "Fixed Asset":
+		target.qty = flt(obj.qty) - flt(obj.issued_quantity)
 
 @frappe.whitelist()
 def make_purchase_order(source_name, target_doc=None):
@@ -209,6 +307,9 @@ def make_purchase_order(source_name, target_doc=None):
 	doclist = get_mapped_doc("Material Request", source_name, 	{
 		"Material Request": {
 			"doctype": "Purchase Order",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 				"material_request_type": ["=", "Purchase"]
@@ -221,7 +322,7 @@ def make_purchase_order(source_name, target_doc=None):
 				["parent", "material_request"],
 				["uom", "stock_uom"],
 				["budget_account", "budget_account"],
-                                ["cost_center", "cost_center"],
+                                ["cost_center_w", "cost_center"],
 				["uom", "uom"]
 			],
 			"postprocess": update_item,
@@ -236,6 +337,9 @@ def make_request_for_quotation(source_name, target_doc=None):
 	doclist = get_mapped_doc("Material Request", source_name, 	{
 		"Material Request": {
 			"doctype": "Request for Quotation",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 				"material_request_type": ["=", "Purchase"]
@@ -247,7 +351,7 @@ def make_request_for_quotation(source_name, target_doc=None):
 				["name", "material_request_item"],
 				["parent", "material_request"],
 				["budget_account", "budget_account"],
-                                ["cost_center", "cost_center"],
+                                ["cost_center_w", "cost_center"],
 				["uom", "uom"]
 			]
 		}
@@ -285,7 +389,7 @@ def make_purchase_order_based_on_supplier(source_name, target_doc=None):
 					["parent", "material_request"],
 					["uom", "stock_uom"],
 					["budget_account", "budget_account"],
-                                	["cost_center", "cost_center"],
+                                	["cost_center_w", "cost_center"],
 					["uom", "uom"]
 				],
 				"postprocess": update_item,
@@ -321,6 +425,9 @@ def make_supplier_quotation(source_name, target_doc=None):
 	doclist = get_mapped_doc("Material Request", source_name, {
 		"Material Request": {
 			"doctype": "Supplier Quotation",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 				"material_request_type": ["=", "Purchase"]
@@ -331,7 +438,7 @@ def make_supplier_quotation(source_name, target_doc=None):
 			"field_map": {
 				"name": "material_request_item",
 				"budget_account": "budget_account",
-                                "cost_center": "cost_center",
+                                "cost_center_w": "cost_center",
 				"parent": "material_request"
 			}
 		}
@@ -345,6 +452,7 @@ def make_stock_entry(source_name, target_doc=None):
 		qty = flt(obj.qty) - flt(obj.ordered_qty) \
 			if flt(obj.qty) > flt(obj.ordered_qty) else 0
 		target.qty = qty
+		target.uom = None
 		target.transfer_qty = qty
 		target.conversion_factor = 1
 
@@ -360,6 +468,9 @@ def make_stock_entry(source_name, target_doc=None):
 	doclist = get_mapped_doc("Material Request", source_name, {
 		"Material Request": {
 			"doctype": "Stock Entry",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1],
 				"material_request_type": ["in", ["Material Transfer", "Material Issue"]]
@@ -371,7 +482,7 @@ def make_stock_entry(source_name, target_doc=None):
 				"name": "material_request_item",
 				"parent": "material_request",
 				"uom": "stock_uom",
-				"cost_center": "cost_center",
+				"cost_center_w": "cost_center",
 				"budget_account": "expense_account"
 			},
 			"postprocess": update_item,
@@ -413,3 +524,12 @@ def raise_production_orders(material_request):
 	if errors:
 		msgprint(_("Productions Orders cannot be raised for:" + '\n' + new_line_sep(errors)))
 	return production_orders
+
+@frappe.whitelist()
+def get_cc_warehouse(user):
+	cc = frappe.db.get_value("Employee", {"user_id": user}, "cost_center")
+	if not cc:
+		cc = frappe.db.get_value("GEP Employee", {"user_id": user}, "cost_center")
+	wh = frappe.db.get_value("Cost Center", cc, "warehouse")
+	app = frappe.db.get_value("Approver Item", {"cost_center": cc}, "approver")
+	return [cc, wh, app]

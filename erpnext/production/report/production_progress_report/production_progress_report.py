@@ -17,7 +17,7 @@ def execute(filters=None):
 def build_filters(filters):
 	filters.is_company = frappe.db.get_value("Cost Center", filters.cost_center, "is_company")
 	filters.from_date, filters.to_date = get_period_date(filters.fiscal_year, filters.report_period, filters.cumulative)
-
+	
 def get_data(filters):
 	data = []
 	cc_condition = get_cc_conditions(filters)

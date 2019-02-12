@@ -384,6 +384,7 @@ class AccountsController(TransactionBase):
 					'outstanding_amount': self.outstanding_amount
 				})
 				lst.append(args)
+		frappe.msgprint("{0}".format(lst))
 
 		if lst:
 			from erpnext.accounts.utils import reconcile_against_document

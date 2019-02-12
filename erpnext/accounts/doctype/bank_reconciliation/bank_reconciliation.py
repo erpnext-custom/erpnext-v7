@@ -36,7 +36,21 @@ class BankReconciliation(Document):
 				and ifnull(t1.is_opening, 'No') = 'No' {0}
 			order by t1.posting_date ASC, t1.name DESC
 		""".format(condition), (self.bank_account, self.from_date, self.to_date), as_dict=1)
-				
+
+		direct_payment_entries = frappe.db.sql("""
+                        select
+                                "Direct Payment" as payment_document, name as payment_entry,
+                                cheque_no as cheque_number, cheque_date,
+                                net_amount as amount,
+                                posting_date, branch as against_account, clearance_date
+                        from `tabDirect Payment`
+                        where '{0}' IN (credit_account, debit_account)
+                        	and docstatus = 1
+                        	and posting_date between '{1}' and '{2}'
+                        {3}
+                """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+		frappe.msgprint(len(direct_payment_entries))	
+		
 		payment_entries = frappe.db.sql("""
 			select 
 				"Payment Entry" as payment_document, name as payment_entry, 
@@ -52,7 +66,7 @@ class BankReconciliation(Document):
 		""".format(condition), 
 		(self.bank_account, self.bank_account, self.bank_account, self.from_date, self.to_date), as_dict=1)
 		
-		entries = sorted(list(payment_entries)+list(journal_entries), 
+		entries = sorted(list(payment_entries)+list(journal_entries)+list(direct_payment_entries), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))
 				
 		self.set('payment_entries', [])

@@ -178,6 +178,18 @@ def get_data():
 					"name": "Expense Claim",
                                         "label": _("Expense Claim"),
 				},
+				 {
+                                        "type": "doctype",
+                                        "name": "Overtime Application",
+                                        "label": _("Overtime Application"),
+                                        "description": _("Overtime Application"),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Employee Benefits",
+                                        "label": _("Process Employee Benefits"),
+                                },
+
 			]
 		},
                 {
@@ -257,6 +269,13 @@ def get_data():
                                         "label": _("Salary Tax & Health Contribution Report"),
 					"doctype": "Salary Slip"
 				},
+				{
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Salary Payable Report",
+                                        "label": _("Salary Payable Report"),
+                                        "doctype": "Salary Slip"
+                                },
 			]
 		},
                 {

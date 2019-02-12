@@ -36,8 +36,10 @@ frappe.ui.form.on("Salary Slip", {
 		frm.trigger("toggle_fields")
 		frm.fields_dict['earnings'].grid.set_column_disp("default_amount", false);
 		frm.fields_dict['deductions'].grid.set_column_disp("default_amount", false);
+		/* Commented by SHIV on 2019/01/29
 		frm.fields_dict['earnings'].grid.set_column_disp("section_break_5", false);
 		frm.fields_dict['deductions'].grid.set_column_disp("section_break_5", false);
+		*/
 	},
 
 	salary_slip_based_on_timesheet: function(frm) {

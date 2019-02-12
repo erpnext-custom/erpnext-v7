@@ -345,7 +345,8 @@ cur_frm.cscript.toggle_related_fields = function(doc) {
 
 	cur_frm.fields_dict["items"].grid.set_column_disp("s_warehouse", doc.purpose!='Material Receipt');
 	cur_frm.fields_dict["items"].grid.set_column_disp("t_warehouse", doc.purpose!='Material Issue');
-
+	cur_frm.fields_dict["items"].grid.set_column_disp("issue_to_employee", doc.purpose=='Material Issue');
+	cur_frm.fields_dict["items"].grid.set_column_disp("issued_to", doc.purpose=='Material Issue');
 	cur_frm.cscript.toggle_enable_bom();
 
 	if (doc.purpose == 'Subcontract') {
@@ -565,3 +566,27 @@ frappe.ui.form.on("Stock Entry", "purpose", function(frm){
       frm.set_df_property("naming_series", "reqd", true)
       refresh_field('naming_series');
 });
+
+frappe.ui.form.on('Stock Entry Detail', {
+        "issue_to_employee": function(frm, cdt, cdn) {
+                frappe.model.set_value(cdt, cdn, "issued_to", '');
+}
+})
+
+cur_frm.fields_dict['items'].grid.get_field('issued_to').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        if (d.issue_to_employee == "Employee") {
+                return {
+                        filters: [
+                        ['Employee', 'status', '=', 'Active']
+                        ]
+                }
+        }
+        else {
+                return {
+                        filters: [
+                                ['Equipment', 'not_cdcl', '=', 0]
+                        ]
+                }
+        }
+}

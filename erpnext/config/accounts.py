@@ -42,6 +42,10 @@ def get_data():
 					"label": "Transfer COGM Balance",
 					"description": _("TRansfer COGM Balance between fiscal years")
 				},
+				{
+					"type": "doctype",
+					"name": "Transporter Payment",
+				},
 			]
 		},
 		{
@@ -214,6 +218,19 @@ def get_data():
                                 },
                         ]
                 },
+		  {
+                        "label": _("Tools"),
+                        "items": [
+                                {
+                                        "type": "doctype",
+                                        "name": "Salary Remittance",
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Fixed Deposit",
+                                },
+                        ]
+                },
 		{
 			"label": _("Accounting Statements"),
 			"items": [
@@ -330,6 +347,10 @@ def get_data():
 					"description": _("Define budget for a financial year.")
 				},
 				{
+                                        "type": "doctype",
+                                        "name": "Revenue Target",
+                                },
+				{
 					"type": "report",
 					"name": "Budget Consumption Report",
 					"is_query_report": True,
@@ -337,13 +358,13 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Supplementary Budget Tool",
+					"name": "Supplementary Budget",
 					"description": "Supplementary Budget",
 					"hide_count": True
 				},
 				{
 					"type": "doctype",
-					"name": "Budget Reappropriation Tool",
+					"name": "Budget Reappropiation",
 					"description": "Budget Reappropriation",
 					"hide_count": True
 				},
@@ -359,6 +380,13 @@ def get_data():
 					"name": "Budget Reappropriation Report",
 					"doctype": "Reappropriation Details"
 				},
+				{
+                                        "type": "report",
+                                        "label": _("Revenue Achievement"),
+                                        "is_query_report": True,
+                                        "name": "Revenue Target",
+                                        "doctype": "Revenue Target",
+                                },
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -463,6 +491,12 @@ def get_data():
 					"doctype": "Purchase Invoice",
 					"is_query_report": True
 				},
+				{
+                                        "type": "report",
+                                        "name": "Fixed Deposit Report",
+                                        "doctype": "Fixed Deposit",
+                                        "is_query_report": True
+                                },
 				{
 					"type": "report",
 					"is_query_report": True,

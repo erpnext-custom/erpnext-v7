@@ -4,6 +4,8 @@ cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("item_code", "item_name", "item_name")
 cur_frm.add_fetch("item_code", "stock_uom", "uom")
 cur_frm.add_fetch("item_code", "item_group", "item_group")
+cur_frm.add_fetch("equipment", "equipment_model", "equipment_model")
+cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
 
 frappe.ui.form.on('Production', {
 	onload: function(frm) {
@@ -131,4 +133,13 @@ cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = functi
         }
 }
 
+
+/*cur_frm.fields_dict['items'].grid.get_field('vehicle_no').get_query = function(frm, cdt, cdn) {
+                var d = locals[cdt][cdn];
+                return {
+                          query: "erpnext.controllers.queries.get_equipment_no",
+			  filters: {"is_disabled": 0}
+                             }
+}
+*/
 

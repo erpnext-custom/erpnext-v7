@@ -228,7 +228,7 @@ def check_if_advance_entry_modified(args):
 					and party_type = %(party_type)s and party = %(party)s and {0} = %(account)s
 					and unallocated_amount = %(unadjusted_amount)s
 			""".format(party_account_field), args)
-
+	frappe.msgprint("{0}".format(ret))
 	if not ret:
 		throw(_("""Payment Entry has been modified after you pulled it. Please pull it again."""))
 
@@ -627,5 +627,20 @@ def get_period_date(fiscal_year, period, cumulative=None):
                 return from_date, to_date
         else:
                 frappe.throw("Report Period Not Defined Properly")
+
+def get_tds_account(percent):
+	if not percent:
+		frappe.throw("TDS Percent is mandatory")
+	if cint(percent) == 2:
+		field = "tds_2_account"
+	elif cint(percent) == 3:
+		field = "tds_3_account"
+	elif cint(percent) == 5:
+		field = "tds_5_account"
+	elif cint(percent) == 10:
+		field = "tds_10_account"
+	else:
+		frappe.throw("Invalid TDS Rate")
+	return frappe.db.get_single_value("Accounts Settings", field)
 
 

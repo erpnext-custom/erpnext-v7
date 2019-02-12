@@ -43,6 +43,7 @@ class StockEntry(StockController):
 		self.validate_posting_time()
 		self.validate_purpose()
 		self.validate_item()
+		self.check_item_value()
 		self.set_transfer_qty()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", "transfer_qty")
@@ -69,6 +70,16 @@ class StockEntry(StockController):
 		self.update_stock_ledger()
 		self.update_production_order()
 		self.make_gl_entries_on_cancel()
+
+	def check_item_value(self):
+                if self.items:
+                        for a in self.items:
+                                if a.issued_to and not a.issue_to_employee:
+                                        a.issued_to = ''
+                                if flt(a.qty) == 0 or flt(a.basic_amount) == 0 or flt(a.amount) == 0:
+                                        frappe.throw("Either Quantity or Amount is 0 for Item <b>" + str(a.item_name) + "</b>")
+                else:
+                        frappe.throw("Stock Entry shoould have an Item Entry")
 
 	def validate_purpose(self):
 		valid_purposes = ["Material Issue", "Material Receipt", "Material Transfer", "Material Transfer for Manufacture",

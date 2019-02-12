@@ -1,33 +1,149 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0		          SHIV		     					26/11/2017         * "PR Type/material_request_type" should only be 
+																			allowed to change by "Stock User"
+																			as recommened by Payma, CDCL
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
 
 {% include 'erpnext/buying/doctype/purchase_common/purchase_common.js' %};
 
+cur_frm.add_fetch("item_code", "stock_uom", "uom")
+cur_frm.add_fetch("branch", "cost_center","temp_cc");
+
 frappe.ui.form.on('Material Request', {
+	material_request_type: function(frm) {
+		if(frm.doc.material_request_type == "Purchase") {
+			cur_frm.set_value("purchase_change_date", get_today())
+		}
+		else {
+			cur_frm.set_value("purchase_change_date", "")
+		}
+	},
 	setup: function(frm) {
 		frm.get_field('items').grid.editable_fields = [
-			{fieldname: 'item_code', columns: 3},
+			{fieldname: 'item_code', columns: 2},
+			{fieldname: 'item_name', columns: 2},
 			{fieldname: 'qty', columns: 2},
-			{fieldname: 'warehouse', columns: 3},
+			{fieldname: 'warehouse', columns: 2},
 			{fieldname: 'schedule_date', columns: 2},
 		];
 	},
+	/*"items_on_form_rendered": function(frm, grid_row, cdt, cdn) {
+		var row = cur_frm.open_grid_row();
+		if(!row.grid_form.fields_dict.cost_center_w.value) {
+			row.grid_form.fields_dict.cost_center_w.set_value(frm.doc.temp_cc)
+                	row.grid_form.fields_dict.cost_center_w.refresh()
+		}
+		if(!row.grid_form.fields_dict.warehouse.value) {
+			row.grid_form.fields_dict.warehouse.set_value(frm.doc.temp_wh)
+                	row.grid_form.fields_dict.warehouse.refresh()
+		}
+	}, */
 	onload: function(frm) {
+		/*
+		if(frm.doc.__islocal) {
+			frm.set_value("creation_date", get_today())
+		}
+		*/
+		
 		// formatter for material request item
 		frm.set_indicator_formatter('item_code',
 			function(doc) { return (doc.qty<=doc.ordered_qty) ? "green" : "orange" })
-	}
+
+		frappe.form.link_formatters['Item'] = function(value, doc) {
+			console.log('inside link_formatters');
+			
+			return value + ': ' + doc.item_name;
+		}
+		
+		
+		/*
+		if(frm.doc.__islocal) {
+			cur_frm.set_value("material_request_type", "Material Issue")
+			frappe.call({
+				method: "erpnext.stock.doctype.material_request.material_request.get_cc_warehouse",
+				args: {"user": frappe.session.user},
+				callback(r) {
+					cur_frm.set_value("temp_cc", r.message[0]);		
+					cur_frm.set_value("temp_wh", r.message[1]);		
+					cur_frm.set_value("approver", r.message[2]);		
+				}
+			})
+		}
+		*/
+		
+		// Ver 3.0 Begins, by SHIV on 2018/11/16
+		// Follwoing code commented by SHIV on 2018/11/16
+		/*
+		if(frm.doc.__islocal) {
+			frappe.call({
+					method: "erpnext.custom_utils.get_user_info",
+					args: {"user": frappe.session.user},
+					callback(r) {
+							cur_frm.set_value("temp_cc", r.message.cost_center);
+							cur_frm.set_value("temp_wh", r.message.warehouse);
+							cur_frm.set_value("approver", r.message.approver);
+							cur_frm.set_value("branch", r.message.branch);
+					}
+			});
+        }
+		*/
+		//if(in_list(user_roles, "MR Manager") || in_list(user_roles, "MR GM")){
+			frm.set_query("approver", function() {
+				return {
+						query: "erpnext.stock.doctype.material_request.material_request.mr_approver_query",
+						filters: {
+								user_id: frappe.session.user,
+								workflow_state: frm.doc.workflow_state,
+								roles: user_roles
+						}
+				};
+			});
+		//}
+		// Ver 3.0 Ends
+		
+	},
+	refresh: function(frm){
+		// Ver2.0, Following condition is changed by SHIV on 26/11/2017
+		//if(in_list(user_roles, "Stock User") || in_list(user_roles, "Purchase User")) {		
+		if(in_list(user_roles, "Stock User")) {
+			frm.set_df_property("material_request_type", "read_only", 0)
+		}
+	},
+	branch: function(frm){
+		
+	},
 });
 
 frappe.ui.form.on("Material Request Item", {
+	"items_add": function(frm, cdt, cdn) {
+		frappe.model.set_value(cdt, cdn, "cost_center_w", frm.doc.temp_cc)
+		frappe.model.set_value(cdt, cdn, "warehouse", frm.doc.temp_wh)
+		frappe.model.set_value(cdt, cdn, "schedule_date", frappe.datetime.add_days(frm.doc.creation_date, 30))
+	}, 
 	"qty": function(frm, doctype, name) {
 			var d = locals[doctype][name];
 			if (flt(d.qty) < flt(d.min_order_qty)) {
 				alert(__("Warning: Material Requested Qty is less than Minimum Order Qty"));
 			}
+		},
+	"issued_quantity": function(frm, doctype, name) {
+		var d = locals[doctype][name];
+		if(d.qty < d.issued_quantity) {
+			frappe.model.set_value(doctype, name, "issued_quantity", "")
+			frappe.model.set_value(doctype, name, "ordered_qty", "")
+			msgprint("Issued Quantity cannot be greater than actual quantity")
+		}
+		else {	
+			frappe.model.set_value(doctype, name, "ordered_qty", d.issued_quantity)
 		}
 	}
-);
+},);
 
 erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.extend({
 	onload: function(doc) {
@@ -37,6 +153,14 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 				query: "erpnext.controllers.queries.item_query"
 			}
 		});
+		
+		/* Shiv, 25/12/2017 tried here not working
+		frappe.form.link_formatters['Item'] = function(value, doc) {
+			console.log('inside link_formatters');
+			
+			return value + ': ' + doc.item_name;
+		}
+		*/
 	},
 
 	refresh: function(doc) {
@@ -246,3 +370,95 @@ frappe.ui.form.on("Material Request Item", "item_code", function(frm, cdt, cdn) 
         }
    })
 })
+
+//cost Center
+/*cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc) {
+	return {
+		filters: {
+			'company': doc.company,
+			"is_group": 0,
+			"is_disabled": 0,
+		}
+	}
+} */
+//cost Center
+cur_frm.fields_dict['items'].grid.get_field('cost_center_w').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+                query: "erpnext.controllers.queries.filter_branch_cost_center",
+                filters: {'branch': frm.branch}
+        }
+}
+
+
+/*
+// Shiv, 25/12/2017 test not working
+cur_frm.cscript.onload = function(frm){
+	console.log('test from cscript');
+
+	frappe.form.link_formatters['Item'] = function(value, doc) {
+		console.log('inside link_formatters');
+		
+		return value + ': ' + doc.items.item_name;
+	}
+}
+*/
+
+
+frappe.ui.form.on("Material Request", "after_save", function(frm, cdt, cdn){
+	if(in_list(user_roles, "MR Manager") || in_list(user_roles, "MR GM") || in_list(user_roles, "MR CEO")){
+		if (frm.doc.workflow_state && frm.doc.workflow_state.indexOf("Rejected") >= 0 && frm.doc.prev_workflow_state != frm.doc.cur_workflow_state){
+			frappe.prompt([
+				{
+					fieldtype: 'Small Text',
+					reqd: true,
+					fieldname: 'reason'
+				}],
+				function(args){
+					validated = true;
+					frappe.call({
+						method: 'frappe.core.doctype.communication.email.make',
+						args: {
+							doctype: frm.doctype,
+							name: frm.docname,
+							subject: format(__('Reason for {0}'), [frm.doc.workflow_state]),
+							content: args.reason,
+							send_mail: false,
+							send_me_a_copy: false,
+							communication_medium: 'Other',
+							sent_or_received: 'Sent'
+						},
+						callback: function(res){
+							if (res && !res.exc){
+								frappe.call({
+									method: 'frappe.client.set_value',
+									args: {
+										doctype: frm.doctype,
+										name: frm.docname,
+										fieldname: 'rejection_reason',
+										value: frm.doc.rejection_reason ?
+											[frm.doc.rejection_reason, '['+String(frappe.session.user)+' '+String(frappe.datetime.nowdate())+']'+' : '+String(args.reason)].join('\n') : frm.doc.workflow_state
+									},
+									callback: function(res){
+										if (res && !res.exc){
+											frm.reload_doc();
+										}
+									}
+								});
+							}
+						}
+					});
+				},
+				__('Reason for ') + __(frm.doc.workflow_state),
+				__('Save')
+			)
+		}
+	}
+	
+	/*
+	delete locals[frm.doctype][frm.name];
+	frm.reload_doc();
+	//refresh_field("workflow_state");
+	*/
+	
+});
