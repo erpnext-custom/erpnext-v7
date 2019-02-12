@@ -14,6 +14,7 @@ class Equipment(Document):
 			item.idx = i
 
 	def validate(self):
+		self.validate_branch()
 		if not self.equipment_number:
 			self.equipment_number = self.name
 		
@@ -30,6 +31,10 @@ class Equipment(Document):
 			if not last_row.to_date:
 				last_row.to_date = getdate(nowdate())
 			
+	def validate_branch(self):
+		if frappe.db.get_value("Branch", self.branch, "is_disabled"):
+			frappe.throw("{0} is disabled branch".format(frappe.bold(self.branch)))
+
 	def create_equipment_history(self, branch, on_date, ref_doc, purpose):
 		from_date = on_date
 		if purpose == "Cancel":

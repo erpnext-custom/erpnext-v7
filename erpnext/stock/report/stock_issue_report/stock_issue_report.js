@@ -27,6 +27,7 @@ frappe.query_reports["Stock Issue Report"] = {
 			"width": "80",
 			"default": frappe.datetime.get_today()
 		},
+
 		{
 			"fieldname": "warehouse",
 			"label": __("Warehouse"),
@@ -34,13 +35,6 @@ frappe.query_reports["Stock Issue Report"] = {
 			"width": "80",
 			"options": "Warehouse"
 		},
-		/*{
-                        "fieldname": "cost_center",
-                        "label": __("Cost Center"),
-                        "fieldtype": "Link",
-                        "width": "80",
-                        "options": "Cost Center"
-                },*/
 
 		{
 			"fieldname": "item_code",

@@ -64,6 +64,14 @@ frappe.ui.form.on("Production", "refresh", function(frm) {
         }
     });
 
+    cur_frm.set_query("branch", function() {
+        return {
+            "filters": {
+		"is_disabled": 0
+            }
+        };
+    });
+
     cur_frm.set_query("location", function() {
         return {
             "filters": {
@@ -131,6 +139,13 @@ cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = functi
                 query: "erpnext.controllers.queries.get_cop_list",
                 filters: {'item_code': d.item_code, 'posting_date': frm.posting_date, 'branch': frm.branch}
         }
+}
+
+cur_frm.fields_dict['items'].grid.get_field('vehicle_no').get_query = function(frm, cdt, cdn) {
+	        var d = locals[cdt][cdn];
+		        return {
+				                query: "erpnext.controllers.queries.get_equipment_no"
+							        };
 }
 
 

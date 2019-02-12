@@ -6,6 +6,35 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def check_asset_dep():
+        for a in frappe.db.sql("select name, asset_category, opening_accumulated_depreciation as oad from tabAsset where docstatus = 1 and status not in ('Scrapped', 'Sold') order by asset_category", as_dict=1):
+		dep_ds = frappe.db.sql("select accumulated_depreciation_amount as ada from `tabDepreciation Schedule` where parent = %s and journal_entry is not null order by schedule_date desc limit 1", a.name, as_dict=1)
+		if dep_ds:
+			dep_ds = flt(dep_ds[0]['ada'])
+		else:
+			dep_ds = 0
+
+		dep_acc = frappe.db.get_value("Asset Category Account", {"parent": a.asset_category}, "depreciation_expense_account")
+		dep_gl = frappe.db.sql("select sum(debit) as gl from `tabGL Entry` where account = %s and against_voucher = %s group by against_voucher", (dep_acc, a.name), as_dict=1)
+		if dep_gl:
+			dep_gl = flt(dep_gl[0]['gl'])
+		else:
+			dep_gl = 0
+		
+		if dep_ds > 0:
+			dep_ds = dep_ds - flt(a.oad)
+		dep_ds = round(dep_ds, 2)
+		if dep_ds != dep_gl:
+			dif =  dep_ds - dep_gl
+			if dif > 0.2 or dif < -0.2:
+				print(str(a.name) + " : " + str(a.asset_category) + " ==> " + str(dep_ds) + " / " + str(dep_gl))
+
+def get_diff_asset():
+	for a in frappe.db.sql("select name, asset_category, asset_account from tabAsset where docstatus = 1", as_dict=1):
+		as_acc = frappe.db.get_value("Asset Category Account", {"parent": a.asset_category}, "fixed_asset_account")
+		if as_acc != a.asset_account:
+			print(str(a.name) + "   :  " + str(as_acc) + "  ==> " + str(a.asset_account))
+
 ##
 # Post casual leave on the first day of every month
 ##
@@ -27,8 +56,9 @@ def post_casual_leaves():
 
 def update_emp_cc():
 	for a in frappe.db.sql("select name, branch from tabEmployee", as_dict=1):
-		#if not get_branch_cc(a.branch):
-		print(str(a.name) + " ==> " + str(a.branch))
+		"""if not get_branch_cc(a.branch):
+			print(str(a.name) + " ==> " + str(a.branch))
+		"""
 		frappe.db.sql("update tabEmployee set cost_center = %s where name = %s", (get_branch_cc(a.branch), a.name))
 
 def move_asset_movement():

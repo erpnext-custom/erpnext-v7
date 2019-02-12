@@ -27,7 +27,8 @@ def get_data(filters):
 		eh_cond = " and (('{1}' between eh.from_date and ifnull(eh.to_date, now())) or ('{1}' between eh.from_date and ifnull(eh.to_date, now())))".format(filters.get("from_date"), filters.get("to_date"))
         if filters.get("not_cdcl"):
                not_cdcll = " and e.not_cdcl = 0"
-
+	else:
+		not_cdcll = ""
         if filters.get("include_disabled"):
                 dis = " "
         else:

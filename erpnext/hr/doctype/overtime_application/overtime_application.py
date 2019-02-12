@@ -33,7 +33,6 @@ class OvertimeApplication(Document):
                 if flt(self.total_hours) <= 0:
                         frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")
 
-                
 	def check_status(self):
 		if self.status != "Approved":
 			frappe.throw("Only Approved documents can be submitted")
@@ -54,7 +53,6 @@ class OvertimeApplication(Document):
 	# Allow only the approver to submit the document
 	##
 	def validate_submitter(self):
-		frappe.msgprint("{0}".format(self.workflow_state))
 		if self.workflow_state == "Waiting Approval":
 			if self.approver != frappe.session.user:
 				frappe.throw("Only the selected Approver can submit this document")
@@ -67,7 +65,6 @@ class OvertimeApplication(Document):
 		cost_center = frappe.db.get_value("Employee", self.employee, ["cost_center"])
 		ot_account = frappe.db.get_single_value("HR Accounts Settings", "overtime_account")
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
-		frappe.msgprint("{0}".format(ot_account))
 		if not cost_center:
 			frappe.throw("Setup Cost Center for employee in Employee Information")
 		if not expense_bank_account:
@@ -115,4 +112,4 @@ class OvertimeApplication(Document):
 		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the journal entry " + str(self.payment_jv) + " first!")
 		
-		self.db_set("payment_jv", "")
+		self.db_set("payment_jv", None)

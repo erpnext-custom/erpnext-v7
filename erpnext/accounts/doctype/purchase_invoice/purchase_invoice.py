@@ -759,8 +759,8 @@ class PurchaseInvoice(BuyingController):
 	def consume_budget(self):
 		for item in self.get("items"):
 			expense, cost_center = frappe.db.get_value("Purchase Order Item", item.po_detail, ["budget_account", "cost_center"])
-			if expense != item.expense_account and cost_center != item.cost_center:
-				frappe.throw("Purchase Order and Invoice should have same Cost Center and Budget Account!")
+			if cost_center != item.cost_center:
+				frappe.throw("Purchase Order and Invoice should have same Cost Center")
 			if expense:
 				account_type = frappe.db.get_value("Account", expense, "account_type")
 				if account_type in ("Fixed Asset", "Expense Account"):

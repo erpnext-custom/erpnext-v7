@@ -7,41 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-05-02 12:25:13.950433", 
- "modified_by": "payma.wangchuk@cdcl.bt", 
+ "modified": "2018-12-28 16:12:51.712775", 
+ "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Status Report", 
  "owner": "Administrator", 
  "ref_doctype": "Equipment Reservation Entry", 
  "report_name": "Equipment Status Report", 
  "report_type": "Script Report", 
- "roles": [
-  {
-   "role": "Administrator"
-  }, 
-  {
-   "role": "Fleet User"
-  }, 
-  {
-   "role": "Fleet Manager"
-  }, 
-  {
-   "role": "Workshop User"
-  }, 
-  {
-   "role": "Workshop Manager"
-  }, 
-  {
-   "role": "Regional Manager"
-  }, 
-  {
-   "role": "Auditor"
-  }, 
-  {
-   "role": "Projects User"
-  }, 
-  {
-   "role": "Management"
-  }
- ]
+ "roles": []
 }
