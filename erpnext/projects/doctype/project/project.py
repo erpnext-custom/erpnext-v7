@@ -883,11 +883,11 @@ class Project(Document):
 		self.actual_start_date = from_time_sheet.start_date
 		self.actual_end_date = from_time_sheet.end_date
 
-		self.total_costing_amount = from_time_sheet.costing_amount
-		self.total_billing_amount = from_time_sheet.billing_amount
-		self.actual_time = from_time_sheet.time
+		self.total_costing_amount = flt(from_time_sheet.costing_amount)
+		self.total_billing_amount = flt(from_time_sheet.billing_amount)
+		self.actual_time = flt(from_time_sheet.time)
 
-		self.total_expense_claim = from_expense_claim.total_sanctioned_amount
+		self.total_expense_claim = flt(from_expense_claim.total_sanctioned_amount)
 
 		self.gross_margin = flt(self.total_billing_amount) - flt(self.total_costing_amount)
 
