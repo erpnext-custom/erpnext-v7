@@ -229,6 +229,7 @@ def make_salary_slip(source_name, target_doc=None):
                                                         'depends_on_lwp' : d.depends_on_lwp,
                                                         'salary_component' : d.salary_component,
                                                         'institution_name' : d.institution_name,
+                                                        'ref_docname' : d.name,
                                                         'reference_type' : d.reference_type,
                                                         'reference_number' : d.reference_number,
                                                         'from_date' : d.from_date,
@@ -242,7 +243,8 @@ def make_salary_slip(source_name, target_doc=None):
                                                 'amount': d.amount,
                                                 'default_amount': d.amount,
                                                 'depends_on_lwp' : d.depends_on_lwp,
-                                                'salary_component' : d.salary_component
+                                                'salary_component' : d.salary_component,
+                                                'ref_docname': d.name
                                         })                                        
 
                 for e in target.get('earnings'):

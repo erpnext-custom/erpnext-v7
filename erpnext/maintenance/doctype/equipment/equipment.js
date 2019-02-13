@@ -5,7 +5,7 @@ cur_frm.add_fetch("hsd_type", "item_name", "item_name")
 
 frappe.ui.form.on('Equipment', {
 	onload: function(frm) {
-		cur_frm.set_df_property("asset_code", "reqd", 1) 
+		//cur_frm.set_df_property("asset_code", "reqd", 1) 
 	},
 	refresh: function(frm) {
 		cur_frm.set_df_property("engine_number", "read_only", frm.doc.engine_number ? 1 : 0)

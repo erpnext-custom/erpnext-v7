@@ -23,28 +23,32 @@ def get_accounts(filters):
 		dep = get_values(a.dep, filters.to_date, filters.from_date, filters.cost_center)[0]
 
 		g_open = flt(gross_opening.debit) - flt(gross_opening.credit)
-		g_total = g_open + flt(gross.debit) - flt(gross.credit)
+		g_addition = flt(gross.debit)
+		g_adjustment = flt(gross.credit)
+		g_total = g_open + g_addition - g_adjustment 
 		d_open = -1 * (flt(dep_opening.debit) - flt(dep_opening.credit))
-		dep_adjust = flt(dep.credit) + flt(acc_dep.debit)
-		d_total = d_open + flt(dep.debit) - flt(dep.credit) - flt(dep_adjust)
+		dep_adjust = flt(acc_dep.debit)
+		dep_addition = flt(acc_dep.credit)
+		d_total = d_open + dep_addition - flt(dep_adjust)
 
-		row = {
-			"asset_category": a.name,
-			"gross_opening": g_open,
-			"gross_addition": gross.debit,
-			"gross_adjustment": gross.credit,
-			"gross_total": g_total,
-			"dep_opening": d_open,
-			"dep_addition": dep.debit,
-			"dep_adjustment": acc_dep.debit,
-			"dep_total": d_total,
-			"net_block": flt(g_total) - flt(d_total) 
-		}
+		row = [ 
+			a.name,
+			g_open,
+			g_addition,
+			g_adjustment,
+			g_total,
+			d_open,
+			dep_addition,
+			dep_adjust,
+			d_total,
+			flt(g_total) - flt(d_total) 
+		]	
 		data.append(row)
 
 	#FOr CWIP Account
 	cwip_acc = []
-	cwip_accounts_gl = frappe.db.sql("select name from tabAccount where parent_account = 'Capital Work in Progress - SMCL'", as_dict=True)
+	cwip_account = frappe.db.get_single_value("Accounts Settings", "cwip_account")
+	cwip_accounts_gl = frappe.db.sql("select name from tabAccount where parent_account = %s", cwip_account, as_dict=True)
 	for account in cwip_accounts_gl:
 		cwip_acc.append(str(account.name))
 	cwip_accounts = tuple(cwip_acc)
@@ -58,18 +62,18 @@ def get_accounts(filters):
 	c_open = flt(cwip_open.debit) - flt(cwip_open.credit)
 	c_total = c_open + flt(cwip.debit) - flt(cwip.credit)
 
-	row = {
-		"asset_category": "Capital Work in Progress",
-		"gross_opening": c_open,
-		"gross_addition": cwip.debit,
-		"gross_adjustment": cwip.credit,
-		"gross_total": c_total,
-		"dep_opening": '',
-		"dep_addition": '',
-		"dep_adjustment": '',
-		"dep_total": '',
-		"net_block": c_total 
-	}
+	row = [
+		"Capital Work in Progress",
+		c_open,
+		cwip.debit,
+		cwip.credit,
+		c_total,
+		0,
+		0,
+		0,
+		0,
+		c_total 
+	]	
 	data.append(row)
 	return data
 

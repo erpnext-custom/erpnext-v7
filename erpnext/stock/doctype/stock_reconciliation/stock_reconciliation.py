@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 import frappe.defaults
 from frappe import msgprint, _
-from frappe.utils import cstr, flt, cint
+from frappe.utils import cstr, flt, cint, get_datetime
 from erpnext.stock.stock_ledger import update_entries_after
 from erpnext.controllers.stock_controller import StockController
 from erpnext.stock.utils import get_stock_balance
