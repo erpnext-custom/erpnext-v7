@@ -122,7 +122,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-09-12 14:50:52.063912", 
+ "modified": "2019-02-13 10:06:41.055798", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Division", 
@@ -255,5 +255,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "title_field": "d_name", 
  "track_seen": 0
 }

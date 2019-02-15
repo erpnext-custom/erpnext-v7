@@ -74,6 +74,17 @@ class StockController(AccountsController):
 
 		return process_gl_map(gl_list)
 
+        def validate_warehouse_branch(self, warehouse, branch):
+                if not branch:
+                        frappe.throw("Branch is Mandatory")
+                if not warehouse:
+                        frappe.throw("Warehouse is Mandatory")
+                branches = frappe.db.sql("select parent from `tabWarehouse Branch` where branch = %s", branch, as_dict=1)
+                for a in branches:
+                        if a.parent == warehouse:
+                                return
+                frappe.throw("Warehouse <b>" + str(warehouse) + "</b> doesn't belong to <b>" + str(branch) + "</b>")
+
 	def get_voucher_details(self, default_expense_account, default_cost_center, sle_map):
 		if self.doctype == "Stock Reconciliation":
 			return [frappe._dict({ "name": voucher_detail_no, "expense_account": default_expense_account,

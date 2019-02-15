@@ -335,7 +335,7 @@
    "no_copy": 0, 
    "oldfieldname": "account_type", 
    "oldfieldtype": "Select", 
-   "options": "\nAccumulated Depreciation\nBank\nCash\nChargeable\nCost of Goods Sold\nDepreciation\nEquity\nExpense Account\nExpenses Included In Valuation\nFixed Asset\nIncome Account\nPayable\nReceivable\nRound Off\nStock\nStock Adjustment\nStock Received But Not Billed\nTax\nTemporary", 
+   "options": "\nBank\nCash\nDepreciation\nTax\nChargeable\nWarehouse\nReceivable\nPayable\nEquity\nFixed Asset\nCost of Goods Sold\nExpense Account\nRound Off\nIncome Account\nStock Received But Not Billed\nExpenses Included In Valuation\nStock Adjustment\nStock\nTemporary\nCapital Work in Progress", 
    "permlevel": 0, 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
@@ -588,8 +588,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-13 07:41:54.655047", 
- "modified_by": "siva@bt.bt", 
+ "modified": "2019-02-13 09:48:14.561146", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Account", 
  "owner": "Administrator", 
@@ -819,6 +819,7 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "search_fields": "", 
+ "sort_field": "modified", 
  "sort_order": "ASC", 
  "track_seen": 0
 }

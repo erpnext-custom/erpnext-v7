@@ -92,6 +92,7 @@
    "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
+   "depends_on": "employee_subgroup", 
    "fieldname": "designation_name", 
    "fieldtype": "Data", 
    "hidden": 0, 
@@ -151,10 +152,11 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-13 07:42:15.110222", 
- "modified_by": "tashi.dorji775@bt.bt", 
+ "modified": "2019-02-13 10:49:12.705321", 
+ "modified_by": "siva@bt.bt", 
  "module": "HR", 
  "name": "Designation", 
+ "name_case": "Title Case", 
  "owner": "Administrator", 
  "permissions": [
   {

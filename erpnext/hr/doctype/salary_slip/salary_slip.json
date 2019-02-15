@@ -273,12 +273,12 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 1, 
+   "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "letter_head", 
    "fieldtype": "Link", 
-   "hidden": 0, 
+   "hidden": 1, 
    "ignore_user_permissions": 1, 
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
@@ -1275,10 +1275,11 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-13 07:41:05.460938", 
+ "modified": "2019-02-13 10:54:50.060762", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Salary Slip", 
+ "name_case": "Title Case", 
  "owner": "Administrator", 
  "permissions": [
   {

@@ -802,8 +802,8 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2018-08-30 07:47:28.752343", 
- "modified_by": "siva@bt.bt", 
+ "modified": "2019-02-13 11:14:54.169774", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Claim Item", 
  "name_case": "", 
@@ -814,6 +814,5 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
  "track_seen": 0
 }

@@ -74,8 +74,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-01-22 05:08:55.317850", 
- "modified_by": "Administrator", 
+ "modified": "2019-02-13 11:11:57.874057", 
+ "modified_by": "siva@bt.bt", 
  "module": "Setup", 
  "name": "UOM", 
  "name_case": "Title Case", 
@@ -325,6 +325,6 @@
  "quick_entry": 1, 
  "read_only": 0, 
  "read_only_onload": 0, 
- "sort_order": "DESC", 
+ "sort_order": "ASC", 
  "track_seen": 0
 }

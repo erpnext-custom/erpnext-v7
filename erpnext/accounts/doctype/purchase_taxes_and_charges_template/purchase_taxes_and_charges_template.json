@@ -201,10 +201,11 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-01-31 12:12:14.872812", 
+ "modified": "2019-02-14 10:15:37.071434", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Purchase Taxes and Charges Template", 
+ "name_case": "Title Case", 
  "owner": "wasim@webnotestech.com", 
  "permissions": [
   {
@@ -271,5 +272,7 @@
  "quick_entry": 1, 
  "read_only": 0, 
  "read_only_onload": 0, 
+ "sort_field": "modified", 
+ "sort_order": "DESC", 
  "track_seen": 0
 }

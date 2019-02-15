@@ -574,8 +574,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-01-04 12:52:24.580977", 
- "modified_by": "Administrator", 
+ "modified": "2019-02-13 10:02:29.236788", 
+ "modified_by": "siva@bt.bt", 
  "module": "HR", 
  "name": "Branch", 
  "name_case": "Title Case", 
@@ -687,6 +687,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "title_field": "", 
+ "title_field": "branch", 
  "track_seen": 0
 }

@@ -17,7 +17,7 @@ class Production(StockController):
 		check_future_date(self.posting_date)
 		self.check_cop()
 		self.validate_data()
-		#self.validate_warehouse()
+		self.validate_warehouse()
 		self.validate_supplier()
 		self.validate_items()
 		self.validate_posting_time()

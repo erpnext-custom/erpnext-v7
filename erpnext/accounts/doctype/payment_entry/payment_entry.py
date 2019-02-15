@@ -25,8 +25,6 @@ from erpnext.controllers.accounts_controller import AccountsController
 
 # Ver 1.0 by SSK on 09/08/2016, Following datetime, make_autoname imports are included
 import datetime
-from frappe.model.naming import make_autoname
-from erpnext.custom_autoname import get_auto_name
 from frappe import msgprint
 
 class InvalidPaymentEntry(ValidationError): pass
@@ -46,10 +44,6 @@ class PaymentEntry(AccountsController):
 			self.party_account_field = "paid_to"
 			self.party_account = self.paid_to
 			self.party_account_currency = self.paid_to_account_currency
-
-        # Ver 1.0 by SSK on 09/08/2016, autoname() method is added
-	def autoname(self):
-		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".#####")
 
 	def validate(self):
 		self.setup_party_account_field()

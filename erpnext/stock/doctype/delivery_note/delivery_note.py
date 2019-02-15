@@ -378,6 +378,9 @@ def make_sales_invoice(source_name, target_doc=None):
 	doc = get_mapped_doc("Delivery Note", source_name, 	{
 		"Delivery Note": {
 			"doctype": "Sales Invoice",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
 			"validation": {
 				"docstatus": ["=", 1]
 			}

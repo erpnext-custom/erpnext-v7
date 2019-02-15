@@ -151,8 +151,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-13 07:45:11.556062", 
- "modified_by": "tashi.dorji775@bt.bt", 
+ "modified": "2019-02-13 11:46:45.014833", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Salary Component", 
  "name_case": "", 
@@ -222,8 +222,9 @@
  "quick_entry": 1, 
  "read_only": 0, 
  "read_only_onload": 0, 
+ "search_fields": "description, gl_head", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "title_field": "", 
+ "title_field": "salary_component", 
  "track_seen": 0
 }
