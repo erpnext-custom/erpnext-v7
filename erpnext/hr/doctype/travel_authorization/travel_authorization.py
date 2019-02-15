@@ -21,6 +21,9 @@ class TravelAuthorization(Document):
                 if self.workflow_state == "Approved":
                         self.document_status = "Approved"
 
+                if self.docstatus == 0 and self.workflow_state == "Approved":
+                        self.workflow_state = "Waiting Approval"
+
 	def validate(self):
 		if not self.branch:
 			frappe.throw("Setup Branch in Emplpoyee Information and try again")
