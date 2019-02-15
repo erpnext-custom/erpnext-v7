@@ -79,6 +79,7 @@ class TravelClaim(Document):
 		
 		ta = frappe.get_doc("Travel Authorization", self.ta)
 		ta.db_set("travel_claim", "")
+		ta.db_set("workflow_state", "Approved")
 
 	def on_cancel(self):
 		self.sendmail(self.employee, "Travel Claim Cancelled by HR" + str(self.name), "Your travel claim " + str(self.name) + " has been cancelled by the user")
@@ -348,6 +349,8 @@ class TravelClaim(Document):
 		if ta.travel_claim and ta.travel_claim <> self.name:
 			frappe.throw("A travel claim <b>" + str(ta.travel_claim) + "</b> has already been created for the authorization")
 		ta.db_set("travel_claim", self.name)
+		if self.docstatus == 1:
+                        ta.db_set("workflow_state", "Claimed")
 
 	##
 	# Allow only approved authorizations to be submitted
