@@ -50,7 +50,6 @@ def get_branch_cc(branch):
                 frappe.throw("No Branch Argument Found")
         cc = frappe.db.get_value("Cost Center", {"branch": branch, "is_disabled": 0, "is_group": 0}, "name")
         if not cc:
-		print(branch)
                 frappe.throw(str(branch) + " is not linked to any cost center")
         return cc
 

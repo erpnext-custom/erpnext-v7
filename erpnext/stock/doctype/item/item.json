@@ -196,7 +196,7 @@
    "report_hide": 0, 
    "reqd": 1, 
    "search_index": 0, 
-   "set_only_once": 0, 
+   "set_only_once": 1, 
    "unique": 0
   }, 
   {
@@ -2389,7 +2389,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 1, 
- "modified": "2018-12-12 12:47:55.335890", 
+ "modified": "2019-02-15 12:38:37.912584", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Item", 

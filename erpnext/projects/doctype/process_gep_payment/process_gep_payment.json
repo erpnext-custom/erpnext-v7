@@ -517,7 +517,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-31 15:41:57.759376", 
+ "modified": "2019-02-02 11:52:31.026736", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Projects", 
  "name": "Process GEP Payment", 
@@ -566,8 +566,8 @@
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
-   "cancel": 1, 
+   "apply_user_permissions": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -582,6 +582,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

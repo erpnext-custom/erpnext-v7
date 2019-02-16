@@ -9,6 +9,7 @@ import json
 from erpnext.accounts.doctype.pricing_rule.pricing_rule import get_pricing_rule_for_item, set_transaction_type
 from erpnext.setup.utils import get_exchange_rate
 from frappe.model.meta import get_field_precision
+from erpnext.custom_utils import get_branch_cc
 
 @frappe.whitelist()
 def get_item_details(args):
@@ -187,6 +188,15 @@ def get_basic_details(args, item):
 
 	for fieldname in ("item_name", "item_group", "barcode", "brand", "stock_uom"):
 		out[fieldname] = item.get(fieldname)
+
+        if args.project:
+                out['cost_center'] = frappe.db.get_value("Project", args.get("project"), "cost_center")
+
+        if args.branch:
+                out['cost_center'] = get_branch_cc(args.branch)
+
+        if out['cost_center']:
+                out['warehouse'] = frappe.db.get_value("Cost Center", out['cost_center'], "warehouse")
 
 	return out
 

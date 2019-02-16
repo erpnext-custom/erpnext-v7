@@ -256,7 +256,7 @@ class POL(StockController):
 		if docstatus and docstatus != 2:
 			frappe.throw("Cancel the Journal Entry " + str(self.jv) + " and proceed.")
 
-		self.db_set("jv", "")
+		self.db_set("jv", None)
 
 		self.cancel_budget_entry()
 		self.delete_pol_entry()

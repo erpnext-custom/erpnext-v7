@@ -229,6 +229,7 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 					child: item,
 					args: {
 						args: {
+							branch: me.frm.doc.branch || null,
 							item_code: item.item_code,
 							barcode: item.barcode,
 							serial_no: item.serial_no,

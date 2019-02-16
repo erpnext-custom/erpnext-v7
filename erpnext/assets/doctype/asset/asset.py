@@ -36,6 +36,7 @@ class Asset(Document):
 
 	def on_submit(self):
 		self.make_asset_gl_entry();
+		self.make_opening_accumulated_gl_entry()
 		self.set_status()
 
 	def on_cancel(self):
@@ -137,8 +138,10 @@ class Asset(Document):
 					accumulated_depreciation += flt(depreciation_amount)
 					value_after_depreciation -= flt(depreciation_amount)
 					income_accumulated_depreciation += income_tax_amount
-					
-					if accumulated_depreciation < self.gross_purchase_amount:
+				
+					val = flt(self.residual_value) + flt(accumulated_depreciation) + flt(self.expected_value_after_useful_life)
+	
+					if val < self.gross_purchase_amount:
 						self.append("schedules", {
 							"schedule_date": schedule_date,
 							"depreciation_amount": depreciation_amount,
@@ -150,9 +153,9 @@ class Asset(Document):
 						if dep_done == 0:
 							self.append("schedules", {
 								"schedule_date": schedule_date,
-								"depreciation_amount": flt(self.gross_purchase_amount) - flt(accumulated_depreciation) - flt(self.expected_value_after_useful_life) + flt(depreciation_amount),
+								"depreciation_amount": flt(self.gross_purchase_amount) - flt(val) + flt(depreciation_amount),
 								"depreciation_income_tax": income_tax_amount,
-								"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life),
+								"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.residual_value) - flt(self.expected_value_after_useful_life),
 								"accumulated_depreciation_income_tax": income_accumulated_depreciation
 							})
 							dep_done = 1
@@ -164,7 +167,7 @@ class Asset(Document):
 								"schedule_date": schedule_date,
 								"depreciation_amount": 0,
 								"depreciation_income_tax": income_tax_amount,
-								"accumulated_depreciation_amount": flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life),
+								"accumulated_depreciation_amount": flt(self.gross_purchase_amount)  - flt(self.residual_value) - flt(self.expected_value_after_useful_life),
 								"accumulated_depreciation_income_tax": income_accumulated_depreciation
 							})
 					
@@ -278,6 +281,43 @@ class Asset(Document):
 				"cost_center": self.cost_center
 				})
 			je.submit();
+
+        def make_opening_accumulated_gl_entry(self):
+                """
+                        1. There is a mistake in getting the account by using the method below. 
+                        2. Method and variable Names has to be descriptive
+                """
+                accumulated_account = frappe.db.get_all("Asset Category Account","accumulated_depreciation_account",{"parent":self.asset_category},order_by="idx", as_list=1)
+                accumulated_account = accumulated_account[0][0] if accumulated_account else ""
+                #frappe.msgprint(_("{0}").format(accumulated_account))
+                if self.opening_accumulated_depreciation:
+                        je = frappe.new_doc("Journal Entry")
+                        je.flags.ignore_permissions = 1
+                        je.update({
+                                "voucher_type": "Journal Entry",
+                                "company": self.company,
+                                "remark": self.name + " (" + self.asset_name + " ) Asset Issued",
+                                "user_remark": self.name + "(" + self.asset_name + ") Asset Issued",
+                                "posting_date": self.purchase_date,
+                                "branch": self.branch
+                                })
+                        #credit
+                        je.append("accounts", {
+                                "account" : accumulated_account,
+                                "credit_in_account_currency": self.opening_accumulated_depreciation,
+                                "reference_type": "Asset",
+                                "reference_name": self.name,
+                                "cost_center": self.cost_center
+                                })
+                        #debit account update
+                        je.append("accounts", {
+                                "account": self.credit_account,
+                                "debit_in_account_currency": self.opening_accumulated_depreciation,
+                                "reference_type": "Asset",
+                                "reference_name": self.name,
+                                "cost_center": self.cost_center
+                                })
+                        je.submit();
 		
 	def delete_asset_gl_entries(self):
 		gl_list = frappe.db.sql(""" select distinct je.name as journal_entry from `tabJournal Entry Account` as jea, `tabJournal Entry` as je where je.voucher_type = 'Journal Entry' and je.name = jea.parent and jea.reference_name = %s and je.docstatus = 1""", self.name, as_dict=True)

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-20 15:21:10.141748", 
+ "modified": "2019-02-07 11:38:10.729665", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Maintenance", 
  "name": "POL Receive Report", 
@@ -30,6 +30,12 @@
   }, 
   {
    "role": "Projects User"
+  }, 
+  {
+   "role": "Stock User (other)"
+  }, 
+  {
+   "role": "Stock User"
   }
  ]
 }

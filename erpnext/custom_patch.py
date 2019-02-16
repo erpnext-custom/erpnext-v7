@@ -14,6 +14,44 @@ from datetime import datetime
 import os
 import subprocess
 
+def get_diff_asset():
+        for a in frappe.db.sql("select name, asset_category, asset_account from tabAsset where docstatus = 1", as_dict=1):
+                as_acc = frappe.db.get_value("Asset Category Account", {"parent": a.asset_category}, "fixed_asset_account")
+                if as_acc != a.asset_account:
+                        print(str(a.name) + "   :  " + str(as_acc) + "  ==> " + str(a.asset_account))
+
+
+def check_ds():
+	#for a in frappe.db.sql("select b.name as ass_name, a.schedule_date as dep_date, a.name, b.residual_value, b.expected_value_after_useful_life as ev, b.gross_purchase_amount as gross, b.value_after_depreciation as vad, a.accumulated_depreciation_amount as ada, a.depreciation_amount as da from `tabDepreciation Schedule` a, tabAsset b where a.parent = b.name and b.docstatus = 1 and a.journal_entry is null and b.status in ('Partially Depreciated', 'Submitted') and residual_value > 0 order by b.name, a.schedule_date", as_dict=1):
+	for a in frappe.db.sql("select b.name as ass_name, a.schedule_date as dep_date, a.name, b.residual_value, b.expected_value_after_useful_life as ev, b.gross_purchase_amount as gross, b.value_after_depreciation as vad, a.accumulated_depreciation_amount as ada, a.depreciation_amount as da from `tabDepreciation Schedule` a, tabAsset b where a.parent = b.name and b.docstatus = 1 and a.journal_entry is null and b.status in ('Partially Depreciated', 'Submitted') and residual_value > 0 and a.accumulated_depreciation_amount > (b.gross_purchase_amount - b.residual_value - b.expected_value_after_useful_life) order by b.name, a.schedule_date", as_dict=1):
+		new_accu = rounded(flt(a.gross) - flt(a.residual_value) - flt(a.ev), 2)
+		new_dep = rounded(flt(a.ada) - new_accu, 2)
+		print(str(a.ass_name) + " ==> " + str(a.dep_date) + " : " + str(new_dep))
+		frappe.db.sql("update `tabDepreciation Schedule` set depreciation_amount = %s, accumulated_depreciation_amount = %s where name = %s", (new_dep, new_accu, a.name))
+
+def delete_ds():
+	for a in frappe.db.sql("select a.name as dname from `tabDepreciation Schedule` a, tabAsset b where a.parent = b.name and b.docstatus = 1 and a.journal_entry is null and b.value_after_depreciation = b.expected_value_after_useful_life;", as_dict=1):
+		frappe.db.sql("delete from `tabDepreciation Schedule` where name = %s", a.dname)
+
+def import_asset():
+	lines = [line.rstrip('\n') for line in open('/home/kinley/erp/asset_file.csv')]
+	for line in lines:
+		a = line.split(",")
+		print(a[0])
+		frappe.db.sql("update tabAsset set residual_value = %s, value_after_depreciation = %s where name = %s", (a[1], 1, a[0]))
+
+def adjust_residual():
+	for a in frappe.db.sql("select name, value_after_depreciation as vad, residual_value as rv, expected_value_after_useful_life as ev from tabAsset where value_after_depreciation < 0 and docstatus = 1", as_dict=1):
+		val = str(rounded(flt(a.rv) + flt(a.vad) - flt(a.ev), 2))
+		frappe.db.sql("update tabAsset set residual_value = %s and value_after_depreciation = %s where name = %s", (val, a.ev, a.name))
+		print(str(a.name) + "  :  " + str(rounded(flt(a.rv) + flt(a.vad) - flt(a.ev), 2)))
+
+def pass_open_accu():
+	for a in frappe.db.sql("select name, creation from tabAsset where opening_accumulated_depreciation > 0 and purchase_date >= '2018-01-01' and docstatus = 1 order by creation", as_dict=1):
+		print(a.name)
+		doc = frappe.get_doc("Asset", a.name)
+		doc.make_opening_accumulated_gl_entry()
+
 def adjust_direct_con():
 	for a in frappe.db.sql("select name from tabPOL where direct_consumption = 1 and docstatus = 1 and posting_date > '2018-03-31'", as_dict=1):
 		print(a.name)

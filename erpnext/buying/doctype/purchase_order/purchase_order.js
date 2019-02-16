@@ -336,6 +336,7 @@ frappe.ui.form.on("Purchase Order Item", "item_code", function(frm, cdt, cdn) {
              if(r.message) {
                    frappe.model.set_value(cdt, cdn, "budget_account", r.message)
 		   frappe.model.set_value(cdt, cdn, "uom", null)
+		   frappe.model.set_value(cdt, cdn, "cost_center", null)
              }
         }
    })
