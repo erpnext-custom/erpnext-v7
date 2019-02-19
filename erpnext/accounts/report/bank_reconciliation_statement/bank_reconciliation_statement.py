@@ -181,7 +181,7 @@ def get_entries(filters):
 			net_amount as debit, 0 as credit,
 			posting_date, customer as against_account, clearance_date, 'BTN' as account_currency
 		from `tabMechanical Payment`
-		where income_account = %(account)s
+		where  %(account)s IN (income_account, expense_account)
 		and docstatus = 1
 		and posting_date <= %(report_date)s 
 		and ifnull(clearance_date, '4000-01-01') > %(report_date)s

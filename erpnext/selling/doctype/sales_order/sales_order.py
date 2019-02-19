@@ -176,6 +176,11 @@ class SalesOrder(SellingController):
 		self.update_prevdoc_status('submit')
 		self.update_product_requisition(action="Submit")
 
+	def check_transporter_amount(self):
+		trans_amount = round(flt(self.total_quantity) * flt(self.total_distance) * flt(self.transportation_rate), 2)
+		if flt(self.transportation_charges) != flt(trans_amount):
+			frappe.throw("The transportation charges is calculated wrongly. Please save again")
+
 	def on_cancel(self):
 		# Cannot cancel closed SO
 		if self.status == 'Closed':
@@ -268,6 +273,7 @@ class SalesOrder(SellingController):
 		pass
 
 	def before_submit(self):
+		self.check_transporter_amount()
 		self.get_selling_rate()
 
 	def before_update_after_submit(self):

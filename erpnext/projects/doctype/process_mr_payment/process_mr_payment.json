@@ -904,7 +904,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-01-31 14:59:55.752211", 
+ "modified": "2019-02-19 09:02:05.442154", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Process MR Payment", 
@@ -1101,7 +1101,7 @@
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
@@ -1117,6 +1117,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

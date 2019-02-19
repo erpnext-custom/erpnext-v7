@@ -226,7 +226,15 @@ class Employee(Document):
                                                 "modified": nowdate()
                         })
                 else:
-                        pass
+                        if exists > 1:
+                                frappe.throw(_("Multiple entries for Self ({0} {1}) not permitted under family details.").format(self.name, self.employee_name), title="Duplicate Entry Found")
+                        else:
+                                for f in self.employee_family_details:
+                                        if f.relationship == "Self":
+                                                f.full_name     = self.employee_name
+                                                f.gender        = self.gender
+                                                f.date_of_birth = self.date_of_birth
+                                                f.cid_no        = self.passport_number
                 
 	def update_user_permissions(self):
 		if self.branch != self.get_db_value("branch") and  self.user_id:

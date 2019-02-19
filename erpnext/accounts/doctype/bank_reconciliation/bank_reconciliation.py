@@ -126,7 +126,7 @@ class BankReconciliation(Document):
                                 net_amount as amount,
                                 posting_date, customer as against_account, clearance_date
                         from `tabMechanical Payment`
-                        where income_account = '{0}'
+                        where '{0}' IN (income_account, expense_account)
                         and docstatus = 1
                         and posting_date >= '{1}' and posting_date <= '{2}'
                         {3}

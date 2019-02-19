@@ -100,13 +100,35 @@ frappe.ui.form.on('Mechanical Payment', {
 		row.grid_form.fields_dict.reference_type.set_value(frm.doc.payment_for)
 		row.grid_form.fields_dict.reference_type.refresh()
 	},
+	"payment_for": function(frm) {
+		if(frm.doc.payment_for == "Transporter Payment"){
+			frappe.model.get_value('Production Account Settings',{'company':'Natural Resources Development Corporation Ltd'},'transportation_account', function(d){
+				frm.set_value("transportation_account", d.transportation_account);
+			});
+			frappe.model.get_value('Branch',{'branch':frm.doc.branch},'expense_bank_account', function(d){
+				frm.set_value("expense_account", d.expense_bank_account);
+			});
+			
+		}
+		calculate_totals(frm);	
+	},
+	"other_deduction": function(frm) {
+	   	calculate_totals(frm);
+	}
 });
 
 function calculate_totals(frm) {
-	if (frm.doc.receivable_amount) {
-		frm.set_value("net_amount", frm.doc.receivable_amount - frm.doc.tds_amount)
-		cur_frm.refresh_field("net_amount")
+	if(frm.doc.payment_for == "Transporter Payment"){
+		var net_amount = frm.doc.total_amount - (frm.doc.tds_amount + frm.doc.other_deduction);
+		frm.set_value("net_amount", net_amount);
 	}
+	else{
+		if (frm.doc.receivable_amount) {
+			frm.set_value("net_amount", frm.doc.receivable_amount - frm.doc.tds_amount)
+			cur_frm.refresh_field("net_amount")
+		}
+	}
+	console.log("net_amount:" + net_amount);
 }
 
 cur_frm.fields_dict['items'].grid.get_field('reference_name').get_query = function(frm, cdt, cdn) {
@@ -120,6 +142,18 @@ cur_frm.fields_dict['items'].grid.get_field('reference_name').get_query = functi
 		}
 	}
 }
+
+frappe.ui.form.on("Transporter Payment Item", {
+		"delivery_note": function(frm, cdt, cdn){
+			var items = frm.doc.transporter_payment_item;
+			var total = 0;
+			for(var i = 0; i < items.length ; i++){
+           			total += parseFloat(items[i].amount);
+      			}
+      			frm.set_value('total_amount', total);
+			calculate_totals(frm);
+		}
+})
 
 frappe.ui.form.on("Mechanical Payment Item", {
 	"reference_name": function(frm, cdt, cdn) {

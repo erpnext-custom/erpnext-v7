@@ -12,7 +12,7 @@ def execute(filters=None):
 
 def get_columns(filters):
 	cols = [
-		("Employee No.") + ":data:150",
+		("Employee No.") + ":Link/Employee:150",
 		("Employee Name") + ":data:150",
 		("Branch")+":data:150",
 		("Department")+":data:150",
@@ -24,6 +24,8 @@ def get_columns(filters):
 		cols.append(("Contract End Date")+":date:170")
 	if filters.uinput == "date_of_retirement":
 		cols.append(("Date of Retirement")+":date:170")
+	if filters.uinput == "probation_clearance_date":
+		cols.append(("Probation Clearance Date")+":date:170")
 	return cols
 
 def get_data(filters):

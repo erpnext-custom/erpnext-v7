@@ -84,7 +84,6 @@ def get_data(filters):
 		delivered_qty =+ flt(d.sii_qty)
 		balance_qty += flt(d.qty_approved) - flt(d.sii_qty)
 		transportation_charges += flt(d.transportation_charges)
-		frappe.msgprint("agg: {0}, qt: {1}".format(agg_qty, qty))
 		row = { "agg_qty": agg_qty, "agg_amount": agg_amount, "qty": qty, "rate": rate, "amount": amount, 
 		"qty_approved": qty_approved, "qty_required": qty_required, "qty_approved": qty_approved, "delivered_qty": delivered_qty,
                 "balance_qty":  balance_qty, "transportation_charges": transportation_charges, "agg_branch": "'Total'", "sales_order": "'Total'"}
@@ -103,7 +102,7 @@ def get_prod_req(filters, cond):
 
 def get_customer(filters, cond):
 	return frappe.db.sql("""
-                        select name, customer_type, mobile_no, customer_name, customer_id from `tabCustomer` where name = '{0}'
+                        select name, customer_type, mobile_no, customer_name, customer_id from `tabCustomer` where name = "{0}"
 			""".format(cond), as_dict =1)[0]
 
 def get_group_by(filters):

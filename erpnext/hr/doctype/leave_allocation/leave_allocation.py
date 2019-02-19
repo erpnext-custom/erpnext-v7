@@ -5,6 +5,7 @@
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   22/08/2016         Introducing Earned Leave Balance Lapse check.
+3.0.190212       SHIV                              12/02/2019         on_cancel() method added
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -45,6 +46,11 @@ class LeaveAllocation(Document):
 		
 		self.validate_against_leave_applications()
 
+        ##### Ver 3.0.190212 Begins, following method added by SHIV on 12/02/2019
+        def on_cancel(self):
+                self.validate_back_dated_allocation(1)
+        ##### Ver 3.0.190212 Ends
+        
 	def validate_period(self):
 		if date_diff(self.to_date, self.from_date) <= 0:
 			frappe.throw(_("To date cannot be before from date"))
@@ -81,16 +87,27 @@ class LeaveAllocation(Document):
 			frappe.throw(_('Reference') + ': <a href="#Form/Leave Allocation/{0}">{0}</a>'
 				.format(leave_allocation[0][0]), OverlapError)
 				
-	def validate_back_dated_allocation(self):
+	def validate_back_dated_allocation(self, cancel=0):
 		future_allocation = frappe.db.sql("""select name, from_date from `tabLeave Allocation`
 			where employee=%s and leave_type=%s and docstatus=1 and from_date > %s 
 			and carry_forward=1""", (self.employee, self.leave_type, self.to_date), as_dict=1)
 		
 		if future_allocation:
+                        ##### Ver 3.0.190212 Begins, by SHIV on 12/02/2019
+                        # Ver 3.0.190212 Following line added
+                        msg = "Leave allocation cannot be cancelled" if cancel else "Leave allocation cannot be allocated before {0}".format(formatdate(future_allocation[0].from_date))
+
+                        # Ver 3.0.190212 Following code replaced by subsequent
+                        '''
 			frappe.throw(_("Leave cannot be allocated before {0}, as leave balance has already been carry-forwarded in the future leave allocation record {1}")
 				.format(formatdate(future_allocation[0].from_date), future_allocation[0].name), 
 					BackDatedAllocationError)
-
+                        '''
+                        frappe.throw(_("{0}, as leave balance has already been carry-forwarded in the future leave allocation record {1}")
+				.format(msg, future_allocation[0].name), 
+					BackDatedAllocationError)
+                        ##### Ver 3.0.190212 Ends
+                        
 	def set_total_leaves_allocated(self):
 		self.carry_forwarded_leaves = get_carry_forwarded_leaves(self.employee, 
 			self.leave_type, self.from_date, self.carry_forward)
