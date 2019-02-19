@@ -45,7 +45,7 @@ class TravelClaim(Document):
 
 	def on_submit(self):
 		#self.get_status()
-		self.validate_submitter()
+		#self.validate_submitter()
 		#self.check_status()
 		self.post_journal_entry()
 		self.update_travel_authorization()
@@ -364,10 +364,10 @@ class TravelClaim(Document):
 	##
 	# Allow only the approver to submit the document
 	##
-	def validate_submitter(self):
-		hr_role = frappe.db.get_value("UserRole", {"parent": frappe.session.user, "role": "HR User"}, "role")
-		if not hr_role:
-			frappe.throw("Only a HR User can submit this document")
+	#def validate_submitter(self):
+	#	hr_role = frappe.db.get_value("UserRole", {"parent": frappe.session.user, "role": "HR User"}, "role")
+	#	if not hr_role:
+	#		frappe.throw("Only a HR User can submit this document")
 
 	##
 	# Send notification to the supervisor / employee

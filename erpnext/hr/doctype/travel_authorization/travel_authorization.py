@@ -58,7 +58,7 @@ class TravelAuthorization(Document):
 	def on_submit(self):
 		#self.get_status()
 		#self.check_double_dates()
-		self.validate_submitter()
+		#self.validate_submitter()
 		self.validate_travel_dates()
 		self.check_status()
 		self.check_advance()
@@ -200,9 +200,9 @@ class TravelAuthorization(Document):
 	##
 	# Allow only the approver to submit the document
 	##
-	def validate_submitter(self):
-		if self.supervisor != frappe.session.user:
-			frappe.throw("Only the selected supervisor can submit this document")
+	#def validate_submitter(self):
+	#	if self.supervisor != frappe.session.user:
+	#		frappe.throw("Only the selected supervisor can submit this document")
 
 
 	##
