@@ -14,13 +14,13 @@ from erpnext.custom_workflow import validate_workflow_states
 
 class TravelClaim(Document):
 	def validate(self):
-		validate_workflow_states(self)
 		hr_role = frappe.db.get_value("UserRole", {"parent": frappe.session.user, "role": "HR User"}, "role")
-#		if frappe.session.user == self.supervisor and not self.supervisor_approval:
-#			self.db_set("supervisor_approved_on", '')
-#			self.supervisor_approved_on = ''
-#		if self.supervisor_approved_on and not hr_role:
-#			frappe.throw("Cannot change records after approval by supervisor")
+		#if frappe.session.user == self.supervisor and not self.supervisor_approval:
+		#	self.db_set("supervisor_approved_on", '')
+		#	self.supervisor_approved_on = ''
+		#if self.supervisor_approved_on and not hr_role:
+		#	frappe.throw("Cannot change records after approval by supervisor")
+		validate_workflow_states(self)
 		#self.check_return_date()
 		self.validate_dates()
 		self.check_approval()
@@ -44,7 +44,7 @@ class TravelClaim(Document):
 		self.check_double_dates()
 
 	def on_submit(self):
-#		self.get_status()
+		#self.get_status()
 		self.validate_submitter()
 		#self.check_status()
 		self.post_journal_entry()

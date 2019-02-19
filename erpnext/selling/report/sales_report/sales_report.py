@@ -102,7 +102,7 @@ def get_prod_req(filters, cond):
 
 def get_customer(filters, cond):
 	return frappe.db.sql("""
-                        select name, customer_type, mobile_no, customer_name, customer_id from `tabCustomer` where name = '{0}'
+                        select name, customer_type, mobile_no, customer_name, customer_id from `tabCustomer` where name = "{0}"
 			""".format(cond), as_dict =1)[0]
 
 def get_group_by(filters):

@@ -168,9 +168,6 @@ def validate_workflow_states(doc):
 			if workflow_state == "Rejected".lower():
 				doc.status = "Rejected"
 			vars(doc)[document_approver[0]] = reports_to[0]
-
-							
-
 	
 	else:
 		pass

@@ -138,6 +138,14 @@ def get_data():
 					"is_query_report": True,
 				},
 				{
+
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Customer Group Report",
+                                        "label": "Customer Group Wise Sales Report",
+                                        "doctype": "Sales Invoice"
+                                },
+				{
                                         "type": "report",
                                         "is_query_report": True,
                                         "name": "Timber Allotment To AWBI",

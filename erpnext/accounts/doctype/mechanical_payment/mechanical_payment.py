@@ -21,6 +21,8 @@ class MechanicalPayment(AccountsController):
 	def set_missing_values(self):
 		self.cost_center = get_branch_cc(self.branch)
 		if not self.payment_for == "Transporter Payment":
+			if not self.transportation_account:
+				self.transportation_account = frappe.db.get_value('Production Account Settings',{'company': self.company},'transportation_account') 
 			if self.tds_amount:
 				self.net_amount = self.receivable_amount - self.tds_amount
 			else:
@@ -61,7 +63,7 @@ class MechanicalPayment(AccountsController):
 		if self.payment_for == "Transporter Payment":
 			for d in self.transporter_payment_item:
 				dtl = frappe.db.sql("select t.delivery_note as dn, m.name as mno from `tabMechanical Payment` m,\
-						 `tabTransporter Payment Item` t where m.name=t.parent and m.docstatus != '2' and \
+						 `tabTransporter Payment Item` t where m.name=t.parent and m.docstatus = 1 and \
 						t.delivery_note='{0}'".format(d.delivery_note), as_dict=True)		
 				if len(dtl) > 0:
 					for a in dtl:
@@ -153,8 +155,8 @@ class MechanicalPayment(AccountsController):
 						 "credit_in_account_currency": flt(self.net_amount),
 						 "cost_center": self.cost_center,
 						 "party_check": 1,
-						 "party_type": "Customer",
-						 "party": self.customer,
+				#		 "party_type": "Customer",
+				#		 "party": self.customer,
 						 "reference_type": self.doctype,
 						 "reference_name": self.name,
 						 "business_activity": default_ba,
@@ -209,7 +211,7 @@ class MechanicalPayment(AccountsController):
         # Update the Committedd Budget for checking budget availability
         ##
         def consume_budget(self):
-                if self.payment_type == "Payment":
+                if self.payment_for == "Transporter Payment":
                         bud_obj = frappe.get_doc({
                                 "doctype": "Committed Budget",
                                 "account": self.transportation_account,
