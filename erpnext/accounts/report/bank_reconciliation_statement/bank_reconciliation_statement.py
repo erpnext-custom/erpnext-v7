@@ -178,10 +178,11 @@ def get_entries(filters):
 		select
 			"Mechanical Payment" as payment_document, name as payment_entry,
 			cheque_no as reference_no, cheque_date as ref_date,
-			net_amount as debit, 0 as credit,
+			IF(payment_for = "Transporter Payment", net_amount, 0) as credit, 
+			IF(payment_for != "Transporter Payment", net_amount, 0) as debit,
 			posting_date, customer as against_account, clearance_date, 'BTN' as account_currency
 		from `tabMechanical Payment`
-		where income_account = %(account)s
+		where  %(account)s IN (income_account, expense_account)
 		and docstatus = 1
 		and posting_date <= %(report_date)s 
 		and ifnull(clearance_date, '4000-01-01') > %(report_date)s

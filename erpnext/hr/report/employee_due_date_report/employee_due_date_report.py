@@ -24,6 +24,8 @@ def get_columns(filters):
 		cols.append(("Contract End Date")+":date:170")
 	if filters.uinput == "date_of_retirement":
 		cols.append(("Date of Retirement")+":date:170")
+	if filters.uinput == "probation_clearance_date":
+                cols.append(("Probation Clearance Date")+":date:170")
 	return cols
 
 def get_data(filters):

@@ -59,6 +59,10 @@ frappe.ui.form.on('Travel Authorization', {
 		}
 		
 		cur_frm.set_df_property("items", "read_only", frm.doc.travel_claim ? 1 : 0)
+
+		if(frm.doc.workflow_state == "Draft" || frm.doc.workflow_state == "Rejected"){
+                        frm.set_df_property("supervisor", "hidden", 1);
+		}
 	},
 	//Auto calculate next date on form render
 	"items_on_form_rendered": function(frm, grid_row, cdt, cdn) {

@@ -25,7 +25,7 @@ def get_data(filters):
 	order_by = get_order_by(filters)
 	query = frappe.db.sql("""select *from 
 	(select so.name as so_name , so.customer, so.customer_name, so.branch, soi.qty as qty_approved, soi.delivered_qty, soi.rate, soi.item_code, 
-	soi.name as soi_name, soi.item_name, soi.item_group, soi.lot_number as slot_number,
+	soi.name as soi_name, soi.item_name, soi.item_group, soi.lot_number as lot_number,
 	so.transaction_date, soi.product_requisition from
         `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0}) as so_detail
 	inner join
@@ -58,7 +58,7 @@ def get_data(filters):
 			row["timber_class"] = tim.timber_class
 			row["timber_species"] = tim.spc
 			row["timber_type"] = tim.timber_type
-			row["lot_number"] = d.slot_number
+			row["lot_number"] = d.lot_number
 
 		if d.product_requisition and filters.item_group == 'Mineral Products':
 			pr = get_prod_req(filters, d.product_requisition)
@@ -84,7 +84,6 @@ def get_data(filters):
 		delivered_qty =+ flt(d.sii_qty)
 		balance_qty += flt(d.qty_approved) - flt(d.sii_qty)
 		transportation_charges += flt(d.transportation_charges)
-		frappe.msgprint("agg: {0}, qt: {1}".format(agg_qty, qty))
 		row = { "agg_qty": agg_qty, "agg_amount": agg_amount, "qty": qty, "rate": rate, "amount": amount, 
 		"qty_approved": qty_approved, "qty_required": qty_required, "qty_approved": qty_approved, "delivered_qty": delivered_qty,
                 "balance_qty":  balance_qty, "transportation_charges": transportation_charges, "agg_branch": "'Total'", "sales_order": "'Total'"}

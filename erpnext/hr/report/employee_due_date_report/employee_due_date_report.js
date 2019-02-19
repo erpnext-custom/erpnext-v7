@@ -11,6 +11,7 @@ frappe.query_reports["Employee Due Date Report"] = {
 			"options": [
 				 { "value": "promotion_due_date", "label": __("Promotion Due Date") },
 				 { "value": "contract_end_date", "label": __("Contract Renew Date") },
+				 { "value": "probation_clearance_date", "label": __("Probation Clearance Date") },
 				 { "value": "date_of_retirement", "label": __("Retirement Date") },
 			],
 			"reqd": 1

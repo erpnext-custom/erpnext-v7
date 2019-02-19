@@ -50,6 +50,17 @@ frappe.ui.form.on("Sales Order", {
 		cur_frm.refresh_field("discount_amount")
         },
 
+	"loading_rate": function(frm) {
+		var total_qty = 0;
+		for (var i in cur_frm.doc.items) {
+			var item = cur_frm.doc.items[i];
+		        total_qty += item.qty;		
+			}
+		console.log("Loading Cost:" + total_qty);
+		cur_frm.set_value("loading_cost", flt(total_qty) * flt(frm.doc.loading_rate));
+
+	},
+
 	"loading_cost": function(frm) {
 		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
 		cur_frm.refresh_field("discount_amount")

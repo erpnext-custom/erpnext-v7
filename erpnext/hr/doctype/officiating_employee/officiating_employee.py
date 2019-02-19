@@ -35,9 +35,9 @@ class OfficiatingEmployee(Document):
 		else:
 			self.db_set("already", 1)
 
-		emp = frappe.get_doc("Employee", self.officiate)
-		emp.db_set("reports_to", frappe.db.get_value("Employee", self.employee, "reports_to"))
-		emp.db_set("approver_name", frappe.db.get_value("Employee", self.employee, "approver_name"))
+		#emp = frappe.get_doc("Employee", self.officiate)
+		#emp.db_set("reports_to", frappe.db.get_value("Employee", self.employee, "reports_to"))
+		#emp.db_set("approver_name", frappe.db.get_value("Employee", self.employee, "approver_name"))
 
 	def revoke_perm(self):
 		#for a in self.items:	
@@ -55,9 +55,9 @@ class OfficiatingEmployee(Document):
 			user.flags.ignore_permissions = True
 			user.remove_roles("Approver")
 
-		emp = frappe.get_doc("Employee", self.officiate)
-		emp.db_set("reports_to", self.employee)			
-		emp.db_set("approver_name", self.employee_name)			
+		#emp = frappe.get_doc("Employee", self.officiate)
+		#emp.db_set("reports_to", self.employee)			
+		#emp.db_set("approver_name", self.employee_name)			
 
 		frappe.msgprint("Permissions Revoked")
 

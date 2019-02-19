@@ -24,7 +24,7 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 		//cur_frm.set_value("date_of_transfer",frappe.datetime.nowdate());
 		//refresh_many(["date_of_transfer"]);
 		this.frm.set_indicator_formatter('full_name',
-                        function(doc) { return doc.dead ? "red" : "green" })
+                        function(doc) { return doc.dead == 1 ? "red" : "green" })
 	},
 
 	refresh: function() {

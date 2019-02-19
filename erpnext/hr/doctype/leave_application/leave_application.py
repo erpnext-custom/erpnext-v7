@@ -56,7 +56,7 @@ class LeaveApplication(Document):
 		self.show_block_day_warning()
 		self.validate_block_days()
 		self.validate_salary_processed_days()
-		self.validate_leave_approver()
+#		self.validate_leave_approver()
 		self.validate_backdated_applications()
                 
 	def on_update(self):
@@ -303,27 +303,26 @@ class LeaveApplication(Document):
 		if max_days and flt(self.total_leave_days) > flt(max_days):
 			frappe.throw(_("Leave of type {0} cannot be longer than {1} days").format(self.leave_type, max_days))
 
-	def validate_leave_approver(self):
-		employee = frappe.get_doc("Employee", self.employee)
-		all_app = get_approvers("User", "", "", "", "", {"employee": self.employee})
-		leave_approvers = []
-		for a in all_app:
-			leave_approvers.append(a[0])
-
-		leave_approvers.append(get_final_approver(employee.branch))		
-
-		if len(leave_approvers) and self.leave_approver not in leave_approvers:
-			frappe.throw(_("Leave approver must be one of {0}")
-				.format(comma_or(leave_approvers)), InvalidLeaveApproverError)
-
-		elif self.leave_approver and not frappe.db.sql("""select name from `tabUserRole`
-			where parent=%s and role='Approver'""", self.leave_approver):
-			frappe.throw(_("{0} ({1}) must have role 'Leave Approver'")\
-				.format(get_fullname(self.leave_approver), self.leave_approver), InvalidLeaveApproverError)
-
-		elif self.docstatus==1 and len(leave_approvers) and self.leave_approver != frappe.session.user:
-			frappe.throw(_("Only the selected Leave Approver can submit this Leave Application"),
-				LeaveApproverIdentityError)
+#	def validate_leave_approver(self):
+#		employee = frappe.get_doc("Employee", self.employee)
+#		all_app = get_approvers("User", "", "", "", "", {"employee": self.employee})
+#		leave_approvers = []
+#		for a in all_app:
+#			leave_approvers.append(a[0])
+#
+#		leave_approvers.append(get_final_approver(employee.branch))		
+#		if len(leave_approvers) and self.leave_approver not in leave_approvers:
+#			frappe.throw(_("Leave approver must be one of {0}")
+#				.format(comma_or(leave_approvers)), InvalidLeaveApproverError)
+#
+#		elif self.leave_approver and not frappe.db.sql("""select name from `tabUserRole`
+#			where parent=%s and role='Approver'""", self.leave_approver):
+#			frappe.throw(_("{0} ({1}) must have role 'Leave Approver'")\
+#				.format(get_fullname(self.leave_approver), self.leave_approver), InvalidLeaveApproverError)
+#
+#		elif self.docstatus==1 and len(leave_approvers) and self.leave_approver != frappe.session.user:
+#			frappe.throw(_("Only the selected Leave Approver can submit this Leave Application"),
+#				LeaveApproverIdentityError)
 
 	def notify_employee(self, status):
 		employee = frappe.get_doc("Employee", self.employee)

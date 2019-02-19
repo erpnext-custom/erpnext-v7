@@ -105,6 +105,10 @@ frappe.ui.form.on('Mechanical Payment', {
 			frappe.model.get_value('Production Account Settings',{'company':'Natural Resources Development Corporation Ltd'},'transportation_account', function(d){
 				frm.set_value("transportation_account", d.transportation_account);
 			});
+			frappe.model.get_value('Branch',{'branch':frm.doc.branch},'expense_bank_account', function(d){
+				frm.set_value("expense_account", d.expense_bank_account);
+			});
+			
 		}
 		calculate_totals(frm);	
 	},

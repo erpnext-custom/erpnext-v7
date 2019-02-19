@@ -10,34 +10,17 @@ from frappe.utils import cint, flt, nowdate, money_in_words, getdate, date_diff,
 from erpnext.accounts.utils import get_account_currency, get_fiscal_year
 import collections
 from erpnext.hr.doctype.travel_authorization.travel_authorization import get_exchange_rate
+from erpnext.custom_workflow import validate_workflow_states
 
 class TravelClaim(Document):
-	def get_status(self):
-                if self.workflow_state =="Verified By Supervisor":
-                        self.supervisor_approval = 1
-			self.seupervisor_approved_on = nowdate()
-                elif self.workflow_state == "Approved":
-                        self.hr_approval =1
-			self.hr_approved_on = nowdate()
-                elif self.workflow_state == "Rejected":
-                        self.hr_approval =0
-                        self.supervisor_approval =0
-                        self.seupervisor_approved_on = None
-			self.hr_approved_on = None
-                else:
-                        self.hr_approval =0
-                        self.supervisor_approval =0
-                        self.supervisor_approved_on = None
-			self.hr_approved_on = None
-
 	def validate(self):
-		self.get_status()
+		validate_workflow_states(self)
 		hr_role = frappe.db.get_value("UserRole", {"parent": frappe.session.user, "role": "HR User"}, "role")
-		if frappe.session.user == self.supervisor and not self.supervisor_approval:
-			self.db_set("supervisor_approved_on", '')
-			self.supervisor_approved_on = ''
-		if self.supervisor_approved_on and not hr_role:
-			frappe.throw("Cannot change records after approval by supervisor")
+#		if frappe.session.user == self.supervisor and not self.supervisor_approval:
+#			self.db_set("supervisor_approved_on", '')
+#			self.supervisor_approved_on = ''
+#		if self.supervisor_approved_on and not hr_role:
+#			frappe.throw("Cannot change records after approval by supervisor")
 		#self.check_return_date()
 		self.validate_dates()
 		self.check_approval()
@@ -61,7 +44,7 @@ class TravelClaim(Document):
 		self.check_double_dates()
 
 	def on_submit(self):
-		self.get_status()
+#		self.get_status()
 		self.validate_submitter()
 		#self.check_status()
 		self.post_journal_entry()
@@ -212,8 +195,11 @@ class TravelClaim(Document):
                 for i in self.get("items"):
                         exchange_rate      = 1 if i.currency == company_currency else get_exchange_rate(i.currency, company_currency)
                         #i.dsa             = flt(dsa_per_day)
-                        i.dsa              = flt(i.dsa) 
-                        i.dsa_percent      = lastday_dsa_percent if i.last_day else i.dsa_percent
+                        i.dsa              = flt(i.dsa)
+                        ##### Ver 3.0.190213 Begins, Following line replaced by SHIV on 13/02/2019
+                        #i.dsa_percent      = lastday_dsa_percent if i.last_day else i.dsa_percent
+                        i.dsa_percent      = (i.dsa_percent if i.dsa_percent <= lastday_dsa_percent else lastday_dsa_percent) if i.last_day else i.dsa_percent
+                        ##### Ver 3.0.190213 Ends
                         i.amount           = (flt(i.days_allocated)*(flt(i.dsa)*flt(i.dsa_percent)/100)) + (flt(i.mileage_rate) * flt(i.distance))
                         i.actual_amount    = flt(i.amount) * flt(exchange_rate)
                         total_claim_amount = flt(total_claim_amount) +  flt(i.actual_amount)

@@ -33,3 +33,12 @@ cur_frm.cscript.end_date = function(doc) {
                 }
         });
 }
+
+// List only the active employees in participants
+cur_frm.fields_dict['participants'].grid.get_field('employee').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+        filters: [
+        ['Employee', 'status', '=', 'Active']
+]}
+}
