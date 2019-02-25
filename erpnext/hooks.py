@@ -32,7 +32,8 @@ notification_config = "erpnext.startup.notifications.get_notification_config"
 on_session_creation = "erpnext.shopping_cart.utils.set_cart_count"
 on_logout = "erpnext.shopping_cart.utils.clear_cart_count"
 
-remember_selected = ['Company', 'Cost Center', 'Project']
+#remember_selected = ['Company', 'Cost Center', 'Project']
+remember_selected = ['Company']
 treeviews = ['Account', 'Cost Center', 'Warehouse', 'Item Group', 'Customer Group', 'Sales Person', 'Territory', "BOM"]
 
 # website
@@ -43,7 +44,8 @@ email_append_to = ["Job Applicant", "Opportunity", "Issue"]
 
 calendars = ["Task", "Production Order", "Leave Application", "Sales Order", "Holiday List"]
 
-fixtures = ["Web Form", "Custom Field", "Property Setter"]
+fixtures = []
+#fixtures = ["Web Form", "Custom Field", "Property Setter"]
 
 website_generators = ["Item Group", "Item", "Sales Partner", "Job Opening"]
 
@@ -171,7 +173,7 @@ scheduler_events = {
 		"erpnext.assets.doctype.asset.asset.sync_cc_branch",
 		#"erpnext.maintenance.doctype.equipment.equipment.sync_branch_asset",
 		"erpnext.selling.doctype.customer.customer.check_cc_branch",
-		"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"
+		#"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"    # Ver 2.0.190225 Commented by SHIV on 25/02/2019
 	],
 	"daily": [
 		#"erpnext.stock.reorder_item.reorder_item",

@@ -41,14 +41,25 @@ class VehicleLogbook(Document):
 				frappe.throw("Total consumption cannot be zero or less")
 
 	def check_hire_rate(self):
+		if self.rate_type == "Without Fuel":
+			return
                 based_on = frappe.db.get_single_value("Mechanical Settings", "hire_rate_based_on")
                 if not based_on:
                         frappe.throw("Set the <b>Hire Rate Based On</b> in <b>Mechanical Settings</b>")
+		c = frappe.get_doc("Customer", self.customer)
+		wf = "a.rate_fuel"
+		wof = "a.rate_wofuel"
+		ir = "a.idle_rate"
+
+		if c.customer_group == "Internal":
+			wf = "a.rate_fuel_internal"
+			wof = "a.rate_wofuel_internal"
+			ir = "a.idle_rate_internal"
 
                 e = frappe.get_doc("Equipment", self.equipment)
 
-                db_query = "select a.rate_fuel, a.rate_wofuel, a.idle_rate, a.yard_hours, a.yard_distance from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{0}' and b.equipment_model = '{1}' and '{2}' between a.from_date and ifnull(a.to_date, now()) and '{3}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
-                data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, self.from_date, self.to_date), as_dict=True)
+                db_query = "select {0}, {1}, {2}, a.yard_hours, a.yard_distance from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{3}' and b.equipment_model = '{4}' and '{5}' between a.from_date and ifnull(a.to_date, now()) and '{6}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
+                data = frappe.db.sql(db_query.format(wf, wof, ir, e.equipment_type, e.equipment_model, self.from_date, self.to_date), as_dict=True)
                 if not data:
                         frappe.throw("There is either no Hire Charge defined or your logbook period overlaps with the Hire Charge period.")
                 if based_on == "Hire Charge Parameter":

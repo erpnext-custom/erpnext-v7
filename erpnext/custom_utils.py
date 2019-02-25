@@ -10,6 +10,8 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                         * This function can be used globally to fetch
                                                                         previous database record by passing arguments
                                                                         like DocType, DocName, ListOf Columns to be fetched.
+2.0.190225        SHIV                             25/02/2018         * cancel_draft_doc()
+                                                                        * code of `Leave Application` added
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -148,6 +150,8 @@ def cancel_draft_doc(doctype, docname):
 
 
         if doctype == "Material Request":
+		doc.db_set("status", "Cancelled")
+	elif doctype == "Leave Application":    ##### Ver 2.0.190225 added by SHIV
 		doc.db_set("status", "Cancelled")
 	elif doctype == "Travel Claim":
 		if doc.ta:

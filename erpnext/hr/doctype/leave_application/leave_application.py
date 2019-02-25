@@ -6,6 +6,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   20/08/2016         Introducing Leave Encashment Logic
 2.0               SHIV                             09/02/2018         Taking care balance for back dated leave applications
+2.0.190225        SHIV                             25/02/2019         ticket#1422: `status` field updation on cancel
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -35,8 +36,12 @@ class LeaveApplication(Document):
 	def get_status(self):
 		if self.workflow_state == "Rejected":
 			self.status = "Rejected"
-		if self.workflow_state == "Approved":
-			self.status= "Approved"	
+		elif self.workflow_state == "Approved":
+			self.status = "Approved"
+		elif self.workflow_state == "Cancelled":
+                        self.status = "Cancelled"
+                else:
+                        pass
 
 	"""def get_feed(self):
 		return _("{0}: From {0} of type {1}").format(self.status, self.employee_name, self.leave_type)
@@ -92,6 +97,9 @@ class LeaveApplication(Document):
 				self.notify_supervisor()
 		self.update_for_backdated_applications()
 
+        def before_cancel(self):
+                self.get_status()
+                
 	def on_cancel(self):
 		# notify leave applier about cancellation
 		self.notify_employee("cancelled")
@@ -793,8 +801,11 @@ def add_holidays(events, start, end, employee, company):
 				"name": holiday.name
 			})
 
+# Ver 2.0.19025, commented by SHIV on 25/02/2019 
+'''
 def check_cancelled_leaves():
 	ls = frappe.db.sql("select name from `tabLeave Application` where docstatus = 2 and status != 'Cancelled'", as_dict=True)
 	for l in ls:
 		doc = frappe.get_doc("Leave Application", l.name)
 		doc.db_set("status", "Cancelled")
+'''
