@@ -9,30 +9,23 @@ from frappe import msgprint, _
 def execute(filters=None):
         data    = []
         columns = []
-        
-	columns  = get_columns()
+       	columns  = get_columns()
 	data = get_data(filters)
 	return columns, data
 
-def get_columns():
-        return [
-                ("Employee ID") + ":Link/Employee:120",
-		("Name")+ ":Data:150",
-		("CID No. ") + ":Data: 110",
-		("Bank ") + ":Data: 110",
-                ("A/C No.") + ":Data:120",
-                ("Amount")+ ":Currency:140",
-                ("Branch")+ ":Dat:190"
-        ]
-
 def get_data(filters):
 	conditions, filters = get_conditions(filters)
+	d1 = []
+	total = 0.0
 	query = """select ss.employee, ss.employee_name, e.passport_number, ss.bank_name, ss.bank_account_no, ss.net_pay, ss.branch 
 			from `tabSalary Slip` ss, 
 			`tabEmployee` e
                         where ss.employee = e.name and ss.docstatus = 1 {0} order by ss.employee, ss.month""".format(conditions)
-	#frappe.msgprint("{0}".format(query))
-	d1 = frappe.db.sql(query)
+	for d in frappe.db.sql(query, as_dict =1):
+		total += d.net_pay
+		row = [d.employee, d.employee_name, d.passport_number, d.bank_name, d.bank_account_no, d.net_pay, d.branch]
+		d1.append(row)
+	d1.append({"net_pay": total, "employee": frappe.bold("TOTAL")})
 	
 	'''
 	if not d1:
@@ -55,3 +48,52 @@ def get_conditions(filters):
 	if filters.get("bank"): conditions += " and ss.bank_name = \'" + str(filters.bank) + "\'"
 	
 	return conditions, filters
+
+def get_columns():
+	columns = [
+		{
+		"fieldname": "employee",
+		"label": "Employee Id",
+		"fieldtype": "Link",
+		"options": "Employee",
+		"width": 120
+		},
+		{
+		"fieldname": "employee_name",
+		"label": "Name",
+		"fieldtype": "Data",
+		"width": 120,
+		},
+		{
+		"fieldname": "passport_number",
+		"label": "CID No",
+		"fieldtype": "Data",
+		"width": 120
+		},
+		{
+		"fieldname":"bank_name",
+		"label": "Bank Name",
+		"fieldtype": "Data",
+		"width": 120
+		},
+		{
+		"fieldname": "bank_account_no",
+		"label": "A/C No.",
+		"fieldtype": "Data",
+		"width": 120
+		},
+		{
+		"fieldname": "net_pay",
+		"label": "Amount",
+		"fieldtype": "Currency",
+		"width": 120
+		},
+		{
+		"fieldname": "branch",
+		"label": "Branch",
+		"fieldtype": "Data",
+		"width": 120
+		}
+	]
+	return columns
+

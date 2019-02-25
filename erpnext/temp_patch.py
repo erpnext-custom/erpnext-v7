@@ -6,6 +6,26 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def update_stock_entries():
+	counter = 0
+	for i in frappe.db.sql("""
+			select name, posting_date,purpose,owner 
+			from `tabStock Entry` 
+			where posting_date between '2019-01-01' and '2019-01-31' 
+			and docstatus=0
+			and purpose = 'Material Transfer'
+			and owner = 'dorji2392@bt.bt'
+			order by posting_date, name
+		""", as_dict=True):
+		counter += 1
+		print counter, i.name, i.posting_date, i.purpose, i.owner
+		try:
+			doc = frappe.get_doc("Stock Entry", i.name)
+			doc.submit()
+			frappe.db.commit()
+		except Exception, e:
+			print 'ERROR',i.name,e
+			frappe.db.rollback()
 
 def cancel_salary_slips():
         fiscal_year = '2019'

@@ -18,16 +18,18 @@ def get_columns():
                 ("Fuelbook") + ":Data:120",
 		("Supplier") + ":Data:120",
                 ("Item Code")+ ":Data:100",
-                ("Item Name")+ ":Data:170",
+                ("Item Name")+ ":Data:130",
                 ("Date") + ":Date:120",
-                ("Quantity") + ":Data:120",
-                ("Rate") + ":Data:120",
-                ("Amount") + ":Currency:120"
+                ("Quantity") + ":Data:100",
+                ("Rate") + ":Data:100",
+                ("Amount") + ":Currency:120",
+		("Cash Memo No") + ":Data:120",
+		("POL Slip No") + ":Data:120"
         ]
 
 def get_data(filters):
 	cond = "('{0}' between eh.from_date and ifnull(eh.to_date, now()) or '{1}' between eh.from_date and ifnull(eh.to_date, now()))".format(filters.get("from_date"), filters.get("to_date"))
-        query =  "select p.equipment, p.equipment_number, p.book_type, p.fuelbook, p.supplier, p.pol_type, p.item_name, p.posting_date, p.qty, p.rate, ifnull(p.total_amount,0) from tabPOL as p, `tabEquipment History` eh where p.docstatus = 1 and p.equipment = eh.parent and {0}".format(cond)
+        query =  "select p.equipment, p.equipment_number, p.book_type, p.fuelbook, p.supplier, p.pol_type, p.item_name, p.posting_date, p.qty, p.rate, ifnull(p.total_amount,0), p.memo_number, p.pol_slip_no from tabPOL as p, `tabEquipment History` eh where p.docstatus = 1 and p.equipment = eh.parent and {0}".format(cond)
 
         if filters.get("branch"):
 		query += " and p.branch = \'"+ str(filters.branch) + "\'"
@@ -39,6 +41,5 @@ def get_data(filters):
                 query += " and p.direct_consumption = 1"
 	else:
 		query += " and p.direct_consumption =  p.direct_consumption "
-	frappe.msgprint("{0}".format(query))	
-
+	query += " order by p.posting_date asc"
         return frappe.db.sql(query, debug = 1)

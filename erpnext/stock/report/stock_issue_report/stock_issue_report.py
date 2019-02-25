@@ -24,18 +24,20 @@ def get_columns(filters):
 	]
 	if filters.purpose == "Material Issue":
 		cols.append(("Cost Center")+":data:170")
-
+		cols.append(("Issued To")+":data:120")
 
 	if filters.purpose == "Material Transfer":
-		cols.append(("Warehouse")+":data:170")
+		cols.append(("Source Warehouse")+":data:170")
+		cols.append(("Destination Warehouse")+":data:170")
+		cols.append(("Equipment Number")+":data:170")
 	cols.append(("Stock Entry")+":Link/Stock Entry:170")
 	return cols
 
 def get_data(filters):
 	if filters.purpose == 'Material Transfer':
-		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.t_warehouse, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Transfer'"
+		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.s_warehouse, sed.t_warehouse, se.equipment_number, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Transfer'"
 	elif filters.purpose == 'Material Issue':
-		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.cost_center, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Issue'"
+		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.cost_center, sed.issued_to, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Issue'"
 	if filters.get("warehouse"):
 		data += " and sed.s_warehouse = \'" + str(filters.warehouse) + "\'"
 	if filters.get("item_code"):

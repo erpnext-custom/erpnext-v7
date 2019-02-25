@@ -369,6 +369,11 @@ frappe.ui.form.on("Purchase Invoice", {
 			erpnext.buying.get_default_bom(frm);
 		}
 		frm.toggle_reqd("supplier_warehouse", frm.doc.is_subcontracted==="Yes");
+	},
+	type: function(frm) {
+		if(frm.doc.type != null) {
+			cur_frm.set_df_property("tds_cost_center", "reqd", 1)
+		}
 	}
 })
 
@@ -415,7 +420,7 @@ cur_frm.cscript.tds_taxable_amount = function(doc) {
 //Do necessary updates
 function doUpdates(doc) {
     //Set cost_center from product
-    cur_frm.set_value("tds_cost_center", "CHQR-FAD - SMCL");
+    //cur_frm.set_value("tds_cost_center", "CHQR-FAD - SMCL");
     //Set the value for tds amount
     msgprint(doc.party_account_currency);
     cur_frm.set_value("tds_amount", (doc.tds_rate/100 ) * doc.tds_taxable_amount);

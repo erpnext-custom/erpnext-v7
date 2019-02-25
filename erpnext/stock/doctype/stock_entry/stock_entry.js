@@ -151,10 +151,22 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		var d = locals[cdt][cdn];
 		if(doc.initial_stock_templates) {
 			d.conversion_factor = 1;
-		}
+			}
 		d.transfer_qty = flt(d.qty) * flt(d.conversion_factor);
+		frappe.model.set_value(cdt, cdn, "received_qty", d.qty);
+		var diff_qty = flt(d.received_qty)-flt(d.qty);
 		this.calculate_basic_amount(d);
+		frappe.model.set_value(cdt, cdn, "basic_rate1", d.basic_rate);
+		frappe.model.set_value(cdt, cdn, "difference_qty", flt(diff_qty))
+		frappe.model.set_value(cdt, cdn, "basic_amount1", flt(diff_qty)*flt(d.basic_rate1));
 	},
+
+	received_qty: function(doc, cdt, cdn) {
+		var d = locals[cdt][cdn];
+		diff_qty = flt(d.received_qty)-flt(d.qty);
+		frappe.model.set_value(cdt, cdn, "difference_qty", flt(diff_qty));
+		frappe.model.set_value(cdt, cdn, "basic_amount1", flt(diff_qty)*flt(d.basic_rate1));
+		},
 
 	production_order: function() {
 		var me = this;
@@ -347,6 +359,9 @@ cur_frm.cscript.toggle_related_fields = function(doc) {
 	cur_frm.fields_dict["items"].grid.set_column_disp("t_warehouse", doc.purpose!='Material Issue');
 	cur_frm.fields_dict["items"].grid.set_column_disp("issue_to_employee", doc.purpose=='Material Issue');
 	cur_frm.fields_dict["items"].grid.set_column_disp("issued_to", doc.purpose=='Material Issue');
+	cur_frm.fields_dict["items"].grid.set_column_disp("received_qty", doc.purpose=='Material Transfer');
+	cur_frm.fields_dict["items"].grid.set_column_disp("difference_qty", doc.purpose=='Material Transfer');
+	cur_frm.fields_dict["items"].grid.set_column_disp("basic_amount1", doc.purpose=='Material Transfer');
 	cur_frm.cscript.toggle_enable_bom();
 
 	if (doc.purpose == 'Subcontract') {
@@ -585,7 +600,7 @@ cur_frm.fields_dict['items'].grid.get_field('issued_to').get_query = function(fr
         else {
                 return {
                         filters: [
-                                ['Equipment', 'not_cdcl', '=', 0]
+                        ['Equipment', 'not_cdcl', '=', 0]
                         ]
                 }
         }

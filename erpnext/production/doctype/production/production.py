@@ -241,6 +241,11 @@ class Production(StockController):
 			doc.ref_doc = self.name
 			doc.production_type = self.production_type
 			doc.adhoc_production = self.adhoc_production
+			doc.equipment_number = a.equipment_number
+			doc.equipment_model = a.equipment_model
+			doc.transporter_type = frappe.db.get_value("Equipment", a.equipment, "equipment_type")
+			doc.unloading_by = a.unloading_by
+			doc.group = a.group
 			doc.submit()
 
 	def delete_production_entry(self):

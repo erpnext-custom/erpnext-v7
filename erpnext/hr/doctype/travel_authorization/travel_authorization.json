@@ -1410,7 +1410,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-15 09:29:20.160979", 
+ "modified": "2019-02-19 15:40:15.801711", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Authorization", 
@@ -1516,7 +1516,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 0
+   "write": 1
   }, 
   {
    "amend": 0, 
@@ -1539,9 +1539,9 @@
    "write": 0
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 1, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -1555,7 +1555,7 @@
    "role": "Employee", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Employee\"]", 
    "write": 1
   }, 

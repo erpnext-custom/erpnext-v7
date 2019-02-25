@@ -81,6 +81,10 @@ def get_data():
 					"name": "Vehicle",
                                         "label": _("Vehicle Master"),
 				},
+				{
+					"type": "doctype",	
+					"name": "Financial Institution",										                               "label": _("Financial Institution"),			
+				},
 			]
 		},
 		{

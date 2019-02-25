@@ -6,6 +6,78 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def update_production_20190225():
+	doc = frappe.get_doc("Production", "PRO190200813")
+	print("processing products gl")
+	doc.make_products_gl_entry()
+	print("processing rm gl")
+	doc.make_raw_material_gl_entry()
+
+def update_pol_1():
+	num = 0
+	for a in frappe.db.sql("select name from tabPOL p where docstatus = 1 and exists (select 1 from `tabStock Ledger Entry` where voucher_no = p.name)", as_dict=1):
+		frappe.db.sql("update tabPOL set docstatus = 0 where name = %s", a.name)
+		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+		frappe.db.sql("delete from `tabStock Ledger Entry` where voucher_no = %s", a.name)
+		print(a.name)
+		doc = frappe.get_doc("POL", a.name)
+		doc.submit()
+		num = num + 1
+		if num % 100 == 0:
+			print("Committing....")
+			frappe.db.commit()
+	frappe.db.commit()
+
+
+def cancel_prod_1():
+	for a in frappe.db.sql("select name from tabProduction where docstatus in (0, 1)", as_dict=1):
+		print(a.name)
+		frappe.db.sql("delete from `tabStock Ledger Entry` where voucher_no = %s", a.name)
+		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+		frappe.db.sql("update tabProduction set docstatus = 2 where name = %s", a.name)
+
+def cancel_st_1():
+	for a in frappe.db.sql("select a.posting_date, a.name, b.name as child, purpose from `tabStock Entry` a, `tabStock Entry Detail` b where a.name = b.parent and b.item_code in ('300017', '300018') and a.docstatus in (0, 1) order by timestamp(a.posting_date, a.posting_time) DESC", as_dict=1):
+		print(a.name)
+		frappe.db.sql("delete from `tabStock Ledger Entry` where voucher_no = %s", a.name)
+		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+		frappe.db.sql("update `tabStock Entry` set docstatus = 2 where name = %s", a.name)
+		frappe.db.sql("update `tabStock Entry Detail` set docstatus = 2 where name = %s", a.child)
+		frappe.db.commit()
+
+
+def cancel_dn_1():
+	for a in frappe.db.sql("select a.posting_date, a.name, b.name as child from `tabDelivery Note` a, `tabDelivery Note Item` b where a.name = b.parent and b.item_code in ('300017', '300018') and a.docstatus in (0, 1) order by timestamp(a.posting_date, a.posting_time) DESC", as_dict=1):
+		print(a.name)
+		frappe.db.sql("delete from `tabStock Ledger Entry` where voucher_no = %s", a.name)
+		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+		frappe.db.sql("update `tabDelivery Note` set docstatus = 2 where name = %s", a.name)
+		frappe.db.sql("update `tabDelivery Note Item` set docstatus = 2 where name = %s", a.child)
+		frappe.db.commit()
+
+def cancel_si_draft():
+	for a in frappe.db.sql("select parent, name from `tabSales Invoice Item` where item_code in ('300017', '300018') and docstatus = 0", as_dict=1):
+		print(a.name)
+	#	frappe.db.sql("update `tabSales Invoice` set docstatus = 2 where name = %s", a.name)
+		frappe.db.sql("update `tabSales Invoice Item` set docstatus = 2 where name = %s", a.name)
+		frappe.db.commit()
+
+		
+def cancel_si():
+	for a in frappe.db.sql("select parent as name from `tabSales Invoice Item` where item_code in ('300017', '300018') and docstatus = 1", as_dict=1):
+		print(a.name)
+		doc = frappe.get_doc("Sales Invoice", a.name)
+		doc.cancel()
+		frappe.db.commit()
+
+
+def cancel_production():
+	for a in frappe.db.sql("select name from tabProduction where docstatus = 1 order by timestamp(posting_date, posting_time) DESC", as_dict=1):
+		print(a.name)
+		doc = frappe.get_doc("Production", a.name)
+		doc.cancel()
+		frappe.db.commit()
+
 def check_asset_dep():
         for a in frappe.db.sql("select name, asset_category, opening_accumulated_depreciation as oad from tabAsset where docstatus = 1 and status not in ('Scrapped', 'Sold') order by asset_category", as_dict=1):
 		dep_ds = frappe.db.sql("select accumulated_depreciation_amount as ada from `tabDepreciation Schedule` where parent = %s and journal_entry is not null order by schedule_date desc limit 1", a.name, as_dict=1)

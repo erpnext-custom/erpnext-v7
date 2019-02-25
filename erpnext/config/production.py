@@ -28,6 +28,12 @@ def get_data():
 					"name": "Item",
 					"label": "Material"
 				},
+				{
+					 "type": "doctype",
+					 "name": "Departmental Group",
+					 "label": "Departmental Group"
+				},
+
 			]
 		},
 		{

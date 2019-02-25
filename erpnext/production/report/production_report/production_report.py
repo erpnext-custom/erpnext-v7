@@ -21,7 +21,7 @@ def get_data(filters):
 	if filters.show_aggregate:
 		total_qty = "sum(qty) as total_qty"
 
-	query = "select pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0} from `tabProduction Entry` pe, `tabCost Center` cc where cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
+	query = "select pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.group, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0} from `tabProduction Entry` pe, `tabCost Center` cc where cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
 
 	total_qty = 0
@@ -133,6 +133,35 @@ def get_columns(filters):
 			"fieldtype": "Date",
 			"width": 100
 		})
-	
+		columns.insert(7, {
+	                "fieldname": "equipment_number",	                        
+			"label": "Equipment Number",
+                        "fieldtype": "Data",														                      "width": 130									                
+			})
+		columns.insert(8, {
+			"fieldname": "equipment_model",
+			"label": "Equipment Model",
+			"fieldtype": "Data",
+			"width": 130 
+			})
+		columns.insert(9, {
+			"fieldname": "transporter_type",
+			"label": "Transporter Type",
+			"fieldtype": "Data",
+			"width": 130
+			})
+		columns.insert(10, {
+			"fieldname": "unloading_by",
+			"label": "Unloading By",
+			"fieldtype": "Data",
+			"width": 120
+			})
+		columns.insert(11, {
+			"fieldname": "group",
+			"label": "Group",
+			"fieldtype": "Data",
+			"width": 120
+			})
+
 	return columns
 

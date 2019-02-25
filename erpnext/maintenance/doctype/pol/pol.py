@@ -81,7 +81,8 @@ class POL(StockController):
 		self.validate_data()
 		self.check_on_dry_hire()
 		self.check_budget()
-		self.update_stock_ledger()
+		if not self.direct_consumption:
+			self.update_stock_ledger()
 		self.update_general_ledger(1)
 		self.make_pol_entry()
 	

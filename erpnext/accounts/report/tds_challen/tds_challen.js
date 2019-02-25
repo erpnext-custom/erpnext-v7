@@ -40,6 +40,12 @@ frappe.query_reports["TDS Challen"] = {
 			"label": __("TDS Rate"),
 			"fieldtype": "Select",
 			"options": "\n2\n3\n5\n10",
-																	},
+		},
+		{
+		"fieldname": "cost_center",
+		"label": __("Cost Center"),
+		"fieldtype": "Link",
+		"options": "Cost Center",
+		}
 	],
 }

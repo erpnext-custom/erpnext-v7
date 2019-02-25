@@ -70,7 +70,6 @@ class HSDPayment(Document):
 		if not creditor_account:
 			frappe.throw("Set Default Payable Account in Company")
 
-		default_ba =  get_default_ba()
 
 		if cint(self.final_settlement) ==1:
 			gl_entries.append(
@@ -80,7 +79,6 @@ class HSDPayment(Document):
 					 "cost_center": self.cost_center,
 					"party_type": "Supplier",
                                          "party": self.supplier,
-					"business_activity": default_ba
 					})
 				)
 		else:
@@ -89,7 +87,6 @@ class HSDPayment(Document):
                                          "credit": flt(self.amount),
                                          "credit_in_account_currency": flt(self.amount),
                                          "cost_center": self.cost_center,
-                                         "business_activity": default_ba
                                         })
                                 )
 
@@ -100,7 +97,6 @@ class HSDPayment(Document):
 					 "cost_center": self.cost_center,
 					 "party_type": "Supplier",
 					 "party": self.supplier,
-					 "business_activity": default_ba
 					})
 			)
 
