@@ -103,7 +103,9 @@ def validate_workflow_states(doc):
                         
 			vars(doc)[document_approver[0]] = reports_to[0]
                         vars(doc)[document_approver[1]] = reports_to[1]
-
+                elif workflow_state == "Cancelled".lower():
+                        if frappe.session.user not in (doc.leave_approver,"Administrator"):
+                                frappe.throw(_("Only leave approver <b>{0}</b> ( {1} ) can cancel this document.").format(doc.leave_approver_name, doc.leave_approver), title="Operation not permitted")
 	elif doc.doctype == "Travel Authorization":
 		if workflow_state == "Draft".lower():
 			vars(doc)[document_approver[0]] = employee[0]
@@ -138,7 +140,7 @@ def validate_workflow_states(doc):
                                 doc.status = "Rejected"
 			vars(doc)[document_approver[0]] = reports_to[0]
 	elif doc.doctype == "Travel Claim":
-		hr_user = "NRDCL0306005"
+		hr_user = frappe.db.get_single_value("HR Settings", "hr_approver")
 		hr_approver = frappe.db.get_value("Employee", hr_user, ["user_id","employee_name","designation","name"])
 		if workflow_state == "Draft".lower():
 			vars(doc)[document_approver[0]] = employee[0]
@@ -161,11 +163,11 @@ def validate_workflow_states(doc):
 			if doc.place_type == "In-Country":
 				if final_approver[0] != doc.supervisor and employee[0] != final_approver[0]:
 					frappe.throw("Only {0} can approve your Travel Authorization".format(frappe.bold(final_approver[0])))
-				doc.status = "Approved"
+				doc.status = "claimed"
 			elif doc.place_type == "Out-Country":
 				if doc.supervisor != hr_approver[0]:
 					frappe.throw("Only {0} can approve your Out Country Travel Claims".format(hr_approver[1]))
-				doc.status = "Approved"
+				doc.status = "Claimed"
 
 		elif workflow_state == "Verified By Supervisor".lower():
 			if doc.supervisor != frappe.session.user:
