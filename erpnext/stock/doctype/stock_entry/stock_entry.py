@@ -399,16 +399,16 @@ class StockEntry(StockController):
 					"incoming_rate": flt(d.valuation_rate)
 				}))
 
-
-		for d in self.get('items'):
-			if d.t_warehouse and d.difference_qty >= 0.0:
-				sl_entries.append(self.get_sl_entries(d, {
-					"warehouse": cstr(d.t_warehouse),
-					"actual_qty": flt(d.difference_qty),
-					"incoming_rate": flt(d.basic_rate1)
-					}))
-			else:
-				frappe.throw("Difference Cannot Be Negative")
+		if self.purpose == "Material Transfer":
+			for d in self.get('items'):
+				if flt(d.difference_qty) > 0.0:
+					sl_entries.append(self.get_sl_entries(d, {
+						"warehouse": cstr(d.t_warehouse),
+						"actual_qty": flt(d.difference_qty),
+						"incoming_rate": flt(d.basic_rate1)
+						}))
+				else:
+					frappe.throw("Difference Cannot Be Negative")
 
 
 		# On cancellation, make stock ledger entry for
