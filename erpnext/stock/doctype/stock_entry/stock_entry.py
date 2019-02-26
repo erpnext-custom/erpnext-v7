@@ -407,8 +407,10 @@ class StockEntry(StockController):
 						"actual_qty": flt(d.difference_qty),
 						"incoming_rate": flt(d.basic_rate1)
 						}))
-				else:
+				elif flt(d.difference_qty) < 0:
 					frappe.throw("Difference Cannot Be Negative")
+				else:
+					pass
 
 
 		# On cancellation, make stock ledger entry for
