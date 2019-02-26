@@ -43,7 +43,7 @@ class TransporterPayment(AccountsController):
 			self.tds_account = None
 	
 		self.net_payable = flt(self.gross_amount) - flt(self.pol_amount)
-		self.amount_payable = flt(self.gross_amount) - flt(self.pol_amount) - flt(self.tds_amount)
+		self.amount_payable = flt(self.gross_amount) - flt(self.pol_amount) - flt(self.tds_amount) - flt(self.deduction_amount)
 			
 
 	def get_payment_details(self):
@@ -215,6 +215,17 @@ class TransporterPayment(AccountsController):
 				       "cost_center": cost_center,
 				}, self.currency)
 			)
+		if self.deduction_amount:
+			gl_entries.append(
+                                self.get_gl_dict({
+                                       "account":  self.gl_account,
+                                       "credit": self.deduction_amount,
+                                       "credit_in_account_currency": self.deduction_amount,
+                                       "against_voucher": self.name,
+                                       "against_voucher_type": self.doctype,
+                                       "cost_center": cost_center,
+                                }, self.currency)
+                        )
 
 		make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 		

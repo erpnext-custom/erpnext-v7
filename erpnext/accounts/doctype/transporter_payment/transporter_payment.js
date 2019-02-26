@@ -66,7 +66,12 @@ frappe.ui.form.on('Transporter Payment', {
 			freeze: true,
 			freeze_message: "Loading Payment Details..... Please Wait"
 		})
-	}
+	},
+	/*"deduction_amount": function(frm) {
+		var payable = flt(frm.doc.net_payable) - flt(frm.doc.deduction_amount)
+		frappe.msgprint(payable)
+		cur_frm.set_value("amount_payable", payable) 
+	}*/
 });
 
 
