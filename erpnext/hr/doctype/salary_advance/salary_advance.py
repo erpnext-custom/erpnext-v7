@@ -137,7 +137,7 @@ class SalaryAdvance(Document):
                         if self.salary_structure:
                                 doc = frappe.get_doc("Salary Structure", self.salary_structure)
                                 for d in doc.get("deductions"):
-                                        if d.salary_component == self.salary_component and d.reference_number == self.name:
+                                        if d.salary_component == self.salary_component and self.name in (d.reference_number, d.ref_docname):
                                                 rem_list.append(d)
 
                                 [doc.remove(d) for d in rem_list]
@@ -152,6 +152,7 @@ class SalaryAdvance(Document):
                                 row.amount                  = flt(self.monthly_deduction)
                                 row.default_amount          = flt(self.monthly_deduction)
                                 row.reference_number        = self.name
+                                row.ref_docname             = self.name
                                 row.total_deductible_amount = flt(self.total_claim)
                                 row.total_deducted_amount   = 0
                                 row.total_outstanding_amount= flt(self.total_claim)
