@@ -34,8 +34,14 @@ class Item(WebsiteGenerator):
 			self.set_onload("asset_exists", True if asset else False)
 
 	def autoname(self):
+                ##### Ver 2.0.190226, following code replaced by subsequent by SHIV on 26/02/2019
+                '''
 		if not self.item_code:
 			self.item_code = self.get_current_item_code()
+		'''
+                self.item_code = self.get_current_item_code()
+                ##### Ver 2.0.190226
+                
 		if not self.item_code:
 			msgprint(_("Item Code is mandatory because Item is not automatically numbered"), raise_exception=1)
 

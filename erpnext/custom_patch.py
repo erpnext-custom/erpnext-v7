@@ -9,6 +9,27 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_production_20190225():
+        num = 0
+        for a in frappe.db.sql("select a.name, a.posting_date from tabProduction a where docstatus = 1 and not exists (select 1 from  `tabGL Entry` b where b.voucher_no = a.name) order by a.posting_date asc, a.posting_time asc", as_dict=1):
+                print(a.name)
+                doc = frappe.get_doc("Production", a.name)
+                doc.make_products_gl_entry()
+                doc.make_raw_material_gl_entry()
+                num = num + 1
+                if num % 20 == 0:
+                        frappe.db.commit()
+        frappe.db.commit()
+
+def update_pol_1():
+	for a in frappe.db.sql("select name from tabPOL where docstatus = 1", as_dict=1):
+		frappe.db.sql("update tabPOL set docstatus = 0 where name = %s", a.name)
+		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+		frappe.db.sql("delete from `tabStock Ledger Entry` where voucher_no = %s", a.name)
+		print(a.name)
+		doc = frappe.get_doc("POL", a.name)
+		doc.submit()
+
 def update_si_today():
 	for a in frappe.db.sql("select transportation_charges as tc, name from `tabSales Invoice` where docstatus = 0", as_dict=1):
 		frappe.db.sql("update `tabSales Invoice` set transportation_charges = %s where name = %s", (round(flt(a.tc), 2), a.name))

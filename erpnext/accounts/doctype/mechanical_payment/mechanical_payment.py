@@ -20,16 +20,16 @@ class MechanicalPayment(AccountsController):
 
 	def set_missing_values(self):
 		self.cost_center = get_branch_cc(self.branch)
-		if not self.payment_for == "Transporter Payment":
-			if not self.transportation_account:
-				self.transportation_account = frappe.db.get_value('Production Account Settings',{'company': self.company},'transportation_account') 
+		if self.payment_for == "Transporter Payment":
+			self.transportation_account = frappe.db.get_value('Production Account Settings',{'company': self.company},'transportation_account') 
 			if self.tds_amount:
-				self.net_amount = self.receivable_amount - self.tds_amount
+				self.net_amount = self.total_amount - (self.tds_amount + self.other_deduction)
 			else:
-				self.net_amount = self.receivable_amount
-		if self.net_amount < 0:
+				self.net_amount = self.total_amount - self.other_deduction
+			
+		if not self.net_amount:
 			frappe.throw("Net Amount cannot be less than Zero")
-		if self.tds_amount < 0 and not self.payment_for == "Transporter Payment":
+		if flt(self.tds_amount) < 0:
 			frappe.throw("TDS Amount cannot be less than Zero")
 
 	def validate_allocated_amount(self):

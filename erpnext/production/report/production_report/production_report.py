@@ -84,7 +84,7 @@ def get_conditions(filters):
 		condition += " and pe.item_code = '{0}'".format(filters.item)
 
 	if filters.from_date and filters.to_date:
-		condition += " and pe.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+		condition += " and DATE(pe.posting_date) between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
 
 	if filters.timber_species:
 		condition += " and pe.timber_species = '{0}'".format(filters.timber_species)

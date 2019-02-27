@@ -9,6 +9,49 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+def testmail():
+        # Test1, trying Delayed TRUE/FALSE
+        a = frappe.sendmail(recipients=['siva@bt.bt','sivasankar.k2003@gmail.com'],subject="Mail with Delayed TRUE",message="Delayed FALSE",delayed=True)
+        print a,'Delayed TRUE: Mail sent successfully...'
+        '''
+        a = frappe.sendmail(recipients=['siva@bt.bt'],subject="Mail with Delayed TRUE",message="Delayed FALSE",delayed=True)
+        print a,'Delayed TRUE: Mail sent successfully...'
+        b = frappe.sendmail(recipients=['siva@bt.bt'],subject="Mail with Delayed FALSE",message="Delayed FALSE",delayed=False)
+        print b,'Delayed FALSE: Mail sent successfully...'
+        '''
+        # Test2, trying bulk emails
+        '''
+        for i in range(50):
+                print i
+                frappe.sendmail(recipients=['siva@bt.bt'],subject="Mail with Delayed TRUE",message="Delayed TRUE")
+        '''
+
+        # Test3, trying with reference details
+        # This doesn't create communication
+        '''
+        frappe.sendmail(recipients=['siva@bt.bt'],
+                    subject='Mail with Delayed TRUE',
+                    message='Delayed TRUE',
+                    reference_doctype='Customers',
+                    reference_name='95591',
+                    communication='Email')
+        '''
+
+        # Test4, creating communication
+        '''
+        email.make(
+                doctype = 'Customers',
+                name = '95591',
+                content = 'Communication body',
+                subject = 'Communication subject',
+                recipients='siva@bt.bt',
+                communication_medium='Email',
+                send_email=True,
+                #send_me_a_copy=True, #Sends a copy to bia@bt.bt
+                print_html='<h1>Some more tests</h1>'   #Sends the print_html content as html attachment
+        )
+        '''
+
 # Shiv 2019/01/24, Due to wrong EL settings under employee group ESP, all ESP employees got
 # 30 days EL credited for the year 2019 
 def remove_el():

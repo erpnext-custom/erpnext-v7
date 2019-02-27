@@ -451,6 +451,11 @@ def get_data():
 				},
 				{
 					"type": "report",
+					"name": "DES Employee Report",
+					"doctype": "DES Employee"
+				},
+				{
+					"type": "report",
 					"is_query_report": True,
 					"name": "Monthly Attendance Sheet",
 					"doctype": "Attendance"

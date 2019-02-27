@@ -93,7 +93,12 @@ class Employee(Document):
 		self.validate_employment()
 		self.validate_employee_leave_approver()
 		self.validate_reports_to()
-	
+
+		if self.passport_number:
+			data = frappe.db.sql("select employee_name from `tabEmployee` where passport_number = '{0}'".format(self.passport_number), as_dict=True)
+			if data:
+				frappe.throw("Employee with this {0} Passport/CID No. is already registered with {1}".format(self.passport_number, data[0].employee_name))
+
 		if self.user_id:
 			self.company_email = self.user_id
 			self.toggle_user_enable()
@@ -289,6 +294,9 @@ class Employee(Document):
 	def validate_date(self):
 		if self.date_of_birth and getdate(self.date_of_birth) > getdate(today()):
 			throw(_("Date of Birth cannot be greater than today."))
+
+		if self.relieving_date:
+                        check_future_date(self.relieving_date)
 
 		if self.date_of_birth and self.date_of_joining and getdate(self.date_of_birth) >= getdate(self.date_of_joining):
 			throw(_("Date of Joining must be greater than Date of Birth"))

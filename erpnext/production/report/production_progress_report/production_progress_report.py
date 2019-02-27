@@ -91,7 +91,7 @@ def get_filter_conditions(filters):
 		condition += " and pe.location = '{0}'".format(filters.location)
 
 	if filters.from_date and filters.to_date:
-		condition += " and pe.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+		condition += " and DATE(pe.posting_date) between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
 
 	return condition
 

@@ -94,6 +94,34 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 			validate_prev_doc(this.frm,__("Please select date of transfer to new cost center"));		
 		}
 	},
+
+        relieving_date: function(){
+                var rel_date = new Date(this.frm.doc.relieving_date);
+                var now_date = new Date(frappe.datetime.nowdate());
+                if(rel_date > now_date){
+                        cur_frm.set_value("relieving_date", "");
+                        frappe.msgprint("Separation Date should not be future dates");
+                }
+        },
+
+        passport_number: function(){
+                if(this.frm.doc.passport_number)
+                {
+                        frappe.call({
+                                        method: "erpnext.hr.doctype.employee.employee.get_employee_passport_number",
+                                        args: {
+                                                'passport_no': this.frm.doc.passport_number
+                                        },
+                                        callback: function(r){
+                                                if(r.message) {
+                                                        frappe.msgprint("An employee with Passport/CID is already assigned to " + r.message);
+                                                        cur_frm.set_value("passport_number", "");
+                                                }
+                                        }
+                                });
+                }
+        },
+
 	
 	status: function(){
 		this.frm.toggle_reqd(["relieving_date","reason_for_resignation"],(this.frm.doc.status == 'Left' ? 1:0));

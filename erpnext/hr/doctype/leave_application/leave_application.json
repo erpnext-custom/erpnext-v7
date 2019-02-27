@@ -769,7 +769,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 3, 
- "modified": "2019-02-19 16:18:05.987502", 
+ "modified": "2019-02-26 17:12:36.105378", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Leave Application", 
@@ -818,7 +818,7 @@
   {
    "amend": 1, 
    "apply_user_permissions": 1, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 0, 
    "delete": 0, 
    "email": 1, 
