@@ -75,7 +75,8 @@ def get_conditions(filters):
 		condition += " and pe.item_code = '{0}'".format(filters.item)
 
 	if filters.from_date and filters.to_date:
-		condition += " and pe.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+		condition += " and DATE(pe.posting_date) between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+		#condition += " and pe.posting_date between '{0}' and '{1}'".format(concat(filters.from_date, ' ', '00:00:00'), concat(filters.to_date, ' ', '23:59:59'))
 
 	if filters.warehouse:
 		condition += " and pe.warehouse = '{0}'".format(filters.warehouse)

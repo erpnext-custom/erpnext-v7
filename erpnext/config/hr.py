@@ -189,6 +189,11 @@ def get_data():
                                         "name": "Employee Benefits",
                                         "label": _("Process Employee Benefits"),
                                 },
+			 	{
+				 	"type": "doctype",
+					"name": "Salary Advance",
+					"label": _("Salary Advance"),
+				},
 
 			]
 		},

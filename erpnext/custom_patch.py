@@ -7,11 +7,17 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, n
 from erpnext.custom_utils import get_branch_cc
 
 def update_production_20190225():
-	doc = frappe.get_doc("Production", "PRO190200813")
-	print("processing products gl")
-	doc.make_products_gl_entry()
-	print("processing rm gl")
-	doc.make_raw_material_gl_entry()
+	num = 0
+	for a in frappe.db.sql("select a.name, a.posting_date from tabProduction a where docstatus = 1 and not exists (select 1 from  `tabGL Entry` b where b.voucher_no = a.name) order by a.posting_date asc, a.posting_time asc", as_dict=1):
+		print(a.name)
+		doc = frappe.get_doc("Production", a.name)
+		doc.make_products_gl_entry()
+		doc.make_raw_material_gl_entry()
+		num = num + 1
+		if num % 20 == 0:
+			frappe.db.commit()
+	frappe.db.commit() 
+
 
 def update_pol_1():
 	num = 0

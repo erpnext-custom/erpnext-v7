@@ -52,6 +52,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Production Target",
 				},
+				{
+					 "type": "doctype",
+					 "name": "Transporter Rate",
+				},
+
 			]
 		},
 		{
