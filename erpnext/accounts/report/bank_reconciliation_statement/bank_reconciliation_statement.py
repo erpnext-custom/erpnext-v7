@@ -205,7 +205,7 @@ def get_entries(filters):
                         select
                                 "Direct Payment" as payment_document, name as payment_entry,
                                 cheque_no as cheque_number, cheque_date,
-                                net_amount as amount,
+                                net_amount as credit, 0 as debit,
                                 posting_date, branch as against_account, clearance_date
                         from `tabDirect Payment`
                         where %(account)s IN (credit_account, debit_account)

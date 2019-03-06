@@ -138,7 +138,6 @@ class SalesInvoice(SellingController):
 		self.update_time_sheet(None)
 
 	def on_cancel(self):
-		check_uncancelled_linked_doc(self.doctype, self.name)
 		self.check_close_sales_order("sales_order")
 
 		from erpnext.accounts.utils import unlink_ref_doc_from_payment_entries
@@ -501,7 +500,8 @@ class SalesInvoice(SellingController):
 
 	def make_gl_entries(self, repost_future_gle=True):
 		gl_entries = self.get_gl_entries()
-
+#		if self.name == "SI19030062":
+#			frappe.throw("{0}".format(gl_entries))
 		if gl_entries:
 			from erpnext.accounts.general_ledger import make_gl_entries
 
@@ -549,7 +549,8 @@ class SalesInvoice(SellingController):
 		self.make_gle_for_change_amount(gl_entries)
 
 		self.make_write_off_gl_entry(gl_entries)
-
+		if self.name =="SI19030062":
+			frappe.throw("{0}".format(gl_entries))
 		return gl_entries
 
 	def make_customer_gl_entry(self, gl_entries):

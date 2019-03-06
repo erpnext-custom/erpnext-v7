@@ -29,4 +29,6 @@ def get_data(filters):
 
         if filters.get("from_date") and filters.get("to_date"):
                 query += " and posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) +"\'"
-        return frappe.db.sql(query)
+        if filters.get("user"):
+		query += " and submitted_by = \'"+ str(filters.user) +"\'"
+	return frappe.db.sql(query)

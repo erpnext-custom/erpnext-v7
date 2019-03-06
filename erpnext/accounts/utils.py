@@ -363,10 +363,19 @@ def remove_ref_doc_link_from_pe(ref_type, ref_no):
 		where reference_doctype=%s and reference_name=%s and docstatus < 2""", (ref_type, ref_no))
 
 	if linked_pe:
-		frappe.db.sql("""update `tabPayment Entry Reference`
-			set allocated_amount=0, modified=%s, modified_by=%s
-			where reference_doctype=%s and reference_name=%s
-			and docstatus < 2""", (now(), frappe.session.user, ref_type, ref_no))
+               if ref_type == 'Sales Invoice':
+                        sales_order = frappe.db.sql("""select sales_order from `tabSales Invoice Item` where parent = %s""", (ref_no), as_dict=True)
+                        if sales_order:
+                                frappe.db.sql("""update `tabPayment Entry Reference`
+                                        set reference_doctype='Sales Order', reference_name = %s,
+                                        modified=%s, modified_by=%s
+                                        where reference_doctype=%s and reference_name=%s
+                                        and docstatus < 2""", (str(sales_order[0].sales_order), now(), frappe.session.user, ref_type, ref_no))
+                else:
+			frappe.db.sql("""update `tabPayment Entry Reference`
+				set allocated_amount=0, modified=%s, modified_by=%s
+				where reference_doctype=%s and reference_name=%s
+				and docstatus < 2""", (now(), frappe.session.user, ref_type, ref_no))
 			
 		for pe in linked_pe:
 			pe_doc = frappe.get_doc("Payment Entry", pe)

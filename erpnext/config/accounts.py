@@ -315,7 +315,13 @@ def get_data():
                                         "doctype": "Royalty Payment",
                                         "is_query_report": True,
                                 },
-				
+				{
+                                        "type": "report",
+                                        "name": "Daily Collection Report",
+                                        "label": "Daily Collection Report",
+                                        "doctype": "Payment Entry",
+                                        "is_query_report": True,
+                                },				
 			]
 		},
 		{

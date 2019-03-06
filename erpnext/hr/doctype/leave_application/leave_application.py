@@ -253,10 +253,10 @@ class LeaveApplication(Document):
 
 				if self.status != "Rejected" and self.leave_balance < self.total_leave_days:
 					if frappe.db.get_value("Leave Type", self.leave_type, "allow_negative"):
-						frappe.msgprint(_("Note: There is not enough leave balance for Leave Type {0}")
+						frappe.msgprint(_("Note: Leave not allocated or Leave balance is not enough for Leave Type {0}. Please contact HR Manager")
 							.format(self.leave_type))
 					else:
-						frappe.throw(_("There is not enough leave balance for Leave Type {0}")
+						frappe.throw(_("Leave not allocated or Leave balance is not enough for Leave Type {0}. Please contact HR Manager")
 							.format(self.leave_type))
 
 	def validate_leave_overlap(self):

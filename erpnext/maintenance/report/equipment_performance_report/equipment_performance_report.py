@@ -117,7 +117,6 @@ def get_date_conditions(filters):
 def get_data(filters):
 	branch_cond, consumption_date, rate_date, jc_date, insurance_date, reg_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcll, dis, mr_date  =  get_conditions(filters)
 	from_date, to_date, no_of_months, from_date1, to_date1, ra  = get_date_conditions(filters)
-	frappe.msgprint("fr,: '{0}' to: {1}".format(from_date, to_date))
 	data = []
 	if filters.get("branch"):
                 branch_cond = " and eh.branch = \'"+str(filters.branch)+"\'"

@@ -24,7 +24,7 @@ import frappe.permissions
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from erpnext.utilities.transaction_base import delete_events
-from erpnext.custom_utils import get_year_start_date, get_year_end_date, round5
+from erpnext.custom_utils import get_year_start_date, get_year_end_date, round5, check_future_date
 from frappe.utils.data import get_first_day, get_last_day, add_days
 
 
@@ -94,10 +94,10 @@ class Employee(Document):
 		self.validate_employee_leave_approver()
 		self.validate_reports_to()
 
-		if self.passport_number:
-			data = frappe.db.sql("select employee_name from `tabEmployee` where passport_number = '{0}'".format(self.passport_number), as_dict=True)
-			if data:
-				frappe.throw("Employee with this {0} Passport/CID No. is already registered with {1}".format(self.passport_number, data[0].employee_name))
+#		if self.passport_number:
+#			data = frappe.db.sql("select employee_name from `tabEmployee` where passport_number = '{0}'".format(self.passport_number), as_dict=True)
+#			if data:
+#				frappe.throw("Employee with this {0} Passport/CID No. is already registered with {1}".format(self.passport_number, data[0].employee_name))
 
 		if self.user_id:
 			self.company_email = self.user_id
@@ -476,6 +476,13 @@ def make_salary_structure(source_name, target=None):
 	})
 	target.make_earn_ded_table()
 	return target
+
+@frappe.whitelist()
+def get_employee_passport_number(passport_no):
+        data = frappe.db.sql("select employee_name from `tabEmployee` where passport_number = '{0}'".format(passport_no), as_dict=True)
+        if data:
+                return data[0].employee_name
+
 
 @frappe.whitelist()
 def get_overtime_rate(employee):

@@ -25,6 +25,12 @@ frappe.query_reports["Daily Collection Report"] = {
                         "fieldtype" : "Date",
 			"default": get_today()
                 },	
-
+		{
+			"fieldname" : "user",
+			"label" : ("User"),
+			"fieldtype" : "Link",
+			"options" : "User",
+			"width" : "150"
+		},
 	]
 }
