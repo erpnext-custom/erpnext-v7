@@ -14,12 +14,46 @@ from datetime import datetime
 import os
 import subprocess
 
+def change_pol_cc():
+	for a in frappe.db.sql("select distinct  voucher_no from `tabGL Entry` where account = 'Clearing Account - CDCL' and posting_date > '2018-12-31';", as_dict=1):
+		pol = frappe.get_doc("POL", a.voucher_no)
+		print(pol.equipment_warehouse)
+		frappe.db.sql("update `tabGL Entry` set account = %s where voucher_no = %s", (pol.equipment_warehouse, a.voucher_no))
+
+def change_si():
+	for a in frappe.db.sql("select name, branch from `tabSales Invoice` where docstatus = 0 and posting_date > '2018-12-31'", as_dict=1):
+		cc = get_branch_cc(a.branch)
+		print(cc)
+		frappe.db.sql("update `tabSales Invoice Item` set cost_center = %s where parent = %s", (cc, a.name))
+		frappe.db.sql("update `tabGL Entry` set cost_center = %s where voucher_no = %s", (cc, a.name))
+
+def change_cc():
+	for a in frappe.db.sql("select name, branch from `tabStock Entry` where docstatus = 0 and posting_date > '2018-12-31'", as_dict=1):
+		cc = get_branch_cc(a.branch)
+		print(cc)
+		frappe.db.sql("update `tabStock Entry Detail` set cost_center = %s where parent = %s", (cc, a.name))
+		frappe.db.sql("update `tabGL Entry` set cost_center = %s where voucher_no = %s", (cc, a.name))
+		"""for b in frappe.db.sql("select cost_center from `tabGL Entry` where voucher_no = %s and cost_center != %s", (a.name, cc), as_dict=1)
+			print()
+		"""
+
+def get_cc():
+	print(frappe.defaults.get_defaults().cost_center)
+
 def get_diff_asset():
         for a in frappe.db.sql("select name, asset_category, asset_account from tabAsset where docstatus = 1", as_dict=1):
                 as_acc = frappe.db.get_value("Asset Category Account", {"parent": a.asset_category}, "fixed_asset_account")
                 if as_acc != a.asset_account:
                         print(str(a.name) + "   :  " + str(as_acc) + "  ==> " + str(a.asset_account))
 
+
+def update_equipment():
+        els = frappe.db.sql("select name from tabEquipment", as_dict=1)
+        for a in els:
+                print a.name
+                doc = frappe.get_doc("Equipment", a.name)
+                doc.save()
+                frappe.db.commit()
 
 def check_ds():
 	#for a in frappe.db.sql("select b.name as ass_name, a.schedule_date as dep_date, a.name, b.residual_value, b.expected_value_after_useful_life as ev, b.gross_purchase_amount as gross, b.value_after_depreciation as vad, a.accumulated_depreciation_amount as ada, a.depreciation_amount as da from `tabDepreciation Schedule` a, tabAsset b where a.parent = b.name and b.docstatus = 1 and a.journal_entry is null and b.status in ('Partially Depreciated', 'Submitted') and residual_value > 0 order by b.name, a.schedule_date", as_dict=1):

@@ -189,7 +189,7 @@ def get_basic_details(args, item):
 	for fieldname in ("item_name", "item_group", "barcode", "brand", "stock_uom"):
 		out[fieldname] = item.get(fieldname)
 
-        if args.project:
+        """if args.project:
                 out['cost_center'] = frappe.db.get_value("Project", args.get("project"), "cost_center")
 
         if args.branch:
@@ -197,6 +197,7 @@ def get_basic_details(args, item):
 
         if out['cost_center']:
                 out['warehouse'] = frappe.db.get_value("Cost Center", out['cost_center'], "warehouse")
+	"""
 
 	return out
 

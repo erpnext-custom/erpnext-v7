@@ -418,6 +418,63 @@ class ProcessPayroll(Document):
                         frappe.throw(_("No data found"),title="Posting failed")
         '''
 
+        ##### Ver2.0.190304 Begins, following code added by SHIV
+        def get_cc_wise_entries(self, salary_component_pf):
+                # Filters
+                cond = self.get_filter_condition()
+                
+                return frappe.db.sql("""
+                        select
+                                t1.cost_center             as cost_center,
+                                (case
+                                        when sc.type = 'Earning' then sc.type
+                                        else ifnull(sc.clubbed_component,sc.name)
+                                end)                       as salary_component,
+                                sc.type                    as component_type,
+                                (case
+                                        when sc.type = 'Earning' then 0
+                                        else ifnull(sc.is_remittable,0)
+                                end)                       as is_remittable,
+                                sc.gl_head                 as gl_head,
+                                sum(ifnull(sd.amount,0))   as amount,
+                                (case
+                                        when ifnull(sc.make_party_entry,0) = 1 then 'Payable'
+                                        else 'Other'
+                                end) as account_type,
+                                (case
+                                        when ifnull(sc.make_party_entry,0) = 1 then 'Employee'
+                                        else 'Other'
+                                end) as party_type,
+                                (case
+                                        when ifnull(sc.make_party_entry,0) = 1 then t1.employee
+                                        else 'Other'
+                                end) as party
+                         from
+                                `tabSalary Detail` sd,
+                                `tabSalary Slip` t1,
+                                `tabSalary Component` sc,
+                                `tabCompany` c
+                        where t1.fiscal_year = '{0}'
+                          and t1.month       = '{1}'
+                          and t1.docstatus   = 1
+                          {2}
+                          and sd.parent      = t1.name
+                          and sd.salary_component = '{3}'
+                          and sc.name        = sd.salary_component
+                          and c.name         = t1.company
+                        group by 
+                                t1.cost_center,
+                                (case when sc.type = 'Earning' then sc.type else ifnull(sc.clubbed_component,sc.name) end),
+                                sc.type,
+                                (case when sc.type = 'Earning' then 0 else ifnull(sc.is_remittable,0) end),
+                                sc.gl_head,
+                                (case when ifnull(sc.make_party_entry,0) = 1 then 'Payable' else 'Other' end),
+                                (case when ifnull(sc.make_party_entry,0) = 1 then 'Employee' else 'Other' end),
+                                (case when ifnull(sc.make_party_entry,0) = 1 then t1.employee else 'Other' end)
+                        order by t1.cost_center, sc.type, sc.name
+                """.format(self.fiscal_year, self.month, cond, salary_component_pf),as_dict=1)
+        ##### Ver2.0.190304 Ends
+        
         #
         # Ver20180403 added by SSK, account rules
         #
@@ -513,15 +570,27 @@ class ProcessPayroll(Document):
 
                                 for r in remit_gl_list:
                                         remit_amount += flt(rec.amount)
-                                        posting.setdefault(rec.salary_component,[]).append({
-                                                "account"       : r,
-                                                "debit_in_account_currency" : flt(rec.amount),
-                                                "cost_center"   : rec.cost_center,
-                                                "party_check"   : 0,
-                                                "account_type"   : rec.account_type if rec.party_type == "Employee" else "",
-                                                "party_type"     : rec.party_type if rec.party_type == "Employee" else "",
-                                                "party"          : rec.party if rec.party_type == "Employee" else "" 
-                                        })
+                                        if r == default_gpf_account:
+                                                for i in self.get_cc_wise_entries(salary_component_pf):
+                                                      posting.setdefault(rec.salary_component,[]).append({
+                                                                "account"       : r,
+                                                                "debit_in_account_currency" : flt(i.amount),
+                                                                "cost_center"   : i.cost_center,
+                                                                "party_check"   : 0,
+                                                                "account_type"   : i.account_type if i.party_type == "Employee" else "",
+                                                                "party_type"     : i.party_type if i.party_type == "Employee" else "",
+                                                                "party"          : i.party if i.party_type == "Employee" else "" 
+                                                        })  
+                                        else:
+                                                posting.setdefault(rec.salary_component,[]).append({
+                                                        "account"       : r,
+                                                        "debit_in_account_currency" : flt(rec.amount),
+                                                        "cost_center"   : rec.cost_center,
+                                                        "party_check"   : 0,
+                                                        "account_type"   : rec.account_type if rec.party_type == "Employee" else "",
+                                                        "party_type"     : rec.party_type if rec.party_type == "Employee" else "",
+                                                        "party"          : rec.party if rec.party_type == "Employee" else "" 
+                                                })
                                         
                                 posting.setdefault(rec.salary_component,[]).append({
                                         "account"       : default_bank_account,

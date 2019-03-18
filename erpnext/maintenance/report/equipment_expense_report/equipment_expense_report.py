@@ -65,24 +65,31 @@ def get_data(filters):
 	if filters.get("branch"):
 		branch_cond = " and branch = \'"+str(filters.branch)+"\'"
 	else:
-		branch_cond = " and branch like '%' "
+		branch_cond = " and branch like '%s'"
 
 	if filters.get("not_cdcl"):
                 not_cdcll = " not_cdcl = 0"
 	else:
-		not_cdcll = " not_cdcl like '%' "
+		not_cdcll = " not_cdcl like '%s'"
         
         if filters.get("include_disabled"):
-               dis = " and is_disabled like '%' "
+               dis = " and is_disabled like '%s' "
         else:
                dis  = " and is_disabled != 1 " 
-        equipments = frappe.db.sql("""
+        '''equipments = frappe.db.sql("""
                                 select e.name, e.branch,e.equipment_number, e.equipment_type,
-								 eo.operator_name as operator, e.equipment_model
+			eo.operator_name as operator, e.equipment_model
                              from tabEquipment as e
                              left join `tabEquipment Operator` as eo on e.name= eo.parent where 
                                 {0} {1} {2} order by branch, name
-                        """.format(not_cdcll, branch_cond, dis), as_dict=1)
+                        """.format(not_cdcll, branch_cond, dis), as_dict=1)'''
+	
+	equipments = frappe.db.sql("""
+                        select e.name, eh.branch, eo.operator, e.equipment_number, e.equipment_type, e.equipment_model,
+                        eh.from_date, eh.to_date, eo.start_date, eo.end_date from `tabEquipment` e, `tabEquipment History` eh,
+                        `tabEquipment Operator` eo
+                        where eh.parent = e.name and eo.parent = e.name
+        """,  as_dict =1)
 
     	for eq in equipments:
 		#:frappe.msgprint("{0}".format(eq))
@@ -148,6 +155,8 @@ def get_data(filters):
 		total_exp    = 0.0
 		total_sal    = 0.0
 		for co in c_operator:
+			if not co.end_date:
+				co.end_date = getdate(nowdate())
 			if co.employee_type == "Muster Roll Employee":
 				#PRoCESS FROM "PROCESS MR PAYMENT"
 				mr_pay = frappe.db.sql("""
@@ -165,7 +174,6 @@ def get_data(filters):
                                                 and mr.docstatus = 1
                                                 and {1}'''
 
-				travel_claim += 0.0
                                 e_amount     += 0.0
                                 gross_pay    += flt(mr_pay.mr_payment)	
 			elif co.employee_type == "Employee":
@@ -174,8 +182,8 @@ def get_data(filters):
 						from `tabTravel Claim` tc 
 						where tc.employee = '{0}'
 						and   tc.docstatus = 1
-						and   {1}
-					""".format(co.operator, tc_date), as_dict=1)[0]
+						and   tc.branch = '{1}' and tc.posting_date between '{2}' and '{3}'
+					""".format(co.operator, eq.branch, eq.start_date, eq.end_date), as_dict=1)[0]
 
 
 				#Leave Encashment Aomunt
@@ -185,7 +193,7 @@ def get_data(filters):
 						where le.employee = '{0}'
 						and   le.docstatus = 1
 						and   {1}
-					""".format(co.operator, le_date), as_dict=1)[0]
+					""".format(co.operator,le_date), as_dict=1)[0]
 
 				#frappe.msgprint("{0}".format(lea))
 
@@ -229,7 +237,7 @@ def get_data(filters):
 						else:
 							pass
 
-				travel_claim += flt(tc.travel_claim)
+				travel_claim = flt(tc.travel_claim)
 				e_amount     += flt(lea.e_amount) 
 				gross_pay    += flt(total_sal)
 		        total_exp = 	((flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(reg.r_amount)+flt(jc.services_amount)+ travel_claim+e_amount + gross_pay)

@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import getdate
+from frappe.utils import getdate, nowdate
 
 class Equipment(Document):
 	def before_save(self):
@@ -19,13 +19,62 @@ class Equipment(Document):
 
 		if not self.equipment_number:
 			self.equipment_number = self.name
-
-	#def on_update(self):
+		'''if self.equipment_history:
+			self.set("equipment_history", {})'''
+		if not self.equipment_history:
+                        self.create_equipment_history(branch = self.branch, on_date = '2017-01-01', ref_doc = self.name, purpose = 'Submit')
+		
 		if len(self.operators) > 1:
 			for a in range(len(self.operators)-1):
 				self.operators[a].end_date = frappe.utils.data.add_days(getdate(self.operators[a + 1].start_date), -1)
 			self.operators[len(self.operators) - 1].end_date = ''
+
+		if self.is_disabled == 1:
+                        last_row = self.equipment_history[len(self.equipment_history) - 1]
+                        if not last_row.to_date:
+                                last_row.to_date = getdate(nowdate())
+		if self.not_cdcl == 0:
+			if not self.asset_code:
+				frappe.throw("Asset Code is mandatory, Please Fill the Asset Code!")
 		self.set_name()
+
+
+	def create_equipment_history(self, branch, on_date, ref_doc, purpose):
+                from_date = on_date
+                if purpose == "Cancel":
+                        to_remove = []
+                        for a in self.equipment_history:
+                                if a.reference_document == ref_doc:
+                                        to_remove.append(a)
+
+                        [self.remove(d) for d in to_remove]
+                        self.set_to_date()
+                        return
+
+                if not self.equipment_history:
+                        self.append("equipment_history",{
+                                                "branch": self.branch,
+                                                "from_date": from_date,
+                                                "reference_document": ref_doc
+                        })
+                else:
+                        #doc = frappe.get_doc(self.doctype,self.name)
+                        ln = len(self.equipment_history)-1	
+                        if self.branch != self.equipment_history[ln].branch:
+                                self.append("equipment_history",{
+                                                "branch": self.branch,
+                                                "from_date": from_date,
+                                                "reference_document": ref_doc
+                        })
+                self.set_to_date()
+
+
+	def set_to_date(self):
+                if len(self.equipment_history) > 1:
+                        for a in range(len(self.equipment_history)-1):
+                                self.equipment_history[a].to_date = frappe.utils.data.add_days(getdate(self.equipment_history[a + 1].from_date), -1)
+                else:
+                        self.equipment_history[0].to_date = None
 
 	def set_name(self):
 		for a in self.operators:

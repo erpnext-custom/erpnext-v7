@@ -58,9 +58,9 @@ class BulkAssetTransfer(Document):
 		if not self.purpose:
 			frappe.throw("Select a Purpose first!")
 		if self.cost_center and self.purpose == "Cost Center":
-			entries = frappe.db.sql("select name as asset_code, asset_name, gross_purchase_amount as gross_amount, cost_center, issued_to as custodian from tabAsset where cost_center = %s and docstatus = 1", self.cost_center, as_dict=True)
+			entries = frappe.db.sql("select name as asset_code, asset_name, gross_purchase_amount as gross_amount, cost_center, issued_to as custodian from tabAsset where status not in ('Scrapped', 'Sold') and cost_center = %s and docstatus = 1", self.cost_center, as_dict=True)
 		elif self.current_custodian and self.purpose == "Custodian":
-			entries = frappe.db.sql("select name as asset_code, asset_name, gross_purchase_amount as gross_amount, cost_center, issued_to as custodian from tabAsset where issued_to = %s and docstatus = 1", self.current_custodian, as_dict=True)
+			entries = frappe.db.sql("select name as asset_code, asset_name, gross_purchase_amount as gross_amount, cost_center, issued_to as custodian from tabAsset where status not in ('Scrapped', 'Sold') and issued_to = %s and docstatus = 1", self.current_custodian, as_dict=True)
 		else:
 			frappe.throw("Either select Cost Center or Custodian")
 		self.set('items', [])

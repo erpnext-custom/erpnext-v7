@@ -8,6 +8,40 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff,
 from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 
+def analyze():
+        qry = """
+                select table_name
+                from information_schema.tables t
+                where t.table_schema = database()
+                and engine = 'InnoDB'
+                and lower(t.table_name) not like '%bkup%'
+                and lower(t.table_name) not like '%bkp%'
+        """
+
+        counter = 0
+        for i in frappe.db.sql(qry, as_dict=True):
+                counter += 1
+                print counter, i.table_name,'analyze table `{0}`'.format(i.table_name)
+                frappe.db.sql('analyze table `{0}`'.format(i.table_name))
+        
+def check_pk():
+        pri_qry = """
+                select table_name
+                from information_schema.tables t
+                where t.table_schema = '4915427b5860138f'
+                and lower(t.table_name) not like '%bkup%'
+                and lower(t.table_name) not like '%bkp%'
+                and not exists(
+                        select 1
+                        from information_schema.columns c
+                        where c.table_schema = t.table_schema
+                        and c.table_name = t.table_name
+                        and c.column_key = 'PRI'
+                )
+        """
+        for i in frappe.db.sql(pri_qry, as_dict=True):
+                print i.table_name
+
 def add_employee_internal_work_history_record():
 	doc = frappe.get_doc("Muster Roll Employee", "11210002416")
 	row = doc.append("internal_work_history",{})

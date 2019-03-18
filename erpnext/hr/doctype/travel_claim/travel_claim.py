@@ -56,6 +56,11 @@ class TravelClaim(Document):
 
 		if frappe.session.user == self.supervisor and self.supervisor_approval:
 			self.db_set("supervisor_approved_on", nowdate())
+		if self.get_db_value('workflow_state') == 'Waiting Approval' and self.workflow_state == "Verified by Supervisor":
+                        if frappe.session.user == self.owner or frappe.session.user == employee:
+                                self.supervisor_approval == 0
+                                frappe.throw("You cannot approve your own claim.")
+		
 		
 	def on_update(self):
 		self.check_double_dates()

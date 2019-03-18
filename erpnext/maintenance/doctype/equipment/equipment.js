@@ -3,10 +3,10 @@
 cur_frm.add_fetch("asset_code", "branch", "branch")
 
 frappe.ui.form.on('Equipment', {
-	onload: function(frm) {
-		cur_frm.set_df_property("asset_code", "reqd", frm.doc.not_cdcl ? 0 : 1) 
-		cur_frm.set_df_property("asset_code", "reqd", frm.doc.equipment_type == "NA" ? 0 : 1) 
-	},
+//	onload: function(frm) {
+	//	cur_frm.set_df_property("asset_code", "reqd", frm.doc.not_cdcl ? 0 : 1) 
+	//	cur_frm.set_df_property("asset_code", "reqd", frm.doc.equipment_type == "NA" ? 0 : 1) 
+//	},
 	refresh: function(frm) {
 		cur_frm.set_df_property("engine_number", "read_only", frm.doc.engine_number ? 1 : 0)
 		cur_frm.set_df_property("asset_code", "read_only", frm.doc.asset_code ? 1 : 0)
@@ -66,10 +66,10 @@ frappe.ui.form.on('Equipment', {
 	},
 	not_cdcl: function(frm) {
 		cur_frm.toggle_reqd("asset_code", frm.doc.not_cdcl == 0) 
-	},
-	equipment_type: function(frm) {
-		cur_frm.toggle_reqd("asset_code", frm.doc.equipment_type != "Fabrication Product")
 	}
+	//equipment_type: function(frm) {
+	//	cur_frm.toggle_reqd("asset_code", frm.doc.equipment_type != "Fabrication Product")
+//	}
 });
 
 frappe.ui.form.on("Equipment", "refresh", function(frm) {
@@ -124,3 +124,13 @@ cur_frm.fields_dict['operators'].grid.get_field('operator').get_query = function
 		}
 	}
 }
+
+frappe.ui.form.on('Equipment History', {
+        before_equipment_history_remove: function(frm, cdt, cdn) {
+                doc = locals[cdt][cdn]
+                if(!doc.__islocal) {
+                        frappe.throw("Cannot delete saved Items")
+                }
+        }
+
+});
