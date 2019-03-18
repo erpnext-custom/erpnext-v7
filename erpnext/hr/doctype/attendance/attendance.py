@@ -30,7 +30,7 @@ class Attendance(Document):
 					self.att_date))
 
 	def validate_att_date(self):
-		if getdate(self.att_date) > getdate(nowdate()):
+		if getdate(self.att_date) > getdate(nowdate()) and not self.reference_name:
 			frappe.throw(_("Attendance can not be marked for future dates"))
 
 	def validate_employee(self):

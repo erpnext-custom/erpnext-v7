@@ -11,7 +11,7 @@ def update_stock_entries():
 	for i in frappe.db.sql("""
 			select name, posting_date,purpose,owner 
 			from `tabStock Entry` 
-			where posting_date between '2019-01-01' and '2019-01-31' 
+			where posting_date between '2019-02-01' and '2019-02-28' 
 			and docstatus=0
 			and purpose = 'Material Transfer'
 			and owner = 'dorji2392@bt.bt'

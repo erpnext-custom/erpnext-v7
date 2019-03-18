@@ -65,8 +65,36 @@ class BankReconciliation(Document):
 				posting_date ASC, name DESC
 		""".format(condition), 
 		(self.bank_account, self.bank_account, self.bank_account, self.from_date, self.to_date), as_dict=1)
+
+                ##### Ver 1.0.190304 Begins, following added by SHIV on 2019/03/04
+                hsd_entries = frappe.db.sql("""
+                        select
+                                "HSD Payment" as payment_document, name as payment_entry,
+                                cheque__no as cheque_number, cheque_date,
+                                amount,
+                                posting_date, supplier as against_account, clearance_date
+                        from `tabHSD Payment`
+                        where bank_account = '{0}'
+                        and docstatus = 1
+                        and posting_date >= '{1}' and posting_date <= '{2}'
+                        {3}
+                """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+
+                transporter_payment_entries = frappe.db.sql("""
+                        select
+                                "Transporter Payment" as payment_document, name as payment_entry,
+                                cheque_no as cheque_number, cheque_date,
+                                amount_payable as amount,
+                                posting_date, registration_no as against_account, clearance_date
+                        from `tabTransporter Payment`
+                        where credit_account = '{0}'
+                        and docstatus = 1
+                        and posting_date >= '{1}' and posting_date <= '{2}'
+                        {3}
+                """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+                ##### Ver 1.0.190304 Ends
 		
-		entries = sorted(list(payment_entries)+list(journal_entries)+list(direct_payment_entries), 
+		entries = sorted(list(payment_entries)+list(journal_entries)+list(direct_payment_entries)+list(hsd_entries)+list(transporter_payment_entries), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))
 				
 		self.set('payment_entries', [])

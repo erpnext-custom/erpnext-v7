@@ -148,7 +148,7 @@ def get_entries(filters):
 		select
 			"Direct Payment" as payment_document, name as payment_entry,
 			cheque_no as cheque_number, cheque_date,
-			net_amount as debit,
+			net_amount as credit,
 			posting_date, branch as against_account, clearance_date
 		from `tabDirect Payment`
 		where %(account)s IN (credit_account, debit_account)
@@ -157,7 +157,35 @@ def get_entries(filters):
 			and ifnull(clearance_date, '4000-01-01') > %(report_date)s
 	""", filters, as_dict=1)
 
-	return sorted(list(payment_entries)+list(journal_entries)+list(direct_payment_entries), 
+        ##### Ver 1.0.190304 Begins, following added by SHIV on 2019/03/04
+        hsd_entries = frappe.db.sql("""
+                select
+                        "HSD Payment" as payment_document, name as payment_entry,
+                        cheque__no as cheque_number, cheque_date,
+                        amount as credit,
+                        posting_date, supplier as against_account, clearance_date
+                from `tabHSD Payment`
+                where bank_account = %(account)s
+                and docstatus = 1
+                and posting_date <= %(report_date)s
+                and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+        """, filters, as_dict=1)
+
+        transporter_payment_entries = frappe.db.sql("""
+                select
+                        "Transporter Payment" as payment_document, name as payment_entry,
+                        cheque_no as cheque_number, cheque_date,
+                        amount_payable as credit,
+                        posting_date, registration_no as against_account, clearance_date
+                from `tabTransporter Payment`
+                where credit_account = %(account)s
+                and docstatus = 1
+                and posting_date <= %(report_date)s
+                and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+        """, filters, as_dict=1)
+        
+        ##### Ver 1.0.190304 Ends        
+	return sorted(list(payment_entries)+list(journal_entries)+list(direct_payment_entries)+list(hsd_entries)+list(transporter_payment_entries), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))
 			
 def get_amounts_not_reflected_in_system(filters):

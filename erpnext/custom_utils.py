@@ -150,7 +150,41 @@ def get_user_info(user=None, employee=None, cost_center=None):
 @frappe.whitelist()
 def cancel_draft_doc(doctype, docname):
         doc = frappe.get_doc(doctype, docname)
+        ##### Ver 2.0.190304 Begins, following coded added by SHIV
+        if doctype == "Leave Application":    
+                if doc.get("workflow_state") not in ("Draft","Rejected") and frappe.session.user not in (doc.get("leave_approver"),"Administrator"):
+                        frappe.throw(_("Only leave approver <b>{0}</b> ( {1} ) can cancel this document.").format(doc.leave_approver_name, doc.leave_approver), title="Operation not permitted")
+	##### Ver 2.0.190304 Ends
         doc.db_set("docstatus", 2)
+
+        ##### Ver 2.0.190304 Begins, following code added by SHIV
+        # Updating Child tables docstatus to 2
+        meta = frappe.get_meta(doctype)
+        if not meta.issingle:
+                if not meta.istable:
+                        for df in meta.get_table_fields():
+                                frappe.db.sql("""update `tab{0}` set docstatus=2 where parent='{1}'""".format(df.options,docname))
+
+        if frappe.db.exists("Workflow", doctype):
+                wfs = frappe.db.get_values("Workflow Document State", {"parent":doctype, "doc_status": 2}, "state", as_dict=True)
+                doc.db_set("workflow_state", wfs[0].state if len(wfs) == 1 else "Cancelled")
+
+        if doctype == "Material Request":
+		doc.db_set("status", "Cancelled")
+	elif doctype == "Leave Application":
+		doc.db_set("status", "Cancelled")
+	elif doctype == "Travel Claim":
+		if doc.ta:
+			ta = frappe.get_doc("Travel Authorization", doc.ta)
+			ta.db_set("travel_claim", None)
+	elif doctype == "Job Card":
+		br = frappe.get_doc("Break Down Report", doc.break_down_report)
+                br.db_set("job_card", None)
+        else:
+                pass
+
+        ##### Ver 2.0.190304 Begins, following code commented by SHIV
+        '''
 	if doctype == "Material Request":
 		doc.db_set("status", "Cancelled")
 		doc.db_set("workflow_state", "Cancelled")
@@ -169,7 +203,8 @@ def cancel_draft_doc(doctype, docname):
                 doc.db_set("workflow_state", "Cancelled")
         else:
                 pass
-                
+        '''
+        ##### Ver 2.0.190304 Ends
 
 ##
 #  nvl() function added by SHIV on 02/02/2018

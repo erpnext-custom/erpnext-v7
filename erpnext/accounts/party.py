@@ -340,7 +340,9 @@ def set_taxes(party, party_type, posting_date, company, customer_group=None, sup
 
 def validate_party_frozen_disabled(party_type, party_name):
 	if party_type and party_name:
-		if party_type != "Employee" and party_type != "Vehicle":
+		# Following line replaced by subsequent, by SHIV on 2019/03/12
+		#if party_type != "Employee" and party_type != "Vehicle":
+		if party_type not in ["Employee", "Vehicle", "Equipment"]:
 			party = frappe.db.get_value(party_type, party_name, ["is_frozen", "disabled"], as_dict=True)
 			if party.disabled:
 				frappe.throw("{0} {1} is disabled".format(party_type, party_name), PartyDisabled)

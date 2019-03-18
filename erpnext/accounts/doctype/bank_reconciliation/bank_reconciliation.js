@@ -7,11 +7,14 @@ frappe.ui.form.on("Bank Reconciliation", {
 		frm.add_fetch("bank_account", "account_currency", "account_currency");
 
 		frm.get_field('payment_entries').grid.editable_fields = [
-			{fieldname: 'against_account', columns: 3},
+			{fieldname: 'posting_date', columns: 1},
+			{fieldname: 'payment_document', columns: 2},
+			{fieldname: 'payment_entry', columns: 2},
+			{fieldname: 'against_account', columns: 1},
 			{fieldname: 'amount', columns: 2},
-			{fieldname: 'cheque_number', columns: 3},
-			{fieldname: 'clearance_date', columns: 2}
-		];
+			{fieldname: 'cheque_number', columns: 1},
+			{fieldname: 'clearance_date', columns: 1}
+        ];
 	},
 
 	onload: function(frm) {
@@ -43,7 +46,9 @@ frappe.ui.form.on("Bank Reconciliation", {
 			callback: function(r, rt) {
 				frm.refresh_field("payment_entries");
 				frm.refresh_fields();
-			}
+			},
+			freeze: true,
+            freeze_message: "Updating Clearance Date"
 		});
 	},
 	get_payment_entries: function(frm) {
@@ -53,7 +58,9 @@ frappe.ui.form.on("Bank Reconciliation", {
 			callback: function(r, rt) {
 				frm.refresh_field("payment_entries");
 				frm.refresh_fields();
-			}
+			},
+			freeze: true,
+            freeze_message: "Getting Reconciliation List"
 		});
 	}
 });

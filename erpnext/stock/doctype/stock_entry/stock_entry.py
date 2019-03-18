@@ -26,8 +26,8 @@ form_grid_templates = {
 }
 
 class StockEntry(StockController):
-	def autoname(self):
-		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
+	#def autoname(self):
+	#	self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
 	def get_feed(self):
 		return _("From {0} to {1}").format(self.from_warehouse, self.to_warehouse)
@@ -405,7 +405,7 @@ class StockEntry(StockController):
 					sl_entries.append(self.get_sl_entries(d, {
 						"warehouse": cstr(d.t_warehouse),
 						"actual_qty": flt(d.difference_qty),
-						"incoming_rate": flt(d.basic_rate1)
+						"incoming_rate": flt(d.valuation_rate)
 						}))
 				elif flt(d.difference_qty) < 0:
 					frappe.throw("Difference Cannot Be Negative")
