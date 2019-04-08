@@ -146,13 +146,18 @@ def get_data():
                                         "doctype": "Product Requisition"
                                 },
 				{
-			
                                         "type": "report",
                                         "is_query_report": True,
                                         "name": "Customer Group Report",
                                         "label": "Customer Group Wise Sales Report",
                                         "doctype": "Sales Invoice"
                                 },
+				{
+                                        "type": "report",
+					"name": "General Sales Order Report",
+                                        "doctype": "Sales Order"
+                                },
+
 			]
 		},
 		{

@@ -9,6 +9,74 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+# 2019/04/01
+def update_production_sle():
+        counter = 0
+        for i in frappe.db.sql("select name from temp_pro order by name", as_dict=True):
+                counter += 1
+                print counter, i.name
+                voucher = frappe.db.sql("""
+                                        select *
+                                        from
+                                                (select 'APPI' as tbl, name, item_code, qty, idx
+                                                from `tabProduction Product Item`
+                                                where parent = '{0}' order by idx) x
+                                        union all
+                                        select *
+                                        from
+                                                (select 'BPMI' tbl, name, item_code, qty, idx
+                                                from `tabProduction Material Item`
+                                                where parent = '{0}' order by idx) y
+                                        order by tbl, idx
+                                """.format(i.name), as_dict=True)
+                sle = frappe.db.sql("select name, item_code, actual_qty from temp_sle where voucher_no = '{0}' order by name".format(i.name), as_dict=True)
+                
+                if len(voucher) == len(sle):
+                        for j in range(len(voucher)):
+                                if voucher[j].item_code == sle[j].item_code and abs(voucher[j].qty) == abs(sle[j].actual_qty):
+                                        print j, 'PROD', i.name, voucher[j].item_code, voucher[j].idx, voucher[j].tbl, voucher[j].name, voucher[j].qty, 'SLE', sle[j].name, sle[j].item_code, sle[j].idx, sle[j].actual_qty
+                                        frappe.db.sql("""
+                                                update `tabStock Ledger Entry`
+                                                set voucher_detail_no = '{0}'
+                                                where name = '{1}'
+                                        """.format(voucher[j].name, sle[j].name))                                     
+                                else:
+                                        frappe.throw(_("Values dont match"))
+                else:
+                        frappe.throw(_("Lengths dont match"))
+
+                if (counter%500) == 0: 
+                        frappe.db.commit()
+        frappe.db.commit()
+                
+def production_gl():
+	qry = """
+	select name
+	from `tabProduction` p
+	where p.docstatus = 1 
+	and not exists(select 1
+			from `tabGL Entry` g
+			where g.voucher_type = 'Production' 
+			and g.voucher_no = p.name)
+	order by name
+	"""
+	counter = 0
+	for i in frappe.db.sql(qry, as_dict=True):
+		counter += 1
+		print counter, i.name
+		doc = frappe.get_doc("Production", i.name)
+		doc.make_gl_entries(repost_future_gle=False)
+	frappe.db.commit()
+	
+def cancel_ssl(pfiscal_year, pmonth):
+	counter = 0
+	for s in frappe.db.sql("select name from `tabSalary Slip` where fiscal_year='{0}' and month = '{1}' and docstatus=1".format(pfiscal_year, pmonth), as_dict=True):
+		counter += 1
+		print counter, s.name
+		doc = frappe.get_doc("Salary Slip", s.name)
+		doc.cancel()	
+	print "Total",counter
+
 def testmail():
         # Test1, trying Delayed TRUE/FALSE
         a = frappe.sendmail(recipients=['siva@bt.bt','sivasankar.k2003@gmail.com'],subject="Mail with Delayed TRUE",message="Delayed FALSE",delayed=True)

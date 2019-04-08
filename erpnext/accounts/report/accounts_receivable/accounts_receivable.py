@@ -39,7 +39,7 @@ class ReceivablePayableReport(object):
 			columns += [args.get("party_type") + " Name::110"]
 
 		columns += [_("Voucher Type") + "::110", _("Voucher No") + ":Dynamic Link/"+_("Voucher Type")+":120",
-			_("Due Date") + ":Date:80"]
+			_("Delivery Note") + ":Dynamic Link/"+_("Delivery Note") + ":120", _("Due Date") + ":Date:80"]
 
 		if args.get("party_type") == "Supplier":
 			columns += [_("Bill No") + "::80", _("Bill Date") + ":Date:80"]
@@ -112,11 +112,16 @@ class ReceivablePayableReport(object):
 				# customer / supplier name
 				if party_naming_by == "Naming Series":
 					row += [self.get_party_name(gle.party_type, gle.party)]
+				
+				if gle.voucher_type == "Sales Invoice":
+					for a in frappe.db.sql("""select delivery_note from `tabSales Invoice Item` where parent = '{0}'
+					limit 1""".format(gle.voucher_no), as_dict=1):
+						dn_no = a.delivery_note
 
 				# get due date
 				due_date = voucher_details.get(gle.voucher_no, {}).get("due_date", "")
 
-				row += [gle.voucher_type, gle.voucher_no, due_date]
+				row += [gle.voucher_type, gle.voucher_no, dn_no, due_date]
 
 				# get supplier bill details
 				if args.get("party_type") == "Supplier":

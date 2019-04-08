@@ -95,13 +95,19 @@ class RoyaltyPayment(Document):
 
 	def get_adhoc_royalty(self, item_code, reading):
 		sub_group, species = frappe.db.get_value("Item", item_code, ["item_sub_group", "species"])
+
 		if species:
 			timber_class = frappe.db.get_value("Timber Species", species, "timber_class")
-		rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date", (item_code, self.posting_date), as_dict=1)
+		if reading < 1:
+			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date and timber_class=''", (item_code, self.posting_date), as_dict=1)
+		
+		if not rate:
+			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date", (item_code, self.posting_date), as_dict=1)
 		if not rate:
 			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date and timber_class = %s and %s >= from_inch and %s <= to_inch", (sub_group, self.posting_date, timber_class, reading, reading), as_dict=1, debug=1)
 		if not rate:
 			frappe.throw("Royalty Rate for {0} has not been defined in Adhoc Royalty Setting".format(frappe.bold(item_code)))
+		
 		return rate
 
 	def set_total(self, total_royalty=0, total_m3=0, total_cft=0, log_amount=0, timber_amount=0, total_log=0, total_timber=0):

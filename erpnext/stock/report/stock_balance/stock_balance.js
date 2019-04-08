@@ -25,6 +25,14 @@ frappe.query_reports["Stock Balance"] = {
 			"options": "Item"
 		},
 		{
+                       "fieldname": "cost_center",
+                        "label": __("Parent Cost Center"),
+                        "fieldtype": "Link",
+                        "width": "80",
+                        "options": "Cost Center"
+                },
+
+		{
 			"fieldname": "warehouse",
 			"label": __("Warehouse"),
 			"fieldtype": "Link",

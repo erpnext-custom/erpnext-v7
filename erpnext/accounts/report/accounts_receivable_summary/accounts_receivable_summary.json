@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-05 12:02:30.715260", 
- "modified_by": "payma.wangchuk@cdcl.bt", 
+ "modified": "2019-03-11 17:25:49.286472", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Accounts Receivable Summary", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Sales User"
   }
  ]
 }

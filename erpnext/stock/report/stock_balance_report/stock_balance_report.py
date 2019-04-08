@@ -159,6 +159,11 @@ def get_conditions(filters):
 	if filters.get("item_code"):
 		conditions += " and item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
 
+	if filters.get("cost_center"):
+		conditions += " and warehouse IN (select wh.name from `tabWarehouse` wh inner join `tabWarehouse Branch` wi on wh.name=wi.parent \
+		inner join `tabBranch` b on b.name=wi.branch inner join `tabCost Center` cc on b.cost_center = cc.name \
+		where cc.name = '%s' or cc.parent_cost_center = '%s')"%(filters.get("cost_center"), filters.get("cost_center"))
+
 	if filters.get("warehouse"):
 		conditions += " and warehouse = '%s'" % frappe.db.escape(filters.get("warehouse"), percent=False)
 

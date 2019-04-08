@@ -1,5 +1,13 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
+'''
+------------------------------------------------------------------------------------------------------------------------------------------
+Version          Author         Ticket#           CreatedOn          ModifiedOn          Remarks
+------------ --------------- --------------- ------------------ -------------------  -----------------------------------------------------
+1.0.190401       SHIV		                                     2019/04/01         Refined production process for making SL and GL
+                                                                                                entries
+------------------------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -134,7 +142,15 @@ class StockController(AccountsController):
                                 gl_map_pol.append(frappe._dict({ "name": voucher_detail_no, "expense_account": "", "cost_center": "" }))
                         return gl_map_pol
 		else:
-			details = self.get("items")
+			""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+			# Following line commented by SHIV on 2019/04/01
+			#details = self.get("items")
+
+			# Following code added by SHIV on 2019/04/01
+			details = list(self.get("items"))
+                        if self.doctype == "Production":
+                                details.extend(self.get("raw_materials"))
+                        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
 			if default_expense_account or default_cost_center:
 				for d in details:

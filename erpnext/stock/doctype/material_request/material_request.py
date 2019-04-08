@@ -77,6 +77,12 @@ class MaterialRequest(BuyingController):
 		self.validate_uom_is_integer("uom", "qty")
 		self.set_urgent_status()
 
+		# **** To record the details of Material Requester **** #
+		if self.workflow_state == "Draft":
+			creator_dtls = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","name"])
+			self.creator = creator_dtls[2]
+			self.creator_name = creator_dtls[1]
+
 		if not self.status:
 			self.status = "Draft"
 

@@ -534,7 +534,7 @@ class ProcessPayroll(Document):
                 # Default Accounts
                 default_bank_account    = frappe.db.get_value("Branch", self.branch,"expense_bank_account")
                 default_payable_account = frappe.db.get_single_value("HR Accounts Settings", "salary_payable_account")
-                company_cc              = frappe.db.get_value("Company", self.company,"cost_center")
+                company_cc              = frappe.db.get_value("Company", self.company,"company_cost_center")
                 default_gpf_account     = frappe.db.get_single_value("HR Accounts Settings", "employee_contribution_pf")
                 default_business_activity = get_default_ba()
                 salary_component_pf     = "PF"
@@ -546,7 +546,7 @@ class ProcessPayroll(Document):
                 cc = frappe.db.sql("""
                         select
                                 (case
-                                        when sc.type = 'Deduction' and ifnull(sc.make_party_entry,0) = 0 then c.cost_center
+                                        when sc.type = 'Deduction' and ifnull(sc.make_party_entry,0) = 0 then c.company_cost_center
                                         else t1.cost_center
                                 end)                       as cost_center,
                                 (case
@@ -590,7 +590,7 @@ class ProcessPayroll(Document):
                           and c.name         = t1.company
                         group by 
                                 (case
-                                        when sc.type = 'Deduction' and ifnull(sc.make_party_entry,0) = 0 then c.cost_center
+                                        when sc.type = 'Deduction' and ifnull(sc.make_party_entry,0) = 0 then c.company_cost_center
                                         else t1.cost_center
                                 end),
                                 (case

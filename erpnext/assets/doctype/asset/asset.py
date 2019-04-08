@@ -174,7 +174,7 @@ class Asset(Document):
 
 	def get_depreciation_amount(self, depreciable_value, num_days=1):
 		if self.depreciation_method == "Straight Line":
-			depreciation_amount = ((flt(self.gross_purchase_amount) - flt(self.residual_value)) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25)
+			depreciation_amount = flt(((flt(self.gross_purchase_amount) - flt(self.residual_value)) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25), 2)
 		else:
 			depreciation_amount = 0.0
 
@@ -325,10 +325,9 @@ class Asset(Document):
 			je.submit();
 		
 	def delete_asset_gl_entries(self):
-		gl_list = frappe.db.sql(""" select distinct je.name as journal_entry from `tabJournal Entry Account` as jea, `tabJournal Entry` as je where je.voucher_type = 'Journal Entry' and je.name = jea.parent and jea.reference_name = %s and je.docstatus = 1""", self.name, as_dict=True)
-		if gl_list:
-			for gl in gl_list:
-				frappe.get_doc("Journal Entry", gl.journal_entry).cancel()
+		gl_list = frappe.db.sql(""" select distinct je.name as journal_entry from `tabJournal Entry Account` as jea, `tabJournal Entry` as je where je.name = jea.parent and jea.reference_name = %s and je.docstatus = 1""", self.name, as_dict=True)
+		for gl in gl_list:
+			frappe.get_doc("Journal Entry", gl.journal_entry).cancel()
 
 	def check_equipment_link(self):
 		eqp = frappe.db.sql("select name from tabEquipment where asset_code = %s", self.name, as_dict=True)

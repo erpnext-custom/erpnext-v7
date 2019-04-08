@@ -321,7 +321,13 @@ def get_data():
                                         "label": "Daily Collection Report",
                                         "doctype": "Payment Entry",
                                         "is_query_report": True,
-                                },				
+                                },
+				{
+                                        "type": "report",
+                                        "name": "Transporter Payment Report",
+                                        "doctype": "Mechanical Payment",
+                                        "is_query_report": True
+                                },
 			]
 		},
 		{

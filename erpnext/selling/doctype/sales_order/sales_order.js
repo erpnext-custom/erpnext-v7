@@ -369,6 +369,14 @@ frappe.ui.form.on("Sales Order", "refresh", function(frm) {
             }
         };
     });
+    cur_frm.set_query("location", function() {
+        return{
+                "filters":{
+                        "branch": frm.doc.branch
+                }
+        };
+    });
+
 })
 
 /*
@@ -421,8 +429,8 @@ cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = functi
         var d = locals[cdt][cdn];
         return {
                 query: "erpnext.controllers.queries.price_template_list",
-                filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch}
-        }
+	        filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch, 'location': frm.location}
+	}
 }
 
 
@@ -438,13 +446,20 @@ cur_frm.fields_dict['items'].grid.get_field('warehouse').get_query = function(fr
 frappe.ui.form.on("Sales Order Item", {
         "price_template": function(frm, cdt, cdn) {
                 d = locals[cdt][cdn]
+		 if(cur_frm.doc.location){
+                         loc = cur_frm.doc.location;
+                 }else{
+                         loc = "NA";
+                 }
+		console.log("Loc :" + loc);
                 frappe.call({
                         method: "erpnext.production.doctype.selling_price.selling_price.get_selling_rate",
                         args: {
                                 "price_list": d.price_template,
                                 "branch": cur_frm.doc.branch,
                                 "item_code": d.item_code,
-                                "transaction_date": cur_frm.doc.transaction_date
+                                "transaction_date": cur_frm.doc.transaction_date,
+				"location": loc
                         },
                         callback: function(r) {
                                 frappe.model.set_value(cdt, cdn, "price_list_rate", r.message)

@@ -255,6 +255,19 @@ def get_data():
 					"name": "Employee Benefits",
                                         "label": _("Process Employee Benefits"),
 				},
+                                {
+					"type": "doctype",
+					"name": "Other Contribution",
+                                        "label": _("Other Contribution"),
+					"description": _("Other Contribution"),
+				},
+                                {
+					"type": "doctype",
+					"name": "Hall Booking",
+                                        "label": _("Hall Booking Invoice"),
+					"description": _("Hall Booking"),
+				},
+				
 			]
 		},
 		{
@@ -484,7 +497,12 @@ def get_data():
                                         "name": "Travel Report",
                                         "doctype": "Travel Claim"
                                 },
-
+				{
+                                        "type": "report",
+					"is_query_report": True,
+                                        "name": "Hall Booking Report",
+                                        "doctype": "Hall Booking"
+                                },
 			]
 		},
 	]

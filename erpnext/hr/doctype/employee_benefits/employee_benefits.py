@@ -6,16 +6,39 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt
+from datetime import date
+from erpnext.custom_workflow import validate_workflow_states
 
 class EmployeeBenefits(Document):
 	def validate(self):
-		pass
+		validate_workflow_states(self)
+		self.validate_gratuity()
 
 	def on_submit(self):
 		if self.purpose == "Separation":
 			self.update_employee()
 		self.post_journal()
-
+	
+	def validate_gratuity(self):
+		self.total_amount = 0
+		for a in self.items:
+			self.total_amount = self.total_amount + a.amount 
+			if a.benefit_type=="Gratuity":
+				date_of_joining = frappe.db.get_value("Employee", self.employee, "date_of_joining")
+				employee_group = frappe.db.get_value("Employee", self.employee, "employee_group")
+				today_date = date.today()
+				years_in_service = abs(((today_date - date_of_joining).days)/364)
+				if years_in_service < 5 and employee_group != "ESP":
+					frappe.throw("Should have minimum of 5 years in service for Gratuity. Only <b>{0}</b> year/s in Services as of now ".format(years_in_service))
+				elif employee_group == "ESP" and years_in_service < 1:
+					frappe.throw("ESP Employee should have minimum of 1 years in service for Gratuity. Only <b>{0}</b> year/s in Services as of now ".format(years_in_service))
+					
+			elif a.benefit_type == "Carriage Charges":
+				emp_grade = frappe.db.get_value("Employee", self.employee, "employee_subgroup")
+				maximum_charges = frappe.db.get_value("Employee Grade", emp_grade, "carriage_ceiling")
+				if a.amount > maximum_charges:
+					frappe.throw("Carriage charges <b>{0}</b> is exceeding the ceiling of {1}".format(a.amount, maximum_charges))	
+	
 	def post_journal(self):
 		emp = frappe.get_doc("Employee", self.employee)
 		je = frappe.new_doc("Journal Entry")
@@ -55,6 +78,7 @@ class EmployeeBenefits(Document):
 		emp = frappe.get_doc("Employee", self.employee)
 		emp.status = "Left"
 		emp.relieving_date = self.separation_date
+		emp.reason_for_resignation = self.reason_for_resignation
 
 		for a in self.items:
 			doc = frappe.new_doc("Separation Benefits")
@@ -74,3 +98,11 @@ class EmployeeBenefits(Document):
 		if docstatus and docstatus != 2:
 			frappe.throw("Cancel Journal Entry {0} before cancelling this document".format(frappe.get_desk_link("Journal Entry", self.journal)))
 
+
+@frappe.whitelist()
+def get_basic_salary(employee):
+	query = "select amount from `tabSalary Structure` s, `tabSalary Detail` d where s.name = d.parent and s.employee=\'" + str(employee) + "\' and d.salary_component='Basic Pay' and is_active='Yes'"
+        data = frappe.db.sql(query, as_dict=True)
+        if not data:
+                frappe.throw("Basic Salary has not been assigned")
+        return data[0].amount

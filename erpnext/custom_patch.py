@@ -9,6 +9,15 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_asset_dtl():
+	for a in frappe.db.sql("select name from `tabAsset` where docstatus = 1", as_dict=1):
+		print("**** Activities are disabled, Remove # if you want to run the function *****")
+		#frappe.db.sql("Delete from `tabJournal Entry` where name in (select parent from `tabJournal Entry Account` where reference_name = %s)", a.name)
+		#frappe.db.sql("Delete from `tabJournal Entry Account` where reference_name = %s", a.name)
+		#frappe.db.sql("Delete from `tabGL Entry` where against_voucher = %s", a.name)
+		#frappe.db.sql("Delete from `tabAsset` where name = %s", a.name)
+		#frappe.db.sql("Delete from `tabDepreciation Schedule` where parent = %s", a.name)
+
 def update_production_20190225():
         num = 0
         for a in frappe.db.sql("select a.name, a.posting_date from tabProduction a where docstatus = 1 and not exists (select 1 from  `tabGL Entry` b where b.voucher_no = a.name) order by a.posting_date asc, a.posting_time asc", as_dict=1):
@@ -20,6 +29,16 @@ def update_production_20190225():
                 if num % 20 == 0:
                         frappe.db.commit()
         frappe.db.commit()
+
+
+
+def update_mr():
+	for a in frappe.db.sql("select name, owner from `tabMaterial Request`", as_dict=1):
+		for b in frappe.db.sql("select employee_name, name from `tabEmployee` where user_id=%s", a.owner, as_dict=1):
+			creator = b.name
+			creator_name = b.employee_name
+		frappe.db.sql("update `tabMaterial Request` set creator =%s, creator_name =%s where name = %s", (creator, creator_name, a.name))
+
 
 def update_pol_1():
 	for a in frappe.db.sql("select name from tabPOL where docstatus = 1", as_dict=1):

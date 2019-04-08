@@ -45,8 +45,10 @@ frappe.ui.form.on("Leave Application", {
 
 		if(frm.doc.workflow_state == "Draft" || frm.doc.workflow_state == "Rejected"){
                         frm.set_df_property("leave_approver", "hidden", 1);
-			frm.set_df_property("leave_approver_name", "hidden",1);
+			frm.set_df_property("leave_approver_name", "hidden", 1);
                 }
+
+		console.log("testing");
 
 	
 		/* if (frm.is_new()) {

@@ -15,6 +15,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe import msgprint
 from frappe.utils import flt, cint, nowdate, getdate, formatdate

@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate, rounded
 from erpnext.accounts.utils import get_child_cost_centers
@@ -31,11 +32,11 @@ class ProductionTarget(Document):
 	def calculate_value(self):
 		for a in self.items:
 			a.quantity = flt(a.quarter1) + flt(a.quarter2) + flt(a.quarter3) + flt(a.quarter4)
-			if flt(a.quantity) > 0 and flt(a.quantity) != flt(a.qty):
+			if flt(a.quantity) > 0 and flt(a.quantity,2) != flt(a.qty,2):
 				frappe.throw("Target Quantity (Production) should be equal to {0} for {1}".format(frappe.bold(str(a.qty)), frappe.bold(a.production_group)))
 		for a in self.disposal:
 			a.quantity = flt(a.quarter1) + flt(a.quarter2) + flt(a.quarter3) + flt(a.quarter4)
-			if flt(a.quantity) > 0 and flt(a.quantity) != flt(a.qty):
+			if flt(a.quantity) > 0 and flt(a.quantity,2) != flt(a.qty,2):
 				frappe.throw("Target Quantity (Sales) should be equal to {0} for {1}".format(frappe.bold(str(a.qty)), frappe.bold(a.production_group)))
 
 def get_target_value(which, cost_center, production_group, fiscal_year, from_date, to_date, is_location=None):

@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
+'''
+------------------------------------------------------------------------------------------------------------------------------------------
+Version          Author         Ticket#           CreatedOn          ModifiedOn          Remarks
+------------ --------------- --------------- ------------------ -------------------  -----------------------------------------------------
+1.0.190401       SHIV		                                     2019/04/01         Refined process for making SL and GL entries
+------------------------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -45,6 +52,14 @@ class Production(StockController):
 			if flt(item.qty) <= 0:
 				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
 
+                        """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+                        # Following code added by SHIV on 2019/04/01
+                        item.business_activity = self.business_activity
+                        item.cost_center = self.cost_center
+                        item.warehouse = self.warehouse
+                        item.expense_account = get_expense_account(self.company, item.item_code)
+                        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+
 		for item in self.get("items"):
 			item.production_type = self.production_type
 			item.item_name, item.item_group, item.item_sub_group, item.timber_species = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group", "species"])
@@ -76,6 +91,14 @@ class Production(StockController):
 				in_inches += cint(f[1])
 			item.reading_inches = in_inches
 
+			""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+                        # Following code added by SHIV on 2019/04/01
+                        item.business_activity = self.business_activity
+			item.cost_center = self.cost_center
+                        item.warehouse = self.warehouse
+                        item.expense_account = get_expense_account(self.company, item.item_code)
+                        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+
 	def check_cop(self):
 		for a in self.items:
 			branch = frappe.db.sql("select 1 from `tabCOP Branch` where parent = %s and branch = %s", (a.price_template, self.branch))
@@ -94,19 +117,67 @@ class Production(StockController):
 		self.check_cop()
 
 	def on_submit(self):
-		self.make_products_sl_entry()
-		self.make_products_gl_entry()
-		self.make_raw_material_stock_ledger()
-		self.make_raw_material_gl_entry()
+                """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+                # Following lines commented by SHIV on 2019/04/01
+		#self.make_products_sl_entry()
+		#self.make_products_gl_entry()
+		#self.make_raw_material_stock_ledger()
+		#self.make_raw_material_gl_entry()
+
+                # Following lines added by SHIV on 2019/04/01
+                self.update_stock_ledger()
+                self.make_gl_entries()
+                """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 		self.make_production_entry()
 
 	def on_cancel(self):
 		self.assign_default_dummy()
-		self.make_products_sl_entry()
-		self.make_products_gl_entry()
-		self.make_raw_material_stock_ledger()
-		self.make_raw_material_gl_entry()
+		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+                # Following lines commented by SHIV on 2019/04/01
+		#self.make_products_sl_entry()
+		#self.make_products_gl_entry()
+		#self.make_raw_material_stock_ledger()
+		#self.make_raw_material_gl_entry()
+
+                # Following lines added by SHIV on 2019/04/01
+		self.update_stock_ledger()
+		self.make_gl_entries_on_cancel()
+		""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+		
 		self.delete_production_entry()
+
+        """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+        # update_stock_ledger() method added by SHIV on 2019/04/01
+        def update_stock_ledger(self):
+                sl_entries = []
+
+                # make sl entries for source warehouse first, then do the target warehouse
+                for d in self.get('raw_materials'):
+                        if cstr(d.warehouse):
+                                sl_entries.append(self.get_sl_entries(d, {
+                                        "warehouse": cstr(d.warehouse),
+                                        "actual_qty": -1 * flt(d.qty),
+                                        "incoming_rate": 0
+                                }))
+                                
+                for d in self.get('items'):
+                        if cstr(d.warehouse):
+                                sl_entries.append(self.get_sl_entries(d, {
+                                        "warehouse": cstr(d.warehouse),
+                                        "actual_qty": flt(d.qty),
+                                        "incoming_rate": flt(d.cop, 2)
+                                }))
+
+                if self.docstatus == 2:
+                        sl_entries.reverse()
+
+                self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+
+        # get_gl_entries() method added by SHIV on 2019/04/01
+        def get_gl_entries(self, warehouse_account):
+                gl_entries = super(Production, self).get_gl_entries(warehouse_account)
+                return gl_entries
+        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
 	def assign_default_dummy(self):
 		self.pol_type = None
@@ -258,6 +329,9 @@ class Production(StockController):
 	def delete_production_entry(self):
 		frappe.db.sql("delete from `tabProduction Entry` where ref_doc = %s", self.name)
 
-
-
-
+@frappe.whitelist()
+def get_expense_account(company, item):
+        expense_account = frappe.db.get_value("Production Account Settings", {"company": company}, "default_production_account")
+        if not expense_account:
+                expense_account = frappe.db.get_value("Item", item, "expense_account")
+        return expense_account

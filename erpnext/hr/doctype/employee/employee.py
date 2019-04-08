@@ -11,6 +11,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                                 "Employee Group" master.
                                                                         2) health_contribution, employee_pf, employer_pf
                                                                                 moved from "HR Settings" to "Employment Group"
+2.0.190408        SHIV                             08/04/2019         Method update_retirement_age() created.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -114,6 +115,8 @@ class Employee(Document):
 		self.populate_work_history()
 		# Following method introduced by SHIV on 15/08/2018
 		self.populate_family_details()
+		# Following method introduced by SHIV on 08/04/2019
+                self.update_retirement_age()
     
 	def before_save(self):
 		if self.branch != self.get_db_value("branch") and  self.user_id:
@@ -124,7 +127,18 @@ class Employee(Document):
 			self.update_user()
 			self.update_user_permissions()
 		self.post_casual_leave()
-		ss = frappe.db.get_value("Salary Structure", {"employee": self.name, "is_active": "Yes"}, "name")
+		self.update_salary_structure()
+
+	def update_retirement_age(self):
+                ret = frappe.db.sql("""
+                                select date_add('{0}', INTERVAL retirement_age YEAR) as date_of_retirement
+                                from `tabEmployee Group` where name = '{1}'
+                """.format(getdate(self.date_of_birth), self.employee_group), as_dict=True)
+                if ret:
+                        self.date_of_retirement = ret[0].date_of_retirement
+
+        def update_salary_structure(self):
+                ss = frappe.db.get_value("Salary Structure", {"employee": self.name, "is_active": "Yes"}, "name")
 		if ss:
 			doc = frappe.get_doc("Salary Structure", ss)
 			doc.flags.ignore_permissions = 1
@@ -327,6 +341,7 @@ class Employee(Document):
 				ss = frappe.get_doc("Salary Structure", name)
 				if ss:
 					ss.db_set("is_active", "No")
+					ss.db_set("to_date", self.relieving_date)
 
 			# Disabling Employee record after marked as "Left"
 			self.docstatus = 1

@@ -167,6 +167,12 @@ def get_data():
 					"name": "Workshop Progress Report",
 					"doctype": "Job Card"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Equipment Maintenance History",
+					"doctype": "Job Card"
+				},
 			]
 		},
 		{
