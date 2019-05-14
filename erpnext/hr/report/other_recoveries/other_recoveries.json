@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-11 09:28:53.366141", 
+ "modified": "2019-04-12 10:21:47.015759", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "Other Recoveries", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "HR Support"
   }
  ]
 }

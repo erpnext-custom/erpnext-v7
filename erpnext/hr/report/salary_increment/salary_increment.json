@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-01-03 16:38:26.485129", 
- "modified_by": "Administrator", 
+ "modified": "2019-04-17 09:17:32.055963", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "Salary Increment", 
  "owner": "Administrator", 
@@ -24,6 +24,12 @@
   }, 
   {
    "role": "HR Manager"
+  }, 
+  {
+   "role": "HR Support"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

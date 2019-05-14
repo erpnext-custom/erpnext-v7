@@ -9,7 +9,7 @@ frappe.ui.form.on('MusterRoll Application', {
 		frm.get_docfield("items").allow_bulk_edit = 1;
 	},
 	refresh: function(frm) {
-		cur_frm.set_df_property("cost_center", "read_only", frm.doc.project ? 1 : 0)
+
 	},
 	onload: function(frm) {
 		if (!frm.doc.posting_date) {

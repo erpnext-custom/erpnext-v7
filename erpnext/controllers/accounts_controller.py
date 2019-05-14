@@ -701,7 +701,7 @@ def get_advance_payment_entries(party_type, party, party_account,
 			select
 				"Payment Entry" as reference_type, t1.name as reference_name,
 				t1.remarks, t2.allocated_amount as amount, t2.name as reference_row,
-				t2.reference_name as against_order, t1.posting_date, t1.{1} as advance_account
+				t2.reference_name as against_order, t1.posting_date, t1.pl_cost_center as cost_center, t1.{1} as advance_account
 			from `tabPayment Entry` t1, `tabPayment Entry Reference` t2
 			where
 				t1.name = t2.parent and t1.payment_type = %s
@@ -713,7 +713,7 @@ def get_advance_payment_entries(party_type, party, party_account,
 	if include_unallocated:
 		unallocated_payment_entries = frappe.db.sql("""
 				select "Payment Entry" as reference_type, name as reference_name,
-				remarks, unallocated_amount as amount, {0} as advance_account
+				remarks, unallocated_amount as amount, pl_cost_center as cost_center, {0} as advance_account
 				from `tabPayment Entry`
 				where
 					party_type = %s and party = %s and payment_type = %s

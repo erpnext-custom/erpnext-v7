@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-12-21 12:28:47.952096", 
+ "modified": "2019-04-08 16:44:54.593433", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Assets", 
  "name": "Asset Depreciations and Balances", 
@@ -33,6 +33,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

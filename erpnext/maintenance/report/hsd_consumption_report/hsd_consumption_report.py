@@ -15,6 +15,7 @@ def execute(filters=None):
 	data = get_data(query, filters)
 
 	return columns,data
+
 def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
@@ -34,53 +35,57 @@ def get_data(query, filters=None):
 		d.close_km = get_km_till(d.name, filters.to_date)
 		d.close_hr = get_hour_till(d.name, filters.to_date)
 
-		row = [d.name, d.ty, d.no, d.place, ("{0}" '/' "{1}".format(d.open_km, d.open_hr)), ("{0}" '/' "{1}".format(d.close_km,d.close_hr)), round(d.close_km-d.open_km,2), round(d.close_hr-d.open_hr,2),
+		d.cap = frappe.db.get_value("Equipment Model", d.equipment_model, "tank_capacity")
+		rate = frappe.db.sql("select (sum(pol.qty*pol.rate)/sum(pol.qty)) as rate from tabPOL pol where pol.branch = %s and pol.docstatus = 1 and pol.pol_type = %s", (d.branch, d.hsd_type))
+		d.rate = rate and flt(rate[0][0]) or 0.0
+	
+		vl_records = frappe.db.sql("select place from `tabVehicle Logbook` where equipment = %s and docstatus = 1 order by to_date desc limit 1", d.name, as_dict=1)
+		d.place = vl_records and flt(vl_records[0].place) or ""
+
+		ys_records = frappe.db.sql("select hci.yard_hours, hci.yard_distance from `tabHire Charge Item` hci, `tabHire Charge Parameter` hcp where hcp.name = hci.parent and hcp.equipment_type = %s and hcp.equipment_model = %s and (%s between from_date and ifnull(to_date, curdate()) or %s between from_date and ifnull(to_date, curdate()))", (d.equipment_type, d.equipment_model, filters.from_date, filters.to_date), as_dict=1)
+		d.yskm = ys_records and flt(ys_records[0].yard_distance) or 0
+		d.yshour = ys_records and flt(ys_records[0].yard_hours) or 0
+	
+		row = [d.name, d.equipment_category, d.equipment_type, d.equipment_number, d.place, ("{0}" '/' "{1}".format(d.open_km, d.open_hr)), ("{0}" '/' "{1}".format(d.close_km,d.close_hr)), round(d.close_km-d.open_km,2), round(d.close_hr-d.open_hr,2),
 		round(flt(d.drawn),2), round(flt(d.opening),2), round((flt(d.drawn)+flt(d.opening)),2),
 		d.yskm, d.yshour, round(d.consumed,2), round(flt(d.closing),2), flt(d.cap), round(flt(d.rate),2), round((flt(d.rate)*flt(d.consumed)),2)]
 		data.append(row);
 	return data
 	#KM and Hour value is changed from consumption_km and consumption_hours to diference between the final and initial after discussing with Project Lead
 def construct_query(filters):
-	query = """select e.name as name, e.equipment_type as ty, e.equipment_number as no, e.branch br, vl.place, 
-	(select (sum(pol.qty*pol.rate)/sum(pol.qty)) from tabPOL pol where pol.branch = vl.branch and pol.docstatus = 1 and pol.pol_type = e.hsd_type) as rate, e.hsd_type,
-	(select em.tank_capacity from  `tabEquipment Model` em where em.name = e.equipment_model) as cap,
-	CASE
-	WHEN vl.ys_km THEN vl.ys_km
-	else 0
-	end as yskm,
-	CASE
-	WHEN vl.ys_hours THEN vl.ys_hours
-	else 0
-	end as yshour
-	from `tabEquipment` e, `tabVehicle Logbook` vl where e.equipment_number = vl.equipment_number
-	and vl.docstatus = 1"""  %{"from_date": str(filters.from_date), "to_date": str(filters.to_date),"branch": str(filters.branch)}
-
+	#(select (sum(pol.qty*pol.rate)/sum(pol.qty)) from tabPOL pol where pol.branch = vl.branch and pol.docstatus = 1 and pol.pol_type = e.hsd_type) as rate, e.hsd_type,
+	query = """select e.name, eh.branch, e.equipment_category, e.hsd_type, e.equipment_number, e.equipment_type, e.equipment_model 
+		from `tabEquipment History` eh, tabEquipment e 
+		where eh.parent = e.name """
 	if filters.get("branch"):
-		query += " and e.branch = \'" + str(filters.branch) + "\'"
+		query += " and eh.branch = \'" + str(filters.branch) + "\'"
 
 	if filters.get("from_date") and filters.get("to_date"):
-		 query += " and (vl.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' or vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\')"
+		 query += " and (eh.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' or ifnull(eh.to_date, curdate()) between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\')"
 
-	if filters.get("not_cdcl"):
-               query += " and e.not_cdcl = 0"
-	if filters.get("include_disabled"):
-                query += " "
-        else:
+	if not filters.include_disabled:
                 query += " and e.is_disabled = 0"
 
-	query += " GROUP BY e.equipment_number "
+	if filters.not_cdcl:
+               query += " and e.not_cdcl = 0"
+
+	'''if filters.category:
+		query += " and e.equipment_category = \'" + str(filters.category) + "\'"'''	
+
+	query += " GROUP BY e.name, eh.branch order by e.equipment_category, e.equipment_type ASC"
 	return query
 
 def get_columns():
 	cols = [
 		("Equipment") + ":Link/Equipment:120",
+		("Equipment Category") + ":data:120",
 		("Equipment Type.") + ":data:120",
 		("Registration No") + ":data:120",
 		("Location")+":data:120",
 		("Initial KM/H")+":data:100",
 		("Final KM/H")+":data:100",
-		("KM")+":data:100",
-		("Hour")+":data:100",
+		("KM")+":Data:100",
+		("Hour")+":Data:100",
 		("HSD Drawn(L)")+":data:100",
 		("Prev Bal(L)")+":data:100",
 		("Total HSD(L)")+":data:100",

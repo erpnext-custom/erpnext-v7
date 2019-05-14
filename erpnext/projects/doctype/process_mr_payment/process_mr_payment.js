@@ -92,6 +92,9 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						row.daily_rate 		= mr['rate_per_day'];
 						row.number_of_hours = mr['number_of_hours'];
 						row.hourly_rate 	= mr['rate_per_hour'];
+						row.bank  = mr['bank'];
+						row.account_no = mr['account_no'];
+						row.designation = mr['designation'];
 						row.total_ot_amount = row.number_of_hours * row.hourly_rate;
 						row.total_wage 		= row.daily_rate * row.number_of_days;
 						

@@ -108,7 +108,7 @@ class ImprestRecoup(AccountsController):
                                 "title": "Recoupment for "+str(self.name),
                                 "entry_date": now_datetime(),
                                 "imprest_type": self.imprest_type,
-                                "amount": flt(self.purchase_amount),
+                                "amount": flt(self.purchase_amount,2),
                                 "revenue_bank_account": self.revenue_bank_account,
                                 "pay_to_recd_from": self.pay_to_recd_from,
                                 "select_cheque_lot": self.select_cheque_lot,

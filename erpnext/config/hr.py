@@ -401,9 +401,14 @@ def get_data():
                                         "name": "Adhoc Recoveries",
                                         "label": _("Adhoc Recoveries"),
                                         "doctype": "Salary Slip"
+                                },
+				 {
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "MR Payment Report",
+                                        "label": _("MR Payment Report"),
+                                        "doctype": "Process MR Payment"
                                 }
-
-
 
 
 			]

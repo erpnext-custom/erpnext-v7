@@ -381,5 +381,4 @@ def get_item_uom(doctype, txt, searchfield, start, page_len, filters):
 def filter_branch_wh(doctype, txt, searchfield, start, page_len, filters):
         if not filters.get("branch"):
                 frappe.throw("Select Branch First")
-	return frappe.db.sql("select warehouse from `tabCost Center` where name = %s", get_branch_cc(filters.get("branch")))
-
+        return frappe.db.sql("select a.parent from `tabWarehouse Branch` a, tabWarehouse b where a.parent = b.name and a.branch = %s and b.disabled = 0", filters.get("branch"))

@@ -34,7 +34,7 @@ def get_data(filters):
 		FROM `tabDirect Payment` where posting_date between \'" + str(filters.start_date) + "\' \
 		and \'" + str(filters.end_date) + "\' and  party =  \'" + str(filters.party) + "\' \
 		and docstatus = '1'"
-
+		frappe.msgprint("{0}".format(sql1))
 		if filters.get("branch"):
 			sql1 += " and branch = \'" + str(filters.branch) + "\'"
 
@@ -55,7 +55,8 @@ def get_data(filters):
 
 		sql2 = "SELECT name, bill_no, posting_date, grand_total, outstanding_amount FROM `tabPurchase Invoice` \
 		WHERE supplier = \'" + str(filters.party) + "\' and \
-		posting_date BETWEEN \'" + str(filters.start_date) + "\' and \'" + str(filters.end_date) + "\'"
+		posting_date BETWEEN \'" + str(filters.start_date) + "\' and \'" + str(filters.end_date) + "\' \
+		and docstatus = '1'"
 		
 		if filters.get("branch"):
 			sql2 += " and branch = \'" + str(filters.branch) + "\'"

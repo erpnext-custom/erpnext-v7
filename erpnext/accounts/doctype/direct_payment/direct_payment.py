@@ -86,7 +86,7 @@ class DirectPayment(AccountsController):
 							"voucher_type": self.doctype,
 							"cost_center": self.cost_center,
 							'party': self.party,
-							'party_type': 'Customer',						
+							'party_type': self.party_type,						
 							"company": self.company,
 							"remarks": self.remarks
 							})
@@ -128,7 +128,7 @@ class DirectPayment(AccountsController):
 							"voucher_type": self.doctype,
 							"cost_center": self.cost_center,
 							'party': self.party,
-							'party_type': 'Customer',					
+							'party_type': self.party_type,					
 							"company": self.company,
 							"remarks": self.remarks
 							})
@@ -158,7 +158,7 @@ class DirectPayment(AccountsController):
 							"voucher_type": self.doctype,
 							"cost_center": self.cost_center,
 							'party': self.party,
-							'party_type': 'Supplier',						
+							'party_type': self.party_type,						
 							"company": self.company,
 							"remarks": self.remarks
 							})
@@ -200,7 +200,7 @@ class DirectPayment(AccountsController):
 							"voucher_type": self.doctype,
 							"cost_center": self.cost_center,
 							'party': self.party,
-							'party_type': 'Supplier',
+							'party_type': self.party_type,
 							"company": self.company,
 							"remarks": self.remarks
 							})

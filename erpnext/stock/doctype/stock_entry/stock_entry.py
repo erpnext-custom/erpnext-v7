@@ -48,6 +48,7 @@ class StockEntry(StockController):
 
 	def validate(self):
 		check_future_date(self.posting_date)
+		#self.check_transfer_wh()
 		self.check_item_value()
 		self.pro_doc = None
 		if self.production_order:
@@ -69,6 +70,13 @@ class StockEntry(StockController):
 		self.set_actual_qty()
 		self.calculate_rate_and_amount(update_finished_item_rate=False)
 
+	def check_transfer_wh(self):
+		if not self.from_warehouse:
+			frappe.throw("Source Warehouse is mandatory")
+
+		if self.purpose == "Material Transfer" and not self.to_warehouse:
+			frappe.throw("Receiving Warehouse is mandatory for transfer")
+			
 	def on_submit(self):
 		self.update_stock_ledger()
 		self.update_consumable_register()
@@ -146,6 +154,12 @@ class StockEntry(StockController):
 
 		source_mandatory = ["Material Issue", "Material Transfer", "Subcontract", "Material Transfer for Manufacture"]
 		target_mandatory = ["Material Receipt", "Material Transfer", "Subcontract", "Material Transfer for Manufacture"]
+
+		if self.purpose in source_mandatory and not self.from_warehouse:
+			frappe.throw(_("Source warehouse is mandatory for {0}").format(self.purpose))
+
+		if self.purpose in target_mandatory and not self.to_warehouse:
+			frappe.throw(_("Target warehouse is mandatory for {0}").format(self.purpose))
 
 		validate_for_manufacture_repack = any([d.bom_no for d in self.get("items")])
 

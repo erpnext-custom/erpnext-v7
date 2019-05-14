@@ -62,7 +62,7 @@ def get_data(filters):
                         (select designation from tabEmployee as emp where emp.name = ass.issued_to) as designation,
                         cost_center, purchase_date, gross_purchase_amount, value_after_depreciation,
                         (select
-                                gl.accumulated_depreciation_amount
+                                sum(gl.depreciation_amount)
                         from `tabDepreciation Schedule` as gl
                         where gl.parent = ass.name
                         and gl.schedule_date < '{from_date}'
@@ -71,10 +71,10 @@ def get_data(filters):
                         order by gl.schedule_date desc limit 1
                         ) as opening_amount,
                         (select
-                                gl.accumulated_depreciation_amount
+                                sum(gl.depreciation_amount)
                         from `tabDepreciation Schedule` as gl
                         where gl.parent = ass.name
-                        and gl.schedule_date <= '{to_date}'
+                        and gl.schedule_date between '{from_date}' and '{to_date}'
                         and gl.docstatus = 1
                         and gl.journal_entry is not null
                         order by gl.schedule_date desc limit 1
@@ -130,11 +130,12 @@ def get_data(filters):
 				opening = flt(a.opening_amount) + flt(a.opening_accumulated_depreciation)
 			"""
                         # Ver 3.0.190131 Begins, code moved from below
-                        if not a.opening_amount:
+			opening = flt(a.opening_accumulated_depreciation) + flt(a.opening_amount)
+                        """if not a.opening_amount:
                                 opening = flt(a.opening_accumulated_depreciation)
                         else:
                                 opening = flt(a.opening_amount)
-                        # Ver 3.0.190131 Ends
+                        # Ver 3.0.190131 Ends"""
 
 			if flt(a.opening_accumulated_depreciation) + flt(a.expected_value_after_useful_life) + flt(a.residual_value) == flt(a.gross_purchase_amount):
                                 actual_dep = 0
@@ -143,7 +144,8 @@ def get_data(filters):
                         else:
                                 # Ver 3.0.190131 Begins, following line replaced by subsequent
                                 #actual_dep =  flt(a.depreciation_amount) - flt(a.opening_amount)
-                                actual_dep =  flt(a.depreciation_amount) - flt(opening)
+				actual_dep = flt(a.depreciation_amount)
+                                #actual_dep =  flt(a.depreciation_amount) - flt(opening)
                                 # Ver 3.0.190131 Ends
                                 
                                 #if not a.opening_amount:
@@ -165,11 +167,11 @@ def get_data(filters):
 			net_income_tax = flt(a.gross_purchase_amount) - flt(a.iopening) - flt(a.depreciation_income_tax) - flt(a.opening_income)
 
 			total_gross += flt(a.gross_purchase_amount)
-			total_net += flt(net_useful_life, 3)
-			total_actual_dep += flt(actual_dep, 3)
-			total_income += flt(a.depreciation_income_tax, 3)
-			total_net_income += flt(net_income_tax, 3)
-			total_opening += flt(opening, 3)
+			total_net += flt(net_useful_life, 2)
+			total_actual_dep += flt(actual_dep, 2)
+			total_income += flt(a.depreciation_income_tax, 2)
+			total_net_income += flt(net_income_tax, 2)
+			total_opening += flt(opening, 2)
 			
 			row = {
 				"asset_code": a.name,
@@ -184,8 +186,8 @@ def get_data(filters):
 				"date_of_issue": a.purchase_date,
 				"qty": a.asset_quantity_,
 				"amount": a.gross_purchase_amount,
-				"actual_depreciation": flt(actual_dep, 3),
-				"opening": flt(opening, 3),
+				"actual_depreciation": flt(actual_dep, 2),
+				"opening": flt(opening, 2),
 				"dep_income_tax": a.depreciation_income_tax,
 				"iopening": flt(a.iopening) + flt(a.opening_income),
 				"net_useful_life": net_useful_life,
@@ -198,7 +200,7 @@ def get_data(filters):
 				"status": a.status
 			}
 			data.append(row)
-		row = {"amount": flt(total_gross, 3), "actual_depreciation": flt(total_actual_dep, 3), "net_useful_life": flt(total_net, 3), "opening": total_opening, "net_income_tax": total_net_income, "dep_income_tax": total_income}
+		row = {"amount": flt(total_gross, 2), "actual_depreciation": flt(total_actual_dep, 2), "net_useful_life": flt(total_net, 2), "opening": total_opening, "net_income_tax": total_net_income, "dep_income_tax": total_income}
 		data.append(row)
 	
 	return data
@@ -295,7 +297,7 @@ def get_columns():
 		},
 		{
 			"fieldname": "net_useful_life",
-			"label": _("Useful Life"),
+			"label": _("Net Book Value"),
 			"fieldtype": "Currency",
 			"width": 120
 		},

@@ -174,7 +174,7 @@ class Asset(Document):
 
 	def get_depreciation_amount(self, depreciable_value, num_days=1):
 		if self.depreciation_method == "Straight Line":
-			depreciation_amount = ((flt(self.gross_purchase_amount) - flt(self.residual_value)) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25)
+			depreciation_amount = flt(((flt(self.gross_purchase_amount) - flt(self.residual_value)) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25), 2)
 		else:
 			depreciation_amount = 0.0
 
@@ -288,7 +288,7 @@ class Asset(Document):
                         2. Method and variable Names has to be descriptive
                 """
                 accumulated_account = frappe.db.get_all("Asset Category Account","accumulated_depreciation_account",{"parent":self.asset_category},order_by="idx", as_list=1)
-                accumulated_account = accumulated_account[0][0] if accumulated_account else ""
+                accumulated_account = accumulated_account[0][0] if accumulated_account else None 
                 #frappe.msgprint(_("{0}").format(accumulated_account))
                 if self.opening_accumulated_depreciation:
                         je = frappe.new_doc("Journal Entry")

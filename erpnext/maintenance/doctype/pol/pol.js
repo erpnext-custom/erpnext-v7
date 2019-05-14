@@ -125,4 +125,25 @@ frappe.ui.form.on("POL", "refresh", function(frm) {
             }
         };
     });
+  
+  cur_frm.set_query("warehouse", function() {
+        return {
+                query: "erpnext.controllers.queries.filter_branch_wh",
+                filters: {'branch': frm.doc.branch}
+        }
+    });
+
+  cur_frm.set_query("equipment_warehouse", function() {
+        return {
+                query: "erpnext.controllers.queries.filter_branch_wh",
+                filters: {'branch': frm.doc.equipment_branch}
+        }
+    });
+
+  cur_frm.set_query("hiring_warehouse", function() {
+        return {
+                query: "erpnext.controllers.queries.filter_branch_wh",
+                filters: {'branch': frm.doc.hiring_branch}
+        }
+    });
 })

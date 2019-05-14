@@ -18,7 +18,8 @@ class IssuePOL(StockController):
 	def validate(self):
 		check_future_date(self.posting_date)
 		self.validate_branch()
-		self.populate_data()
+		#self.populate_data()
+		self.validate_warehouse()
 		self.validate_data()
 		self.validate_posting_time()
 		self.validate_uom_is_integer("stock_uom", "qty")
@@ -33,6 +34,9 @@ class IssuePOL(StockController):
 
 		if self.tanker and self.branch != frappe.db.get_value("Equipment", self.tanker, "branch"):
 			frappe.throw("Selected Branch and Equipment Branch does not match")
+	
+	def validate_warehouse(self):
+                self.validate_warehouse_branch(self.warehouse, self.branch)
 
 	def populate_data(self):
 		cc = get_branch_cc(self.branch)

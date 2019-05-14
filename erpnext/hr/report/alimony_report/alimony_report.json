@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-11 09:25:55.045232", 
+ "modified": "2019-04-12 10:22:31.702768", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "Alimony Report", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "HR Support"
   }
  ]
 }

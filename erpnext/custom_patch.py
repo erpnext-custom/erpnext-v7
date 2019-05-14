@@ -14,11 +14,64 @@ from datetime import datetime
 import os
 import subprocess
 
+def test_get_branch():
+	for a in frappe.db.sql("select name from `tabStock Entry` where docstatus = 1 and purpose = 'Material Transfer' and posting_date between '2019-01-01' and '2019-12-31' and name = 'SEMT19010037'", as_dict=1):
+		print(a.name)
+		frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+		doc = frappe.get_doc("Stock Entry", a.name)
+		doc.make_gl_entries()
+
+def update_wh_branch():
+        counter =0
+        for t in frappe.get_all("Warehouse", ["name", "branch"]):
+                if not frappe.db.exists("Warehouse Branch", {"parent" :t.name }):
+                        counter +=1
+                        print counter, t.name
+                        doc = frappe.get_doc("Warehouse", t.name)
+                        row = doc.append ("items",{})
+                        row.branch  = t.branch
+                        row.save()
+                        print t
+        print 'dona saving .........'
+
+
+def asset_test():
+	for a in frappe.db.sql("select name, asset_category, opening_accumulated_depreciation as oad from tabAsset where asset_category = 'Machinery & Equipment(10 Years)' and docstatus = 1 and status not in ('Scrapped', 'Sold')", as_dict=1):
+		accu_ar = frappe.db.sql("""select
+                	gl.accumulated_depreciation_amount as ac
+                        from `tabDepreciation Schedule` gl, tabAsset ass
+                        where gl.parent = ass.name
+                        and gl.schedule_date <= '2018-12-31'
+                        and gl.docstatus = 1
+			and ass.name = '{0}'
+                        and gl.journal_entry is not null 
+			order by gl.schedule_date desc limit 1""".format(a.name), as_dict=1)
+		opening = a.oad
+		if accu_ar:
+			opening = accu_ar[0].ac
+		
+		gl_acc = frappe.db.sql("select name, sum(credit) as cr, sum(debit) as dr from `tabGL Entry` where account like '%Depreciation -Machinery & Equipment(10 Years) - CDCL' and voucher_type not in ('Asset Movement', 'Bulk Asset Transfer') and posting_date < '2019-01-01' and against_voucher = '{0}'".format(a.name), as_dict=1)
+		gl_open = 1 
+		if gl_acc:
+			gl_open = gl_acc[0].cr
+	
+		if not gl_open:	
+			gl_open = 1
+		if flt(opening) - flt(gl_open) > 1 or flt(opening) - flt(gl_open) < -1:
+			print str(a.name) + " ==> " + str(opening) + " : " + str(gl_open)
+
 def change_pol_cc():
 	for a in frappe.db.sql("select distinct  voucher_no from `tabGL Entry` where account = 'Clearing Account - CDCL' and posting_date > '2018-12-31';", as_dict=1):
 		pol = frappe.get_doc("POL", a.voucher_no)
 		print(pol.equipment_warehouse)
 		frappe.db.sql("update `tabGL Entry` set account = %s where voucher_no = %s", (pol.equipment_warehouse, a.voucher_no))
+
+def change_dn():
+	for a in frappe.db.sql("select name, branch from `tabDelivery Note` where docstatus = 1 and posting_date > '2018-12-31'", as_dict=1):
+		cc = get_branch_cc(a.branch)
+		print(cc)
+		frappe.db.sql("update `tabDelivery Note Item` set cost_center = %s where parent = %s", (cc, a.name))
+		frappe.db.sql("update `tabGL Entry` set cost_center = %s where voucher_no = %s", (cc, a.name))
 
 def change_si():
 	for a in frappe.db.sql("select name, branch from `tabSales Invoice` where docstatus = 0 and posting_date > '2018-12-31'", as_dict=1):
@@ -36,6 +89,12 @@ def change_cc():
 		"""for b in frappe.db.sql("select cost_center from `tabGL Entry` where voucher_no = %s and cost_center != %s", (a.name, cc), as_dict=1)
 			print()
 		"""
+def update_bank():
+	for a in frappe.db.sql("select id_card, bank, account_no, designation from `tabMuster Roll Employee", as_dict=1):
+		bank1 =a.bank
+		account = a.account_no
+		designation1= a.designation
+		frappe.db.sql("update `tabMR Payment Item` set bank = %s, account_no = %s, designation = %s where id_card = %s", (bank1, account, designation1, a.id_card))
 
 def get_cc():
 	print(frappe.defaults.get_defaults().cost_center)

@@ -279,6 +279,9 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         id_card,
                                         rate_per_day,
                                         rate_per_hour,
+					bank,
+					account_no,
+					designation,
                                         salary
                                 from `tab{0}` as e
                                 where name = '{1}'

@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-10 14:24:26.443376", 
- "modified_by": "Administrator", 
+ "modified": "2019-04-18 12:02:07.961189", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Equipment Status", 
  "owner": "Administrator", 
@@ -48,6 +48,9 @@
   }, 
   {
    "role": "Project Supervisor"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

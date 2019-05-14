@@ -43,6 +43,8 @@ erpnext.hr.MRAttendanceControlPanel = frappe.ui.form.Controller.extend({
 				var $log_wrapper = $(cur_frm.fields_dict.import_log.wrapper).empty();
 
 				if(!r.messages) r.messages = [];
+				//console.log(r.exc);
+				//console.log(r.error);
 				// replace links if error has occured
 				if(r.exc || r.error) {
 					r.messages = $.map(r.message.messages, function(v) {

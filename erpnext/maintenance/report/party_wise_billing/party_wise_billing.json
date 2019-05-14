@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-09 16:31:36.916873", 
- "modified_by": "Administrator", 
+ "modified": "2019-04-18 11:59:50.595410", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Party Wise Billing", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

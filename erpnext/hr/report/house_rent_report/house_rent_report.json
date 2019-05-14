@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-11 09:27:59.079852", 
+ "modified": "2019-04-12 10:22:49.466936", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "House Rent Report", 
@@ -33,6 +33,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "HR Support"
   }
  ]
 }

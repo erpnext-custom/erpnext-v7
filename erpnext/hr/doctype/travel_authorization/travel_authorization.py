@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
-
+'''
+------------------------------------------------------------------------------------------------------------------------------------------
+Version          Author         Ticket#           CreatedOn          ModifiedOn          Remarks
+------------ --------------- --------------- ------------------ -------------------  -----------------------------------------------------
+2.0.190419       SHIV		                                     2019/04/19         JE Issue while submitting
+------------------------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 from __future__ import unicode_literals
 import frappe
 from frappe import _
@@ -38,6 +44,15 @@ class TravelAuthorization(Document):
                 self.advance_amount     = 0 if not self.need_advance else self.advance_amount
                 self.advance_amount_nu  = 0 if not self.need_advance else self.advance_amount_nu
                 self.advance_journal    = None if self.docstatus == 0 else self.advance_journal
+
+                """ ++++++++++ Ver 2.0.190419 Begins ++++++++++"""
+                if flt(self.advance_amount) and not flt(self.estimated_amount):
+                        frappe.throw(_("Total Estimated Amount required for advance request"), title="Data Missing")
+                elif flt(self.advance_amount) and flt(self.advance_amount) > flt(self.estimated_amount*0.9):
+                        frappe.throw(_("Advance amount cannot be greater than 90% of the estimated amount"), title="Invalid Data")
+                else:
+                        pass
+                """ ++++++++++ Ver 2.0.190419 Ends ++++++++++++"""
         
 	def create_copy(self):
 		self.details = []

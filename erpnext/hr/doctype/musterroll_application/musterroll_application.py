@@ -7,16 +7,11 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate, get_url, today
-from erpnext.custom_utils import get_branch_cc
 
 class MusterRollApplication(Document):
 	def validate(self):
 		self.default_validations()
-		self.check_branch_cc()
-
-	def check_branch_cc(self):
-		if self.cost_center != get_branch_cc(self.branch):
-			frappe.throw("Your Cost Center and Branch doesn't belong to each other")	
+	
 	def on_submit(self):
 		self.validate_submitter()
 		self.check_status()
@@ -26,8 +21,6 @@ class MusterRollApplication(Document):
                 self.remove_mr()
         
         def default_validations(self):
-		if self.project:
-			self.cost_center, self.branch = frappe.db.get_value("Project", self.project, ["cost_center", "branch"])
                 for i in self.items:
                         if not i.joining_date:
                                 frappe.throw(_("Row#{0} : Date of joining is mandatory.").format(i.idx),title="Missing Value")
@@ -80,7 +73,7 @@ class MusterRollApplication(Document):
                         to_date   = ""
                         
                         cid       = i.citizenship_id if not i.is_existing else i.existing_cid
-                        from_date, to_date = frappe.db.get_value("Employee Internal Work History", {"parenttype": "Muster Roll Employee", "parent": cid, "reference_docname": self.name}, ["from_date","to_date"])
+                        from_date, to_date = frappe.get_value("Employee Internal Work History", {"parenttype": "Muster Roll Employee", "parent": cid, "reference_docname": self.name}, ["from_date","to_date"])
 
                         if from_date:
                                 if not to_date:
@@ -110,7 +103,7 @@ class MusterRollApplication(Document):
 					doc.joining_date = a.joining_date
 					doc.reference_doctype = self.doctype
 					doc.reference_docname = self.name
-
+					
 				doc.temp_doctype = self.doctype
 				doc.temp_docname = self.name
                                 doc.person_name   = a.person_name
@@ -120,8 +113,12 @@ class MusterRollApplication(Document):
                                 doc.cost_center   = self.cost_center 
                                 doc.rate_per_day  = a.rate_per_day
                                 doc.rate_per_hour = a.rate_per_hour
-                                doc.company       = self.company 
+                                doc.company       = "Construction Development Corporation Ltd"
                                 doc.id_card       = cid
+				doc.designation = a.designation
+                                doc.bank = a.bank
+                                doc.account_no = a.account_no
+                                doc.qualification = a.qualification				
 
                                 if self.project:
                                         doc.project = self.project

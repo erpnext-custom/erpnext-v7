@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-01-31 09:27:06.754983", 
+ "modified": "2019-04-08 16:44:20.239186", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Assets", 
  "name": "Asset Depreciation Ledger", 
@@ -36,6 +36,9 @@
   }, 
   {
    "role": "Asset User"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

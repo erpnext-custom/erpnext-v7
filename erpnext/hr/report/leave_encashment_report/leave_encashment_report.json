@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:53:15.983239", 
- "modified_by": "Administrator", 
+ "modified": "2019-04-12 10:24:27.491022", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "Leave Encashment Report", 
  "owner": "Administrator", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "HR User"
+  }, 
+  {
+   "role": "HR Support"
   }
  ]
 }

@@ -255,6 +255,14 @@ if (sys_defaults.auto_accounting_for_stock) {
 		refresh_field("items");
 	}
 
+	cur_frm.fields_dict['items'].grid.get_field('warehouse').get_query = function(doc, cdt, cdn) {
+        item = locals[cdt][cdn]
+        return {
+                query: "erpnext.controllers.queries.filter_branch_wh",
+                filters: {'branch': doc.branch}
+        }
+        }
+
 	cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc) {
 		return {
 

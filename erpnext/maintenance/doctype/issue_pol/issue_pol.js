@@ -75,6 +75,29 @@ frappe.ui.form.on("Issue POL", "refresh", function(frm) {
 		}
 	})
 	
+	cur_frm.set_query("warehouse", function() {
+                return {
+                        query: "erpnext.controllers.queries.filter_branch_wh",
+                        filters: {'branch': frm.doc.branch}
+                }
+            });
+
+        frm.fields_dict['items'].grid.get_field('equipment_warehouse').get_query = function(doc, cdt, cdn) {
+                item = locals[cdt][cdn]
+                return {
+                        "query": "erpnext.controllers.queries.filter_branch_wh",
+                        filters: {'branch': item.equipment_branch}
+                }
+        }
+
+        frm.fields_dict['items'].grid.get_field('hiring_warehouse').get_query = function(doc, cdt, cdn) {
+                item = locals[cdt][cdn]
+                return {
+                        "query": "erpnext.controllers.queries.filter_branch_wh",
+                        filters: {'branch': item.hiring_branch}
+                }
+        }
+
 	frm.fields_dict['items'].grid.get_field('equipment').get_query = function(doc, cdt, cdn) {
 		doc = locals[cdt][cdn]
                 if(frm.doc.purpose == "Transfer") {

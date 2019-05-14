@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt
-from erpnext.custom_utils import get_branch_cc
+from erpnext.custom_utils import get_branch_cc, send_mail_to_role_branch
 
 class FundRequisition(Document):
 	def validate(self):
@@ -16,6 +16,32 @@ class FundRequisition(Document):
 			total += flt(a.amount)
 
 		self.total_amount = total
+		self.send_email()
+	
+	def send_email(self):
+                subject = "Fund Requisition"
+
+                if self.workflow_state == "Waiting Approval" and self.get_db_value("workflow_state") == "Draft":
+                        message = "Waiting approval "
+                        send_mail_to_role_branch(self.branch, "Regional Manager", message, subject)
+     
+                if self.workflow_state == "Verified by Supervisor" and self.get_db_value("workflow_state") == "Waiting Approval":
+                        message = "Waiting for approval for the fund requisition"
+                        send_mail_to_role_branch(self.branch, "Fund Requisition Approver", message, subject)
+                if self.workflow_state == "Approved" and self.get_db_value("workflow_state") == "Verified by Supervisor":
+                        message = "Waiting for approval for the fund requisition"
+                        send_mail_to_role_branch(self.issuing_branch, "Accounts User", message, subject)
+                if self.workflow_state == "Paid" and self.get_db_value("workflow_state") == "Approved":
+                        message = "Waiting for approval for the fund requisition"
+                        send_mail_to_role_branch(self.branch, "Accounts User", message, subject)
+                if self.workflow_state == "Rejected" and self.get_db_value("workflow_state") == "Waiting Approval":
+                        message = "Fund Requisition is rejected"
+                        send_mail_to_role_branch(self.branch, "Accounts User", message, subject)
+               
+                if self.workflow_state == "Rejected" and self.get_db_value("workflow_state") == "Verified by Supervisor":
+                        message = "Fund Requisition is rejected"
+                        send_mail_to_role_branch(self.branch, "Regional Manager", message, subject)
+
 
 	def assign_cost_center(self):
                 self.cost_center = get_branch_cc(self.branch)

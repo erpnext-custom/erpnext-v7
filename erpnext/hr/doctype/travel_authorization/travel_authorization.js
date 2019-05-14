@@ -1,5 +1,12 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
+/*
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+2.0.190419       SHIV		                        2019/04/19         JE issue while submitting
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+*/
 
 cur_frm.add_fetch("employee", "employee_name", "employee_name")
 cur_frm.add_fetch("employee", "employee_subgroup", "grade")
@@ -98,9 +105,11 @@ frappe.ui.form.on('Travel Authorization', {
 		frm.toggle_reqd("advance_amount", frm.doc.need_advance==1);
 	},
 	"advance_amount": function(frm) {
-		if(frm.doc.advance_amount > frm.doc.estimated_amount * 0.9) {
-			msgprint("Advance amount cannot be greater than 90% of the estimated amount")
-			frm.set_value("advance_amount", 0)
+		if(frm.doc.advance_amount && !frm.doc.estimated_amount){
+			msgprint("Total Estimated Amount required for advance request");
+		} else if (frm.doc.advance_amount > frm.doc.estimated_amount * 0.9) {
+			msgprint("Advance amount cannot be greater than 90% of the estimated amount");
+			//frm.set_value("advance_amount", 0)
 		}
 		else {
 			if(frm.doc.currency == "BTN") {
@@ -213,9 +222,12 @@ function update_advance_amount(frm) {
 		},
 		callback: function(r) {
 			if(r.message) {
-				frm.set_value("advance_amount_nu", flt(frm.doc.advance_amount) * flt(r.message))
-				frm.set_value("advance_amount", format_currency(flt(frm.doc.advance_amount), frm.doc.currency))
-				frm.set_value("estimated_amount", format_currency(flt(frm.doc.estimated_amount), frm.doc.currency))
+				frm.set_value("advance_amount_nu", flt(frm.doc.advance_amount) * flt(r.message));
+				/* ++++++++++ Ver 2.0.190419 Begins ++++++++++*/
+				// Following lines commented as they are getting updated with null values and also serves no purpose
+				//frm.set_value("advance_amount", format_currency(flt(frm.doc.advance_amount), frm.doc.currency))
+				//frm.set_value("estimated_amount", format_currency(flt(frm.doc.estimated_amount), frm.doc.currency))
+				/* ++++++++++ Ver 2.0.190419 Ends ++++++++++++*/
 			}
 		}
 	})

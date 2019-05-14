@@ -65,7 +65,7 @@ class BankReconciliation(Document):
 
 		for pe in payment_entries:
                         total_deductions = 0
-                        for d in frappe.get_all("Payment Entry Deduction", ["amount"], {"parent":pe.payment_entry}):
+                        for d in frappe.get_all("Payment Entry Deduction", ["name","amount"], {"parent":pe.payment_entry}):
                                 total_deductions += flt(d.amount)
 
 			tds_amount = frappe.db.get_value("Payment Entry", pe.payment_entry, "tds_amount")

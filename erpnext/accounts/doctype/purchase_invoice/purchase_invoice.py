@@ -44,6 +44,7 @@ class PurchaseInvoice(BuyingController):
 
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.adjust_add_ded()
 		if not self.buying_cost_center:
 			frappe.throw("Buying Cost Center is Mandatory")
 		if not self.is_opening:
@@ -80,6 +81,11 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset()
 		self.validate_fixed_asset_account()
 		self.create_remarks()
+
+	def adjust_add_ded(self):
+                self.total_add_ded = flt(self.freight_and_insurance_charges) - flt(self.discount) + flt(self.tax) + flt(self.other_charges)
+                self.discount_amount = -1 * flt(self.total_add_ded)
+	
 
 	def validate_tds(self):
 		if not self.type:
@@ -553,6 +559,7 @@ class PurchaseInvoice(BuyingController):
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.credit_to,
+					#"cost_center": self.buying_cost_center,
 					"party_type": "Supplier",
 					"party": self.supplier,
 					"against": self.cash_bank_account,

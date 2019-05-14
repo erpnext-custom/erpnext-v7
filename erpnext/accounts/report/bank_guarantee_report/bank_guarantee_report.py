@@ -17,14 +17,16 @@ def get_columns():
 		("Bank Name") + ":Data:120",
 		("Project") + ":Data:120",
 		("Customer") + ":Data:120",
-		("Amount") + ":Data:120",
+		("Amount") + ":Currency:120",
 		("Start Date") + ":Data:120",
 		("End Date") + ":Data:120",
+		("Custodian") + ":Data:120",
+		("Purpose") + ":Data:120",
 		("Status") + ":Data:120"
 		]	
 
 def get_data(filters):
-	query = " select bank_guarantee_number, bank_name, project, customer, amount, start_date, end_date, guarantee_status from `tabBank Guarantee`"
+	query = " select bank_guarantee_number, bank_name, project, customer, amount, start_date, end_date, custodian_name, purpose, guarantee_status from `tabBank Guarantee`"
 
 	if filters.get("from_date") and filters.get("to_date"):
 		query += " where start_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) +"\'"

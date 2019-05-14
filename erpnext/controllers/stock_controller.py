@@ -39,7 +39,6 @@ class StockController(AccountsController):
 
 		gl_list = []
 		warehouse_with_no_account = []
-		
 		for detail in voucher_details:
 			sle_list = sle_map.get(detail.name)
 			if self.doctype in ["POL", "Issue POL"]:
@@ -53,7 +52,10 @@ class StockController(AccountsController):
 				
 						to_cc = detail.cost_center
                                                 if self.doctype == "Stock Entry" and self.purpose == "Material Transfer":
-                                                        to_branch = frappe.db.get_value("Warehouse", detail.t_warehouse, "branch")
+							#to_branch = frappe.db.get_value("Stock Entry", detail.parent, "branch")
+							branchdtls = frappe.db.sql("select branch from `tabWarehouse Branch` where parent = '{0}' order by creation desc limit 1".format(detail.t_warehouse), as_dict=1)
+							for bra in branchdtls:
+								to_branch  = bra.branch
                                                         to_cc = get_branch_cc(to_branch)
                                                 if self.doctype == "Stock Entry" and self.purpose == "Material Transfer" and sle.stock_value_difference > 0:
                                                         ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
@@ -129,14 +131,12 @@ class StockController(AccountsController):
                         return gl_map_pol
 		else:
 			details = self.get("items")
-
 			if default_expense_account or default_cost_center:
 				for d in details:
 					if default_expense_account and not d.get("expense_account"):
 						d.expense_account = default_expense_account
 					if default_cost_center and not d.get("cost_center"):
 						d.cost_center = default_cost_center
-
 			return details
 
 	def get_items_and_warehouses(self):
@@ -290,7 +290,19 @@ class StockController(AccountsController):
 
 		for w in warehouses:
 			validate_warehouse_company(w, self.company)
-			
+	
+	def validate_warehouse_branch(self, warehouse, branch):
+                if not branch:
+                        frappe.throw("Branch is Mandatory")
+                if not warehouse:
+                        frappe.throw("Warehouse is Mandatory")
+                branches = frappe.db.sql("select parent from `tabWarehouse Branch` where branch = %s", branch, as_dict=1)
+                for a in branches:
+                        if a.parent == warehouse:
+                                return
+                frappe.throw("Warehouse <b>" + str(warehouse) + "</b> doesn't belong to <b>" + str(branch) + "</b>")
+		
+	
 	def update_billing_percentage(self, update_modified=True):
 		self._update_percent_field({
 			"target_dt": self.doctype + " Item",

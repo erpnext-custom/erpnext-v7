@@ -581,7 +581,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2018-12-10 15:22:58.696096", 
+ "modified": "2019-04-09 10:06:55.787822", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Material Request", 
@@ -668,7 +668,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
-   "user_permission_doctypes": "[\"Branch\",\"User\"]", 
+   "user_permission_doctypes": "[\"User\"]", 
    "write": 1
   }, 
   {

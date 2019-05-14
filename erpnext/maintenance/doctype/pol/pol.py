@@ -15,7 +15,8 @@ class POL(StockController):
 	def validate(self):
 		check_future_date(self.posting_date)
 		self.validate_dc()
-		self.set_warehouse()
+		self.validate_warehouse()
+		#self.set_warehouse()
 		self.check_on_dry_hire()
 		self.validate_data()
 		self.validate_posting_time()
@@ -29,6 +30,12 @@ class POL(StockController):
 
 		if self.direct_consumption and no_own_tank:
                         frappe.throw("Direct Consumption not permitted for Equipments without own Tank")
+
+	def validate_warehouse(self):
+                self.validate_warehouse_branch(self.warehouse, self.branch)
+                self.validate_warehouse_branch(self.equipment_warehouse, self.equipment_branch)
+                if self.hiring_branch:
+                        self.validate_warehouse_branch(self.hiring_warehouse, self.hiring_branch)	
 
 	def set_warehouse(self):
 		cc = get_branch_cc(self.equipment_branch)

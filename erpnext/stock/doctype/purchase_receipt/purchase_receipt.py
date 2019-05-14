@@ -60,6 +60,7 @@ class PurchaseReceipt(BuyingController):
 
 	def validate(self):
 		check_future_date(self.posting_date)
+		check_future_date(self.actual_receipt_date)
 		super(PurchaseReceipt, self).validate()
 		self.set_status()
 		self.po_required()
@@ -474,6 +475,14 @@ def make_purchase_invoice(source_name, target_doc=None):
 		doc.run_method("set_missing_values")
 		doc.run_method("calculate_taxes_and_totals")
 
+	def update_other_charges(source, target, sp):
+                target.discount = flt(target.discount) + flt(source.discount)
+                target.tax = flt(target.tax) + flt(source.tax)
+                target.other_charges = flt(target.other_charges) + flt(source.other_charges)
+                target.freight_and_insurance_charges = flt(target.freight_and_insurance_charges) + flt(source.freight_and_insurance_charges)
+                target.total_add_ded = flt(target.freight_and_insurance_charges) - flt(target.discount) + flt(target.tax) + flt(target.other_charges)
+                target.discount_amount = -1 * flt(target.total_add_ded) 
+
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0)
 		cat = frappe.db.get_value("Item", source_doc.item_code, "item_group")
@@ -495,7 +504,9 @@ def make_purchase_invoice(source_name, target_doc=None):
 			"validation": {
 				"docstatus": ["=", 1],
 			},
+			"postprocess": update_other_charges,
 		},
+		
 		"Purchase Receipt Item": {
 			"doctype": "Purchase Invoice Item",
 			"field_map": {
@@ -511,7 +522,7 @@ def make_purchase_invoice(source_name, target_doc=None):
 			"doctype": "Purchase Taxes and Charges",
 			"add_if_empty": True
 		}
-	}, target_doc, set_missing_values)
+	}, target_doc, set_missing_values, dont_copy=["freight_and_insurance_charges", "tax", "discount", "other_charges", "discount_amount"])
 	
 	return doclist
 

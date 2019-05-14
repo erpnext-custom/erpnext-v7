@@ -56,9 +56,10 @@ class TravelClaim(Document):
 
 		if frappe.session.user == self.supervisor and self.supervisor_approval:
 			self.db_set("supervisor_approved_on", nowdate())
-		if self.get_db_value('workflow_state') == 'Waiting Approval' and self.workflow_state == "Verified by Supervisor":
+		if self.get_db_value('workflow_state') == 'Waiting Approval' and self.workflow_state == "Verified By Supervisor":
                         if frappe.session.user == self.owner or frappe.session.user == employee:
-                                self.supervisor_approval == 0
+                                self.supervisor_approval = 0
+				self.db_set("workflow_state", 'Waiting Approval')
                                 frappe.throw("You cannot approve your own claim.")
 		
 		
@@ -224,10 +225,14 @@ class TravelClaim(Document):
                         total_claim_amount = flt(total_claim_amount) +  flt(i.actual_amount)
 
                 self.total_claim_amount = flt(total_claim_amount)
-                self.balance_amount     = flt(self.total_claim_amount) + flt(self.extra_claim_amount) - flt(self.advance_amount)
+                self.total_claim_amount = flt(self.claim_amount) + flt(self.extra_claim_amount)
+                self.balance_amount     = flt(self.total_claim_amount) - flt(self.advance_amount)
 
-                if flt(self.balance_amount) < 0:
-                        frappe.throw(_("Balance Amount cannot be a negative value."), title="Invalid Amount")
+#		self.balance_amount     = flt(self.total_claim_amount) + flt(self.extra_claim_amount) - flt(self.advance_amount)
+
+                
+                #if flt(self.balance_amount) < 0:
+                #        frappe.throw(_("Balance Amount cannot be a negative value."), title="Invalid Amount")
                 
 	def check_return_date(self):
                 pass
@@ -298,7 +303,7 @@ class TravelClaim(Document):
 		je.posting_date = self.posting_date
 		je.branch = self.branch
 
-		total_amt = flt(self.total_claim_amount) + flt(self.extra_claim_amount)
+		total_amt = flt(self.claim_amount) + flt(self.extra_claim_amount)
 	
 		je.append("accounts", {
 				"account": expense_account,

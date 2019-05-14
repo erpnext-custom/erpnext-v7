@@ -72,18 +72,21 @@ frappe.ui.form.on('Travel Claim', {
 				total += parseFloat(d.actual_amount || 0.0)
 			})
 			
-			if(parseFloat(total) != parseFloat(frm.doc.total_claim_amount)){
-				frm.set_value("total_claim_amount", parseFloat(total));
+			if(parseFloat(total) != parseFloat(frm.doc.claim_amount)){
+				frm.set_value("claim_amount", parseFloat(total));
 			}
 		}
 		
 	},
-	"total_claim_amount": function(frm) {
-		frm.set_value("balance_amount", frm.doc.total_claim_amount + frm.doc.extra_claim_amount - frm.doc.advance_amount)
-	},
+
 	"extra_claim_amount": function(frm) {
-		frm.set_value("balance_amount", frm.doc.total_claim_amount + frm.doc.extra_claim_amount - frm.doc.advance_amount)
+		frm.set_value("total_claim_amount", frm.doc.extra_claim_amount + frm.doc.claim_amount)
 	},
+	"claim_amount": function(frm) {
+                frm.set_value("total_claim_amount", frm.doc.claim_amount + frm.doc.extra_claim_amount);
+                frm.set_value("balance_amount", frm.doc.total_claim_amount - frm.doc.advance_amount);
+
+        },
 });
 
 frappe.ui.form.on("Travel Claim Item", {
@@ -121,7 +124,7 @@ frappe.ui.form.on("Travel Claim Item", {
 		frm.doc.items.forEach(function(d) { 
 			total += d.actual_amount	
 		})
-		frm.set_value("total_claim_amount", total)
+		frm.set_value("claim_amount", total)
 	}
 })
 

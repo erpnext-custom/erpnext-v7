@@ -359,7 +359,13 @@ def get_data():
 					"name": "Intra Company Report",
 					"doctype": "GL Entry",
 					"is_query_report": True,
-				}
+				},
+				{
+                                        "type": "report",
+                                        "name": "Inter Company Transaction Report",
+                                        "doctype": "Account",
+                                        "is_query_report": True,
+                                },
 			]
 		},
 		{

@@ -106,6 +106,7 @@ class BOQ(Document):
         def update_project_value(self):
                 if self.total_amount:
                         pro_doc = frappe.get_doc("Project", self.project)
+                        pro_doc.flags.dont_sync_tasks = True
                         pro_doc.project_value = flt(pro_doc.project_value)+(-1*(self.total_amount) if self.docstatus==2 else flt(self.total_amount))
                         pro_doc.save(ignore_permissions = True)
 

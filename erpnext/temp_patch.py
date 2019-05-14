@@ -8,6 +8,48 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff,
 from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 
+def test():
+	for d in frappe.get_all("Payment Entry Deduction", ["name","amount"], {"parent":"PEJV190400003-2"}):
+		print d.name, d.amount
+
+# Following method created by SHIV on 2019/04/15
+# This method will add entry to `tabSalary Slip Item` where ever it is missing
+def add_ssl_item():
+        ssl = frappe.db.sql("""
+                select *
+                from `tabSalary Slip` as ss
+                where salary_structure is not null
+                and start_date is not null
+                and end_date is not null
+                and not exists(select 1
+                                from `tabSalary Slip Item` as ssi
+                                where ssi.parent = ss.name)
+                order by fiscal_year, month
+        """, as_dict=True)
+        counter = 0
+        for i in ssl:
+                counter += 1
+                working_days = date_diff(i.end_date, i.start_date) + 1
+                doc = frappe.get_doc("Salary Slip", i.name)
+                row = doc.append("items", {})
+                row.salary_structure    = i.salary_structure
+                row.from_date           = i.start_date
+                row.to_date             = i.end_date
+                row.total_days_in_month = working_days
+                row.working_days        = working_days
+                row.save()
+                print counter, i.name, i.fiscal_year, i.month
+
+def cancel_ssl(pfiscal_year, pmonth):
+        counter = 0
+        for s in frappe.db.sql("select name from `tabSalary Slip` where fiscal_year='{0}' and month = '{1}' and docstatus=1".format(pfiscal_year, pmonth), as_dict=True):
+                counter += 1
+                print counter, s.name
+                doc = frappe.get_doc("Salary Slip", s.name)
+                doc.cancel()
+        print "Total",counter
+
+
 def analyze():
         qry = """
                 select table_name
