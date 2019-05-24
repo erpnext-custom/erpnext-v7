@@ -7,9 +7,11 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt
+from erpnext.custom_workflow import validate_workflow_states
 
 class OvertimeApplication(Document):
 	def validate(self):
+		validate_workflow_states(self)
 		self.validate_dates()
 		self.calculate_totals()
 

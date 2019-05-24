@@ -59,8 +59,8 @@ class RoyaltyPayment(Document):
 			# Following line replaced by subsequent, by SHIV on 2018/11/13
 			#frappe.db.sql("delete from `tabRoyalty Adhoc Temp` where parent = %s or parent like '%New Royalty Payment%'", self.name)
 			frappe.db.sql("delete from `tabRoyalty Adhoc Temp` where parent = %s or parent like %s", (self.name,("%" + "New Royalty Payment" + "%")))
-
 			for a in entries:
+				#frappe.msgprint("item_code: {0} , reading:  {1} ".format(a.item_code, a.reading_inches))
 				d = self.get_adhoc_royalty(a.item_code, a.reading_inches)
 				if d[0].based_on == "Item Sub Group":
 					d[0].par_name = frappe.db.get_value(d[0].based_on, d[0].particular, "reading_parameter")
@@ -100,10 +100,10 @@ class RoyaltyPayment(Document):
 			timber_class = frappe.db.get_value("Timber Species", species, "timber_class")
 		if reading < 1:
 			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date and timber_class=''", (item_code, self.posting_date), as_dict=1)
-		
-		if not rate:
+		else:
 			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date", (item_code, self.posting_date), as_dict=1)
 		if not rate:
+			#frappe.msgprint("subgroup: {0} Date: {1} class: {2} reading: {3} reading:{4} ".format(sub_group, self.posting_date, timber_class, reading, reading))
 			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date and timber_class = %s and %s >= from_inch and %s <= to_inch", (sub_group, self.posting_date, timber_class, reading, reading), as_dict=1, debug=1)
 		if not rate:
 			frappe.throw("Royalty Rate for {0} has not been defined in Adhoc Royalty Setting".format(frappe.bold(item_code)))

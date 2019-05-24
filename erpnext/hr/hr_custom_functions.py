@@ -66,12 +66,17 @@ def post_leave_credits(today=None):
                                 ) as no_of_months,
                                 t2.leave_type, t2.credits_per_month, t2.credits_per_year,
                                 t3.is_carry_forward
-                        from `tabEmployee` as t1, `tabEmployee Group Item` as t2, `tabLeave Type` as t3
+                        from `tabEmployee` as t1, `tabEmployee Group Item` as t2, `tabLeave Type` as t3, `tabEmployment Status` as t4
                         where t1.status = 'Active'
                         and t1.date_of_joining <= '{0}'
                         and t1.employee_group = t2.parent
                         and (t2.credits_per_month > 0 or t2.credits_per_year > 0)
                         and t3.name = t2.leave_type
+			and t4.name = t1.employment_status
+			and not exists (select 1
+					from `tabEmployment Status Item` as t5
+					where t5.parent = t4.name
+					and t5.leave_type = t2.leave_type)
                         order by t1.name, t2.leave_type
                 """.format(str(today)), as_dict=1)
 

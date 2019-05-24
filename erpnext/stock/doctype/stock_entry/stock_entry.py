@@ -48,6 +48,7 @@ class StockEntry(StockController):
 
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.check_transfer_wh()
 		self.check_item_value()
 		self.pro_doc = None
 		if self.production_order:
@@ -68,6 +69,13 @@ class StockEntry(StockController):
 
 		self.set_actual_qty()
 		self.calculate_rate_and_amount(update_finished_item_rate=False)
+
+        def check_transfer_wh(self):
+                if not self.from_warehouse:
+                        frappe.throw("Source Warehouse is mandatory")
+
+                if self.purpose == "Material Transfer" and not self.to_warehouse:
+                        frappe.throw("Receiving Warehouse is mandatory for transfer")
 
 	def on_submit(self):
 		self.update_stock_ledger()

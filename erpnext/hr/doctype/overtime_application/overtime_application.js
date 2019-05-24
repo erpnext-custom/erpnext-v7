@@ -15,6 +15,11 @@ frappe.ui.form.on('Overtime Application', {
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
 		}
+
+		if(frm.doc.workflow_state == "Draft" || frm.doc.workflow_state == "Rejected"){
+			frm.set_df_property("approver", "hidden", 1);
+			frm.set_df_property("approver_name", "hidden", 1);
+		}
 	},
 	onload: function(frm) {
 		if(!frm.doc.posting_date) {

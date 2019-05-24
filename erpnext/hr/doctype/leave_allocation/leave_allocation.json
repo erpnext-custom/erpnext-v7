@@ -626,7 +626,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-12 15:10:59.275645", 
+ "modified": "2019-05-08 11:12:06.829367", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Leave Allocation", 
@@ -696,7 +696,7 @@
   {
    "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 

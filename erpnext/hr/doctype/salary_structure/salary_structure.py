@@ -25,6 +25,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                         introducted inorder to restrict user from making
                                                                         mistakes by adding deduction salary_component type
                                                                         under earnings table vice versa.
+3.0.190429        SHIV                             29/04/2019         * Introduced is_pf_deductible under salary component
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -202,7 +203,7 @@ class SalaryStructure(Document):
                 '''
                 self.validate_salary_component()
                 
-                basic_pay = comm_allowance = gis_amt = pf_amt = health_cont_amt = tax_amt = 0 
+                basic_pay = comm_allowance = gis_amt = pf_amt = health_cont_amt = tax_amt = basic_pay_arrears = 0 
                 total_earning = total_deduction = net_pay = 0
                 settings      = get_payroll_settings(self.employee)
                 settings      = settings if settings else {}
@@ -230,6 +231,9 @@ class SalaryStructure(Document):
                                                                 amount = flt(new_basic_pay)
                                                         basic_pay = amount
                                                         ed_item.amount = basic_pay
+                                                # Following condition added by SHIV on 2019/04/29
+                                                elif frappe.db.exists("Salary Component", {"name": ed_item.salary_component, "is_pf_deductible": 1}):
+                                                        basic_pay_arrears += flt(ed_item.amount)
                                                 total_earning += round(amount)
                                         else:
                                                 total_deduction += round(amount)
@@ -262,7 +266,7 @@ class SalaryStructure(Document):
                                                 calc_amt = gis_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': flt(gis_amt)})
                                         elif self.get(m['field_name']) and m['name'] == 'PF':
-                                                pf_amt   = round(flt(basic_pay)*flt(settings.get("employee_pf"))*0.01)
+                                                pf_amt   = round((flt(basic_pay)+flt(basic_pay_arrears))*flt(settings.get("employee_pf"))*0.01)
                                                 calc_amt = pf_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': flt(pf_amt)})
                                         elif self.get(m['field_name']) and m['name'] == 'Health Contribution':
@@ -306,7 +310,8 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 	def postprocess(source, target):
                 gross_amt = 0.00
 		comm_amt  = 0.00
-		basic_amt = 0.00               
+		basic_amt = 0.00
+		basic_pay_arrears = 0.00
                 settings  = get_payroll_settings(source.employee)
 		m_details = get_month_details(target_doc.fiscal_year, target_doc.month)
 
@@ -404,6 +409,9 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                 for e in calc_map['earnings']:
                         if e['salary_component'] == 'Basic Pay':
                         	basic_amt = (flt(e['amount']))
+                        # Following condition added by SHIV on 2019/04/29
+                        elif frappe.db.exists("Salary Component", {"name": e['salary_component'], "is_pf_deductible": 1}):
+                                basic_pay_arrears += (flt(e['amount']))
                         if e['salary_component'] == 'Communication Allowance':
                         	comm_amt = (flt(e['amount']))
 			gross_amt += flt(e['amount'])
@@ -421,7 +429,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                         d['amount'] = sws
                                 if d['salary_component'] == 'PF':
                                         percent = flt(settings.get("employee_pf"))
-                                        pf = round(basic_amt*flt(percent)*0.01);
+                                        pf = round((flt(basic_amt)+flt(basic_pay_arrears))*flt(percent)*0.01);
                                         d['amount'] = pf
                                 if d['salary_component'] == 'Group Insurance Scheme':
                                         gis = flt(settings.get("gis"))

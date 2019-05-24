@@ -9,6 +9,12 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+# 2019/05/22 Birkha->Shiv
+def cancel_dn():
+	doc = frappe.get_doc("Delivery Note", "DN19043483")
+	doc.cancel()
+	print doc.name, doc.docstatus
+
 # 2019/04/01
 def update_production_sle():
         counter = 0

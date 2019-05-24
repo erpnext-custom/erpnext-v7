@@ -333,10 +333,11 @@ class TravelClaim(Document):
 	# Update the claim reference on travel authorization
 	##
 	def update_travel_authorization(self):
-		ta = frappe.get_doc("Travel Authorization", self.ta)
-		if ta.travel_claim and ta.travel_claim <> self.name:
-			frappe.throw("A travel claim <b>" + str(ta.travel_claim) + "</b> has already been created for the authorization")
-		ta.db_set("travel_claim", self.name)
+		for i in self.get("items"):	
+			ta = frappe.get_doc("Travel Authorization", i.travel_authorization)
+			if ta.travel_claim and ta.travel_claim <> self.name:
+				frappe.throw("A travel claim <b>" + str(ta.travel_claim) + "</b> has already been created for the authorization <b>" + str(i.travel_authorization) + "</b>")
+			ta.db_set("travel_claim", self.name)
 
 	##
 	# Allow only approved authorizations to be submitted
@@ -380,4 +381,30 @@ class TravelClaim(Document):
 			except:
 				pass
 
+
+@frappe.whitelist()
+def get_travel_detail(employee, start_date, end_date, place_type, travel_type):
+	if employee and start_date and end_date and place_type and travel_type:
+		data=[]
+		query1 = "select name, dsa_per_day, currency, advance_amount from `tabTravel Authorization`  \
+			where posting_date between \'"+ str(start_date) +"\' and \'"+ str(end_date) +"\' \
+			and employee = \'"+ str(employee) + "\' and place_type = \'"+ str(place_type) + "\' \
+			and travel_type = \'"+ str(travel_type) + "\' and docstatus = 1 and (travel_claim ='' or travel_claim is NULL)"
+
+		for b in frappe.db.sql(query1, as_dict=True):
+			for a in frappe.db.sql("select halt, from_place, to_place, date, no_days, till_date, \
+				halt_to_date, halt_at, no_days from `tabTravel Authorization Item` i \
+				where i.parent = %s order by `date`",b.name, as_dict=True):
+				if b.currency == "BTN":
+					exchange_rate = 1
+				else:
+					exchange_rate = frappe.db.get_value("Currency Exchange", {"from_currency": b.currency, "to_currency": "BTN"}, "exchange_rate")
+				data.append({"name":b.name, "halt":a.halt, "from_place":a.from_place, "to_place":a.to_place, "date":a.date, "no_days":a.no_days, "till_date":a.till_date, "halt_at":a.halt_at, "dsa_per_day":b.dsa_per_day, "currency":b.currency, "exchange_rate":exchange_rate, "dsa_percent":100, "last_day":0, "advance_amount":0})
+					
+			data[len(data)-1]['last_day'] = 1
+			dsa_percent = frappe.db.get_single_value("HR Settings", "return_day_dsa")
+			data[len(data)-1]['dsa_percent'] = dsa_percent
+			data[len(data)-1]['advance_amount'] = b.advance_amount
+			
+		return data
 

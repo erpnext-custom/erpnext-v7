@@ -204,7 +204,7 @@ def get_entries(filters):
         direct_payment_entries = frappe.db.sql("""
                         select
                                 "Direct Payment" as payment_document, name as payment_entry,
-                                cheque_no as cheque_number, cheque_date,
+                                cheque_no as reference_no, cheque_date as ref_date,
                                 net_amount as credit, 0 as debit,
                                 posting_date, branch as against_account, clearance_date
                         from `tabDirect Payment`

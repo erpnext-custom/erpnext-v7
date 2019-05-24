@@ -140,16 +140,17 @@ class PBVA(Document):
                                                         sum(sd.amount) as amount
                                                 from
                                                         `tabSalary Detail` sd,
-                                                        `tabSalary Slip` sl,
-                                                        `tabSalary Structure` ss
+                                                        `tabSalary Slip` sl
                                                 where sd.parent = sl.name
                                                 and sl.employee = e.name
-                                                and sl.salary_structure = ss.name
                                                 and sd.salary_component = 'Basic Pay'
                                                 and sl.docstatus = 1
-                                                and ss.eligible_for_pbva = 1
                                                 and sl.fiscal_year = {0}
-                                                group by sl.employee
+                                                and exists(select 1
+                                                                from `tabSalary Slip Item` ssi, `tabSalary Structure` ss
+                                                                where ssi.parent = sl.name
+                                                                and ss.name = ssi.salary_structure
+                                                                and ss.eligible_for_pbva = 1)
                                         ) as basic_pay
                                 from tabEmployee e, `tabSalary Structure` st
                                 where e.name = st.employee and st.is_active = 'Yes' and st.eligible_for_pbva = 1 and (

@@ -1,6 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
+cur_frm.add_fetch("employee", "branch", "branch");
 frappe.ui.form.on('Travel Claim', {
 	"items_on_form_rendered": function(frm, grid_row, cdt, cdn) {
 		/*var row = cur_frm.open_grid_row();
@@ -84,6 +85,11 @@ frappe.ui.form.on('Travel Claim', {
 	"extra_claim_amount": function(frm) {
 		frm.set_value("balance_amount", frm.doc.total_claim_amount + frm.doc.extra_claim_amount - frm.doc.advance_amount)
 	},
+	"get_travel_authorization": function(frm) {
+		console.log("testing");
+		get_travel_detail(frm);
+	},
+	
 });
 
 frappe.ui.form.on("Travel Claim Item", {
@@ -122,8 +128,70 @@ frappe.ui.form.on("Travel Claim Item", {
 			total += d.actual_amount	
 		})
 		frm.set_value("total_claim_amount", total)
-	}
+	},
 })
+
+
+function get_travel_detail(form) {
+	if(form.doc.start_date && form.doc.end_date && form.doc.place_type && form.doc.travel_type){
+		frappe.call({
+                        method: "erpnext.hr.doctype.travel_claim.travel_claim.get_travel_detail",
+                        async: false,
+                        args: {
+                                "employee": form.doc.employee,
+                                "start_date": form.doc.start_date,
+				"end_date": form.doc.end_date,
+				"place_type": form.doc.place_type,
+				"travel_type": form.doc.travel_type
+                        },
+                        callback: function(r){
+                                if(r.message){
+					var total_advance_amount = 0;
+					var total_claim_amount = 0;
+					var dsa_per_day = 0;
+                                        cur_frm.clear_table("items");
+                                        r.message.forEach(function(dtl) {
+                                                console.log(dtl);
+                                        	var row = frappe.model.add_child(cur_frm.doc, "Travel Claim Item", "items");
+						row.halt= dtl['halt'];
+						row.from_place= dtl['from_place'];
+						row.to_place= dtl['to_place'];
+						row.date = dtl['date'];
+						row.no_days = dtl['no_days'];
+						row.days_allocated = dtl['no_days']
+						row.till_date = dtl['till_date'];
+						row.halt_at = dtl['halt_at'];
+						row.travel_authorization = dtl['name'];
+						row.last_day = dtl['last_day'];
+						row.dsa = dtl['dsa_per_day'];
+						dsa_per_day = dtl['dsa_per_day'];
+						row.dsa_percent = dtl['dsa_percent'];
+						row.currency = dtl['currency'];
+						row.exchange_rate = dtl['exchange_rate'];
+						var amount = dtl['no_days'] * (dtl['dsa_per_day'] * (dtl['dsa_percent']/100));
+						var actual_amount = dtl['no_days'] * (dtl['dsa_per_day'] * (dtl['dsa_percent']/100)) * dtl['exchange_rate'];
+						row.amount = amount; 
+						row.actual_amount = actual_amount;
+						total_claim_amount += actual_amount;
+ 						total_advance_amount += dtl['advance_amount'];
+                                        });
+					form.set_value("total_claim_amount", total_claim_amount);
+					form.set_value("advance_amount", total_advance_amount);
+					form.set_value("balance_amount", total_claim_amount - total_advance_amount);
+					form.set_value("dsa_per_day", dsa_per_day);
+                                        cur_frm.refresh();
+                                }
+                                else {
+                                        frappe.msgprint("No unclaimed Travel Authorization found!")
+                                }
+                        }
+                });
+	
+	} else {
+		frappe.msgprint("Start Date, End Date, Place Type and Travel Purpose not be selected before");
+	}
+
+}
 
 function do_update(frm, cdt, cdn) {
 	//var item = frappe.get_doc(cdt, cdn)

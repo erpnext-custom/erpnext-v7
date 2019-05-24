@@ -9,6 +9,32 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_production_20190225():
+        num = 0
+        for a in frappe.db.sql("select a.name, a.posting_date from tabProduction a where docstatus = 1 and not exists (select 1 from  `tabGL Entry` b where b.voucher_no = a.name) order by a.posting_date asc, a.posting_time asc", as_dict=1):
+                print(a.name)
+                doc = frappe.get_doc("Production", a.name)
+                doc.make_products_gl_entry()
+                doc.make_raw_material_gl_entry()
+                num = num + 1
+                if num % 20 == 0:
+                        frappe.db.commit()
+        frappe.db.commit()
+
+def update_employment_status():
+	for a in frappe.db.sql("select name, status from `tabEmployee`", as_dict=1):
+		if a.status == "Active":
+			frappe.db.sql("update `tabEmployee` set employment_status = 'In Service' where name = %s", a.name)
+			print("Employment Status ===> Active")
+		elif a.status == "Left":
+			frappe.db.sql("update `tabEmployee` set employment_status = 'Left' where name = %s", a.name)
+			print("Employment Status ==> Left")
+
+def update_asset_1():
+	for a in frappe.db.sql("select a.name, a.gross_purchase_amount as gross, b.accumulated_depreciation_amount as accu from tabAsset a, `tabDepreciation Schedule` b where a.name = b.parent and a.docstatus = 1 and a.value_after_depreciation = 0 and a.gross_purchase_amount != a.opening_accumulated_depreciation and b.schedule_date = '2019-03-31'", as_dict=1):
+		print(a.name)
+		frappe.db.sql("update tabAsset set value_after_depreciation = %s, status = 'Partially Depreciated', disable_depreciation = 0 where name = %s", (flt(a.gross) - flt(a.accu), a.name))
+
 def update_asset_dtl():
 	for a in frappe.db.sql("select name from `tabAsset` where docstatus = 1", as_dict=1):
 		print("**** Activities are disabled, Remove # if you want to run the function *****")

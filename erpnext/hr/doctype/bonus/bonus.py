@@ -80,16 +80,18 @@ class Bonus(Document):
                                                         sd.amount
                                                 from
                                                         `tabSalary Detail` sd,
-                                                        `tabSalary Slip` sl,
-                                                        `tabSalary Structure` ss
+                                                        `tabSalary Slip` sl
                                                 where sd.parent = sl.name
                                                 and sl.employee = e.name
-                                                and sl.salary_structure = ss.name
                                                 and sd.salary_component = 'Basic Pay'
                                                 and sl.actual_basic = 0
                                                 and sl.docstatus = 1
-                                                and ss.eligible_for_annual_bonus = 1
                                                 and sl.fiscal_year = '{0}'
+                                                and exists(select 1
+                                                                from `tabSalary Slip Item` ssi, `tabSalary Structure` ss
+                                                                where ssi.parent = sl.name
+                                                                and ss.name = ssi.salary_structure
+                                                                and ss.eligible_for_annual_bonus = 1)
                                                 order by sl.month desc limit 1
                                         ) as basic_pay
                                 from tabEmployee e, `tabSalary Structure` st
