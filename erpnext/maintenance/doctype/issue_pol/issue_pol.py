@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
+'''
+------------------------------------------------------------------------------------------------------------------------------------------
+Version          Author         Ticket#           CreatedOn          ModifiedOn          Remarks
+------------ --------------- --------------- ------------------ -------------------  -----------------------------------------------------
+2.0.190509       SHIV		                                     2019/05/09         Refined process for making SL and GL entries
+------------------------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -24,6 +31,10 @@ class IssuePOL(StockController):
 		self.validate_posting_time()
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.check_on_dry_hire()
+		""" ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
+                # Ver 2.0.190509, following method added by SHIV on 2019/05/24
+                self.update_items()
+                """ ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
 
 	def validate_branch(self):
 		if self.purpose == "Issue" and self.is_hsd_item and not self.tanker:
@@ -77,14 +88,206 @@ class IssuePOL(StockController):
 		self.check_on_dry_hire()
 		self.check_dry_hire_wh()
 		self.check_tanker_hsd_balance()
-		self.update_stock_gl_ledger(1, 1)
+		""" ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
+                # Following lines commented by SHIV on 2019/05/24
+		#self.update_stock_gl_ledger(1, 1)
+                
+		# Following lines added by SHIV on 2019/05/24
+		self.update_stock_ledger()
+                self.make_gl_entries()
+		""" ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
+		
 		self.make_pol_entry()
+
+        def on_cancel(self):
+		""" ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
+                # Following lines commented by SHIV on 2019/05/09
+		#self.update_stock_gl_ledger(1, 1)
+
+		# Following lines added by SHIV on 2019/05/09
+		self.update_stock_ledger()
+		self.make_gl_entries_on_cancel()
+		""" ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
+		
+		self.delete_pol_entry()
 
 	def check_dry_hire_wh(self):
                 for a in self.items:
 			if a.hiring_branch and not a.hiring_warehouse:
 				frappe.throw("Select hiring warehouse for row {0}".format(a.idx))
 
+        """ ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
+        # Ver 2.0.190509, following method created by SHIV on 2019/05/24
+        def update_items(self):
+                for a in self.items:
+                        a.item_code = self.pol_type
+
+                        # Cost Center
+                        if a.hiring_cost_center:
+                                a.cost_center = a.hiring_cost_center
+                        else:
+                                a.cost_center = a.equipment_cost_center
+                                
+                        # Warehouse
+                        if a.hiring_warehouse:
+                                a.warehouse = a.hiring_warehouse
+                        else:
+                                a.warehouse = a.equipment_warehouse
+
+                        # Expense Account
+                        a.equipment_category = frappe.db.get_value("Equipment", a.equipment, "equipment_category")
+                        if self.is_hsd_item:
+				budget_account = frappe.db.get_value("Equipment Category", a.equipment_category, "budget_account")
+			else:
+				budget_account = frappe.db.get_value("Item", self.pol_type, "expense_account")
+			if not budget_account:
+				frappe.throw("Set Budget Account in Equipment Category")
+			a.expense_account = budget_account
+
+	# Ver 2.0.190509, following method added by SHIV on 2019/05/09
+        def update_stock_ledger(self):
+                sl_entries = []
+                for a in self.items:
+                        if self.purpose == "Issue":
+				sl_entries.append(self.get_sl_entries(a, {
+							"actual_qty": -1 * flt(a.qty), 
+							"warehouse": self.warehouse, 
+							"incoming_rate": 0 
+				}))
+			else:
+                                # Transfer only if different warehouse
+                                if a.warehouse != self.warehouse:
+                                        stock_qty, map_rate = get_stock_balance(self.pol_type, self.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
+                                        valuation_rate = flt(a.qty) * flt(map_rate)
+
+                                        # make sl entries for source warehouse first, then do for target warehouse
+					sl_entries.append(self.get_sl_entries(a,{
+								"actual_qty": -1 * flt(a.qty), 
+								"warehouse": self.warehouse, 
+								"incoming_rate": 0 
+					}))
+
+					sl_entries.append(self.get_sl_entries(a,{
+								"actual_qty": flt(a.qty), 
+								"warehouse": a.warehouse, 
+								"incoming_rate": flt(map_rate)
+					}))
+					
+		if self.docstatus == 2:
+			sl_entries.reverse()
+
+		self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+
+        # Ver 2.0.190509, following method added by SHIV on 2019/05/21
+        def get_gl_entries(self, warehouse_account):
+		gl_entries = []
+
+		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
+		if not wh_account:
+			frappe.throw(str(self.warehouse) + " is not linked to any account.")
+
+		for a in self.get("items"):
+			if a.hiring_branch:
+                                comparing_branch = a.hiring_branch
+                        else:
+                                comparing_branch = a.equipment_branch
+
+                        # Valuation rate
+			stock_qty, map_rate = get_stock_balance(self.pol_type, self.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
+                        valuation_rate = flt(a.qty) * flt(map_rate)
+
+			if self.purpose == "Issue":
+				gl_entries.append(
+					self.get_gl_dict({"account": wh_account,
+							 "credit": flt(valuation_rate),
+							 "credit_in_account_currency": flt(valuation_rate),
+							 "cost_center": self.cost_center,
+							 "business_activity": get_equipment_ba(self.tanker)
+				}))
+
+				gl_entries.append(
+					self.get_gl_dict({"account": a.expense_account,
+							 "debit": flt(valuation_rate),
+							 "debit_in_account_currency": flt(valuation_rate),
+							 "cost_center": a.cost_center,
+							 "business_activity": get_equipment_ba(a.equipment)
+				}))
+				
+				#Do IC Accounting Entry if different branch
+				if comparing_branch != self.branch:
+					allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+					if allow_inter_company_transaction:
+						ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+						if not ic_account:
+							frappe.throw("Setup Intra-Company Account in Accounts Settings")
+						gl_entries.append(
+							self.get_gl_dict({"account": ic_account,
+									 "debit": flt(valuation_rate),
+									 "debit_in_account_currency": flt(valuation_rate),
+									 "cost_center": self.cost_center,
+									 "business_activity": get_equipment_ba(self.tanker)
+						}))
+
+						gl_entries.append(
+							self.get_gl_dict({"account": ic_account,
+									 "credit": flt(valuation_rate),
+									 "credit_in_account_currency": flt(valuation_rate),
+									 "cost_center": a.cost_center,
+									 "business_activity": get_equipment_ba(a.equipment)
+									}))
+					
+			else : 
+				#Do IC Accounting Entry if different branch
+				if comparing_branch != self.branch:
+					twh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": a.warehouse}, "name")
+					if not twh_account:
+						frappe.throw(str(a.warehouse) + " is not linked to any account.")
+
+					gl_entries.append(
+						prepare_gl(self, {"account": wh_account,
+								 "credit": flt(valuation_rate),
+								 "credit_in_account_currency": flt(valuation_rate),
+								 "cost_center": self.cost_center,
+								 "business_activity": get_equipment_ba(self.tanker)
+								})
+						)
+
+					gl_entries.append(
+						prepare_gl(self, {"account": twh_account,
+								 "debit": flt(valuation_rate),
+								 "debit_in_account_currency": flt(valuation_rate),
+								 "cost_center": a.cost_center,
+								 "business_activity": get_equipment_ba(a.equipment)
+								})
+						)
+
+					allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+					if allow_inter_company_transaction:
+						ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+						if not ic_account:
+							frappe.throw("Setup Intra-Company Account in Accounts Settings")
+						gl_entries.append(
+							prepare_gl(self, {"account": ic_account,
+									 "debit": flt(valuation_rate),
+									 "debit_in_account_currency": flt(valuation_rate),
+									 "cost_center": self.cost_center,
+									 "business_activity": get_equipment_ba(self.tanker)
+									})
+							)
+
+						gl_entries.append(
+							prepare_gl(self, {"account": ic_account,
+									 "credit": flt(valuation_rate),
+									 "credit_in_account_currency": flt(valuation_rate),
+									 "cost_center": a.cost_center,
+									 "business_activity": get_equipment_ba(a.equipment)
+									})
+							)
+
+		return gl_entries
+
+        # Ver 2.0.190509, following code commented by SHIV on 2019/05/24
+        '''
 	def update_stock_gl_ledger(self, post_gl=None, post_sl=None, map_rate=None):
 		sl_entries = []
 		gl_entries = []
@@ -251,10 +454,8 @@ class IssuePOL(StockController):
 				make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
 			else:
 				return gl_entries
-
-	def on_cancel(self):
-		self.update_stock_gl_ledger(1, 1)
-		self.delete_pol_entry()
+	'''
+        """ ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
 
 	def check_tanker_hsd_balance(self):
 		if not self.tanker:

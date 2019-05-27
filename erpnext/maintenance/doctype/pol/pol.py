@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
+'''
+------------------------------------------------------------------------------------------------------------------------------------------
+Version          Author         Ticket#           CreatedOn          ModifiedOn          Remarks
+------------ --------------- --------------- ------------------ -------------------  -----------------------------------------------------
+2.0.190509       SHIV		                                     2019/05/09         Refined process for making SL and GL entries
+------------------------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -22,6 +29,42 @@ class POL(StockController):
 		self.validate_posting_time()
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.validate_item()
+
+        def on_submit(self):
+		self.validate_dc()
+		self.validate_data()
+		self.check_on_dry_hire()
+		self.check_budget()
+		if not self.direct_consumption:
+			self.update_stock_ledger()
+		""" ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
+		# Ver 2.0.190509, Following method commented by SHIV on 2019/05/24
+		#self.update_general_ledger(1)
+
+		# Ver 2.0.190509, Following method added by SHIV on 2019/05/24
+		self.make_gl_entries()
+		""" ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
+		
+		self.make_pol_entry()
+
+        def on_cancel(self):
+		self.update_stock_ledger()
+		""" ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
+		# Ver 2.0.190509, Following method commented by SHIV on 2019/05/24
+		#self.update_general_ledger(1)
+
+		# Ver 2.0.190509, Following method added by SHIV on 2019/05/24
+		self.make_gl_entries_on_cancel()
+		""" ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
+		
+		docstatus = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
+		if docstatus and docstatus != 2:
+			frappe.throw("Cancel the Journal Entry " + str(self.jv) + " and proceed.")
+
+		self.db_set("jv", "")
+
+		self.cancel_budget_entry()
+		self.delete_pol_entry()
 
 	def validate_dc(self):
 		is_container, no_own_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type") , ["is_container", "no_own_tank"])
@@ -76,16 +119,6 @@ class POL(StockController):
 
 		if not is_hsd and not is_pol:
 			frappe.throw(str(self.item_name) + " is not a HSD/POL item")
-
-	def on_submit(self):
-		self.validate_dc()
-		self.validate_data()
-		self.check_on_dry_hire()
-		self.check_budget()
-		if not self.direct_consumption:
-			self.update_stock_ledger()
-		self.update_general_ledger(1)
-		self.make_pol_entry()
 	
 	def check_budget(self):
 		if self.hiring_cost_center:
@@ -131,7 +164,30 @@ class POL(StockController):
 		consume.flags.ignore_permissions=1
 		consume.submit()
 
+        """ ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
+        # Ver 2.0.190509, Following method added by SHIV on 2019/05/24
 	def update_stock_ledger(self):
+		if self.hiring_warehouse:
+                        wh = self.hiring_warehouse
+                else:
+                        wh = self.equipment_warehouse
+
+		sl_entries = []
+		sl_entries.append(prepare_sl(self, 
+				{
+					"actual_qty": flt(self.qty), 
+					"warehouse": wh, 
+					"incoming_rate": round(flt(self.total_amount) / flt(self.qty) , 2)
+				}))
+
+		if self.docstatus == 2:
+			sl_entries.reverse()
+
+		self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+
+        # Ver 2.0.190509, Following method commented by SHIV on 2019/05/24
+        '''
+        def update_stock_ledger(self):
 		if self.hiring_warehouse:
                         wh = self.hiring_warehouse
                 else:
@@ -157,8 +213,85 @@ class POL(StockController):
 			sl_entries.reverse()
 
 		self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+	'''
 
-	def update_general_ledger(self, post=None):
+        # Ver 2.0.190509, Following method created by SHIV on 2019/05/24
+	def get_gl_entries(self, warehouse_account):
+		gl_entries = []
+		
+		creditor_account = frappe.db.get_value("Company", self.company, "default_payable_account")
+		if not creditor_account:
+			frappe.throw("Set Default Payable Account in Company")
+
+		expense_account = self.get_expense_account()
+
+		if self.hiring_cost_center:
+                        cost_center = self.hiring_cost_center
+                else:
+                        cost_center = get_branch_cc(self.equipment_branch)
+
+		ba = get_equipment_ba(self.equipment)
+		default_ba = get_default_ba()
+
+		gl_entries.append(
+			prepare_gl(self, {"account": expense_account,
+					 "debit": flt(self.total_amount),
+					 "debit_in_account_currency": flt(self.total_amount),
+					 "cost_center": cost_center,
+					 "business_activity": ba
+					})
+			)
+
+		gl_entries.append(
+			prepare_gl(self, {"account": creditor_account,
+					 "credit": flt(self.total_amount),
+					 "credit_in_account_currency": flt(self.total_amount),
+					 "cost_center": self.cost_center,
+					 "party_type": "Supplier",
+					 "party": self.supplier,
+					 "against_voucher": self.name,
+                                         "against_voucher_type": self.doctype,
+					 "business_activity": default_ba
+					})
+			)
+
+		if self.hiring_branch:
+                        comparing_branch = self.hiring_branch
+                else:
+                        comparing_branch = self.equipment_branch
+
+		if comparing_branch != self.fuelbook_branch:
+			allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+			if allow_inter_company_transaction:
+				ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+				if not ic_account:
+					frappe.throw("Setup Intra-Company Account in Accounts Settings")
+
+				customer_cc = get_branch_cc(comparing_branch)
+
+				gl_entries.append(
+					prepare_gl(self, {"account": ic_account,
+							 "credit": flt(self.total_amount),
+							 "credit_in_account_currency": flt(self.total_amount),
+							 "cost_center": customer_cc,
+							 "business_activity": default_ba
+							})
+					)
+
+				gl_entries.append(
+					prepare_gl(self, {"account": ic_account,
+							 "debit": flt(self.total_amount),
+							 "debit_in_account_currency": flt(self.total_amount),
+							 "cost_center": self.cost_center,
+							 "business_activity": default_ba
+							})
+					)
+
+		return gl_entries
+
+        # Ver 2.0.190509, following code commented by SHIV on 2019/05/24
+        '''
+        def update_general_ledger(self, post=None):
 		gl_entries = []
 		
 		creditor_account = frappe.db.get_value("Company", self.company, "default_payable_account")
@@ -234,7 +367,9 @@ class POL(StockController):
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)
 		else:
 			return gl_entries
-
+	'''
+        """ ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
+        
 	def get_expense_account(self):
 		if self.direct_consumption or getdate(self.posting_date) <= getdate("2018-03-31"):
 			if self.is_hsd_item:
@@ -253,18 +388,6 @@ class POL(StockController):
                         if not expense_account:
                                 frappe.throw(str(wh) + " is not linked to any account.")
 		return expense_account
-
-	def on_cancel(self):
-		self.update_stock_ledger()
-		self.update_general_ledger(1)
-		docstatus = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
-		if docstatus and docstatus != 2:
-			frappe.throw("Cancel the Journal Entry " + str(self.jv) + " and proceed.")
-
-		self.db_set("jv", "")
-
-		self.cancel_budget_entry()
-		self.delete_pol_entry()
 
 	##
 	# Cancel budget check entry

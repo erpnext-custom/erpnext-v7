@@ -104,6 +104,7 @@ class ReceivablePayableReport(object):
 		data = []
 		for gle in self.get_entries_till(self.filters.report_date, args.get("party_type")):
 			if self.is_receivable_or_payable(gle, dr_or_cr, future_vouchers):
+                                dn_no = ""
 				outstanding_amount = self.get_outstanding_amount(gle, self.filters.report_date, dr_or_cr)
 				#if outstanding_amount: #abs(outstanding_amount) > 0.1/10**currency_precision:
 
