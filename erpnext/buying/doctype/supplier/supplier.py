@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import frappe
 import frappe.defaults
 from frappe import msgprint, _
+from frappe.utils import cstr, flt, cint, getdate, now_datetime, formatdate, strip
 from frappe.model.naming import make_autoname
 from erpnext.utilities.address_and_contact import load_address_and_contact
 from erpnext.utilities.transaction_base import TransactionBase
@@ -20,11 +21,26 @@ class Supplier(TransactionBase):
 		load_address_and_contact(self, "supplier")
 
 	def autoname(self):
-		supp_master_name = frappe.defaults.get_global_default('supp_master_name')
-		if supp_master_name == 'Supplier Name':
-			self.name = self.supplier_name
+		frappe.msgprint("This is a test")
+		self.supplier_code = self.get_current_supplier_code()
+		
+		if not self.supplier_code:
+			msgprint(_("supplier Code is mandatory because supplier is not automatically numbered"), raise_exception=1)
+
+		self.supplier_code = strip(self.supplier_code)
+		self.name = self.supplier_code
+
+	def get_current_supplier_code(self):
+		supplier_code = frappe.db.sql("""select supplier_code from tabSupplier where supplier_type=%s order by supplier_code desc limit 1;""", self.supplier_type);
+
+		if supplier_code:
+			return str(int(supplier_code[0][0]) + 1);
 		else:
-			self.name = make_autoname(self.naming_series + '.#####')
+			base = frappe.db.get_value("Supplier Type", self.supplier_type, "supplier_code_base")
+			if not base:
+				frappe.throw("Setup Supplier Code Base in Supplier Type")
+			return str(base)
+
 
 	def update_address(self):
 		frappe.db.sql("""update `tabAddress` set supplier_name=%s, modified=NOW()
@@ -35,8 +51,8 @@ class Supplier(TransactionBase):
 			where supplier=%s""", (self.supplier_name, self.name))
 
 	def on_update(self):
-		if not self.naming_series:
-			self.naming_series = ''
+#		if not self.naming_series:
+#			self.naming_series = ''
 
 		self.update_address()
 		self.update_contact()

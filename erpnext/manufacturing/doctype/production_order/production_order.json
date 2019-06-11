@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "naming_series:", 
  "beta": 0, 
  "creation": "2013-01-10 16:34:16", 
@@ -1092,7 +1092,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-09-07 05:52:30.443446", 
+ "modified": "2019-05-28 09:35:44.947388", 
  "modified_by": "Administrator", 
  "module": "Manufacturing", 
  "name": "Production Order", 

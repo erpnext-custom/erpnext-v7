@@ -18,3 +18,4 @@ Management Dashboard
 Assets
 Budget
 Production
+Rental Management

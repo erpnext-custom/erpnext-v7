@@ -1,0 +1,32 @@
+{
+ "add_total_row": 1, 
+ "apply_user_permissions": 0, 
+ "creation": "2018-10-11 19:28:37.085066", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2019-05-29 23:13:32.381383", 
+ "modified_by": "Administrator", 
+ "module": "Manufacturing", 
+ "name": "Production Analytics", 
+ "owner": "Administrator", 
+ "ref_doctype": "Work Order", 
+ "report_name": "Production Analytics", 
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Manufacturing User"
+  }, 
+  {
+   "role": "Stock User"
+  }, 
+  {
+   "role": "Manufacturing Manager"
+  }, 
+  {
+   "role": "Administrator"
+  }
+ ]
+}

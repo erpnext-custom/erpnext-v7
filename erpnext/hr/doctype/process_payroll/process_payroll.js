@@ -1,7 +1,5 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
-
-
 cur_frm.cscript.display_activity_log = function(msg) {
 	if(!cur_frm.ss_html)
 		cur_frm.ss_html = $a(cur_frm.fields_dict['activity_log'].wrapper,'div');

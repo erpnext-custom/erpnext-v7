@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-11-22 16:05:59.977583", 
+ "modified": "2019-05-29 10:24:17.817738", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "TDS Challen", 
@@ -17,10 +17,13 @@
  "report_type": "Script Report", 
  "roles": [
   {
-   "role": "Administrator"
+   "role": "Accounts Manager"
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Administrator"
   }
  ]
 }

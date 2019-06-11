@@ -79,9 +79,12 @@ class MaterialRequest(BuyingController):
 
 		# **** To record the details of Material Requester **** #
 		if self.workflow_state == "Draft":
+			self.creator = None
+			self.creator_name = None
 			creator_dtls = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","name"])
-			self.creator = creator_dtls[2]
-			self.creator_name = creator_dtls[1]
+			if creator_dtls:
+				self.creator = creator_dtls[2]	
+				self.creator_name = creator_dtls[1]
 
 		if not self.status:
 			self.status = "Draft"

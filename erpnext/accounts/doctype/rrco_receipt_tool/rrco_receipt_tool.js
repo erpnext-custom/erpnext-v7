@@ -133,6 +133,7 @@ erpnext.rrco_receipt_tool = {
 			frappe.call({
 				method: "erpnext.accounts.doctype.rrco_receipt_tool.rrco_receipt_tool.get_invoices",
 				args: {
+				   "purpose": frm.doc.purpose,
 				   "branch": frm.doc.branch,
 				   "start_date":frm.doc.start_date,
 				   "end_date":frm.doc.end_date,

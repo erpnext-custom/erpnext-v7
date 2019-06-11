@@ -45,7 +45,19 @@ class Workstation(Document):
 
 @frappe.whitelist()
 def get_default_holiday_list():
-	return frappe.db.get_value("Company", frappe.defaults.get_user_default("Company"), "default_holiday_list")
+	#return frappe.get_cached_value('Company',  frappe.defaults.get_user_default("Company"),  "default_holiday_list")
+	holiday_list = frappe.db.get_value("Workstation", workstation, "holiday_list")
+
+	holidays = {}
+
+	if holiday_list not in holidays:
+		holiday_list_days = [getdate(d[0]) for d in frappe.get_all("Holiday", fields=["holiday_date"],
+		filters={"parent": holiday_list}, order_by="holiday_date", limit_page_length=0, as_list=1)]
+
+		holidays[holiday_list] = holiday_list_days
+
+	return holidays[holiday_list]
+
 
 def check_if_within_operating_hours(workstation, operation, from_datetime, to_datetime):
 	if from_datetime and to_datetime:
@@ -58,11 +70,15 @@ def check_if_within_operating_hours(workstation, operation, from_datetime, to_da
 def is_within_operating_hours(workstation, operation, from_datetime, to_datetime):
 	operation_length = time_diff_in_seconds(to_datetime, from_datetime)
 	workstation = frappe.get_doc("Workstation", workstation)
+	
+	if not workstation.working_hours:
+		return
 
 	for working_hour in workstation.working_hours:
-		slot_length = (to_timedelta(working_hour.end_time or "") - to_timedelta(working_hour.start_time or "")).total_seconds()
-		if slot_length >= operation_length:
-			return
+		if working_hour.start_time and working_hour.end_time:
+			slot_length = (to_timedelta(working_hour.end_time or "") - to_timedelta(working_hour.start_time or "")).total_seconds()
+			if slot_length >= operation_length:
+				return
 
 	frappe.throw(_("Operation {0} longer than any available working hours in workstation {1}, break down the operation into multiple operations").format(operation, workstation.name), NotInWorkingHoursError)
 

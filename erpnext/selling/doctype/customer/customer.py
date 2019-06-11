@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.naming import make_autoname
 from frappe import _, msgprint, throw
+from frappe.utils import cstr, flt, cint, getdate, now_datetime, formatdate, strip
 import frappe.defaults
 from frappe.utils import flt, cint, cstr
 from frappe.desk.reportview import build_match_conditions
@@ -22,24 +23,24 @@ class Customer(TransactionBase):
 		load_address_and_contact(self, "customer")
 
 	def autoname(self):
-		cust_master_name = frappe.defaults.get_global_default('cust_master_name')
-		if cust_master_name == 'Customer Name':
-			#self.name = self.get_customer_name()
-			self.name = str(self.customer_name) + '(' + str(self.customer_id) + ')'
+		self.customer_code = self.get_current_customer_code()
+		
+		if not self.customer_code:
+			msgprint(_("customer Code is mandatory because customer is not automatically numbered"), raise_exception=1)
+
+		self.customer_code = strip(self.customer_code)
+		self.name = self.customer_code
+
+	def get_current_customer_code(self):
+		customer_code = frappe.db.sql("""select customer_code from tabCustomer where customer_group=%s order by customer_code desc limit 1;""", self.customer_group);
+
+		if customer_code:
+			return str(int(customer_code[0][0]) + 1);
 		else:
-			if not self.naming_series:
-				frappe.throw(_("Series is mandatory"), frappe.MandatoryError)
-
-			self.name = make_autoname(self.naming_series+'.#####')
-
-	'''def get_customer_name(self):
-		if frappe.db.get_value("Customer", self.customer_name):
-			count = frappe.db.sql("""select ifnull(max(SUBSTRING_INDEX(name, ' ', -1)), 0) from tabCustomer
-				 where name like %s""", "%{0} - %".format(self.customer_name), as_list=1)[0][0]
-			count = cint(count) + 1
-			return "{0} - {1}".format(self.customer_name, cstr(count))
-
-		return self.customer_name'''
+			base = frappe.db.get_value("Customer Group", self.customer_group, "customer_code_base")
+			if not base:
+				frappe.throw("Setup Customer Code Base in Customer Group")
+			return str(base)
 
 	def validate(self):
 		self.flags.is_new_doc = self.is_new()
