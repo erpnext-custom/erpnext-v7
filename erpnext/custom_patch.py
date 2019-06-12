@@ -75,6 +75,12 @@ def update_pol_1():
 		doc = frappe.get_doc("POL", a.name)
 		doc.submit()
 
+def update_customer_code():
+	for a in frappe.db.sql("select name, tenant from `tabRental Bill`", as_dict=1):
+		customer_code = frappe.db.get_value("Tenant Information", a.tenant, "customer_code")
+		frappe.db.sql("update `tabRental Bill` set customer_code = %s, posting_date= '2019-08-30' where name = %s", (customer_code, a.name))
+		print(str(a.name) + " ==> " + str(customer_code))
+
 def update_si_today():
 	for a in frappe.db.sql("select transportation_charges as tc, name from `tabSales Invoice` where docstatus = 0", as_dict=1):
 		frappe.db.sql("update `tabSales Invoice` set transportation_charges = %s where name = %s", (round(flt(a.tc), 2), a.name))

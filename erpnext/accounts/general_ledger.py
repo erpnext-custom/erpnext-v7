@@ -120,6 +120,7 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 					})
 					con_obj.flags.ignore_permissions=1
 					con_obj.submit()
+	
 
 def make_entry(args, adv_adj, update_outstanding):
 	args.update({"doctype": "GL Entry"})

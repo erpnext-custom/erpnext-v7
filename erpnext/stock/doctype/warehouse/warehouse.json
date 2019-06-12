@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "beta": 0, 
  "creation": "2013-03-07 18:50:32", 
  "custom": 0, 
@@ -639,7 +639,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-11-18 09:26:48.032434", 
+ "modified": "2019-06-11 21:11:58.788314", 
  "modified_by": "dorji2392@bt.bt", 
  "module": "Stock", 
  "name": "Warehouse", 

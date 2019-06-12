@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "FA.YY.MM.####", 
  "beta": 0, 
@@ -251,8 +251,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-05-29 15:10:04.985976", 
- "modified_by": "Administrator", 
+ "modified": "2019-06-12 12:01:30.717317", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Rental Management", 
  "name": "Floor Area", 
  "name_case": "", 

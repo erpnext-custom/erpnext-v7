@@ -230,7 +230,7 @@ class DirectPayment(AccountsController):
 						)
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 		else:
-			frappe.throw("Total Debit is not equal to Total Credit. It should be equal")
+			frappe.throw("Total Debit is not equal to Total Credit. It has to be equal")
 
 @frappe.whitelist()
 def get_tds_account(percent, payment_type):

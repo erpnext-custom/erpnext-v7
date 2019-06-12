@@ -25,7 +25,19 @@ frappe.ui.form.on('Process Rental Billing', {
 		process_rental(frm, "submit");
 	},
 	accounts_posting: function(frm) {
-		process_rental(frm, "accounts");
+		frappe.confirm(__("Do you really want to Submit Rental Bills for month {0} and year {1}", [frm.doc.month, frm.doc.fiscal_year]), function() {
+                                return frappe.call({
+                                                method: "post_gl_entry",
+                                                doc: frm.doc,
+                                                callback: function(r, rt) {
+                                                                frm.refresh_fields();
+                                                                if (r.message)
+                                                                       cur_frm.cscript.display_activity_log(r.message);
+                                                },
+                                                freeze: true,
+                                                freeze_message: "Posting General Ledger.... Please Wait!!!",
+                                });
+                })
 	},
 	
 });
