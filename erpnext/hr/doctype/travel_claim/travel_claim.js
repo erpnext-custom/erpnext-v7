@@ -86,7 +86,6 @@ frappe.ui.form.on('Travel Claim', {
 		frm.set_value("balance_amount", frm.doc.total_claim_amount + frm.doc.extra_claim_amount - frm.doc.advance_amount)
 	},
 	"get_travel_authorization": function(frm) {
-		console.log("testing");
 		get_travel_detail(frm);
 	},
 	

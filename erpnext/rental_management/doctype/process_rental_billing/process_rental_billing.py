@@ -65,13 +65,17 @@ class ProcessRentalBilling(AccountsController):
 						prev_month = "12"
 					else:
 						prev_fiscal_year = self.fiscal_year
-						prev_month = "0" + str(int(self.month) - 1)
+						if self.month < 10:	
+							prev_month = "0" + str(int(self.month) - 1)
+						else:
+							prev_month = str(int(self.month) - 1)
+							
 
 					#customer_code = frappe.db.get_value("Customer", {"customer_id":name}, "customer_code")
 					#bill_code = "NHDCL/" + customer_code + "/" + self.fiscal_year + self.month
 					yearmonth = str(self.fiscal_year) + str(self.month)
 					
-					dtls = frappe.db.sql("""
+					query = """
                                                             select tenant_name, customer_code, block_no, business_activity, flat_no, 
                                                             ministry_agency, location, branch, department, dzongkhag, designation, 
                                                             mobile_no, town_category, building_category, allocated_date, rental_amount 
@@ -91,7 +95,9 @@ class ProcessRentalBilling(AccountsController):
 						                           where t3.tenant = '{1}'
 							      		))
 						            and t.name = '{1}';
-                                                            """.format(bill_date, name, prev_fiscal_year, prev_month), as_dict=True)
+                                                            """.format(bill_date, name, prev_fiscal_year, prev_month)
+					dtls = frappe.db.sql(query, as_dict=True)
+
 					if dtls:
 						for d in dtls:
 							rb = frappe.get_doc({
@@ -142,7 +148,8 @@ class ProcessRentalBilling(AccountsController):
 				return '<div style="color:red;"> Error: Tenant CID :{1} - {0}</div>'.format(str(e), name)
 
 	def post_gl_entry(self):
-		self.posting_date = get_last_day(self.posting_date)
+		bill_date = str(self.fiscal_year) + "-" + str(self.month) + "-" + "01"
+		self.posting_date = get_last_day(bill_date)
 		gl_entries = []
 		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 		business_activity = frappe.db.get_single_value("Rental Setting", "business_activity")

@@ -72,6 +72,7 @@ def validate_returned_items(doc):
 	warehouse_mandatory = not (doc.doctype=="Purchase Invoice" or (doc.doctype=="Sales Invoice" and not doc.update_stock))
 
 	items_returned = False
+	self.per_billed = 0.0
 	for d in doc.get("items"):
 		if flt(d.qty) < 0:
 			if d.item_code not in valid_items:
@@ -102,6 +103,8 @@ def validate_returned_items(doc):
 
 				if warehouse_mandatory and not d.get("warehouse"):
 					frappe.throw(_("Warehouse is mandatory"))
+
+
 
 			items_returned = True
 

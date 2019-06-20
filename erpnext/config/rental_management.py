@@ -71,6 +71,14 @@ def get_data():
 					"type": "doctype",
 					"name": "Process Rental Billing",
 				},
+				{
+					"type": "doctype",
+					"name": "Rental Bill",
+				},
+				{
+					"type": "doctype",
+					"name": "Rental Payment",
+				},
 				
 			]
 		},
