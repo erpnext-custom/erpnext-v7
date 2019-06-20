@@ -14,8 +14,7 @@ def execute(filters=None):
 def get_data(query, filters):
 	data = []
 	for d in frappe.db.sql(query, as_dict =1):
-		row = [d.pr_name, d.pr_branch, d.pr_creation, d.pr_posting, d.pr_owner, d.pr_is_allotment, d.pr_cons_type,d.pr_docstatus, \
-			d.so_name, d.so_creation, d.so_posting_date, d.so_owner, d.so_status, d.dn_name, d.dn_creation, d.dn_posting, d.dn_owner,\
+		row = [ d.so_name, d.so_creation, d.so_posting_date, d.so_owner, d.so_status, d.dn_name, d.dn_creation, d.dn_posting, d.dn_owner,\
 			d.dn_status, d.si_name, d.si_creation, d.si_posting, d.si_owner, d.si_status, d.pe_name, d.pe_creation, d.pe_posting,\
 			d.pe_owner,d.pe_status] 
 		data.append(row)
@@ -26,9 +25,9 @@ def get_conditions(filters):
         if filters.get("month"):
                 month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov","Dec"].index(filters["month"])
 		mon = month + 1
-                conditions += " and month(pr.creation) = {0}".format(mon)
-       	if filters.get("fiscal_year"): conditions += " and year(pr.creation) = {0}".format(filters.get("fiscal_year"))
-        if filters.get("cost_center"): conditions += " and pr.branch =  '{0}'".format(filters.get("cost_center"))
+                conditions += " and month(so.creation) = {0}".format(mon)
+       	if filters.get("fiscal_year"): conditions += " and year(so.creation) = {0}".format(filters.get("fiscal_year"))
+        if filters.get("cost_center"): conditions += " and so.branch =  '{0}'".format(filters.get("cost_center"))
         return conditions
 
 '''def get_conditions(filters):
@@ -50,17 +49,17 @@ def get_conditions(filters):
 
 def get_query(filters):
 	conditions = get_conditions(filters)
+	''' (select 
+                pr.name as pr_name, pr.branch as pr_branch, pr.creation as pr_creation, pr.posting_date as pr_posting, 
+                case pr.docstatus when 0 then "Draft" when 2 then "Cancelled" when 1 then "Submitted" end as pr_docstatus, pr.owner as pr_owner, pr.is_allotment as pr_is_allotment, pr.construction_type  as pr_cons_type
+                from `tabProduct Requisition` pr, `tabProduct Requisition Item` pri  where pr.name = pri.parent {0}) as pr_detail
+        right join'''
+
 	query = """
 	select *from 
-	(select 
-		pr.name as pr_name, pr.branch as pr_branch, pr.creation as pr_creation, pr.posting_date as pr_posting, 
-		case pr.docstatus when 0 then "Draft" when 2 then "Cancelled" when 1 then "Submitted" end as pr_docstatus, pr.owner as pr_owner, pr.is_allotment as pr_is_allotment, pr.construction_type  as pr_cons_type
-		from `tabProduct Requisition` pr, `tabProduct Requisition Item` pri  where pr.name = pri.parent {0}) as pr_detail
-    	left join
-	(select 
-		so.name as so_name , so.creation as so_creation, so.transaction_date as so_posting_date, so.owner as so_owner, so.po_no as so_po, soi.name as soi_name, case so.docstatus when 0 then "Draft" when 2 then "Cancelled" when 1 then "Submitted" end as so_status
-		from `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent) as so_detail
-	on pr_detail.pr_name = so_detail.so_po
+	(select so.name as so_name , so.branch, so.creation as so_creation, so.transaction_date as so_posting_date, so.owner as so_owner, 
+	so.po_no as so_po, soi.name as soi_name, case so.docstatus when 0 then "Draft" when 2 then "Cancelled" when 1 then "Submitted" 
+	end as so_status from `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent {0}) as so_detail
     	left join
 	(select 
 		dn.name as dn_name, dn.creation as dn_creation, dn.posting_date as dn_posting, dn.owner as dn_owner,dni.name as dni_detail, dni.so_detail as dni_name, case dn.docstatus when 0 then "Draft" when 2 then "Cancelled" when 1 then "Submitted" end as dn_status
@@ -83,15 +82,6 @@ def get_query(filters):
 	
 def get_columns(filters):
         cols = [
-                ("PR Name") + ":Link/Product Requisition:120",
-		("Branch") + ":Link/Branch:160",
-		("PR Create Date") + ":Date:100",
-                ("PR Submit Date") + ":Date:110",
-		("PR Owner") + ":Link/User:140",
-		("Is Allotment") + ":Data:100",
-                ("Construction Type") + ":Data:120",
-		("PR Status") + ":Data:100",
-
                 ("SO Name") + ":Link/Sales Order:100",
                 ("SO Creation Date") + ":Data:100",
 		("SO Submit Date") + ":Date:100",

@@ -45,7 +45,7 @@ def segregrate(master_set):
 def send_email(email, doc_list, doctype):
 	message = "The following " + str(doctype) + " has been waiting your approval: <br />"
 	num = 1
-	subject = str(doctype) + " Pending your Approval"
+	subject = str(doctype) + " Status Notification"
 
 	for a in doc_list:
 		message += str(num) + "  <a href='https://nes.nrdcl.bt/desk#Form/"+str(doctype)+"/"+str(a)+"'>" + str(a) + "</a> <br />" 

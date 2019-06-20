@@ -331,6 +331,11 @@ class SalesInvoice(SellingController):
 			and amount = 0""", self.name)
 
 	def validate_with_previous_doc(self):
+                # Following condition added by SHIV on 2019/05/27
+                # Skip all checks for opening invoices created via "Opening Invoice Creation Tool"
+                if self.is_opening == "Yes":
+                        return
+                
 		super(SalesInvoice, self).validate_with_previous_doc({
 			"Sales Order": {
 				"ref_dn_field": "sales_order",

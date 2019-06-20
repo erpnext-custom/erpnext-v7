@@ -24,7 +24,7 @@ def get_data(filters):
 	#frappe.msgprint("so {0}, {1}".format(qty, group))
 	order_by = get_order_by(filters)
 	query = frappe.db.sql("""select *from 
-	(select so.name as so_name , so.customer, so.customer_name, so.branch, soi.qty as qty_approved, soi.delivered_qty, soi.rate, soi.item_code, 
+	(select so.name as so_name , so.customer as customer, so.customer_name, so.branch, soi.qty as qty_approved, soi.delivered_qty, soi.rate, soi.item_code, 
 	soi.name as soi_name, soi.item_name, soi.item_group, soi.lot_number as lot_number,
 	so.transaction_date, soi.product_requisition from
         `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0}) as so_detail
@@ -113,6 +113,9 @@ def get_group_by(filters):
 		qty = " sum(sii.qty)"
 	if filters.aggrigate:
 		group_by = " group by item_sub, si.branch"
+		qty = " sum(sii.qty)"
+	if filters.product_wise_customer:
+		group_by = " group by customer"
 		qty = " sum(sii.qty)"
 	return qty, group_by
 
@@ -419,7 +422,66 @@ def get_columns(filters):
                   "label": "Amount",
                   "fieldtype": "Currency",
                   "width": 100
-                }
+                },
+		]
+
+	if filters.product_wise_customer == 1:
+		columns = [
+		{
+                  "fieldname": "agg_branch",
+                  "label": "Branch",
+                  "fieldtype": "data",
+                  "width": 100
+                },
+		{
+                  "fieldname": "agg_location",
+                  "label": "Location",
+                  "fieldtype": "data",
+                  "width": 100
+                },
+		{
+		  "fieldname": "customer",
+		  "label": "Customer Name",
+		  "fieldtype": "Link",
+          	  "options": "Customer",
+		  "width": 140
+		},
+		{
+		  "fieldname": "customer_type",
+		  "label": "Customer Type",
+		  "fieldtype": "Data",
+		  "width": 140
+		},
+        	{	
+		  "fieldname": "customer_id",
+		  "label": "Customer ID/Work Permit",
+		  "fieldtype": "Data",
+		  "width": 150
+		},
+		{
+		  "fieldname": "customer_contact",
+		  "label": "Customer Contact",
+		  "fieldtype": "Data",
+		  "width": 120
+		},	
+		{
+                  "fieldname": "item_sub_group",
+                  "label": "Item Sub Group",
+                  "fieldtype": "data",
+                  "width": 100
+                },
+                {
+                  "fieldname": "qty",
+                  "label": "Sales Qty",
+                  "fieldtype": "Float",
+                  "width": 90
+                },
+               {
+		  "fieldname": "agg_amount",
+                  "label": "Amount",
+                  "fieldtype": "Currency",
+                  "width": 100
+                },
 		]
 
 	return columns

@@ -59,9 +59,11 @@ class TravelClaim(Document):
 		cl_status = frappe.db.get_value("Journal Entry", self.claim_journal, "docstatus")
 		if cl_status and cl_status != 2:
 			frappe.throw("You need to cancel the claim journal entry first!")
-		
-		ta = frappe.get_doc("Travel Authorization", self.ta)
-		ta.db_set("travel_claim", "")
+
+		tas = frappe.db.sql("select distinct(travel_authorization) as ta from `tabTravel Claim Item` where parent = %s", str(self.name), as_dict=True)
+		for a in tas:
+			ta = frappe.get_doc("Travel Authorization", a.ta)
+			ta.db_set("travel_claim", "")
 
 	def on_cancel(self):
 		self.sendmail(self.employee, "Travel Claim Cancelled by HR" + str(self.name), "Your travel claim " + str(self.name) + " has been cancelled by the user")

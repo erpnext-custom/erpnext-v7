@@ -162,6 +162,8 @@ class OpeningInvoiceCreationTool(Document):
                                 "business_activity": row.business_activity,
                                 "name_tolerance": "Default",
                                 "loss_method": "Quantity in Flat",
+                                "po_detail": "Opening Invoice",
+                                "so_detail": "Sales Invoice"
 			})
 
 		if not row:

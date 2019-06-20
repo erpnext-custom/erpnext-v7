@@ -11,7 +11,8 @@ def execute(filters=None):
 	return columns, data
 
 def getdata(filters=None):
-	query = """select p.name as name, p.branch as branch, p.cost_center as cost_center, p.posting_date as posting_date,
+	
+	query = """select p.name as name, p.branch as branch, p.cost_center as cost_center, p.posting_date as posting_date, p.owner,
 		i.delivery_note as delivery_note, i.amount as amount, p.cheque_no as cheque_no, p.cheque_date  as cheque_date 
 		from  `tabMechanical Payment` p inner join `tabTransporter Payment Item` i 
 		on p.name = i.parent where p.docstatus = 1 and p.payment_for='Transporter Payment' """
@@ -36,6 +37,7 @@ def getcolumns():
 		("Branch") + ":Link/Branch:160",
 		("Cost Center") + ":Link/Cost Center:160",
 		("Posting Date") + ":Date:100",
+		("Created By") + ":Link/User:150",
 		("Delivery Note") + ":Link/Delivery Note:120",
 		("Amount") + ":Currency:100",
 		("Cheque No") + ":Data:120",

@@ -21,7 +21,7 @@ def get_data(filters):
 	if filters.show_aggregate:
 		total_qty = "sum(qty) as total_qty"
 
-	query = "select pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0}, pe.cable_line_no as cable_line_no from `tabProduction Entry` pe, `tabCost Center` cc where cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
+	query = "select pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0}, pe.cable_line_no as cable_line_no, pe.production_area as production_area from `tabProduction Entry` pe, `tabCost Center` cc where cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
 
 	total_qty = 0
@@ -94,6 +94,9 @@ def get_conditions(filters):
 
 	if filters.warehouse:
 		condition += " and pe.warehouse = '{0}'".format(filters.warehouse)
+
+	if filters.production_area:
+                condition += " and pe.production_area = '{0}'".format(filters.production_area)
 
 	return condition
 
@@ -189,7 +192,12 @@ def get_columns(filters):
                         "fieldtype": "Data",
                         "width": 100
                 })
-
+		columns.insert(12, {
+                        "fieldname": "production_area",
+                        "label": "Production Area",
+                        "fieldtype": "Data",
+                        "width": 100
+                })
 
 	return columns
 

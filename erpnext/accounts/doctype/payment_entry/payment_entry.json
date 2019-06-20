@@ -299,7 +299,7 @@
   {
    "allow_on_submit": 0, 
    "bold": 0, 
-   "collapsible": 1, 
+   "collapsible": 0, 
    "fieldname": "payment_accounts_section", 
    "fieldtype": "Section Break", 
    "hidden": 0, 
@@ -1934,7 +1934,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-03-05 12:41:27.384155", 
+ "modified": "2019-06-19 13:06:45.196060", 
  "modified_by": "dorji2392@bt.bt", 
  "module": "Accounts", 
  "name": "Payment Entry", 

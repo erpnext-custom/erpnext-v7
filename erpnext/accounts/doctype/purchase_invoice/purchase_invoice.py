@@ -139,6 +139,11 @@ class PurchaseInvoice(BuyingController):
 				pc_obj.check_for_closed_status('Purchase Order', d.purchase_order)
 
 	def validate_with_previous_doc(self):
+                # Following condition added by SHIV on 2019/05/27
+                # Skip all checks for opening invoices created via "Opening Invoice Creation Tool"
+                if self.is_opening == "Yes":
+                        return
+                        
 		super(PurchaseInvoice, self).validate_with_previous_doc({
 			"Purchase Order": {
 				"ref_dn_field": "purchase_order",
@@ -795,6 +800,11 @@ class PurchaseInvoice(BuyingController):
 		self.due_date = None
 
 	def consume_budget(self):
+                # Following condition added by SHIV on 2019/05/27
+                # Skip all checks for opening invoices created via "Opening Invoice Creation Tool"
+                if self.is_opening == "Yes":
+                        return
+                
 		for item in self.get("items"):
 			expense, cost_center = frappe.db.get_value("Purchase Order Item", item.po_detail, ["budget_account", "cost_center"])
 			if expense != item.expense_account and cost_center != item.cost_center:

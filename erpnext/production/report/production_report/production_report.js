@@ -195,5 +195,12 @@ frappe.query_reports["Production Report"] = {
 			"fieldtype": "Check",
  			"default": 1,
 		},
+		{
+                        "fieldname": "production_area",
+                        "label":("Production Area"),
+                        "fieldtype" : "Select",
+                        "width" :"80",
+                        "options": ["Normal","Road Alignment","Fire Burnt Area","Transmission Line"],
+                },
 	]
 }
