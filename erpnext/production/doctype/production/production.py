@@ -30,6 +30,8 @@ class Production(StockController):
 		self.validate_posting_time()
 
 	def validate_data(self):
+
+
 		if self.production_type == "Adhoc" and not self.adhoc_production:
 			frappe.throw("Select Adhoc Production to Proceed")
 		if self.production_type == "Planned":
@@ -46,6 +48,7 @@ class Production(StockController):
 
 	def validate_items(self):
 		prod_items = self.get_production_items()
+		total_raw_material_qty = total_production_qty = 0
 		for item in self.get("raw_materials"):
 			if item.item_code not in prod_items:
 				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
@@ -60,9 +63,25 @@ class Production(StockController):
                         item.expense_account = get_expense_account(self.company, item.item_code)
                         """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
+			total_raw_material_qty += item.qty
+
 		for item in self.get("items"):
+			total_production_qty += item.qty
 			item.production_type = self.production_type
 			item.item_name, item.item_group, item.item_sub_group, item.timber_species = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group", "species"])
+			if item.item_group != "Mineral Products":
+				if item.reading_select == "5 ft Above (Log)":
+					item.reading = "5.5"
+				elif item.reading_select == "5 ft Below (Log)":
+					item.reading = "4.5"
+				elif item.reading_select == "0 - 6 ft (Pole)":
+					item.reading = "5.5"
+				elif item.reading_select == "6.1 - 12 ft (Pole)":
+					item.reading = "10"
+				elif item.reading_select == "12.1 - 17.11 ft (Pole)":
+					item.reading = "15"
+				elif item.reading_select == "18 ft Above (Pole)":
+					item.reading = "19"
 
 			if item.item_code not in prod_items:
 				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
@@ -99,6 +118,12 @@ class Production(StockController):
                         item.expense_account = get_expense_account(self.company, item.item_code)
                         """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
+			############# Change applied by Thukten on reading  ########
+				
+		self.total_raw_material_qty = total_raw_material_qty
+                self.total_production_qty = total_production_qty
+
+			######### End Changes ###########
 	def check_cop(self):
 		for a in self.items:
 			branch = frappe.db.sql("select 1 from `tabCOP Branch` where parent = %s and branch = %s", (a.price_template, self.branch))

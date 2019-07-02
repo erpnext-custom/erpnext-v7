@@ -32,12 +32,13 @@ def get_data(filters):
 		total_qty += flt(a.qty)
 		data.append(a)
 	data.append({"qty": total_qty, "region": frappe.bold("TOTAL")})
-
 	return data
 
 def get_group_by(filters):
 	if filters.show_aggregate:
 		group_by = " group by pe.branch, pe.location, pe.item_sub_group"
+		if filters.show_species_wise:
+			group_by += ", pe.timber_species"
 	else:
 		group_by = ""
 
@@ -148,7 +149,17 @@ def get_columns(filters):
 			"options": "UoM",
 			"width": 100
 		},
+		
 	]
+	
+	if filters.show_species_wise:
+		columns.insert(9, {
+			"fieldname": "timber_species",
+			"label": "Species",
+			"fieldtype": "Link",
+			"options": "Timber Species",
+			"width": 120
+		})
 
 	if not filters.show_aggregate:
 		columns.insert(3, {
@@ -173,18 +184,18 @@ def get_columns(filters):
 			"options": "Timber Class",
 			"width": 100
 		})
-		columns.insert(10, {
-			"fieldname": "timber_species",
-			"label": "Species",
-			"fieldtype": "Link",
-			"options": "Timber Species",
-			"width": 100
-		})
 		columns.insert(11, {
 			"fieldname": "timber_type",
 			"label": "Type",
 			"fieldtype": "Data",
 			"width": 100
+		})
+		columns.insert(9, {
+			"fieldname": "timber_species",
+			"label": "Species",
+			"fieldtype": "Link",
+			"options": "Timber Species",
+			"width": 120
 		})
 		columns.insert(12, {
                         "fieldname": "cable_line_no",

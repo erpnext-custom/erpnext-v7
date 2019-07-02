@@ -5,4 +5,46 @@ frappe.ui.form.on('Lot List', {
 	setup: function(frm){
                 frm.get_docfield("items").allow_bulk_edit = 1;
         },
+	refresh: function(frm) {
+			
+	},
 });
+
+frappe.ui.form.on("Lot List Item", {
+        "length": function(frm, cdt, cdn) {
+                	d = locals[cdt][cdn];
+			if(d.girth > 0){
+				update_volume(frm, cdt, cdn);
+			}
+		},
+	"girth": function(frm, cdt, cdn) {
+                        d = locals[cdt][cdn];
+                        if(d.length > 0){
+                                update_volume(frm, cdt, cdn);
+                        }
+                },
+});
+
+
+function update_volume(frm, cdt, cdn)
+{
+	d = locals[cdt][cdn];
+	var f = d.girth.toString().split(".");
+
+	var in_inches = 0;
+	var girth = (parseFloat(f[0]) * 12) + parseFloat(f[1]);
+	//console.log("Girth" + girth +" f1 " + f[0] + " f2 " + f[1]);
+	var volume = ((girth * girth) * d.length ) / 1809.56;
+	frappe.model.set_value(cdt, cdn, "volume", volume);
+	
+	var items = frm.doc.items || [];
+	var total_vol = 0;
+	for(var i = 0; i < items.length; i++ ){
+		total_vol += items[i].volume;
+	}
+
+	frm.set_value("total_volume", total_vol);
+	frm.set_value("total_pieces", items.length);
+	 
+}
+

@@ -196,6 +196,12 @@ frappe.query_reports["Production Report"] = {
  			"default": 1,
 		},
 		{
+			"fieldname": "show_species_wise",
+			"label": ("Show Species Wise"),
+			"fieldtype": "Check",
+ 			"default": 0,
+		},
+		{
                         "fieldname": "production_area",
                         "label":("Production Area"),
                         "fieldtype" : "Select",

@@ -9,6 +9,50 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_production_reading():
+	for a in frappe.db.sql("select i.name as name, i.reading as reading, i.item_group as item_group, i.item_sub_group as sub_group, p.production_type as production_type from `tabProduction` p, `tabProduction Product Item` i where p.name = i.parent and p.docstatus = 1", as_dict=1):
+		if a.item_group != "Mineral Products" and a.production_type == "Adhoc":
+			if a.sub_group == "Log":
+				if a.reading < 5:
+					reading_select = "5 ft Below (Log)"
+				else:
+					reading_select = "5 ft Above (Log)"
+			elif a.sub_group == "Pole":
+				if a.reading < 6:
+					reading_select == "0 - 6 ft (Pole)"
+                                elif a.reading > 6 and a.reading < 12.1:
+					reading_select == "6.1 - 12 ft (Pole)"
+                                elif a.reading > 12 and a.reading < 17.11:
+					reading_select == "12.1 - 17.11 ft (Pole)"
+                                elif a.reading > 17.11:
+					reading_select == "18 ft Above (Pole)"
+			frappe.db.sql("Update `tabProduction Product Item` set reading_select = '{0}' where name = '{1}'".format(reading_select, a.name))
+		if a.item_group == "Mineral Products":
+			frappe.db.sql("Update `tabProduction Product Item` set reading_select = '' where name = '{0}'".format(a.name))
+			print("Group :  {3} Name : {0} and reading_select : {1} reading : {2}".format(a.name, reading_select, a.reading, a.item_group))	
+			
+		 
+
+def update_production_total_qty():
+        for a in frappe.db.sql("select name from `tabProduction`", as_dict=1):
+                raw_item = frappe.db.sql("select sum(qty) as total_qty from `tabProduction Material Item` where parent = '{0}'".format(a.name), as_dict=True)
+                production_item = frappe.db.sql("select sum(qty) as total_qty from `tabProduction Product Item` where parent = '{0}'".format(a.name), as_dict=True)
+                if raw_item[0]['total_qty'] > 0:
+                        frappe.db.sql("update `tabProduction` set total_raw_material_qty = '{0}' where name = '{1}'".format( raw_item[0]['total_qty'], a.name))
+
+                if production_item[0]['total_qty'] > 0:
+                        frappe.db.sql("update `tabProduction` set total_production_qty = '{0}' where name = '{1}'".format(production_item[0]['total_qty'], a.name))
+                print("Production ===> {0}  === {1} ==== {2}".format(production_item[0]['total_qty'], a.name, production_item))
+
+
+def replace_discount_to_additional_amount():
+	for a in frappe.db.sql("select name, discount_or_cost_amount from `tabSales Order` where discount_or_cost_amount < 0", as_dict=1):
+		add_amount = a.discount_or_cost_amount * -1
+		#frappe.db.sql("update `tabSales Order` set additional_cost ='{0}' where name = '{1}'".format(add_amount, a.name))
+		frappe.db.sql("update `tabSales Order` set discount_or_cost_amount = 0 where name = '{0}'".format( a.name))
+		print("Updation of " + str(a.name) + " - " + str(a.discount_or_cost_amount) + " - " + str(add_amount))
+		
+
 def update_production_20190225():
         num = 0
         for a in frappe.db.sql("select a.name, a.posting_date from tabProduction a where docstatus = 1 and not exists (select 1 from  `tabGL Entry` b where b.voucher_no = a.name) order by a.posting_date asc, a.posting_time asc", as_dict=1):

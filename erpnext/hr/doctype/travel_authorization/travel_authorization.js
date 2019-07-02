@@ -219,8 +219,10 @@ function update_advance_amount(frm) {
 		callback: function(r) {
 			if(r.message) {
 				frm.set_value("advance_amount_nu", flt(frm.doc.advance_amount) * flt(r.message))
-				frm.set_value("advance_amount", format_currency(flt(frm.doc.advance_amount), frm.doc.currency))
-				frm.set_value("estimated_amount", format_currency(flt(frm.doc.estimated_amount), frm.doc.currency))
+				frm.set_value("advance_amount", flt(frm.doc.advance_amount))
+				frm.set_value("estimated_amount", flt(frm.doc.estimated_amount))
+				//frm.set_value("advance_amount", format_currency(flt(frm.doc.advance_amount), frm.doc.currency))
+				//frm.set_value("estimated_amount", format_currency(flt(frm.doc.estimated_amount), frm.doc.currency))
 			}
 		}
 	})

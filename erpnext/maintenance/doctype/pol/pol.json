@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "POL.YY.MM.#####", 
  "beta": 0, 
@@ -1455,7 +1455,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-06-19 12:27:45.004526", 
+ "modified": "2019-06-20 17:17:06.554119", 
  "modified_by": "dorji2392@bt.bt", 
  "module": "Maintenance", 
  "name": "POL", 
@@ -1479,7 +1479,7 @@
    "role": "Accounts User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
@@ -1547,11 +1547,11 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 1, 
    "if_owner": 0, 
@@ -1563,7 +1563,7 @@
    "role": "Accounts Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "write": 1
   }, 
   {
