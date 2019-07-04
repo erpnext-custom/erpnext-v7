@@ -34,7 +34,7 @@ def update_production_reading():
 		 
 
 def update_production_total_qty():
-        for a in frappe.db.sql("select name from `tabProduction`", as_dict=1):
+        for a in frappe.db.sql("select name from `tabProduction` where name ='PRO190700014'", as_dict=1):
                 raw_item = frappe.db.sql("select sum(qty) as total_qty from `tabProduction Material Item` where parent = '{0}'".format(a.name), as_dict=True)
                 production_item = frappe.db.sql("select sum(qty) as total_qty from `tabProduction Product Item` where parent = '{0}'".format(a.name), as_dict=True)
                 if raw_item[0]['total_qty'] > 0:

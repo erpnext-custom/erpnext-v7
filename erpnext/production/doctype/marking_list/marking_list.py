@@ -41,7 +41,8 @@ class MarkingList(Document):
 			d.timber_type = doc.timber_type
 			d.timber_class = doc.timber_class
 
-			d.qty_cft = d.qty_m3 * 35.315
+			#d.qty_cft = d.qty_m3 * 35.315
+			d.qty_cft = d.qty_m3 * 35.32
 			total_qty_m3 += d.qty_m3
 			total_qty_cft += d.qty_cft
 

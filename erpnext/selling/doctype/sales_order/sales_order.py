@@ -42,7 +42,11 @@ class SalesOrder(SellingController):
 		self.validate_for_items()
 		self.validate_warehouse()
 		self.validate_drop_ship()
-	
+		
+		if self.naming_series == "Timber Products":
+			self.validate_lot_list()
+
+
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 		make_packing_list(self)
 
@@ -51,6 +55,34 @@ class SalesOrder(SellingController):
 
 		if not self.billing_status: self.billing_status = 'Not Billed'
 		if not self.delivery_status: self.delivery_status = 'Not Delivered'
+
+	def validate_lot_list(self):
+		for item in self.items:
+			item_sub_group = frappe.db.get_value("Item", item.item_code, "item_sub_group")
+			sub_groups = ["Pole","Log","Block","Sawn", "Hakaries"]
+			if item_sub_group in sub_groups:
+				data = frappe.db.sql("select name, total_volume from `tabLot List` where branch='{0}' and item = '{1}' and name='{2}'".format(self.branch, item.item_code, item.lot_number), as_dict=1)
+				if not data:
+					frappe.throw("Invalid Lot selection, Please check Branch and Material")
+				else:
+					for a in data:
+						balance = flt(a.total_volume) - flt(item.qty)
+						if balance < 0:
+							frappe.throw("Not available balance {0} in the selected Lot {1}".format(balance, item.lot_number))
+						else:
+							item.lot_balance_volume = balance
+	def update_lot_onsubmit(self):
+		for item in self.items:
+			if item.lot_number:
+				prev_sold_qty=frappe.db.get_value("Lot List", item.lot_number, "sold_volume")
+				total_sold_qty = flt(prev_sold_qty) + flt(item.qty) 
+				frappe.db.sql("update `tabLot List` set sold_volume = {0} where name = {1}".format(total_sold_qty, item.lot_number))	
+	def update_lot_oncancel(self):
+		for item in self.items:
+			if item.lot_number:
+				prev_sold_qty=frappe.db.get_value("Lot List", item.lot_number, "sold_volume")
+				total_sold_qty = flt(prev_sold_qty) - flt(item.qty) 
+				frappe.db.sql("update `tabLot List` set sold_volume = {0} where name = {1}".format(total_sold_qty, item.lot_number))	
 
 	def calculate_transportation(self):
 		total_qty = 0
@@ -175,6 +207,9 @@ class SalesOrder(SellingController):
 
 		self.update_prevdoc_status('submit')
 		self.update_product_requisition(action="Submit")
+		if self.naming_series == "Timber Products":
+			self.update_lot_onsubmit()
+
 
 	def check_transporter_amount(self):
 		trans_amount = round(flt(self.total_quantity) * flt(self.total_distance) * flt(self.transportation_rate), 2)
@@ -194,6 +229,8 @@ class SalesOrder(SellingController):
 
 		frappe.db.set(self, 'status', 'Cancelled')
 		self.update_product_requisition(action = 'Cancell')
+		if self.naming_series == "Timber Products":
+			self.update_lot_oncancel()
 
 	def check_credit_limit(self):
 		from erpnext.selling.doctype.customer.customer import check_credit_limit
@@ -385,6 +422,16 @@ def get_list_context(context=None):
 	})
 
 	return list_context
+
+@frappe.whitelist()
+def get_lot_detail(branch, item_code, lot_number):
+	re = []
+	data = frappe.db.sql("select name, total_volume from `tabLot List` where branch='{0}' and item = '{1}' and name='{2}' and docstatus = 1".format(branch, item_code, lot_number), as_dict=1)
+	if data:
+		for a in data:
+			re.append({'name':a.name, 'total_volume':a.total_volume})
+		return re
+
 
 @frappe.whitelist()
 def close_or_unclose_sales_orders(names, status):

@@ -17,6 +17,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Production",
 				},
+                                {
+					"type": "doctype",
+					"name": "Lot List", 
+				},
 			]
 		},
 		{
