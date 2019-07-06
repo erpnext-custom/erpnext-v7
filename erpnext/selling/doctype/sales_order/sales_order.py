@@ -61,7 +61,7 @@ class SalesOrder(SellingController):
 			item_sub_group = frappe.db.get_value("Item", item.item_code, "item_sub_group")
 			sub_groups = ["Pole","Log","Block","Sawn", "Hakaries"]
 			if item_sub_group in sub_groups:
-				data = frappe.db.sql("select name, total_volume from `tabLot List` where branch='{0}' and item = '{1}' and name='{2}'".format(self.branch, item.item_code, item.lot_number), as_dict=1)
+				data = frappe.db.sql("select name, total_volume from `tabLot List` where branch='{0}' and item = '{1}' and name='{2}' and docstatus=1 and (sales_order is NULL OR sales_order ='')".format(self.branch, item.item_code, item.lot_number), as_dict=1)
 				if not data:
 					frappe.throw("Invalid Lot selection, Please check Branch and Material")
 				else:
@@ -74,15 +74,12 @@ class SalesOrder(SellingController):
 	def update_lot_onsubmit(self):
 		for item in self.items:
 			if item.lot_number:
-				prev_sold_qty=frappe.db.get_value("Lot List", item.lot_number, "sold_volume")
-				total_sold_qty = flt(prev_sold_qty) + flt(item.qty) 
-				frappe.db.sql("update `tabLot List` set sold_volume = {0} where name = {1}".format(total_sold_qty, item.lot_number))	
+				frappe.db.sql("update `tabLot List` set sales_order = '{0}' where name = '{1}'".format(self.name, item.lot_number))	
+	
 	def update_lot_oncancel(self):
 		for item in self.items:
 			if item.lot_number:
-				prev_sold_qty=frappe.db.get_value("Lot List", item.lot_number, "sold_volume")
-				total_sold_qty = flt(prev_sold_qty) - flt(item.qty) 
-				frappe.db.sql("update `tabLot List` set sold_volume = {0} where name = {1}".format(total_sold_qty, item.lot_number))	
+				frappe.db.sql("update `tabLot List` set sales_order = '' where name = '{0}'".format(item.lot_number))	
 
 	def calculate_transportation(self):
 		total_qty = 0
@@ -426,10 +423,11 @@ def get_list_context(context=None):
 @frappe.whitelist()
 def get_lot_detail(branch, item_code, lot_number):
 	re = []
-	data = frappe.db.sql("select name, total_volume from `tabLot List` where branch='{0}' and item = '{1}' and name='{2}' and docstatus = 1".format(branch, item_code, lot_number), as_dict=1)
+	data = frappe.db.sql('select name, total_volume from `tabLot List` where branch="{0}" and item = "{1}" and name="{2}" and docstatus = 1'.format(branch, item_code, lot_number), as_dict=1)
+	sub_group = frappe.db.get_value("Item", item_code, "item_sub_group")
 	if data:
 		for a in data:
-			re.append({'name':a.name, 'total_volume':a.total_volume})
+			re.append({'name':a.name, 'total_volume':a.total_volume, 'sub_group':sub_group})
 		return re
 
 

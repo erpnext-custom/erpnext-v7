@@ -99,6 +99,9 @@ def get_conditions(filters):
 	if filters.production_area:
                 condition += " and pe.production_area = '{0}'".format(filters.production_area)
 
+	if filters.uom:
+		condition += " and pe.uom = '{0}'".format(filters.uom)
+
 	return condition
 
 def get_columns(filters):

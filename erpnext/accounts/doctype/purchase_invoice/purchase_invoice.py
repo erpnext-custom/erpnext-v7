@@ -45,9 +45,10 @@ class PurchaseInvoice(BuyingController):
 			frappe.throw("Buying Cost Center is Mandatory")
 		if not self.is_opening:
 			self.is_opening = 'No'
-
+		
 		self.check_ba()
 		self.validate_tds()
+		self.outstanding_amount = flt(self.grand_total) - flt(self.other_deductions)
 
 		###if self.outstanding_amount:
 		#	outstanding_old = self.outstanding_amount;
@@ -59,6 +60,7 @@ class PurchaseInvoice(BuyingController):
 			self.po_required()
 			self.pr_required()
 			self.validate_supplier_invoice()
+			
 
 
 		# validate cash purchase
@@ -78,6 +80,13 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset()
 		self.validate_fixed_asset_account()
 		self.create_remarks()
+	
+		if self.other_deductions:
+			if self.tds_amount:
+				self.outstanding_amount = flt(self.grand_total) - flt(self.tds_amount) - flt(self.other_deductions)
+			else:
+				self.outstanding_amount = flt(self.grand_total) - flt(self.other_deductions)
+			
 
 	def validate_tds(self):
 		if not self.type:
@@ -290,7 +299,6 @@ class PurchaseInvoice(BuyingController):
 		self.check_ba()
 		self.check_prev_docstatus()
 		self.update_status_updater_args()
-
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype,
 			self.company, self.base_grand_total)
 

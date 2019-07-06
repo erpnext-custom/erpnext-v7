@@ -722,7 +722,6 @@ def get_child_cost_centers(current_cs=None):
     		      if(c['parent_cost_center'] in allchilds):
         			 if(c['name'] not in allchilds):
         			    allchilds.append(str(c['name']));
-
 	return allchilds;
 
 ##

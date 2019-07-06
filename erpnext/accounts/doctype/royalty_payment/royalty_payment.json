@@ -1136,7 +1136,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-20 19:18:25.325167", 
+ "modified": "2019-07-06 13:58:08.292245", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Royalty Payment", 
@@ -1249,7 +1249,7 @@
   {
    "amend": 0, 
    "apply_user_permissions": 1, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -1263,7 +1263,7 @@
    "role": "Production Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 

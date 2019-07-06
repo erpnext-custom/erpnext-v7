@@ -208,5 +208,12 @@ frappe.query_reports["Production Report"] = {
                         "width" :"80",
                         "options": ["Normal","Road Alignment","Fire Burnt Area","Transmission Line"],
                 },
+		{
+			"fieldname": "uom",
+			"label": ("UOM"),
+			"fieldtype": "Link",
+			"options":"UOM",
+		}
+
 	]
 }

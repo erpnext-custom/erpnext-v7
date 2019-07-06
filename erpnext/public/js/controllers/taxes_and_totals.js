@@ -558,7 +558,7 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 		// NOTE:
 		// paid_amount and write_off_amount is only for POS Invoice
 		// total_advance is only for non POS Invoice
-		
+
 		if(this.frm.doc.doctype == "Sales Invoice" && this.frm.doc.is_return){
 			this.calculate_paid_amount()
 		}
@@ -573,7 +573,10 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 		if(this.frm.doc.party_account_currency == this.frm.doc.currency) {	
 			var total_amount_to_pay = flt((this.frm.doc.grand_total - this.frm.doc.total_advance 
 				- this.frm.doc.write_off_amount), precision("grand_total"));
-
+			if(this.frm.doc.other_deductions){
+				total_amount_to_pay = flt((total_amount_to_pay - this.frm.doc.other_deductions), precision("grand_total"))
+			}
+			
 			if(this.frm.doc.tds_amount) {
 				total_amount_to_pay = flt((total_amount_to_pay - this.frm.doc.tds_amount), precision("grand_total"))
 			}

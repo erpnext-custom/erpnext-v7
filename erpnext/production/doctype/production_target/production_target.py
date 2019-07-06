@@ -49,10 +49,12 @@ def get_target_value(which, cost_center, production_group, fiscal_year, from_dat
 		cond = " a.location = '{0}'".format(cost_center)
 	else:
 		all_ccs = get_child_cost_centers(cost_center)
-		cond = " a.cost_center in {0}".format(tuple(all_ccs))
-
+		if len(all_ccs) > 1:
+			cond = " a.cost_center in {0}".format(tuple(all_ccs))
+		else:
+			cond = " a.cost_center in ('DUMMY')"
+	
 	query = "select sum(quantity) as total, sum(quarter1) as q1, sum(quarter2) as q2, sum(quarter3) as q3, sum(quarter4) as q4 from `tabProduction Target` a, `tab{0} Target Item` b where a.name = b.parent and {1} and a.fiscal_year = '{2}' and b.production_group = '{3}'".format(which, cond, fiscal_year, production_group)
-
 	qty = frappe.db.sql(query, as_dict=True)
 
 	q1 = qty and qty[0].q1 or 0
