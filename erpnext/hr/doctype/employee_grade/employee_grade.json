@@ -501,7 +501,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-04-16 12:04:26.435337", 
+ "modified": "2019-07-09 15:55:12.509135", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee Grade", 
@@ -574,6 +574,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

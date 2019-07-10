@@ -81,11 +81,11 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset_account()
 		self.create_remarks()
 	
-		if self.other_deductions:
-			if self.tds_amount:
-				self.outstanding_amount = flt(self.grand_total) - flt(self.tds_amount) - flt(self.other_deductions)
-			else:
-				self.outstanding_amount = flt(self.grand_total) - flt(self.other_deductions)
+		#if self.other_deductions:
+		#	if self.tds_amount:
+		#		self.outstanding_amount = flt(self.grand_total) - flt(self.tds_amount) - flt(self.other_deductions)
+		#	else:
+		#		self.outstanding_amount = flt(self.grand_total) - flt(self.other_deductions)
 			
 
 	def validate_tds(self):
@@ -407,6 +407,11 @@ class PurchaseInvoice(BuyingController):
 					"against_voucher_type": self.doctype,
 				}, self.party_account_currency)
 			)
+
+	def make_charges_gl_entry(self, gl_entries):
+		if self.charges:
+			for charge in self.charges:
+				pass
 
 	def make_item_gl_entries(self, gl_entries):
 		# item gl entries

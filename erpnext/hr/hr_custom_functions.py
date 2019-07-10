@@ -58,7 +58,7 @@ def post_leave_credits(today=None):
         
 	
 
-        #if first_day_of_month or first_day_of_year:
+        # if first_day_of_month or first_day_of_year:
 	f_date = get_first_day(add_days(today, -today.day))
 	t_date   = get_last_day(f_date)
 	elist = frappe.db.sql("""
@@ -102,70 +102,70 @@ def post_leave_credits(today=None):
 			continue
 
 		# Monthly credits
-		if first_day_of_month and flt(e.credits_per_month) > 0:
-			# For Earned Leaved monthly credits are given for previous month
-			if e.leave_type == "Earned Leave":
-				total_working_days = 0
-				total_leaves = 0
-				start_date = get_first_day(add_days(today, -20))
-				end_date   = get_last_day(start_date)
-				emplist = frappe.db.sql("""
-				select a.employee, a.employee_name, a.from_date, a.to_date 
-				from `tabLeave Application` a inner join `tabLeave Type` b on a.leave_type = b.name 
-				inner join `tabLeave Type Item` c on b.name = c.parent 
-				where (a.from_date between '{0}' and '{1}' or a.to_date 
-				between '{0}' and '{1}' or '{2}' between a.from_date and a.to_date)
-				and a.employee = '{3}'
-				and c.leave_type = 'Earned Leave' 
-				and a.docstatus = 1 
-				union select employee, employee_name, from_date, to_date 
-				from  `tabEmployee Disciplinary Record` 
-				where (from_date between '{0}' and '{1}' or to_date between '{0}' and '{1}' 
-				or '{2}' between from_date and to_date) and employee = '{3}' 
-				and not_guilty_or_acquitted = 0 and docstatus = 1
-				""".format(str(start_date), str(end_date), str(today), e.name), as_dict=1)					
-				if emplist:
-					total_days_in_month = date_diff(end_date, start_date)
-					leave_allocation_per_day = flt(e.credits_per_month/total_days_in_month)
-					for l in emplist:	
-						#Incase of leave within the month
-						if l.from_date >= start_date and l.to_date <= end_date:
-							total_leaves = total_leaves + date_diff(l.to_date, l.from_date)
-						#Incase of leave starting before the month and ending within the month(Not the last day of the month)
-						elif l.from_date < start_date and l.to_date < end_date:
-							total_leaves = total_leaves + date_diff(l.to_date, start_date)
-						#Incase of leave starting within the month(Not first day of the month) and but ends in other months
-						elif l.from_date > start_date and l.to_date > end_date:
-							total_leaves = total_leaves + date_diff(end_date, l.from_date)
-					total_working_days = total_days_in_month - total_leaves
+		#if first_day_of_month and flt(e.credits_per_month) > 0:
+		# For Earned Leaved monthly credits are given for previous month
+		if e.leave_type == "Earned Leave":
+			total_working_days = 0
+			total_leaves = 0
+			start_date = get_first_day(add_days(today, -20))
+			end_date   = get_last_day(start_date)
+			emplist = frappe.db.sql("""
+			select a.employee, a.employee_name, a.from_date, a.to_date 
+			from `tabLeave Application` a inner join `tabLeave Type` b on a.leave_type = b.name 
+			inner join `tabLeave Type Item` c on b.name = c.parent 
+			where (a.from_date between '{0}' and '{1}' or a.to_date 
+			between '{0}' and '{1}' or '{2}' between a.from_date and a.to_date)
+			and a.employee = '{3}'
+			and c.leave_type = 'Earned Leave' 
+			and a.docstatus = 1 
+			union select employee, employee_name, from_date, to_date 
+			from  `tabEmployee Disciplinary Record` 
+			where (from_date between '{0}' and '{1}' or to_date between '{0}' and '{1}' 
+			or '{2}' between from_date and to_date) and employee = '{3}' 
+			and not_guilty_or_acquitted = 0 and docstatus = 1
+			""".format(str(start_date), str(end_date), str(today), e.name), as_dict=1)					
+			if emplist:
+				total_days_in_month = date_diff(end_date, start_date)
+				leave_allocation_per_day = flt(e.credits_per_month/total_days_in_month)
+				for l in emplist:	
+					#Incase of leave within the month
+					if l.from_date >= start_date and l.to_date <= end_date:
+						total_leaves = total_leaves + date_diff(l.to_date, l.from_date)
+					#Incase of leave starting before the month and ending within the month(Not the last day of the month)
+					elif l.from_date < start_date and l.to_date < end_date:
+						total_leaves = total_leaves + date_diff(l.to_date, start_date)
+					#Incase of leave starting within the month(Not first day of the month) and but ends in other months
+					elif l.from_date > start_date and l.to_date > end_date:
+						total_leaves = total_leaves + date_diff(end_date, l.from_date)
+				total_working_days = total_days_in_month - total_leaves
 
-					credits_per_month = flt(total_working_days) * flt(leave_allocation_per_day)
-					logger.info("{0}|{1}|{2}|{3}|{4}|{5}".format(e.name,e.employee_name,e.leave_type,flt(total_working_days),flt(credits_per_month),flt(leave_allocation_per_day)))
-					
-				else:
-					# For Earned Leaved monthly credits are given for previous month
-					credits_per_month = flt(e.credits_per_month)
-
+				credits_per_month = flt(total_working_days) * flt(leave_allocation_per_day)
+				logger.info("{0}|{1}|{2}|{3}|{4}|{5}".format(e.name,e.employee_name,e.leave_type,flt(total_working_days),flt(credits_per_month),flt(leave_allocation_per_day)))
+				
 			else:
-				start_date = get_first_day(today)
-				end_date   = get_last_day(start_date)
+				# For Earned Leaved monthly credits are given for previous month
+				credits_per_month = flt(e.credits_per_month)
 
-			leave_allocation.append({
-				'from_date': str(start_date),
-				'to_date': str(end_date),
-				'new_leaves_allocated': flt(credits_per_month)
-			})
+		else:
+			start_date = get_first_day(today)
+			end_date   = get_last_day(start_date)
+
+		leave_allocation.append({
+			'from_date': str(start_date),
+			'to_date': str(end_date),
+			'new_leaves_allocated': flt(credits_per_month)
+		})
 
 		# Yearly credits
-		if first_day_of_year and flt(e.credits_per_year) > 0:
-			start_date = get_year_start_date(today)
-			end_date   = get_year_end_date(start_date)
+		# if first_day_of_year and flt(e.credits_per_year) > 0:
+		start_date = get_year_start_date(today)
+		end_date   = get_year_end_date(start_date)
 
-			leave_allocation.append({
-				'from_date': str(start_date),
-				'to_date': str(end_date),
-				'new_leaves_allocated': flt(e.credits_per_year)
-			})
+		leave_allocation.append({
+			'from_date': str(start_date),
+			'to_date': str(end_date),
+			'new_leaves_allocated': flt(e.credits_per_year)
+		})
 
 		for la in leave_allocation:
 			if not frappe.db.exists("Leave Allocation", {"employee": e.name, "leave_type": e.leave_type, "from_date": la['from_date'], "to_date": la['to_date'], "docstatus": ("<",2)}):

@@ -174,11 +174,11 @@ frappe.query_reports["Sales Report"] = {
                         "fieldtype": "Link",
                         "options": "Warehouse",
                         "get_query": function() {
-                                var branch = frappe.query_report.filters_by_name.branch.get_value();
+                         /*     var branch = frappe.query_report.filters_by_name.branch.get_value();
                                 if (!branch) {
                                         return
-                                }
-                                return {"doctype": "Warehouse", "filters": {"branch": branch, "disabled": 0}}
+                                } */
+                                return {"doctype": "Warehouse", "filters": {"disabled": 0}}
                         }
                 },
 

@@ -82,6 +82,10 @@ class Production(StockController):
 					item.reading = "15"
 				elif item.reading_select == "18 ft Above (Pole)":
 					item.reading = "19"
+				elif item.reading_select == "0 - 6 ft (Hakaries)":
+					item.reading = "5.5"
+				else:
+					pass
 
 			if item.item_code not in prod_items:
 				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
