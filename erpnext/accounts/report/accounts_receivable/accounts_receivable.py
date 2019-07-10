@@ -39,7 +39,7 @@ class ReceivablePayableReport(object):
 			columns += [args.get("party_type") + " Name::110"]
 
 		columns += [_("Voucher Type") + "::110", _("Voucher No") + ":Dynamic Link/"+_("Voucher Type")+":120",
-			_("Delivery Note") + ":Dynamic Link/"+_("Delivery Note") + ":120", _("Due Date") + ":Date:80"]
+			_("Due Date") + ":Date:80"]
 
 		if args.get("party_type") == "Supplier":
 			columns += [_("Bill No") + "::80", _("Bill Date") + ":Date:80"]
@@ -104,7 +104,6 @@ class ReceivablePayableReport(object):
 		data = []
 		for gle in self.get_entries_till(self.filters.report_date, args.get("party_type")):
 			if self.is_receivable_or_payable(gle, dr_or_cr, future_vouchers):
-                                dn_no = ""
 				outstanding_amount = self.get_outstanding_amount(gle, self.filters.report_date, dr_or_cr)
 				#if outstanding_amount: #abs(outstanding_amount) > 0.1/10**currency_precision:
 
@@ -113,16 +112,11 @@ class ReceivablePayableReport(object):
 				# customer / supplier name
 				if party_naming_by == "Naming Series":
 					row += [self.get_party_name(gle.party_type, gle.party)]
-				
-				if gle.voucher_type == "Sales Invoice":
-					for a in frappe.db.sql("""select delivery_note from `tabSales Invoice Item` where parent = '{0}'
-					limit 1""".format(gle.voucher_no), as_dict=1):
-						dn_no = a.delivery_note
 
 				# get due date
 				due_date = voucher_details.get(gle.voucher_no, {}).get("due_date", "")
 
-				row += [gle.voucher_type, gle.voucher_no, dn_no, due_date]
+				row += [gle.voucher_type, gle.voucher_no, due_date]
 
 				# get supplier bill details
 				if args.get("party_type") == "Supplier":
@@ -204,6 +198,10 @@ class ReceivablePayableReport(object):
 		elif gle.voucher_type == "POL":
 			out_amt = frappe.db.get_value("POL", gle.voucher_no, "outstanding_amount")
                 # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		elif gle.voucher_type == "Rental Bill":
+			inv_amount = frappe.db.get_value("Rental Bill", gle.voucher_no, "rent_amount")
+			out_am = frappe.db.get_value("Rental Bill", gle.voucher_no, "received_amount")
+			out_amt = inv_amount - out_am
 		else:
 			pass
 		
@@ -237,6 +235,8 @@ class ReceivablePayableReport(object):
 			for si in frappe.db.sql("""select name, due_date
 				from `tabSales Invoice` where docstatus=1""", as_dict=1):
 					voucher_details.setdefault(si.name, si)
+			for bi in frappe.db.sql(""" select name, posting_date as due_date from `tabRental Bill` where docstatus = 1""", as_dict =1):
+				voucher_details.setdefault(bi.name, bi)
 
 		if party_type == "Supplier":
 			for pi in frappe.db.sql("""select name, due_date, bill_no, bill_date
@@ -247,8 +247,8 @@ class ReceivablePayableReport(object):
 
 	def get_gl_entries(self, party_type):
 		if not hasattr(self, "gl_entries"):
-			conditions, values = self.prepare_conditions(party_type)
-			
+			conditions, values, ren_cond  = self.prepare_conditions(party_type)
+			values1 = values
 			# Ver 1.0 Begins by SSK on 21/10/2016, Following variable is introducted
                         exempt_gls = ["Abnormal Loss - SMCL","Normal Loss - SMCL"]
                         exempt_gls = " and account not in ('{0}','{1}')".format(*exempt_gls)
@@ -265,7 +265,7 @@ class ReceivablePayableReport(object):
 				select_fields = "debit_in_account_currency as debit, credit_in_account_currency as credit"
 			else:
 				select_fields = "debit, credit"
-
+			frappe.msgprint("cond {0} val {1} re {2}".format(conditions, values1, ren_cond))
                         # Ver 1.0 Begins by SSK on 21/10/2016, Following code commented and the subsequet is added
                         '''
                         self.gl_entries = frappe.db.sql("""select name, posting_date, account, party_type, party,
@@ -275,7 +275,6 @@ class ReceivablePayableReport(object):
 				{2}
 				order by posting_date, party"""
 				.format(select_fields, conditions, cus_query), values, as_dict=True)
-                        '''
 
 			self.gl_entries = frappe.db.sql("""select posting_date, party_type, party,
 				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks,cost_center, {0}
@@ -287,11 +286,56 @@ class ReceivablePayableReport(object):
 				group by posting_date, party_type, party, voucher_type, voucher_no,
 				against_voucher_type, against_voucher, account_currency, cost_center
 				order by posting_date, party"""
-				.format(select_fields, conditions, cus_query, exempt_gls), values, as_dict=True)
+				.format(select_fields, conditions, cus_query, exempt_gls), values, as_dict=True)'''
+			self.gl_entries = frappe.db.sql("""select *from (select posting_date, party_type, party, 
+				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks,cost_center, {0} 
+				from `tabGL Entry` 
+				where docstatus < 2 and party_type= %s and voucher_type != 'Process Rental Billing' and 
+				(party is not null and party != '') {1}
+				{2}
+				{3}
+				and against_voucher_type is not null
+				union
+				select 
+				posting_date, party_type, tenant_name as party,
+				"Rental Bill" as voucher_type,  name as voucher_no, "Rental Payment" as against_voucher_type, 
+				rental_payment as against_voucher,
+				'BTN' as account_currency, '' as remarks, cost_center, rent_amount as debit, 0 as credit
+				from `tabRental Bill`
+				where docstatus < 2 and party_type = '{4}' and (tenant_name is not null and tenant_name != '') {5}) as gg
+				group by gg.posting_date, gg.party_type, gg.party, gg.voucher_type, gg.voucher_no,
+				gg.against_voucher_type, gg.against_voucher, gg.account_currency, gg.cost_center"""
+				.format(select_fields, conditions, cus_query, exempt_gls, party_type, ren_cond), values, as_dict=True, debug =True)
 
 		return self.gl_entries
 
+	
+
+
 	def prepare_conditions(self, party_type):
+                conditions = [""]
+                values = [party_type]
+		ren_cond = "and 1 = 1"
+                party_type_field = scrub(party_type)
+
+                if self.filters.company:
+                        conditions.append("company=%s")
+                        values.append(self.filters.company)
+			ren_cond += " and company = '{0}'".format(self.filters.company)
+
+                if self.filters.cost_center:
+                        conditions.append("cost_center=%s")
+                        values.append(self.filters.cost_center)
+			ren_cond += " and cost_center = '{0}'".format(self.filters.cost_center)
+
+                if self.filters.get(party_type_field):
+                        conditions.append("party=%s")
+                        values.append(self.filters.get(party_type_field))
+			ren_cond = " and tenant_name = '{0}'".format(self.filters.get(party_type_field))
+
+                return " and ".join(conditions), values, ren_cond
+
+	def prepare_conditions1(self, party_type):
 		conditions = [""]
 		values = [party_type]
 
@@ -367,3 +411,4 @@ def get_ageing_data(first_range, second_range, third_range, age_as_on, entry_dat
 	outstanding_range[index] = outstanding_amount
 
 	return [age] + outstanding_range
+

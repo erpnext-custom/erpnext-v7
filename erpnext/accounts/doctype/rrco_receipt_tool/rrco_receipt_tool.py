@@ -12,13 +12,13 @@ class RRCOReceiptTool(Document):
 	pass
 
 @frappe.whitelist()
-def get_invoices(branch=None, start_date=None, end_date=None, tds_rate=2):
+def get_invoices(purpose = None, branch=None, start_date=None, end_date=None, tds_rate=2):
 	invoices_not_marked = []
 	invoices_marked = []
 	if not branch:
 		branch = '48217412094rewqjhrouwq'	
 	query = ""
-	if tds_rate == '1234567890':
+	if tds_rate == '1234567890' and purpose == 'Leave Encashment':
 		query = "select \'" + str(purpose) + "\' as purpose, name, application_date as posting_date, concat(employee_name, \" (\",  name, \")\") bill_no FROM `tabLeave Encashment` AS a WHERE a.docstatus = 1 AND a.application_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND a.branch = \'"+ str(branch)+"\' AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"
 	else:
 		query = "select \'" + str(purpose) + "\' as purpose, name, posting_date, bill_no, supplier FROM `tabPurchase Invoice` AS a WHERE docstatus = 1 AND posting_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND tds_rate = " + str(tds_rate) + " AND a.branch = \'"+ str(branch)+"\' AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name) UNION select \'" + str(purpose) + "\' as purpose, name, posting_date, name as bill_no, party as supplier FROM `tabDirect Payment` AS a WHERE docstatus = 1 AND posting_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND tds_percent = " + str(tds_rate) + " AND a.branch = \'"+ str(branch)+"\' AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"

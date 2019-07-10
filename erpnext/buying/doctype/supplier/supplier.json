@@ -2,7 +2,7 @@
  "allow_copy": 0, 
  "allow_import": 1, 
  "allow_rename": 1, 
- "autoname": "field:supplier_code", 
+ "autoname": "field:supplier_name", 
  "beta": 0, 
  "creation": "2013-01-10 16:34:11", 
  "custom": 0, 
@@ -1041,7 +1041,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-05-30 12:36:44.918775", 
+ "modified": "2019-07-08 10:51:01.395401", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Supplier", 
@@ -1289,7 +1289,7 @@
    "write": 1
   }
  ], 
- "quick_entry": 1, 
+ "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
  "search_fields": "supplier_name, supplier_type", 

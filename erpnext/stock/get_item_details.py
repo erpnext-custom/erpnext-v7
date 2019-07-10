@@ -292,10 +292,10 @@ def validate_conversion_rate(args, meta):
 	args.conversion_rate = flt(args.conversion_rate,
 		get_field_precision(meta.get_field("conversion_rate"),
 			frappe._dict({"fields": args})))
-
 	# validate price list currency conversion rate
 	if not args.get("price_list_currency"):
-		throw(_("Price List Currency not selected"))
+		args.price_list_currency = "BTN" #Added by Thukten due to error while creating PO from MR
+		# throw(_("Price List Currency not selected"))
 	else:
 		validate_conversion_rate(args.price_list_currency, args.plc_conversion_rate,
 			meta.get_label("plc_conversion_rate"), args.company)

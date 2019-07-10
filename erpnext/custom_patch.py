@@ -9,6 +9,20 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_customer_tenant():
+	for a in frappe.db.sql("select owner_name from `tabCustomer` group by owner_name having count(owner_name) > 1", as_dict=1):
+		for b in frappe.db.sql("select name, customer_code, customer_name from `tabCustomer` where owner_name='{0}'".format(a.owner_name), as_dict=1):
+			f_cus_name = b.customer_name + "-" + b.customer_code
+			frappe.db.sql("update `tabCustomer` set customer_name = '{0}' where name = '{1}'".format(f_cus_name, b.name))
+
+
+def update_rental_bills():
+        doc = frappe.get_doc("GL Entry", 'GL19060000098')
+        for a in frappe.db.sql(""" select name from `tabRental Bill` where docstatus = 1""", as_dict =1):
+                frappe.db.sql("""update `tabRental Bill` set company = '{0}', cost_center = '{1}' where name = '{2}'
+			""".format(doc.company, doc.cost_center, a.name))
+		print(a.name)
+
 def update_production_20190225():
         num = 0
         for a in frappe.db.sql("select a.name, a.posting_date from tabProduction a where docstatus = 1 and not exists (select 1 from  `tabGL Entry` b where b.voucher_no = a.name) order by a.posting_date asc, a.posting_time asc", as_dict=1):

@@ -35,8 +35,12 @@ data = {
 	'fieldname': 'project',
 	'transactions': [
 		{
-			'label': _('Project'),
-                        'items': ['Task', 'Timesheet', 'BOQ', 'BOQ Adjustment', 'MB Entry']
+			'label': _('Work Progress'),
+                        'items': ['Task', 'Timesheet']
+		},
+                {
+			'label': _('BOQ & SUBCONTRACT'),
+                        'items': ['BOQ', 'BOQ Adjustment', 'Subcontract', 'MB Entry']
 		},
                 {
 			'label': _('Transactions'),

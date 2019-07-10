@@ -10,13 +10,12 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
-// Ver 3.0 Begins, by SHIV on 2018/11/05
-// Following line commented by SHIV on 2018/11/05
-//cur_frm.add_fetch("cost_center", "branch", "branch")
-cur_frm.add_fetch("branch","cost_center","cost_center");
-// Ver 3.0 Ends
-cur_frm.add_fetch("customer", "image", "customer_image" );
-cur_frm.add_fetch("customer", "customer_details", "customer_address" );
+//cur_frm.add_fetch("cost_center", "branch", "branch");
+cur_frm.add_fetch("branch", "cost_center", "cost_center");
+//cur_frm.add_fetch("customer", "image", "customer_image" );
+//cur_frm.add_fetch("customer", "customer_details", "customer_address" );
+//cur_frm.add_fetch("supplier", "image", "customer_image" );
+//cur_frm.add_fetch("supplier", "supplier_details", "supplier_details" );
 
 frappe.ui.form.on("Project", {
 	// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
@@ -83,6 +82,7 @@ frappe.ui.form.on("Project", {
 	// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 	
 	onload: function(frm) {
+		enable_disable(frm);
 		var so = frappe.meta.get_docfield("Project", "sales_order");
 		so.get_route_options_for_new_doc = function(field) {
 			if(frm.is_new()) return;
@@ -99,6 +99,14 @@ frappe.ui.form.on("Project", {
 						query:"erpnext.projects.doctype.project.project.get_users_for_project"
 					}
 				});
+			
+		/*
+		frm.set_query("party_type", function() {
+			return {
+				filters: {"name": ["in", ["Customer", "Supplier"]]}
+			}
+		});
+		*/
 
 		// sales order
 		frm.set_query('sales_order', function() {
@@ -116,24 +124,28 @@ frappe.ui.form.on("Project", {
 		});
 	},
 	refresh: function(frm) {
+		enable_disable(frm);
 		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
 		// Following code added SHIV on 02/09/2017
-		frm.add_custom_button(__("Advance"), function(){frm.trigger("make_project_advance")},__("Make"), "icon-file-alt");
-		frm.add_custom_button(__("Project Register"), function(){
-				frappe.route_options = {
-					project: frm.doc.name,
-					additional_info: 1
-				};
-				frappe.set_route("query-report", "Project Register");
-			},__("Reports"), "icon-file-alt"
-		);
-		frm.add_custom_button(__("Manpower"), function(){
-				frappe.route_options = {
-					project: frm.doc.name
-				};
-				frappe.set_route("query-report", "Project Manpower");
-			},__("Reports"), "icon-file-alt"
-		);
+		if(!frm.doc.__islocal){
+			frm.add_custom_button(__("Advance"), function(){frm.trigger("make_project_advance")},__("Make"), "icon-file-alt");
+			frm.add_custom_button(__("BOQ"), function(){frm.trigger("make_boq")},__("Make"), "icon-file-alt");
+			frm.add_custom_button(__("Project Register"), function(){
+					frappe.route_options = {
+						project: frm.doc.name,
+						additional_info: 1
+					};
+					frappe.set_route("query-report", "Project Register");
+				},__("Reports"), "icon-file-alt"
+			);
+			frm.add_custom_button(__("Manpower"), function(){
+					frappe.route_options = {
+						project: frm.doc.name
+					};
+					frappe.set_route("query-report", "Project Manpower");
+				},__("Reports"), "icon-file-alt"
+			);
+		}
 		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		
 		if(frm.doc.__islocal) {
@@ -155,6 +167,13 @@ frappe.ui.form.on("Project", {
 		if(frm.doc.docstatus === 0){
 			enable_disable_items(frm);
 		}
+	},
+	
+	make_boq: function(frm){
+		frappe.model.open_mapped_doc({
+			method: "erpnext.projects.doctype.project.project.make_boq",
+			frm: frm
+		});
 	},
 	
 	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
@@ -238,7 +257,7 @@ frappe.ui.form.on("Project", {
 			cur_frm.set_value("imprest_receivable",parseFloat(frm.doc.imprest_limit || 0.0)-parseFloat(frm.doc.imprest_received || 0.0))
 		}
 	},
-	// Ver 3.0, Begins, following code commented by SHIV on 2018/11/05
+	
 	/*
 	branch: function(frm){
 		// Update Cost Center
@@ -262,8 +281,64 @@ frappe.ui.form.on("Project", {
 		}
 	},
 	*/
-	// Ver 3.0 Ends
+	
+	project_type: function(frm){
+		enable_disable(frm);
+		update_party_info(frm.doc);
+	},
+	party_type: function(frm){
+		enable_disable(frm);
+		update_party_info(frm.doc);
+	},
+	party: function(frm){
+		update_party_info(frm.doc);
+	},
+	project_category: function(){
+		cur_frm.set_value('project_sub_category','');
+		cur_frm.fields_dict['project_sub_category'].get_query = function(doc, dt, dn) {
+		   return {
+				filters:{"project_category": doc.project_category}
+		   }
+		}
+	}
 });
+
+var update_party_info=function(doc){
+	cur_frm.call({
+		method: "update_party_info",
+		doc:doc
+	});
+}
+
+var enable_disable = function(frm){
+	// Display tasks only after the project is saved
+	cur_frm.toggle_display("activity_and_tasks", !frm.doc.__islocal);
+	cur_frm.toggle_display("activity_tasks", !frm.doc.__islocal);
+	cur_frm.toggle_display("sb_additional_tasks", !frm.doc.__islocal);
+	cur_frm.toggle_display("additional_tasks", !frm.doc.__islocal);
+	
+	//cur_frm.toggle_reqd("party_type", frm.doc.project_type=="External");
+	//cur_frm.toggle_reqd("party", frm.doc.party_type || frm.doc.project_type=="External");
+	cur_frm.toggle_reqd("party_type", 1);
+	cur_frm.toggle_reqd("party", 1);
+	
+	if (frm.doc.project_type == "External") {
+		frm.set_query("party_type", function() {
+			return {
+				//filters: {"name": ["in", ["Customer", "Supplier"]]}
+				filters: {"name": ["in", ["Supplier"]]}
+			}
+		});
+		//cur_frm.toggle_reqd("party", frm.doc.party_type);
+	} else {
+		frm.set_query("party_type", function() {
+			return {
+				//filters: {"name": ["in", ["Employee"]]}
+				filters: {"name": ["in", ["Customer"]]}
+			}
+		});
+	}
+}
 
 frappe.ui.form.on("Project Task", {
 	edit_task: function(frm, doctype, name) {

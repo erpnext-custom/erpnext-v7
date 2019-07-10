@@ -9,6 +9,8 @@ from frappe.utils.data import get_first_day, get_last_day, add_days, add_years
 
 class TenantInformation(Document):
 	def validate(self):
+		self.rent_amount = self.floor_area * self.rate_per_sq_ft
+
 		self.validate_allocation()
 		#if not self.rental_charges:
 		#	self.calculate_rent_charges()
@@ -75,11 +77,12 @@ class TenantInformation(Document):
 			if not customer_code:
 				frappe.throw("Setup Customer Code Base in Rental Customer Group")
 		self.db_set("customer_code", customer_code)	
-		
+		cus_name = self.tenant_name + "-" + customer_code
+			
 		cus = frappe.new_doc("Customer")
 		cus.customer_code = customer_code
 		cus.name = customer_code
-		cus.customer_name = self.tenant_name
+		cus.customer_name = cus_name
 		cus.customer_group = "Rental"
 		cus.customer_id = self.cid
 		cus.territory = "Bhutan"

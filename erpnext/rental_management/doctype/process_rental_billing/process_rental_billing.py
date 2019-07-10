@@ -100,6 +100,8 @@ class ProcessRentalBilling(AccountsController):
 
 					if dtls:
 						for d in dtls:
+							cost_center = frappe.db.get_value("Branch", d.branch, "cost_center") 
+							company = frappe.db.get_value("Branch", d.branch, "company") 
 							rb = frappe.get_doc({
 								"doctype": "Rental Bill",
 								"tenant": name,
@@ -124,7 +126,9 @@ class ProcessRentalBilling(AccountsController):
 								"yearmonth": yearmonth,
 								"fiscal_year" : self.fiscal_year,
 								"month": self.month,
-								"rent_amount": d.rental_amount
+								"rent_amount": d.rental_amount,
+								"cost_center": cost_center,
+								"company": company
 							})
 							rb.insert()
 						msg = "Rental Bill Created Successfully for {0} amount Nu. {1}".format(d.tenant_name, d.rental_amount)

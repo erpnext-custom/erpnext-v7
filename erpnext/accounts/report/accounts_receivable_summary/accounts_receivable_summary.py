@@ -90,7 +90,6 @@ class AccountsReceivableSummary(ReceivablePayableReport):
 
 	def get_voucherwise_data(self, party_naming_by, args):
 		voucherwise_data = ReceivablePayableReport(self.filters).run(args)[1]
-
 		cols = ["posting_date", "party"]
 
 		if party_naming_by == "Naming Series":

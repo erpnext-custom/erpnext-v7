@@ -21,14 +21,13 @@ class Supplier(TransactionBase):
 		load_address_and_contact(self, "supplier")
 
 	def autoname(self):
-		frappe.msgprint("This is a test")
 		self.supplier_code = self.get_current_supplier_code()
 		
 		if not self.supplier_code:
 			msgprint(_("supplier Code is mandatory because supplier is not automatically numbered"), raise_exception=1)
 
 		self.supplier_code = strip(self.supplier_code)
-		self.name = self.supplier_code
+		self.name = self.supplier_name
 
 	def get_current_supplier_code(self):
 		supplier_code = frappe.db.sql("""select supplier_code from tabSupplier where supplier_type=%s order by supplier_code desc limit 1;""", self.supplier_type);

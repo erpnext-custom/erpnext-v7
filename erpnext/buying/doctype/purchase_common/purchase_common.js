@@ -322,6 +322,7 @@ erpnext.buying.get_items_from_product_bundle = function(frm) {
 		args = dialog.get_values();
 		if(!args) return;
 		dialog.hide();
+
 		return frappe.call({
 			type: "GET",
 			method: "erpnext.stock.doctype.packed_item.packed_item.get_items_from_product_bundle",

@@ -12,6 +12,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 2.0               SHIV                              07/06/2018         * Allowing role "Project Committee" to change
                                                                          Branch and Cost Center.
                                                                          Method: validate_branch_change
+2.0.190402        SHIV                              2019/04/02         * Refined                                                                         
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -27,6 +28,7 @@ import datetime
 
 # Autonaming is changed, SHIV on 23/10/2017
 from frappe.model.naming import make_autoname
+from erpnext.custom_utils import get_branch_cc
 
 class Project(Document):
         def autoname(self):
@@ -47,13 +49,25 @@ class Project(Document):
 			self.load_tasks()
 		'''
 
-                # Following code added by SHIV on 11/08/2017 
-		if not self.get('__unsaved') and not self.get("activity_tasks"):
-			self.load_activity_tasks()
-			self.load_additional_tasks()
-			self.load_boq()
-			self.load_advance()
-			self.load_invoice()
+                # Following code added by SHIV on 11/08/2017
+                if not self.get('__unsaved'):
+                        if not self.get("activity_tasks"):
+                                self.load_activity_tasks()
+
+                        if not self.get("additional_tasks"):
+                                self.load_additional_tasks()
+
+                        # Following code commented by SHIV on 2019/06/20
+                        '''
+                        if not self.get("project_boq_item"):
+                                self.load_boq()
+
+                        if not self.get("project_advance_item"):
+                                self.load_advance()
+
+                        if not self.get("project_invoice_item"):
+                                self.load_invoice()
+                        '''
 
                 # Following code is commented and the subsequent is added by SHIV on 20/09/2017
                 """
@@ -69,12 +83,18 @@ class Project(Document):
 			from `tabTimesheet Detail` where project=%s and docstatus < 2 group by description
 			order by total_days desc''', self.name, as_dict=True))
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-        
+
+        # Commented by SHIV on 2019/01/30, it seems is calling onload twice
+        '''
 	def __setup__(self):
 		self.onload()
-
+        '''
+        
 	def validate(self):
 		self.validate_dates()
+		self.validate_branch_cc()
+		self.validate_project_type_and_party()
+                self.update_party_info()
 
 		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 		# Follwoing 2 lines are commented by SHIV on 2017/08/11
@@ -94,14 +114,68 @@ class Project(Document):
                         self.sync_additional_tasks()
 		self.activity_tasks = []
 		self.additional_tasks = []
+		
+		# Following code commented by SHIV on 2019/06/20
+                '''
 		self.project_advance_item = []
 		self.project_boq_item = []
 		self.project_invoice_item = []
-
+                '''
+                
 		# Following method added by SHIV on 03/11/2017
 		self.validate_branch_change()
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.send_welcome_email()
+
+        def validate_project_type_and_party(self):
+                """ Restrict user from changing party if there are advance/invoice transactions """
+
+                if not self.project_type:
+                        frappe.throw(_("Project type cannot be empty"), title="Data Missing")
+                elif self.party_type and not self.party:
+                        frappe.throw(_("Party cannot be empty"),title="Data Missing")
+                elif not self.party_type and self.party:
+                        frappe.throw(_("Party Type cannot be empty"),title="Data Missing")
+                else:
+                        #project_type = {"Internal": ["Employee","None"], "External": ["Supplier","Customer"]}
+                        project_type = {"Internal": ["Customer"], "External": ["Supplier"]}
+                        for key,value in project_type.iteritems():
+                                if self.project_type == key and (self.party_type or "None") not in value:
+                                        frappe.throw(_("Party type should be {0} for {1} projects").format("/".join(value),key), title="Invalid Data")
+
+                        prev_project_type = self.get_db_value("project_type") 
+                        prev_party        = self.get_db_value("party")
+
+                        fields = []
+                        if prev_project_type and prev_project_type != self.project_type:
+                                fields.append("Project Type")
+                        elif prev_party and prev_party != self.party:
+                                fields.append("Party")
+                        
+                        if fields:
+                                self.check_dependencies(fields[0])
+
+        def check_dependencies(self, field):
+                for dt in ["Project Advance", "Project Invoice"]:
+                        for t in frappe.get_all(dt, ["name"], {"project": self.name,"docstatus":("<",2)}):
+                                msg = '<b>Reference# : <a href="#Form/{1}/{0}">{0}</a></b>'.format(t.name,dt)
+                                frappe.throw(_("{2} cannot be changed for projects already having {1}<br>{0}").format(msg,dt,field), title="Invalid Operation")
+                                                
+        def update_party_info(self):
+                if self.project_type:
+                        if self.party_type and self.party:
+                                doc = frappe.get_doc(self.party_type, self.party)
+                                self.party_address = doc.get("customer_details") if self.party_type == "Customer" else doc.get("supplier_details") if self.party_type == "Supplier" else doc.get("employee_name")
+                                self.party_image = doc.image
+                        else:
+                                self.party_address = None
+                                self.party_image = None
+                                        
+	def validate_branch_cc(self):
+                if self.flags.dont_sync_tasks: return
+                
+		if self.cost_center != get_branch_cc(self.branch):
+			frappe.throw("Project\'s branch and cost center doesn't belong to each other")
 
 	def on_update(self):
                 # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
@@ -124,6 +198,8 @@ class Project(Document):
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
         def validate_branch_change(self):
+                if self.flags.dont_sync_tasks: return
+                
                 if self.branch != self.get_db_value("branch"):
                         for doctype in ["Project Advance", "Project Invoice"]:
                                 for t in frappe.get_all(doctype, ["name"], {"project": self.name, "docstatus":("<",2)}):
@@ -131,6 +207,8 @@ class Project(Document):
                                         frappe.throw(_("Change of branch not permitted.<br>{0}").format(msg),title="Dependencies found")
 
         def update_branch_change(self):
+                if self.flags.dont_sync_tasks: return
+                
                 for doctype in ["MB Entry", "BOQ Adjustment", "BOQ", "Timesheet", "Task"]:
                         for t in frappe.get_all(doctype, ["name"], {"project": self.name}):
                                 doc = frappe.get_doc(doctype, t.name)
@@ -149,6 +227,8 @@ class Project(Document):
                 }[str(self.status) or "Planning"]
 
         def validate_imprest(self):
+                if self.flags.dont_sync_tasks: return
+                
                 if flt(self.imprest_limit) < 0:
                         frappe.throw(_("Imprest Limit cannot be a negative value."),title="Invalid Value")
                         
@@ -160,6 +240,8 @@ class Project(Document):
         
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         def validate_target_quantity(self):
+                if self.flags.dont_sync_tasks: return
+                
                 for task in self.activity_tasks:
                         prev_value = frappe.db.get_value("Task", task.task_id, "target_quantity")
                         
@@ -205,6 +287,8 @@ class Project(Document):
                                         frappe.throw("Row# {0} : Cannot change `Target Quantity/Value` for Tasks already having active Timesheets. <br/>{1}".format(task.idx, msg))
                                         
         def validate_work_quantity(self):
+                if self.flags.dont_sync_tasks: return
+                
                 for task in self.activity_tasks:
                         prev_value = frappe.db.get_value("Task", task.task_id, "work_quantity")
                         
@@ -250,6 +334,8 @@ class Project(Document):
                                         frappe.throw("Row# {0} : Cannot change `Target Work Quantity` for Tasks already having active Timesheets. <br/>{1}".format(task.idx, msg))
                                         
         def update_task_progress(self):
+                if self.flags.dont_sync_tasks: return
+                
                 task_list = frappe.db.sql("""
                                 select name
                                 from `tabTask`
@@ -278,6 +364,8 @@ class Project(Document):
                                 """.format(flt(values.target_quantity_complete), flt(values.work_quantity_complete), task.name))
 
         def update_project_progress(self):
+                if self.flags.dont_sync_tasks: return
+                
                 # Following code added by SHIV on 2017/08/16
 		total = frappe.db.sql("""
                                 select
@@ -354,6 +442,8 @@ class Project(Document):
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++                
 
         def update_group_tasks(self):
+                if self.flags.dont_sync_tasks: return
+                
                 # Activity Tasks
                 group_list = frappe.db.sql("""
                                         select t1.name, t1.task_idx, t1.subject, t1.is_group,
@@ -493,6 +583,8 @@ class Project(Document):
                         self.append("project_advance_item",{
                                 "advance_name": item.name,
                                 "advance_date": item.advance_date.strftime("%d-%m-%Y"),
+                                "advance_amount": flt(item.received_amount)+flt(item.paid_amount),
+                                "paid_amount": flt(item.paid_amount),
                                 "received_amount": flt(item.received_amount),
                                 "adjustment_amount": flt(item.adjustment_amount),
                                 "balance_amount": flt(item.balance_amount)
@@ -612,6 +704,8 @@ class Project(Document):
 		return frappe.get_all("Task", "*", {"project": self.name}, order_by="exp_start_date asc")
 
 	def validate_dates(self):
+                if self.flags.dont_sync_tasks: return
+                
 		if self.expected_start_date and self.expected_end_date:
 			if getdate(self.expected_end_date) < getdate(self.expected_start_date):
 				frappe.throw(_("Expected End Date can not be less than Expected Start Date"))
@@ -775,8 +869,8 @@ class Project(Document):
 			task_names.append(task.name)
 
 		# delete
-		for t in frappe.get_all("Task", ["name"], {"project": self.name, "name": ("not in", task_names), "additional_task": 0}):
-			frappe.delete_doc("Task", t.name)
+                for t in frappe.get_all("Task", ["name"], {"project": self.name, "name": ("not in", task_names), "additional_task": 0}):
+                        frappe.delete_doc("Task", t.name)
 
 		self.update_percent_complete()
 		self.update_costing()
@@ -784,7 +878,7 @@ class Project(Document):
 	def sync_additional_tasks(self):
 		"""sync tasks and remove table"""
 		if self.flags.dont_sync_tasks: return
-
+		
 		task_names = []
 		task_idx = 0
 		for t in self.additional_tasks:
@@ -874,11 +968,11 @@ class Project(Document):
 		self.actual_start_date = from_time_sheet.start_date
 		self.actual_end_date = from_time_sheet.end_date
 
-		self.total_costing_amount = from_time_sheet.costing_amount
-		self.total_billing_amount = from_time_sheet.billing_amount
-		self.actual_time = from_time_sheet.time
+		self.total_costing_amount = flt(from_time_sheet.costing_amount)
+		self.total_billing_amount = flt(from_time_sheet.billing_amount)
+		self.actual_time = flt(from_time_sheet.time)
 
-		self.total_expense_claim = from_expense_claim.total_sanctioned_amount
+		self.total_expense_claim = flt(from_expense_claim.total_sanctioned_amount)
 
 		self.gross_margin = flt(self.total_billing_amount) - flt(self.total_costing_amount)
 
@@ -958,17 +1052,36 @@ def get_cost_center_name(project):
 @frappe.whitelist()
 def make_project_advance(source_name, target_doc=None):
         def update_master(source_doc, target_doc, source_partent):
-                target_doc.customer = source_doc.customer
+                #target_doc.customer = source_doc.customer
+                pass
         
         doclist = get_mapped_doc("Project", source_name, {
                 "Project": {
                                 "doctype": "Project Advance",
                                 "field_map":{
                                         "name": "project",
-                                        "customer": "customer"
+                                        "party_type": "party_type",
+                                        "party": "party",
+                                        "party_address": "party_address"
                                 },
                                 "postprocess": update_master
                         }
         }, target_doc)
         return doclist
 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+
+@frappe.whitelist()
+def make_boq(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_partent):
+                pass
+        
+        doclist = get_mapped_doc("Project", source_name, {
+                "Project": {
+                                "doctype": "BOQ",
+                                "field_map":{
+                                        "name": "project",
+                                },
+                                "postprocess": update_master
+                        }
+        }, target_doc)
+        return doclist

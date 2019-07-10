@@ -29,7 +29,7 @@ class Customer(TransactionBase):
 			msgprint(_("customer Code is mandatory because customer is not automatically numbered"), raise_exception=1)
 
 		self.customer_code = strip(self.customer_code)
-		self.name = self.customer_code
+		self.name = self.customer_name
 
 	def get_current_customer_code(self):
 		customer_code = frappe.db.sql("""select customer_code from tabCustomer where customer_group=%s order by customer_code desc limit 1;""", self.customer_group);
