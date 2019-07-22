@@ -19,6 +19,13 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 1.0               SSK                              28/08/2016         Added employee_subgroup to Salary Slip
 1.0               SSK                              29/08/2016         Added method calculate_totals for use in
                                                                         Salary Increment
+2.0               SSK                              27/02/2018         Methods
+                                                                                validate_salary_component()
+                                                                                salary_component_query()
+                                                                        introducted inorder to restrict user from making
+                                                                        mistakes by adding deduction salary_component type
+                                                                        under earnings table vice versa.
+3.0.190429        SHIV                             29/04/2019         * Introduced is_pf_deductible under salary component
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -26,40 +33,67 @@ from __future__ import unicode_literals
 import frappe
 
 from frappe import msgprint
-from frappe.utils import cstr, flt, getdate
+from frappe.utils import cstr, flt, cint, getdate, date_diff, nowdate
+from frappe.utils.data import get_first_day, get_last_day, add_days
 from frappe.model.naming import make_autoname
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from frappe.model.document import Document
 from erpnext.hr.utils import set_employee_name
+from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settings, get_salary_tax
+from erpnext.accounts.accounts_custom_functions import get_number_of_days
+from erpnext.custom_utils import nvl
+from frappe.desk.reportview import get_match_cond
+import operator
 
 class SalaryStructure(Document):
 	def autoname(self):
 		self.name = make_autoname(self.employee + '/.SST' + '/.#####')
 		
 	def validate(self):
+		if self.is_active == 'No' and not self.to_date:
+			frappe.throw("To Date is mandatory for Non Active Salary Structures")
 		self.check_overlap()
 		self.validate_amount()
 		self.validate_employee()
 		self.validate_joining_date()
 		set_employee_name(self)
+		self.check_multiple_active()
+		self.update_salary_structure()
+		
+	def on_update(self):
+		self.assign_employee_details()
 
+        # Ver 2.0, following method introduced by SHIV on 2018/02/2017
+        def validate_salary_component(self):
+                dup = {}
+                for parentfield in ['earnings','deductions']:
+                        parenttype = 'Earning' if parentfield == 'earnings' else 'Deduction'
+                        for i in self.get(parentfield):
+                                # Restricting users from entering earning component under deductions table and vice versa.
+                                component_type = frappe.db.get_value("Salary Component",i.salary_component,"type")
+                                if parenttype != component_type:
+                                        frappe.throw(_('Salary Component <b>`{1}`</b> of type <b>`{2}`</b> cannot be added under <b>`{3}`</b> table. <br/> <b><u>Reference# : </u></b> <a href="#Form/Salary Structure/{0}">{0}</a>').format(self.name,i.salary_component,component_type,parentfield.title()),title="Invalid Salary Component")
+
+                                # Checking duplicate entries 
+                                if i.salary_component in ('Basic Pay') and i.salary_component in dup:
+                                        frappe.throw(_("Row#{0} : Duplicate entries not allowed for component <b>{1}</b>.").format(i.idx,i.salary_component),title="Duplicate Record Found")
+                                else:
+                                        dup.update({i.salary_component: 1})
+        
 	def get_employee_details(self):
-		ret = {}
-		det = frappe.db.sql("""select employee_name, branch, designation, department, division, section
-			from `tabEmployee` where name = %s""", self.employee)
-		if det:
-			ret = {
-				'employee_name': cstr(det[0][0]),
-				'branch': cstr(det[0][1]),
-				'designation': cstr(det[0][2]),
-				'department': cstr(det[0][3]),
-                                'division': cstr(det[0][4]),       #Ver 20160704.1 added by SSK
-                                'section': cstr(det[0][5]),        #Ver 20160704.1 added by SSK
-				'backup_employee': cstr(self.employee)
-			}
-		return ret
-
+                emp = frappe.get_doc("Employee", self.employee)
+                self.employee_name      = emp.employee_name
+		self.branch             = emp.branch
+		self.designation        = emp.designation
+		self.employment_type    = emp.employment_type
+		self.employee_group     = emp.employee_group
+		self.employee_grade     = emp.employee_subgroup
+		self.department         = emp.department
+                self.division           = emp.division
+                self.section            = emp.section
+		self.backup_employee    = self.employee
+				
 	def get_ss_values(self,employee):
 		basic_info = frappe.db.sql("""select bank_name, bank_ac_no
 			from `tabEmployee` where name =%s""", employee)
@@ -71,23 +105,37 @@ class SalaryStructure(Document):
                 # Ver 1.0 by SSK on 08/08/2016, Following line is commented and the subsequent if condition is added
                 #list1 = frappe.db.sql("select name from `tab%s` where docstatus != 2" % doct_name)
                 if (tab_fname == 'earnings'):
-                        list1 = frappe.db.sql("select name from `tab%s` where `docstatus` != 2 and `type` = 'Earning' and `default` = 1" % doct_name)
+                        list1 = frappe.db.sql("select * from `tab{0}` where `docstatus` != 2 and `type` = 'Earning' and `default` = 1".format(doct_name), as_dict=True)
                 else:
-                        list1 = frappe.db.sql("select name from `tab%s` where `docstatus` != 2 and `type` = 'Deduction' and `default` = 1 " % doct_name)
+                        list1 = frappe.db.sql("select * from `tab{0}` where `docstatus` != 2 and `type` = 'Deduction' and `default` = 1".format(doct_name), as_dict=True)
                         
 		for li in list1:
-			child = self.append(tab_fname, {})
+                        child = self.append(tab_fname, {})
 			if(tab_fname == 'earnings'):
-				child.salary_component = cstr(li[0])
-				child.amount = 0
+				child.salary_component = li.name
+				child.amount = flt(li.default_amount)
 			elif(tab_fname == 'deductions'):
-				child.salary_component = cstr(li[0])
-				child.amount = 0
-
+				child.salary_component = li.name
+				child.amount = flt(li.default_amount)
+				
 	def make_earn_ded_table(self):
-		self.make_table('Salary Component','earnings','Salary Detail')
-		self.make_table('Salary Component','deductions', 'Salary Detail')
-
+		#self.make_table('Salary Component','earnings','Salary Detail')
+		#self.make_table('Salary Component','deductions', 'Salary Detail')
+		tbl_list = {'earnings': 'Earning', 'deductions': 'Deduction'}
+		for ed in tbl_list:
+                        sc_list = frappe.db.sql("select * from `tabSalary Component` where `docstatus` != 2 and `type` = '{0}'".format(tbl_list[ed]), as_dict=True)
+                        for sc in sc_list:
+                                if sc.default:
+                                        child = self.append(ed, {})
+                                        child.salary_component = sc.name
+                                        if sc.type == 'Earning':
+                                                child.amount = flt(sc.default_amount) if sc.payment_method == 'Lumpsum' else 0
+                                        else:
+                                                child.amount = flt(sc.default_amount)
+                                        vars(self)[sc.field_name] = sc.default
+                                vars(self)[sc.field_method] = sc.payment_method
+                                vars(self)[sc.field_value]  = flt(sc.default_amount)
+                                
 	def check_overlap(self):
 		existing = frappe.db.sql("""select name from `tabSalary Structure`
 			where employee = %(employee)s and
@@ -121,214 +169,339 @@ class SalaryStructure(Document):
 		if getdate(self.from_date) < joining_date:
 			frappe.throw(_("From Date in Salary Structure cannot be lesser than Employee Joining Date."))
 
-	def calculate_totals(self, employee, new_basic):
-                basic_pay = 0.00
-                gross_pay = 0.00
-                deductions = 0.00
-                net_pay = 0.00
+	def assign_employee_details(self):
+		if self.employee:
+			doc = frappe.get_doc("Employee", self.employee)
+			self.db_set("employee_name", doc.employee_name)
+			self.db_set("branch", doc.branch)
+			self.db_set("department", doc.department)
+			self.db_set("division", doc.division)
+			self.db_set("section", doc.section)
+			self.db_set("employment_type", doc.employment_type)
+			self.db_set("employee_group", doc.employee_group)
+			self.db_set("employee_grade", doc.employee_subgroup)
+			self.db_set("designation", doc.designation)
 
-                for e in self.earnings:
-                        if e.salary_component == 'Basic Pay':
-                                e.amount = flt(new_basic)
-                                basic_pay += flt(new_basic)
+	def check_multiple_active(self):
+		if self.is_active == 'Yes':
+			result = frappe.db.sql("select 1 from `tabSalary Structure` where employee = %s and is_active = \'Yes\' and name != %s", (self.employee, self.name))
+			if result:
+				frappe.throw("Can not have multiple 'Active' Salary Structures")
 
-                gross_pay = flt(basic_pay)
+        # ++++++++++++++++++++ VER#2.0#CDCL#886 BEGINS ++++++++++++++++++++
+        # Following code added by SHIV on 06/09/2018
+        def update_salary_structure(self, new_basic_pay=0):
+                '''
+                    This method calculates all the allowances and deductions based on the preferences
+                    set in the GUI. Calculated values are then checked and updated as follows.
+                            1) If the calculated component is missing in the existing earnings/deductions
+                                table then insert a new row.
+                            2) If the calculated component is found in the existing earnings/deductions
+                                table but amounts do not match, then update the respective row.
+                '''
+                self.validate_salary_component()
+                
+                basic_pay = comm_allowance = gis_amt = pf_amt = health_cont_amt = tax_amt = basic_pay_arrears = 0 
+                total_earning = total_deduction = net_pay = 0
+                settings      = get_payroll_settings(self.employee)
+                settings      = settings if settings else {}
+                
+                tbl_list      = {'earnings': 'Earning', 'deductions': 'Deduction'}
 
-                #
-                # Calculating Earnings
-                #
-                for e in self.earnings:
-                        calc_amt = 0.00
-                        if e.salary_component == 'Basic Pay':
-                                pass
-                        elif self.eligible_for_corporate_allowance and e.salary_component == 'Corporate Allowance':
-                                calc_amt = round(basic_pay*flt(self.ca)*0.01)
-                                gross_pay += calc_amt
-                                e.amount = calc_amt
-                        elif self.eligible_for_contract_allowance and e.salary_component == 'Contract Allowance':
-                                calc_amt = round(basic_pay*flt(self.contract_allowance)*0.01)
-                                gross_pay += calc_amt
-                                e.amount = calc_amt
-                        elif self.eligible_for_communication_allowance and e.salary_component == 'Communication Allowance':
-                                calc_amt = round(flt(self.communication_allowance))			
-                                gross_pay += calc_amt
-                                e.amount = calc_amt
-                        elif self.eligible_for_psa and e.salary_component == 'PSA':
-                                calc_amt = round(basic_pay*flt(self.psa)*0.01)
-                                gross_pay += calc_amt
-                                e.amount = calc_amt
-                        elif self.eligible_for_mpi and e.salary_component == 'MPI':
-                                calc_amt = round(basic_pay*flt(self.mpi)*0.01)
-                                gross_pay += calc_amt
-                                e.amount = calc_amt
-                        elif self.eligible_for_officiating_allowance and e.salary_component == 'Officiating Allowance':
-                                calc_amt = round(basic_pay*flt(self.officiating_allowance)*0.01)
-                                gross_pay += calc_amt
-                                e.amount = calc_amt
-                        elif self.eligible_for_temporary_transfer_allowance and e.salary_component == 'Temporary Transfer Allowance':
-                                calc_amt = (basic_pay*flt(self.temporary_transfer_allowance)*0.01)
-                                gross_pay += calc_amt
-                                e.amount = calc_amt
-                        elif self.eligible_for_fuel_allowances and e.salary_component == 'Fuel Allowance':
-                                calc_amt = round(flt(self.fuel_allowances))
-                                gross_pay += calc_amt
-                                e.amount = calc_amt
-                        else:
-                                gross_pay += e.amount
+                for ed in ['earnings','deductions']:
+                        add_list = []
+                        del_list = []
+                        calc_map = []
 
-                #
-                # Calculating Deductions
-                #
-                company_det = get_company_pf('2016')
-                frappe.msgprint(company_det)
-                for d in self.deductions:
-                        if d.salary_component == 'Group Insurance Scheme':
-                                calc_gis_amt = flt(get_employee_gis(self.employee))
-                                d.amount = calc_gis_amt
-                                deductions += calc_gis_amt
-                        elif d.salary_component == 'PF':
-                                calc_pf_amt = 0;
-                                calc_pf_amt = round(basic_pay*company_det.employee_pf*0.01);
-                                d.amount = calc_pf_amt
-                                deductions += calc_pf_amt
-                        elif d.salary_component == 'Health Contribution':
-                                calc_health_amt = 0;
-                                calc_health_amt = round(gross_pay*company_det.health_contribution*0.01);
-                                d.amount = calc_health_amt
-                                deductions += calc_health_amt
-                        elif d.salary_component == 'Salary Tax':
-                                calc_tds_amt = 0;
-                                calc_tds_amt = get_salary_tax(gross_pay-calc_pf_amt-calc_gis_amt)
-                                d.amount = calc_tds_amt
-                                deductions += calc_tds_amt
-                        else:
-                                deductions += d.amount
+                        sst_map = {}
+                        for sc in frappe.db.sql("select * from `tabSalary Component` where `type`='{0}' and field_name is not null".format(tbl_list[ed]), as_dict=True):
+                                sst_map.setdefault(ed,[]).append(sc)
+                        ed_map = [i.name for i in sst_map[ed]]
+
+                        # Update Basic Pay if new_basic_pay has value(from salary increments), and remove
+                        #  components if not eligible from earnings and deductions tables. 
+                        for ed_item in self.get(ed):
+                                amount = flt(ed_item.amount)
+                                if ed_item.salary_component not in ed_map:
+                                        if ed == 'earnings':
+                                                if ed_item.salary_component == 'Basic Pay':
+                                                        if flt(new_basic_pay) > 0 and flt(new_basic_pay) != flt(amount):
+                                                                amount = flt(new_basic_pay)
+                                                        basic_pay = amount
+                                                        ed_item.amount = basic_pay
+                                                # Following condition added by SHIV on 2019/04/29
+                                                elif frappe.db.exists("Salary Component", {"name": ed_item.salary_component, "is_pf_deductible": 1}):
+                                                        basic_pay_arrears += flt(ed_item.amount)
+                                                total_earning += round(amount)
+                                        else:
+                                                total_deduction += round(amount)
+                                else:
+                                        for m in sst_map[ed]:
+                                                if m['name'] == ed_item.salary_component and not self.get(m['field_name']):
+                                                        del_list.append(ed_item)
+                        [self.remove(d) for d in del_list]
+
+                        # Calculating Earnings and Deductions based on preferences and values set
+                        for m in sst_map[ed]:
+                                calc_amt = 0
+
+                                if self.get(m['field_method']) == 'Percent' and flt(self.get(m['field_value'])) > 100:
+                                        frappe.throw(_("Percentage cannot exceed 100 for component <b>{0}</b>").format(m['name']), title="Invalid Data")
+                                        
+                                if ed == 'earnings':
+                                        if self.get(m['field_name']):
+                                                calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))
+                                                comm_allowance += round(flt(calc_amt) if m['name'] == 'Communication Allowance' else 0)
+                                                total_earning += calc_amt
+                                                calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
+                                else:
+                                        if self.get(m['field_name']) and m['name'] == 'SWSS':
+                                                sws_amt = round(flt(settings.get("sws_contribution")))
+                                                calc_amt = sws_amt
+                                                calc_map.append({'salary_component': m['name'], 'amount': flt(sws_amt)})
+                                        elif self.get(m['field_name']) and m['name'] == 'Group Insurance Scheme':
+                                                gis_amt  = round(flt(settings.get("gis")))
+                                                calc_amt = gis_amt
+                                                calc_map.append({'salary_component': m['name'], 'amount': flt(gis_amt)})
+                                        elif self.get(m['field_name']) and m['name'] == 'PF':
+                                                pf_amt   = round((flt(basic_pay)+flt(basic_pay_arrears))*flt(settings.get("employee_pf"))*0.01)
+                                                calc_amt = pf_amt
+                                                calc_map.append({'salary_component': m['name'], 'amount': flt(pf_amt)})
+                                        elif self.get(m['field_name']) and m['name'] == 'Health Contribution':
+                                                health_cont_amt = round(flt(total_earning)*flt(settings.get("health_contribution"))*0.01)
+                                                calc_amt = health_cont_amt
+                                                calc_map.append({'salary_component': m['name'], 'amount': flt(health_cont_amt)})
+                                        else:
+                                                calc_amt = 0
+                                        total_deduction += calc_amt
+
+                        # Calculating Salary Tax
+                        if ed == 'deductions':
+                                tax_amount = round(get_salary_tax(flt(total_earning)-flt(pf_amt)-flt(gis_amt)-(comm_allowance*0.5)))
+                                total_deduction += tax_amount
+                                calc_map.append({'salary_component': 'Salary Tax', 'amount': flt(tax_amount)})
+
+                        # Updating existing Earnings and Deductions tables
+                        for c in calc_map:
+                                found = 0
+                                for ed_item in self.get(ed):
+                                        if ed_item.salary_component == c['salary_component']:
+                                                found = 1
+                                                if flt(ed_item.amount) != flt(c['amount']):
+                                                        ed_item.amount = flt(c['amount'])
+                                if not found:
+                                        add_list.append(c)
+
+                        [self.append(ed,i) for i in add_list]
+                                        
+                self.total_earning = flt(total_earning)
+                self.total_deduction = flt(total_deduction)
+                self.net_pay = flt(total_earning)-flt(total_deduction)
+
+                if flt(total_earning)-flt(total_deduction) < 0:
+                        frappe.throw(_("Total deduction cannot be more than total earning."), title="Invalid Data")
+                        
+        # +++++++++++++++++++++ VER#2.0#CDCL#886 ENDS +++++++++++++++++++++
 
 @frappe.whitelist()
-def make_salary_slip(source_name, target_doc=None):
+def make_salary_slip(source_name, target_doc=None, calc_days={}):
 	def postprocess(source, target):
-                # Ver 1.0 Begins added by SSK on 25/08/201, updating branch, department, division in salary slip
                 gross_amt = 0.00
-                employee = frappe.get_doc("Employee",source.employee)
-                target.branch = employee.branch
-                target.department = employee.department
-                target.division = employee.division
-                target.designation = employee.designation
-                target.section = employee.section
-                target.employee_subgroup = employee.employee_subgroup # Ver 1.0 Begins, added by SSK on 28/08/2016
-                #frappe.msgprint(_("StartDate: {0} EndDate: {1}").format(target.start_date,target.end_date))
-                # Ver 1.0 Ends
-		# copy earnings and deductions table
+		comm_amt  = 0.00
+		basic_amt = 0.00
+		basic_pay_arrears = 0.00
+                settings  = get_payroll_settings(source.employee)
+		m_details = get_month_details(target_doc.fiscal_year, target_doc.month)
+
+                target.gross_pay = 0
+                target.total_deduction = 0
+                target.net_pay = 0
+                target.rounded_total = 0
+                target.actual_basic = 0
+                
+                if calc_days:
+                        start_date   = calc_days.get("from_date")
+                        end_date     = calc_days.get("to_date")
+                        days_in_month= calc_days.get("total_days_in_month")
+                        working_days = calc_days.get("working_days")
+                        lwp          = calc_days.get("leave_without_pay")
+                        payment_days = calc_days.get("payment_days")
+                else:
+                        return
+
+		# Copy earnings and deductions table from source salary structure
+		calc_map = {}
 		for key in ('earnings', 'deductions'):
 			for d in source.get(key):
-                                if d.from_date and d.to_date:
-                                        if ((d.from_date <= target.start_date <= d.to_date) or (d.from_date <= target.end_date <= d.to_date)):
-                                                target.append(key, {
-                                                        'amount': d.amount,
-                                                        'default_amount': d.amount,
-                                                        'depends_on_lwp' : d.depends_on_lwp,
-                                                        'salary_component' : d.salary_component,
-                                                        'institution_name' : d.institution_name,
-                                                        'ref_docname' : d.name,
-                                                        'reference_type' : d.reference_type,
-                                                        'reference_number' : d.reference_number,
-                                                        'from_date' : d.from_date,
-                                                        'to_date' : d.to_date,
-                                                        'total_deductible_amount' : d.total_deductible_amount,
-                                                        'total_deducted_amount' : (d.total_deducted_amount+d.amount),
-                                                        'total_outstanding_amount' : (d.total_deductible_amount-(d.total_deducted_amount+d.amount)) if d.total_deductible_amount else 0
-                                                })
+                                amount          = flt(d.amount)
+                                deductible_amt  = 0.0
+                                deducted_amt    = 0.0
+                                outstanding_amt = 0.0
+
+                                if d.from_date:
+                                        if (start_date <= d.from_date <= end_date) or ((d.from_date <= end_date) and (nvl(d.to_date,end_date) >= start_date)):                
+                                                if key == 'deductions':
+                                                        if flt(d.total_deductible_amount) > 0:
+                                                                if flt(d.total_outstanding_amount) > 0:
+                                                                        if flt(amount) >= flt(d.total_outstanding_amount):
+                                                                                amount = flt(d.total_outstanding_amount)
+                                                                else:
+                                                                        amount = 0
+                                        else:
+                                                amount = 0                
+                                elif d.to_date:
+                                        if (start_date <= d.to_date <= end_date) or ((d.to_date >= start_date) and (nvl(d.from_date,start_date) <= end_date)):
+                                                if key == 'deductions':
+                                                        if flt(d.total_deductible_amount) > 0:
+                                                                if flt(d.total_outstanding_amount) > 0:
+                                                                        if flt(amount) >= flt(d.total_outstanding_amount):
+                                                                                amount = flt(d.total_outstanding_amount)
+                                                                else:
+                                                                        amount = 0
+                                        else:
+                                                amount = 0
                                 else:
-                                        target.append(key, {
-                                                'amount': d.amount,
-                                                'default_amount': d.amount,
-                                                'depends_on_lwp' : d.depends_on_lwp,
-                                                'salary_component' : d.salary_component,
-                                                'ref_docname': d.name
-                                        })                                        
+                                        if key == 'deductions':
+                                                if flt(d.total_deductible_amount) > 0:
+                                                        if flt(d.total_outstanding_amount) > 0:
+                                                                if flt(amount) >= flt(d.total_outstanding_amount):
+                                                                        amount = flt(d.total_outstanding_amount)
 
-                for e in target.get('earnings'):
-                        gross_amt += flt(e.amount)
+                                                        else:
+                                                                amount = 0
 
-                gross_amt += flt(target.arrear_amount) + flt(target.leave_encashment_amount)
+                                if flt(d.total_deductible_amount) > 0:
+                                        if flt(d.total_outstanding_amount) > 0:
+                                                deductible_amt  = flt(d.total_deductible_amount)
+                                                deducted_amt    = flt(d.total_deducted_amount) + flt(amount)
+                                                outstanding_amt = flt(d.total_outstanding_amount) - flt(amount)
 
-                for d in target.get('deductions'):
-                        if d.salary_component in ('PF','Group Insurance Scheme'):
-                                gross_amt -= flt(d.amount)
+                                # Leave without pay
+                                calc_amount = flt(amount)
+                                if key == "earnings":
+                                        if d.depends_on_lwp:
+                                                calc_amount = round(flt(amount)*flt(payment_days)/flt(days_in_month))
+                                        else:
+                                                calc_amount = round(flt(amount)*(flt(working_days)/flt(days_in_month)))
+                                
+                                calc_map.setdefault(key,[]).append({
+                                        'salary_component'         : d.salary_component,
+                                        'depends_on_lwp'           : d.depends_on_lwp,
+					'institution_name'         : d.institution_name,
+					'reference_type'           : d.reference_type,
+					'reference_number'         : d.reference_number,
+                                        'ref_docname'              : d.name,
+                                        'from_date'                : start_date,
+                                        'to_date'                  : end_date,
+                                        'amount'                   : flt(calc_amount),
+                                        'default_amount'           : flt(amount),
+                                        'total_deductible_amount'  : flt(deductible_amt),
+                                        'total_deducted_amount'    : flt(deducted_amt),
+                                        'total_outstanding_amount' : flt(outstanding_amt),
+                                        'total_days_in_month'      : flt(days_in_month),
+                                        'working_days'             : flt(working_days),
+                                        'leave_without_pay'        : flt(lwp),
+                                        'payment_days'             : flt(payment_days)
+                                })
 
-                for d in target.get('deductions'):
-                        if d.salary_component == 'Salary Tax':
-                                #frappe.msgprint(_("Gross Amount: {0}").format(flt(gross_amt)))
-                                tax_amt = get_salary_tax(flt(gross_amt))
-                                #frappe.msgprint(_("Tax: {0}").format(tax_amt))
-                                d.amount = flt(tax_amt)
+                for e in calc_map['earnings']:
+                        if e['salary_component'] == 'Basic Pay':
+                        	basic_amt = (flt(e['amount']))
+                        # Following condition added by SHIV on 2019/04/29
+                        elif frappe.db.exists("Salary Component", {"name": e['salary_component'], "is_pf_deductible": 1}):
+                                basic_pay_arrears += (flt(e['amount']))
+                        if e['salary_component'] == 'Communication Allowance':
+                        	comm_amt = (flt(e['amount']))
+			gross_amt += flt(e['amount'])
 
-                                        
+                gross_amt += (flt(target.arrear_amount) + flt(target.leave_encashment_amount))
+
+                # Calculating PF, Group Insurance Scheme, Health Contribution
+		sws = pf = gis = health = 0.00
+		for d in calc_map['deductions']:
+                        if not flt(gross_amt):
+                                d['amount'] = 0
+                        else:
+                                if d['salary_component'] == 'SWSS':
+                                        sws = flt(settings.get("sws_contribution"));
+                                        d['amount'] = sws
+                                if d['salary_component'] == 'PF':
+                                        percent = flt(settings.get("employee_pf"))
+                                        pf = round((flt(basic_amt)+flt(basic_pay_arrears))*flt(percent)*0.01);
+                                        d['amount'] = pf
+                                if d['salary_component'] == 'Group Insurance Scheme':
+                                        gis = flt(settings.get("gis"))
+                                        d['amount'] = gis
+                                if d['salary_component'] == 'Health Contribution':
+                                        percent = flt(settings.get("health_contribution"))
+                                        health = round(gross_amt*flt(percent)*0.01);
+                                        d['amount'] = health
+
+
+                # Calculating Salary Tax
+		tax_included = 0
+		for d in calc_map['deductions']:
+                        if not flt(gross_amt):
+                                d['amount'] = 0
+                        else:
+                                if d['salary_component'] == 'Salary Tax':
+                                        if not tax_included:
+                                                tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
+                                                d['amount'] = flt(tax_amt)
+                                                tax_included = 1
+
+                # Appending calculated components to salary slip                                                
+                [target.append('earnings',m) for m in calc_map['earnings']]
+                [target.append('deductions',m) for m in calc_map['deductions']]
+                
 		target.run_method("pull_emp_details")
-		target.run_method("get_leave_details")
 		target.run_method("calculate_net_pay")
-			
-
+		
 	doc = get_mapped_doc("Salary Structure", source_name, {
 		"Salary Structure": {
 			"doctype": "Salary Slip",
 			"field_map": {
 				"total_earning": "gross_pay",
-				"name": "salary_structure"
+				"name": "salary_structure",
 			}
 		}
 	}, target_doc, postprocess, ignore_child_tables=True)
-
+                
 	return doc
 
-# Ver 1.0 added by SSK on 04/08/2016, Fetching TDS component
+# Ver 2.0, Following method added by SHIV on 2018/02/27
 @frappe.whitelist()
-def get_salary_tax(gross_amt):
-        tax_amount = 0
-        max_limit = frappe.db.sql("""select max(b.upper_limit)
-                from `tabSalary Tax` a, `tabSalary Tax Item` b
-                where now() between a.from_date and a.to_date
-                and b.parent = a.name
-                """)
-
-        if flt(flt(gross_amt) if flt(gross_amt) else 0.00) > flt(flt(max_limit[0][0]) if flt(max_limit[0][0]) else 0.00):
-                tax_amount = flt((((flt(gross_amt) if flt(gross_amt) else 0.00)-83333.00)*0.25)+11875.00)
-        else:
-                result = frappe.db.sql("""select b.tax from
-                        `tabSalary Tax` a, `tabSalary Tax Item` b
-                        where now() between a.from_date and a.to_date
-                        and b.parent = a.name
-                        and %s between b.lower_limit and b.upper_limit
-                        limit 1
-                        """,gross_amt)
-                if result:
-                        tax_amount = flt(result[0][0])
-                else:
-                        tax_amount = 0
-        
-        return tax_amount
-		
-# Ver 1.0 added by SSK on 03/08/2016, Fetching PF component
-@frappe.whitelist()
-def get_company_pf(fiscal_year):
-        result = frappe.db.sql("""
-                select employee_pf, employer_pf, health_contribution, retirement_age
-                from `tabFiscal Year`
-                where now() between year_start_date and year_end_date
-                limit 1
-                """);
-        return result
-
-# Ver 1.0 added by SSK on 04/08/2016, Fetching GIS component
-@frappe.whitelist()
-def get_employee_gis(employee):
-        #msgprint(employee);
-        result = frappe.db.sql("""select a.gis
-                from `tabEmployee Grade` a, `tabEmployee` b
-                where b.employee = %s
-                and b.employee_group = a.employee_group
-                and b.employee_subgroup = a.employee_subgroup
-                limit 1
-                """,employee);
-        #msgprint(result);
-        return result     
+def salary_component_query(doctype, txt, searchfield, start, page_len, filters):
+        return frappe.db.sql(""" 
+                        select
+                                name,
+                                type,
+                                payment_method
+                        from `tabSalary Component`
+                        where type = %(component_type)s
+                        and (
+                                {key} like %(txt)s
+                                or
+                                type like %(txt)s
+                                or
+                                payment_method like %(txt)s
+                        )
+                        {mcond}
+                        order by
+                                if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
+                                if(locate(%(_txt)s, type), locate(%(_txt)s, type), 99999),
+                                if(locate(%(_txt)s, payment_method), locate(%(_txt)s, payment_method), 99999),
+                                idx desc,
+                                name, type, payment_method
+                        limit %(start)s, %(page_len)s
+                        """.format(**{
+                                'key': searchfield,
+                                'mcond': get_match_cond(doctype)
+                        }),
+                        {
+                "txt": "%%%s%%" % txt,
+                "_txt": txt.replace("%", ""),
+                "start": start,
+                "page_len": page_len,
+                "component_type": 'Earning' if filters['parentfield'] == 'earnings' else 'Deduction'
+            })

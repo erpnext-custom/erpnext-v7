@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, cint
 
@@ -38,7 +39,19 @@ class CostofProduction(Document):
 		branch_list = [str(d.branch) for d in self.get("item_branch")]
 		branch_list.append(str("DUMMY"))
 
-		for a in frappe.db.sql("select a.branch, b.name from `tabCOP Branch` a, `tabCost of Production` b where a.parent = b.name and b.name != %s and a.branch in {0} and (%s between b.from_date and b.to_date or %s between b.from_date and b.to_date or  (%s > b.from_date and %s < b.to_date) or (%s < b.from_date and %s > b.to_date))".format(tuple(branch_list)), (self.name, self.from_date, self.to_date, self.from_date, self.to_date, self.from_date, self.to_date), as_dict=1):
+		for a in frappe.db.sql("""
+				select a.branch, b.name 
+				from `tabCOP Branch` a, `tabCost of Production` b 
+				where a.parent = b.name 
+				and b.name != '{0}'
+				and a.branch in {1} 
+				and (
+					('{2}' between b.from_date and b.to_date) or 
+					('{3}' between b.from_date and b.to_date) or  
+					('{2}' > b.from_date and '{3}' < b.to_date) or 
+					('{2}' < b.from_date and '{3}' > b.to_date)
+				)
+			""".format(self.name, tuple(branch_list), self.from_date, self.to_date), as_dict=1):
 			#check for Item duplicate
 			doc = frappe.get_doc("Cost of Production", a.name)
 			for b in doc.item_rates:

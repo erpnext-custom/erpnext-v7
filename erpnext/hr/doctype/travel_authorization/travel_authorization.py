@@ -16,9 +16,9 @@ class TravelAuthorization(Document):
 	def get_status(self):
                 if self.workflow_state == "Draft":
                         self.document_status = None
-                if self.workflow_state == "Rejected":
+                if self.workflow_state == "Rejected" and self.docstatus == 0:
                         self.document_status = "Rejected"
-                if self.workflow_state == "Approved":
+                if self.workflow_state == "Approved" and self.docstatus ==1:
                         self.document_status = "Approved"
 
                 if self.docstatus == 0 and self.workflow_state == "Approved":
@@ -211,8 +211,7 @@ class TravelAuthorization(Document):
 	def validate_submitter(self):
 		if self.supervisor != frappe.session.user:
 			frappe.throw("Only the selected supervisor can submit this document")
-
-
+		
 	##
 	# Send notification to the supervisor / employee
 	##

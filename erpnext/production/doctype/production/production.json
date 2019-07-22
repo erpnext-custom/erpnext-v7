@@ -709,7 +709,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-15 16:49:35.016098", 
+ "modified": "2019-07-05 10:06:53.239504", 
  "modified_by": "dorji2392@bt.bt", 
  "module": "Production", 
  "name": "Production", 
@@ -737,7 +737,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 

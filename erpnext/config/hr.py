@@ -207,10 +207,12 @@ def get_data():
 			"label": _("Training & Development"),
 			"items": [
 				{
-					"type": "doctype",
-					"name": "Training And Development",
-					"description": _("Traning & Development Master."),
-				},                  
+				"type": "doctype",
+				"name": "Training Records",
+				"description":_("Training And Development"),
+				"label": _("Training And Development")
+				},
+
 			]
 		},
 		{
@@ -233,6 +235,13 @@ def get_data():
 					"label": _("MPI Target Setting"),
 					"description": _("MPI Target Setup")
 				},
+				{
+					"type": "doctype",
+					"name": "Assign Supervisor",
+					"label": _("Assign Supervisor Tool"),
+					"description": _("Bulk Assign of Suvervisor")
+				},
+
 			]
 		},
 		{
@@ -287,7 +296,15 @@ def get_data():
                                         "label": _("Salary Payable Report"),
                                         "doctype": "Salary Slip"
                                 },
-			]
+				{
+					"type" : "report",
+					"is_query_report": True,
+					"name": "LTC Process Report",
+					"label": _("LTC, PVBA, BONUS Report"),
+					"doctype": "Leave Travel Concession"
+				},
+				
+				]
 		},
                 {
 			"label": _("Other Reports"),
@@ -298,6 +315,12 @@ def get_data():
 					"is_query_report": True,
 					"name": "Travel Report",
 					"doctype": "Travel Claim"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Overtime Report",
+					"doctype": "Overtime Application"
 				},
                                 {
 					"type": "report",
@@ -329,6 +352,7 @@ def get_data():
 					"name": "Employee Information",
 					"doctype": "Employee"
 				},
+
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -341,7 +365,16 @@ def get_data():
 					"name": "Salary Tax Report",
                                         "label": "RRCO Tax Slab Details",
 					"doctype": "Salary Tax"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Summarized Employee Report",
+					"label": "Summarized Employee Report",
+					"doctype": "Employee"
 				}
+
+
 			]
 		}
 	]

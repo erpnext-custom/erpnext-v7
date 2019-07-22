@@ -6,6 +6,9 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 1.0		  SSK		                   08/08/2016         DocumentNaming standard is introduced
 1.0		  SSK		                   29/08/2016         Validations for expense claim changed
+1.0.190404	  SHIV		                   04/04/2019         Changed code for pay_to_recd_from
+1.0.190517        SHIV/DORJI                       17/05/2019         Update journalentry name in Overtime Payment when
+                                                                        the original JV is cancelled and amended.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -97,6 +100,33 @@ class JournalEntry(AccountsController):
 	def get_title(self):
 		return self.pay_to_recd_from or self.accounts[0].account
 
+        def update_overtime_application(self):
+                ot_list = frappe._dict()
+                for d in self.get("accounts"):
+                        if d.reference_type == "Overtime Application":
+                                ot_list.setdefault(d.reference_type, []).append(d.reference_name)
+                                
+        """ ++++++++++ Ver 1.0.190517 Begins ++++++++++ """
+        # Following method created by SHIV on 2019/05/17
+        def update_advance_paid(self):
+		advance_paid = frappe._dict()
+		for d in self.get("accounts"):
+                        if d.reference_type == "Overtime Application":
+                                advance_paid.setdefault(d.reference_type, []).append(d.reference_name)
+                        else:
+                                if d.is_advance:
+                                        if d.reference_type in ("Sales Order", "Purchase Order"):
+                                                advance_paid.setdefault(d.reference_type, []).append(d.reference_name)
+
+		for voucher_type, order_list in advance_paid.items():
+			for voucher_no in list(set(order_list)):
+                                if voucher_type == "Overtime Application":
+                                        frappe.db.set_value(voucher_type, voucher_no, "payment_jv", self.name)
+                                else:
+                                        frappe.get_doc(voucher_type, voucher_no).set_total_advance_paid()
+
+        # Following method commented by SHIV on 2019/05/17
+	'''			
 	def update_advance_paid(self):
 		advance_paid = frappe._dict()
 		for d in self.get("accounts"):
@@ -107,7 +137,9 @@ class JournalEntry(AccountsController):
 		for voucher_type, order_list in advance_paid.items():
 			for voucher_no in list(set(order_list)):
 				frappe.get_doc(voucher_type, voucher_no).set_total_advance_paid()
-
+        '''
+	""" ++++++++++ Ver 1.0.190517 Ends ++++++++++ """
+	
 	def on_cancel(self):
 		if self.clearance_date:
 			frappe.throw("Already done bank reconciliation.")
@@ -407,12 +439,25 @@ class JournalEntry(AccountsController):
 	def set_print_format_fields(self):
 		bank_amount = party_amount = total_amount = 0.0
 		currency = bank_account_currency = party_account_currency = pay_to_recd_from= None
+		""" ++++++++++ Ver 1.0.190404 Begins ++++++++++ """
+		# Following code added by SHIV on 2019/04/04
+		if self.pay_to_recd_from:
+                        pay_to_recd_from = self.pay_to_recd_from
+                """ ++++++++++ Ver 1.0.190404 Ends ++++++++++++ """
+                
 		for d in self.get('accounts'):
 			if d.party_type and d.party:
 				if not pay_to_recd_from:
-					pay_to_recd_from = frappe.db.get_value(d.party_type, d.party,
-						"customer_name" if d.party_type=="Customer" else "supplier_name" if d.party_type=="Supplier" else "registration_number" if d.party_type == "Vehicle" else "employee_name")
+                                        """ ++++++++++ Ver 1.0.190404 Begins ++++++++++ """
+                                        # Following code commented by SHIV on 2019/04/04
+					#pay_to_recd_from = frappe.db.get_value(d.party_type, d.party,
+					#	"customer_name" if d.party_type=="Customer" else "supplier_name" if d.party_type=="Supplier" else "registration_number" if d.party_type == "Vehicle" else "employee_name")
 
+                                        # Following code added by SHIV on 2019/04/04
+                                        if d.party_type in ("Customer", "Supplier", "Employee"):
+                                                pay_to_recd_from = frappe.db.get_value(d.party_type, d.party,
+                                                        "customer_name" if d.party_type=="Customer" else "supplier_name" if d.party_type=="Supplier" else "employee_name")
+                                        """ ++++++++++ Ver 1.0.190404 Ends ++++++++++++ """
 				party_amount += (d.debit_in_account_currency or d.credit_in_account_currency)
 				party_account_currency = d.account_currency
 
@@ -420,6 +465,9 @@ class JournalEntry(AccountsController):
 				bank_amount += (d.debit_in_account_currency or d.credit_in_account_currency)
 				bank_account_currency = d.account_currency
 
+                """ ++++++++++ Ver 1.0.190404 Begins ++++++++++ """
+                # Following code commented by SHIV on 2019/04/04
+                '''
 		if pay_to_recd_from:
 			self.pay_to_recd_from = pay_to_recd_from
 			if bank_amount:
@@ -433,7 +481,14 @@ class JournalEntry(AccountsController):
                 elif self.voucher_type == "Bank Entry":
                         total_amount = bank_amount
                         currency = bank_account_currency
-                        
+                '''
+
+                # Following code added by SHIV on 2019/04/04
+                self.pay_to_recd_from = pay_to_recd_from
+                total_amount = bank_amount or party_amount
+                currency = bank_account_currency or party_account_currency
+                """ ++++++++++ Ver 1.0.190404 Ends ++++++++++++ """
+
 		self.set_total_amount(total_amount, currency)
 
 	def set_total_amount(self, amt, currency):

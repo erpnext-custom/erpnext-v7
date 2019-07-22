@@ -18,6 +18,7 @@ class TransporterPayment(AccountsController):
 		self.validate_dates()
 		self.set_debit_account()
 		self.calculate_total()
+		self.calculate_on_save()
 
 	def validate_dates(self):
 		check_future_date(self.posting_date)
@@ -33,10 +34,52 @@ class TransporterPayment(AccountsController):
 	
 		if self.unloading_amount:
 			self.unloading_account = get_settings_value("Production Account Settings", self.company, "default_unloading_account")
+	def calculate_on_save(self):
+		trip_no = 0
+		total_transporter_amount = 0
+		unloading_amount = 0
+		for i in self.items:
+			trip_no = trip_no + 1
+			total_transporter_amount = total_transporter_amount + i.transportation_amount
+			unloading_amount = unloading_amount + i.unloading_amount
 
+		self.total_trip = trip_no
+		self.transportation_amount = total_transporter_amount
+		self.unloading_amount = unloading_amount
+		self.gross_amount = total_transporter_amount + unloading_amount
+	
+		pol_amount = 0
+		for j in self.pols:
+			pol_amount = pol_amount + j.amount
+
+		self.pol_amount = pol_amount
+		self.net_payable = self.gross_amount - self.pol_amount
+
+		total_other_deduction = 0
+
+		if self.deductions:
+			for k in self.deductions:
+				total_other_deduction = total_other_deduction + k.amount			
+		
+		if total_other_deduction > 0:
+			if self.tds_amount > 0:		
+				self.other_deductions = total_other_deduction + self.tds_amount
+			else:
+				self.other_deductions= total_other_deduction
+		elif self.tds_amount > 0:
+			self.other_deductions = self.tds_amount
+		else:
+			pass
+
+			
+		self.amount_payable = self.net_payable - self.other_deductions
+		
 
 	def calculate_total(self):
                 other_deductions = 0
+
+
+
 		if self.tds_percent:
 			self.tds_amount = flt(self.gross_amount) * flt(self.tds_percent) / 100.0
 			self.tds_account = get_tds_account(self.tds_percent)
@@ -186,6 +229,13 @@ class TransporterPayment(AccountsController):
 		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 		if not cost_center:
 			frappe.throw("{0} is not linked to any Cost Center".format(self.branch))
+		
+		
+		account_type = frappe.db.get_value("Account", self.credit_account, "account_type")
+		party = party_type = None
+		if account_type == "Receivable" or account_type == "Payable":
+			party = self.equipment
+			party_type = "Equipment"
 
 		if self.amount_payable:
 			gl_entries.append(
@@ -194,6 +244,8 @@ class TransporterPayment(AccountsController):
 				       "credit": self.amount_payable,
 				       "credit_in_account_currency": self.amount_payable,
 				       "against_voucher": self.name,
+				       "party_type": party_type,
+				       "party": party,
 				       "against_voucher_type": self.doctype,
 				       "cost_center": cost_center,
 				}, self.currency)

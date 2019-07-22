@@ -557,6 +557,7 @@ class SalesInvoice(SellingController):
                                         	"debit_in_account_currency": a.amount,
                                         	"against_voucher": self.name,
                                         	"against_voucher_type": self.doctype,
+						"cost_center": a.cost_center
                                 	}, accounts)
                         	)
                         	gl_entries.append(
@@ -586,7 +587,8 @@ class SalesInvoice(SellingController):
 					"debit_in_account_currency": grand_total_in_company_currency \
 						if self.party_account_currency==self.company_currency else self.grand_total,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
-					"against_voucher_type": self.doctype
+					"against_voucher_type": self.doctype,
+					"cost_center": self.cost_center
 				}, self.party_account_currency)
 			)
 		
@@ -604,7 +606,7 @@ class SalesInvoice(SellingController):
 							if account_currency==self.company_currency else flt(tax.tax_amount_after_discount_amount),
 						"cost_center": tax.cost_center
 					}, account_currency)
-				)
+					)
 
 	def make_item_gl_entries(self, gl_entries):
 		# income account gl entries
@@ -691,7 +693,8 @@ class SalesInvoice(SellingController):
 									if account_currency==self.company_currency else (item.abnormal_loss_amt * self.conversion_rate, self.precision("grand_total")) ,
 								#"cost_center": item.cost_center
 								"against_voucher": self.return_against if cint(self.is_return) else self.name,
-								"against_voucher_type": self.doctype
+								"against_voucher_type": self.doctype,
+								"cost_center": item.cost_center
 							}, account_currency)
 						)
 
@@ -727,6 +730,7 @@ class SalesInvoice(SellingController):
 								"against_voucher_type": self.doctype,
 								"remark": remark,
 								"remarks": remark,
+								"cost_center": item.cost_center
 							}, account_currency)
 						)
 
@@ -752,6 +756,7 @@ class SalesInvoice(SellingController):
 							else payment_mode.amount,
 						"against_voucher": self.return_against if cint(self.is_return) else self.name,
 						"against_voucher_type": self.doctype,
+						"cost_center": self.cost_center
 					}, self.party_account_currency)
 				)
 
@@ -761,6 +766,7 @@ class SalesInvoice(SellingController):
 						"account": payment_mode.account,
 						"against": self.customer,
 						"debit": payment_mode.base_amount,
+						"cost_center": self.cost_center,
 						"debit_in_account_currency": payment_mode.base_amount \
 							if payment_mode_account_currency==self.company_currency else payment_mode.amount
 					}, payment_mode_account_currency)
@@ -779,7 +785,8 @@ class SalesInvoice(SellingController):
 						"debit_in_account_currency": flt(self.base_change_amount) \
 							if self.party_account_currency==self.company_currency else flt(self.change_amount),
 						"against_voucher": self.return_against if cint(self.is_return) else self.name,
-						"against_voucher_type": self.doctype
+						"against_voucher_type": self.doctype,
+						"cost_center": self.cost_center
 					}, self.party_account_currency)
 				)
 				
@@ -787,7 +794,8 @@ class SalesInvoice(SellingController):
 					self.get_gl_dict({
 						"account": self.account_for_change_amount,
 						"against": self.customer,
-						"credit": self.base_change_amount
+						"credit": self.base_change_amount,
+						"cost_center": self.cost_center
 					})
 				)
 			else:
@@ -844,6 +852,7 @@ class SalesInvoice(SellingController):
 					"credit_in_account_currency": allocated_amount, 
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
+					"cost_center": a.advance_cost_center
 				}, advance_account_currency)
 			)
 			gl_entries.append(

@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt,cint
 from erpnext.custom_utils import prepare_gl, check_future_date
@@ -57,8 +58,8 @@ class HSDPayment(Document):
 					doc.db_set("paid_amount", flt(doc.paid_amount) - flt(a.allocated_amount))
 					doc.db_set("outstanding_amount", flt(doc.outstanding_amount) + flt(a.allocated_amount))	
 				else:
-					paid_amount = flt(doc.paid_amount) + flt(a.allocated_amount)
-					if paid_amount > flt(doc.total_amount):
+					paid_amount = flt(flt(doc.paid_amount) + flt(a.allocated_amount))
+					if round(paid_amount,2) > round(flt(doc.total_amount),2):
 						frappe.throw("Paid Amount cannot be greater than the Total Amount for Receive POl <b>"+str(a.pol)+"</b>")
 					doc.db_set("paid_amount", paid_amount)
 					doc.db_set("outstanding_amount", a.balance_amount)	

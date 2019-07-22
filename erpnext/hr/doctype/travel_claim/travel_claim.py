@@ -56,6 +56,12 @@ class TravelClaim(Document):
 
 		if frappe.session.user == self.supervisor and self.supervisor_approval:
 			self.db_set("supervisor_approved_on", nowdate())
+
+		if self.workflow_state == 'Approved' or self.workflow_state == "Verified by Supervisor":
+			if frappe.session.user == self.owner or frappe.session.user == employee:
+				self.supervisor_approval = 0
+				frappe.throw("You cannot approve your own claim.")
+
 		
 	def on_update(self):
 		self.check_double_dates()
@@ -74,7 +80,7 @@ class TravelClaim(Document):
 
 	def before_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.claim_journal, "docstatus")
-		if cl_status and cl_status != 2:
+		if cl_status < 2:
 			frappe.throw("You need to cancel the claim journal entry first!")
 		
 		ta = frappe.get_doc("Travel Authorization", self.ta)
@@ -382,6 +388,11 @@ class TravelClaim(Document):
 		hr_role = frappe.db.get_value("UserRole", {"parent": frappe.session.user, "role": "HR User"}, "role")
 		if not hr_role:
 			frappe.throw("Only a HR User can submit this document")
+
+		if self.workflow_state == "Approved":
+			if self.owner== frappe.session.user:
+			 	frappe.throw("You Cannot Submit Your Own Claim")
+
 
 	##
 	# Send notification to the supervisor / employee

@@ -5,14 +5,14 @@ cur_frm.add_fetch("branch", "expense_bank_account", "credit_account")
 cur_frm.add_fetch("settlement_account","account_type","settlement_account_type");
 frappe.ui.form.on('Transporter Payment', {
 	setup: function(frm) {
-		frm.get_field('items').grid.editable_fields = [
+	/*	frm.get_field('items').grid.editable_fields = [
 			{fieldname: 'posting_date', columns: 2},
 			{fieldname: 'item_code', columns: 2},
 			{fieldname: 'transportation_amount', columns: 2},
 			{fieldname: 'unloading_amount', columns: 2},
 			{fieldname: 'total_amount', columns: 2},
 		];
-		frm.get_field('pols').grid.editable_fields = [
+	*/	frm.get_field('pols').grid.editable_fields = [
 			{fieldname: 'posting_date', columns: 2},
 			{fieldname: 'item_code', columns: 2},
 			{fieldname: 'qty', columns: 2},
@@ -81,7 +81,7 @@ frappe.ui.form.on('Transporter Payment', {
 			callback: function(r, rt){
 				total_html(frm);
 			},
-			freeze: true,
+			freeze: false,
 			freeze_message: "Loading Payment Details..... Please Wait"
 		});
 

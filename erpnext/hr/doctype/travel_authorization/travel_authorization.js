@@ -30,11 +30,11 @@ frappe.ui.form.on('Travel Authorization', {
 	
 	refresh: function(frm) {
 		//show the document status field and submit button
-		if (in_list(user_roles, "Expense Approver") && frappe.session.user == frm.doc.supervisor) {
+		/*if (in_list(user_roles, "Expense Approver") && frappe.session.user == frm.doc.supervisor) {
 			frm.toggle_display("document_status", frm.doc.docstatus==0);
 			frm.toggle_reqd("document_status", frm.doc.docstatus==0);
 		}
-		
+		*/
 		if (frm.doc.docstatus == 1 && !frm.doc.travel_claim && frm.doc.workflow_state == "Approved") {
 			frm.add_custom_button("Create Travel Claim", function() {
 				if(frm.doc.end_date_auth < get_today()){
@@ -46,11 +46,19 @@ frappe.ui.form.on('Travel Authorization', {
 					frappe.msgprint(__('Claim is allowed only after travel completion date i.e., {0}', [frm.doc.end_date_auth]));
 				}
 			}).addClass((frm.doc.end_date_auth < get_today()) ? "btn-success" : "btn-danger");
+		
+		}
+		if (frm.doc.docstatus == 1 && frm.doc.workflow_state == "Approved") {
+			frm.set_value("document_status", "Approved")
+				
+		}
+		if (frm.doc.docstatus == 0 && frm.doc.workflow_state == "Rejected") {
+		 	frm.set_value("document_status", "Rejected")
 		}
 
-		if(frm.doc.docstatus == 1) {
+		/*if(frm.doc.docstatus == 1) {
 			frm.toggle_display("document_status", 1);
-		}
+		}*/
 		
 		if(frm.doc.__islocal){
 			frm.set_value("advance_journal", "");

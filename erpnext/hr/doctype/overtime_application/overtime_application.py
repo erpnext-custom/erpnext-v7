@@ -5,13 +5,16 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from erpnext.hr.doctype.employee.employee import get_holiday_list_for_employee
+from erpnext.accounts.utils import get_fiscal_year, now
+from frappe.utils import flt, getdate, formatdate
 from frappe.model.document import Document
-from frappe.utils import flt
 
 class OvertimeApplication(Document):
 	def validate(self):
 		self.validate_dates()
-		self.calculate_totals()
+		#self.calculate_totals()
+		self.calculate_amount()
 
 	def on_submit(self):
 		self.check_status()
@@ -22,7 +25,7 @@ class OvertimeApplication(Document):
 		self.db_set("status", "Rejected")
 		self.check_journal()
 
-	def calculate_totals(self):
+	'''def calculate_totals(self):
                 total_hours  = 0
                 for i in self.items:
                         total_hours += flt(i.number_of_hours)
@@ -31,7 +34,7 @@ class OvertimeApplication(Document):
                 self.total_amount = flt(total_hours)*flt(self.rate)
 
                 if flt(self.total_hours) <= 0:
-                        frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")
+                        frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")'''
 
 	def check_status(self):
 		if self.status != "Approved":
@@ -57,6 +60,38 @@ class OvertimeApplication(Document):
 			if self.approver != frappe.session.user:
 				frappe.throw("Only the selected Approver can submit this document")
 
+
+	def get_basic_salary(self):
+			if self.employee:
+				# Get basic pay from the active salary structure
+				sst_doc = frappe.get_doc("Salary Structure",frappe.db.get_value('Salary Structure', {'employee': self.employee, 'is_active' : 'Yes'}, "name"))
+				for d in sst_doc.earnings:
+					if d.salary_component == 'Basic Pay':
+						basic        = flt(d.amount)
+						#number of month is uniformly taken as 30 as per SMCL Rule
+						rate_per_day = flt(basic)/30
+						rate_per_hour = flt(rate_per_day)/8
+						self.rate = rate_per_hour
+
+	def calculate_amount(self):
+		holiday_list = get_holiday_list_for_employee(self.employee)
+                amount = 0.0
+                hour = 0.0
+                for d in self.items:
+			ot_base = 1
+			holiday_bonus = 0
+			d.is_holiday = 0
+			if frappe.db.exists("Holiday", {"parent": holiday_list, "holiday_date": str(d.date)}):
+				d.is_holiday = 1
+				holiday_bonus = 0.5
+				
+			amount += (self.rate*(ot_base+holiday_bonus))*flt(d.number_of_hours)
+			hour += flt(d.number_of_hours)
+
+		self.total_hours = hour
+		self.total_amount = amount
+		if flt(self.total_amount) <= 0:
+                        frappe.throw(_("Total amount cannot be nil."),title="Incomlete information")
 
 	##
 	# Post journal entry

@@ -7,6 +7,14 @@ frappe.ui.form.on('Equipment', {
 	onload: function(frm) {
 		//cur_frm.set_df_property("asset_code", "reqd", 1) 
 	},
+	setup: function(frm){
+		frm.get_field('model_items').grid.editable_fields = [
+		{fieldname: 'equipment_type', columns: 3},
+		{fieldname: 'equipment_model', columns: 3},
+		{fieldname: 'modified_date', columns: 3},
+		{fieldname: 'ref_doc', columns:3},
+        ];
+        },
 	refresh: function(frm) {
 		cur_frm.set_df_property("engine_number", "read_only", frm.doc.engine_number ? 1 : 0)
 		cur_frm.set_df_property("asset_code", "read_only", frm.doc.asset_code ? 1 : 0)

@@ -372,6 +372,7 @@ class PurchaseInvoice(BuyingController):
 					"account": self.credit_to,
 					"party_type": "Supplier",
 					"party": self.supplier,
+					"cost_center": self.buying_cost_center,
 					"against": self.against_expense_account,
 					"credit": grand_total_in_company_currency,
 					"credit_in_account_currency": grand_total_in_company_currency \

@@ -8,6 +8,8 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 1.0		  SSK		                   08/08/2016         DocumentNaming standard is introduced
 1.0               SSK                              15/08/2016         Introducing Loss Tolerance for Sales
 1.0               SSK                              22/09/2016         get_default_bank_cash_sales_account is introduced.
+1.0.190516        SSK/DORJI                        16/05/2019         Add party_type, party for paid_from and paid_to
+                                                                        GLs if they are receivable/payable.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -139,10 +141,10 @@ class PaymentEntry(AccountsController):
 					
 	def validate_bank_accounts(self):
 		if self.payment_type in ("Pay", "Internal Transfer"):
-			self.validate_account_type(self.paid_from, ["Bank", "Cash"])
+			self.validate_account_type(self.paid_from, ["Bank", "Cash", "Receivable", "Payable"])   # Ver 1.0.190516, "Receivable","Payable" added by SHIV on 2019/05/16
 			
 		if self.payment_type in ("Receive", "Internal Transfer"):
-			self.validate_account_type(self.paid_to, ["Bank", "Cash"])
+			self.validate_account_type(self.paid_to, ["Bank", "Cash", "Receivable", "Payable"])     # Ver 1.0.190516, "Receivable","Payable" added by SHIV on 2019/05/16
 			
 	def validate_account_type(self, account, account_types):
 		account_type = frappe.db.get_value("Account", account, "account_type")
@@ -399,7 +401,8 @@ class PaymentEntry(AccountsController):
 				"party_type": self.party_type,
 				"party": self.party,
 				"against": against_account,
-				"account_currency": self.party_account_currency
+				"account_currency": self.party_account_currency,
+				"cost_center": self.pl_cost_center
 			})
 			
 			dr_or_cr = "credit" if self.party_type == "Customer" else "debit"
@@ -435,6 +438,21 @@ class PaymentEntry(AccountsController):
 				gl_entries.append(gle)
 				
 	def add_bank_gl_entries(self, gl_entries):
+                """ ++++++++++ Ver 1.0.190516 Begins ++++++++++ """
+                # Ver 1.0.190516, Following code added by SHIV on 2019/05/16
+                party_type = ''
+                party      = ''
+                if self.party_account:
+                        if self.payment_type=="Receive":
+                                against_account = self.paid_to
+                        else:
+                                against_account = self.paid_from
+
+                        if frappe.get_value("Account", against_account, "account_type") in ('Receivable', 'Payable'):
+                                party_type = self.party_type
+                                party      = self.party
+                """ ++++++++++ Ver 1.0.190516 Ends ++++++++++++ """
+                                
 		if self.payment_type in ("Pay", "Internal Transfer"):
 			if frappe.get_value("Account", self.paid_from, "report_type") == "Profit and Loss":	
 				if self.pl_cost_center:
@@ -445,7 +463,9 @@ class PaymentEntry(AccountsController):
 							"against": self.party if self.payment_type=="Pay" else self.paid_to,
 							"credit_in_account_currency": self.paid_amount,
 							"credit": self.base_paid_amount,
-							"cost_center": self.pl_cost_center
+							"cost_center": self.pl_cost_center,
+                                                        "party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+                                                        "party": party                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
 						})
 					)
 				else:
@@ -457,7 +477,10 @@ class PaymentEntry(AccountsController):
 						"account_currency": self.paid_from_account_currency,
 						"against": self.party if self.payment_type=="Pay" else self.paid_to,
 						"credit_in_account_currency": self.paid_amount,
-						"credit": self.base_paid_amount
+						"credit": self.base_paid_amount,
+						"cost_center": self.pl_cost_center,
+                                                "party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+                                                "party": party                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
 					})
 				)
 
@@ -471,7 +494,9 @@ class PaymentEntry(AccountsController):
 							"against": self.party if self.payment_type=="Receive" else self.paid_from,
 							"debit_in_account_currency": self.received_amount,
 							"debit": self.base_received_amount,
-							"cost_center": self.pl_cost_center
+							"cost_center": self.pl_cost_center,
+                                                        "party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+                                                        "party": party                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
 						})
 					)
 				else:
@@ -483,7 +508,10 @@ class PaymentEntry(AccountsController):
 						"account_currency": self.paid_to_account_currency,
 						"against": self.party if self.payment_type=="Receive" else self.paid_from,
 						"debit_in_account_currency": self.received_amount,
-						"debit": self.base_received_amount
+						"debit": self.base_received_amount,
+						"cost_center": self.pl_cost_center,
+                                                "party_type": party_type,       # Ver 1.0.190516, Line added by SHIV on 2019/05/16
+                                                "party": party                  # Ver 1.0.190516, Line added by SHIV on 2019/05/16
 					})
 				)
 			

@@ -233,6 +233,10 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Fixed Deposit",
                                 },
+				{
+					"type": "doctype",
+					"name": "RRCO Receipt Modifier",
+				},
                         ]
                 },
 		{
@@ -302,7 +306,12 @@ def get_data():
 					"name": "Party Wise Ledger",
 					"doctype": "GL Entry",
 					"is_query_report": True,
-				}
+				},
+				{
+					 "type": "report",
+					 "name": "Transporter Payment Report",
+					 "doctype": "Transporter Payment",
+					 "is_query_report": True,														      }
 			]
 		},
 		{
@@ -506,7 +515,14 @@ def get_data():
 					"is_query_report": True,
 					"name": "Customer Credit Balance",
 					"doctype": "Customer"
+				},
+				{
+				    	"type": "report",
+					"is_query_report": True,
+					"name": "Overtime Report",
+					"doctype": "Overtime Application"
 				}
+
 			]
 		},
 	]

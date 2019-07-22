@@ -6,6 +6,193 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+# back dated production entries 2019/07/02
+def backdate_production():
+	query = """
+	select name, posting_date, posting_time, docstatus
+	from `tabProduction`
+	where name in ('PRO190700055','PRO190700054','PRO190700038','PRO190700053','PRO190700052',
+	'PRO190700051','PRO190700050','PRO190700049','PRO190700048','PRO190700047',
+	'PRO190700046','PRO190700045','PRO190700044','PRO190700043')
+	and docstatus = 0
+	order by posting_date, posting_time
+	"""
+	for i in frappe.db.sql(query, as_dict=True):
+		print i
+		doc = frappe.get_doc("Production", i.name)
+		doc.submit()
+		frappe.db.commit()
+
+# Following method created by SHIV on 2019/04/15
+# This method is created to update deduction details for Feb-2019 and Mar-2019 salary slips
+def update_ssl_final():
+        counter = 0
+        for i in frappe.db.sql("select * from maintenance.sd_update where fiscal_year='2019' and month='03' order by creation", as_dict=True):
+                counter += 1
+                print counter,i.fiscal_year, i.month, i.qry
+                frappe.db.sql(i.qry)
+        frappe.db.commit()
+                
+def update_ssl_deductions():
+        src_year  = "2019"
+        src_month = "02"
+        dest_year = "2019"
+        dest_month= "03"
+        qry = """
+                select
+                        ss.name, ss.employee, ss.fiscal_year, ss.month,
+                        sd.name sd_name,
+                        sd.salary_component,
+                        sd.amount,
+                        sd.institution_name,
+                        sd.reference_type,
+                        sd.reference_number,
+                        sd.total_deductible_amount,
+                        sd.total_deducted_amount,
+                        sd.total_outstanding_amount,
+                        sd.salary_component_type,
+                        sd.ref_docname
+                from `tabSalary Slip` ss, `tabSalary Detail` sd
+                where ss.docstatus = 1
+                {cond}
+                and sd.parent = ss.name
+                and sd.parentfield = 'deductions'
+                order by ss.name
+        """
+        cond = "and ss.fiscal_year = '{fiscal_year}' and ss.month = '{month}'".format(fiscal_year=src_year, month=src_month)
+        counter = log_single = log_multiple = log_notfound = 0
+        
+        for i in frappe.db.sql(qry.format(cond=cond), as_dict = True):
+                counter += 1
+                info = []
+                amounts = []
+
+                if i.get("institution_name"):
+                        info.append("institution_name = '{0}'".format(i.get("institution_name")))
+                if i.get("reference_type"):
+                        info.append("reference_type = '{0}'".format(i.get("reference_type")))
+                if i.get("reference_number"):
+                        info.append("reference_number = '{0}'".format(i.get("reference_number")))
+                if i.get("total_deductible_amount"):
+                        info.append("total_deductible_amount = {0}".format(i.get("total_deductible_amount")))
+                if i.get("total_deducted_amount"):
+                        amounts.append("total_deducted_amount = {0}".format(flt(i.get("total_deducted_amount"))+flt(i.get("amount"))))
+                if i.get("total_outstanding_amount"):
+                        amounts.append("total_outstanding_amount = '{0}'".format(flt(i.get("total_outstanding_amount"))-flt(i.get("amount"))))
+                if i.get("salary_component_type"):
+                        info.append("salary_component_type = '{0}'".format(i.get("salary_component_type")))
+                if i.get("ref_docname"):
+                        info.append("ref_docname = '{0}'".format(i.get("ref_docname")))
+
+                if info or amounts:
+                        update_qry = []
+                        cond = """
+                                and ss.fiscal_year = '{fiscal_year}'
+                                and ss.month = '{month}'
+                                and ss.employee = '{employee}'
+                                and sd.salary_component = '{salary_component}'
+                        """.format(fiscal_year=dest_year, month=dest_month, employee=i.employee, salary_component=i.salary_component)
+                        ssl = frappe.db.sql(qry.format(cond=cond), as_dict=True)
+                        if len(ssl) > 1:
+                                cond = """
+                                        and ss.fiscal_year = '{fiscal_year}'
+                                        and ss.month = '{month}'
+                                        and ss.employee = '{employee}'
+                                        and sd.salary_component = '{salary_component}'
+                                        and sd.amount = {amount}
+                                """.format(fiscal_year=dest_year, month=dest_month, employee=i.employee, salary_component=i.salary_component, amount=flt(i.amount))
+                                ssl2 = frappe.db.sql(qry.format(cond=cond), as_dict=True)
+                                if len(ssl2) > 1:
+                                        print 'MULTIPLE SSL2',counter,i.name,i.sd_name,i.salary_component,i.amount,i.institution_name,i.reference_type,i.reference_number,i.total_deductible_amount,i.total_deducted_amount,i.total_outstanding_amount,i.salary_component_type,i.ref_docname
+                                        log_multiple += 1
+                                elif len(ssl2) == 1:
+                                        log_single += 1
+                                        if info:
+                                                update_qry.append("update `tabSalary Detail` set " + ",".join(info)+" where name='{0}';".format(ssl2[0].sd_name))
+                                        if amounts:
+                                                update_qry.append("update `tabSalary Detail` set " + ",".join(amounts)+" where name='{0}';".format(ssl2[0].sd_name))
+                                                update_qry.append("update `tabSalary Detail` set " + ",".join(amounts)+" where name='{0}';".format(i.ref_docname))
+                                else:
+                                        print 'NOT FOUND SSL2',counter,i.name,i.sd_name,i.salary_component,i.amount,i.institution_name,i.reference_type,i.reference_number,i.total_deductible_amount,i.total_deducted_amount,i.total_outstanding_amount,i.salary_component_type,i.ref_docname
+                                        log_notfound += 1
+                        elif len(ssl) == 1:
+                                log_single += 1
+                                if info:
+                                        update_qry.append("update `tabSalary Detail` set " + ",".join(info)+" where name='{0}';".format(ssl[0].sd_name))
+                                if amounts:
+                                        update_qry.append("update `tabSalary Detail` set " + ",".join(amounts)+" where name='{0}';".format(ssl[0].sd_name))
+                                        update_qry.append("update `tabSalary Detail` set " + ",".join(amounts)+" where name='{0}';".format(i.ref_docname))
+                        else:
+                                print 'NOT FOUND',counter,i.name,i.sd_name,i.salary_component,i.amount,i.institution_name,i.reference_type,i.reference_number,i.total_deductible_amount,i.total_deducted_amount,i.total_outstanding_amount,i.salary_component_type,i.ref_docname
+                                log_notfound += 1
+
+                        for uq in update_qry:
+                                frappe.db.sql('insert into maintenance.sd_update values("{0}","{1}","{2}",{3})'.format(dest_year,dest_month,uq,"now()"))
+                        
+        print 'MULTIPLE',log_multiple,'SINGLE',log_single,'NOTFOUND',log_notfound
+        frappe.db.commit()
+                
+# 2019/04/01
+def update_production_sle(update="No"):
+        counter = 0
+        for i in frappe.db.sql("select name from temp_pro order by name", as_dict=True):
+                counter += 1
+                print counter, i.name
+                voucher = frappe.db.sql("""
+                                        select *
+                                        from
+                                                (select 'APPI' as tbl, name, item_code, qty, idx
+                                                from `tabProduction Product Item`
+                                                where parent = '{0}' order by idx) x
+                                        union all
+                                        select *
+                                        from
+                                                (select 'BPMI' tbl, name, item_code, qty, idx
+                                                from `tabProduction Material Item`
+                                                where parent = '{0}' order by idx) y
+                                        order by tbl, idx
+                                """.format(i.name), as_dict=True)
+                sle = frappe.db.sql("select * from temp_sle where voucher_no = '{0}' order by name".format(i.name), as_dict=True)
+                
+                if len(voucher) == len(sle):
+                        for j in range(len(voucher)):
+                                if voucher[j].item_code == sle[j].item_code and abs(voucher[j].qty) == abs(sle[j].actual_qty):
+                                        print j, 'PROD', i.name, voucher[j].item_code, voucher[j].idx, voucher[j].tbl, voucher[j].name, voucher[j].qty, 'SLE', sle[j].name, sle[j].item_code, sle[j].voucher_detail_no, sle[j].idx, sle[j].actual_qty
+                                        if update.lower() == "yes":
+                                                frappe.db.sql("""
+                                                        update `tabStock Ledger Entry`
+                                                        set voucher_detail_no = '{0}'
+                                                        where name = '{1}'
+                                                """.format(voucher[j].name, sle[j].name))                                     
+                                else:
+                                        frappe.throw(_("Values dont match"))
+                else:
+                        frappe.throw(_("Lengths dont match"))
+
+                if (counter%100) == 0 and update.lower() == "yes":
+                        counter = 0
+                        frappe.db.commit()
+        frappe.db.commit()
+                
+def production_gl():
+	qry = """
+	select name
+	from `tabProduction` p
+	where p.docstatus = 1 
+	and not exists(select 1
+			from `tabGL Entry` g
+			where g.voucher_type = 'Production' 
+			and g.voucher_no = p.name)
+	order by name
+	"""
+	counter = 0
+	for i in frappe.db.sql(qry, as_dict=True):
+		counter += 1
+		print counter, i.name
+		doc = frappe.get_doc("Production", i.name)
+		doc.make_gl_entries(repost_future_gle=False)
+	frappe.db.commit()
+
 def update_stock_entries():
 	counter = 0
 	for i in frappe.db.sql("""
@@ -29,7 +216,7 @@ def update_stock_entries():
 
 def cancel_salary_slips():
         fiscal_year = '2019'
-        month   = '01'
+        month   = '04'
         counter = 0
 
         for ssl in frappe.db.sql("select name from `tabSalary Slip` where fiscal_year='{0}' and month = '{1}' and docstatus=1".format(fiscal_year,month), as_dict=True):

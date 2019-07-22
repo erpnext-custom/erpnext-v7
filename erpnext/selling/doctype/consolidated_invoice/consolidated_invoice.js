@@ -53,23 +53,27 @@ function get_invoices(from_date, to_date, item_code, customer, cost_center) {
 		callback: function(r) {
 			if(r.message) {
 				var total_amount = 0;
+				var total_loading = 0;
 				var total_qty = 0;
 				cur_frm.clear_table("items");
 				r.message.forEach(function(invoice) {
 				        var row = frappe.model.add_child(cur_frm.doc, "Consolidated Invoice Item", "items");
 					row.invoice_no = invoice['name']
 					row.amount = invoice['outstanding_amount']
+					row.loading_charges = invoice['charges_total']
 					row.date = invoice['posting_date']
 					row.delivery_note = invoice['delivery_note']
 					row.sales_order = invoice['sales_order']
 					refresh_field("items");
 
 					total_amount += invoice['outstanding_amount']
+					total_loading += invoice['charges_total']
 					total_qty += invoice['accepted_qty']
-					msgprint("QTY: " + invoice['accepted_qty'])
 				});
 
 				cur_frm.set_value("total_amount", total_amount)
+				cur_frm.set_value("loading_amount", total_loading)
+				cur_frm.set_value("grand_total", flt(total_amount) + flt(total_loading))
 				cur_frm.set_value("quantity", total_qty)
 			}
 		}

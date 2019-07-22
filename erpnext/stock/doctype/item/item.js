@@ -379,16 +379,6 @@ cur_frm.cscript.item_group = function(doc) {
              cur_frm.set_value("item_code", r.message.toString());
         }
    });
-   if (doc.item_group != 'All Item Groups') {
-     cur_frm.fields_dict['expense_account'].get_query = function(doc) {
-        return {
-               "filters": {
-                       "item_group": doc.item_group
-                }
-        }
-     }
-     refresh_field("expense_account");
-   }
 }
 
 //function to assess item_code ranges

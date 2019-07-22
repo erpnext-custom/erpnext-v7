@@ -45,6 +45,11 @@ def get_data():
 					"name": "HSD Adjustment",
 					"description": _("Create Payment"),
 				},
+				{
+					"type": "doctype",
+					"name": "Equipment Modifier Tool",
+					"description": _("Equipment Modifier Tool"),
+				},
 			]
 		},
 		{

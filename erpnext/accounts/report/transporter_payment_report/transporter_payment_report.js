@@ -22,5 +22,13 @@ frappe.query_reports["Transporter Payment Report"] = {
 	"fieldtype": "Date",
 	"default": frappe.defaults.get_user_default("year_end_date"),
 	},
+	{
+	"fieldname":"equipment_type",
+	"label": ("Equipment Type"),
+	"fieldtype": "Link",
+	"options": "Equipment Type",
+	"width": "100",
+	}
+
 ]
 }

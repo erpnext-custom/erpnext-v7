@@ -152,7 +152,7 @@ class Asset(Document):
 		else:
 			depreciation_amount = 0.0
 
-		return depreciation_amount
+		return flt(depreciation_amount, 2)
 
 	def validate_expected_value_after_useful_life(self):
 		if self.depreciation_method == "Double Declining Balance":

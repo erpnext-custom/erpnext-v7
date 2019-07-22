@@ -413,12 +413,13 @@ frappe.call({
 // gross amount calculation
 frappe.ui.form.on("Asset", "asset_rate", function(frm) {
     if (frm.doc.asset_quantity_) {
-        cur_frm.set_value("gross_purchase_amount", ((frm.doc.asset_quantity_ * frm.doc.asset_rate) + frm.doc.additional_value))
+        cur_frm.set_value("gross_purchase_amount", ((frm.doc.asset_quantity_ * frm.doc.asset_rate) + (frm.doc.additional_value || 0)))
     }
 })
 
 frappe.ui.form.on("Asset", "asset_quantity_", function(frm) {
     if (frm.doc.asset_rate) {
-        cur_frm.set_value("gross_purchase_amount", frm.doc.asset_quantity_ * frm.doc.asset_rate)
+	//cur_frm.set_value("gross_purchase_amount", frm.doc.asset_quantity_ * frm.doc.asset_rate)
+	cur_frm.set_value("gross_purchase_amount", ((frm.doc.asset_quantity_ * frm.doc.asset_rate) + (frm.doc.additional_value || 0)))
     }
 })

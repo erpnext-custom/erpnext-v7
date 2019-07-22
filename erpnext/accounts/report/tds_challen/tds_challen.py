@@ -19,11 +19,15 @@ def get_data(query, filters):
 	data1 = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
+		status = 'Not Paid'
+		bil = frappe.db.sql(""" select name from `tabRRCO Receipt Entries` where bill_no = '{0}' and docstatus =1""".format(d.bill_no), as_dict = 1)
+		if bil:
+			status = 'Paid'
 		if filters.get("cost_center") and d.cost_center == filters.get("cost_center"):
-			row = [d.name, d.vendor_tpn_no, d.bill_no, d.bill_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, d.cost_center]
+			row = [d.name, d.vendor_tpn_no, d.bill_no, d.bill_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, d.cost_center, status]
 			data.append(row);
 		else:
-			row = [d.name, d.vendor_tpn_no, d.bill_no, d.bill_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, d.cost_center]
+			row = [d.name, d.vendor_tpn_no, d.bill_no, d.bill_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, d.cost_center, status]
 			data1.append(row);
 	if filters.get("cost_center"):
 		return data
@@ -129,5 +133,12 @@ def get_columns():
 		"options": "Cost Centr",
 		"width": 150
 		},
+		{
+		"fieldname": "status",
+		"label": "Status",
+		"fieldtype": "Data",
+		"width": 100
+		},
+	
 		        
 	]

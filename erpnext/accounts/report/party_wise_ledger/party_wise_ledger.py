@@ -30,13 +30,28 @@ def execute(filters=None):
 def get_data(filters, show_party_name):
 	#party_name_field = "customer_name" if filters.get("party_type")=="Customer" else "supplier_name"
 	#Party type to be shown in the report Kinley Tsheirng
-	party_name_field = "customer_name" if filters.get("party_type")=="Customer" else "supplier_name" if filters.get("party_type")=="Supplier" else "employee_name"
+	party_name_field = "customer_name" if filters.get("party_type")=="Customer" else "supplier_name" if filters.get("party_type")=="Supplier" else "equipment_number" if filters.get("party_type")== "Equipment" else "employee_name"
+
+        """ ++++++++++ Ver 1.0.190404 Begins ++++++++++ """
+        # Following code commented by SHIV on 2019/04/04 as the inter_company filter is not taken care properly
+        '''
 	if not filters.get("inter_company"):
 		parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
 	elif filters.get("party_type") == "Employee":
 		parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
 	else:
 		parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], filters = {"inter_company": 1}, order_by="name")
+        '''
+
+        # Following code added by SHIV on 2019/04/04 as a replacement for the above block
+        if filters.get("party_type") in ("Employee", "Equipment"): #inter_company is not applicable for Employee and Equipment types
+                parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
+        else:
+                if not filters.get("inter_company"):
+                        parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
+                else:
+                        parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], filters = {"inter_company": 1}, order_by="name")
+	""" ++++++++++ Ver 1.0.190404 Ends ++++++++++ """
 	
 	company_currency = frappe.db.get_value("Company", filters.company, "default_currency")
 	opening_balances = get_opening_balances(filters)
@@ -248,6 +263,9 @@ def get_columns(filters, show_party_name):
 def is_party_name_visible(filters):
 	if filters.get("party_type") == "Employee":
 		return True;
+
+	if filters.get("party_type") == "Equipment":
+                return True
 
 	show_party_name = False
 	if filters.get("party_type") == "Customer":

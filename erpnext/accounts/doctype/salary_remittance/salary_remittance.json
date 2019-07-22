@@ -201,8 +201,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-07-27 09:48:15.304530", 
- "modified_by": "Administrator", 
+ "modified": "2019-04-06 14:50:14.178466", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Accounts", 
  "name": "Salary Remittance", 
  "name_case": "", 
@@ -274,6 +274,5 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 1, 
  "track_seen": 0
 }

@@ -6,6 +6,43 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+
+def update_empdetail():
+	for a in frappe.db.sql(" select employee, name from `tabSalary Structure` ", as_dict =1):
+		emp = frappe.get_doc("Employee", a.employee)
+		print(a.name, a.employee)
+		frappe.db.sql(""" update `tabSalary Structure` set employee_group = '{0}', employee_grade = '{1}' 
+				where  name = '{2}'""".format(emp.employee_group, emp.employee_subgroup, a.name))
+
+
+def save_salary_structure():
+	for a in frappe.db.sql(""" select name from `tabSalary Structure` where is_active = 'Yes'""", as_dict =1):
+		doc = frappe.get_doc("Salary Structure", a.name)
+		print(a.name)
+		doc.save()
+
+
+def update_rrco_entries():
+	import re
+	pi = '^PI'
+	dp = '^DP'
+	bill_name = ''
+	for a in frappe.db.sql("select name, purchase_invoice from `tabRRCO Receipt Entries`", as_dict =1):
+		if a.purchase_invoice:
+			print(a.name, a.purchase_invoice)
+			if re.match(pi, str(a.purchase_invoice)):
+				doc  = frappe.get_doc("Purchase Invoice", a.purchase_invoice)
+				bill_name = doc.bill_no
+				supp = doc.supplier
+				frappe.db.sql(""" update `tabRRCO Receipt Entries` set bill_no = '{0}', 
+					purpose = 'Purchase Invoices', supplier ='{2}'  where name = '{1}'""".format(bill_name, a.name, supp))
+			if re.match(dp, str(a.purchase_invoice)):
+				doc  = frappe.get_doc("Direct Payment", a.purchase_invoice)
+				bill_name = doc.name
+				supp = doc.party
+				frappe.db.sql(""" update `tabRRCO Receipt Entries` set bill_no = '{0}', 
+					purpose = 'Purchase Invoices', supplier = '{2}'  where name = '{1}'""".format(bill_name, a.name, supp))
+
 def update_production_20190225():
 	num = 0
 	for a in frappe.db.sql("select a.name, a.posting_date from tabProduction a where docstatus = 1 and not exists (select 1 from  `tabGL Entry` b where b.voucher_no = a.name) order by a.posting_date asc, a.posting_time asc", as_dict=1):

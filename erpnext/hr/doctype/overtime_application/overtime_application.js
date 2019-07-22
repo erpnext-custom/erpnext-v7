@@ -34,7 +34,7 @@ frappe.ui.form.on('Overtime Application', {
 			frm.set_value("approver_name", frappe.user.full_name(frm.doc.approver));
 		}
 	},
-	employee: function(frm) {
+	/*employee: function(frm) {
 		if (frm.doc.employee) {
 			frappe.call({
 				method: "erpnext.hr.doctype.employee.employee.get_overtime_rate",
@@ -48,12 +48,23 @@ frappe.ui.form.on('Overtime Application', {
 				}
 			})
 		}	
-	},
-	rate: function(frm) {
+	},*/
+	employee: function(frm) {
+                get_basic_salary(frm.doc);
+        },
+	/*rate: function(frm) {
 		frm.set_value("total_amount", frm.doc.rate * frm.doc.total_hours)
-	}
+	}*/
 });
 
+var get_basic_salary=function(doc){
+        cur_frm.call({
+                method: "get_basic_salary",
+                doc:doc
+        }
+
+	);
+}
 
 //Overtime Item  Details
 frappe.ui.form.on("Overtime Application Item", {
@@ -73,7 +84,7 @@ function calculate_time(frm, cdt, cdn) {
 		}	
 	})
 	frm.set_value("total_hours", total_time)
-	frm.set_value("total_amount", total_time * frm.doc.rate)
+	//frm.set_value("total_amount", total_time * frm.doc.rate)
 	cur_frm.refresh_field("total_hours")
 	cur_frm.refresh_field("total_amount")
 }

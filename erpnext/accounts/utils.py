@@ -217,7 +217,7 @@ def check_if_advance_entry_modified(args):
 				where
 					t1.name = t2.parent and t1.docstatus = 1 
 					and t1.name = %(voucher_no)s and t2.name = %(voucher_detail_no)s
-					and t1.party_type = %(party_type)s and t1.party = %(party)s and t1.{0} = %(account)s
+					and t1.party_type = %(party_type)s and t1.party = %(party)s
 					and t2.reference_doctype in ("", "Sales Order", "Purchase Order") 
 					and t2.allocated_amount = %(unadjusted_amount)s
 			""".format(party_account_field), args)
@@ -225,10 +225,9 @@ def check_if_advance_entry_modified(args):
 			ret = frappe.db.sql("""select name from `tabPayment Entry`
 				where
 					name = %(voucher_no)s and docstatus = 1
-					and party_type = %(party_type)s and party = %(party)s and {0} = %(account)s
+					and party_type = %(party_type)s and party = %(party)s
 					and unallocated_amount = %(unadjusted_amount)s
-			""".format(party_account_field), args)
-	frappe.msgprint("{0}".format(ret))
+			""", args)
 	if not ret:
 		throw(_("""Payment Entry has been modified after you pulled it. Please pull it again."""))
 

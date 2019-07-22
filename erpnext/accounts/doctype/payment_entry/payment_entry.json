@@ -273,7 +273,7 @@
   {
    "allow_on_submit": 0, 
    "bold": 0, 
-   "collapsible": 1, 
+   "collapsible": 0, 
    "fieldname": "payment_accounts_section", 
    "fieldtype": "Section Break", 
    "hidden": 0, 
@@ -528,7 +528,7 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 0, 
+   "reqd": 1, 
    "search_index": 0, 
    "set_only_once": 0, 
    "unique": 0
@@ -1503,8 +1503,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-13 10:10:06.886159", 
- "modified_by": "Administrator", 
+ "modified": "2019-05-16 16:20:37.921848", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Accounts", 
  "name": "Payment Entry", 
  "name_case": "", 
