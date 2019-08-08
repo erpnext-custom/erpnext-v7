@@ -65,12 +65,12 @@ class ProcessRentalBilling(AccountsController):
 						prev_month = "12"
 					else:
 						prev_fiscal_year = self.fiscal_year
-						if self.month < 10:	
-							prev_month = "0" + str(int(self.month) - 1)
+						if int(self.month) <= 10:	
+							a = 0
+							b = int(self.month) - 1
+							prev_month = str(a) + str(b)
 						else:
 							prev_month = str(int(self.month) - 1)
-							
-
 					#customer_code = frappe.db.get_value("Customer", {"customer_id":name}, "customer_code")
 					#bill_code = "NHDCL/" + customer_code + "/" + self.fiscal_year + self.month
 					yearmonth = str(self.fiscal_year) + str(self.month)
@@ -93,6 +93,7 @@ class ProcessRentalBilling(AccountsController):
 								or not exists(select 1
 	                                                                   from `tabRental Bill` as t3
 						                           where t3.tenant = '{1}'
+									   and t3.docstatus != 2	
 							      		))
 						            and t.name = '{1}';
                                                             """.format(bill_date, name, prev_fiscal_year, prev_month)

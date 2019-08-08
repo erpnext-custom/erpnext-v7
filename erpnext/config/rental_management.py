@@ -86,8 +86,25 @@ def get_data():
                         "label": _("Reports"),
                         "icon": "icon-list",
                         "items": [
-
+				 {
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Rental Register",
+                                        "doctype": "Rental Information",
+                                        "Label": _("Rental Register")
+                                }
 
 			]
 		},
+		   {
+                        "label": _("Tools"),
+                        "icon": "icon-list",
+                        "items": [
+                                 {
+                                        "type": "doctype",
+                                        "name": "Tenant Updation Tool",
+                                }
+
+                        ]
+                },
 	]

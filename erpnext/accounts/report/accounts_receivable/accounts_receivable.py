@@ -25,10 +25,10 @@ class ReceivablePayableReport(object):
 			if self.filters.report_date > getdate(nowdate()) \
 			else self.filters.report_date
                 
-	def run(self, args):
+	def run(self,filters, args):
 		party_naming_by = frappe.db.get_value(args.get("naming_by")[0], None, args.get("naming_by")[1])
 		columns = self.get_columns(party_naming_by, args)
-		data = self.get_data(party_naming_by, args)
+		data = self.get_data(filters, party_naming_by, args)
 		chart = self.get_chart_data(columns, data)
 		return columns, data, None, chart
 
@@ -82,7 +82,7 @@ class ReceivablePayableReport(object):
 			"width": 100
 		})
 		if args.get("party_type") == "Customer":
-			columns += [_("Territory") + ":Link/Territory:80"]
+			columns += [_("Territory") + ":Link/Territory:70"]
 		if args.get("party_type") == "Supplier":
 			columns += [_("Supplier Type") + ":Link/Supplier Type:80"]
 			
@@ -90,7 +90,7 @@ class ReceivablePayableReport(object):
 		columns.append(_("Cost Center") + "::200")		
 		return columns
 
-	def get_data(self, party_naming_by, args):
+	def get_data(self, filters, party_naming_by, args):
 		from erpnext.accounts.utils import get_currency_precision
 		currency_precision = get_currency_precision() or 2
 		dr_or_cr = "debit" if args.get("party_type") == "Customer" else "credit"
@@ -105,8 +105,9 @@ class ReceivablePayableReport(object):
 		for gle in self.get_entries_till(self.filters.report_date, args.get("party_type")):
 			if self.is_receivable_or_payable(gle, dr_or_cr, future_vouchers):
 				outstanding_amount = self.get_outstanding_amount(gle, self.filters.report_date, dr_or_cr)
+				if not filters.show_zero and outstanding_amount ==  0.0:
+					continue
 				#if outstanding_amount: #abs(outstanding_amount) > 0.1/10**currency_precision:
-
 				row = [gle.posting_date, gle.party]
 
 				# customer / supplier name
@@ -174,7 +175,8 @@ class ReceivablePayableReport(object):
 			(gle.against_voucher==gle.voucher_no and gle.get(dr_or_cr) > 0) or
 
 			# entries adjusted with future vouchers
-			((gle.against_voucher_type, gle.against_voucher) in future_vouchers)
+			((gle.against_voucher_type, gle.against_voucher) in future_vouchers) or
+			(gle.voucher_type  == "Rental Bill")
 		)
 
 	def get_outstanding_amount(self, gle, report_date, dr_or_cr):
@@ -255,8 +257,10 @@ class ReceivablePayableReport(object):
                         # Ver 1.0 Ends
                         
 			if self.filters.inter_company_customer:
+				ren_cond = " and exists (select 1 from `tabCustomer` as c where c.inter_company = 1 and c.name = tenant_name)"
 				cus_query = " and exists (select 1 from `tabCustomer` as c where c.inter_company = 1 and c.name = `tabGL Entry`.party)"
 			elif self.filters.inter_company_supplier:
+				ren_cond = " and exists (select 1 from `tabSupplier` as c where c.inter_company = 1 and c.name = tenant_name)"
 				cus_query = " and exists (select 1 from `tabSupplier` as c where c.inter_company = 1 and c.name = `tabGL Entry`.party)"
 			else:
 				cus_query = ""
@@ -265,7 +269,7 @@ class ReceivablePayableReport(object):
 				select_fields = "debit_in_account_currency as debit, credit_in_account_currency as credit"
 			else:
 				select_fields = "debit, credit"
-			frappe.msgprint("cond {0} val {1} re {2}".format(conditions, values1, ren_cond))
+			#frappe.msgprint("cond {0} val {1} re {2}".format(conditions, values1, ren_cond))
                         # Ver 1.0 Begins by SSK on 21/10/2016, Following code commented and the subsequet is added
                         '''
                         self.gl_entries = frappe.db.sql("""select name, posting_date, account, party_type, party,
@@ -302,11 +306,10 @@ class ReceivablePayableReport(object):
 				rental_payment as against_voucher,
 				'BTN' as account_currency, '' as remarks, cost_center, rent_amount as debit, 0 as credit
 				from `tabRental Bill`
-				where docstatus < 2 and party_type = '{4}' and (tenant_name is not null and tenant_name != '') {5}) as gg
+				where docstatus < 2 and party_type = '{4}' and  (tenant_name is not null and tenant_name != '') {5}) as gg
 				group by gg.posting_date, gg.party_type, gg.party, gg.voucher_type, gg.voucher_no,
 				gg.against_voucher_type, gg.against_voucher, gg.account_currency, gg.cost_center"""
 				.format(select_fields, conditions, cus_query, exempt_gls, party_type, ren_cond), values, as_dict=True, debug =True)
-
 		return self.gl_entries
 
 	
@@ -391,7 +394,7 @@ def execute(filters=None):
 		"party_type": "Customer",
 		"naming_by": ["Selling Settings", "cust_master_name"],
 	}
-	return ReceivablePayableReport(filters).run(args)
+	return ReceivablePayableReport(filters).run(filters, args)
 
 def get_ageing_data(first_range, second_range, third_range, age_as_on, entry_date, outstanding_amount):
 	# [0-30, 30-60, 60-90, 90-above]

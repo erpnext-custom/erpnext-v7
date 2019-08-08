@@ -3,6 +3,7 @@
 
 cur_frm.add_fetch('employee', 'company', 'company');
 cur_frm.add_fetch('employee', 'employee_name', 'employee_name');
+cur_frm.add_fetch('employee', 'employment_type', 'employment_type');
 
 cur_frm.cscript.onload = function(doc, cdt, cdn) {
 	if(doc.__islocal) cur_frm.set_value("att_date", get_today());

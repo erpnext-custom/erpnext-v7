@@ -3,7 +3,6 @@
 
 frappe.ui.form.on('Tenant Information', {
 	refresh: function(frm) {
-
 	},
 	"location": function(frm){
 		calculate(frm);
@@ -25,6 +24,15 @@ frappe.ui.form.on('Tenant Information', {
 	},
 	"calculate_rent_charges": function(frm){
 		calculate_rent_charges(frm);
+	},
+	"building_category": function(frm, cdt, cdn) {
+		doc = locals[cdt][cdn]
+		cur_frm.toggle_reqd("floor_area", doc.building_category !== "Pilot Housing");
+		cur_frm.toggle_reqd("rate_per_sq_ft", doc.building_category !== "Pilot Housing");
+		cur_frm.fields_dict.rental_charges.grid.toggle_reqd("from_date", doc.building_category !== "Pilot Housing");
+		cur_frm.fields_dict.rental_charges.grid.toggle_reqd("to_date", doc.building_category !== "Pilot Housing");
+		cur_frm.fields_dict.rental_charges.grid.toggle_reqd("rental_amount", doc.building_category !== "Pilot Housing");
+		
 	},
 	
 });

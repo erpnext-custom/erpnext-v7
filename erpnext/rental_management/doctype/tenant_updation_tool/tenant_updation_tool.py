@@ -12,13 +12,15 @@ class TenantUpdationTool(Document):
 		pass
 
 	def on_submit(self):
+		self.update_history()
 		frappe.db.sql ("update `tabTenant Information` set ministry_agency = \'"+ str(self.new_ministry_agency) +"\', department = \'"+ str(self.new_department) +"\', floor_area = '{0}' where name= '{1}' ".format(self.new_floor_area, self.tenant))
 	
-		self.update_history()		
+		#self.update_history()		
 
 	def update_history(self):
 		ti = frappe.get_doc("Tenant Information", self.tenant)
-		ti.append("tenant_history",{
+		if not ti.tenant_history:
+			ti.append("tenant_history",{
 					"department": ti.department,
 					"ministry_agency": ti.ministry_agency,
 					"floor_area": ti.floor_area,
@@ -28,8 +30,18 @@ class TenantUpdationTool(Document):
 					"modified_by": frappe.session.user,
 					"modified": nowdate(),
 					})
+			ti.append("tenant_history",{
+                                        "department": self.new_department,
+                                        "ministry_agency": self.new_ministry_agency,
+                                        "floor_area": self.new_floor_area,
+                                        "from_date": nowdate(),
+                                        "creation": nowdate(),
+                                        "modified_by": frappe.session.user,
+                                        "modified": nowdate()
+          			      })
 
-		ti.append("tenant_history",{
+		else:
+			ti.append("tenant_history",{
 					"department": self.new_department,
 					"ministry_agency": self.new_ministry_agency,
 					"floor_area": self.new_floor_area,

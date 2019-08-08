@@ -94,6 +94,12 @@ class SalaryStructure(Document):
                 self.section            = emp.section
 		self.backup_employee    = self.employee
 		self.business_activity  = emp.business_activity
+		
+		#Added By Thukten Dendup<thukten.dendup@bt.bt> on 2019-08-07
+		if emp.employment_type == "GEP":
+			self.depend_salary_on_attendance = 1
+		else:
+			self.depend_salary_on_attendance = 0
 				
 	def get_ss_values(self,employee):
 		basic_info = frappe.db.sql("""select bank_name, bank_ac_no
@@ -202,7 +208,6 @@ class SalaryStructure(Document):
                                 table but amounts do not match, then update the respective row.
                 '''
                 self.validate_salary_component()
-                
                 basic_pay = comm_allowance = gis_amt = pf_amt = health_cont_amt = tax_amt = basic_pay_arrears = 0 
                 total_earning = total_deduction = net_pay = 0
                 settings      = get_payroll_settings(self.employee)
@@ -328,6 +333,10 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                         working_days = calc_days.get("working_days")
                         lwp          = calc_days.get("leave_without_pay")
                         payment_days = calc_days.get("payment_days")
+
+			if source.depend_salary_on_attendance:
+				absent_days = calc_days.get("absent_days")
+				
                 else:
                         return
 
@@ -381,10 +390,12 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                 # Leave without pay
                                 calc_amount = flt(amount)
                                 if key == "earnings":
-                                        if d.depends_on_lwp:
+                                        if d.depends_on_lwp or source.depend_salary_on_attendance:
                                                 calc_amount = round(flt(amount)*flt(payment_days)/flt(days_in_month))
                                         else:
                                                 calc_amount = round(flt(amount)*(flt(working_days)/flt(days_in_month)))
+
+					
                                 
                                 calc_map.setdefault(key,[]).append({
                                         'salary_component'         : d.salary_component,

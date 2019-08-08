@@ -122,17 +122,43 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		}
 	},
 
-	refresh: function() {
-		var me = this;
-		erpnext.toggle_naming_series();
-		this.toggle_related_fields(this.frm.doc);
-		this.toggle_enable_bom();
-		this.show_stock_ledger();
-		if (cint(frappe.defaults.get_default("auto_accounting_for_stock"))) {
-			this.show_general_ledger();
-		}
-		erpnext.hide_company();
-	},
+	refresh: function(frm) {
+	  var me = this;
+                erpnext.toggle_naming_series();
+                this.toggle_related_fields(this.frm.doc);
+                this.toggle_enable_bom();
+                this.show_stock_ledger();
+                if (cint(frappe.defaults.get_default("auto_accounting_for_stock"))) {
+                        this.show_general_ledger();
+                }
+                erpnext.hide_company();
+
+	if(frm.__islocal){
+	cur_frm.add_custom_button(__('Make Material Request'), function() {
+                                frappe.model.with_doctype('Material Request', function() {
+                                        var mr = frappe.model.get_new_doc('Material Request');
+                                        //var items =cur_frm.get_field('items').grid.get_selected_children();
+                                        //var items = frm.doc.items;
+                                        items.forEach(function(item) {
+                                                var mr_item = frappe.model.add_child(mr, 'items');
+                                                mr_item.item_code = item.item_code;
+                                                mr_item.item_name = item.item_name;
+                                                mr_item.uom = item.uom;
+                                                mr_item.conversion_factor = item.conversion_factor;
+                                                mr_item.item_group = item.item_group;
+                                                mr_item.description = item.description;
+                                                mr_item.image = item.image;
+                                                mr_item.qty = item.qty;
+                                                mr_item.warehouse = item.s_warehouse;
+                                                mr_item.required_date = frappe.datetime.nowdate();
+                                        });
+                                        frappe.set_route('Form', 'Material Request', mr.name);
+                                });
+                        });
+	}
+
+        },
+
 
 	on_submit: function() {
 		this.clean_up();
@@ -165,11 +191,11 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	},
 
 	clean_up: function() {
-		// Clear Production Order record from locals, because it is updated via Stock Entry
-		if(this.frm.doc.production_order &&
+		// Clear Work Order record from locals, because it is updated via Stock Entry
+		if(this.frm.doc.work_order &&
 				in_list(["Manufacture", "Material Transfer for Manufacture"], this.frm.doc.purpose)) {
-			frappe.model.remove_from_locals("Production Order",
-				this.frm.doc.production_order);
+			frappe.model.remove_from_locals("Work Order",
+				this.frm.doc.work_order);
 		}
 	},
 
@@ -178,7 +204,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		if(!this.frm.doc.fg_completed_qty || !this.frm.doc.bom_no)
 			frappe.throw(__("BOM and Manufacturing Quantity are required"));
 
-		if(this.frm.doc.production_order || this.frm.doc.bom_no) {
+		if(this.frm.doc.work_order || this.frm.doc.bom_no) {
 			// if production order / bom is mentioned, get items
 			return this.frm.call({
 				doc: me.frm.doc,
@@ -199,13 +225,13 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		this.calculate_basic_amount(d);
 	},
 
-	production_order: function() {
+	work_order: function() {
 		var me = this;
 		this.toggle_enable_bom();
 
 		return frappe.call({
-			method: "erpnext.stock.doctype.stock_entry.stock_entry.get_production_order_details",
-			args: {production_order: me.frm.doc.production_order},
+			method: "erpnext.stock.doctype.stock_entry.stock_entry.get_work_order_details",
+			args: {work_order: me.frm.doc.production_order},
 			callback: function(r) {
 				if (!r.exc) {
 					$.each(["from_bom", "bom_no", "fg_completed_qty", "use_multi_level_bom"], function(i, field) {
@@ -234,7 +260,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	},
 
 	toggle_enable_bom: function() {
-		this.frm.toggle_enable("bom_no", !!!this.frm.doc.production_order);
+		this.frm.toggle_enable("bom_no", !!!this.frm.doc.work_order);
 	},
 
 	add_excise_button: function() {
@@ -411,12 +437,12 @@ cur_frm.cscript.toggle_related_fields = function(doc) {
 	cur_frm.fields_dict["items"].grid.set_column_disp("additional_cost", doc.purpose!='Material Issue');
 }
 
-cur_frm.fields_dict['production_order'].get_query = function(doc) {
+cur_frm.fields_dict['work_order'].get_query = function(doc) {
 	return {
 		filters: [
-			['Production Order', 'docstatus', '=', 1],
-			['Production Order', 'qty', '>','`tabProduction Order`.produced_qty'],
-			['Production Order', 'company', '=', cur_frm.doc.company]
+			['Work Order', 'docstatus', '=', 1],
+			['Work Order', 'qty', '>','`tabProduction Order`.produced_qty'],
+			['Work Order', 'company', '=', cur_frm.doc.company]
 		]
 	}
 }

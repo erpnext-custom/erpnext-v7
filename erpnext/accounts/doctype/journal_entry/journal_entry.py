@@ -12,7 +12,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 
 from __future__ import unicode_literals
 import frappe, json
-from frappe.utils import cstr, flt, fmt_money, formatdate, getdate
+from frappe.utils import cstr, flt, fmt_money, formatdate, getdate, now_datetime
 from frappe import msgprint, _, scrub
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.utils import get_balance_on, get_account_currency
@@ -132,6 +132,10 @@ class JournalEntry(AccountsController):
 		self.make_gl_entries(1)
 		self.update_advance_paid()
 		self.update_expense_claim()
+		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
+		# Following method is created by SHIV on 04/09/2017
+		self.update_project_advance(cancel=True)
+		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 	def validate_party(self):
 		for d in self.get("accounts"):
@@ -584,7 +588,46 @@ class JournalEntry(AccountsController):
 
         # ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
         # Folowing method is created by SHIV on 04/09/2017
-	def update_project_advance(self):
+	def update_project_advance(self, cancel=False):
+                project_advance = frappe._dict()
+                for d in self.accounts:
+                        if d.reference_type == "Project Advance" and d.reference_name:
+                                if project_advance.has_key(d.reference_name):
+                                        project_advance[d.reference_name]["credit"] += flt(d.credit)
+                                        project_advance[d.reference_name]["debit"] += flt(d.debit)
+                                else:
+                                        project_advance[d.reference_name] = frappe._dict({"credit": flt(d.credit), "debit": flt(d.debit)})
+
+                factor = 1
+                for key, value in project_advance.iteritems():
+                        doc = frappe.get_doc("Project Advance", key)
+                        if cancel:
+                                factor = -1
+                                #doc.db_set("journal_entry_status", "Cancelled on {0}".format(now_datetime().strftime('%Y-%m-%d %H:%M:%S')))
+                                doc.journal_entry_status = "Cancelled on {0}".format(now_datetime().strftime('%Y-%m-%d %H:%M:%S'))
+                        else:
+                                doc.journal_entry = self.name
+                                #doc.db_set("journal_entry", self.name)
+                                if doc.payment_type == "Pay":
+                                        #doc.db_set("journal_entry_status", "Paid on {0}".format(now_datetime().strftime('%Y-%m-%d %H:%M:%S')))
+                                        doc.journal_entry_status = "Paid on {0}".format(now_datetime().strftime('%Y-%m-%d %H:%M:%S'))
+                                else:
+                                        #doc.db_set("journal_entry_status", "Received on {0}".format(now_datetime().strftime('%Y-%m-%d %H:%M:%S')))
+                                        doc.journal_entry_status = "Received on {0}".format(now_datetime().strftime('%Y-%m-%d %H:%M:%S'))
+                                
+                        if doc.party_type == "Customer":
+                                #doc.db_set("balance_amount", flt(doc.balance_amount) + (value["credit"] * factor))
+                                #doc.db_set("received_amount", flt(doc.received_amount) + (value["credit"] * factor))
+                                doc.balance_amount = flt(doc.balance_amount) + (value["credit"] * factor)
+                                doc.received_amount = flt(doc.received_amount) + (value["credit"] * factor)
+                        else:
+                                #doc.db_set("balance_amount", flt(doc.balance_amount) + (value["debit"] * factor))
+                                #doc.db_set("paid_amount", flt(doc.paid_amount) + (value["debit"] * factor))
+                                doc.balance_amount = flt(doc.balance_amount) + (value["debit"] * factor)
+                                doc.paid_amount = flt(doc.paid_amount) + (value["debit"] * factor)
+
+                        doc.save(ignore_permissions=True)
+                '''
                 reference_list = dict()
 
                 for d in self.accounts:
@@ -610,6 +653,7 @@ class JournalEntry(AccountsController):
                                                 balance_amount = {1}-ifnull(adjustment_amount,0)
                                                 where name = '{2}'
                                         """.format(flt(amt)+flt(value), flt(amt)+flt(value), key))
+                '''
         # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
         
 	def validate_expense_claim(self):

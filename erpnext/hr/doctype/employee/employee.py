@@ -44,6 +44,7 @@ class Employee(Document):
 					frappe.throw("Date of Joining not Set!")
 				abbr = frappe.db.get_value("Company", self.company, "abbr")
 				naming_series = str(abbr) + "." + str(getdate(self.date_of_joining).year)[2:4]	
+				#frappe.msgprint("{0}".format(naming_series))
 				x = make_autoname(str(naming_series) + '.###')
 				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
 				start_id = cint(len(str(abbr))) + 2

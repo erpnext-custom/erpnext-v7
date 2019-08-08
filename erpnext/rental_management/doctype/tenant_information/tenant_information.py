@@ -9,7 +9,8 @@ from frappe.utils.data import get_first_day, get_last_day, add_days, add_years
 
 class TenantInformation(Document):
 	def validate(self):
-		self.rent_amount = self.floor_area * self.rate_per_sq_ft
+		if self.building_category != "Pilot Housing":
+			self.rent_amount = self.floor_area * self.rate_per_sq_ft
 
 		self.validate_allocation()
 		#if not self.rental_charges:

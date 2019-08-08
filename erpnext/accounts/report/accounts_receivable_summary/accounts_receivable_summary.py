@@ -7,9 +7,9 @@ from frappe import _
 from erpnext.accounts.report.accounts_receivable.accounts_receivable import ReceivablePayableReport
 
 class AccountsReceivableSummary(ReceivablePayableReport):
-	def run(self, args):
+	def run(self,filters, args):
 		party_naming_by = frappe.db.get_value(args.get("naming_by")[0], None, args.get("naming_by")[1])
-		return self.get_columns(party_naming_by, args), self.get_data(party_naming_by, args)
+		return self.get_columns(party_naming_by, args), self.get_data(filters, party_naming_by, args)
 
 	def get_columns(self, party_naming_by, args):
 		columns = [_(args.get("party_type")) + ":Link/" + args.get("party_type") + ":200"]
@@ -41,10 +41,10 @@ class AccountsReceivableSummary(ReceivablePayableReport):
 
 		return columns
 
-	def get_data(self, party_naming_by, args):
+	def get_data(self, filters, party_naming_by, args):
 		data = []
 
-		partywise_total = self.get_partywise_total(party_naming_by, args)
+		partywise_total = self.get_partywise_total(filters, party_naming_by, args)
 
 		for party, party_dict in partywise_total.items():
 			row = [party]
@@ -67,9 +67,9 @@ class AccountsReceivableSummary(ReceivablePayableReport):
 
 		return data
 
-	def get_partywise_total(self, party_naming_by, args):
+	def get_partywise_total(self, filters, party_naming_by, args):
 		party_total = frappe._dict()
-		for d in self.get_voucherwise_data(party_naming_by, args):
+		for d in self.get_voucherwise_data(filters, party_naming_by, args):
 			party_total.setdefault(d.party,
 				frappe._dict({
 					"invoiced_amt": 0,
@@ -88,8 +88,8 @@ class AccountsReceivableSummary(ReceivablePayableReport):
 
 		return party_total
 
-	def get_voucherwise_data(self, party_naming_by, args):
-		voucherwise_data = ReceivablePayableReport(self.filters).run(args)[1]
+	def get_voucherwise_data(self, filters, party_naming_by, args):
+		voucherwise_data = ReceivablePayableReport(self.filters).run(filters, args)[1]
 		cols = ["posting_date", "party"]
 
 		if party_naming_by == "Naming Series":
@@ -123,4 +123,4 @@ def execute(filters=None):
 		"naming_by": ["Selling Settings", "cust_master_name"],
 	}
 
-	return AccountsReceivableSummary(filters).run(args)
+	return AccountsReceivableSummary(filters).run(filters, args)

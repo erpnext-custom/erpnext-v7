@@ -18,6 +18,12 @@ def get_data():
 				},                                
 				{
 					"type": "doctype",
+					"name": "Attendance Upload",
+					"label": "GEP Attendance Upload",
+					"description":_("Upload attendance from a .csv file"),
+				},
+				{
+					"type": "doctype",
 					"name": "Upload Attendance",
 					"description":_("Upload attendance from a .csv file"),
 					"hide_count": True

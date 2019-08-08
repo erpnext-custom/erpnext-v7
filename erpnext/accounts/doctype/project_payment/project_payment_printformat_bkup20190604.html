@@ -1,0 +1,145 @@
+<div class="page-break">
+	<div id="header-html" class="hidden-pdf">
+    {%- if letter_head and not no_letterhead -%}
+        <div class="letter-head">
+            {{ letter_head }}
+        </div>
+    {%- endif -%}
+</div>
+
+
+<div id="footer-html" class="visible-pdf">
+    {% if not no_letterhead and footer %}
+        <div class="letter-head-footer">
+        {{ footer }}
+        </div>
+    {% endif %}
+
+    <p class="text-center small page-number visible-pdf">
+        {{ _("Page {0} of {1}").format('<span class="page"></span>', '<span class="topage"></span>') }}
+    </p>
+</div>
+<div class="print-heading">
+		<div  style="text-align: center;">
+<h3>{{doc.naming_series}}</h3>
+<h5><u>
+{{doc.branch}}
+</u></h5>
+</div>
+
+<table class = "table1" style="margin-top: 1px; text-align:justify;font-size:small; width:100% ">
+<tr>
+<td><strong>Customer:</strong></td>
+<td>{{doc.party}}</td>
+<td><strong>Posting Date:</strong></td>
+<td>{{ frappe.utils.formatdate(doc.posting_date) }}</td>
+</tr>
+<tr>
+<td><strong>Entry Type:</strong></td>
+<td>{{doc.naming_series}}</td>
+<td><strong>Reference:</strong></td>
+<td>{{doc.name}}</td>
+</tr>
+</table>
+	
+	<table class="table table-bordered" style="margin-top: 15px;">
+		<tbody>
+			{% set slno = 0 %}
+			<tr>
+				<th>Sr</th>
+				<th>Account</th>
+				<th>Party Type</th>
+				<th>Party</th>
+				<th class="text-right">Debit</th>
+				<th class="text-right">Credit</th>
+			</tr>
+			{% set tot_debit = [0] %}
+			{% set tot_credit = [0] %}
+			{%- for row in frappe.get_list(doctype="GL Entry",fields = ["account", "party_type", "party", "debit", "credit"],filters = {"voucher_no":doc.name},order_by = "-debit") -%}	
+			<tr>
+				{% set slno = slno + 1 %}
+				{% if tot_debit.append(tot_debit.pop() + row.debit) %}{% endif %}
+				{% if tot_credit.append(tot_credit.pop() + row.credit) %}{% endif %}
+				<td style="width: 3%;">{{ loop.index }}</td>
+				<td>{{ row.account }}</td>
+				<td>{{ row.party_type or "" }}</td>
+				<td>{{row.party or ""}}</td>
+				<td class="text-right">{{ frappe.format_value(row.debit, {"fieldtype":"Currency"}, currency=doc.currency) }}</td>
+				<td class="text-right">{{ frappe.format_value(row.credit, {"fieldtype":"Currency"}, currency=doc.currency) }}</td>
+			</tr>				
+			{%- endfor -%}
+		</tbody>
+	</table>
+	<div class="row section-break">
+		<div class="col-xs-6 column-break">
+			<div class="row">
+				<div class="col-xs-5 text-left">
+					<b><lable>Cheque No.<lable></b>
+				</div>
+				{%- if doc.cheque_no -%}
+					<div class="col-xs-7 value">
+						{{doc.cheque_no}}
+					</div>			
+				{%- endif -%}
+			</div>
+			
+			<div class="row">
+				<div class="col-xs-5 text-left">
+					<b><lable>Cheque Date<lable></b>
+				</div>
+				
+				<div class="col-xs-7 value">
+					{%- if doc.cheque_date -%}
+						{{ frappe.utils.formatdate(doc.cheque_date) }}
+					{%- endif -%}
+				</div>							
+			</div>
+			<div class="row">
+				<div class="col-xs-5 text-left">
+					<b><lable>Clearance Date<lable></b>
+				</div>
+				
+				<div class="col-xs-7 value">
+					{%- if doc.clearance_date -%}
+						{{ frappe.utils.formatdate(doc.clearance_date) }}
+					{%- endif -%}				
+				</div>							
+			</div>			
+		</div>
+		<div class="col-xs-6 column-break">
+			<div class="row">
+				<div class="col-xs-5 text-right">
+					<b><lable>Total Debit<lable></b>
+				</div>
+				<div class="col-xs-7 value"  style="text-align: right;">
+					<b>{{ frappe.format_value(tot_debit[0], {"fieldtype":"Currency"}, currency=doc.currency) }}</b>
+				</div>				
+			</div>
+			<div class="row">
+				<div class="col-xs-5 text-right">
+					<b><lable>Total Credit<lable></b>
+				</div>
+				<div class="col-xs-7 value" style="text-align: right;">
+					<b>{{ frappe.format_value(tot_credit[0], {"fieldtype":"Currency"}, currency=doc.currency) }}</b>
+				</div>				
+			</div>			
+		</div>
+	</div>
+
+	<div class="row" style="margin-top: 15px;">
+		<b><lable>Narration<lable>:</b>
+			{{doc.remarks}}
+	</div>
+	<div class="row section-break" style="margin-top: 60px;">
+		<div class="col-xs-6 column-break" style="text-align: left;">Prepared By</div>
+		<div class="col-xs-6 column-break" style="text-align: center;">Verified By</div>
+	</div>
+	<div class="row section-break" style="margin-top: 60px;">
+		<div class="col-xs-6 column-break" style="text-align: left;">Approved By</div>
+		<div class="col-xs-6 column-break" style="text-align: center;">Received By</div>
+	</div>
+
+	</small>
+</div>
+<div style="padding-top: 100px; clear: both;">
+<div class="printedby">This print is system generated and should be considered VALID only with appropriate seal and/or signature. <br>  Printed by {{ frappe.user }} on {{ frappe.utils.nowdate()  }} at {{ frappe.utils.nowtime() }}</div>

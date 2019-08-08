@@ -634,8 +634,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-07-09 16:26:45.062371", 
- "modified_by": "Administrator", 
+ "modified": "2019-08-06 15:24:00.598124", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Rental Management", 
  "name": "Tenant Updation Tool", 
  "name_case": "", 
@@ -682,9 +682,9 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 

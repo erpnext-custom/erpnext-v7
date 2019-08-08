@@ -11,9 +11,9 @@ frappe.ui.form.on('BOQ Adjustment', {
 			{fieldname: 'boq_code', columns: 1},
 			{fieldname: 'item', columns: 2},
 			{fieldname: 'is_group', columns: 1},
-			{fieldname: 'quantity', columns: 2},
-			{fieldname: 'balance_quantity', columns: 2},
-			{fieldname: 'adjustment_quantity', columns: 2}
+			{fieldname: 'balance_amount', columns: 2},
+			{fieldname: 'balance_amount_adj', columns: 2},
+			{fieldname: 'adjustment_amount', columns: 2}
 		];
 	},
 	
@@ -102,3 +102,4 @@ var calculate_total_amount = function(frm){
 	
 	cur_frm.set_value("total_amount",parseFloat(total_amount));
 }
+

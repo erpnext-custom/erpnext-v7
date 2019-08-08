@@ -10,4 +10,4 @@ def execute(filters=None):
 		"party_type": "Supplier",
 		"naming_by": ["Buying Settings", "supp_master_name"],
 	}
-	return ReceivablePayableReport(filters).run(args)
+	return ReceivablePayableReport(filters).run(filters, args)

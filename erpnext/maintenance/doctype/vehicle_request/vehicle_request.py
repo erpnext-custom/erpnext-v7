@@ -10,15 +10,15 @@ from frappe.utils import flt, get_datetime, nowdate
 class VehicleRequest(Document):
 	def validate(self):
 		if get_datetime(self.from_date) > get_datetime(self.to_date):
-			frappe.throw("To Date cannot be earlier then From Date")
-		 
+			frappe.throw("To Date/Time cannot be earlier then From Date/Time")
+	
 		if not self.posting_date:
 			self.posting_date = nowdate()
 
 		if not self.items:
 			frappe.throw("Employee List Cannot be empty, Add Employees")
 
-		if self.workflow_state in ("Approved", "Milage Claim") :
+		if self.workflow_state == "Approved":
 			self.db_set("docstatus", 1)	
 		self.check_duplicate()
 
@@ -28,11 +28,13 @@ class VehicleRequest(Document):
 	def on_submit(self):
 		self.check_if_free()
 		self.send_email()
+		if self.r_status == "Approved":
+			self.update_reservation_entry()
 		if self.r_status == "Rejected" and self.rejection_reason == None:
 			frappe.throw("Rejection Reason Is Mandatory")
 
 	def on_cancel(self):
-		frappe.db.sql(""" delete from `tabEquipment Reservation Entry` where equipment_request = '{0}'""".format(self.name)) 
+		frappe.db.sql(""" delete from `tabEquipment Reservation Entry` where vehicle_request = '{0}'""".format(self.name)) 
 
 	def validate_approver(self):
 		if self.approver:
@@ -40,7 +42,7 @@ class VehicleRequest(Document):
 		else:
 			frappe.throw("Set Reports To Field in Employee Master")
 
-                if self.approver_if != frappe.session.user:
+                if self.approver_id != frappe.session.user:
                         frappe.throw("Only the selected supervisor can submit this document")
 
 	def check_duplicate(self):
@@ -52,10 +54,36 @@ class VehicleRequest(Document):
 				found.append(a.employee)
 
 	def check_if_free(self):
-		date = "between '{0}' and '{1}'".format(self.from_date, self.to_date)
-		query = frappe.db.sql(""" select equipment from `tabEquipment Reservation Entry` where docstatus =1 and equipment = '{0}' and from_date {1} and to_date {1}""".format(self.equipment, date))
-		if query:
-			frappe.throw("<b> '{0}' </b> is currently in use".format(query[0]))
+		result = frappe.db.sql("""
+                                        select equipment
+                                        from `tabEquipment Reservation Entry`
+                                        where equipment = '{0}'
+                                        and docstatus = 1
+                                        and ('{1}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
+                                                or
+                                                '{2}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
+                                                or
+                                                ('{3}' <= concat(from_date,' ',from_time) and '{4}' >= concat(to_date,' ',to_time))
+                                        )
+                                """.format(self.equipment, self.from_date, self.to_date, self.from_date, self.to_date), as_dict=True)
+		if result:
+			frappe.throw("<b> '{0}' </b> is currently in use".format(result[0]))
+
+	def update_reservation_entry(self):
+		import datetime
+                from_time = datetime.datetime.strptime(self.from_date, '%Y-%m-%d %H:%M:%S')
+		to_time = datetime.datetime.strptime(self.to_date, '%Y-%m-%d %H:%M:%S')
+                frappe.msgprint("{0}".format(from_time.time()))
+		doc = frappe.new_doc("Equipment Reservation Entry")
+		doc.equipment = self.equipment
+		doc.vehicle_request = self.name
+		doc.reason = "On Duty"
+		doc.ehf_name = "On Duty" 
+		doc.from_date = self.from_date
+		doc.to_date = self.to_date
+		doc.from_time = from_time.time()
+		doc.to_time = to_time.time()
+		doc.submit()
 
 	def send_email(self):
 		email = self.owner

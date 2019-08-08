@@ -181,11 +181,11 @@ cur_frm.cscript = new erpnext.hr.EmployeeController({frm: cur_frm});
 
 cur_frm.add_fetch("cost_center", "branch", "branch")
 
-cur_frm.fields_dict['designation'].get_query = function(doc, dt, dn) {
+/*cur_frm.fields_dict['designation'].get_query = function(doc, dt, dn) {
    return {
 		   filters:{"employee_group": doc.employee_group}
    }
-}
+} */
 
 cur_frm.fields_dict['division'].get_query = function(doc, dt, dn) {
        return {

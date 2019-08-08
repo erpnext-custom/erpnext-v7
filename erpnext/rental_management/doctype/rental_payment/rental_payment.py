@@ -56,12 +56,12 @@ class RentalPayment(AccountsController):
 		credit_account = self.credit_account
 		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 		business_activity = frappe.db.get_single_value("Rental Setting", "business_activity")
-		if self.individual_payment:
-			party = frappe.db.get_value("Tenant Information", self.tenant, "customer_code")
-			party_type = ""
-		else:
-			party = ""
-			party_type=""
+		#if self.individual_payment:
+		#	party = frappe.db.get_value("Tenant Information", self.tenant, "customer_code")
+		#	party_type = ""
+		#else:
+		#	party = ""
+		#	party_type=""
 		gl_entries.append(
 			self.get_gl_dict({
 			    "account": debit_account,
@@ -70,8 +70,8 @@ class RentalPayment(AccountsController):
 			    "voucher_no": self.name,
 			    "voucher_type": "Rental Payment",
 			    "cost_center": cost_center,
-			    'party': party,
-			    'party_type': party_type,
+		#	    'party': party,
+		#	    'party_type': party_type,
 			    "company": self.company,
 			    "remarks": self.remarks,
 			    "business_activity": business_activity

@@ -52,6 +52,14 @@ frappe.query_reports["Accounts Payable Summary"] = {
 			"fieldtype": "Int",
 			"default": "90",
 			"reqd": 1
-		}
+		},
+
+		{
+                        "fieldname":"show_zero",
+                        "label": __("Show Zero Values"),
+                        "fieldtype": "Check",
+                        "default": 0,
+                }
+
 	]
 }

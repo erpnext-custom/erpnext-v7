@@ -28,10 +28,19 @@ class ProcessPayroll(Document):
 
 		if process_type == "create":
                         cond += self.get_joining_releiving_condition()
+
+			if self.employment_type == "GEP":
+				emp_type_cond = "t1.employment_type in ('GEP')"
+			else:
+				emp_type_cond = "t1.employment_type not in ('GEP')"  	
+
+			frappe.msgprint("{0}".format(emp_type_cond))
+
                         emp_list = frappe.db.sql("""
                                 select t1.name
                                 from `tabEmployee` t1
-                                where not exists(select 1
+                                where {3}
+				and not exists(select 1
                                                 from `tabSalary Slip` as t3
                                                 where t3.employee = t1.name
                                                 and t3.docstatus != 2
@@ -39,7 +48,7 @@ class ProcessPayroll(Document):
                                                 and t3.month = '{1}')
                                 {2}
                                 order by t1.branch, t1.name
-                        """.format(self.fiscal_year, self.month, cond), as_dict=True)
+                        """.format(self.fiscal_year, self.month, cond, emp_type_cond), as_dict=True)
                 else:
                         emp_list = frappe.db.sql("""
                                 select t1.name

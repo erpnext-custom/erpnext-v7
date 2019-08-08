@@ -9,6 +9,102 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+def create_project_items(project=None):
+        def create_project_boq_item():
+                cond = "and t1.project = '{0}'".format(project) if project else ""
+                boq = frappe.db.sql("""
+                        select *
+                        from `tabBOQ` as t1
+                        where t1.docstatus = 1
+                        and not exists(select 1
+                                           from `tabProject BOQ Item` as t2
+                                           where t2.parent = t1.project
+                                           and t2.boq_name = t1.name
+                                           )
+                        {cond}
+                        order by t1.project, t1.name
+                """.format(cond=cond), as_dict=True)
+                counter = 0
+                for i in boq:
+                        counter += 1
+                        doc = frappe.get_doc("Project", i.project)
+                        row = doc.append("project_boq_item", {})
+                        row.boq_name            = i.name
+                        row.boq_date            = i.boq_date
+                        row.amount              = flt(i.total_amount)
+                        row.price_adjustment    = flt(i.price_adjustment)
+                        row.total_amount        = flt(i.total_amount)+flt(i.price_adjustment)
+                        row.received_amount     = flt(i.received_amount)
+                        row.paid_amount         = flt(i.paid_amount)
+                        row.balance_amount      = flt(i.balance_amount)
+                        row.save(ignore_permissions=True)
+                        print counter,'create_project_boq_item',i.project,i.name,'Row added'
+
+        def create_project_advance_item():
+                cond = "and t1.project = '{0}'".format(project) if project else ""
+                items = frappe.db.sql("""
+                        select *
+                        from `tabProject Advance` as t1
+                        where t1.docstatus = 1
+                        and not exists(select 1
+                                           from `tabProject Advance Item` as t2
+                                           where t2.parent = t1.project
+                                           and t2.advance_name = t1.name
+                                           )
+                        {cond}
+                        order by t1.project, t1.name
+                """.format(cond=cond), as_dict=True)
+                counter = 0
+                for i in items:
+                        counter += 1
+                        doc = frappe.get_doc("Project", i.project)
+                        row = doc.append("project_advance_item", {})
+                        row.advance_name        = i.name
+                        row.advance_date        = i.advance_date
+                        row.advance_amount      = flt(i.received_amount)+flt(i.paid_amount)
+                        row.received_amount     = flt(i.received_amount)
+                        row.paid_amount         = flt(i.paid_amount)
+                        row.adjustment_amount   = flt(i.adjustment_amount)
+                        row.balance_amount      = flt(i.balance_amount)
+                        row.save(ignore_permissions=True)
+                        print counter,'create_project_advance_item',i.project,i.name,'Row added'
+
+        def create_project_invoice_item():
+                cond = "and t1.project = '{0}'".format(project) if project else ""
+                items = frappe.db.sql("""
+                        select *
+                        from `tabProject Invoice` as t1
+                        where t1.docstatus = 1
+                        and not exists(select 1
+                                           from `tabProject Invoice Item` as t2
+                                           where t2.parent = t1.project
+                                           and t2.invoice_name = t1.name
+                                           )
+                        {cond}
+                        order by t1.project, t1.name
+                """.format(cond=cond), as_dict=True)
+                counter = 0
+                for i in items:
+                        counter += 1
+                        doc = frappe.get_doc("Project", i.project)
+                        row = doc.append("project_invoice_item", {})
+                        row.invoice_name            = i.name
+                        row.invoice_date            = i.invoice_date
+                        row.boq                     = i.boq
+                        row.subcontract             = i.subcontract
+                        row.gross_invoice_amount    = flt(i.gross_invoice_amount)
+                        row.price_adjustment_amount = flt(i.price_adjustment_amount)
+                        row.net_invoice_amount      = flt(i.net_invoice_amount)
+                        row.total_received_amount   = flt(i.total_received_amount)
+                        row.total_paid_amount       = flt(i.total_paid_amount)
+                        row.total_balance_amount    = flt(i.total_balance_amount)
+                        row.save(ignore_permissions=True)
+                        print counter,'create_project_invoice_item',i.project,i.name,'Row added'
+
+        create_project_boq_item()
+        create_project_advance_item()
+        create_project_invoice_item()
+
 # 2019/05/22 Birkha->Shiv
 def cancel_dn():
 	doc = frappe.get_doc("Delivery Note", "DN19043483")
