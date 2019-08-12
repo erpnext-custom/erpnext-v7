@@ -133,14 +133,22 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
                 }
                 erpnext.hide_company();
 
-	if(frm.__islocal){
-	cur_frm.add_custom_button(__('Make Material Request'), function() {
+	if(!frm.__islocal){
+	cur_frm.add_custom_button("Create Material Request", function() {
+                                frappe.model.open_mapped_doc({
+                                        method: "erpnext.stock.doctype.stock_entry.stock_entry.make_material_requisition",
+                                        frm: cur_frm
+                                })
+                        });
+	}
+
+	/*cur_frm.add_custom_button(__('Make Material Request'), function() {
                                 frappe.model.with_doctype('Material Request', function() {
                                         var mr = frappe.model.get_new_doc('Material Request');
                                         //var items =cur_frm.get_field('items').grid.get_selected_children();
-                                        //var items = frm.doc.items;
+                                        var items = frm.doc.items;
                                         items.forEach(function(item) {
-                                                var mr_item = frappe.model.add_child(mr, 'items');
+                                                var mr_item = frappe.model.add_child(cur_frm, "Material Request Item", "items");
                                                 mr_item.item_code = item.item_code;
                                                 mr_item.item_name = item.item_name;
                                                 mr_item.uom = item.uom;
@@ -155,7 +163,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
                                         frappe.set_route('Form', 'Material Request', mr.name);
                                 });
                         });
-	}
+	}*/
 
         },
 

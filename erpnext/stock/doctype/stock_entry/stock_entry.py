@@ -11,6 +11,7 @@ from erpnext.stock.stock_ledger import get_previous_sle, NegativeStockError
 from erpnext.stock.get_item_details import get_bin_details, get_default_cost_center, get_conversion_factor
 from erpnext.manufacturing.doctype.bom.bom import validate_bom_no
 import json
+from frappe.model.mapper import get_mapped_doc
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
 from erpnext.custom_utils import check_future_date
@@ -889,3 +890,44 @@ def get_warehouse_details(args):
 
 	return ret
 
+
+@frappe.whitelist()
+def make_material_requisition(source_name, target_doc=None):
+	def update_so(source, target):
+		'''target.price_list_currency = source.currency
+		target.currency = source.currency
+		target.plc_conversion_rate = 1
+		target.ignore_pricing_rule = 1
+		target.run_method("set_missing_values")
+		target.run_method("calculate_taxes_and_totals")'''
+
+        doclist = get_mapped_doc("Stock Entry", source_name,       {
+                "Stock Entry": {
+                        "doctype": "Material Request",
+                        "field_map": {
+				"branch": "branch",
+				"customer": "customer",
+				"posting_date":"posting_date",
+				"title":"title",
+                        },
+                        "validation": {
+                                "docstatus": ["=", 1]
+                        }
+                },
+                "Stock Entry Detail": {
+                        "doctype": "Material Request Item",
+                        "field_map": [
+                                ["item_code", "item_code"],
+				["item_name", "item_name"],
+				["uom",  "uom"],
+				["conversion_factor", "conversion_factor"],
+				["item_group",  "item_group"],
+				["description", "description"],
+				["image", "image"],
+				["qty", "qty"],
+				["warehouse",  "s_warehouse"]
+                        ],
+                }
+        }, target_doc, update_so)
+
+        return doclist

@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils.data import get_first_day, get_last_day, add_days, add_years
+from frappe.utils import cint, flt, nowdate, money_in_words
 
 class TenantInformation(Document):
 	def validate(self):
@@ -19,6 +20,20 @@ class TenantInformation(Document):
 			self.update_customer()
 		else:
 			frappe.db.set(self, 'customer_code', '')
+
+		if self.building_category == "Pilot Housing":
+			self.cal_monthly_installment_for_pilot_housing()
+
+		if not self.rental_charges and self.building_category == "Pilot Housing":
+			self.update_rental_charges()
+	
+	def cal_monthly_installment_for_pilot_housing(self):
+		if self.pilot_account_details:
+			monthly_installment_amount = 0.0
+			for a in self.pilot_account_details:
+				monthly_installment_amount += flt(a.amount)
+
+			self.original_monthly_instalment = monthly_installment_amount
 	
 	def validate_allocation(self):
 		cid = frappe.db.get_value("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus":1}, "cid")
@@ -30,11 +45,26 @@ class TenantInformation(Document):
 		customer_code = frappe.db.sql("select customer_code from `tabCustomer` where customer_id = %s and customer_group ='Rental'",str(self.cid))
 		if not customer_code:
 			self.create_customer()
-		else:
-			frappe.throw("Rental Customer of same CID is already registered with customer code <b>{0}</b>".format(customer_code[0][0]))
+		#else:
+		#	frappe.throw("Rental Customer of same CID is already registered with customer code <b>{0}</b>".format(customer_code[0][0]))
 		if not self.rental_charges:
-			self.calculate_rent_charges()
+			
+			if self.building_category != "Pilot Housing":
+				self.calculate_rent_charges()
+			#else:
+			#	self.update_rental_charges()
+
 	
+	def update_rental_charges(self):
+		rent_obj = self.append("rental_charges", {
+					"from_date": self.from_date,
+					"to_date": self.to_date,
+					"increment": 0.0,
+					"rental_amount": self.original_monthly_instalment
+				})
+		#frappe.msgprint("Before save")
+		#rent_obj.save()
+		#frappe.msgprint("Afer Save")
 	
 	def calculate_rent_charges(self):
 		percentage = 0.1

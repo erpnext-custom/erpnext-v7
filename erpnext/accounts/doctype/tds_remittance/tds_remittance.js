@@ -15,5 +15,14 @@ frappe.ui.form.on('TDS Remittance', {
 	},
 	refresh: function(frm) {
 
+	},
+	tds_rate: function(frm){
+		if (frm.doc.tds_rate =2){
+			 frappe.model.get_value('Accounts Settings',{'name': 'Accounts Settings'},  'tds_2_account',
+                        function(d) {
+                            cur_frm.set_value("tds_account",d.tds_2_account);
+	
+                        });
+			}
 	}
 });

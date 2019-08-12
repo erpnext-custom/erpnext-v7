@@ -39,9 +39,10 @@ class ProcessRentalBilling(AccountsController):
                                 from `tabRental Bill` as t1
                                 where t1.fiscal_year = '{0}'
                                 and t1.month = '{1}'
+				and t1.branch = '{2}'
                                 and t1.docstatus = 0
                                 order by t1.branch, t1.name
-                        """.format(self.fiscal_year, self.month), as_dict=True)
+                        """.format(self.fiscal_year, self.month, self.branch), as_dict=True)
 
 		return tenant_list	
 
@@ -74,11 +75,15 @@ class ProcessRentalBilling(AccountsController):
 					#customer_code = frappe.db.get_value("Customer", {"customer_id":name}, "customer_code")
 					#bill_code = "NHDCL/" + customer_code + "/" + self.fiscal_year + self.month
 					yearmonth = str(self.fiscal_year) + str(self.month)
-					
+
 					query = """
                                                             select tenant_name, customer_code, block_no, business_activity, flat_no, 
                                                             ministry_agency, location, branch, department, dzongkhag, designation, 
-                                                            mobile_no, town_category, building_category, allocated_date, rental_amount 
+                                                            mobile_no, town_category, building_category, allocated_date, 
+							    (Case 
+								WHEN building_category = 'Pilot Housing' Then original_monthly_instalment  
+								Else rental_amount 
+							    End) as rental_amount
                                                             from `tabTenant Information` t 
                                                             inner join `tabTenant Rental Charges` r 
                                                             on t.name = r.parent 
@@ -170,6 +175,20 @@ class ProcessRentalBilling(AccountsController):
 			      and gl_entry = 0
 		           """.format(self.branch, self.fiscal_year, self.month), as_dict=True)	
 		if bills[0]['rental_amount'] > 0:
+			x = "RB" + str(self.fiscal_year)[2:4] + str(self.month)
+			voucher_nos = frappe.db.sql("select voucher_no from `tabGL Entry` Where voucher_no like '{0}%' order by voucher_no desc limit 1".format(x), as_dict=1)
+			if voucher_nos:
+				for a in voucher_nos:
+					start_id = len(x)
+					y = cint(a.voucher_no[start_id:]) + 1
+					if y < 10:
+						no = str("0") + str(y)
+					else:
+						no = str(y)
+				voucher_no = x + no
+			else:
+				voucher_no = x + str("01")
+				
 			for b in bills:
 				total_debit = b.rental_amount
 				gl_entries.append(
@@ -177,8 +196,8 @@ class ProcessRentalBilling(AccountsController):
 					    "account": revenue_claim_account,
 					    "debit": b.rental_amount,
 					    "debit_in_account_currency": b.rental_amount,
-					   # "voucher_no": voucher_no,
-					   # "voucher_type": "Rental Bill",
+					    "voucher_no": voucher_no,
+					    "voucher_type": "Rental Bill",
 					    "cost_center": cost_center,
 					    #'party': b.customer_code,
 					    #'party_type': 'Customer',
@@ -200,24 +219,63 @@ class ProcessRentalBilling(AccountsController):
 				   """.format(self.branch, self.fiscal_year, self.month), as_dict=True)	
 					  
 			if credit_bills:
+				
 				total_credit = 0
 				for c in credit_bills:
-					total_credit = total_credit + c.rental_amount
-					credit_account = frappe.db.get_value("Rental Account Setting Item",{"building_category":c.building_category}, "account")
-					gl_entries.append(
-						self.get_gl_dict({
-							"account": credit_account,
-							"credit": c.rental_amount,
-							"credit_in_account_currency": c.rental_amount,
-					#		"voucher_no": voucher_no,
-					#		"voucher_type": "Rental Bill",
-							"cost_center": cost_center,
-							"company": self.company,
-							"remarks": "Rental Bill for " + str(c.building_category) +" Year "+ str(self.fiscal_year) + " Month " +str(self.month),
-							"business_activity": business_activity
-							})
-					    )
+					if c.building_category == "Pilot Housing":
+						total_pilot_credit = 0.0
+						pilot_housing_data = frappe.db.sql("""
+									select sum(p.amount) as p_amount, p.account as p_account
+									from `tabTenant Information` t inner join
+									`tabPilot Housing Account` p on t.name = p.parent
+									where t.building_category = 'Pilot Housing' 
+									and exists(select 1
+                                                                           	from `tabRental Bill` as t2
+                                                                           	where t2.tenant = t.name
+										and t2.branch = '{0}'
+                                                                           	and t2.docstatus = 1 
+                                                                           	and t2.fiscal_year = '{1}'
+                                                                           	and t2.month = '{2}'
+                                                                           	)
+									group by p.account 
+									""".format(self.branch, self.fiscal_year, self.month), as_dict=True)
+						for p in pilot_housing_data:
+							total_pilot_credit += p.p_amount
+							gl_entries.append(
+								self.get_gl_dict({
+									"account": p.p_account,
+									"credit": p.p_amount,
+									"credit_in_account_currency": p.p_amount,
+									"voucher_no": voucher_no,
+									"voucher_type": "Rental Bill",
+									"cost_center": cost_center,
+									"company": self.company,
+									"remarks": "Rental Bill for " + str(c.building_category) +" Year "+ str(self.fiscal_year) + " Month " +str(self.month),
+									"business_activity": business_activity
+									})
+							    )
+						if total_pilot_credit == c.rental_amount:
+							total_credit += c.rental_amount
+						else:
+							frappe.throw("Rental Bill Amount {0} for Pilot Housing and Tenant Account Amount {1} is not equal".format(total_pilot_credit, c.rental_amount))
+					else:
+						total_credit = total_credit + c.rental_amount
+						credit_account = frappe.db.get_value("Rental Account Setting Item",{"building_category":c.building_category}, "account")
+						gl_entries.append(
+							self.get_gl_dict({
+								"account": credit_account,
+								"credit": c.rental_amount,
+								"credit_in_account_currency": c.rental_amount,
+								"voucher_no": voucher_no,
+								"voucher_type": "Rental Bill",
+								"cost_center": cost_center,
+								"company": self.company,
+								"remarks": "Rental Bill for " + str(c.building_category) +" Year "+ str(self.fiscal_year) + " Month " +str(self.month),
+								"business_activity": business_activity
+								})
+						    )
 			if total_credit and total_debit:	
+				#frappe.msgprint("{0}".format(gl_entries))
 				make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)	
 				frappe.db.sql("update `tabRental Bill` set gl_entry = 1 where branch='{0}' and fiscal_year='{1}' and month = '{2}' and docstatus=1".format(self.branch, self.fiscal_year, self.month))
 				msg = "<b>Rental Bills Successfully posted to account and updated</b>"

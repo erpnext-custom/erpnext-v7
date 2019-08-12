@@ -32,7 +32,6 @@ frappe.ui.form.on('Tenant Information', {
 		cur_frm.fields_dict.rental_charges.grid.toggle_reqd("from_date", doc.building_category !== "Pilot Housing");
 		cur_frm.fields_dict.rental_charges.grid.toggle_reqd("to_date", doc.building_category !== "Pilot Housing");
 		cur_frm.fields_dict.rental_charges.grid.toggle_reqd("rental_amount", doc.building_category !== "Pilot Housing");
-		
 	},
 	
 });
