@@ -9,6 +9,8 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 																			warehouse.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
+cur_frm.add_fetch("to_warehouse", "email_id", "email_id")
+cur_frm.add_fetch("to_warehouse", "email_id1", "email_id1")
 
 frappe.provide("erpnext.stock");
 

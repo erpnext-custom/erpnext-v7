@@ -80,6 +80,7 @@ class JournalEntry(AccountsController):
 		check_future_date(self.posting_date)
 		if not self.is_opening:
 			self.is_opening='No'
+		self.set_status()
 		self.clearance_date = None
 
 		self.validate_party()
@@ -100,6 +101,13 @@ class JournalEntry(AccountsController):
 		self.set_account_and_party_balance()
 		if not self.title:
 			self.title = self.get_title()
+
+	def set_status(self):
+                self.status = {
+                        "0": "Draft",
+                        "1": "Submitted",
+                        "2": "Cancelled"
+                }[str(self.docstatus or 0)]
 
 	def on_submit(self):
 		self.check_credit_limit()

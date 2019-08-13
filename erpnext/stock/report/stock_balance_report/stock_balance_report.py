@@ -183,10 +183,10 @@ def get_item_warehouse_map(filters):
 		key = (d.company, d.item_code, d.warehouse)
 		if key not in iwb_map:
 			iwb_map[key] = frappe._dict({
-				"opening_qty": 0.0, "opening_val": 0.0,
-				"in_qty": 0.0, "in_val": 0.0,
-				"out_qty": 0.0, "out_val": 0.0,
-				"bal_qty": 0.0, "bal_val": 0.0,
+				"opening_qty": 0.0000, "opening_val": 0.0000,
+				"in_qty": 0.0000, "in_val": 0.0000,
+				"out_qty": 0.0000, "out_val": 0.0000,
+				"bal_qty": 0.0000, "bal_val": 0.0000,
 				"val_rate": 0.0, "uom": None
 			})
 

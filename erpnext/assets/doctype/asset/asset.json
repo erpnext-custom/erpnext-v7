@@ -36,7 +36,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 1, 
+   "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "asset_name", 
@@ -765,8 +765,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-12 11:36:30.189136", 
- "modified_by": "Administrator", 
+ "modified": "2019-06-13 12:31:11.772239", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Assets", 
  "name": "Asset", 
  "name_case": "", 
@@ -894,7 +894,7 @@
    "write": 0
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 

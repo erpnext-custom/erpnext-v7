@@ -13,6 +13,7 @@ from erpnext.custom_utils import check_future_date
 class DirectPayment(AccountsController):
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.set_status()
 		if self.payment_type == "Receive":
 			inter_company = frappe.db.get_value("Customer", self.party, "inter_company")
 			if inter_company == 0:
@@ -21,6 +22,12 @@ class DirectPayment(AccountsController):
 		branch_name = frappe.db.get_value("Cost Center", self.cost_center, "branch")
 		if branch_name != self.branch:
 			frappe.throw(_("Branch {0} and Cost Center {1} doest not belong to each other".format(self.party)))
+	def set_status(self):
+                self.status = {
+                        "0": "Draft",
+                        "1": "Submitted",
+                        "2": "Cancelled"
+                }[str(self.docstatus or 0)]
 	
 	def on_submit(self):
 		self.post_gl_entry()

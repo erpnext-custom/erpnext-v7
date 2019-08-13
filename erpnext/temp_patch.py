@@ -8,6 +8,182 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff,
 from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 
+# Advance GL not posted
+def post_ta_advance():
+	#doc = frappe.get_doc("Travel Authorization", "TA190700130-1")
+	doc = frappe.get_doc("Travel Authorization", "TA190700135")
+	doc.check_advance()
+
+# Following method created by SHIV on 2019/06/27
+def generate_pol_gls():
+        counter = 0
+        for i in frappe.db.sql("select * from `tabPOL` p where p.posting_date >= '2019-01-01' and p.docstatus = 1 and not exists(select 1 from `tabGL Entry` gle where gle.voucher_type = 'POL' and gle.voucher_no = p.name) order by timestamp(p.posting_date, p.posting_time)", as_dict=True):
+                counter += 1
+                print counter, i.name, i.posting_date, i.posting_time
+                doc = frappe.get_doc('POL', i.name)
+                doc.make_gl_entries(repost_future_gle=False)
+
+# Following method created by SHIV on 2019/06/27
+def generate_issuepol_gls():
+        counter = 0
+        for i in frappe.db.sql("select * from `tabIssue POL` p where p.posting_date >= '2019-01-01' and p.docstatus = 1 and not exists(select 1 from `tabGL Entry` gle where gle.voucher_type = 'Issue POL' and gle.voucher_no = p.name) order by timestamp(p.posting_date, p.posting_time)", as_dict=True):
+                counter += 1
+                print counter, i.name, i.posting_date, i.posting_time
+                doc = frappe.get_doc('Issue POL', i.name)
+                doc.make_gl_entries(repost_future_gle=False)
+
+'''
+# update stock reconciliation items with proper balances from stock ledger for missing items
+def update_sr_with_sl_missing_items(update="No"):
+        from erpnext.stock.doctype.stock_reconciliation.stock_reconciliation import get_stock_balance_for
+        
+        def create_backup_tables():
+                # create backup tables
+                tables = ["Stock Reconciliation Item"]
+                for t in tables:
+                        frappe.db.sql("create table if not exists maintenance.`tab{0}_backup` as select t.*, t.modified as backup from `tab{0}` as t where 1=2".format(t))
+
+        def create_backup_data(key,value):
+                # take data backup
+                frappe.db.sql("insert into maintenance.`tabStock Reconciliation_backup` select t.*, now() from `tabStock Reconciliation` as t where name = '{0}'".format(key))
+                for i in value:
+                        frappe.db.sql("insert into maintenance.`tabStock Reconciliation Item_backup` select t.*, now() from `tabStock Reconciliation Item` as t where name = '{0}'".format(i.sr_name))
+
+        
+        items = frappe.db.sql("""
+                select
+                        sr.name as voucher_no,
+                        sri.name as sr_name,
+                        sri.item_code, sri.warehouse,
+                        sr.posting_date,
+                        sr.posting_time as posting_time_orig,
+                        time(sr.posting_time-interval 1 second) as posting_time,
+                        sri.current_qty, sri.qty,
+                        sri.current_valuation_rate, sri.valuation_rate,
+                        ((ifnull(sri.qty,0)*ifnull(sri.valuation_rate,0))-(ifnull(sri.current_qty,0)*ifnull(sri.current_valuation_rate,0))) as sr_amount
+                from `tabStock Reconciliation Item` sri, `tabStock Reconciliation` sr
+                where sr.name = sri.parent
+                and sr.docstatus = 1
+                and not exists(select 1
+                                from `tabStock Ledger Entry` sle
+                                where sle.voucher_no = sri.parent
+                                and sle.item_code = sri.item_code)
+                and abs(((ifnull(sri.qty,0)*ifnull(sri.valuation_rate,0))-(ifnull(sri.current_qty,0)*ifnull(sri.current_valuation_rate,0)))) > 0 
+                order by sr.name, sri.item_code, sri.warehouse
+        """, as_dict=True)
+
+        if items:
+                create_backup_tables()
+                items_dict = frappe._dict()
+                for i in items:
+                        items_dict.setdefault(i.voucher_no,[]).append(i)
+
+                counter = 0
+                for key, value in items_dict.iteritems():
+                        #create_backup_data(key, value)
+                        diff_amount = 0
+                        print key
+
+                        # update current_qty, current_valuation_rate in Stock Reconciliation Item
+                        for i in value:
+                                counter += 1
+                                balance = frappe._dict(get_stock_balance_for(i.item_code, i.warehouse, i.posting_date, i.posting_time))
+                                print "\t",counter,i
+                                print "\t",counter,balance
+                                query = "update `tabStock Reconciliation Item` set current_qty={qty}, current_valuation_rate={rate} where name='{name}'".format(name=i.sr_name,qty=flt(balance.get("qty")), rate=flt(balance.get("rate")))
+                                print "\t***",counter,query
+                                if update.lower() == "yes":
+                                        frappe.db.sql(query)
+'''
+
+# update stock reconciliation items with proper balances from stock ledger
+def update_sr_with_sl(update="No"):
+        from erpnext.stock.doctype.stock_reconciliation.stock_reconciliation import get_stock_balance_for
+        
+        def create_backup_tables():
+                # create backup tables
+                tables = ["Stock Reconciliation","Stock Reconciliation Item"]
+                for t in tables:
+                        frappe.db.sql("create table if not exists maintenance.`tab{0}_backup` as select t.*, t.modified as backup from `tab{0}` as t where 1=2".format(t))
+
+        def create_backup_data(key,value):
+                # take data backup
+                frappe.db.sql("insert into maintenance.`tabStock Reconciliation_backup` select t.*, now() from `tabStock Reconciliation` as t where name = '{0}'".format(key))
+                for i in value:
+                        frappe.db.sql("insert into maintenance.`tabStock Reconciliation Item_backup` select t.*, now() from `tabStock Reconciliation Item` as t where name = '{0}'".format(i.sr_name))
+
+        
+        items = frappe.db.sql("""
+                select x.voucher_no, x.item_code, x.warehouse,
+                        max(posting_date) as posting_date,
+                        max(posting_time) as posting_time,
+                        max(x.sr_name) as sr_name,
+                        max(x.sl_name) as sl_name,
+                        sum(ifnull(x.sr_amount,0)) as sr_amount_tot,
+                        sum(ifnull(x.sl_amount,0)) as sl_amount_tot
+                from
+                (
+                select 	
+                        sri.parent as voucher_no, 
+                        sri.item_code,
+                        sri.warehouse,
+                        sr.posting_date,
+                        time(sr.posting_time-interval 1 second) as posting_time,
+                        sri.name as sr_name,
+                        "" as sl_name,
+                        ((ifnull(sri.qty,0)*ifnull(sri.valuation_rate,0))-(ifnull(sri.current_qty,0)*ifnull(sri.current_valuation_rate,0))) as sr_amount,
+                        0 as sl_amount
+                from `tabStock Reconciliation Item` sri, `tabStock Reconciliation` sr
+                where sr.name = sri.parent
+                and sr.name like 'SR%'
+                union all
+                select 
+                        voucher_no as voucher_no,
+                        item_code,
+                        warehouse,
+                        "" posting_date,
+                        "" posting_time,
+                        "" as sr_name,
+                        name as sl_name,
+                        0 as sr_amount,
+                        stock_value_difference as sl_amount
+                from `tabStock Ledger Entry`
+                where voucher_no like 'SR%'
+                ) as x
+                group by x.voucher_no, x.item_code, x.warehouse
+                having count(*) = 2 and abs(sr_amount_tot-sl_amount_tot) > 1
+        """, as_dict=True)
+
+        if items:
+                create_backup_tables()
+                items_dict = frappe._dict()
+                for i in items:
+                        items_dict.setdefault(i.voucher_no,[]).append(i)
+
+                counter = 0
+                for key, value in items_dict.iteritems():
+                        create_backup_data(key, value)
+                        diff_amount = 0
+                        print key
+
+                        # update current_qty, current_valuation_rate in Stock Reconciliation Item
+                        for i in value:
+                                balance = frappe._dict(get_stock_balance_for(i.item_code, i.warehouse, i.posting_date, i.posting_time))
+                                print "\t",i
+                                print "\t",balance
+                                query = "update `tabStock Reconciliation Item` set current_qty={qty}, current_valuation_rate={rate} where name='{name}'".format(name=i.sr_name,qty=balance.qty, rate=balance.rate)
+                                print "\t***",query
+                                if update.lower() == "yes":
+                                        frappe.db.sql(query)
+
+                        # update difference_amount in Stock Reconciliation
+                        diff_amount = frappe.db.sql("select sum(stock_value_difference) as tot_stock_value_difference from `tabStock Ledger Entry` where voucher_no='{0}'".format(key), as_dict=False)[0][0]
+                        print "diff_amount",diff_amount
+                        query = "update `tabStock Reconciliation` set difference_amount={diff_amount} where name = '{name}'".format(name=key,diff_amount=diff_amount)
+                        print "***",query
+                        if update.lower() == "yes":
+                                frappe.db.sql(query)
+                                
 def test():
 	for d in frappe.get_all("Payment Entry Deduction", ["name","amount"], {"parent":"PEJV190400003-2"}):
 		print d.name, d.amount

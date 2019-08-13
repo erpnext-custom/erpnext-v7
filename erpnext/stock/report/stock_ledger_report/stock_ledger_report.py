@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from frappe.utils import flt
 
 def execute(filters=None):
 	columns = get_columns()
@@ -23,8 +24,8 @@ def execute(filters=None):
 
 		data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group, item_detail.item_sub_group,
 			sle.warehouse,
-			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
-			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
+			item_detail.stock_uom, flt(sle.actual_qty, 5),round(flt(sle.qty_after_transaction, 5)),
+			(sle.incoming_rate if sle.actual_qty > 0 else 0.0000),
 			sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
 			sle.vehicle_no, sle.transporter_name, sle.company])
 			

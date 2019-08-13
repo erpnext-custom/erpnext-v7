@@ -179,6 +179,13 @@ def get_data():
 					"label": _("Material Prices")
 				},
 				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Stock Reconciliation Report",
+                                        "doctype": "Stock Reconciliation",
+                                        "label": _("Stock Reconciliation Report")
+                                },
+				{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Materialwise Recommended Reorder Level Report",

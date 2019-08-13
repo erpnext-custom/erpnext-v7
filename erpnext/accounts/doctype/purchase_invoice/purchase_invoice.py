@@ -44,6 +44,7 @@ class PurchaseInvoice(BuyingController):
 
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.set_status()
 		self.adjust_add_ded()
 		if not self.buying_cost_center:
 			frappe.throw("Buying Cost Center is Mandatory")
@@ -81,6 +82,13 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset()
 		self.validate_fixed_asset_account()
 		self.create_remarks()
+
+	def set_status(self):
+                self.status = {
+                        "0": "Draft",
+                        "1": "Submitted",
+                        "2": "Cancelled"
+                }[str(self.docstatus or 0)]
 
 	def adjust_add_ded(self):
                 self.total_add_ded = flt(self.freight_and_insurance_charges) - flt(self.discount) + flt(self.tax) + flt(self.other_charges)

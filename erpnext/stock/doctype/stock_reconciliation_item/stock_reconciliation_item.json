@@ -275,8 +275,8 @@
  "istable": 1, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2016-07-11 03:28:08.918029", 
- "modified_by": "Administrator", 
+ "modified": "2019-06-12 18:00:56.868167", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Stock", 
  "name": "Stock Reconciliation Item", 
  "name_case": "", 
@@ -287,5 +287,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

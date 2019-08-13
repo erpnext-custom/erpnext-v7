@@ -27,6 +27,7 @@ frappe.ui.form.on('Material Request', {
 		frm.get_field('items').grid.editable_fields = [
 			{fieldname: 'item_code', columns: 2},
 			{fieldname: 'item_name', columns: 2},
+			{fieldname: 'uom', columns:2},
 			{fieldname: 'qty', columns: 2},
 			{fieldname: 'warehouse', columns: 2},
 			{fieldname: 'schedule_date', columns: 2},

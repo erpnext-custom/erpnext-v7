@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-12-21 12:27:31.689987", 
+ "modified": "2019-06-07 11:12:24.679028", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Budget", 
  "name": "Budget Proposal", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "HR Manager"
   }
  ]
 }

@@ -61,7 +61,9 @@ def construct_query(filters):
 		query += " and eh.branch = \'" + str(filters.branch) + "\'"
 
 	if filters.get("from_date") and filters.get("to_date"):
-		 query += " and (eh.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' or ifnull(eh.to_date, curdate()) between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\')"
+		# query += " and (eh.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' or ifnull(eh.to_date, curdate()) between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\')"
+		query += " and ('{0}' >= ifnull(eh.from_date, curdate()) and '{1}' <= ifnull(eh.to_date, curdate()))".format(filters.to_date, filters.from_date)
+		
 
 	if not filters.include_disabled:
                 query += " and e.is_disabled = 0"

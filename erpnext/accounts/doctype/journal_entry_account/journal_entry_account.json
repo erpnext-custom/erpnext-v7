@@ -8,6 +8,7 @@
  "custom": 0, 
  "docstatus": 0, 
  "doctype": "DocType", 
+ "document_type": "Document", 
  "editable_grid": 1, 
  "fields": [
   {
@@ -506,7 +507,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "reference", 
@@ -694,7 +695,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2019-05-03 16:04:57.680280", 
+ "modified": "2019-06-13 11:55:17.841732", 
  "modified_by": "dorji2392@bt.bt", 
  "module": "Accounts", 
  "name": "Journal Entry Account", 

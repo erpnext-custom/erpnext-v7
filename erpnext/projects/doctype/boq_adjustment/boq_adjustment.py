@@ -73,6 +73,7 @@ class BOQAdjustment(Document):
 
                         # Update Project
                         pro_doc = frappe.get_doc("Project", self.project)
+			pro_doc.flags.dont_sync_tasks = True
                         pro_doc.project_value = flt(pro_doc.project_value) + flt(total_amount)
                         pro_doc.save(ignore_permissions = True)
 

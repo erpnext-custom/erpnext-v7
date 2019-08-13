@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-04-03 17:01:08.551475", 
- "modified_by": "Administrator", 
+ "modified": "2019-05-23 10:05:52.403992", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Accounts", 
  "name": "Comparative Statement", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Management"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

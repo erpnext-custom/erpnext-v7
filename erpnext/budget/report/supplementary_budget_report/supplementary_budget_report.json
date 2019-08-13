@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-01-14 15:52:16.243021", 
+ "modified": "2019-06-07 11:14:40.974825", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Budget", 
  "name": "Supplementary Budget Report", 
@@ -30,6 +30,12 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

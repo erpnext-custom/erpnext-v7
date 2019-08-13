@@ -12,11 +12,12 @@
 <table class="table table-bordered">
 	<thead>
 		<tr>
-			<th style="width: 15%">{%= __("Date") %}</th>
+			<th style="width: 10%">{%= __("Date") %}</th>
 			<th style="width: 15%">{%= __("Ref") %}</th>
 			<th style="width: 40%">{%= __("Party") %}</th>
-			<th style="width: 15%">{%= __("Debit") %}</th>
-			<th style="width: 15%">{%= __("Credit") %}</th>
+			<th style="width: 10%">{%= __("Debit") %}</th>
+			<th style="width: 10%">{%= __("Credit") %}</th>
+			<th style="width: 15%">{%= __("Cost Center") %}</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -36,6 +37,8 @@
 					<br>{%= __("Remarks") %}: {%= data[i][__("Remarks")] %}</td>
 				<td style="text-align: right">{%= format_currency(data[i][__("Debit")]) %}</td>
 				<td style="text-align: right">{%= format_currency(data[i][__("Credit")]) %}</td>
+				<td>{%= data[i][__("Cost Center")] %}</td>
+
 			{% } else { %}
 				<td></td>
 				<td></td>

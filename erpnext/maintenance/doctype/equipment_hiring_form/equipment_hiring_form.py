@@ -69,7 +69,7 @@ class EquipmentHiringForm(Document):
 			frappe.db.sql("UPDATE `tabJournal Entry Account` SET `reference_name` = \'" + str(self.name) + "\' WHERE name = \'" + str(a.reference_row) + "\'")
 
 
-	def update_equipment_request(self, status):
+	'''def update_equipment_request(self, status):
 		total_percent = 0
 		er = None
 		for a in self.approved_items:
@@ -85,7 +85,16 @@ class EquipmentHiringForm(Document):
 				total = flt(total_percent) + flt(er.percent_completed)
 			else:
 				total = flt(er.percent_completed) - flt(total_percent) 
-			er.db_set("percent_completed", round(total))
+			er.db_set("percent_completed", round(total))'''
+	
+	def update_equipment_request(self, action):
+		if action == 'Cancell':
+                        ehf = ''
+                else:
+                        ehf = self.name
+                if self.er_reference:
+                        er = frappe.get_doc("Equipment Request", self.er_reference)
+                        er.db_set("ehf",ehf)
 
 	def check_date_approval(self):
 		for a in self.approved_items:

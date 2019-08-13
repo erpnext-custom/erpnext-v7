@@ -109,7 +109,7 @@ class DeliveryNote(SellingController):
 		self.validate_warehouse()
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.validate_with_previous_doc()
-
+		self.per_delivered = 100
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 		make_packing_list(self)
 
@@ -193,6 +193,8 @@ class DeliveryNote(SellingController):
 		# update delivered qty in sales order
 		self.update_prevdoc_status()
 		self.update_billing_status()
+		if self.is_return:
+			self.dupdate_return_status()
 
 		if not self.is_return:
 			self.check_credit_limit()
@@ -217,6 +219,28 @@ class DeliveryNote(SellingController):
 		self.cancel_packing_slips()
 
 		self.make_gl_entries_on_cancel()
+		if self.is_return:
+			self.dupdate_return_status()
+	
+	def dupdate_return_status(self):
+		actual_qty = frappe.db.sql("""
+				select dni.item_code, sum(ifnull(dni.qty,0)) as qty from `tabDelivery Note` dn, `tabDelivery Note Item` dni
+				where dn.name = dni.parent and dn.docstatus =1 and dn.name = '{0}' group by dni.item_code
+			""".format(self.return_against), as_dict = 1)
+		returned_qty = frappe.db.sql("""
+				select dni.item_code, sum(ifnull(dni.qty,0)) as qty from `tabDelivery Note` dn, `tabDelivery Note Item` dni
+				where dn.name = dni.parent and dn.docstatus =1 and dn.return_against = '{0}' group by dni.item_code
+			""".format(self.return_against), as_dict =1)
+	
+			
+		ref_qty = actual_qty and actual_qty[0].qty or 0.0
+		ret_qty = returned_qty and -flt(returned_qty[0].qty) or 0.0
+		per_delivered = ((ref_qty - ret_qty)/ref_qty)*100
+		frappe.db.sql(""" update `tabDelivery Note` set per_delivered = {0} where name = '{1}'""".format(per_delivered, self.name))
+		frappe.db.sql("""update `tabDelivery Note` set per_delivered  = {0} where name = '{1}'""".format(per_delivered, self.return_against))
+		target = frappe.get_doc("Delivery Note", self.return_against)
+		target.set_status(update=True)
+		return per_delivered
 
 	def check_credit_limit(self):
 		from erpnext.selling.doctype.customer.customer import check_credit_limit

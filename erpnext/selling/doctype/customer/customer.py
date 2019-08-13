@@ -45,6 +45,13 @@ class Customer(TransactionBase):
 		validate_party_accounts(self)
 		self.status = get_party_status(self)
 		self.check_id_required()
+	#	self.check_duplication()
+
+       # def check_duplication(self):
+        #        customer = frappe.db.sql("""select customer_id, customer_name from tabCustomer where disabled != 1""",as_dict =1)
+         #       for a in customer:
+          #              if self.customer_id == a.customer_id:
+           #                     frappe.throw("Customer ID, {0} already exist for the customer {1}".format(self.customer_id, a.customer_name))		
 
 	def check_id_required(self):
 		if self.customer_group == "Domestic" and not self.customer_id:

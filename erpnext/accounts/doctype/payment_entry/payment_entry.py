@@ -57,6 +57,7 @@ class PaymentEntry(AccountsController):
 
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.set_status()
 		self.setup_party_account_field()
 		self.set_missing_values()
 		self.validate_payment_type()
@@ -72,6 +73,13 @@ class PaymentEntry(AccountsController):
 		self.set_title()
 		self.set_remarks()
 		
+	def set_status(self):
+                self.status = {
+                        "0": "Draft",
+                        "1": "Submitted",
+                        "2": "Cancelled"
+                }[str(self.docstatus or 0)]
+
 	def on_submit(self):
 		self.setup_party_account_field()
 		if self.difference_amount:

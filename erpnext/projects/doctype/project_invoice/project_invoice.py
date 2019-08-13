@@ -224,15 +224,33 @@ class ProjectInvoice(AccountsController):
         def default_validations(self):
                 if not self.project:
                         frappe.throw(_("Project cannot be blank. Please generate the invoice from BOQ."), title="Invalid Project")
-                        
-                for rec in self.project_invoice_boq:
-                        if round(flt(rec.invoice_quantity)) > round(flt(rec.act_quantity)):
-                                #frappe.msgprint(_("{0}, invoice_quantity: {1}, act_quantity: {2}").format(rec.boq_item_name, flt(rec.invoice_quantity), flt(rec.act_quantity)))
-                                frappe.throw(_("Row{0}: Invoice Quantity cannot be greater than Balance Quantity").format(rec.idx))
-                        elif round(flt(rec.invoice_amount)) > round(flt(rec.act_amount)):
-                                frappe.throw(_("Row{0}: Invoice Amount cannot be greater than Balance Amount").format(rec.idx))
-                        elif flt(rec.invoice_quantity) < 0 or flt(rec.invoice_amount) < 0:
-                                frappe.throw(_("Row{0}: Value cannot be in negative.").format(rec.idx))
+
+                if self.invoice_type == "Direct Invoice":
+                        is_selected = 0
+                        for rec in self.project_invoice_boq:
+                                if round(flt(rec.invoice_quantity)) > round(flt(rec.act_quantity)):
+                                        #frappe.msgprint(_("{0}, invoice_quantity: {1}, act_quantity: {2}").format(rec.boq_item_name, flt(rec.invoice_quantity), flt(rec.act_quantity)))
+                                        frappe.throw(_("Row{0}: Invoice Quantity cannot be greater than Balance Quantity").format(rec.idx))
+                                elif round(flt(rec.invoice_amount)) > round(flt(rec.act_amount)):
+                                        frappe.throw(_("Row{0}: Invoice Amount cannot be greater than Balance Amount").format(rec.idx))
+                                elif flt(rec.invoice_quantity) < 0 or flt(rec.invoice_amount) < 0:
+                                        frappe.throw(_("Row{0}: Value cannot be in negative.").format(rec.idx))
+
+                                is_selected += 1 if rec.is_selected else 0
+
+                        if not is_selected:
+                                frappe.throw(_("You need to select atleast one BOQ ITEM for invoicing"),title="Invalid Data")
+                else:
+                        is_selected = 0
+                        for rec in self.project_invoice_mb:
+                                is_selected += 1 if rec.is_selected else 0
+
+                        if not is_selected:
+                                frappe.throw(_("You need to select atleast one MEASUREMENT BOOK ENTRY for invoicing"),title="Invalid Data")
+                                
+                if flt(self.gross_invoice_amount) == 0:
+                        frappe.throw(_("Gross Invoice Amount should be greater than zero"), title="Invalid Data")
+
 
         def make_gl_entries(self):
                 if self.net_invoice_amount:

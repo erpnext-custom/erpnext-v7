@@ -77,7 +77,7 @@ def validate_expense_against_budget(args):
 		pass
 	elif frappe.db.get_value("Account", {"name": args.account, "root_type": "Expense"}) or frappe.db.get_value("Account", {"name": args.account, "root_type": "Asset", "account_type": "Fixed Asset"}):
 		if args.debit_in_account_currency:
-                        check_budget_available(args.cost_center, args.account, args.posting_date, flt(args.debit_in_account_currency))
+                        return check_budget_available(args.cost_center, args.account, args.posting_date, flt(args.debit_in_account_currency), False)
 	else:
 		pass
 

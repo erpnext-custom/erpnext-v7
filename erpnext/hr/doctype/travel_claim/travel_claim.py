@@ -10,6 +10,7 @@ from frappe.utils import cint, flt, nowdate, money_in_words, getdate, date_diff,
 from erpnext.accounts.utils import get_account_currency, get_fiscal_year
 import collections
 from erpnext.hr.doctype.travel_authorization.travel_authorization import get_exchange_rate
+from erpnext.custom_utils import check_budget_available, get_branch_cc
 
 class TravelClaim(Document):
 	def get_status(self):
@@ -72,7 +73,7 @@ class TravelClaim(Document):
 		#self.check_status()
 		self.post_journal_entry()
 		self.update_travel_authorization()
-
+		self.check_budget()
 		if self.supervisor_approval and self.hr_approval:
 			self.db_set("hr_approved_on", nowdate())
 		
@@ -260,6 +261,23 @@ class TravelClaim(Document):
 			tas = frappe.db.sql("select a.name from `tabTravel Claim` a, `tabTravel Claim Item` b where a.employee = %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date) and a.name != %s", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date), str(self.name)), as_dict=True)
 			if tas:
 				frappe.throw("The dates in your current Travel Claim has already been claimed in " + str(tas[0].name))
+	
+	def check_budget(self):
+                cc = get_branch_cc(self.branch)
+                if self.travel_type == 'Travel' and self.place_type == 'In-Country':
+                        account = frappe.db.get_single_value ("HR Accounts Settings",  "travel_incountry_account")
+                if self.travel_type == "Travel" and self.place_type == "Out-Country":
+                        account = frappe.db.get_single_value ("HR Accounts Settings", "travel_outcountry_account")
+                if self.travel_type == "Training" and self.place_type =="In-Country":
+                        account = frappe.db.get_single_value ("HR Accounts Settings",  "training_incountry_account")
+                if self.travel_type == "Training" and self.place_type == "Out-Country":
+                        account = frappe.db.get_single_value ("HR Accounts Settings", "training_outcountry_account")
+                if self.travel_type == "Meeting and Seminars" and self.place_type =="In-Country":
+                        account = frappe.db.get_single_value ("HR Accounts Settings",  "meeting_and_seminars_in_account")
+                if self.travel_type == "Meeting and Seminars" and self.place_type == "Out-Country":
+                        account = frappe.db.get_single_value ("HR Accounts Settings", "meeting_and_seminars_out_account")
+
+                check_budget_available(cc, account, self.posting_date, self.total_claim_amount, throw_error=True)
 
 	##
 	# make necessary journal entry

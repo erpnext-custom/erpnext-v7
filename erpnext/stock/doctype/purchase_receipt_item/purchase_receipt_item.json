@@ -1692,8 +1692,8 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2017-09-20 11:50:29.140132", 
- "modified_by": "Administrator", 
+ "modified": "2019-05-31 17:30:37.901159", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Stock", 
  "name": "Purchase Receipt Item", 
  "owner": "Administrator", 
@@ -1703,5 +1703,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

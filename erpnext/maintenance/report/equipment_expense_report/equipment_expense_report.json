@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-04-18 12:00:31.224974", 
+ "modified": "2019-06-11 11:31:58.420362", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Equipment Expense Report", 
@@ -32,7 +32,7 @@
    "role": "Auditor"
   }, 
   {
-   "role": "CPBD"
+   "role": "HR Manager"
   }
  ]
 }

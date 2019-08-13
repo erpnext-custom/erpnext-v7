@@ -70,6 +70,7 @@ class ImprestRecoup(AccountsController):
                         
 
                         self.purchase_amount += flt(i.amount)
+                self.purchase_amount = round(self.purchase_amount)
                 
         def update_amounts(self):
                 opening_balance = get_opening_balance(self.branch, self.imprest_type, self.name, self.entry_date)

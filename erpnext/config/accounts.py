@@ -220,6 +220,13 @@ def get_data():
 					"description": "Enter RRCO Receipts in Bulk",
 					"hide_count": True
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "RRCO Receipt Modifier",
+                                        "description": "Enter RRCO Receipts Modification",
+                                        "hide_count": True
+                                },
+
                                 {
 					"type": "doctype",
 					"name": "Salary Remittance",
@@ -536,7 +543,7 @@ def get_data():
                                 {
 					"type": "report",
 					"is_query_report": True,
-					"name": "GIS Report",
+					"name": "New GIS Report",
                                         "label": _("GIS Report"),
 					"doctype": "Salary Slip"
 				},

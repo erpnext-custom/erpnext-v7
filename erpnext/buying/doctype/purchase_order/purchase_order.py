@@ -294,12 +294,21 @@ class PurchaseOrder(BuyingController):
 	##
 	def check_budget_available(self):
 		budgets = frappe.db.sql("select cost_center, budget_account, sum(base_net_amount) as base_net_amount, sum(base_amount) as base_amount from `tabPurchase Order Item` where parent = %s group by cost_center, budget_account", self.name, as_dict=True)	
+	
+		budget_error = []
 		for a in budgets:
 			amount = a.base_amount
 			if a.base_net_amount:
 				amount = a.base_net_amount
-			check_budget_available(a.cost_center, a.budget_account, self.transaction_date, amount)
-
+			error = check_budget_available(a.cost_center, a.budget_account, self.transaction_date, amount, False)
+                        if error:
+                                budget_error.append(error)
+                #loop through the list if there is errors
+                if budget_error:
+                        for e in budget_error:
+                                #print the errors and then throw
+                                frappe.msgprint(str(e))
+                        frappe.throw("", title="Insufficient Budget")
 
 	##
 	# Cancel budget check entry

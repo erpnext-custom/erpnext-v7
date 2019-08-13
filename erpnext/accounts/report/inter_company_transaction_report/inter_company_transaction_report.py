@@ -34,7 +34,7 @@ def get_data(filters):
 		FROM `tabDirect Payment` where posting_date between \'" + str(filters.start_date) + "\' \
 		and \'" + str(filters.end_date) + "\' and  party =  \'" + str(filters.party) + "\' \
 		and docstatus = '1'"
-		frappe.msgprint("{0}".format(sql1))
+	#	frappe.msgprint("{0}".format(sql1))
 		if filters.get("branch"):
 			sql1 += " and branch = \'" + str(filters.branch) + "\'"
 

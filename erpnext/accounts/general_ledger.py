@@ -82,42 +82,58 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 	validate_account_for_auto_accounting_for_stock(gl_map)
 	round_off_debit_credit(gl_map)
 
+        #List to hold budget errors
+        budget_errors = []
+
 	for entry in gl_map:
-		make_entry(entry, adv_adj, update_outstanding)
 		# check against budget only if not se
 		if entry.voucher_type not in ['Stock Entry', 'Period Closing Voucher', 'Purchase Invoice', 'POL', 'Issue POL']:
-			validate_expense_against_budget(entry)
-	
+			error = validate_expense_against_budget(entry)
+                        if error:
+                                budget_errors.append(error)
+
 			#commit the budget too
-			if entry.voucher_type == 'Journal Entry' and entry.against_voucher_type != 'Asset':
-				acc_type = frappe.db.get_value("Account", entry.account, "account_type")
-				if acc_type == "Expense Account" or acc_type == "Fixed Asset":
-					#Commit Budget
-					bud_obj = frappe.get_doc({
-						"doctype": "Committed Budget",
-						"account": entry.account,
-						"cost_center": entry.cost_center,
-						"po_no": entry.voucher_no,
-						"po_date": entry.posting_date,
-						"amount": flt(entry.debit_in_account_currency) - flt(entry.credit_in_account_currency),
-						"date": frappe.utils.nowdate()
-					})
-					bud_obj.flags.ignore_permissions=1
-					bud_obj.submit()
-				
-					#Consume Budget
-					con_obj = frappe.get_doc({
-						"doctype": "Consumed Budget",
-						"account": entry.account,
-						"cost_center": entry.cost_center,
-						"po_no": entry.voucher_no,
-						"po_date": entry.posting_date,
-						"amount": flt(entry.debit_in_account_currency) - flt(entry.credit_in_account_currency),
-						"com_ref": entry.voucher_no,
-						"date": frappe.utils.nowdate()
-					})
-					con_obj.flags.ignore_permissions=1
-					con_obj.submit()
+                        if not budget_errors:
+				if entry.voucher_type == 'Journal Entry' and entry.against_voucher_type != 'Asset':
+					acc_type = frappe.db.get_value("Account", entry.account, "account_type")
+					if acc_type == "Expense Account" or acc_type == "Fixed Asset":
+						#Commit Budget
+						bud_obj = frappe.get_doc({
+							"doctype": "Committed Budget",
+							"account": entry.account,
+							"cost_center": entry.cost_center,
+							"po_no": entry.voucher_no,
+							"po_date": entry.posting_date,
+							"amount": flt(entry.debit_in_account_currency) - flt(entry.credit_in_account_currency),
+							"date": frappe.utils.nowdate()
+						})
+						bud_obj.flags.ignore_permissions=1
+						bud_obj.submit()
+					
+						#Consume Budget
+						con_obj = frappe.get_doc({
+							"doctype": "Consumed Budget",
+							"account": entry.account,
+							"cost_center": entry.cost_center,
+							"po_no": entry.voucher_no,
+							"po_date": entry.posting_date,
+							"amount": flt(entry.debit_in_account_currency) - flt(entry.credit_in_account_currency),
+							"com_ref": entry.voucher_no,
+							"date": frappe.utils.nowdate()
+						})
+						con_obj.flags.ignore_permissions=1
+						con_obj.submit()
+
+                if not budget_errors:
+                        #make gl entry only after checking budget, if required
+                        make_entry(entry, adv_adj, update_outstanding)
+
+        #Check budget errors
+        if budget_errors:
+                for e in budget_errors:
+                        frappe.msgprint(str(e))
+                frappe.throw("", title="Insufficient Budget")
+
 
 def make_entry(args, adv_adj, update_outstanding):
 	args.update({"doctype": "GL Entry"})

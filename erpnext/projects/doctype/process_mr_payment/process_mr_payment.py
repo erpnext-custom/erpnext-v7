@@ -8,6 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, cint
 from calendar import monthrange
+from erpnext.custom_utils import check_budget_available, get_branch_cc
 
 class ProcessMRPayment(Document):
 	def validate(self):
@@ -25,8 +26,8 @@ class ProcessMRPayment(Document):
                                 a.fiscal_year   = self.fiscal_year
                                 a.month         = self.month
                                 
-				a.total_ot_amount = flt(a.hourly_rate) * flt(a.number_of_hours)
-				a.total_wage = flt(a.daily_rate) * flt(a.number_of_days)
+				#a.total_ot_amount = flt(a.hourly_rate) * flt(a.number_of_hours)
+				#a.total_wage = flt(a.daily_rate) * flt(a.number_of_days)
 				
 				if a.employee_type == "GEP Employee":
                                         salary = frappe.db.get_value("GEP Employee", a.employee, "salary")
@@ -53,6 +54,7 @@ class ProcessMRPayment(Document):
 			
 
 	def on_submit(self):
+		self.check_budget()
 		self.post_journal_entry()
 
 	def before_cancel(self):
@@ -61,6 +63,24 @@ class ProcessMRPayment(Document):
 			frappe.throw("You need to cancel the journal entry related to this payment first!")
 		
 		self.db_set('payment_jv', "")
+		
+	def check_budget(self):
+                budget_error= []
+                overtime_account = frappe.db.get_single_value ("Projects Accounts Settings",  "mr_overtime_account")
+                wages_account = frappe.db.get_single_value ("Projects Accounts Settings", "mr_wages_account")
+
+                error = check_budget_available(self.cost_center, overtime_account, self.posting_date, self.ot_amount, False)
+                if error:
+                        budget_error.append(error)
+
+                errors= check_budget_available(self.cost_center, wages_account, self.posting_date, self.wages_amount, throw_error = False)
+                if errors:
+                        budget_error.append(errors)
+                if budget_error:
+                        for e in budget_error:
+                                frappe.msgprint(str(e))
+                        frappe.throw("", title="Insufficient Budget")
+
 
         def duplicate_entry_check(self, employee, employee_type, idx):
                 pl = frappe.db.sql("""
@@ -90,7 +110,7 @@ class ProcessMRPayment(Document):
 		if self.employee_type == "GEP Employee":
 			query = "select 'GEP Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabGEP Employee` where status = 'Active'"
 		elif self.employee_type == "Muster Roll Employee":
-			query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabMuster Roll Employee` where status = 'Active'"
+			query = "select 'Muster Roll Employee' as employee_type, r.name as employee, r.person_name, r.id_card, m.rate_per_day as daily_rate, m.rate_per_hour as hourly_rate from `tabMuster Roll Employee` r, tabMusterroll m where r.status = 'Active' and r.name=m.parent order by m.rate_per_day desc limit 1"
 		else:
 			frappe.throw("Select employee record first!")
 	
@@ -145,29 +165,26 @@ class ProcessMRPayment(Document):
 		je.remark = 'Payment against : ' + self.name;
 		je.posting_date = self.posting_date
 		je.branch = self.branch
-		total_amount = flt(self.total_overall_amount)
+		total_amount = self.total_overall_amount
 
-                '''
 		if self.total_health_amount and self.employee_type == "GEP Employee":
 			total_amount -= flt(self.total_health_amount)
-                '''
-                
-                total_amount = flt(self.wages_amount,2) + flt(self.ot_amount,2) - flt(self.total_health_amount,2)
-                
+
 		je.append("accounts", {
 				"account": expense_bank_account,
 				"cost_center": self.cost_center,
-				"credit_in_account_currency": flt(total_amount,2),
-				"credit": flt(total_amount,2),
+				"credit_in_account_currency": flt(total_amount),
+				"credit": flt(total_amount),
 			})
+	
 		if self.ot_amount:	
 			je.append("accounts", {
 					"account": ot_account,
 					"reference_type": "Process MR Payment",
 					"reference_name": self.name,
 					"cost_center": self.cost_center,
-					"debit_in_account_currency": flt(self.ot_amount,2),
-					"debit": flt(self.ot_amount,2),
+					"debit_in_account_currency": flt(self.ot_amount),
+					"debit": flt(self.ot_amount),
 				})
 
 		if self.wages_amount:
@@ -180,8 +197,8 @@ class ProcessMRPayment(Document):
 						"reference_type": "Process MR Payment",
 						"reference_name": self.name,
 						"cost_center": self.cost_center,
-						"credit_in_account_currency": flt(self.total_health_amount,2),
-						"credit": flt(self.total_health_amount,2),
+						"credit_in_account_currency": flt(self.total_health_amount),
+						"credit": flt(self.total_health_amount),
 					})
 
 			je.append("accounts", {
@@ -189,12 +206,13 @@ class ProcessMRPayment(Document):
 					"reference_type": "Process MR Payment",
 					"reference_name": self.name,
 					"cost_center": self.cost_center,
-					"debit_in_account_currency": flt(self.wages_amount,2),
-					"debit": flt(self.wages_amount,2),
+					"debit_in_account_currency": flt(self.wages_amount),
+					"debit": flt(self.wages_amount),
 				})
 
 		je.insert()
 		self.db_set("payment_jv", je.name)
+
 		
 		if self.total_health_amount and self.employee_type == "GEP Employee":
 			health_account = frappe.db.get_value("Salary Component", "Health Contribution", "gl_head")
@@ -214,266 +232,213 @@ class ProcessMRPayment(Document):
 					"reference_type": "Process MR Payment",
 					"reference_name": self.name,
 					"cost_center": self.cost_center,
-					"debit_in_account_currency": flt(self.total_health_amount,2),
-					"debit": flt(self.total_health_amount,2),
+					"debit_in_account_currency": flt(self.total_health_amount),
+					"debit": flt(self.total_health_amount),
 				})
 
 			hjv.append("accounts", {
 					"account": expense_bank_account,
 					"cost_center": self.cost_center,
-					"credit_in_account_currency": flt(self.total_health_amount,2),
-					"credit": flt(self.total_health_amount,2),
+					"credit_in_account_currency": flt(self.total_health_amount),
+					"credit": flt(self.total_health_amount),
 				})
 			hjv.insert()
 			
 
+def update_mr_rates(employee_type, employee, cost_center, from_date, to_date):
+	# Updating wage rate
+	rates = frappe.db.sql("""
+		select
+                        greatest(ifnull(from_date,'{from_date}'),'{from_date}') as from_date, 
+			least(ifnull(to_date,'{to_date}'),'{to_date}') as to_date, 
+			rate_per_day,
+			rate_per_hour
+		from `tabMusterroll`
+		where parent = '{employee}'
+		and '{year_month}' between date_format(ifnull(from_date,'{from_date}'),'%Y%m') and date_format(ifnull(to_date,'{to_date}'),'%Y%m')
+	""".format(
+		employee=employee,
+		year_month=str(to_date)[:4]+str(to_date)[5:7],
+		from_date=from_date,
+		to_date=to_date
+	),
+	as_dict=True)
+#	frappe.msgprint('{0}'.format(rates))
+	for r in rates:
+		frappe.db.sql("""
+			update `tabAttendance Others`
+			set rate_per_day = {rate_per_day}
+			where employee_type = '{employee_type}'
+			and employee = '{employee}'
+			and `date` between '{from_date}' and '{to_date}'
+			and status = 'Present'
+			and docstatus = 1 
+		""".format(
+			rate_per_day=r.rate_per_day,
+			employee_type=employee_type,
+			employee=employee,
+			from_date=r.from_date,
+			to_date=r.to_date
+		))
+
+		frappe.db.sql("""
+			update `tabOvertime Entry`
+			set rate_per_hour = {rate_per_hour}
+			where employee_type = '{employee_type}'
+			and number = '{employee}'
+			and `date` between '{from_date}' and '{to_date}'
+			and docstatus = 1 
+		""".format(
+			rate_per_hour=r.rate_per_hour,
+			employee_type=employee_type,
+			employee=employee,
+			from_date=r.from_date,
+			to_date=r.to_date
+		))
+
+	frappe.db.commit()
+
 @frappe.whitelist()
 def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, cost_center, branch, dn):
-        month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(fiscal_month) + 1
+	month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(fiscal_month) + 1
         month = str(month) if cint(month) > 9 else str("0" + str(month))
 
         total_days = monthrange(cint(fiscal_year), cint(month))[1]
         from_date = str(fiscal_year) + '-' + str(month) + '-' + str('01')
         to_date   = str(fiscal_year) + '-' + str(month) + '-' + str(total_days)
 
-        data = []
-
-        li = frappe.db.sql("""
-                                select employee,
-                                        sum(number_of_days) as number_of_days,
-                                        sum(number_of_hours) as number_of_hours,
-                                        {4} as noof_days_in_month
-                                from (
-                                        select
-                                                employee,
-                                                1 as number_of_days,
-                                                0 as number_of_hours
-                                        from `tabAttendance Others` b
-                                        where b.employee_type = '{0}'
-                                        and b.date between '{1}' and '{2}'
-                                        and b.cost_center = '{3}'
-                                        and b.status = 'Present'
-                                        and b.docstatus = 1
-                                        group by employee, b.date
-                                        UNION ALL
-                                        select
-                                                number as employee,
-                                                0 as number_of_days,
-                                                max(c.number_of_hours) as number_of_hours
-                                        from `tabOvertime Entry` c
-                                        where c.employee_type = '{0}'
-                                        and c.date between '{1}' and '{2}'
-                                        and c.cost_center = '{3}'
-                                        and c.docstatus = 1
-                                        group by number, c.date
-                                ) as abc
-                                group by employee
-                        """.format(employee_type, from_date, to_date, cost_center, total_days), as_dict=True)
-
-        for i in li:
-                rest = frappe.db.sql("""
+        data    = []
+        master  = frappe._dict()
+	
+        emp_list = frappe.db.sql("""
                                 select
-                                        '{0}' as type,
                                         name,
                                         person_name,
                                         id_card,
                                         rate_per_day,
                                         rate_per_hour,
+					designation,
 					bank,
 					account_no,
-					designation,
                                         salary
-                                from `tab{0}` as e
-                                where name = '{1}'
-                                and not exists(
+                                from `tab{employee_type}` as e
+                                where not exists(
                                         select 1
                                         from `tabMR Payment Item` i, `tabProcess MR Payment` m
-                                        where i.employee = e.name
-                                        and i.employee_type = '{0}'
-                                        and i.fiscal_year = '{2}'
-                                        and i.month = '{3}'
-                                        and m.docstatus in (0,1)
-                                        and i.parent != '{4}'
-                                        and m.name = i.parent
-                                        and m.cost_center = '{5}'
+                                        where m.fiscal_year = '{fiscal_year}'
+					and m.month = '{fiscal_month}'
+					and m.docstatus < 2
+					and m.cost_center = '{cost_center}'
+					and m.name != '{dn}'
+					and i.parent = m.name
+					and i.employee = e.name
+					and i.employee_type = '{employee_type}'
                                 )
-                        """.format(employee_type, i.employee, fiscal_year, fiscal_month, dn, cost_center), as_dict=True)
+				and (
+					exists(
+					select 1
+					from `tabAttendance Others`
+                                        where employee_type = '{employee_type}'
+					and employee = e.name
+                                        and date between '{from_date}' and '{to_date}'
+                                        and cost_center = '{cost_center}'
+                                        and status = 'Present'
+                                        and docstatus = 1
+					)
+					or
+					exists(
+					select 1
+					from `tabOvertime Entry`
+                                        where employee_type = '{employee_type}'
+					and number = e.name
+                                        and date between '{from_date}' and '{to_date}'
+                                        and cost_center = '{cost_center}'
+                                        and docstatus = 1
+					)
+				)
+        """.format(
+        		employee_type=employee_type,
+        		fiscal_year=fiscal_year,
+        		fiscal_month=fiscal_month,
+        		dn=dn,
+        		cost_center=cost_center,
+			from_date = from_date,
+			to_date = to_date
+        ),as_dict=True)
+#	frappe.msgprint('{0}'.format(emp_list))
+	for e in emp_list:
+                master.setdefault(e.name, frappe._dict({
+                        "type": employee_type,
+                        "employee": e.name,
+                        "person_name": e.person_name,
+                        "id_card": e.id_card,
+                        "rate_per_day": e.rate_per_day,
+                        "rate_per_hour": e.rate_per_hour,
+			"designation" : e.designation,
+			"account_no" : e.account_no,
+			"bank" : e.bank,
+                        "salary": e.salary
+                }))
+		if employee_type == "Muster Roll Employee":
+	        	update_mr_rates(employee_type, e.name, cost_center, from_date, to_date);
+	        
+        rest_list = frappe.db.sql("""
+                                select employee,
+                                        sum(number_of_days)     as number_of_days,
+                                        sum(number_of_hours)    as number_of_hours,
+                                        sum(total_wage)         as total_wage,
+                                        sum(total_ot)           as total_ot,
+                                        {4} as noof_days_in_month
+                                from (
+                                        select
+                                                employee,
+                                                1                       as number_of_days,
+                                                0                       as number_of_hours,
+                                                ifnull(rate_per_day,0)  as total_wage,
+                                                0                       as total_ot
+                                        from `tabAttendance Others`
+                                        where employee_type = '{0}'
+                                        and date between '{1}' and '{2}'
+                                        and cost_center = '{3}'
+                                        and status = 'Present'
+                                        and docstatus = 1
+                                        UNION ALL
+                                        select
+                                                number                  as employee,
+                                                0                       as number_of_days,
+                                                ifnull(number_of_hours,0) as number_of_hours,
+                                                0                       as total_wage,
+                                                ifnull(number_of_hours,0)*ifnull(rate_per_hour,0) as total_ot
+                                        from `tabOvertime Entry`
+                                        where employee_type = '{0}'
+                                        and date between '{1}' and '{2}'
+                                        and cost_center = '{3}'
+                                        and docstatus = 1
+                                ) as abc
+                                group by employee
+        """.format(employee_type, from_date, to_date, cost_center, total_days), as_dict=True)
 
-                if rest:
-                        rest[0].update(i)
-                        data.append(rest[0])
-        '''
-        # 2nd Try
-        data = frappe.db.sql("""
-                        select distinct
-                                iw.parenttype,
-                                e.name,
-                                e.person_name,
-                                iw.branch,
-                                iw.cost_center,
-                                e.id_card,
-                                e.rate_per_day,
-                                e.rate_per_hour,
-                                e.salary
-                        from `tab{0}` as e, `tabEmployee Internal Work History` as iw
-                        where iw.parent = e.name
-                        and iw.cost_center = '{1}'
-                        and not exists(
-                                        select 1
-                                        from `tabMR Payment Item` i
-                                        where i.employee = iw.parent
-                                        and i.employee_type = iw.parenttype
-                                        and i.fiscal_year = '{2}'
-                                        and i.month = '{3}'
-                                        and i.docstatus in (0,1)
-                                        and i.parent != '{4}'
-                        )
-                """.format(employee_type, cost_center, fiscal_year, fiscal_month, dn), as_dict=True)
 
-        for e in data:
-                nod = frappe.db.sql("""
-                                select count(*) as number_of_days
-                                from `tabAttendance Others` b
-                                where b.employee = '{0}'
-                                and b.employee_type = '{1}'
-                                and b.date between '{2}' and '{3}'
-                                and b.cost_center = '{4}'
-                                and b.branch = '{5}'
-                                and b.status = 'Present'
-                                and b.docstatus = 1
-                                """.format(e.name, e.parenttype, from_date, to_date, e.cost_center, e.branch))
-
-                noh = frappe.db.sql("""
-                                select sum(c.number_of_hours) as number_of_hours
-                                from `tabOvertime Entry` c
-                                where c.number = '{0}'
-                                and c.employee_type = '{1}'
-                                and c.date between '{2}' and '{3}'
-                                and c.cost_center = '{4}'
-                                and c.branch = '{5}'
-                                and c.docstatus = 1
-                                """.format(e.name, e.parenttype, from_date, to_date, e.cost_center, e.branch))
-                
-                e.setdefault('number_of_days', nod if nod else 0.0)
-                e.setdefault('number_of_hours', noh if noh else 0.0)
-
-        frappe.msgprint(_("{0}").format(data))
-        '''
-        
-        '''
-        # 1st Try
-	if employee_type == "Muster Roll Employee":
-		data = frappe.db.sql("""
-                                select
-                                        'Muster Roll Employee' as type,
-                                        a.name,
-                                        a.person_name,
-                                        a.id_card,
-                                        a.rate_per_day,
-                                        a.rate_per_hour,
-                                        (
-                                                select sum(1)
-                                                from `tabAttendance Others` b
-                                                where b.employee = a.name
-                                                and b.employee_type = '{0}'
-                                                and b.date between %s and %s
-                                                and b.cost_center = %s
-                                                and b.branch = %s
-                                                and b.status = 'Present'
-                                                and b.docstatus = 1
-                                                and not exists(
-                                                                select 1
-                                                                from `tabMR Payment Item` i
-                                                                where i.employee = b.employee
-                                                                and i.employee_type = '{0}'
-                                                                and i.fiscal_year = '{1}'
-                                                                and i.month = '{2}'
-                                                                and i.docstatus in (0,1)
-                                                                and i.parent != '{3}'
-                                                )
-                                        ) as number_of_days,
-                                        (
-                                                select sum(c.number_of_hours)
-                                                from `tabOvertime Entry` c
-                                                where c.number = a.name
-                                                and c.date between %s and %s
-                                                and c.cost_center = %s
-                                                and c.branch = %s
-                                                and c.docstatus = 1
-                                                and not exists(
-                                                                select 1
-                                                                from `tabMR Payment Item` i
-                                                                where i.employee = c.number
-                                                                and i.employee_type = '{0}'
-                                                                and i.fiscal_year = '{1}'
-                                                                and i.month = '{2}'
-                                                                and i.docstatus in (0,1)
-                                                                and i.parent != '{3}'
-                                                )
-                                        ) as number_of_hours
-                                        from `tabMuster Roll Employee` a
-                                        where a.cost_center = %s
-                                        order by a.person_name
-                                        """.format(employee_type, fiscal_year, fiscal_month, dn), (str(from_date), str(to_date), str(cost_center), str(branch), str(from_date), str(to_date), str(cost_center), str(branch), str(cost_center)), as_dict=True)
-	elif employee_type == "GEP Employee":
-		data = frappe.db.sql("""
-                                select
-                                        'GEP Employee' as type,
-                                        a.name,
-                                        a.person_name,
-                                        a.id_card,
-                                        a.rate_per_day,
-                                        a.rate_per_hour,
-                                        (
-                                                select sum(1)
-                                                from `tabAttendance Others` b
-                                                where b.employee = a.name
-                                                and b.date between %s and %s
-                                                and b.cost_center = %s
-                                                and b.branch = %s
-                                                and b.status = 'Present'
-                                                and b.docstatus = 1
-                                                and not exists(
-                                                                select 1
-                                                                from `tabMR Payment Item` i
-                                                                where i.employee = b.employee
-                                                                and i.employee_type = '{0}'
-                                                                and i.fiscal_year = '{1}'
-                                                                and i.month = '{2}'
-                                                                and i.docstatus in (0,1)
-                                                                and i.parent != '{3}'
-                                                )
-                                        )  as number_of_days,
-                                        (
-                                                select sum(c.number_of_hours)
-                                                from `tabOvertime Entry` c
-                                                where c.number = a.name
-                                                and c.date between %s and %s
-                                                and c.cost_center = %s
-                                                and c.branch = %s
-                                                and c.docstatus = 1
-                                                and not exists(
-                                                                select 1
-                                                                from `tabMR Payment Item` i
-                                                                where i.employee = c.number
-                                                                and i.employee_type = '{0}'
-                                                                and i.fiscal_year = '{1}'
-                                                                and i.month = '{2}'
-                                                                and i.docstatus in (0,1)
-                                                                and i.parent != '{3}'
-                                                )
-                                        ) as number_of_hours,
-                                        a.salary
-                                from `tabGEP Employee` a
-                                where a.cost_center = %s
-                                order by a.person_name
-                                """.format(employee_type, fiscal_year, fiscal_month, dn), (str(from_date), str(to_date), str(cost_center), str(branch), str(from_date), str(to_date), str(cost_center), str(branch), str(cost_center)), as_dict=True)
-                                
-	else:
-		frappe.throw("Invalid Employee Type")
-        '''
-        
+        for r in rest_list:
+                if master.get(r.employee) and (flt(r.total_wage)+flt(r.total_ot)):
+			r.employee_type = r.type
+			master[r.employee].update(r)
+			data.append(master[r.employee])
+                        
 	if data:
+		"""total_overall_amount = 0;
+		ot_amount = 0;
+		wages_amount = 0;	
+		for d in data:
+			d.employee_type = d.type
+			row = self.append('items', {})
+			row.update(d)
+			total_overall_amount = flt(total_overall_amount) + flt(d.total_wage) + flt(d.total_ot)
+			ot_amount = flt(ot_amount) + flt(d.total_ot)
+			wages_amount = flt(wages_amount) + flt(d.total_wage)
+		self.total_overall_amount = total_overall_amount
+		self.ot_amount = ot_amount
+		self.wages_amount = wages_amount"""
 		return data
 	else:
 		frappe.throw(_("No data found!"),title="No Data Found!")

@@ -60,6 +60,7 @@ class SalesInvoice(SellingController):
 	def validate(self):
 		check_future_date(self.posting_date)
 		super(SalesInvoice, self).validate()
+		self.set_status()
 		self.validate_posting_time()
 		self.so_dn_required()
 		self.validate_proj_cust()
@@ -93,6 +94,12 @@ class SalesInvoice(SellingController):
 		self.validate_multiple_billing("Delivery Note", "dn_detail", "amount", "items")
 		self.update_packing_list()
 		self.calculate_billing_amount_from_timesheet()
+	def set_status(self):
+                self.status = {
+                        "0": "Draft",
+                        "1": "Submitted",
+                        "2": "Cancelled"
+                }[str(self.docstatus or 0)]
 
 	def before_save(self):
 		set_account_for_mode_of_payment(self)

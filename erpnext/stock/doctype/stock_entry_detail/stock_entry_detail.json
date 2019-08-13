@@ -8,6 +8,7 @@
  "custom": 0, 
  "docstatus": 0, 
  "doctype": "DocType", 
+ "document_type": "Document", 
  "editable_grid": 1, 
  "fields": [
   {
@@ -402,6 +403,7 @@
    "oldfieldname": "qty", 
    "oldfieldtype": "Currency", 
    "permlevel": 0, 
+   "precision": "", 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
@@ -663,6 +665,7 @@
    "oldfieldname": "transfer_qty", 
    "oldfieldtype": "Currency", 
    "permlevel": 0, 
+   "precision": "5", 
    "print_hide": 1, 
    "print_hide_if_no_value": 0, 
    "read_only": 1, 
@@ -1033,7 +1036,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2016-07-11 03:28:08.710800", 
+ "modified": "2019-08-07 12:18:04.095368", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Entry Detail", 
@@ -1043,5 +1046,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

@@ -145,6 +145,7 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 			if(jvd.reference_type==="Expense Claim") {
 				return {};
 			}
+			
 
 			// journal entry
 			if(jvd.reference_type==="Journal Entry") {

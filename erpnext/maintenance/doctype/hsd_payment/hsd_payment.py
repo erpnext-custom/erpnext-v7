@@ -11,8 +11,16 @@ from erpnext.custom_utils import prepare_gl, check_future_date
 class HSDPayment(Document):
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.set_status()
 		self.validate_allocated_amount()
 		self.clearance_date = None
+
+	def set_status(self):
+                self.status = {
+                        "0": "Draft",
+                        "1": "Submitted",
+                        "2": "Cancelled"
+                }[str(self.docstatus or 0)]
 
 	def validate_allocated_amount(self):
 		if not self.amount > 0:

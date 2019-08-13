@@ -174,11 +174,11 @@ class Asset(Document):
 
 	def get_depreciation_amount(self, depreciable_value, num_days=1):
 		if self.depreciation_method == "Straight Line":
-			depreciation_amount = flt(((flt(self.gross_purchase_amount) - flt(self.residual_value)) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25), 2)
+			depreciation_amount = ((flt(self.gross_purchase_amount) - flt(self.residual_value)) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25)
 		else:
 			depreciation_amount = 0.0
 
-		return depreciation_amount
+		return flt(depreciation_amount, 2)
 
 	def validate_expected_value_after_useful_life(self):
 		if self.depreciation_method == "Double Declining Balance":

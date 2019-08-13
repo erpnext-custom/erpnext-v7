@@ -430,6 +430,7 @@ frappe.ui.form.on("Item", "refresh", function(frm) {
         return {
             "filters": {
 		"item_group": frm.doc.item_group,
+		"disabled" : 0,
             }
         };
     });

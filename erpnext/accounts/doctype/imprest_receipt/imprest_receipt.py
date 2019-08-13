@@ -66,7 +66,7 @@ class ImprestReceipt(Document):
                 if not imprest_limit:
                         frappe.throw("Please set imprest limit for the branch.", title="Insufficient Balance")
                 else:
-                        if flt(self.closing_balance) > flt(imprest_limit):
+                        if flt(self.closing_balance,2) > flt(imprest_limit,2):
                                 frappe.throw(_("Closing balance cannot exceed imprest limit Nu.{0}/-.").format(flt(imprest_limit)),title="Invalid Data")
 
 

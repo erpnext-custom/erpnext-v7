@@ -20,6 +20,7 @@ from frappe import msgprint
 from frappe.model.document import Document
 from frappe.utils import cint, flt, nowdate, money_in_words
 from erpnext.hr.hr_custom_functions import get_month_details
+from erpnext.custom_utils import check_budget_available
 
 class ProcessPayroll(Document):
 
@@ -389,6 +390,8 @@ class ProcessPayroll(Document):
 
                 # Final Posting to accounts
                 if posting:
+			#check budget
+			self.check_budget(posting)
                         for i in posting:
                                 if i == "to_payables":
                                         v_title         = "To Payables"
@@ -416,6 +419,29 @@ class ProcessPayroll(Document):
                         frappe.msgprint(_("Salary posting to accounts is successful."),title="Posting Successful")
                 else:
                         frappe.throw(_("No data found"),title="Posting failed")
+
+
+
+	# Ver 20190719.1 added by SHIV, JIGME on 2019/07/19
+        def check_budget(self, posting):
+                budget_error = []
+                def check_budget_voucher_wise(vouchertype):
+                        for rec in sorted(posting[vouchertype], key=lambda item: item['cost_center']):
+                                if flt(rec.get("debit_in_account_currency")) > 0:
+                                        #frappe.msgprint(_("{0} {1}").format(vouchertype, rec))
+                                        if frappe.db.exists("Account", {"name": rec.get("account"), "root_type": "Expense"}):
+                                                error = check_budget_available(rec.get("cost_center"), rec.get("account"), nowdate(), flt(rec.get("debit_in_account_currency")), False)
+                                                if error:
+                                                        budget_error.append(error)
+
+                for p in posting:
+                        check_budget_voucher_wise(p)
+
+                if budget_error:
+                        for e in budget_error:
+                                frappe.msgprint(str(e))
+                        frappe.throw("", title="Insufficient Budget")
+
         '''
 
         ##### Ver2.0.190304 Begins, following code added by SHIV

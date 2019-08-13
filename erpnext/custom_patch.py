@@ -14,6 +14,26 @@ from datetime import datetime
 import os
 import subprocess
 
+def check_stock_gl():
+	for a in frappe.db.sql("select name, branch from `tabStock Entry` where docstatus = 1 and name = 'SEMI19030600'", as_dict=1):
+		try:
+			cc = get_branch_cc(a.branch)
+			sed = frappe.db.sql("select name from `tabStock Entry Detail` where parent = %s and cost_center != %s", (a.name, cc))
+			if sed:
+				print(a.name)
+				frappe.db.sql("update `tabStock Entry Detail` set cost_center = %s where parent = %s", (cc, a.name))
+				frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s", a.name)
+				doc = frappe.get_doc("Stock Entry", a.name)
+				doc.make_gl_entries()
+		except:
+			cc = "Dummy"
+
+def update_gl_stock_2019():
+	for a in frappe.db.sql("select name from `tabStock Entry` where name in ('SEMT19040008', 'SEMT19040007', 'SEMT19050031', 'SEMT19050040', 'SEMT19010104')", as_dict=1):
+		print(str(a.name))
+		self = frappe.get_doc("Stock Entry", a.name)
+		self.make_gl_entries()
+
 def test_get_branch():
 	for a in frappe.db.sql("select name from `tabStock Entry` where docstatus = 1 and purpose = 'Material Transfer' and posting_date between '2019-01-01' and '2019-12-31' and name = 'SEMT19010037'", as_dict=1):
 		print(a.name)
@@ -66,6 +86,18 @@ def change_pol_cc():
 		print(pol.equipment_warehouse)
 		frappe.db.sql("update `tabGL Entry` set account = %s where voucher_no = %s", (pol.equipment_warehouse, a.voucher_no))
 
+def update_musterroll():
+	MR = frappe.db.sql("select rate_per_day, rate_per_hour, joining_date, name from `tabMuster Roll Employee`;", as_dict=1)
+	counter = 0
+        for i in MR:
+                counter += 1
+                
+                doc = frappe.get_doc("Muster Roll Employee", i.name)
+                row = doc.append("musterroll", {})
+                row.rate_per_day    = i.rate_per_day
+                row.rate_per_hour           = i.rate_per_hour
+                row.from_date             = i.joining_date
+                row.save()
 def change_dn():
 	for a in frappe.db.sql("select name, branch from `tabDelivery Note` where docstatus = 1 and posting_date > '2018-12-31'", as_dict=1):
 		cc = get_branch_cc(a.branch)
