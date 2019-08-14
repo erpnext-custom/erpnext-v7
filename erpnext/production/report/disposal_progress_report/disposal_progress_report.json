@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-11-02 11:15:57.018251", 
- "modified_by": "Administrator", 
+ "modified": "2019-07-27 09:28:14.087117", 
+ "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Production", 
  "name": "Disposal Progress Report", 
  "owner": "Administrator", 
@@ -21,6 +21,9 @@
   }, 
   {
    "role": "Production Manager"
+  }, 
+  {
+   "role": "Production User"
   }
  ], 
  "submitted_by": ""

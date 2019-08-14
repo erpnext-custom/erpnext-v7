@@ -32,7 +32,7 @@ def execute(filters=None):
 		row = [ss.employee, ss.employee_name, 
                        ss.bank_name, ss.bank_account_no, 
 			ss.company, ss.branch, ss.department,
-                        ss.division, ss.section, ss.designation, 
+                        ss.division, ss.employee_grade, ss.designation, 
                         status,
                         ss.from_date, ss.to_date]
 			
@@ -65,7 +65,7 @@ def get_columns(salary_structures):
                 _("Branch") + ":Link/Branch:120",
 		 _("Department") + ":Link/Department:120",
 		 _("Division") + ":Link/Division:120",
-                _("Section") + ":Link/Section:120",	
+                _("Grade") + ":Link/Employee Grade:120",	
 		 _("Designation") + ":Link/Designation:120",
 		_("Status") + "::100",
                 _("From Date") + ":Date:80",

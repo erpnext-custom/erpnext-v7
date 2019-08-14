@@ -437,7 +437,7 @@
    "label": "Production Area", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "Normal\nRoad Alignment\nFire Burnt Area\nTransmission Line", 
+   "options": "Normal\nRoad Alignment\nFire Burnt Area\nTransmission Line\nSanitation Work Area\nScientific Thinning Area", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -864,7 +864,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-07-02 14:45:47.259870", 
+ "modified": "2019-08-01 11:01:25.950974", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Production", 
@@ -894,7 +894,7 @@
   {
    "amend": 1, 
    "apply_user_permissions": 1, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -913,7 +913,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
@@ -929,14 +929,14 @@
    "role": "Production User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
    "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 

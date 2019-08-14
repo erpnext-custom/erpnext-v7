@@ -573,9 +573,6 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 		if(this.frm.doc.party_account_currency == this.frm.doc.currency) {	
 			var total_amount_to_pay = flt((this.frm.doc.grand_total - this.frm.doc.total_advance 
 				- this.frm.doc.write_off_amount), precision("grand_total"));
-			if(this.frm.doc.other_deductions){
-				total_amount_to_pay = flt((total_amount_to_pay - this.frm.doc.other_deductions), precision("grand_total"))
-			}
 			
 			if(this.frm.doc.tds_amount) {
 				total_amount_to_pay = flt((total_amount_to_pay - this.frm.doc.tds_amount), precision("grand_total"))

@@ -59,27 +59,28 @@ class SalesOrder(SellingController):
 	def validate_lot_list(self):
 		for item in self.items:
 			item_sub_group = frappe.db.get_value("Item", item.item_code, "item_sub_group")
-			sub_groups = ["Pole","Log","Block","Sawn", "Hakaries"]
+			sub_groups = ["Pole","Log","Block","Sawn", "Hakaries","Block (Special Size)"]
 			if item_sub_group in sub_groups:
 				data = frappe.db.sql("select name, total_volume from `tabLot List` where branch='{0}' and item = '{1}' and name='{2}' and docstatus=1 and (sales_order is NULL OR sales_order ='')".format(self.branch, item.item_code, item.lot_number), as_dict=1)
 				if not data:
 					frappe.throw("Invalid Lot selection, Please check Branch and Material")
-				else:
-					for a in data:
-						balance = flt(a.total_volume) - flt(item.qty)
-						if balance < 0:
-							frappe.throw("Not available balance {0} in the selected Lot {1}".format(balance, item.lot_number))
-						else:
-							item.lot_balance_volume = balance
+				#else:
+				#	for a in data:
+				#		frappe.msgprint("{0} and {1}".format(a.total_volume, item.qty))
+				#		balance = flt(a.total_volume) - flt(item.qty)
+				#		if flt(a.total_volume) < flt(item.qty):
+				#			frappe.throw("Not available balance {0} in the selected Lot {1}".format(balance, item.lot_number))
+				#		else:
+				#			item.lot_balance_volume = balance
 	def update_lot_onsubmit(self):
 		for item in self.items:
 			if item.lot_number:
-				frappe.db.sql("update `tabLot List` set sales_order = '{0}' where name = '{1}'".format(self.name, item.lot_number))	
+				frappe.db.sql('update `tabLot List` set sales_order = "{0}" where name = "{1}"'.format(self.name, item.lot_number))	
 	
 	def update_lot_oncancel(self):
 		for item in self.items:
 			if item.lot_number:
-				frappe.db.sql("update `tabLot List` set sales_order = '' where name = '{0}'".format(item.lot_number))	
+				frappe.db.sql('update `tabLot List` set sales_order = " " where name = "{0}"'.format(item.lot_number))	
 
 	def calculate_transportation(self):
 		total_qty = 0
@@ -570,6 +571,8 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 			"doctype": "Sales Invoice",
 			"field_map": {
 				"naming_series": "naming_series",
+			#	"loading_rate" : "rate_per_unit",
+                        #        "loading_cost" : "total_loading_amount"
 			},
 			"field_map": {
 				"party_account_currency": "party_account_currency"

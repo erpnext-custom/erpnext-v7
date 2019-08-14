@@ -31,6 +31,12 @@ frappe.query_reports["Monthly Salary Register"] = {
                         "fieldtype": "Link",
                         "options": "Division",
                 },
+		{
+                        "fieldname":"cost_center",
+                        "label": __("Cost Center"),
+                        "fieldtype": "Link",
+                        "options": "Cost Center",
+                },
                 {
                         "fieldname":"employee",
                         "label": __("Employee"),

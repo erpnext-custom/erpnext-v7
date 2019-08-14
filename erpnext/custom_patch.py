@@ -9,6 +9,15 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_si_location():
+        for a in frappe.db.sql("select name, location, delivery_note, parent from `tabSales Invoice Item`", as_dict=1):
+                if not a.location:
+                        location_name = frappe.db.get_value("Delivery Note", a.delivery_note, "location")
+                        if location_name:
+                                frappe.db.sql("update `tabSales Invoice` set location = '{0}' where name = '{1}'".format(location_name, a.parent))
+                                frappe.db.sql("update `tabSales Invoice Item` set location = '{0}' where name = '{1}'".format(location_name, a.name))  
+
+
 def update_production_reading():
 	for a in frappe.db.sql("select i.name as name, i.reading as reading, i.item_group as item_group, i.item_sub_group as sub_group, p.production_type as production_type from `tabProduction` p, `tabProduction Product Item` i where p.name = i.parent and p.docstatus = 1", as_dict=1):
 		if a.item_group != "Mineral Products" and a.production_type == "Adhoc":

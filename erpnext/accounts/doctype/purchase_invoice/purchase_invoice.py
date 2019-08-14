@@ -48,20 +48,21 @@ class PurchaseInvoice(BuyingController):
 		
 		self.check_ba()
 		self.validate_tds()
-		self.outstanding_amount = flt(self.grand_total) - flt(self.other_deductions)
-
-		###if self.outstanding_amount:
-		#	outstanding_old = self.outstanding_amount;
 
 		super(PurchaseInvoice, self).validate()
-		###self.outstanding_amount = outstanding_old;
 
 		if not self.is_return:
 			self.po_required()
 			self.pr_required()
 			self.validate_supplier_invoice()
 			
+		if self.charges:
+			total_charges = 0
+			for c in self.charges:
+				total_charges += c.charges
 
+			self.outstanding_amount = self.outstanding_amount - total_charges
+				
 
 		# validate cash purchase
 		if (self.is_paid == 1):
@@ -81,11 +82,6 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset_account()
 		self.create_remarks()
 	
-		#if self.other_deductions:
-		#	if self.tds_amount:
-		#		self.outstanding_amount = flt(self.grand_total) - flt(self.tds_amount) - flt(self.other_deductions)
-		#	else:
-		#		self.outstanding_amount = flt(self.grand_total) - flt(self.other_deductions)
 			
 
 	def validate_tds(self):
@@ -359,6 +355,7 @@ class PurchaseInvoice(BuyingController):
 		self.make_tax_gl_entries(gl_entries)
 		self.make_tds_gl_entry(gl_entries)
 		self.make_advance_gl_entry(gl_entries)
+		self.make_charges_gl_entry(gl_entries)
 
 		gl_entries = merge_similar_entries(gl_entries)
 
@@ -410,8 +407,38 @@ class PurchaseInvoice(BuyingController):
 
 	def make_charges_gl_entry(self, gl_entries):
 		if self.charges:
-			for charge in self.charges:
-				pass
+			for c in self.charges:
+				if c.account:
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": c.account,
+							"against": self.supplier,
+							#"party_type": "Supplier",
+							#"party": self.supplier,
+							"credit": flt(c.charges),
+							"credit_in_account_currency": flt(c.charges),
+							"business_activity": self.business_activity,
+							"cost_center": self.buying_cost_center
+						})
+					)
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": self.credit_to,
+							"party_type": "Supplier",
+							"party": self.supplier,
+							"against": c.account,
+							"debit": flt(c.charges),
+							"debit_in_account_currency": flt(c.charges),
+							"against_voucher": self.return_against if cint(self.is_return) else self.name,
+							"against_voucher_type": self.doctype,
+							"cost_center": self.buying_cost_center,
+							"business_activity": self.business_activity,
+						})
+					)
+					
+				else:
+					frappe.throw("Please select an account under Deduction Charges")
+					
 
 	def make_item_gl_entries(self, gl_entries):
 		# item gl entries

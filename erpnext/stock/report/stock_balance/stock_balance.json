@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-06-04 16:05:30.834992", 
- "modified_by": "payma.wangchuk@cdcl.bt", 
+ "modified": "2019-07-27 11:36:56.292753", 
+ "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Stock", 
  "name": "Stock Balance", 
  "owner": "Administrator", 
@@ -39,6 +39,9 @@
   }, 
   {
    "role": "POL User"
+  }, 
+  {
+   "role": "Sales User"
   }
  ]
 }

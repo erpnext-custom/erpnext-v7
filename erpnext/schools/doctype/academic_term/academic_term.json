@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "field:term_name", 
  "beta": 0, 
  "creation": "2015-09-08 17:19:19.158228", 
@@ -47,7 +47,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-01 14:20:28.487181", 
+ "modified": "2019-08-09 15:25:03.737027", 
  "modified_by": "Administrator", 
  "module": "Schools", 
  "name": "Academic Term", 
@@ -100,5 +100,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

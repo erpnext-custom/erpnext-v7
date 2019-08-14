@@ -10,6 +10,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 
 from __future__ import unicode_literals
 import frappe
+from erpnext.accounts.utils import get_child_cost_centers
 from frappe.utils import flt, cstr
 from frappe import msgprint, _
 
@@ -39,8 +40,8 @@ def execute(filters=None):
                         
 		row = [ss.employee, ss.employee_name,
 			ss.bank_name, ss.bank_account_no, 
-			ss.company, ss.branch, ss.department,
-                         ss.division, ss.section, ss.designation, 
+			ss.cost_center, ss.branch, ss.department,
+                         ss.division, ss.employee_grade, ss.designation, 
 			 ss.fiscal_year, ss.month, ss.leave_withut_pay, ss.payment_days,
                          status]
 			
@@ -62,9 +63,10 @@ def get_columns(salary_slips):
 	columns = [
 		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140",
 		_("Bank Name")+ "::80", _("Bank A/C#")+"::100", 
-		_("Company") + ":Link/Company:120",
+		#_("Company") + ":Link/Company:120",
+		_("Cost Center") + ":Link/Cost Center:120",
                 _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120", _("Division") + ":Link/Division:120",
-                _("Section") + ":Link/Section:120", _("Designation") + ":Link/Designation:120",
+                _("Grade") + ":Link/Employee Grade:120", _("Designation") + ":Link/Designation:120",
 		_("Year") + "::80", _("Month") + "::80", _("Leave Without Pay") + ":Float:130", 
 		_("Payment Days") + ":Float:120", _("Status") + "::100"
 	]
@@ -117,7 +119,10 @@ def get_conditions(filters):
 	if filters.get("company"): conditions += " and company = %(company)s"
 	if filters.get("employee"): conditions += " and employee = %(employee)s"
 	if filters.get("division"): conditions += " and division = %(division)s"
-	
+	if filters.get("cost_center"):
+		all_ccs = get_child_cost_centers(filters.cost_center)
+		conditions += " and cost_center in {0} ".format(tuple(all_ccs))
+		
         if filters.get("process_status") == "All":
                 conditions += " and docstatus = docstatus"
         elif filters.get("process_status") == "Submitted":

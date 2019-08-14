@@ -62,11 +62,21 @@ class Production(StockController):
                         item.warehouse = self.warehouse
                         item.expense_account = get_expense_account(self.company, item.item_code)
                         """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
-
-			total_raw_material_qty += item.qty
+			if self.business_activity == "Timber":
+				if item.uom == "Cft":
+					total_raw_material_qty += item.qty
+			else:
+				total_raw_material_qty += item.qty
+				
 
 		for item in self.get("items"):
-			total_production_qty += item.qty
+			if self.business_activity == "Timber":
+				if item.uom == "Cft":
+					total_production_qty += item.qty
+			else:
+				total_production_qty += item.qty
+				
+
 			item.production_type = self.production_type
 			item.item_name, item.item_group, item.item_sub_group, item.timber_species = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group", "species"])
 			if item.item_group != "Mineral Products":
@@ -102,7 +112,7 @@ class Production(StockController):
 			if reading_required:
 				if not flt(min_val) <= flt(item.reading) <=  flt(max_val):
 					frappe.throw("<b>{0}</b> reading should be between {1} and {2} for {3} for Adhoc Production".format(par, frappe.bold(min_val), frappe.bold(max_val), frappe.bold(item.item_code)))
-			else:
+			elif not item.reading:
 				item.reading = 0
 			
 			in_inches = 0
@@ -144,6 +154,8 @@ class Production(StockController):
 	def before_submit(self):
 		self.assign_default_dummy()
 		self.check_cop()
+		if not self.items:
+			frappe.throw("Product Item is mandatory to submit the production")
 
 	def on_submit(self):
                 """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
@@ -152,6 +164,9 @@ class Production(StockController):
 		#self.make_products_gl_entry()
 		#self.make_raw_material_stock_ledger()
 		#self.make_raw_material_gl_entry()
+
+		if not self.items:
+			frappe.throw("There should be atleast one Product Item")
 
                 # Following lines added by SHIV on 2019/04/01
                 self.update_stock_ledger()
@@ -172,7 +187,6 @@ class Production(StockController):
 		self.update_stock_ledger()
 		self.make_gl_entries_on_cancel()
 		""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
-		
 		self.delete_production_entry()
 
         """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """

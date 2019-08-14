@@ -37,6 +37,10 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Range",
+				},
+				{
+					"type": "doctype",
 					"name": "Timber Class",
 				},
 				{

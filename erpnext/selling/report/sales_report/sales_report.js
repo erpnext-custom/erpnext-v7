@@ -199,7 +199,7 @@ frappe.query_reports["Sales Report"] = {
 			"default": "Sales Order"
                 },
 		{
-                        "fieldname": "aggrigate",
+                        "fieldname": "aggregate",
                         "label": ("Show Aggregate"),
                         "fieldtype": "Check",
                         "default": 0
@@ -209,6 +209,14 @@ frappe.query_reports["Sales Report"] = {
                         "label": ("Product Wise Customer"),
                         "fieldtype": "Check",
                         "default": 0
-                }
+                },
+		{
+                        "fieldname": "show_species_wise",
+                        "label": ("Show Species Wise"),
+                        "fieldtype": "Check",
+                        "default": 0,
+                },
+
+
 	]
 }

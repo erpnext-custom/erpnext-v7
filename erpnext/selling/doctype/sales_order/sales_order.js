@@ -443,7 +443,7 @@ cur_frm.fields_dict['items'].grid.get_field('warehouse').get_query = function(fr
 
 cur_frm.fields_dict['items'].grid.get_field('lot_number').get_query = function(frm, cdt, cdn) {
         return {
-		filters: {"branch": frm.branch, "sales_order": ''} 
+		filters: {"branch": frm.branch, "docstatus": 1, "sales_order": ''} 
         }
 }
 
@@ -502,7 +502,7 @@ function get_balance(frm, cdt, cdn){
                                 if(r.message){
                                         var balance = r.message[0]['total_volume'];
 					var item_sub_group = r.message[0]['sub_group']; 
-					var sub_groups = ["Pole","Log","Block","Sawn", "Hakaries"];
+					var sub_groups = ["Pole","Log","Block","Sawn", "Hakaries","Field Sawn"];
                 			if(sub_groups.includes(item_sub_group))
                 			{
                                         	console.log(balance);

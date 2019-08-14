@@ -137,21 +137,6 @@ erpnext.accounts.PurchaseInvoice = erpnext.buying.BuyingController.extend({
 		this.frm.refresh_fields();
 	},
 
-	other_deductions: function() {
-		/*
-		if(this.frm.doc.tds_amount > 0){
-			var total_payable = this.frm.doc.grand_total - (this.frm.tds_amount + this.frm.doc.other_deductions); 
-		}else{
-			var total_payable = this.frm.doc.grand_total - this.frm.doc.other_deductions; 
-		}
-		
-		cur_frm.set_value("outstanding_amount", total_payable);
-		this.frm.refresh_fields();
-		*/
-		//this.set_in_company_currency(this.from.doc, ["other_deductions"]);
-		this.calculate_outstanding_amount();
-		this.frm.refresh_fields();
-	},
 
 	paid_amount: function() {
 		this.set_in_company_currency(this.frm.doc, ["paid_amount"]);

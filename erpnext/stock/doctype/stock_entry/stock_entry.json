@@ -1639,7 +1639,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-10-29 10:36:49.043568", 
+ "modified": "2019-07-24 14:53:44.526556", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Entry", 
@@ -1704,7 +1704,7 @@
    "role": "Stock User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
