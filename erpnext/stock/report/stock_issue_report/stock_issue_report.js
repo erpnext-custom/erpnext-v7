@@ -43,6 +43,14 @@ frappe.query_reports["Stock Issue Report"] = {
 			"width": "80",
 			"options": "Item"
 		},
+		 {
+                        "fieldname": "equipment_type",
+                        "label": __("Equipment Type"),
+                        "fieldtype": "Link",
+                        "width": "80",
+                        "options": "Equipment Type"
+                },
+
 
 	]
 }

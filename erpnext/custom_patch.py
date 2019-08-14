@@ -7,6 +7,25 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, n
 from erpnext.custom_utils import get_branch_cc
 
 
+def update_se():
+        for a in frappe.db.sql("select name, equipment from `tabStock Entry` where purpose = 'Material Transfer' and docstatus = 1", as_dict =1):
+                if a.equipment:
+                        equipment_type = frappe.get_doc("Equipment", a.equipment).equipment_type
+                        frappe.db.sql(" update `tabStock Entry` set equipment_type = '{0}' where name = '{1}'".format(equipment_type, a.name))
+                print a.name, a.equipment
+
+
+def check_trans_pay():
+	for a in frappe.db.sql("select a.name, a.equipment, b.reference_type as rt, b.reference_name as rn, b.reference_row as rr  from `tabTransporter Payment` a, `tabTransporter Payment Item` b  where a.name = b.parent and a.docstatus = 1", as_dict=1):
+		if a.rt == "Production":
+			eq = frappe.db.get_value("Production Product Item", a.rr, "equipment")
+		elif a.rt == "Stock Entry":
+			eq = frappe.db.get_value("Stock Entry", a.rn, "equipment")
+		else:
+			eq = None
+		if a.equipment != eq:
+			print(a.name)
+
 def update_empdetail():
 	for a in frappe.db.sql(" select employee, name from `tabSalary Structure` ", as_dict =1):
 		emp = frappe.get_doc("Employee", a.employee)

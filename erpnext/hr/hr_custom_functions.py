@@ -19,15 +19,16 @@ def post_casual_leaves():
 	#employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular employees\', \'Contract\')", as_dict=True)
 	employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type not in (\'Temporary\')", as_dict=True)
 	for e in employees:
-		la = frappe.new_doc("Leave Allocation")
-		la.employee = e.name
-		la.employee_name = e.employee_name
-		la.leave_type = "Casual Leave"
-		la.from_date = str(start)
-		la.to_date = str(end)
-		la.carry_forward = cint(0)
-		la.new_leaves_allocated = flt(10)
-		la.submit()
+		if not frappe.db.exists("Leave Allocation", {"employee": e.name, "leave_type": "Casual Leave", "from_date": start, "to_date": end, "docstatus": ("<",2)}):
+			la = frappe.new_doc("Leave Allocation")
+			la.employee = e.name
+			la.employee_name = e.employee_name
+			la.leave_type = "Casual Leave"
+			la.from_date = str(start)
+			la.to_date = str(end)
+			la.carry_forward = cint(0)
+			la.new_leaves_allocated = flt(10)
+			la.submit()
 
 ##
 # Post earned leave on the first day of every month
@@ -41,15 +42,16 @@ def post_earned_leaves():
         #employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular employees\', \'Contract\')", as_dict=True)	
 	employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type not in (\'Temporary\')", as_dict=True)
 	for e in employees:
-		la = frappe.new_doc("Leave Allocation")
-		la.employee = e.name
-		la.employee_name = e.employee_name
-		la.leave_type = "Earned Leave"
-		la.from_date = str(start)
-		la.to_date = str(end)
-		la.carry_forward = cint(1)
-		la.new_leaves_allocated = flt(2.5)
-		la.submit()
+		if not frappe.db.exists("Leave Allocation", {"employee": e.name, "leave_type": "Earned Leave", "from_date": start, "to_date": end, "docstatus": ("<",2)}):
+			la = frappe.new_doc("Leave Allocation")
+			la.employee = e.name
+			la.employee_name = e.employee_name
+			la.leave_type = "Earned Leave"
+			la.from_date = str(start)
+			la.to_date = str(end)
+			la.carry_forward = cint(1)
+			la.new_leaves_allocated = flt(2.5)
+			la.submit()
 @frappe.whitelist()
 def get_month_details(year, month):
         ysd = frappe.db.get_value("Fiscal Year", year, "year_start_date")

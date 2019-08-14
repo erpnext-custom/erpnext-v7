@@ -17,6 +17,10 @@ class Equipment(Document):
 		self.validate_branch()
 		if not self.equipment_number:
 			self.equipment_number = self.name
+
+		#Maintain Equipment History for Others Equipments
+		if self.not_cdcl:
+                        self.create_equipment_history(branch = self.branch, on_date = nowdate(), ref_doc = None, purpose = 'Submit')
 		
 		if not self.equipment_history:
                         self.create_equipment_history(branch = self.branch, on_date = "2017-01-01", ref_doc = self.name, purpose = 'Submit')

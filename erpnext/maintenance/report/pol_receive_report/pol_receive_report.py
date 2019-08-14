@@ -29,7 +29,7 @@ def get_columns():
 
 def get_data(filters):
 	cond = "('{0}' between eh.from_date and ifnull(eh.to_date, now()) or '{1}' between eh.from_date and ifnull(eh.to_date, now()))".format(filters.get("from_date"), filters.get("to_date"))
-        query =  "select p.equipment, p.equipment_number, p.book_type, p.fuelbook, p.supplier, p.pol_type, p.item_name, p.posting_date, p.qty, p.rate, ifnull(p.total_amount,0), p.memo_number, p.pol_slip_no from tabPOL as p, `tabEquipment History` eh where p.docstatus = 1 and p.equipment = eh.parent and {0}".format(cond)
+        query =  "select distinct p.equipment, p.equipment_number, p.book_type, p.fuelbook, p.supplier, p.pol_type, p.item_name, p.posting_date, p.qty, p.rate, ifnull(p.total_amount,0), p.memo_number, p.pol_slip_no from tabPOL as p, `tabEquipment History` eh where p.docstatus = 1 and p.equipment = eh.parent and {0}".format(cond)
 
         if filters.get("branch"):
 		query += " and p.branch = \'"+ str(filters.branch) + "\'"

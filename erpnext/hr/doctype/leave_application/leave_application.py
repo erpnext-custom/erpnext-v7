@@ -73,6 +73,7 @@ class LeaveApplication(Document):
 			#self.validate_back_dated_application()
 			# notify leave applier about approval
 			self.notify_employee(self.status)
+			self.db_set("docstatus",1)
 		self.update_for_backdated_applications()
 
 	def on_cancel(self):
@@ -422,7 +423,6 @@ def get_approved_leaves_for_period(employee, leave_type, from_date, to_date):
 		"employee": employee,
 		"leave_type": leave_type
 	}, as_dict=1)
-
 	leave_days = 0
 	for leave_app in leave_applications:
 		if leave_app.from_date >= getdate(from_date) and leave_app.to_date <= getdate(to_date):

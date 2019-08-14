@@ -161,9 +161,29 @@ class TransporterPayment(AccountsController):
 		self.calculate_total()
 
 	def on_submit(self):
+		self.check_paid()
 		self.check_budget()
 		self.make_gl_entry()
 		self.mark_paid(1)
+
+	def check_paid(self):
+		for a in self.items:
+			if a.reference_type == "Production":
+				eq = frappe.db.get_value("Production Product Item", a.reference_name, "equipment")
+				if eq != self.equipment:
+					frappe.throw("Transportation Details are not for " + str(self.equipment))
+				paid = frappe.db.get_value("Production Product Item", a.reference_row, "transport_payment_done")
+				if paid:
+					frappe.throw("Payment Already Done")
+			elif a.reference_type == "Stock Entry":
+				eq = frappe.db.get_value("Stock Entry", a.reference_name, "equipment")
+				if eq != self.equipment:
+					frappe.throw("Transportation Details are not for " + str(self.equipment))
+				paid = frappe.db.get_value("Stock Entry", a.reference_name, "transport_payment_done")
+				if paid:
+					frappe.throw("Payment Already Done")
+			else:
+				pass
 
 	def check_budget(self):
 		if self.docstatus == 2:

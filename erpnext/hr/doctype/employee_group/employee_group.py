@@ -4,7 +4,17 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 class EmployeeGroup(Document):
-	pass
+	def validate(self):
+                self.validate_group_items()
+
+        def validate_group_items(self):
+                dup = {}
+                for i in self.items:
+                        if dup.has_key(i.leave_type):
+                                frappe.throw(_("Row#{0} : Duplicate Record found for leave type `<b>{1}</b>`").format(i.idx, i.leave_type), title="Duplicate Data")
+                        else:
+                                dup.setdefault(i.leave_type, 1)
