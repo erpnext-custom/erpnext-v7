@@ -277,7 +277,7 @@ class ProcessRentalBilling(AccountsController):
 			if total_credit and total_debit:	
 				#frappe.msgprint("{0}".format(gl_entries))
 				make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)	
-				frappe.db.sql("update `tabRental Bill` set gl_entry = 1 where branch='{0}' and fiscal_year='{1}' and month = '{2}' and docstatus=1".format(self.branch, self.fiscal_year, self.month))
+				frappe.db.sql("update `tabRental Bill` set gl_entry = 1, gl_reference = '{3}'  where branch='{0}' and fiscal_year='{1}' and month = '{2}' and docstatus=1".format(self.branch, self.fiscal_year, self.month, voucher_no))
 				msg = "<b>Rental Bills Successfully posted to account and updated</b>"
 			else:
 				msg = "Failed to post to account as Total Credit: {0} is not equal to Total Debit: {1} ".format(total_credit, total_debit)

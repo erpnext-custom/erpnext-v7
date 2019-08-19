@@ -56,15 +56,9 @@ def get_data():
 			]
 		},
 		{
-			"label": _("MR & DES Management"),
+			"label": _("MR Management"),
 			"icon": "icon-facetime-video",
 			"items": [
-				{
-					"type": "doctype",
-					"name": "DES Employee",
-					"label": "DES Employee",
-					"description": _("DES Employee records."),
-				},
 				{
 					"type": "doctype",
 					"name": "Muster Roll Employee",
@@ -240,12 +234,6 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "PBVA",
-                                        "label": _("Process PBVA"),
-					"description": _("PBVA process"),
-				},
-				{
-					"type": "doctype",
 					"name": "Bonus",
                                         "label": _("Process Bonus"),
 					"description": _("Bonus Process"),
@@ -260,18 +248,6 @@ def get_data():
 					"type": "doctype",
 					"name": "Employee Benefits",
                                         "label": _("Process Employee Benefits"),
-				},
-                                {
-					"type": "doctype",
-					"name": "Other Contribution",
-                                        "label": _("Other Contribution"),
-					"description": _("Other Contribution"),
-				},
-                                {
-					"type": "doctype",
-					"name": "Hall Booking",
-                                        "label": _("Hall Booking Invoice"),
-					"description": _("Hall Booking"),
 				},
 				
 			]
@@ -434,10 +410,6 @@ def get_data():
                                         "label": _("Adhoc Recoveries"),
                                         "doctype": "Salary Slip"
                                 }
-
-
-
-
 			]
 		},
 		{
@@ -470,11 +442,6 @@ def get_data():
 				},
 				{
 					"type": "report",
-					"name": "DES Employee Report",
-					"doctype": "DES Employee"
-				},
-				{
-					"type": "report",
 					"is_query_report": True,
 					"name": "Monthly Attendance Sheet",
 					"doctype": "Attendance"
@@ -502,12 +469,6 @@ def get_data():
                                         "is_query_report": True,
                                         "name": "Travel Report",
                                         "doctype": "Travel Claim"
-                                },
-				{
-                                        "type": "report",
-					"is_query_report": True,
-                                        "name": "Hall Booking Report",
-                                        "doctype": "Hall Booking"
                                 },
 			]
 		},

@@ -91,5 +91,10 @@ def get_notification_config():
 			"Marking List" : {"docstatus": 0},
 			"Royalty Payment" : {"docstatus": 0},
                         "Salary Advance" : {"docstatus": 0},
+						"Asset Modifier": {"docstatus": 0},
+			"Asset Movement": {"docstatus": 0},
+			"Bulk Asset Transfer": {"docstatus": 0},
+			"Supplementary Budget": {"docstatus": 0},
+			"Budget Reappropiation": {"docstatus": 0},
 		}
 	}

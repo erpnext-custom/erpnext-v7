@@ -291,43 +291,10 @@ def get_data():
 				},
 				{
 					"type": "report",
-					"name": "Intra Company Report",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
 					"name": "Advance Report",
 					"doctype": "Payment Entry",
 					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Inter Company Transaction Report",
-					"label": "DHI Company Report",
-					"doctype": "Account",
-					"is_query_report": True,
-				},
-				{
-                                        "type": "report",
-                                        "name": "Royalty Payment Report",
-                                        "label": "Royalty Payment Report",
-                                        "doctype": "Royalty Payment",
-                                        "is_query_report": True,
-                                },
-				{
-                                        "type": "report",
-                                        "name": "Daily Collection Report",
-                                        "label": "Daily Collection Report",
-                                        "doctype": "Payment Entry",
-                                        "is_query_report": True,
-                                },
-				{
-                                        "type": "report",
-                                        "name": "Transporter Payment Report",
-                                        "doctype": "Mechanical Payment",
-                                        "is_query_report": True
-                                },
+				}
 			]
 		},
 		{

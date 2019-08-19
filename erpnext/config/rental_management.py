@@ -92,7 +92,15 @@ def get_data():
                                         "name": "Rental Register",
                                         "doctype": "Rental Information",
                                         "Label": _("Rental Register")
+                                },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Tenant Information",
+                                        "doctype": "Tenant Information",
+                                        "Label": _("Tenant Information")
                                 }
+
 
 			]
 		},
@@ -103,6 +111,12 @@ def get_data():
                                  {
                                         "type": "doctype",
                                         "name": "Tenant Updation Tool",
+                                },
+
+                                 {
+                                        "type": "doctype",
+                                        "name": "Rental Bill Cancelation Tool",
+					"label": "Bill Cancellation Tool"
                                 }
 
                         ]
