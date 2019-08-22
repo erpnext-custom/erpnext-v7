@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:ministry_agency", 
  "beta": 0, 
  "creation": "2019-05-27 16:33:36.998453", 
@@ -72,7 +72,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-06-17 10:41:26.308454", 
+ "modified": "2019-08-20 09:39:10.529146", 
  "modified_by": "dorji2392@bt.bt", 
  "module": "Rental Management", 
  "name": "Ministry and Agency", 

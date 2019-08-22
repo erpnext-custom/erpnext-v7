@@ -37,12 +37,12 @@ def execute(filters=None):
                 else:
                         status = str(ss.docstatus)
                         
-		row = [ss.employee, ss.employee_name,
+		row = [ss.employee, ss.employee_name, ss.employment_type, 
 			ss.bank_name, ss.bank_account_no, 
 			ss.company, ss.branch, ss.department,
-                         ss.division, ss.section, ss.designation, 
-			 ss.fiscal_year, ss.month, ss.leave_withut_pay, ss.payment_days,
-                         status]
+                        ss.division, ss.section, ss.designation, 
+			ss.fiscal_year, ss.month, ss.leave_withut_pay, ss.payment_days,
+                        status]
 			
 		for e in earning_types:
 			row.append(ss_earning_map.get(ss.name, {}).get(e))
@@ -55,12 +55,12 @@ def execute(filters=None):
 		row += [ss.total_deduction, ss.net_pay]
 		
 		data.append(row)
-	
 	return columns, data
 	
 def get_columns(salary_slips):
 	columns = [
-		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140",
+		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::120",
+		_("Employment Type") + ":Link/Employment Type:80",
 		_("Bank Name")+ "::80", _("Bank A/C#")+"::100", 
 		_("Company") + ":Link/Company:120",
                 _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120", _("Division") + ":Link/Division:120",
@@ -117,6 +117,7 @@ def get_conditions(filters):
 	if filters.get("company"): conditions += " and company = %(company)s"
 	if filters.get("employee"): conditions += " and employee = %(employee)s"
 	if filters.get("division"): conditions += " and division = %(division)s"
+	if filters.get("employment_type"): conditions += " and employment_type = %(employment_type)s"
 	
         if filters.get("process_status") == "All":
                 conditions += " and docstatus = docstatus"

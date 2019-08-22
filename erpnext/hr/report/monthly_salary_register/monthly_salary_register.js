@@ -26,6 +26,12 @@ frappe.query_reports["Monthly Salary Register"] = {
 				"Dec"][frappe.datetime.str_to_obj(frappe.datetime.get_today()).getMonth()],
 		},
 		{
+                        "fieldname":"employment_type",
+                        "label": __("Employment Type"),
+                        "fieldtype": "Link",
+                        "options": "Employment Type",
+                },
+		{
                         "fieldname":"division",
                         "label": __("Division"),
                         "fieldtype": "Link",
