@@ -42,6 +42,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Tenant Department",
 				},
+				{
+					"type": "doctype",
+					"name": "Tenant Section",
+				},
 				
 			]
 		},
@@ -52,6 +56,10 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Rental Setting",
+				},
+				{
+					"type": "doctype",
+					"name": "Rental Account Setting",
 				},
 				{
 					"type": "doctype",

@@ -37,6 +37,29 @@ frappe.ui.form.on('Asset', {
 		frappe.ui.form.trigger("Asset", "is_existing_asset");
 		frm.toggle_display("next_depreciation_date", frm.doc.docstatus < 1);
 
+		var employees = ["label","structure no","value","block_no"];
+		//cur_frm.set_df_property("structure_no", "options", employees);
+
+		//frm.set_df_property('structure_no', 'options', ['option a', 'option b']);
+		//frm.refresh_field('structure_no');
+		//
+
+
+		frappe.call({
+                        method: "erpnext.rental_management.doctype.tenant_information.tenant_information.get_distinct_structure_no",
+                        callback: function(r) {
+				var structure_options = ["",];
+                                if(r.message) {
+					r.message.forEach(function(rec) {
+						structure_options.push(rec);
+					});
+					console.log(structure_options);
+					cur_frm.set_df_property("structure_no", "options", structure_options);
+                                }
+                        }
+                });
+
+		
 		if (frm.doc.docstatus==1) {
 			if (frm.doc.status=='Submitted' && !frm.doc.is_existing_asset && !frm.doc.purchase_invoice) {
 				frm.add_custom_button("Make Purchase Invoice", function() {

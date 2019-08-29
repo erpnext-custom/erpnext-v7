@@ -155,8 +155,8 @@ def invalidate_cache_for(doc, item_group=None):
 			clear_cache(d.route)
 
 def get_item_group_defaults(item, company):
-        item = frappe.get_cached_doc("Item", item)
-        item_group = frappe.get_cached_doc("Item Group", item.item_group)
+        item = frappe.get_doc("Item", item)
+        item_group = frappe.get_doc("Item Group", item.item_group)
 
         for d in item_group.item_group_defaults or []:
                 if d.company == company:

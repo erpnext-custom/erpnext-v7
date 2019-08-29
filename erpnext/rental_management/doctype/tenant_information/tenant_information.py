@@ -26,6 +26,13 @@ class TenantInformation(Document):
 
 		if not self.rental_charges and self.building_category == "Pilot Housing":
 			self.update_rental_charges()
+
+		if not self.structure_no:
+			if self.location_id and self.block_no:
+				self.structure_no = self.location_id + "/" + self.block_no
+			else:
+				frappe.msgprint("Structure No. not able to assign as Locaton Id and Block No are missing")
+
 	
 	def cal_monthly_installment_for_pilot_housing(self):
 		if self.pilot_account_details:
@@ -124,3 +131,10 @@ class TenantInformation(Document):
 		cus.branch = self.branch
 		cus.insert()
 
+@frappe.whitelist()
+def get_distinct_structure_no():
+	data = []
+	for a in frappe.db.sql("select distinct(t.structure_no) as structure_no from `tabTenant Information` t where t.structure_no is not NULL and docstatus =1 and not exists (select 1 from `tabAsset` a where a.structure_no= t.structure_no and docstatus = 1)", as_dict=1):
+		data.append(a.structure_no)
+
+	return data

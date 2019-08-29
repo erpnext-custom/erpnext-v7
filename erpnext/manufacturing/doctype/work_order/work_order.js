@@ -536,8 +536,6 @@ erpnext.work_order = {
 		} else {
 			var max = flt(frm.doc.qty) - flt(frm.doc.produced_qty);
 		}
-
-		max = flt(max, precision("qty"));
 		frappe.prompt({fieldtype:"Float", label: __("Qty for {0}", [purpose]), fieldname:"qty",
 			description: __("Max: {0}", [max]), 'default': max }, function(data)
 		{
@@ -545,6 +543,8 @@ erpnext.work_order = {
 				frappe.msgprint(__("Quantity must not be more than {0}", [max]));
 				return;
 			}
+			s_warehouse = get_warehouse()
+			aler(s_warehouse)
 			frappe.call({
 				method:"erpnext.manufacturing.doctype.work_order.work_order.make_stock_entry",
 				args: {
@@ -582,6 +582,19 @@ erpnext.work_order = {
 				frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
 			}
 		});
+		frappe.call({
+                        method:"erpnext.manufacturing.doctype.work_order.work_order.make_material_request",
+                        args: {
+                                "work_order_id": frm.doc.name,
+                                "purpose": "Issue",
+                                "qty": max
+                        },
+                        callback: function(r) {
+                                //var doclist = frappe.model.sync(r.message);
+                                //frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+                        }
+                });
+
 	},
 
 	stop_work_order: function(frm, status) {
@@ -599,4 +612,13 @@ erpnext.work_order = {
 			}
 		})
 	}
-}
+},
+
+
+
+get_warehouse = function(cdt, cdn){
+	var d = locals[cdt][cdn]
+	var s_ware = d.source_warehouse
+	alert(s_ware)
+	return s_ware
+}	

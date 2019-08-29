@@ -1,0 +1,51 @@
+{
+ "allow_comments": 0, 
+ "allow_delete": 0, 
+ "allow_edit": 0, 
+ "allow_multiple": 0, 
+ "breadcrumbs": "[{\"title\":\"Maintenance Application\", \"name\":\"maintenance-application\"}]", 
+ "creation": "2019-08-28 16:39:00.143548", 
+ "doc_type": "Maintenance Application Form", 
+ "docstatus": 0, 
+ "doctype": "Web Form", 
+ "idx": 0, 
+ "is_standard": 1, 
+ "login_required": 0, 
+ "modified": "2019-08-28 16:47:33.647661", 
+ "modified_by": "Administrator", 
+ "module": "Rental Management", 
+ "name": "maintenance-application", 
+ "owner": "Administrator", 
+ "published": 1, 
+ "route": "maintenance-application", 
+ "success_url": "/maintenance-application", 
+ "title": "Maintenance Application", 
+ "web_form_fields": [
+  {
+   "fieldname": "branch", 
+   "fieldtype": "Link", 
+   "hidden": 0, 
+   "label": "Branch", 
+   "options": "Branch", 
+   "read_only": 0, 
+   "reqd": 1
+  }, 
+  {
+   "fieldname": "posting_date", 
+   "fieldtype": "Date", 
+   "hidden": 0, 
+   "label": "Posting date", 
+   "read_only": 0, 
+   "reqd": 1
+  }, 
+  {
+   "fieldname": "tenant", 
+   "fieldtype": "Link", 
+   "hidden": 0, 
+   "label": "Tenant CID", 
+   "options": "Tenant Information", 
+   "read_only": 0, 
+   "reqd": 0
+  }
+ ]
+}

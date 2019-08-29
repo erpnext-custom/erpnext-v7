@@ -1,11 +1,16 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
+cur_frm.add_fetch("location", "location_id", "location_id");
 frappe.ui.form.on('Tenant Information', {
 	refresh: function(frm) {
 	},
 	"location": function(frm){
 		calculate(frm);
+		if(frm.doc.location_id && frm.doc.block_no){
+			var structure_no = frm.doc.location_id + "/" + frm.doc.block_no;
+			cur_frm.set_value("structure_no", structure_no);
+		}
 	},
 	"building_category": function(frm){
 		calculate(frm);
@@ -33,6 +38,12 @@ frappe.ui.form.on('Tenant Information', {
 		cur_frm.fields_dict.rental_charges.grid.toggle_reqd("to_date", doc.building_category !== "Pilot Housing");
 		cur_frm.fields_dict.rental_charges.grid.toggle_reqd("rental_amount", doc.building_category !== "Pilot Housing");
 	},
+	"block_no": function(frm) {
+		if (frm.doc.location){
+			var structure_no = frm.doc.location_id + "/" + frm.doc.block_no;
+			cur_frm.set_value("structure_no", structure_no);
+		}
+	}
 	
 });
 
