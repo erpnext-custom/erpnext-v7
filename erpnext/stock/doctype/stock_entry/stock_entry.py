@@ -70,6 +70,10 @@ class StockEntry(StockController):
 
 		self.set_actual_qty()
 		self.calculate_rate_and_amount(update_finished_item_rate=False)
+		if self.purpose == "Material Issue For Maintenance":
+			if not self.technical_sanction:
+				frappe.throw("Please select approved technical sanction for Maintenance Purpose")
+			
 
         def check_transfer_wh(self):
                 if not self.from_warehouse:

@@ -8,7 +8,7 @@
  "custom": 0, 
  "docstatus": 0, 
  "doctype": "DocType", 
- "document_type": "", 
+ "document_type": "Other", 
  "editable_grid": 1, 
  "fields": [
   {
@@ -1742,7 +1742,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-08-26 10:57:49.275733", 
+ "modified": "2019-09-02 17:14:47.751649", 
  "modified_by": "Administrator", 
  "module": "Rental Management", 
  "name": "Tenant Information", 

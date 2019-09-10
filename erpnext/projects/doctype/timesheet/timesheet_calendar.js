@@ -1,17 +1,12 @@
 frappe.views.calendar["Timesheet"] = {
 	field_map: {
-		"start": "start_date",
-		"end": "end_date",
+		"start": "from_date",
+		"end": "to_date",
 		"name": "parent",
-		"id": "name",
+		"id": "parent",
+		"title": "activity_type",
 		"allDay": "allDay",
-		"child_name": "name",
-		"title": "title"
-	},
-	style_map: {
-		"0": "info", 
-		"1": "standard", 
-		"2": "danger"
+		"child_name": "name"
 	},
 	gantt: true,
 	filters: [

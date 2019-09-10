@@ -536,6 +536,8 @@ erpnext.work_order = {
 		} else {
 			var max = flt(frm.doc.qty) - flt(frm.doc.produced_qty);
 		}
+
+		max = flt(max, precision("qty"));
 		frappe.prompt({fieldtype:"Float", label: __("Qty for {0}", [purpose]), fieldname:"qty",
 			description: __("Max: {0}", [max]), 'default': max }, function(data)
 		{
@@ -543,20 +545,34 @@ erpnext.work_order = {
 				frappe.msgprint(__("Quantity must not be more than {0}", [max]));
 				return;
 			}
-			s_warehouse = get_warehouse()
-			aler(s_warehouse)
 			frappe.call({
 				method:"erpnext.manufacturing.doctype.work_order.work_order.make_stock_entry",
 				args: {
 					"work_order_id": frm.doc.name,
 					"purpose": purpose,
-					"qty": data.qty
+					"qty": data.qty,
+					"branch": frm.doc.branch
 				},
 				callback: function(r) {
 					var doclist = frappe.model.sync(r.message);
 					frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
 				}
 			});
+			if(purpose == 'Material Transfer for Manufacture') {
+				frappe.call({
+                                method:"erpnext.manufacturing.doctype.work_order.work_order.make_material_request",
+                                args: {
+                                        "work_order_id": frm.doc.name,
+                                        "purpose": purpose,
+                                        "qty": data.qty,
+					"branch": frm.doc.branch
+                                },
+                                callback: function(r) {
+                                        var doclist = frappe.model.sync(r.message);
+                                        frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+                                }
+                        });
+			}
 		}, __("Select Quantity"), __("Make"));
 	},
 
@@ -575,7 +591,8 @@ erpnext.work_order = {
 			args: {
 				"work_order_id": frm.doc.name,
 				"purpose": "Material Consumption for Manufacture",
-				"qty": max
+				"qty": max,
+				"branch": frm.doc.branch
 			},
 			callback: function(r) {
 				var doclist = frappe.model.sync(r.message);
@@ -590,8 +607,8 @@ erpnext.work_order = {
                                 "qty": max
                         },
                         callback: function(r) {
-                                //var doclist = frappe.model.sync(r.message);
-                                //frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+                                var doclist = frappe.model.sync(r.message);
+                                frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
                         }
                 });
 
@@ -612,13 +629,4 @@ erpnext.work_order = {
 			}
 		})
 	}
-},
-
-
-
-get_warehouse = function(cdt, cdn){
-	var d = locals[cdt][cdn]
-	var s_ware = d.source_warehouse
-	alert(s_ware)
-	return s_ware
-}	
+}

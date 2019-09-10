@@ -4,6 +4,16 @@
 frappe.ui.form.on('Asset Issue Details', {
 	refresh: function(frm) {
 
+	},
+	"qty": function(frm){
+		if(frm.doc.asset_rate){
+	 		frm.set_value("amount", frm.doc.qty * frm.doc.asset_rate);
+		}
+	},
+	"asset_rate": function(frm){
+		if(frm.doc.qty){
+	 		frm.set_value("amount", frm.doc.qty * frm.doc.asset_rate);
+		}
 	}
 });
 

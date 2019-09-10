@@ -3,7 +3,7 @@
  "allow_delete": 0, 
  "allow_edit": 0, 
  "allow_multiple": 0, 
- "breadcrumbs": "[{\"title\":\"Maintenance Application\", \"name\":\"maintenance-application\"}]", 
+ "breadcrumbs": "[{\"title\":\"Maintenance\", \"name\":\"maintenance\"}]", 
  "creation": "2019-08-28 16:39:00.143548", 
  "doc_type": "Maintenance Application Form", 
  "docstatus": 0, 
@@ -11,41 +11,90 @@
  "idx": 0, 
  "is_standard": 1, 
  "login_required": 0, 
- "modified": "2019-08-28 16:47:33.647661", 
+ "modified": "2019-09-02 18:19:10.959739", 
  "modified_by": "Administrator", 
  "module": "Rental Management", 
  "name": "maintenance-application", 
  "owner": "Administrator", 
  "published": 1, 
- "route": "maintenance-application", 
- "success_url": "/maintenance-application", 
+ "route": "maintenance", 
+ "success_message": "We have noted you complain", 
+ "success_url": "/maintenance", 
  "title": "Maintenance Application", 
  "web_form_fields": [
-  {
-   "fieldname": "branch", 
-   "fieldtype": "Link", 
-   "hidden": 0, 
-   "label": "Branch", 
-   "options": "Branch", 
-   "read_only": 0, 
-   "reqd": 1
-  }, 
   {
    "fieldname": "posting_date", 
    "fieldtype": "Date", 
    "hidden": 0, 
-   "label": "Posting date", 
+   "label": "Date", 
    "read_only": 0, 
    "reqd": 1
   }, 
   {
-   "fieldname": "tenant", 
-   "fieldtype": "Link", 
+   "fieldname": "", 
+   "fieldtype": "Column Break", 
    "hidden": 0, 
-   "label": "Tenant CID", 
-   "options": "Tenant Information", 
+   "label": "", 
    "read_only": 0, 
    "reqd": 0
+  }, 
+  {
+   "fieldname": "location", 
+   "fieldtype": "Data", 
+   "hidden": 0, 
+   "label": "Location", 
+   "options": "", 
+   "read_only": 0, 
+   "reqd": 1
+  }, 
+  {
+   "fieldname": "", 
+   "fieldtype": "Section Break", 
+   "hidden": 0, 
+   "label": "", 
+   "options": "", 
+   "read_only": 0, 
+   "reqd": 0
+  }, 
+  {
+   "fieldname": "tenant", 
+   "fieldtype": "Data", 
+   "hidden": 0, 
+   "label": "Tenant CID", 
+   "options": "", 
+   "read_only": 0, 
+   "reqd": 0
+  }, 
+  {
+   "fieldname": "", 
+   "fieldtype": "Column Break", 
+   "hidden": 0, 
+   "label": "", 
+   "options": "", 
+   "read_only": 0, 
+   "reqd": 0
+  }, 
+  {
+   "fieldname": "tenant_name", 
+   "fieldtype": "Data", 
+   "hidden": 0, 
+   "label": "Tenant Name", 
+   "read_only": 0, 
+   "reqd": 0
+  }, 
+  {
+   "fieldtype": "Section Break", 
+   "hidden": 0, 
+   "read_only": 0, 
+   "reqd": 0
+  }, 
+  {
+   "fieldname": "maintenance_required", 
+   "fieldtype": "Text", 
+   "hidden": 0, 
+   "label": "Natures of maintenancec required", 
+   "read_only": 0, 
+   "reqd": 1
   }
  ]
 }

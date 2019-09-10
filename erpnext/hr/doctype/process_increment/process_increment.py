@@ -15,9 +15,9 @@ class ProcessIncrement(Document):
         # Following method created by SHIV on 2018/10/10
         def get_emp_list(self, process_type=None):
 		cond = self.get_filter_condition()
-
 		if process_type == "create":
                         cond += self.get_joining_releiving_condition()
+
                         emp_list = frappe.db.sql("""
                                 select t1.name
                                   from `tabEmployee` as t1

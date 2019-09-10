@@ -21,7 +21,7 @@ frappe.ui.form.on("Sales Order", {
 			function(doc) { return (doc.qty<=doc.delivered_qty) ? "green" : "orange" })
 	},
 	"naming_series": function(frm) {
-		cur_frm.toggle_reqd("selling_price_template", frm.doc.naming_series == 'Sales Product' );
+		//cur_frm.toggle_reqd("selling_price_template", frm.doc.naming_series == 'Sales Product' );
 
 		/*
 		// Following code added by SHIV on 08/12/2017

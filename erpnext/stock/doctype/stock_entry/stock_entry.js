@@ -46,6 +46,13 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 				}
 			};
 		});
+		this.frm.set_query("technical_sanction", function() {
+			return {
+				"filters": {
+					"docstatus": 1,
+				}
+			}
+		});
 
 		if(cint(frappe.defaults.get_default("auto_accounting_for_stock"))) {
 			this.frm.add_fetch("company", "stock_adjustment_account", "expense_account");

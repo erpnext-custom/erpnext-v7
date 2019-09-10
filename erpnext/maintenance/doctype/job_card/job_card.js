@@ -160,8 +160,8 @@ frappe.ui.form.on("Mechanic Assigned", {
                 }
                 else {
 			var doc_type = "Muster Roll Employee"
-			if(item.employee_type == "DES Employee") {
-				doc_type = "DES Employee"
+			if(item.employee_type == "GEP Employee") {
+				doc_type = "GEP Employee"
 			}
                         frappe.call({
                                 method: "frappe.client.get_value",
@@ -210,15 +210,17 @@ cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = functi
                 return {
                         filters: [
                         ['Employee', 'is_job_card_employee', '=', 1],
+                        ['Employee', 'branch', '=', frm.branch],
                         ['Employee', 'status', '=', 'Active']
                         ]
                 }
         }
-	else if(d.employee_type == "DES Employee") {
+	else if(d.employee_type == "GEP Employee") {
                 return {
                         filters: [
-                        ['DES Employee', 'list_in_job_card', '=', 1],
-                        ['DES Employee', 'status', '=', 'Active']
+                        ['GEP Employee', 'list_in_job_card', '=', 1],
+                        ['GEP Employee', 'branch', '=', frm.branch],
+                        ['GEP Employee', 'status', '=', 'Active']
                         ]
                 }
 	}
@@ -226,6 +228,7 @@ cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = functi
                 return {
                         filters: [
                         ['Muster Roll Employee', 'list_in_job_card', '=', 1],
+                        ['Muster Roll Employee', 'branch', '=', frm.branch],
                         ['Muster Roll Employee', 'status', '=', 'Active']
                         ]
                 }

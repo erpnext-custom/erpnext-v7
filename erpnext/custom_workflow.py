@@ -23,7 +23,8 @@ def validate_workflow_states(doc):
 			"Travel Claim": ["supervisor",""],
 			"Employee Benefits": ["benefit_approver","benefit_approver_name"],
                         "Request EL Allocation": ["approver", "approver_name"],
-			"Overtime Application": ["approver", "approver_name"],
+			"Overtime Authorization": ["approver", "approver_name"],
+			"Overtime Claim": ["approver", "approver_name"],
 	}
 	
 	if not approver_field.has_key(doc.doctype) or not frappe.db.exists("Workflow", {"document_type": doc.doctype, "is_active": 1}):
@@ -109,16 +110,31 @@ def validate_workflow_states(doc):
 		else:
 			pass
 
-	elif doc.doctype == "Overtime Application":
+	elif doc.doctype == "Overtime Claim" or "Overtime Authorization":
+		hr_user = frappe.db.get_single_value("HR Settings", "hr_approver")
+		hr_approver = frappe.db.get_value("Employee", hr_user, ["user_id","employee_name","designation","name"])
+		
 		if workflow_state == "Draft".lower():
 			vars(doc)[document_approver[0]] = employee[0]
 			vars(doc)[document_approver[1]] = employee[1]
+
 		elif workflow_state == "Approved".lower():
 			if  doc.approver != frappe.session.user:
 				frappe.throw("Only {0} can only approve Overtime Application".format(doc.approver))
 			if final_approver[0] != doc.approver and employee[0] != final_approver[0]:
 				frappe.throw("Only {0} can approve your Overtime Application".format(frappe.bold(final_approver[0])))
-			doc.status= "Approved"
+			#doc.status= "Approved"
+			if doc.doctype == "Overtime Claim":
+				officiating = get_officiating_employee(hr_approver[3])
+				if officiating:
+					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+				vars(doc)[document_approver[0]] = officiating[0] if officiating else hr_approver[0]
+				vars(doc)[document_approver[1]] = officiating[1] if officiating else hr_approver[1]
+				
+
+		elif workflow_state == "Claimed".lower():
+			if  hr_approver[0] != frappe.session.user:
+				frappe.throw("Only {0} can verify payment for  Overtime Application".format(hr_approver[0]))
 
 		if workflow_state == "Waiting Supervisor Approval".lower():
 			officiating = get_officiating_employee(reports_to[3])

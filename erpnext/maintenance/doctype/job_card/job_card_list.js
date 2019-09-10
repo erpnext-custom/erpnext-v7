@@ -8,7 +8,7 @@ frappe.listview_settings['Job Card'] = {
 	get_indicator: function(doc) {
 		if(doc.docstatus==0) {
 			if(doc.assigned_to) {
-				return ["Job Assigned", "orange", "docstatus,=,0|assigned_to,not like, "];
+				return ["Job Assigned", "grey", "docstatus,=,0|assigned_to,not like, "];
 			}
 			else {			
 				return ["Job Created", "grey", "docstatus,=,0|assigned_to,like, "];
@@ -22,14 +22,18 @@ frappe.listview_settings['Job Card'] = {
 			else if(doc.owned_by == "CDCL") {
 				return ["Journal Adjusted", "green", "docstatus,=,1|owned_by,=,CDCL"];
 			}
-			else if(doc.outstanding_amount == 0) {
+			else if(doc.customer && doc.outstanding_amount == 0) {
 				return ["Payment Received", "green", "docstatus,=,1|outstanding_amount,=,0|owned_by,=,Others"];
 			}
+			else if(doc.supplier){
+				return ["Outsourced", "brown", "docstatus,=,1"];
+			}
+
 			else if(doc.outstanding_amount != 0 && doc.outstanding_amount < doc.total_amount) {
-                                return ["Partially Received", "blue", "docstatus,=,1|outstanding_amount,!=,0|outstanding_amount,>,0|owned_by,=,Others"];
-                        }
+				return ["Partially Received", "blue", "docstatus,=,1|outstanding_amount,!=,0|outstanding_amount,>,0|owned_by,=,Others"];
+			}
 			else {
-				return ["Invoice Raised", "blue", "docstatus,=,1|outstanding_amount,>,0|owned_by,=,Others"];
+				return ["Invoice Raised", "orange", "docstatus,=,1|outstanding_amount,>,0|owned_by,=,Others"];
 			}
 		}
 	}

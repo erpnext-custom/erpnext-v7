@@ -43,15 +43,15 @@ frappe.ui.form.on('Break Down Report', {
 	owned_by: function(frm) {
 		cur_frm.set_value("customer", "")
 		cur_frm.set_value("equipment", "")
-		cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'Own Company')
-		cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'Own Company')
+		cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'CDCL')
+		cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'CDCL')
 
 		//cur_frm.toggle_reqd("equipment_model", frm.doc.owned_by != 'Others')
 		//cur_frm.toggle_reqd("equipment_number", frm.doc.owned_by != 'Others')
 	}
 });
 
-cur_frm.add_fetch("branch", "cost_center", "cost_center");
+cur_frm.add_fetch("cost_center", "branch", "branch");
 cur_frm.add_fetch("customer", "customer_group", "client");
 cur_frm.add_fetch("customer", "cost_center", "customer_cost_center");
 cur_frm.add_fetch("customer", "branch", "customer_branch");
@@ -63,7 +63,7 @@ cur_frm.add_fetch("equipment", "equipment_number", "equipment_number");
 
 frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
     cur_frm.set_query("equipment", function() {
-	if (frm.doc.owned_by == "Own Branch") {
+	if (frm.doc.owned_by == "Own") {
 		return {
 		    "filters": {
 			"is_disabled": 0,
@@ -71,7 +71,7 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
 		    }
 		};
 	}
-	else if (frm.doc.owned_by == "Own Company"){
+	else if (frm.doc.owned_by == "CDCL"){
 		return {
 		    "filters": {
 			"is_disabled": 0,
@@ -92,7 +92,7 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
     });
 
     cur_frm.set_query("customer", function() {
-	if(frm.doc.owned_by == "Own Branch") {
+	if(frm.doc.owned_by == "Own") {
 		return {
 		    "filters": {
 			"disabled": 0,
@@ -101,12 +101,11 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
 		    }
 		};
 	}
-	if(frm.doc.owned_by == "Own Company") {
+	if(frm.doc.owned_by == "CDCL") {
 		return {
 		    "filters": {
 			"disabled": 0,
-			"customer_group": "Internal",
-			"branch": ["!=", frm.doc.branch]
+			"customer_group": "Internal"
 		    }
 		};
 	}
