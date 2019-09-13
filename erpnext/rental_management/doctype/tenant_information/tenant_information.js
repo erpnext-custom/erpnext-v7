@@ -22,10 +22,10 @@ frappe.ui.form.on('Tenant Information', {
 		calculate(frm);
 	},
 	"rate_per_sq_ft": function(frm){
-		cur_frm.set_value("rent_amount", frm.doc.floor_area * frm.doc.rate_per_sq_ft);
+		cur_frm.set_value("rent_amount", Math.round(frm.doc.floor_area * frm.doc.rate_per_sq_ft));
 	},
 	"floor_area": function(frm){
-		cur_frm.set_value("rent_amount", frm.doc.floor_area * frm.doc.rate_per_sq_ft);
+		cur_frm.set_value("rent_amount", Math.round(frm.doc.floor_area * frm.doc.rate_per_sq_ft));
 	},
 	"calculate_rent_charges": function(frm){
 		calculate_rent_charges(frm);
@@ -92,16 +92,17 @@ function calculate(frm){
 		frappe.model.get_value('Floor Area', {'building_category': frm.doc.building_category, 'location': frm.doc.location, 'block_no': frm.doc.block_no, 'flat_no': frm.doc.flat_no }, 'floor_area',
 			  function(d) {
 			    cur_frm.set_value("floor_area", d.floor_area);
-			    if(frm.doc.rate_per_sq_ft){ 
-                                 cur_frm.set_value("rent_amount", frm.doc.rate_per_sq_ft * d.floor_area);
+			    if(frm.doc.rate_per_sq_ft){
+                                 cur_frm.set_value("rent_amount", Math.round(frm.doc.rate_per_sq_ft * d.floor_area));
 			    }
         	});
 		frappe.model.get_value('Rate Item', {'parent': frm.doc.dzongkhag, 'building_category':frm.doc.building_category, 'location': frm.doc.location}, 'rate',
 			  function(e) {
 			    cur_frm.set_value("rate_per_sq_ft", e.rate);
 			    if(frm.doc.floor_area){
-				cur_frm.set_value("rent_amount", frm.doc.floor_area * e.rate)
+				cur_frm.set_value("rent_amount", Math.round(frm.doc.floor_area * e.rate));
 			    }
         	});
 	}
 }
+

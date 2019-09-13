@@ -11,7 +11,7 @@ from frappe.utils import cint, flt, nowdate, money_in_words
 class TenantInformation(Document):
 	def validate(self):
 		if self.building_category != "Pilot Housing":
-			self.rent_amount = self.floor_area * self.rate_per_sq_ft
+			self.rent_amount = flt(self.floor_area) * flt(self.rate_per_sq_ft)
 
 		self.validate_allocation()
 		#if not self.rental_charges:

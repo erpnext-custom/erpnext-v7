@@ -8,11 +8,13 @@ cur_frm.add_fetch("employee", "employee_subgroup", "grade");
 
 frappe.ui.form.on('Overtime Authorization', {
 	refresh: function(frm) {
-		frm.add_custom_button("Overtime Claim", function() {
-                        frappe.model.open_mapped_doc({
-                                method: "erpnext.hr.doctype.overtime_authorization.overtime_authorization.make_overtime_claim",
-                                frm: cur_frm
-                        })
-                }, __("Make"));
+		if (frm.doc.docstatus == 1 && !frm.doc.overtime_claim) {
+			frm.add_custom_button("Overtime Claim", function() {
+				frappe.model.open_mapped_doc({
+					method: "erpnext.hr.doctype.overtime_authorization.overtime_authorization.make_overtime_claim",
+					frm: cur_frm
+				})
+			}, __("Make"));
+		}
 	}
 });

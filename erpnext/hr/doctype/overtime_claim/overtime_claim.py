@@ -21,9 +21,19 @@ class OvertimeClaim(Document):
 	def on_submit(self):
 		self.validate_submitter()
 		self.post_journal_entry()
+		self.update_authorization(action='submit')
+		self.update_authorization(action='cancel')
 
 	def on_cancel(self):
 		self.check_journal()
+	
+	def update_authorization(self, action):
+		if action == "submit":
+			frappe.db.sql("update `tabOvertime Authorization` set `overtime_claim` = {0} where name = {1}".format(self.name, self.overtime_authorization))
+		elif action == "cancel":
+			frappe.db.sql("update `tabOvertime Authorization` set `overtime_claim` = "" where name = {0}".format(self.overtime_authorization))
+		else:
+			pass	
 
 	def calculate_totals(self):
                 total_hours  = 0

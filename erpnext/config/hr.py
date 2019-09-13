@@ -240,9 +240,15 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Overtime Application",
-                                        "label": _("Overtime Application"),
-					"description": _("Overtime Application"),
+					"name": "Overtime Authorization",
+                                        "label": _("Overtime Authorization"),
+					"description": _("Overtime Authorization"),
+				},
+				{
+					"type": "doctype",
+					"name": "Overtime Claim",
+                                        "label": _("Overtime Claim"),
+					"description": _("Overtime Claim"),
 				},
 				{
 					"type": "doctype",
