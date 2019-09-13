@@ -24,7 +24,7 @@ class Customer(TransactionBase):
 
 	def autoname(self):
 		self.customer_code = self.get_current_customer_code()
-		
+				
 		if not self.customer_code:
 			msgprint(_("customer Code is mandatory because customer is not automatically numbered"), raise_exception=1)
 
@@ -37,10 +37,12 @@ class Customer(TransactionBase):
 		if customer_code:
 			return str(int(customer_code[0][0]) + 1);
 		else:
-			base = frappe.db.get_value("Customer Group", self.customer_group, "customer_code_base")
-			if not base:
-				frappe.throw("Setup Customer Code Base in Customer Group")
-			return str(base)
+			if self.customer_group:
+				frappe.msgprint("{0}".format(self.customer_group))
+				base = frappe.db.get_value("Customer Group", self.customer_group, "customer_code_base")
+				if not base:
+					frappe.throw("Setup Customer Code Base in Customer Group")
+				return str(base)
 
 	def validate(self):
 		self.flags.is_new_doc = self.is_new()

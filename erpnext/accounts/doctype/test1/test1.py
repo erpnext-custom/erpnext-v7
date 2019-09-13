@@ -7,4 +7,5 @@ import frappe
 from frappe.model.document import Document
 
 class test1(Document):
-	pass
+	def validate(self):
+		frappe.msgprint("pywatch working testing the final pywatch")

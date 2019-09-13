@@ -590,8 +590,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-07-19 16:51:40.955476", 
- "modified_by": "ugyen.thinley@bt.bt", 
+ "modified": "2019-08-28 13:39:50.166439", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Account", 
  "owner": "Administrator", 
@@ -858,7 +858,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 1, 
+   "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
    "delete": 1, 
@@ -1038,7 +1038,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 1, 

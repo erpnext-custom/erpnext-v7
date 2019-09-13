@@ -30,6 +30,7 @@ class Company(Document):
 		self.validate_abbr()
 		self.validate_default_accounts()
 		self.validate_currency()
+		
 
 	def validate_abbr(self):
 		if not self.abbr:

@@ -348,8 +348,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-07-16 22:41:16.950748", 
- "modified_by": "Administrator", 
+ "modified": "2019-08-20 13:12:55.641544", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Maintenance", 
  "name": "Equipment Reservation Entry", 
  "name_case": "", 
@@ -376,9 +376,9 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
