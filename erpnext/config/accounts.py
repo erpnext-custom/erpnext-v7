@@ -308,6 +308,12 @@ def get_data():
 					"is_query_report": True,
 				},
 				{
+                                        "type": "report",
+                                        "name": "Direct Payment Report",
+                                        "doctype": "Direct Payment",
+                                        "is_query_report": True,
+                                },
+				{
 					 "type": "report",
 					 "name": "Transporter Payment Report",
 					 "doctype": "Transporter Payment",

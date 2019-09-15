@@ -12,7 +12,8 @@ def execute(filters=None):
     
 def get_columns():
         return [
-                ("Equipment ") + ":Link/Equipment:120",
+                ("POL") + ":Link/POL:120",
+		("Equipment ") + ":Link/Equipment:120",
                 ("Equipment No.") + ":Data:120",
                 ("Book Type") + ":Data:120",
                 ("Fuelbook") + ":Data:120",
@@ -28,10 +29,11 @@ def get_columns():
         ]
 
 def get_data(filters):
-	cond = "('{0}' between eh.from_date and ifnull(eh.to_date, now()) or '{1}' between eh.from_date and ifnull(eh.to_date, now()))".format(filters.get("from_date"), filters.get("to_date"))
-        query =  "select distinct p.equipment, p.equipment_number, p.book_type, p.fuelbook, p.supplier, p.pol_type, p.item_name, p.posting_date, p.qty, p.rate, ifnull(p.total_amount,0), p.memo_number, p.pol_slip_no from tabPOL as p, `tabEquipment History` eh where p.docstatus = 1 and p.equipment = eh.parent and {0}".format(cond)
+	'''cond = "('{0}' between eh.from_date and ifnull(eh.to_date, now()) or '{1}' between eh.from_date and ifnull(eh.to_date, now()))".format(filters.get("from_date"), filters.get("to_date"))'''
 
-        if filters.get("branch"):
+        query =  "select distinct p.name, p.equipment, p.equipment_number, p.book_type, p.fuelbook, p.supplier, p.pol_type, p.item_name, p.posting_date, p.qty, p.rate, ifnull(p.total_amount,0), p.memo_number, p.pol_slip_no from tabPOL as p where docstatus = 1"
+
+	if filters.get("branch"):
 		query += " and p.branch = \'"+ str(filters.branch) + "\'"
 
         if filters.get("from_date") and filters.get("to_date"):
@@ -41,5 +43,5 @@ def get_data(filters):
                 query += " and p.direct_consumption = 1"
 	else:
 		query += " and p.direct_consumption =  p.direct_consumption "
-	query += " order by p.posting_date asc"
-        return frappe.db.sql(query, debug = 1)
+	query += " order by p.name, p.posting_date asc"
+        return frappe.db.sql(query)

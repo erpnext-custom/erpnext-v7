@@ -24,6 +24,8 @@ class EquipmentModifierTool(Document):
 			frappe.msgprint(" Equipment Type Is Mandiatory")
 		if not 	self.current_equipment_model or not self.new_equipment_model:
 			frappe.msgprint(" Equipment Model Is Mandiatory")
+		if not self.current_equipment_category or not self.new_equipment_category:
+			frappe.msgprint(" Equipment Category Is Mandiatory")
 
 	def on_submit(self):
 		self.update_equipment_master()	
@@ -43,16 +45,18 @@ class EquipmentModifierTool(Document):
                         eq_obj = frappe.get_doc("Equipment", eq.equipment)
 			if eq_obj.model_items and  frappe.db.exists("Equipment Model History", {"parent": eq.equipment, \
 				"equipment_model": self.new_equipment_model, "equipment_type": self.new_equipment_type, \
-				"modified_date": self.posting_date}):
+				"modified_date": self.posting_date, "equipment_category": self.new_equipment_category}):
 				frappe.throw("The Same Record already maintained in Equipment Master <b> '{0}' </b> ".format(eq.equipment))
 			else: 
 				eq_obj.flags.ignore_permissions = 1,
 				eq_obj.db_set("equipment_type", self.new_equipment_type),
                         	eq_obj.db_set("equipment_model", self.new_equipment_model),
+				eq_obj.db_set("equipment_category", self.new_equipment_category),
 				eq_obj.append("model_items",{
 								"equipment_model": self.new_equipment_model,
 								"equipment_type": self.new_equipment_type,
 								"modified_date": self.posting_date,
+								"equipment_category": self.new_equipment_category,
 								"ref_doc": self.name
 					})
 				eq_obj.save()	
@@ -61,12 +65,13 @@ class EquipmentModifierTool(Document):
                 frappe.db.sql("delete from `tabEquipment Model History` where ref_doc = %s", self.name)
 
 	def get_equipment(self):
-		if not self.current_equipment_model and not self.current_equipment_type:
-			frappe.throw("Current Equipment Model and Type Is Not Selected")
+		if not self.current_equipment_model and not self.current_equipment_type and not self.current_equipment_category:
+			frappe.throw("Current Equipment <b> Model/Type/Category <b> Is Not Selected")
 		else:
 			query = "select name as equipment, equipment_number, equipment_model, equipment_category, equipment_type from tabEquipment \
 					where is_disabled != 1 and equipment_type = '{0}' \
-				and equipment_model = '{1}'".format(self.current_equipment_type, self.current_equipment_model)
+				and equipment_model = '{1}' and equipment_category = '{2}'".format(self.current_equipment_type,\
+				 self.current_equipment_model, self.current_equipment_category)
 			if self.branch:
 				query += " and branch = '{0}'".format(self.branch)
 			entries = frappe.db.sql(query, as_dict=True, debug =1)

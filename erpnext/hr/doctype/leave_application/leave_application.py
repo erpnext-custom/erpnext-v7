@@ -32,8 +32,25 @@ from frappe.model.document import Document
 class LeaveApplication(Document):
 	def get_feed(self):
 		return _("{0}: From {0} of type {1}").format(self.status, self.employee_name, self.leave_type)
+	
+	def get_status(self):
+                if self.workflow_state == "Rejected":
+                        self.status = "Rejected"
+                elif self.workflow_state == "Approved":
+                        if self.docstatus == 1:
+                                self.status = "Approved"
+                        else:
+                                self.workflow_state = "Waiting Supervisor Approval"
+                elif self.workflow_state == "Cancelled":
+                        if frappe.session.user not in (self.leave_approver,"Administrator"):
+                                frappe.throw(_("Only leave approver <b>{0}</b> ( {1} ) can cancel this document.").format(self.leave_approver_name, self.leave_approver), title="Operation not permitted")
+                        self.status = "Cancelled"
+                else:
+                        pass
+	
 
 	def validate(self):
+		#self.get_status()
 		self.validate_fiscal_year()
 		if not getattr(self, "__islocal", None) and frappe.db.exists(self.doctype, self.name):
 			self.previous_doc = frappe.db.get_value(self.doctype, self.name, "*", as_dict=True)

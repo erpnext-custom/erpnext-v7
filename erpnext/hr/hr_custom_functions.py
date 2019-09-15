@@ -40,7 +40,7 @@ def post_earned_leaves():
 
         # Shiv 2019/01/22 ticket#1333, Following line replaced by subsequent
         #employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular employees\', \'Contract\')", as_dict=True)	
-	employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type not in (\'Temporary\')", as_dict=True)
+	employees = frappe.db.sql("select name, employee_group, employee_name from `tabEmployee` where status = 'Active' and employment_type not in (\'Temporary\')", as_dict=True)
 	for e in employees:
 		if not frappe.db.exists("Leave Allocation", {"employee": e.name, "leave_type": "Earned Leave", "from_date": start, "to_date": end, "docstatus": ("<",2)}):
 			la = frappe.new_doc("Leave Allocation")

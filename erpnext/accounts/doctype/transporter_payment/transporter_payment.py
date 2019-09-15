@@ -108,13 +108,21 @@ class TransporterPayment(AccountsController):
 		self.amount_payable = flt(self.net_payable) - flt(self.other_deductions)			
 
 	def get_payment_details(self):
+		production = []
+		'''
+		# Commented by SHIV on 2019/09/12 upon request from Dorji
 		query = "select b.name as reference_row, a.posting_date, 'Production' as reference_type, a.name as reference_name, b.item_code, b.item_name, a.warehouse as receiving_warehouse, b.qty, b.unloading_by, b.equipment from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and a.docstatus = 1 and b.transport_payment_done = 0 and a.posting_date between %s and %s and b.equipment = %s"	
 		production = frappe.db.sql(query, (self.from_date, self.to_date, self.equipment), as_dict=True)
+		'''
 
 		query = "select b.name as reference_row, a.posting_date, 'Stock Entry' as reference_type, a.name as reference_name, b.item_code, b.item_name, b.t_warehouse as receiving_warehouse, b.received_qty as qty, a.unloading_by, a.equipment from `tabStock Entry` a, `tabStock Entry Detail` b where a.name = b.parent and a.docstatus = 1 and a.transport_payment_done = 0 and a.purpose = 'Material Transfer' and a.posting_date between %s and %s and a.equipment = %s"
 		stock_transfer = frappe.db.sql(query, (self.from_date, self.to_date, self.equipment), as_dict=True)
 	
-		entries = production + stock_transfer
+		query = "select b.name as reference_row, a.posting_date, 'Delivery Note' as reference_type, a.name as reference_name, b.item_code, b.item_name, a.customer as receiving_warehouse, b.qty as qty, '' as unloading_by, a.equipment from `tabDelivery Note` a, `tabDelivery Note Item` b where a.name = b.parent and a.docstatus = 1 and a.posting_date between %s and %s and a.equipment = %s and transport_payment_done = 0"
+		delivery_note = frappe.db.sql(query, (self.from_date, self.to_date, self.equipment), as_dict = True)
+		entries = production + stock_transfer+delivery_note
+		if not entries:
+			frappe.throw("No Transportation Detail(s) for Equipment <b>{0}</b>".format(self.equipment))
 
 		self.set('items', [])
 		self.set('pols', [])
@@ -182,6 +190,14 @@ class TransporterPayment(AccountsController):
 				paid = frappe.db.get_value("Stock Entry", a.reference_name, "transport_payment_done")
 				if paid:
 					frappe.throw("Payment Already Done")
+			elif a.reference_type == "Delivery Note":
+                                eq = frappe.db.get_value("Delivery Note", a.reference_name, "equipment")
+                                if eq != self.equipment:
+                                        frappe.throw("Transportation Details are not for " + str(self.equipment))
+                                paid = frappe.db.get_value("Delivery Note", a.reference_name, "transport_payment_done")
+                                if paid:
+                                        frappe.throw("Payment Already Done")
+
 			else:
 				pass
 
@@ -345,6 +361,10 @@ class TransporterPayment(AccountsController):
 				frappe.db.sql("update `tabProduction Product Item` set transport_payment_done = %s where name = %s", (submit, a.reference_row))
 			elif a.reference_type == "Stock Entry":
 				frappe.db.sql("update `tabStock Entry` set transport_payment_done = %s where name = %s", (submit, a.reference_name))
+			
+			elif a.reference_type == "Delivery Note":
+				frappe.db.sql("update `tabDelivery Note` set transport_payment_done = %s where name = %s", (submit, a.reference_name))
+			
 			else:
 				pass
 

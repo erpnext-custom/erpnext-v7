@@ -9,7 +9,8 @@ frappe.ui.form.on('Equipment Modifier Tool', {
 			{fieldname: 'equipment_model', columns: 3},
 			{fieldname: 'equipment_type', columns: 2},
 			{fieldname: 'equipment_category', columns: 2},
-		];		
+		];
+
 	},
 	refresh: function(frm) {
 	cur_frm.set_query("current_equipment_model", function() {
@@ -45,7 +46,8 @@ cur_frm.fields_dict['items'].grid.get_field('equipment').get_query = function(fr
 		filters: [
 		['Equipment', 'is_disabled', '=', 0],
 		['Equipment', 'equipment_type', '=', frm.current_equipment_type],
-		['Equipment', 'equipment_model', '=', frm.current_equipment_model]
+		['Equipment', 'equipment_model', '=', frm.current_equipment_model],
+		['Equipment', 'equipment_category', '=', frm.current_equipment_category]
 		]
                 }
         };

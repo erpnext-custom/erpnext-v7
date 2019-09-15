@@ -267,3 +267,23 @@ frappe.ui.form.on("Delivery Note", "onload", function(frm) {
 		};
 	});
 });
+
+
+
+
+frappe.ui.form.on('Delivery Note', {
+        refresh: function(frm) {
+        cur_frm.toggle_reqd("equipment", cint(frm.doc.others_equipment) == 0);
+        if (cint(frm.doc.others_equipment) == 1){
+        cur_frm.set_df_property("lr_no", "read_only", 0);
+        }
+        },
+        "others_equipment": function(frm, cdt, cdn) {
+                doc = locals[cdt][cdn]
+                cur_frm.toggle_reqd("equipment", cint(doc.others_equipment) == 0);
+                if (cint(doc.others_equipment) == 1){
+        cur_frm.set_df_property("lr_no", "read_only", 0);
+        }
+
+        }
+});

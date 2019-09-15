@@ -24,10 +24,13 @@ def get_data(query):
 	return data
 
 def construct_query(filters=None):
-	if not filters.vendor_name:
-		filters.vendor_name = ""
+	vendor_cond = " and 1 = 1"
+	sup_cond = " and 1 = 1"
+	if filters.get("vendor_name"):
+		vendor_cond = " AND a.supplier = '{0}'".format(filters.get("vendor_name"))
+		sup_cond = " and d.party = '{0}'".format(filters.get("vendor_name"))
 
-	query = "SELECT a.posting_date, a.tds_taxable_amount, a.tds_rate, a.tds_amount, b.cheque_number, b.cheque_date, b.receipt_number, b.receipt_date FROM `tabPurchase Invoice` AS a, `tabRRCO Receipt Entries` AS b WHERE a.name = b.purchase_invoice AND a.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND a.supplier = \'" + filters.vendor_name + "\' UNION SELECT d.posting_date, d.amount as tds_taxable_amount, d.tds_percent as tds_rate, d.tds_amount, rr.cheque_number, rr.cheque_date, rr.receipt_number, rr.receipt_date FROM `tabDirect Payment` AS d, `tabRRCO Receipt Entries` AS rr WHERE d.name = rr.purchase_invoice AND d.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND d.supplier = \'" + filters.vendor_name + "\'"
+	query = "SELECT a.posting_date, a.tds_taxable_amount, a.tds_rate, a.tds_amount, b.cheque_number, b.cheque_date, b.receipt_number, b.receipt_date FROM `tabPurchase Invoice` AS a, `tabRRCO Receipt Entries` AS b WHERE a.name = b.purchase_invoice AND a.posting_date BETWEEN '{0}' and '{1}' {2} UNION SELECT d.posting_date, d.amount as tds_taxable_amount, d.tds_percent as tds_rate, d.tds_amount, rr.cheque_number, rr.cheque_date, rr.receipt_number, rr.receipt_date FROM `tabDirect Payment` AS d, `tabRRCO Receipt Entries` AS rr WHERE d.name = rr.purchase_invoice AND d.posting_date BETWEEN '{0}' and '{1}' {3}".format(filters.from_date, filters.to_date, vendor_cond, sup_cond)
 	
 	query+=";";
 	

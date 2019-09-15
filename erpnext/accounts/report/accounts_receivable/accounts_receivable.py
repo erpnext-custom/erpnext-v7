@@ -8,7 +8,6 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                       by Hap Dorji
                                                                           i) Abnormal Loss - SMCL
                                                                           ii) Normal Loss - SMCL
-1.0		  SHIV		                   05/09/2017         Project Invoice is introduced.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -38,8 +37,8 @@ class ReceivablePayableReport(object):
 		if party_naming_by == "Naming Series":
 			columns += [args.get("party_type") + " Name::110"]
 
-		columns += [_("Voucher Type") + "::110", _("Voucher No") + ":Dynamic Link/"+_("Voucher Type")+":120", 
-			_("Delivery Note") + ":Link/"+_("Delivery Note")+":120", _("Due Date") + ":Date:80"]
+		columns += [_("Voucher Type") + "::110", _("Voucher No") + ":Dynamic Link/"+_("Voucher Type")+":120",
+			_("Due Date") + ":Date:80"]
 
 		if args.get("party_type") == "Supplier":
 			columns += [_("Bill No") + "::80", _("Bill Date") + ":Date:80"]
@@ -87,7 +86,7 @@ class ReceivablePayableReport(object):
 			columns += [_("Supplier Type") + ":Link/Supplier Type:80"]
 			
 		columns.append(_("Remarks") + "::200")
-		columns.append(_("Cost Center") + "::200")		
+		
 		return columns
 
 	def get_data(self, party_naming_by, args):
@@ -112,18 +111,11 @@ class ReceivablePayableReport(object):
 				# customer / supplier name
 				if party_naming_by == "Naming Series":
 					row += [self.get_party_name(gle.party_type, gle.party)]
-			
-				dn_no = ""	
-				if gle.voucher_type == "Sales Invoice":
-					result = frappe.db.sql("select delivery_note from `tabSales Invoice Item` where \
-					 parent ='{0}' limit 1".format(gle.voucher_no), as_dict=True)
-					if len(result) > 0:
-						for a in result:
-							dn_no = a.delivery_note
+
 				# get due date
 				due_date = voucher_details.get(gle.voucher_no, {}).get("due_date", "")
 
-				row += [gle.voucher_type, gle.voucher_no, dn_no, due_date]
+				row += [gle.voucher_type, gle.voucher_no, due_date]
 
 				# get supplier bill details
 				if args.get("party_type") == "Supplier":
@@ -154,7 +146,6 @@ class ReceivablePayableReport(object):
 					row += [self.get_supplier_type(gle.party)]
 
 				row.append(gle.remarks)
-				row.append(gle.cost_center)
 				data.append(row)
 
 		return data
@@ -194,17 +185,6 @@ class ReceivablePayableReport(object):
 			out_amt = frappe.db.get_value("Sales Invoice", gle.voucher_no, "outstanding_amount")
 		elif gle.voucher_type == "Purchase Invoice":
 			out_amt = frappe.db.get_value("Purchase Invoice", gle.voucher_no, "outstanding_amount")
-		# ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-		# Following condition added by SHIV on 05/09/2017
-		elif gle.voucher_type == "Project Invoice":
-                        out_amt = frappe.db.get_value("Project Invoice", gle.voucher_no, "total_balance_amount")
-		elif gle.voucher_type == "Job Card":
-			out_amt = frappe.db.get_value("Job Card", gle.voucher_no, "outstanding_amount")
-		elif gle.voucher_type == "Hire Charge Invoice":
-			out_amt = frappe.db.get_value("Hire Charge Invoice", gle.voucher_no, "outstanding_amount")
-		elif gle.voucher_type == "POL":
-			out_amt = frappe.db.get_value("POL", gle.voucher_no, "outstanding_amount")
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		else:
 			pass
 		
@@ -279,14 +259,14 @@ class ReceivablePayableReport(object):
                         '''
 
 			self.gl_entries = frappe.db.sql("""select posting_date, party_type, party,
-				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks,cost_center, {0}
+				voucher_type, voucher_no, against_voucher_type, against_voucher, account_currency, '' remarks, {0}
 				from `tabGL Entry`
 				where docstatus < 2 and party_type=%s and (party is not null and party != '') {1}
 				{2}
 				{3}
 				and against_voucher_type is not null
 				group by posting_date, party_type, party, voucher_type, voucher_no,
-				against_voucher_type, against_voucher, account_currency, cost_center
+				against_voucher_type, against_voucher, account_currency
 				order by posting_date, party"""
 				.format(select_fields, conditions, cus_query, exempt_gls), values, as_dict=True)
 
@@ -301,10 +281,6 @@ class ReceivablePayableReport(object):
 		if self.filters.company:
 			conditions.append("company=%s")
 			values.append(self.filters.company)
-
-		if self.filters.cost_center:
-			conditions.append("cost_center=%s")
-			values.append(self.filters.cost_center)
 
 		if self.filters.get(party_type_field):
 			conditions.append("party=%s")
