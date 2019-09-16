@@ -110,7 +110,7 @@ def validate_workflow_states(doc):
 		else:
 			pass
 
-	elif doc.doctype == "Overtime Claim" or "Overtime Authorization":
+	elif doc.doctype in ["Overtime Claim","Overtime Authorization"]:
 		hr_user = frappe.db.get_single_value("HR Settings", "hr_approver")
 		hr_approver = frappe.db.get_value("Employee", hr_user, ["user_id","employee_name","designation","name"])
 		

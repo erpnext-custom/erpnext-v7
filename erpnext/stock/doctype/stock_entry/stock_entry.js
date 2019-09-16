@@ -101,18 +101,20 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 			})
 	
 			
-		}		
-		if(me.frm.doc.__islocal) {
+		}
+		//Commented By Tashi for testing purpose		
+		/*if(me.frm.doc.__islocal) {
 			frappe.call({
                               method: "erpnext.custom_utils.get_user_info",
                               args: {"user": frappe.session.user},
                               callback(r) {
+					if(r.message){
                                         cur_frm.set_value("branch", r.message.branch);
                                         cur_frm.set_value("from_warehouse", r.message.warehouse);
                                         cur_frm.set_value("user_cost_center", r.message.cost_center);
-                             }
+                             }}
                         });
-		}
+		}*/
 	},
 	// Ver2.0 Ends
 	

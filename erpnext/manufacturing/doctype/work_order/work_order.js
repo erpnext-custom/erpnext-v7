@@ -124,7 +124,7 @@ frappe.ui.form.on("Work Order", {
 			});
 
 			if(not_completed && not_completed.length) {
-				frm.add_custom_button(__('Make Job Order'), () => {
+				frm.add_custom_button(__('Make Job Card'), () => {
 					frm.trigger("make_job_card")
 				}).addClass('btn-primary');
 			}
@@ -240,7 +240,7 @@ frappe.ui.form.on("Work Order", {
 					}
 				}
 			});
-		}, __("For Job Order"));
+		}, __("For Job Card"));
 	},
 
 	make_bom: function(frm) {
@@ -436,7 +436,7 @@ erpnext.work_order = {
 			}
 
 			const show_start_btn = (frm.doc.skip_transfer
-				|| frm.doc.transfer_material_against == 'Job Order') ? 0 : 1;
+				|| frm.doc.transfer_material_against == 'Manufacturing Job Card') ? 0 : 1;
 
 			if (show_start_btn){
 				if ((flt(doc.material_transferred_for_manufacturing) < flt(doc.qty))
@@ -550,29 +550,13 @@ erpnext.work_order = {
 				args: {
 					"work_order_id": frm.doc.name,
 					"purpose": purpose,
-					"qty": data.qty,
-					"branch": frm.doc.branch
+					"qty": data.qty
 				},
 				callback: function(r) {
 					var doclist = frappe.model.sync(r.message);
 					frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
 				}
 			});
-			if(purpose == 'Material Transfer for Manufacture') {
-				frappe.call({
-                                method:"erpnext.manufacturing.doctype.work_order.work_order.make_material_request",
-                                args: {
-                                        "work_order_id": frm.doc.name,
-                                        "purpose": purpose,
-                                        "qty": data.qty,
-					"branch": frm.doc.branch
-                                },
-                                callback: function(r) {
-                                        var doclist = frappe.model.sync(r.message);
-                                        frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
-                                }
-                        });
-			}
 		}, __("Select Quantity"), __("Make"));
 	},
 
@@ -591,27 +575,13 @@ erpnext.work_order = {
 			args: {
 				"work_order_id": frm.doc.name,
 				"purpose": "Material Consumption for Manufacture",
-				"qty": max,
-				"branch": frm.doc.branch
+				"qty": max
 			},
 			callback: function(r) {
 				var doclist = frappe.model.sync(r.message);
 				frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
 			}
 		});
-		frappe.call({
-                        method:"erpnext.manufacturing.doctype.work_order.work_order.make_material_request",
-                        args: {
-                                "work_order_id": frm.doc.name,
-                                "purpose": "Issue",
-                                "qty": max
-                        },
-                        callback: function(r) {
-                                var doclist = frappe.model.sync(r.message);
-                                frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
-                        }
-                });
-
 	},
 
 	stop_work_order: function(frm, status) {
