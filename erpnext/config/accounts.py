@@ -38,12 +38,6 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Transfer CoGM",
-					"label": "Transfer COGM Balance",
-					"description": _("TRansfer COGM Balance between fiscal years")
-				},
-				{
-					"type": "doctype",
 					"name": "Transporter Payment",
 				},
 			]
@@ -414,6 +408,28 @@ def get_data():
 				}
 			]
 		},
+		{
+                        "label": _("Account Setup"),
+                        "icon": "icon-cog",
+                        "items": [
+                                {
+                                        "type": "doctype",
+                                        "name": "Accounts Settings",
+                                        "description": _("Default settings for accounting transactions.")
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "HR Accounts Settings",
+                                        "description": _("HR Account Settings")
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Production Account Settings",
+                                        "description": _("Account setting for production module")
+                                },
+                        ]
+                },
+
 		{
 			"label": _("Setup"),
 			"icon": "icon-cog",

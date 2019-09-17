@@ -127,7 +127,9 @@ class LeaveEncashment(Document):
         
         def post_accounts_entry(self):
                 employee = frappe.get_doc("Employee", self.employee)
-                default_bank_cash_account = get_default_bank_cash_account(employee.company, "Bank")
+		#following code commented as per ticket #282 and subsequent added
+		#default_bank_cash_account = get_default_bank_cash_account(employee.company, "Bank")
+		expense_bank_account = frappe.db.get_value("HR Accounts Settings", None, "employee_payable_account")
                 sal_struc_name = self.get_salary_structure()
                 #le = get_le_settings(["expense_account", "tax_account"])
                 le = get_le_settings()
@@ -176,7 +178,7 @@ class LeaveEncashment(Document):
                         "party_check": 0
                 })
 
-                je.append("accounts", {
+                '''je.append("accounts", {
                         "account": "Sundry Creditors - Employee - SMCL",
                         "debit_in_account_currency": flt(basic_pay),
                         "reference_type": "Leave Encashment",
@@ -196,16 +198,15 @@ class LeaveEncashment(Document):
                         "party": self.employee,
                         "cost_center": self.cost_center,
                         "party_check": 0
-                })
+                })'''
 
                 je.append("accounts", {
-                        "account": default_bank_cash_account.account,
+                        "account": expense_bank_account,
+			"party_type": "Employee",
+			"party": self.employee,
                         "credit_in_account_currency": (flt(basic_pay)-flt(salary_tax)),
                         "reference_type": "Leave Encashment",
                         "reference_name": self.name,
-                        "balance": default_bank_cash_account.balance,
-                        "account_currency": default_bank_cash_account.account_currency,
-                        "account_type": default_bank_cash_account.account_type,
                         "cost_center": self.cost_center
                 })
                 je.insert()

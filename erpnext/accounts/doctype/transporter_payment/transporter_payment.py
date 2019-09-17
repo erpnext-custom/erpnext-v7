@@ -50,7 +50,9 @@ class TransporterPayment(AccountsController):
 	
 		pol_amount = 0
 		for j in self.pols:
-			pol_amount = pol_amount + j.amount
+			if not j.allocated_amount:
+				j.allocated_amount = j.amount
+			pol_amount = pol_amount + j.allocated_amount
 
 		self.pol_amount = pol_amount
 		self.net_payable = self.gross_amount - self.pol_amount
@@ -156,7 +158,7 @@ class TransporterPayment(AccountsController):
 			unload_amount = unload_amount + flt(d.unloading_amount)
 
 		#POL Details
-		query = "select posting_date, name as pol, pol_type as item_code, item_name, qty, rate, total_amount as amount from tabPOL where docstatus = 1 and transport_payment_done = 0 and posting_date between %s and %s and equipment = %s"
+		query = "select posting_date, name as pol, pol_type as item_code, item_name, qty, rate, total_amount as amount, total_amount as allocated_amount from tabPOL where docstatus = 1 and transport_payment_done = 0 and posting_date between %s and %s and equipment = %s"
 		for a in frappe.db.sql(query, (self.from_date, self.to_date, self.equipment), as_dict=1):
 			row = self.append('pols', {})
 			row.update(a)
@@ -273,7 +275,7 @@ class TransporterPayment(AccountsController):
 			party = self.equipment
 			party_type = "Equipment"
 
-		if self.amount_payable:
+		if self.amount_payable >= 0.0:
 			gl_entries.append(
 				self.get_gl_dict({
 				       "account": self.credit_account,

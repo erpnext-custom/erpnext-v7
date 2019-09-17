@@ -14,10 +14,10 @@ frappe.ui.form.on('Transporter Payment', {
 		];
 	*/	frm.get_field('pols').grid.editable_fields = [
 			{fieldname: 'posting_date', columns: 2},
-			{fieldname: 'item_code', columns: 2},
 			{fieldname: 'qty', columns: 2},
 			{fieldname: 'rate', columns: 2},
 			{fieldname: 'amount', columns: 2},
+			{fieldname: 'allocated_amount', columns:2}
 		];
 	},
 	onload: function(frm) {
@@ -126,4 +126,12 @@ var total_html = function(frm){
 	$(cur_frm.fields_dict.total_html.wrapper).html('<table style="width: 100%; font-weight: bold;">'+row+'</table>');	
 }
 
+
+/*frappe.ui.form.on('Transporter Payment Pol', {
+        refresh: function(frm, cdt, cdn) {
+	var child = locals[cdt][cdn]
+		if(!frm.child.allocated_amount) {
+		frappe.model.set_value(cdt, cdn, "allocated_amount", frm.child.amount);
+		}
+        }})*/
 

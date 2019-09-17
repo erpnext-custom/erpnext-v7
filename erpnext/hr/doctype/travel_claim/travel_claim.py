@@ -15,7 +15,7 @@ class TravelClaim(Document):
 	def get_status(self):
                 if self.workflow_state =="Verified By Supervisor":
                         self.supervisor_approval = 1
-			self.seupervisor_approved_on = nowdate()
+			self.supervisor_approved_on = nowdate()
                 elif self.workflow_state == "Approved":
                         self.hr_approval =1
 			self.hr_approved_on = nowdate()
@@ -265,7 +265,9 @@ class TravelClaim(Document):
 		cost_center = frappe.db.get_value("Employee", self.employee, "cost_center")
 		if not cost_center:
 			frappe.throw("Setup Cost Center for employee in Employee Information")
-		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+		#following code commented as per ticket #282 and subsequent added by Tashi
+		#expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+		expense_bank_account = frappe.db.get_value("HR Accounts Settings", None, "employee_payable_account")
 		if not expense_bank_account:
 			frappe.throw("Setup Default Expense Bank Account for your Branch")
 		
@@ -335,6 +337,8 @@ class TravelClaim(Document):
 		if flt(self.balance_amount) > 0:
 			je.append("accounts", {
 					"account": expense_bank_account,
+					"party_type": "Employee",
+					"party": self.employee,
 					"reference_type": "Travel Claim",
 					"reference_name": self.name,
 					"cost_center": cost_center,

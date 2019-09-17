@@ -99,7 +99,9 @@ class OvertimeApplication(Document):
 	def post_journal_entry(self):	
 		cost_center = frappe.db.get_value("Employee", self.employee, ["cost_center"])
 		ot_account = frappe.db.get_single_value("HR Accounts Settings", "overtime_account")
-		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+		#following code commented as per ticket #282 and subsequent added
+		expense_bank_account = frappe.db.get_value("HR Accounts Settings", None, "employee_payable_account")
+		#expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
 		if not cost_center:
 			frappe.throw("Setup Cost Center for employee in Employee Information")
 		if not expense_bank_account:
@@ -119,6 +121,8 @@ class OvertimeApplication(Document):
 
 		je.append("accounts", {
 				"account": expense_bank_account,
+				"party_type": "Employee",
+				"party": self.employee,
 				"cost_center": cost_center,
 				"credit_in_account_currency": flt(total_amount),
 				"credit": flt(total_amount),
