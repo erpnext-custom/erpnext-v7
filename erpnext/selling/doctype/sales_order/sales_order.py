@@ -59,8 +59,10 @@ class SalesOrder(SellingController):
 	def validate_lot_list(self):
 		for item in self.items:
 			item_sub_group = frappe.db.get_value("Item", item.item_code, "item_sub_group")
-			sub_groups = ["Pole","Log","Block","Sawn", "Hakaries","Block (Special Size)"]
-			if item_sub_group in sub_groups:
+			lot_check = frappe.db.get_value("Item Sub Group", item_sub_group, "lot_check")
+		#	sub_groups = ["Pole","Log","Block","Sawn", "Hakaries","Block (Special Size)"]
+		#	if item_sub_group in sub_groups:
+			if lot_check:
 				data = frappe.db.sql("select name, total_volume from `tabLot List` where branch='{0}' and item = '{1}' and name='{2}' and docstatus=1 and (sales_order is NULL OR sales_order ='')".format(self.branch, item.item_code, item.lot_number), as_dict=1)
 				if not data:
 					frappe.throw("Invalid Lot selection, Please check Branch and Material")
@@ -426,9 +428,10 @@ def get_lot_detail(branch, item_code, lot_number):
 	re = []
 	data = frappe.db.sql('select name, total_volume from `tabLot List` where branch="{0}" and item = "{1}" and name="{2}" and docstatus = 1'.format(branch, item_code, lot_number), as_dict=1)
 	sub_group = frappe.db.get_value("Item", item_code, "item_sub_group")
+	lot_check = frappe.db.get_value("Item Sub Group", sub_group, "lot_check")
 	if data:
 		for a in data:
-			re.append({'name':a.name, 'total_volume':a.total_volume, 'sub_group':sub_group})
+			re.append({'name':a.name, 'total_volume':a.total_volume, 'sub_group':sub_group, 'lot_check':lot_check})
 		return re
 
 

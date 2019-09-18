@@ -90,6 +90,9 @@ def get_selling_rate(price_list, branch, item_code, transaction_date, location):
 	rate=""
 	if location != "NA":
 		rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and location = '{2}' """.format(price_list, item_code, location), as_dict =1)
+	else:
+		rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and (location is Null or location ='') """.format(price_list, item_code), as_dict =1)
+
 	if not rate:
 		rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}'""".format(price_list, item_code), as_dict =1)
 		

@@ -9,6 +9,13 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_sws_contribution():
+        for a in frappe.db.sql("select name, employee, employee_name, employee_grade from `tabSalary Structure`",  as_dict=1):
+                sws_amount = frappe.db.get_value("Employee Grade", a.employee_grade, "sws_contribution")
+                frappe.db.sql("update `tabSalary Detail` set amount = %s where parent = %s and salary_component = 'SWS'",(sws_amount, a.name))
+                print("SS   ===> {0}   === {1} ==== {2} ===> {3}".format(a.name, a.employee_grade, sws_amount, a.employee))
+
+
 def update_si_location():
         for a in frappe.db.sql("select name, location, delivery_note, parent from `tabSales Invoice Item`", as_dict=1):
                 if not a.location:

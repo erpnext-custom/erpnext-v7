@@ -404,8 +404,11 @@ def price_template_list(doctype,txt, searchfield, start, page_len, filters):
 	if not filters.get("branch") or not filters.get("item_code") or not filters.get("transaction_date"):
                 frappe.throw("Select Item Code or Branch or Posting Date")
 	item_price=""
-	if filters.get("location"):
+	if not filters.get("location"):
+		item_price = frappe.db.sql(""" select a.parent, b.particular, b.selling_price from `tabSelling Price Branch` a, `tabSelling Price Rate` b where a.parent = b.parent and a.branch = '{0}' and b.particular = '{1}' and (b.location is NULL or b.location ='') and exists (select 1 from `tabSelling Price` where name = a.parent and '{2}' between from_date and to_date) group by a.parent""".format(filters.get("branch"), filters.get("item_code"), filters.get("transaction_date")))
+	else:
 		item_price = frappe.db.sql(""" select a.parent, b.particular, b.selling_price from `tabSelling Price Branch` a, `tabSelling Price Rate` b where a.parent = b.parent and a.branch = '{0}' and b.location = '{1}' and b.particular = '{2}' and exists (select 1 from `tabSelling Price` where name = a.parent and '{3}' between from_date and to_date) group by a.parent""".format(filters.get("branch"), filters.get("location"), filters.get("item_code"), filters.get("transaction_date")))
+
 	if not item_price:
 		item_price = frappe.db.sql(""" select a.parent, b.particular, b.selling_price from `tabSelling Price Branch` a, `tabSelling Price Rate` b where a.parent = b.parent and a.branch = '{0}' and b.particular = '{1}' and exists (select 1 from `tabSelling Price` where name = a.parent and '{2}' between from_date and to_date) group by a.parent""".format(filters.get("branch"), filters.get("item_code"), filters.get("transaction_date")))
 

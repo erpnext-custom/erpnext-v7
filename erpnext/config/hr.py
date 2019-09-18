@@ -157,6 +157,11 @@ def get_data():
 					"name": "Leave Adjustment",
 					"label": _("Leave Adjustment Tool"),
 				},
+                                {
+					"type": "doctype",
+					"name": "Request EL Allocation",
+					"label": _("Request EL Allocation"),
+				},
 			]
 		},
 		{

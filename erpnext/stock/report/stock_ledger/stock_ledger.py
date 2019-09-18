@@ -29,7 +29,7 @@ def execute(filters=None):
 	return columns, data
 
 def get_columns():
-	return [_("Date") + ":Datetime:95", _("Item") + ":Link/Item:130", _("Item Name") + "::100", _("Item Group") + ":Link/Item Group:100",
+	return [_("Date") + ":Date:95", _("Item") + ":Link/Item:130", _("Item Name") + "::100", _("Item Group") + ":Link/Item Group:100",
 		_("Brand") + ":Link/Brand:100", _("Description") + "::200", _("Warehouse") + ":Link/Warehouse:100",
 		_("Stock UOM") + ":Link/UOM:100", _("Qty") + ":Float:50", _("Balance Qty") + ":Float:100",
 		_("Incoming Rate") + ":Currency:110", _("Valuation Rate") + ":Currency:110", _("Balance Value") + ":Currency:110",
@@ -38,7 +38,7 @@ def get_columns():
 	]
 
 def get_stock_ledger_entries(filters):
-	return frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
+	return frappe.db.sql("""select concat_ws(" ",posting_date, posting_time) as date,
 			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
 			stock_value, voucher_type, voucher_no, batch_no, serial_no, company
 		from `tabStock Ledger Entry` sle

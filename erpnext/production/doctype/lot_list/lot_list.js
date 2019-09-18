@@ -80,7 +80,7 @@ function update_volume(frm, cdt, cdn)
 		var volume = (((girth * girth) * d.length ) / 1809.56) * d.number_pieces;
 	}
 
-	frappe.model.set_value(cdt, cdn, "volume", volume);
+	frappe.model.set_value(cdt, cdn, "volume", volumeek_7;
 	
 	var items = frm.doc.items || [];
 	var total_vol = 0;

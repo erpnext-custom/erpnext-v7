@@ -75,7 +75,7 @@ cur_frm.fields_dict['operators'].grid.get_field('operator').get_query = function
 	if (d.employee_type == "Employee") {
 		return {
 			filters: [
-			['Employee', 'designation', 'in', ['Operator', 'Driver']],
+		        /* ['Employee', 'designation', 'in', ['Operator', 'Driver','Dredging Operator']], */
 			['Employee', 'branch', '=', frm.branch],
 			['Employee', 'status', '=', 'Active']
 			]

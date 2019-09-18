@@ -372,7 +372,8 @@ frappe.ui.form.on("Sales Order", "refresh", function(frm) {
     cur_frm.set_query("location", function() {
         return{
                 "filters":{
-                        "branch": frm.doc.branch
+                        "branch": frm.doc.branch,
+			"is_disabled": 0
                 }
         };
     });
@@ -501,9 +502,10 @@ function get_balance(frm, cdt, cdn){
                                 console.log(r.message);
                                 if(r.message){
                                         var balance = r.message[0]['total_volume'];
-					var item_sub_group = r.message[0]['sub_group']; 
-					var sub_groups = ["Pole","Log","Block","Sawn", "Hakaries","Field Sawn"];
-                			if(sub_groups.includes(item_sub_group))
+					var lot_check = r.message[0]['lot_check']; 
+			        //	var item_sub_group = r.message[0]['sub_group']; 
+				//	var sub_groups = ["Pole","Log","Block","Sawn", "Hakaries","Field Sawn","Block (Special Size)"];
+                			if(lot_check)
                 			{
                                         	console.log(balance);
 						if(balance < 0){
