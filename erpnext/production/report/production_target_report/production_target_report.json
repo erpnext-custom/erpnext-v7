@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-08-14 16:38:04.521080", 
+ "modified": "2019-09-19 17:00:52.265670", 
  "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Production", 
  "name": "Production Target Report", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Production Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

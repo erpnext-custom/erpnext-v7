@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:03.320623", 
- "modified_by": "Administrator", 
+ "modified": "2019-09-19 16:59:34.574080", 
+ "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Manufacturing", 
  "name": "Production Orders in Progress", 
  "owner": "Administrator", 
@@ -16,5 +16,12 @@
  "ref_doctype": "Production Order", 
  "report_name": "Production Orders in Progress", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Auditor"
+  }
+ ]
 }

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-08-14 16:37:37.676838", 
+ "modified": "2019-09-19 16:59:03.756714", 
  "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Production", 
  "name": "Production Progress Report", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Production User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

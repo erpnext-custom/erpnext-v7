@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-06 18:26:01.379626", 
- "modified_by": "Administrator", 
+ "modified": "2019-09-19 17:01:59.072364", 
+ "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Manufacturing", 
  "name": "Completed Production Orders", 
  "owner": "Administrator", 
@@ -16,5 +16,12 @@
  "ref_doctype": "Production Order", 
  "report_name": "Completed Production Orders", 
  "report_type": "Query Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Auditor"
+  }
+ ]
 }

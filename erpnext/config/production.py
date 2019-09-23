@@ -114,7 +114,13 @@ def get_data():
                                         "name": "Sales Report",
                                         "label": "Sales Report",
                                         "doctype": "Sales Order"
-                                }
+                },
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Lot List Report",
+					"doctype": "Lot List List"
+				},
 
 
 			]

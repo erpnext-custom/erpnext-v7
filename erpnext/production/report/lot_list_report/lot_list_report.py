@@ -19,7 +19,19 @@ def validate_filters(filters):
 		frappe.throw(_("From Date cannot be greater than To Date"))
 
 def get_data(filters):
-	query = "select item as item_code, item_name, item_sub_group as type, lot_no, monthname(posting_date) as month from `tabLot List` where posting_date >= \'"+str(filters.from_date)+"\' and posting_date <= \'"+str(filters.to_date)+"\'"
+	query = "select item as item_code, item_name, item_sub_group as type,total_volume as volume,lot_no, monthname(posting_date) as month,branch,warehouse from `tabLot List` where posting_date >= \'"+str(filters.from_date)+"\' and posting_date <= \'"+str(filters.to_date)+"\'"
+
+	if filters.branch:
+		query+=" and branch = \'"+filters.branch+"\'"
+
+	if filters.warehouse:
+		query+=" and warehouse = \'"+filters.warehouse+"\'"
+
+	if filters.type:
+		query+=" and item_sub_group = \'"+filters.type+"\'"
+
+	if filters.item_code:
+		query+=" and item = \'"+filters.item_code+"\'"
 
 	data = frappe.db.sql(query, as_dict=True)
 	
@@ -47,6 +59,12 @@ def get_columns():
 			"width": 130
 		},
 		{
+			"fieldname": "volume",
+			"label": _("Total Volume(cft)"),
+			"fieldtype": "Data",
+			"width": 130
+		},
+		{
 			"fieldname": "lot_no",
 			"label": _("Lot Number"),
 			"fieldtype": "Data",
@@ -55,6 +73,18 @@ def get_columns():
 		{
 			"fieldname": "month",
 			"label": _("Month"),
+			"fieldtype": "Data",
+			"width": 130
+		},
+		{
+			"fieldname": "branch",
+			"label": _("Branch"),
+			"fieldtype": "Data",
+			"width": 130
+		},
+		{
+			"fieldname": "warehouse",
+			"label": _("Warehouse"),
 			"fieldtype": "Data",
 			"width": 130
 		},

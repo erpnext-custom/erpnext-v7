@@ -20,7 +20,25 @@ def validate_filters(filters):
 
 def get_data(filters):
 
-	query = "select a.employee_name as employee,c.employee_group as designation,c.employee_subgroup as grade,sum(b.number_of_hours) as hours,sum(round(b.number_of_hours*a.rate,2)) as amount,c.cost_center from `tabOvertime Application Item` as b,`tabOvertime Application` as a join `tabEmployee` as c on a.employee_name=c.employee_name where b.parent=a.name and b.docstatus=1 and b.date>= \'"+str(filters.from_date)+"\' and b.date<=\'"+str(filters.to_date)+"\' group by a.employee_name order by a.employee_name asc"
+	query = "select a.employee as employee, a.employee_name as employee_name,c.designation as designation,c.employee_subgroup as grade,\
+		sum(b.number_of_hours) as hours,sum(round(b.number_of_hours*a.rate,2)) as amount, \
+		c.cost_center from `tabOvertime Application Item` as b inner join `tabOvertime Application` as a  on b.parent = a.name \
+		inner join `tabEmployee` as c on a.employee=c.employee \
+		where a.docstatus=1 and b.date between  \'"+str(filters.from_date)+"\' and \'"+str(filters.to_date)+"\' "
+
+	if filters.cost_center:
+		query+=" and c.cost_center = \'"+filters.cost_center+"\'"
+
+	if filters.employee:
+		query+=" and a.employee = \'"+filters.employee+"\'"
+
+	if filters.designation:
+		query+=" and c.designation = \'"+filters.designation+"\'"
+
+	if filters.grade:
+		query+=" and c.employee_subgroup = \'"+filters.grade+"\'"
+	
+	query+=" group by a.employee order by a.employee"
 
 	data = frappe.db.sql(query, as_dict=True)
 	
@@ -30,9 +48,15 @@ def get_columns():
 	return [
 		{
 			"fieldname": "employee",
-			"label": _("Employee Name"),
+			"label": _("Employee"),
 			"fieldtype": "Link",
 			"options": "Employee",
+			"width": 120
+		},
+		{
+			"fieldname": "employee_name",
+			"label": _("Employee Name"),
+			"fieldtype": "Data",
 			"width": 120
 		},
 		{

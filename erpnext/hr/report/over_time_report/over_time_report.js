@@ -8,14 +8,38 @@ frappe.query_reports["Over Time Report"] = {
 			"label": ("From Date"),
 			"fieldtype": "Date",
 			"width": "80",
-	"default": frappe.datetime.year_start()
-	},
-	{
+			"reqd" : 1
+		},
+		{
 			"fieldname":"to_date",
 			"label": ("To Date"),
 			"fieldtype": "Date",
 			"width": "80",
-		"default": frappe.datetime.year_end()
-	}
+			"reqd" : 1			
+		},
+		{
+			"fieldname": "cost_center",
+			"label": __("Cost Center"),
+			"fieldtype": "Link",
+			"options": "Cost Center",
+		},
+		{
+			"fieldname": "grade",
+			"label": __("Employee Grade"),
+			"fieldtype": "Link",
+			"options": "Employee Grade",
+		},
+		{
+			"fieldname": "designation",
+			"label": __("Designation"),
+			"fieldtype": "Link",
+			"options": "Designation",
+		},
+		{
+			"fieldname": "employee",
+			"label": __("Employee"),
+			"fieldtype": "Link",
+			"options": "Employee",
+		},
 	]
 }
