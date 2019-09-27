@@ -79,7 +79,8 @@ function calculate_rent_charges(frm){
 			row.from_date = from_date;
 			row.to_date = to_date;
 			row.increment = increment;
-			row.rental_amount = (actual_rent > 0)?actual_rent:frm.doc.rent_amount;
+			var rental_amount = (actual_rent > 0)?actual_rent:frm.doc.rent_amount;
+			row.rental_amount = Math.round(rental_amount);
 		}
 		cur_frm.refresh();
 	}else{

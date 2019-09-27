@@ -179,9 +179,16 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 					cur_frm.add_custom_button(__("Transfer Material"),
 					this.make_stock_entry, __("Make"));
 
-				if(doc.material_request_type === "Material Issue" && doc.status === "Submitted")
+				if(doc.material_request_type === "Material Issue" && doc.status === "Submitted"){
+					if(!doc.stock_entry) {
 					cur_frm.add_custom_button(__("Issue Material"),
 					this.make_stock_entry, __("Make"));
+					}
+					else {
+					cur_frm.add_custom_button(__("Issue Material Work Order"),
+					this.open_stock_entry, __("Make"));
+					}	
+				}
 
 				if(doc.material_request_type === "Purchase")
 					cur_frm.add_custom_button(__('Purchase Order'),
@@ -334,6 +341,9 @@ erpnext.buying.MaterialRequestController = erpnext.buying.BuyingController.exten
 				"material_request": cur_frm.doc.name
 			}
 		});
+	},
+	open_stock_entry: function() {
+		frappe.set_route("Form", "Stock Entry", cur_frm.doc.stock_entry)
 	}
 });
 

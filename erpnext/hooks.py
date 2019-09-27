@@ -184,8 +184,6 @@ scheduler_events = {
 		"erpnext.assets.doctype.asset.depreciation.post_depreciation_entries",
 		"erpnext.hr.doctype.officiating_employee.officiating_employee.check_off_exp",
 		"erpnext.maintenance.maintenance_utils.check_hire_end",
-		#"erpnext.hr.hr_custom_functions.post_earned_leaves",
-		#"erpnext.hr.hr_custom_functions.post_casual_leaves",
                 "erpnext.hr.hr_custom_functions.post_leave_credits",
 		"erpnext.custom_functions.check_pending_approvers"
 	],

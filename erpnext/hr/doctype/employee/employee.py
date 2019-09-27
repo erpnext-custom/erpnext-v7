@@ -118,7 +118,6 @@ class Employee(Document):
 		self.populate_family_details()
 		# Following method introduced by SHIV on 08/04/2019
                 self.update_retirement_age()
-    
 	def before_save(self):
 		if self.branch != self.get_db_value("branch") and  self.user_id:
 			frappe.permissions.remove_user_permission("Branch", self.get_db_value("branch"), self.user_id)           

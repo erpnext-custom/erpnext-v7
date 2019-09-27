@@ -14,6 +14,7 @@ from erpnext.hr.doctype.salary_structure.salary_structure import get_salary_tax
 from erpnext.accounts.doctype.journal_entry.journal_entry import get_default_bank_cash_account
 #from dateutil.relativedelta import *
 from erpnext.hr.doctype.leave_application.leave_application import get_leave_balance_on
+from erpnext.custom_workflow import validate_workflow_states
 
 class OverlapError(frappe.ValidationError): pass
 class InsufficientError(frappe.ValidationError): pass
@@ -29,11 +30,12 @@ class LeaveEncashment(Document):
                 self.name = make_autoname(self.employee+"/LE/"+monthyear+"/.#####")
         
         def validate(self):
+		validate_workflow_states(self)                
 		#self.branch = frappe.db.get_value("Employee", self.employee, "branch")         #Commented by SHIV on 2018/10/15
                 self.validate_leave_application()
                 self.get_leave_balance()                                                        #Added by SHIV on 2018/10/15
                 self.validate_balances()                                                        #Commented by SHIV on 2018/10/12
-                
+
         def on_submit(self):
 		self.adjust_leave()
 		self.post_accounts_entry()

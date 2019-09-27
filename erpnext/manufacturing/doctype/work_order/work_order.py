@@ -622,7 +622,6 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 		stock_entry.to_warehouse = wip_warehouse
 		stock_entry.project = work_order.project
 		stock_entry.from_warehouse = swh[0].source_warehouse
-		make_material_request(work_order_id, purpose, qty)
 	else:
 		stock_entry.from_warehouse = wip_warehouse
 		stock_entry.to_warehouse = work_order.fg_warehouse
@@ -632,36 +631,10 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 			stock_entry.set("additional_costs", additional_costs)
 
 	stock_entry.get_items()
+	stock_entry.save()
+	work_order.set("stock_entry", stock_entry.name)
 	return stock_entry.as_dict()
 
-
-def make_material_request(work_order_id, purpose, qty=None):
-        work_order = frappe.get_doc("Work Order", work_order_id)
-        if not frappe.db.get_value("Warehouse", work_order.wip_warehouse, "is_group") \
-                        and not work_order.skip_transfer:
-                wip_warehouse = work_order.wip_warehouse
-        else:
-                wip_warehouse = None
-
-        mr = frappe.new_doc("Material Request")
-        mr.material_request_type = 'Material Issue'
-        mr.work_order = work_order_id
-        mr.company = work_order.company
-        mr.branch =  work_order.branch
-        mr.title = "MR for {0}".format(work_order.name)
-
-        for a in work_order.get("required_items"):
-                mr.append("items", {
-                                "item_code": a.item_code,
-                                "item_name": a.item_name,
-                                "qty": qty,
-                                "uom": frappe.get_doc("Item", a.item_code).stock_uom,
-                                "warehouse": work_order.wip_warehouse,
-                                "reference_name": work_order.name,
-                                "business_activity": "Common"
-                                })
-
-        mr.save(ignore_permissions=True)
 
 @frappe.whitelist()
 def get_default_warehouse():

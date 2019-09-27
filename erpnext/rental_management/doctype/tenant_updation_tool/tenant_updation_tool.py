@@ -13,7 +13,7 @@ class TenantUpdationTool(Document):
 
 	def on_submit(self):
 		self.update_history()
-		frappe.db.sql ("update `tabTenant Information` set ministry_agency = \'"+ str(self.new_ministry_agency) +"\', department = \'"+ str(self.new_department) +"\', floor_area = '{0}' where name= '{1}' ".format(self.new_floor_area, self.tenant))
+		frappe.db.sql ("update `tabTenant Information` set ministry_agency = \'"+ str(self.new_ministry_agency) +"\', department = \'"+ str(self.new_department) +"\', floor_area = '{0}', tenant_section = \'"+ str(self.new_tenant_section) +"\' where name= '{1}' ".format(self.new_floor_area, self.tenant, ))
 	
 		#self.update_history()		
 

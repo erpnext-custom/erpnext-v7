@@ -9,6 +9,16 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def round_of_rent():
+	for a in frappe.db.sql("select name, rent_amount from `tabTenant Information` where docstatus = 1", as_dict=1):
+		print("name ===>" + str(a.name) + "amount" + str(a.rent_amount))
+		rent = round(a.rent_amount)
+		frappe.db.sql("update `tabTenant Information` set rent_amount = '{0}' where name = '{1}'".format(rent, a.name))
+		for b in frappe.db.sql("select name, rental_amount from `tabTenant Rental Charges` where parent = %s", (a.name), as_dict=1):
+			rent_amt = round(b.rental_amount)
+			frappe.db.sql("update `tabTenant Rental Charges` set rental_amount = %s where name = %s", (rent_amt, b.name))
+
+
 def update_pilot_housing_rent():
 	for a in frappe.db.sql("select name, original_monthly_instalment from `tabTenant Information` where building_category = 'Pilot Housing' and docstatus = 1", as_dict=1):
 		print("name ===>" + str(a.name) + "amount" + str(a.original_moonthly_instalment))

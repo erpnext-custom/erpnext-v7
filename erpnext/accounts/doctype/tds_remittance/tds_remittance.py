@@ -51,6 +51,10 @@ class TDSRemittance(AccountsController):
 		self.post_gl_entry()
 
 
+	def on_cancel(self):
+		self.post_gl_entry()
+
+	
 	def get_details(self):
 		query = """ select d.posting_date, d.party, d.name as invoice_no, d.taxable_amount as bill_amount, d.tds_amount from 
                                 `tabDirect Payment` d  where tds_percent = '{0}' 

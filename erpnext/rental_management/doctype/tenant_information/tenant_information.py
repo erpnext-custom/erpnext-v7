@@ -11,7 +11,7 @@ from frappe.utils import cint, flt, nowdate, money_in_words
 class TenantInformation(Document):
 	def validate(self):
 		if self.building_category != "Pilot Housing":
-			self.rent_amount = flt(self.floor_area) * flt(self.rate_per_sq_ft)
+			self.rent_amount = round(flt(self.floor_area) * flt(self.rate_per_sq_ft))
 
 		self.validate_allocation()
 		#if not self.rental_charges:
@@ -92,7 +92,7 @@ class TenantInformation(Document):
 						"from_date": start_date,
 						"to_date": end_date,
 						"increment": increment,
-						"rental_amount": actual_rent
+						"rental_amount": round(actual_rent)
 					})
 
 			rent_obj.save()

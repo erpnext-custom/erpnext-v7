@@ -582,7 +582,7 @@
    "precision": "", 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
-   "read_only": 0, 
+   "read_only": 1, 
    "report_hide": 0, 
    "reqd": 0, 
    "search_index": 0, 
@@ -625,7 +625,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-09-11 08:51:58.197085", 
+ "modified": "2019-09-25 13:13:47.036989", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Overtime Authorization", 
@@ -776,7 +776,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
