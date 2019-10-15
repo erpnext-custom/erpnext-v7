@@ -56,6 +56,8 @@ class ProcessRentalBilling(AccountsController):
 		self.check_permission('write')
 		msg=""
 
+	#	frappe.throw("{0}".format(name))
+
 		if name:
 			try:
 				if process_type == "create":
@@ -107,7 +109,8 @@ class ProcessRentalBilling(AccountsController):
 					if dtls:
 						for d in dtls:
 							cost_center = frappe.db.get_value("Branch", d.branch, "cost_center") 
-							company = frappe.db.get_value("Branch", d.branch, "company") 
+							company = frappe.db.get_value("Branch", d.branch, "company")
+							 
 							rb = frappe.get_doc({
 								"doctype": "Rental Bill",
 								"tenant": name,
@@ -130,8 +133,6 @@ class ProcessRentalBilling(AccountsController):
 								"building_category": d.building_category,
 								"allocation_date": d.allocated_date,
 								"yearmonth": yearmonth,
-								"fiscal_year" : self.fiscal_year,
-								"month": self.month,
 								"rent_amount": d.rental_amount,
 								"cost_center": cost_center,
 								"company": company

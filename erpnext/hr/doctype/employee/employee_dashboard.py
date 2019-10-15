@@ -11,15 +11,15 @@ data = {
 		},
 		{
 			'label': _('Payroll'),
-			'items': ['Salary Structure', 'Salary Slip', 'Salary Increment', 'Timesheet']
+			'items': ['Salary Structure', 'Salary Slip', 'Timesheet']
 		},
 		{
 			'label': _('Expense'),
-			'items': ['Travel Claim', 'Leave Encashment', 'Overtime Application']
+			'items': ['Expense Claim']
 		},
 		{
-			'label': _('Yearly Components'),
-			'items': ['Leave Travel Concession', 'PBVA', 'Bonus']
-		},
+			'label': _('Evaluation'),
+			'items': ['Appraisal']
+		}
 	]
 }

@@ -9,6 +9,35 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def test_process_bill():
+	rb = frappe.get_doc({
+		"doctype": "Rental Bill",
+		"tenant": '10702001145',
+		"customer_code": '300635',
+		"posting_date": '2019-01-30',
+		"tenant_name": 'Dechen Norbu',
+		"block_no": '08',
+		"total_in_words": "",
+		"fiscal_year": '2019',
+		"month": '01',
+		"flat_no": '102',
+		"ministry_agency": 'Chukha Dzongkhag',
+		"location": 'Chukha',
+		"branch": 'Real Estate Management',
+		"department": 'Dzongkhag Administration',
+		"dzongkhag": 'Chukha',
+		"designation": '',
+		"mobile": 0,
+		"town_category": 'Town-B',
+		"building_category": 'Residential',
+		"allocation_date": '2018-07-01',
+		"yearmonth": '201901',
+		"rent_amount": 1985.000000,
+		"cost_center": 'Construction Management - NHDCL',
+		"company": 'National Housing Development Corporation Ltd.'
+	})
+	rb.insert()
+
 def round_of_rent():
 	for a in frappe.db.sql("select name, rent_amount from `tabTenant Information` where docstatus = 1", as_dict=1):
 		print("name ===>" + str(a.name) + "amount" + str(a.rent_amount))

@@ -10,6 +10,7 @@ from frappe.model.naming import make_autoname
 class RentalBill(Document):
 	def autoname(self):
                 customer_code = frappe.db.get_value("Customer", {"customer_id":self.tenant}, "customer_code")
+		#customer_code = frappe.db.get_value("Tenant Information", self.tenant, "customer_code")
                 bill_code = "NHDCL/" + customer_code + "/" + self.fiscal_year + self.month + '/.#####'
-
+		#bill_code = "NHDCL/300635/2019/01/00001"
 		self.name = make_autoname(bill_code)	
