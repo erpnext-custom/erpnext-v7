@@ -189,11 +189,13 @@ class calculate_taxes_and_totals(object):
 		if self.doc.doctype in ['Purcahse Receipt', 'Purchase Invoice']:
 			self.doc.round_floats_in(self.doc, ["total_tax_amount", "base_tax_amount"])
 
+		if self.doc.doctype in ["Quotation", "Sales Order", "Delivery Note", "Sales Invoice"]:
+			self.doc.net_total = flt(self.doc.total) - flt(self.doc.discount_amount) + flt(self.doc.fitting_and_installation_charges) + flt(self.doc.transportation_charges) + flt(self.doc.loading_cost)
+
 	def calculate_taxes(self):
 		# maintain actual tax rate based on idx
 		actual_tax_dict = dict([[tax.idx, flt(tax.tax_amount, tax.precision("tax_amount"))]
 			for tax in self.doc.get("taxes") if tax.charge_type == "Actual"])
-
 		for n, item in enumerate(self.doc.get("items")):
 			item_tax_map = self._load_item_tax_rate(item.item_tax_rate)
 
@@ -325,8 +327,9 @@ class calculate_taxes_and_totals(object):
 		self._set_in_company_currency(self.doc, ["total_taxes_and_charges"])
 
 		if self.doc.doctype in ["Quotation", "Sales Order", "Delivery Note", "Sales Invoice"]:
-			self.doc.base_grand_total = flt(self.doc.grand_total * self.doc.conversion_rate) \
-				if self.doc.total_taxes_and_charges else self.doc.base_net_total
+			self.doc.base_grand_total = flt(self.doc.grand_total * self.doc.conversion_rate)
+			#self.doc.base_grand_total = flt(self.doc.grand_total * self.doc.conversion_rate) \
+			#	if self.doc.total_taxes_and_charges else self.doc.base_net_total
 		else:
 			self.doc.taxes_and_charges_added = self.doc.taxes_and_charges_deducted = 0.0
 			for tax in self.doc.get("taxes"):
@@ -477,16 +480,16 @@ class calculate_taxes_and_totals(object):
 		self._set_in_company_currency(self.doc, ['write_off_amount'])
 
 		if self.doc.doctype == "Sales Invoice":
-			self.doc.round_floats_in(self.doc, ["total_normal_loss", "total_abnormal_loss", "total_excess_amount", "total_loading_amount", "void_amount"])
+			self.doc.round_floats_in(self.doc, ["total_normal_loss", "total_abnormal_loss", "total_excess_amount", "void_amount"])
 			if self.doc.party_account_currency == self.doc.currency:
 				total_amount_to_pay = flt(self.doc.grand_total  - self.doc.total_advance 
 					- flt(self.doc.total_normal_loss) - flt(self.doc.total_abnormal_loss) + flt(self.doc.total_excess_amount)
-					- flt(self.doc.write_off_amount) + flt(self.doc.total_loading_amount) - flt(self.doc.void_amount), self.doc.precision("grand_total"))
+					- flt(self.doc.write_off_amount) - flt(self.doc.void_amount), self.doc.precision("grand_total"))
 			else:
 				total_amount_to_pay = flt(flt(self.doc.grand_total *
 					self.doc.conversion_rate, self.doc.precision("grand_total")) - self.doc.total_advance
 						- flt(self.doc.total_normal_loss * self.doc.conversion_rate) - flt(self.doc.total_abnormal_loss * self.doc.conversion_rate) + flt(self.doc.total_excess_amount * self.doc.conversion_rate)
-						- flt(self.doc.base_write_off_amount)+ flt(self.doc.total_loading_amount * self.doc.conversion_rate) - flt(self.doc.void_amount * self.doc.conversion_rate), self.doc.precision("grand_total"))
+						- flt(self.doc.base_write_off_amount) - flt(self.doc.void_amount * self.doc.conversion_rate), self.doc.precision("grand_total"))
 		else:
 			if self.doc.party_account_currency == self.doc.currency:
 				tds_amount = 0

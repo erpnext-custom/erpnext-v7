@@ -97,7 +97,6 @@ class DeliveryNote(SellingController):
 
 	def validate(self):
 		check_future_date(self.posting_date)
-		self.calculate_transportation()
 		super(DeliveryNote, self).validate()
 		self.set_status()
 		self.so_required()
@@ -115,16 +114,6 @@ class DeliveryNote(SellingController):
 		self.update_current_stock()
 
 		if not self.installation_status: self.installation_status = 'Not Installed'
-
-        def calculate_transportation(self):
-                total_qty = 0
-                for a in self.items:
-                        total_qty += flt(a.qty)
-
-                self.total_quantity = total_qty
-                self.transportation_charges = round(flt(self.total_quantity) * flt(self.total_distance) * flt(self.transportation_rate), 2)
-                self.discount_amount = flt(self.discount_or_cost_amount) - flt(self.transportation_charges) - flt(self.loading_cost) - flt(self.additional_cost)
-	
 
 	def check_transportation_detail(self):
 		if self.naming_series == 'Mineral Products':

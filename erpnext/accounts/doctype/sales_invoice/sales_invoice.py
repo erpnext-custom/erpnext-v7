@@ -549,18 +549,16 @@ class SalesInvoice(SellingController):
 		self.make_gle_for_change_amount(gl_entries)
 
 		self.make_write_off_gl_entry(gl_entries)
-		if self.name =="SI19030062":
-			frappe.throw("{0}".format(gl_entries))
 		return gl_entries
 
 	def make_customer_gl_entry(self, gl_entries):
 		if self.grand_total:
 			# Didnot use base_grand_total to book rounding loss gle
-			grand_total_in_company_currency = flt(flt(self.grand_total * self.conversion_rate) + flt(self.total_loading_amount * self.conversion_rate) - flt(self.void_amount * self.conversion_rate),
+			grand_total_in_company_currency = flt(flt(self.grand_total * self.conversion_rate) - flt(self.void_amount * self.conversion_rate),
 				self.precision("grand_total"))
 			#grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
 			#	self.precision("grand_total"))
-			grand_total = flt(self.grand_total) + flt(self.total_loading_amount) + flt(self.void_amount)
+			grand_total = flt(self.grand_total) - flt(self.void_amount)
 
                         cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
                         

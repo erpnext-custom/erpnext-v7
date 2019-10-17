@@ -5,7 +5,6 @@
 cur_frm.cscript.tax_table = "Sales Taxes and Charges";
 {% include 'erpnext/accounts/doctype/sales_taxes_and_charges_template/sales_taxes_and_charges_template.js' %}
 
-
 cur_frm.email_field = "contact_email";
 
 frappe.provide("erpnext.selling");
@@ -27,10 +26,7 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 	},
 
 	setup_queries: function() {
-
-
 		var me = this;
-
 		this.frm.add_fetch("sales_partner", "commission_rate", "commission_rate");
 
 		$.each([["customer_address", "customer_filter"],
@@ -114,6 +110,37 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 
 	customer_address: function() {
 		erpnext.utils.get_address_display(this.frm, "customer_address");
+	},
+
+	additional_discount_percentage: function() {
+	/*	this.frm.set_value("fitting_and_installation_charges", 0.00);
+		this.frm.set_value("transportation_charges", 0.00);
+		this.frm.set_value("loading_cost", 0.00); */
+	},
+
+	fitting_and_installation_charges: function(){
+		var additional_cost = this.frm.doc.fitting_and_installation_charges;
+		if(additional_cost > 0){
+			this.frm.set_value("net_total", this.frm.doc.net_total + additional_cost);
+			this.frm.set_value("grand_total", this.frm.doc.grand_total + additional_cost);
+		}
+	},
+
+	transportation_charges: function() {
+		var additional_cost = this.frm.doc.transportation_charges;
+		if(additional_cost > 0){
+                	this.frm.set_value("net_total", this.frm.doc.net_total + additional_cost);
+                	this.frm.set_value("grand_total", this.frm.doc.grand_total + additional_cost);
+		}
+	},
+
+	loading_cost: function() {
+		var additional_cost = this.frm.doc.loading_cost;
+		if(additional_cost >0){
+                	this.frm.set_value("net_total", this.frm.doc.net_total + additional_cost);
+                	this.frm.set_value("grand_total", this.frm.doc.grand_total + additional_cost);
+		}
+		console.log("test2");
 	},
 
 	shipping_address_name: function() {
@@ -371,7 +398,7 @@ frappe.ui.form.on(cur_frm.doctype,"project", function(frm) {
 			})
 		}
 	}
-})
+});
 
 function today_date() {
    return frappe.utils.now().split(' ')[0]

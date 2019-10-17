@@ -27,6 +27,7 @@ class Quotation(SellingController):
 		if self.items:
 			self.with_items = 1
 
+
 	def has_sales_order(self):
 		return frappe.db.get_value("Sales Order Item", {"prevdoc_docname": self.name, "docstatus": 1})
 
@@ -102,6 +103,7 @@ def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
 				"doctype": "Sales Order",
 				"field_map": {
 					"naming_series": "naming_series",
+					"discount_amount": "discount_or_cost_amount",
 				},
 				"validation": {
 					"docstatus": ["=", 1]

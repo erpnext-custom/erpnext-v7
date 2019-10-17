@@ -69,6 +69,7 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 				// Reset discount amount and net / grand total
 				frm.set_value("discount_amount", 0);
 			}
+			
 
 			var total = flt(frm.doc[frappe.model.scrub(frm.doc.apply_discount_on)]);
 			var discount_amount = flt(total*flt(frm.doc.additional_discount_percentage) / 100,

@@ -31,8 +31,6 @@ class SalesOrder(SellingController):
 	def validate(self):
 		check_future_date(self.transaction_date)
 		super(SalesOrder, self).validate()
-		self.calculate_transportation()
-
 		self.validate_order_type()
 		self.validate_delivery_date()
 		self.validate_mandatory()
@@ -51,15 +49,6 @@ class SalesOrder(SellingController):
 
 		if not self.billing_status: self.billing_status = 'Not Billed'
 		if not self.delivery_status: self.delivery_status = 'Not Delivered'
-
-	def calculate_transportation(self):
-		total_qty = 0
-		for a in self.items:
-			total_qty += flt(a.qty)
-
-		self.total_quantity = total_qty
-		self.transportation_charges = round(flt(self.total_quantity) * flt(self.total_distance) * flt(self.transportation_rate), 2)
-		self.discount_amount = flt(self.discount_or_cost_amount) - flt(self.transportation_charges) - flt(self.loading_cost) - flt(self.additional_cost)
 
 	def validate_mandatory(self):
 		# validate transaction date v/s delivery date
@@ -176,11 +165,6 @@ class SalesOrder(SellingController):
 		self.update_prevdoc_status('submit')
 		self.update_product_requisition(action="Submit")
 
-	def check_transporter_amount(self):
-		trans_amount = round(flt(self.total_quantity) * flt(self.total_distance) * flt(self.transportation_rate), 2)
-		if flt(self.transportation_charges) != flt(trans_amount):
-			frappe.throw("The transportation charges is calculated wrongly. Please save again")
-
 	def on_cancel(self):
 		# Cannot cancel closed SO
 		if self.status == 'Closed':
@@ -273,7 +257,7 @@ class SalesOrder(SellingController):
 		pass
 
 	def before_submit(self):
-		self.check_transporter_amount()
+	#	self.check_transporter_amount()
 		self.get_selling_rate()
 
 	def before_update_after_submit(self):
@@ -349,28 +333,16 @@ class SalesOrder(SellingController):
 
 	def get_selling_rate(self):
 		for item in self.items:
-			item_sub_group = None
-			if not self.branch or not item.item_code or not self.transaction_date:
-				frappe.throw("Select Item Code or Branch or Posting Date")
-			rate=""
-			if self.location:
-				rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and location = '{2}'""".format(item.price_template, item.item_code, self.location), as_dict =1)
-			if not rate:
+			if not item.prevdoc_docname:
+				if not self.branch or not item.item_code or not self.transaction_date:
+					frappe.throw("Select Item Code or Branch or Posting Date")
+				rate=""
 				rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}'""".format(item.price_template, item.item_code), as_dict =1)
-			if not rate:
-				species,item_sub_group = frappe.db.get_value("Item", item.item_code, ["species","item_sub_group"])
-				if species:
-					timber_class, timber_type = frappe.db.get_value("Timber Species", species, ["timber_class", "timber_type"])
-					if self.location:
-						rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}' and location = '{4}'""".format(item.price_template, timber_class, timber_type,item_sub_group, self.location), as_dict =1)
-					if not rate:
-						rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}'""".format(item.price_template, timber_class, timber_type,item_sub_group), as_dict =1)
-
-			rate = rate and rate[0].rate or 0.0
-			if item.rate != rate:
-				frappe.throw("Selling Rate had changed since you last pulled. Please pull again")
-			if item.rate <= 0.0 or item.amount <= 0.0:
-				frappe.throw("Rate and Amount must be greater than 0")
+				rate = rate and rate[0].rate or 0.0
+				if item.rate != rate:
+					frappe.throw("Selling Rate had changed since you last pulled. Please pull again")
+				if item.rate <= 0.0 or item.amount <= 0.0:
+					frappe.throw("Rate and Amount must be greater than 0")
 
 		
 

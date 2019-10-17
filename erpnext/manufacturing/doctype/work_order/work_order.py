@@ -191,7 +191,7 @@ class WorkOrder(Document):
 		for purpose, fieldname in (("Manufacture", "produced_qty"),
 			("Material Transfer for Manufacture", "material_transferred_for_manufacturing")):
 			if (purpose == 'Material Transfer for Manufacture' and
-				self.operations and self.transfer_material_against == 'Job Order'):
+				self.operations and self.transfer_material_against == 'Manufacturing Job Card'):
 				continue
 
 			qty = flt(frappe.db.sql("""select sum(fg_completed_qty)
@@ -383,8 +383,8 @@ class WorkOrder(Document):
 				self.actual_end_date = max(actual_end_dates)
 
 	def delete_job_card(self):
-		for d in frappe.get_all("Job Order", ["name"], {"work_order": self.name}):
-			frappe.delete_doc("Job Order", d.name)
+		for d in frappe.get_all("Manufacturing Job Card", ["name"], {"work_order": self.name}):
+			frappe.delete_doc("Manufacturing Job Card", d.name)
 
 	def validate_production_item(self):
 		if frappe.db.get_value("Item", self.production_item, "has_variants"):
@@ -603,8 +603,11 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	else:
 		wip_warehouse = None
 
+	swh = frappe.db.sql("select source_warehouse from `tabWork Order Item` where parent = '{0}'".format(work_order.name), as_dict =1)
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.purpose = purpose
+	stock_entry.branch = work_order.branch
+	stock_entry.title = "SE for '{0}'".format(work_order.name)
 	stock_entry.work_order = work_order_id
 	stock_entry.company = work_order.company
 	stock_entry.from_bom = 1
@@ -618,6 +621,7 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	if purpose=="Material Transfer for Manufacture":
 		stock_entry.to_warehouse = wip_warehouse
 		stock_entry.project = work_order.project
+		stock_entry.from_warehouse = swh[0].source_warehouse
 	else:
 		stock_entry.from_warehouse = wip_warehouse
 		stock_entry.to_warehouse = work_order.fg_warehouse
@@ -627,7 +631,10 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 			stock_entry.set("additional_costs", additional_costs)
 
 	stock_entry.get_items()
+	stock_entry.save()
+	work_order.set("stock_entry", stock_entry.name)
 	return stock_entry.as_dict()
+
 
 @frappe.whitelist()
 def get_default_warehouse():
@@ -672,7 +679,7 @@ def make_job_card(work_order, operation, workstation, qty=0):
 		return create_job_card(work_order, row, qty)
 
 def create_job_card(work_order, row, qty=0, auto_create=False):
-	doc = frappe.new_doc("Job Order")
+	doc = frappe.new_doc("Manufacturing Job Card")
 	doc.update({
 		'work_order': work_order.name,
 		'operation': row.operation,
@@ -686,7 +693,7 @@ def create_job_card(work_order, row, qty=0, auto_create=False):
 		'wip_warehouse': work_order.wip_warehouse
 	})
 
-	if work_order.transfer_material_against == 'Job Order' and not work_order.skip_transfer:
+	if work_order.transfer_material_against == 'Manufacturing Job Card' and not work_order.skip_transfer:
 		doc.get_required_items()
 
 	if auto_create:

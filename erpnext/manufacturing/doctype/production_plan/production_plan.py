@@ -323,7 +323,7 @@ class ProductionPlan(Document):
 		material_request_map = {}
 
 		for item in self.mr_items:
-			item_doc = frappe.get_cached_doc('Item', item.item_code)
+			item_doc = frappe.get_doc('Item', item.item_code)
 
 			# key for Sales Order:Material Request Type
 			key = '{}:{}'.format(item.sales_order, item_doc.default_material_request_type)

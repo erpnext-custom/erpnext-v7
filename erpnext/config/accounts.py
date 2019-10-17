@@ -17,6 +17,11 @@ def get_data():
 					"description": _("Direct Payment")
 				},
 				{
+                                        "type": "doctype",
+                                        "name": "TDS Remittance",
+                                        "description": _("TDS Remittance")
+                                },
+				{
 					"type": "doctype",
 					"name": "Period Closing Voucher",
 					"description": _("Close Balance Sheet and book Profit or Loss.")

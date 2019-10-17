@@ -124,7 +124,7 @@ frappe.ui.form.on("Work Order", {
 			});
 
 			if(not_completed && not_completed.length) {
-				frm.add_custom_button(__('Make Job Order'), () => {
+				frm.add_custom_button(__('Make Job Card'), () => {
 					frm.trigger("make_job_card")
 				}).addClass('btn-primary');
 			}
@@ -240,7 +240,7 @@ frappe.ui.form.on("Work Order", {
 					}
 				}
 			});
-		}, __("For Job Order"));
+		}, __("For Job Card"));
 	},
 
 	make_bom: function(frm) {
@@ -436,7 +436,7 @@ erpnext.work_order = {
 			}
 
 			const show_start_btn = (frm.doc.skip_transfer
-				|| frm.doc.transfer_material_against == 'Job Order') ? 0 : 1;
+				|| frm.doc.transfer_material_against == 'Manufacturing Job Card') ? 0 : 1;
 
 			if (show_start_btn){
 				if ((flt(doc.material_transferred_for_manufacturing) < flt(doc.qty))

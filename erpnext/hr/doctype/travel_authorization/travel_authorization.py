@@ -18,9 +18,6 @@ class TravelAuthorization(Document):
 		self.branch = frappe.db.get_value("Employee", self.employee, "branch")
                 self.cost_center = frappe.db.get_value("Employee", self.employee, "cost_center")
 		
-		#if frappe.db.get_value("Employee", self.employee, "user_id") == self.supervisor:
-                #        frappe.throw(_("Invalid supervisor"), title="Invalid Data")
-
 		validate_workflow_states(self)
 		self.validate_travel_dates()
                 self.check_double_dates()

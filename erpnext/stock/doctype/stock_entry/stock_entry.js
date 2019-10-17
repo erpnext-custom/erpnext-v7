@@ -133,14 +133,14 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
                 }
                 erpnext.hide_company();
 
-	if(!frm.__islocal){
+	/*if(!frm.__islocal){
 	cur_frm.add_custom_button("Create Material Request", function() {
                                 frappe.model.open_mapped_doc({
                                         method: "erpnext.stock.doctype.stock_entry.stock_entry.make_material_requisition",
                                         frm: cur_frm
                                 })
                         });
-	}
+	} */
 
 	/*cur_frm.add_custom_button(__('Make Material Request'), function() {
                                 frappe.model.with_doctype('Material Request', function() {
