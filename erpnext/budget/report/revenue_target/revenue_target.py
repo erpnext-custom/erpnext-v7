@@ -148,7 +148,8 @@ def get_records(filters):
                                 rtc.account_code,
                                 sum(ifnull(rtc.target_amount,0)) as target_amount,
                                 sum(ifnull(rtc.adjustment_amount,0)) as adjustment_amount,
-                                sum(ifnull(rtc.net_target_amount,0)) as net_target_amount
+                               (sum(ifnull(rtc.target_amount,0)) + sum(ifnull(rtc.adjustment_amount,0))) as net_target_amount
+ 
                         from `tabRevenue Target Account` as rtc, `tabRevenue Target` as rt
                         where rt.fiscal_year = '{0}'
 			{1}

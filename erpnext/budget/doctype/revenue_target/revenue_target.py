@@ -33,7 +33,8 @@ class RevenueTarget(Document):
 
                         if not item.account_code:
                                 item.account_code = frappe.db.get_value("Account", item.account, "account_code")
-
+			
+			item.net_target_amount = item.target_amount + item.adjustment_amount
                         tot_target_amount     += flt(item.target_amount)
                         tot_adjustment_amount += flt(item.adjustment_amount)
 

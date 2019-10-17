@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-05-17 16:30:09.817704", 
- "modified_by": "Administrator", 
+ "modified": "2019-10-14 09:19:24.285690", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Projects", 
  "name": "Project Manpower", 
  "owner": "Administrator", 
@@ -30,6 +30,12 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "HR Manager"
+  }, 
+  {
+   "role": "HR Support"
   }
  ]
 }

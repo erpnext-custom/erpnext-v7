@@ -10,8 +10,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                                 setting under salary component.
                                                                         2) Clubbing components and posting accumulated entry.
                                                                         3) Party wise entries if required.
-2.0               SHIV,DORJI                       19/12/2018         Clubbing of journal entry for salary
-2.0               SHIV, JIGME                      19/07/2019         Budget Check before salary posting introduced.
+2.0               SHIV,DORJI                       19/12/2018         Clubbing of journal entry for salary                                                                               
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -21,7 +20,7 @@ from frappe import msgprint
 from frappe.model.document import Document
 from frappe.utils import cint, flt, nowdate, money_in_words
 from erpnext.hr.hr_custom_functions import get_month_details
-from erpnext.custom_utils import check_budget_available, get_branch_cc
+from erpnext.custom_utils import check_budget_available
 
 class ProcessPayroll(Document):
 
@@ -391,6 +390,8 @@ class ProcessPayroll(Document):
 
                 # Final Posting to accounts
                 if posting:
+			#check budget
+			self.check_budget(posting)
                         for i in posting:
                                 if i == "to_payables":
                                         v_title         = "To Payables"
@@ -418,6 +419,29 @@ class ProcessPayroll(Document):
                         frappe.msgprint(_("Salary posting to accounts is successful."),title="Posting Successful")
                 else:
                         frappe.throw(_("No data found"),title="Posting failed")
+
+
+
+	# Ver 20190719.1 added by SHIV, JIGME on 2019/07/19
+        def check_budget(self, posting):
+                budget_error = []
+                def check_budget_voucher_wise(vouchertype):
+                        for rec in sorted(posting[vouchertype], key=lambda item: item['cost_center']):
+                                if flt(rec.get("debit_in_account_currency")) > 0:
+                                        #frappe.msgprint(_("{0} {1}").format(vouchertype, rec))
+                                        if frappe.db.exists("Account", {"name": rec.get("account"), "root_type": "Expense"}):
+                                                error = check_budget_available(rec.get("cost_center"), rec.get("account"), nowdate(), flt(rec.get("debit_in_account_currency")), False)
+                                                if error:
+                                                        budget_error.append(error)
+
+                for p in posting:
+                        check_budget_voucher_wise(p)
+
+                if budget_error:
+                        for e in budget_error:
+                                frappe.msgprint(str(e))
+                        frappe.throw("", title="Insufficient Budget")
+
         '''
 
         ##### Ver2.0.190304 Begins, following code added by SHIV
@@ -551,9 +575,6 @@ class ProcessPayroll(Document):
                 posting        = frappe._dict()
                 cc_wise_totals = frappe._dict()
                 tot_payable_amt= 0
-                #
-                # Prepare JE
-                #
                 for rec in cc:
                         # To Payables
                         tot_payable_amt += (-1*flt(rec.amount) if rec.component_type == 'Deduction' else flt(rec.amount))
@@ -568,13 +589,6 @@ class ProcessPayroll(Document):
                                 "party"          : rec.party if rec.party_type == "Employee" else "" 
                         }) 
                                 
-			# Intra Comany Entries
-			if rec.component_type == 'Earning':
-				if cc_wise_totals.has_key(rec.cost_center):
-                                	cc_wise_totals[rec.cost_center] += flt(rec.amount)
-                        	else:
-                                	cc_wise_totals[rec.cost_center]  = flt(rec.amount)
-
                         # Remittance
                         if rec.is_remittable and rec.component_type == 'Deduction':
                                 remit_amount    = 0
@@ -631,36 +645,9 @@ class ProcessPayroll(Document):
                                 "cost_center"   : company_cc,
                                 "party_check"   : 0
                         })
-			# Intra Company Entries
-			if cc_wise_totals:
-				ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
-				total_ic_amount = 0
-				if not ic_account:
-					frappe.throw(_("Please setup <b>Intra Company Account</b> under <b>Accounts Settings</b>"))
 
-				for key,value in cc_wise_totals.iteritems():
-					total_ic_amount += flt(value)
-					posting.setdefault("to_payables",[]).append({
-                                		"account"       : ic_account,
-                                		"credit_in_account_currency" : flt(value),
-                              			"cost_center"   : key,
-                                		"party_check"   : 0
-                        		})
-				if flt(total_ic_amount):
-					posting.setdefault("to_payables",[]).append({
-                                		"account"       : ic_account,
-                                		"debit_in_account_currency" : flt(total_ic_amount),
-                                		"cost_center"   : company_cc,
-                                		"party_check"   : 0
-                        		})
-
-                #
                 # Final Posting to accounts
-                #
                 if posting:
-                        # Budget check
-                        self.check_budget(posting)
-			#self.inter_company_jv(posting)
                         for i in posting:
                                 if i == "to_payables":
                                         v_title         = "To Payables"
@@ -688,60 +675,7 @@ class ProcessPayroll(Document):
                         frappe.msgprint(_("Salary posting to accounts is successful."),title="Posting Successful")
                 else:
                         frappe.throw(_("No data found"),title="Posting failed")
-
-	'''
-	def inter_company_jv(self, posting):
-		ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
-		cc = get_branch_cc(self.branch) 
-		
-		je = frappe.new_doc("Journal Entry")
-		je.flags.ignore_permissions = 1 
-		je.title = "To Payables"
-		je.voucher_type = 'Journal Entry'
-		je.naming_series = 'Journal Voucher'
-		je.remark = "Salary ["+str(self.fiscal_year)+str(self.month)+"] - "+str(v_title),
-		je.posting_date = nowdate(),
-		je.branch = self.branch
-	
-		for rec in sorted(posting[vouchertype], key=lambda item: item['cost_center']):
-			je.append("accounts", {
-				"account":ic_account,
-				"reference_name": self.name,
-				"cost_center": rec.cost_center,
-				"debit_in_account_currency": flt(rec.amount),
-				"debit": flt(rec.get("debit_in_account_currency")),
-					})
-			je.append("accounts", {
-				"account": ic_account,
-				"reference_name": self.name,
-				"cost_center": cc,
-				"credit_in_account_currency": flt(sum(flt(rec.get("debit_in_account_currency")))),
-				"credit": flt(sum(flt(rec.get("debit_in_account_currency"))),
-					})
-			
-			je.save()	
-	'''
-
-        # Ver 20190719.1 added by SHIV, JIGME on 2019/07/19
-        def check_budget(self, posting):
-                budget_error = []    
-                def check_budget_voucher_wise(vouchertype):
-                        for rec in sorted(posting[vouchertype], key=lambda item: item['cost_center']):
-                                if flt(rec.get("debit_in_account_currency")) > 0:
-                                        #frappe.msgprint(_("{0} {1}").format(vouchertype, rec))
-                                        if frappe.db.exists("Account", {"name": rec.get("account"), "root_type": "Expense"}):
-                                                error = check_budget_available(rec.get("cost_center"), rec.get("account"), nowdate(), flt(rec.get("debit_in_account_currency")), False)
-                                                if error:
-                                                        budget_error.append(error)
-
-                for p in posting:
-                        check_budget_voucher_wise(p)
-
-                if budget_error:
-                        for e in budget_error:
-                                frappe.msgprint(str(e))
-                        frappe.throw("", title="Insufficient Budget")
-        
+                        
         # Ver 20160706.1 added by SSK
         def post_journal_entry(self, title, user_remark, accounts, bank_entry_req, tot_earnings, tot_deductions):
                 from frappe.utils import money_in_words

@@ -8,6 +8,61 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff,
 from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 
+def post_intra_je():
+        from calendar import monthrange
+        company = "Construction Development Corporation Ltd"
+        posting_branch = "Finance and Investment"
+
+        company_cc = frappe.db.get_value("Company", company,"company_cost_center")
+        ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+        query = """
+                select ss.company,ss.cost_center, sum(sd.amount) as total_earning
+                from `tabSalary Detail` sd, `tabSalary Slip` ss
+                where ss.yearmonth = '{0}'
+                and ss.docstatus = 1
+                and sd.parent = ss.name
+                and sd.parentfield = 'earnings'
+                group by ss.company,ss.cost_center
+        """
+        for i in ['201901','201902','201903','201904','201905','201906','201907', '201908']:
+                print 'Month: ',i
+                accounts = []
+                total = 0
+
+                for j in frappe.db.sql(query.format(i),as_dict=True):
+                        if flt(j.total_earning):
+                                accounts.append({
+                                        "account"       : ic_account,
+                                        "credit_in_account_currency" : flt(j.total_earning),
+                                        "cost_center"   : j.cost_center,
+                                        "party_check"   : 0
+                                })
+                        total += flt(j.total_earning)
+		# grant total
+                if flt(total):
+                        accounts.append({
+                                "account"       : ic_account,
+                                "debit_in_account_currency" : flt(total),
+                                "cost_center"   : company_cc,
+                                "party_check"   : 0
+                        })
+                        # Create Journal Entry
+                        doc = frappe.get_doc({
+                                                "doctype": "Journal Entry",
+                                                "voucher_type": "Journal Entry",
+                                                "naming_series": "Journal Voucher",
+                                                "title": "Salary ["+i+"] - "+"To Payables",
+                                                "fiscal_year": i[:4],
+                                                "user_remark": "Salary ["+i+"] - "+"To Payables",
+                                                "posting_date": i[:4]+"-"+i[4:6]+"-"+str(monthrange(int(i[:4]),int(i[4:6]))[1]),
+                                                "company": j.company,
+                                                "accounts": sorted(accounts, key=lambda item: item['cost_center']),
+                                                "branch": posting_branch
+                        })
+                        doc.flags.ignore_permissions = 1
+                        doc.submit()
+
+
 # Advance GL not posted
 def post_ta_advance():
 	#doc = frappe.get_doc("Travel Authorization", "TA190700130-1")
@@ -216,14 +271,17 @@ def add_ssl_item():
                 row.save()
                 print counter, i.name, i.fiscal_year, i.month
 
-def cancel_ssl(pfiscal_year, pmonth):
+def cancel_ssl(pfiscal_year, pmonth, debug=1):
         counter = 0
         for s in frappe.db.sql("select name from `tabSalary Slip` where fiscal_year='{0}' and month = '{1}' and docstatus=1".format(pfiscal_year, pmonth), as_dict=True):
                 counter += 1
                 print counter, s.name
                 doc = frappe.get_doc("Salary Slip", s.name)
-                doc.cancel()
+		if not debug:
+                	doc.cancel()
+			print "Cancelled"
         print "Total",counter
+	print "DEBUG",debug
 
 
 def analyze():

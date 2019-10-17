@@ -21,6 +21,7 @@ def get_accounts(filters):
 		dep_opening = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center, opening=True)[0]
 		acc_dep = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center)[0]
 		dep = get_values(a.dep, filters.to_date, filters.from_date, filters.cost_center)[0]
+		adj = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center, adjustment=True)[0]		
 
 		g_open = flt(gross_opening.debit) - flt(gross_opening.credit)
 		g_addition = flt(gross.debit)
@@ -28,9 +29,10 @@ def get_accounts(filters):
 		g_total = g_open + g_addition - g_adjustment 
 		d_open = -1 * (flt(dep_opening.debit) - flt(dep_opening.credit))
 		dep_adjust = flt(acc_dep.debit)
-		dep_addition = flt(acc_dep.credit)
-		#dep_addition = flt(dep.debit)
-		d_total = d_open + dep_addition - flt(dep_adjust)
+		adj_adjust = flt(adj.credit)
+		dep_addition = flt(acc_dep.credit) - flt(adj.credit)
+		dep_add = flt(acc_dep.credit)
+		d_total = d_open + dep_add  - flt(dep_adjust)
 
 		row = [ 
 			a.name,
@@ -41,6 +43,7 @@ def get_accounts(filters):
 			d_open,
 			dep_addition,
 			dep_adjust,
+			adj_adjust,
 			d_total,
 			flt(g_total) - flt(d_total) 
 		]	
@@ -73,20 +76,24 @@ def get_accounts(filters):
 		0,
 		0,
 		0,
+		0,
 		c_total 
 	]	
 	data.append(row)
 	return data
 
-def get_values(account, to_date, from_date, cost_center=None, opening=False, cwip=False):
+def get_values(account, to_date, from_date, cost_center=None, opening=False, cwip=False, adjustment=False):
+#	query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \'" + str(account) + "\' and docstatus = 1"
 	if cwip:
 		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account in " + str(account) + " and docstatus = 1 "
+	elif adjustment:
+		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \'" + str(account) + "\' and docstatus = 1 and is_depreciation_adjustment = 'Yes'"
 	else:
-		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \'" + str(account) + "\' and docstatus = 1 "
+		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \'" + str(account) + "\' and docstatus = 1"
 	if not opening:
 		query += " and posting_date between \'" + str(from_date) + "\' and \'" + str(to_date) + "\'"
 	else:
-		query += "and posting_date < \'" + str(from_date) + "\'"
+		query += " and posting_date < \'" + str(from_date) + "\'"
 	if cost_center:
 		query += " and cost_center = \'" + str(cost_center) + "\'"
 
@@ -146,6 +153,12 @@ def get_columns():
 			"fieldtype": "Currency",
 			"width": 150
 		},
+		{
+                        "fieldname": "adjustment",
+                        "label": _("Adjustment"),
+                        "fieldtype": "Currency",
+                        "width": 150
+                },
 		{
 			"fieldname": "dep_total",
 			"label": _("Dep. Total"),

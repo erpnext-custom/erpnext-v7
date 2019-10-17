@@ -145,8 +145,9 @@ class MechanicalPayment(AccountsController):
 			frappe.throw("Setup Default Receivable Account in Maintenance Setting")
 
 		gl_entries = []
-		gl_entries.append(
-			self.get_gl_dict({"account": self.income_account,
+		if flt(self.net_amount) > 0:
+			gl_entries.append(
+				self.get_gl_dict({"account": self.income_account,
 					 "debit": flt(self.net_amount),
 					 "debit_in_account_currency": flt(self.net_amount),
 					 "cost_center": self.cost_center,

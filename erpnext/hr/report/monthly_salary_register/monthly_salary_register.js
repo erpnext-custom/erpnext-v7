@@ -36,7 +36,7 @@ frappe.query_reports["Monthly Salary Register"] = {
 			"label": __("Status"),
 			"fieldtype": "Select",
 			"options": "All\nSubmitted\nUn-Submitted\nCancelled",
-			"default": "All"
+			"default": "Submitted"
 		}
 	]
 }

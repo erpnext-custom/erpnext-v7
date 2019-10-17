@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-04-18 12:01:00.663399", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2019-07-29 14:01:01.773830", 
+ "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Performance Report", 
  "owner": "Administrator", 
@@ -33,9 +33,6 @@
   }, 
   {
    "role": "Auditor"
-  }, 
-  {
-   "role": "CPBD"
   }
  ]
 }

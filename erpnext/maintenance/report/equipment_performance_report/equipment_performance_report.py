@@ -1,4 +1,4 @@
-	# Copyrght (c) 2013, Frappe Technologies Pvt. Ltd. and contributors
+# Copyrght (c) 2013, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
@@ -9,402 +9,294 @@ from frappe import _, json
 from frappe.utils import flt, cint
 from frappe.utils.data import get_last_day
 from frappe.utils.data import flt, cint,add_days, cstr, flt, getdate, nowdate, rounded, date_diff
-
 def execute(filters=None):
 	columns = get_columns(filters)
 	data = get_data(filters)
 	return columns, data
 
-def get_conditions(filters):
-	branch = consumption_date = rate_date = jc_date = insurance_date = rev_date = bench_date = tc_date = operator_date = le_date = ss_date= not_cdcl = disable = mr_date= ""
-	if filters.get("branch"):
-		branch += str(filters.branch)
-	if filters.get("not_cdcl"):
-                not_cdcl  += "0"
-
-	if filters.get("include_disabled"):
-                disable  += "is_disabled"
-        '''else:
-                disable  += "0"'''
-
-	consumption_date = get_dates(filters, "vl", "from_date", "to_date")
-	rate_date 	 = get_dates(filters, "pol", "date")
-	jc_date 	 = get_dates(filters, "jc", "posting_date", "finish_date")
-	insurance_date   = get_dates(filters, "ins", "insured_date")
-	operator_date    = get_dates(filters, "op", "start_date", "end_date")
-	tc_date		 = get_dates(filters, "tc", "posting_date")
-	le_date		 = get_dates(filters, "le", "encashed_date")
-	ss_date		 = get_dates(filters, "ss", "start_date", "ifnull(end_date,curdate())")
-	rev_date	 = get_dates(filters, "revn", "ci.posting_date")
-	bench_date       = get_dates(filters, "benchmark", "hi.from_date", "hi.to_date")
-	mr_date		 = get_dates(filters, "mr_pay", "from_date", "to_date")
-	return branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable, mr_date
-
-def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
-	cond1 = ""
-	cond2 = ""
-	from_date,to_date,no_of_months, from_date1, to_date1, ra = get_date_conditions(filters)
-	
-	if from_date_column:
-		cond1 = ("{0} between '%(from_date)s'  and '%(to_date)s'").format(from_date_column)
-
-	if to_date_column:
-		if module in ("op","ss", "benchmark"):
-			cond2 = str(" or {0} between '%(from_date)s' and '%(to_date)s'").format(to_date_column)
-		else:
-			cond2 = str("and {0} between '%(from_date)s' and '%(to_date)s'").format(to_date_column)
-
-	cond1 = cond1 % {"from_date": from_date, "to_date": to_date}
-	cond2 = cond2 % {"from_date": from_date, "to_date": to_date}
-
-	return "({0} {1})".format(cond1, cond2)
-
-def get_date_conditions(filters):
-	from_date = to_date = no_of_months = from_date1 = to_date1 = no_of_months1 = 0
-	ra = []
-	months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-	no_of_months = 0
-
-	def calc_dates(from_month, to_month):
-		from_date = getdate(filters.get("fy") + "-" + str(from_month) + "-" + "01")
-		to_date   = get_last_day(getdate(filters.get("fy") + "-" + str(to_month) + "-" + "01"))
-		ra        = range(from_month, to_month+1)
-		return from_date, to_date, (to_month-from_month)+1, ra
-		
-	
-	def calc_dates_two(from_month, to_month):
-                from_date1 = getdate(filters.get("fy") + "-" + str(from_month) + "-" + "01")
-                to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(to_month) + "-" + "01"))
-                return from_date1, to_date1
-
-
-
-	if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
-		if filters.get("period") == "1st Quarter":
-			from_date, to_date, no_of_months, ra  = calc_dates(1,3)
-		elif filters.get("period") == "2nd Quarter":
-			from_date,to_date,no_of_months, ra  = calc_dates(4,6)
-		elif filters.get("period") == "3rd Quarter":
-			from_date,to_date,no_of_months, ra  = calc_dates(7,9)
-		elif filters.get("period") == "4th Quarter":
-			from_date,to_date,no_of_months, ra  = calc_dates(10,12)
-		elif filters.get("period") == "1st Half Year":
-			from_date,to_date,no_of_months, ra  = calc_dates(1,6)
-		elif filters.get("period") == "2nd Half Year":
-			from_date,to_date,no_of_months, ra  = calc_dates(7,12)
-		for i in ra:
-                                from_date1, to_date1 = calc_dates_two(i,i)
-	elif filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
-		month_id     = months.index(filters.get("period"))+1
-		from_date    = getdate(filters.get("fy") + "-" + str(month_id) + "-" + "01")
-		to_date      = get_last_day(from_date)
-		no_of_months = 1 
-	elif filters.fy and (not filters.get("period")):
-		from_date    = getdate(filters.get("fy")+ "-" + "01" + "-" + "01")
-		to_date      = get_last_day(getdate(filters.get("fy") + "-" + "12" + "-" + "31"))
-		no_of_months = 12
-		ra = [1,2,3,4,5,6,7,8,9,10,11,12]
-		#for i in ra:
-		#	from_date1, to_date1, no_of_months1 = calc_dates(i,i)		
-	return from_date, to_date, no_of_months, from_date1, to_date1, ra 
-
-'''def calc_dates_tw(filters):
-	def calc_dates_two(from_date, to_date):
-		from_date1 = getdate(filters.get("fy") + "-" + str(from_month) + "-" + "01")
-		to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(to_month) + "-" + "01"))
-		return from_date1, to_date1'''
 
 
 def get_data(filters):
-	branch, consumption_date, rate_date, jc_date, insurance_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcl, disable, mr_date  =  get_conditions(filters)
-	data = []
-	branch_cond = " branch = '{0}'".format(branch) if branch else "branch = branch"
-	not_cdcll = " where not_cdcl = '{0}'".format(not_cdcl) if not_cdcl else "where not_cdcl = not_cdcl"
-	dis	= " is_disabled = {0}".format(disable) if disable else "is_disabled = 0"
-	#if disable else "is_disabled = is_disabled"
-	#branch_cond = " where branch = '{0}'".format(branch) if branch else ""
-	from_date = to_date = no_of_month = get_date_conditions(filters)
-	#frappe.msgprint("dis {0}".format(dis))
-	#frappe.msgprint("not cd {0}".format(not_cdcll))
-	equipments = frappe.db.sql("""
-                                select name, branch, equipment_number, equipment_type, equipment_model
-                                from `tabEquipment`
-				{0} and 
-				{1} and 
-				{2}
-				order by branch, name
-                        """.format(not_cdcll, branch_cond, dis), as_dict=1)
- 
-   	for eq in equipments:
+        data = []
+        cond = " and 1 =1"
+        if filters.get("branch"):
+                cond += " and eh.branch = '{0}'".format(filters.branch)
 
-                # `tabVehicle Logbook`
-        	vl = frappe.db.sql("""
-                        	select sum(ifnull(consumption,0)) as consumption
-                        	from `tabVehicle Logbook`
-                        	where equipment = '{0}'
-                        	and   docstatus = 1
-				and   {1}
-                    """.format(eq.name,consumption_date), as_dict=1)[0]
+        if filters.get("not_cdcl"):
+                cond += " and e.not_cdcl  = 0"
 
-                # `tabPOL`
-            	pol = frappe.db.sql("""
-                            	select (sum(qty*rate)/sum(qty)) as rate
-                            	from `tabPOL`
-                        	where branch = '{0}'
-                        	and   docstatus = 1
-                    """.format(eq.branch), as_dict=1)[0]
+        if filters.get("include_disabled"):
+               cond += " and e.is_disabled = 1"
 
-                # `tabJob Card`
-            	jc = frappe.db.sql("""
-                            	select sum(ifnull(goods_amount,0)) as goods_amount,
-                            		sum(ifnull(services_amount,0)) as services_amount
-                            	from `tabJob Card`
-                            	where equipment = '{0}'
-                            	and   docstatus = 1
-				and   {1}
-                    """.format(eq.name,jc_date), as_dict=1)[0]
+        equipments = """
+                select * from (select e.name, eh.branch, eh.from_date, ifnull(eh.to_date, curdate()) as to_date, e.equipment_number, 
+                e.equipment_type, e.equipment_model from `tabEquipment` e, `tabEquipment History` eh  where eh.parent = e.name {0} group by e.name, eh.branch) 
+                as equip left join
+                (select eo.operator, eo.start_date, eo.employee_type, ifnull(eo.end_date, curdate()) as end_date, eo.parent 
+                from `tabEquipment Operator` eo) 
+                as opr 
+                on opr.parent = equip.name 
+                """.format(cond)
+        filter_date  = " between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+	for eq in frappe.db.sql(equipments, as_dict = True):
+                date = " between '{0}' and '{1}'".format(eq.from_date, eq.to_date)
+                gross_pay = tc = le = ot = 0.0
+                if eq.operator:
+                        date = " between '{0}' and '{1}'".format(eq.start_date, eq.end_date)
+                if eq.employee_type == "Muster Roll Employee":
+                        #PRoCESS FROM "PROCESS MR PAYMENT"
+                        mr_pay = frappe.db.sql("""
+                                        select sum(ifnull(mi.total_wage,0)) as mr_wage, sum(ifnull(mi.total_ot_amount,0)) as mr_ot 
+                                        from `tabProcess MR Payment` mr , `tabMR Payment Item` mi
+                                        where mi.parent = mr.name
+                                        and mi.id_card = '{0}' 
+                                        and mr.docstatus = 1 and mr.branch = '{2}'
+                                        and mr.posting_date {1} and mr.posting_date {3}
+                                """.format(eq.operator, date, eq.branch, filter_date), as_dict=1)[0]
+                        gross_pay    = flt(mr_pay.mr_wage)
+                        ot = flt(mr_pay.mr_ot)
+                elif eq.employee_type == "Employee":
+                        #get tc
+                        tc = frappe.db.sql("""
+                                        select sum(ifnull(tc.total_claim_amount,0)) as travel_claim
+                                        from `tabTravel Claim` tc 
+                                        where tc.employee = '{0}'
+                                        and   tc.docstatus = 1
+                                        and tc.branch = '{2}' and tc.posting_date {1} and tc.posting_date {3}
+                                """.format(eq.operator, date, eq.branch, filter_date), as_dict=1)[0]
 
-		'''#revenue
-		revn = frappe.db.sql("""
-				  select id.total_amount as rev
-				  from `tabHire Invoice Details` id, `tabHire Charge Invoice` ci
-				  where ci.name = id.parent
-				  and id.equipment = '{0}' and {1}
-				  group by id.equipment """.format(eq.name, rev_date), as_dict=1)
-		#frappe.msgprint("{0}".format(revn))'''	
-	
-		#Insurance
-		ins = frappe.db.sql("""
-			 	select sum(ifnull(id.insured_amount,0)) as insurance
-				from `tabInsurance Details` id,	`tabInsurance and Registration` ir
-				where id.parent = ir.name and ir.equipment = '{0}'
-				and   ir.docstatus = 1
-				and   {1}
-			 """.format(eq.name, insurance_date), as_dict=1)[0]
-		#Revenue from Hire of Equipments
-		revn = frappe.db.sql("""
-			 	 select sum(ifnull(id.total_amount, 0)) as rev from `tabHire Invoice Details` id, `tabHire Charge Invoice` ci
-			 	 where ci.name = id.parent
-			 	 and id.equipment = '{0}'
-			 	 and {1}
-			 """.format(eq.name, rev_date), as_dict=1)[0]
-		#frappe.msgprint("{0} , {1}".format(eq.name, revn))		
-		#Looping via operator of the equipment to calculate the expensis related to operator
-		c_operator = frappe.db.sql("""
-				select operator,employee_type, start_date, end_date , name
-				from `tabEquipment Operator` eo
-				where eo.parent = '{0}'
-				and   eo.docstatus < 2
-			""".format(eq.name), as_dict=1)
-			#	and   {1}
-			#""".format(eq.name, operator_date), as_dict=1)
+                        tc = flt(tc.travel_claim)
+			#Leave Encashment Aomunt
+                        lea = frappe.db.sql("""
+                                        select sum(ifnull(le.encashment_amount,0)) as e_amount 
+                                        from `tabLeave Encashment` le
+                                        where le.employee = '{0}'
+                                        and   le.docstatus = 1 and le.branch = '{3}'
+                                        and   le.application_date {1} and le.application_date {2}
+                                        """.format(eq.operator, date, filter_date, eq.branch), as_dict=1)[0]
+                        le = flt(lea.e_amount)
+                        ota = frappe.db.sql("""
+                                        select sum(ifnull((ot.rate*oti.number_of_hours), 0)) as amount from `tabOvertime Application` ot, 
+                                        `tabOvertime Application Item` oti 
+                                        where oti.parent = ot.name and ot.docstatus = 1 and 
+                                        oti.date {0} and ot.employee = '{1}'  and oti.date {2} and ot.branch = '{3}'
+                                        """.format(date, eq.operator, filter_date, eq.branch), as_dict =1)[0]
+                        ot = flt(ota.amount)
+                        #process salary
+                        ss_date = " between ssi.from_date and ssi.to_date"
+			sal = frappe.db.sql("""
+                                select ss.name, ss.employee, ss.branch,  ss.gross_pay, ssi.from_date, ssi.to_date
+                                from `tabSalary Slip` ss, `tabSalary Slip Item` ssi 
+                                where ss.employee = '{0}' and ssi.parent = ss.name
+                                and ss.docstatus = 1
+                                and ss.branch = '{1}' and (((ssi.from_date {2}) or (ssi.to_date {2})) or (( '{3}' {5}) or ('{4}' {5}))) and '{3}' 
+                                <= '{6}' 
+                        """.format(eq.operator, eq.branch, date, eq.start_date, eq.end_date, ss_date, filters.to_date), as_dict = True)
 
-		travel_claim = 0.0
-		e_amount     = 0.0
-		gross_pay    = 0.0
-		total_exp    = 0.0
-		total_sal    = 0.0
-		total_rev    = 0.0
+                        if sal:
+                                gross_pay= 0.0
+                                for s in sal:
+                                        total_days = flt(date_diff(s.to_date, s.from_date) + 1)
+                                        s_start_date = getdate(s.from_date)
+                                        s_end_date = getdate(s.to_date)
+                                        f_from_date =  getdate(filters.from_date)
+                                        f_to_date =    getdate(filters.to_date)
+                                        if f_from_date <= s_start_date and s_end_date <=  f_to_date:
+                                                if f_from_date < getdate(eq.start_date) < f_to_date:
+                                                        work_date = flt(date_diff(s_end_date, eq.start_date) +1)
+                                                        gross_pay += flt(s.gross_pay)*flt(work_date)/flt(total_days)
+                                                        #frappe.msgprint("a000")
+                                                elif f_from_date < getdate(eq.end_date) < f_to_date:
+                                                        #frappe.msgprint("a00")
+                                                        work_date = flt(date_diff(eq.end_date, f_from_date) +1)
+                                                        gross_pay += flt(s.gross_pay)*flt(work_date)/flt(total_days)
+                                                else:
+                                                        gross_pay += flt(s.gross_pay)
+                                                        #frappe.msgprint("a0")
+                                        if getdate(eq.end_date) < f_from_date:
+                                                        gross_pay == 0.0
+                                                        #frappe.msgprint("a")
+					if s_start_date < f_from_date < s_end_date and  s_start_date < f_to_date < s_end_date:
+                                                work_date = flt(date_diff(s_start_date, f_from_date) +1)
+                                                gross_pay += flt(s.gross_pay)*flt(work_date)/flt(total_days)
+                                                #frappe.msgprint("b a {0}, w{1}, t{2}".format(gross_pay, work_date, total_days))
 
-		for co in c_operator:
-			if co.employee_type =="Muster Roll Employee":
-				mr_pay = frappe.db.sql("""
-					           select sum(ifnull(mr.total_overall_amount,0)) as mr_payment
-						   from `tabProcess MR Payment` mr, `tabMR Payment Item` mi
-					           where mi.parent = mr.name
-						   and mi.id_card ='{0}'
-						   and mr.docstatus = 1
-					           and {1} 
-					""".format(co.operator, mr_date), as_dict =1) [0]
-				travel_claim += 0.0
-				e_amount += 0.0
-				gross_pay += flt(mr_pay.mr_payment)
+                                        if s_start_date < f_from_date and f_from_date <= s_end_date <=  f_to_date and getdate(eq.end_date) > f_from_date:
+                                                work_date = flt(date_diff(s_end_date, f_from_date) +1)
+                                                gross_pay += flt(s.gross_pay)*flt(work_date)/flt(total_days)
+                                                #frappe.msgprint("c a {0}, w{1}, t{2}".format(gross_pay, work_date, total_days))
 
-			elif co.employee_type == "Employee":	
-				tc = frappe.db.sql("""
-						select sum(ifnull(tc.total_claim_amount,0)) as travel_claim
-						from `tabTravel Claim` tc
-						where tc.employee = '{0}'
-						and   tc.docstatus = 1
-						and   {1}
-					""".format(co.operator, tc_date), as_dict=1)[0]
-			
-				#Leave Encashment Aomun
-				lea = frappe.db.sql("""
-						select sum(ifnull(le.encashment_amount,0)) as e_amount
-						from `tabLeave Encashment` le
-						where le.employee = '{0}'
-						and   le.docstatus = 1
-						and   {1}
-					""".format(co.operator, le_date), as_dict=1)[0]
-
-				cem = frappe.db.sql("""
-						select employee, gross_pay, start_date, end_date
-						from `tabSalary Slip` ss
-						where employee = '{0}'
-						and ss.docstatus = 1
-						and {1} group by employee
-				      """.format(co.operator, ss_date),  as_dict=1)
-				#frappe.msgprint(str(cem))
-				if cem:
-					for e in cem:
-						total_days = flt(date_diff(e.end_date, e.start_date) + 1)
-						if e.end_date < co.start_date:
-							pass
-						elif co.end_date and e.start_date > co.end_date:
-							pass
-						elif co.end_date and e.start_date > co.start_date and e.end_date < co.end_date:
-							total_sal += flt(e.gross_pay)
-						
-						elif co.end_date and e.start_date <= co.start_date and e.end_date >= co.end_date:
-							days = date_diff(co.end_date, co.start_date) + 1
-							total_sal += (flt(e.gross_pay) * days ) / total_days
-						elif co.end_date and e.start_date > co.start_date and e.end_date > co.end_date:
-							days = date_diff(co.end_date, e.start_date) + 1
-							total_sal += (flt(e.gross_pay) * days ) / total_days
-						elif co.end_date and e.start_date < co.start_date and e.end_date < co.end_date:
-							days = date_diff(e.end_date, co.start_date) + 1
-							total_sal += (flt(e.gross_pay) * days ) / total_days
-						elif not co.end_date and e.start_date >= co.start_date:
-							total_sal += flt(e.gross_pay)
-						elif not co.end_date and e.start_date < co.start_date:
-							days = date_diff(e.end_date, co.start_date) + 1
-							total_sal += (flt(e.gross_pay) * days ) / total_days
-						else:
-							pass
-
-				travel_claim += flt(tc.travel_claim)
-				e_amount     += flt(lea.e_amount)
-				gross_pay    += flt(total_sal)
-				#frappe.msgprint(str(pol.rate))
-		total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
-		total_rev    = flt(revn.rev)
-		pro_target = 0.0
-		
-		#benchmar
-		benchmark  = frappe.db.sql("""
-                               select hi.rate_fuel as rat, hi.perf_bench as bn, 
-                               hi.from_date as fr, hi.to_date as t
-                               from  `tabHire Charge Item` hi, `tabHire Charge Parameter` hp
-                               where hi.parent = hp.name 
-                               and hp.equipment_type = '{0}'
-			       and hp.equipment_model = '{1}'
-			""".format(eq.equipment_type, eq.equipment_model), as_dict=1)
-
-		rate = []
-		bench = []
-		total_hc = 0
-		for a in benchmark:
-			from_date,to_date,no_of_months, from_date1, to_date1, ra  = get_date_conditions(filters)
-			ta = ta1= ta2 =  ta3 = ta4 = 0.0
-			if not a.t:
-				a.t = getdate(filters.to_date)
-				#from_date,to_date,no_of_months, from_date1, to_date1, no_of_months1, ra = get_date_conditions(filters)
-			if a.fr >= from_date and a.t <= to_date:
-				rate.append(a.rat) 
-				bench.append(a.bn)
-				total_hc   += flt(a.rat)*flt(a.bn)*8*no_of_months
-		
-			if a.fr <= from_date and a.t >= to_date:
-                                rate.append(a.rat)
-                                bench.append(a.bn)
-                                total_hc += flt(a.rat)*flt(a.bn)*no_of_months*8
-
-			#if filters.get("period") not in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
-			if from_date  < a.fr < to_date  and (a.t > to_date) and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
-				rate.append(a.rat)
-				bench.append(a.bn)
-				cal_date = date_diff(to_date, a.fr) + 1
-				ta2 += flt(a.rat)*flt(a.bn)*8
-				bench_date = date_diff(to_date, from_date) + 1
-				total_hc += cal_date*ta2/bench_date
-
-			if to_date > a.t > from_date and  a.fr < from_date and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
-				rate.append(a.rat)
-				bench.append(a.bn)
-				ta3  += flt(a.rat)*flt(a.bn)*8
-				bench_date = date_diff(to_date, from_date) + 1
-				cal_date = date_diff(a.t, from_date)+1
-				total_hc += cal_date*ta3/bench_date 
-
-			if from_date  < a.fr <= to_date  and (a.t > to_date) and filters.get("period")  in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
-				for i in ra:
-					from_date1 = getdate(filters.get("fy") + "-" + str(i) + "-" + "01")
-                			to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(i) + "-" + "01"))
-					if from_date1 < a.fr <= to_date1 and (a.t > to_date1):
-						rate.append(a.rat)
-						bench.append(a.bn)
-						cal_date = date_diff(to_date1, a.fr) + 1
-						bench_date = date_diff(to_date1, from_date1) + 1
-						ta4   += flt(a.rat)*flt(a.bn)*8
-						total_hc += cal_date*ta4/bench_date
-					else:
-						rate.append(a.rat)
-                                                bench.append(a.bn)
-						total_hc   += flt(a.rat)*flt(a.bn)*8
-			if to_date > a.t >= from_date and  (a.fr < from_date) and filters.get("period")	in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
-				for i in  ra:
-					from_date1 = getdate(filters.get("fy") + "-" + str(i) + "-" + "01")
-                                        to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(i) + "-" + "01"))
-                                        if from_date1 < a.t <= to_date1 and (a.fr <  from_date1):
-						rate.append(a.rat)
-                                                bench.append(a.bn)
-                                                cal_date = date_diff(a.t, from_date1) + 1
-                                                bench_date = date_diff(to_date1, from_date1) + 1
-                                                ta4   = flt(a.rat)*flt(a.bn)*8
-                                                total_hc += cal_date*ta4/bench_date
-                                        elif (from_date1 < a.fr and a.t < to_date1) or (a.fr < from_date1 and a.t > to_date1):
-                                                rate.append(a.rat)
-                                                bench.append(a.bn)
-                                                total_hc   += flt(a.rat)*flt(a.bn)*8
-				
-		if not benchmark:
-			benchmark = {"rat": 0, "bn": 0, "fr": '', "t": ''}
-		#ben = [i*8 for i in bench]
-                # utility % based on existance of revenue and benchmark target'''
-
-		util_percent = 0
-
+                                        if f_from_date <=  s_start_date <= f_to_date and s_end_date > f_to_date:
+                                                work_date = flt(date_diff(f_to_date, s_start_date) +1)
+                                                gross_pay += flt(s.gross_pay)*flt(work_date)/flt(total_days)
+                                                #frappe.msgprint("b a {0}, w{1}, t{2}".format(gross_pay, work_date, total_days))
+		eq_ex = equipment_expense(filters, eq.name, eq.branch, date, filter_date)
+                total_exp = flt(eq_ex) + flt(gross_pay) +  flt(le) + flt(tc) + flt(ot)
+		revn = revenue(filters, eq.name, eq.branch, date, filter_date)
+		rate, bench, total_hc = benchmark(filters, eq.equipment_type, eq.equipment_model)
+		ex = flt(revn) - flt(total_exp)
+		util_percent = 0.0
                 if total_hc != 0.0:
-                        util_percent = 100*total_rev/total_hc
-			#frappe.msgprint("1 {0}".format(util_percent))
+                        util_percent = 100*flt(revn)/flt(total_hc)
+                        #frappe.msgprint("1 {0}".format(util_percent))
 
-                elif flt(total_hc) == 0  and flt(total_rev) > 0:
+                elif flt(total_hc) == 0  and flt(revn) > 0:
                         util_percent = 100
-			#frappe.msgprint("2 {0} ".format(util_percent))
+                        #frappe.msgprint("2 {0} ".format(util_percent))
 
-                elif flt(total_hc) == 0.0 and flt(total_rev) <= 0.0:
+                elif flt(total_hc) == 0.0 and flt(revn) <= 0.0:
                         util_percent = 0.0
-			#frappe.msgprint("3 {0}".format(util_percent))
+                        #frappe.msgprint("3 {0}".format(util_percent))
 
                 else:
                         util_percent = 0.0
-			#frappe.msgprint("4 {0}".format(util_percent))
+                        #frappe.msgprint("4 {0}".format(util_percent))
 
-		#frappe.msgprint(_("{0}, {1}, {2}").format(total_rev, total_hc, util_percent))
-	
-		data.append((	eq.branch,
-			eq.name,
-			eq.equipment_number,
-			eq.equipment_type,
-			eq.equipment_model,
-			total_exp,
-			total_rev,
-			flt(total_rev-total_exp),
-			list(set(rate)),
-			list(set(bench)),
-			flt(total_hc),
-			round(flt(util_percent),2)
-		))
-	return tuple(data)
+		row = [eq.name, eq.branch, eq.equipment_number, eq.equipment_type, eq.equipment_model, eq.operator, total_exp, revn, ex, rate,\
+		bench,total_hc, round(util_percent,2)]
+                data.append(row)
+        return data
+
+def equipment_expense(filters, eq_name, eq_branch, date, filter_date):
+        # `tabVehicle Logbook`
+        '''vl = frappe.db.sql("""
+                        select sum(ifnull(vl.consumption,0)) as consumption
+                        from `tabVehicle Logbook` vl, `tabVehicle Log` l
+                        where vl.equipment = '{0}'
+                        and   vl.docstatus = 1 and vl.branch = '{3}'
+                        and l.parent = vl.name
+                        and   l.work_date {1} and l.work_date {2}
+            """.format(eq_name, date, filter_date, eq_branch), as_dict=1)[0]'''
+
+        vl = frappe.db.sql("""
+                        select sum(ifnull(vl.consumption,0)) as consumption
+                        from `tabVehicle Logbook` vl
+                        where vl.equipment = '{0}'
+                        and   vl.docstatus = 1 and vl.branch = '{3}'
+                        and   (vl.from_date {1} or vl.to_date {1}) and (vl.from_date {2} or vl.to_date {2})
+            """.format(eq_name, date, filter_date, eq_branch), as_dict=1)[0]
+
+        # `tabPOL`
+        pol = frappe.db.sql("""
+                        select (sum(qty*rate)/sum(qty)) as rate
+                        from `tabPOL`
+                        where branch = '{0}'
+                        and   docstatus = 1 and posting_date {1} and posting_date {2}
+                    """.format(eq_branch, date, filter_date), as_dict=1)[0]
+	 # `tabJob Card`
+        jc = frappe.db.sql("""
+                        select sum(ifnull(jc.goods_amount,0)) as goods_amount,
+                                sum(ifnull(jc.services_amount,0)) as services_amount
+                        from `tabJob Card` jc
+                        where jc.equipment = '{0}'
+                        and   jc.docstatus = 1
+                        and   jc.finish_date {1} and jc.customer_branch = '{2}' and jc.finish_date {3}
+            """.format(eq_name, date, eq_branch, filter_date), as_dict=1)[0]
+        #Insurance
+        ins = frappe.db.sql("""
+                        select sum(ifnull(id.insured_amount,0)) as insurance  
+                        from `tabInsurance Details` id, `tabInsurance and Registration` ir 
+                        where id.parent = ir.name and ir.equipment = '{0}'
+                        and   id.insured_date {1} and id.insured_date {2}
+                 """.format(eq_name, date, filter_date), as_dict=1)[0]
+        #Reg fee
+        reg = frappe.db.sql("""
+                        select sum(ifnull(rd.registration_amount,0)) as r_amount
+                        from `tabRegistration Details` rd, `tabInsurance and Registration` i  
+                                where rd.parent = i.name  
+                                and i.equipment = '{0}'
+                                and   rd.registration_date {1} and rd.registration_date {2}
+                        """.format(eq_name, date, filter_date), as_dict=1)[0]
+
+	return round(flt(vl.consumption)*flt(pol.rate),2) + round(flt(ins.insurance)+flt(reg.r_amount),2) + round(flt(jc.goods_amount),2) +\
+	round(flt(jc.services_amount),2)
+
+
+def revenue(filters, eq_name, eq_branch, date, filter_date):
+	#Revenue from Hire of Equipments
+	revn = frappe.db.sql("""
+		select sum(ifnull(hid.total_amount, 0)) as rev from `tabHire Invoice Details` hid, `tabHire Charge Invoice` hci
+		where hci.name = hid.parent
+		and hid.equipment = '{0}'
+		and hci.posting_date {1}
+		and hci.branch = '{2}'
+		and hci.posting_date {3}
+		and hci.docstatus =1
+        """.format(eq_name, date, eq_branch, filter_date), as_dict=1)[0]	
+	return revn.rev
+
+def benchmark(filters, equipment_type, equipment_model):
+	#benchmar
+	benchmark  = frappe.db.sql("""
+		       select hi.rate_fuel as rat, hi.perf_bench as bn, 
+		       hi.from_date as fr, hi.to_date as t
+		       from  `tabHire Charge Item` hi, `tabHire Charge Parameter` hp
+		       where hi.parent = hp.name 
+		       and hp.equipment_type = '{0}'
+		       and hp.equipment_model = '{1}'
+		""".format(equipment_type, equipment_model), as_dict=1)
+	rate = []
+	bench = []
+	total_hc = 0.0
+	util_percent = 0.0
+	for b in benchmark:
+		total_hc = 0.0
+		from_date = getdate(filters.from_date)
+		to_date = getdate(filters.to_date)
+		no_of_months = 12
+		total_no_of_days = date_diff(to_date, from_date)+1 
+		total_days_in_month  = 30
+		rate = b.rat
+                bench = b.bn
+		hc_per_month = rate*bench*8
+		hc_per_day = flt(hc_per_month)/flt(total_days_in_month)
+		total_hc = flt(hc_per_day)*flt(total_no_of_days)
+		#from_date,to_date,no_of_months, from_date1, to_date1, ra  = get_date_conditions(filters)
+		#ta = ta1= ta2 =  ta3 = ta4 = 0.0
+		'''if not b.t:
+			b.t = getdate(filters.to_date)
+
+		if b.fr >= from_date and b.t <= to_date:
+			rate.append(b.rat) 
+			bench.append(b.bn)
+			total_hc   += flt(b.rat)*flt(b.bn)*8*no_of_months
+		
+		if b.fr < from_date and b.t > to_date:
+			rate.append(b.rat)
+			bench.append(b.bn)
+			total_hc += flt(b.rat)*flt(b.bn)*no_of_months*8
+				
+
+	if not benchmark:
+		benchmark = {"rat": 0, "bn": 0, "fr": '', "t": ''}
+		#ben = [i*8 for i in bench]
+		# utility % based on existance of revenue and benchmark target'
+		#frappe.msgprint("{0}".format(total_rev))
+		if total_hc != 0.0:
+			util_percent = 100*total_rev/total_hc
+			frappe.msgprint("1 {0}".format(util_percent))
+
+		elif flt(total_hc) == 0  and flt(total_rev) > 0:
+			util_percent = 100
+			frappe.msgprint("2 {0} ".format(util_percent))
+
+		elif flt(total_hc) == 0.0 and flt(total_rev) <= 0.0:
+			util_percent = 0.0
+			frappe.msgprint("3 {0}".format(util_percent))
+
+		else:
+			util_percent = 0.0
+			frappe.msgprint("4 {0}".format(util_percent))'''
+	return rate, bench, total_hc
 
 def get_columns(filters):
 	cols = [
+		("Equipment") + ":Link/Equipment:120",
 		("Branch") + ":Data:120",
-                ("ID") + ":Link/Equipment:120",
 		("Registration No") + ":Data:120",
 		("Equipment Type") + ":Data:120",
 		("Equipment Model") + ":Data:120",
+		("Operator") + ":Link/Employee:120",
 		("Total Expense") + ":Currency:120",
 		("Total Revenue") + ":Currency:120",
 		("R-E") + ":Currency:120",

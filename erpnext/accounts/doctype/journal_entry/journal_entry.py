@@ -486,7 +486,8 @@ class JournalEntry(AccountsController):
                                                         "remarks": self.remark,
                                                         "cost_center": d.cost_center,
                                                         "project": d.project,
-                                                        "party_check": 1 
+                                                        "party_check": 1,
+							"is_depreciation_adjustment" : self.is_depreciation_adjustment 
                                                 })
                                         )
                                 else:
@@ -506,7 +507,9 @@ class JournalEntry(AccountsController):
                                                         "remarks": self.remark,
                                                         "cost_center": d.cost_center,
                                                         "project": d.project,
-                                                        "party_check": d.party_check
+                                                        "party_check": d.party_check,
+							"is_depreciation_adjustment" : self.is_depreciation_adjustment
+
                                                 })
                                         )                                        
 

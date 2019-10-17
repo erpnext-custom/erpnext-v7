@@ -30,15 +30,14 @@ def get_notification_config():
 			"Delivery Note": {"docstatus": 0},
 			"Stock Entry": {"docstatus": 0},
 			"Material Request": {
-				"docstatus": ("<", 2),
+				"docstatus": 0,
 				"status": ("not in", ("Stopped",)),
 				"per_ordered": ("<", 100)
 			},
 			"Request for Quotation": { "docstatus": 0 },
 			"Supplier Quotation": {"docstatus": 0},
 			"Purchase Order": {
-				"status": ("not in", ("Completed", "Closed")),
-				"docstatus": ("<", 2)
+				"docstatus": 0,
 			},
 			"Purchase Receipt": {"docstatus": 0},
 			"Production Order": { "status": ("in", ("Draft", "Not Started", "In Process")) },

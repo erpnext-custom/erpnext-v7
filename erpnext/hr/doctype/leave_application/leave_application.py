@@ -37,7 +37,10 @@ class LeaveApplication(Document):
 		if self.workflow_state == "Rejected":
 			self.status = "Rejected"
 		elif self.workflow_state == "Approved":
-			self.status = "Approved"
+			if self.docstatus == 1:
+				self.status = "Approved"
+			else:
+				self.workflow_state = "Waiting Approval"
 		elif self.workflow_state == "Cancelled":
                         if frappe.session.user not in (self.leave_approver,"Administrator"):
                                 frappe.throw(_("Only leave approver <b>{0}</b> ( {1} ) can cancel this document.").format(self.leave_approver_name, self.leave_approver), title="Operation not permitted")

@@ -29,7 +29,7 @@ def check_stock_gl():
 			cc = "Dummy"
 
 def update_gl_stock_2019():
-	for a in frappe.db.sql("select name from `tabStock Entry` where name in ('SEMT19040008', 'SEMT19040007', 'SEMT19050031', 'SEMT19050040', 'SEMT19010104')", as_dict=1):
+	for a in frappe.db.sql("select name from `tabStock Entry` where name in ('SEMT19040019', 'SEMT19040021')", as_dict=1):
 		print(str(a.name))
 		self = frappe.get_doc("Stock Entry", a.name)
 		self.make_gl_entries()
