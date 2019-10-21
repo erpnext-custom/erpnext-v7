@@ -308,7 +308,8 @@ class ProductionPlan(Document):
 		wo = frappe.new_doc("Work Order")
 		wo.update(item)
 		wo.set_work_order_operations()
-
+		wo.branch = self.branch
+		wo.production_type = self.production_type
 		if not wo.fg_warehouse:
 			wo.fg_warehouse = warehouse.get('fg_warehouse')
 		try:
