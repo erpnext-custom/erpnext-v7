@@ -82,6 +82,16 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Manufacturing Settings",
                                         "description": _("Global settings for all manufacturing processes."),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Job Specification",
+                                        "description": _("Job Specification"),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Product and Labour Hour",
+                                        "description": _("Product and Labour Hour"),
                                 }
                         ]
                 },
