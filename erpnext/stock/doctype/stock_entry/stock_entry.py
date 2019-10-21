@@ -55,7 +55,8 @@ class StockEntry(StockController):
 		if self.work_order:
 			self.pro_doc = frappe.get_doc('Work Order', self.work_order)
 			if self.purpose == "Material Transfer for Manufacture":
-                                self.create_mr()
+				if self.get("__islocal"):	
+					self.create_mr()
 
 		self.validate_posting_time()
 		self.validate_purpose()

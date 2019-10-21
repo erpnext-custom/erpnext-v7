@@ -55,28 +55,31 @@ def post_leave_credits(today=None):
         #if first_day_of_month or first_day_of_year:        
 	elist = frappe.db.sql("""
 		select
-			t1.name, t1.employee_name, t1.date_of_joining,
-			(
-			case
-				when day(t1.date_of_joining) > 1 and day(t1.date_of_joining) <= 15
-				then timestampdiff(MONTH,t1.date_of_joining,'{0}')+1 
-				else timestampdiff(MONTH,t1.date_of_joining,'{0}')       
-			end
-			) as no_of_months,
-			t2.leave_type, t2.credits_per_month, t2.credits_per_year,
-			t3.is_carry_forward
-		from `tabEmployee` as t1, `tabEmployee Group Item` as t2, `tabLeave Type` as t3, `tabEmployment Status` as t4
-		where t1.status = 'Active'
-		and t1.date_of_joining <= '{0}'
-		and t1.employee_group = t2.parent
-		and (t2.credits_per_month > 0 or t2.credits_per_year > 0)
-		and t3.name = t2.leave_type
-		and t4.name = t1.employment_status
-		and not exists (select 1
-				from `tabEmployment Status Item` as t5
-				where t5.parent = t4.name
-				and t5.leave_type = t2.leave_type)
-		order by t1.name, t2.leave_type
+                        t1.name, t1.employee_name, t1.date_of_joining,
+                        (
+                        case
+                                when day(t1.date_of_joining) > 1 and day(t1.date_of_joining) <= 15
+                                then timestampdiff(MONTH,t1.date_of_joining,'{0}')+1 
+                                else timestampdiff(MONTH,t1.date_of_joining,'{0}')       
+                        end
+                        ) as no_of_months,
+                        t2.leave_type, t2.credits_per_month, t2.credits_per_year,
+                        t3.is_carry_forward
+                from `tabEmployee` as t1, `tabEmployee Group Item` as t2, `tabLeave Type` as t3
+                where t1.status = 'Active'
+                and t1.date_of_joining <= '{0}'
+                and t1.employee_group = t2.parent
+                and (t2.credits_per_month > 0 or t2.credits_per_year > 0)
+                and t3.name = t2.leave_type
+                and not exists(select 1
+                                      from `tabLeave Allocation` as t4
+                                      where t4.employee = t1.name
+                                      and t4.docstatus != 2 
+                                      and t4.from_date = '{1}'
+                                      and t4.to_date = '{2}'
+                                      and t4.leave_type = t3.name
+                                      )
+                order by t1.name, t2.leave_type
 	""".format(str(today)), as_dict=1)
 
 	counter = 0
@@ -92,30 +95,28 @@ def post_leave_credits(today=None):
 
 		# Monthly credits
 		#if first_day_of_month and flt(e.credits_per_month) > 0:
+		if flt(e.credits_per_month) > 0:
 			# For Earned Leaved monthly credits are given for previous month
-		if e.leave_type == "Earned Leave":
 			start_date = get_first_day(add_days(today, -20))
 			end_date   = get_last_day(start_date)
-		else:
-			start_date = get_first_day(today)
-			end_date   = get_last_day(start_date)
 
-		leave_allocation.append({
-			'from_date': str(start_date),
-			'to_date': str(end_date),
-			'new_leaves_allocated': flt(e.credits_per_month)
-		})
+			leave_allocation.append({
+				'from_date': str(start_date),
+				'to_date': str(end_date),
+				'new_leaves_allocated': flt(e.credits_per_month)
+			})
 
 		# Yearly credits
 		#if first_day_of_year and flt(e.credits_per_year) > 0:
-		start_date = get_year_start_date(today)
-		end_date   = get_year_end_date(start_date)
+		if flt(e.credits_per_year) > 0:
+			start_date = get_year_start_date(today)
+			end_date   = get_year_end_date(start_date)
 
-		leave_allocation.append({
-			'from_date': str(start_date),
-			'to_date': str(end_date),
-			'new_leaves_allocated': flt(e.credits_per_year)
-		})
+			leave_allocation.append({
+				'from_date': str(start_date),
+				'to_date': str(end_date),
+				'new_leaves_allocated': flt(e.credits_per_year)
+			})
 
 		for la in leave_allocation:
 			if not frappe.db.exists("Leave Allocation", {"employee": e.name, "leave_type": e.leave_type, "from_date": la['from_date'], "to_date": la['to_date'], "docstatus": ("<",2)}):

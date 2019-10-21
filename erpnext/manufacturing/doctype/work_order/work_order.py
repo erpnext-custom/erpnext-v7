@@ -602,7 +602,7 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 		wip_warehouse = work_order.wip_warehouse
 	else:
 		wip_warehouse = None
-
+	stock_entry = frappe.new_doc("Stock Entry")
 	swh = frappe.db.sql("select source_warehouse from `tabWork Order Item` where parent = '{0}'".format(work_order.name), as_dict =1)
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.purpose = purpose
