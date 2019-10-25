@@ -141,6 +141,17 @@ frappe.ui.form.on("BOM", {
 				}
 			});
 		}
+	},
+	item: function(frm) {
+	      if(frm.doc.item){
+		console.log("Test" + frm.doc.item);	
+		frappe.model.get_value('Cost Sheet', {'item': frm.doc.item}, 'production_cost',
+                          function(e) {
+			    if(e.production_cost > 0){
+                            	cur_frm.set_value("overhead_cost", e.production_cost);
+			    }
+                });	
+	      }	
 	}
 });
 

@@ -308,7 +308,8 @@ class ProductionPlan(Document):
 		wo = frappe.new_doc("Work Order")
 		wo.update(item)
 		wo.set_work_order_operations()
-
+		wo.branch = self.branch
+		wo.production_type = self.production_type
 		if not wo.fg_warehouse:
 			wo.fg_warehouse = warehouse.get('fg_warehouse')
 		try:
@@ -461,8 +462,8 @@ def get_material_request_items(row, sales_order, company, ignore_existing_ordere
 		requested_qty = requested_qty / row['conversion_factor']
 
 	if frappe.db.get_value("UOM", row['purchase_uom'], "must_be_whole_number"):
-		requested_qty = ceil(requested_qty)
-
+		#requested_qty = ceil(requested_qty)
+		requested_qty = requested_qty
 	if requested_qty > 0:
 		return {
 			'item_code': row.item_code,

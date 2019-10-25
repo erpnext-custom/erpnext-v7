@@ -730,14 +730,14 @@ class SalesInvoice(SellingController):
 								"cost_center": item.cost_center
 							}, account_currency)
 						)
-
-					if self.total_loading_amount:
+					additional_cost = self.fitting_and_installation_charges + self.transportation_charges + self.loading_cost
+					if additional_cost > 0:
 						gl_entries.append(
 							self.get_gl_dict({
 								"account": item.income_account,
-								"credit": flt(self.rate_per_unit * item.delivered_qty * self.conversion_rate) ,
-								"credit_in_account_currency": flt(self.rate_per_unit * item.delivered_qty * self.conversion_rate) \
-									if self.party_account_currency==self.company_currency else flt(self.rate_per_unit * item.delivered_qty),
+								"credit": flt(additional_cost) ,
+								"credit_in_account_currency": flt(additional_cost) \
+									if self.party_account_currency==self.company_currency else flt(additional_cost),
 								"business_activity": item.business_activity,
 								"cost_center": item.cost_center
 							}, self.party_account_currency)
@@ -894,16 +894,17 @@ class SalesInvoice(SellingController):
 			)
 
 	def make_loading_gl_entry(self, gl_entries):
-		if self.total_loading_amount:
+		additional_cost = self.fitting_and_installation_charges + self.transportation_charges + self.loading_cost
+		if additional_cost > 0:
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.debit_to,
 					"party_type": "Customer",
 					"party": self.customer,
 					"against": self.against_income_account,
-					"credit": flt(self.total_loading_amount * self.conversion_rate) ,
-					"credit_in_account_currency": flt(self.total_loading_amount * self.conversion_rate) \
-						if self.party_account_currency==self.company_currency else self.total_loading_amount,
+					"credit": flt(additional_cost * self.conversion_rate) ,
+					"credit_in_account_currency": flt(additional_cost * self.conversion_rate) \
+						if self.party_account_currency==self.company_currency else additional_cost,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"business_activity": self.business_activity,
 					"against_voucher_type": self.doctype
@@ -923,7 +924,7 @@ class SalesInvoice(SellingController):
 					"against": self.against_income_account,
 					"debit": flt(self.void_amount * self.conversion_rate) ,
 					"debit_in_account_currency": flt(self.void_amount * self.conversion_rate) \
-						if self.party_account_currency==self.company_currency else self.total_loading_amount,
+						if self.party_account_currency==self.company_currency else self.void_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
 					"business_activity": self.business_activity,

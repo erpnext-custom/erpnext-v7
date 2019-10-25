@@ -21,6 +21,15 @@ frappe.ui.form.on('Job Card', {
 				};
 				frappe.set_route("query-report", "General Ledger");
 			}, __("View"));
+			if (frm.doc.out_source == 1 && frm.doc.docstatus ==1){
+				
+				frm.add_custom_button(__('Payment'),function(){
+					frappe.model.open_mapped_doc({
+						method: "erpnext.maintenance.doctype.job_card.job_card.make_payment",
+						frm: cur_frm
+					})
+				},__("Payment"));
+			}
 		}
 		if (frm.doc.jv && frappe.model.can_read("Journal Entry")) {
 			cur_frm.add_custom_button(__('Bank Entries'), function() {
@@ -32,7 +41,7 @@ frappe.ui.form.on('Job Card', {
 			}, __("View"));
 		}
 	
-		if (frm.doc.outstanding_amount > 0 && frm.doc.owned_by == "Others" && frappe.model.can_write("Journal Entry")) {
+		if (frm.doc.outstanding_amount > 0 && frm.doc.owned_by == "Others" && frm.doc.out_source != 1 && frappe.model.can_write("Journal Entry")) {
 			//cur_frm.toggle_display("receive_payment", 1)
 			/*cur_frm.add_custom_button(__('Payment'), function() {
 				cur_frm.cscript.receive_payment()

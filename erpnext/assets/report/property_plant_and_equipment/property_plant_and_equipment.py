@@ -79,7 +79,7 @@ def get_accounts(filters):
 
 def get_values(account, to_date, from_date, cost_center=None, opening=False, cwip=False):
 	if cwip:
-		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account in " + str(account) + " and docstatus = 1 "
+		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \'" + str(account) + "\' and docstatus = 1 "
 	else:
 		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \'" + str(account) + "\' and docstatus = 1 "
 	if not opening:
@@ -90,6 +90,7 @@ def get_values(account, to_date, from_date, cost_center=None, opening=False, cwi
 		query += " and cost_center = \'" + str(cost_center) + "\'"
 
 	query += " and voucher_type not in ('Period Closing Voucher', 'Asset Movement', 'Bulk Asset Transfer')"
+
 	value = frappe.db.sql(query, as_dict=True)
 
 	return value

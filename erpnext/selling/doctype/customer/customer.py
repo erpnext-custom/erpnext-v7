@@ -38,7 +38,7 @@ class Customer(TransactionBase):
 			return str(int(customer_code[0][0]) + 1);
 		else:
 			if self.customer_group:
-				frappe.msgprint("{0}".format(self.customer_group))
+				#frappe.msgprint("{0}".format(self.customer_group))
 				base = frappe.db.get_value("Customer Group", self.customer_group, "customer_code_base")
 				if not base:
 					frappe.throw("Setup Customer Code Base in Customer Group")

@@ -255,6 +255,9 @@ frappe.ui.form.on("Vehicle Log", {
 	"work_date": function(frm, cdt, cdn) {
 		date_check(frm, cdt, cdn)
 	},
+	"from_date": function(frm, cdt, cdn) {
+		date_check(frm, cdt, cdn)
+	},
 
 	"from_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
@@ -304,11 +307,14 @@ function check(frm,cdt, cdn){
 function date_check(frm, cdt, cdn){
 	var a = locals[cdt][cdn]
 		console.log(a.work_date)
+		if (a.to_date && a.to_date < frm.doc.from_date || a.to_date > frm.doc.to_date){
+			frappe.model.set_value(cdt, cdn, "to_date", "" )
+			frappe.msgprint ("To Date must be between From Date and To Date")
+		}
 		if (a.work_date && a.work_date < frm.doc.from_date || a.work_date > frm.doc.to_date){
 			frappe.model.set_value(cdt, cdn, "work_date", "" )
 			frappe.msgprint ("Work Date must be between From Date and To Date")
-		
-	}
+		}
 		frm.doc.vlogs.forEach(function(d){
 			if (a.name != d.name && d.work_date == a.work_date){
 				frappe.model.set_value(cdt, cdn,"work_date", "")

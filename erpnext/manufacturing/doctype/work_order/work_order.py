@@ -53,7 +53,12 @@ class WorkOrder(Document):
 		validate_uom_is_integer(self, "stock_uom", ["qty", "produced_qty"])
 
 		self.set_required_items(reset_only_qty = len(self.get("required_items")))
-
+		'''js = frappe.db.get_value("Job Specification", {"product": self.production_item})
+		if not js:
+			self.job_specification == None
+		if self.job_specification !=  js:
+			frappe.throw("Job Specification {0} doesn't belong to Item {1}".format(self.job_specification, self.production_item))'''
+	
 	def validate_sales_order(self):
 		if self.sales_order:
 			so = frappe.db.sql("""
@@ -531,6 +536,14 @@ class WorkOrder(Document):
 
 		bom.set_bom_material_details()
 		return bom
+
+@frappe.whitelist()
+def get_job_spec(item):
+	js = frappe.db.get_value("Job Specification", {'product': item, 'docstatus': 1})
+	if js:
+		return js
+	else:
+		frappe.throw(" Job Specification for Item <b> {0} </b> is not defined".format(item))
 
 @frappe.whitelist()
 def get_item_details(item, project = None):

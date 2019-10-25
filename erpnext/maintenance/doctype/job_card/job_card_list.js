@@ -16,6 +16,8 @@ frappe.listview_settings['Job Card'] = {
 		}
 
 		if(doc.docstatus == 1) {
+			if(doc.out_source == 1){{
+				return ["Test", "orange", "docstatus,=,1|out_source, =,1" ];}
 			if(doc.owned_by == "Own") {
 				return ["Own Equipment", "yellow", "docstatus,=,1|owned_by,=,Own"];
 			}
@@ -31,6 +33,6 @@ frappe.listview_settings['Job Card'] = {
 			else {
 				return ["Invoice Raised", "blue", "docstatus,=,1|outstanding_amount,>,0|owned_by,=,Others"];
 			}
-		}
+		}}
 	}
 };

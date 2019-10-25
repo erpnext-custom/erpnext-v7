@@ -77,7 +77,7 @@ frappe.ui.form.on('Imprest Recoup', {
 				"filters": [
 					["status", "!=", "Used"],
 					["docstatus", "=", "1"],
-					["branch", "=", frm.doc.branch]
+				//	["branch", "=", frm.doc.branch]
 				]
 			}
 		});

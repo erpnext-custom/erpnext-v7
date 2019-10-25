@@ -59,27 +59,6 @@ frappe.query_reports["Sales Report"] = {
                         }
                 },
                 {
-                        "fieldname": "location",
-                        "label": ("Location"),
-                        "fieldtype": "Link",
-                        "options": "Location",
-                        "get_query": function() {
-                                var branch = frappe.query_report.filters_by_name.branch.get_value();
-                                return {"doctype": "Location", "filters": {"branch": branch, "is_disabled": 0}}
-                        }
-                },
-		
-		/*{
-                        "fieldname": "adhoc_production",
-                        "label": ("Adhoc Production"),
-                        "fieldtype": "Link",
-                        "options": "Adhoc Production",
-                        "get_query": function() {
-                                var loc = frappe.query_report.filters_by_name.location.get_value();
-                                return {"doctype": "Adhoc Production", "filters": {"location": loc, "is_disabled": 0}}
-                        }
-                },*/
-                {
                         "fieldname": "from_date",
                         "label": __("From Date"),
                         "fieldtype": "Date",
@@ -96,15 +75,14 @@ frappe.query_reports["Sales Report"] = {
 		{
                         "fieldtype": "Break",
                 },
-		
 		{
                         "fieldname": "item_group",
                         "label": ("Material Group"),
                         "fieldtype": "Link",
                         "options": "Item Group",
-                        "get_query": function() {
+                        /*"get_query": function() {
                                 return {"doctype": "Item Group", "filters": {"is_group": 0, "is_production_group": 1}}
-                        },
+                        },*/
                 },
                 {
                         "fieldname": "item_sub_group",
@@ -123,49 +101,7 @@ frappe.query_reports["Sales Report"] = {
                         "options": "Item",
                         "get_query": function() {
                                 var sub_group = frappe.query_report.filters_by_name.item_sub_group.get_value();
-                                return {"doctype": "Item", "filters": {"item_sub_group": sub_group, "is_production_item": 1}}
-                        }
-                },
-			
-		/*{
-                        "fieldname": "production_type",
-                        "label":("Production Type"),
-                        "fieldtype" : "Select",
-                        "width" :"80",
-                        "options": ["All", "Planned","Adhoc"],
-                        "default": "All",
-                        "reqd" : 1
-                },*/
-                {
-                        "fieldname": "timber_species",
-                        "label": ("Timber Species"),
-                        "fieldtype": "Link",
-                        "options": "Timber Species",
-                        "get_query": function() {
-                                var item_group = frappe.query_report.filters_by_name.item_group.get_value();
-                                if (!item_group || item_group != "Timber Products") {
-                                        return {"doctype": "Timber Species", "filters": {"docstatus": 5}}
-                                }
-                                else {
-                                        return {"doctype": "Timber Species"}
-                                }
-                        }
-                },
-
-
-		{
-                        "fieldname": "timber_class",
-                        "label": ("Timber Class"),
-                        "fieldtype": "Link",
-                        "options": "Timber Class",
-                        "get_query": function() {
-                                var item_group = frappe.query_report.filters_by_name.item_group.get_value();
-                                if (!item_group || item_group != "Timber Products") {
-                                        return {"doctype": "Timber Class", "filters": {"docstatus": 5}}
-                                }
-                                else {
-                                        return {"doctype": "Timber Class"}
-                                }
+                                return {"doctype": "Item", "filters": {"item_sub_group": sub_group}}
                         }
                 },
                 {
@@ -182,15 +118,6 @@ frappe.query_reports["Sales Report"] = {
                         }
                 },
 
-		{
-                        "fieldname": "timber_type",
-                        "label":("Timber Type"),
-                        "fieldtype" : "Select",
-                        "width" :"80",
-                        "options": ["All", "Conifer","Broadleaf"],
-                        "default": "All",
-                        "reqd" : 1
-                },
                 {
                         "fieldname": "group_by",
                         "label": ("Group By"),
@@ -199,7 +126,7 @@ frappe.query_reports["Sales Report"] = {
 			"default": "Sales Order"
                 },
 		{
-                        "fieldname": "aggrigate",
+                        "fieldname": "aggregate",
                         "label": ("Show Aggregate"),
                         "fieldtype": "Check",
                         "default": 0

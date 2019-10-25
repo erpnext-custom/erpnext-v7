@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "JS.YYYY.####", 
  "beta": 0, 
@@ -274,7 +274,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-10-21 17:23:10.232423", 
+ "modified": "2019-10-23 12:47:01.370782", 
  "modified_by": "dorji2392@bt.bt", 
  "module": "Manufacturing", 
  "name": "Job Specification", 
