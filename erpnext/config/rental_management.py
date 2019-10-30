@@ -90,6 +90,29 @@ def get_data():
 				
 			]
 		},
+		 {
+                        "label": _("Real State Management"),
+                        "icon": "icon-star",
+                        "items": [
+                                {
+                                        "type": "doctype",
+                                        "name": "Maintenance Application Form",
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Technical Sanction",
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Rate Analysis",
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Service",
+                                },
+
+                        ]
+                },
 		{
                         "label": _("Reports"),
                         "icon": "icon-list",

@@ -44,12 +44,14 @@ frappe.ui.form.on("Technical Sanction Item", {
 					if(d.same_rate){
 						frappe.model.get_value("Service",{'name':c.service},'cost',
 						function(e){
-							frappe.model.set_value(cdt,cdn,'amount', e.cost);
+							frappe.model.set_value(cdt,cdn,'amount', e.cost );
+							frappe.model.set_value(cdt,cdn, 'total', (e.cost * d.qty))
 						});
 					}else if(frm.doc.region){
 						frappe.model.get_value("BSR Item", {'parent':c.service, 'region':frm.doc.region}, 'rate', 
 							function(f){
 								frappe.model.set_value(cdt, cdn, 'amount', f.rate);	
+								frappe.model.set_value(cdt, cdn, 'total', f.rate * d.qty)
 						});
 					}else{
 						frappe.msgprint("Select a region as the rate is different across region");
@@ -58,7 +60,8 @@ frappe.ui.form.on("Technical Sanction Item", {
 		}else if(c.type="Rate Analysis"){
 			frappe.model.get_value("Rate Analysis", {'name':c.service}, ['total_amount','title'],
                                 function(d){
-                                    frappe.model.set_value(cdt, cdn, 'amount', d.total_amount);
+                                    frappe.model.set_value(cdt, cdn, 'amount', d.total_amount );
+				    frappe.model.set_value(cdt, cdn, 'total' , d.total_amount * d.qty);
 				    frappe.model.set_value(cdt, cdn, 'item_name', d.title);
                                 });	
 		}	

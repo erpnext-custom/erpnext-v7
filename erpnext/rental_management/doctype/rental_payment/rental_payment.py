@@ -5,25 +5,39 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.utils import cint, cstr, flt, fmt_money, formatdate, nowtime, getdate
 from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.controllers.accounts_controller import AccountsController
 
 class RentalPayment(AccountsController):
 	def validate(self):
+		self.get_rental_bill()
 		received_amt = 0
 		if not self.individual_payment:
 			self.tenant = ""
 			self.tenant_name = ""
 
 		for a in self.item:
-			received_amt = received_amt + a.allocated_amount
+			received_amt = flt(received_amt) + flt(a.allocated_amount)
 
-		self.amount_received = received_amt
+		self.amount_received = flt(received_amt)
 		if self.tds_amount:
-			self.net_amount = self.amount_received - self.tds_amount
+			self.net_amount = flt(self.amount_received) - flt(self.tds_amount)
 		else:
-			self.net_amount = self.amount_received
+			self.net_amount = flt(self.amount_received)
 
+	
+	def get_rental_bill(self):
+		for i in self.item:
+			if i.tenant and not i.rental_bill:
+				for a in frappe.db.sql("Select name, customer_code, fiscal_year, month, rent_amount, tenant_name from `tabRental Bill` where tenant = '{0}' and (received_amount is NULL or rental_payment is NULL or rental_payment ='') and docstatus = 1 order by posting_date limit 1".format(i.tenant), as_dict=1):
+					i.customer_code = a.customer_code
+					i.amount = a.rent_amount
+					i.fiscal_year = a.fiscal_year
+					i.month = a.month
+					i.rental_bill = a.name
+					
+					
 	def on_submit(self):
 		self.update_rental_bill()
 		self.post_gl_entry()
