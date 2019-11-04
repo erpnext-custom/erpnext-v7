@@ -34,9 +34,11 @@ class OvertimeApplication(Document):
 		
 		if incentive_hour > 0:
 			self.holiday_incentive = flt(flt(self.rate)/2) * flt(incentive_hour)
-		
+
+#		frappe.msgprint("{0}".format(incentive_hour))
+			
                 self.total_hours  = flt(total_hours)
-                self.total_amount = (flt(total_hours)*flt(self.rate)) + self.holiday_incentive
+                self.total_amount = (flt(total_hours)*flt(self.rate)) + flt(self.holiday_incentive)
 
                 if flt(self.total_hours) <= 0:
                         frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")
