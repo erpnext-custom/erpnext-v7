@@ -25,11 +25,20 @@ class OvertimeApplication(Document):
 
 	def calculate_totals(self):
                 total_hours  = 0
+		incentive_hour = 0
                 for i in self.items:
                         total_hours += flt(i.number_of_hours)
+			check_holiday = frappe.db.sql("Select * from `tabHoliday` h inner join `tabHoliday List` l on h.parent = l.name inner join `tabHoliday List Branch` b on b.parent = l.name where '{0}' between l.from_date and l.to_date and h.holiday_date = '{0}' and b.branch= '{1}'".format(i.date, self.branch), as_dict=1)
+			if check_holiday:
+				incentive_hour += flt(i.number_of_hours)
+		
+		if incentive_hour > 0:
+			self.holiday_incentive = flt(flt(self.rate)/2) * flt(incentive_hour)
 
+#		frappe.msgprint("{0}".format(incentive_hour))
+			
                 self.total_hours  = flt(total_hours)
-                self.total_amount = flt(total_hours)*flt(self.rate)
+                self.total_amount = (flt(total_hours)*flt(self.rate)) + flt(self.holiday_incentive)
 
                 if flt(self.total_hours) <= 0:
                         frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")

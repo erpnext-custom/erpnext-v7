@@ -448,25 +448,27 @@ class Employee(Document):
                 '''
 
 	def create_customer(self):
-		last_customer_code = frappe.db.sql("select customer_code from tabCustomer where customer_group='Internal' order by customer_code desc limit 1;");
-		if last_customer_code:
-			customer_code = str(int(last_customer_code[0][0]) + 1)
-		else:
-			customer_code = frappe.db.get_value("Customer Group", "Internal", "customer_code_base")
-			if not customer_code:
-				frappe.throw("Setup Customer Code Base in Internal Customer Group")
-		cus_name = self.employee_name
-		cus = frappe.new_doc("Customer")
-		cus.customer_code = customer_code
-		cus.name = customer_code
-		cus.customer_name = cus_name
-		cus.customer_group = "Internal"
-		cus.customer_id = self.name
-		cus.territory = "Bhutan"
-		cus.dzongkhag = self.dzongkhag
-		cus.cost_center = self.cost_center
-		cus.branch = self.branch
-		cus.insert()	
+		check_customer = frappe.db.get_value("Customer", {"customer_id":self.name}, "customer_code")
+		if not check_customer:
+			last_customer_code = frappe.db.sql("select customer_code from tabCustomer where customer_group='Internal' order by customer_code desc limit 1;");
+			if last_customer_code:
+				customer_code = str(int(last_customer_code[0][0]) + 1)
+			else:
+				customer_code = frappe.db.get_value("Customer Group", "Internal", "customer_code_base")
+				if not customer_code:
+					frappe.throw("Setup Customer Code Base in Internal Customer Group")
+			cus_name = self.employee_name
+			cus = frappe.new_doc("Customer")
+			cus.customer_code = customer_code
+			cus.name = customer_code
+			cus.customer_name = cus_name
+			cus.customer_group = "Internal"
+			cus.customer_id = self.name
+			cus.territory = "Bhutan"
+			cus.dzongkhag = self.dzongkhag
+			cus.cost_center = self.cost_center
+			cus.branch = self.branch
+			cus.insert()	
 
 
                 

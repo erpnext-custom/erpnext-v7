@@ -1402,7 +1402,11 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
+<<<<<<< HEAD
  "modified": "2019-10-30 10:20:54.327241", 
+=======
+ "modified": "2019-10-30 10:29:09.306289", 
+>>>>>>> 3c57e61e48a5c57548a6fc11c81ef93b79c255ff
  "modified_by": "Administrator", 
  "module": "Manufacturing", 
  "name": "Work Order", 
