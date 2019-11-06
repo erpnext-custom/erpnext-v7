@@ -119,7 +119,7 @@ class Employee(Document):
 		# Following method introduced by SHIV on 08/04/2019
                 self.update_retirement_age()
 		# Introduced for WCCL on 24/10/2019 
-		self.create_customer()
+		#self.create_customer()
     
 	def before_save(self):
 		if self.branch != self.get_db_value("branch") and  self.user_id:
@@ -448,7 +448,7 @@ class Employee(Document):
                 '''
 
 	def create_customer(self):
-		check_customer = frappe.db.get_value("Customer", {"customer_id":self.name}, "customer_code")
+		check_customer = frappe.db.get_value("Customer", {"customer_id":self.name, "customer_name":self.employee_name}, "customer_code")
 		if not check_customer:
 			last_customer_code = frappe.db.sql("select customer_code from tabCustomer where customer_group='Internal' order by customer_code desc limit 1;");
 			if last_customer_code:

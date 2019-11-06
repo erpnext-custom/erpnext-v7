@@ -31,6 +31,9 @@ def validate_workflow_states(doc):
 	document_approver = approver_field[doc.doctype]
 	employee          = frappe.db.get_value("Employee", doc.employee, ["user_id","employee_name","designation","name"])
 	reports_to        = frappe.db.get_value("Employee", frappe.db.get_value("Employee", doc.employee, "reports_to"), ["user_id","employee_name","designation","name"])
+	if not reports_to:
+		frappe.throw("Supervisor or Approval not set in employee master detail")
+
 	final_approver    = frappe.db.get_value("Employee", {"user_id": get_final_approver(doc.branch)}, ["user_id","employee_name","designation","name"])
         workflow_state    = doc.get("workflow_state").lower()
 
@@ -130,8 +133,30 @@ def validate_workflow_states(doc):
 		elif workflow_state == "Approved".lower():
 			if doc.supervisor != frappe.session.user:
 				frappe.throw("Only {0} can Approve the Travel Authorization".format(doc.supervisor))
-			if final_approver[0] != doc.supervisor and employee[0] != final_approver[0]:
-				frappe.throw("Only {0} can approve your Travel Authorization".format(frappe.bold(final_approver[0])))
+			#if final_approver[0] != doc.supervisor and employee[0] != final_approver[0]:
+			#	frappe.throw("Only {0} can approve your Travel Authorization".format(frappe.bold(final_approver[0])))
+			doc.status= "Approved"
+
+		elif workflow_state == "Rejected".lower():
+			doc.status = "Rejected"
+			vars(doc)[document_approver[0]] = reports_to[0]
+
+	elif doc.doctype == "Overtime Application":
+		if workflow_state == "Draft".lower():
+			vars(doc)[document_approver[0]] = employee[0]
+
+		elif workflow_state == "Waiting Approval".lower():
+			officiating = get_officiating_employee(reports_to[3])
+                        if officiating:
+                                officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+                        vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
+			
+			if doc.supervisor == employee[0]:
+				frappe.throw("OT submitter {0} cannot be the supervisor ".format(doc.supervisor))
+			
+		elif workflow_state == "Approved".lower():
+			if doc.supervisor != frappe.session.user:
+				frappe.throw("Only {0} can Approve the OT".format(doc.supervisor))
 			doc.status= "Approved"
 
 		elif workflow_state == "Rejected".lower():

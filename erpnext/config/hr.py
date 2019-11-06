@@ -17,25 +17,6 @@ def get_data():
 					"description": _("Attendance record."),
 				},                                
 				{
-					"type": "doctype",
-					"name": "Attendance Upload",
-					"label": "GEP Attendance Upload",
-					"description":_("Upload attendance from a .csv file"),
-				},
-				{
-					"type": "doctype",
-					"name": "Upload Attendance",
-					"description":_("Upload attendance from a .csv file"),
-					"hide_count": True
-				},
-                                {
-					"type": "doctype",
-					"name": "Employee Attendance Tool",
-					"label": _("Employee Attendance Tool"),
-					"description":_("Mark Attendance for multiple employees"),
-					"hide_count": True
-				},
-				{
                                         "type": "doctype",
                                         "name": "Training Records",
                                         "description":_("Training And Development"),
@@ -53,73 +34,11 @@ def get_data():
                                         "description":_("SWS Application"),
                                         "label": _("SWS Application")
 				},
-			]
-		},
-		{
-			"label": _("MR & DES Management"),
-			"icon": "icon-facetime-video",
-			"items": [
-				{
+				{	
 					"type": "doctype",
-					"name": "DES Employee",
-					"label": "DES Employee",
-					"description": _("DES Employee records."),
-				},
-				{
-					"type": "doctype",
-					"name": "Muster Roll Employee",
-					"description": _("Muster Roll Employee Data"),
-				},
-				{
-					"type": "doctype",
-					"name": "MusterRoll Application",
-					"label": "Muster Roll Application",
-				},
-				{
-					"type": "doctype",
-					"name": "Attendance Tool Others",
-					"label": "Attendance Tool",
-					"description": _("Attendance Tool for Others"),
-				},
-				{
-					"type": "doctype",
-					"name": "Upload Attendance Others",
-					"label": "Upload Bulk Attendance",
-					"description": _("Attendance Tool for Others"),
-				},
-				{
-					"type": "doctype",
-					"name": "Project Overtime Tool",
-					"label": "Overtime Tool",
-					"description": _("Overtime Tool for MR and GEP"),
-				},
-				{
-					"type": "doctype",
-					"name": "Upload Overtime Entries",
-					"label": "Upload Overtime Entry",
-					"description": _("Overtime Tool for Others"),
-				},
-				{
-					"type": "doctype",
-					"name": "Process MR Payment",
-					"label": "Process Payment",
-					"description": _("Process Payments for Project Muster Roll"),
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Attendance Register",
-					"label": "Attendance Register",
-					"description": _("Attendance Sheet"),
-					"doctype": "Attendance Others"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Overtime Register",
-					"label": "Overtime Register",
-					"description": _("Overtime Register"),
-					"doctype": "Overtime Entry"
+                                        "name": "Employee Disciplinary Record",
+                                        "description":_("Employee Disciplinary Record"),
+                                        "label": _("Employee Disciplinary Record")
 				},
 			]
 		},
@@ -260,18 +179,6 @@ def get_data():
 					"type": "doctype",
 					"name": "Employee Benefits",
                                         "label": _("Process Employee Benefits"),
-				},
-                                {
-					"type": "doctype",
-					"name": "Other Contribution",
-                                        "label": _("Other Contribution"),
-					"description": _("Other Contribution"),
-				},
-                                {
-					"type": "doctype",
-					"name": "Hall Booking",
-                                        "label": _("Hall Booking Invoice"),
-					"description": _("Hall Booking"),
 				},
 				
 			]
@@ -470,11 +377,6 @@ def get_data():
 				},
 				{
 					"type": "report",
-					"name": "DES Employee Report",
-					"doctype": "DES Employee"
-				},
-				{
-					"type": "report",
 					"is_query_report": True,
 					"name": "Monthly Attendance Sheet",
 					"doctype": "Attendance"
@@ -502,12 +404,6 @@ def get_data():
                                         "is_query_report": True,
                                         "name": "Travel Report",
                                         "doctype": "Travel Claim"
-                                },
-				{
-                                        "type": "report",
-					"is_query_report": True,
-                                        "name": "Hall Booking Report",
-                                        "doctype": "Hall Booking"
                                 },
 			]
 		},
