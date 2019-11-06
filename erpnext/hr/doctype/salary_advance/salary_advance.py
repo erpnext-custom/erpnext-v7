@@ -7,11 +7,11 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, cint, today, nowdate, getdate, get_first_day, add_months
-from erpnext.custom_workflow import validate_workflow_states
+#from erpnext.custom_workflow import validate_workflow_states
 
 class SalaryAdvance(Document):
 	def validate(self):
-                validate_workflow_states(self)
+ #               validate_workflow_states(self)
                 self.update_defaults()
 		self.validate_amounts()
                 self.check_duplicates()

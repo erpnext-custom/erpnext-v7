@@ -87,7 +87,7 @@
    "reqd": 1, 
    "search_index": 0, 
    "set_only_once": 0, 
-   "unique": 1
+   "unique": 0
   }, 
   {
    "allow_on_submit": 0, 
@@ -1308,8 +1308,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-08-23 14:42:16.664141", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2019-11-05 16:54:15.804855", 
+ "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Customer", 
  "name_case": "Title Case", 
