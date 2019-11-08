@@ -75,8 +75,8 @@ class StockEntry(StockController):
 		self.calculate_rate_and_amount(update_finished_item_rate=False)
 
         def check_transfer_wh(self):
-                if not self.from_warehouse:
-                        frappe.throw("Source Warehouse is mandatory")
+		if self.purpose != "Material Receipt" and not self.from_warehouse:
+				frappe.throw("Source Warehouse is mandatory")
 
                 if self.purpose == "Material Transfer" and not self.to_warehouse:
                         frappe.throw("Receiving Warehouse is mandatory for transfer")
