@@ -1,0 +1,19 @@
+{
+ "creation": "2019-11-07 12:09:20.019187", 
+ "css": "table {\n    margin: 0 auto; /* or margin: 0 auto 0 auto */\n    width: 100%;\n  }\n\n#main {\n   margin-left: 20px;\n   margin-right: 20px;\n}\n\n@media all {\n   div .printedby {\n       position: absolute;\n       bottom: 30px;\n       left: 0;\n       text-align: center;\n       font-size: xx-small;\n       width: 100% !important;\n       height: 20px !important;\n   }\n}\n   div .terms {\n\tfont-size: 20%;\n   }\n\n#lastPara { margin-bottom: 0; padding-bottom: 0; } ", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "Break Down Report", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div class=\"page-break\">\n\t<div id=\"header-html\" class=\"hidden-pdf\">\n\t\t{%- if letter_head and not no_letterhead -%}\n\t\t\t<div class=\"letter-head\">\n\t\t\t\t{{ letter_head }}\n\t\t\t</div>\n\t\t{%- endif -%}\n\t</div>\n\t\n\t<div id=\"main\">\n\t\t<div  style=\"text-align: center;\">\n\t\t\t<h3>PURCHASE ORDER</h3>\n\t\t\t<h5><u>\n{%- if doc.cost_center -%}\n\t{{ doc.cost_center }}\n{%- endif -%}\n</u></h5>\n\t\t\t\n\t\t</div>\n\t\t<div style=\"margin-top: 40px;\"></div>\n\t\t<div style=\"float: left; width: 50%;\">To:<br />\n\t\t\t<p>Ms. {{ doc.supplier }}</p>\n\t\t\t<p>{{ frappe.db.get_value(\"Supplier\", doc.supplier, \"location\") }}</p>\n\t\t\t{%- if frappe.db.get_value(\"Supplier\", doc.supplier, \"telephone_and_fax\")  -%}\n\t\t\t<p>Tel/Fax: {{ frappe.db.get_value(\"Supplier\", doc.supplier, \"telephone_and_fax\") }}</p>\n\t\t\t{%- endif -%}\n\t\t</div>\n\n\t\t\n\n\t\t<div style=\"clear: both;\"><br /><p>Dear Sir/Madam,</p><br />\n\t\t\t{%- if doc.job_outsource_header -%}\n\t\t\t{{ doc.job_outsource_header }}\n\t\t\t{%- endif -%}\n\t\t</div>\n\t\t\n\t\t<table class=\"table table-bordered\" style=\"margin-top: 15px;width:100%; font-size: small\">\n<tbody>\n\t<tr>\n\t\t<th style=\"text-align: center;\">Defects / Malfunction Observed Comments on Repair </th>\n\t</tr>\n\t<tr>\n\t\t<td >{{ doc.defect }}</td>\n\t</tr>\n  </tbody>\n\t\t\t\n\t\t\t</table>\n\t\t</div>\n\t\t<div>\n\t\t\t{%- if doc.terms -%}\n\t\t\t\t<br /><p>Purchase Terms &amp; Conditions:</p>\n\t\t\t\t{{ doc.terms }}\n\t\t\t{%- endif -%}\n\t\t</div>\n\t\t<br />\n\t\t<div>\n\t\t\t{%- if doc.job_outsource_footer -%}\n\t\t\t\t{{ doc.job_outsource_footer }}\n\t\t\t{%- endif -%}\n\t\t\t<p id=\"lastPara\"></p>\n\n\t\t</div>\n\t</div>\n\n<div id=\"footer-html\" class=\"visible-pdf\">\n    {% if not no_letterhead and footer %}\n        <div class=\"letter-head-footer\">\n        {{ footer }}\n        </div>\n    {% endif %}\n\n    <p class=\"text-center small page-number visible-pdf\">\n        {{ _(\"Page {0} of {1}\").format('<span class=\"page\"></span>', '<span class=\"topage\"></span>') }}\n    </p>\n</div>\n\t\t\n\t\n", 
+ "idx": 0, 
+ "modified": "2019-11-07 12:20:33.270946", 
+ "modified_by": "Administrator", 
+ "name": "Out Source Work Order", 
+ "owner": "Administrator", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes"
+}

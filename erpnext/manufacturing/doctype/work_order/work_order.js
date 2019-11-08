@@ -76,7 +76,7 @@ frappe.ui.form.on("Work Order", {
 		frm.set_query("project", function() {
 			return{
 				filters:[
-					['Project', 'status', 'not in', 'Completed, Cancelled']
+					['Project', 'status', 'not in', 'Completed']
 				]
 			}
 		});
@@ -89,6 +89,14 @@ frappe.ui.form.on("Work Order", {
 			      }
 			}
 		});*/
+		cur_frm.set_query("indent", function(){
+                        return {
+                                "filters": [
+                                        ["status", "!=", "Completed"]
+
+                                ]
+                        }
+                });
 
 		// formatter for work order operation
 		frm.set_indicator_formatter('operation',
@@ -595,8 +603,9 @@ erpnext.work_order = {
 					"qty": data.qty
 				},
 				callback: function(r) {
-					var doclist = frappe.model.sync(r.message);
-					frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+					frm.reload_doc()
+					//var doclist = frappe.model.sync(r.message);
+					//frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
 				}
 			});
 		}, __("Select Quantity"), __("Make"));

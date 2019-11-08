@@ -47,8 +47,8 @@ frappe.ui.form.on('Break Down Report', {
 	owned_by: function(frm) {
 		cur_frm.set_value("customer", "")
 		cur_frm.set_value("equipment", "")
-		cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'Own Company')
-		cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'Own Company')
+	/*	cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'Own Company')
+		cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'Own Company') */
 
 		//cur_frm.toggle_reqd("equipment_model", frm.doc.owned_by != 'Others')
 		//cur_frm.toggle_reqd("equipment_number", frm.doc.owned_by != 'Others')
@@ -68,14 +68,14 @@ cur_frm.add_fetch("equipment", "equipment_number", "equipment_number");
 
 frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
     cur_frm.set_query("equipment", function() {
-	if (frm.doc.owned_by == "Own Branch") {
+/*	if (frm.doc.owned_by == "Own Branch") {
 		return {
 		    "filters": {
 			"is_disabled": 0,
 			"branch": frm.doc.branch
 		    }
 		};
-	}
+	} 
 	else if (frm.doc.owned_by == "Own Company"){
 		return {
 		    "filters": {
@@ -84,7 +84,7 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
 		    }
 		};
 	}
-	else {}
+	*/
     });
 
     cur_frm.set_query("cost_center", function() {
@@ -97,7 +97,7 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
     });
 
     cur_frm.set_query("customer", function() {
-	if(frm.doc.owned_by == "Own Branch") {
+	/*if(frm.doc.owned_by == "Own Branch") {
 		return {
 		    "filters": {
 			"disabled": 0,
@@ -122,7 +122,7 @@ frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
 			"customer_group": ["!=","Internal"]
 		    }
 		};
-	}
+	} */
     });
 });
 

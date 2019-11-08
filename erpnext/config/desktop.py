@@ -134,9 +134,9 @@ def get_data():
 		},
 		{
 			"module_name": "Manufacturing",
-			"color": "#7f8c8d",
+			"color": "#2d686d",
 			"icon": "icon-cogs",
-			"icon": "octicon octicon-tools",
+			"icon": "octicon octicon-milestone",
 			"type": "module",
 			"hidden": 1
 		},
