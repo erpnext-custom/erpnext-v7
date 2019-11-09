@@ -187,7 +187,7 @@ frappe.ui.form.on("Hiring Approval Details", {
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("rate_type", doc.equipment)
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("rate", doc.equipment)
 		cur_frm.fields_dict.approved_items.grid.toggle_reqd("idle_rate", doc.equipment)
-		cur_frm.fields_dict.approved_items.grid.toggle_reqd("place", doc.equipment)
+		//cur_frm.fields_dict.approved_items.grid.toggle_reqd("place", doc.equipment)
 		get_rates(frm, cdt, cdn)
 		calculate_amount(frm, cdt, cdn)
 	},
