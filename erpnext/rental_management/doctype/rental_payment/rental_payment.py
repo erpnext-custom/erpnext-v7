@@ -23,7 +23,6 @@ class RentalPayment(AccountsController):
 			self.net_amount = self.amount_received - self.tds_amount
 		else:
 			self.net_amount = self.amount_received
-
 	def on_submit(self):
 		self.update_rental_bill()
 		self.post_gl_entry()
