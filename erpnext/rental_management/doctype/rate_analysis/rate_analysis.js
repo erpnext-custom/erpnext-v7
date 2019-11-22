@@ -32,9 +32,32 @@ frappe.ui.form.on("Rate Analysis Item", {
 			frappe.model.set_value(cdt, cdn, "amount", c.rate * c.qty);
 			update_amount(frm, cdt, cdn);
 		}
+	},
+	"service_category": function(frm, cdt,cdn){
+		c = locals[cdt][cdn];
+	/*	if(c.type = 'Service'){
+			console.log(c.type + " and " + c.service_category);
+			cur_frm.fields_dict['item_code'].get_query = function(doc, dt, dn) {
+       				return {
+               				filters:{
+                        			"item_group": c.service_category,
+                			}
+       				}
+			}
+		} */
 	} 
 });
 
+cur_frm.fields_dict['item'].grid.get_field('item_code').get_query = function(frm, cdt, cdn) {
+	c = locals[cdt][cdn];
+	if(c.type == "Service"){
+	     return {
+		filters:{
+			"item_group": c.service_category,
+		}
+	   }
+	}
+}
 
 function update_amount(frm, cdt, cdn)
 {
@@ -60,3 +83,21 @@ function update_amount(frm, cdt, cdn)
 	}
 	frm.set_value("total_amount", frm.doc.base_amount + amt1 + amt2 + amt3);
 }
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

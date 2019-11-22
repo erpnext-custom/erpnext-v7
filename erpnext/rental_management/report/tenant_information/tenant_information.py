@@ -13,7 +13,7 @@ def execute(filters=None):
 def get_data(filters):
 	query = """select branch, tenant_name, cid, customer_code, dzongkhag, location,
 town_category, building_classification, building_category, block_no,
-flat_no, ministry_agency, department, designation, employee_id, grade, mobile_no, dob, date_of_appointment, pf_account_no, tenant_dzongkhag, gewog, village, floor_area, rate_per_sq_ft, rent_amount, security_deposit, house_no, area, repayment_period, original_monthly_instalment, allocated_date, status, surrendered_date from `tabTenant Information` where docstatus = 1"""
+flat_no, ministry_agency, department, designation, employee_id, grade, mobile_no, dob, date_of_appointment, pf_account_no, tenant_dzongkhag, gewog, village, floor_area, rate_per_sq_ft, rent_amount, security_deposit, receipt_no, receipt_date, area, repayment_period, original_monthly_instalment, allocated_date, status, surrendered_date from `tabTenant Information` where docstatus = 1"""
 	return frappe.db.sql(query) 
 		
 
@@ -47,6 +47,8 @@ def get_columns():
 		("Rate per Sqft") + ":Data:120",
 		("Rent Amount") + ":Data:120",
 		("Security Deposit") + ":Data:120",
+		("SD Receipt No.") + ":Data:120",
+		("SD Receipt Date") + ":Date:100",
         	("House No") + ":Data:120",
 		("Land area (Sq.m)") + ":Data:100",
 		("Repayment Period") + ":Data:100",

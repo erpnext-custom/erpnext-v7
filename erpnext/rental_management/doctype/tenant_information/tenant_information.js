@@ -27,6 +27,9 @@ frappe.ui.form.on('Tenant Information', {
 	"floor_area": function(frm){
 		cur_frm.set_value("rent_amount", Math.round(frm.doc.floor_area * frm.doc.rate_per_sq_ft));
 	},
+	"rent_amount": function(frm){
+                cur_frm.set_value("security_deposit", Math.round(frm.doc.rent_amount + frm.doc.rent_amount));
+        },
 	"calculate_rent_charges": function(frm){
 		calculate_rent_charges(frm);
 	},

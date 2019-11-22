@@ -29,7 +29,7 @@ class TenantInformation(Document):
 
 		if not self.structure_no:
 			if self.location_id and self.block_no:
-				self.structure_no = self.location_id + "/" + self.block_no
+				self.structure_no = self.location_id + "-" + self.block_no
 			else:
 				frappe.msgprint("Structure No. not able to assign as Locaton Id and Block No are missing")
 
@@ -43,10 +43,14 @@ class TenantInformation(Document):
 			self.original_monthly_instalment = monthly_installment_amount
 	
 	def validate_allocation(self):
-		cid = frappe.db.get_value("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus":1}, "cid")
+		cid = frappe.db.get_value("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus":1, "status":"Allocated"}, "cid")
 		if cid:
-			frappe.throw("The Flat is already rented to a Tenant with CID No: {0}".format(cid))		
-	
+			frappe.throw("The Flat is already rented to a Tenant with CID No: {0}".format(cid))
+		else:
+			surrendered_date = frappe.db.get_value("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus":1, "status":"Surrendered"}, "surrendered_date")
+			if getdate(self.allocated_date) < getdate(surrendered_date):
+				frappe.throw("Allocation Date {0} cannot be before surrendered date {1}".format(self.allocated_date, surrendered_date))
+
 	def on_submit(self):
 		#Validate Creation of Duplicate Customer in Customer Master
 		customer_code = frappe.db.sql("select customer_code from `tabCustomer` where customer_id = %s and customer_group ='Rental'",str(self.cid))

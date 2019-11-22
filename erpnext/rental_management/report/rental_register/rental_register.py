@@ -27,6 +27,7 @@ def get_columns():
 		("Fiscal Year") + ":Data:80",
 		("Month") + " :Data:80",
                 ("Rent Amount") + ":Currency:120",
+		("Paid Amount") + ":Currency:120",
                 ("Penalty.")+ ":Currency:120",
                 ("Total.") + ":Currency:120",
 	
@@ -39,7 +40,7 @@ def get_data(filters):
 	if filters.get("status") == "Submitted":
 		status = "docstatus = 1"
 
-	query = """select branch, tenant,  tenant_name, ministry_agency, department, dzongkhag, location, town_category, building_category,'class', block_no, flat_no,fiscal_year, month,  rent_amount, 'penalty', rent_amount from `tabRental Bill` where {0}""".format(status)
+	query = """select branch, tenant,  tenant_name, ministry_agency, department, dzongkhag, location, town_category, building_category,'class', block_no, flat_no,fiscal_year, month,  rent_amount, received_amount, 'penalty', rent_amount from `tabRental Bill` where {0}""".format(status)
 	if filters.get("dzongkhag"):
 		query += " and dzongkhag = \'" + str(filters.dzongkhag) + "\'"
 	if filters.get("location"):

@@ -19,24 +19,25 @@ class BreakDownReport(Document):
 		self.assign_reservation()
 		self.post_equipment_status_entry()
 
-	def validate_equipment(self):
-                if self.owned_by in ['CDCL', 'Own']:
-                        eb = frappe.db.get_value("Equipment", self.equipment, "branch")
-                        if self.owned_by == "Own" and self.branch != eb:
-                                frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to your branch")
-                        if self.owned_by == "CDCL" and self.customer_branch != eb:
-                                frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to <b>" + str(self.customer_branch) + "</b>")
-                else:
-                        self.equipment = ""
-
 	def on_cancel(self):
-		docs = check_uncancelled_linked_doc(self.doctype, self.name)
-                if docs != 1:
-                        frappe.throw("There is an uncancelled <b>" + str(docs[0]) + "("+ str(docs[1]) +")</b> linked with this document")
+		check_uncancelled_linked_doc(self.doctype, self.name)
 		frappe.db.sql("delete from `tabEquipment Reservation Entry` where ehf_name = \'"+str(self.name)+"\'")
+		frappe.db.sql("delete from `tabEquipment Status Entry` where ehf_name = \'"+str(self.name)+"\'")
 	
+	def validate_equipment(self):
+		if self.owned_by in ['Own Company', 'Own Branch']:
+			eb = frappe.db.get_value("Equipment", self.equipment, "branch")
+			if self.owned_by == "Own Branch" and self.branch != eb:
+				frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to your branch")
+			if self.owned_by == "Own Company" and self.customer_branch != eb:
+				frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to <b>" + str(self.customer_branch) + "</b>")
+			if self.owned_by == "Own Company" and self.cost_center == self.customer_cost_center:
+				frappe.throw("Equipment From your Branch should be 'Own Branch' and not 'Own Company'")
+		else:
+			self.equipment = ""
+
 	def assign_reservation(self):
-		if self.owned_by in ['CDCL', 'Own']:
+		if self.owned_by in ['Own Company', 'Own Branch']:
 			doc = frappe.new_doc("Equipment Reservation Entry")
 			doc.flags.ignore_permissions = 1 
 			doc.equipment = self.equipment
@@ -50,18 +51,18 @@ class BreakDownReport(Document):
 			doc.submit()
 
 	def post_equipment_status_entry(self):
-                if self.owned_by in ['CDCL', 'Own']:
-                        ent = frappe.new_doc("Equipment Status Entry")
-                        ent.flags.ignore_permissions = 1
-                        ent.equipment = self.equipment
-                        ent.reason = "Maintenance"
-                        ent.ehf_name = self.name
-                        ent.hours = 100
-                        ent.place = self.branch
-                        ent.from_date = self.date
-                        ent.from_time = self.time
-                        ent.to_date = add_years(self.date, 1)
-                        ent.submit()
+		if self.owned_by in ['Own Company', 'Own Branch']:
+			ent = frappe.new_doc("Equipment Status Entry")
+			ent.flags.ignore_permissions = 1 
+			ent.equipment = self.equipment
+			ent.reason = "Maintenance"
+			ent.ehf_name = self.name
+			ent.hours = 100
+			ent.place = self.branch
+			ent.from_date = self.date
+			ent.from_time = self.time
+			ent.to_date = add_years(self.date, 1)
+			ent.submit()
 
 @frappe.whitelist()
 def make_job_card(source_name, target_doc=None): 
