@@ -9,12 +9,14 @@ from frappe.utils import flt, getdate, formatdate, cstr
 def execute(filters=None):
 	validate_filters(filters);
 	columns = get_columns();
-	queries = construct_query(filters);
-	data = get_data(queries);
+	#queries = construct_query(filters);
+	data = get_data(filters);
 
 	return columns, data
 
-def get_data(query):
+def get_data(filters):
+	query = construct_query(filters)
+	frappe.msgprint("{0}".format(query))
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:

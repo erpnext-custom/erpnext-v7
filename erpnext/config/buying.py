@@ -148,6 +148,12 @@ def get_data():
 					"name": "Asset Balance Report",
 					"doctype": "Asset Received Entries"
 				},
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Comparative Statement(Quotation)",
+                                        "doctype": "Purchase Order"
+                                },
 			]
 		},
 		{

@@ -6,12 +6,5 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 
-class CommittedBudget(Document):
-	def submit(self):
-		pass
-
-	def cancel(self):
-		pass
-
-
-		
+class TDSRemittanceItem(Document):
+	pass

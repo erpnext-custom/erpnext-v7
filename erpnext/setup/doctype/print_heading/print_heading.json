@@ -8,7 +8,7 @@
  "custom": 0, 
  "docstatus": 0, 
  "doctype": "DocType", 
- "document_type": "Setup", 
+ "document_type": "", 
  "editable_grid": 0, 
  "fields": [
   {
@@ -76,7 +76,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-07-25 05:24:25.628101", 
+ "modified": "2019-09-19 21:47:21.917358", 
  "modified_by": "Administrator", 
  "module": "Setup", 
  "name": "Print Heading", 
@@ -127,5 +127,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "search_fields": "print_heading", 
+ "sort_order": "ASC", 
  "track_seen": 0
 }

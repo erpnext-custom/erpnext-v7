@@ -50,7 +50,7 @@ class LeaveApplication(Document):
 	
 
 	def validate(self):
-		#self.get_status()
+		self.get_status()
 		self.validate_fiscal_year()
 		if not getattr(self, "__islocal", None) and frappe.db.exists(self.doctype, self.name):
 			self.previous_doc = frappe.db.get_value(self.doctype, self.name, "*", as_dict=True)

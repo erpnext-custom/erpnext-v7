@@ -40,6 +40,11 @@ def get_data():
 					"type": "doctype",
 					"name": "Transporter Payment",
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "TDS Remittance",
+                                        "description": _("TDS Remittance")
+                                },
 			]
 		},
 		{

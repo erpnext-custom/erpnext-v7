@@ -588,6 +588,21 @@ frappe.ui.form.on('Stock Entry Detail', {
 }
 })
 
+frappe.ui.form.on("Stock Entry", {
+        is_write_off_entry:  function(frm) {
+                if(cur_frm.doc.is_write_off_entry && cur_frm.doc.purpose == 'Material Issue'){
+                        frm.set_df_property('remarks', 'reqd', 1)
+                        frm.set_df_property('equipment', 'reqd', 0)
+                }
+                else {
+                        frm.set_df_property('remarks', 'reqd', 0)
+                        frm.set_df_property('equipment', 'reqd', 1)
+                }
+        }
+
+        }
+)
+
 cur_frm.fields_dict['items'].grid.get_field('issued_to').get_query = function(frm, cdt, cdn) {
         var d = locals[cdt][cdn];
         if (d.issue_to_employee == "Employee") {

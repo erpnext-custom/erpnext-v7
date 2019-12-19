@@ -22,7 +22,9 @@ def get_columns(filters):
 		("Valuation Rate")+":data:120",
 		("Amount")+":Currency:110",
 	]
-	if filters.purpose == "Material Issue":
+	        
+
+	if filters.purpose in ("Material Issue", "Inventory Write Off"):	
 		cols.append(("Cost Center")+":data:170")
 		cols.append(("Issued To")+":data:120")
 
@@ -38,9 +40,13 @@ def get_columns(filters):
 
 def get_data(filters):
 	if filters.purpose == 'Material Transfer':
-		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, sed.uom, sed.qty, sed.received_qty, sed.difference_qty, sed.valuation_rate, sed.received_qty*sed.valuation_rate, sed.s_warehouse, sed.t_warehouse, se.equipment_model, se.equipment_number, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Transfer'"
+		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, sed.uom, sed.qty, sed.received_qty, sed.difference_qty, sed.valuation_rate, sed.received_qty*sed.valuation_rate, sed.s_warehouse, sed.t_warehouse, se.equipment_model, se.equipment_number, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Transfer' and se.is_write_off_entry = 0"
 	elif filters.purpose == 'Material Issue':
-		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.cost_center, sed.issued_to, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Issue'"
+		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.cost_center, sed.issued_to, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Issue' and se.is_write_off_entry = 0"
+
+	elif filters.purpose == 'Inventory Write Off':
+                data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.cost_center, sed.issued_to, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Issue' and se.is_write_off_entry = 1"
+
 	if filters.get("warehouse"):
 		data += " and sed.s_warehouse = \'" + str(filters.warehouse) + "\'"
 	if filters.get("item_code"):

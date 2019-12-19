@@ -8,7 +8,7 @@ frappe.query_reports["Stock Issue Report"] = {
 			"label": __("Purpose"),
 			"fieldtype": "Select",
 			"width": "80",
-			"options": ["Material Issue", "Material Transfer"],
+			"options": ["Material Issue", "Material Transfer", "Inventory Write Off"],
 			"reqd": 1
 		},
 

@@ -11,7 +11,8 @@ from erpnext.custom_utils import get_year_start_date, get_year_end_date
 # Post casual leave on the first day of every month
 ##
 def post_casual_leaves():
-	date = add_days(frappe.utils.nowdate(), 10)
+	#date = add_days(frappe.utils.nowdate(), 10)
+	date = frappe.utils.nowdate()
 	start = get_year_start_date(date);
 	end = get_year_end_date(date);
 
@@ -34,9 +35,12 @@ def post_casual_leaves():
 # Post earned leave on the first day of every month
 ##
 def post_earned_leaves():
-	date = add_days(frappe.utils.nowdate(), -20)
-	start = get_first_day(date);
-	end = get_last_day(date);
+	#date = add_days(frappe.utils.nowdate(), -20)
+	today_date = frappe.utils.nowdate()
+	today_month_start_date = get_first_day(today_date)
+	prev_month_date = add_days(today_month_start_date, -1)
+	start = get_first_day(prev_month_date) 
+	end = get_last_day(prev_month_date)
 
         # Shiv 2019/01/22 ticket#1333, Following line replaced by subsequent
         #employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular employees\', \'Contract\')", as_dict=True)	

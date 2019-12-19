@@ -36,8 +36,13 @@ class TravelClaim(Document):
 		if frappe.session.user == self.supervisor and not self.supervisor_approval:
 			self.db_set("supervisor_approved_on", '')
 			self.supervisor_approved_on = ''
-		if self.supervisor_approved_on and not hr_role:
-			frappe.throw("Cannot change records after approval by supervisor")
+		'''if self.supervisor_approved_on and not hr_role:
+			frappe.throw("Cannot change records after approval by supervisor")'''
+		if self.workflow_state == "Verified By Supervisor" and frappe.session.user != self.supervisor or not hr_role:
+			'''supervisor_d = frappe.get_doc("Employee", {"user_id": self.supervisor})
+                        frappe.throw("Only <b> {0}/HR. {1} </b>  can verify/edit".format(supervisor_d.salutation, supervisor_d.employee_name))'''
+			pass
+
 		#self.check_return_date()
 		self.validate_dates()
 		self.check_approval()

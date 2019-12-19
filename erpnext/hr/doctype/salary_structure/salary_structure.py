@@ -322,8 +322,14 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                 if calc_days:
                         start_date   = calc_days.get("from_date")
                         end_date     = calc_days.get("to_date")
-                        days_in_month= calc_days.get("total_days_in_month")
-                        working_days = calc_days.get("working_days")
+                        #days_in_month= calc_days.get("total_days_in_month")
+                        days_in_month = flt(30)
+			working_days1 = calc_days.get("working_days")
+			if flt(working_days1) > 30:
+				working_days = working_days1 - 1
+			else:
+				working_days = working_days1
+
                         lwp          = calc_days.get("leave_without_pay")
                         payment_days = calc_days.get("payment_days")
                 else:
