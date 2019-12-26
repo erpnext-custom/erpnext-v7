@@ -56,7 +56,6 @@ def get_item_details(filters):
 			brand, stock_uom from `tabItem` {item_conditions}"""\
 			.format(item_conditions=get_item_conditions(filters)), filters, as_dict=1):
 		item_details.setdefault(item.name, item)
-
 	return item_details
 
 def get_item_conditions(filters):
