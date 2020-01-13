@@ -443,8 +443,11 @@ cur_frm.fields_dict['items'].grid.get_field('warehouse').get_query = function(fr
 }
 
 cur_frm.fields_dict['items'].grid.get_field('lot_number').get_query = function(frm, cdt, cdn) {
+        var item = locals[cdt][cdn];
         return {
-		filters: {"branch": frm.branch, "docstatus": 1, "sales_order": ''} 
+                query: "erpnext.controllers.queries.filter_lots",
+                filters: {'branch': cur_frm.doc.branch, 'item':item.item_code},
+                searchfield : "lot_no"
         }
 }
 

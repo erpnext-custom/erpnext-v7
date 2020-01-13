@@ -298,6 +298,18 @@ cur_frm.fields_dict['items'].grid.get_field('location').get_query = function(frm
 		frappe.throw("Branch is Mandatory")
 	}
 }
+
+/*
+cur_frm.fields_dict['vehicle_items'].grid.get_field('vehicle').get_query = function(doc, cdt, cdn) {
+        item = locals[cdt][cdn]
+	if(doc.customer_order){
+        	return {
+                	query: "erpnext.controllers.queries.filter_vehicle_customer_order",
+                	filters: {'customer_order': doc.customer_order, 'branch': doc.branch, 'posting_date':doc.posting_date}
+        	}
+	}
+}
+*/
 //custom Scripts
 /*frappe.ui.form.on("Delivery Note", "onload", function(frm) {
 	cur_frm.set_query("transporter_name1", function() {

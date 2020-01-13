@@ -20,7 +20,7 @@ def get_data(filters):
 		dni_loc = " and 1 =1"
 
 	cond = get_conditions(filters)
-	qty, group = get_group_by(filters)
+	qty, group, amount = get_group_by(filters)
 	#frappe.msgprint("so {0}, {1}".format(qty, group))
 	order_by = get_order_by(filters)
 
@@ -52,9 +52,9 @@ def get_data(filters):
         where dn.name = dni.parent and dn.docstatus =1 {5}) as dn_detail
 	on so_detail.soi_name = dn_detail.dni_name
 	inner join
-	(select si.name, sii.dn_detail, (select item_sub_group from tabItem where item_code = sii.item_code group by item_sub_group) as item_sub, sii.sales_order, sii.delivery_note, {2} as sii_qty, sii.rate as sii_rate, sii.amount as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1 {6} {3}) 
+	(select si.name, sii.dn_detail, (select item_sub_group from tabItem where item_code = sii.item_code group by item_sub_group) as item_sub, sii.sales_order, sii.delivery_note, {2} as sii_qty, sii.rate as sii_rate, {7} as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1 {6} {3}) 
 	as si_detail
-	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group, so_cond, dn_cond, si_cond), as_dict = True)
+	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group, so_cond, dn_cond, si_cond, amount), as_dict = True)
 	agg_qty = agg_amount = qty = rate = amount =  qty_required  = qty_approved = balance_qty = delivered_qty = transportation_charges = 0.0
 	row = {}
 	for d in query:
@@ -64,7 +64,7 @@ def get_data(filters):
 			"sales_order": d.so_name, "posting_date": d.transaction_date, "customer": cust.name, "customer_name": cust.customer_name, 
 			"customer_type": cust.customer_type, "customer_id": cust.customer_id, "customer_contact": cust.mobile_no, 
 			"item_code": d.item_code, "item_name": d.item_name, "qty_approved": flt(d.qty_approved),
-			"qty": flt(d.sii_qty),  "rate": flt(d.sii_rate),  "amount": flt(d.sii_qty) * flt(d.sii_rate), "receipt_no": d.name, 
+			"qty": flt(d.sii_qty),  "rate": flt(d.sii_rate),  "amount": flt(d.sii_amount), "receipt_no": d.name, 
 			"delivered_qty": flt(d.sii_qty), "vehicle_no": d.vehicle, "drivers_name": d.drivers_name, 
 			"drivers_contact": d.contact_no, "transportation_charges": d.transportation_charges, "agg_qty": flt(d.sii_qty),
 			"agg_amount": flt(d.sii_amount), "agg_branch": d.branch, "agg_location": d.location, "item_sub_group": d.item_sub
@@ -97,7 +97,7 @@ def get_data(filters):
 		agg_amount += flt(d.sii_amount)
 		qty +=  flt(d.sii_qty)  
 		#rate +=  flt(d.sii_rate)
-		amount += flt(d.sii_qty) * flt(d.sii_rate)
+		amount += flt(d.sii_amount)
 		qty_approved += flt(d.qty_approved)
 		delivered_qty =+ flt(d.sii_qty)
 		balance_qty += flt(d.qty_approved) - flt(d.sii_qty)
@@ -126,19 +126,23 @@ def get_customer(filters, cond):
 def get_group_by(filters):
 	group_by = " "
 	qty = 'sii.qty'
+	amount = 'sii.amount'
 	if filters.group_by == 'Sales Order':
 		group_by = " group by sii.sales_order"
 		qty = " sum(sii.qty)"
+		amount = " sum(sii.amount)"
 
 	if filters.aggregate:
 		group_by = " group by item_sub, si.branch"
 		qty = " sum(sii.qty)"
+		amount = " sum(sii.amount)"
 
 	if filters.product_wise_customer:
 		group_by = " group by item_sub, customer"
 		qty = " sum(sii.qty)"
+		amount = " sum(sii.amount)"
 	#frappe.msgprint("{0}".format(group_by))
-	return qty, group_by
+	return qty, group_by, amount
 
 def get_order_by(filters):
 	return " order by so.name"

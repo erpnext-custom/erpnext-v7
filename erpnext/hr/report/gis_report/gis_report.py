@@ -41,6 +41,7 @@ def get_columns(data):
 		_("Basic Pay") + ":Currency:120",
         	_("GIS Contribution") + ":Currency:120",
         	_("Company") + ":Link/Branch:120",
+		_("Cost Center") + ":Link/Cost Center:120",
 		_("Branch") + ":Link/Branch:120",
 		_("Department") + ":Link/Department:120",
     		_("Division") + ":Data:120",
@@ -58,7 +59,7 @@ def get_data(filters):
 				t3.date_of_birth, t3.date_of_joining, t3.employee_group, t1.employee_subgroup, t1.gis_number, t1.gis_policy_number,
 				sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0) else 0 end) as basicpay,
 				sum(case when t2.salary_component = 'Group Insurance Scheme' then ifnull(t2.amount,0) else 0 end) as gisamount,
-                        	t1.company, t1.branch, t1.department, t1.division, t1.section,t1.fiscal_year, t1.month
+                        	t1.company, t1.branch, t1.cost_center, t1.department, t1.division, t1.section,t1.fiscal_year, t1.month
                 		from `tabSalary Slip` t1, `tabSalary Detail` t2, `tabEmployee` t3
                 		where t1.docstatus = 1 %s
                 		and t3.employee = t1.employee
@@ -87,5 +88,6 @@ def get_conditions(filters):
 	if filters.get("fiscal_year"): conditions += " and t1.fiscal_year = %(fiscal_year)s"
 	if filters.get("company"): conditions += " and t1.company = %(company)s"
 	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"
+	if filters.get("cost_center"): conditions += " and exists(select 1 from `tabCost Center` cc where t1.cost_center = cc.name and (cc.parent_cost_center = '{0}' or cc.name = '{0}'))".format(filters.cost_center)
 
 	return conditions, filters

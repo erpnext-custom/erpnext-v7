@@ -26,6 +26,7 @@ class ImprestRecoup(AccountsController):
 
                 if not self.final_settlement:   # Ver 3.0 Begins, by SHIV on 2018/11/18, if condition added (applicable for only NRDCL)
                         self.post_receipt_entry()
+		
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
                 self.post_gl_entry()
                 self.consume_budget()
@@ -180,7 +181,6 @@ class ImprestRecoup(AccountsController):
                                        "business_activity": self.business_activity
                                 })
                         )
-                
                 make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
  	##
         # Update the Committedd Budget for checking budget availability

@@ -19,6 +19,7 @@ def get_columns(data):
 		("Employee") + ":Link/Employee:100",
 		("Employee Name") + "::160",
         	("Designation") + ":Link/Designation:150",
+		("Cost Center") + ":Link/Cost Center:120",
                 ("Branch") + ":Link/Branch:120",
 		("Amount") + ":Currency:100",
 	]
@@ -28,7 +29,7 @@ def get_columns(data):
 def get_data(filters):
 		conditions, filters = get_conditions(filters)
 
-	        data = frappe.db.sql(""" SELECT ss.employee, ss.employee_name,  ss.designation, ss.branch, sd.amount
+	        data = frappe.db.sql(""" SELECT ss.employee, ss.employee_name,  ss.designation, ss.cost_center, ss.branch, sd.amount
 FROM `tabSalary Slip` AS ss , `tabSalary Detail` AS sd
 WHERE ss.name= sd.parent
 AND sd.salary_component ='House Rent' {0}""".format(conditions))
@@ -47,5 +48,6 @@ def get_conditions(filters):
 	if filters.get("company"): conditions += " and ss.company = '{0}'".format(filters.company)
 	if filters.get("employee"): conditions += " and ss.employee = '{0}'".format(filters.employee)
 	if filters.get("branch"): conditions += " and ss.branch = '{0}'".format(filters.branch)
+	if filters.get("cost_center"): conditions += " and exists(select 1 from `tabCost Center` cc where t1.cost_center = cc.name and (cc.parent_cost_center = '{0}' or cc.name = '{0}'))".format(filters.cost_center)
 	#frappe.msgprint("{0}".format(conditions))
 	return conditions, filters

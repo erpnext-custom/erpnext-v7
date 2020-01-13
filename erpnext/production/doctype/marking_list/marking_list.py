@@ -30,7 +30,9 @@ class MarkingList(Document):
 
 		self.cost_center = get_branch_cc(self.branch)
 		total_amount = total_qty_m3 = total_qty_cft = log_volume = firewood_volume = 0
+		total_trees = 0
 		for d in self.items:
+			total_trees += d.no_of_trees
 			d.qty_m3 = flt(d.l_volume)*flt(d.no_of_trees)
 			if not flt(d.qty_m3) > 0:
 				frappe.throw("Volume cannot be zero or less")
@@ -81,6 +83,7 @@ class MarkingList(Document):
 		self.total_qty_cft = total_qty_cft
 		self.log_volume = log_volume
 		self.firewood_volume = firewood_volume
+		self.total_no_of_trees = total_trees
 
 	def calculate_total(self):
 		#records = frappe.db.sql("select b.class as timber_class, sum(a.qty) as qty_m3, b.timber_type from `tabMarking List Item` a, `tabTimber Species` b where a.species = b.name and a.parent = %s group by b.class, b.timber_type", self.name, as_dict=1)

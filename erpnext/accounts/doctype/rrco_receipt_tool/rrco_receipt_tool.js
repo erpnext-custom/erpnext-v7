@@ -7,6 +7,13 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 		frm.set_value("start_date", get_today());
 		frm.set_value("end_date", get_today());
 		erpnext.rrco_receipt_tool.load_invoices(frm);
+		frm.set_query("cost_center", function(){
+			return {
+				"filters" : {
+					"list_in_other_contribution": 1
+				}
+			}
+		});
 	},
 
 	update_receipt_date: function(frm) {
@@ -20,7 +27,8 @@ frappe.ui.form.on("RRCO Receipt Tool", {
 					"receipt_number":frm.doc.receipt_number,
 					"receipt_date":frm.doc.receipt_date,
 					"cheque_number":frm.doc.cheque_no,
-					"cheque_date":frm.doc.cheque_date
+					"cheque_date":frm.doc.cheque_date,
+					"cost_center":frm.doc.cost_center,
 				},
 				callback: function(r) {
 					if(r.message == "DONE") {

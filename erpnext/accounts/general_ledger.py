@@ -44,7 +44,6 @@ def process_gl_map(gl_map, merge_entries=True):
 			entry.debit_in_account_currency = \
 				flt(entry.debit_in_account_currency) - flt(entry.credit_in_account_currency)
 			entry.credit_in_account_currency = 0.0
-
 	return gl_map
 
 def merge_similar_entries(gl_map):
@@ -129,6 +128,7 @@ def make_entry(args, adv_adj, update_outstanding):
 	gle.run_method("on_update_with_args", adv_adj, update_outstanding)
 	gle.submit()
 	
+	
 
 def validate_account_for_auto_accounting_for_stock(gl_map):
 	if cint(frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_stock")) \
@@ -180,6 +180,7 @@ def make_round_off_gle(gl_map, debit_credit_diff):
 		"posting_date", "remarks", "is_opening"]:
 			round_off_gle[k] = gl_map[0][k]
 
+	default_business_activity = frappe.db.get_value("Business Activity",{"is_default":1},"name")
 	round_off_gle.update({
 		"account": round_off_account,
 		"debit_in_account_currency": abs(debit_credit_diff) if debit_credit_diff < 0 else 0,
@@ -191,8 +192,10 @@ def make_round_off_gle(gl_map, debit_credit_diff):
 		"party": None,
 		"against_voucher_type": None,
 		"against_voucher": None,
-		"fiscal_year": str(gl_map[0].posting_date)[0:4]
+		"fiscal_year": str(gl_map[0].posting_date)[0:4],
+		"business_activity" : default_business_activity
 	})
+	
 
 	gl_map.append(round_off_gle)
 

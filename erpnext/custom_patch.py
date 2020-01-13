@@ -9,6 +9,51 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_royalty():
+	for a in frappe.db.sql("select docstatus, name, po_no from `tabSales Order` where po_no in (select name from `tabProduct Requisition` where supply_rate = 'Concessional Royalty')", as_dict=True):
+		frappe.db.sql("Update `tabSales Order` set supply_rate = 'Concessional Royalty' where name = '{0}'".format(a.name))
+
+def update_leave_allocation():
+	for a in frappe.db.sql("select name, carry_forwarded_leaves, total_leaves_allocated, employee, leave_encashment, encashed_days from `tabLeave Allocation` where from_date = '2020-01-01' and to_date = '2020-12-31' and docstatus = 1", as_dict=True):
+		if a.leave_encashment:
+			frappe.db.sql("update `tabLeave Allocation` set carry_forwarded_leaves= '{0}', total_leaves_allocated = '{1}', leave_encashment= '{2}', encashed_days = '{3}' where employee = '{4}' and from_date='2019-12-01' and to_date = '2019-12-31'".format(a.carry_forwarded_leaves, a.total_leaves_allocated, a.leave_encashment, a.encashed_days, a.employee))
+		frappe.db.sql("update `tabLeave Allocation` set docstatus = 2 where name = '{0}'".format(a.name))
+				
+def update_product_requisition1():
+	for a in frappe.db.sql("select name, parent, item_code, balance, qty  from `tabProduct Requisition Item` where parent = 'PREQ191970'", as_dict=True):
+		balance_qty = 0.00
+		so_qty = 0.00
+		for b in frappe.db.sql("select soi.qty as qty, soi.item_code as item_code from `tabSales Order` so inner join `tabSales Order Item` soi on so.name = soi.parent where so.docstatus = 1 and so.po_no = '{0}'".format(a.parent), as_dict=True):
+			so_qty += flt(b.qty)
+		balance_qty = flt(a.qty) - flt(so_qty)
+		print("{0} and {1} and {2}".format(balance_qty, a.qty, so_qty))
+		frappe.db.sql("update `tabProduct Requisition Item` set balance = '{0}' where name = '{1}'".format(balance_qty, a.name))
+
+def update_product_requisition():
+	for i in frappe.db.sql("select name from `tabProduct Requisition`", as_dict=True):
+		balance_qty = 0.00
+		so_qty = 0.00
+
+		for b in frappe.db.sql("select soi.qty as qty, soi.item_code as item_code from `tabSales Order` so inner join `tabSales Order Item` soi on so.name = soi.parent where so.docstatus = 1 and so.po_no = '{0}'".format(a.parent), as_dict=True):
+			so_qty += flt(b.qty)
+		balance_qty = flt(a.qty) - flt(so_qty)
+		frappe.db.sql("update `tabProduct Requisition Item` set balance = '{0}' where name = '{1}'".format(balance_qty, a.name))
+
+def update_pr():
+	for a in frappe.db.sql("select name from `tabProduct Requisition`", as_dict=True):
+		delevery_flag = 1
+		for b in frappe.db.sql("select name, parent, balance from `tabProduct Requisition Item` where parent = '{0}'".format(a.name), as_dict=True):
+			if b.balance > 0:
+				delevery_flag = 0
+		if delevery_flag == 1:
+			frappe.db.sql("update `tabProduct Requisition` set delivered = '1' where name = '{0}'".format(a.name))
+	
+
+def update_lot_stock_entry():
+	for a in frappe.db.sql("select name, parent, lot_list from `tabStock Entry Detail` where lot_list is not NULL and lot_list!='' and docstatus = 1", as_dict=1):
+		frappe.db.sql("update `tabLot List` set stock_entry = '{0}' where name = '{1}'".format(a.parent, a.lot_list))
+		print("Lot No. ===> {0}   Stock Entry ===> {1}".format(a.lot_list, a.parent))
+
 def update_sws_contribution():
         for a in frappe.db.sql("select name, employee, employee_name, employee_grade from `tabSalary Structure`",  as_dict=1):
                 sws_amount = frappe.db.get_value("Employee Grade", a.employee_grade, "sws_contribution")

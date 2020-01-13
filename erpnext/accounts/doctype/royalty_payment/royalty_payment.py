@@ -54,15 +54,29 @@ class RoyaltyPayment(Document):
 			if (not self.adhoc_production and not self.range_name) or not self.from_date or not self.to_date:
 				frappe.throw("Adhoc Production, From Date and To Date are Mandatory")
 
-			if self.adhoc_production:
-				entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
+			if self.business_activity == "Firewood":
+				if self.adhoc_production:
+					entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group = 'Firewood' and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
+				else:
+					entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, \
+					sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b \
+					where a.name = b.parent and a.branch = %s and b.item_sub_group = 'Firewood' \
+					and a.adhoc_production in (select adhoc_name from `tabAdhoc Production` \
+					where range_name = %s) and a.posting_date between %s and %s \
+					and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, \
+					b.reading", (self.branch, self.range_name, self.from_date, self.to_date), as_dict=1)
+				
 			else:
-			 	entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, \
-                                sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b \
-                                where a.name = b.parent and a.branch = %s and a.adhoc_production in (select adhoc_name from `tabAdhoc Production` \
-                                where range_name = %s) and a.posting_date between %s and %s \
-                                and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, \
-                                b.reading", (self.branch, self.range_name, self.from_date, self.to_date), as_dict=1)
+				if self.adhoc_production:
+					entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group != 'Firewood' and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
+				else:
+					entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, \
+					sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b \
+					where a.name = b.parent and a.branch = %s and b.item_sub_group != 'Firewood' \
+					and a.adhoc_production in (select adhoc_name from `tabAdhoc Production` \
+					where range_name = %s) and a.posting_date between %s and %s \
+					and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, \
+					b.reading", (self.branch, self.range_name, self.from_date, self.to_date), as_dict=1)
 
 			self.set('adhoc_temp_items', [])
 			# Following line replaced by subsequent, by SHIV on 2018/11/13
@@ -111,6 +125,11 @@ class RoyaltyPayment(Document):
 
 		if species:
 			timber_class = frappe.db.get_value("Timber Species", species, "timber_class")
+			if not timber_class:
+				timber_class = 0
+		else:
+			timber_class = 0
+
 		if reading < 1:
 			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date and timber_class=''", (item_code, self.posting_date), as_dict=1)
 		else:
@@ -119,7 +138,13 @@ class RoyaltyPayment(Document):
 			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date", (item_code, self.posting_date), as_dict=1)
 		if not rate:
 			#frappe.msgprint("subgroup: {0} Date: {1} class: {2} reading: {3} reading:{4} ".format(sub_group, self.posting_date, timber_class, reading, reading))
-			rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date and timber_class = %s and %s >= from_inch and %s <= to_inch", (sub_group, self.posting_date, timber_class, reading, reading), as_dict=1, debug=1)
+			if timber_class != 0:
+				rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where particular = %s and %s between from_date and to_date and timber_class = %s and %s >= from_inch and %s <= to_inch", (sub_group, self.posting_date, timber_class, reading, reading), as_dict=1, debug=1)
+
+		if not rate:
+			if sub_group:
+				rate = frappe.db.sql("select based_on, particular, royalty_rate, timber_class, from_reading, to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where based_on = 'Item Sub Group' and particular = %s and %s between from_date and to_date and timber_class is NULL", (sub_group, self.posting_date), as_dict=1)
+
 		if not rate:
 			frappe.throw("Royalty Rate for {0} has not been defined in Adhoc Royalty Setting".format(frappe.bold(item_code)))
 		

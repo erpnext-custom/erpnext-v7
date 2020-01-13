@@ -296,7 +296,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-11-28 10:29:22.016068", 
+ "modified": "2020-01-13 10:31:29.743243", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Selling Price", 
@@ -350,6 +350,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "submitted_by": "", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

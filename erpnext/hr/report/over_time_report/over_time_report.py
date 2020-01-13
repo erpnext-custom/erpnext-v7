@@ -20,7 +20,7 @@ def validate_filters(filters):
 
 def get_data(filters):
 
-	query = "select a.employee as employee, a.employee_name as employee_name,c.designation as designation,c.employee_subgroup as grade,\
+	query = "select a.employee as employee, a.employee_name as employee_name,c.designation as designation,c.employee_subgroup as grade, a.rate as rate, \
 		sum(b.number_of_hours) as hours,sum(round(b.number_of_hours*a.rate,2)) as amount, \
 		c.cost_center from `tabOvertime Application Item` as b inner join `tabOvertime Application` as a  on b.parent = a.name \
 		inner join `tabEmployee` as c on a.employee=c.employee \
@@ -74,8 +74,14 @@ def get_columns():
 			"width": 120
 		},
 		{
+			"fieldname": "rate",
+			"label": _("Hourly Rate"),
+			"fieldtype": "Currency",
+			"width": 100
+		},
+		{
 			"fieldname" : "hours",
-			"label": _("Hours"),
+			"label": _("Total Hours"),
 			"fieldtype": "Data",
 			"width": 100
 		},

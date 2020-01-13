@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, getdate, cint
 
@@ -91,8 +92,35 @@ class LeaveTravelConcession(Document):
 	#@frappe.whitelist()
 	def get_ltc_details(self):
 		start, end = frappe.db.get_value("Fiscal Year", self.fiscal_year, ["year_start_date", "year_end_date"])
-		query = "select e.date_of_joining, b.employee, b.employee_name, b.branch, a.amount, e.bank_name, e.bank_ac_no  from `tabSalary Detail` a, `tabSalary Structure` b, tabEmployee e where a.parent = b.name and b.employee = e.name and a.salary_component = 'Basic Pay' and (b.is_active = 'Yes' or e.relieving_date between \'"+str(start)+"\' and \'"+str(end)+"\') and b.eligible_for_ltc = 1 "
-		query += " order by b.branch"
+		query = """
+			select
+				e.date_of_joining, e.name as employee, e.employee_name,
+				e.employment_type, e.employee_group, e.employee_subgroup, 
+				e.designation, e.branch,
+				ifnull((
+					select sd.amount
+					from `tabSalary Structure` sst, `tabSalary Detail` sd
+					where sst.employee = e.name
+					and sst.eligible_for_ltc = 1
+					and sst.from_date <= '{end_date}'
+					and ifnull(sst.to_date,greatest(now(),'{end_date}')) >= '{end_date}'
+					and sd.parent = sst.name
+					and sd.salary_component = 'Basic Pay'
+					order by ifnull(sst.to_date,greatest(now(),'{end_date}')) desc
+					limit 1 
+				),0) as amount,
+				e.bank_name, e.bank_ac_no
+			from `tabEmployee` e
+			where e.date_of_joining <= '{start_date}'
+			and ifnull(e.relieving_date,greatest(now(),'{end_date}')) >= '{end_date}'
+			and exists(select 1
+					from `tabSalary Structure` sst
+					where sst.employee = e.name
+					and sst.eligible_for_ltc = 1
+					and ifnull(sst.to_date,greatest(now(),'{end_date}'))   >= '{end_date}'
+					)
+		""".format(start_date=str(start), end_date=str(end))
+		query += " order by e.branch"
 		entries = frappe.db.sql(query, as_dict=True)
 		self.set('items', [])
 

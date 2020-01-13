@@ -130,6 +130,14 @@ class MaterialRequest(BuyingController):
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated
 		# Though the creation of Material Request from a Production Plan can be rethought to fix this
 
+		### Check Supporting Document
+		self.validate_supporting_doc()
+
+	def validate_supporting_doc(self):
+		if self.workflow_state not in ["Draft","Waiting Approval","Approved","Rejected by CEO","Rejected by GM","Rejected","Cancelled"]:
+			if not self.supporting_doc:
+				frappe.throw("Attach the relevant documents to support your Material Request")
+
         def validate_multiple_approvers(self):
                 self.prev_workflow_state = self.get_db_value("workflow_state")
                 self.cur_workflow_state = self.workflow_state

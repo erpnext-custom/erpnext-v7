@@ -11,7 +11,11 @@ class LotList(Document):
 	def validate(self):
 		if self.items:
 			self.calculate_vol()
+		self.lot_no = self.name
+		
 
+	def on_submit(self):
+		pass
 	def calculate_vol(self):
 		total_vol=0.0
 		count = 0

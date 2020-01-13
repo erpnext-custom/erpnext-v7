@@ -21,16 +21,8 @@ frappe.ui.form.on('Job Card', {
 				};
 				frappe.set_route("query-report", "General Ledger");
 			}, __("View"));
-			if (frm.doc.out_source == 1 && frm.doc.docstatus ==1){
-				
-				frm.add_custom_button(__('Payment'),function(){
-					frappe.model.open_mapped_doc({
-						method: "erpnext.maintenance.doctype.job_card.job_card.make_payment",
-						frm: cur_frm
-					})
-				},__("Payment"));
-			}
 		}
+		
 		if (frm.doc.jv && frappe.model.can_read("Journal Entry")) {
 			cur_frm.add_custom_button(__('Bank Entries'), function() {
 				frappe.route_options = {
@@ -41,7 +33,7 @@ frappe.ui.form.on('Job Card', {
 			}, __("View"));
 		}
 	
-		if (frm.doc.outstanding_amount > 0 && frm.doc.owned_by == "Others" && frm.doc.out_source != 1 && frappe.model.can_write("Journal Entry")) {
+		if (frm.doc.outstanding_amount > 0 && frm.doc.owned_by == "Others" && frappe.model.can_write("Journal Entry")) {
 			//cur_frm.toggle_display("receive_payment", 1)
 			/*cur_frm.add_custom_button(__('Payment'), function() {
 				cur_frm.cscript.receive_payment()
@@ -108,6 +100,22 @@ frappe.ui.form.on("Job Card Item", {
 	},
 	"end_time": function(frm, cdt, cdn) {
 		calculate_datetime(frm, cdt, cdn)
+	},
+	"job": function(frm, cdt, cdn) {
+		var item = locals[cdt][cdn]
+		
+		if(item.job) {
+			frappe.call({
+				method: "frappe.client.get_value",
+				args: {
+					doctype: item.which,
+					fieldname: ["item_name", "cost"],
+					filters: {
+						name: item.job
+					}
+				},
+				callback: function(r) {
+					frappe.model.set_value(cdt, cdn, "job_name", r.message.item_name)
 	},
 	"job": function(frm, cdt, cdn) {
 		var item = locals[cdt][cdn]
@@ -205,22 +213,6 @@ cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = functi
 		filters: [
 		[
 			'Employee', 'designation', 'in', ['Mechanic','Auto Electrician','Operator','Welder','Driver']
-		],
-		['Employee', 'branch', '=', frm.branch],
-		['Employee', 'status', '=', 'Active']
-		]
-	}
-}
-*/
-
-cur_frm.fields_dict['assigned_to'].grid.get_field('mechanic').get_query = function(frm, cdt, cdn) {
-	var d = locals[cdt][cdn];
-        if(d.employee_type == "Employee") {
-                return {
-                        filters: [
-                        ['Employee', 'is_job_card_employee', '=', 1],
-                        ['Employee', 'status', '=', 'Active']
-                        ]
                 }
         }
 	else if(d.employee_type == "DES Employee") {

@@ -37,7 +37,13 @@ frappe.query_reports["Other Recoveries"] = {
 			"fieldtype": "Link",
 			"options": "Company",
 			"default": frappe.defaults.get_user_default("Company")
-		}
+		},
 
+		{
+			"fieldname":"cost_center",
+			"label": __("Parent Cost Center"),
+			"fieldtype": "Link",
+			"options": "Cost Center"
+		}
 	]
 }

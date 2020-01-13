@@ -4027,7 +4027,7 @@
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
    "in_list_view": 0, 
-   "label": "Notification Email Address", 
+   "label": " Email Address", 
    "length": 0, 
    "no_copy": 1, 
    "options": "Email", 

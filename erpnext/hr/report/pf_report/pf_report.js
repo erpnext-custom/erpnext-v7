@@ -38,14 +38,15 @@ frappe.query_reports["PF Report"] = {
                         "options":[" ", 1, 2],
                 },
 		{
-                        "fieldname":"test",
-                        "label": __("Test"),
-                        "fieldtype": "Select",
-                        "options": [] 
-                },
+			"fieldname":"cost_center",
+			"label": __("Parent Cost Center"),
+			"fieldtype": "Link",
+			"options": "Cost Center"
+		}
 	
 	],
-	onload: function(report) {
+
+/*	onload: function(report) {
 		select = $('div[data-fieldname="test"]').children()
 		frappe.call({
 			method: "erpnext.hr.doctype.employee.employee.get_list",
@@ -55,5 +56,5 @@ frappe.query_reports["PF Report"] = {
 				})
 			}
 		})
-	}
+	} */
 }

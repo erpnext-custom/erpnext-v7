@@ -9,6 +9,210 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+# Created by SHIV on 2019/12/12
+def refresh_salary_structures(debug=1):
+        counter = 0
+        for i in frappe.db.get_all("Salary Structure", "name", {"is_active": "Yes"}):
+                counter += 1
+                print counter, i.name
+                if not debug:
+                        doc = frappe.get_doc("Salary Structure", i.name)
+                        doc.save()
+        
+def update_new_payscale_arrears(debug=1):
+        counter = 0
+        for i in frappe.db.sql("""
+                        select sst.name, sr.new_basic, sr.basic_arrears, sr.salary_arrears
+                        from
+                                `tabSalary Structure` sst,
+                                maintenance.salary_revision2019 sr
+                        where sst.is_active = 'Yes'
+                        and sst.from_date = '2019-12-01'
+                        and sr.employee = sst.employee
+                        and (ifnull(sr.basic_arrears,0) > 0 or ifnull(sr.salary_arrears,0))
+                """, as_dict=True):
+                counter += 1
+                print counter, i
+                if not debug:
+                        print 'updating....'
+                        doc = frappe.get_doc("Salary Structure", i.name)
+                        if flt(i.basic_arrears):
+                                row = doc.append("earnings", {})
+                                row.salary_component = "Basic Pay Arrears"
+                                row.amount          = flt(i.basic_arrears)
+                                row.from_date        = "2019-12-01"
+                                row.to_date          = "2019-12-31"
+                                row.save(ignore_permissions=True)
+                        if flt(i.salary_arrears):
+                                row = doc.append("earnings", {})
+                                row.salary_component = "Salary Arrears"
+                                row.amount          = flt(i.salary_arrears)
+                                row.from_date        = "2019-12-01"
+                                row.to_date          = "2019-12-31"
+                                row.save(ignore_permissions=True)                                
+                        doc.save()
+                        
+def update_new_payscale_basic(debug=1):
+        counter = 0
+        for i in frappe.db.sql("""
+                        select sst.name, sr.new_basic, sr.basic_arrears, sr.salary_arrears
+                        from
+                                `tabSalary Structure` sst,
+                                maintenance.salary_revision2019 sr
+                        where sst.is_active = 'Yes'
+                        and sst.from_date = '2019-12-01'
+                        and sr.employee = sst.employee
+                """, as_dict=True):
+                counter += 1
+                print counter, i
+                if not debug:
+                        print 'updating....'
+                        if not frappe.db.exists("Salary Detail", {"parent": i.name, "salary_component": "Basic Pay"}):
+                                frappe.throw(_("Basic Pay component not found"))
+                        #basic = frappe.get_doc("Salary Detail", {"parent": i.name, "salary_component": "Basic Pay"})
+                        #basic.db_set("amount",i.new_basic)
+                        doc = frappe.get_doc("Salary Structure", i.name)
+                        for j in doc.get('earnings'):
+                                if j.salary_component == "Basic Pay":
+                                        j.amount = i.new_basic
+                                        break
+                        doc.save()
+        
+def update_new_payscale_master(debug=1):
+        counter = 0
+        for i in frappe.db.get_all("Salary Structure", "name", {"is_active": "Yes", "from_date": "2019-12-01"}):
+                counter += 1
+                print counter, i
+                if not debug:
+                        doc = frappe.get_doc("Salary Structure", i.name)
+                        doc.ca = 20 if flt(doc.ca) == 23 else doc.ca
+                        doc.eligible_for_psa = 0
+                        doc.psa = 0
+                        doc.save()
+                
+def create_new_salary_structures(debug=1):
+        def duplicate_structure(old_sst):
+                old = frappe.get_doc("Salary Structure", old_sst)
+                old.is_active   = 'No'
+                old.to_date     = '2019-11-30'
+                old.save(ignore_permissions=True)
+                print 'update old_structure'
+                new = {
+                        "doctype": "Salary Structure",
+                        "employee": old.employee,
+                        "is_active": "Yes",
+                        "from_date": "2019-12-01",
+                        "eligible_for_corporate_allowance": old.eligible_for_corporate_allowance,
+                        "ca_method": old.ca_method,
+                        "ca": old.ca,
+                        "eligible_for_contract_allowance": old.eligible_for_contract_allowance,
+                        "contract_allowance_method": old.contract_allowance_method,
+                        "contract_allowance": old.contract_allowance,
+                        "eligible_for_communication_allowance": old.eligible_for_communication_allowance,
+                        "communication_allowance_method": old.communication_allowance_method,
+                        "communication_allowance": old.communication_allowance,
+                        "eligible_for_fuel_allowances": old.eligible_for_fuel_allowances,
+                        "fuel_allowances_method": old.fuel_allowances_method,
+                        "fuel_allowances": old.fuel_allowances,
+                        "eligible_for_shift": old.eligible_for_shift,
+                        "shift_method": old.shift_method,
+                        "shift": old.shift,
+                        "eligible_for_difficulty": old.eligible_for_difficulty,
+                        "difficulty_method": old.difficulty_method,
+                        "difficulty": old.difficulty,
+                        "eligible_for_high_altitude": old.eligible_for_high_altitude,
+                        "high_altitude_method": old.high_altitude_method,
+                        "high_altitude": old.high_altitude,
+                        "eligible_for_psa": old.eligible_for_psa,
+                        "psa_method": old.psa_method,
+                        "psa": old.psa,
+                        "eligible_for_mpi": old.eligible_for_mpi,
+                        "mpi_method": old.mpi_method,
+                        "mpi": old.mpi,
+                        "eligible_for_deputation": old.eligible_for_deputation,
+                        "deputation_method": old.deputation_method,
+                        "deputation": old.deputation,
+                        "eligible_for_officiating_allowance": old.eligible_for_officiating_allowance,
+                        "officiating_allowance_method": old.officiating_allowance_method,
+                        "officiating_allowance": old.officiating_allowance,
+                        "eligible_for_temporary_transfer_allowance": old.eligible_for_temporary_transfer_allowance,
+                        "temporary_transfer_allowance_method": old.temporary_transfer_allowance_method,
+                        "temporary_transfer_allowance": old.temporary_transfer_allowance,
+                        "eligible_for_scarcity": old.eligible_for_scarcity,
+                        "scarcity_method": old.scarcity_method,
+                        "scarcity": old.scarcity,
+                        "eligible_for_cash_handling": old.eligible_for_cash_handling,
+                        "cash_handling_method": old.cash_handling_method,
+                        "cash_handling": old.cash_handling,
+                        "eligible_for_honorarium": old.eligible_for_honorarium,
+                        "honorarium_method": old.honorarium_method,
+                        "honorarium": old.honorarium,
+                        "eligible_for_pbva": old.eligible_for_pbva,
+                        "eligible_for_leave_encashment": old.eligible_for_leave_encashment,
+                        "eligible_for_ltc": old.eligible_for_ltc,
+                        "eligible_for_overtime_and_payment": old.eligible_for_overtime_and_payment,
+                        "eligible_for_sws": old.eligible_for_sws,
+                        "eligible_for_gis": old.eligible_for_gis,
+                        "eligible_for_pf": old.eligible_for_pf,
+                        "eligible_for_health_contribution": old.eligible_for_health_contribution,
+                        "eligible_for_bonus": old.eligible_for_annual_bonus,
+                }
+                # Earnings
+                earnings = []
+                for i in old.get("earnings"):
+                        earnings.append({
+                                "salary_component": i.salary_component,
+                                "amount": i.amount,
+                                "depends_on_lwp": i.depends_on_lwp,
+                                "from_date": i.from_date,
+                                "to_date": i.to_date,
+                                "institution_name": i.institution_name,
+                                "reference_type": i.reference_type,
+                                "reference_number": i.reference_number,
+                                "total_deductible_amount": i.total_deductible_amount,
+                                "total_deducted_amount": i.total_deducted_amount,
+                                "total_outstanding_amount": i.total_outstanding_amount,
+                                "salary_component_type": i.salary_component_type
+                        })
+
+                # Deductions
+                deductions = []
+                for i in old.get("deductions"):
+                        deductions.append({
+                                "salary_component": i.salary_component,
+                                "amount": i.amount,
+                                "depends_on_lwp": i.depends_on_lwp,
+                                "from_date": i.from_date,
+                                "to_date": i.to_date,
+                                "institution_name": i.institution_name,
+                                "reference_type": i.reference_type,
+                                "reference_number": i.reference_number,
+                                "total_deductible_amount": i.total_deductible_amount,
+                                "total_deducted_amount": i.total_deducted_amount,
+                                "total_outstanding_amount": i.total_outstanding_amount,
+                                "salary_component_type": i.salary_component_type
+                        })
+
+                new.update({"earnings": earnings})
+                new.update({"deductions": deductions})
+                frappe.get_doc(new).save(ignore_permissions=True)
+                return new
+        
+        counter = 0
+        for i in frappe.db.sql("""
+                        select ssb.name
+                        from
+                                maintenance.`tabSalary Structure_bkp20191212` ssb,
+                                `tabSalary Structure` sst
+                        where ssb.is_active='Yes'
+                        and sst.name = ssb.name
+                        and sst.is_active = ssb.is_active
+                """, as_dict=True):
+                counter += 1
+                print counter, i
+                if not debug:
+                        duplicate_structure(i.name)
+        
 # 2019/05/22 Birkha->Shiv
 def cancel_dn():
 	doc = frappe.get_doc("Delivery Note", "DN19043483")

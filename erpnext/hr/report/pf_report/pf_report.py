@@ -31,7 +31,7 @@ def get_columns(data):
 		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140", _("Designation") + ":Link/Designation:120",
                 _("CID") + "::120",_("NPPF Tier") + "::100", _("Basic Pay") + ":Currency:120",_("PF Account#") + "::120",
                 _("Employee PF") + ":Currency:120", _("Employer PF") + ":Currency:120", _("Total") + ":Currency:120",
-                _("Company") + ":Link/Branch:120", _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120",
+                _("Company") + ":Link/Branch:120", _("Cost Center") + ":Link/Cost Center:120", _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120",
                 _("Division") + ":Link/Division:120", _("Section") + ":Link/Section:120", _("Year") + "::80", _("Month") + "::80"
 	]
 	
@@ -47,7 +47,7 @@ def get_data(filters):
                         sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end) as employeepf,
                         sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end) as employerpf,
                         sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0)*2 else 0 end) as total,
-                        t1.company, t1.branch, t1.department, t1.division, t1.section,
+                        t1.company, t1.branch, t1.cost_center, t1.department, t1.division, t1.section,
                         t1.fiscal_year, t1.month
                 from `tabSalary Slip` t1, `tabSalary Detail` t2, `tabEmployee` t3
                 where t1.docstatus = 1 %s
@@ -79,6 +79,6 @@ def get_conditions(filters):
 	if filters.get("company"): conditions += " and t1.company = %(company)s"
 	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"
 	if filters.get("tier"): conditions += " and t3.nppf_tiers = %(tier)s"
-	
+	if filters.get("cost_center"): conditions += " and exists(select 1 from `tabCost Center` cc where t1.cost_center = cc.name and (cc.parent_cost_center = '{0}' or cc.name = '{0}'))".format(filters.cost_center)
 	return conditions, filters
 	

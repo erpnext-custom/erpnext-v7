@@ -28,16 +28,35 @@ class Production(StockController):
 		self.validate_supplier()
 		self.validate_items()
 		self.validate_posting_time()
+		self.validate_lot_list()
 
 	def validate_data(self):
-
-
 		if self.production_type == "Adhoc" and not self.adhoc_production:
 			frappe.throw("Select Adhoc Production to Proceed")
 		if self.production_type == "Planned":
 			self.adhoc_production = None
 		if self.work_type == "Private" and not self.supplier:
 			frappe.throw("Contractor is Mandatory if work type is private")
+
+	def validate_lot_list(self):
+		for item in self.raw_materials:
+			if item.lot_list:
+				lot_dtl = frappe.db.sql("""
+							select lot_no from `tabLot List` ll
+							where ll.docstatus = 1 and (ll.sales_order is NULL or ll.sales_order = '')
+							and ll.lot_no = '{0}'
+							and (ll.sales_order is NULL or ll.sales_order ='')
+							and (ll.production is NULL or ll.production ='')
+						""".format(item.lot_list), as_dict = True)
+				if not lot_dtl:
+					frappe.throw("Lot No {0} is either sold or previously transferred".format(item.lot_list))
+	def update_lot_list(self, action):
+		for item in self.raw_materials:
+			if item.lot_list:
+				if action == "submit":
+					frappe.db.sql("update `tabLot List` set production='{0}' where name = '{1}'".format(self.name, item.lot_list))
+				elif action == "cancel":
+					frappe.db.sql("update `tabLot List` set production='' where name = '{0}'".format(item.lot_list))
 
 	def validate_warehouse(self):
 		self.validate_warehouse_branch(self.warehouse, self.branch)
@@ -158,7 +177,10 @@ class Production(StockController):
 			frappe.throw("Product Item is mandatory to submit the production")
 
 	def on_submit(self):
-                """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+		if self.raw_materials:
+			self.update_lot_list(action="submit")
+
+		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
                 # Following lines commented by SHIV on 2019/04/01
 		#self.make_products_sl_entry()
 		#self.make_products_gl_entry()
@@ -176,6 +198,9 @@ class Production(StockController):
 
 	def on_cancel(self):
 		self.assign_default_dummy()
+		if self.raw_materials:
+			self.update_lot_list(action="cancel")
+
 		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
                 # Following lines commented by SHIV on 2019/04/01
 		#self.make_products_sl_entry()

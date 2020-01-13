@@ -13,6 +13,12 @@ class ProductRequisition(Document):
 			if self.start_date > self.end_date:
 				frappe.throw("To Date Cannot Be Greater Then From Date")
 
+		for i in self.items:
+			if not i.balance:
+				i.balance = i.qty	
+		
+
+
 @frappe.whitelist()
 def make_sales_order(source_name, target_doc=None):
 	def update_so(source, target):
@@ -41,7 +47,7 @@ def make_sales_order(source_name, target_doc=None):
                         "doctype": "Sales Order Item",
                         "field_map": [
                                 ["item_code", "item_code"],
-                                ["qty", "qty"]
+                                ["balance", "qty"]
                         ],
                 }
         }, target_doc, update_so)

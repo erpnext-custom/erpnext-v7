@@ -19,6 +19,7 @@ def get_columns(data):
 		_("Employee") + ":Link/Employee:80",
 		 _("Employee Name") + "::140",
 		  _("Designation") + ":Link/Designation:120",
+		_("Cost Center") + ":Link/Cost Center:120",
 	        _("Branch") + ":Link/Branch:120",
 		 _("Amount") + ":Currency:140",
 	]
@@ -47,5 +48,5 @@ def get_conditions(filters):
 	if filters.get("branch"): conditions += " and ss.branch = '{0}'".format(filters.branch)
 	if filters.get("company"): conditions += " and ss.company = '{0}'".format(filters.company)
 	if filters.get("employee"): conditions += " and ss.employee = '{0}'".format(filters.employee)
-
+	if filters.get("cost_center"): conditions += " and exists(select 1 from `tabCost Center` cc where t1.cost_center = cc.name and (cc.parent_cost_center = '{0}' or cc.name = '{0}'))".format(filters.cost_center)
 	return conditions, filters

@@ -427,13 +427,6 @@ cur_frm.fields_dict['items'].grid.get_field('lot_list').get_query = function(frm
 	 	query: "erpnext.controllers.queries.filter_lot_list",
 		filters: {'branch': cur_frm.doc.branch, 'item':item.item_code},
 		searchfield : "lot_no" 
-                // filters: {"branch": frm.branch, "item":item.item_code, "docstatus": 1}
-	/*	filters:[
-			['Lot List', 'docstatus', '=', 1],
-			['Lot List', 'branch', '=', cur_frm.branch],
-			['Lot List', 'item', '=', item.item_code],
-			['Lot List', 'sales_order', "is", "NULL"]
-		] */
         }
 }
 

@@ -12,14 +12,19 @@ def execute(filters=None):
     
 def get_columns():
         return [
-                ("Branch ") + ":Link/Equipment:250",
-                ("Employee ID") + ":Data:100",
+                ("Branch ") + ":Link/Equipment:200",
+                ("Employee ID") + ":Link/Employee:100",
                 ("Employee Name") + ":Data:150",
+                ("Designation") + ":Data:150",
+                ("Grade") + ":Data:80",
+                ("Date Of Joining") + ":Data:100",
 		("Year") + ":Data:80",
                 ("Month")+ ":Data:50",
                 ("Current Basic") + ":Currency:120",
                 ("Increment") + ":Currency:80",
-                ("New Basic") + ":Currency:120"
+                ("New Basic") + ":Currency:120",
+                ("Division") + ":Data:150",
+                ("Remarks") + ":Data:150",
         ]
 def get_data(filters):
 	#docstatus = ""
@@ -28,14 +33,25 @@ def get_data(filters):
         if filters.uinput == "Submitted":
                 docstatus = 1
         if filters.uinput == "All":
-                docstatus = "docstatus"
-        query =  """select branch, employee, employee_name, fiscal_year, month, old_basic, 
-                    increment, new_basic 
-                    from `tabSalary Increment` 
-                    where docstatus = {0}
+                docstatus = "si.docstatus"
+        query =  """select si.branch, si.employee, si.employee_name,
+                        e.designation, si.employee_subgroup, e.date_of_joining,
+                        si.fiscal_year, si.month,
+                        si.old_basic, si.increment, si.new_basic,
+                        si.division, si.remarks
+                    from `tabSalary Increment` si, `tabEmployee` e
+                    where si.docstatus = {0}
+                    and e.name = si.employee
                 """.format(docstatus)
+        if filters.get("fiscal_year"):
+                query += " and fiscal_year = \'"+ str(filters.fiscal_year) + "\'"
+        if filters.get("increment_and_promotion_cycle"):
+                month = {'January': '01', 'February': '02', 'March': '03', 'April': '04', 'May': '05', 'June': '06',
+                         'July': '07', 'August': '08', 'September': '09', 'October': '10', 'November': '11', 'December': '12'}
+                query += " and month = \'"+ str(month[filters.increment_and_promotion_cycle]) + "\'"
         if filters.get("branch"):
                 query += " and branch = \'"+ str(filters.branch) + "\'"
+        
         #frappe.msgprint(docstatus)
         query += "order by branch"
         return frappe.db.sql(query)

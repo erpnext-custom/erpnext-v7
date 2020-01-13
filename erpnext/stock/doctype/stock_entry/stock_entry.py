@@ -69,9 +69,31 @@ class StockEntry(StockController):
 
 		self.set_actual_qty()
 		self.calculate_rate_and_amount(update_finished_item_rate=False)
+		self.validate_lot_list()
+
+	def validate_lot_list(self):
+		for item in self.items:
+			if item.lot_list:
+				lot_dtl = frappe.db.sql("""
+							select lot_no from `tabLot List` ll
+							where ll.docstatus = 1 and (ll.sales_order is NULL or ll.sales_order = '')
+							and ll.lot_no = '{0}'
+							and (ll.stock_entry is NULL or ll.stock_entry ='')
+						""".format(item.lot_list), as_dict = True)	
+				if not lot_dtl:
+					frappe.throw("Lot No {0} is either sold or previously transferred".format(item.lot_list))
+
+	def update_lot_list(self, action):
+		for item in self.items:
+			if item.lot_list:
+				if action == "submit":
+					frappe.db.sql("update `tabLot List` set stock_entry='{0}' where name = '{1}'".format(self.name, item.lot_list))
+				elif action == "cancel":
+					frappe.db.sql("update `tabLot List` set stock_entry='' where name = '{0}'".format(item.lot_list))
+			
 
         def check_transfer_wh(self):
-                if not self.from_warehouse:
+                if not self.from_warehouse and self.purpose != "Material Receipt":
                         frappe.throw("Source Warehouse is mandatory")
 
                 if self.purpose == "Material Transfer" and not self.to_warehouse:
@@ -80,14 +102,20 @@ class StockEntry(StockController):
 	def on_submit(self):
 		self.update_stock_ledger()
 		self.update_consumable_register()
+		if self.purpose == "Material Transfer":
+			self.update_lot_list(action="submit")
 
 		from erpnext.stock.doctype.serial_no.serial_no import update_serial_nos_after_submit
 		update_serial_nos_after_submit(self, "items")
 		self.update_production_order()
 		self.validate_purchase_order()
 		self.make_gl_entries()
+		
 
 	def on_cancel(self):
+		if self.purpose == "Material Transfer":
+			self.update_lot_list(action="cancel")
+		
 		self.update_stock_ledger()
 		self.update_production_order()
 		self.make_gl_entries_on_cancel()

@@ -296,6 +296,9 @@ def validate_workflow_states(doc):
 
 		elif workflow_state == "Waiting Supervisor Approval".lower():
 			if doc.place_type == "In-Country":
+				if not doc.tour_report:
+                                        frappe.throw("Please Attach the relevant documents to support your Travel Claim")
+
 				officiating = get_officiating_employee(reports_to[3])
 				if officiating:
 					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
@@ -306,17 +309,19 @@ def validate_workflow_states(doc):
                                         officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
                                 vars(doc)[document_approver[0]] = officiating[0] if officiating else hr_approver[0]
 				
-		elif workflow_state == "Approved".lower():
+		elif workflow_state == "Claimed".lower():
 			if doc.supervisor != frappe.session.user:
 				frappe.throw("Only {0} can submit the Travel Authorization".format(doc.supervisor))
 			if doc.place_type == "In-Country":
 				if final_approver[0] != doc.supervisor and employee[0] != final_approver[0]:
 					frappe.throw("Only {0} can approve your Travel Authorization".format(frappe.bold(final_approver[0])))
-				doc.status = "claimed"
+				doc.status = "Claimed"
 			elif doc.place_type == "Out-Country":
 				if doc.supervisor != hr_approver[0]:
 					frappe.throw("Only {0} can approve your Out Country Travel Claims".format(hr_approver[1]))
 				doc.status = "Claimed"
+			if doc.docstatus == 0 and doc.workflow_state == "Claimed":
+				doc.workflow_state = "Verified By Supervisor"
 
 		elif workflow_state == "Verified By Supervisor".lower():
 			if doc.supervisor != frappe.session.user:

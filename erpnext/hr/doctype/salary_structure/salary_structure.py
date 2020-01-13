@@ -26,6 +26,8 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                         mistakes by adding deduction salary_component type
                                                                         under earnings table vice versa.
 3.0.190429        SHIV                             29/04/2019         * Introduced is_pf_deductible under salary component
+3.0.191212        SHIV                             12/12/2019         * Already deducted components should not be included
+                                                                                under total_deductions
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -224,6 +226,7 @@ class SalaryStructure(Document):
                         #  components if not eligible from earnings and deductions tables. 
                         for ed_item in self.get(ed):
                                 amount = flt(ed_item.amount)
+                                
                                 if ed_item.salary_component not in ed_map:
                                         if ed == 'earnings':
                                                 if ed_item.salary_component == 'Basic Pay':
@@ -236,7 +239,15 @@ class SalaryStructure(Document):
                                                         basic_pay_arrears += flt(ed_item.amount)
                                                 total_earning += round(amount)
                                         else:
-                                                total_deduction += round(amount)
+                                                ''' Ver.3.0.191212 Begins '''
+                                                # Following line commented and subsequent if condition added by SHIV on 2019/12/12
+                                                #total_deduction += round(amount)
+                                                if flt(ed_item.total_deductible_amount) == 0:
+                                                        total_deduction += round(amount)
+                                                else:
+                                                        if flt(ed_item.total_deductible_amount) != flt(ed_item.total_deducted_amount):
+                                                                total_deduction += round(amount)
+                                                ''' Ver3.0.191212 Ends '''
                                 else:
                                         for m in sst_map[ed]:
                                                 if m['name'] == ed_item.salary_component and not self.get(m['field_name']):

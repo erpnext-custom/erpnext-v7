@@ -26,14 +26,16 @@ class MechanicalPayment(AccountsController):
 				self.net_amount = self.total_amount - (self.tds_amount + self.other_deduction)
 			else:
 				self.net_amount = self.total_amount - self.other_deduction
-			
+		if self.payment_for == "Job Card" and self.tds_amount:
+				self.net_amount = self.payable_amount - self.tds_amount
+	
 		if not self.net_amount:
 			frappe.throw("Net Amount cannot be less than Zero")
 		if flt(self.tds_amount) < 0:
 			frappe.throw("TDS Amount cannot be less than Zero")
 
 	def validate_allocated_amount(self):
-		if not self.receivable_amount > 0 and not self.payment_for == "Transporter Payment":
+		if not self.receivable_amount > 0 and not self.payment_for == "Transporter Payment" and not self.payable_amount:
 			frappe.throw("Amount should be greater than 0")	
 		to_remove = []
 		total = flt(self.receivable_amount)
@@ -99,6 +101,7 @@ class MechanicalPayment(AccountsController):
 
 			if a.reference_type == "Job Card":
 				payable_amount = doc.total_amount
+				self.total_amount = payable_amount
 			else:
 				payable_amount = doc.balance_amount
 
@@ -116,9 +119,14 @@ class MechanicalPayment(AccountsController):
 	def make_gl_entry(self):
 		from erpnext.accounts.general_ledger import make_gl_entries
 		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
+		#creditor_account  = frappe.db.get_value("Company", "default_payable_account")
+		#frappe.msgprint("{0}".format(creditor_account))
+		creditor_account= frappe.get_doc("Company", self.company).default_payable_account
 		if not receivable_account:
 			frappe.throw("Setup Default Receivable Account in Maintenance Setting")
-	
+		if not creditor_account:
+			frappe.throw("Setup Default Payable Account in Company")
+
 		default_ba = get_default_ba()
 
 		gl_entries = []
@@ -164,7 +172,8 @@ class MechanicalPayment(AccountsController):
 						})
 				)
 		else:
-			gl_entries.append(
+			if self.receivable_amount:
+				gl_entries.append(
 				self.get_gl_dict({"account": self.income_account,
 						 "debit": flt(self.net_amount),
 						 "debit_in_account_currency": flt(self.net_amount),
@@ -177,34 +186,72 @@ class MechanicalPayment(AccountsController):
 						})
 				)
 
-			if self.tds_amount:
+				if self.tds_amount:
+					gl_entries.append(
+						self.get_gl_dict({"account": self.tds_account,
+								 "debit": flt(self.tds_amount),
+								 "debit_in_account_currency": flt(self.tds_amount),
+								 "cost_center": self.cost_center,
+								 "party_check": 1,
+								 "reference_type": self.doctype,
+								 "reference_name": self.name,
+								 "business_activity": default_ba,
+								 "remarks": self.remarks
+								})
+						)
+				
 				gl_entries.append(
-					self.get_gl_dict({"account": self.tds_account,
-							 "debit": flt(self.tds_amount),
-							 "debit_in_account_currency": flt(self.tds_amount),
+					self.get_gl_dict({"account": receivable_account,
+							 "credit": flt(self.receivable_amount),
+							 "credit_in_account_currency": flt(self.net_amount),
 							 "cost_center": self.cost_center,
 							 "party_check": 1,
+							 "party_type": "Customer",
+							 "party": self.customer,
 							 "reference_type": self.doctype,
 							 "reference_name": self.name,
 							 "business_activity": default_ba,
 							 "remarks": self.remarks
 							})
 					)
-			
-			gl_entries.append(
-				self.get_gl_dict({"account": receivable_account,
-						 "credit": flt(self.receivable_amount),
-						 "credit_in_account_currency": flt(self.receivable_amount),
-						 "cost_center": self.cost_center,
-						 "party_check": 1,
-						 "party_type": "Customer",
-						 "party": self.customer,
-						 "reference_type": self.doctype,
-						 "reference_name": self.name,
-						 "business_activity": default_ba,
-						 "remarks": self.remarks
-						})
-				)
+			else:
+				gl_entries.append(
+                                self.get_gl_dict({"account": creditor_account,
+                                                 "debit": flt(self.payable_amount),
+                                                 "debit_in_account_currency": flt(self.payable_amount),
+                                                 "cost_center": self.cost_center,
+                                                 "reference_type": self.doctype,
+						 "party_type": "Supplier",
+						 "party": self.supplier,
+                                                 "reference_name": self.name,
+                                                 "business_activity": default_ba,
+                                                 "remarks": self.remarks
+                                                })
+                                        )
+				if self.tds_amount:
+					gl_entries.append(
+						self.get_gl_dict({"account": self.tds_account,
+								 "credit": flt(self.tds_amount),
+								 "credit_in_account_currency": flt(self.tds_amount),
+								 "cost_center": self.cost_center,
+								 "reference_type": self.doctype,
+								 "reference_name": self.name,
+								 "business_activity": default_ba,
+								 "remarks": self.remarks
+								})
+						)
+				gl_entries.append(
+					self.get_gl_dict({"account": self.outgoing_account,
+							 "credit": flt(self.net_amount),
+							 "credit_in_account_currency": flt(self.net_amount),
+							 "cost_center": self.cost_center,
+							 "reference_type": self.doctype,
+							 "reference_name": self.name,
+							 "business_activity": default_ba,
+							 "remarks": self.remarks
+							})
+                                	)
+	
 
 		make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 	##

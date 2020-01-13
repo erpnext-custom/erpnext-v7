@@ -44,8 +44,8 @@ def mark_invoice(branch=None, invoice_list=None, receipt_number=None, receipt_da
 		rrco.submit()
 
 @frappe.whitelist()
-def updateSalaryTDS(purpose=None, branch=None, month=None, fiscal_year=None, receipt_number=None, receipt_date=None, cheque_number=None,cheque_date=None):
-	chk_value = frappe.db.get_value("RRCO Receipt Entries", {"fiscal_year": str(fiscal_year), "month": str(month)})
+def updateSalaryTDS(purpose=None, branch=None, month=None, fiscal_year=None, receipt_number=None, receipt_date=None, cheque_number=None,cheque_date=None, cost_center = None):
+	chk_value = frappe.db.get_value("RRCO Receipt Entries", {"fiscal_year": str(fiscal_year), "month": str(month), "cost_center":str(cost_center)})
 	if chk_value:
 		frappe.throw("RRCO Receipt and date has been already assigned for the given month and fiscal year")
 	else:
@@ -58,6 +58,7 @@ def updateSalaryTDS(purpose=None, branch=None, month=None, fiscal_year=None, rec
 		rrco.cheque_number = str(cheque_number)
 		rrco.cheque_date = str(cheque_date)
 		rrco.branch = str(branch)
+		rrco.cost_center = str(cost_center)
 		rrco.submit()
 
 		return "DONE"

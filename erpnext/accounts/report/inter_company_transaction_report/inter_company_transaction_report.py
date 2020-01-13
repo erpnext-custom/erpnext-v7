@@ -69,8 +69,7 @@ def get_data(filters):
 
 		sql2 = "SELECT name, bill_no, posting_date, grand_total, outstanding_amount FROM `tabPurchase Invoice` \
 		WHERE supplier = \'" + str(filters.party) + "\' and \
-		posting_date BETWEEN \'" + str(filters.start_date) + "\' and \'" + str(filters.end_date) + "\' 
-		and docstatus = '1' "
+		posting_date BETWEEN \'" + str(filters.start_date) + "\' and \'" + str(filters.end_date) + "\' and docstatus = '1'"
 		
 		if filters.get("branch"):
 			sql2 += " and branch = \'" + str(filters.branch) + "\'"

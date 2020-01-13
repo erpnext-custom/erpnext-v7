@@ -206,7 +206,8 @@ class SalesOrder(SellingController):
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype, self.company, self.base_grand_total, self)
 
 		self.update_prevdoc_status('submit')
-		self.update_product_requisition(action="Submit")
+		#if self.po_no:
+		#	self.update_product_requisition(action="Submit")
 		if self.naming_series == "Timber Products":
 			self.update_lot_onsubmit()
 
@@ -228,7 +229,9 @@ class SalesOrder(SellingController):
 		self.update_prevdoc_status('cancel')
 
 		frappe.db.set(self, 'status', 'Cancelled')
-		self.update_product_requisition(action = 'Cancell')
+		#if self.po_no:
+		#	self.update_product_requisition(action = 'Cancell')
+
 		if self.naming_series == "Timber Products":
 			self.update_lot_oncancel()
 
@@ -319,14 +322,35 @@ class SalesOrder(SellingController):
 		#self.get_selling_rate()
 
 	def update_product_requisition(self, action):
-		if action == 'Cancell':
-			ref_doc = ''
-		else:
-			ref_doc = self.name
-		
 		if self.po_no:
-			doc = frappe.get_doc("Product Requisition", self.po_no)
-			doc.db_set("so_reference", ref_doc)
+			for a in frappe.db.sql("select name, item_code, qty, balance from `tabProduct Requisition Item` where parent = '{0}'".format(self.po_no), as_dict=True):
+				so_qty = 0.0
+				
+				for i in self.items:
+					if i.item_code == a.item_code:
+						so_qty += flt(i.qty)
+
+				doc = frappe.get_doc("Product Requisition Item", a.name)
+				actual_balance = a.balance
+				#frappe.throw("{0} and {1}".format(actual_balance, so_qty))
+				if action == "Cancell":
+					new_balance = flt(actual_balance) + flt(so_qty)
+				else:
+					if actual_balance >= so_qty:
+						new_balance = flt(actual_balance) - flt(so_qty)
+					else:
+						frappe.throw("Balance Quantity in PR is less than allocated quantity in SO")
+
+				doc.db_set("balance", new_balance)
+
+		delivered_flag = 1
+		for a in frappe.db.sql("select balance from `tabProduct Requisition Item` where parent = '{0}'".format(self.po_no), as_dict=True):
+			if a.balance > 0:
+				delivered_flag = 0
+		if delivered_flag == 1:
+			doc1 = frappe.get_doc("Product Requisition", self.po_no)
+			doc1.db_set("delivered", "1")
+
 
 	def validate_supplier_after_submit(self):
 		"""Check that supplier is the same after submit if PO is already made"""
@@ -401,7 +425,7 @@ class SalesOrder(SellingController):
 					if self.location:
 						rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}' and location = '{4}'""".format(item.price_template, timber_class, timber_type,item_sub_group, self.location), as_dict =1)
 					if not rate:
-						rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}'""".format(item.price_template, timber_class, timber_type,item_sub_group), as_dict =1)
+						rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}' and (location is NULL or location = '')""".format(item.price_template, timber_class, timber_type,item_sub_group), as_dict =1)
 
 			rate = rate and rate[0].rate or 0.0
 			if item.rate != rate:
