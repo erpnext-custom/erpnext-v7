@@ -104,12 +104,12 @@ def get_data():
 					"type": "doctype",
 					"name": "Asset Category",
 				},
-				{
-					"type": "report",
-					"name": "Asset Depreciation Ledger",
-					"doctype": "Asset",
-					"is_query_report": True,
-				},
+				#{
+				#	"type": "report",
+				#	"name": "Asset Depreciation Ledger",
+				#	"doctype": "Asset",
+				#	"is_query_report": True,
+				#},
 				{
 					"type": "report",
 					"name": "Asset Depreciations and Balances",
@@ -129,7 +129,7 @@ def get_data():
 				},
 				{
 					"type": "report",
-					"name": "Property Plant & Equipment",
+					"name": "Property Plant and Equipment",
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				},

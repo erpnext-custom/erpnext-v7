@@ -15,6 +15,7 @@ class LeaveTravelConcession(Document):
 		cc_amount = {}
 		for a in self.items:
 			cc = frappe.db.get_value("Division", frappe.db.get_value("Employee", a.employee, "division"), "cost_center")
+			frappe.msgprint("{0} {1}".format(cc, a.employee))
 			if cc_amount.has_key(cc):
 				cc_amount[cc] = cc_amount[cc] + a.amount
 			else:
@@ -64,7 +65,7 @@ class LeaveTravelConcession(Document):
 
 @frappe.whitelist()
 def get_ltc_details(branch=None):
-	query = "select b.employee, b.employee_name, b.branch, a.amount from `tabSalary Detail` a, `tabSalary Structure` b where a.parent = b.name and a.salary_component = 'Basic Pay' and b.is_active = 'Yes' and b.eligible_for_ltc = 1 "
+	query = "select b.employee, b.employee_name, b.branch, a.amount, (select e.bank_name from `tabEmployee` e where e.name = b.employee) as bank_name, (select e.bank_ac_no from `tabEmployee` e where e.name = b.employee) as bank_ac_no  from `tabSalary Detail` a, `tabSalary Structure` b where a.parent = b.name and a.salary_component = 'Basic Pay' and b.is_active = 'Yes' and b.eligible_for_ltc = 1 "
 	if branch:
 		query += " and b.branch = \'" + str(branch) + "\'";
 	query += " order by b.branch"

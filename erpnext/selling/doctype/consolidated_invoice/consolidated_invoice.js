@@ -59,14 +59,14 @@ function get_invoices(from_date, to_date, item_code, customer, cost_center) {
 				r.message.forEach(function(invoice) {
 				        var row = frappe.model.add_child(cur_frm.doc, "Consolidated Invoice Item", "items");
 					row.invoice_no = invoice['name']
-					row.amount = invoice['outstanding_amount']
+					amount1 = parseFloat(invoice['outstanding_amount']) + parseFloat(invoice['excess_amount']) - parseFloat(invoice['normal_loss_amount']) - parseFloat(invoice['abnormal_loss_amount']) 
+					row.amount = amount1
 					row.loading_charges = invoice['charges_total']
 					row.date = invoice['posting_date']
 					row.delivery_note = invoice['delivery_note']
 					row.sales_order = invoice['sales_order']
 					refresh_field("items");
-
-					total_amount += invoice['outstanding_amount']
+					total_amount += amount1 
 					total_loading += invoice['charges_total']
 					total_qty += invoice['accepted_qty']
 				});

@@ -33,14 +33,23 @@ def get_columns(data):
 	
 def get_data(filters):
 	conditions, filters = get_conditions(filters)
-
-        data = frappe.db.sql("""
+	status = "t1.docstatus <=2"
+	if filters.get("process_status") == "All":
+		status = "t1.docstatus <= 2"
+        if filters.get("process_status") == "Submitted":
+		status = "t1.docstatus = 1"
+        if filters.get("process_status") == "Cancelled":
+		status = "t1.docstatus = 2"
+        if filters.get("process_status") == "Un-Submitted":
+		status = "t1.docstatus = 0"
+        
+	query = """
                 select t1.employee, t3.employee_name, t1.designation, t3.passport_number,
                         t2.reference_type, t2.institution_name, t2.reference_number, t2.amount,
                         t1.company, t1.branch, t1.department, t1.division, t1.section,
                         t1.fiscal_year, t1.month
                 from `tabSalary Slip` t1, `tabSalary Detail` t2, `tabEmployee` t3
-                where t1.docstatus = 1 %s
+                where {0} {1}
                 and t3.employee = t1.employee
                 and t2.parent = t1.name
                 and t2.parentfield = 'deductions'
@@ -48,8 +57,9 @@ def get_data(filters):
                                 from `tabSalary Component` sc
                                 where sc.name = t2.salary_component
                                 and sc.gl_head = 'Financial Institution Loan - SMCL')
-                """ % conditions, filters)
+                """.format(status, conditions)
 		
+	data = frappe.db.sql(query)
 	if not data:
 		msgprint(_("No Data Found for month: ") + cstr(filters.get("month")) + 
 			_(" and year: ") + cstr(filters.get("fiscal_year")), raise_exception=1)
@@ -62,11 +72,10 @@ def get_conditions(filters):
 		month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", 
 			"Dec"].index(filters["month"]) + 1
 		filters["month"] = month
-		conditions += " and t1.month = %(month)s"
+		conditions += " and t1.month = {0}".format(month)
 	
-	if filters.get("fiscal_year"): conditions += " and t1.fiscal_year = %(fiscal_year)s"
-	if filters.get("company"): conditions += " and t1.company = %(company)s"
-	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"
-	
+	if filters.get("fiscal_year"): conditions += " and t1.fiscal_year = '{0}'".format(filters.get("fiscal_year"))
+	if filters.get("company"): conditions += " and t1.company = '{0}'".format(filters.get("company"))
+	if filters.get("employee"): conditions += " and t1.employee = '{0}'".format(filters.get("employee"))
 	return conditions, filters
 	

@@ -229,7 +229,8 @@ class TransporterPayment(AccountsController):
                         "amount": amount,
                         "item_code": None,
                         "poi_name": self.name,
-                        "date": frappe.utils.nowdate()
+                        "date": frappe.utils.nowdate(),
+			"consumed" : 1
                         })
                 bud_obj.flags.ignore_permissions = 1
                 bud_obj.submit()

@@ -303,6 +303,13 @@ def get_data():
 					"label": _("LTC, PVBA, BONUS Report"),
 					"doctype": "Leave Travel Concession"
 				},
+				{
+                                        "type" : "report",
+                                        "is_query_report": True,
+                                        "name": "Salary Increment",
+                                        "label": _("Salary Increment Report"),
+                                        "doctype": "Salary Increment"
+                                },
 				
 				]
 		},

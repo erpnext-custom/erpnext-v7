@@ -6,13 +6,76 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def update_sals():
+        count = 1
+        for ss in frappe.db.sql(""" select name from `tabSalary Structure` where is_active = 'Yes'""", as_dict =1):
+                frappe.db.sql(""" update `tabSalary Detail` set amount = Null where parent = '{0}' and salary_component = 'Salary Advance Deductions'
+                """.format(ss.name))
+                doc = frappe.get_doc("Salary Structure", ss.name)
+                doc.save()
+                count += 1
+                print ss.name, count
 
-def update_se():
+
+def update_po():
+	#p.transaction_date >= '2019-07-01'
+        count = 0
+        for po in frappe.db.sql(""" select p.name, p.transaction_date, c.budget_account, c.cost_center, c.amount, c.item_code, 
+                        p.transaction_date from `tabPurchase Order` p, `tabPurchase Order Item` c 
+                        where p.name = c.parent and p.docstatus = 1 and p.name = 'PO19100014'""", as_dict = 1):
+                if not frappe.db.exists("Committed Budget", {"po_no": po.name,  "po_date": po.transaction_date, "amount": po.amount, "item_code": po.item_code, "account" : po.budget_account}):
+                        count += 1
+                        bud_obj = frappe.get_doc({
+                                "doctype": "Committed Budget",
+                                "account": po.budget_account,
+                                "cost_center": po.cost_center,
+                                "po_no": po.name,
+                                "po_date": po.transaction_date,
+                                "amount": po.amount,
+                                "item_code": po.item_code,
+                                "date": po.transaction_date
+                                })
+                        bud_obj.submit()
+                        print po.name, count
+
+def update_com_budget():
+        count = 1
+        for a in frappe.db.sql("select po_no, amount, account, cost_center, com_ref, item_code, po_date, date from `tabConsumed Budget` where docstatus = 1 and po_date >= '2019-07-01'", as_dict =1):
+
+                frappe.db.sql("""update `tabCommitted Budget` com set consumed = 1 where com.po_no = '{0}' and com.amount =  {1} and com.account = '{2}' and com.cost_center = '{3}' and com.item_code = '{4}' and com.po_date = '{5}' and com.date != '{6}'""".format(a.com_ref, a.amount, a.account, a.cost_center, a.item_code, a.po_date, a.date))
+
+		'''frappe.db.sql("""update `tabCommitted Budget` com set consumed = 1 where com.po_no = '{0}' and com.amount =  {1} and com.account = '{2}' and com.cost_center = '{3}'""".format(a.po_no, a.amount, a.account, a.cost_center))
+		print a.po_no
+                count += 1
+                frappe.db.sql("""update `tabCommitted Budget` com set consumed = 1 where com.po_no = '{0}' and com.amount =  {1} and com.account = '{2}' and com.cost_center = '{3}' and com.po_no = '{4}' and com.date = '{5}'""".format(a.po_no, a.amount, a.account, a.cost_center, a.com_ref, a.date))
+		
+		frappei.db.sql("""update `tabCommitted Budget` com set consumed = 1 where com.po_no = '{0}' and com.amount =  {1} and com.account = '{2}' and com.cost_center = '{3}' and com.item_code = '{4}' and com.po_date = '{5}'""".format(a.com_ref, a.amount, a.account, a.cost_center, a.item_code, a.po_date))
+		'''
+		count += 1
+		print a.po_no, count
+
+
+
+
+def update_sst():
+	count = 0
+        for a in frappe.db.sql(""" select s.name from `tabSalary Structure` s, `tabSalary Detail` d where s.name = d.parent and s.is_active = 'Yes'
+                        and d.salary_component = 'PF' and d.amount > 0""", as_dict =1):
+                doc = frappe.get_doc("Salary Structure", a.name)
+                count += 1
+		doc.save()
+                print count, doc.name
+
+
+
+	'''def update_se():
         for a in frappe.db.sql("select name, equipment from `tabStock Entry` where purpose = 'Material Transfer' and docstatus = 1", as_dict =1):
                 if a.equipment:
                         equipment_type = frappe.get_doc("Equipment", a.equipment).equipment_type
                         frappe.db.sql(" update `tabStock Entry` set equipment_type = '{0}' where name = '{1}'".format(equipment_type, a.name))
-                print a.name, a.equipment
+                print a.i
+
+name, a.equipment
 
 
 def check_trans_pay():
@@ -24,7 +87,7 @@ def check_trans_pay():
 		else:
 			eq = None
 		if a.equipment != eq:
-			print(a.name)
+			print(a.name)'''
 
 def update_empdetail():
 	for a in frappe.db.sql(" select employee, name from `tabSalary Structure` ", as_dict =1):

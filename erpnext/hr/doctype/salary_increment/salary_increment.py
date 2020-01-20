@@ -1,6 +1,13 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+3.0.200106        SHIV                             06/01/2020         "Date Of Reference" should be from date_of_joining
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 
 from __future__ import unicode_literals
 import frappe
@@ -22,6 +29,7 @@ class SalaryIncrement(Document):
         def validate(self):
                 self.validate_dates()
 		self.validate_increment()
+		self.update_increment(self.new_basic)
 
 	def on_submit(self):
                 self.update_increment(self.new_basic)
@@ -74,6 +82,10 @@ class SalaryIncrement(Document):
                 # Following line commented by SHIV on 2019/01/04
                 # date_of_reference which is used for pro-rating should be salary structures from date
                 #self.date_of_reference  = doc.date_of_joining
+                ### Ver.3.0.200106 Begins, by SHIV on 2020/01/06
+                # Following code is added
+                self.date_of_reference  = doc.date_of_joining
+                ### Ver.3.0.200106 Ends
                 self.company            = doc.company
                 self.branch             = doc.branch
                 self.department         = doc.department
@@ -106,7 +118,11 @@ class SalaryIncrement(Document):
                                 sst_doc = frappe.get_doc("Salary Structure", self.salary_structure)
                                 # Following line added by SHIV on 2019/01/04
                                 # date_of_reference which is used for pro-rating should be salary structures from date
-                                self.date_of_reference = sst_doc.from_date
+                                ### Ver.3.0.200106 Begins, by SHIV on 2019/01/06
+                                # Following line is replaced by subsequent
+                                #self.date_of_reference = sst_doc.from_date
+                                self.date_of_reference = sst_doc.from_date if getdate(sst_doc.from_date) < getdate(self.date_of_reference) else self.date_of_reference
+                                ### Ver.3.0.200106 Ends
                                 for d in sst_doc.earnings:
                                         if d.salary_component == 'Basic Pay':
                                                 self.old_basic = flt(d.amount)

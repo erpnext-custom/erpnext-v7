@@ -41,7 +41,8 @@ class DirectPayment(AccountsController):
                                 "po_date": self.posting_date,
                                 "amount": self.amount,
                                 "poi_name": self.name,
-                                "date": frappe.utils.nowdate()
+                                "date": frappe.utils.nowdate(),
+				"consumed" : 1
                                 })
                         bud_obj.flags.ignore_permissions = 1
                         bud_obj.submit()

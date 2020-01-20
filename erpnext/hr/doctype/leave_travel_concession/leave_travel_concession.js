@@ -38,6 +38,9 @@ function process_ltc(branch) {
 					row.employee = ltc['employee']
 					row.employee_name = ltc['employee_name']
 					row.branch = ltc['branch']
+					row.bank_name = ltc['bank_name']
+					row.bank_ac_no = ltc['bank_ac_no']
+					row.basic_pay = ltc['amount']
 					if (ltc['amount'] > 15000){
 						row.amount = 15000
 					}

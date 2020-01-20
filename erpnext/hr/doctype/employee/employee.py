@@ -52,6 +52,10 @@ class Employee(Document):
 			if existing_user_id:
 				frappe.permissions.remove_user_permission(
 					"Employee", self.name, existing_user_id)
+		
+		# Added by Tashi to update the employee details in Salary Structure upon changing the employee master
+                doc = frappe.get_doc("Salary Structure", {"employee" : self.name, "is_active": "Yes"})
+                doc.save()
 
 	def on_update(self):
 		if self.user_id:

@@ -16,7 +16,6 @@ def execute(filters=None):
 
 def get_data(filters):
 	query = construct_query(filters)
-	frappe.msgprint("{0}".format(query))
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
@@ -31,7 +30,9 @@ def get_data(filters):
 	return data
 
 def construct_query(filters=None):
-	query = "SELECT distinct com.account,com.cost_center,com.po_no,com.po_date,com.amount FROM `tabCommitted Budget` com WHERE com.docstatus = 1 and com.po_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' and not exists (select 1 from `tabConsumed Budget` cb where cb.account = com.account and cb.cost_center = com.cost_center and cb.com_ref = com.po_no and (IFNULL(com.item_code,1) = 1 OR cb.item_code = com.item_code)) "
+	'''query = "SELECT distinct com.account,com.cost_center,com.po_no,com.po_date,com.amount FROM `tabCommitted Budget` com WHERE com.docstatus = 1 and com.po_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' and not exists (select 1 from `tabConsumed Budget` cb where cb.account = com.account and cb.cost_center = com.cost_center and cb.com_ref = com.po_no and (IFNULL(com.item_code,1) = 1 OR cb.item_code = com.item_code)) "
+	'''
+	query = """SELECT distinct com.account,com.cost_center,com.po_no,com.po_date,com.amount FROM `tabCommitted Budget` com WHERE com.docstatus = 1 and com.po_date BETWEEN '{0}' and '{1}' and com.consumed = 0""".format(filters.get("from_date"), filters.get("to_date"))
 	return query;
 
 def validate_filters(filters):

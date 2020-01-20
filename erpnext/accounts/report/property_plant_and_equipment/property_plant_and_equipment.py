@@ -51,30 +51,31 @@ def get_accounts(filters):
 	cwip_accounts_gl = frappe.db.sql("select name from tabAccount where parent_account = %s", cwip_account, as_dict=True)
 	for account in cwip_accounts_gl:
 		cwip_acc.append(str(account.name))
-	cwip_accounts = tuple(cwip_acc)
+	if len(cwip_acc) > 0:
+		cwip_accounts = tuple(cwip_acc)
 
-	cwip_open = get_values(cwip_accounts, filters.to_date, filters.from_date, filters.cost_center, opening=True, cwip=True)
-	cwip = get_values(cwip_accounts, filters.to_date, filters.from_date, filters.cost_center, cwip=True)
+		cwip_open = get_values(cwip_accounts, filters.to_date, filters.from_date, filters.cost_center, opening=True, cwip=True)
+		cwip = get_values(cwip_accounts, filters.to_date, filters.from_date, filters.cost_center, cwip=True)
 
-	cwip_open = cwip_open[0]
-	cwip = cwip[0]
+		cwip_open = cwip_open[0]
+		cwip = cwip[0]
 
-	c_open = flt(cwip_open.debit) - flt(cwip_open.credit)
-	c_total = c_open + flt(cwip.debit) - flt(cwip.credit)
+		c_open = flt(cwip_open.debit) - flt(cwip_open.credit)
+		c_total = c_open + flt(cwip.debit) - flt(cwip.credit)
 
-	row = [
-		"Capital Work in Progress",
-		c_open,
-		cwip.debit,
-		cwip.credit,
-		c_total,
-		0,
-		0,
-		0,
-		0,
-		c_total 
-	]	
-	data.append(row)
+		row = [
+			"Capital Work in Progress",
+			c_open,
+			cwip.debit,
+			cwip.credit,
+			c_total,
+			0,
+			0,
+			0,
+			0,
+			c_total 
+		]	
+		data.append(row)
 	return data
 
 def get_values(account, to_date, from_date, cost_center=None, opening=False, cwip=False):
@@ -89,9 +90,12 @@ def get_values(account, to_date, from_date, cost_center=None, opening=False, cwi
 	if cost_center:
 		query += " and cost_center = \'" + str(cost_center) + "\'"
 
-	query += " and voucher_type != 'Period Closing Voucher' "
+	query += " and voucher_type not in ('Period Closing Voucher', 'Asset Movement', 'Bulk Asset Transfer') "
+	#query += " and against_voucher is not null"
 	value = frappe.db.sql(query, as_dict=True)
-
+	if account == "Plant & Machinery - SMCL":
+		frappe.msgprint(str(query))
+		frappe.msgprint(str(value))
 	return value
 
 

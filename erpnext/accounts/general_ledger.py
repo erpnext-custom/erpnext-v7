@@ -99,7 +99,8 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 						"po_no": entry.voucher_no,
 						"po_date": entry.posting_date,
 						"amount": flt(entry.debit_in_account_currency) - flt(entry.credit_in_account_currency),
-						"date": frappe.utils.nowdate()
+						"date": frappe.utils.nowdate(),
+						"consumed":1
 					})
 					bud_obj.submit()
 				
