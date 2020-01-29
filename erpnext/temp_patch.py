@@ -278,6 +278,7 @@ def production_gl():
 		doc.make_gl_entries(repost_future_gle=False)
 	frappe.db.commit()
 	
+# bench execute erpnext.temp_patch.cancel_ssl --args "'2020','01',"
 def cancel_ssl(pfiscal_year, pmonth):
 	counter = 0
 	for s in frappe.db.sql("select name from `tabSalary Slip` where fiscal_year='{0}' and month = '{1}' and docstatus=1".format(pfiscal_year, pmonth), as_dict=True):

@@ -6,6 +6,7 @@ import frappe
 from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr
 from operator import itemgetter
+from erpnext.accounts.utils import get_child_cost_centers
 
 def execute(filters=None):
 	validate_filters(filters);
@@ -78,6 +79,7 @@ def construct_query(filters=None):
 		 where a.fiscal_year = r.fiscal_year and a.month = r.month and a.docstatus = 1 and r.purpose = 'Employee Salary' and a.fiscal_year = """ + str(filters.fiscal_year)
 
 	'''
+
 	query = """select a.month, a.gross_pay,
         (select b.amount from `tabSalary Detail` b where salary_component = 'Basic Pay' and b.parent = a.name) as basic_pay,
         (select b.amount from `tabSalary Detail` b where salary_component = 'Salary Tax' and b.parent = a.name) as tds ,
@@ -86,9 +88,10 @@ def construct_query(filters=None):
         (select b.amount from `tabSalary Detail` b where salary_component = 'Communication Allowance' and b.parent = a.name) as comm_all ,
         (select b.amount from `tabSalary Detail` b where salary_component = 'Health Contribution' and b.parent = a.name) as health,
         r.receipt_number, r.receipt_date
-         from `tabSalary Slip` a, `tabRRCO Receipt Entries` r, `tabCost Center` c
-         where a.fiscal_year = r.fiscal_year and a.month = r.month and a.docstatus = 1 
-         and c.name = a.cost_center and r.cost_center = c.parent_cost_center
+         from `tabSalary Slip` a, `tabRRCO Receipt Entries` r
+         where a.fiscal_year = r.fiscal_year and a.month = r.month and a.docstatus = 1
+	 and exists (select 1 from `tabCost Center` where name in (select name from `tabCost Center` where parent_cost_center 
+	 in (select name from `tabCost Center` where parent_cost_center = r.cost_center))) 
          and r.purpose = 'Employee Salary' and a.fiscal_year = """ + str(filters.fiscal_year)
 
 	if filters.employee:

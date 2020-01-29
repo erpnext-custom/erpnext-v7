@@ -47,7 +47,7 @@ def get_data(filters):
 	so.transaction_date, soi.product_requisition from
         `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0} {4}) as so_detail
 	inner join
-	(select dn.name, dn.contact_no, dn.drivers_name, dn.transportation_charges, dn.vehicle, dni.location, dni.so_detail as dni_name, 
+	(select dn.name as dn_no, dn.contact_no, dn.drivers_name, dn.transportation_charges, dn.vehicle, dni.location, dni.so_detail as dni_name, 
 	dni.name as dni_detail, dni.against_sales_invoice from `tabDelivery Note` dn, `tabDelivery Note Item` dni
         where dn.name = dni.parent and dn.docstatus =1 {5}) as dn_detail
 	on so_detail.soi_name = dn_detail.dni_name
@@ -61,7 +61,7 @@ def get_data(filters):
 		#customer detail
 		cust = get_customer(filter, d.customer)
 		row = {
-			"sales_order": d.so_name, "posting_date": d.transaction_date, "customer": cust.name, "customer_name": cust.customer_name, 
+			"sales_order": d.so_name, "dn_no": d.dn_no, "posting_date": d.transaction_date, "customer": cust.name, "customer_name": cust.customer_name, 
 			"customer_type": cust.customer_type, "customer_id": cust.customer_id, "customer_contact": cust.mobile_no, 
 			"item_code": d.item_code, "item_name": d.item_name, "qty_approved": flt(d.qty_approved),
 			"qty": flt(d.sii_qty),  "rate": flt(d.sii_rate),  "amount": flt(d.sii_amount), "receipt_no": d.name, 
@@ -199,6 +199,13 @@ def get_columns(filters):
 		  "label": "Sales Order",
 		  "fieldtype": "Link",
 		  "options": "Sales Order",
+		  "width": 100
+		},
+		{
+		  "fieldname": "dn_no",
+		  "label": "Delivery Note No",
+		  "fieldtype": "Link",
+		  "options": "Delivery Note",
 		  "width": 100
 		},
 		{

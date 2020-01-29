@@ -21,7 +21,7 @@ def get_data(filters):
 	if filters.show_aggregate:
 		total_qty = "sum(qty) as total_qty"
 
-	query = "select pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0}, pe.cable_line_no as cable_line_no, pe.production_area as production_area from `tabProduction Entry` pe, `tabCost Center` cc where cc.name = pe.cost_center and pe.item_sub_group != 'Sawn' {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
+	query = "select pe.name as production_number, pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0}, pe.cable_line_no as cable_line_no, pe.production_area as production_area from `tabProduction Entry` pe, `tabCost Center` cc where cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
 
 	total_qty = 0
@@ -32,13 +32,12 @@ def get_data(filters):
 		total_qty += flt(a.qty)
 		data.append(a)
 	data.append({"qty": total_qty, "region": frappe.bold("TOTAL")})
+
 	return data
 
 def get_group_by(filters):
 	if filters.show_aggregate:
 		group_by = " group by pe.branch, pe.location, pe.item_sub_group"
-		if filters.show_species_wise:
-			group_by += ", pe.timber_species"
 	else:
 		group_by = ""
 
@@ -85,7 +84,7 @@ def get_conditions(filters):
 		condition += " and pe.item_code = '{0}'".format(filters.item)
 
 	if filters.from_date and filters.to_date:
-		condition += " and DATE(pe.posting_date) between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+		condition += " and pe.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
 
 	if filters.timber_species:
 		condition += " and pe.timber_species = '{0}'".format(filters.timber_species)
@@ -95,17 +94,21 @@ def get_conditions(filters):
 
 	if filters.warehouse:
 		condition += " and pe.warehouse = '{0}'".format(filters.warehouse)
-
+	
 	if filters.production_area:
-                condition += " and pe.production_area = '{0}'".format(filters.production_area)
-
-	if filters.uom:
-		condition += " and pe.uom = '{0}'".format(filters.uom)
+		condition += " and pe.production_area = '{0}'".format(filters.production_area)
 
 	return condition
 
 def get_columns(filters):
 	columns = [
+		{
+			"fieldname": "production_number",
+			"label": "Production No",
+			"fieldtype": "Link",
+			"options": "Production Entry",
+			"width": 120
+		},
 		{
 			"fieldname": "region",
 			"label": "Region",
@@ -152,17 +155,7 @@ def get_columns(filters):
 			"options": "UoM",
 			"width": 100
 		},
-		
 	]
-	
-	if filters.show_species_wise:
-		columns.insert(9, {
-			"fieldname": "timber_species",
-			"label": "Species",
-			"fieldtype": "Link",
-			"options": "Timber Species",
-			"width": 120
-		})
 
 	if not filters.show_aggregate:
 		columns.insert(3, {
@@ -187,31 +180,30 @@ def get_columns(filters):
 			"options": "Timber Class",
 			"width": 100
 		})
+		columns.insert(10, {
+			"fieldname": "timber_species",
+			"label": "Species",
+			"fieldtype": "Link",
+			"options": "Timber Species",
+			"width": 100
+		})
 		columns.insert(11, {
 			"fieldname": "timber_type",
 			"label": "Type",
 			"fieldtype": "Data",
 			"width": 100
 		})
-		columns.insert(9, {
-			"fieldname": "timber_species",
-			"label": "Species",
-			"fieldtype": "Link",
-			"options": "Timber Species",
-			"width": 120
-		})
 		columns.insert(12, {
-                        "fieldname": "cable_line_no",
-                        "label": "Cable Line No",
-                        "fieldtype": "Data",
-                        "width": 100
-                })
+			"fieldname": "cable_line_no",
+			"label": "Cable Line No",
+			"fieldtype": "Data",
+			"width": 100
+		})
 		columns.insert(12, {
                         "fieldname": "production_area",
                         "label": "Production Area",
                         "fieldtype": "Data",
                         "width": 100
                 })
-
 	return columns
 

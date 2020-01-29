@@ -28,7 +28,7 @@ def execute(filters=None):
 def get_columns(data):
 	columns = [
 		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140", _("Designation") + ":Link/Designation:120",
-                _("CID") + "::120", _("Loan Type") + "::140", _("Bank Name") + "::160", _("Account No") + "::140", _("Amount") + ":Currency:140",
+                _("CID") + "::120", _("Loan Type") + "::140", _("Loan From") + "::160", _("Account No") + "::140",  _("Deduction Amount") + ":Currency:140", _("Total Deductible Amount") + ":Currency:170", _("Balance Amount") + ":Currency:140",
                 _("Company") + ":Link/Company:120", _("Cost Center") + ":Link/Cost Center:120", _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120",
                 _("Division") + ":Link/Division:120", _("Section") + ":Link/Section:120", _("Year") + "::80", _("Month") + "::80"
 	]
@@ -40,7 +40,7 @@ def get_data(filters):
 
         data = frappe.db.sql("""
                 select t1.employee, t3.employee_name, t1.designation, t3.passport_number,
-                        t2.reference_type, t2.institution_name, t2.reference_number, t2.amount,
+                        t2.reference_type, t2.institution_name, t2.reference_number, t2.amount, t2.total_deductible_amount, t2.total_outstanding_amount,
                         t1.company, t1.cost_center, t1.branch, t1.department, t1.division, t1.section,
                         t1.fiscal_year, t1.month
                 from `tabSalary Slip` t1, `tabSalary Detail` t2, `tabEmployee` t3
@@ -51,7 +51,8 @@ def get_data(filters):
                 and exists(select 1
                                 from `tabSalary Component` sc
                                 where sc.name = t2.salary_component
-                                and sc.name = 'Financial Institution Loan')
+						   )
+				and t2.reference_type != 'NULL'
                 """ % conditions, filters)
 
 	'''	

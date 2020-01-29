@@ -168,18 +168,18 @@ frappe.query_reports["Production Report"] = {
 			}
 		},
 		{
-                        "fieldname": "warehouse",
-                        "label": ("Warehouse"),
-                        "fieldtype": "Link",
-                        "options": "Warehouse",
-                        "get_query": function() {
-                         /*     var branch = frappe.query_report.filters_by_name.branch.get_value();
- *                                     if (!branch) {
- *                                                                             return
- *                                                                                                             } */
-                                return {"doctype": "Warehouse", "filters": {"disabled": 0}}
-                        }
-                },
+			"fieldname": "warehouse",
+			"label": ("Warehouse"),
+			"fieldtype": "Link",
+ 			"options": "Warehouse",
+			"get_query": function() {
+				var branch = frappe.query_report.filters_by_name.branch.get_value();
+				if (!branch) {
+					return
+				}
+				return {"doctype": "Warehouse", "filters": {"branch": branch, "disabled": 0}}
+			}
+		},
 		{
 			"fieldname": "timber_type",
 			"label":("Timber Type"),
@@ -196,24 +196,13 @@ frappe.query_reports["Production Report"] = {
  			"default": 1,
 		},
 		{
-			"fieldname": "show_species_wise",
-			"label": ("Show Species Wise"),
-			"fieldtype": "Check",
- 			"default": 0,
+			"fieldname": "production_area",
+			"label":("Production Area"),
+			"fieldtype" : "Select",
+			"width" :"80",
+			"options": ["Normal","Road Alignment","Fire Burnt Area","Transmission Line","Sanitation Work Area","Scientific Thinning Area"],
+			"default": "Normal",
+			"reqd" : 1
 		},
-		{
-                        "fieldname": "production_area",
-                        "label":("Production Area"),
-                        "fieldtype" : "Select",
-                        "width" :"80",
-                        "options": ["Normal","Road Alignment","Fire Burnt Area","Transmission Line","Sanitation Work Area","Scientific Thinning Area"],
-                },
-		{
-			"fieldname": "uom",
-			"label": ("UOM"),
-			"fieldtype": "Link",
-			"options":"UOM",
-		}
-
 	]
 }
