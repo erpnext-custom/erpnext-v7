@@ -145,6 +145,12 @@ def get_data():
                                         "name": "Production plan Report",
                                         "doctype": "Production Plan"
                                 },
+				 {
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Monthly Indent",
+                                        "doctype": "Monthly Indent"
+                                },
 				
 			#	{
                         #                "type": "report",

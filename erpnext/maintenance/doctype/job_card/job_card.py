@@ -304,7 +304,8 @@ class JobCard(AccountsController):
                         ba = get_default_ba()
 
                         maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
-                        payable_account = frappe.db.get_value("Company", "Natural Resources Development Corporation Ltd","default_payable_account")
+			company = frappe.db.get_single_value('Global Defaults', 'default_company')
+                        payable_account = frappe.db.get_value("Company", company, "default_payable_account")
                         if not maintenance_account:
                                 frappe.throw("Setup Default Goods Account in Maintenance Setting")
                         if not payable_account:

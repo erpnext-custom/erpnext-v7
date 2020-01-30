@@ -44,7 +44,6 @@ def process_gl_map(gl_map, merge_entries=True):
 			entry.debit_in_account_currency = \
 				flt(entry.debit_in_account_currency) - flt(entry.credit_in_account_currency)
 			entry.credit_in_account_currency = 0.0
-
 	return gl_map
 
 def merge_similar_entries(gl_map):
@@ -120,7 +119,6 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 					})
 					con_obj.flags.ignore_permissions=1
 					con_obj.submit()
-	
 
 def make_entry(args, adv_adj, update_outstanding):
 	args.update({"doctype": "GL Entry"})

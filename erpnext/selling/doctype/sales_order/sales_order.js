@@ -20,12 +20,12 @@ frappe.ui.form.on("Sales Order", {
 		//formatter for material request item
 		frm.set_indicator_formatter('item_code', function(doc) { return (doc.qty<=doc.delivered_qty) ? "green" : "orange" });
 	},
-	"naming_series": function(frm) { 
+	"naming_series": function(frm) {
 	},
 	"discount_or_cost_amount": function(frm) {
 	},
 	"additional_cost": function(frm) {
-        },
+	},
 });
 
 

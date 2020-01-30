@@ -78,7 +78,7 @@ def get_stock_balance(item_code, warehouse, posting_date=None, posting_time=None
 	if not posting_time: posting_time = nowtime()
 
 	last_entry = get_previous_sle({
-		"item_code": item_code,
+	"item_code": item_code,
 		"warehouse":warehouse,
 		"posting_date": posting_date,
 		"posting_time": posting_time })

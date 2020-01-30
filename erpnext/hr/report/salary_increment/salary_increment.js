@@ -19,6 +19,22 @@ frappe.query_reports["Salary Increment"] = {
 			"fieldtype": "Link",
 			"options": "Branch",
 			"width": "100"
-		}
+		},
+
+	{
+                        "fieldname":"fiscal_year",
+                        "label": ("Fiscal Year"),
+                        "fieldtype": "Link",
+                        "options": "Fiscal Year",
+                        "width": "100"
+                },
+	{
+                        "fieldname":"month",
+                        "label": ("Month"),
+                        "fieldtype": "Select",
+                        "options": [" ", "January", "July"],
+                        "width": "100"
+                }
+
 	]
 }

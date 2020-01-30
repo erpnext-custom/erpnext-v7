@@ -33,7 +33,23 @@ class LeaveEncashment(Document):
                 self.validate_leave_application()
                 self.get_leave_balance()                                                        #Added by SHIV on 2018/10/15
                 self.validate_balances()                                                        #Commented by SHIV on 2018/10/12
-                
+		self.get_payment_details()
+
+	def get_payment_details(self):
+		sal_struc_name = self.get_salary_structure()
+		if sal_struc_name:
+			sal_struc= frappe.get_doc("Salary Structure",sal_struc_name)
+			for d in sal_struc.earnings:
+				if d.salary_component == 'Basic Pay':
+					basic_pay = flt(d.amount)
+		else:
+			frappe.throw(_("No Active salary structure found."))
+
+		if basic_pay:
+			salary_tax = get_salary_tax(basic_pay)
+			self.encashment_amount = flt(basic_pay)
+			self.tax_amount = flt(salary_tax) if salary_tax else 0.00
+		
         def on_submit(self):
 		self.adjust_leave()
 		self.post_accounts_entry()

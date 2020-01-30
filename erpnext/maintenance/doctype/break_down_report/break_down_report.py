@@ -13,7 +13,8 @@ from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 class BreakDownReport(Document):
 	def validate(self):
 		check_future_date(self.date)
-		self.validate_equipment()
+		self.job_card =None
+	#	self.validate_equipment()
 
 	def on_submit(self):
 		self.assign_reservation()

@@ -9,6 +9,8 @@
  "is_standard": "Yes", 
  "json": "{\"filters\":[],\"columns\":[[\"name\",\"Employee\"],[\"employee_name\",\"Employee\"],[\"date_of_birth\",\"Employee\"],[\"date_of_joining\",\"Employee\"],[\"branch\",\"Employee\"],[\"department\",\"Employee\"],[\"designation\",\"Employee\"],[\"gender\",\"Employee\"],[\"status\",\"Employee\"],[\"employment_status\",\"Employee\"],[\"company\",\"Employee\"],[\"employment_type\",\"Employee\"],[\"employee_group\",\"Employee\"],[\"employee_subgroup\",\"Employee\"],[\"reports_to\",\"Employee\"],[\"company_email\",\"Employee\"]],\"sort_by\":\"Employee.bank_ac_no\",\"sort_order\":\"desc\",\"sort_by_next\":null,\"sort_order_next\":\"desc\"}", 
  "modified": "2019-11-08 12:54:14.867060", 
+ "json": "{\"filters\":[],\"columns\":[[\"name\",\"Employee\"],[\"employee_name\",\"Employee\"],[\"date_of_joining\",\"Employee\"],[\"branch\",\"Employee\"],[\"date_of_birth\",\"Employee\"],[\"department\",\"Employee\"],[\"designation\",\"Employee\"],[\"gender\",\"Employee\"],[\"status\",\"Employee\"],[\"employment_status\",\"Employee\"],[\"company\",\"Employee\"],[\"employment_type\",\"Employee\"],[\"employee_group\",\"Employee\"],[\"employee_subgroup\",\"Employee\"],[\"reports_to\",\"Employee\"],[\"company_email\",\"Employee\"]],\"sort_by\":\"Employee.bank_ac_no\",\"sort_order\":\"desc\",\"sort_by_next\":null,\"sort_order_next\":\"desc\"}", 
+ "modified": "2019-11-08 13:05:49.796587", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee Information", 

@@ -645,6 +645,18 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 
 	stock_entry.get_items()
 	stock_entry.save()
+
+	######**** Change Made by Thukten to include additional cost ****#####
+	if purpose =="Manufacture":
+		for a in frappe.db.sql("select item, overhead_cost from `tabBOM` where name = '{0}'".format(work_order.bom_no), as_dict=True):
+			if a.overhead_cost > 0:
+				add_cost = 0.0
+				for b in frappe.db.sql("select name, basic_amount, bom_no, qty from `tabStock Entry Detail` d where parent = '{0}' and item_code = '{1}' and bom_no = '{2}'".format(stock_entry.name, a.item, work_order.bom_no), as_dict=True):
+					add_cost = flt(a.overhead_cost) * flt(b.qty)
+					amount = flt(add_cost) + flt(b.basic_amount)
+					val_rate = flt(amount)/flt(b.qty)
+					frappe.db.sql("update `tabStock Entry Detail` set additional_cost = '{0}', amount = '{1}', valuation_rate = '{2}' where name ='{3}'".format(add_cost, amount, val_rate, b.name))
+
 	work_order.set("stock_entry", stock_entry.name)
 	return stock_entry.as_dict()
 

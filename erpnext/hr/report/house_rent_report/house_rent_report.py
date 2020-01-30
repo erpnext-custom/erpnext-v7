@@ -30,7 +30,7 @@ def get_data(filters):
 
 	        data = frappe.db.sql(""" SELECT ss.employee, ss.employee_name,  ss.designation, ss.branch, sd.amount
 FROM `tabSalary Slip` AS ss , `tabSalary Detail` AS sd
-WHERE ss.name= sd.parent
+WHERE ss.name= sd.parent and ss.docstatus = 1
 AND sd.salary_component ='House Rent' {0}""".format(conditions))
 
 		return data

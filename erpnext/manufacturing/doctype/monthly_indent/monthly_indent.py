@@ -7,4 +7,9 @@ import frappe
 from frappe.model.document import Document
 
 class MonthlyIndent(Document):
-	pass
+	def validate(self):	
+		pass
+
+	def on_submit(self):
+		if not self.status == 'Completed':
+			frappe.throw("Only Completed Monthly Indent can be Submitted.") 

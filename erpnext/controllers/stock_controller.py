@@ -129,7 +129,6 @@ class StockController(AccountsController):
 		if warehouse_with_no_account:
 			frappe.throw(_("No accounting entries for the following warehouses") + ": \n" +
 				"\n".join(warehouse_with_no_account))
-
 		return process_gl_map(gl_list)
 
         # Ver 2.0.190509, Following method commented by SHIV on 2019/05/24

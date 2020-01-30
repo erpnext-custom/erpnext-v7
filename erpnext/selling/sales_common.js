@@ -121,24 +121,24 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 	fitting_and_installation_charges: function(){
 		var additional_cost = this.frm.doc.fitting_and_installation_charges;
 		if(additional_cost > 0){
-			this.frm.set_value("net_total", this.frm.doc.net_total + additional_cost);
-			this.frm.set_value("grand_total", this.frm.doc.grand_total + additional_cost);
+			this.frm.set_value("net_total", Math.round(this.frm.doc.net_total + additional_cost));
+			this.frm.set_value("grand_total", Math.round(this.frm.doc.grand_total + additional_cost));
 		}
 	},
 
 	transportation_charges: function() {
 		var additional_cost = this.frm.doc.transportation_charges;
 		if(additional_cost > 0){
-                	this.frm.set_value("net_total", this.frm.doc.net_total + additional_cost);
-                	this.frm.set_value("grand_total", this.frm.doc.grand_total + additional_cost);
+                	this.frm.set_value("net_total", Math.round(this.frm.doc.net_total + additional_cost));
+                	this.frm.set_value("grand_total", Math.round(this.frm.doc.grand_total + additional_cost));
 		}
 	},
 
 	loading_cost: function() {
 		var additional_cost = this.frm.doc.loading_cost;
 		if(additional_cost >0){
-                	this.frm.set_value("net_total", this.frm.doc.net_total + additional_cost);
-                	this.frm.set_value("grand_total", this.frm.doc.grand_total + additional_cost);
+                	this.frm.set_value("net_total",Math.round( this.frm.doc.net_total + additional_cost));
+                	this.frm.set_value("grand_total", Math.round(this.frm.doc.grand_total + additional_cost));
 		}
 		console.log("test2");
 	},

@@ -41,7 +41,7 @@ class SellingPrice(Document):
                 item_list = []
                 for a in self.item_rates:
                         item_list.append(str(a.particular))
-		
+	
 		branch_list = [str(d.branch) for d in self.get("item_branch")]
 		branch_list.append(str("DUMMY"))
 	
