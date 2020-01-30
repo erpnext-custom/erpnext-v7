@@ -21,7 +21,7 @@ frappe.query_reports["Overtime Register"] = {
 			"fieldname":"employee_type",
 			"label": __("Employee Type"),
 			"fieldtype": "Select",
-			"options": ['Muster Roll Employee', 'DES Employee'],
+			"options": ['Muster Roll Employee', 'GEP'],
 			"reqd": 1
 		},
 		{

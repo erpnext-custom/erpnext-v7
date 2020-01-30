@@ -9,6 +9,62 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_salary_st():
+        count = 0
+        for a in frappe.db.sql(""" select * from `tabSalary Advance` where docstatus = 1 and application_date >= '2020-01-01'""", as_dict = True):
+                doc = frappe.get_doc("Salary Structure", {"employee": a.employee, "is_active": "Yes"})
+                update = 'Yes'
+                adv = frappe.get_doc("Salary Advance", a.name)
+                for c in doc.get("deductions"):
+                        if c.salary_component == a.salary_component and a.name in (c.reference_number, c.ref_docname):
+                                update = 'No'
+                if update == 'Yes':
+                        count += 1
+                        row = doc.append("deductions",{})
+                        row.salary_component        = a.salary_component
+                        row.from_date               = a.recovery_start_date
+                        row.to_date                 = a.recovery_end_date
+                        row.amount                  = flt(a.monthly_deduction)
+                        row.default_amount          = flt(a.monthly_deduction)
+                        row.reference_number        = a.name
+                        row.ref_docname             = a.name
+                        row.total_deductible_amount = flt(a.total_claim)
+                        row.total_deducted_amount   = 0
+                        row.total_outstanding_amount= flt(a.total_claim)
+                        row.total_days_in_month     = 0
+                        row.working_days            = 0
+                        row.leave_without_pay       = 0
+                        row.payment_days            = 0
+                        doc.save(ignore_permissions=True)
+                        adv.db_set("salary_structure", doc.name)
+                print count, a.name, doc.name
+
+
+
+def update_locationid_structure_no():
+        for a in frappe.db.sql("select name, location, block_no from `tabTenant Information`", as_dict=True):
+                if a.block_no and a.location:
+                        location_id = frappe.db.get_value("Locations", a.location, "location_id")
+                        structure_no = location_id + "/" + a.block_no
+                        frappe.db.sql("Update `tabTenant Information` set location_id = '{0}', structure_no = '{1}' where name = '{2}'".format(location_id, structure_no, a.name))
+                else:
+                        print("No Location and Block No")
+
+def update_security_deposit():
+	for a in frappe.db.sql("select name, rent_amount from `tabTenant Information`", as_dict=True):
+		security_deposit = flt(2 * flt(a.rent_amount))
+		frappe.db.sql("Update `tabTenant Information` set security_deposit = '{0}' where name = '{1}'".format(security_deposit, a.name))
+
+
+def save_ss():
+	count = 0
+	for a in frappe.db.sql(" select name from `tabSalary Structure` where is_active = 'Yes'", as_dict = 1):
+		doc = frappe.get_doc("Salary Structure", a.name)
+		count += 1
+		print a.name, count
+		doc.save()
+
+
 def test_process_bill():
 	rb = frappe.get_doc({
 		"doctype": "Rental Bill",

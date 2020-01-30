@@ -51,14 +51,20 @@ frappe.ui.form.on('Tenant Information', {
 });
 
 function calculate_rent_charges(frm){
+	frappe.model.get_value('Rental Setting',{'name': 'Rental Setting'}, 'percent_of_increment', function(d){
+                cur_frm.set_value("percent_of_increment", d.percent_of_increment);
+                cur_frm.set_value("no_of_year_for_increment", d.no_of_year_for_increment);
+        });
+
 	if(frm.doc.rent_amount){
 		var d = new Date(frm.doc.allocated_date);
 		cur_frm.clear_table("rental_charges");
-		
-		var percentage = 0.1;
+
+		var percentage = frm.doc.percent_of_increment/100;
+                var increment_year = frm.doc.no_of_year_for_increment;		
 		var increment = 0;
 		var actual_rent = 0;
-		for(var i=0;i<10;i+=2){
+		for(var i=0;i<10;i+=increment_year){
 			var yyyy = (d.getFullYear() + i).toString();
 			var mm = (d.getMonth()+1).toString();
 			if(mm == "1"){
@@ -67,7 +73,7 @@ function calculate_rent_charges(frm){
 				var to_mm = d.getMonth().toString();
 			}
 			var fdd = '01'.toString();
-			var to_yyyy = (d.getFullYear() + 2 + i).toString();
+			var to_yyyy = (d.getFullYear() + increment_year + i).toString();
 			var last_day = new Date(to_yyyy, (d.getMonth()-1) +1, 0).getDate();
 			console.log("Month:"+ d.getMonth() + " Date: " + last_day);
 			var from_date = yyyy + '-' + (mm[1]?mm:"0"+mm[0]) + "-" + fdd;

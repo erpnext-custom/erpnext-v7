@@ -62,6 +62,12 @@ def get_data():
 					"description": _("Item Sub Groups."),
 				},
 				{
+                                        "type": "doctype",
+                                        "name": "Item Sub Group Type",
+                                        "label": _("Material Sub Group Type"),
+                                        "description": _("Item Sub Groups Type."),
+                                },
+				{
 					"type": "doctype",
 					"name": "Item Price",
 					"label": _("Material Price"),

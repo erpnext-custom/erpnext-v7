@@ -430,6 +430,14 @@ frappe.ui.form.on("Item", "refresh", function(frm) {
             }
         };
     });
+
+    cur_frm.set_query("item_sub_group_type", function() {
+        return {
+            "filters": {
+                "item_sub_group": frm.doc.item_sub_group,
+            }
+        };
+    });
     /*cur_frm.set_query("expense_account", function() {
         return {
             "filters": {

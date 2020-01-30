@@ -53,7 +53,12 @@ class WorkOrder(Document):
 		validate_uom_is_integer(self, "stock_uom", ["qty", "produced_qty"])
 
 		self.set_required_items(reset_only_qty = len(self.get("required_items")))
-
+		'''js = frappe.db.get_value("Job Specification", {"product": self.production_item})
+		if not js:
+			self.job_specification == None
+		if self.job_specification !=  js:
+			frappe.throw("Job Specification {0} doesn't belong to Item {1}".format(self.job_specification, self.production_item))'''
+	
 	def validate_sales_order(self):
 		if self.sales_order:
 			so = frappe.db.sql("""
@@ -533,6 +538,14 @@ class WorkOrder(Document):
 		return bom
 
 @frappe.whitelist()
+def get_job_spec(item):
+	js = frappe.db.get_value("Job Specification", {'product': item, 'docstatus': 1})
+	if js:
+		return js
+	else:
+		frappe.throw(" Job Specification for Item <b> {0} </b> is not defined".format(item))
+
+@frappe.whitelist()
 def get_item_details(item, project = None):
 	res = frappe.db.sql("""
 		select stock_uom, description
@@ -602,7 +615,7 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 		wip_warehouse = work_order.wip_warehouse
 	else:
 		wip_warehouse = None
-	stock_entry = frappe.new_doc("Stock Entry")
+
 	swh = frappe.db.sql("select source_warehouse from `tabWork Order Item` where parent = '{0}'".format(work_order.name), as_dict =1)
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.purpose = purpose
@@ -632,6 +645,18 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 
 	stock_entry.get_items()
 	stock_entry.save()
+	######**** Change Made by Thukten to include additional cost ****#####
+	if purpose =="Manufacture":
+		for a in frappe.db.sql("select item, overhead_cost from `tabBOM` where name = '{0}'".format(work_order.bom_no), as_dict=True):
+			if a.overhead_cost > 0:
+				add_cost = 0.0
+				for b in frappe.db.sql("select name, basic_amount, bom_no, qty from `tabStock Entry Detail` d where parent = '{0}' and item_code = '{1}' and bom_no = '{2}'".format(stock_entry.name, a.item, work_order.bom_no), as_dict=True):
+					add_cost = flt(a.overhead_cost) * flt(b.qty)
+					amount = flt(add_cost) + flt(b.basic_amount)
+					val_rate = flt(amount)/flt(b.qty)
+					frappe.db.sql("update `tabStock Entry Detail` set additional_cost = '{0}', amount = '{1}', valuation_rate = '{2}' where name ='{3}'".format(add_cost, amount, val_rate, b.name))				
+	
+
 	work_order.set("stock_entry", stock_entry.name)
 	return stock_entry.as_dict()
 

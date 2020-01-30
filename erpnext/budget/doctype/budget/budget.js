@@ -55,6 +55,7 @@ frappe.ui.form.on("Budget Account", "initial_budget", function(frm, cdt, cdn) {
     var child = locals[cdt][cdn];
 
     frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+    calculate_value(frm, cdt, cdn);
 });
 
 //Calculate when supplementary budget changes
@@ -62,6 +63,7 @@ frappe.ui.form.on("Budget Account", "supplementary_budget", function(frm, cdt, c
     var child = locals[cdt][cdn];
 
     frappe.model.set_value(cdt, cdn, "budget_amount", calculate_budget_amount(child));
+    calculate_value(frm, cdt, cdn);
 });
 
 //Calculate when re-appropiation budget received budget changes
@@ -143,4 +145,29 @@ frappe.ui.form.on("Budget", "refresh", function(frm) {
 });
 
 
+function calculate_value(frm, cdt, cdn) {
+	var init_amount = 0;
+	var actual_amount = 0;
+	var sup_amount = 0;
+	frm.doc.accounts.forEach(function(d) {
+		if(d.initial_budget) { 
+			init_amount += d.initial_budget
+		}
+		if(d.budget_amount) {
+			actual_amount += d.budget_amount	
+		}
+		if(d.supplementary_amount) {
+
+			sup_amount += d.supplementary_amount
+		}		
+	
+	})
+	frm.set_value("initial_total", init_amount);
+	frm.set_value("actual_total", actual_amount);
+	frm.set_value("supp_total", sup_amount);
+	cur_frm.refresh_field("initial_total");
+	cur_frm.refresh_field("actual_total");
+	cur_frm.refresh_field("supp_total");
+	
+}
 

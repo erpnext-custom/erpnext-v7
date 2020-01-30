@@ -53,6 +53,12 @@ def get_data():
                                         "description":_("SWS Application"),
                                         "label": _("SWS Application")
 				},
+				{	
+					"type": "doctype",
+                                        "name": "Vehicle Request",
+                                        "description":_("Vehicle Request"),
+                                        "label": _("Vehicle Request")
+				},
 			]
 		},
 		{

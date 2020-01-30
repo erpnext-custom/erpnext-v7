@@ -119,6 +119,12 @@ frappe.ui.form.on('Salary Structure', {
 	eligible_for_health_contribution: function(frm){
 		calculate_others(frm.doc);
 	},
+	eligible_for_pbvi: function(frm){
+                calculate_others(frm.doc);
+        },
+        eligible_for_hra: function(frm){
+                calculate_others(frm.doc);
+        },
 	ca: function(frm){
 		calculate_others(frm.doc);
 	},

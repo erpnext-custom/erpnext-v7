@@ -21,17 +21,25 @@ frappe.query_reports["Attendance Register"] = {
 			"fieldname":"employee_type",
 			"label": __("Employee Type"),
 			"fieldtype": "Select",
-			"options": ['Muster Roll Employee', 'DES Employee'],
+			"options": ['Muster Roll Employee', 'GEP'],
 			"reqd": 1
 		},
-		{
+		/*{
 			"fieldname":"cost_center",
 			"label": __("Cost Center"),
 			"fieldtype": "Link",
 			"options": "Cost Center",
 			"reqd": 1,
 			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1'], ['Cost Center', 'is_group', '!=', '1']]}}
-		}
+		}*/
+		{
+                        "fieldname":"cost_center",
+                        "label": __("Cost Center"),
+                        "fieldtype": "Link",
+                        "options": "Branch",
+                        "reqd": 1
+                }
+
 	],
 
 	"onload": function(me) {

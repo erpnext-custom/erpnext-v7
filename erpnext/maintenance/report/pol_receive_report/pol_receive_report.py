@@ -39,6 +39,6 @@ def get_data(filters):
                 query += " and p.direct_consumption = 1"
 	else:
 		query += " and p.direct_consumption =  p.direct_consumption "
-	frappe.msgprint("{0}".format(query))	
+	#frappe.msgprint("{0}".format(query))	
 
         return frappe.db.sql(query, debug = 1)

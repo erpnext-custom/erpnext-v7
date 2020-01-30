@@ -19,6 +19,9 @@ class RentalPayment(AccountsController):
 
 		for a in self.item:
 			received_amt = flt(received_amt) + flt(a.allocated_amount)
+			if a.allocated_amount > a.amount:
+				frappe.throw("Allocated amount is bigger than Rent Amount for {0}".format(a.tenant_name))			
+		
 
 		self.amount_received = flt(received_amt)
 		if self.tds_amount:
@@ -143,7 +146,7 @@ class RentalPayment(AccountsController):
 			if self.month:
 				condition += " and month = '{0}'".format(self.month)
 			bill_lists = frappe.db.sql("""
-			                         select name, tenant, tenant_name, customer_code, rent_amount, fiscal_year, month
+			                         select name, tenant, tenant_name, customer_code, rent_amount, received_amount, fiscal_year, month
                                                  from `tabRental Bill`
 						 where 	docstatus = 1
 		                                 and received_amount < rent_amount
@@ -155,7 +158,7 @@ class RentalPayment(AccountsController):
 				condition += " and tenant = '{0}'".format(self.tenant)
 
 			bill_lists = frappe.db.sql("""
-			                         select name, tenant, tenant_name, customer_code, rent_amount, fiscal_year, month
+			                         select name, tenant, tenant_name, customer_code, rent_amount, received_amount, fiscal_year, month
                                                  from `tabRental Bill`
 						 where 	docstatus = 1
 		                                 and received_amount < rent_amount
@@ -164,7 +167,19 @@ class RentalPayment(AccountsController):
 					""".format(condition), as_dict=True)
                                                 
 		for a in bill_lists:
-			 data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "rent_amount":a.rent_amount, "fiscal_year":a.fiscal_year, "month":a.month})
+			if a.received_amount == 0.00:
+				data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "rent_amount":a.rent_amount, "fiscal_year":a.fiscal_year, "month":a.month})
+			else:	
+				balance = flt(a.rent_amount) - flt(a.received_amount)
+				if balance > 0 and balance != a.rent_amount:
+					data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "rent_amount":balance, "fiscal_year":a.fiscal_year, "month":a.month})
+
+		return data	
+
+@frappe.whitelist()
+def get_tds_account():
+	return frappe.db.get_single_value("Accounts Settings", "tds_deducted")			
+			
 
 		return data	
 

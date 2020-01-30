@@ -12,8 +12,9 @@ def execute(filters=None):
     
 def get_columns():
         return [
-                ("Branch ") + ":Link/Equipment:250",
-                ("Employee ID") + ":Data:100",
+                ("Name ") + ":Link/Salary Increment:200",
+		("Branch ") + ":Link/Equipment:200",
+                ("Employee ID") + ":Link/Employee:100",
                 ("Employee Name") + ":Data:150",
 		("Year") + ":Data:80",
                 ("Month")+ ":Data:50",
@@ -29,14 +30,20 @@ def get_data(filters):
                 docstatus = 1
         if filters.uinput == "All":
                 docstatus = "docstatus"
-        query =  """select branch, employee, employee_name, fiscal_year, month, old_basic, 
+        query =  """select name, branch, employee, employee_name, fiscal_year, month, old_basic, 
                     increment, new_basic 
                     from `tabSalary Increment` 
                     where docstatus = {0}
                 """.format(docstatus)
         if filters.get("branch"):
                 query += " and branch = \'"+ str(filters.branch) + "\'"
+	if filters.get("fiscal_year"):
+		query += " and fiscal_year = \'"+ str(filters.fiscal_year) + "\'"
+	if filters.get("month") and filters.get("month") == 'January':
+		query += " and month = 1 "
+	if filters.get("month") and filters.get("month") == 'July':
+		query += " and month = 6 " 
         #frappe.msgprint(docstatus)
-        query += "order by branch"
-        return frappe.db.sql(query)
+        query += " order by branch"
+        return frappe.db.sql(query, debug =1)
       

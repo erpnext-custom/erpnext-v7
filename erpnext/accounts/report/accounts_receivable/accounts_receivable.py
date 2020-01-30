@@ -309,7 +309,7 @@ class ReceivablePayableReport(object):
 				where docstatus < 2 and party_type = '{4}' and  (tenant_name is not null and tenant_name != '') {5}) as gg
 				group by gg.posting_date, gg.party_type, gg.party, gg.voucher_type, gg.voucher_no,
 				gg.against_voucher_type, gg.against_voucher, gg.account_currency, gg.cost_center"""
-				.format(select_fields, conditions, cus_query, exempt_gls, party_type, ren_cond), values, as_dict=True, debug =True)
+				.format(select_fields, conditions, cus_query, exempt_gls, party_type, ren_cond), values, as_dict=True)
 		return self.gl_entries
 
 	

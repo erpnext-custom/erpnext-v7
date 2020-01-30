@@ -110,6 +110,11 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Service",
                                 },
+				{
+					"type": "doctype",
+					"name": "Upload Service List",
+					"description": "Upload Bulk Service List"
+				},
 
                         ]
                 },

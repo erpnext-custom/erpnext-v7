@@ -29,8 +29,7 @@ cur_frm.fields_dict.equipment.get_query = function(doc) {
 		filters:{
 			'not_cdcl': 0,
 			'is_disabled': 0,
-			'equipment_type': doc.equipment_type,
-			'branch':doc.branch,
+			'equipment_type': doc.equipment_type
 		}
 	}
 }

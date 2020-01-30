@@ -75,18 +75,24 @@ def get_conditions(filters):
 
 def get_employee_details(employee_type):
 	emp_map = frappe._dict()
-	if employee_type == "Muster Roll Employee":
-		for d in frappe.db.sql("""select name, person_name, id_card
-			from `tabMuster Roll Employee`""", as_dict=1):
-			emp_map.setdefault(d.name, d)
-	elif employee_type == "DES Employee":
-		for d in frappe.db.sql("""select name, person_name, id_card
-			from `tabDES Employee`""", as_dict=1):
-			emp_map.setdefault(d.name, d)
-	else:
-		frappe.throw("Select a Employee Type")
+        if employee_type == "Muster Roll Employee":
+                for d in frappe.db.sql(""" select name, person_name as employee_name, '{0}' as employment_type from `tabMuster Roll Employee`""".format(employee_type), as_dict = 1):
+                        emp_map.setdefault(d.name, d)
+        else:
+                for d in frappe.db.sql(""" select name, employee_name, employment_type from `tabEmployee` where employment_type = '{0}'""".format(employee_type), as_dict = 1):
+                        emp_map.setdefault(d.name, d)
+        '''if employee_type == "Muster Roll Employee":
+                        for d in frappe.db.sql("""select name, person_name, id_card
+                                from `tabMuster Roll Employee`""", as_dict=1):
+                        emp_map.setdefault(d.name, d)
+        elif employee_type == "GEP":
+                for d in frappe.db.sql("""select name, person_name, id_card
+                        from `tabDES Employee`""", as_dict=1):
+                        emp_map.setdefault(d.name, d)
+        else:
+                frappe.throw("Select a Employee Type")'''
+        return emp_map
 
-	return emp_map
 
 @frappe.whitelist()
 def get_years():

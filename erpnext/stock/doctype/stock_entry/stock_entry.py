@@ -79,7 +79,7 @@ class StockEntry(StockController):
 			
 
         def check_transfer_wh(self):
-                if not self.from_warehouse:
+                if not self.from_warehouse and self.purpose != "Material Receipt":
                         frappe.throw("Source Warehouse is mandatory")
 
                 if self.purpose == "Material Transfer" and not self.to_warehouse:
@@ -457,6 +457,8 @@ class StockEntry(StockController):
 
 		gl_entries = super(StockEntry, self).get_gl_entries(warehouse_account)
 
+		default_business_activity = frappe.db.get_value("Business Activity",{"is_default":1}, "name")
+
 		for d in self.get("items"):
 			additional_cost = flt(d.additional_cost, d.precision("additional_cost"))
 			if additional_cost:
@@ -465,7 +467,8 @@ class StockEntry(StockController):
 					"against": d.expense_account,
 					"cost_center": d.cost_center,
 					"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
-					"credit": additional_cost
+					"credit": additional_cost,
+					"business_activity": default_business_activity
 				}))
 
 				gl_entries.append(self.get_gl_dict({
@@ -473,7 +476,8 @@ class StockEntry(StockController):
 					"against": expenses_included_in_valuation,
 					"cost_center": d.cost_center,
 					"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
-					"credit": -1 * additional_cost # put it as negative credit instead of debit purposefully
+					"credit": -1 * additional_cost, # put it as negative credit instead of debit purposefully
+					"business_activity": default_business_activity
 				}))
 
 		return gl_entries

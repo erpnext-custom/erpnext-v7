@@ -76,10 +76,27 @@ frappe.ui.form.on("Work Order", {
 		frm.set_query("project", function() {
 			return{
 				filters:[
-					['Project', 'status', 'not in', 'Completed, Cancelled']
+					['Project', 'status', 'not in', 'Completed']
 				]
 			}
 		});
+		
+		//job specification
+		/*frm.set_query("job_specification", function(doc) {
+			return{
+				filters: {
+					'product':frm.doc.production_item, 'docstatus': 1
+			      }
+			}
+		});*/
+		cur_frm.set_query("indent", function(){
+                        return {
+                                "filters": [
+                                        ["status", "!=", "Completed"]
+
+                                ]
+                        }
+                });
 
 		// formatter for work order operation
 		frm.set_indicator_formatter('operation',
@@ -316,9 +333,42 @@ frappe.ui.form.on("Work Order", {
 					}
 				}
 			});
+			/*frappe.call({
+                        method: "erpnext.manufacturing.doctype.work_order.work_order.get_job_spec",
+                        args: {
+                                item: frm.doc.production_item
+                        },
+                        freeze: true,
+                        callback: function(r) {
+                                if(r.message) {
+                                        frm.set_value("job_specification", r.message);
+                                        }
+				else {
+					frm.set_value("job_specification", "");
+					
+				}
+                                }
+                        })*/
+
 		}
 	},
 
+	/***job_specification: function(frm) {
+		msgprint("this")
+ 		frappe.call({
+			method: "erpnext.manufacturing.doctype.work_order.work_order.get_job_spec",
+			args: { 
+				item: frm.doc.production_item
+			},
+			freeze: true,
+			callback: function(r) {
+				if(r.message) { 
+					frm.set_value("job_specification", r.message)
+					}
+				}
+			})
+		
+	},***/
 	project: function(frm) {
 		if(!erpnext.in_production_item_onchange) {
 			frm.trigger("production_item");
@@ -553,8 +603,9 @@ erpnext.work_order = {
 					"qty": data.qty
 				},
 				callback: function(r) {
-					var doclist = frappe.model.sync(r.message);
-					frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+					frm.reload_doc()
+					//var doclist = frappe.model.sync(r.message);
+					//frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
 				}
 			});
 		}, __("Select Quantity"), __("Make"));
