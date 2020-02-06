@@ -25,10 +25,7 @@ frappe.ui.form.on('Break Down Report', {
 		if (!frm.doc.date) {
 			frm.set_value("date", get_today());
 		}
-		
-		if (frm.doc.out_sourced == 1) {
-			cur_frm.toggle_
-		
+			
 		// Ver 2.0 Begins, following code added by SHIV on 28/11/2017
 		if(frm.doc.__islocal) {
 			frappe.call({
@@ -41,15 +38,13 @@ frappe.ui.form.on('Break Down Report', {
 				}
 			});
 		}
-	}	// Ver 2.0 Ends
 	},
 		
 	owned_by: function(frm) {
 		cur_frm.set_value("customer", "")
 		cur_frm.set_value("equipment", "")
-		cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'Own Company')
-		cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'Own Company')
-
+		//cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'Own Company')
+		//cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'Own Company')
 		//cur_frm.toggle_reqd("equipment_model", frm.doc.owned_by != 'Others')
 		//cur_frm.toggle_reqd("equipment_number", frm.doc.owned_by != 'Others')
 	}

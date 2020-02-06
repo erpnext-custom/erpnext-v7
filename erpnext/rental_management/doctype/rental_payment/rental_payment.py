@@ -181,8 +181,6 @@ def get_tds_account():
 	return frappe.db.get_single_value("Accounts Settings", "tds_deducted")			
 			
 
-		return data	
-
 @frappe.whitelist()
 def get_tds_account():
 	return frappe.db.get_single_value("Accounts Settings", "tds_deducted")			

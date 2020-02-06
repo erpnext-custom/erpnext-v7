@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "AT.YY.####", 
  "beta": 0, 
@@ -322,8 +322,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-11-18 14:17:18.021423", 
- "modified_by": "Administrator", 
+ "modified": "2020-02-05 19:13:22.198110", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Buying", 
  "name": "Annual Tender", 
  "name_case": "", 

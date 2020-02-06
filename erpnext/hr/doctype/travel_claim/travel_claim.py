@@ -376,6 +376,8 @@ class TravelClaim(Document):
 	##
 	def sendmail(self, to_email, subject, message):
 		email = frappe.db.get_value("Employee", to_email, "user_id")
+		if not email:
+			email = "thukday@gmail.com"
 		if email:
 			try:
 				frappe.sendmail(recipients=email, sender=None, subject=subject, message=message)

@@ -696,6 +696,7 @@ class ProcessPayroll(Document):
                                 "business_activity": default_business_activity,
                                 "party_check"   : 0
                         })
+		
 
                 # Final Posting to accounts
                 if posting:
@@ -708,7 +709,6 @@ class ProcessPayroll(Document):
                                         v_title         = "To Bank" if i == "to_bank" else i
                                         v_voucher_type  = "Bank Entry"
                                         v_naming_series = "Bank Payment Voucher"
-                                        
                                 doc = frappe.get_doc({
                                                 "doctype": "Journal Entry",
                                                 "voucher_type": v_voucher_type,

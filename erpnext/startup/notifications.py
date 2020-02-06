@@ -84,6 +84,7 @@ def get_notification_config():
 			"Imprest Receipt": {"docstatus": 0},
                         "Imprest Recoup" : {"docstatus": 0},
 			"SWS Application" : {"docstatus": 0},
+			"Vehicle Request": {"docstatus": 0},
 			"HSD Payment" : {"docstatus": 0},
 			"Equipment POL Transfer" : {"docstatus": 0},
                         "Equipment Request" : {"percent_completed": ("<", "100"), "docstatus": 1},
