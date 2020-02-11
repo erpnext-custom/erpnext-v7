@@ -90,7 +90,7 @@ def construct_query(filters=None):
         r.receipt_number, r.receipt_date
          from `tabSalary Slip` a, `tabRRCO Receipt Entries` r
          where a.fiscal_year = r.fiscal_year and a.month = r.month and a.docstatus = 1
-	 and exists (select 1 from `tabCost Center` where name in (select name from `tabCost Center` where parent_cost_center 
+	 and exists (select 1 from `tabCost Center` where a.cost_center in (select name from `tabCost Center` where parent_cost_center 
 	 in (select name from `tabCost Center` where parent_cost_center = r.cost_center))) 
          and r.purpose = 'Employee Salary' and a.fiscal_year = """ + str(filters.fiscal_year)
 

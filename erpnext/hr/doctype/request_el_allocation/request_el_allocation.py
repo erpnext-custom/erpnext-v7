@@ -11,8 +11,8 @@ from frappe.utils import flt
 class RequestELAllocation(Document):
 	def validate(self):
 		validate_workflow_states(self)
-		if self.unused_leaves < 1 or self.unused_leaves > 6:
-			frappe.throw("Unused No of Leaves to Allocate cannot be less than 1 or greater than 6", title="Error")
+		if self.unused_leaves < 1 or self.unused_leaves > 7:
+			frappe.throw("Unused No of Leaves to Allocate cannot be less than 1 or greater than 7", title="Error")
 		
 		#frappe.throw("this is workflow state {0}".format(self.workflow_state.lower()))
 		
