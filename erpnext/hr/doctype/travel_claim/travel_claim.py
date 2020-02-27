@@ -73,7 +73,7 @@ class TravelClaim(Document):
 		#self.check_status()
 		self.post_journal_entry()
 		self.update_travel_authorization()
-		self.check_budget()
+		#self.check_budget()
 		if self.supervisor_approval and self.hr_approval:
 			self.db_set("hr_approved_on", nowdate())
 		

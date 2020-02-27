@@ -670,3 +670,7 @@ def make_asset_transfer_gl(self, asset, date, from_cc, to_cc, not_legacy_data=Tr
 		)
 
 	make_gl_entries(gl_entries, cancel=0, update_outstanding="No", merge_entries=False)
+
+def check_missing_gl(from_date=None):
+	query = "select name from `tabJournal Entry` je where je.docstatus = 1 and not exists (select 1 from `tabGL Entry` gl where gl.voucher_no = je.name)"
+	

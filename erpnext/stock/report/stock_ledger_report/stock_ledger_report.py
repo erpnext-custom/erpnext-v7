@@ -24,7 +24,7 @@ def execute(filters=None):
 
 		data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group, item_detail.item_sub_group,
 			sle.warehouse,
-			item_detail.stock_uom, flt(sle.actual_qty, 5),round(flt(sle.qty_after_transaction, 5)),
+			item_detail.stock_uom, flt(sle.actual_qty, 5),(flt(sle.qty_after_transaction, 5)),
 			(sle.incoming_rate if sle.actual_qty > 0 else 0.0000),
 			sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
 			sle.vehicle_no, sle.transporter_name, sle.company])
@@ -96,7 +96,7 @@ def get_opening_balance(filters, columns):
 	
 	row = [""]*len(columns)
 	row[1] = _("'Opening'")
-	for i, v in ((9, 'qty_after_transaction'), (11, 'valuation_rate'), (12, 'stock_value')):
+	for i, v in ((8, 'qty_after_transaction'), (10, 'valuation_rate'), (11, 'stock_value')):
 			row[i] = last_entry.get(v, 0)
 		
 	return row

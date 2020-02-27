@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-12-14 10:19:45.179384", 
- "modified_by": "Administrator", 
+ "modified": "2020-01-30 12:17:12.645187", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Projected Quantity", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Stock User (other)"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

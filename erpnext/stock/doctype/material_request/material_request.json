@@ -581,8 +581,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2019-04-09 10:06:55.787822", 
- "modified_by": "Administrator", 
+ "modified": "2020-01-27 16:19:31.587235", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Material Request", 
  "owner": "Administrator", 
@@ -668,7 +668,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
-   "user_permission_doctypes": "[\"User\"]", 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
@@ -709,7 +709,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 1
+   "write": 0
   }, 
   {
    "amend": 0, 

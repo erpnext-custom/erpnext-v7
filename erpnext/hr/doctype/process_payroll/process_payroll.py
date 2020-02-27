@@ -12,6 +12,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                         3) Party wise entries if required.
 2.0               SHIV,DORJI                       19/12/2018         Clubbing of journal entry for salary
 2.0               SHIV, JIGME                      19/07/2019         Budget Check before salary posting introduced.
+2.0.200106        SHIV                             06/01/2020         Budget check should happen for the processing year
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 from __future__ import unicode_literals
@@ -659,7 +660,7 @@ class ProcessPayroll(Document):
                 #
                 if posting:
                         # Budget check
-                        self.check_budget(posting)
+                        #self.check_budget(posting)
 			#self.inter_company_jv(posting)
                         for i in posting:
                                 if i == "to_payables":
@@ -724,13 +725,22 @@ class ProcessPayroll(Document):
 
         # Ver 20190719.1 added by SHIV, JIGME on 2019/07/19
         def check_budget(self, posting):
-                budget_error = []    
+                budget_error = []
+                ### Ver.2.0.200106 Begins, added by SHIV on 2019/01/06
+                # Budget check should happen on processing year and month not nowdate()
+                budget_date = "-".join([self.fiscal_year, self.month, '01'])
+                budget_date = budget_date if budget_date else nowdate()
+                ### Ver.2.0.200106 Ends
                 def check_budget_voucher_wise(vouchertype):
                         for rec in sorted(posting[vouchertype], key=lambda item: item['cost_center']):
                                 if flt(rec.get("debit_in_account_currency")) > 0:
                                         #frappe.msgprint(_("{0} {1}").format(vouchertype, rec))
                                         if frappe.db.exists("Account", {"name": rec.get("account"), "root_type": "Expense"}):
-                                                error = check_budget_available(rec.get("cost_center"), rec.get("account"), nowdate(), flt(rec.get("debit_in_account_currency")), False)
+                                                ### Ver.2.0.200106 Begins, added by SHIV on 2019/01/06
+                                                # Following line is replaced
+                                                #error = check_budget_available(rec.get("cost_center"), rec.get("account"), nowdate(), flt(rec.get("debit_in_account_currency")), False)
+                                                error = check_budget_available(rec.get("cost_center"), rec.get("account"), budget_date, flt(rec.get("debit_in_account_currency")), False)
+                                                ### Ver.2.0.200106 Ends
                                                 if error:
                                                         budget_error.append(error)
 

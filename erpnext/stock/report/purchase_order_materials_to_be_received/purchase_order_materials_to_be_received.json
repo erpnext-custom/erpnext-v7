@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2017-12-14 10:25:39.980563", 
- "modified_by": "Administrator", 
+ "modified": "2020-01-30 12:23:03.045978", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Purchase Order Materials To Be Received", 
  "owner": "Administrator", 
@@ -34,6 +34,9 @@
   }, 
   {
    "role": "Stock User (other)"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

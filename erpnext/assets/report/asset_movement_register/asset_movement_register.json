@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-01-21 17:34:49.873099", 
- "modified_by": "Administrator", 
+ "modified": "2019-12-26 12:24:55.361075", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Assets", 
  "name": "Asset Movement Register", 
  "owner": "Administrator", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Asset User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

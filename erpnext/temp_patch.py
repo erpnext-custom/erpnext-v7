@@ -8,6 +8,497 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff,
 from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 
+# Salary Revision 2019
+# refresh salary structures
+def refresh_salary_structures(debug=1):
+        counter = 0
+        for i in frappe.db.get_all("Salary Structure", "name", {"is_active": "Yes", "from_date": "2019-12-01"}):
+                counter += 1
+                print counter, i.name
+                if not debug:
+                        doc = frappe.get_doc("Salary Structure", i.name)
+                        doc.save()
+
+# generate new sst name
+def gen_sst_name(debug=1):
+        from frappe.model.naming import make_autoname
+        counter = 0
+        for i in frappe.db.sql("select * from maintenance.salary_revision2019 where new_salary_structure is null ", as_dict=True):
+                counter += 1                
+                if not debug:
+                        new_sst_name = make_autoname(i.employee + '/.SST' + '/.#####')
+                        frappe.db.sql("update maintenance.salary_revision2019 set new_salary_structure='{0}' where employee = '{1}'".format(new_sst_name, i.employee))
+                        print counter, i.employee, new_sst_name
+        frappe.db.commit()               
+
+# update basic_pay, arrears
+def update_sst(debug=1):
+        counter = 0
+        for i in frappe.db.sql("""select * from maintenance.salary_revision2019 sr
+                        where sr.new_salary_structure is not null
+                        and exists(select 1
+                                        from `tabSalary Structure` sst
+                                        where sst.name = sr.new_salary_structure)""", as_dict=True):
+                counter += 1
+                print counter, i.employee, i.new_salary_structure
+                if not debug:
+                        #update basic_pay
+                        frappe.db.sql("update `tabSalary Detail` set amount = {0} where parent = '{1}' and salary_component = 'Basic Pay'".format(flt(i.new_basic_pay),i.new_salary_structure))
+                        #arrears
+                        doc = frappe.get_doc("Salary Structure", i.new_salary_structure)
+
+                        salary_component = "Basic Pay Arrears"
+                        print salary_component
+                        if flt(i.tot_basic_arrears) and not frappe.db.exists("Salary Detail", {"parent": i.new_salary_structure, "salary_component": salary_component}):
+                                row = doc.append("earnings", {})
+                                row.salary_component = salary_component
+                                row.amount          = flt(i.tot_basic_arrears)
+                                row.from_date        = "2019-12-01"
+                                row.to_date          = "2019-12-31"
+                                row.save(ignore_permissions=True)
+                        salary_component = "Salary Arrears"
+                        print salary_component
+                        if flt(i.tot_all_arrears) and not frappe.db.exists("Salary Detail", {"parent": i.new_salary_structure, "salary_component": salary_component}):
+                                row = doc.append("earnings", {})
+                                row.salary_component = salary_component
+                                row.amount          = flt(i.tot_all_arrears)
+                                row.from_date        = "2019-12-01"
+                                row.to_date          = "2019-12-31"
+                                row.save(ignore_permissions=True)
+        frappe.db.commit()
+
+# Duplicate salary structures
+def duplicate_sst(debug=1):
+        from frappe.model.naming import make_autoname
+        counter = 0
+        for i in frappe.db.sql("""
+                select distinct sr.new_salary_structure as new_sst,
+                        sst.name as old_sst
+                from `tabSalary Structure` sst, maintenance.salary_revision2019 sr
+                where sst.is_active='No'
+                and sst.to_date = '2019-11-30'
+                and sr.employee = sst.employee
+                and sr.new_salary_structure is not null
+                and not exists(select 1
+                                from `tabSalary Structure` sstn
+                                where sstn.employee = sst.employee
+                                and sstn.from_date = '2019-12-01')
+                """, as_dict=True):
+                counter += 1
+                print counter, i.old_sst, i.new_sst
+                if not debug:
+                        frappe.db.sql("""
+                                insert into `tabSalary Structure`(name,creation,modified,modified_by,owner,docstatus,parent,parentfield,
+                                        parenttype,idx,letter_head,to_date,total_earning,_comments,
+                                        from_date,branch,employee,_liked_by,total_deduction,company,
+                                        _assign,is_active,net_pay,department,employee_name,_user_tags,
+                                        designation,section,division,corporate_allowance,
+                                        eligible__corporate_allowance,eligible_corporate_allowance_,
+                                        eligible_mpi,eligible_communication_allowance,
+                                        eligible_psa,eligible_fuel_allowances,
+                                        eligible_officiating_allowance,eligible_fuel_allowances1,
+                                        eligible_annual_bonus,eligible_pbva,
+                                        eligible_leave_encashment,eligible_ltc,
+                                        eligible_contract_allowance,eligible_for_leave_encashment,
+                                        eligible_for_ltc,eligible_for_annual_bonus,
+                                        eligible_for_pbva,eligible_for_mpi,
+                                        eligible_for_overtime_and_payment,eligible_for_temporary_transfer_allowance,
+                                        eligible_for_officiating_allowance,eligible_for_fuel_allowances,
+                                        eligible_for_psa,eligible_for_communication_allowance,
+                                        eligible_for_contract_allowance,eligible_for_corporate_allowance,
+                                        cbrake1,contract_allowance,communication_allowance,mpi,
+                                        psa,temporary_transfer_allowance,officiating_allowance,fuel_allowances,
+                                        ca,bonus,salary_component,is_default,hour_rate,salary_slip_based_on_timesheet,
+                                        eligible_for_gis,eligible_for_pf,eligible_for_health_contribution,lumpsum_temp_transfer_amount,
+                                        eligible_for_underground,underground,eligible_for_shift,shift,
+                                        eligible_for_pda,pda,eligible_for_deputation,deputation,eligible_for_difficulty,difficulty,
+                                        eligible_for_high_altitude,high_altitude,eligible_for_scarcity,scarcity,
+                                        eligible_for_cash_handling,cash_handling,actual_basic,submission,
+                                        submitted_by,eligible_for_tax,ca_method,contract_allowance_method,
+                                        communication_allowance_method,fuel_allowances_method,underground_method,shift_method,
+                                        difficulty_method,high_altitude_method,psa_method,pda_method,
+                                        deputation_method,officiating_allowance_method,temporary_transfer_allowance_method,scarcity_method,
+                                        cash_handling_method,employment_type,employee_group,employee_grade)
+                                select '{0}',now(),now(),'Administrator','Administrator',docstatus,parent,parentfield,
+                                        parenttype,idx,letter_head,null,total_earning,_comments,
+                                        '2019-12-01',branch,employee,_liked_by,total_deduction,company,
+                                        _assign,'Yes',net_pay,department,employee_name,_user_tags,
+                                        designation,section,division,corporate_allowance,
+                                        eligible__corporate_allowance,eligible_corporate_allowance_,
+                                        eligible_mpi,eligible_communication_allowance,
+                                        eligible_psa,eligible_fuel_allowances,
+                                        eligible_officiating_allowance,eligible_fuel_allowances1,
+                                        eligible_annual_bonus,eligible_pbva,
+                                        eligible_leave_encashment,eligible_ltc,
+                                        eligible_contract_allowance,eligible_for_leave_encashment,
+                                        eligible_for_ltc,eligible_for_annual_bonus,
+                                        eligible_for_pbva,eligible_for_mpi,
+                                        eligible_for_overtime_and_payment,eligible_for_temporary_transfer_allowance,
+                                        eligible_for_officiating_allowance,eligible_for_fuel_allowances,
+                                        eligible_for_psa,eligible_for_communication_allowance,
+                                        eligible_for_contract_allowance,eligible_for_corporate_allowance,
+                                        cbrake1,contract_allowance,communication_allowance,mpi,
+                                        psa,temporary_transfer_allowance,officiating_allowance,fuel_allowances,
+                                        ca,bonus,salary_component,is_default,hour_rate,salary_slip_based_on_timesheet,
+                                        eligible_for_gis,eligible_for_pf,eligible_for_health_contribution,lumpsum_temp_transfer_amount,
+                                        eligible_for_underground,underground,eligible_for_shift,shift,
+                                        eligible_for_pda,pda,eligible_for_deputation,deputation,eligible_for_difficulty,difficulty,
+                                        eligible_for_high_altitude,high_altitude,eligible_for_scarcity,scarcity,
+                                        eligible_for_cash_handling,cash_handling,actual_basic,submission,
+                                        submitted_by,eligible_for_tax,ca_method,contract_allowance_method,
+                                        communication_allowance_method,fuel_allowances_method,underground_method,shift_method,
+                                        difficulty_method,high_altitude_method,psa_method,pda_method,
+                                        deputation_method,officiating_allowance_method,temporary_transfer_allowance_method,scarcity_method,
+                                        cash_handling_method,employment_type,employee_group,employee_grade
+                                from `tabSalary Structure`
+                                where name = '{1}'
+                        """.format(i.new_sst, i.old_sst))
+                        for j in frappe.db.sql("select * from `tabSalary Detail` where parent = '{0}'".format(i.old_sst), as_dict=True):
+                                sd_name = make_autoname('hash','Salary Detail')
+                                print j.name, j.salary_component, sd_name
+                                frappe.db.sql("""
+                                        insert into `tabSalary Detail`
+                                        (name,creation,modified,modified_by,owner,docstatus,parent,parentfield,
+                                                parenttype,idx,default_amount,depends_on_lwp,amount,salary_component,from_date,to_date,
+                                                institution_name,reference_number,total_deductible_amount,total_deducted_amount,
+                                                total_outstanding_amount,reference_type,salary_component_type,ref_docname,
+                                                submission,submitted_by,total_days_in_month,working_days,
+                                                leave_without_pay,payment_days)
+                                        select
+                                                '{2}',now(),now(),'Administrator','Administrator',docstatus,'{0}',parentfield,
+                                                parenttype,idx,default_amount,depends_on_lwp,amount,salary_component,from_date,to_date,
+                                                institution_name,reference_number,total_deductible_amount,total_deducted_amount,
+                                                total_outstanding_amount,reference_type,salary_component_type,ref_docname,
+                                                submission,submitted_by,total_days_in_month,working_days,
+                                                leave_without_pay,payment_days
+                                        from `tabSalary Detail`
+                                        where name = '{1}'
+                                """.format(i.new_sst, j.name, sd_name))
+
+# Created by SHIV on 2019/12/20
+def create_asset_schedules_b4(debug=1):
+        qry = """
+                select *
+                from maintenance.tmp_assetsb4 t, `tabAsset` a
+                where t.flag = 0
+                and a.name = t.asset
+                and not exists(select 1
+                        from `tabDepreciation Schedule` ds
+                        where ds.parent = t.asset
+                        and ds.schedule_date = t.schedule_date)
+                order by t.asset, t.schedule_date
+        """
+        tot_count = 0
+        for i in frappe.db.sql(qry, as_dict=True):
+                tot_count += 1
+                prev = get_previous_schedule(i.asset, i.schedule_date)
+                if prev:
+                        print 'FOUND',tot_count, i.asset, i.depreciation, i.schedule_date, i.status
+                        if not debug:
+                                doc                                     = frappe.get_doc("Asset", i.asset)
+                                row                                     = doc.append("schedules", {})
+                                row.schedule_date                       = i.schedule_date
+                                row.depreciation_amount                 = flt(i.depreciation)
+                                row.depreciation_income_tax             = flt(prev.depreciation_income_tax)
+                                row.accumulated_depreciation_amount     = flt(prev.opening_accumulated_depreciation)+flt(i.depreciation)
+                                row.accumulated_depreciation_income_tax = flt(prev.accumulated_depreciation_income_tax)
+                                row.save(ignore_permissions=True)
+                                frappe.db.sql("update `tabAsset` set residual_value=0 where name='{0}'".format(i.asset))
+                                frappe.db.sql("update maintenance.tmp_assetsb4 set flag=1 where asset='{0}'".format(i.asset))
+                                frappe.db.sql("""update `tabDepreciation Schedule`
+                                        set accumulated_depreciation_amount = accumulated_depreciation_amount + {1}
+                                        where parent='{0}'
+                                        and schedule_date > '{2}'
+                                """.format(i.asset, flt(i.depreciation), i.schedule_date))
+                else:
+                        print 'NOT-FOUND',tot_count, i.asset, i.depreciation, i.schedule_date, i.status
+        frappe.db.commit()
+        
+# Created by SHIV on 2019/12/18, M&E 10years, ME6, FF no schedules
+# Assets without any schedules
+def create_asset_schedule_me10me6ff(debug=1):
+        qry = """
+                select *
+                from maintenance.tmp_asset_schedule_me10me6ff t
+                where t.flag = 0
+                and not exists(select 1
+                        from `tabDepreciation Schedule` ds
+                        where ds.parent = t.asset
+                        and ds.schedule_date = '2019-01-01')
+        """
+        tot_count = 0
+        for i in frappe.db.sql(qry, as_dict=True):
+                tot_count += 1
+                depreciation_amount = 0
+                print 'FOUND',tot_count, i.asset
+                depreciation_amount = flt(i.gross_purchase_amount)-flt(i.opening_accumulated_depreciation)-(i.tot_depreciation_amount)-1
+
+                if not debug:
+                        doc                                     = frappe.get_doc("Asset", i.asset)
+                        row                                     = doc.append("schedules", {})
+                        row.schedule_date                       = '2019-01-01'
+                        row.depreciation_amount                 = flt(depreciation_amount)
+                        row.depreciation_income_tax             = 0
+                        row.accumulated_depreciation_amount     = flt(i.opening_accumulated_depreciation)+flt(depreciation_amount)
+                        row.accumulated_depreciation_income_tax = 0
+                        row.save(ignore_permissions=True)
+                        frappe.db.sql("update `tabAsset` set residual_value=0 where name='{0}'".format(i.asset))
+                        frappe.db.sql("update maintenance.tmp_asset_schedule_me10me6ff set flag=1 where asset='{0}'".format(i.asset))
+        frappe.db.commit()
+
+# Rescheduling
+# Created by SHIV on 2020/02/08, Hap Dorji
+# bench execute erpnext.temp_patch.asset_schedule20200208 --args "1,"
+def asset_schedule20200208(debug=1):
+        qry = """
+                select *
+                from maintenance.asset_schedule20200208 t
+                where t.asset = "{0}"
+                and not exists(select 1
+                        from `tabDepreciation Schedule` ds
+                        where ds.parent = t.asset
+                        and ds.schedule_date = t.schedule_date
+                        and round(ds.depreciation_amount,2) = round(t.amount,2))
+                order by t.schedule_date
+        """
+        tot_count = 0
+        for i in frappe.db.sql("""select *
+                               from `tabAsset` a
+                               where exists(select 1
+                                       from maintenance.asset_schedule20200208 t
+                                       where t.asset = a.name)
+                               order by a.name""", as_dict=True):
+                print "="*20
+                print i.name, i.disable_depreciation
+                print "="*20
+                prev = get_previous_schedule(i.name, '2019-01-01')
+                print 'PREV', prev.schedule_date, prev.depreciation_amount, prev.accumulated_depreciation_amount
+                accumulated_depreciation_amount = flt(prev.accumulated_depreciation_amount)
+                for j in frappe.db.sql(qry.format(i.name), as_dict=True):
+                        accumulated_depreciation_amount += flt(j.amount)
+                        if not debug:
+                                doc = frappe.get_doc("Asset", i.name)
+                                row = doc.append("schedules", {})
+                                row.schedule_date       = j.schedule_date
+                                row.depreciation_amount = flt(j.amount)
+                                row.depreciation_income_tax = flt(prev.depreciation_income_tax)
+                                row.accumulated_depreciation_amount = flt(accumulated_depreciation_amount)
+                                row.accumulated_depreciation_income_tax = flt(prev.accumulated_depreciation_income_tax)
+                                row.save(ignore_permissions=True)
+                                print j.asset, j.schedule_date, j.amount, accumulated_depreciation_amount
+
+        '''        
+        for i in frappe.db.sql(qry, as_dict=True):
+                tot_count += 1
+                prev = get_previous_schedule(i.asset, '2019-01-01')
+                depreciation_amount = 0
+                if prev:
+                        print 'FOUND',tot_count, i.asset, prev.schedule_date
+                        depreciation_amount = flt(i.gross_purchase_amount)-flt(i.opening_accumulated_depreciation)-(i.tot_depreciation_amount)-1
+
+                        if not debug:
+                                doc = frappe.get_doc("Asset", i.asset)
+                                row = doc.append("schedules", {})
+                                row.schedule_date     = '2019-01-01'
+                                row.depreciation_amount = flt(depreciation_amount)
+                                row.depreciation_income_tax = prev.depreciation_income_tax
+                                row.accumulated_depreciation_amount = flt(prev.accumulated_depreciation_amount)+flt(depreciation_amount)
+                                row.accumulated_depreciation_income_tax = flt(prev.accumulated_depreciation_income_tax)
+                                row.save(ignore_permissions=True)
+                                frappe.db.sql("update `tabAsset` set residual_value=0 where name='{0}'".format(i.asset))
+                                frappe.db.sql("update maintenance.tmp_asset_schedule_me10 set flag=1 where asset='{0}'".format(i.asset))
+                else:
+                        print 'NOT-FOUND',tot_count, i.asset
+        frappe.db.commit()
+        '''
+        
+# Created by SHIV on 2019/12/18, M&E 10years
+def create_asset_schedule_me10(debug=1):
+        qry = """
+                select *
+                from maintenance.tmp_asset_schedule_me10 t
+                where t.flag = 0
+                and not exists(select 1
+                        from `tabDepreciation Schedule` ds
+                        where ds.parent = t.asset
+                        and ds.schedule_date = '2019-01-01')
+        """
+        tot_count = 0
+        for i in frappe.db.sql(qry, as_dict=True):
+                tot_count += 1
+                prev = get_previous_schedule(i.asset, '2019-01-01')
+                depreciation_amount = 0
+                if prev:
+                        print 'FOUND',tot_count, i.asset, prev.schedule_date
+                        depreciation_amount = flt(i.gross_purchase_amount)-flt(i.opening_accumulated_depreciation)-(i.tot_depreciation_amount)-1
+
+                        if not debug:
+                                doc = frappe.get_doc("Asset", i.asset)
+                                row = doc.append("schedules", {})
+                                row.schedule_date     = '2019-01-01'
+                                row.depreciation_amount = flt(depreciation_amount)
+                                row.depreciation_income_tax = prev.depreciation_income_tax
+                                row.accumulated_depreciation_amount = flt(prev.accumulated_depreciation_amount)+flt(depreciation_amount)
+                                row.accumulated_depreciation_income_tax = flt(prev.accumulated_depreciation_income_tax)
+                                row.save(ignore_permissions=True)
+                                frappe.db.sql("update `tabAsset` set residual_value=0 where name='{0}'".format(i.asset))
+                                frappe.db.sql("update maintenance.tmp_asset_schedule_me10 set flag=1 where asset='{0}'".format(i.asset))
+                else:
+                        print 'NOT-FOUND',tot_count, i.asset
+        frappe.db.commit()
+        
+# Create by SHIV on 2019/12/18, Dorji, Jigme
+# Schedules created as 31/10/2019 on 2019/10/22, are having 0 as Depreciation Amount
+#       which is wrong, they all supposed to have some amount not 0
+def get_previous_schedule(asset, schedule_date):
+        entry = frappe.db.sql("""
+                select *
+                from `tabDepreciation Schedule`
+                where parent = "{asset}"
+                and schedule_date < "{schedule_date}"
+                order by schedule_date desc limit 1
+        """.format(asset=asset, schedule_date=schedule_date), as_dict=True)
+        if entry:
+                return entry[0]
+        else:
+                return None
+
+# bench execute erpnext.temp_patch.asset_update_schedule --args "1,"
+def asset_update_schedule(debug=1):
+        qry = """
+                select
+                        tds.name,
+                        a.name as asset,
+                        a.gross_purchase_amount,
+                        tds.schedule_date
+                from `tabAsset` a, maintenance.`tmp_ds20191218` tds
+                where tds.parent = a.name
+                and a.status != "Scrapped"
+                and exists(select 1
+                        from `tabDepreciation Schedule` ds
+                        where ds.name = tds.name
+                        and ds.depreciation_amount = 0)
+        """
+        tot_count = 0
+        prev_schedule_found = 0
+        prev_schedule_notfound = 0
+        for i in frappe.db.sql(qry, as_dict=True):
+                flag = 0
+                tot_count += 1
+                depreciation_amount = 0
+                prev_schedule = get_previous_schedule(i.asset, i.schedule_date)
+                if prev_schedule:
+                        prev_schedule_found += 1
+                        depreciation_amount = flt(i.gross_purchase_amount) - flt(prev_schedule.accumulated_depreciation_amount) - 1
+                        if flt(depreciation_amount) <= 0:
+                                flag = 0
+                                print 'INVALID_VALIE',depreciation_amount,tot_count, i.asset, prev_schedule.schedule_date, i.gross_purchase_amount, prev_schedule.accumulated_depreciation_amount, depreciation_amount
+                        else:
+                                flag = 1
+                                print 'FOUND',tot_count, i.asset, prev_schedule.schedule_date, i.gross_purchase_amount, prev_schedule.accumulated_depreciation_amount, depreciation_amount
+                                
+                        if not debug and flag:
+                                doc = frappe.get_doc("Depreciation Schedule", i.name)
+                                doc.depreciation_amount = depreciation_amount
+                                doc.accumulated_depreciation_amount = flt(prev_schedule.accumulated_depreciation_amount)+flt(depreciation_amount)
+                                doc.save(ignore_permissions=True)
+                else:
+                        prev_schedule_notfound += 1
+        print 'Total no.of schedules: ', tot_count
+        print 'Schedules found having previous schedules: ', prev_schedule_found
+        print 'Schedules found not having previous schedules: ', prev_schedule_notfound
+        
+# Create by SHIV on 2019/10/22, Dorji
+# add schedule entry for assets for the depreciation balances provided by Dorji 
+def asset_create_schedule():
+	def has_balance_schedule(asset):
+		return frappe.db.sql("""
+			select 1
+			from `tabDepreciation Schedule` ds
+			where ds.parent = "{asset}"
+			and ds.schedule_date >= '2019-10-01'
+		""".format(asset=asset), as_dict=True)
+
+	scrapped = 0
+	tot_count = 0
+	count = 0
+	has_balance_count = 0
+	has_no_balance_count = 0
+	latest_count = 0
+	qry = """
+		select 
+			a.name,	a.asset_name,a.asset_category,
+			t.balance_amount,a.status,
+			a.value_after_depreciation
+		from `tabAsset` a, tmp_asset_schedule t
+		where t.asset = a.name
+		and t.flag = 0
+	"""
+	for i in frappe.db.sql(qry, as_dict=True):
+		print i
+		tot_count += 1
+		if i.status == "Scrapped":
+			scrapped += 1
+		else:
+			count += 1
+			if not has_balance_schedule(i.name):
+				has_no_balance_count += 1
+				# get the latest entry from schedule
+				latest = frappe.db.sql("""
+					select *
+					from `tabDepreciation Schedule`
+					where parent = "{asset}"
+					order by schedule_date desc
+					limit 1
+				""".format(asset=i.name), as_dict=True)
+				if latest:
+					latest_count += 1
+					#print i.name,latest[0].schedule_date
+					doc = frappe.get_doc("Asset", i.name)
+					row = doc.append("schedules", {})
+					row.schedule_date     = '2019-10-31'
+					row.depreciation_amount = flt(i.value_after_depreciation)-1
+					row.depreciation_income_tax = latest[0].depreciation_income_tax
+					row.accumulated_depreciation_amount = flt(latest[0].accumulated_depreciation_amount)+flt(i.value_after_depreciation)-1
+					row.accumulated_depreciation_income_tax = latest[0].accumulated_depreciation_income_tax
+					row.save(ignore_permissions=True)
+					frappe.db.sql("update `tabAsset` set residual_value=0 where name='{0}'".format(i.name))
+					frappe.db.sql("update tmp_asset_schedule set flag=1,remarks='created' where asset='{0}'".format(i.name))
+			else:
+				has_balance_count += 1
+
+	frappe.db.commit()
+	print 'Total no.of records: ',tot_count
+	print 'Total skipped(Scrapped): ',scrapped
+	print 'Total no.of records to be update: ', has_balance_count
+	print 'Total no.of records to be created: ',has_no_balance_count
+	print 'Total no.of latest records found: ',latest_count
+
+# Following method created by SHIV on 2019/10/21, Dorji
+# Generate missing GL Entries for Purchase Receipts having Stock Entry but now GL
+def generate_gls_for_pr():
+        counter = 0
+	posting_year = '2019'
+        for i in frappe.db.sql("""
+			select pr.name, pr.posting_date, pr.branch 
+			from `tabPurchase Receipt` pr
+			where year(posting_date) = '{posting_year}'
+			and pr.docstatus = 1
+			and exists(select 1
+						from `tabStock Ledger Entry` sle
+						where sle.voucher_type = 'Purchase Receipt'
+						and sle.voucher_no = pr.name)
+			and not exists(select 1
+						from `tabGL Entry` gl
+						where gl.voucher_type = 'Purchase Receipt'
+						and gl.voucher_no = pr.name)
+			order by pr.posting_date
+		""".format(posting_year=posting_year), as_dict=True):
+                counter += 1
+                print counter, i.name, i.posting_date, i.branch
+                doc = frappe.get_doc('Purchase Receipt', i.name)
+                doc.make_gl_entries(repost_future_gle=False)
+
 def post_intra_je():
         from calendar import monthrange
         company = "Construction Development Corporation Ltd"
@@ -271,6 +762,7 @@ def add_ssl_item():
                 row.save()
                 print counter, i.name, i.fiscal_year, i.month
 
+#bench execute erpnext.temp_patch.cancel_ssl --args "'2019','11',1" 
 def cancel_ssl(pfiscal_year, pmonth, debug=1):
         counter = 0
         for s in frappe.db.sql("select name from `tabSalary Slip` where fiscal_year='{0}' and month = '{1}' and docstatus=1".format(pfiscal_year, pmonth), as_dict=True):

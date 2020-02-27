@@ -19,7 +19,7 @@ class ProcessMRPayment(Document):
                 total_days = monthrange(cint(self.fiscal_year), cint(month))[1]
                 
 		if self.items:
-			total_ot = total_wage = total_health = salary = 0
+			total_ot = total_wage = total_health = salary = 0.0
 			
 			for a in self.items:
                                 self.duplicate_entry_check(a.employee, a.employee_type, a.idx)
@@ -37,18 +37,27 @@ class ProcessMRPayment(Document):
                                         if flt(total_days) == flt(a.number_of_days):
                                                 a.total_wage = flt(salary)
                                         
+				# Ver.1.0.20200205 Begins, Following code added by SHIV on 2020/01/05
+				a.total_wage = round(a.total_wage)
+				a.total_ot_amount = round(a.total_ot_amount)
+				# Ver.1.0.20200205 Ends
+
 				a.total_amount = flt(a.total_ot_amount) + flt(a.total_wage)
 				total_ot += flt(a.total_ot_amount)
 				total_wage += flt(a.total_wage)
 				if a.employee_type == "GEP Employee":
-					a.health = flt(a.total_wage) * 0.01
+					# Ver.1.0.20200205 Begins, Following code added by SHIV on 2020/01/05
+					# Follwoing line replcaed by subsequent by SHIV
+					#a.health = flt(a.total_wage) * 0.01
+					a.health = round(flt(a.total_wage) * 0.01)
+					# Ver.1.0.20200205 Ends
 					a.wage_payable = flt(a.total_wage) - flt(a.health)
 					total_health += flt(a.health)
 				
 			total = total_ot + total_wage
-			self.wages_amount = total_wage
-			self.ot_amount = total_ot
-			self.total_overall_amount = total
+			self.wages_amount = flt(total_wage)
+			self.ot_amount = flt(total_ot)
+			self.total_overall_amount = flt(total)
 			if a.employee_type == "GEP Employee":
 				self.total_health_amount = total_health
 			
@@ -317,6 +326,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         id_card,
                                         rate_per_day,
                                         rate_per_hour,
+										status,
 					designation,
 					bank,
 					account_no,
@@ -338,8 +348,9 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
 					exists(
 					select 1
 					from `tabAttendance Others`
-                                        where employee_type = '{employee_type}'
+                    where employee_type = '{employee_type}'
 					and employee = e.name
+					and e.status = 'Active'
                                         and date between '{from_date}' and '{to_date}'
                                         and cost_center = '{cost_center}'
                                         and status = 'Present'
@@ -381,7 +392,35 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                 }))
 		if employee_type == "Muster Roll Employee":
 	        	update_mr_rates(employee_type, e.name, cost_center, from_date, to_date);
-	        
+		if employee_type == "GEP Employee":
+		
+			frappe.db.sql("""
+                        update `tabAttendance Others`
+                        set rate_per_day = {rate_per_day}
+                        where employee_type = '{employee_type}'
+                        and employee = '{employee}'
+                        and status = 'Present'
+                        and docstatus = 1 
+                """.format(
+                        rate_per_day=flt(e.rate_per_day),
+                        employee_type=employee_type,
+                        employee=e.name,
+                ))
+
+	                frappe.db.sql("""
+                        update `tabOvertime Entry`
+                        set rate_per_hour = {rate_per_hour}
+                        where employee_type = '{employee_type}'
+                        and number = '{employee}'
+                        and docstatus = 1 
+                """.format(
+                        rate_per_hour=flt(e.rate_per_hour),
+                        employee_type=employee_type,
+                        employee=e.name,
+                ))
+
+        	frappe.db.commit()     
+			
         rest_list = frappe.db.sql("""
                                 select employee,
                                         sum(number_of_days)     as number_of_days,
@@ -390,8 +429,9 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         sum(total_ot)           as total_ot,
                                         {4} as noof_days_in_month
                                 from (
-                                        select
+                                        select distinct
                                                 employee,
+						date,
                                                 1                       as number_of_days,
                                                 0                       as number_of_hours,
                                                 ifnull(rate_per_day,0)  as total_wage,
@@ -403,8 +443,9 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         and status = 'Present'
                                         and docstatus = 1
                                         UNION ALL
-                                        select
+                                        select distinct
                                                 number                  as employee,
+						date,
                                                 0                       as number_of_days,
                                                 ifnull(number_of_hours,0) as number_of_hours,
                                                 0                       as total_wage,

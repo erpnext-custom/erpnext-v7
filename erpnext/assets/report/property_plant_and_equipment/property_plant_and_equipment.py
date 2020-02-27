@@ -98,6 +98,7 @@ def get_values(account, to_date, from_date, cost_center=None, opening=False, cwi
 		query += " and cost_center = \'" + str(cost_center) + "\'"
 
 	query += " and voucher_type not in ('Period Closing Voucher', 'Asset Movement', 'Bulk Asset Transfer')"
+	#query += " and voucher_type not in ('Period Closing Voucher')"
 	value = frappe.db.sql(query, as_dict=True)
 
 	return value

@@ -71,8 +71,11 @@ frappe.ui.form.on('Direct Payment', {
 	"taxable_amount": function(frm) {
 		calculate_tds(frm);
 	},
+	"deduction_amount": function(frm){
+		frm.set_value("net_amount",  parseFloat(frm.doc.amount) - parseFloat(frm.doc.tds_amount) - parseFloat(frm.doc.deduction_amount)	)	}
+			,
 	"tds_amount": function(frm){
-		frm.set_value("net_amount", parseFloat(frm.doc.amount) - parseFloat(frm.doc.tds_amount))
+		frm.set_value("net_amount", parseFloat(frm.doc.amount) - parseFloat(frm.doc.tds_amount) - parseFloat(frm.doc.deduction_amount))
 	},
 	"branch": function(frm) {
 		frappe.call({
@@ -119,10 +122,17 @@ function calculate_tds(frm) {
 	var tds = roundOff(parseFloat(frm.doc.tds_percent) * parseFloat(frm.doc.taxable_amount) / 100 );
 	frm.set_value("tds_amount", tds);
 	if(tds > 0){
-		frm.set_value("net_amount", frm.doc.amount - tds);
+		if(frm.doc.deduction_amount)
+			frm.set_value("net_amount", frm.doc.amount - frm.doc.deduction_amount - tds);
+		else
+			frm.set_value("net_amount", frm.doc.amount - tds);
 	}else{
-		frm.set_value("net_amount", frm.doc.amount);
+		if(frm.doc.deduction_amount)
+			frm.set_value("net_amount", frm.doc.amount - frm.doc.deduction_amount);
+		else
+			frm.set_value("net_amount", frm.doc.amount);
 	}
+
 	frappe.call({
 		method: "erpnext.accounts.doctype.direct_payment.direct_payment.get_tds_account",
 		args: {
@@ -167,3 +177,24 @@ frappe.ui.form.on("Direct Payment", "select_cheque_lot", function(frm){
 		});
 	}
 })
+
+frappe.ui.form.on("Direct Payment Deduction", { 
+	"amount": function(frm, cdt, cdn) {
+		calculate_total(frm,cdt,cdn)
+	}
+});
+
+function calculate_total(frm, cdt, cdn) {
+	var deducts = locals[cdt][cdn]
+		var total = 0;
+		
+		frm.doc.deduct.forEach(function(d) {
+			total     += parseFloat(d.amount);
+			cur_frm.set_value("deduction_amount", total);
+			if(frm.doc.tds_amount)
+				cur_frm.set_value("net_amount", (frm.doc.amount - frm.doc.tds_amount - frm.doc.deduction_amount));
+			else
+				cur_frm.set_value("net_amount", (frm.doc.amount - frm.doc.deduction_amount));
+
+		})
+	}

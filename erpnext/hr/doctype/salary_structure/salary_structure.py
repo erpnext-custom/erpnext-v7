@@ -25,6 +25,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                         introducted inorder to restrict user from making
                                                                         mistakes by adding deduction salary_component type
                                                                         under earnings table vice versa.
+2.0.190429        SHIV                             27/12/2019         * Introduced is_pf_deductible under salary component                                                                        
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -200,7 +201,13 @@ class SalaryStructure(Document):
                 '''
                 self.validate_salary_component()
                 
-                basic_pay = comm_allowance = gis_amt = pf_amt = health_cont_amt = tax_amt = 0 
+                basic_pay = comm_allowance = gis_amt = pf_amt = health_cont_amt = tax_amt = 0
+                ### Ver.2.0.191227 Begins, added by SHIV on 2019/12/27
+                # Following variables introduced
+                basic_pay_arrears = 0
+                basic_pay_arrears_pf = 0
+                ### Ver.2.0.191227 Ends
+                
                 total_earning = total_deduction = net_pay = 0
                 settings      = get_payroll_settings(self.employee)
                 settings      = settings if settings else {}
@@ -228,6 +235,17 @@ class SalaryStructure(Document):
                                                                 amount = flt(new_basic_pay)
                                                         basic_pay = amount
                                                         ed_item.amount = basic_pay
+                                                ### Ver.2.0.20191227 Begins, added by SHIV on 2019/12/27
+                                                # Following condition added by SHIV on 2019/12/27
+                                                elif frappe.db.exists("Salary Component", {"name": ed_item.salary_component, "is_pf_deductible": 1}):
+                                                        if flt(ed_item.amount):
+                                                                basic_pay_arrears += flt(ed_item.amount)
+                                                                off_cycle_pf = frappe.db.get_value("Salary Component", ed_item.salary_component, "off_cycle_pf")
+                                                                if flt(off_cycle_pf) > 0:
+                                                                        basic_pay_arrears_pf += flt(ed_item.amount)*flt(off_cycle_pf)*0.01
+                                                                elif not flt(off_cycle_pf):
+                                                                        basic_pay_arrears_pf += round(flt(ed_item.amount)*flt(settings.get("employee_pf"))*0.01)
+                                                ### Ver.2.0.20191227 Ends
                                                 total_earning += round(amount)
                                         else:
                                                 total_deduction += round(amount)
@@ -263,6 +281,10 @@ class SalaryStructure(Document):
                                                 calc_map.append({'salary_component': m['name'], 'amount': flt(gis_amt)})
                                         elif self.get(m['field_name']) and m['name'] == 'PF':
                                                 pf_amt   = round(flt(basic_pay)*flt(settings.get("employee_pf"))*0.01)
+                                                ### Ver.2.0.191227 Begins, by SHIV on 2019/12/27
+                                                # Following code added by SHIV to introduce is_pf_deductible logic
+                                                pf_amt  += basic_pay_arrears_pf
+                                                ### Ver.2.0.191227 Ends
                                                 calc_amt = pf_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': flt(pf_amt)})
                                         elif self.get(m['field_name']) and m['name'] == 'Health Contribution':
@@ -306,7 +328,12 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 	def postprocess(source, target):
                 gross_amt = 0.00
 		comm_amt  = 0.00
-		basic_amt = 0.00               
+		basic_amt = 0.00
+                ### Ver.2.0.191227 Begins, added by SHIV on 2019/12/27
+                # Following variables introduced
+                basic_pay_arrears = 0
+                basic_pay_arrears_pf = 0
+                ### Ver.2.0.191227 Ends
                 settings  = get_payroll_settings(source.employee)
 		m_details = get_month_details(target_doc.fiscal_year, target_doc.month)
 
@@ -404,6 +431,17 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                 for e in calc_map['earnings']:
                         if e['salary_component'] == 'Basic Pay':
                         	basic_amt = (flt(e['amount']))
+                        ### Ver.2.0.20191227 Begins, added by SHIV on 2019/12/27
+                        # Following condition added by SHIV on 2019/12/27
+                        elif frappe.db.exists("Salary Component", {"name": e["salary_component"], "is_pf_deductible": 1}):
+                                if flt(e["amount"]):
+                                        basic_pay_arrears += flt(e["amount"])
+                                        off_cycle_pf = frappe.db.get_value("Salary Component", e["salary_component"], "off_cycle_pf")
+                                        if flt(off_cycle_pf) > 0:
+                                                basic_pay_arrears_pf += flt(e["amount"])*flt(off_cycle_pf)*0.01
+                                        elif not flt(off_cycle_pf):
+                                                basic_pay_arrears_pf += round(flt(e["amount"])*flt(settings.get("employee_pf"))*0.01)
+                        ### Ver.2.0.20191227 Ends
                         if e['salary_component'] == 'Communication Allowance':
                         	comm_amt = (flt(e['amount']))
 			gross_amt += flt(e['amount'])
@@ -424,6 +462,32 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                 if d['salary_component'] == 'PF':
                                         percent = flt(settings.get("employee_pf"))
                                         pf = round(basic_amt*flt(percent)*0.01);
+                                        pf += basic_pay_arrears_pf
+                                        ### Ver.2.0.20191227 Begins, added by SHIV on 2019/12/27
+                                        # Temporary workout for adding 4% of oct-2019 and nov-2019 PF
+                                        # this needs to be commented after processing 201912 payslips
+                                        tmp_basic = 0
+                                        tmp_pf = 0
+                                        if target_doc.fiscal_year == '2019' and target_doc.month == '12':
+                                                tmp = frappe.db.sql("""
+                                                        select sum(amount) total_amount
+                                                        from `tabSalary Detail`
+                                                        where salary_component = 'Basic Pay'
+                                                        and exists(select 1
+                                                                        from `tabSalary Slip`
+                                                                        where `tabSalary Slip`.employee = '{employee}'
+                                                                        and `tabSalary Slip`.fiscal_year = '2019'
+                                                                        and `tabSalary Slip`.month in ('10','11')
+                                                                        and `tabSalary Slip`.docstatus = 1
+                                                                        and `tabSalary Detail`.parent = `tabSalary Slip`.name
+                                                        )
+                                                """.format(employee=source.employee), as_dict=True)
+
+                                                if tmp:
+                                                       tmp_basic = flt(tmp[0].total_amount)
+                                                tmp_pf = tmp_basic*4*0.01
+                                        pf += flt(tmp_pf)
+                                        ### Ver.2.0.20191227 Ends
                                         d['amount'] = pf
                                 if d['salary_component'] == 'Group Insurance Scheme':
                                         gis = flt(settings.get("gis"))

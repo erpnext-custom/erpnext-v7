@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2019-01-01 10:48:01.738389", 
+ "modified": "2020-01-30 12:13:53.297507", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Ageing", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

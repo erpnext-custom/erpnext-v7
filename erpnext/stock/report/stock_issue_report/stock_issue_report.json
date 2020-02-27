@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-01-14 15:54:58.618995", 
+ "modified": "2020-01-30 12:15:17.370759", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Issue Report", 
@@ -36,6 +36,9 @@
   }, 
   {
    "role": "CPBD"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

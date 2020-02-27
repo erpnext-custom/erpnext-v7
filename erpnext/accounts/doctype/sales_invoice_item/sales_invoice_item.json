@@ -2092,8 +2092,8 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2016-07-11 03:28:07.483665", 
- "modified_by": "Administrator", 
+ "modified": "2020-01-15 15:47:16.402611", 
+ "modified_by": "dorji2392@bt.bt", 
  "module": "Accounts", 
  "name": "Sales Invoice Item", 
  "owner": "Administrator", 
@@ -2103,5 +2103,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

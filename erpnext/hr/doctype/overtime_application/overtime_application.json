@@ -720,7 +720,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-05-01 09:28:19.541766", 
+ "modified": "2019-10-18 15:36:05.596806", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "HR", 
  "name": "Overtime Application", 
@@ -910,7 +910,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "user_permission_doctypes": "[\"Employee\"]", 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

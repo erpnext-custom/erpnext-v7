@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-05-25 09:12:57.877659", 
+ "modified": "2020-01-27 14:17:13.051089", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Buying", 
  "name": "Material Purchase History", 
@@ -34,6 +34,9 @@
   }, 
   {
    "role": "Asset Manager"
+  }, 
+  {
+   "role": "Projects User"
   }
  ]
 }

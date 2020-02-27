@@ -81,13 +81,18 @@ def get_data():
 					"doctype": "Asset",
 					"is_query_report": True,
 				},
-				 {
-                                        "type": "report",
-                                        "name": "Asset Movement Register",
-                                        "doctype": "Asset",
-                                        "is_query_report": True,
-                                },
-
+				{
+                    "type": "report",
+                    "name": "Asset Movement Register",
+                    "doctype": "Asset",
+                    "is_query_report": True,
+                },
+								{
+                    "type": "report",
+                    "name": "Asset Insurance Report",
+                    "doctype": "Asset",
+                    "is_query_report": True,
+                },
 			]
 		},
 	]

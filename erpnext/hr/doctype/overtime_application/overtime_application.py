@@ -17,7 +17,7 @@ class OvertimeApplication(Document):
 	def on_submit(self):
 		#self.check_status()
 		self.validate_submitter()
-		self.check_budget()
+         	#self.check_budget()
 		self.post_journal_entry()
 
 	def on_cancel(self):

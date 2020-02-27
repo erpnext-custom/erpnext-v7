@@ -11,10 +11,10 @@ def get_data():
 					"name": "Budget",
 					"description": _("Define budget for a financial year.")
 				},
-				{
-					"type": "doctype",
-					"name": "Revenue Target",
-				},
+#				{
+#					"type": "doctype",
+#					"name": "Revenue Target",
+#				},
 			]
 		},
                 {
@@ -42,6 +42,12 @@ def get_data():
 					"is_query_report": True,
 					"doctype": "GL Entry"
 				},
+				{
+                    "type": "report",
+                    "name": "Budget Consumption Breakdown Report",
+                    "is_query_report": True,
+                    "doctype": "Consumed Budget"
+                },
 				{
 					"type": "report",
 					"is_query_report": True,

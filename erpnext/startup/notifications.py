@@ -51,6 +51,7 @@ def get_notification_config():
 				"docstatus": 0,
 				"claim_status": ("not in", ("Rejected by HR", "Rejected by Supervisor"))
 			},
+			"MusterRoll Application": {"docstatus" :0},
 			"Leave Encashment": {"docstatus": 0},
 			"Break Down Report": {"docstatus": 0},
 			"Job Card": {"docstatus": 0},

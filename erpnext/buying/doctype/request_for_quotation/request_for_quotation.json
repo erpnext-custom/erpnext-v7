@@ -640,7 +640,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-13 11:40:38.162019", 
+ "modified": "2020-01-11 11:57:52.752781", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Buying", 
  "name": "Request for Quotation", 
@@ -710,7 +710,7 @@
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 

@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:05:46.227583", 
- "modified_by": "Administrator", 
+ "modified": "2020-01-30 12:24:05.984600", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Selling", 
  "name": "Pending SO Items For Purchase Request", 
  "owner": "Administrator", 
@@ -25,6 +25,9 @@
   }, 
   {
    "role": "Sales User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

@@ -99,24 +99,24 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						row.fiscal_year 	= fiscal_year;
 						row.month 			= month;
 						row.number_of_days 	= mr['number_of_days'];
-						row.number_of_hours = mr['number_of_hours'];
+						row.number_of_hours = parseFloat(mr['number_of_hours']);
 						row.bank = "BOBL"; //mr['bank'];
 						row.account_no = mr['account_no'];
 						row.designation = mr['designation'];
 						if(mr['type'] == 'GEP Employee'){
 							row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
 							row.hourly_rate     = parseFloat(mr['salary']*1.5)/parseFloat(mr['noof_days_in_month']*8);
-							row.total_ot_amount = row.number_of_hours * row.hourly_rate;
-							row.total_wage      = row.daily_rate * row.number_of_days;
-							
+							row.total_ot_amount = parseFloat(row.number_of_hours) * parseFloat(row.hourly_rate);
+							row.total_wage      = parseFloat(row.daily_rate) * parseFloat(row.number_of_days);
+							console.log(row.total_ot_amount);
 							if((parseFloat(row.total_wage) > parseFloat(mr['salary']))||(parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days']))){
 								row.total_wage = parseFloat(mr['salary']);
 							}
 						} else {
 							//row.daily_rate 	= mr['rate_per_day'];
 							//row.hourly_rate 	= mr['rate_per_hour'];
-							row.total_ot_amount = mr['total_ot'];
-							row.total_wage 		= mr['total_wage'];
+							row.total_ot_amount = parseFloat(mr['total_ot']);
+							row.total_wage 		= parseFloat(mr['total_wage']);
 						}
 						
 						/*
@@ -128,7 +128,7 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						}
 						*/
 						
-						row.total_amount 	= row.total_ot_amount + row.total_wage;
+						row.total_amount 	= parseFloat(row.total_ot_amount) + parseFloat(row.total_wage);
 						refresh_field("items");
 
 						total_overall_amount += row.total_amount;
@@ -138,8 +138,8 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 				});
 
 				cur_frm.set_value("total_overall_amount", total_overall_amount)
-				cur_frm.set_value("wages_amount", wages_amount)
-				cur_frm.set_value("ot_amount", ot_amount)
+				cur_frm.set_value("wages_amount", flt(wages_amount))
+				cur_frm.set_value("ot_amount", flt(ot_amount))
 				cur_frm.refresh_field("total_overall_amount")
 				cur_frm.refresh_field("wages_amount")
 				cur_frm.refresh_field("ot_amount")

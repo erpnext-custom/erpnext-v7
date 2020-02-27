@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-17 22:55:38.264247", 
- "modified_by": "Administrator", 
+ "modified": "2020-01-30 12:23:31.086245", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Purchase Receipt Trends", 
  "owner": "Administrator", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Stock Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

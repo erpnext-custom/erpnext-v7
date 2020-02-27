@@ -132,7 +132,7 @@ def get_columns():
 		},
 		{
 		  "fieldname": "cost_center",
-		  "label": "Cost Center",
+		  "label": "Activity/Cost Center",
 		  "fieldtype": "Link",
 		  "options": "Cost Center",
 		  "width": 130

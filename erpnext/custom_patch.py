@@ -14,6 +14,13 @@ from datetime import datetime
 import os
 import subprocess
 
+def update_mr():
+	doc = frappe.get_doc("Process MR Payment", 'MRP200200016')
+	print doc.name
+	doc.save(ignore_permissions = True)
+
+
+
 def check_stock_gl():
 	for a in frappe.db.sql("select name, branch from `tabStock Entry` where docstatus = 1 and name = 'SEMI19030600'", as_dict=1):
 		try:
@@ -29,7 +36,7 @@ def check_stock_gl():
 			cc = "Dummy"
 
 def update_gl_stock_2019():
-	for a in frappe.db.sql("select name from `tabStock Entry` where name in ('SEMT19040019', 'SEMT19040021')", as_dict=1):
+	for a in frappe.db.sql("select name from `tabStock Entry` where name = 'SEMT18070012'", as_dict=1):
 		print(str(a.name))
 		self = frappe.get_doc("Stock Entry", a.name)
 		self.make_gl_entries()

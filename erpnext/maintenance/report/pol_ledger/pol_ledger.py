@@ -107,7 +107,7 @@ def get_columns():
 		("Branch") + ":Data:120",
 		("Equipment") + ":Link/Equipment:100",
 		("Equipment No.") + ":Data:100",
-		("Item Name") + ":Data:130",
+		("Item Name") + ":Link/Item:130",
 		("Qty") + ":Float:80",
 		("Fuel Tank Balance") + ":Float:100",
 		("Tanker Balance") + ":Float:100",
@@ -117,4 +117,3 @@ def get_columns():
 		("Transaction Branch") + ":Data:130",
 		("Direct Consumption") + "Data:50"
 	]
-

@@ -79,7 +79,7 @@ def get_employee_details(employee_type):
 		for d in frappe.db.sql("""select name, person_name, id_card
 			from `tabMuster Roll Employee`""", as_dict=1):
 			emp_map.setdefault(d.name, d)
-	elif employee_type == "GEP Employee":
+	elif employee_type == "YELP Employee":
 		for d in frappe.db.sql("""select name, person_name, id_card
 			from `tabGEP Employee`""", as_dict=1):
 			emp_map.setdefault(d.name, d)

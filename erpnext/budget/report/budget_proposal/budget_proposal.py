@@ -52,6 +52,7 @@ def get_columns(filters):
 			"width": 100
 		},
 	]
+	overall_total = 0.00
 	ccs = frappe.db.sql("select b.cost_center, sum(a.budget_amount) as grand_total from `tabBudget Account` a, tabBudget b where a.parent = b.name and b.docstatus = 0 and b.fiscal_year = %s group by b.cost_center order by b.cost_center ASC", filters.fiscal_year, as_dict=True)
 	for cc in ccs:
 		cc_key = str(cc.cost_center).rstrip(" - CDCL").replace(' ', '_').strip().lower().encode('utf-8')	
@@ -61,7 +62,11 @@ def get_columns(filters):
 		row['fieldtype'] = "Currency"
 		row['width'] = 180
 		cols.append(row)
+		overall_total += flt(cc.grand_total)
 		total_dict[cc_key] = flt(cc.grand_total)
+		total_dict["total"] =  overall_total	
 	cols.append({"fieldname": "total", "label": "Total", "fieldtype": "Currency", "width": 180})
+	
+	#total_dict ={"total" : overall_total}
 	return cols, total_dict
 

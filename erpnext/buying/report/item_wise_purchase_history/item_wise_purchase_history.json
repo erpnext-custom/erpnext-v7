@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:48:20.388052", 
- "modified_by": "Administrator", 
+ "modified": "2020-01-30 12:23:46.144652", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Buying", 
  "name": "Item-wise Purchase History", 
  "owner": "Administrator", 
@@ -25,6 +25,9 @@
   }, 
   {
    "role": "Purchase Manager"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

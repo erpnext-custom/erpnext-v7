@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2017-11-07 15:54:29.492254", 
- "modified_by": "Administrator", 
+ "modified": "2020-01-30 12:18:23.483627", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Selling", 
  "name": "Available Stock for Packing Items", 
  "owner": "Administrator", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Sales User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }
