@@ -35,6 +35,6 @@ def get_without_fuel_hire(equipment, posting_date, posting_time):
 def get_equipment_ba(equipment):
 	doc = frappe.get_doc("Equipment", equipment)
 	if not doc.business_activity:
-		frappe.throw("Equipment is not assigned to any Business Activity")
+		frappe.throw("Equipment is not assigned to any Funding Pool")
 	return doc.business_activity	
 

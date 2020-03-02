@@ -18,7 +18,7 @@ def execute(filters=None):
 def get_data(query, filters):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
-	ini = su = cm = co = ad = av = 0
+	ini = spi = su = cm = co = ad = av = 0
 	for d in datas:
 		if filters.group_by_account:
 			d.cost_center = ""
@@ -39,11 +39,12 @@ def get_data(query, filters):
 			if committed < 0:
 				committed = 0
 		
-		available = flt(d.initial_budget) + flt(adjustment) + flt(d.supplement) - consumed - committed
+		available = flt(d.initial_budget) + flt(d.spill_over) + flt(adjustment) + flt(d.supplement) - consumed - committed
 		row = {
 			"account": d.account, 
 			"cost_center": d.cost_center,
 			"initial": flt(d.initial_budget),
+			"spill_over": flt(d.spill_over),
 			"supplementary": supplement,
 			"adjustment": adjustment,
 			"committed": committed,
@@ -52,6 +53,7 @@ def get_data(query, filters):
 		}
 		data.append(row);
 		ini+=flt(d.initial_budget)
+		spi+=flt(d.spill_over)
 		su+=supplement
 		cm+=committed
 		co+=consumed
@@ -62,6 +64,7 @@ def get_data(query, filters):
 		"account": "Total",
 		"cost_center": "",
 		"initial": ini,
+		"spill_over" : spi,
 		"supplementary": su,
 		"adjustment": ad,
 		"committed": cm,
@@ -76,7 +79,7 @@ def construct_query(filters=None):
 	if filters.group_by_account:
 		filters.cost_center = None
 	#query = "select b.cost_center, ba.account, ba.budget_amount, ba.initial_budget, ba.budget_received as added, ba.budget_sent as deducted, ba.supplementary_budget as supplement, (select SUM(amount) from `tabCommitted Budget` cb where cb.cost_center = b.cost_center and cb.account = ba.account and cb.po_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as committed, (select SUM(amount) from `tabConsumed Budget` conb where conb.cost_center = b.cost_center and conb.account = ba.account and conb.po_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as consumed from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and b.name = ba.parent and b.fiscal_year = " + str(filters.fiscal_year)
-	query = "select b.cost_center, ba.account, SUM(ba.budget_amount) as budget_amount, SUM(ba.initial_budget) as initial_budget, SUM(ba.budget_received) as added, SUM(ba.budget_sent) as deducted, SUM(ba.supplementary_budget) as supplement from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and b.name = ba.parent and b.fiscal_year = " + str(filters.fiscal_year)
+	query = "select b.cost_center, ba.account, SUM(ba.budget_amount) as budget_amount, SUM(ba.initial_budget) as initial_budget,SUM(ba.spill_over) as spill_over, SUM(ba.budget_received) as added, SUM(ba.budget_sent) as deducted, SUM(ba.supplementary_budget) as supplement from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and b.name = ba.parent and b.fiscal_year = '{0}'".format(filters.fiscal_year)
 	if filters.cost_center:
 		query += " and b.cost_center = \'" + str(filters.cost_center) + "\' "
 	if filters.group_by_account:
@@ -134,7 +137,7 @@ def get_columns():
 		  "fieldname": "cost_center",
 		  "label": "Cost Center",
 		  "fieldtype": "Link",
-		  "options": "Cost Center",
+	 	  "options": "Cost Center",
 		  "width": 130
 		},
 		{
@@ -143,6 +146,12 @@ def get_columns():
 		  "fieldtype": "Currency",
 		  "width": 130
 		},
+		{
+                  "fieldname": "spill_over",
+                  "label": "Spill Over",
+                  "fieldtype": "Currency",
+                  "width": 130
+                },
 		{
 		  "fieldname": "supplementary",
 		  "label": "Supplementary Budget",

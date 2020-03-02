@@ -234,7 +234,7 @@ body[data-route="pos"] .modal-dialog {
 	background-image: url("");
 	background-repeat: no-repeat !important;
 	background-position: center !important;
-	background-color: #12880b !important;
+	background-color: #BD903C !important;
 }
 
 @media all {
@@ -260,10 +260,10 @@ body[data-route="pos"] .modal-dialog {
 }
 
 .page-head {
-       // background: url("http://cdcl.erp.bt/files/he_background.png") no-repeat center
+        background: url("http://gelephu.erp.bt/files/he_background.png") no-repeat center
 }
 
 #page-desktop {
- //       background: url("http://cdcl.erp.bt/files/de_background.png") no-repeat center
+        background: url("http://gelephu.erp.bt/files/de_background.png") no-repeat center
 }
 

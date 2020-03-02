@@ -13,7 +13,7 @@ frappe.query_reports["Statement of Financial Position"]["filters"].push({
    },
    {
 	"fieldname":"business_activity",
-	"label": __("Business Activity"),
+	"label": __("Funding Pool"),
 	"fieldtype": "Link",
 	"options": "Business Activity",
 	},

@@ -48,14 +48,14 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 		//Custom filter to query based on "Cost Center"
 		{
 			"fieldname": "cost_center",
-			"label": __("Cost Center"),
+			"label": __("Cost Center/Activity"),
 			"fieldtype": "Link",
 			"options": "Cost Center",
 			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1']]}}
 		},
 		{
 			"fieldname":"business_activity",
-			"label": __("Business Activity"),
+			"label": __("Funding Pool"),
 			"fieldtype": "Link",
 			"options": "Business Activity",
 	},

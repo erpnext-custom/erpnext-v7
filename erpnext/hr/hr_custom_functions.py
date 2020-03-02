@@ -412,11 +412,14 @@ def get_payroll_settings(employee=None):
 
 @frappe.whitelist()
 def get_month_details(year, month):
+	from dateutil.relativedelta import relativedelta
+	import calendar, datetime
 	ysd = frappe.db.get_value("Fiscal Year", year, "year_start_date")
+	if cint(month) <= 6:
+		ysd = ysd + relativedelta(6)
+
 	if ysd:
-		from dateutil.relativedelta import relativedelta
-		import calendar, datetime
-		diff_mnt = cint(month)-cint(ysd.month)
+		diff_mnt = cint(month)-cint(ysd.month) 
 		if diff_mnt<0:
 			diff_mnt = 12-int(ysd.month)+cint(month)
 		msd = ysd + relativedelta(months=diff_mnt) # month start date
@@ -430,7 +433,7 @@ def get_month_details(year, month):
 		})
 	else:
 		frappe.throw(_("Fiscal Year {0} not found").format(year))
-
+	
 def get_officiating_employee(employee):
 	if not employee:
 		frappe.throw("Employee is Mandatory")

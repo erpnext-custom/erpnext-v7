@@ -250,7 +250,7 @@ class StockReconciliation(StockController):
 			msgprint(_("Please enter Cost Center"), raise_exception=1)
 
 		if not self.business_activity:
-			msgprint(_("Please enter Business Activity"), raise_exception=1)
+			msgprint(_("Please enter Funding Pool"), raise_exception=1)
 
 		return super(StockReconciliation, self).get_gl_entries(warehouse_account,
 			self.expense_account, self.cost_center, self.business_activity)

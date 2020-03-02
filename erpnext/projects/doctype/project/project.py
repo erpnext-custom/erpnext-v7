@@ -138,7 +138,7 @@ class Project(Document):
                         frappe.throw(_("Party Type cannot be empty"),title="Data Missing")
                 else:
                         #project_type = {"Internal": ["Employee","None"], "External": ["Supplier","Customer"]}
-                        project_type = {"Internal": ["Customer"], "External": ["Supplier"]}
+                        project_type = {"Departmental": ["Customer"], "Contract Works": ["Supplier"]}
                         for key,value in project_type.iteritems():
                                 if self.project_type == key and (self.party_type or "None") not in value:
                                         frappe.throw(_("Party type should be {0} for {1} projects").format("/".join(value),key), title="Invalid Data")

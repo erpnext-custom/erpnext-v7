@@ -13,6 +13,9 @@ def execute(filters=None):
 	else:
 		show_zero = 0
 	period_list = get_period_list(filters.fiscal_year, filters.periodicity)
+	
+	asset = get_data(filters.cost_center, filters.business_activity, filters.company, "Asset", "Credit", period_list,
+                accumulated_values=filters.accumulated_values, ignore_closing_entries=True, show_zero_values=show_zero)
 
 	income = get_data(filters.cost_center, filters.business_activity, filters.company, "Income", "Credit", period_list,
 		accumulated_values=filters.accumulated_values, ignore_closing_entries=True, show_zero_values=show_zero)
@@ -22,14 +25,15 @@ def execute(filters=None):
 	net_profit_loss = get_net_profit_loss(income, expense, period_list, filters.company)
 
 	data = []
+	data.extend(asset or [])
 	data.extend(income or [])
 	data.extend(expense or [])
-	if net_profit_loss:
-		data.append(net_profit_loss)
+#	if net_profit_loss:
+#		data.append(net_profit_loss)
 
 	columns = get_columns(filters.periodicity, period_list, filters.accumulated_values, filters.company)
 
-	chart = get_chart_data(filters, columns, income, expense, net_profit_loss)
+	chart = get_chart_data(filters, columns,asset, income, expense)
 
 	return columns, data, None, chart 
 
@@ -57,26 +61,30 @@ def get_net_profit_loss(income, expense, period_list, company):
 		if has_value:
 			return net_profit_loss
 
-def get_chart_data(filters, columns, income, expense, net_profit_loss):
+def get_chart_data(filters, columns, asset, income, expense):
 	x_intervals = ['x'] + [d.get("label") for d in columns[2:-1]]
 
-	income_data, expense_data, net_profit = [], [], []
+	asset_data, income_data, expense_data, net_profit = [], [], [], []
 
 	for p in columns[2:]:
+		if asset:
+			asset_data.append(asset[-2].get(p.get("fieldname")))
 		if income:
 			income_data.append(income[-2].get(p.get("fieldname")))
 		if expense:
 			expense_data.append(expense[-2].get(p.get("fieldname")))
-		if net_profit_loss:
-			net_profit.append(net_profit_loss.get(p.get("fieldname")))
+	#	if net_profit_loss:
+	#		net_profit.append(net_profit_loss.get(p.get("fieldname")))
 
 	columns = [x_intervals]
+	if asset_data:
+		columns.append(["Asset"] + asset_data)
 	if income_data:
 		columns.append(["Income"] + income_data)
 	if expense_data:
 		columns.append(["Expense"] + expense_data)
-	if net_profit:
-		columns.append(["Net Profit/Loss"] + net_profit)
+#	if net_profit:
+#		columns.append(["Net Profit/Loss"] + net_profit)
 
 	chart = {
 		"data": {

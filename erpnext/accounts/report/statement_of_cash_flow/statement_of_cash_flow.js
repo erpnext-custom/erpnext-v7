@@ -14,7 +14,7 @@ frappe.require("assets/erpnext/js/financial_statements.js", function() {
 	},
 	{
 		"fieldname":"business_activity",
-		"label": __("Business Activity"),
+		"label": __("Funding Pool"),
 		"fieldtype": "Link",
 		"options": "Business Activity",
 },

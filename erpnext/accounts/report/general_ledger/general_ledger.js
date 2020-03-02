@@ -44,7 +44,7 @@ frappe.query_reports["General Ledger"] = {
 		},
 		{
 			"fieldname":"cost_center",
-			"label": __("Cost Center"),
+			"label": __("Cost Center/Activity"),
 			"fieldtype": "Link",
 			"options": "Cost Center",
 		},
@@ -78,7 +78,7 @@ frappe.query_reports["General Ledger"] = {
 		},
 		 {
                         "fieldname":"business_activity",
-                        "label": __("Business Activity"),
+                        "label": __("Funding Pool"),
                         "fieldtype": "Link",
                         "options": "Business Activity",
                 },

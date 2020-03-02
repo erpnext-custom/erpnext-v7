@@ -40,32 +40,32 @@ def get_data():
 				},
 			]
 		},
-		{
-			"label": _("Sales & Purchase Accounts"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Payment Entry",
-					"description": _("Bank/Cash transactions against party or for internal transfer")
-				},
-				{
-					"type": "doctype",
-					"name": "Sales Invoice",
-					"description": _("Bills raised to Customers.")
-				},
-				{
-					"type": "doctype",
-					"name": "Purchase Invoice",
-					"description": _("Bills raised by Suppliers.")
-				},
-                                {
-					"type": "report",
-					"name": "Payment Entry Summary",
-					"doctype": "Payment Entry",
-					"is_query_report": True,
-				},                                
-			]
-		},                
+		# {
+		# 	"label": _("Sales & Purchase Accounts"),
+		# 	"items": [
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Payment Entry",
+		# 			"description": _("Bank/Cash transactions against party or for internal transfer")
+		# 		},
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Sales Invoice",
+		# 			"description": _("Bills raised to Customers.")
+		# 		},
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Purchase Invoice",
+		# 			"description": _("Bills raised by Suppliers.")
+		# 		},
+        #                         {
+		# 			"type": "report",
+		# 			"name": "Payment Entry Summary",
+		# 			"doctype": "Payment Entry",
+		# 			"is_query_report": True,
+		# 		},                                
+		# 	]
+		# },                
 		{
 			"label": _("Project Accounts"),
 			"items": [
@@ -91,62 +91,62 @@ def get_data():
 				},
 			]
 		},
-		{
-			"label": _("Mechanical Accounts"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Hire Charge Invoice",
-					"description": _("Hire Charge Invoice"),
-				},
-				{
-					"type": "doctype",
-					"name": "Job Card",
-					"label": "Job Card Invoice",
-					"description": _("Create Job Card"),
-				},
-				{
-					"type": "doctype",
-					"name": "Mechanical Payment",
-					"description": _("Create Payment"),
-				},
-				{
-					"type": "doctype",
-					"name": "HSD Payment",
-					"description": _("Create Payment"),
-				},
-			]
-		},
-                {
-			"label": _("Imprest Management"),
-			"icon": "icon-cog",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Imprest Type",
-					"description": _("Imprest Types.")
-				},
-				{
-					"type": "doctype",
-					"name": "Imprest Receipt",
-					"label": "Receipt Entry",
-					"description": _("Imprest Receipt Entry.")
-				},
-				{
-					"type": "doctype",
-					"name": "Imprest Recoup",
-					"label": "Recoup Entry",
-					"description": _("Imprest Recoup Entry.")
-				},
-                                {
-					"type": "report",
-                                        "label": _("Imprest Register"),
-					"is_query_report": True,
-					"name": "Register Imprest",
-					"doctype": "Imprest Receipt"
-				},
-			]
-		},
+		# {
+		# 	"label": _("Mechanical Accounts"),
+		# 	"items": [
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Hire Charge Invoice",
+		# 			"description": _("Hire Charge Invoice"),
+		# 		},
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Job Card",
+		# 			"label": "Job Card Invoice",
+		# 			"description": _("Create Job Card"),
+		# 		},
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Mechanical Payment",
+		# 			"description": _("Create Payment"),
+		# 		},
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "HSD Payment",
+		# 			"description": _("Create Payment"),
+		# 		},
+		# 	]
+		# },
+        #         {
+		# 	"label": _("Imprest Management"),
+		# 	"icon": "icon-cog",
+		# 	"items": [
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Imprest Type",
+		# 			"description": _("Imprest Types.")
+		# 		},
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Imprest Receipt",
+		# 			"label": "Receipt Entry",
+		# 			"description": _("Imprest Receipt Entry.")
+		# 		},
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Imprest Recoup",
+		# 			"label": "Recoup Entry",
+		# 			"description": _("Imprest Recoup Entry.")
+		# 		},
+        #                         {
+		# 			"type": "report",
+        #                                 "label": _("Imprest Register"),
+		# 			"is_query_report": True,
+		# 			"name": "Register Imprest",
+		# 			"doctype": "Imprest Receipt"
+		# 		},
+		# 	]
+		# },
                 {
 			"label": _("Tools"),
 			"items": [
@@ -169,35 +169,35 @@ def get_data():
 					"description": "Bulk document generator for Salary Remittance",
 					"hide_count": True
 				},
-				 {
-                                        "type": "doctype",
-                                        "name": "Fund Requisition",
-                                        "description": "Fund Requisition from Regions",
-                                        "hide_count": True
-                                },
-				{
-                                        "type": "doctype",
-                                        "name": "Opening Invoice Creation Tool",
-                                        "description": "Opening Invoice Creation Tool",
-                                        "hide_count": True
-                                },
+		#		 {
+                #                       "type": "doctype",
+                #                        "name": "Fund Requisition",
+                #                        "description": "Fund Requisition from Regions",
+                #                        "hide_count": True
+                #                },
+	#			{
+        #                                "type": "doctype",
+        #                                "name": "Opening Invoice Creation Tool",
+        #                                "description": "Opening Invoice Creation Tool",
+        #                                "hide_count": True
+        #                        },
 			]
 		},
 		{
 			"label": _("Taxes and Registers"),
 			"items": [
-				{
-					"type": "report",
-					"name": "Sales Register",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Purchase Register",
-					"doctype": "Purchase Invoice",
-					"is_query_report": True
-				},
+			#	{
+			#		"type": "report",
+			#		"name": "Sales Register",
+			#		"doctype": "Sales Invoice",
+			#		"is_query_report": True
+			#	},
+			#	{
+			#		"type": "report",
+			#		"name": "Purchase Register",
+			#		"doctype": "Purchase Invoice",
+			#		"is_query_report": True
+			#	},
 				{
 					"type": "report",
 					"name": "Cheque Register",
@@ -230,42 +230,43 @@ def get_data():
 		{
 			"label": _("Accounting Statements"),
 			"items": [
-				{
-					"type": "report",
-					"name": "Statement of Trial Balance",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Statement of Financial Position",
-					"doctype": "GL Entry",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Statement of Cash Flow",
-					"doctype": "GL Entry",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Statement of Comprehensive Income",
-					"doctype": "GL Entry",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Comparative Statement",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-                                {
-					"type": "report",
-					"name": "Profitability Analysis",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				}
+				 {
+				 	"type": "report",
+				 	"name": "Statement of Trial Balance",
+				 	"doctype": "GL Entry",
+					"label": _("Payments and Reciepts Report"),
+				 	"is_query_report": True,
+				 },
+				# {
+				# 	"type": "report",
+				# 	"name": "Statement of Financial Position",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True
+				# },
+				# {
+				# 	"type": "report",
+				# 	"name": "Statement of Cash Flow",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True
+				# },
+				#  {
+				#  	"type": "report",
+				#  	"name": "Statement of Comprehensive Income",
+				# 	"doctype": "GL Entry",
+				#  	"is_query_report": True
+				#  },
+				# {
+				# 	"type": "report",
+				# 	"name": "Comparative Statement",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True,
+				# },
+                #                 {
+				# 	"type": "report",
+				# 	"name": "Profitability Analysis",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True,
+				# }
 			]
 		},
 		{
@@ -277,30 +278,30 @@ def get_data():
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				},
-				{
-					"type": "report",
-					"name": "Accounts Receivable",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Accounts Payable",
-					"doctype": "Purchase Invoice",
-					"is_query_report": True
-				},
+				# {
+				# 	"type": "report",
+				# 	"name": "Accounts Receivable",
+				# 	"doctype": "Sales Invoice",
+				# 	"is_query_report": True
+				# },
+				# {
+				# 	"type": "report",
+				# 	"name": "Accounts Payable",
+				# 	"doctype": "Purchase Invoice",
+				# 	"is_query_report": True
+				# },
 				{
 					"type": "report",
 					"name": "Party Wise Ledger",
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				},
-				{
-					"type": "report",
-					"name": "Advance Report",
-					"doctype": "Payment Entry",
-					"is_query_report": True,
-				}
+				# {
+				# 	"type": "report",
+				# 	"name": "Advance Report",
+				# 	"doctype": "Payment Entry",
+				# 	"is_query_report": True,
+				# }
 			]
 		},
 		{
@@ -352,50 +353,50 @@ def get_data():
                                 },
 			]
 		},
-		{
-			"label": _("Other Reports"),
-			"icon": "icon-table",
-			"items": [
-				{
-					"type": "report",
-					"name": "Gross Profit",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Payment Period Based On Invoice Date",
-					"is_query_report": True,
-					"doctype": "Journal Entry"
-				},
-				{
-					"type": "report",
-					"name": "Item-wise Sales Register",
-					"is_query_report": True,
-					"doctype": "Sales Invoice",
-					"label":"Materialwise Sales Register"
-				},
-				{
-					"type": "report",
-					"name": "Item-wise Purchase Register",
-					"is_query_report": True,
-					"doctype": "Purchase Invoice",
-					"label":"Materialwise Purchase Register"
-				},
-				{
-					"type": "report",
-					"name": "Accounts Receivable Summary",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Accounts Payable Summary",
-					"doctype": "Purchase Invoice",
-					"is_query_report": True
-				},
-			]
-		},
+		# {
+		# 	"label": _("Other Reports"),
+		# 	"icon": "icon-table",
+		# 	"items": [
+		# #		{
+		# #			"type": "report",
+		# #			"name": "Gross Profit",
+		# #			"doctype": "Sales Invoice",
+		# #			"is_query_report": True
+		# #		},
+		# 		{
+		# 			"type": "report",
+		# 			"name": "Payment Period Based On Invoice Date",
+		# 			"is_query_report": True,
+		# 			"doctype": "Journal Entry"
+		# 		},
+		# #		{
+		# #			"type": "report",
+		# #			"name": "Item-wise Sales Register",
+		# #			"is_query_report": True,
+		# #			"doctype": "Sales Invoice",
+		# #			"label":"Materialwise Sales Register"
+		# #		},
+		# #		{
+		# #			"type": "report",
+		# #			"name": "Item-wise Purchase Register",
+		# #			"is_query_report": True,
+		# #			"doctype": "Purchase Invoice",
+		# #			"label":"Materialwise Purchase Register"
+		# #		},
+		# 		{
+		# 			"type": "report",
+		# 			"name": "Accounts Receivable Summary",
+		# 			"doctype": "Sales Invoice",
+		# 			"is_query_report": True
+		# 		},
+		# 		{
+		# 			"type": "report",
+		# 			"name": "Accounts Payable Summary",
+		# 			"doctype": "Purchase Invoice",
+		# 			"is_query_report": True
+		# 		},
+		# 	]
+		# },
                 {
 			"label": _("Salary Reports"),
 			"icon": "icon-list",
@@ -425,13 +426,13 @@ def get_data():
                                         "label": _("Salary Payable Report"),
                                         "doctype": "Salary Slip"
                                 },
-				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "LTC Process Report",
-                                        "label": _("LTC, PBVA and Bonus Report"),
-                                        "doctype": "Leave Travel Concession"
-                                },
+		#		{
+                 #                       "type": "report",
+                  #                      "is_query_report": True,
+                   #                     "name": "LTC Process Report",
+                   #                     "label": _("LTC, PBVA and Bonus Report"),
+                   #                     "doctype": "Leave Travel Concession"
+                   #             },
                                 {
                                         "type" : "report",
                                         "is_query_report": True,
@@ -551,12 +552,38 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Business Activity",
+					"label": _("Funding Pool")
 				},                                
 				{
 					"type": "doctype",
 					"name": "Branch",
 					"description": _("List of Branches"),
-				},                                
+				},
+				{
+					"type": "doctype",
+					"name": "Supplier",
+					"label": "Vendor",
+					"description": _("Supplier database."),
+				},
+				{
+					"type": "doctype",
+					"name": "Supplier Type",
+					"label": "Vendor Type",
+					"description": _("Supplier Type master.")
+				},
+				{
+					"type": "doctype",
+					"name": "Customer",
+					"description": _("Customer database."),
+				},
+				{
+					"type": "doctype",
+					"label": _("Customer Group"),
+					"name": "Customer Group",
+					"icon": "icon-sitemap",
+					"link": "Tree/Customer Group",
+					"description": _("Manage Customer Group Tree."),
+				}                                
 			]
 		},
                 {
@@ -578,25 +605,25 @@ def get_data():
 					"name": "Employee Benefit Type",
                                         "description": _("Employee Benefit Types e.g., Transfer and Retirement")
 				},
-				{
-					"type": "doctype",
-					"name": "Maintenance Accounts Settings",
-					"description": _("Account Settings for Maintenance Accounting")
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Maintenance Accounts Settings",
+				# 	"description": _("Account Settings for Maintenance Accounting")
+				# },
 				{
 					"type": "doctype",
 					"name": "Projects Accounts Settings",
 					"description": _("Account Settings for Projects Accounting")
 				},
-				{
-					"type": "doctype",
-					"name": "Sales Accounts Settings",
-					"description": _("Account Settings for Sales Accounting")
-				},
-				{
-					"type": "doctype",
-					"name": "Production Account Settings",
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Sales Accounts Settings",
+				# 	"description": _("Account Settings for Sales Accounting")
+				# },
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Production Account Settings",
+				# },
 			]
 		},
 		{

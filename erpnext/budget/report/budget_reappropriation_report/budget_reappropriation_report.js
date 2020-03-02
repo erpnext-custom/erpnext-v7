@@ -37,7 +37,7 @@ frappe.query_reports["Budget Reappropriation Report"] = {
 		},
 		{
 			"fieldname": "from_cc",
-			"label": __("From Cost Center"),
+			"label": __("From Cost Center/Activity"),
 			"fieldtype": "Link",
 			"options": "Cost Center",
 		},
@@ -49,7 +49,7 @@ frappe.query_reports["Budget Reappropriation Report"] = {
 		},
 		{
 			"fieldname": "to_cc",
-			"label": __("To Cost Center"),
+			"label": __("To Cost Center/Activity"),
 			"fieldtype": "Link",
 			"options": "Cost Center",
 		},

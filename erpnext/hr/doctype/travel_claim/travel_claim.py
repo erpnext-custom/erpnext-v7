@@ -47,7 +47,7 @@ class TravelClaim(Document):
 		#self.get_status()
 		#self.validate_submitter()
 		#self.check_status()
-		if self.workflow_state == "Claimed":
+		if self.workflow_state == "Approved":
 			self.post_journal_entry()
 		self.update_travel_authorization()
 

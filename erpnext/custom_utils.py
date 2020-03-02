@@ -34,6 +34,12 @@ def get_date_diff(start_date, end_date):
         else:
                 return frappe.utils.data.date_diff(end_date, start_date) + 1;
 
+
+#Function to get fiscal year from date
+def get_fiscal_year_name(transaction_date):
+	doc = frappe.db.sql(" select name from `tabFiscal Year` where '{0}' between year_start_date and year_end_date".format(transaction_date))
+        return doc and doc[0][0] or None
+
 ##
 # Check for future dates in transactions
 ##
@@ -210,10 +216,15 @@ def prepare_gl(d, args):
 ##
 # Check budget availability in the budget head
 ##
+
 def check_budget_available(cost_center, budget_account, transaction_date, amount):
 	if frappe.db.get_value("Account", budget_account, "budget_check"):
                 return
-        budget_amount = frappe.db.sql("select b.action_if_annual_budget_exceeded as action, ba.budget_check, ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (budget_account, cost_center, str(transaction_date)[0:4]), as_dict=True)
+	fiscal_year = get_fiscal_year_name(transaction_date)
+	year_start_date = frappe.db.get_value("Fiscal Year", fiscal_year, "year_start_date")
+	year_end_date =  frappe.db.get_value("Fiscal Year", fiscal_year, "year_end_date")
+
+        budget_amount = frappe.db.sql("select b.action_if_annual_budget_exceeded as action, ba.budget_check, ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (budget_account, cost_center, fiscal_year), as_dict=True)
 	
         #action = frappe.db.sql("select action_if_annual_budget_exceeded as action from tabBudget where docstatus = 1 and cost_center = \'" + str(cost_center) + "\' and fiscal_year = " + str(transaction_date)[0:4] + " ", as_dict=True)
 	ig_or_stop = budget_amount and budget_amount[0].action or None
@@ -222,8 +233,8 @@ def check_budget_available(cost_center, budget_account, transaction_date, amount
                 return
         else:
                 if budget_amount:
-                        committed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31"), as_dict=True)
-                        consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabConsumed Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31"), as_dict=True)
+                        committed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(year_start_date), str(year_end_date)), as_dict=True)
+                        consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabConsumed Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(year_start_date), str(year_end_date)), as_dict=True)
 			if consumed and committed:
 				if consumed[0].total > committed[0].total:
 					committed = consumed

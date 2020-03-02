@@ -322,7 +322,7 @@ var enable_disable = function(frm){
 	cur_frm.toggle_reqd("party_type", 1);
 	cur_frm.toggle_reqd("party", 1);
 	
-	if (frm.doc.project_type == "External") {
+	if (frm.doc.project_type == "Contract Works") {
 		frm.set_query("party_type", function() {
 			return {
 				//filters: {"name": ["in", ["Customer", "Supplier"]]}

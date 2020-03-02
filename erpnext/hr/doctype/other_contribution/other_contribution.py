@@ -79,7 +79,7 @@ class OtherContribution(Document):
                 elif not advance_other_account:
                         frappe.throw(_("Please define GL Head for the salary component <b>{0}</b>").format(self.salary_component), title="Data missing")
                 elif not default_business_activity:
-                        frappe.throw(_("Please define default business activity under <b>Business Activity</b>"), title="Data missing")
+                        frappe.throw(_("Please define default funding pool under <b>Funding Pool</b>"), title="Data missing")
                 elif not default_cost_center:
                         frappe.throw(_("Please define default cost center under <b>Company</b> master"), title="Data missing")
                 else:

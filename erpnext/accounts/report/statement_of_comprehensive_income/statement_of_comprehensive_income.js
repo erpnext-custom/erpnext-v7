@@ -15,7 +15,7 @@ frappe.query_reports["Statement of Comprehensive Income"]["filters"].push(
 	},
 	{
 		"fieldname":"business_activity",
-		"label": __("Business Activity"),
+		"label": __("Funding Pool"),
 		"fieldtype": "Link",
 		"options": "Business Activity",
 	},

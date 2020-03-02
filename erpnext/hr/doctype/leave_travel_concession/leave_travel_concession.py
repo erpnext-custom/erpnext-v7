@@ -98,7 +98,7 @@ class LeaveTravelConcession(Document):
 
 		for d in entries:
 			d.basic_pay = d.amount
-			if getdate(str(self.fiscal_year) + "-01-01") < getdate(d.date_of_joining) <  getdate(str(self.fiscal_year) + "-12-31"):
+			if getdate(start) < getdate(d.date_of_joining) <  getdate(end):
 				if cint(str(d.date_of_joining)[8:10]) < 15:
 					months = 12 - cint(str(d.date_of_joining)[5:7]) + 1
 				else:

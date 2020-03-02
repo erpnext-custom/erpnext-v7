@@ -19,7 +19,6 @@ from frappe.utils import money_in_words
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import generate_receipt_no
 import collections
-from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class ProjectPayment(AccountsController):
 	def __setup__(self):
@@ -307,7 +306,6 @@ class ProjectPayment(AccountsController):
                         from erpnext.accounts.general_ledger import make_gl_entries
                         gl_entries = []
                         currency = frappe.db.get_value(doctype=self.party_type, filters=self.party, fieldname=["default_currency"], as_dict=True)
-                        default_ba =  get_default_ba()
                         
                         bank_account = self.expense_bank_account if self.party_type == "Supplier" else self.revenue_bank_account
                         
@@ -324,9 +322,9 @@ class ProjectPayment(AccountsController):
                                                          "credit_in_account_currency" if self.party_type == "Supplier" else "debit_in_account_currency": flt(self.paid_amount),
                                                          "cost_center": self.cost_center,
                                                          "party_check": 0,
+							"business_activity": self.business_activity,
                                                          "account_type": bank_account_type,
-                                                         "is_advance": "No",
-                                                         "business_activity": default_ba
+                                                         "is_advance": "No"
                                         }, currency.default_currency)
                                 )
 
@@ -356,8 +354,8 @@ class ProjectPayment(AccountsController):
                                                          "is_advance": "No",
                                                          "reference_type": "Project Payment",
                                                          "reference_name": self.name,
-                                                         "project": self.project,
-                                                         "business_activity": default_ba
+							"business_activity": self.business_activity,
+                                                         "project": self.project
                                         }, currency.default_currency)
                                 )
 
@@ -379,9 +377,9 @@ class ProjectPayment(AccountsController):
                                                                  "reference_name": self.name,
                                                                  "project": self.project,
                                                                  "party_check": 1 if deduction_account_type in ("Payable","Receivable") else 0,
-                                                                 "party_type": self.party_type,
-                                                                 "party": self.party,
-                                                                 "business_activity": default_ba
+                                                                "business_activity": self.business_activity,
+								 "party_type": self.party_type,
+                                                                 "party": self.party
                                                 }, currency.default_currency)
                                         )
 
@@ -400,9 +398,9 @@ class ProjectPayment(AccountsController):
                                                         "account_type": tds_account_type,
                                                         "is_advance": "No",
                                                         "reference_type": "Project Payment",
-                                                        "reference_name": self.name,
-                                                        "project": self.project,
-                                                        "business_activity": default_ba
+                                                        "business_activity": self.business_activity,
+							"reference_name": self.name,
+                                                        "project": self.project
                                         }, currency.default_currency)
                                 )
                         # Receivable Account
@@ -425,10 +423,10 @@ class ProjectPayment(AccountsController):
                                                          "party": self.party,
                                                          "account_type": sundry_account_type,
                                                          "is_advance": "No",
+							"business_activity": self.business_activity,
                                                          "reference_type": "Project Payment",
                                                          "reference_name": self.name,
-                                                         "project": self.project,
-                                                         "business_activity": default_ba
+                                                         "project": self.project
                                         }, currency.default_currency)
                                 )
                                  
@@ -447,6 +445,7 @@ class ProjectPayment(AccountsController):
                                          "cost_center": self.cost_center,
                                          "party_check": 0,
                                          "account_type": rev_gl_det.account_type,
+					"business_activity": self.business_activity,
                                          "is_advance": "No"
                         })
 
@@ -467,6 +466,7 @@ class ProjectPayment(AccountsController):
                                          "is_advance": "No",
                                          "reference_type": "Project Payment",
                                          "reference_name": self.name,
+					"business_activity": self.business_activity,
                                          "project": self.project
                         })
 
@@ -481,6 +481,7 @@ class ProjectPayment(AccountsController):
                                                  "is_advance": "No",
                                                  "reference_type": "Project Payment",
                                                  "reference_name": self.name,
+						"business_activity": self.business_activity,
                                                  "project": self.project
                                 })
 
@@ -495,6 +496,7 @@ class ProjectPayment(AccountsController):
                                         "is_advance": "No",
                                         "reference_type": "Project Payment",
                                         "reference_name": self.name,
+					"business_activity": self.business_activity,
                                         "project": self.project
                                         })
                 # Receivable Account
@@ -512,6 +514,7 @@ class ProjectPayment(AccountsController):
                                          "is_advance": "No",
                                          "reference_type": "Project Payment",
                                          "reference_name": self.name,
+					"business_activity": self.business_activity,
                                          "project": self.project
                         })                         
                          

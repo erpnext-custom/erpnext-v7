@@ -65,7 +65,7 @@ class AccountsController(TransactionBase):
                 if not self.business_activity:
                         self.business_activity = get_default_ba()
                         if not self.business_activity:
-                                frappe.throw("Business Activity is Mandatory. Set up a default BA and try again")
+                                frappe.throw("Funding Pool is Mandatory. Set up a default BA and try again")
 
 	def validate_paid_amount(self):
 		if hasattr(self, "is_pos") or hasattr(self, "is_paid"):

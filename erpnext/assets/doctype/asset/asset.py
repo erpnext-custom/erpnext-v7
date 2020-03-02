@@ -344,7 +344,7 @@ class Asset(Document):
 def get_asset_ba(asset):
 	doc = frappe.get_doc("Asset", asset)
 	if not doc.business_activity:
-		frappe.throw("Business Activity in Asset is Mandatory")
+		frappe.throw("Funding Pool in Asset is Mandatory")
 	return doc.business_activity
 
 @frappe.whitelist()

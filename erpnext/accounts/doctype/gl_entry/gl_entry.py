@@ -144,6 +144,16 @@ def check_freezing_date(posting_date, adv_adj=False):
 					and not frozen_accounts_modifier in frappe.get_roles():
 				frappe.throw(_("You are not authorized to add or update entries before {0}").format(formatdate(acc_frozen_upto)))
 
+		acc_froze_monthly = frappe.db.get_value("Accounts Settings", None, "froze_acc_monthly")
+                if acc_froze_monthly:
+                        frozen_accounts_modifier = frappe.db.get_value("Accounts Settings", None, "frozen_accounts_modifier")
+                        if getdate(posting_date).month != getdate(frappe.utils.nowdate()).month  \
+					and getdate(posting_date).year == getdate(frappe.utils.nowdate()).year \
+                                        and not frozen_accounts_modifier in frappe.get_roles():
+                                frappe.throw(("You are not authorized to add or update entries for date: <b>  {0} </b> month is already closed").format(getdate(posting_date)))
+
+	
+	
 def update_outstanding_amt(account, party_type, party, against_voucher_type, against_voucher, on_cancel=False):
 	if party_type and party:
 		party_condition = " and party_type='{0}' and party='{1}'"\

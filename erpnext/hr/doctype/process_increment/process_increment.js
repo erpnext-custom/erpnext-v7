@@ -165,13 +165,13 @@ var process_increment = function(frm, process_type){
 		args: {"process_type": process_type},
 		callback: function(r, rt){
 			if(r.message){
+				msgprint(" this is called form js");	
 				var counter=0;
 				r.message.forEach(function(rec) {
 					counter += 1;
 					frm.set_value("progress", "Processing "+counter+"/"+r.message.length+" salary increment(s) ["+Math.round((counter/r.message.length)*100)+"% completed]");
 					frm.refresh_field("progress");
 					frm.refresh_field("activity_log");
-					
 					cur_frm.call({
 						method: "process_increment",
 						doc: frm.doc,

@@ -139,6 +139,10 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 			if(jvd.reference_type==="Project Advance"){
 				return {};
 			}
+			if(jvd.reference_type==="Activity"){
+                                return {};
+                        }
+
 			// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 			
 			// expense claim

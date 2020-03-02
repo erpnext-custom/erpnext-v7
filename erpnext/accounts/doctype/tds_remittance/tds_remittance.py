@@ -56,7 +56,7 @@ class TDSRemittance(AccountsController):
 
 	
 	def get_details(self):
-		query = """ select d.posting_date, d.party, d.name as invoice_no, d.taxable_amount as bill_amount, d.tds_amount from 
+		query = """ select d.posting_date, d.party, d.name as invoice_no, d.invoice_date, d.taxable_amount as bill_amount, d.tds_amount, (select vendor_tpn_no from `tabSupplier` where name = d.party) as vendor_tpn_no from 
                                 `tabDirect Payment` d  where tds_percent = '{0}' 
                                 and d.posting_date >= '{1}' and d.posting_date <= '{2}' 
                                 and docstatus = 1 
@@ -68,7 +68,7 @@ class TDSRemittance(AccountsController):
                                         and t.docstatus = 1
                                 )
 				union all 
-                                select p.posting_date, p.supplier, p.name,  p.tds_taxable_amount as bill_amount, p.tds_amount 
+                                select p.posting_date, p.supplier, p.name, p.bill_date as invoice_date, p.tds_taxable_amount as bill_amount, p.tds_amount, (select vendor_tpn_no from `tabSupplier` where name = p.supplier) as vendor_tpn_no
                                 from `tabPurchase Invoice` p where tds_rate = '{0}' and docstatus =1 
                                 and posting_date >= '{1}' and posting_date<= '{2}'
 				and not exists (

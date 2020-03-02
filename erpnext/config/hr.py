@@ -13,52 +13,58 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Attendance",
-					"description": _("Attendance record."),
-				},                                
-				{
-					"type": "doctype",
-					"name": "Attendance Upload",
-					"label": "GEP Attendance Upload",
-					"description":_("Upload attendance from a .csv file"),
-				},
-				{
-					"type": "doctype",
-					"name": "Upload Attendance",
-					"description":_("Upload attendance from a .csv file"),
-					"hide_count": True
-				},
-                                {
-					"type": "doctype",
-					"name": "Employee Attendance Tool",
-					"label": _("Employee Attendance Tool"),
-					"description":_("Mark Attendance for multiple employees"),
-					"hide_count": True
-				},
-				{
-                                        "type": "doctype",
-                                        "name": "Training Records",
-                                        "description":_("Training And Development"),
-                                        "label": _("Training And Development")
-                                },
-				 {
-                                        "type": "doctype",
-                                        "name": "Salary Advance",
-                                        "description":_("Salary Advance"),
-                                        "label": _("Salary Advance Application")
-                                },
-				{	
-					"type": "doctype",
-                                        "name": "SWS Application",
-                                        "description":_("SWS Application"),
-                                        "label": _("SWS Application")
-				},
-				{	
-					"type": "doctype",
-                                        "name": "Vehicle Request",
-                                        "description":_("Vehicle Request"),
-                                        "label": _("Vehicle Request")
-				},
+					"label": "Employee Group",
+					"name": "Employee Group",
+					"description": _("Customer database."),
+				}, 
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Attendance",
+				# 	"description": _("Attendance record."),
+				# },                                
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Attendance Upload",
+				# 	"label": "GEP Attendance Upload",
+				# 	"description":_("Upload attendance from a .csv file"),
+				# },
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Upload Attendance",
+				# 	"description":_("Upload attendance from a .csv file"),
+				# 	"hide_count": True
+				# },
+                # {
+				# 	"type": "doctype",
+				# 	"name": "Employee Attendance Tool",
+				# 	"label": _("Employee Attendance Tool"),
+				# 	"description":_("Mark Attendance for multiple employees"),
+				# 	"hide_count": True
+				# },
+				# {
+                #    "type": "doctype",
+                #    "name": "Training Records",
+                #    "description":_("Training And Development"),
+                #    "label": _("Training And Development")
+                # },
+				# {
+                #     "type": "doctype",
+                #     "name": "Salary Advance",
+                #     "description":_("Salary Advance"),
+                #     "label": _("Salary Advance Application")
+                # },
+				# {	
+				# 	"type": "doctype",
+                #     "name": "SWS Application",
+                #     "description":_("SWS Application"),
+                # 	"label": _("SWS Application")
+				# },
+				# {	
+				# 	"type": "doctype",
+                #     "name": "Vehicle Request",
+                #     "description":_("Vehicle Request"),
+                #     "label": _("Vehicle Request")
+				# },
 			]
 		},
 		{
@@ -75,30 +81,30 @@ def get_data():
 					"name": "MusterRoll Application",
 					"label": "Muster Roll Application",
 				},
-				{
-					"type": "doctype",
-					"name": "Attendance Tool Others",
-					"label": "Attendance Tool",
-					"description": _("Attendance Tool for Others"),
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Attendance Tool Others",
+				# 	"label": "Attendance Tool",
+				# 	"description": _("Attendance Tool for Others"),
+				# },
 				{
 					"type": "doctype",
 					"name": "Upload Attendance Others",
 					"label": "Upload Bulk Attendance",
 					"description": _("Attendance Tool for Others"),
 				},
-				{
-					"type": "doctype",
-					"name": "Project Overtime Tool",
-					"label": "Overtime Tool",
-					"description": _("Overtime Tool for MR and GEP"),
-				},
-				{
-					"type": "doctype",
-					"name": "Upload Overtime Entries",
-					"label": "Upload Overtime Entry",
-					"description": _("Overtime Tool for Others"),
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Project Overtime Tool",
+				# 	"label": "Overtime Tool",
+				# 	"description": _("Overtime Tool for MR and GEP"),
+				# },
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Upload Overtime Entries",
+				# 	"label": "Upload Overtime Entry",
+				# 	"description": _("Overtime Tool for Others"),
+				# },
 				{
 					"type": "doctype",
 					"name": "Process MR Payment",
@@ -113,14 +119,14 @@ def get_data():
 					"description": _("Attendance Sheet"),
 					"doctype": "Attendance Others"
 				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Overtime Register",
-					"label": "Overtime Register",
-					"description": _("Overtime Register"),
-					"doctype": "Overtime Entry"
-				},
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Overtime Register",
+				# 	"label": "Overtime Register",
+				# 	"description": _("Overtime Register"),
+				# 	"doctype": "Overtime Entry"
+				# },
 			]
 		},
 		{
@@ -224,7 +230,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Travel Claim",
-                                        "label": _("Travel Claim"),
+                    "label": _("Travel Claim"),
 					"description": _("Claims for travels"),
 				},
 				{
@@ -238,29 +244,29 @@ def get_data():
                                         "label": _("Process LTC"),
 					"description": _("LTC process"),
 				},
-				{
-					"type": "doctype",
-					"name": "Bonus",
-                                        "label": _("Process Bonus"),
-					"description": _("Bonus Process"),
-				},
-				{
-					"type": "doctype",
-					"name": "Overtime Authorization",
-                                        "label": _("Overtime Authorization"),
-					"description": _("Overtime Authorization"),
-				},
-				{
-					"type": "doctype",
-					"name": "Overtime Claim",
-                                        "label": _("Overtime Claim"),
-					"description": _("Overtime Claim"),
-				},
-				{
-					"type": "doctype",
-					"name": "Employee Benefits",
-                                        "label": _("Process Employee Benefits"),
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Bonus",
+                #                         "label": _("Process Bonus"),
+				# 	"description": _("Bonus Process"),
+				# },
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Overtime Authorization",
+                #                         "label": _("Overtime Authorization"),
+				# 	"description": _("Overtime Authorization"),
+				# },
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Overtime Claim",
+                #                         "label": _("Overtime Claim"),
+				# 	"description": _("Overtime Claim"),
+				# },
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Employee Benefits",
+                #                         "label": _("Process Employee Benefits"),
+				# },
 				
 			]
 		},
@@ -300,7 +306,7 @@ def get_data():
 					"type": "doctype",
 					"name": "Employee Grade",
 					"description": _("List of Employee Grades"),
-				},                                
+				},                              
 				{
 					"type": "doctype",
 					"name": "Financial Institution",
@@ -394,20 +400,20 @@ def get_data():
                                         "label": _("Summarized Salary Report"),
                                         "doctype": "Salary Slip",
                                 },
-				{
-					"type" : "report",
-					"is_query_report": True,
-					"name": "Alimony Report",
-					"label":_("Alimony Report"),
-					"doctype" : "Salary Slip"
-				},
-                                {
-                                        "type" : "report",
-                                        "is_query_report": True,
-                                        "name": "House Rent Report",
-                                        "label": _("House Rent Report"),
-                                        "doctype": "Salary Slip",
-                                },
+				# {
+				# 	"type" : "report",
+				# 	"is_query_report": True,
+				# 	"name": "Alimony Report",
+				# 	"label":_("Alimony Report"),
+				# 	"doctype" : "Salary Slip"
+				# },
+                                # {
+                                #         "type" : "report",
+                                #         "is_query_report": True,
+                                #         "name": "House Rent Report",
+                                #         "label": _("House Rent Report"),
+                                #         "doctype": "Salary Slip",
+                                # },
                                  {
                                         "type" : "report",
                                         "is_query_report": True,
@@ -452,12 +458,12 @@ def get_data():
 					"name": "Employee Information",
 					"doctype": "Employee"
 				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Monthly Attendance Sheet",
-					"doctype": "Attendance"
-				},
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Monthly Attendance Sheet",
+				# 	"doctype": "Attendance"
+				# },
                                 {
 					"type": "report",
 					"is_query_report": True,
@@ -475,13 +481,14 @@ def get_data():
                                         "type": "report",
                                         "name": "LTC Details",
                                         "doctype": "Leave Travel Concession"
-                                },
-				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Travel Report",
-                                        "doctype": "Travel Claim"
-                                },
+                },
+				# {
+                #                         "type": "report",
+                #                         "is_query_report": True,
+                #                         "name": "Travel Report",
+                #                         "doctype": "Travel Claim"
+		# }
+                                # },
 			]
 		},
 	]

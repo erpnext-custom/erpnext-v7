@@ -26,6 +26,7 @@ def get_notification_config():
 			"Sales Invoice": { "outstanding_amount": (">", 0), "docstatus": ("<", 2) },
 			"Purchase Invoice": {"docstatus": 0},
 			"Leave Application": {"status": "Open"},
+			"Leave Allocation": {"docstatus": 0},
 			"Expense Claim": {"approval_status": "Draft"},
 			"Job Applicant": {"status": "Open"},
 			"Delivery Note": {"docstatus": 0},

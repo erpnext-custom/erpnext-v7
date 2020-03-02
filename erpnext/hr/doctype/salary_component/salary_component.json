@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:salary_component", 
  "beta": 0, 
  "creation": "2016-06-30 15:42:43.631931", 
@@ -538,7 +538,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-04-30 09:09:06.027880", 
+ "modified": "2020-02-11 11:09:57.582455", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Salary Component", 

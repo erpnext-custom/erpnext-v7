@@ -9,6 +9,20 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def save_bb():
+        for a in frappe.db.sql(" select name from `tabBusiness Activity`" , as_dict =1):
+                doc = frappe.get_doc("Business Activity", a.name)
+                print a.name
+                doc.save()
+
+def update_ss():
+	count = 0
+	for a in frappe.db.sql("select name from `tabSalary Structure`", as_dict =True):
+		count +=1
+		doc = frappe.get_doc("Salary Structure", a.name)
+		doc.save(ignore_permissions=True)
+	print a.name, count 
+
 def update_salary_st():
         count = 0
         for a in frappe.db.sql(""" select * from `tabSalary Advance` where docstatus = 1 and application_date >= '2020-01-01'""", as_dict = True):
@@ -58,7 +72,7 @@ def update_security_deposit():
 
 def save_ss():
 	count = 0
-	for a in frappe.db.sql(" select name from `tabSalary Structure` where is_active = 'Yes'", as_dict = 1):
+	for a in frappe.db.sql(" select name from `tabSalary Structure` where is_active = 'Yes' and name != 'GCC2001001/SST/00001'", as_dict = 1):
 		doc = frappe.get_doc("Salary Structure", a.name)
 		count += 1
 		print a.name, count
@@ -90,7 +104,7 @@ def test_process_bill():
 		"yearmonth": '201901',
 		"rent_amount": 1985.000000,
 		"cost_center": 'Construction Management - NHDCL',
-		"company": 'National Housing Development Corporation Ltd.'
+		"company": 'Gelephu City Corporation'
 	})
 	rb.insert()
 

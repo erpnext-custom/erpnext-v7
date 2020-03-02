@@ -102,7 +102,7 @@ frappe.ui.form.on('Mechanical Payment', {
 	},
 	"payment_for": function(frm) {
 		if(frm.doc.payment_for == "Transporter Payment"){
-			frappe.model.get_value('Production Account Settings',{'company':'National Housing Development Corporation Ltd'},'transportation_account', function(d){
+			frappe.model.get_value('Production Account Settings',{'company':'Gelephu Thromde'},'transportation_account', function(d){
 				frm.set_value("transportation_account", d.transportation_account);
 			});
 			frappe.model.get_value('Branch',{'branch':frm.doc.branch},'expense_bank_account', function(d){

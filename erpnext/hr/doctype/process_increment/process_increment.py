@@ -17,7 +17,6 @@ class ProcessIncrement(Document):
 		cond = self.get_filter_condition()
 		if process_type == "create":
                         cond += self.get_joining_releiving_condition()
-
                         emp_list = frappe.db.sql("""
                                 select t1.name
                                   from `tabEmployee` as t1
@@ -31,7 +30,7 @@ class ProcessIncrement(Document):
                                                    and t3.month = '{2}')
                                    {3}
                                  order by t1.branch, t1.name
-                        """.format(calendar.month_name[int(self.month)],self.fiscal_year,self.month,cond),as_dict=True)
+                        """.format(calendar.month_name[int(self.month)],self.fiscal_year,self.month,cond), as_dict=True)
 		else:
                         emp_list = frappe.db.sql("""
                                 select t1.name
@@ -112,16 +111,16 @@ class ProcessIncrement(Document):
 			and ifnull(t1.date_of_joining, '%(month_end_date)s') <= '%(month_end_date)s'
 			and ifnull(t1.relieving_date, '%(month_start_date)s') >= '%(month_start_date)s'
 		""" % m
+
 		return cond
 
         # Following method created by SHIV on 2018/10/10
         def process_increment(self, process_type=None, name=None):
                 self.check_permission('write')
 		msg = ""
-		
 		if name:
                         try:
-                                if process_type == "create":
+                                if process_type == "create":	
                                         si = frappe.new_doc("Salary Increment")
                                         si.employee = name
                                         si.fiscal_year = self.fiscal_year
@@ -158,7 +157,7 @@ class ProcessIncrement(Document):
 		for emp in emp_list:
 			if not frappe.db.sql("""select name from `tabSalary Increment`
 					where docstatus!= 2 and employee = %s and month = %s and fiscal_year = %s and company = %s
-					""", (emp.name, self.month, self.fiscal_year, self.company)) and flt(emp.no_of_months) >= 3:
+					""", (emp.name, self.month, str(self.fiscal_year), self.company)) and flt(emp.no_of_months) >= 3:
                                 payscale = get_employee_payscale(emp.name, emp.employee_subgroup, self.fiscal_year, self.month)
 
                                 # Prorate based on noof months
@@ -170,7 +169,7 @@ class ProcessIncrement(Document):
 				if payscale:
                                         si = frappe.get_doc({
                                                 "doctype": "Salary Increment",
-                                                "fiscal_year": self.fiscal_year,
+                                                "fiscal_year": str(self.fiscal_year),
                                                 "employee": emp.name,
                                                 "month": self.month,
                                                 "company": emp.company,
@@ -255,6 +254,7 @@ class ProcessIncrement(Document):
 
 	def create_log(self, si_list):
 		log = "<p>" + _("No employee for the above selected criteria OR salary increment already created") + "</p>"
+
 		if si_list:
 			log = "<b>" + _("Salary Increment Created") + "</b>\
 			<br><br>%s" % '<br>'.join(self.format_as_links(si_list))

@@ -86,9 +86,9 @@ def get_columns():
 		},
 		{
 		  "fieldname": "po_no",
-		  "label": "Purchase Order",
+		  "label": "Payments",
 		  "fieldtype": "Link",
-		  "options": "Purchase Order",
+		  "options": "Direct Payment",
 		  "width": 150
 		},
 		{

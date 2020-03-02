@@ -261,15 +261,16 @@ class SalaryStructure(Document):
                                         frappe.throw(_("Percentage cannot exceed 100 for component <b>{0}</b>").format(m['name']), title="Invalid Data")
                                        
 				if m['name'] == 'HRA' and basic_pay and self.get(m['field_name']):
-					hra_allowance = frappe.db.get_single_value("HR Settings", "hra")
+					#hra_allowance = frappe.db.get_single_value("HR Settings", "hra")
+					hra_allowance = frappe.get_doc("Employee Grade", self.employee_grade).hra
 					if not hra_allowance:
-						frappe.throw("Setup HRA in HR Settings")
-
-					housing = round(flt(basic_pay)*flt(hra_allowance)*0.01)
+						frappe.throw("<b> HRA Not Defined in Employee Grade {0} </b>".format(self.employee_grade))
+					calc_amt = hra_allowance
+					'''housing = round(flt(basic_pay)*flt(hra_allowance)*0.01)
 					if flt(housing) <= 3500.00:
 						calc_amt  = 3500.00
 					else:
-						calc_amt  = housing
+						calc_amt  = housing'''
 					total_earning += calc_amt
                                         calc_map.append({'salary_component': m['name'], 'amount': flt(calc_amt)})  
                                 if ed == 'earnings' and m['name'] != 'HRA':

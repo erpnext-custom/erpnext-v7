@@ -36,7 +36,6 @@ class LeaveEncashment(Document):
                 self.get_leave_balance()                                                        #Added by SHIV on 2018/10/15
                 self.validate_balances()                                                        #Commented by SHIV on 2018/10/12
 		self.get_payment_details()
-
 	def get_payment_details(self):
 		sal_struc_name = self.get_salary_structure()
 		if sal_struc_name:

@@ -14,6 +14,14 @@ frappe.ui.form.on('Budget', {
 				}
 			}
 		})
+		frm.set_query("sub_activity", function() {
+                        return {
+                                filters: {
+                                        company: frm.doc.company,
+                                        disable: 0,
+                                }
+                        }
+                })
 
 		frm.set_query("account", "accounts", function() {
 			return {

@@ -38,13 +38,13 @@ class SalaryIncrement(Document):
         def validate_dates(self):
 		cur_year = getdate(nowdate()).year
 		cur_month= getdate(nowdate()).month
-
-		if int(self.fiscal_year) > int(cur_year):
+		pass
+		'''if int(self.fiscal_year) > int(cur_year):
 			frappe.throw(_("Salary Increment not allowed for future years"), title="Invalid Data")
 
 		if int(self.fiscal_year) < int(cur_year):
 			frappe.throw(_("Salary Increment not allowed for past years"), title="Invalid Data")
-        
+        	'''
 	def validate_increment(self):
                 if self.employee and not frappe.db.exists("Employee", {"name": self.employee, "increment_and_promotion_cycle": calendar.month_name[cint(self.month)]}):
                         frappe.throw(_('Invalid increment cycle `<b>{0}</b>` for employee <a href="#Form/Employee/{1}">{1}: {2}</a>').format(calendar.month_name[cint(self.month)],self.employee,self.employee_name), title="Invalid Data")

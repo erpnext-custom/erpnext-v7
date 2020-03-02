@@ -38,7 +38,7 @@ def execute(filters=None):
                         status = str(ss.docstatus)
                         
 		row = [ss.employee, ss.employee_name, ss.employment_type, 
-			ss.bank_name, ss.bank_account_no, 
+			ss.bank_name, ss.bank_account_no,
 			ss.company, ss.branch, ss.department,
                         ss.division, ss.section, ss.designation, 
 			ss.fiscal_year, ss.month, ss.leave_withut_pay, ss.payment_days,
@@ -52,7 +52,7 @@ def execute(filters=None):
 		for d in ded_types:
 			row.append(ss_ded_map.get(ss.name, {}).get(d))
 		
-		row += [ss.total_deduction, ss.net_pay]
+		row += [ss.reference_type, ss.reference_number, ss.total_deduction, ss.net_pay]
 		
 		data.append(row)
 	return columns, data
@@ -88,12 +88,13 @@ def get_columns(salary_slips):
         columns = columns + [(e + ":Currency:120") for e in earning_types] + \
                         ["Arrear Amount:Currency:120", "Leave Encashment Amount:Currency:150", 
                         "Gross Pay:Currency:120"] + [(d + ":Currency:120") for d in ded_types] + \
-                        ["Total Deduction:Currency:120", "Net Pay:Currency:120"]
+                        ["Reference Type:Data:120","Reference Number:Data:120","Total Deduction:Currency:120", "Net Pay:Currency:120"]
 
 	return columns, earning_types, ded_types
-	
+
 def get_salary_slips(filters):
 	conditions, filters = get_conditions(filters)
+	#Continue from here 2/11/2020
 	salary_slips = frappe.db.sql("""select * from `tabSalary Slip` where 1 = 1 %s
 		order by employee, month""" % conditions, filters, as_dict=1)
 
@@ -148,7 +149,7 @@ def get_ss_earning_map(salary_slips):
 	return ss_earning_map
 
 def get_ss_ded_map(salary_slips):
-	ss_deductions = frappe.db.sql("""select parent, salary_component, sum(ifnull(amount,0)) as amount 
+	ss_deductions = frappe.db.sql("""select parent, salary_component, reference_type, reference_number, sum(ifnull(amount,0)) as amount 
 		from `tabSalary Detail` where parent in (%s)
 		and parentfield = 'deductions'
 		group by parent, salary_component
