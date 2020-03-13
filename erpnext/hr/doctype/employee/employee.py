@@ -54,8 +54,9 @@ class Employee(Document):
 					"Employee", self.name, existing_user_id)
 		
 		# Added by Tashi to update the employee details in Salary Structure upon changing the employee master
-                doc = frappe.get_doc("Salary Structure", {"employee" : self.name, "is_active": "Yes"})
-                doc.save()
+		if self.status != "Left":
+			doc = frappe.get_doc("Salary Structure", {"employee" : self.name, "is_active": "Yes"})
+			doc.save()
 
 	def on_update(self):
 		if self.user_id:
@@ -150,7 +151,7 @@ class Employee(Document):
 				ss = frappe.get_doc("Salary Structure", name)
 				if ss:
 					ss.db_set("is_active", "No")
-
+		
 
 	def validate_for_enabled_user_id(self):
 		if not self.status == 'Active':

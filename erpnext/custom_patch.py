@@ -6,15 +6,43 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def pol_update():
+	for a in frappe.db.sql(" select pol from `tabHSD Payment Item` where parent = 'HSDP2002007'", as_dict = 1):
+		frappe.db.sql("update `tabPOL` set paid_amount = '' where name = '{0}'".format(a.pol))
+
+def get_asset_issue():
+	#for a in frappe.db.sql("select name from tabAsset where purchase_date > '2018-12-31' and docstatus = 1", as_dict=1):
+	for a in frappe.db.sql("select name, asset_category as ac, gross_purchase_amount as gross from tabAsset where docstatus = 1", as_dict=1):
+		for b in frappe.db.sql("select je.name from `tabJournal Entry` je, `tabJournal Entry Account` jea where je.name = jea.parent and jea.reference_name = %s and je.docstatus = 2", a.name, as_dict=1):
+			print str(a.name) + " > " + str(b.name) + " = " + str(a.gross) + " : " + str(a.ac)
+
+def get_asset_issue_1():
+	#for a in frappe.db.sql("select name from tabAsset where purchase_date > '2018-12-31' and docstatus = 1", as_dict=1):
+	for a in frappe.db.sql("select name, asset_category as ac, gross_purchase_amount as gross from tabAsset where docstatus = 1 and purchase_date > '2018-12-31'", as_dict=1):
+		gls = frappe.db.sql("select je.name from `tabJournal Entry` je, `tabJournal Entry Account` jea where je.name = jea.parent and jea.reference_name = %s and je.docstatus = 2", a.name, as_dict=1)
+		if not gls:
+			print str(a.name) + " > " + str(a.gross) + " : " + str(a.ac)
+def update_basic():
+        count = 1
+        for ss in frappe.db.sql(""" select p.name, c.amount, p.employee from `tabSalary Slip` p, `tabSalary Detail` c where c.parent = p.name and 
+                                p.fiscal_year = '2019' and p.month = 12 and p.docstatus = 1 and c.salary_component = 'Basic Pay'""", as_dict =1):
+                count += 1
+                doc = frappe.get_doc("Salary Structure", {"employee": ss.employee, "is_active": 'Yes'})
+                frappe.db.sql(""" update `tabSalary Detail` set amount = {0} where parent  = '{1}' and salary_component = 'Basic Pay'
+                        """.format(ss.amount, doc.name))
+                #doc.save()
+                print ss.employee, ss.amount, doc.name, count
+
+
+
 def update_sals():
         count = 1
         for ss in frappe.db.sql(""" select name from `tabSalary Structure` where is_active = 'Yes'""", as_dict =1):
-                frappe.db.sql(""" update `tabSalary Detail` set amount = Null where parent = '{0}' and salary_component = 'Salary Advance Deductions'
-                """.format(ss.name))
                 doc = frappe.get_doc("Salary Structure", ss.name)
                 doc.save()
                 count += 1
                 print ss.name, count
+
 
 
 def update_po():

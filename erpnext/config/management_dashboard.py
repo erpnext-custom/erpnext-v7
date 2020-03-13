@@ -58,18 +58,6 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Project"),
-			"icon": "icon-list",
-			"items": [
-                                {
-					"type": "report",
-					"is_query_report": True,
-					"name": "Project Register",
-					"doctype": "Project"
-				},
-			]
-		},
-		{
 			"label": _("Mechanical Services"),
 			"icon": "icon-list",
 			"items": [

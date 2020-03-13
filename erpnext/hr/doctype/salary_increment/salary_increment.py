@@ -29,7 +29,7 @@ class SalaryIncrement(Document):
         def validate(self):
                 self.validate_dates()
 		self.validate_increment()
-		self.update_increment(self.new_basic)
+		#self.update_increment(self.new_basic)
 
 	def on_submit(self):
                 self.update_increment(self.new_basic)

@@ -319,21 +319,22 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                 target.rounded_total = 0
                 target.actual_basic = 0
                 
+		
+		total_days_in_month = frappe.db.get_single_value("HR Settings", "total_days_in_month")
                 if calc_days:
                         start_date   = calc_days.get("from_date")
                         end_date     = calc_days.get("to_date")
-                        #days_in_month= calc_days.get("total_days_in_month")
-                        days_in_month = flt(30)
-			working_days1 = calc_days.get("working_days")
-			if flt(working_days1) > 30:
-				working_days = working_days1 - 1
-			else:
-				working_days = working_days1
-
+                        days_in_month= calc_days.get("total_days_in_month")
+                        working_days = calc_days.get("working_days")
+                        if total_days_in_month and days_in_month >= 30:
+                                days_in_month = flt(30)
+                                working_days = flt(30)
                         lwp          = calc_days.get("leave_without_pay")
                         payment_days = calc_days.get("payment_days")
                 else:
                         return
+
+
 
 		# Copy earnings and deductions table from source salary structure
 		calc_map = {}
