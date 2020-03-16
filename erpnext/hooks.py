@@ -166,6 +166,11 @@ doc_events = {
 }
 
 scheduler_events = {
+	"cron": {
+		"0/5 * * * *": [
+			"erpnext.temp_patch.testing_purpose"
+		]
+	},
 	"hourly": [
 		"erpnext.controllers.recurring_document.create_recurring_documents",
 		"erpnext.stock.doctype.item.item.sync_item_code",

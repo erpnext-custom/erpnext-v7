@@ -144,7 +144,21 @@ class BankReconciliation(Document):
                         and posting_date >= '{1}' and posting_date <= '{2}'
                         {3}
                 """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
-		# Ver 2.0 Ends
+		
+
+		#TDS Remittance
+		tds_remittance  = frappe.db.sql("""
+                        select
+                                "TDS Remittance" as payment_document, name as payment_entry,
+                                cheque_no as cheque_number, cheque_date,
+                                total_tds as amount,
+                                posting_date, tds_account as against_account, clearance_date
+                        from `tabTDS Remittance`
+                        where account = '{0}'
+                        and docstatus = 1
+                        and posting_date >= '{1}' and posting_date <= '{2}'
+                        {3}
+                """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 		
 #		direct_payment_entries = frappe.db.sql("""
 #                        select
@@ -159,7 +173,7 @@ class BankReconciliation(Document):
 #                        {4}
 #                """.format(self.bank_account, self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 
-		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries), 
+		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(tds_remittance), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))
 				
 		self.set('payment_entries', [])

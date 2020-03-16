@@ -531,7 +531,8 @@ def get_employee_passport_number(passport_no):
 def get_overtime_rate(employee):
 		basic = frappe.db.sql("select a.amount as basic_pay from `tabSalary Detail` a, `tabSalary Structure` b where a.parent = b.name and a.salary_component = 'Basic Pay' and b.is_active = 'Yes' and b.employee = \'" + str(employee) + "\'", as_dict=True)
 		if basic:
-			return ((flt(basic[0].basic_pay) * 1.5) / (30 * 8))
+			return ((flt(basic[0].basic_pay) / 30) / 7)
+			#return ((flt(basic[0].basic_pay) * 1.5) / (30 * 8))
 		else:
 			frappe.throw("No Salary Structure foudn for the employee")
 

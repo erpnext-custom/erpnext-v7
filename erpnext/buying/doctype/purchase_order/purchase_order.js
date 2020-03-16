@@ -15,7 +15,8 @@ frappe.ui.form.on("Purchase Order", {
 			function(doc) { return (doc.qty<=doc.received_qty) ? "green" : "orange" })
 
 		//set default price list
-		frm.set_value("buying_price_list", "Standard Buying")
+		if(!frm.doc.buying_price_list)
+			frm.set_value("buying_price_list", "Standard Buying")
 
 		if(frm.doc.__islocal && !frm.doc.branch) {
                         frappe.call({

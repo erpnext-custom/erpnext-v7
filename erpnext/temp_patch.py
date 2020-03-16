@@ -8,6 +8,9 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff,
 from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
+def testing_purpose():
+	print("Tesing Scheduler")
+
 
 def create_project_items(project=None):
         def create_project_boq_item():

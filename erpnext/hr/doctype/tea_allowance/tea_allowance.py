@@ -40,7 +40,8 @@ class TeaAllowance(AccountsController):
 		"""
 		
 		#Total Days in month	
-		total_days_in_month = date_diff(self.end_date, self.start_date)
+		total_days_in_month = date_diff(self.end_date, self.start_date) + 1
+
 		#Get Total Holiday from Holiday List
 		for a in frappe.db.sql("select count(*) as total_holiday from `tabHoliday` where holiday_date between '{0}' and '{1}'".format(self.start_date, self.end_date), as_dict=1):
 			total_holiday = a.total_holiday
@@ -51,6 +52,9 @@ class TeaAllowance(AccountsController):
 				not_eligible_days = b.not_eligible_days
 			
 			total_eligible_days = total_days_in_month - (total_holiday + not_eligible_days)
+			if total_eligible_days < 0:
+				total_eligible_days = 0.00
+
 			e.employee = e.name
 			e.eligible_days = flt(total_eligible_days)
 			e.tea_allowance = flt(total_eligible_days) * flt(self.allowance_amount)
