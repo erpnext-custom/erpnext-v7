@@ -33,19 +33,33 @@ class Item(WebsiteGenerator):
 			asset = frappe.db.get_all("Asset", filters={"item_code": self.name, "docstatus": 1}, limit=1)
 			self.set_onload("asset_exists", True if asset else False)
 
-	def autoname(self):
-		if frappe.db.get_default("item_naming_by")=="Naming Series":
-			if self.variant_of:
-				if not self.item_code:
-					self.item_code = make_variant_item_code(self.variant_of, self)
-			else:
-				from frappe.model.naming import make_autoname
-				self.item_code = make_autoname(self.naming_series+'.#####')
-		elif not self.item_code:
-			msgprint(_("Item Code is mandatory because Item is not automatically numbered"), raise_exception=1)
 
-		self.item_code = strip(self.item_code)
-		self.name = self.item_code
+	def autoname(self):
+                ##### Ver 2.0.190226, following code replaced by subsequent by SHIV on 26/02/2019
+                '''
+                if not self.item_code:
+                        self.item_code = self.get_current_item_code()
+                '''
+                self.item_code = self.get_current_item_code()
+                ##### Ver 2.0.190226
+
+                if not self.item_code:
+                        msgprint(_("Item Code is mandatory because Item is not automatically numbered"), raise_exception=1)
+
+                self.item_code = strip(self.item_code)
+                self.name = self.item_code
+
+        def get_current_item_code(self):
+                item_code = frappe.db.sql("""select item_code from tabItem where item_group=%s order by item_code desc limit 1;""", self.item_group);
+
+                if item_code:
+                        return str(int(item_code[0][0]) + 1);
+                else:
+                        base = frappe.db.get_value("Item Group", self.item_group, "item_code_base")
+                        if not base:
+                                frappe.throw("Setup Item Code Base in Item Group")
+                        return str(base)
+
 
 	def before_insert(self):
 		if not self.description:

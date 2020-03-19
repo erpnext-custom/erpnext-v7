@@ -14,6 +14,27 @@ from datetime import datetime
 import os
 import subprocess
 
+def update_emp():
+	count = 0
+	for emp in frappe.db.sql(" select name from `tabEmployee` where name = 'GYAL20083'", as_dict = True):
+		sal_doc = frappe.get_doc("Salary Structure", {'employee': emp.name})
+		emp_doc = frappe.get_doc("Employee", emp.name)
+		emp_doc.save()
+		#frappe.db.sql(" update `tabSalary Structure` set employee = '{0}' where employee = '{0}'".format(emp_doc.name, emp.name))
+		#sal_doc.save()
+		count += 1
+		print count, emp.name, emp_doc.name, sal_doc.name
+
+def save_ss():
+	count = 0
+	for ss in frappe.db.sql(" select name from `tabSalary Structure` where is_active = 'Yes'", as_dict = True):
+		doc = frappe.get_doc("Salary Structure", ss.name)
+		doc.save()
+		count += 1
+
+		print ss.name, count
+
+
 def update_mr():
 	doc = frappe.get_doc("Process MR Payment", 'MRP200200016')
 	print doc.name

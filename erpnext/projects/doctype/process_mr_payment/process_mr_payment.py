@@ -376,7 +376,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
 			from_date = from_date,
 			to_date = to_date
         ),as_dict=True)
-#	frappe.msgprint('{0}'.format(emp_list))
+	# frappe.msgprint('{0}'.format(emp_list))
 	for e in emp_list:
                 master.setdefault(e.name, frappe._dict({
                         "type": employee_type,

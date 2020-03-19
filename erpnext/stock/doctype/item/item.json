@@ -2389,8 +2389,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 1, 
- "modified": "2019-05-25 09:43:35.879546", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2020-03-10 11:29:41.067910", 
+ "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Item", 
  "owner": "Administrator", 
@@ -2836,7 +2836,7 @@
    "write": 1
   }
  ], 
- "quick_entry": 1, 
+ "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
  "search_fields": "item_name,description,item_group,customer_code", 

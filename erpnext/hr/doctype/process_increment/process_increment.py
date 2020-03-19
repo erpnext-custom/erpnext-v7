@@ -23,6 +23,7 @@ class ProcessIncrement(Document):
                                   from `tabEmployee` as t1
                                  where t1.status = 'Active'
                                    and t1.increment_and_promotion_cycle = '{0}'
+				   and t1.employment_type != 'Deputation'
                                    and not exists(select 1
                                                    from `tabSalary Increment` as t3
                                                    where t3.employee = t1.employee
@@ -39,6 +40,7 @@ class ProcessIncrement(Document):
                                 where t1.fiscal_year = '{0}'
                                 and t1.month = '{1}'
                                 and t1.docstatus = 0
+				and t1.employment_type != 'Deputation'
                                 {2}
                                 order by t1.branch, t1.name
                         """.format(self.fiscal_year, self.month, cond), as_dict=True)

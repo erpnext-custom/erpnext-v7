@@ -15,16 +15,12 @@ data = {
 	'transactions': [
 		{
 			'label': _('Project'),
-                        'items': ['Task', 'Timesheet', 'BOQ', 'Issue', 'MB Entry']
-		},
-                {
-			'label': _('Transactions'),
-			'items': ['Project Advance', 'Project Invoice', 'Project Payment']
+                        'items': ['Task', 'Timesheet']
 		},
 		{
 			'label': _('Material'),
-			'items': ['Material Request', 'BOM', 'Stock Entry']
-		},
+			'items': ['Material Request','Stock Entry']
+		}
 	]
 }
 '''
@@ -36,15 +32,11 @@ data = {
 	'transactions': [
 		{
 			'label': _('Project'),
-                        'items': ['Task', 'Timesheet', 'BOQ', 'BOQ Adjustment', 'MB Entry']
-		},
-                {
-			'label': _('Transactions'),
-			'items': ['Project Advance', 'Project Invoice', 'Project Payment']
+                        'items': ['Task', 'Timesheet']
 		},
 		{
 			'label': _('Material'),
 			'items': ['Material Request', 'Stock Entry']
-		},
+		}
 	]
 }

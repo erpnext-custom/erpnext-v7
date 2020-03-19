@@ -314,9 +314,17 @@ def get_data():
 					"doctype": "GL Entry",
 					"is_query_report": True
 				},
+				# {
+				# 	"type": "report",
+				# 	"name": "Statement of Comprehensive Income",
+				# 	"label": "Statement of Comprehensive Income",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True
+				# },
 				{
 					"type": "report",
-					"name": "Statement of Comprehensive Income",
+					"name": "Income & Expenditure Statement",
+					"label": "Income & Expenditure Statement",
 					"doctype": "GL Entry",
 					"is_query_report": True
 				},

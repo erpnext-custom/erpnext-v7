@@ -163,6 +163,7 @@ class PBVA(Document):
                                                 and bd.parent = b.name
                                                 and bd.employee = e.employee
                                                 and b.docstatus in (0,1))
+				and e.employment_type != 'Deputation'
                                 order by e.branch
                         """.format(self.fiscal_year, start, end, self.employee_status, self.name)
 		

@@ -237,3 +237,9 @@ def check_cc_branch():
 	for a in cus_list:
 		frappe.db.sql("update tabCustomer set cost_center = null, branch = null where name = %s", a.name)
 
+@frappe.whitelist()
+def get_customers(doctype, txt, searchfield, start, page_len, filters):
+	if filters.get("customer_type") == 'Internal':	
+		return frappe.db.sql("select name from `tabCustomer` where customer_group = \'"+str(filters.get("customer_type"))+"\' and disabled = 0")
+	elif filters.get("customer_type") == 'External':
+		return frappe.db.sql("select name from `tabCustomer` where customer_group != 'Internal' and disabled = 0")

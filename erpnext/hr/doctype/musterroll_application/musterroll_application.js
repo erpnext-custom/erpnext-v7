@@ -107,4 +107,13 @@ frappe.ui.form.on('MusterRoll Application Item', {
 			}
 		})
 	},	
+
+
 })
+
+//cur_frm.fields_dict['items'].grid.get_field('existing_cid').get_query = function(frm, cdt, cdn) {
+     //   item = locals[cdt][cdn]
+    //    return {
+      //          filters: {'status': "Active"}
+  //      }
+//}

@@ -522,7 +522,8 @@ def make_purchase_invoice(source_name, target_doc=None):
 			"doctype": "Purchase Taxes and Charges",
 			"add_if_empty": True
 		}
-	}, target_doc, set_missing_values, dont_copy=["freight_and_insurance_charges", "tax", "discount", "other_charges", "discount_amount"])
+	}, target_doc, set_missing_values)
+	# dont_copy=["freight_and_insurance_charges", "tax", "discount", "other_charges", "discount_amount"])
 	
 	return doclist
 

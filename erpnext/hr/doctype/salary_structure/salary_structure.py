@@ -60,7 +60,8 @@ class SalaryStructure(Document):
 		set_employee_name(self)
 		self.check_multiple_active()
 		self.update_salary_structure()
-		
+	
+
 	def on_update(self):
 		self.assign_employee_details()
 
@@ -221,7 +222,7 @@ class SalaryStructure(Document):
 
                         sst_map = {}
                         for sc in frappe.db.sql("select * from `tabSalary Component` where `type`='{0}' and field_name is not null".format(tbl_list[ed]), as_dict=True):
-                                sst_map.setdefault(ed,[]).append(sc)
+				sst_map.setdefault(ed,[]).append(sc)
                         ed_map = [i.name for i in sst_map[ed]]
 
                         # Update Basic Pay if new_basic_pay has value(from salary increments), and remove
@@ -258,11 +259,22 @@ class SalaryStructure(Document):
                         # Calculating Earnings and Deductions based on preferences and values set
                         for m in sst_map[ed]:
                                 calc_amt = 0
+				if self.get(m['field_method']) == 'Percent' and flt(self.get(m['field_value'])) > 100:
+					frappe.throw(_("Percentage cannot exceed 100 for component <b>{0}</b>").format(m['name']), title="Invalid Data")	
+				if m['name'] == 'Housing Allowance' and basic_pay and self.get(m['field_name']):
+                                        hra_allowance = frappe.db.get_single_value("HR Settings", "hra")
+                                        if not hra_allowance:
+                                                frappe.throw("Setup HRA in HR Settings")
 
-                                if self.get(m['field_method']) == 'Percent' and flt(self.get(m['field_value'])) > 100:
-                                        frappe.throw(_("Percentage cannot exceed 100 for component <b>{0}</b>").format(m['name']), title="Invalid Data")
-                                        
-                                if ed == 'earnings':
+                                        housing = round(flt(basic_pay)*flt(hra_allowance)*0.01)
+                                        #if flt(housing) <= 3500.00:
+                                        #        calc_amt  = 3500.00
+                                        #else:
+                                        calc_amt  = housing
+                                        total_earning += calc_amt
+                                        calc_map.append({'salary_component': m['name'], 'amount': flt(calc_amt)})
+				
+                                if ed == 'earnings' and m['name'] != 'Housing Allowance' :
                                         if self.get(m['field_name']):
                                                 calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))
                                                 comm_allowance += round(flt(calc_amt) if m['name'] == 'Communication Allowance' else 0)
@@ -290,8 +302,8 @@ class SalaryStructure(Document):
                                         elif self.get(m['field_name']) and m['name'] == 'Health Contribution':
                                                 health_cont_amt = round(flt(total_earning)*flt(settings.get("health_contribution"))*0.01)
                                                 calc_amt = health_cont_amt
-                                                calc_map.append({'salary_component': m['name'], 'amount': flt(health_cont_amt)})
-                                        else:
+                                                calc_map.append({'salary_component': m['name'], 'amount': flt(health_cont_amt)})                                        	
+					else:
                                                 calc_amt = 0
                                         total_deduction += calc_amt
 
@@ -329,6 +341,9 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                 gross_amt = 0.00
 		comm_amt  = 0.00
 		basic_amt = 0.00
+		deput_amt = 0.00
+		gross_amt1 = 0.00
+		tax_amt1  = 0.00
                 ### Ver.2.0.191227 Begins, added by SHIV on 2019/12/27
                 # Following variables introduced
                 basic_pay_arrears = 0
@@ -446,6 +461,10 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                         	comm_amt = (flt(e['amount']))
 			gross_amt += flt(e['amount'])
 
+			#Deputation allowance
+			if e['salary_component'] == 'Deputation Allowance':
+				deput_amt = (flt(e['amount']))
+
                 gross_amt += (flt(target.arrear_amount) + flt(target.leave_encashment_amount))
 
                 # Calculating PF, Group Insurance Scheme, Health Contribution
@@ -466,7 +485,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                         ### Ver.2.0.20191227 Begins, added by SHIV on 2019/12/27
                                         # Temporary workout for adding 4% of oct-2019 and nov-2019 PF
                                         # this needs to be commented after processing 201912 payslips
-                                        tmp_basic = 0
+                                        '''tmp_basic = 0
                                         tmp_pf = 0
                                         if target_doc.fiscal_year == '2019' and target_doc.month == '12':
                                                 tmp = frappe.db.sql("""
@@ -486,18 +505,24 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                                 if tmp:
                                                        tmp_basic = flt(tmp[0].total_amount)
                                                 tmp_pf = tmp_basic*4*0.01
-                                        pf += flt(tmp_pf)
+                                        pf += flt(tmp_pf)'''
                                         ### Ver.2.0.20191227 Ends
                                         d['amount'] = pf
                                 if d['salary_component'] == 'Group Insurance Scheme':
                                         gis = flt(settings.get("gis"))
                                         d['amount'] = gis
+
                                 if d['salary_component'] == 'Health Contribution':
                                         percent = flt(settings.get("health_contribution"))
-                                        health = round(gross_amt*flt(percent)*0.01);
+					health = round(gross_amt*flt(percent)*0.01);
+
+					if source.employment_type == 'Deputation':	
+						#gross_amt  =  gross_amt - deput_amt
+						health = round(deput_amt*flt(percent)*0.01);
+
                                         d['amount'] = health
 
-
+				
                 # Calculating Salary Tax
 		tax_included = 0
 		for d in calc_map['deductions']:
@@ -507,16 +532,33 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                 if d['salary_component'] == 'Salary Tax':
                                         if not tax_included:
                                                 tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
-                                                d['amount'] = flt(tax_amt)
+                                        	if source.employment_type == 'Deputation':
+							gross_amt1 = gross_amt - deput_amt
+							tax_amt1 = get_salary_tax(flt(gross_amt1) - flt(gis) - flt(pf) -(flt(comm_amt) * 0.5))  
+							tax_amt = tax_amt - tax_amt1	
+
+						d['amount'] = flt(tax_amt)
                                                 tax_included = 1
 
                 # Appending calculated components to salary slip                                                
-                [target.append('earnings',m) for m in calc_map['earnings']]
-                [target.append('deductions',m) for m in calc_map['deductions']]
-                
+                #[target.append('earnings',m) for m in calc_map['earnings']]
+                #[target.append('deductions',m) for m in calc_map['deductions']]
+		for m in calc_map['earnings']:
+			#frappe.msgprint("hhh {0} {1}".format(m['salary_component'], source.employment_type))
+			if source.employment_type == 'Deputation' and m['salary_component'] not in ['Deputation Allowance', 'Communication Allowance']:
+				continue 
+			else:
+				target.append('earnings', m)
+		for m in calc_map['deductions']:
+			if source.employment_type == 'Deputation' and m['salary_component'] not in ['Salary Tax', 'Health Contribution']:
+				continue
+			else:
+				target.append('deductions', m)
+  
 		target.run_method("pull_emp_details")
 		target.run_method("calculate_net_pay")
-		
+
+	
 	doc = get_mapped_doc("Salary Structure", source_name, {
 		"Salary Structure": {
 			"doctype": "Salary Slip",

@@ -33,6 +33,10 @@ class LeaveEncashment(Document):
                 self.validate_leave_application()
                 self.get_leave_balance()                                                        #Added by SHIV on 2018/10/15
                 self.validate_balances()                                                        #Commented by SHIV on 2018/10/12
+
+		#Employees on Deputation are not eligible for Leave Encashment
+		if self.employment_type == "Deputation" and self.workflow_state == "Waiting Approval":
+			frappe.throw("<b> You are not allowed to apply Leave Encashment </b>")
                 
         def on_submit(self):
 		self.adjust_leave()

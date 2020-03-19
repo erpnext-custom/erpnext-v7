@@ -95,6 +95,7 @@ class MusterRollApplication(Document):
 					doc = frappe.get_doc("Muster Roll Employee", cid)
 					if doc.docstatus == 1 and doc.status == 'Left':
                                                 doc.db_set("docstatus",0)
+						doc.db_set("status", "Active")
                                                 doc = frappe.get_doc("Muster Roll Employee", cid)
 
 					doc.date_of_transfer = a.joining_date
@@ -113,12 +114,18 @@ class MusterRollApplication(Document):
                                 doc.cost_center   = self.cost_center 
                                 doc.rate_per_day  = a.rate_per_day
                                 doc.rate_per_hour = a.rate_per_hour
-                                doc.company       = "Construction Development Corporation Ltd"
+                                doc.company       = self.company
                                 doc.id_card       = cid
 				doc.designation = a.designation
                                 doc.bank = a.bank
                                 doc.account_no = a.account_no
                                 doc.qualification = a.qualification				
+				doc.append("musterroll",{
+                                                "rate_per_day": a.rate_per_day,
+						"rate_per_hour": a.rate_per_hour,
+						"from_date": a.joining_date,
+                                                "owner": frappe.session.user,
+                                })
 
                                 if self.project:
                                         doc.project = self.project

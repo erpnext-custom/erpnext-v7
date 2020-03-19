@@ -29,7 +29,8 @@ class SalaryIncrement(Document):
         def validate(self):
                 self.validate_dates()
 		self.validate_increment()
-
+		if self.employment_type == 'Deputation':
+			frappe.throw(" Salary Increment for <b> {0} </b> must be processed from Parent Organization".format(self.employee))
 	def on_submit(self):
                 self.update_increment(self.new_basic)
 

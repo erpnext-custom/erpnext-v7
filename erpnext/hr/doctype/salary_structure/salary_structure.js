@@ -170,6 +170,9 @@ frappe.ui.form.on('Salary Structure', {
 	cash_handling: function(frm){
 		calculate_others(frm.doc);
 	},
+	eligible_for_hra: function(frm){
+                calculate_others(frm.doc);
+        },
 	// Payment Methods
 	ca_method: function(frm){
 		calculate_others(frm.doc);
@@ -244,6 +247,7 @@ var calculate_others = function(doc){
 	cur_frm.call({
 		method: "update_salary_structure",
 		doc: doc
+	
 	});
 }
 

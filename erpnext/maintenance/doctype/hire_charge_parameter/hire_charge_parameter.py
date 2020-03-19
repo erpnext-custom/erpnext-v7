@@ -42,3 +42,11 @@ class HireChargeParameter(Document):
 			for a in range(len(self.items)-1):
 				self.items[a].to_date = frappe.utils.data.add_days(getdate(self.items[a + 1].from_date), -1)
 
+@frappe.whitelist()
+def get_rates(rate_type, equipment_model):
+	if rate_type and equipment_model:
+		if rate_type == 'With Fuel':
+			return frappe.db.sql("select hci.rate_fuel, hci.idle_rate, hci.from_date, hci.to_date from `tabHire Charge Item` hci, `tabHire Charge Parameter` hcp where hci.parent = hcp.name and hcp.equipment_model = \'" + str(equipment_model) + "\'", as_dict=True)
+		else:
+			return frappe.db.sql("select hci.rate_wofuel, hci.idle_rate, hci.from_date, hci.to_date from `tabHire Charge Item` hci, `tabHire Charge Parameter` hcp where hci.parent = hcp.name and hcp.equipment_model = \'" + str(equipment_model) + "\'", as_dict=True)
+			
