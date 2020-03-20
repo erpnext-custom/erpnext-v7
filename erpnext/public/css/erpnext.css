@@ -229,8 +229,8 @@ body[data-route="pos"] .modal-dialog {
 	background-size: 70% !important;
 	background-image: url("");
 	background-repeat: no-repeat !important;
-	background-position: center !important;
-	background-color: #2b4d80 !important;
+	background-position: left !important;
+	background-color: #CA852E !important;
 }
 
 @media all {

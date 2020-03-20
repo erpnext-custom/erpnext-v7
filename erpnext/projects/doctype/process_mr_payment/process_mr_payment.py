@@ -49,7 +49,7 @@ class ProcessMRPayment(Document):
 					# Ver.1.0.20200205 Begins, Following code added by SHIV on 2020/01/05
 					# Follwoing line replcaed by subsequent by SHIV
 					#a.health = flt(a.total_wage) * 0.01
-					a.health = round(flt(a.total_wage) * 0.01)
+					#a.health = round(flt(a.total_wage) * 0.01)
 					# Ver.1.0.20200205 Ends
 					a.wage_payable = flt(a.total_wage) - flt(a.health)
 					total_health += flt(a.health)
