@@ -474,8 +474,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-09-09 16:19:36.917581", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2020-03-23 15:58:29.812146", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Branch", 
  "owner": "Administrator", 
@@ -746,6 +746,7 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "title_field": "", 
  "track_changes": 1, 
  "track_seen": 0
 }

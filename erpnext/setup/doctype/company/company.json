@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:company_name", 
  "beta": 0, 
  "creation": "2013-04-10 08:35:39", 
@@ -1412,7 +1412,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2020-03-05 14:48:04.102008", 
+ "modified": "2020-03-23 14:43:41.951006", 
  "modified_by": "Administrator", 
  "module": "Setup", 
  "name": "Company", 
