@@ -36,19 +36,19 @@ def get_data():
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				},
-                                {
-					"type": "report",
-					"name": "Profitability Analysis",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-				{
-                                        "type": "report",
-                                        "label": _("Revenue Target & Achievement Report"),
-                                        "is_query_report": True,
-                                        "name": "Revenue Target",
-                                        "doctype": "Revenue Target",
-                                },
+                                #{
+				#	"type": "report",
+				#	"name": "Profitability Analysis",
+				#	"doctype": "GL Entry",
+				#	"is_query_report": True,
+				#},
+				#{
+                                #        "type": "report",
+                                #        "label": _("Revenue Target & Achievement Report"),
+                                #        "is_query_report": True,
+                                #        "name": "Revenue Target",
+                                #        "doctype": "Revenue Target",
+                                #},
 				  {
                                         "type": "report",
                                         "name": "Budget Consumption Report",
@@ -76,32 +76,9 @@ def get_data():
                                 {
 					"type": "report",
 					"is_query_report": True,
-					"name": "Equipment Performance Report",
+					"name": "Equipment Expense Report",
 					"doctype": "Equipment"
-				},
-                                {
-					"type": "report",
-					"is_query_report": True,
-					"name": "Workshop Progress Report",
-					"doctype": "Job Card"
-				},
-			]
-		},
-		{
-			"label": _("Sales"),
-			"icon": "icon-list",
-			"items": [
-                                {
-					"type": "report",
-					"is_query_report": True,
-					"name": "Sales History Report",
-					"doctype": "Sales Invoice"
-				},
-				{
-					"type": "page",
-					"name": "sales-analytics",
-					"label": "Sales Analytics"
-				},
+				}
 			]
 		},
 		{

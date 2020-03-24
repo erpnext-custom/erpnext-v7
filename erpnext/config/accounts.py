@@ -62,12 +62,7 @@ def get_data():
 					"type": "doctype",
 					"name": "Projects Accounts Settings",
 					"description": _("Account Settings for Projects Accounting")
-				},
-				{
-					"type": "doctype",
-					"name": "Sales Accounts Settings",
-					"description": _("Account Settings for Sales Accounting")
-				},
+				}
 			]
 		},
 		{
@@ -98,17 +93,12 @@ def get_data():
 			]
 		},
 		{
-			"label": _("Sales & Purchase Accounts"),
+			"label": _("Purchase Accounts"),
 			"items": [
 				{
 					"type": "doctype",
 					"name": "Payment Entry",
 					"description": _("Bank/Cash transactions against party or for internal transfer")
-				},
-				{
-					"type": "doctype",
-					"name": "Sales Invoice",
-					"description": _("Bills raised to Customers.")
 				},
 				{
 					"type": "doctype",
@@ -155,12 +145,6 @@ def get_data():
 					"type": "doctype",
 					"name": "Hire Charge Invoice",
 					"description": _("Hire Charge Invoice"),
-				},
-				{
-					"type": "doctype",
-					"name": "Job Card",
-					"label": "Job Card Invoice",
-					"description": _("Create Job Card"),
 				},
 				{
 					"type": "doctype",
@@ -244,12 +228,6 @@ def get_data():
 		{
 			"label": _("Taxes and Registers"),
 			"items": [
-				{
-					"type": "report",
-					"name": "Sales Register",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
 				{
 					"type": "report",
 					"name": "Purchase Register",
@@ -357,12 +335,12 @@ def get_data():
 					"doctype": "Sales Invoice",
 					"is_query_report": True
 				},
-				{
-					"type": "report",
-					"name": "Accounts Payable",
-					"doctype": "Purchase Invoice",
-					"is_query_report": True
-				},
+				#{
+				#	"type": "report",
+				#	"name": "Accounts Payable",
+				#	"doctype": "Purchase Invoice",
+				#	"is_query_report": True
+				#},
 				{
 					"type": "report",
 					"name": "Party Wise Ledger",
@@ -481,13 +459,13 @@ def get_data():
 					"is_query_report": True,
 					"doctype": "Journal Entry"
 				},
-				{
-					"type": "report",
-					"name": "Item-wise Sales Register",
-					"is_query_report": True,
-					"doctype": "Sales Invoice",
-					"label":"Materialwise Sales Register"
-				},
+				#{
+				#	"type": "report",
+				#	"name": "Item-wise Sales Register",
+				#	"is_query_report": True,
+				#	"doctype": "Sales Invoice",
+				#	"label":"Materialwise Sales Register"
+				#},
 				{
 					"type": "report",
 					"name": "Item-wise Purchase Register",
@@ -495,12 +473,12 @@ def get_data():
 					"doctype": "Purchase Invoice",
 					"label":"Materialwise Purchase Register"
 				},
-				{
-					"type": "report",
-					"name": "Accounts Receivable Summary",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
+				#{
+				#	"type": "report",
+				#	"name": "Accounts Receivable Summary",
+				#	"doctype": "Sales Invoice",
+				#	"is_query_report": True
+				#},
 				{
 					"type": "report",
 					"name": "Accounts Payable Summary",
