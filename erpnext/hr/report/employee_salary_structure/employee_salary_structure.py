@@ -32,7 +32,11 @@ def execute(filters=None):
 		row = [ss.employee, ss.employee_name,
                         ss.bank_name, ss.bank_account_no, 
 			ss.company, ss.branch, ss.department,
+<<<<<<< HEAD
                         ss.division, ss.section, ss.employment_type, ss.designation, 
+=======
+                        ss.division, ss.section, ss.designation, ss.employment_type,
+>>>>>>> d4211aa36af0214d85009975a81e5cc0691672e9
                         status,
                         ss.from_date, ss.to_date]
 			
@@ -60,7 +64,11 @@ def get_columns(salary_structures):
 		_("Bank Name")+ "::80", _("Bank A/C#")+"::100", 
 		_("Company") + ":Link/Company:120",
                 _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120", _("Division") + ":Link/Division:120",
+<<<<<<< HEAD
                 _("Section") + ":Link/Section:120", _("Employment Type") + "::100",  _("Designation") + ":Link/Designation:120",
+=======
+                _("Section") + ":Link/Section:120", _("Designation") + ":Link/Designation:120", _("Employment Type") + "::100",
+>>>>>>> d4211aa36af0214d85009975a81e5cc0691672e9
 		_("Status") + "::100",
                 _("From Date") + ":Date:80", _("To Date") + ":Date:80"
 	]

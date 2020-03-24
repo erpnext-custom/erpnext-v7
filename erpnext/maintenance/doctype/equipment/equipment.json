@@ -923,7 +923,11 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
+<<<<<<< HEAD
  "modified": "2020-03-24 18:11:39.829146", 
+=======
+ "modified": "2020-03-24 18:12:39.697905", 
+>>>>>>> d4211aa36af0214d85009975a81e5cc0691672e9
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment", 
