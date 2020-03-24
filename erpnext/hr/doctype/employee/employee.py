@@ -67,7 +67,7 @@ class Employee(Document):
 					frappe.throw("Date of Joining not Set!")
 				#naming_series = str(self.naming_series) + str(getdate(self.date_of_joining).year)[2:4]
 				naming_series = str(self.naming_series)	
-				x = make_autoname(str(naming_series) + '.####')
+				x = make_autoname(str(naming_series) + '.###')
 				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
 				eid = x[:6] + y[:2] + x[6:9]
 				self.name = x
