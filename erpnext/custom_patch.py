@@ -14,6 +14,24 @@ from datetime import datetime
 import os
 import subprocess
 
+
+def update_branch():
+	count = 0
+	for d in frappe.db.sql(" select name, branch from `tabEmployee` where status = 'Active'", as_dict =1):
+		doc = frappe.get_doc("Employee Internal Work History", {"parent": d.name})
+		frappe.db.sql(" update `tabEmployee Internal Work History` set branch = '{0}' where parent = '{1}'".format(d.branch, d.name))
+		count += 1
+		print count
+
+
+def update_cid_ss():
+	count = 0
+        for a in frappe.db.sql("select e.name, e.passport_number from tabEmployee e  where e.name = (select employee from `tabSalary Slip` s where e.name =s.employee)", as_dict=1):
+        	ss =frappe.get_doc("Salary Slip", {"employee" : a.name})
+	        frappe.db.sql("update `tabSalary Slip` set cid = '{0}' where employee = '{1}' and docstatus = 1" .format(a.passport_number, a.name))
+		count += 1
+		print count
+
 def update_emp():
 	count = 0
 	for emp in frappe.db.sql(" select name from `tabEmployee` where name = 'GYAL20083'", as_dict = True):
@@ -113,6 +131,7 @@ def change_pol_cc():
 		pol = frappe.get_doc("POL", a.voucher_no)
 		print(pol.equipment_warehouse)
 		frappe.db.sql("update `tabGL Entry` set account = %s where voucher_no = %s", (pol.equipment_warehouse, a.voucher_no))
+
 
 def update_musterroll():
 	MR = frappe.db.sql("select rate_per_day, rate_per_hour, joining_date, name from `tabMuster Roll Employee`;", as_dict=1)

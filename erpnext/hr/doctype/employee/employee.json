@@ -1332,7 +1332,7 @@
    "reqd": 0, 
    "search_index": 0, 
    "set_only_once": 0, 
-   "unique": 0
+   "unique": 1
   }, 
   {
    "allow_on_submit": 0, 
@@ -1726,7 +1726,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-03-17 17:36:26.690723", 
+ "modified": "2020-03-26 14:15:09.097895", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee", 

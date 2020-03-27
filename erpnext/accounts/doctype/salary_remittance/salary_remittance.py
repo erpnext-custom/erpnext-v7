@@ -39,7 +39,7 @@ def get_dtls(month, fiscal_year):
 			from `tabSalary Detail` sd, `tabSalary Slip` ss, `tabSalary Remittance Template`  t
 			where ss.name = sd.parent and t.salary_component = sd.salary_component
 			and sd.parenttype = 'Salary Slip'
-			and sd.docstatus =1 and sd.institution_name is not null
+			and sd.docstatus =1
 			and ss.month ='{0}'
 			and ss.fiscal_year = '{1}'
 			group by sd.salary_component, sd.institution_name
