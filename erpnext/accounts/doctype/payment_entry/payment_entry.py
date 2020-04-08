@@ -607,6 +607,7 @@ class PaymentEntry(AccountsController):
 		if self.payment_type in ("Receive", "Pay") and self.party:
 			for d in self.get("references"):
 				if d.allocated_amount and d.reference_doctype in ("Sales Order", "Purchase Order"):
+					#frappe.msgprint("the refernce docs {0} and {1} and {2}".format(d.allocated_amount, d.reference_doctype, d.reference_name))
 					frappe.get_doc(d.reference_doctype, d.reference_name).set_total_advance_paid()
 
 	def get_series(self):
@@ -718,7 +719,13 @@ def get_party_details(company, party_type, party, date):
 
 @frappe.whitelist()	
 def get_account_details(account, date):
-	frappe.has_permission('Payment Entry', throw=True)
+	''' Ver.3.0.191222 Begins, NRDCLCRM, CRMNRDCL, NRDCL CRM, CRM NRDCL '''
+	# following line commented by SHIV on 2019/12/22
+	#frappe.has_permission('Payment Entry', throw=True)
+	# following code added by SHIV on 2019/12/22
+	if "CRM Customer" not in frappe.get_roles():
+		frappe.has_permission('Payment Entry', throw=True)
+	''' Ver.3.0.19.12.22 Ends '''
 	return frappe._dict({
 		"account_currency": get_account_currency(account),
 		"account_balance": get_balance_on(account, date),

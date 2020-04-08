@@ -1,7 +1,180 @@
 from frappe import _
 
 def get_data():
-	return [{"label": "","items":[]}]
+	#return [{"label": "","items":[]}]
+	
+	return [
+		{
+			"label": _("Master Data"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Site Type",
+					"description": _("Site Type."),
+				},
+				{
+					"type": "doctype",
+					"name": "Construction Type",
+					"description": _("Construction Type."),
+				},
+				{
+					"type": "doctype",
+					"name": "CRM Branch Setting",
+					"description": _("CRM Branch Setting."),
+				},
+				{
+					"type": "doctype",
+					"name": "Vehicle Capacity",
+					"description": _("Vehicle Load Capacity"),
+				},
+			]
+		},
+		{
+			"label": _("SMS"),
+			"icon": "icon-wrench",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "SMS Center",
+					"description":_("Send mass SMS to your contacts"),
+				},
+				{
+					"type": "doctype",
+					"name": "SMS Log",
+					"description":_("Logs for maintaining sms delivery status"),
+				},
+				{
+					"type": "doctype",
+					"name": "SMS Settings",
+					"description": _("Setup SMS gateway settings")
+				}
+			]
+		},
+		{
+			"label": _("User Information"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "User Request",
+					"description": _("User Requests."),
+				},
+				{
+					"type": "doctype",
+					"name": "User Account",
+					"description": _("User Accounts."),
+				},
+			]
+		},
+		{
+			"label": _("Site Information"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Site",
+					"description": _("Site."),
+				},
+				{
+					"type": "doctype",
+					"name": "Site Registration",
+					"description": _("Site Registration."),
+				},
+				{
+					"type": "doctype",
+					"name": "Site Extension",
+					"description": _("Site Extension."),
+				},
+				{
+					"type": "doctype",
+					"name": "Site Status",
+					"description": _("Activate/Deactivate site."),
+				},
+				{
+					"type": "doctype",
+					"name": "Quantity Extension",
+					"description": _("Quantity Extension."),
+				},
+			]
+		},
+		{
+			"label": _("Transporter Information"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Transporter",
+					"description": _("Transporters"),
+				},
+				{
+					"type": "doctype",
+					"name": "Transport Request",
+					"description": _("Transport Request"),
+				},
+				{
+					"type": "doctype",
+					"name": "Vehicle",
+					"description": _("Vehicle Records"),
+				},
+				{
+					"type": "doctype",
+					"name": "Vehicle Update",
+					"label": "Update Vehicle Details",
+					"description": _("Vehicle Update"),
+				},
+				{
+					"type": "doctype",
+					"name": "Change Vehicle Status",
+					"description": _("Change Vehicle Status"),
+				},
+				{
+					"type": "doctype",
+					"name": "Load Request",
+					"description": _("Transporter Requesting for load"),
+				},
+				{
+					"type": "doctype",
+					"name": "Delivery Confirmation",
+					"description": _("Delivery Note"),
+				}
+			]
+		},
+		{
+			"label": _("Orders & Payments"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Customer Order",
+					"label": "Customer Orders",
+					"description": _("Customer Order"),
+				},
+				{
+					"type": "doctype",
+					"name": "Customer Payment",
+					"label": "Customer Payments",
+					"description": _("Customer Payments"),
+				},
+			]
+		},
+		{
+			"label": _("Help"),
+			"items": [
+				{
+					"type": "help",
+					"label": _("Lead to Quotation"),
+					"youtube_id": "TxYX4r4JAKA"
+				},
+				{
+					"type": "help",
+					"label": _("Newsletters"),
+					"youtube_id": "muLKsCrrDRo"
+				},
+			]
+		},
+	]
+
 """	return [
 		{
 			"label": _("Sales Pipeline"),

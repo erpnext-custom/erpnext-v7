@@ -104,17 +104,27 @@ class DeliveryNote(SellingController):
 		self.validate_proj_cust()
 		self.check_close_sales_order("against_sales_order")
 		self.validate_for_items()
-		self.check_transportation_detail()
 		self.validate_warehouse()
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.validate_with_previous_doc()
 		self.per_delivered = 100
+		#TTPL Code
+		self.check_transportation_detail()
+		self.update_shipping_address()
+		
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 		make_packing_list(self)
 
 		self.update_current_stock()
 
 		if not self.installation_status: self.installation_status = 'Not Installed'
+
+	#TTPL Code
+	def update_shipping_address(self):
+		if self.customer_order:
+			self.shipping_address_name = frappe.db.get_value("Customer Order", self.customer_order, "site_location")
+		if self.customer:
+			self.contact_mobile = frappe.db.get_value("Customer", self.customer, "mobile_no")
 
         def calculate_transportation(self):
                 total_qty = 0
@@ -128,8 +138,23 @@ class DeliveryNote(SellingController):
 
 	def check_transportation_detail(self):
 		if self.naming_series == 'Mineral Products':
-			if self.vehicle == None or self.drivers_name == None  or self.contact_no == None:
+			if not self.vehicle:
 				frappe.throw("Transporter Detail Is Mandiatory For Mineral Products")
+			#TTPL Code
+			else:
+				#TTPL Code
+				if self.total_quantity > 0:
+					vehicle_capacity = frappe.db.get_value("Vehicle", self.vehicle, "vehicle_capacity")
+					if self.total_quantity > vehicle_capacity:
+						frappe.throw("Vehicle Capacity is {0}, which is less than total quantity {1}".format(vehicle_capacity, self.total_quantity))
+				
+				'''transport_mode = frappe.db.get_value("Customer Order", self.customer_order, "transport_mode")        
+				if transport_mode == "Common Pool":
+					for a in frappe.db.sql("select name, vehicle, token from `tabLoad Request` where docstatus != 2 and load_status = 'Queued' and crm_branch = '{0}' and vehicle = '{1}' order by token limit 1".format(self.branch, self.vehicle), as_dict=True):
+						self.load_request = a.name
+					if not self.load_request:
+						frappe.throw("Vehicle {0} is not registered for queue".format(self.vehicle))
+				'''
 
 	def validate_with_previous_doc(self):
 		for fn in (("Sales Order", "against_sales_order", "so_detail"),

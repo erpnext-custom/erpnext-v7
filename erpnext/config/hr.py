@@ -478,42 +478,48 @@ def get_data():
 					"name": "Monthly Attendance Sheet",
 					"doctype": "Attendance"
 				},
-                {
+                		{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Salary Tax Report",
-                    "label": "RRCO Tax Slab Details",
+                    			"label": "RRCO Tax Slab Details",
 					"doctype": "Salary Tax"
 				},
-                {
+                		{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Employee Due Date Report",
 					"doctype": "Employee"
 				},
 				{
-                    "type": "report",
-                    "name": "LTC Details",
-                    "doctype": "Leave Travel Concession"
-                },
-				{
-                    "type": "report",
-                    "is_query_report": True,
-                    "name": "Travel Report",
-                    "doctype": "Travel Claim"
-                                },
-				{
-                    "type": "report",
-					"is_query_report": True,
-                    "name": "Hall Booking Report",
-                    "doctype": "Hall Booking"
-                },
+				    "type": "report",
+				    "name": "LTC Details",
+				    "doctype": "Leave Travel Concession"
+				},
+						{
+				    "type": "report",
+				    "is_query_report": True,
+				    "name": "Travel Report",
+				    "doctype": "Travel Claim"
+						},
+						{
+				    "type": "report",
+							"is_query_report": True,
+				    "name": "Hall Booking Report",
+				    "doctype": "Hall Booking"
+				},
 				{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Over Time Report",
 					"doctype": "Overtime Application List"
 				},
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Salary Advance Report",
+                                        "doctype": "Salary Advance"
+                                },
 			]
 		},
 	]

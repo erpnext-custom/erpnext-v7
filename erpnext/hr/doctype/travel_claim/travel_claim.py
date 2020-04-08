@@ -239,7 +239,7 @@ class TravelClaim(Document):
 			if not end_date:
 				end_date = self.items[len(self.items) - 1].date
 
-			tas = frappe.db.sql("select a.name from `tabTravel Claim` a, `tabTravel Claim Item` b where a.employee = %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date) and a.name != %s and a.travel_type = %s", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date), str(self.name), str(self.travel_type)), as_dict=True)
+			tas = frappe.db.sql("select a.name from `tabTravel Claim` a, `tabTravel Claim Item` b where a.employee = %s and a.docstatus = 1 and a.name = b.parent and (b.date between %s and %s or %s between b.date and b.till_date or %s between b.date and b.till_date) and a.name != %s and a.travel_type = %s and a.place_type = %s", (str(self.employee), str(start_date), str(end_date), str(start_date), str(end_date), str(self.name), str(self.travel_type), str(self.place_type)), as_dict=True)
 			if tas:
 				frappe.throw("The dates in your current Travel Claim has already been claimed in " + str(tas[0].name))
 

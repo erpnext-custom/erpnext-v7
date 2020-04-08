@@ -26,7 +26,7 @@ def remove_user_roles(user, role):
 		user.remove_roles(role)
 
 @frappe.whitelist()
-def get_branch_source(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
+def get_branch_source_query(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
 	""" get list of `CRM Branch`s based on `Item Sub Group` 
 	    used under:
 		1. Site Registration
@@ -36,16 +36,119 @@ def get_branch_source(doctype=None, txt=None, searchfield=None, start=None, page
 
 	bl = frappe.db.sql("""
 		select distinct cbs.branch, 
-			has_common_pool,
 			(case
 				when cbs.has_common_pool = 1 then 'Has Common Pool facility'
 				else '<span style = "color:white;padding: 0px 5px;border-radius: 2px; background-color:tomato;">Does not have Common Pool facility</span>'
 			end) as has_common_pool_msg
-		from `tabCRM Branch Setting` cbs, `tabCRM Branch Setting Item` cbsi
+		from 
+			`tabCRM Branch Setting` cbs, 
+			`tabCRM Branch Setting Item` cbsi,
+			`tabItem` i,
+			`tabSelling Price` sp,
+			`tabSelling Price Branch` spb,
+			`tabSelling Price Rate` spr
 		where cbsi.item_sub_group = "{0}"
 		and cbsi.has_stock = 1
 		and cbs.name = cbsi.parent
+		and i.name	= cbsi.item
+		and now() between sp.from_date and sp.to_date
+		and spb.parent  = sp.name
+		and spb.branch  = cbs.branch
+		and spr.parent  = sp.name
+		and spr.price_based_on = 'Item'
+		and spr.particular = i.name
 	""".format(filters.get("item_sub_group")))
+
+	if not bl:
+		frappe.throw(_("No material source found"))
+	return bl
+
+@frappe.whitelist()
+def get_vehicle_list(user):
+        """ 
+		get active vehicle list based on `user` 
+        """
+	vl = frappe.db.sql("""
+		select 
+			v.name,
+			v.vehicle_capacity,
+			ifnull(
+				(
+					select dc.confirmation_status
+					from `tabDelivery Confirmation` dc
+					where dc.vehicle = v.name
+					and confirmation_status = 'In Transit'
+					limit 1
+				),
+				ifnull((
+					select load_status
+					from `tabLoad Request` lr
+					where lr.vehicle = v.name
+					and lr.load_status = 'Queued'
+					limit 1
+				),'Available')
+			) vehicle_status,
+			(select count(*) + 1
+			from `tabLoad Request` lr1 
+			where lr1.load_status = "Queued"
+			and lr1.vehicle_capacity = v.vehicle_capacity
+			and lr1.creation < (select max(lr2.creation)
+						from `tabLoad Request` lr2
+						where lr2.vehicle = v.name
+						and lr2.load_status = lr1.load_status
+						)
+			) as queue_count,
+			lr.location, lr.customer_name, lr.contact_mobile, lr.delivery_note
+		from `tabVehicle` v
+		left join `tabLoad Request` lr
+                        on lr.vehicle = v.name
+                        and lr.load_status = "Loaded" 
+		where v.user = "{0}" 
+		and v.vehicle_status = 'Active'
+		and v.common_pool = 1
+		order by v.user, v.name
+	""".format(user), as_dict=True)
+
+        if not vl:
+                frappe.throw(_("No Vehicle List found"))
+        return vl
+
+@frappe.whitelist()
+def get_branch_source(item_sub_group):
+	""" get list of `CRM Branch`s based on `Item Sub Group` 
+	    used under:
+		1. Site Registration
+	"""
+	if not item_sub_group:
+		frappe.throw(_("Please select a material first"))
+
+	bl = frappe.db.sql("""
+		select distinct cbs.branch, 
+			(case
+				when cbs.has_common_pool = 1 then 'Has Common Pool facility'
+				else '<span style = "color:white;padding: 0px 5px;border-radius: 2px; background-color:tomato;">Does not have Common Pool facility</span>'
+			end) as has_common_pool_msg,
+			cbs.has_common_pool,
+			cbs.allow_self_owned_transport,
+			cbs.allow_other_transport
+		from 
+			`tabCRM Branch Setting` cbs, 
+			`tabCRM Branch Setting Item` cbsi,
+			`tabItem` i,
+			`tabSelling Price` sp,
+			`tabSelling Price Branch` spb,
+			`tabSelling Price Rate` spr
+		where cbsi.item_sub_group = "{0}"
+		and cbsi.has_stock = 1
+		and cbs.name = cbsi.parent
+		and i.name	= cbsi.item
+		and now() between sp.from_date and sp.to_date
+		and spb.parent  = sp.name
+		and spb.branch  = cbs.branch
+		and spr.parent  = sp.name
+		and spr.price_based_on = 'Item'
+		and spr.particular = i.name
+	""".format(item_sub_group), as_dict=True)
 
 	if not bl:
 		frappe.throw(_("No material source found"))
@@ -137,7 +240,7 @@ def get_site_items(doctype=None, txt=None, searchfield=None, start=None, page_le
 						`tabSite Distance` sd
 					where sd.parent = "{0}" 
 					and sd.branch 	= cbs.branch
-					and sd.item 	= cbsi.item
+					and sd.item_sub_group = i.item_sub_group
 				)
 			)
 		)
@@ -149,6 +252,85 @@ def get_site_items(doctype=None, txt=None, searchfield=None, start=None, page_le
 
 @frappe.whitelist()
 def get_branch_rate_query(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
+	""" get list of source branches along with rates based on selected item/item_sub_group or both 
+	    used under:
+		1. Customer Order
+	    conditions:
+		list of branches are returned based on following conditions
+			1. Branches are pulled from 'CRM Branch Setting'
+			2. Return only branches having stock(has_stock) for selected item
+			3. Return all branches with no common pool facility
+			4. If is a common pool branch, return only branches having rates defined
+				under 'Selling Price' asof current date, distance defined under 
+				'Site Distance' table, and 'Transportation Rate' exists.
+	"""
+	cond 	  = []
+	site_cond = ""
+	columns   = []
+	if not filters.get("item_sub_group") and not filters.get("item"):
+		frappe.throw(_("Please select a material first"))
+
+	if filters.get("item"):
+		cond.append('cbsi.item = "{0}" '.format(filters.get("item")))
+		#columns.extend(["concat('Rate: Nu.',round(spr.selling_price,2),'/',i.stock_uom) as item_rate"])
+		#columns.extend(["concat('Lead Time: ',(case when cbs.has_common_pool = 1 then cbs.lead_time else null end),' Days') as lead_time"])
+		columns.extend(["concat('Lead Time: ',cbs.lead_time,' Days') as lead_time"])
+	if filters.get("item_sub_group"):
+		cond.append('cbsi.item_sub_group = "{0}" '.format(filters.get("item_sub_group")))
+	if filters.get("site"):
+		site_cond = """
+			and (
+				cbs.has_common_pool = 0
+				or exists(select 1
+					from `tabSite Distance` sd
+					where sd.parent = "{0}"
+					and sd.branch 	= cbs.branch
+					and sd.item_sub_group = i.item_sub_group
+					and ifnull(sd.distance,0) > 0
+					and exists(select 1
+						from `tabTransportation Rate` tr
+						where tr.branch = sd.branch
+						and tr.item_sub_group = sd.item_sub_group
+						and sd.distance between tr.from_distance and tr.to_distance))
+			)
+		""".format(filters.get("site"))
+
+	cond = " and ".join(cond)
+	columns = ", ".join(columns)
+
+	bl = frappe.db.sql("""
+		select distinct  
+			cbs.branch,
+			(case
+				when cbs.has_common_pool = 1 then 'Has Common Pool facility'
+				else '<span style = "color:white;padding: 0px 5px;border-radius: 2px; background-color:tomato;">Does not have Common Pool facility</span>'
+			end) as has_common_pool_msg,
+			{columns}
+		from 
+			`tabCRM Branch Setting` cbs, 
+			`tabCRM Branch Setting Item` cbsi,
+			`tabItem` i
+		where {cond}
+		and cbs.name 	= cbsi.parent
+		and i.name 	= cbsi.item
+		and cbsi.has_stock = 1
+		and exists(select 1
+				from `tabSelling Price` sp, `tabSelling Price Branch` spb, `tabSelling Price Rate` spr
+				where now() between sp.from_date and sp.to_date
+				and spb.parent = sp.name
+				and spb.branch = cbs.branch
+				and spr.parent = sp.name
+				and spr.price_based_on = 'Item'
+				and spr.particular = i.name)
+		{site_cond}
+	""".format(cond=cond, site_cond=site_cond, columns=columns))
+
+	#if not bl:
+	#	frappe.throw(_("Rates not available for this material"))
+	return bl
+
+@frappe.whitelist()
+def get_branch_rate_query_old(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
 	""" get list of source branches along with rates based on selected item/item_sub_group or both 
 	    used under:
 		1. Customer Order
@@ -241,7 +423,97 @@ def get_branch_rate(branch=None, item_sub_group=None, item=None, site=None):
 	"""
 	cond 	  = []
 	site_cond = ""
-	columns   = ["cbs.branch", "cbs.has_common_pool"]
+	columns   = ["cbs.branch", "cbs.has_common_pool", "cbs.allow_self_owned_transport", "cbs.allow_other_transport"]
+	if not item_sub_group and not item:
+		frappe.throw(_("Please select a material first"))
+
+	if branch:
+		cond.append('cbs.branch = "{0}" '.format(branch))
+	if item:
+		cond.append('cbsi.item = "{0}" '.format(item))
+		#columns.extend(["cbs.lead_time", "spr.selling_price as item_rate"])
+		columns.extend(["cbs.lead_time"])
+	if item_sub_group:
+		cond.append('cbsi.item_sub_group = "{0}" '.format(item_sub_group))
+	if site:
+		site_cond = """
+			and (
+				cbs.has_common_pool = 0
+				or exists(select 1
+					from `tabSite Distance` sd
+					where sd.parent = "{0}"
+					and sd.branch 	= cbs.branch
+					and sd.item_sub_group = i.item_sub_group
+					and ifnull(sd.distance,0) > 0
+					and exists(select 1
+						from `tabTransportation Rate` tr
+						where tr.branch = sd.branch
+						and tr.item_sub_group = sd.item_sub_group
+						and sd.distance between tr.from_distance and tr.to_distance))
+			)
+		""".format(site)
+
+	cond = " and ".join(cond)
+	columns = ", ".join(columns)
+	bl = frappe.db.sql("""
+		select distinct  
+			{columns},
+			(case
+				when cbs.has_common_pool = 1 then 'Has Common Pool facility'
+				else '<span style = "color:white;padding: 0px 5px;border-radius: 2px; background-color:tomato;">Does not have Common Pool facility</span>'
+			end) as has_common_pool_msg,
+			sd.distance,
+			tr.name tr_name,
+			tr.rate tr_rate,
+			i.stock_uom
+		from 
+			`tabCRM Branch Setting` cbs
+		inner join `tabCRM Branch Setting Item` cbsi 
+			on cbsi.parent = cbs.name
+			and cbsi.has_stock = 1
+		inner join `tabItem` i
+			on i.name = cbsi.item
+		left join `tabSite Distance` sd
+			on sd.parent = "{site}"
+			and sd.branch= cbs.branch
+			and sd.item_sub_group = i.item_sub_group
+		left join `tabTransportation Rate` tr
+			on tr.branch = cbs.branch
+			and tr.item_sub_group = i.item_sub_group
+			and ifnull(sd.distance,0) between tr.from_distance and tr.to_distance
+		where {cond}
+		and exists(select 1
+				from `tabSelling Price` sp, `tabSelling Price Branch` spb, `tabSelling Price Rate` spr
+				where now() between sp.from_date and sp.to_date
+				and spb.parent = sp.name
+				and spb.branch = cbs.branch
+				and spr.parent = sp.name
+				and spr.price_based_on = 'Item'
+				and spr.particular = i.name)
+		{site_cond}
+	""".format(cond=cond, site_cond=site_cond, columns=columns, site=site), as_dict=True)
+
+	#if not bl:
+	#	frappe.throw(_("Rates not available for this material"))
+	return bl
+
+@frappe.whitelist()
+def get_branch_rate_old(branch=None, item_sub_group=None, item=None, site=None):
+	""" get list of source branches along with rates based on selected item/item_sub_group or both 
+	    used under:
+		1. Customer Order
+	    conditions:
+		list of branches are returned based on following conditions
+			1. Branches are pulled from 'CRM Branch Setting'
+			2. Return only branches having stock(has_stock) for selected item
+			3. Return all branches with no common pool facility
+			4. If is a common pool branch, return only branches having rates defined
+				under 'Selling Price' asof current date, distance defined under 
+				'Site Distance' table, and 'Transportation Rate' exists.
+	"""
+	cond 	  = []
+	site_cond = ""
+	columns   = ["cbs.branch", "cbs.has_common_pool", "cbs.allow_self_owned_transport", "cbs.allow_other_transport"]
 	if not item_sub_group and not item:
 		frappe.throw(_("Please select a material first"))
 
@@ -316,24 +588,402 @@ def get_branch_rate(branch=None, item_sub_group=None, item=None, site=None):
 	return bl
 
 @frappe.whitelist()
-def get_vehicles(user):
+def get_branch_location_query(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
+	if not filters.get("item"):
+		frappe.throw(_("Please select required Material first"))
+	if not filters.get("branch"):
+		frappe.throw(_("Please select Source Branch first"))
+
+	bl = frappe.db.sql("""
+		select distinct 
+			(case
+				when spr.location is null then "Departmental"
+				when ifnull(spr.location,'') = '' then "Departmental"
+				else spr.location
+			end) as name,
+			spr.parent as selling_price,
+			concat('Rate: Nu.',round(spr.selling_price,2),'/-') as item_rate
+		from `tabSelling Price` sp, `tabSelling Price Branch` spb, `tabSelling Price Rate` spr
+		where now() between sp.from_date and sp.to_date  
+		and spb.parent = sp.name
+		and spb.branch = "{branch}"
+		and spr.parent = sp.name 
+		and spr.price_based_on = "Item"
+		and spr.particular = "{item}"
+		and (
+			spr.location is null 
+			or 
+			ifnull(spr.location,'') = ''
+			or
+			exists(select 1
+				from `tabLocation` l
+				where l.name = spr.location 
+				and l.branch = spb.branch
+			)
+		)
+	""".format(branch=filters.get("branch"), item=filters.get("item")), as_dict=False)
+
+	return bl
+
+@frappe.whitelist()
+def get_branch_location_query_bkp20200218(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
+	if not filters.get("item"):
+		frappe.throw(_("Please select required Material first"))
+	if not filters.get("branch"):
+		frappe.throw(_("Please select Source Branch first"))
+
+	bl = frappe.db.sql("""
+		select distinct 
+			spr.location as name,
+			spr.parent as selling_price,
+			concat('Rate: Nu.',round(spr.selling_price,2),'/-') as item_rate
+		from `tabSelling Price` sp, `tabSelling Price Branch` spb, `tabSelling Price Rate` spr
+		where now() between sp.from_date and sp.to_date  
+		and spb.parent = sp.name
+		and spb.branch = "{branch}"
+		and spr.parent = sp.name 
+		and spr.price_based_on = "Item"
+		and spr.particular = "{item}"
+		and spr.location is not null
+		and exists(select 1
+			from `tabLocation` l
+			where l.name = spr.location 
+			and l.branch = spb.branch
+		)
+	""".format(branch=filters.get("branch"), item=filters.get("item")), as_dict=False)
+
+	return bl
+
+@frappe.whitelist()
+def get_branch_location(site, item, branch=None, location=None):
+	cond = []
+	site_cond = ''
+	if not item:
+		frappe.throw(_("Please select required Material first"))
+
+	if branch:
+		cond.append('spb.branch = "{0}"'.format(branch))
+	if location:
+		if location == "Departmental":
+			cond.append('(spr.location is null or ifnull(spr.location,"") = "" or spr.location = "{0}")'.format(location))
+		else:
+			cond.append('spr.location = "{0}"'.format(location))
+
+	cond = " and ".join(cond)
+	cond = " and "+cond if cond else cond
+
+	if site:
+		site_cond = """
+			and (
+				cbs.has_common_pool = 0
+				or exists(select 1
+					from `tabSite Distance` sd
+					where sd.parent = "{0}"
+					and sd.branch 	= cbs.branch
+					and sd.item_sub_group = i.item_sub_group
+					and ifnull(sd.distance,0) > 0
+					and exists(select 1
+						from `tabTransportation Rate` tr
+						where tr.branch = sd.branch
+						and tr.item_sub_group = sd.item_sub_group
+						and sd.distance between tr.from_distance and tr.to_distance))
+			)
+		""".format(site)
+
+	bl = frappe.db.sql("""
+		select distinct 
+			spb.branch,
+			(case
+				when spr.location is null then "Departmental"
+				when ifnull(spr.location,'') = '' then "Departmental"
+				else spr.location
+			end) as location,
+			spr.parent as selling_price,
+			spr.selling_price as item_rate,
+			cbs.lead_time,
+			(case
+				when spr.location is null then
+					(case
+						when exists(select 1
+								from `tabSelling Price Rate` spr2, `tabLocation` l2
+								where spr2.parent = spr.parent
+								and spr2.location is not null
+								and l2.name = spr2.location
+								and l2.branch = spb.branch) then 0
+						else 1
+					end)
+				else 1
+			end) display
+		from 
+			`tabSelling Price` sp, 
+			`tabSelling Price Branch` spb, 
+			`tabSelling Price Rate` spr,
+			`tabItem` i,
+			`tabCRM Branch Setting` cbs,
+			`tabCRM Branch Setting Item` cbsi
+		where now() between sp.from_date and sp.to_date  
+		and spb.parent = sp.name
+		and spr.parent = sp.name 
+		and spr.price_based_on = "Item"
+		and spr.particular = "{item}"
+		and i.name = "{item}"
+		{cond}
+		and (
+			spr.location is null
+			or
+			ifnull(spr.location,'') = ''
+			or
+			exists(select 1
+				from `tabLocation` l
+				where l.name = spr.location 
+				and l.branch = spb.branch
+			)
+		)
+		and cbs.branch = spb.branch
+		and cbsi.parent = cbs.name
+		and cbsi.item = "{item}"
+		and cbsi.has_stock = 1
+		{site_cond}
+		order by spb.branch, cbs.lead_time
+	""".format(cond=cond, item=item, site_cond=site_cond), as_dict=True)
+
+	return bl
+
+@frappe.whitelist()
+def get_branch_location_bkp20200218(site, item, branch=None, location=None):
+	cond = []
+	site_cond = ''
+	if not item:
+		frappe.throw(_("Please select required Material first"))
+
+	if branch:
+		cond.append('spb.branch = "{0}"'.format(branch))
+	if location:
+		cond.append('spr.location = "{0}"'.format(location))
+
+	cond = " and ".join(cond)
+	cond = " and "+cond if cond else cond
+
+	if site:
+		site_cond = """
+			and (
+				cbs.has_common_pool = 0
+				or exists(select 1
+					from `tabSite Distance` sd
+					where sd.parent = "{0}"
+					and sd.branch 	= cbs.branch
+					and sd.item_sub_group = i.item_sub_group
+					and ifnull(sd.distance,0) > 0
+					and exists(select 1
+						from `tabTransportation Rate` tr
+						where tr.branch = sd.branch
+						and tr.item_sub_group = sd.item_sub_group
+						and sd.distance between tr.from_distance and tr.to_distance))
+			)
+		""".format(site)
+
+	bl = frappe.db.sql("""
+		select distinct 
+			spb.branch,
+			spr.location,
+			spr.parent as selling_price,
+			spr.selling_price as item_rate,
+			cbs.lead_time,
+			(case
+				when spr.location is null then
+					(case
+						when exists(select 1
+								from `tabSelling Price Rate` spr2, `tabLocation` l2
+								where spr2.parent = spr.parent
+								and spr2.location is not null
+								and l2.name = spr2.location
+								and l2.branch = spb.branch) then 0
+						else 1
+					end)
+				else 1
+			end) display
+		from 
+			`tabSelling Price` sp, 
+			`tabSelling Price Branch` spb, 
+			`tabSelling Price Rate` spr,
+			`tabItem` i,
+			`tabCRM Branch Setting` cbs,
+			`tabCRM Branch Setting Item` cbsi
+		where now() between sp.from_date and sp.to_date  
+		and spb.parent = sp.name
+		and spr.parent = sp.name 
+		and spr.price_based_on = "Item"
+		and spr.particular = "{item}"
+		and i.name = "{item}"
+		{cond}
+		and (
+			spr.location is null
+			or
+			exists(select 1
+				from `tabLocation` l
+				where l.name = spr.location 
+				and l.branch = spb.branch
+			)
+		)
+		and cbs.branch = spb.branch
+		and cbsi.parent = cbs.name
+		and cbsi.item = "{item}"
+		and cbsi.has_stock = 1
+		{site_cond}
+		order by spb.branch, cbs.lead_time
+	""".format(cond=cond, item=item, site_cond=site_cond), as_dict=True)
+
+	return bl
+
+@frappe.whitelist()
+def get_branch_location_old(item, branch=None, location=None):
+	cond = []
+	if not item:
+		frappe.throw(_("Please select required Material first"))
+
+	if branch:
+		cond.append('spb.branch = "{0}"'.format(branch))
+	if location:
+		cond.append('spr.location = "{0}"'.format(location))
+
+	cond = " and ".join(cond)
+	cond = " and "+cond if cond else cond
+
+	bl = frappe.db.sql("""
+		select distinct 
+			spb.branch,
+			spr.location,
+			spr.parent as selling_price,
+			spr.selling_price as item_rate,
+			cbs.lead_time
+		from 
+			`tabSelling Price` sp, 
+			`tabSelling Price Branch` spb, 
+			`tabSelling Price Rate` spr,
+			`tabCRM Branch Setting` cbs,
+			`tabCRM Branch Setting Item` cbsi
+		where now() between sp.from_date and sp.to_date  
+		and spb.parent = sp.name
+		and spr.parent = sp.name 
+		and spr.price_based_on = "Item"
+		and spr.particular = "{item}"
+		{cond}
+		and (
+			spr.location is null
+			or
+			exists(select 1
+				from `tabLocation` l
+				where l.name = spr.location 
+				and l.branch = spb.branch
+			)
+		)
+		and cbs.branch = spb.branch
+		and cbsi.parent = cbs.name
+		and cbsi.item = "{item}"
+		and cbsi.has_stock = 1
+		order by spb.branch, cbs.lead_time
+	""".format(cond=cond, item=item), as_dict=True)
+
+	return bl
+
+@frappe.whitelist()
+def get_vehicles_old(user, site, transport_mode):
+	cond = ""
+
+	if transport_mode == "Self Owned Transport":
+		if not user:
+			frappe.throw(_("Please select a customer first"))
+		cond = """and v.user = "{}" """.format(user)
+
+	if transport_mode == "Private Pool":
+		if not site:
+			frappe.throw(_("Please select a site first"))
+
+		cond = """
+			and exists(select 1
+				from `tabSite` s, `tabSite Private Pool` spp
+				where s.name 	= "{}"
+				and s.allow_private_pool = 1
+				and spp.parent 	= s.name
+				and spp.vehicle = v.name)
+		""".format(site)
+
 	vl = frappe.db.sql("""
 		select 
-			name vehicle,
-			drivers_name,
-			contact_no,
-			vehicle_capacity
-		from `tabVehicle`
-		where user = "{user}"
-		and docstatus = 1
-		and vehicle_status = "Active"
-	""".format(user=user), as_dict=True)
+			v.name vehicle,
+			v.drivers_name,
+			v.contact_no,
+			v.vehicle_capacity
+		from `tabVehicle` v
+		where v.vehicle_status = "Active"
+		{cond}
+	""".format(cond=cond), as_dict=True)
 	if not vl:
 		for i in frappe.db.get_all("Transport Request",{"user": user, "docstatus": 0, "self_arranged": 1}):
 			frappe.throw(_("Your request for vehicle registration (Request ID#{0}) is awaiting approval").format(i.name))
 
 		frappe.throw(_("Please register a vehicle first"))
 	return vl
+
+@frappe.whitelist()
+def get_vehicles(user):
+	cond = ""
+
+	cond = """and v.user = "{}" """.format(user)
+
+	vl = frappe.db.sql("""
+		select 
+			v.name vehicle,
+			v.drivers_name,
+			v.contact_no,
+			v.vehicle_capacity
+		from `tabVehicle` v
+		where v.vehicle_status = "Active"
+		{cond}
+	""".format(cond=cond), as_dict=True)
+	if not vl:
+		for i in frappe.db.get_all("Transport Request",{"user": user, "docstatus": 0, "self_arranged": 1}):
+			frappe.throw(_("Your request for vehicle registration (Request ID#{0}) is awaiting approval").format(i.name))
+
+		frappe.throw(_("Please register a vehicle first"))
+	return vl
+
+@frappe.whitelist()
+def get_vehicles_query(doctype, txt, searchfield, start, page_len, filters):
+        from erpnext.controllers.queries import get_match_cond
+	cond = ""
+
+	if filters.get("transport_mode") == "Self Owned Transport":
+		if not filters.get("user"):
+			frappe.throw(_("Please select a customer first"))
+		cond = """and v.user = "{}" """.format(filters.get("user"))
+
+	if filters.get("transport_mode") == "Private Pool":
+		if not filters.get("site"):
+			frappe.throw(_("Please select a site first"))
+
+		cond = """
+			and exists(select 1
+				from `tabSite` s, `tabSite Private Pool` spp
+				where s.name 	= "{}"
+				and s.allow_private_pool = 1
+				and spp.parent 	= s.name
+				and spp.vehicle = v.name)
+		""".format(filters.get("site"))
+
+	return frappe.db.sql("""
+			select 
+				name, 
+				drivers_name, 
+				contact_no,
+				vehicle_capacity 
+			from `tabVehicle` v
+			where v.vehicle_status = 'Active'
+			{cond}
+		""".format(cond=cond, key=frappe.db.escape(searchfield),
+		 match_condition=get_match_cond(doctype)), {
+		'txt': "%%%s%%" % frappe.db.escape(txt)
+	})
 
 @frappe.whitelist()
 def get_site(user=frappe.session.user):
@@ -364,26 +1014,39 @@ def filter_vehicle_customer_order(doctype, txt, searchfield, start, page_len, fi
                 frappe.throw("Select Customer Order First")
         from erpnext.controllers.queries import get_match_cond
         user_id, transport_mode = frappe.db.get_value("Customer Order", filters.get("customer_order"), ["user","transport_mode"])
-        if transport_mode == "Common Pool":
-                return frappe.db.sql("""select vehicle, requesting_date_time, transporter, token from `tabLoad Request`
-                                        where load_status = 'Queued'
-                                        and crm_branch = '{1}'
-					and docstatus = 1
-                                        and exists(
-                                                select 1 from `tabVehicle` where docstatus = 1 and vehicle_status = 'Active'
-                                        )
-                                        order by requesting_date_time, token limit 1
-                                """.format(filters.get("posting_date"), filters.get("branch"), key=frappe.db.escape(searchfield),
+	if transport_mode in ["Self Owned Transport", "Private Pool"]:
+		cond = " and v.user = '{0}'".format(user_id) if transport_mode == "Self Owned Transport" else ""
+			
+                return frappe.db.sql("""select name, drivers_name, contact_no from `tabVehicle` v
+                                        where v.vehicle_status = 'Active'
+					{0}
+					and exists(
+						select 1 from `tabCustomer Order Vehicle` c 
+						where c.parent = '{1}' 
+						and c.vehicle = v.name  
+					)
+                                """.format(cond, filters.get("customer_order"), key=frappe.db.escape(searchfield),
                                  match_condition=get_match_cond(doctype)), {
                                 'txt': "%%%s%%" % frappe.db.escape(txt)
                         })
-        else:
+
+		
+	elif transport_mode == "Common Pool":
+                return frappe.db.sql("""select vehicle, requesting_date_time, token from `tabLoad Request`
+                                        where load_status = 'Queued'
+                                        and crm_branch = '{0}'
+					and vehicle_capacity = '{1}'
+                                        order by requesting_date_time, token limit 1
+                                """.format(filters.get("branch"), filters.get("total_quantity"), key=frappe.db.escape(searchfield),
+                                 match_condition=get_match_cond(doctype)), {
+                                'txt': "%%%s%%" % frappe.db.escape(txt)
+                        })
+	
+	else:
                 return frappe.db.sql("""select name, drivers_name, contact_no from `tabVehicle`
-                                        where user = '{0}' 
-                                        and docstatus = 1 
+                                        where docstatus = 1 
                                         and vehicle_status = 'Active'
-					and self_arranged = 1
-                                """.format(user_id, key=frappe.db.escape(searchfield),
+                                """.format(key=frappe.db.escape(searchfield),
                                  match_condition=get_match_cond(doctype)), {
                                 'txt': "%%%s%%" % frappe.db.escape(txt)
                         })
@@ -468,3 +1131,41 @@ def get_limit_details(site, branch, item):
 	else:
 		pass
 	return limits
+
+@frappe.whitelist()
+def get_transport_mode(site="",branch=""):
+	modes = []
+	tl = frappe.db.sql("""
+		select
+			cbs.has_common_pool,
+			cbs.allow_self_owned_transport,
+			cbs.allow_other_transport,
+			ifnull((select s.allow_private_pool
+				from `tabSite` s
+				where s.name = "{1}"
+				and exists(select 1
+				from `tabSite Private Pool` spp
+				where spp.parent = s.name)),0) allow_private_pool
+		from `tabCRM Branch Setting` cbs
+		where cbs.branch = "{0}"
+	""".format(branch, site), as_dict=True)
+
+	if tl:
+		if tl[0].has_common_pool:
+			modes.append("Common Pool")
+		if tl[0].allow_self_owned_transport:
+			modes.append("Self Owned Transport")
+		if tl[0].allow_other_transport:
+			modes.append("Others")
+		if tl[0].allow_private_pool:
+			modes.append("Private Pool")
+	return modes
+
+def cancel_online_payment():
+	''' Cancel requests pending for more than 1hr in Online Payment'''
+	for i in frappe.db.sql("""select name,status,modified from `tabOnline Payment` where status = 'Pending'
+		and (time_to_sec(timediff(now(), modified )) / 3600) > 1""", as_dict=True):
+		doc = frappe.get_doc("Online Payment", i.name)
+		doc.status = 'Cancelled'
+		doc.save(ignore_permissions=True)
+	frappe.db.commit()

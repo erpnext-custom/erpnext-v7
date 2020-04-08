@@ -202,7 +202,6 @@ class SalesOrder(SellingController):
 	def on_submit(self):
 		self.check_credit_limit()
 		self.update_reserved_qty()
-
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype, self.company, self.base_grand_total, self)
 
 		self.update_prevdoc_status('submit')
@@ -322,6 +321,11 @@ class SalesOrder(SellingController):
 		#self.get_selling_rate()
 
 	def update_product_requisition(self, action):
+		''' Ver.3.0.191222 Begins, NRDCLCRM, CRMNRDCL, NRDCL CRM, CRM NRDCL '''
+		# Following if condition added by SHIV on 2019/12/22
+		if self.customer_order:
+			return
+		''' Ver.3.0.191222 Ends'''
 		if self.po_no:
 			for a in frappe.db.sql("select name, item_code, qty, balance from `tabProduct Requisition Item` where parent = '{0}'".format(self.po_no), as_dict=True):
 				so_qty = 0.0
@@ -409,6 +413,12 @@ class SalesOrder(SellingController):
 						cint(reference_doc.repeat_on_day_of_month)))
 
 	def get_selling_rate(self):
+		''' Ver.3.0.191222 Begins, NRDCLCRM, CRMNRDCL, NRDCL CRM, CRM NRDCL '''
+		# Following if condition added by SHIV on 2019/12/22
+		if self.customer_order:
+			return
+		''' Ver.3.0.191222 Ends'''
+
 		for item in self.items:
 			item_sub_group = None
 			if not self.branch or not item.item_code or not self.transaction_date:

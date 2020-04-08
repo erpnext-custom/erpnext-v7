@@ -26,48 +26,72 @@ def get_data(filters):
 
 	if filters.from_date and filters.to_date:
 		if filters.aggregate:
-			#so_cond = " and so.transaction_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
-			so_cond = " and 1 = 1" 
+			so_cond = " and so.transaction_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+			#so_cond = " and 1 = 1" 
 			#dn_cond = " and dn.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
 			dn_cond = " and 1 = 1"
-			si_cond = " and si.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+			#si_cond = " and si.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+			si_cond = " and 1 = 1"
 			if filters.item:
 				si_cond += " and sii.item_code = '{0}'".format(filters.item)
 
 		else:
-			#so_cond = " and so.transaction_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
-			so_cond = " and 1 = 1" 
+			so_cond = " and so.transaction_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+			#so_cond = " and 1 = 1" 
 			dn_cond = " and 1 = 1"
-			si_cond = " and si.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
-			#si_cond = " and 1 = 1"
-	
-	query = frappe.db.sql("""select *from 
-	(select so.name as so_name , so.customer as customer, so.customer_name, so.branch, soi.qty as qty_approved, soi.delivered_qty, soi.rate, soi.item_code, 
-	soi.name as soi_name, soi.item_name, soi.item_group, soi.lot_number as lot_number,
-	so.transaction_date, soi.product_requisition from
+			#si_cond = " and si.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+			si_cond = " and 1 = 1"
+
+	query = frappe.db.sql("""select * from 
+	(select so.name as so_name , so.customer as customer, so.customer_name, so.branch, soi.qty as qty_approved, 
+	soi.delivered_qty, soi.rate, soi.item_code, soi.name as soi_name, soi.item_name, soi.item_group, 
+	soi.lot_number as lot_number, so.transaction_date, soi.product_requisition, so.naming_series as naming_series from
         `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0} {4}) as so_detail
 	inner join
-	(select dn.name as dn_no, dn.shipping_address_name as destination, dn.contact_no, dn.drivers_name, dn.transportation_charges, dn.vehicle, dni.location, dni.so_detail as dni_name, 
-	dni.name as dni_detail, dni.against_sales_invoice from `tabDelivery Note` dn, `tabDelivery Note Item` dni
+	(select dn.name as dn_no, dn.shipping_address_name as destination, dn.contact_no, dn.drivers_name, dn.transportation_charges, 
+	dn.vehicle, dni.location, dni.so_detail as dni_name, dni.name as dni_detail, dni.against_sales_invoice,
+	(SELECT item_sub_group FROM tabItem WHERE item_code = dni.item_code GROUP BY item_sub_group) AS item_sub, 
+	sum(dni.qty) as dni_qty, sum(dni.amount) as dni_amount 
+	from `tabDelivery Note` dn, `tabDelivery Note Item` dni
+        where dn.name = dni.parent and dn.docstatus =1 {5} {3}) as dn_detail
+	on so_detail.soi_name = dn_detail.dni_name
+	""".format(cond, dni_loc, qty, group, so_cond, dn_cond, amount), as_dict = True)
+
+	query1 = """select * from 
+	(select so.name as so_name , so.customer as customer, so.customer_name, so.branch, soi.qty as qty_approved, 
+	soi.delivered_qty, soi.rate, soi.item_code, soi.name as soi_name, soi.item_name, soi.item_group, 
+	soi.lot_number as lot_number, so.transaction_date, soi.product_requisition, so.naming_series as naming_series from
+        `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0} {4}) as so_detail
+	inner join
+	(select dn.name as dn_no, dn.shipping_address_name as destination, dn.contact_no, dn.drivers_name, dn.transportation_charges, 
+	dn.vehicle, dni.location, dni.so_detail as dni_name, dni.name as dni_detail, dni.against_sales_invoice 
+	from `tabDelivery Note` dn, `tabDelivery Note Item` dni
         where dn.name = dni.parent and dn.docstatus =1 {5}) as dn_detail
 	on so_detail.soi_name = dn_detail.dni_name
 	inner join
 	(select si.name, sii.dn_detail, (select item_sub_group from tabItem where item_code = sii.item_code group by item_sub_group) as item_sub, sii.sales_order, sii.delivery_note, {2} as sii_qty, sii.rate as sii_rate, {7} as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1 {6} {3}) 
 	as si_detail
-	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group, so_cond, dn_cond, si_cond, amount), as_dict = True)
+	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, dni_loc, qty, group, so_cond, dn_cond, si_cond, amount)
+
 	agg_qty = agg_amount = qty = rate = amount =  qty_required  = qty_approved = balance_qty = delivered_qty = transportation_charges = 0.0
 	row = {}
 	for d in query:
+		if filters.item_group == "Mineral Products" or d.naming_series == "Mineral Products":
+			for a in frappe.db.sql("select sum(soi.qty) as soi_qty from `tabSales Order` so, `tabSales Order Item` soi where so.name = soi.parent and so.name = '{0}'".format(d.so_name), as_dict= True):
+				soi_qty = flt(a.soi_qty)
+		else:
+			soi_qty = flt(d.qty_approved)
 		#customer detail
 		cust = get_customer(filter, d.customer)
 		row = {
-			"sales_order": d.so_name, "dn_no": d.dn_no, "posting_date": d.transaction_date, "customer": cust.name, "customer_name": cust.customer_name, 
-			"customer_type": cust.customer_type, "customer_id": cust.customer_id, "customer_contact": cust.mobile_no, 
-			"item_code": d.item_code, "item_name": d.item_name, "destination": d.destination, "qty_approved": flt(d.qty_approved),
-			"qty": flt(d.sii_qty),  "rate": flt(d.sii_rate),  "amount": flt(d.sii_amount), "receipt_no": d.name, 
-			"delivered_qty": flt(d.sii_qty), "vehicle_no": d.vehicle, "drivers_name": d.drivers_name, 
-			"drivers_contact": d.contact_no, "transportation_charges": d.transportation_charges, "agg_qty": flt(d.sii_qty),
-			"agg_amount": flt(d.sii_amount), "agg_branch": d.branch, "agg_location": d.location, "item_sub_group": d.item_sub
+			"sales_order": d.so_name, "dn_no": d.dn_no, "posting_date": d.transaction_date, "customer": cust.name, 
+			"customer_name": cust.customer_name, "customer_type": cust.customer_type, "customer_id": cust.customer_id, 
+			"customer_contact": cust.mobile_no, 
+			"item_code": d.item_code, "item_name": d.item_name, "destination": d.destination, "qty_approved": soi_qty,
+			"qty": flt(d.dni_qty),  "rate": flt(d.sii_rate),  "amount": flt(d.dni_amount), "receipt_no": d.name, 
+			"delivered_qty": flt(d.dni_qty), "vehicle_no": d.vehicle, "drivers_name": d.drivers_name, 
+			"drivers_contact": d.contact_no, "transportation_charges": d.transportation_charges, "agg_qty": flt(d.dni_qty),
+			"agg_amount": flt(d.dni_amount), "agg_branch": d.branch, "agg_location": d.location, "item_sub_group": d.item_sub
 			}	
 
 		spec = frappe.db.get_value("Item", d.item_code, "species")
@@ -94,13 +118,13 @@ def get_data(filters):
 			row["no_of_story"] = pr.no_of_story
 			qty_required += flt(pr.qty_required)
 		data.append(row)
-		agg_amount += flt(d.sii_amount)
-		qty +=  flt(d.sii_qty)  
+		agg_amount += flt(d.dni_amount)
+		qty +=  flt(d.dni_qty)  
 		#rate +=  flt(d.sii_rate)
-		amount += flt(d.sii_amount)
+		amount += flt(d.dni_amount)
 		qty_approved += flt(d.qty_approved)
-		delivered_qty =+ flt(d.sii_qty)
-		balance_qty += flt(d.qty_approved) - flt(d.sii_qty)
+		delivered_qty += flt(d.dni_qty)
+		balance_qty += flt(d.qty_approved) - flt(d.dni_qty)
 		transportation_charges += flt(d.transportation_charges)
 		row = { "agg_qty": agg_qty, "agg_amount": agg_amount, "qty": qty, "rate": rate, "amount": amount, 
 		"qty_approved": qty_approved, "qty_required": qty_required, "qty_approved": qty_approved, "delivered_qty": delivered_qty,
@@ -125,22 +149,22 @@ def get_customer(filters, cond):
 
 def get_group_by(filters):
 	group_by = " "
-	qty = 'sii.qty'
-	amount = 'sii.amount'
+	qty = 'dni.qty'
+	amount = 'dni.amount'
 	if filters.group_by == 'Sales Order':
-		group_by = " group by sii.sales_order"
-		qty = " sum(sii.qty)"
-		amount = " sum(sii.amount)"
+		group_by = " group by dni.against_sales_order"
+		qty = " sum(dni.qty)"
+		amount = " sum(dni.amount)"
 
 	if filters.aggregate:
-		group_by = " group by item_sub, si.branch"
-		qty = " sum(sii.qty)"
-		amount = " sum(sii.amount)"
+		group_by = " group by item_sub, dn.branch"
+		qty = " sum(dni.qty)"
+		amount = " sum(dni.amount)"
 
 	if filters.product_wise_customer:
 		group_by = " group by item_sub, customer"
-		qty = " sum(sii.qty)"
-		amount = " sum(sii.amount)"
+		qty = " sum(dni.qty)"
+		amount = " sum(dni.amount)"
 	#frappe.msgprint("{0}".format(group_by))
 	return qty, group_by, amount
 

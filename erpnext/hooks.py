@@ -14,8 +14,17 @@ source_link = "https://github.com/frappe/erpnext"
 
 error_report_email = "erpnext@dhi.bt"
 
-app_include_js = "assets/js/erpnext.min.js"
-app_include_css = "assets/css/erpnext.css"
+app_include_js = [
+	"assets/js/erpnext.min.js",
+	"assets/erpnext/js/crm.custom.js",
+]
+
+app_include_css = [
+	"assets/css/erpnext.css",
+	"assets/css/nrdcl.custom.css"
+]
+#app_include_js = "assets/js/erpnext.min.js"
+#app_include_css = "assets/css/erpnext.css"
 web_include_js = "assets/js/erpnext-web.min.js"
 web_include_css = "assets/erpnext/css/website.css"
 
@@ -172,7 +181,8 @@ scheduler_events = {
 		"erpnext.assets.doctype.asset.asset.sync_cc_branch",
 		#"erpnext.maintenance.doctype.equipment.equipment.sync_branch_asset",
 		"erpnext.selling.doctype.customer.customer.check_cc_branch",
-		#"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"    # Ver 2.0.19025, commented by SHIV on 25/02/2019 
+		#"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves",    # Ver 2.0.19025, commented by SHIV on 25/02/2019 
+		#"erpnext.crm_utils.cancel_online_payment"
 	],
 	"daily": [
 		#"erpnext.stock.reorder_item.reorder_item",

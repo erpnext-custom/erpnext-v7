@@ -7,4 +7,8 @@ import frappe
 from frappe.model.document import Document
 
 class Vehicle(Document):
-	pass
+	def autoname(self):
+		self.name = self.vehicle_no.replace(" ", "").upper()
+
+#	def validate(self):
+#		self.vehicle_no = self.vehicle_no.upper()

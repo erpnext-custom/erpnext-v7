@@ -39,7 +39,7 @@ class ReceivablePayableReport(object):
 			columns += [args.get("party_type") + " Name::110"]
 
 		columns += [_("Voucher Type") + "::110", _("Voucher No") + ":Dynamic Link/"+_("Voucher Type")+":120",
-			_("Delivery Note") + ":Dynamic Link/"+_("Delivery Note") + ":120", _("Delivery Status") + "::110", _("Due Date") + ":Date:80"]
+			_("Delivery Note") + ":Dynamic Link/"+_("Delivery Note") + ":120", _("Delivery Status") + "::110",  _("Delivery Quantity") + "::110", _("Due Date") + ":Date:80"]
 
 		if args.get("party_type") == "Supplier":
 			columns += [_("Bill No") + "::80", _("Bill Date") + ":Date:80"]
@@ -104,8 +104,9 @@ class ReceivablePayableReport(object):
 		data = []
 		for gle in self.get_entries_till(self.filters.report_date, args.get("party_type")):
 			if self.is_receivable_or_payable(gle, dr_or_cr, future_vouchers):
-                                dn_no = ""
+				dn_no = ""
 				dn_status = ""
+				dn_quantity = ""
 				outstanding_amount = self.get_outstanding_amount(gle, self.filters.report_date, dr_or_cr)
 				#if outstanding_amount: #abs(outstanding_amount) > 0.1/10**currency_precision:
 
@@ -114,17 +115,17 @@ class ReceivablePayableReport(object):
 				# customer / supplier name
 				if party_naming_by == "Naming Series":
 					row += [self.get_party_name(gle.party_type, gle.party)]
-				
 				if gle.voucher_type == "Sales Invoice":
-					for a in frappe.db.sql("""select sii.delivery_note, dn.status from `tabSales Invoice Item` sii, `tabDelivery Note` dn where sii.parent = '{0}'
+					for a in frappe.db.sql("""select sii.delivery_note, dn.status, dn.total_quantity from `tabSales Invoice Item` sii, `tabDelivery Note` dn where sii.parent = '{0}'
 					and sii.delivery_note = dn.name limit 1""".format(gle.voucher_no), as_dict=1):
 						dn_no = a.delivery_note
 						dn_status = a.status
+						dn_quantity = a.total_quantity
 
 				# get due date
 				due_date = voucher_details.get(gle.voucher_no, {}).get("due_date", "")
-
-				row += [gle.voucher_type, gle.voucher_no, dn_no, dn_status, due_date]
+				#if dn_no and dn_status:
+				row += [gle.voucher_type, gle.voucher_no, dn_no, dn_status, dn_quantity, due_date]
 
 				# get supplier bill details
 				if args.get("party_type") == "Supplier":

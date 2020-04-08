@@ -4,62 +4,112 @@ import urlparse
 from frappe import _
 from frappe.utils import cint, flt, now, get_datetime
 from erpnext.crm.doctype.site.site import has_pending_transactions
-from erpnext.integrations import BFSSecure
+from erpnext.integrations import BFSSecure, SendSMS
 
 #bench execute erpnext.crm_api.init_payment --args "'ORDR200100020','1010','100635222',1"
-#@frappe.async.handler
-@frappe.whitelist(allow_guest=True)
-def init_payment(customer_order, bank_code, bank_account, amount):
+@frappe.whitelist()
+def init_payment(customer_order=None, bank_code=None, bank_account=None, amount=0):
 	''' start new payment transaction '''
 	# TEMPORARILY MADE AMOUNT 1
-	amount = 1
+	if not customer_order:
+		frappe.throw(_("Invalid Order"))
+	elif not bank_code:
+		frappe.throw(_("Invalid Remitter Bank"))
+	elif not bank_account:
+		frappe.throw(_("Invalid Remitter Account No"))
+	elif not flt(amount):
+		frappe.throw(_("Invalid Amount"))
+	#amount = 1
+
+	# LOG
+	print '#'*60
+	print '#','METHOD	   :','init_payment'
+	print '#','CUSTOMER_ORDER   :',customer_order
+	print '#','BANK_CODE        :',bank_code
+	print '#','BANK_ACCOUNT     :',bank_account
+	print '#','AMOUNT           :',flt(amount)
+	print '#'*60
+
 	# BFSSecure
 	bfs 		= BFSSecure()
-	bfs.customer_order = customer_order
-	bfs.bank_code	= bank_code
-	bfs.bank_account= bank_account
-	bfs.amount	= flt(amount)
 	response	= None
 	error_msg	= None
 	status		= None
 
-	# AR Request
-	bfs.create_online_payment()
-	auth_request 	= bfs.auth_request()	
-	if auth_request.error_msg:
-		response  = auth_request.response
-		error_msg = auth_request.error_msg
-		status 	  = auth_request.status
+	req 		= bfs.auth_request(customer_order, bank_code, bank_account, amount)	
+	if req.error_msg:
+		response  = req.response
+		error_msg = req.error_msg
+		status 	  = req.status
 	else:
-		account_inquiry = bfs.account_inquiry()
-		if account_inquiry.error_msg:
-			response  = account_inquiry.response
-			error_msg = account_inquiry.error_msg
-			status 	  = account_inquiry.status
+		req = bfs.account_inquiry()
+		if req.error_msg:
+			response  = req.response
+			error_msg = req.error_msg
+			status 	  = req.status
 		else:
-			response  = account_inquiry.response
-			error_msg = account_inquiry.error_msg
-			status 	  = account_inquiry.status
+			response  = req.response
+			error_msg = req.error_msg
+			status 	  = req.status
+	print
+	print '#','ONLINE_PAYMENT   :',bfs.order_no
+	print '#','TRANSACTION_ID   :',bfs.transaction_id
+	print '#','TRANSACTION_TIME :',bfs.transaction_time
+	print
 	if error_msg:
 		frappe.throw(_(error_msg))
-	return bfs.transaction_id
+	return ({'transaction_id': bfs.transaction_id})
 
 @frappe.whitelist()
-def make_payment(transaction_id, otp):
+def make_payment(customer_order=None, otp=None):
+	''' make debit request '''
+	if not customer_order:
+		frappe.throw(_("Invalid Order"))
+	elif not otp:
+		frappe.throw(_("Invalid OTP"))
+		
+	# LOG
+	print '#'*60
+	print '#','METHOD	   :','make_payment'
+	print '#','CUSTOMER_ORDER   :',customer_order
+	print '#'*60
+
 	# BFSSecure
 	bfs 		= BFSSecure()
-	bfs.transaction_id = transaction_id
-	bfs.otp		= otp
 	response	= None
 	error_msg	= None
 	status		= None
 
-	bfs.get_online_payment()
-	debit_request = bfs.debit_request()
-	if debit_request.error_msg:
-		response  = debit_request.response
-		error_msg = debit_request.error_msg
-		status	  = debit_request.status
+	req = bfs.debit_request(customer_order, otp)
+	if req.error_msg:
+		response  = req.response
+		error_msg = req.error_msg
+		status	  = req.status
+	else:
+		pass
+
+	if error_msg:
+		frappe.throw(_(error_msg))
+	return({
+		'transaction_id': bfs.order_no,
+		'transaction_time': bfs.transaction_time_fmt,
+		'amount': flt(bfs.amount),
+	})
+
+@frappe.whitelist()
+def check_payment(customer_order):
+	''' check payment status '''
+	# BFSSecure
+	bfs 		= BFSSecure()
+	response	= None
+	error_msg	= None
+	status		= None
+
+	req = bfs.auth_status(customer_order)
+	if req.error_msg:
+		response  = req.response
+		error_msg = req.error_msg
+		status	  = req.status
 	else:
 		pass
 
@@ -73,7 +123,7 @@ def branch_source(item_sub_group):
 		frappe.throw(_("Please select a material first"))
 
 	bl = frappe.db.sql("""
-		select distinct cbs.branch, cbs.has_common_pool
+		select distinct cbs.branch, cbs.has_common_pool, cbs.allow_self_owned_transport, cbs.allow_other_transport
 		from `tabCRM Branch Setting` cbs, `tabCRM Branch Setting Item` cbsi
 		where cbsi.item_sub_group = "{0}"
 		and cbs.name = cbsi.parent
@@ -102,16 +152,29 @@ def set_site_status(site, status):
 	doc.submit()
 
 @frappe.whitelist()
-def deregister_vehicle(vehicle):
+def deregister_vehicle(vehicle, user):
 	''' Do not allow to deregister vehicle if user has pending transactions '''
 	#if has_pending_transactions(vehicle):
 	#	frappe.throw(_("You cannot deregister the site as there are pending transactions"))
 	
 	v_doc = frappe.get_doc("Vehicle", vehicle)
-	if v_doc.vehicle_status != "Active":
-		frappe.throw(_("Vechile not allowed to deregister because its {0}".format(v_doc.vehicle_status)))		
+	if v_doc.vehicle_status not in ["Active","Approved"]:
+		frappe.throw(_("Vechile not allowed to deregister because its {0}".format(v_doc.vehicle_status)))
+	else:
+		# Update Vehicle Status	
+		v_doc.db_set('vehicle_status',"Deregistered")
+		# Update Transport Request
+		frappe.db.sql("update `tabTransport Request` set approval_status = 'Deregistered' where vehicle_no = '{0}' and approval_status = 'Approved' and user = '{1}'".format(vehicle, user))
+		frappe.msgprint("Vehicle deregistration successful")
 
-	v_doc.db_set('vehicle_status',"Deregistered")
+@frappe.whitelist()
+def delivery_confirmation(delivery_note, user, remarks=None):
+	if not delivery_note or not user:
+		frappe.throw("Delivery Note no or User ID is missing")
+	import datetime
+	received_datetime =  datetime.datetime.now()
+	frappe.db.sql("update `tabDelivery Confirmation` set confirmation_status = 'Received', received_date_time = '{0}', remarks = '{1}' where  delivery_note = '{2}' and user = '{3}'".format(received_datetime, remarks, delivery_note, user))
+
 
 @frappe.whitelist(allow_guest=True)
 def success(**args):
@@ -147,6 +210,77 @@ def webpay(**args):
 	#	res = s.post(url)
 	return url
 	
+
+@frappe.whitelist(allow_guest=True)
+def sendsms(**args):
+	import logging
+	import sys
+
+	import smpplib.gsm
+	import smpplib.client
+	import smpplib.consts
+
+	def send_sms(*args):
+	    try:
+		# if you want to know what's happening
+
+		logging.basicConfig(filename='sms_smpp.log', filemode='w', level='DEBUG')
+
+		# Two parts, UCS2, SMS with UDH
+		parts, encoding_flag, msg_type_flag = smpplib.gsm.make_parts(MESSAGE)
+		client = smpplib.client.Client(SMSC_HOST, int(SMSC_PORT))
+
+		# Print when obtain message_id
+		client.set_message_sent_handler(
+		    lambda pdu: sys.stdout.write('sent {} {}\n'.format(pdu.sequence, pdu.message_id))
+		    )
+		client.set_message_received_handler(
+		    lambda pdu: sys.stdout.write('delivered {}\n'.format(pdu.receipted_message_id))
+		    )
+
+		client.connect()
+		if USER_TYPE == "bind_transceiver":
+		    client.bind_transceiver(system_id=SYSTEM_ID, password=SYSTEM_PASS)
+		if USER_TYPE == "bind_tranmitter":
+			client.bind_tranmitter(system_id=SYSTEM_ID, password=SYSTEM_PASS)
+
+		for part in parts:
+		    pdu = client.send_message(
+			source_addr_ton=smpplib.consts.SMPP_TON_INTL,
+			#source_addr_npi=smpplib.consts.SMPP_NPI_ISDN,
+			# Make sure it is a byte string, not unicode:
+			source_addr=SENDER_ID,
+
+			dest_addr_ton=smpplib.consts.SMPP_TON_INTL,
+			#dest_addr_npi=smpplib.consts.SMPP_NPI_ISDN,
+			# Make sure thease two params are byte strings, not unicode:
+			destination_addr=DESTINATION_NO,
+			short_message=part,
+
+			data_coding=encoding_flag,
+			esm_class=msg_type_flag,
+			registered_delivery=True,
+		    )
+		    print(pdu.sequence)
+		client.unbind()
+		client.disconnect()
+
+	    except ValueError:
+		pass
+
+	SMSC_HOST = '119.2.115.41'
+	SMSC_PORT = '9000'
+	SYSTEM_ID = 'nrdcl2'
+	SYSTEM_PASS = 'nrdcl@btl'
+	#SYSTEM_ID = 'vas1'
+	#SYSTEM_PASS = 'vasbtl18'
+	USER_TYPE = "bind_transceiver"
+	SENDER_ID = "BTL_TEST" if not args.get('sender') else args.get('sender')
+	DESTINATION_NO = "97517115380"
+	MESSAGE = "from "+SYSTEM_ID
+	send_sms()
+
+	return args
 
 @frappe.whitelist(allow_guest=True)
 def make_payment_request(**args):
@@ -223,4 +357,12 @@ def make_payment_request(**args):
 	if not args.cart:
 		return pr
 	'''
+
+@frappe.whitelist()
+def cancel_customer_order(customer_order):
+	frappe.db.sql("update `tabCustomer Order Vehicle` set docstatus = 2 where parent = '{}' and docstatus = 0".format(customer_order))
+	frappe.db.sql("update `tabCustomer Order Pool` set docstatus = 2 where parent = '{}' and docstatus = 0".format(customer_order))
+	frappe.db.sql("update `tabCustomer Order Branch` set docstatus = 2 where parent = '{}' and docstatus = 0".format(customer_order))
+	frappe.db.sql("update `tabCustomer Order` set docstatus = 2 where name = '{}' and docstatus = 0".format(customer_order))
+	frappe.db.commit()
 

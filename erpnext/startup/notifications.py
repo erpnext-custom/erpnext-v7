@@ -96,5 +96,15 @@ def get_notification_config():
 			"Bulk Asset Transfer": {"docstatus": 0},
 			"Supplementary Budget": {"docstatus": 0},
 			"Budget Reappropiation": {"docstatus": 0},
+			"User Request": {"docstatus": 0},
+			"Site Registration": {"docstatus": 0},
+			"Site Extension": {"docstatus": 0},
+			"Site Status": {"docstatus": 0},
+			"Quantity Extension": {"docstatus": 0},
+			"Transport Request": {"docstatus": 0},
+			"Vehicle Update": {"docstatus": 0},
+			"Change Vehicle Status": {"docstatus": 0},
+			"Delivery Confirmation": {"docstatus": 0},
+			"Customer Order": {"total_balance_amount": (">", 0)},
 		}
 	}

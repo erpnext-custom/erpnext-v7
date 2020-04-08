@@ -23,8 +23,9 @@ class BFSSecure:
 		self.customer_order = None
 		self.op		  = None
 		self.order_no	  = None
-		self.transaction_time = None
-		self.transaction_id = None
+		self.transaction_id 	  = None
+		self.transaction_time 	  = None
+		self.transaction_time_fmt = None
 		self.bfs_settings = frappe.get_doc('BFS Settings')
 		self.benfId 	  = self.bfs_settings.mobile_beneficiary_id
 		self.url 	  = self.bfs_settings.mobile_api_url
@@ -35,32 +36,58 @@ class BFSSecure:
 		self.amount	  = 0
 		self.otp	  = None
 	
-	def create_online_payment(self):
+	def create_online_payment(self, customer_order, bank_code, bank_account, amount):
+		self.customer_order = customer_order
+		self.bank_code	 = bank_code
+		self.bank_account= bank_account
+		self.amount	 = flt(amount)
+
 		if flt(self.amount) < 0:
 			frappe.throw(_("Amount cannot be a negative value"))
 		elif not frappe.db.exists('Customer Order', self.customer_order):
 			frappe.throw(_("Customer Order {0} not found").format(self.customer_order))
 
+		co = frappe.get_doc("Customer Order", customer_order)
+		self.amount = flt(co.total_balance_amount)
+		co.save(ignore_permissions=True)
+
 		transaction_time = get_datetime().strftime("%Y%m%d%H%M%S")
 		op = frappe.new_doc('Online Payment')
 		op.update({
-			'user': frappe.db.get_value('Customer Order', self.customer_order, "user"),
+			'user': co.user,
 			'customer_order': self.customer_order,
 			'bank_code': self.bank_code,
 			'bank_account': self.bank_account,
 			'amount': self.amount,
 			'transaction_time': transaction_time
 		}).save(ignore_permissions=True)
-		print 'Online Payment:', op.name
 		self.op 	= op
 		self.order_no	= op.name
 		self.transaction_time = transaction_time
 		frappe.db.commit()
 
-	def get_online_payment(self):
-		if not frappe.db.exists('Online Payment', {'transaction_id':self.transaction_id}):
-			frappe.throw(_('Transaction {0} not found').format(self.transaction_id))
-		self.op = frappe.get_doc('Online Payment', {'transaction_id':self.transaction_id})
+	def get_online_payment(self, customer_order):
+		self.customer_order = customer_order
+		op = frappe.db.sql("""
+			select name, transaction_id, transaction_time,
+				bank_code, bank_account, amount
+			from `tabOnline Payment`
+			where customer_order = "{0}"
+			order by creation desc
+			limit 1
+		""".format(self.customer_order),as_dict=True)
+
+		if op:
+			self.order_no	      = op[0].name
+			self.transaction_id   = op[0].transaction_id
+			self.transaction_time = get_datetime(op[0].transaction_time).strftime("%Y%m%d%H%M%S")
+			self.transaction_time_fmt = op[0].transaction_time
+			self.bank_code	      = op[0].bank_code
+			self.bank_account     = op[0].bank_account 
+			self.amount	      = op[0].amount
+			self.op = frappe.get_doc('Online Payment', op[0].name)
+		else:
+			frappe.throw(_("Invalid order number"))
 
 	def update_online_payment(self, message):
 		self.op.response  = message.get('response')
@@ -70,21 +97,26 @@ class BFSSecure:
 		self.op.save(ignore_permissions=True)
 		frappe.db.commit()
 
-	def auth_request(self):
+	def auth_request(self, customer_order, bank_code, bank_account, amount):
 		''' Authorization Request '''
-		print '==========> AR <=========='
-		final_url    = self.get_url('AR')
+		print
+		print '****************************'
+		print '*            AR            *'
+		print '****************************'
+		self.create_online_payment(customer_order, bank_code, bank_account, amount)
+
+		payload      = self.get_payload('AR')
 		res 	     = frappe._dict()
 		out 	     = frappe._dict()	
 		response     = None
 		error_msg    = None
 		status	     = None
 
-		print 'FINAL_URL'
-		print final_url
+		print 'PAYLOAD'
+		print payload
 
 		start_time   = time.time()
-		request      =  self.post_request(final_url)
+		request      =  self.post_request(payload, timeout=5)
 		elapsed_time = time.time() - start_time
 		print
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
@@ -97,6 +129,9 @@ class BFSSecure:
 			print request.res.text
 			response = request.res.text
 			res = urlparse.parse_qs(request.res.text)
+			print '******* BEGIN, urlparse.parse_qs(request.res.text) ********'
+			print res
+			print '******* END, urlparse.parse_qs(request.res.text) ********'
 			if res.get('bfs_msgType') and res.get('bfs_msgType')[0] == 'RC':
 				if res.get('bfs_responseCode') and res.get('bfs_responseCode')[0] == '00':
 					error_msg = None
@@ -114,26 +149,44 @@ class BFSSecure:
 		self.update_online_payment(out)
 		return out
 
-	def auth_status(self):
+	def auth_status(self, customer_order):
 		''' Authorization Status '''
-		final_url = self.get_url('AS')
-		return self.post_request(final_url)
-
-	def account_inquiry(self):
-		''' Account Inquiry '''
-		print '==========> AE <=========='
-		final_url    = self.get_url('AE')
+		self.get_online_payment(customer_order)
+		payload      = self.get_payload('AS')
 		res 	     = frappe._dict()
 		out 	     = frappe._dict()	
 		response     = None
 		error_msg    = None
 		status	     = None
 
-		print 'FINAL_URL'
-		print final_url
+		print 'PAYLOAD'
+		print payload
 
 		start_time = time.time()
-		request =  self.post_request(final_url)
+		request =  self.post_request(payload, timeout=10)
+		elapsed_time = time.time() - start_time
+		print
+		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
+		print request
+
+	def account_inquiry(self):
+		''' Account Inquiry '''
+		print
+		print '****************************'
+		print '*            AE            *'
+		print '****************************'
+		payload      = self.get_payload('AE')
+		res 	     = frappe._dict()
+		out 	     = frappe._dict()	
+		response     = None
+		error_msg    = None
+		status	     = None
+
+		print 'PAYLOAD'
+		print payload
+
+		start_time = time.time()
+		request =  self.post_request(payload, timeout=5)
 		elapsed_time = time.time() - start_time
 		print
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
@@ -162,21 +215,27 @@ class BFSSecure:
 		self.update_online_payment(out)
 		return out
 
-	def debit_request(self):
+	def debit_request(self, customer_order, otp):
 		''' Debit Request '''
-		print '==========> DR <=========='
-		final_url    = self.get_url('DR')
+		print
+		print '****************************'
+		print '*            DR            *'
+		print '****************************'
+		self.otp     = otp
+		self.get_online_payment(customer_order)
+
+		payload      = self.get_payload('DR')
 		res 	     = frappe._dict()
 		out 	     = frappe._dict()	
 		response     = None
 		error_msg    = None
 		status	     = None
 
-		print 'FINAL_URL'
-		print final_url
+		print 'PAYLOAD'
+		print payload
 
 		start_time = time.time()
-		request =  self.post_request(final_url)
+		request =  self.post_request(payload, timeout=30)
 		elapsed_time = time.time() - start_time
 		print
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
@@ -211,11 +270,11 @@ class BFSSecure:
 		self.update_online_payment(out)
 		return out
 
-	def get_url(self, req_type):
+	def get_payload(self, req_type):
 		''' generate url based on request type '''
 		if req_type in ('AR', 'AS'):
 			params = [
-				{'key': 'msgType', 'value': 'AR'},
+				{'key': 'msgType', 'value': req_type},
 				{'key': 'benfTxnTime', 'value': self.transaction_time},
 				{'key': 'orderNo', 'value': self.order_no},
 				{'key': 'benfId', 'value': self.benfId},
@@ -228,7 +287,7 @@ class BFSSecure:
 			]
 		elif req_type == 'AE':
 			params = [
-				{'key': 'msgType', 'value': 'AE'},
+				{'key': 'msgType', 'value': req_type},
 				{'key': 'bfsTxnId', 'value': self.transaction_id},
 				{'key': 'benfId', 'value': self.benfId},
 				{'key': 'remitterBankId', 'value': self.bank_code},
@@ -236,7 +295,7 @@ class BFSSecure:
 			]
 		elif req_type == 'DR':
 			params = [
-				{'key': 'msgType', 'value': 'DR'},
+				{'key': 'msgType', 'value': req_type},
 				{'key': 'bfsTxnId', 'value': self.transaction_id},
 				{'key': 'benfId', 'value': self.benfId},
 				{'key': 'remitterOtp', 'value': self.otp},
@@ -249,33 +308,51 @@ class BFSSecure:
 		# get checksum
 		checksum = self.get_checksum(values)
 		final.update({'bfs_checkSum':checksum})
-		final_url = str(self.url)+"?"+str(urllib.urlencode(final))
-		return final_url
+		return final
 
-	def post_request(self, url):
+	def post_request(self, payload, timeout):
 		''' make post request '''
 		print
 		print '==========> POST REQUEST <=========='
 		res 	= None
 		out 	= frappe._dict()
 		headers = {'Content-type': 'application/x-www-form-urlencoded'}
+
+		''' TRY WITHOUT SESSION
 		with requests.Session() as s:
 			try:
-				res = s.post(url, headers=headers, timeout=1)
+                                res = s.post(self.url, headers=headers, data=payload, timeout=timeout)
 				print 'RES'
 				print res.text
+			except requests.exceptions.Timeout as e:
+				print 'EXCEPTION requests.exceptions.Timeout'
+				print str(e)
 			except requests.exceptions.RequestException as e:
 				out.update({'error': e})
 				print 'EXCEPTION requests.exceptions.RequestException'
 				print str(e)
 				#sys.exit(1)
+		'''
+		try:
+			res = requests.post(self.url, headers=headers, data=payload, timeout=timeout)
+			print 'RES'
+			print res.text
+		except requests.exceptions.Timeout as e:
+			print 'EXCEPTION requests.exceptions.Timeout'
+			print str(e)
+		except requests.exceptions.RequestException as e:
+			out.update({'error': e})
+			print 'EXCEPTION requests.exceptions.RequestException'
+			print str(e)
+			#sys.exit(1)
+
 		if res:
 			if res.status_code == 200:
 				out.update({'res': res})
 			else:
 				out.update({'error': res.text})
 		else:
-			out.update({'error': 'Request failed'})
+			out.update({'error': 'Request failed!!!'})
 		return out
 
 	def get_checksum(self, message):

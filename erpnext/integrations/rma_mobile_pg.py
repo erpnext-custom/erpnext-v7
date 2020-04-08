@@ -67,7 +67,7 @@ def get_params(req_type, bfs_bfsTxnId=None):
 		{'key': 'bfsTxnId', 'value': bfs_bfsTxnId},
 		{'key': 'benfId', 'value': benfId},
 		{'key': 'remitterBankId', 'value': '1010'},
-		{'key': 'remitterAccNo', 'value': '100127751'},
+		{'key': 'remitterAccNo', 'value': '100774924'},
 	]
     return url_params
 
@@ -94,13 +94,10 @@ def call(req_type,bfs_bfsTxnId=None):
         frappe.flags.integration_request = s.post(final_url, headers=headers)
         frappe.flags.integration_request.raise_for_status()
         print frappe.flags.integration_request
-        
-        if frappe.flags.integration_request.headers.get("Content-Type")=='text/plain;charset=ISO-8859-1':
-            return urlparse.parse_qs(frappe.flags.integration_request.text)
 
         return frappe.flags.integration_request.json()
     except Exception as exc:
-        #frappe.log_error()
+        frappe.log_error()
         raise exc
 
     '''
@@ -118,8 +115,6 @@ def call(req_type,bfs_bfsTxnId=None):
     print '==========', 'RESPONSE', '=========='
     print res.text
     print
-    print 'res.headers'
-    print res.headers
     return urlparse.parse_qs(res.text)
     '''
 
@@ -128,8 +123,10 @@ def main():
     res = call('AR')
     print 'RES IN MAIN:'
     print res
+    '''
     if res.get('bfs_bfsTxnId'):
         res = call('AE',res.get('bfs_bfsTxnId')[0])
+    '''
 
 if __name__ == '__main__':
     main()

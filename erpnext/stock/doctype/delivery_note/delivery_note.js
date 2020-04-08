@@ -299,6 +299,18 @@ cur_frm.fields_dict['items'].grid.get_field('location').get_query = function(frm
 	}
 }
 
+/* #TTPL Code */
+frappe.ui.form.on("Delivery Note", "onload", function(frm) {
+        cur_frm.set_query("vehicle", function() {
+                 if(frm.doc.customer_order){
+                       return {
+                                 query: "erpnext.crm_utils.filter_vehicle_customer_order",
+                                 filters: {'customer_order': frm.doc.customer_order, 'branch': frm.doc.branch, 'posting_date':frm.doc.posting_date}
+                              }
+                 }
+        });
+});
+
 /*
 cur_frm.fields_dict['vehicle_items'].grid.get_field('vehicle').get_query = function(doc, cdt, cdn) {
         item = locals[cdt][cdn]
