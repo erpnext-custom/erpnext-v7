@@ -619,6 +619,7 @@ def get_branch_location_query(doctype=None, txt=None, searchfield=None, start=No
 				from `tabLocation` l
 				where l.name = spr.location 
 				and l.branch = spb.branch
+				and l.is_crm_item = 1
 			)
 		)
 	""".format(branch=filters.get("branch"), item=filters.get("item")), as_dict=False)
@@ -649,6 +650,7 @@ def get_branch_location_query_bkp20200218(doctype=None, txt=None, searchfield=No
 			from `tabLocation` l
 			where l.name = spr.location 
 			and l.branch = spb.branch
+			and l.is_crm_item = 1
 		)
 	""".format(branch=filters.get("branch"), item=filters.get("item")), as_dict=False)
 
@@ -709,7 +711,8 @@ def get_branch_location(site, item, branch=None, location=None):
 								where spr2.parent = spr.parent
 								and spr2.location is not null
 								and l2.name = spr2.location
-								and l2.branch = spb.branch) then 0
+								and l2.branch = spb.branch
+								and l2.is_crm_item = 1) then 0
 						else 1
 					end)
 				else 1
@@ -737,6 +740,7 @@ def get_branch_location(site, item, branch=None, location=None):
 				from `tabLocation` l
 				where l.name = spr.location 
 				and l.branch = spb.branch
+				and l.is_crm_item = 1
 			)
 		)
 		and cbs.branch = spb.branch
@@ -797,7 +801,8 @@ def get_branch_location_bkp20200218(site, item, branch=None, location=None):
 								where spr2.parent = spr.parent
 								and spr2.location is not null
 								and l2.name = spr2.location
-								and l2.branch = spb.branch) then 0
+								and l2.branch = spb.branch
+								and l2.is_crm_item = 1) then 0
 						else 1
 					end)
 				else 1
@@ -823,6 +828,7 @@ def get_branch_location_bkp20200218(site, item, branch=None, location=None):
 				from `tabLocation` l
 				where l.name = spr.location 
 				and l.branch = spb.branch
+				and l.is_crm_item = 1
 			)
 		)
 		and cbs.branch = spb.branch
@@ -875,6 +881,7 @@ def get_branch_location_old(item, branch=None, location=None):
 				from `tabLocation` l
 				where l.name = spr.location 
 				and l.branch = spb.branch
+				and l.is_crm_item = 1
 			)
 		)
 		and cbs.branch = spb.branch
