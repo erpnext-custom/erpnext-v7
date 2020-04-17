@@ -124,6 +124,13 @@ frappe.query_reports["Overall Sales Report"] = {
                                 return {"doctype": "Warehouse", "filters": {"disabled": 0}}
                         }
                 },
+		{
+                        "fieldname": "report_by",
+                        "label": "Report Base On",
+                        "fieldtype": "Select",
+                        "options": ["Sales Order","Delivery Note"],
+                        "default": "Sales Order"
+                },
                 {
                         "fieldname": "aggregate",
                         "label": ("Show Aggregate"),

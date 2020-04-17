@@ -13,6 +13,7 @@ from frappe.core.doctype.user.user import send_sms
 
 class CustomerOrder(Document):
 	def validate(self):
+		self.check_for_duplicates()
 		self.get_site_details()
 		self.get_item_details()
 		self.update_item_rate()
@@ -28,6 +29,11 @@ class CustomerOrder(Document):
 
 	def on_cancel(self):
 		self.update_site()
+
+	def check_for_duplicates(self):
+		if frappe.db.sql("""select count(*) from `tabCustomer Order` where user = "{}" and site = "{}"
+			and docstatus = 0 and name != "{}" """.format(self.user, self.site, self.name))[0][0]:
+			frappe.throw(_("New orders not allowed as you already have unpaid order(s). Please complete the payment/cancel the previous order(s)"))
 
 	def update_user_details(self):
 		if frappe.db.exists("User Account", self.user):

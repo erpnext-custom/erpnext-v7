@@ -114,10 +114,45 @@ frappe.ui.form.on('Mechanical Payment', {
 	},
 	"other_deduction": function(frm) {
 	   	calculate_totals(frm);
-	}
+	},
+	"get_delivery_note": function(frm) {
+                get_delivery_notes(frm);
+        },
 });
 
-function calculate_totals(frm) {
+
+function get_delivery_notes(frm){
+        if (frm.doc.transporter || frm.doc.vehicle){
+                return frappe.call({
+                        method: "get_delivery_note_list",
+                        doc: cur_frm.doc,
+                        callback: function(r, rt){
+                                if(r.message){
+					console.log(r.message);
+                                        var total_amount = 0;
+                                        console.log(r.message);
+                                        cur_frm.clear_table("transporter_payment_item");
+                                        r.message.forEach(function(rec) {
+                                                var row = frappe.model.add_child(cur_frm.doc, "Transporter Payment Item", "transporter_payment_item");
+                                                row.delivery_note = rec['delivery_note'];
+                                                row.vehicle = rec['vehicle'];
+                                                row.amount = rec['amount'];
+                                                total_amount += rec['amount'];
+                                        });
+                                        cur_frm.set_value("total_amount", total_amount);
+                                }else{
+                                      cur_frm.clear_table("transporter_payment_item");
+                                      frappe.msgprint("No Delivery Note for the above selected vehicle or transporter");
+                                }
+                                cur_frm.refresh();
+                        },
+                });
+        }else{
+                frappe.msgprint("To retrieve Delivery Note, Please Provide Transporter or Vehicle no");
+        }
+}
+
+function calculat(frm) {
 	if(frm.doc.payment_for == "Transporter Payment"){
 		var net_amount = frm.doc.total_amount - (frm.doc.tds_amount + frm.doc.other_deduction);
 		frm.set_value("net_amount", net_amount);
@@ -141,6 +176,20 @@ cur_frm.fields_dict['items'].grid.get_field('reference_name').get_query = functi
 			"outstanding_amount": [">", 0]
 		}
 	}
+}
+
+function calculate_totals(frm) {
+        if(frm.doc.payment_for == "Transporter Payment"){
+                var net_amount = frm.doc.total_amount - (frm.doc.tds_amount + frm.doc.other_deduction);
+                frm.set_value("net_amount", net_amount);
+        }
+        else{
+                if (frm.doc.receivable_amount) {
+                        frm.set_value("net_amount", frm.doc.receivable_amount - frm.doc.tds_amount)
+                        cur_frm.refresh_field("net_amount")
+                }
+        }
+        console.log("net_amount:" + net_amount);
 }
 
 frappe.ui.form.on("Transporter Payment Item", {

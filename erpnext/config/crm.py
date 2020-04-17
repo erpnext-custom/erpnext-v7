@@ -65,6 +65,11 @@ def get_data():
 					"name": "User Account",
 					"description": _("User Accounts."),
 				},
+				{
+					"type": "doctype",
+					"name": "Feedback",
+					"description": _("Feedbacks."),
+				},
 			]
 		},
 		{
@@ -122,6 +127,12 @@ def get_data():
 					"name": "Vehicle Update",
 					"label": "Update Vehicle Details",
 					"description": _("Vehicle Update"),
+				},
+				{
+					"type": "doctype",
+					"name": "Change Status",
+					"label": "Change Queue and Delivery Confirmation Status",
+					"description": _("Change Queue and Confirmation Status"),
 				},
 				{
 					"type": "doctype",

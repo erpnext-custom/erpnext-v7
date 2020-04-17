@@ -7,6 +7,8 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate, date_diff, nowdate
 from frappe.core.doctype.user.user import send_sms
+from erpnext.crm_utils import add_user_roles, remove_user_roles
+from frappe.model.mapper import get_mapped_doc
 
 class TransportRequest(Document):
 	def validate(self):
@@ -20,6 +22,7 @@ class TransportRequest(Document):
 		self.map_user_transport()
 		self.request_date = getdate(nowdate())
 		self.validate_vehicle()
+		self.attach_cid()
 
 	def map_user_transport(self):
 		#if not self.user:
@@ -28,6 +31,7 @@ class TransportRequest(Document):
 			#	self.user = frappe.session.user
 			
 		if self.common_pool:
+			self.add_user_roles()
 			if not self.transporter_name:
 				self.transporter_name = frappe.db.get_value("User", self.user, "first_name")
 
@@ -51,6 +55,9 @@ class TransportRequest(Document):
 			if not self.self_arranged:
 				frappe.throw("The transport request should be either Common Pool or Self Owned")
 		
+	def add_user_roles(self):
+		""" add role `CRM Transporter` """
+		add_user_roles(self.user, "CRM Transporter")
 
 	def on_submit(self):
 #		if not self.registration_document:
@@ -66,6 +73,34 @@ class TransportRequest(Document):
 			self.create_transporter_vehicle()
 		self.sendsms()
 
+	def attach_cid(self):
+		target_doc = None
+		def set_missing_values(source, target):
+			target.attached_to_doctype = self.doctype
+			target.attached_to_name = self.name
+
+		''' attach documents '''
+		file = frappe.db.sql("""
+			select 
+				f.name file, ur.name user_request,
+				f.attached_to_doctype, f.attached_to_name, f.file_name, f.file_url 
+			from `tabUser Request` ur, `tabFile` f
+			where ur.user	 	  = "{user}"
+			and ur.request_category   = "CID Details" 
+			and ur.docstatus 	  = 1
+			and f.attached_to_doctype = "User Request"
+			and f.attached_to_name 	  = ur.name
+			order by ur.modified desc
+			limit 1
+		""".format(user=self.user),as_dict=True)
+		if file and not frappe.db.exists("File", {"attached_to_doctype": self.doctype, "attached_to_name": self.name, "file_url": file[0].file_url}):
+			attachment = get_mapped_doc("File", file[0].file, {
+					"File": {
+						"doctype": "File",
+					},
+			}, target_doc, set_missing_values, ignore_permissions=True)
+			attachment.save(ignore_permissions=True)
+
 	def sendsms(self,msg=None):
 		if self.docstatus == 1:
 			msg = "Your request for Transport Registration is {0}. Tran Ref No {1}".format(str(self.approval_status).lower(),self.name)
@@ -79,25 +114,26 @@ class TransportRequest(Document):
 		if self.common_pool:
 			if not frappe.db.exists("Transporter", {"transporter_id": self.user, "docstatus": ("<",2)}):
 				doc = frappe.new_doc("Transporter")
-				doc.transporter_name = self.transporter_name
+				if frappe.db.exists("Transporter", {"transporter_name": self.transporter_name}):
+					transporter_name = self.transporter_name + "(" + self.user + ")"
+				else:
+					transporter_name = self.transporter_name
+
+				doc.transporter_name = transporter_name
 				doc.transporter_id = self.user
 				doc.mobile_no = u_mobile_no
 				doc.user = self.user		
 				doc.submit()				
 	
 			transporter, enabled = frappe.db.get_value("Transporter", {"transporter_id": self.user}, ["transporter_name", "enabled"])
-
 		if frappe.db.exists("Vehicle", self.vehicle_no):
-			v_doc = frappe.get_doc("Vehicle", self.vehicle_no)
-			v_doc.db_set("vehicle_capacity", self.vehicle_capacity)
-			v_doc.db_set("common_pool", self.common_pool)
-			v_doc.db_set("self_arranged", self.self_arranged)
-			v_doc.db_set("drivers_name", self.drivers_name)
-			v_doc.db_set("owner_cid", self.owner_cid)
-			v_doc.db_set("contact_no", self.contact_no)
-			v_doc.db_set("user", self.user)
-			v_doc.db_set("vehicle_status", "Active")
-			v_doc.save(ignore_permissions = True)	
+			frappe.db.sql("""
+					Update `tabVehicle` set
+					vehicle_capacity = '{0}', common_pool = '{1}', self_arranged = '{2}',
+					drivers_name = '{3}', owner_cid = '{4}', contact_no = '{5}', user = '{6}',
+					vehicle_status = 'Active', docstatus = 1 
+					where name = '{7}'
+					""".format(self.vehicle_capacity, self.common_pool, self.self_arranged, self.drivers_name, self.owner_cid, self.contact_no, self.user, self.vehicle_no))
 		else:	
 			v_doc = frappe.new_doc("Vehicle")
 			v_doc.vehicle_no = self.vehicle_no

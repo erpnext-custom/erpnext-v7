@@ -235,7 +235,7 @@ class BFSSecure:
 		print payload
 
 		start_time = time.time()
-		request =  self.post_request(payload, timeout=30)
+		request =  self.post_request(payload, timeout=60)
 		elapsed_time = time.time() - start_time
 		print
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))

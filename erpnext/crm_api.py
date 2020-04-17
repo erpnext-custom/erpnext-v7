@@ -5,6 +5,7 @@ from frappe import _
 from frappe.utils import cint, flt, now, get_datetime
 from erpnext.crm.doctype.site.site import has_pending_transactions
 from erpnext.integrations import BFSSecure, SendSMS
+from frappe.custom_utils import cancel_draft_doc
 
 #bench execute erpnext.crm_api.init_payment --args "'ORDR200100020','1010','100635222',1"
 @frappe.whitelist()
@@ -173,7 +174,16 @@ def delivery_confirmation(delivery_note, user, remarks=None):
 		frappe.throw("Delivery Note no or User ID is missing")
 	import datetime
 	received_datetime =  datetime.datetime.now()
+	
 	frappe.db.sql("update `tabDelivery Confirmation` set confirmation_status = 'Received', received_date_time = '{0}', remarks = '{1}' where  delivery_note = '{2}' and user = '{3}'".format(received_datetime, remarks, delivery_note, user))
+	frappe.db.sql("update `tabLoad Request` set load_status = 'Delivered'  where delivery_note = '{0}'".format(delivery_note))
+
+
+@frappe.whitelist()
+def cancel_load_request(user, vehicle):
+	if not user or not vehicle:
+		frappe.throw("Either User ID or Vehicle No is missing")
+	frappe.db.sql("update `tabLoad Request` set docstatus = 2, load_status = 'Cancelled' where user = '{0}' and vehicle = '{1}' and load_status = 'Queued'".format(user, vehicle))
 
 
 @frappe.whitelist(allow_guest=True)
@@ -276,7 +286,8 @@ def sendsms(**args):
 	#SYSTEM_PASS = 'vasbtl18'
 	USER_TYPE = "bind_transceiver"
 	SENDER_ID = "BTL_TEST" if not args.get('sender') else args.get('sender')
-	DESTINATION_NO = "97517115380"
+	DESTINATION_NO = args.get('mobileno')
+	#DESTINATION_NO = "97517115380"
 	MESSAGE = "from "+SYSTEM_ID
 	send_sms()
 
@@ -360,9 +371,5 @@ def make_payment_request(**args):
 
 @frappe.whitelist()
 def cancel_customer_order(customer_order):
-	frappe.db.sql("update `tabCustomer Order Vehicle` set docstatus = 2 where parent = '{}' and docstatus = 0".format(customer_order))
-	frappe.db.sql("update `tabCustomer Order Pool` set docstatus = 2 where parent = '{}' and docstatus = 0".format(customer_order))
-	frappe.db.sql("update `tabCustomer Order Branch` set docstatus = 2 where parent = '{}' and docstatus = 0".format(customer_order))
-	frappe.db.sql("update `tabCustomer Order` set docstatus = 2 where name = '{}' and docstatus = 0".format(customer_order))
-	frappe.db.commit()
+	cancel_draft_doc('Customer Order', customer_order)
 

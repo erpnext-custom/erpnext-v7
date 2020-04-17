@@ -30,6 +30,13 @@ frappe.ui.form.on('Site', {
 				}
 			}
 		};
+		frm.fields_dict['private_pool'].grid.get_field('vehicle').get_query = function(){
+			return{
+				filters: {
+					'vehicle_status': "Active",
+				}
+			}
+		};
 	},
 	refresh: function(frm) {
 	}

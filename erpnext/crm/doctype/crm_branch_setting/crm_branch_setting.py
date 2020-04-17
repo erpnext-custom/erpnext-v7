@@ -33,8 +33,9 @@ class CRMBranchSetting(Document):
 			else:
 				dup.update({str(i.item): 1})
 
-			if flt(i.daily_quantity_limit) or flt(i.weekly_quantity_limit) \
-				or flt(i.monthly_quantity_limit) or flt(i.yearly_quantity_limit):
+			# Limits
+			if i.limit_type == "Quantity" and (flt(i.daily_quantity_limit) or flt(i.weekly_quantity_limit) \
+				or flt(i.monthly_quantity_limit) or flt(i.yearly_quantity_limit)):
 				i.has_limit = 1
 				if flt(i.daily_quantity_limit) < 0:
 					frappe.throw(_("Row#{0}: Limit/Day cannot be a negative value").format(i.idx))
@@ -55,6 +56,29 @@ class CRMBranchSetting(Document):
 				elif flt(i.yearly_quantity_limit) and flt(i.yearly_quantity_limit) < flt(i.weekly_quantity_limit):
 					frappe.throw(_("Row#{0}: Limit/Year cannot be less than Limit/Week").format(i.idx))
 				elif flt(i.yearly_quantity_limit) and flt(i.yearly_quantity_limit) < flt(i.daily_quantity_limit):
+					frappe.throw(_("Row#{0}: Limit/Year cannot be less than Limit/Day").format(i.idx))
+			elif i.limit_type == "Truck Loads" and (flt(i.daily_quantity_limit_count) or flt(i.weekly_quantity_limit_count) \
+				or flt(i.monthly_quantity_limit_count) or flt(i.yearly_quantity_limit_count)):
+				i.has_limit = 1
+				if flt(i.daily_quantity_limit_count) < 0:
+					frappe.throw(_("Row#{0}: Limit/Day cannot be a negative value").format(i.idx))
+				elif flt(i.weekly_quantity_limit_count) < 0:
+					frappe.throw(_("Row#{0}: Limit/Week cannot be a negative value").format(i.idx))
+				elif flt(i.weekly_quantity_limit_count) and flt(i.weekly_quantity_limit_count) < flt(i.daily_quantity_limit_count):
+					frappe.throw(_("Row#{0}: Limit/Week cannot be less than Limit/Day").format(i.idx))
+				elif flt(i.monthly_quantity_limit_count) < 0:
+					frappe.throw(_("Row#{0}: Limit/Month cannot be a negative value").format(i.idx))
+				elif flt(i.monthly_quantity_limit_count) and flt(i.monthly_quantity_limit_count) < flt(i.weekly_quantity_limit_count):
+					frappe.throw(_("Row#{0}: Limit/Month cannot be less than Limit/Week").format(i.idx))
+				elif flt(i.monthly_quantity_limit_count) and flt(i.monthly_quantity_limit_count) < flt(i.daily_quantity_limit_count):
+					frappe.throw(_("Row#{0}: Limit/Month cannot be less than Limit/Day").format(i.idx))
+				elif flt(i.yearly_quantity_limit_count) < 0:
+					frappe.throw(_("Row#{0}: Limit/Year cannot be a negative value").format(i.idx))
+				elif flt(i.yearly_quantity_limit_count) and flt(i.yearly_quantity_limit_count) < flt(i.monthly_quantity_limit_count):
+					frappe.throw(_("Row#{0}: Limit/Year cannot be less than Limit/Month").format(i.idx))
+				elif flt(i.yearly_quantity_limit_count) and flt(i.yearly_quantity_limit_count) < flt(i.weekly_quantity_limit_count):
+					frappe.throw(_("Row#{0}: Limit/Year cannot be less than Limit/Week").format(i.idx))
+				elif flt(i.yearly_quantity_limit_count) and flt(i.yearly_quantity_limit_count) < flt(i.daily_quantity_limit_count):
 					frappe.throw(_("Row#{0}: Limit/Year cannot be less than Limit/Day").format(i.idx))
 			else:
 				i.has_limit = 0

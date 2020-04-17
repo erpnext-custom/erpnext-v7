@@ -312,6 +312,63 @@ class MechanicalPayment(AccountsController):
 		self.receivable_amount = total
 		self.actual_amount = total
 
+	def get_delivery_note_list(self):
+		data = []
+		cond = ""
+		if not self.transporter and not self.vehicle:
+			frappe.throw("Please select vehicle or transporter to get Delivery Note")
+
+		if self.vehicle:
+			cond = " and d.vehicle = '{0}'".format(self.vehicle)
+
+		if self.transporter and not self.vehicle:
+			cond = " and exists (select 1 from `tabTransporter` t, `tabVehicle` v where t.transporter_id = v.user and t.name = '{0}')".format(self.transporter)
+		'''
+
+		dn_list = frappe.db.sql("""
+					select d.name as delivery_note, d.vehicle, d.transportation_charges
+					from `tabDelivery Note` d
+					where d.docstatus = 1
+					and d.transportation_charges > 0
+					and d.branch = '{0}'
+					and not exists(
+						select 1 
+						from `tabMechanical Payment` m, `tabTransporter Payment Item` t
+						where m.name = t.parent
+						and t.delivery_note = d.name
+						and m.docstatus < 2
+					) 
+					and not exists(
+						select 1
+						from `tabDelivery Confirmation` c
+						where c.delivery_note = d.name
+						and c.confirmation_status = 'In Transit'
+					) 
+					{1}
+				""".format(self.branch, cond), as_dict=True)
+		'''
+		dn_list = frappe.db.sql("""
+					select d.name as delivery_note, d.vehicle, d.transportation_charges
+					from `tabDelivery Note` d
+					where d.docstatus = 1
+					and d.transportation_charges > 0
+					and d.branch = '{0}'
+					and not exists(
+						select 1 
+						from `tabMechanical Payment` m, `tabTransporter Payment Item` t
+						where m.name = t.parent
+						and t.delivery_note = d.name
+						and m.docstatus < 2
+					) 
+					{1}
+				""".format(self.branch, cond), as_dict=True)
+
+		for a in dn_list:
+			data.append({"delivery_note":a.delivery_note, "vehicle": a.vehicle, "amount": a.transportation_charges})
+
+		return data
+
+
 
 
 

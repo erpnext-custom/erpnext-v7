@@ -894,26 +894,29 @@ def get_branch_location_old(item, branch=None, location=None):
 	return bl
 
 @frappe.whitelist()
-def get_vehicles_old(user, site, transport_mode):
+def get_vehicles(user, site=None, transport_mode=None):
 	cond = ""
 
-	if transport_mode == "Self Owned Transport":
-		if not user:
-			frappe.throw(_("Please select a customer first"))
+	if transport_mode:
+		if transport_mode == "Self Owned Transport":
+			if not user:
+				frappe.throw(_("Please select a customer first"))
+			cond = """and v.user = "{}" """.format(user)
+
+		if transport_mode == "Private Pool":
+			if not site:
+				frappe.throw(_("Please select a site first"))
+
+			cond = """
+				and exists(select 1
+					from `tabSite` s, `tabSite Private Pool` spp
+					where s.name 	= "{}"
+					and s.allow_private_pool = 1
+					and spp.parent 	= s.name
+					and spp.vehicle = v.name)
+			""".format(site)
+	else:
 		cond = """and v.user = "{}" """.format(user)
-
-	if transport_mode == "Private Pool":
-		if not site:
-			frappe.throw(_("Please select a site first"))
-
-		cond = """
-			and exists(select 1
-				from `tabSite` s, `tabSite Private Pool` spp
-				where s.name 	= "{}"
-				and s.allow_private_pool = 1
-				and spp.parent 	= s.name
-				and spp.vehicle = v.name)
-		""".format(site)
 
 	vl = frappe.db.sql("""
 		select 
@@ -933,7 +936,7 @@ def get_vehicles_old(user, site, transport_mode):
 	return vl
 
 @frappe.whitelist()
-def get_vehicles(user):
+def get_vehicles_old(user):
 	cond = ""
 
 	cond = """and v.user = "{}" """.format(user)
@@ -1017,10 +1020,23 @@ def get_branch_warehouse(doctype=None, txt=None, searchfield=None, start=None, p
 
 @frappe.whitelist()
 def filter_vehicle_customer_order(doctype, txt, searchfield, start, page_len, filters):
-        if not filters.get("customer_order"):
-                frappe.throw("Select Customer Order First")
         from erpnext.controllers.queries import get_match_cond
-        user_id, transport_mode = frappe.db.get_value("Customer Order", filters.get("customer_order"), ["user","transport_mode"])
+	if filters.get("customer_order"):
+                user_id, transport_mode = frappe.db.get_value("Customer Order", filters.get("customer_order"), ["user","transport_mode"])
+        else:
+                transport_mode = "Others"
+
+        if filters.get("select_vehicle_queue") or transport_mode == "Common Pool":
+                return frappe.db.sql("""select vehicle, requesting_date_time, token from `tabLoad Request`
+                                        where load_status = 'Queued'
+                                        and crm_branch = '{0}'
+                                        and vehicle_capacity = '{1}'
+                                        order by requesting_date_time, token limit 1
+                                """.format(filters.get("branch"), filters.get("total_quantity"), key=frappe.db.escape(searchfield),
+                                 match_condition=get_match_cond(doctype)), {
+                                'txt': "%%%s%%" % frappe.db.escape(txt)
+                        })
+
 	if transport_mode in ["Self Owned Transport", "Private Pool"]:
 		cond = " and v.user = '{0}'".format(user_id) if transport_mode == "Self Owned Transport" else ""
 			
@@ -1036,19 +1052,6 @@ def filter_vehicle_customer_order(doctype, txt, searchfield, start, page_len, fi
                                  match_condition=get_match_cond(doctype)), {
                                 'txt': "%%%s%%" % frappe.db.escape(txt)
                         })
-
-		
-	elif transport_mode == "Common Pool":
-                return frappe.db.sql("""select vehicle, requesting_date_time, token from `tabLoad Request`
-                                        where load_status = 'Queued'
-                                        and crm_branch = '{0}'
-					and vehicle_capacity = '{1}'
-                                        order by requesting_date_time, token limit 1
-                                """.format(filters.get("branch"), filters.get("total_quantity"), key=frappe.db.escape(searchfield),
-                                 match_condition=get_match_cond(doctype)), {
-                                'txt': "%%%s%%" % frappe.db.escape(txt)
-                        })
-	
 	else:
                 return frappe.db.sql("""select name, drivers_name, contact_no from `tabVehicle`
                                         where docstatus = 1 

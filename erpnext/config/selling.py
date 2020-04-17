@@ -84,6 +84,13 @@ def get_data():
 				{
                                         "type": "report",
                                         "is_query_report": True,
+                                        "name": "Overall Sales Report",
+                                        "label": "Overall Sales Report",
+                                        "doctype": "Sales Order"
+                                },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
                                         "name": "Sales Report",
                                         "label": "Sales Report",
                                         "doctype": "Sales Order"

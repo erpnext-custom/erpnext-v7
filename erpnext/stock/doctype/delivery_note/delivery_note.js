@@ -6,16 +6,58 @@
 frappe.provide("erpnext.stock");
 frappe.provide("erpnext.stock.delivery_note");
 
-frappe.ui.form.on('Delivery Note', 'onload', function(frm) {
-	frm.set_indicator_formatter('item_code',
-		function(doc) {
-			return (doc.docstatus==1 || doc.qty<=doc.actual_qty) ? "green" : "orange"
-		})
+frappe.ui.form.on('Delivery Note', {
+        'onload': function(frm) {
+                frm.set_indicator_formatter('item_code',
+                        function(doc) {
+                                return (doc.docstatus==1 || doc.qty<=doc.actual_qty) ? "green" : "orange"
+                        })
 
-	/*erpnext.queries.setup_queries(frm, "Warehouse", function() {
-		return erpnext.queries.warehouse(frm.doc);
-	}); */
+                cur_frm.set_query("vehicle", function() {
+                        var items = frm.doc.items || [];
+                        var total_vol = 0;
+                        for(var i = 0; i < items.length; i++ ){
+                                total_vol += items[i].qty;
+                        }
+                        return {
+                                 query: "erpnext.crm_utils.filter_vehicle_customer_order",
+                                 filters: {'customer_order': frm.doc.customer_order, 'branch': frm.doc.branch, 'total_quantity': total_vol, 'select_vehicle_queue': frm.doc.select_vehicle_queue}
+                              }
+                });
+
+        },
+        "select_vehicle_queue": function(frm) {
+                cur_frm.set_value("vehicle","");
+                cur_frm.set_query("vehicle", function() {
+                        var items = frm.doc.items || [];
+                        var total_vol = 0;
+                        for(var i = 0; i < items.length; i++ ){
+                                total_vol += items[i].qty;
+                        }
+                        return {
+                                 query: "erpnext.crm_utils.filter_vehicle_customer_order",
+                                 filters: {
+                                           'customer_order': frm.doc.customer_order,
+                                           'branch': frm.doc.branch,
+                                           'total_quantity': total_vol,
+                                           'select_vehicle_queue': frm.doc.select_vehicle_queue
+                                        }
+                              }
+
+                });
+        },
+        /*erpnext.queries.setup_queries(frm, "Warehouse", function() {
+ *                 return erpnext.queries.warehouse(frm.doc);
+ *                         }); */
 })
+
+frappe.ui.form.on("Delivery Note Item", {
+        "qty": function(frm, cdt, cdn){
+                frm.set_value("vehicle","");
+                frm.set_value("drivers_name","");
+                frm.set_value("contact_no","");
+        }
+});
 
 erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend({
 	refresh: function(doc, dt, dn) {
@@ -299,36 +341,3 @@ cur_frm.fields_dict['items'].grid.get_field('location').get_query = function(frm
 	}
 }
 
-/* #TTPL Code */
-frappe.ui.form.on("Delivery Note", "onload", function(frm) {
-        cur_frm.set_query("vehicle", function() {
-                 if(frm.doc.customer_order){
-                       return {
-                                 query: "erpnext.crm_utils.filter_vehicle_customer_order",
-                                 filters: {'customer_order': frm.doc.customer_order, 'branch': frm.doc.branch, 'posting_date':frm.doc.posting_date}
-                              }
-                 }
-        });
-});
-
-/*
-cur_frm.fields_dict['vehicle_items'].grid.get_field('vehicle').get_query = function(doc, cdt, cdn) {
-        item = locals[cdt][cdn]
-	if(doc.customer_order){
-        	return {
-                	query: "erpnext.controllers.queries.filter_vehicle_customer_order",
-                	filters: {'customer_order': doc.customer_order, 'branch': doc.branch, 'posting_date':doc.posting_date}
-        	}
-	}
-}
-*/
-//custom Scripts
-/*frappe.ui.form.on("Delivery Note", "onload", function(frm) {
-	cur_frm.set_query("transporter_name1", function() {
-		return {
-			"filters": {
-				"vendor_group": "Transporter"
-			}
-		};
-	});
-});*/

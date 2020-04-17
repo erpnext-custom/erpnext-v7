@@ -14,6 +14,7 @@ from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+import datetime
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -134,7 +135,6 @@ class DeliveryNote(SellingController):
                 self.total_quantity = total_qty
                 self.transportation_charges = round(flt(self.total_quantity) * flt(self.total_distance) * flt(self.transportation_rate), 2)
                 self.discount_amount = flt(self.discount_or_cost_amount) - flt(self.transportation_charges) - flt(self.loading_cost) - flt(self.additional_cost)
-	
 
 	def check_transportation_detail(self):
 		if self.naming_series == 'Mineral Products':
@@ -142,19 +142,25 @@ class DeliveryNote(SellingController):
 				frappe.throw("Transporter Detail Is Mandiatory For Mineral Products")
 			#TTPL Code
 			else:
-				#TTPL Code
-				if self.total_quantity > 0:
+				total_qty = 0.00
+				for i in self.items:
+					total_qty += i.qty
+
+				if total_qty > 0:
 					vehicle_capacity = frappe.db.get_value("Vehicle", self.vehicle, "vehicle_capacity")
-					if self.total_quantity > vehicle_capacity:
+					if total_qty > vehicle_capacity:
 						frappe.throw("Vehicle Capacity is {0}, which is less than total quantity {1}".format(vehicle_capacity, self.total_quantity))
-				
-				'''transport_mode = frappe.db.get_value("Customer Order", self.customer_order, "transport_mode")        
-				if transport_mode == "Common Pool":
-					for a in frappe.db.sql("select name, vehicle, token from `tabLoad Request` where docstatus != 2 and load_status = 'Queued' and crm_branch = '{0}' and vehicle = '{1}' order by token limit 1".format(self.branch, self.vehicle), as_dict=True):
-						self.load_request = a.name
+
+				transport_mode = frappe.db.get_value("Customer Order", self.customer_order, "transport_mode")
+				if self.select_vehicle_queue or transport_mode == "Common Pool":
+					for a in frappe.db.sql("select name, vehicle, token from `tabLoad Request` where load_status = 'Queued' and crm_branch = '{0}' and vehicle_capacity = {1} order by requesting_date_time, token limit 1".format(self.branch, total_qty), as_dict=True):
+						if a.vehicle == self.vehicle:
+							self.load_request = a.name
+						else:
+							frappe.throw("Selected vehicle is already loaded or not from Queue List.")
+
 					if not self.load_request:
 						frappe.throw("Vehicle {0} is not registered for queue".format(self.vehicle))
-				'''
 
 	def validate_with_previous_doc(self):
 		for fn in (("Sales Order", "against_sales_order", "so_detail"),
@@ -229,6 +235,9 @@ class DeliveryNote(SellingController):
 
 		# Check for Approving Authority
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype, self.company, self.base_grand_total, self)
+
+		#Creation of DC and Update Load Request
+		self.create_delivery_confirmation()
 
 		# update delivered qty in sales order
 		self.update_prevdoc_status()
@@ -353,6 +362,45 @@ class DeliveryNote(SellingController):
 			dn_doc.update_billing_percentage(update_modified=update_modified)
 
 		self.load_from_db()
+
+	#TTPL Code
+	def create_delivery_confirmation(self):
+		now = datetime.datetime.now()
+		if self.customer_order:
+			total_qty = 0.00
+			for i in self.items:
+				total_qty += i.qty
+
+			doc = frappe.get_doc("Customer Order", self.customer_order)
+
+			# Update Load Request Queue if transport mode is Common Pool
+			# TTPL New Update
+			if doc.transport_mode == "Common Pool":
+				if self.load_request:
+					queue_status = frappe.db.get_value("Load Request", self.load_request, "load_status")
+					if queue_status == "Queued":
+						frappe.db.sql("update `tabLoad Request` set load_status = 'Loaded', customer='{0}', customer_name = '{1}', location = '{2}', contact_mobile = '{3}', delivery_note = '{4}' where name = '{5}'".format(self.customer, self.customer_name, self.shipping_address_name, self.contact_mobile, self.name, self.load_request))
+					else:
+						frappe.throw("Cannot select Vehicle status in Load Request(Queue) with {0}".format(queue_status))
+				else:
+					frappe.throw("Vehicle is not selected from Load Request Queue or Load Request is missing")
+
+			# Create Delivery Confirmation document
+			dc_doc = frappe.new_doc("Delivery Confirmation")
+			dc_doc.branch = self.branch
+			dc_doc.confirmation_status = "In Transit"
+			dc_doc.exit_date_time = now
+			dc_doc.delivery_note = self.name
+			dc_doc.user = doc.user
+			dc_doc.customer = doc.customer
+			dc_doc.vehicle = self.vehicle
+			dc_doc.drivers_name = self.drivers_name
+			dc_doc.contact_no = self.contact_no
+			dc_doc.customer_order = self.customer_order
+			dc_doc.transport_mode = doc.transport_mode
+			dc_doc.qty = total_qty
+			dc_doc.save(ignore_permissions=True)
+			dc_doc.submit()
 
 def update_billed_amount_based_on_so(so_detail, update_modified=True):
 	# Billed against Sales Order directly
