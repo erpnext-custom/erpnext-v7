@@ -294,12 +294,20 @@ var reset_quota_details = function(frm){
 	cur_frm.set_value("total_available_quantity", 0);
 	cur_frm.set_value("daily_quantity_limit", 0);
 	cur_frm.set_value("daily_available_quantity", 0);
+	cur_frm.set_value("daily_quantity_limit_count", 0);
+	cur_frm.set_value("daily_available_quantity_count", 0);
 	cur_frm.set_value("weekly_quantity_limit", 0);
 	cur_frm.set_value("weekly_available_quantity", 0);
+	cur_frm.set_value("weekly_quantity_limit_count", 0);
+	cur_frm.set_value("weekly_available_quantity_count", 0);
 	cur_frm.set_value("monthly_quantity_limit", 0);
 	cur_frm.set_value("monthly_available_quantity", 0);
+	cur_frm.set_value("monthly_quantity_limit_count", 0);
+	cur_frm.set_value("monthly_available_quantity_count", 0);
 	cur_frm.set_value("yearly_quantity_limit", 0);
 	cur_frm.set_value("yearly_available_quantity", 0);
+	cur_frm.set_value("yearly_quantity_limit_count", 0);
+	cur_frm.set_value("yearly_available_quantity_count", 0);
 }
 
 var get_limit_details = function(frm){
@@ -314,26 +322,50 @@ var get_limit_details = function(frm){
 					cur_frm.set_value("total_available_quantity", flt(r.message.total_available_quantity));
 					if("has_limit" in r.message){
 						var balance=0;
+						cur_frm.set_value("order_limit_type", r.message.has_limit.limit_type);
 						cur_frm.set_value("daily_quantity_limit", flt(r.message.has_limit.daily_quantity_limit));
+						cur_frm.set_value("daily_quantity_limit_count", flt(r.message.has_limit.daily_quantity_limit_count));
 						cur_frm.set_value("weekly_quantity_limit", flt(r.message.has_limit.weekly_quantity_limit));
+						cur_frm.set_value("weekly_quantity_limit_count", flt(r.message.has_limit.weekly_quantity_limit_count));
 						cur_frm.set_value("monthly_quantity_limit", flt(r.message.has_limit.monthly_quantity_limit));
+						cur_frm.set_value("monthly_quantity_limit_count", flt(r.message.has_limit.monthly_quantity_limit_count));
 						cur_frm.set_value("yearly_quantity_limit", flt(r.message.has_limit.yearly_quantity_limit));
+						cur_frm.set_value("yearly_quantity_limit_count", flt(r.message.has_limit.yearly_quantity_limit_count));
 						
-						if(flt(r.message.has_limit.daily_quantity_limit)){
-							balance = flt(r.message.has_limit.daily_quantity_limit)-flt(r.message.has_limit.daily_ordered_quantity);
-							cur_frm.set_value("daily_available_quantity", flt(balance));
-						}
-						if(flt(r.message.has_limit.weekly_quantity_limit)){
-							balance = flt(r.message.has_limit.weekly_quantity_limit)-flt(r.message.has_limit.weekly_ordered_quantity);
-							cur_frm.set_value("weekly_available_quantity", flt(balance));
-						}
-						if(flt(r.message.has_limit.monthly_quantity_limit)){
-							balance = flt(r.message.has_limit.monthly_quantity_limit)-flt(r.message.has_limit.monthly_ordered_quantity);
-							cur_frm.set_value("monthly_available_quantity", flt(balance));
-						}
-						if(flt(r.message.has_limit.daily_quantity_limit)){
-							balance = flt(r.message.has_limit.yearly_quantity_limit)-flt(r.message.has_limit.yearly_ordered_quantity);
-							cur_frm.set_value("yearly_available_quantity", flt(balance));
+						if(r.message.has_limit.limit_type == "Quantity"){
+							if(flt(r.message.has_limit.daily_quantity_limit)){
+								balance = flt(r.message.has_limit.daily_quantity_limit)-flt(r.message.has_limit.daily_ordered_quantity);
+								cur_frm.set_value("daily_available_quantity", flt(balance));
+							}
+							if(flt(r.message.has_limit.weekly_quantity_limit)){
+								balance = flt(r.message.has_limit.weekly_quantity_limit)-flt(r.message.has_limit.weekly_ordered_quantity);
+								cur_frm.set_value("weekly_available_quantity", flt(balance));
+							}
+							if(flt(r.message.has_limit.monthly_quantity_limit)){
+								balance = flt(r.message.has_limit.monthly_quantity_limit)-flt(r.message.has_limit.monthly_ordered_quantity);
+								cur_frm.set_value("monthly_available_quantity", flt(balance));
+							}
+							if(flt(r.message.has_limit.daily_quantity_limit)){
+								balance = flt(r.message.has_limit.yearly_quantity_limit)-flt(r.message.has_limit.yearly_ordered_quantity);
+								cur_frm.set_value("yearly_available_quantity", flt(balance));
+							}
+						}else if(r.message.has_limit.limit_type == "Truck Loads"){
+							if(flt(r.message.has_limit.daily_quantity_limit_count)){
+								balance = flt(r.message.has_limit.daily_quantity_limit_count)-flt(r.message.has_limit.daily_ordered_quantity_count);
+								cur_frm.set_value("daily_available_quantity_count", flt(balance));
+							}
+							if(flt(r.message.has_limit.weekly_quantity_limit_count)){
+								balance = flt(r.message.has_limit.weekly_quantity_limit_count)-flt(r.message.has_limit.weekly_ordered_quantity_count);
+								cur_frm.set_value("weekly_available_quantity_count", flt(balance));
+							}
+							if(flt(r.message.has_limit.monthly_quantity_limit_count)){
+								balance = flt(r.message.has_limit.monthly_quantity_limit_count)-flt(r.message.has_limit.monthly_ordered_quantity_count);
+								cur_frm.set_value("monthly_available_quantity_count", flt(balance));
+							}
+							if(flt(r.message.has_limit.daily_quantity_limit_count)){
+								balance = flt(r.message.has_limit.yearly_quantity_limit_count)-flt(r.message.has_limit.yearly_ordered_quantity_count);
+								cur_frm.set_value("yearly_available_quantity_count", flt(balance));
+							}
 						}
 					}
 				}

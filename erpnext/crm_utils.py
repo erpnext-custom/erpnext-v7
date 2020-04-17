@@ -1062,7 +1062,7 @@ def filter_vehicle_customer_order(doctype, txt, searchfield, start, page_len, fi
                         })
 
 @frappe.whitelist()
-def get_limit_details(site, branch, item):
+def get_limit_details_old(site, branch, item):
 	''' get quantity limit checks from CRM Branch Setting'''
 	limits 	= frappe._dict()
 	item_sub_group = frappe.db.get_value("Item", item, "item_sub_group")
@@ -1137,6 +1137,118 @@ def get_limit_details(site, branch, item):
 			'yearly_quantity_limit': flt(cbsi[0].yearly_quantity_limit),
 			'yearly_ordered_quantity': flt(ll[0].yearly_ordered_quantity),
 			'total_ordered_quantity': flt(ll[0].total_ordered_quantity)
+		})})
+	else:
+		pass
+	return limits
+
+@frappe.whitelist()
+def get_limit_details(site, branch, item):
+	''' get quantity limit checks from CRM Branch Setting'''
+	limits 	= frappe._dict()
+	item_sub_group = frappe.db.get_value("Item", item, "item_sub_group")
+	if not site:
+		frappe.throw(_("Site is mandatory to get quantity limit details"))
+	elif not branch:
+		frappe.throw(_("Branch is mandatory to get quantity limit details"))
+	elif not item:
+		frappe.throw(_("Item is mandatory to get quantity limit details"))
+
+	if frappe.db.exists("Site Item", {"parent": site, "item_sub_group": item_sub_group}):
+		si = frappe.get_doc("Site Item", {"parent": site, "item_sub_group": item_sub_group})
+		limits.update({
+			'site_item_name': si.name,
+			'total_available_quantity': flt(si.balance_quantity)
+		})
+	else:
+		frappe.throw(_("Material {0} not found under Site").format(item_sub_group))
+
+	st = frappe.get_doc("Site Type", frappe.db.get_value("Site", site, "site_type"))
+	if cint(st.apply_limit_check):
+		filters = {'site': site, 'branch': branch, 'item': item}
+		cbsi = frappe.db.sql("""
+			select *
+			from `tabCRM Branch Setting Item` cbsi
+			where cbsi.item = "{item}"
+			and exists(select 1
+				from `tabCRM Branch Setting` cbs
+				where cbs.branch = "{branch}"
+				and cbsi.parent = cbs.name) 
+		""".format(**filters), as_dict=True)
+		if not cbsi:
+			frappe.throw(_("Material {0} not found under CRM Branch Setting").format(item))
+
+		ll = frappe.db.sql("""
+				select 
+					ifnull(sum((case 
+						when posting_date between date_add(now(), interval -1 day) and now() 
+							then ifnull(total_quantity,0)
+						else 0 
+					end)),0) as daily_ordered_quantity,
+					ifnull(sum((case 
+						when posting_date between date_add(now(), interval -1 day) and now() 
+							then ifnull(noof_truck_load,0)
+						else 0 
+					end)),0) as daily_ordered_quantity_count,
+					ifnull(sum((case 
+						when posting_date between date_add(now(), interval -7 day) and now() 
+							then ifnull(total_quantity,0)
+						else 0 
+					end)),0) as weekly_ordered_quantity,
+					ifnull(sum((case 
+						when posting_date between date_add(now(), interval -7 day) and now() 
+							then ifnull(noof_truck_load,0)
+						else 0 
+					end)),0) as weekly_ordered_quantity_count,
+					ifnull(sum((case 
+						when posting_date between date_add(now(), interval -1 month) and now() 
+							then ifnull(total_quantity,0)
+						else 0 
+					end)),0) as monthly_ordered_quantity,
+					ifnull(sum((case 
+						when posting_date between date_add(now(), interval -1 month) and now() 
+							then ifnull(noof_truck_load,0)
+						else 0 
+					end)),0) as monthly_ordered_quantity_count,
+					ifnull(sum((case 
+						when posting_date between date_add(now(), interval -1 year) and now() 
+							then ifnull(total_quantity,0)
+						else 0 
+					end)),0) as yearly_ordered_quantity,
+					ifnull(sum((case 
+						when posting_date between date_add(now(), interval -1 year) and now() 
+							then ifnull(noof_truck_load,0)
+						else 0 
+					end)),0) as yearly_ordered_quantity_count,
+					ifnull(sum(ifnull(total_quantity,0)),0) total_ordered_quantity,
+					ifnull(sum(ifnull(noof_truck_load,0)),0) total_ordered_quantity_count
+				from `tabCustomer Order`
+				where site = "{site}"
+				and branch = "{branch}"
+				and item = "{item}"
+				and docstatus = 1
+		""".format(**filters), as_dict=True)
+
+		limits.update({'has_limit': frappe._dict({
+			'limit_type': cbsi[0].limit_type,
+			'daily_quantity_limit': flt(cbsi[0].daily_quantity_limit),
+			'daily_ordered_quantity': flt(ll[0].daily_ordered_quantity),
+			'daily_quantity_limit_count': flt(cbsi[0].daily_quantity_limit_count),
+			'daily_ordered_quantity_count': flt(ll[0].daily_ordered_quantity_count),
+			'weekly_quantity_limit': flt(cbsi[0].weekly_quantity_limit),
+			'weekly_ordered_quantity': flt(ll[0].weekly_ordered_quantity),
+			'weekly_quantity_limit_count': flt(cbsi[0].weekly_quantity_limit_count),
+			'weekly_ordered_quantity_count': flt(ll[0].weekly_ordered_quantity_count),
+			'monthly_quantity_limit': flt(cbsi[0].monthly_quantity_limit),
+			'monthly_ordered_quantity': flt(ll[0].monthly_ordered_quantity),
+			'monthly_quantity_limit_count': flt(cbsi[0].monthly_quantity_limit_count),
+			'monthly_ordered_quantity_count': flt(ll[0].monthly_ordered_quantity_count),
+			'yearly_quantity_limit': flt(cbsi[0].yearly_quantity_limit),
+			'yearly_ordered_quantity': flt(ll[0].yearly_ordered_quantity),
+			'yearly_quantity_limit_count': flt(cbsi[0].yearly_quantity_limit_count),
+			'yearly_ordered_quantity_count': flt(ll[0].yearly_ordered_quantity_count),
+			'total_ordered_quantity': flt(ll[0].total_ordered_quantity),
+			'total_ordered_quantity_count': flt(ll[0].total_ordered_quantity_count)
 		})})
 	else:
 		pass

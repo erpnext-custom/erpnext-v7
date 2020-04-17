@@ -22,6 +22,9 @@ class CustomerOrder(Document):
 		self.validate_quantity_limits()
 		self.update_user_details()
 
+	def before_submit(self):
+		self.posting_date = now()
+
 	def on_submit(self):
 		self.update_site()
 		self.make_sales_order()
@@ -31,7 +34,7 @@ class CustomerOrder(Document):
 		self.update_site()
 
 	def check_for_duplicates(self):
-		if frappe.db.sql("""select count(*) from `tabCustomer Order` where user = "{}" and site = "{}"
+		if frappe.db.sql("""select count(*) from `tabCustomer Order` where user = "{}" and site = "{}" 
 			and docstatus = 0 and name != "{}" """.format(self.user, self.site, self.name))[0][0]:
 			frappe.throw(_("New orders not allowed as you already have unpaid order(s). Please complete the payment/cancel the previous order(s)"))
 
@@ -71,44 +74,84 @@ class CustomerOrder(Document):
 				.format(flt(self.total_quantity)-flt(self.total_available_quantity), self.uom),title="Insufficient Balance")
 
 		if 'has_limit' in limits:
-			limits = limits.has_limit
-			balance 			= 0
-			self.daily_quantity_limit 	= 0
-			self.daily_available_quantity	= 0
-			self.weekly_quantity_limit 	= 0
-			self.weekly_available_quantity	= 0
-			self.monthly_quantity_limit 	= 0
-			self.monthly_available_quantity	= 0
-			self.yearly_quantity_limit 	= 0
-			self.yearly_available_quantity	= 0
-			if flt(limits.daily_quantity_limit):
-				balance = flt(limits.daily_quantity_limit)-flt(limits.daily_ordered_quantity)
-				self.daily_quantity_limit 	= flt(limits.daily_quantity_limit)
-				self.daily_available_quantity 	= flt(balance)
-				if flt(balance) < flt(self.total_quantity):
-					frappe.throw(_("You have crossed your daily quota by quantity {0} {1}")\
-						.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
-			if flt(limits.weekly_quantity_limit):
-				balance = flt(limits.weekly_quantity_limit)-flt(limits.weekly_ordered_quantity)
-				self.weekly_quantity_limit 	= flt(limits.weekly_quantity_limit)
-				self.weekly_available_quantity 	= flt(balance)
-				if flt(balance) < flt(self.total_quantity):
-					frappe.throw(_("You have crossed your weekly quota by quantity {0} {1}")\
-						.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
-			if flt(limits.monthly_quantity_limit):
-				balance = flt(limits.monthly_quantity_limit)-flt(limits.monthly_ordered_quantity)
-				self.monthly_quantity_limit 	= flt(limits.monthly_quantity_limit)
-				self.monthly_available_quantity = flt(balance)
-				if flt(balance) < flt(self.total_quantity):
-					frappe.throw(_("You have crossed your monthly quota by quantity {0} {1}")\
-						.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
-			if flt(limits.yearly_quantity_limit):
-				balance = flt(limits.yearly_quantity_limit)-flt(limits.yearly_ordered_quantity)
-				self.yearly_quantity_limit 	= flt(limits.yearly_quantity_limit)
-				self.yearly_available_quantity 	= flt(balance)
-				if flt(balance) < flt(self.total_quantity):
-					frappe.throw(_("You have crossed your yearly quota by quantity {0} {1}")\
-						.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
+			limits 		= limits.has_limit
+			self.order_limit_type = limits.limit_type
+			if limits.limit_type == "Quantity":
+				balance 			= 0
+				self.daily_quantity_limit 	= 0
+				self.daily_available_quantity	= 0
+				self.weekly_quantity_limit 	= 0
+				self.weekly_available_quantity	= 0
+				self.monthly_quantity_limit 	= 0
+				self.monthly_available_quantity	= 0
+				self.yearly_quantity_limit 	= 0
+				self.yearly_available_quantity	= 0
+				if flt(limits.daily_quantity_limit):
+					balance = flt(limits.daily_quantity_limit)-flt(limits.daily_ordered_quantity)
+					self.daily_quantity_limit 	= flt(limits.daily_quantity_limit)
+					self.daily_available_quantity 	= flt(balance)
+					if flt(balance) < flt(self.total_quantity):
+						frappe.throw(_("You have crossed your daily quota by quantity {0} {1}")\
+							.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
+				if flt(limits.weekly_quantity_limit):
+					balance = flt(limits.weekly_quantity_limit)-flt(limits.weekly_ordered_quantity)
+					self.weekly_quantity_limit 	= flt(limits.weekly_quantity_limit)
+					self.weekly_available_quantity 	= flt(balance)
+					if flt(balance) < flt(self.total_quantity):
+						frappe.throw(_("You have crossed your weekly quota by quantity {0} {1}")\
+							.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
+				if flt(limits.monthly_quantity_limit):
+					balance = flt(limits.monthly_quantity_limit)-flt(limits.monthly_ordered_quantity)
+					self.monthly_quantity_limit 	= flt(limits.monthly_quantity_limit)
+					self.monthly_available_quantity = flt(balance)
+					if flt(balance) < flt(self.total_quantity):
+						frappe.throw(_("You have crossed your monthly quota by quantity {0} {1}")\
+							.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
+				if flt(limits.yearly_quantity_limit):
+					balance = flt(limits.yearly_quantity_limit)-flt(limits.yearly_ordered_quantity)
+					self.yearly_quantity_limit 	= flt(limits.yearly_quantity_limit)
+					self.yearly_available_quantity 	= flt(balance)
+					if flt(balance) < flt(self.total_quantity):
+						frappe.throw(_("You have crossed your yearly quota by quantity {0} {1}")\
+							.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
+			elif limits.limit_type == "Truck Loads":
+				balance 			= 0
+				self.daily_quantity_limit_count 	= 0
+				self.daily_available_quantity_count	= 0
+				self.weekly_quantity_limit_count 	= 0
+				self.weekly_available_quantity_count	= 0
+				self.monthly_quantity_limit_count 	= 0
+				self.monthly_available_quantity_count	= 0
+				self.yearly_quantity_limit_count 	= 0
+				self.yearly_available_quantity_count	= 0
+				if flt(limits.daily_quantity_limit_count):
+					balance = flt(limits.daily_quantity_limit_count)-flt(limits.daily_ordered_quantity_count)
+					self.daily_quantity_limit_count 	= flt(limits.daily_quantity_limit_count)
+					self.daily_available_quantity_count 	= flt(balance)
+					if flt(balance) < flt(self.noof_truck_load):
+						frappe.throw(_("You have crossed your daily quota by {0} truck load(s)")\
+							.format(flt(self.noof_truck_load)-flt(balance)),title="Insufficient Balance")
+				if flt(limits.weekly_quantity_limit_count):
+					balance = flt(limits.weekly_quantity_limit_count)-flt(limits.weekly_ordered_quantity_count)
+					self.weekly_quantity_limit_count 	= flt(limits.weekly_quantity_limit_count)
+					self.weekly_available_quantity_count 	= flt(balance)
+					if flt(balance) < flt(self.noof_truck_load):
+						frappe.throw(_("You have crossed your weekly quota by {0} truck load(s)")\
+							.format(flt(self.noof_truck_load)-flt(balance)),title="Insufficient Balance")
+				if flt(limits.monthly_quantity_limit_count):
+					balance = flt(limits.monthly_quantity_limit_count)-flt(limits.monthly_ordered_quantity_count)
+					self.monthly_quantity_limit_count 	= flt(limits.monthly_quantity_limit_count)
+					self.monthly_available_quantity_count   = flt(balance)
+					if flt(balance) < flt(self.noof_truck_load):
+						frappe.throw(_("You have crossed your monthly quota by {0} truck load(s)")\
+							.format(flt(self.noof_truck_load)-flt(balance)),title="Insufficient Balance")
+				if flt(limits.yearly_quantity_limit_count):
+					balance = flt(limits.yearly_quantity_limit_count)-flt(limits.yearly_ordered_quantity_count)
+					self.yearly_quantity_limit_count 	= flt(limits.yearly_quantity_limit_count)
+					self.yearly_available_quantity_count 	= flt(balance)
+					if flt(balance) < flt(self.noof_truck_load):
+						frappe.throw(_("You have crossed your yearly quota by {0} truck load(s)")\
+							.format(flt(self.noof_truck_load)-flt(balance)),title="Insufficient Balance")
 
 	def get_item_details(self):
 		if not self.item:
@@ -221,6 +264,7 @@ class CustomerOrder(Document):
 		self.customer = frappe.db.get_value("Customer", {"customer_id": self.user})
 
 	def validate_transportation(self):
+		noof_truck_load = 0
 		if not self.transport_mode:
 			frappe.throw(_("Please select preferred Transport Mode"))
 		elif self.transport_mode == "Common Pool":
@@ -230,10 +274,12 @@ class CustomerOrder(Document):
 			for i in self.get("pool_vehicles"):
 				if flt(i.noof_truck_load) < 0:
 					frappe.throw(_("Row#{0}: No.of Truck Loads cannot be a negative value").format(i.idx))
+				noof_truck_load += flt(i.noof_truck_load)
 		elif self.transport_mode == "Others":
 			for i in self.get("pool_vehicles"):
 				if flt(i.noof_truck_load) < 0:
 					frappe.throw(_("Row#{0}: No.of Truck Loads cannot be a negative value").format(i.idx))
+				noof_truck_load += flt(i.noof_truck_load)
 		else:
 			#get_vehicles(self.user, self.site, self.transport_mode)
 			for i in self.get("vehicles"):
@@ -250,11 +296,13 @@ class CustomerOrder(Document):
 
 				if flt(i.noof_truck_load) < 0:
 					frappe.throw(_("Row#{0}: No.of Truck Loads cannot be a negative value for vehicle {1}").format(i.idx,i.vehicle))
+				noof_truck_load += flt(i.noof_truck_load)
 
 			if self.transport_mode == "Self Owned Transport" and not frappe.db.exists("Vehicle", {"user": self.user}):
 				frappe.throw(_("No vehicle found under your account. Please register your vehicle first"))
 			if not self.get("vehicles"):
 				frappe.throw(_("You need to select atleast one vehicle for {}").format(self.transport_mode))
+		self.noof_truck_load = flt(noof_truck_load)
 
 	def update_item_rate(self):
 		''' update item_rate based on selected branch '''
@@ -327,5 +375,6 @@ class CustomerOrder(Document):
 		self.total_transportation_rate	= flt(total_transportation_rate) 
 		self.total_payable_amount  	= flt(self.total_item_rate) + flt(self.total_transportation_rate)
 		#if flt(self.total_payable_amount,2) - math.floor(flt(self.total_payable_amount,2)) != 0.50:
-		self.total_payable_amount 	= flt(self.total_payable_amount,2)
+		#	self.total_payable_amount = round(self.total_payable_amount)
+
 		self.total_balance_amount	= flt(self.total_payable_amount)
