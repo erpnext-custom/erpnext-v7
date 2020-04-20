@@ -2648,8 +2648,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-10-22 16:11:51.917249", 
- "modified_by": "Administrator", 
+ "modified": "2020-04-09 10:45:19.902944", 
+ "modified_by": "kuenley.tshering@smcl.bt", 
  "module": "HR", 
  "name": "Salary Structure", 
  "owner": "Administrator", 
@@ -2687,13 +2687,13 @@
    "import": 0, 
    "permlevel": 0, 
    "print": 1, 
-   "read": 1, 
+   "read": 0, 
    "report": 1, 
    "role": "HR User", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 1
+   "write": 0
   }, 
   {
    "amend": 0, 

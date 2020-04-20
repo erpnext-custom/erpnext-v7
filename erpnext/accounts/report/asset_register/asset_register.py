@@ -129,21 +129,21 @@ def get_data(filters):
 				opening = flt(a.opening_amount) + flt(a.opening_accumulated_depreciation)
 			"""
                         # Ver 3.0.190131 Begins, code moved from below
-			opening = flt(a.opening_accumulated_depreciation) + flt(a.opening_amount)
+			opening = flt(a.opening_accumulated_depreciation, 2) + flt(a.opening_amount, 2)
                         """if not a.opening_amount:
                                 opening = flt(a.opening_accumulated_depreciation)
                         else:
                                 opening = flt(a.opening_amount)
                         # Ver 3.0.190131 Ends"""
 
-			if flt(a.opening_accumulated_depreciation) + flt(a.expected_value_after_useful_life) + flt(a.residual_value) == flt(a.gross_purchase_amount):
+			if flt(a.opening_accumulated_depreciation, 2) + flt(a.expected_value_after_useful_life, 2) + flt(a.residual_value, 2) == flt(a.gross_purchase_amount, 2):
                                 actual_dep = 0
 			elif not a.depreciation_amount:
 				actual_dep = 0
                         else:
                                 # Ver 3.0.190131 Begins, following line replaced by subsequent
                                 #actual_dep =  flt(a.depreciation_amount) - flt(a.opening_amount)
-				actual_dep = flt(a.depreciation_amount)
+				actual_dep = flt(a.depreciation_amount, 2)
                                 #actual_dep =  flt(a.depreciation_amount) - flt(opening)
                                 # Ver 3.0.190131 Ends
                                 

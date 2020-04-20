@@ -45,6 +45,7 @@ def get_stock_ledger_entries(filters):
 			CASE voucher_type WHEN 'Stock Entry' THEN (select transporter_name from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select transporter_name1 from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as transporter_name, company
 		from `tabStock Ledger Entry`
 		where company = %(company)s and
+		docstatus = 1 and 
 			posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			order by posting_date asc, posting_time asc, name asc"""\

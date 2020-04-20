@@ -33,15 +33,15 @@ def get_accounts(filters):
 
 		row = [ 
 			a.name,
-			g_open,
-			g_addition,
-			g_adjustment,
-			g_total,
-			d_open,
-			dep_addition,
-			dep_adjust,
-			d_total,
-			flt(g_total) - flt(d_total) 
+			round(g_open,2),
+			round(g_addition, 2),
+			round(g_adjustment, 2),
+			round(g_total, 2),
+			round(d_open, 2),
+			round(dep_addition, 2),
+			round(dep_adjust, 2),
+			round(d_total, 2),
+			round(flt(g_total) - flt(d_total), 2) 
 		]	
 		data.append(row)
 
@@ -65,15 +65,15 @@ def get_accounts(filters):
 
 		row = [
 			"Capital Work in Progress",
-			c_open,
-			cwip.debit,
-			cwip.credit,
-			c_total,
+			round(c_open,2),
+			round(cwip.debit,2),
+			round(cwip.credit,2),
+			round(c_total,2),
 			0,
 			0,
 			0,
 			0,
-			c_total 
+			round(c_total,2)
 		]	
 		data.append(row)
 	return data

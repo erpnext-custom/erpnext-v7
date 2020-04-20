@@ -121,6 +121,12 @@ class PBVA(Document):
                                                 and sl.docstatus = 1
                                                 and ifnull(ss.eligible_for_pbva,0) = 1
                                                 and sl.fiscal_year <= {0}
+						and (sd.salary_component = 'Basic Pay'
+                                                        or exists(select 1 from `tabSalary Component` sc
+                                                                        where sc.name = sd.salary_component
+                                                                        and sc.is_pf_deductible = 1
+                                                                        and sc.type = 'Earning')
+                                                )
                                                 order by sl.month desc limit 1
                                         ) as basic_pay,
                                         0 as percent

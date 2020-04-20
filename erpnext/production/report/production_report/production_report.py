@@ -21,7 +21,7 @@ def get_data(filters):
 	if filters.show_aggregate:
 		total_qty = "sum(qty) as total_qty"
 
-	query = "select pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.equipment_number, pe.equipment_model, pe.transporter_type, pe.unloading_by, pe.group, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.group, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0} from `tabProduction Entry` pe, `tabCost Center` cc where cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
+	query = "select pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.equipment_number, pe.equipment_model, pe.transporter_type, pe.unloading_by, pe.group, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.group, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0} from `tabProduction Entry` pe, `tabCost Center` cc where pe.docstatus = 1 and cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
 
 	total_qty = 0
