@@ -148,7 +148,13 @@ def get_data():
                                         "is_query_report": True,
                                         "name": "MR Status Report",
                                         "doctype": "Material Request"
-                                }
+                },
+				{
+					"type": "report",
+					"name": "Tax Exemption Report",
+					"doctype": "Purchase Invoice",
+					"is_query_report": True,
+				},	
 
 
 			]

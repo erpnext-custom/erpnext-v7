@@ -258,25 +258,12 @@ class SalaryStructure(Document):
 
                         # Calculating Earnings and Deductions based on preferences and values set
                         for m in sst_map[ed]:
-                                calc_amt = 0
+				calc_amt = 0
 				if self.get(m['field_method']) == 'Percent' and flt(self.get(m['field_value'])) > 100:
 					frappe.throw(_("Percentage cannot exceed 100 for component <b>{0}</b>").format(m['name']), title="Invalid Data")	
-				if m['name'] == 'Housing Allowance' and basic_pay and self.get(m['field_name']):
-                                        hra_allowance = frappe.db.get_single_value("HR Settings", "hra")
-                                        if not hra_allowance:
-                                                frappe.throw("Setup HRA in HR Settings")
-
-                                        housing = round(flt(basic_pay)*flt(hra_allowance)*0.01)
-                                        #if flt(housing) <= 3500.00:
-                                        #        calc_amt  = 3500.00
-                                        #else:
-                                        calc_amt  = housing
-                                        total_earning += calc_amt
-                                        calc_map.append({'salary_component': m['name'], 'amount': flt(calc_amt)})
-				
-                                if ed == 'earnings' and m['name'] != 'Housing Allowance' :
-                                        if self.get(m['field_name']):
-                                                calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))
+				if ed =='earnings':
+                                	if self.get(m['field_name']):
+                                        	calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))
                                                 comm_allowance += round(flt(calc_amt) if m['name'] == 'Communication Allowance' else 0)
                                                 total_earning += calc_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
@@ -342,6 +329,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 		comm_amt  = 0.00
 		basic_amt = 0.00
 		deput_amt = 0.00
+		hra_amt = 0.00
 		gross_amt1 = 0.00
 		tax_amt1  = 0.00
                 ### Ver.2.0.191227 Begins, added by SHIV on 2019/12/27
@@ -464,7 +452,10 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 			#Deputation allowance
 			if e['salary_component'] == 'Deputation Allowance':
 				deput_amt = (flt(e['amount']))
-
+			# HRA
+			if e['salary_component'] == 'Housing Allowance':
+                                hra_amt = (flt(e['amount']))
+	
                 gross_amt += (flt(target.arrear_amount) + flt(target.leave_encashment_amount))
 
                 # Calculating PF, Group Insurance Scheme, Health Contribution
@@ -533,7 +524,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                         if not tax_included:
                                                 tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
                                         	if source.employment_type == 'Deputation':
-							gross_amt1 = gross_amt - deput_amt
+							gross_amt1 = gross_amt - deput_amt 
 							tax_amt1 = get_salary_tax(flt(gross_amt1) - flt(gis) - flt(pf) -(flt(comm_amt) * 0.5))  
 							tax_amt = tax_amt - tax_amt1	
 

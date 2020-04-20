@@ -1412,11 +1412,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
-<<<<<<< HEAD
  "modified": "2020-03-23 14:43:41.951006", 
-=======
  "modified": "2020-03-23 13:00:18.640181", 
->>>>>>> c07bc42e78a567be867794064e90da49f3535e4c
  "modified_by": "Administrator", 
  "module": "Setup", 
  "name": "Company", 

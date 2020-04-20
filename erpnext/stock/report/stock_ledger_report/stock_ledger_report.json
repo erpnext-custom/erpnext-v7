@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2020-03-23 15:15:10.432351", 
- "modified_by": "Administrator", 
+ "modified": "2020-04-18 11:21:57.373643", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Ledger Report", 
  "owner": "Administrator", 
@@ -29,9 +29,6 @@
    "role": "Accounts Manager"
   }, 
   {
-   "role": "Stock User (other)"
-  }, 
-  {
    "role": "Management"
   }, 
   {
@@ -42,6 +39,9 @@
   }, 
   {
    "role": "CPBD"
+  }, 
+  {
+   "role": "Stock User (other)"
   }
  ]
 }

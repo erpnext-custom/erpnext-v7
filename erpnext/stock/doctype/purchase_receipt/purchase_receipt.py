@@ -476,10 +476,11 @@ def make_purchase_invoice(source_name, target_doc=None):
 		doc.run_method("calculate_taxes_and_totals")
 
 	def update_other_charges(source, target, sp):
-                target.discount = flt(target.discount) + flt(source.discount)
-                target.tax = flt(target.tax) + flt(source.tax)
-                target.other_charges = flt(target.other_charges) + flt(source.other_charges)
-                target.freight_and_insurance_charges = flt(target.freight_and_insurance_charges) + flt(source.freight_and_insurance_charges)
+                target.discount =  flt(target.discount)
+                target.tax =  flt(target.tax)
+                target.other_charges = flt(target.other_charges)
+	#	target.other_charges = flt(target.other_charges) + flt(source.other_charges)
+                target.freight_and_insurance_charges =  flt(target.freight_and_insurance_charges)
                 target.total_add_ded = flt(target.freight_and_insurance_charges) - flt(target.discount) + flt(target.tax) + flt(target.other_charges)
                 target.discount_amount = -1 * flt(target.total_add_ded) 
 

@@ -288,7 +288,7 @@ def get_data():
 				},
 				{
 					"type": "report",
-					"name": "Statement of Cash Flow",
+					"name": "Fund Flow Statement",
 					"doctype": "GL Entry",
 					"is_query_report": True
 				},
@@ -301,8 +301,8 @@ def get_data():
 				# },
 				{
 					"type": "report",
-					"name": "Income & Expenditure Statement",
-					"label": "Income & Expenditure Statement",
+					"name": "Expenditure Statement",
+					"label": "Expenditure Statement",
 					"doctype": "GL Entry",
 					"is_query_report": True
 				},
@@ -354,11 +354,11 @@ def get_data():
 					"is_query_report": True,
 				},
 				{
-                                        "type": "report",
-                                        "name": "Inter Company Transaction Report",
-                                        "doctype": "Account",
-                                        "is_query_report": True,
-                                },
+                    "type": "report",
+                    "name": "Inter Company Transaction Report",
+                    "doctype": "Account",
+                    "is_query_report": True,
+                }	
 			]
 		},
 		{
