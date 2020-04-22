@@ -39,9 +39,9 @@ def get_data():
 				},
 				{
                                         "type": "doctype",
-                                        "name": "Tea Allowance",
-                                        "label": "Tea Allowance Payment",
-                                        "description": "Tea Allowance Payment"
+                                        "name": "Allowance Payment",
+                                        "label": "Tea and HS Allowance Payment",
+                                        "description": "Tea and Health Allowance Payment"
                                 },
 			]
 		},
