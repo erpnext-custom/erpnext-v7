@@ -16,12 +16,20 @@ class TeaAllowance(AccountsController):
 		check_future_date(self.start_date)
 		check_future_date(self.end_date)
 		self.company = frappe.db.get_single_value('Global Defaults', 'default_company')
+		self.check_duplicate()
 
 		tea_amount = 0.0
 		for i in self.items:
 			tea_amount += flt(i.eligible_days) * flt(self.allowance_amount)
 		if tea_amount != self.total_amount:
 			frappe.msgprint("Tea Allowance amount doesn't match {0} and {1}".format(tea_amount, self.total_amount))  	
+
+	def check_duplicate(self):
+		check = 0
+		for a in frappe.db.sql("select count(*) as count from `tabTea Allowance` where docstatus = 1 and start_date = '{0}' and end_date ='{1}'".format(self.start_date, self.end_date), as_dict=1):
+			check = a.count
+		if check > 0:
+			frappe.throw("Tea Allowance is already processed for the provided dates")
 
 	def on_submit(self):
 		self.post_gl_entry()
@@ -48,7 +56,17 @@ class TeaAllowance(AccountsController):
 
 		total_amount = 0.0		
 		for e in frappe.db.sql(qry, as_dict=True):
-			for b in frappe.db.sql("select count(*) as not_eligible_days from `tabAttendance` where att_date between '{0}' and '{1}' and employee = '{2}' and status in ('Tour','Half Day','Absent','Leave')".format(self.start_date, self.end_date, e.name), as_dict=1):
+			for b in frappe.db.sql("""
+						select count(*) as not_eligible_days 
+						from `tabAttendance` 
+						where att_date between '{0}' and '{1}' 
+						and employee = '{2}' 
+						and status in ('Tour','Half Day','Absent','Leave') 
+						and not exists (select 1 
+								from `tabHoliday` 
+								where holiday_date between '{0}' and '{1}' 
+								and holiday_date = att_date)
+						""".format(self.start_date, self.end_date, e.name), as_dict=1):
 				not_eligible_days = b.not_eligible_days
 			
 			total_eligible_days = total_days_in_month - (total_holiday + not_eligible_days)
@@ -67,8 +85,8 @@ class TeaAllowance(AccountsController):
 
 	def post_gl_entry(self):
                 gl_entries = []
-                credit_account = frappe.db.get_single_value("HR Accounts Settings", "other_allowance")
-                debit_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+                debit_account = frappe.db.get_single_value("HR Accounts Settings", "other_allowance")
+                credit_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
                 gl_entries.append(
                         self.get_gl_dict({
                             "account": debit_account,

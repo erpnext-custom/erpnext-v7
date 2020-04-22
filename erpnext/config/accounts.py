@@ -37,6 +37,12 @@ def get_data():
 					"is_query_report": True,
                                         "style": {"color":"red"}
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "Tea Allowance",
+                                        "label": "Tea Allowance Payment",
+                                        "description": "Tea Allowance Payment"
+                                },
 			]
 		},
 		{

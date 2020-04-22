@@ -140,7 +140,6 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
                 	this.frm.set_value("net_total",Math.round( this.frm.doc.net_total + additional_cost));
                 	this.frm.set_value("grand_total", Math.round(this.frm.doc.grand_total + additional_cost));
 		}
-		console.log("test2");
 	},
 
 	shipping_address_name: function() {

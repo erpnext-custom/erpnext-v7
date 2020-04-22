@@ -118,10 +118,11 @@ class HSDPayment(Document):
 		total_amount = 0
 		for d in entries:
 			total_amount+=flt(d.payable_amount)
+			d.payable_amount = round(d.payable_amount)
 			d.allocated_amount = d.payable_amount
 			d.balance_amount = 0
 			row = self.append('items', {})
 			row.update(d)
-		self.amount = total_amount
-		self.actual_amount = total_amount
+		self.amount = round(total_amount)
+		self.actual_amount = round(total_amount)
 

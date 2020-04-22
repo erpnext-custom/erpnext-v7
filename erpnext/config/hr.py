@@ -135,6 +135,12 @@ def get_data():
 			"label": _("Expense Claims"),
 			"items": [
 				{
+                                        "type": "doctype",
+                                        "name": "Tea Allowance",
+                                        "label": "Tea Allowance Payment",
+                                        "description": "Tea Allowance Payment"
+                                },
+				{
 					"type": "doctype",
 					"name": "Travel Authorization",
                                         "label": _("Travel Authorization"),

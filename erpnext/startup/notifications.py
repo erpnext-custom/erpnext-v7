@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 def get_notification_config():
 	return { "for_doctype":
 		{
-			"Issue": {"status": "Open"},
+			"Issue": {"status": ("not in", ("Cancelled"))},
 			"Warranty Claim": {"status": "Open"},
 			"Task": {"status": "Overdue", "is_group": 0},
 			"Project": {
@@ -19,7 +19,7 @@ def get_notification_config():
 			"Opportunity": {"status": "Open"},
 			"Quotation": {"docstatus": 0},
 			"Sales Order": {
-				"status": ("not in", ("Completed", "Closed")),
+				"status": ("not in", ("Completed", "Closed", "Cancelled")),
 				"docstatus": ("<", 2)
 			},
 			"Journal Entry": {"docstatus": 0},
@@ -31,8 +31,8 @@ def get_notification_config():
 			"Delivery Note": {"docstatus": 0},
 			"Stock Entry": {"docstatus": 0},
 			"Material Request": {
-				"docstatus": ("<", 2),
-				"status": ("not in", ("Stopped",)),
+				"rejection_reason": ("not in", ("Rejected")),
+				"status": ("not in", ("Stopped","Cancelled")),
 				"per_ordered": ("<", 100)
 			},
 			"Request for Quotation": { "docstatus": 0 },

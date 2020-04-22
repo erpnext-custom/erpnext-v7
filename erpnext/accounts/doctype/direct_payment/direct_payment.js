@@ -6,7 +6,6 @@ frappe.ui.form.on('Direct Payment', {
 			return {
 				"filters": [
 					["is_group", "=", "0"],
-					
 				]
 			}
 		});
@@ -14,7 +13,6 @@ frappe.ui.form.on('Direct Payment', {
 			return {
 				"filters": [
 					["is_group", "=", "0"],
-					
 				]
 			}
 		});
@@ -137,12 +135,12 @@ function roundOff(num) {
 }
 
 function calculate_tds(frm) {
-	var tds = roundOff(parseFloat(frm.doc.tds_percent) * parseFloat(frm.doc.taxable_amount) / 100 );
+	var tds = Math.round(parseFloat(frm.doc.tds_percent) * parseFloat(frm.doc.taxable_amount) / 100 );
 	frm.set_value("tds_amount", tds);
 	if(tds > 0){
-		frm.set_value("net_amount", frm.doc.amount - tds);
+		frm.set_value("net_amount", Math.round(frm.doc.amount - tds));
 	}else{
-		frm.set_value("net_amount", frm.doc.amount);
+		frm.set_value("net_amount", Math.round(frm.doc.amount));
 	}
 	frappe.call({
 		method: "erpnext.accounts.doctype.direct_payment.direct_payment.get_tds_account",

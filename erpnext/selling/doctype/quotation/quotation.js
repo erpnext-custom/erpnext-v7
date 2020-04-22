@@ -6,6 +6,9 @@
 
 frappe.ui.form.on("Quotation", {
 	onload: function(frm) {},
+	"wccl_discount_percentage": function(frm) {
+                frm.set_value("discount_amount",Math.round(frm.doc.total * frm.doc.wccl_discount_percentage/100));
+        },
 });
 
 erpnext.selling.QuotationController = erpnext.selling.SellingController.extend({

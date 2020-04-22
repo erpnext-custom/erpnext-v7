@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "field:attribute_name", 
  "beta": 0, 
  "creation": "2014-09-26 03:49:54.899170", 
@@ -253,7 +253,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2017-09-01 17:07:54.995739", 
+ "modified": "2020-04-10 12:12:45.891109", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Item Attribute", 
@@ -265,7 +265,7 @@
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 0, 
    "export": 0, 
    "if_owner": 0, 
@@ -306,5 +306,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }
