@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import get_datetime
+from frappe.utils import cint, get_datetime
 from frappe.model.document import Document
 from frappe.core.doctype.user.user import validate_mobile_no
 from frappe.model.mapper import get_mapped_doc
@@ -51,14 +51,17 @@ class UserRequest(Document):
 			if self.approval_status == "Approved" and self.request_category == "CID Details" \
 				and not frappe.db.exists("User Request", {"name": ("!=",self.name),"user": self.user, \
 					"request_category": self.request_category, "docstatus":1, "approval_status": "Approved"}):
-				msg = "You are successfully registered for NRDCL online services. You can now login with your registered CID number and PIN received during registration process."
+				msg = """You are successfully registered for NRDCL online services. 
+					You can now login with your registered CID number and PIN received 
+					during registration process."""
 			else:
 				if self.approval_status == "Rejected":
 					msg = "Your request for update in {0} is {1}. Tran Ref No {2}. {3}".format(str(self.request_category).lower(), str(self.approval_status).lower(),self.name,self.rejection_reason)
 				else:
 					msg = "Your request for update in {0} is {1}. Tran Ref No {2}".format(str(self.request_category).lower(), str(self.approval_status).lower(),self.name)
 		mobile_no = frappe.db.get_value("User", self.user, "mobile_no")
-		if mobile_no:
+		if mobile_no and cint(self.send_sms):
+			msg = self.sms_content if self.sms_content else msg
 			send_sms(mobile_no, msg)
 
 	def set_old_details(self):

@@ -24,6 +24,7 @@ class TransportRequest(Document):
 		self.validate_vehicle()
 		self.attach_cid()
 
+
 	def map_user_transport(self):
 		#if not self.user:
 			#account_type = frappe.db.get_value("User", frappe.session.user, "account_type")
@@ -38,7 +39,7 @@ class TransportRequest(Document):
 	def validate_vehicle(self):
 		vehicle = self.vehicle_no
 		self.vehicle_no = vehicle.upper()
-		vehicle_dtl = frappe.db.sql("select name, user from `tabTransport Request` where vehicle_no='{0}' and approval_status in ('Pending', 'Approved') and name!= '{1}'".format(self.vehicle_no, self.name), as_dict = True)
+		vehicle_dtl = frappe.db.sql("select name, user from `tabTransport Request` where vehicle_no='{0}' and approval_status in ('Pending', 'Approved') and name!= '{1}' and docstatus != 2".format(self.vehicle_no, self.name), as_dict = True)
 		if vehicle_dtl:
 			for a in vehicle_dtl:
 				r_user = a.user
@@ -46,7 +47,7 @@ class TransportRequest(Document):
 
 		if frappe.db.exists("Vehicle", self.vehicle_no):
 			docv = frappe.get_doc("Vehicle", self.vehicle_no)
-			if docv.vehicle_status != "Deregistered" and docv.user:
+			if docv.vehicle_status != "Deregistered" and docv.user and docv.user != self.user:
 				frappe.throw("Vehicle is already registered with status {0}".format(docv.vehicle_status))
 			if self.approval_status == "Approved" and self.docstatus == 1:
 				docv.db_set('user', self.user)
@@ -65,13 +66,26 @@ class TransportRequest(Document):
 		#if self.owner == "Spouse":
 		#	if not self.marriage_certificate:
 		#		frappe.throw("You must attach MC copy as the vehicle is registered on your spouse name")
-			
+		self.check_duplicate()
+					
 		if self.approval_status == "Pending":
 			frappe.throw("Change the Approval Status other than Pending to submit ")
 
 		if self.approval_status == "Approved":
 			self.create_transporter_vehicle()
 		self.sendsms()
+
+	def check_duplicate(self):
+		if self.vehicle_no and self.approval_status == "Approved":
+			vehicle_number = self.vehicle_no
+			vehicle_last_four_digit = vehicle_number[-4:]
+			check = 0
+			if self.common_pool:
+				for a in frappe.db.sql("select name, vehicle_status from `tabVehicle` where name like '%{0}'".format(vehicle_last_four_digit), as_dict=True):
+					frappe.msgprint("Vehicle with similar number " + a.name + " status " + a.vehicle_status + " is already registered")
+					check += 1
+			if check > 0:
+				frappe.throw("There are vehicle already registered with similar number to {0}".format(self.vehicle_no))
 
 	def attach_cid(self):
 		target_doc = None

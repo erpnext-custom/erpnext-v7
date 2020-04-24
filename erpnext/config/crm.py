@@ -68,8 +68,9 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Feedback",
-					"description": _("Feedbacks."),
+					"description": _("Feedback."),
 				},
+				
 			]
 		},
 		{
@@ -129,11 +130,11 @@ def get_data():
 					"description": _("Vehicle Update"),
 				},
 				{
-					"type": "doctype",
-					"name": "Change Status",
-					"label": "Change Queue and Delivery Confirmation Status",
-					"description": _("Change Queue and Confirmation Status"),
-				},
+                                        "type": "doctype",
+                                        "name": "Change Status",
+                                        "label": "Change Queue and Delivery Confirmation Status",
+                                        "description": _("Change Queue and Confirmation Status"),
+                                },
 				{
 					"type": "doctype",
 					"name": "Change Vehicle Status",
@@ -166,6 +167,18 @@ def get_data():
 					"name": "Customer Payment",
 					"label": "Customer Payments",
 					"description": _("Customer Payments"),
+				},
+			]
+		},
+		{
+			"label": _("Tools"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "CRM Sign up",
+					"label": "CRM Sign up",
+					"description": _("Customer creation for Back Office"),
 				},
 			]
 		},

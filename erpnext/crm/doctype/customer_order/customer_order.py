@@ -373,8 +373,8 @@ class CustomerOrder(Document):
 		self.total_quantity  	   	= total_quantity
 		self.total_item_rate 	  	= flt(total_quantity) * flt(self.item_rate)
 		self.total_transportation_rate	= flt(total_transportation_rate) 
-		self.total_payable_amount  	= flt(self.total_item_rate) + flt(self.total_transportation_rate)
+		self.total_payable_amount  	= flt(flt(self.total_item_rate) + flt(self.total_transportation_rate),2)
 		#if flt(self.total_payable_amount,2) - math.floor(flt(self.total_payable_amount,2)) != 0.50:
 		#	self.total_payable_amount = round(self.total_payable_amount)
 
-		self.total_balance_amount	= flt(self.total_payable_amount)
+		self.total_balance_amount	= flt(self.total_payable_amount,2)

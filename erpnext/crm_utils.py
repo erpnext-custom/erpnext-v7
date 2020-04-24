@@ -1053,13 +1053,37 @@ def filter_vehicle_customer_order(doctype, txt, searchfield, start, page_len, fi
                                 'txt': "%%%s%%" % frappe.db.escape(txt)
                         })
 	else:
-                return frappe.db.sql("""select name, drivers_name, contact_no from `tabVehicle`
-                                        where docstatus = 1 
-                                        and vehicle_status = 'Active'
+		'''
+                return frappe.db.sql("""select vehicle_no, drivers_name, contact_no from `tabVehicle`
+                                        where vehicle_status = 'Active'
                                 """.format(key=frappe.db.escape(searchfield),
                                  match_condition=get_match_cond(doctype)), {
                                 'txt': "%%%s%%" % frappe.db.escape(txt)
                         })
+		'''
+		return frappe.db.sql("""
+				select name, drivers_name, contact_no from `tabVehicle`
+					where vehicle_status = 'Active'
+					and ({key} like %(txt)s
+						or drivers_name like %(txt)s
+						or contact_no like %(txt)s)
+					{mcond}
+				order by
+					if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
+					if(locate(%(_txt)s, drivers_name), locate(%(_txt)s, drivers_name), 99999),
+					if(locate(%(_txt)s, contact_no), locate(%(_txt)s, contact_no), 99999),
+					idx desc,
+					name, drivers_name, contact_no
+				limit %(start)s, %(page_len)s""".format(**{
+					'key': searchfield,
+					'mcond': get_match_cond(doctype)
+				}), {
+					'txt': "%%%s%%" % txt,
+					'_txt': txt.replace("%", ""),
+					'start': start,
+					'page_len': page_len
+		})
+
 
 @frappe.whitelist()
 def get_limit_details_old(site, branch, item):

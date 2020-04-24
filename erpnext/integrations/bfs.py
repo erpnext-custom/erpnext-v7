@@ -52,19 +52,20 @@ class BFSSecure:
 		co.save(ignore_permissions=True)
 
 		transaction_time = get_datetime().strftime("%Y%m%d%H%M%S")
-		op = frappe.new_doc('Online Payment')
-		op.update({
-			'user': co.user,
-			'customer_order': self.customer_order,
-			'bank_code': self.bank_code,
-			'bank_account': self.bank_account,
-			'amount': self.amount,
-			'transaction_time': transaction_time
-		}).save(ignore_permissions=True)
-		self.op 	= op
-		self.order_no	= op.name
-		self.transaction_time = transaction_time
-		frappe.db.commit()
+		if flt(self.amount) > 0:
+			op = frappe.new_doc('Online Payment')
+			op.update({
+				'user': co.user,
+				'customer_order': self.customer_order,
+				'bank_code': self.bank_code,
+				'bank_account': self.bank_account,
+				'amount': flt(self.amount,2),
+				'transaction_time': transaction_time
+			}).save(ignore_permissions=True)
+			self.op 	= op
+			self.order_no	= op.name
+			self.transaction_time = transaction_time
+			frappe.db.commit()
 
 	def get_online_payment(self, customer_order):
 		self.customer_order = customer_order
@@ -84,7 +85,7 @@ class BFSSecure:
 			self.transaction_time_fmt = op[0].transaction_time
 			self.bank_code	      = op[0].bank_code
 			self.bank_account     = op[0].bank_account 
-			self.amount	      = op[0].amount
+			self.amount	      = flt(op[0].amount,2)
 			self.op = frappe.get_doc('Online Payment', op[0].name)
 		else:
 			frappe.throw(_("Invalid order number"))
@@ -163,7 +164,7 @@ class BFSSecure:
 		print payload
 
 		start_time = time.time()
-		request =  self.post_request(payload, timeout=10)
+		request =  self.post_request(payload, timeout=5)
 		elapsed_time = time.time() - start_time
 		print
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
@@ -186,7 +187,7 @@ class BFSSecure:
 		print payload
 
 		start_time = time.time()
-		request =  self.post_request(payload, timeout=5)
+		request =  self.post_request(payload, timeout=10)
 		elapsed_time = time.time() - start_time
 		print
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
@@ -235,7 +236,7 @@ class BFSSecure:
 		print payload
 
 		start_time = time.time()
-		request =  self.post_request(payload, timeout=60)
+		request =  self.post_request(payload, timeout=45)
 		elapsed_time = time.time() - start_time
 		print
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
