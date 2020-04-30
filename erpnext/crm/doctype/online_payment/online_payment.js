@@ -3,6 +3,6 @@
 
 frappe.ui.form.on('Online Payment', {
 	refresh: function(frm) {
-
+		cur_frm.set_df_property("status", "read_only", frm.doc.status=="Successful");
 	}
 });

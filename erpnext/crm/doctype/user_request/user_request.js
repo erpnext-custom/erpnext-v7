@@ -13,6 +13,13 @@ frappe.ui.form.on('User Request', {
 				}
 			}
 		});
+		cur_frm.set_query("new_financial_institution_branch",function(){
+			return {
+				filters: {
+					"financial_institution": frm.doc.new_financial_institution
+				}
+			}
+		});
 	},
 	refresh: function(frm) {
 		custom.apply_default_settings(frm);
@@ -59,7 +66,7 @@ var enable_disable = function(frm){
 	var fields = [{"CID Details": ["cid"]}, 
 			{"Address Details": ["address_type", "address_line1", "dzongkhag", "gewog"]},
 			{"Contact Details": ["first_name"]}, 
-			{"Bank Details": ["financial_institution", "account_number"]}];
+			{"Bank Details": ["financial_institution", "financial_institution_branch", "account_number"]}];
 
 	// toggle fields required based on request_category
 	$(fields).each(function(i,j){
@@ -74,7 +81,7 @@ var get_old_details = function(frm){
 	var fields = [{"CID Details": ["cid", "date_of_issue", "date_of_expiry", "cid_file_front", "cid_file_back"]}, 
 			{"Address Details": ["address_line1", "address_line2", "dzongkhag", "gewog", "pincode"]},
 			{"Contact Details": ["first_name", "last_name", "email_id", "mobile_no", "alternate_mobile_no"]}, 
-			{"Bank Details": ["financial_institution", "account_number"]}];
+			{"Bank Details": ["financial_institution", "financial_institution_branch", "account_number"]}];
 
 	frappe.call({
 		method: "erpnext.crm.doctype.user_request.user_request.get_old_details",

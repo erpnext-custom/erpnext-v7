@@ -14,7 +14,7 @@ from frappe.core.doctype.user.user import send_sms
 fields = {"CID Details": ["cid", "cid_file_front", "cid_file_back", "date_of_issue", "date_of_expiry"], 
 		"Address Details": ["address_type", "address_line1", "address_line2", "dzongkhag", "gewog", "pincode"],
 		"Contact Details": ["first_name", "last_name", "email_id", "mobile_no", "alternate_mobile_no"], 
-		"Bank Details": ["financial_institution", "account_number"]}
+		"Bank Details": ["financial_institution", "financial_institution_branch", "account_number"]}
 
 class UserRequest(Document):
 	def validate(self):
@@ -126,7 +126,7 @@ class UserRequest(Document):
 		fields = {"CID Details": ["cid"], 
 				"Address Details": ["address_type", "address_line1", "dzongkhag", "gewog"],
 				"Contact Details": ["first_name"], 
-				"Bank Details": ["financial_institution", "account_number"]}
+				"Bank Details": ["financial_institution", "financial_institution_branch", "account_number"]}
 		for i in fields.get(self.request_category):
 			fieldname = "new_"+i
 			if not self.get(fieldname):
