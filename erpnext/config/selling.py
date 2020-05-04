@@ -136,7 +136,7 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Sales Penalty Report",
+					"name": "Sales Compensation Report",
 					"doctype": "Sales Invoice"
 				},
 				{
