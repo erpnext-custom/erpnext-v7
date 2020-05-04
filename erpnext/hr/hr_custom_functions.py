@@ -263,12 +263,13 @@ def get_employee_gis(employee):
 # VER#2.0#CDCL#886: Following code is added by SHIV on 06/09/2018
 @frappe.whitelist()
 def get_payroll_settings(employee=None):
-        settings = {}
+	settings = {}
         if employee:
                 settings = frappe.db.sql("""
                         select
                                 e.employee_group,
                                 e.employee_subgroup,
+                                d.sws_contribution,
                                 d.gis,
                                 g.health_contribution,
                                 g.employee_pf,
@@ -281,6 +282,7 @@ def get_payroll_settings(employee=None):
                 """.format(employee), as_dict=True);
         settings = settings[0] if settings else settings
         return settings
+
 # +++++++++++++++++++++ VER#2.0#CDCL#886 ENDS +++++++++++++++++++++
 
 @frappe.whitelist()

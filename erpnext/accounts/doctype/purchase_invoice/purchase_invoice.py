@@ -91,7 +91,7 @@ class PurchaseInvoice(BuyingController):
                 }[str(self.docstatus or 0)]
 
 	def adjust_add_ded(self):
-                self.total_add_ded = flt(self.freight_and_insurance_charges) - flt(self.discount) + flt(self.tax) + flt(self.other_charges)
+                self.total_add_ded = flt(self.freight_and_insurance_charges) - flt(self.discount) + flt(self.royalty) + flt(self.tax) + flt(self.other_charges)
                 self.discount_amount = -1 * flt(self.total_add_ded)
 	
 

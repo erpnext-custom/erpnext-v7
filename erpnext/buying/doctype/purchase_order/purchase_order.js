@@ -36,6 +36,10 @@ frappe.ui.form.on("Purchase Order", {
 		calculate_discount(frm)
 	},
 
+	royalty: function(frm) {
+		calculate_discount(frm)
+	},
+
 	other_charges: function(frm) {
 		calculate_discount(frm)
 	},
@@ -56,8 +60,8 @@ frappe.ui.form.on("Purchase Order", {
 });
 
 function calculate_discount(frm) {
-	cur_frm.set_value("total_add_ded", frm.doc.freight_and_insurance_charges + frm.doc.other_charges + frm.doc.tax - frm.doc.discount)
-	cur_frm.set_value("discount_amount", -frm.doc.freight_and_insurance_charges - frm.doc.other_charges - frm.doc.tax + frm.doc.discount)
+	cur_frm.set_value("total_add_ded", frm.doc.freight_and_insurance_charges + frm.doc.royalty + frm.doc.other_charges + frm.doc.tax - frm.doc.discount)
+	cur_frm.set_value("discount_amount", -frm.doc.freight_and_insurance_charges - frm.doc.royalty - frm.doc.other_charges - frm.doc.tax + frm.doc.discount)
 	cur_frm.refresh_field("discount_amount")
 	cur_frm.refresh_field("total_add_ded")
 }

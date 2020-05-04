@@ -497,7 +497,7 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
                         from `tabEquipment` e
                         where e.branch like %(branch)s
                         and e.is_disabled != 1
-                        and e.not_cdcl = 0
+                        and e.not_cdcl = 0 
                         and exists(select 1
                                      from `tabEquipment Type` t
                                     where t.name = e.equipment_type

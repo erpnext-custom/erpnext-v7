@@ -268,12 +268,12 @@ class SalaryStructure(Document):
                                                 total_earning += calc_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
                                 else:
-                                        '''
+                                        
                                         if self.get(m['field_name']) and m['name'] == 'SWS':
                                                 sws_amt = round(flt(settings.get("sws_contribution")))
                                                 calc_amt = sws_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': flt(sws_amt)})
-                                        '''
+                                        
                                         if self.get(m['field_name']) and m['name'] == 'Group Insurance Scheme':
                                                 gis_amt  = round(flt(settings.get("gis")))
                                                 calc_amt = gis_amt
@@ -353,6 +353,10 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                         working_days = calc_days.get("working_days")
                         lwp          = calc_days.get("leave_without_pay")
                         payment_days = calc_days.get("payment_days")
+			
+			if source.depend_salary_on_attendance:
+                                absent_days = calc_days.get("absent_days")
+
                 else:
                         return
 
@@ -406,7 +410,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                 # Leave without pay
                                 calc_amount = flt(amount)
                                 if key == "earnings":
-                                        if d.depends_on_lwp:
+					if d.depends_on_lwp or source.depend_salary_on_attendance:
                                                 calc_amount = round(flt(amount)*flt(payment_days)/flt(days_in_month))
                                         else:
                                                 calc_amount = round(flt(amount)*(flt(working_days)/flt(days_in_month)))
@@ -464,11 +468,11 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                         if not flt(gross_amt):
                                 d['amount'] = 0
                         else:
-                                '''
+                                
                                 if d['salary_component'] == 'SWS':
                                         sws = flt(settings.get("sws_contribution"));
                                         d['amount'] = sws
-                                '''
+                                
                                 if d['salary_component'] == 'PF':
                                         percent = flt(settings.get("employee_pf"))
                                         pf = round(basic_amt*flt(percent)*0.01);

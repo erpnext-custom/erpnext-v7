@@ -159,7 +159,8 @@ class SalarySlip(TransactionBase):
                 holidays     = 0
                 payment_days = 0
                 lwp          = 0
-                start_date   = getdate(self.start_date)
+                absent_days  = 0
+		start_date   = getdate(self.start_date)
                 end_date     = getdate(self.end_date)
                 
                 # if default fiscal year is not set, get from nowdate
@@ -207,17 +208,21 @@ class SalarySlip(TransactionBase):
                                         days_in_month -= len(holidays)
                                         working_days  -= len(calc_holidays)
 
-                                payment_days = flt(working_days)-flt(lwp) 
+                                if ss_doc.depend_salary_on_attendance:
+                                        absent_days = self.calculate_absent_days(start_date, end_date)
+
+				payment_days = flt(working_days)-flt(lwp) - flt(absent_days)
 
                 self.total_days_in_month = days_in_month
                 self.leave_without_pay = lwp
                 self.payment_days = payment_days > 0 and payment_days or 0
-
+		self.absent_days = absent_days
                 self.append('items',{
                         'salary_structure': ss_doc.name,
                         'from_date': start_date,
                         'to_date': end_date,
                         'total_days_in_month': days_in_month,
+			'absent_days': absent_days,
                         'working_days': working_days,
                         'leave_without_pay': lwp,
                         'payment_days': payment_days
@@ -227,6 +232,7 @@ class SalarySlip(TransactionBase):
                         'from_date': start_date,
                         'to_date': end_date,
                         'total_days_in_month': days_in_month,
+			'absent_days': absent_days,
                         'working_days': working_days,
                         'leave_without_pay': lwp,
                         'payment_days': payment_days
@@ -321,6 +327,19 @@ class SalarySlip(TransactionBase):
 				if leave:
 					lwp = cint(leave[0][1]) and (lwp + 0.5) or (lwp + 1)
 		return lwp
+
+	def calculate_absent_days(self, start_date, end_date):
+                absent = 0
+                absentes = frappe.db.sql("""
+                        select count(*) as ab
+                        from `tabAttendance`
+                        where status = 'Absent'
+                        and employee = %s
+                        and att_date between %s and %s
+                """, (self.employee, start_date, end_date) )
+                if absentes:
+                        absent = absentes[0][0]
+                return absent
 
         #Commented by SHIV on 2018/09/28
         '''

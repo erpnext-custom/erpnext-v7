@@ -478,10 +478,11 @@ def make_purchase_invoice(source_name, target_doc=None):
 	def update_other_charges(source, target, sp):
                 target.discount =  flt(target.discount)
                 target.tax =  flt(target.tax)
+		target.royalty = flt(target.royalty)
                 target.other_charges = flt(target.other_charges)
 	#	target.other_charges = flt(target.other_charges) + flt(source.other_charges)
                 target.freight_and_insurance_charges =  flt(target.freight_and_insurance_charges)
-                target.total_add_ded = flt(target.freight_and_insurance_charges) - flt(target.discount) + flt(target.tax) + flt(target.other_charges)
+                target.total_add_ded = flt(target.freight_and_insurance_charges) - flt(target.discount) + flt(target.royalty) + flt(target.tax) + flt(target.other_charges)
                 target.discount_amount = -1 * flt(target.total_add_ded) 
 
 	def update_item(source_doc, target_doc, source_parent):
