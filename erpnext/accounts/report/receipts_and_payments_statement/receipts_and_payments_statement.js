@@ -1,10 +1,12 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
+frappe.require("assets/erpnext/js/financial_statements.js", function() {
+
 frappe.query_reports["Receipts and Payments Statement"] = {
 	"filters": [
 		{
-			"fieldname":"company",
+			"fieldname": "company",
 			"label": __("Company"),
 			"fieldtype": "Link",
 			"options": "Company",
@@ -12,87 +14,63 @@ frappe.query_reports["Receipts and Payments Statement"] = {
 			"reqd": 1
 		},
 		{
-			"fieldname":"from_date",
-			"label": __("From Date"),
-			"fieldtype": "Date",
-			"default": frappe.datetime.add_months(frappe.datetime.get_today(), -1),
-			"reqd": 1,
-			"width": "60px"
-		},
-		{
-			"fieldname":"to_date",
-			"label": __("To Date"),
-			"fieldtype": "Date",
-			"default": frappe.datetime.get_today(),
-			"reqd": 1,
-			"width": "60px"
-		},
-		{
-			"fieldname":"account",
-			"label": __("Account"),
+			"fieldname": "fiscal_year",
+			"label": __("Fiscal Year"),
 			"fieldtype": "Link",
-			"options": "Account",
-			"get_query": function() {
-				var company = frappe.query_report.filters_by_name.company.get_value();
-				return {
-					"doctype": "Account",
-					"filters": {
-						"company": company,
-					}
+			"options": "Fiscal Year",
+			"default": frappe.defaults.get_user_default("fiscal_year"),
+			"reqd": 1,
+			"on_change": function(query_report) {
+				var fiscal_year = query_report.get_values().fiscal_year;
+				if (!fiscal_year) {
+					return;
 				}
+				frappe.model.with_doc("Fiscal Year", fiscal_year, function(r) {
+					var fy = frappe.model.get_doc("Fiscal Year", fiscal_year);
+					query_report.filters_by_name.from_date.set_input(fy.year_start_date);
+					query_report.filters_by_name.to_date.set_input(fy.year_end_date);
+					query_report.trigger_refresh();
+				});
 			}
 		},
 		{
-			"fieldname":"cost_center",
+			"fieldname": "from_date",
+			"label": __("From Date"),
+			"fieldtype": "Date",
+			"default": frappe.defaults.get_user_default("year_start_date"),
+		},
+		{
+			"fieldname": "to_date",
+			"label": __("To Date"),
+			"fieldtype": "Date",
+			"default": frappe.defaults.get_user_default("year_end_date"),
+		},
+	
+		{
+			"fieldname": "cost_center",
 			"label": __("Cost Center"),
 			"fieldtype": "Link",
 			"options": "Cost Center",
+			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1']]}}
 		},
 		{
-                        "fieldname":"voucher_no",
-                        "label": __("Voucher Number"),
-                        "fieldtype": "Data",
-                },
-		{
-			"fieldtype": "Break",
-		},
-		{
-			"fieldname":"party_type",
-			"label": __("Party Type"),
-			"fieldtype": "Select",
-			"options": ["", "Customer", "Supplier", "Employee"],
-			"default": ""
-		},
-		{
-			"fieldname":"party",
-			"label": __("Party"),
-			"fieldtype": "Dynamic Link",
-			"get_options": function() {
-				var party_type = frappe.query_report.filters_by_name.party_type.get_value();
-				var party = frappe.query_report.filters_by_name.party.get_value();
-				if(party && !party_type) {
-					frappe.throw(__("Please select Party Type first"));
-				}
-				return party_type;
-			}
-		},
-		{
-			"fieldname":"group_by_voucher",
-			"label": __("Group by Voucher"),
+			"fieldname": "with_period_closing_entry",
+			"label": __("Period Closing Entry"),
 			"fieldtype": "Check",
 			"default": 1
 		},
 		{
-			"fieldname":"group_by_account",
-			"label": __("Group by Account"),
-			"fieldtype": "Check",
+			"fieldname": "show_zero_values",
+			"label": __("Show zero values"),
+			"fieldtype": "Check"
 		},
-		/*{
-			"fieldname":"letter_head",
-			"label": __("Letter Head"),
-			"fieldtype": "Link",
-			"options": "Letter Head",
-			"default": frappe.defaults.get_default("letter_head"),
-		} */
-	]
-}
+	],
+	"formatter": erpnext.financial_statements.formatter,
+	
+	"tree": true,
+	"name_field": "account",
+	"parent_field": "parent_account",
+	"initial_depth": 3
+   }
+});
+
