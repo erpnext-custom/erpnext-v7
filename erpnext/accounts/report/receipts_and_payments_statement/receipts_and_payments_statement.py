@@ -17,7 +17,6 @@ def execute(filters=None):
 	columns = get_columns()
 	return columns, data
 
-
 def get_data(filters):
 	validate_filters(filters)
         data   		= []
@@ -40,10 +39,10 @@ def get_data(filters):
 		total_credit += flt(credit)
 
 	# total row
-	data += [frappe._dict({
-		'account': 'Total', 'account_name': 'Total', 'account_code': None, 'parent_account': None, 
-		'indent': 0, 'debit': total_debit, 'credit': total_credit, 
-	})]
+#	data += [frappe._dict({
+#		'account': 'Total', 'account_name': 'Total', 'account_code': None, 'parent_account': None, 
+#		'indent': 0, 'debit': total_debit, 'credit': total_credit, 
+#	})]
 
         return data
 

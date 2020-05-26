@@ -42,11 +42,11 @@ def get_data():
 					"label": "Material",
 					"description": _("All Products or Services."),
 				},
-				{
-					"type": "doctype",
-					"name": "Price List",
-					"description": _("Price List master.")
-				},
+				#{
+				#	"type": "doctype",
+				#	"name": "Price List",
+				#	"description": _("Price List master.")
+				#},
 				{
 					"type": "doctype",
 					"name": "Item Group",

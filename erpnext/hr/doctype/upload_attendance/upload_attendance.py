@@ -19,7 +19,7 @@ def get_template():
 		raise frappe.PermissionError
 
 	args = frappe.local.form_dict
-
+	
 	w = UnicodeWriter()
 	w = add_header(w)
 
@@ -42,7 +42,7 @@ def add_header(w):
 
 def add_data(w, args):
 	dates = get_dates(args)
-	employees = get_active_employees()
+	employees = get_active_employees(args)
 	existing_attendance_records = get_existing_attendance_records(args)
 	for date in dates:
 		for employee in employees:
@@ -65,9 +65,16 @@ def get_dates(args):
 	dates = [add_days(args["from_date"], i) for i in range(0, no_of_days)]
 	return dates
 
-def get_active_employees():
+def get_active_employees(args):
+	cond = " and 1 = 1"
+	if args.get("branch"):
+		cond += " and ifnull(branch, '') = '{0}'".format(args["branch"])
+	
+	if args.get("employment_type"):
+		cond += " and ifnull(employment_type, '')  = '{0}'".format(args["employment_type"])
+	
 	employees = frappe.db.sql("""select name, employee_name, company
-		from tabEmployee where docstatus < 2 and status = 'Active'""", as_dict=1)
+		from tabEmployee where docstatus < 2 and status = 'Active' {0}""".format(cond), as_dict=1, debug =1)
 	return employees
 
 def get_existing_attendance_records(args):

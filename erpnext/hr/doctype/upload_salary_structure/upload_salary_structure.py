@@ -142,10 +142,22 @@ def upload():
 					doc.temporary_transfer_allowance_method = 'Percent'
 					doc.temporary_transfer_allowance = d.temporary_transfer_allowance
 	
-				if d.corporate:
+				if emp.employment_type == 'GEP' or emp.employee_group == 'GEP':
+					doc.depend_salary_on_attendance = 1
+					doc.eligible_for_corporate_allowance = 0
+					doc.eligible_for_pbva = 0
+					doc.eligible_for_leave_encashment = 0
+					doc.eligible_for_ltc = 0
+					doc.eligible_for_sws = 0
+					doc.eligible_for_health_contribution = 0
+					doc.eligible_for_leave_e = 0
+					doc.eligible_for_annual_bonus = 0
+
+				elif emp.employment_type != 'GEP':
 					doc.eligible_for_corporate_allowance = 1
 					doc.ca = d.corporate
 					doc.ca_method = 'Percent'
+				
 					#amount = flt(d.basic) * 0.01 * flt(d.corporate)
 					#doc.append("earnings",{"salary_component": "Corporate Allowance", "amount": amount})	
 					#ear += flt(amount)	

@@ -226,10 +226,10 @@ body[data-route="pos"] .modal-dialog {
 }
 
 #page-desktop {
-	background-size: 70% !important;
-	background-image: url("");
+	background-size: 60% !important;
+	background-image: url("https://erp.ns.bt/files/112th%20National%20Day112c122.jpg");
 	background-repeat: no-repeat !important;
-	background-position: left !important;
+	background-position: center !important;
 	background-color: #CA852E !important;
 }
 

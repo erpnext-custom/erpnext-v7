@@ -329,18 +329,18 @@ def get_data():
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				},
-				{
-					"type": "report",
-					"name": "Accounts Receivable",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
 				#{
 				#	"type": "report",
-				#	"name": "Accounts Payable",
-				#	"doctype": "Purchase Invoice",
+				#	"name": "Accounts Receivable",
+				#	"doctype": "Sales Invoice",
 				#	"is_query_report": True
 				#},
+				{
+					"type": "report",
+					"name": "Accounts Payable",
+					"doctype": "Purchase Invoice",
+					"is_query_report": True
+				},
 				{
 					"type": "report",
 					"name": "Party Wise Ledger",
@@ -447,12 +447,12 @@ def get_data():
 			"label": _("Other Reports"),
 			"icon": "icon-table",
 			"items": [
-				{
-					"type": "report",
-					"name": "Gross Profit",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
+				#{
+				#	"type": "report",
+				#	"name": "Gross Profit",
+				#	"doctype": "Sales Invoice",
+				#	"is_query_report": True
+				#},
 				{
 					"type": "report",
 					"name": "Payment Period Based On Invoice Date",

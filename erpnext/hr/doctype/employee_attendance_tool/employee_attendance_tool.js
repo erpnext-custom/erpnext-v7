@@ -15,7 +15,9 @@ frappe.ui.form.on("Employee Attendance Tool", {
 	department: function(frm) {
 		erpnext.employee_attendance_tool.load_employees(frm);
 	},
-
+	employment_type: function(frm) {
+		erpnext.employee_attendance_tool.load_employees(frm);
+	},
 	branch: function(frm) {
 		erpnext.employee_attendance_tool.load_employees(frm);
 	},
@@ -35,6 +37,7 @@ erpnext.employee_attendance_tool = {
 				args: {
 					date: frm.doc.date,
 					department: frm.doc.department,
+					employment_type: frm.doc.employment_type,
 					branch: frm.doc.branch,
 					company: frm.doc.company
 				},

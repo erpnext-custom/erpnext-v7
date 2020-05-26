@@ -268,13 +268,14 @@ class SalaryStructure(Document):
                                                 total_earning += calc_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
                                 else:
-                                        
                                         if self.get(m['field_name']) and m['name'] == 'SWS':
                                                 sws_amt = round(flt(settings.get("sws_contribution")))
-                                                calc_amt = sws_amt
+                                                #sws_amt = 0.0
+						#sws_amt = frappe.get_doc("Employee Grade", self.employee_grade).sws_contribution
+						calc_amt = flt(sws_amt)
                                                 calc_map.append({'salary_component': m['name'], 'amount': flt(sws_amt)})
                                         
-                                        if self.get(m['field_name']) and m['name'] == 'Group Insurance Scheme':
+					if self.get(m['field_name']) and m['name'] == 'Group Insurance Scheme':
                                                 gis_amt  = round(flt(settings.get("gis")))
                                                 calc_amt = gis_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': flt(gis_amt)})
@@ -353,7 +354,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                         working_days = calc_days.get("working_days")
                         lwp          = calc_days.get("leave_without_pay")
                         payment_days = calc_days.get("payment_days")
-			
+
 			if source.depend_salary_on_attendance:
                                 absent_days = calc_days.get("absent_days")
 
@@ -362,12 +363,15 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 
 		# Copy earnings and deductions table from source salary structure
 		calc_map = {}
+		full_basic = 0.0
 		for key in ('earnings', 'deductions'):
 			for d in source.get(key):
                                 amount          = flt(d.amount)
                                 deductible_amt  = 0.0
                                 deducted_amt    = 0.0
                                 outstanding_amt = 0.0
+				if d.salary_component == 'Basic Pay':
+                                        full_basic = amount
 
                                 if d.from_date:
                                         if (start_date <= d.from_date <= end_date) or ((d.from_date <= end_date) and (nvl(d.to_date,end_date) >= start_date)):                
@@ -414,6 +418,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                                 calc_amount = round(flt(amount)*flt(payment_days)/flt(days_in_month))
                                         else:
                                                 calc_amount = round(flt(amount)*(flt(working_days)/flt(days_in_month)))
+
                                 
                                 calc_map.setdefault(key,[]).append({
                                         'salary_component'         : d.salary_component,
@@ -471,12 +476,17 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                 
                                 if d['salary_component'] == 'SWS':
                                         sws = flt(settings.get("sws_contribution"));
-                                        d['amount'] = sws
+                                        #sws = 0.0
+					#sws = frappe.get_doc("Employee Grade", self.employee_grade).sws_contribution
+					d['amount'] = flt(sws)
                                 
                                 if d['salary_component'] == 'PF':
-                                        percent = flt(settings.get("employee_pf"))
-                                        pf = round(basic_amt*flt(percent)*0.01);
-                                        pf += basic_pay_arrears_pf
+                                        if source.employment_type == 'GEP':
+                                                pf = round(full_basic*flt(percent)*0.01);
+                                        else:
+                                                pf = round(basic_amt*flt(percent)*0.01);
+
+					pf += basic_pay_arrears_pf
                                         ### Ver.2.0.20191227 Begins, added by SHIV on 2019/12/27
                                         # Temporary workout for adding 4% of oct-2019 and nov-2019 PF
                                         # this needs to be commented after processing 201912 payslips

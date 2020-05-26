@@ -22,22 +22,22 @@ def get_data():
 					"name": "Timesheet",
 					"description": _("Timesheet for all tasks."),
 				},
-                #                 {
-				# 	"type": "doctype",
-				# 	"name": "BOQ",
-				# 	"description": _("Bill of Quantities."),
-				# },
-                #                 {
-				# 	"type": "doctype",
-				# 	"name": "BOQ Adjustment",
-				# 	"description": _("Adjustments for Bill of Quantities."),
-				# },
-                #                 {
-				# 	"type": "doctype",
-				# 	"name": "MB Entry",
-                #                         "label": "Measurement Book Entries",
-				# 	"description": _("Measurement Book Entries."),
-				# },
+                                 {
+				 	"type": "doctype",
+				 	"name": "BOQ",
+				 	"description": _("Bill of Quantities."),
+				 },
+                                {
+					"type": "doctype",
+				 	"name": "BOQ Adjustment",
+				 	"description": _("Adjustments for Bill of Quantities."),
+				 },
+                                 {
+				 	"type": "doctype",
+				 	"name": "MB Entry",
+                                         "label": "Measurement Book Entries",
+				 	"description": _("Measurement Book Entries."),
+				 },
 				{
 					"type": "report",
 					"route": "Gantt/Task",
@@ -176,24 +176,24 @@ def get_data():
                                         "name": "Project Equipment",
                                         "doctype": "Project"
                                 },
-                #                 {
-				# 	"type": "report",
-				# 	"is_query_report": True,
-				# 	"name": "BOQ Register",
-				# 	"doctype": "BOQ"
-				# },
-                #                 {
-				# 	"type": "report",
-				# 	"is_query_report": True,
-				# 	"name": "Measurement Book Register",
-				# 	"doctype": "MB Entry"
-				# },
-                #                 {
-				# 	"type": "report",
-				# 	"is_query_report": True,
-				# 	"name": "Advance Payment Register",
-				# 	"doctype": "Project Advance"
-				# },
+                                 {
+				 	"type": "report",
+				 	"is_query_report": True,
+				 	"name": "BOQ Register",
+				 	"doctype": "BOQ"
+				 },
+                                 {
+				 	"type": "report",
+				 	"is_query_report": True,
+				 	"name": "Measurement Book Register",
+				 	"doctype": "MB Entry"
+				 },
+                                 {
+				 	"type": "report",
+				 	"is_query_report": True,
+				 	"name": "Advance Payment Register",
+				 	"doctype": "Project Advance"
+				 },
                 #                 {
 				# 	"type": "report",
 				# 	"is_query_report": True,

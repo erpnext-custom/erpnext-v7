@@ -159,8 +159,8 @@ class SalarySlip(TransactionBase):
                 holidays     = 0
                 payment_days = 0
                 lwp          = 0
-                absent_days  = 0
-		start_date   = getdate(self.start_date)
+		absent_days  = 0
+                start_date   = getdate(self.start_date)
                 end_date     = getdate(self.end_date)
                 
                 # if default fiscal year is not set, get from nowdate
@@ -207,24 +207,24 @@ class SalarySlip(TransactionBase):
                                 if not cint(frappe.db.get_value("HR Settings", None, "include_holidays_in_total_working_days")):
                                         days_in_month -= len(holidays)
                                         working_days  -= len(calc_holidays)
-
                                 if ss_doc.depend_salary_on_attendance:
-                                        absent_days = self.calculate_absent_days(start_date, end_date)
+                                        absent_days = self.calculate_absent_days(start_date, end_date) 
 
-				payment_days = flt(working_days)-flt(lwp) - flt(absent_days)
+				payment_days = flt(working_days)-flt(lwp)-flt(absent_days) 
 
                 self.total_days_in_month = days_in_month
                 self.leave_without_pay = lwp
                 self.payment_days = payment_days > 0 and payment_days or 0
 		self.absent_days = absent_days
-                self.append('items',{
+                
+		self.append('items',{
                         'salary_structure': ss_doc.name,
                         'from_date': start_date,
                         'to_date': end_date,
                         'total_days_in_month': days_in_month,
-			'absent_days': absent_days,
                         'working_days': working_days,
                         'leave_without_pay': lwp,
+			'absent_days': absent_days,
                         'payment_days': payment_days
                 })
 		return {
@@ -232,9 +232,9 @@ class SalarySlip(TransactionBase):
                         'from_date': start_date,
                         'to_date': end_date,
                         'total_days_in_month': days_in_month,
-			'absent_days': absent_days,
                         'working_days': working_days,
                         'leave_without_pay': lwp,
+			'absent_days': absent_days,
                         'payment_days': payment_days
                 }
 

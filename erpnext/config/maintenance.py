@@ -51,15 +51,15 @@ def get_data():
 					"name": "Hire Charge Parameter",
 					"description": _("Hire Charge Parameter"),
 				},
-				# {
-				# 	"type": "doctype",
-				# 	"name": "Branch Fleet Manager",
-				# 	"label": "Mechanical Notification Settings",
-				# },
-				# {
-				# 	"type": "doctype",
-				# 	"name": "Tender Hire Rate",
-				# },
+				 {
+				 	"type": "doctype",
+				 	"name": "Branch Fleet Manager",
+				 	"label": "Mechanical Notification Settings",
+				 },
+				 {
+				 	"type": "doctype",
+				 	"name": "Tender Hire Rate",
+				 },
 				{
 					"type": "doctype",
 					"name": "HSD Adjustment",
@@ -71,31 +71,31 @@ def get_data():
 			"label": _("Maintenance Transaction"),
 			"icon": "icon-star",
 			"items": [
-				# {
-				# 	"type": "doctype",
-				# 	"name": "Break Down Report",
-				# 	"description": _("Break Down Reports"),
-				# },
-				# {
-				# 	"type": "doctype",
-				# 	"name": "Job Card",
-				# 	"description": _("Create Job Card"),
-				# },
-				# {
-				# 	"type": "doctype",
-				# 	"name": "Mechanical Payment",
-				# 	"description": _("Create Payment"),
-				# },
+				 {
+				 	"type": "doctype",
+				 	"name": "Break Down Report",
+				 	"description": _("Break Down Reports"),
+				 },
+				 {
+				 	"type": "doctype",
+				 	"name": "Job Card",
+				 	"description": _("Create Job Card"),
+				 },
+				 {
+				 	"type": "doctype",
+				 	"name": "Mechanical Payment",
+				 	"description": _("Create Payment"),
+				 },
 			]
 		},
 		{
 			"label": _("Fleet Transaction"),
 			"icon": "icon-star",
 			"items": [
-				# {
-				# 	"type": "doctype",
-				# 	"name": "Equipment Request",
-				# },
+				 {
+				 	"type": "doctype",
+				 	"name": "Equipment Request",
+				 },
 				{
 					"type": "doctype",
 					"name": "Equipment Hiring Form",
@@ -190,25 +190,25 @@ def get_data():
 					"name": "HSD Consumption Report",
 					"doctype": "Vehicle Logbook"
 				},
-				# {
-				# 	"type": "report",
-				# 	"is_query_report": True,
-				# 	"name": "Equipment Expense Report",
-				# 	"doctype": "Equipment"
-				# },
+				 {
+				 	"type": "report",
+				 	"is_query_report": True,
+				 	"name": "Equipment Expense Report",
+				 	"doctype": "Equipment"
+				 },
 				# {
 				# 	"type": "report",
 				# 	"is_query_report": True,
 				# 	"name": "Equipment Performance Report",
 				# 	"doctype": "Equipment"
 				# },
-				# {
-				# 	"type": "report",
-				# 	"is_query_report": True,
-				# 	"name": "Equipment Status",
-				# 	"label": "Equipment Status Report",
-				# 	"doctype": "Equipment"
-				# },
+				 {
+				 	"type": "report",
+				 	"is_query_report": True,
+				 	"name": "Equipment Status",
+				 	"label": "Equipment Status Report",
+				 	"doctype": "Equipment"
+				 },
 				# {
 				# 	"type": "report",
 				# 	"is_query_report": True,

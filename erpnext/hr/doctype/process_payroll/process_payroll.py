@@ -28,7 +28,12 @@ class ProcessPayroll(Document):
 
 	def get_emp_list(self, process_type=None):
 		cond = self.get_filter_condition()
-
+		emp_cond = " and 1 = 1"	
+		if self.employment_type == 'GEP':
+			emp_cond = " and employment_type = 'GEP'"
+		if self.employment_type == 'Others':
+			emp_cond = " and employment_type != 'GEP'"
+	
 		if process_type == "create":
                         cond += self.get_joining_releiving_condition()
                         emp_list = frappe.db.sql("""
@@ -40,9 +45,9 @@ class ProcessPayroll(Document):
                                                 and t3.docstatus != 2
                                                 and t3.fiscal_year = '{0}'
                                                 and t3.month = '{1}')
-                                {2}
+                                {2} {3}
                                 order by t1.branch, t1.name
-                        """.format(self.fiscal_year, self.month, cond), as_dict=True)
+                        """.format(self.fiscal_year, self.month, cond, emp_cond), as_dict=True)
                 else:
                         emp_list = frappe.db.sql("""
                                 select t1.name
@@ -50,9 +55,9 @@ class ProcessPayroll(Document):
                                 where t1.fiscal_year = '{0}'
                                 and t1.month = '{1}'
                                 and t1.docstatus = 0
-                                {2}
+                                {2} {3}
                                 order by t1.branch, t1.name
-                        """.format(self.fiscal_year, self.month, cond), as_dict=True)
+                        """.format(self.fiscal_year, self.month, cond, emp_cond), as_dict=True)
 
 		return emp_list
 
@@ -84,7 +89,6 @@ class ProcessPayroll(Document):
         def process_salary(self, process_type=None, name=None):
 		self.check_permission('write')
 		msg = ""
-		
 		if name:
                         try:
                                 if process_type == "create":
