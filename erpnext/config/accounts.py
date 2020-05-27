@@ -237,6 +237,13 @@ def get_data():
 					"label": _("Payments and Reciepts Report"),
 				 	"is_query_report": True,
 				 },
+				 				 {
+				 	"type": "report",
+				 	"name": "Receipts and Payments Report",
+				 	"doctype": "GL Entry",
+					"label": _("Receipts and Payments Report"),
+				 	"is_query_report": True,
+				 },
 				# {
 				# 	"type": "report",
 				# 	"name": "Statement of Financial Position",

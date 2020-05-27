@@ -72,7 +72,7 @@ def get_data(filters):
 
 	total_row = calculate_values(accounts, gl_entries_by_account, opening_balances, filters)
 	accumulate_values_into_parents(accounts, accounts_by_name)
-
+	
 	data = prepare_data(accounts, filters, total_row, parent_children_map)
 	data = filter_out_zero_value_rows(data, parent_children_map,
 		show_zero_values=filters.get("show_zero_values"))
@@ -131,6 +131,44 @@ def get_rootwise_opening_balances(filters, report_type):
 		opening.setdefault(d.account, d)
 	return opening
 
+
+#ndef bank_cash(accounts, gl_entries_by_account, opening_balances, filters):
+       	list = frappe.db.sql("""select a.name as name, sum(b.debit) as debit, sum(b.credit) as credit from tabAccount a, `tabGL Entry` b where b.account in (select account from `tabGL Entry` where docstatus =1)  and a.account_type = 'Bank' and a.is_group != 1""")
+	init = {
+                "opening_debit": 0.0,
+                "opening_credit": 0.0,
+                "debit": 0.0,
+                "credit": 0.0,
+                "closing_debit": 0.0,
+                "closing_credit": 0.0
+        }
+
+        bank = {
+                "account": None,
+                "account_name": _("bank"),
+                "warn_if_negative": True,
+                "opening_debit": 0.0,
+                "opening_credit": 0.0,
+                "debit": 0.0,
+                "credit": 0.0,
+                "closing_debit": 0.0,
+                "closing_credit": 0.0
+        }
+	for a in list:
+        	accounts = a.name
+                debits = a.debit
+                credits = a.credit
+
+                # add opening
+		bank["opening_debit"] = debits
+		bank["opening_credit"] = credit
+
+	bank["debit"] += bank["debit"]
+        bank["credit"] += bank["credit"]
+
+        return bank
+
+
 def calculate_values(accounts, gl_entries_by_account, opening_balances, filters):
 	init = {
 		"opening_debit": 0.0,
@@ -176,7 +214,7 @@ def accumulate_values_into_parents(accounts, accounts_by_name):
 			for key in value_fields:
 				accounts_by_name[d.parent_account][key] += d[key]
 
-def prepare_data(accounts, filters, total_row, parent_children_map):
+def prepare_data( accounts, filters, total_row, parent_children_map):
 	data = []
 	for d in accounts:
 		has_value = False
@@ -189,7 +227,6 @@ def prepare_data(accounts, filters, total_row, parent_children_map):
 			"from_date": filters.from_date,
 			"to_date": filters.to_date
 		}
-
 		prepare_opening_and_closing(d, total_row)
 
 		for key in value_fields:
@@ -203,7 +240,6 @@ def prepare_data(accounts, filters, total_row, parent_children_map):
 		data.append(row)
 
 	data.extend([{},total_row])
-
 	return data
 
 def get_columns():
@@ -284,4 +320,30 @@ def prepare_opening_and_closing(d, total_row):
                 total_row['opening_debit'] = total_row['opening_debit'] + d['opening_debit']
                 total_row['closing_credit'] = total_row['closing_credit'] + d['closing_credit']
                 total_row['closing_debit'] = total_row['closing_debit'] + d['closing_debit']
+
+#def prepare_opening_and_closing(d, bank):
+        d["closing_debit"] = d["opening_debit"] + d["debit"]
+        d["closing_credit"] = d["opening_credit"] + d["credit"]
+
+        if d["closing_debit"] > d["closing_credit"]:
+                d["closing_debit"] -= d["closing_credit"]
+                d["closing_credit"] = 0.0
+
+        else:
+                d["closing_credit"] -= d["closing_debit"]
+                d["closing_debit"] = 0.0
+
+        if d["opening_debit"] > d["opening_credit"]:
+                d["opening_debit"] -= d["opening_credit"]
+                d["opening_credit"] = 0.0
+
+        else:
+                d["opening_credit"] -= d["opening_debit"]
+                d["opening_debit"] = 0.0
+
+        if str(d.account_name.encode('utf-8')) in ["Assets", "Liabilities", "Equity", "Revenue", "Expenses"]:
+                bank['opening_credit'] = bank['opening_credit'] + d['opening_credit']
+                bank['opening_debit'] = bank['opening_debit'] + d['opening_debit']
+                bank['closing_credit'] = bank['closing_credit'] + d['closing_credit']
+                bank['closing_debit'] = bank['closing_debit'] + d['closing_debit']
 

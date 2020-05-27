@@ -373,7 +373,7 @@ class ProjectInvoice(AccountsController):
 
                 self.gross_invoice_amount    = flt(gross_invoice_amount)
                 self.price_adjustment_amount = flt(price_adjustment_amount)
-                self.net_invoice_amount      = flt(self.gross_invoice_amount)+flt(self.price_adjustment_amount)-flt(self.advance_recovery)-flt(self.tds_amount)
+                self.net_invoice_amount      = flt(self.gross_invoice_amount)+flt(self.price_adjustment_amount)-flt(self.advance_recovery)-flt(self.tds_amount)-flt(self.tds) -flt(self.mobilization_amount)-flt(self.material_advance)-flt(self.retention_money)-flt(self.other_deductions)
                 self.total_balance_amount    = flt(self.net_invoice_amount)-flt(self.total_received_amount)-flt(self.total_paid_amount)
                 
                 if flt(self.gross_invoice_amount) == 0:

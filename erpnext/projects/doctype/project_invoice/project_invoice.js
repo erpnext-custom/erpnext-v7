@@ -157,9 +157,22 @@ frappe.ui.form.on('Project Invoice', {
 		calculate_totals(frm);
 	},
 	
-	tds_amount: function(frm){
+	tds: function(frm){
 		calculate_totals(frm);
 	},
+	material_advance: function(frm){
+                calculate_totals(frm);
+        },
+	mobilization_amount: function(frm){
+                calculate_totals(frm);
+        },
+	retention_money: function(frm){
+                calculate_totals(frm);
+        },
+	other_deductions: function(frm){
+                calculate_totals(frm);
+        },
+
 	
 	check_all: function(frm){
 		check_uncheck_all(frm);
@@ -377,7 +390,7 @@ var calculate_totals = function(frm){
 
 		}
 				
-		net_invoice_amount = (flt(gross_invoice_amount)+flt(frm.doc.price_adjustment_amount || 0.0)-flt(frm.doc.advance_recovery || 0.0)-flt(frm.doc.tds_amount || 0.0));
+		net_invoice_amount = (flt(gross_invoice_amount)+flt(frm.doc.price_adjustment_amount || 0.0)-flt(frm.doc.advance_recovery || 0.0)-flt(frm.doc.tds || 0.0)-flt(frm.doc.other_deductions) -flt(frm.doc.retention_money)- flt(frm.doc.material_advance) - flt(frm.doc.mobilization_amount));
 		cur_frm.set_value("gross_invoice_amount",(gross_invoice_amount));
 		cur_frm.set_value("net_invoice_amount",(net_invoice_amount));
 		cur_frm.set_value("total_balance_amount",(flt(frm.doc.net_invoice_amount || 0)-flt(frm.doc.total_received_amount || 0)-flt(frm.doc.total_paid_amount || 0)));

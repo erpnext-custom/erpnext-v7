@@ -482,13 +482,12 @@ def get_data():
                                         "name": "LTC Details",
                                         "doctype": "Leave Travel Concession"
                 },
-				# {
-                #                         "type": "report",
-                #                         "is_query_report": True,
-                #                         "name": "Travel Report",
-                #                         "doctype": "Travel Claim"
-		# }
-                                # },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Travel Report",
+                                        "doctype": "Travel Claim"
+				}
 			]
 		},
 	]
