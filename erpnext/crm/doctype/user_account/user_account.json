@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 0, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:user", 
  "beta": 0, 
  "creation": "2019-11-24 08:09:55.495115", 
@@ -1007,7 +1007,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-04-30 12:14:32.763720", 
+ "modified": "2020-05-15 09:43:49.454888", 
  "modified_by": "Administrator", 
  "module": "CRM", 
  "name": "User Account", 

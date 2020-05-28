@@ -335,7 +335,7 @@ class BFSSecure:
 				#sys.exit(1)
 		'''
 		try:
-			res = requests.post(self.url, headers=headers, data=payload, timeout=timeout)
+			res = requests.post(self.url, headers=headers, data=payload, timeout=timeout, verify=False)
 			print 'RES'
 			print res.text
 		except requests.exceptions.Timeout as e:

@@ -9,6 +9,15 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_ss():
+        count = 1
+        for a in frappe.db.sql(" select name from `tabSalary Structure` where is_active = 'Yes'", as_dict = 1):
+                doc = frappe.get_doc("Salary Structure", a.name)
+                count += 1
+                doc.save(ignore_permissions = True)
+                print a.name, count
+
+
 def update_royalty():
 	for a in frappe.db.sql("select docstatus, name, po_no from `tabSales Order` where po_no in (select name from `tabProduct Requisition` where supply_rate = 'Concessional Royalty')", as_dict=True):
 		frappe.db.sql("Update `tabSales Order` set supply_rate = 'Concessional Royalty' where name = '{0}'".format(a.name))
@@ -48,6 +57,22 @@ def update_pr():
 		if delevery_flag == 1:
 			frappe.db.sql("update `tabProduct Requisition` set delivered = '1' where name = '{0}'".format(a.name))
 	
+def check_vehicle():
+	listed_vehicle = []
+	i = 0
+	for a in frappe.db.sql("select name, vehicle_no, drivers_name, common_pool, self_arranged from `tabVehicle` where vehicle_status = 'Active' and (common_pool = 1 or self_arranged = 1) order by creation desc", as_dict=True):
+		vehicle = a.vehicle_no
+                cond = "upper(vehicle_no)"
+                for x in [' ', '+', '-', '(', ')', '/', '#']:
+                        vehicle = vehicle.replace(x, '')
+                        cond = "replace({},'{}','')".format(cond, x)
+                cond += " = '{}'".format(vehicle)
+		if a.name not in listed_vehicle:
+			#print(str(i), str(a.vehicle_no), str(a.common_pool), str(a.self_arranged))
+			i += 1
+			for b in frappe.db.sql("select name, vehicle_no, common_pool, self_arranged from `tabVehicle` where {} and name != '{}'".format(cond, a.name), as_dict=True):
+				print(str(i), str(a.vehicle_no), str(a.common_pool), str(a.self_arranged), str(b.vehicle_no), str(b.common_pool), str(b.self_arranged))	
+					
 
 def update_lot_stock_entry():
 	for a in frappe.db.sql("select name, parent, lot_list from `tabStock Entry Detail` where lot_list is not NULL and lot_list!='' and docstatus = 1", as_dict=1):

@@ -79,7 +79,9 @@ class JobCard(AccountsController):
 		if bdr.job_card == self.name:
 			bdr.db_set("job_card", None)
 		if self.owned_by == "Others":
-			self.make_gl_entries()	
+			self.make_gl_entries()
+		if self.supplier and self.out_source == 1:
+			self.make_gl_entry()	
 
 	def get_default_settings(self):
 		goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
@@ -297,7 +299,6 @@ class JobCard(AccountsController):
                         make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 
 	def make_gl_entry(self):
-		frappe.msgprint("this is called")
 		if self.total_amount:
                 	from erpnext.accounts.general_ledger import make_gl_entries
                         gl_entries = []

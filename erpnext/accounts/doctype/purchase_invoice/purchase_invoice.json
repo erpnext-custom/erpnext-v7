@@ -3802,8 +3802,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2019-11-12 13:31:05.444560", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2020-05-19 09:47:21.711541", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Purchase Invoice", 
  "name_case": "Title Case", 
@@ -3811,7 +3811,7 @@
  "permissions": [
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -3914,7 +3914,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 

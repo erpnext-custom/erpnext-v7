@@ -3,6 +3,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, cint, nowdate, getdate, formatdate
+from frappe.core.doctype.user.user import send_sms
 
 def get_frappe_dict(filters):
 	import ast
@@ -1315,3 +1316,39 @@ def cancel_online_payment():
 		doc.status = 'Cancelled'
 		doc.save(ignore_permissions=True)
 	frappe.db.commit()
+
+def notify_customers(msg=None, debug=1):
+	tran_id = 1
+	staff = ['97517115380','97517839763','97517448509']
+	if not msg:
+		msg = "NRDCL would like to request all valued customers who have applied for sand through My Resources App to kindly confirm the receipt of the sand delivery through the App ONLY AFTER the sand has been delivered at your construction site, and not before that. Please ensure to verify the truck number mentioned in your delivery confirmation screen in the App. Thank you."
+	customers = frappe.db.sql_list("""select distinct u.mobile_no 
+			from `tabUser` u 
+			where u.account_type = 'CRM' 
+			and ifnull(u.enabled,0) = 1 
+			and u.mobile_no is not null
+			and not exists(select 1
+				from bulk_sms b
+				where b.id = {}
+				and b.mobile_no = u.mobile_no)
+			""".format(tran_id))
+	
+	customers += staff
+	counter = 0
+	tot_success = 0
+	tot_failed  = 0
+	for i in customers:
+		counter += 1
+		if not debug:
+			try:
+				send_sms(i,msg)
+				frappe.db.sql("insert into bulk_sms values({},'{}',NOW())".format(tran_id,i))
+				frappe.db.commit()
+				tot_success += 1
+			except:
+				tot_failed += 1
+		print counter,i
+
+	print 'Total no.of records: {}'.format(counter)
+	print 'Successful         : {}/{}'.format(tot_success,counter)
+	print 'Failed             : {}/{}'.format(tot_failed,counter)

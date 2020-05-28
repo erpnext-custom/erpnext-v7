@@ -82,7 +82,7 @@ def get_data(filters=None):
 
 
 
-        #frappe.throw(str(query))
+       	#frappe.msgprint(str(query))
         data = frappe.db.sql(query)
         #row = {}
         #for a in  frappe.db.sql(query, as_dict=True):

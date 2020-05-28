@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate, date_diff, nowdate
 from frappe.core.doctype.user.user import send_sms
@@ -36,6 +37,20 @@ class TransportRequest(Document):
 			if not self.transporter_name:
 				self.transporter_name = frappe.db.get_value("User", self.user, "first_name")
 
+	'''
+	def check_duplicate(self):
+		if self.vehicle_no and self.approval_status == "Approved":
+			vehicle_number = self.vehicle_no
+			vehicle_last_four_digit = vehicle_number[-4:]
+			check = 0
+			if self.common_pool:
+				for a in frappe.db.sql("select name, vehicle_status from `tabVehicle` where name like '%{0}'".format(vehicle_last_four_digit), as_dict=True):
+					frappe.msgprint("Vehicle with similar number " + a.name + " status " + a.vehicle_status + " is already registered")
+					check += 1
+			if check > 0:
+				frappe.throw("There are vehicle already registered with similar number to {0}".format(self.vehicle_no))
+	'''
+
 	def validate_vehicle(self):
 		self.vehicle_no = self.vehicle_no.upper()
 		vehicle = self.vehicle_no
@@ -45,14 +60,14 @@ class TransportRequest(Document):
 			cond = "replace({},'{}','')".format(cond, x)
 		cond1 = cond + " = '{}'".format(vehicle)
 		cond += " like '%{}%'".format(vehicle)
-
-
+		
+	
 		vehicle_dtl = frappe.db.sql("""select name, user from `tabTransport Request` 
 				where {}
 				and approval_status in ('Pending', 'Approved') 
 				and name!= '{}' and docstatus != 2
 		""".format(cond, self.name), as_dict = True)
-
+			
 		if vehicle_dtl:
 			for a in vehicle_dtl:
 				r_user = a.user
@@ -77,7 +92,7 @@ class TransportRequest(Document):
 					vehicle_status = 'Active', docstatus = 1 
 					where name = '{7}'
 					""".format(self.vehicle_capacity, self.common_pool, self.self_arranged, self.drivers_name, self.owner_cid, self.contact_no, self.user, b.name))
-					frappe.msgprint("Vehicle already exist and details are updated as per this request for vehicle {}".format(b.name))
+					frappe.msgprint("Vehicle already exist and details are updated as per request for vehicle {}".format(b.name))
 		else:
 			if self.approval_status == "Approved" and self.docstatus == 1:
 				v_doc = frappe.new_doc("Vehicle")
@@ -93,7 +108,7 @@ class TransportRequest(Document):
 
 		if not self.common_pool:
 			if not self.self_arranged:
-				frappe.throw("The transport request should be either Common Pool or Self Owned")	
+				frappe.throw("The transport request should be either Common Pool or Self Owned")
 		
 	def add_user_roles(self):
 		""" add role `CRM Transporter` """
@@ -112,6 +127,7 @@ class TransportRequest(Document):
 		if self.approval_status == "Approved":
 			self.create_transporter_vehicle()
 		self.sendsms()
+
 
 	def attach_cid(self):
 		target_doc = None

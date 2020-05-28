@@ -23,7 +23,6 @@ def get_data(filters):
 
 	query = "select pe.name as production_number, pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0}, pe.cable_line_no as cable_line_no, pe.production_area as production_area from `tabProduction Entry` pe, `tabCost Center` cc where cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
-
 	total_qty = 0
 	for a in frappe.db.sql(query, as_dict=1):
 		a.region = str(a.region).replace(abbr, "")
@@ -84,7 +83,7 @@ def get_conditions(filters):
 		condition += " and pe.item_code = '{0}'".format(filters.item)
 
 	if filters.from_date and filters.to_date:
-		condition += " and pe.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+		condition += " and CAST(pe.posting_date as DATE) between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
 
 	if filters.timber_species:
 		condition += " and pe.timber_species = '{0}'".format(filters.timber_species)

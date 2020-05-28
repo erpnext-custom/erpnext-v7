@@ -185,6 +185,14 @@ def cancel_load_request(user, vehicle):
 		frappe.throw("Either User ID or Vehicle No is missing")
 	frappe.db.sql("update `tabLoad Request` set docstatus = 2, load_status = 'Cancelled' where user = '{0}' and vehicle = '{1}' and load_status = 'Queued'".format(user, vehicle))
 
+@frappe.whitelist()
+def cancel_load_request_with_remarks(user, vehicle, remarks):
+        if not user or not vehicle:
+                frappe.throw("Either User ID or Vehicle No is missing")
+        if len(remarks) < 1:
+                frappe.throw("Please provide reason for cancel")
+        frappe.db.sql("update `tabLoad Request` set docstatus = 2, load_status = 'Cancelled', remarks = '{0}'  where user = '{1}' and vehicle = '{2}' and load_status = 'Queued'".format(remarks, user, vehicle))
+
 
 @frappe.whitelist(allow_guest=True)
 def success(**args):
@@ -229,6 +237,7 @@ def sendsms(**args):
 	import smpplib.gsm
 	import smpplib.client
 	import smpplib.consts
+	return
 
 	def send_sms(*args):
 	    try:

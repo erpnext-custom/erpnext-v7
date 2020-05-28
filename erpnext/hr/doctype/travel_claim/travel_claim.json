@@ -1558,7 +1558,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-05-23 15:22:22.610483", 
+ "modified": "2020-05-20 12:33:50.440390", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Claim", 
@@ -1876,6 +1876,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "employee_name", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

@@ -162,6 +162,11 @@ def get_data():
 					"name": "Request EL Allocation",
 					"label": _("Request EL Allocation"),
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "Carry Forward Entry",
+                                        "label": _("Carry Forward CL"),
+                                }
 			]
 		},
 		{

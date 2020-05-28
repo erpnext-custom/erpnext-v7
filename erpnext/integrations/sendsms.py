@@ -75,7 +75,7 @@ def SendSMS(sender, receiver, message, debug=0):
 				esm_class=msg_type_flag,
 				registered_delivery=True,
 			)
-			print(pdu.sequence)
+			#print(pdu.sequence)
 			client.read_pdu()
 		client.unbind()
 		client.disconnect()

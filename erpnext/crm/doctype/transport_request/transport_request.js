@@ -6,12 +6,17 @@ frappe.ui.form.on('Transport Request', {
 		custom.apply_default_settings(frm);
 	},
 	onload: function(frm) {
-
+		cur_frm.set_query("vehicle_capacity",function(){
+			return {
+				"filters": [
+					["is_crm_item", "=", "1"]
+				]
+			}
+		});
 	},
-	"owner": function(frm) {
-		if(frm.doc.owner == "Self"){
+	"vehicle_owner": function(frm) {
+		if(frm.doc.vehicle_owner == "Self"){
 			frappe.model.get_value("User", {"name":frm.doc.user}, "login_id", function(d){
-				console.log(frm.doc.user);
 				frm.set_value("owner_cid", d.login_id);
 			});
 		}

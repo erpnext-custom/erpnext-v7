@@ -66,6 +66,13 @@ frappe.ui.form.on('Customer Order', {
 			}
 		};
 		*/
+		frm.fields_dict['pool_vehicles'].grid.get_field('vehicle_capacity').get_query = function(){
+			return{
+				filters: {
+					'is_crm_item': 1,
+				}
+			}
+		};
 		frm.fields_dict['vehicles'].grid.get_field('vehicle').get_query = function(){
 			return{
 				"query": "erpnext.crm_utils.get_vehicles_query",
