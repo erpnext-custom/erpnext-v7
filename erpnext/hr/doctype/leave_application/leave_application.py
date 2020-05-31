@@ -91,6 +91,7 @@ class LeaveApplication(Document):
 			# notify leave applier about approval
 			self.notify_employee(self.status)
 			self.db_set("docstatus",1)
+			self.update_cf_entry('Submit')
 		self.update_for_backdated_applications()
 
 	def on_cancel(self):
@@ -98,6 +99,7 @@ class LeaveApplication(Document):
 		self.db_set("status", "Cancelled")
 		self.notify_employee("cancelled")
 		self.update_for_backdated_applications()
+		self.update_cf_entry('Cancel')
 
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         # Following method created by SHIV on 2018/02/12
@@ -327,6 +329,25 @@ class LeaveApplication(Document):
                         if str(self.from_date)[0:4] != str(self.to_date)[0:4]:
                                 frappe.throw("Leave Application cannot overlap fiscal years")
 
+	#update Carry Forward Transaction
+        #only if leave_type = 'Casual Leave'
+        def update_cf_entry(self, action):
+                leave_days = 0.0
+                if action == 'Submit':
+                        leave_days = self.total_leave_days
+
+                if action == 'Cancel':
+                        leave_days = -1 * self.total_leave_days
+
+                cf = frappe.db.sql(""" select p.name from `tabCarry Forward Entry` p, `tabCarry Forward Item` c where c.parent = p.name 
+                                 and c.employee = '{0}' and (p.fiscal_year = '{1}' or p.fiscal_year = '{2}') and p.docstatus = 1
+                                 """.format(self.employee,  getdate(self.from_date).year, getdate(self.to_date).year), frappe._dict())
+                c = cf and cf[0] or 0.0
+                if cf:
+                        frappe.db.sql(""" update `tabCarry Forward Item` set leaves_taken = leaves_taken + {0}, 
+                                leave_balance = leaves_allocated - leaves_taken  where parent = '{1}' and employee = '{2}'
+                                """.format(leave_days, c[0], self.employee))
+
 @frappe.whitelist()
 def get_approvers(doctype, txt, searchfield, start, page_len, filters):
 	if not filters.get("employee"):
@@ -388,22 +409,41 @@ def get_leave_balance_on(employee, leave_type, ason_date, allocation_records=Non
                
 	return flt(allocation.total_leaves_allocated) - flt(leaves_taken) 
         '''
-        
+       
+	#leaves carry forwarded from CL to EL
+
+        carry_forward = frappe.db.sql(""" select c.employee, c.leave_balance,  p.fiscal_year from `tabCarry Forward Entry` p, 
+                        `tabCarry Forward Item` c where c.parent = p.name and p.docstatus = 1 and p.leave_type = 'Casual Leave' 
+                        and {0}-fiscal_year = 1 and c.employee = '{1}' and p.docstatus = 1 
+                        order by fiscal_year desc limit 1""".format(getdate(ason_date).year, employee), frappe._dict())
+        leaves = 0.0
+        if carry_forward:
+                if leave_type == 'Casual Leave':
+                        leaves = carry_forward and -1* carry_forward[0][1] or 0.0
+                elif leave_type == 'Earned Leave':
+                        leaves = carry_forward and carry_forward[0][1] or 0.0
+                else:
+                        leaves = 0.0
+
+
         allocation   = get_leave_allocation_records(ason_date, employee).get(employee, frappe._dict()).get(leave_type, frappe._dict())
         balance      = 0
-        
-        if allocation:
+	
+	if allocation:
                 leaves_taken = get_approved_leaves_for_period(employee, leave_type, allocation.from_date, ason_date)
-                balance      = flt(allocation.total_leaves_allocated) - flt(leaves_taken)
-                
+                balance      = flt(allocation.total_leaves_allocated) - flt(leaves_taken) + flt(leaves)
+                if balance <= 0:
+                        balance = flt(allocation.total_leaves_allocated) - flt(leaves_taken)
+
                 if leave_type == 'Earned Leave':
                         le = get_le_settings()
-                        if flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken)) > flt(le.encashment_lapse):
+                        if flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken)) + flt(leaves) > flt(le.encashment_lapse):
                                 balance = flt(le.encashment_lapse)
         else:
                 balance = 0
-                
+
         return flt(balance)
+ 
         ##
         #  Ver 2.0 Ends
         ##

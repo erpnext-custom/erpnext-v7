@@ -92,6 +92,12 @@ def get_data():
 					"label": _("Leave Adjustment Tool"),
 					"description":_("Adjust leave allocations.")
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "Carry Forward Entry",
+                                        "label": _("Carry Forward Entry"),
+                                        "description":_("Forward CL balances.")
+                                },
 			]
 		},
 		{

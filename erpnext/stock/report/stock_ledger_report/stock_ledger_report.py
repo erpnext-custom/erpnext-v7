@@ -24,7 +24,7 @@ def execute(filters=None):
 			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
 			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
 			sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
-			sle.vehicle_no, sle.transporter_name, sle.customer, sle.company])
+			sle.vehicle_no, sle.transporter_name, sle.unloading_by, sle.customer, sle.company])
 			
 	return columns, data
 
@@ -33,19 +33,20 @@ def get_columns():
 		_("Warehouse") + ":Link/Warehouse:100",
 		_("Stock UOM") + ":Link/UOM:100", _("Qty") + ":Float:50", _("Balance Qty") + ":Float:100",
 		_("Incoming Rate") + ":Currency:110", _("MAP") + ":Currency:110", _("Balance Value") + ":Currency:110",
-		_("Transaction Type") + "::110", _("Transaction No.") + ":Dynamic Link/"+_("Transaction Type")+":100", _("Vehicle No") + ":Data:100", _("Transporter") + ":Data:100", _("Customer") + ":Data:100", _("Company") + ":Link/Company:100"
+		_("Transaction Type") + "::110", _("Transaction No.") + ":Dynamic Link/"+_("Transaction Type")+":100", _("Vehicle No") + ":Data:100", _("Transporter") + ":Data:100", ("Unloading By") + ":Data:100",
+		_("Customer") + ":Data:100", _("Company") + ":Link/Company:100"
 	]
 
 def get_stock_ledger_entries(filters):
 	return frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
 			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
 			stock_value, voucher_type, voucher_no, batch_no, serial_no, 
-			CASE voucher_type WHEN 'Stock Entry' THEN (select vehicle_no from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select lr_no from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as vehicle_no, 
+			CASE voucher_type WHEN 'Stock Entry' THEN (select equipment_number from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select lr_no from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as vehicle_no, 
+			CASE voucher_type WHEN 'Stock Entry' THEN (select unloading_by from `tabStock Entry` where name = voucher_no) ELSE ''  END as unloading_by, 
 			CASE voucher_type WHEN 'Delivery Note' THEN (select customer from `tabDelivery Note` where name = voucher_no) ELSE '' END as customer, 
 			CASE voucher_type WHEN 'Stock Entry' THEN (select transporter_name from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select transporter_name1 from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as transporter_name, company
 		from `tabStock Ledger Entry`
 		where company = %(company)s and
-		docstatus = 1 and 
 			posting_date between %(from_date)s and %(to_date)s
 			{sle_conditions}
 			order by posting_date asc, posting_time asc, name asc"""\
@@ -57,6 +58,7 @@ def get_item_details(filters):
 			brand, stock_uom from `tabItem` {item_conditions}"""\
 			.format(item_conditions=get_item_conditions(filters)), filters, as_dict=1):
 		item_details.setdefault(item.name, item)
+
 	return item_details
 
 def get_item_conditions(filters):

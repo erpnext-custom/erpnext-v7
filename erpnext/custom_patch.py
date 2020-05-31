@@ -6,6 +6,14 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def update_ss():
+	count = 1
+	for a in frappe.db.sql(" select name from `tabSalary Structure` where is_active = 'Yes'", as_dict = 1):
+		doc = frappe.get_doc("Salary Structure", a.name)
+		count += 1
+		doc.save(ignore_permissions = True)
+		print a.name, count
+
 def pol_update():
 	for a in frappe.db.sql(" select pol from `tabHSD Payment Item` where parent = 'HSDP2002007'", as_dict = 1):
 		frappe.db.sql("update `tabPOL` set paid_amount = '' where name = '{0}'".format(a.pol))
