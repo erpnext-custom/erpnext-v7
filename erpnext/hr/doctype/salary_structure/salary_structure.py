@@ -61,6 +61,8 @@ class SalaryStructure(Document):
 		self.check_multiple_active()
 		self.update_salary_structure()
 	
+		if self.employment_type == 'GEP':
+			self.depend_salary_on_attendance = 1
 
 	def on_update(self):
 		self.assign_employee_details()
@@ -481,6 +483,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 					d['amount'] = flt(sws)
                                 
                                 if d['salary_component'] == 'PF':
+					percent = flt(settings.get("employee_pf"))
                                         if source.employment_type == 'GEP':
                                                 pf = round(full_basic*flt(percent)*0.01);
                                         else:

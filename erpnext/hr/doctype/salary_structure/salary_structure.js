@@ -31,7 +31,6 @@ frappe.ui.form.on('Salary Structure', {
 		frm.fields_dict['earnings'].grid.set_column_disp("default_amount", false);
 		frm.fields_dict['deductions'].grid.set_column_disp("default_amount", false);
 		frm.fields_dict['earnings'].grid.set_column_disp("sb_additional_info", false);
-		
 		/*
 		if((!frm.doc.__islocal) && (frm.doc.is_active == 'Yes') && cint(frm.doc.salary_slip_based_on_timesheet == 0)){
 			cur_frm.add_custom_button(__('Salary Slip'),
