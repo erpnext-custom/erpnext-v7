@@ -1028,15 +1028,40 @@ def filter_vehicle_customer_order(doctype, txt, searchfield, start, page_len, fi
                 transport_mode = "Others"
 
         if filters.get("select_vehicle_queue") or transport_mode == "Common Pool":
-                return frappe.db.sql("""select vehicle, requesting_date_time, token from `tabLoad Request`
-                                        where load_status = 'Queued'
-                                        and crm_branch = '{0}'
-                                        and vehicle_capacity = '{1}'
-                                        order by requesting_date_time, token limit 1
-                                """.format(filters.get("branch"), filters.get("total_quantity"), key=frappe.db.escape(searchfield),
-                                 match_condition=get_match_cond(doctype)), {
-                                'txt': "%%%s%%" % frappe.db.escape(txt)
-                        })
+		local_distance_limit = frappe.db.get_value("CRM Branch Setting", filters.get("branch"), "local_distance")
+                if filters.get("distance") > flt(local_distance_limit) or filters.get("select_vehicle_queue"):
+			return frappe.db.sql("""select vehicle, requesting_date_time, token from `tabLoad Request`
+						where load_status = 'Queued'
+						and crm_branch = '{0}'
+						and vehicle_capacity = '{1}'
+						order by requesting_date_time, token limit 1
+					""".format(filters.get("branch"), filters.get("total_quantity"), key=frappe.db.escape(searchfield),
+					 match_condition=get_match_cond(doctype)), {
+					'txt': "%%%s%%" % frappe.db.escape(txt)
+				})
+		else:
+			 return frappe.db.sql("""
+					 select name, drivers_name, contact_no from `tabVehicle`
+                                        where vehicle_status = 'Active'
+                                        and ({key} like %(txt)s
+                                                or drivers_name like %(txt)s
+                                                or contact_no like %(txt)s)
+                                        {mcond}
+                                order by
+                                        if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
+                                        if(locate(%(_txt)s, drivers_name), locate(%(_txt)s, drivers_name), 99999),
+                                        if(locate(%(_txt)s, contact_no), locate(%(_txt)s, contact_no), 99999),
+                                        idx desc,
+                                        name, drivers_name, contact_no
+                                limit %(start)s, %(page_len)s""".format(**{
+                                        'key': searchfield,
+                                        'mcond': get_match_cond(doctype)
+                                }), {
+                                        'txt': "%%%s%%" % txt,
+                                        '_txt': txt.replace("%", ""),
+                                        'start': start,
+                                        'page_len': page_len
+				})
 
 	if transport_mode in ["Self Owned Transport", "Private Pool"]:
 		cond = " and v.user = '{0}'".format(user_id) if transport_mode == "Self Owned Transport" else ""
@@ -1049,6 +1074,7 @@ def filter_vehicle_customer_order(doctype, txt, searchfield, start, page_len, fi
 						where c.parent = '{1}' 
 						and c.vehicle = v.name  
 					)
+					{match_condition}
                                 """.format(cond, filters.get("customer_order"), key=frappe.db.escape(searchfield),
                                  match_condition=get_match_cond(doctype)), {
                                 'txt': "%%%s%%" % frappe.db.escape(txt)

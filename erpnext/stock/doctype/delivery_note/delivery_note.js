@@ -21,10 +21,15 @@ frappe.ui.form.on('Delivery Note', {
                         }
                         return {
                                  query: "erpnext.crm_utils.filter_vehicle_customer_order",
-                                 filters: {'customer_order': frm.doc.customer_order, 'branch': frm.doc.branch, 'total_quantity': total_vol, 'select_vehicle_queue': frm.doc.select_vehicle_queue}
+				 filters: {
+                                        'customer_order': frm.doc.customer_order,
+                                        'branch': frm.doc.branch,
+                                        'total_quantity': total_vol,
+                                        'select_vehicle_queue': frm.doc.select_vehicle_queue,
+                                        'distance' : frm.doc.total_distance
+                                     }
                               }
                 });
-
         },
         "select_vehicle_queue": function(frm) {
                 cur_frm.set_value("vehicle","");

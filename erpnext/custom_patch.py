@@ -319,6 +319,13 @@ def populate_wh_branch():
 		row.branch = t.branch
 		row.save()
 
+def insert_vehicle():
+	doc = frappe.get_doc("Customer Order", "ORDR200400174")
+	for a in frappe.db.sql("select name as vehicle, drivers_name, contact_no, driver_cid, vehicle_capacity, '2' as noof_truck_load, '16' as quantity from `tabVehicle` where name = 'BP-2-A8593'", as_dict=True):
+		row = doc.append("vehicles", {})
+		row.save(ignore_permissions = True)
+
+
 def update_customer1():
         cus = frappe.db.sql("select name from tabCustomer", as_dict=1)
         count = 0

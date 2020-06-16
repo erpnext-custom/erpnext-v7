@@ -91,17 +91,10 @@ def get_data():
 				{
                                         "type": "report",
                                         "is_query_report": True,
-                                        "name": "Sales Report",
-                                        "label": "Sales Report",
-                                        "doctype": "Sales Order"
-                                },
-												{
-                                        "type": "report",
-                                        "is_query_report": True,
                                         "name": "Timber Sales Report",
                                         "label": "Timber Sales Report",
                                         "doctype": "Sales Order"
-                },
+                		},
 				{
 					"type": "report",
 					"is_query_report": True,

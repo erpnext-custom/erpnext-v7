@@ -153,14 +153,16 @@ class DeliveryNote(SellingController):
 
 				transport_mode = frappe.db.get_value("Customer Order", self.customer_order, "transport_mode")
 				if self.select_vehicle_queue or transport_mode == "Common Pool":
-					for a in frappe.db.sql("select name, vehicle, token from `tabLoad Request` where load_status = 'Queued' and crm_branch = '{0}' and vehicle_capacity = {1} order by requesting_date_time, token limit 1".format(self.branch, total_qty), as_dict=True):
-						if a.vehicle == self.vehicle:
-							self.load_request = a.name
-						else:
-							frappe.throw("Selected vehicle is already loaded or not from Queue List.")
+					local_distance_limit = frappe.db.get_value("CRM Branch Setting", self.branch, "local_distance")
+					if self.total_distance > flt(local_distance_limit):
+						for a in frappe.db.sql("select name, vehicle, token from `tabLoad Request` where load_status = 'Queued' and crm_branch = '{0}' and vehicle_capacity = {1} order by requesting_date_time, token limit 1".format(self.branch, total_qty), as_dict=True):
+							if a.vehicle == self.vehicle:
+								self.load_request = a.name
+							else:
+								frappe.throw("Selected vehicle is already loaded or not from Queue List.")
 
-					if not self.load_request:
-						frappe.throw("Vehicle {0} is not registered for queue".format(self.vehicle))
+						if not self.load_request:
+							frappe.throw("Vehicle {0} is not registered for queue".format(self.vehicle))
 
 	def validate_with_previous_doc(self):
 		for fn in (("Sales Order", "against_sales_order", "so_detail"),
@@ -375,7 +377,8 @@ class DeliveryNote(SellingController):
 
 			# Update Load Request Queue if transport mode is Common Pool
 			# TTPL New Update
-			if doc.transport_mode == "Common Pool":
+			local_distance_limit = frappe.db.get_value("CRM Branch Setting", self.branch, "local_distance")
+			if doc.transport_mode == "Common Pool" and self.total_distance > local_distance_limit:
 				if self.load_request:
 					queue_status = frappe.db.get_value("Load Request", self.load_request, "load_status")
 					if queue_status == "Queued":
