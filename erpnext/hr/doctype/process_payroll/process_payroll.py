@@ -65,10 +65,18 @@ class ProcessPayroll(Document):
 		self.check_mandatory()
 
 		cond = ''
+		if self.employment_type: 
+                        if self.employment_type == 'GEP':
+                                cond += " and t1.employment_type = 'GEP'"
+
+                        else:
+                                cond += " and t1.employment_type != 'GEP'"
+
 		for f in ['company', 'employee']:
 			if self.get(f):
 				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
-
+	
+			
 		return cond
 
 	def get_joining_releiving_condition(self):

@@ -35,7 +35,8 @@ class CostCenter(NestedSet):
                 b.company = self.company
                 b.address = "N.A"
                 b.expense_bank_account = frappe.db.get_value("Company", company, "default_bank_account")
-                b.save()
+                if not frappe.db.get_value("Branch", {'name': b.name}):
+			b.save()
                 self.create_customer(b.name)
                 self.db_set("branch_created", 1)
 		self.db_set("branch", b.name)
