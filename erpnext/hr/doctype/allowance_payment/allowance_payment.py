@@ -57,7 +57,7 @@ class AllowancePayment(AccountsController):
 		else:
 			qry = """
 				select 
-				employee, employee_name, designation
+				employee as name, employee_name, designation
 				from `tabHSA Employee` e
 				where e.eligible = 1
 				order by employee 
@@ -71,24 +71,29 @@ class AllowancePayment(AccountsController):
 		total_amount = 0.0
 		for e in frappe.db.sql(qry, as_dict=True):
 			if self.allowance_type == "Tea Allowance":
-				for b in frappe.db.sql("select count(*) as not_eligible_days from `tabAttendance` where att_date between '{0}' and '{1}' and employee = '{2}' and status in ('Tour','Half Day','Absent','Leave')".format(self.start_date, self.end_date, e.name), as_dict=1):
+				for b in frappe.db.sql("select count(*) as not_eligible_days from `tabAttendance` where att_date between '{0}' and '{1}' and employee = '{2}' and status in ('Tour','Half Day','Absent','Leave') and att_date not in (select holiday_date from `tabHoliday` where holiday_date between '{0}' and '{1}')".format(self.start_date, self.end_date, e.name), as_dict=1):
 					not_eligible_days = b.not_eligible_days
 
 				total_eligible_days = total_days_in_month - (total_holiday + not_eligible_days)
 				total_eligible_half_days = 0
-				e.employee = e.name
 			else:
 				date_list, total_saturday = self.get_weekly_off_date_list()
-				for b in frappe.db.sql("select count(*) as not_eligible_days from `tabAttendance` where att_date between '{0}' and '{1}' and employee = '{2}' and status in ('Tour','Absent','Leave')".format(self.start_date, self.end_date, e.name), as_dict=1):
-                                        not_eligible_days = b.not_eligible_days
+				absent_saturday = 0
+				not_eligible_days = 0
+				for a in frappe.db.sql("select att_date from `tabAttendance` where att_date between '{0}' and '{1}' and employee = '{2}' and status in ('Tour','Absent','Leave')".format(self.start_date, self.end_date, e.name), as_dict=1):
+					if a.att_date in date_list:
+						absent_saturday +=1
+					not_eligible_days +=1 
+				eligible_saturday = flt(total_saturday) - flt(absent_saturday)
 				half_day_leave = 0
 				for d in frappe.db.sql("select count(*) as half_day_leave from `tabAttendance` where att_date between '{0}' and '{1}' and employee = '{2}' and status = 'Half Day'".format(self.start_date, self.end_date, e.name), as_dict=1):
 					half_day_leave = d.half_day_leave
 		
-				total_eligible_days = total_days_in_month - (total_holiday + not_eligible_days + half_day_leave + total_saturday)
+				total_eligible_days = total_days_in_month - (total_holiday + not_eligible_days + half_day_leave + eligible_saturday)
 				
-				total_eligible_half_days = total_saturday + half_day_leave
-				e.employee = e.employee
+				total_eligible_half_days = eligible_saturday + half_day_leave
+
+			e.employee = e.name
 
 			e.eligible_days = flt(total_eligible_days)
 			e.eligible_half_days = flt(total_eligible_half_days)
