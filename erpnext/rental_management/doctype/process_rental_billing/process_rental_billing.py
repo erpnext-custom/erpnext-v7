@@ -16,13 +16,19 @@ class ProcessRentalBilling(AccountsController):
 	def get_tenant_list(self, process_type=None):
 		self.check_mandatory()
 		rental_bill_date = self.fiscal_year + "-" + self.month + "-" + "01"
+		month_start = get_first_day(rental_bill_date)
+		month_end = get_last_day(rental_bill_date)
 		if process_type == "create":
 			tenant_list = frappe.db.sql("""
                                select t1.name
                                from `tabTenant Information` t1
-                               where t1.status = "Allocated" and t1.docstatus = "1"
-                               and t1.allocated_date < now()
-                               and t1.allocated_date <= '{2}'
+                               where t1.docstatus = "1"
+			       and (
+					(t1.status="Allocated" and t1.allocated_date <= '{3}') 
+					or 
+					(t1.status="Surrendered" and t1.surrendered_date >= '{2}')
+				   )
+			       and t1.allocated_date <= '{3}'	
                                and not exists(select 1
                                               from `tabRental Bill` as t2
                                               where t2.tenant = t1.name
@@ -31,8 +37,7 @@ class ProcessRentalBilling(AccountsController):
                                               and t2.month = '{1}'
                                               )
                                order by t1.ministry_agency, t1.department
-			""".format(self.fiscal_year, self.month, rental_bill_date), as_dict=True)
-
+			""".format(self.fiscal_year, self.month, month_start, month_end), as_dict=True)
 		else:
 			tenant_list = frappe.db.sql("""
                                 select t1.name

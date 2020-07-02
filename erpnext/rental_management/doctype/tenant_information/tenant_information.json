@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:cid", 
  "beta": 0, 
  "creation": "2019-05-27 16:41:57.136813", 
@@ -618,7 +618,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "ministry_agency", 
@@ -1073,7 +1073,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "depends_on": "eval:doc.building_category !=='Pilot Housing'", 
@@ -1099,7 +1099,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "depends_on": "eval:doc.building_category !=='Pilot Housing'", 
@@ -1199,7 +1199,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "initial_allotment_date", 
@@ -1218,13 +1218,13 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 0, 
+   "reqd": 1, 
    "search_index": 0, 
    "set_only_once": 0, 
    "unique": 0
   }, 
   {
-   "allow_on_submit": 1, 
+   "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "allocated_date", 
@@ -1243,7 +1243,7 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 0, 
+   "reqd": 1, 
    "search_index": 0, 
    "set_only_once": 0, 
    "unique": 0
@@ -1619,7 +1619,7 @@
    "precision": "", 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
-   "read_only": 0, 
+   "read_only": 1, 
    "report_hide": 0, 
    "reqd": 0, 
    "search_index": 0, 
@@ -1653,7 +1653,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 1, 
+   "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
    "depends_on": "", 
@@ -1706,10 +1706,10 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
-   "depends_on": "eval:doc.building_category == 'Pilot Housing'", 
+   "depends_on": "eval:doc.building_category =='Pilot Housing'", 
    "fieldname": "sec_brk1", 
    "fieldtype": "Section Break", 
    "hidden": 0, 
@@ -1732,9 +1732,10 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
+   "depends_on": "eval:doc.building_category =='Pilot Housing'", 
    "fieldname": "pilot_account_details", 
    "fieldtype": "Table", 
    "hidden": 0, 
@@ -1895,8 +1896,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-01-14 11:26:33.985123", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2020-06-29 16:09:39.097394", 
+ "modified_by": "Administrator", 
  "module": "Rental Management", 
  "name": "Tenant Information", 
  "name_case": "", 
@@ -2010,6 +2011,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "tenant_name", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

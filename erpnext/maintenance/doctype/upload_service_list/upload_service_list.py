@@ -72,7 +72,7 @@ def upload():
                                         continue
 
                                 doc = frappe.new_doc("Service")
-                                doc.item_name = d.service_name
+                                doc.item_name = str(d.service_name)
                                 doc.item_group = d.service_category
                                 doc.item_sub_group = d.sub_category
 				doc.bsr_service_item = d.bsr_item

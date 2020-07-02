@@ -51,49 +51,63 @@ frappe.ui.form.on('Tenant Information', {
 });
 
 function calculate_rent_charges(frm){
-	frappe.model.get_value('Rental Setting',{'name': 'Rental Setting'}, 'percent_of_increment', function(d){
-                cur_frm.set_value("percent_of_increment", d.percent_of_increment);
-                cur_frm.set_value("no_of_year_for_increment", d.no_of_year_for_increment);
-        });
-
-	if(frm.doc.rent_amount){
-		var d = new Date(frm.doc.allocated_date);
+	if(frm.doc.building_category == "Pilot Building"){
 		cur_frm.clear_table("rental_charges");
+                cur_frm.refresh_fields();
+                var row = frappe.model.add_child(cur_frm.doc, "Tenant Rental Charges", "rental_charges");
+                row.from_date = frm.doc.from_date;
+                row.to_date = frm.doc.to_date;
+                row.increment = 0.00;
+                row.rental_amount = Math.round(frm.doc.original_monthly_instalment);
+                cur_frm.refresh();
+	}
+	else{
+		frappe.model.get_value('Rental Setting',{'name': 'Rental Setting'}, 'percent_of_increment', function(d){
+			cur_frm.set_value("percent_of_increment", d.percent_of_increment);
+			cur_frm.set_value("no_of_year_for_increment", d.no_of_year_for_increment);
+		});
 
-		var percentage = frm.doc.percent_of_increment/100;
-                var increment_year = frm.doc.no_of_year_for_increment;		
-		var increment = 0;
-		var actual_rent = 0;
-		for(var i=0;i<10;i+=increment_year){
-			var yyyy = (d.getFullYear() + i).toString();
-			var mm = (d.getMonth()+1).toString();
-			if(mm == "1"){
-				var to_mm = "12";
-			}else{
-				var to_mm = d.getMonth().toString();
+		if(frm.doc.rent_amount){
+			var d = new Date(frm.doc.allocated_date);
+			cur_frm.clear_table("rental_charges");
+
+			var percentage = frm.doc.percent_of_increment/100;
+			var increment_year = frm.doc.no_of_year_for_increment;		
+			var increment = 0;
+			var actual_rent = 0;
+			for(var i=0;i<10;i+=increment_year){
+				var yyyy = (d.getFullYear() + i).toString();
+				var mm = (d.getMonth()+1).toString();
+				if(mm == "1"){
+					var to_mm = "12";
+					to_yyyy = (d.getFullYear() + increment_year - 1 + i).toString();
+				}else{
+					var to_mm = d.getMonth().toString();
+					to_yyyy = (d.getFullYear() + increment_year + i).toString();
+				}
+				var fdd = '01'.toString();
+				// var to_yyyy = (d.getFullYear() + increment_year + i).toString();
+				var last_day = new Date(to_yyyy, (d.getMonth()-1) +1, 0).getDate();
+				console.log("Month:"+ d.getMonth() + " Date: " + last_day);
+				var from_date = yyyy + '-' + (mm[1]?mm:"0"+mm[0]) + "-" + fdd;
+				var to_date = to_yyyy + "-" + (to_mm[1]?to_mm:"0"+to_mm[0]) + "-" + last_day;
+				console.log("from_date :" + from_date + "to Date:" + to_date);
+				var row = frappe.model.add_child(cur_frm.doc, "Tenant Rental Charges", "rental_charges");
+				if(i>0){	
+					increment = (actual_rent > 0)?actual_rent * percentage:frm.doc.rent_amount * percentage;
+					actual_rent = (actual_rent > 0)? actual_rent + increment : frm.doc.rent_amount + increment; 
+					console.log("increment: " + increment + "actual rent: " + actual_rent);
+				}
+				row.from_date = from_date;
+				row.to_date = to_date;
+				row.increment = increment;
+				var rental_amount = (actual_rent > 0)?actual_rent:frm.doc.rent_amount;
+				row.rental_amount = Math.round(rental_amount);
 			}
-			var fdd = '01'.toString();
-			var to_yyyy = (d.getFullYear() + increment_year + i).toString();
-			var last_day = new Date(to_yyyy, (d.getMonth()-1) +1, 0).getDate();
-			console.log("Month:"+ d.getMonth() + " Date: " + last_day);
-			var from_date = yyyy + '-' + (mm[1]?mm:"0"+mm[0]) + "-" + fdd;
-			var to_date = to_yyyy + "-" + (to_mm[1]?to_mm:"0"+to_mm[0]) + "-" + last_day;
-			console.log("from_date :" + from_date + "to Date:" + to_date);
-			var row = frappe.model.add_child(cur_frm.doc, "Tenant Rental Charges", "rental_charges");
-			if(i>0){	
-				increment = (actual_rent > 0)?actual_rent * percentage:frm.doc.rent_amount * percentage;
-				actual_rent = (actual_rent > 0)? actual_rent + increment : frm.doc.rent_amount + increment; 
-				console.log("increment: " + increment + "actual rent: " + actual_rent);
-			}
-			row.from_date = from_date;
-			row.to_date = to_date;
-			row.increment = increment;
-			var rental_amount = (actual_rent > 0)?actual_rent:frm.doc.rent_amount;
-			row.rental_amount = Math.round(rental_amount);
+			cur_frm.refresh();
+		}else{
+			frappe.throw("Please provide Initial Rent Amount");
 		}
-		cur_frm.refresh();
-	}else{
-		frappe.throw("Please provide the Initial Rent Amount");
 	}
 }
 

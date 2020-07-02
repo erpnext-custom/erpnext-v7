@@ -48,7 +48,7 @@ def send_email(email, doc_list, doctype):
 	subject = str(doctype) + " Pending your Approval"
 
 	for a in doc_list:
-		message += str(num) + "  <a href='https://nes.nrdcl.bt/desk#Form/"+str(doctype)+"/"+str(a)+"'>" + str(a) + "</a> <br />" 
+		message += str(num) + "  <a href='https://erp.nhdcl.bt/desk#Form/"+str(doctype)+"/"+str(a)+"'>" + str(a) + "</a> <br />" 
 		num = num + 1
 	message += "<br /><br />"
 	try:

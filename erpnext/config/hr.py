@@ -482,6 +482,13 @@ def get_data():
                                         "name": "Travel Report",
                                         "doctype": "Travel Claim"
                                 },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Salary Advance Report",
+                                        "doctype": "Salary Advance"
+                                },
+				
 			]
 		},
 	]

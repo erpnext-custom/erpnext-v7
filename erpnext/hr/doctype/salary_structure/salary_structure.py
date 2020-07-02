@@ -360,7 +360,6 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                         working_days = calc_days.get("working_days")
                         lwp          = calc_days.get("leave_without_pay")
                         payment_days = calc_days.get("payment_days")
-
 			if source.depend_salary_on_attendance:
 				absent_days = calc_days.get("absent_days")
 				

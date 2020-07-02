@@ -1,7 +1,8 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-cur_frm.add_fetch("branch", "revenue_bank_account", "income_account")
-
+cur_frm.add_fetch("branch", "revenue_bank_account", "income_account");
+cur_frm.add_fetch("technical_sanction","total_amount", "service_charges");
+cur_frm.add_fetch("technical_sanction","material_charges", "material_charges");
 frappe.ui.form.on('Mechanical Payment', {
 	onload: function(frm) {
 		cur_frm.set_query("income_account", function(){
@@ -102,7 +103,7 @@ frappe.ui.form.on('Mechanical Payment', {
 	},
 	"payment_for": function(frm) {
 		if(frm.doc.payment_for == "Transporter Payment"){
-			frappe.model.get_value('Production Account Settings',{'company':'National Housing Development Corporation Ltd'},'transportation_account', function(d){
+			frappe.model.get_value('Production Account Settings',{'company':frm.doc.company},'transportation_account', function(d){
 				frm.set_value("transportation_account", d.transportation_account);
 			});
 			frappe.model.get_value('Branch',{'branch':frm.doc.branch},'expense_bank_account', function(d){
@@ -118,7 +119,7 @@ frappe.ui.form.on('Mechanical Payment', {
 });
 
 function calculate_totals(frm) {
-	if(frm.doc.payment_for == "Transporter Payment"){
+	if(in_list(["Transporter Payment", "Maintenance Payment"], frm.doc.payment_for)){
 		var net_amount = frm.doc.total_amount - (frm.doc.tds_amount + frm.doc.other_deduction);
 		frm.set_value("net_amount", net_amount);
 	}

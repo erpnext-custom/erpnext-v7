@@ -145,6 +145,8 @@ class RentalPayment(AccountsController):
 				condition += " and fiscal_year = '{0}'".format(self.fiscal_year)
 			if self.month:
 				condition += " and month = '{0}'".format(self.month)
+			if self.dzongkhag:
+				condition += " and dzongkhag = '{0}'".format(self.dzongkhag)
 			bill_lists = frappe.db.sql("""
 			                         select name, tenant, tenant_name, customer_code, rent_amount, received_amount, fiscal_year, month
                                                  from `tabRental Bill`

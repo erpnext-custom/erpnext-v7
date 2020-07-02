@@ -209,7 +209,6 @@ class SalarySlip(TransactionBase):
                                 if not cint(frappe.db.get_value("HR Settings", None, "include_holidays_in_total_working_days")):
                                         days_in_month -= len(holidays)
                                         working_days  -= len(calc_holidays)
-				
 				#Added by Thukten on 2019-08-07
 				if ss_doc.depend_salary_on_attendance:
 					absent_days = self.calculate_absent_days(start_date, end_date)                               

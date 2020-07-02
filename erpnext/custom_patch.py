@@ -9,6 +9,67 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_tenant_customer_code():
+	for a in frappe.db.sql("select name, cid from `tabTenant Information` where customer_code is NULL or customer_code =''", as_dict=True):
+		for b in frappe.db.sql("select customer_code from `tabCustomer` where customer_id = '{}'".format(a.cid), as_dict=1):
+			if b.customer_code:
+				frappe.db.sql("update `tabTenant Information` set customer_code = '{}' where name = '{}'".format(b.customer_code, a.name))
+				print(str(a.name) + "=>" + str(b.customer_code))
+		
+
+def update_ss():
+	for a in frappe.db.sql("select name from `tabSalary Structure` where is_active = 'Yes'", as_dict=True):
+		taxable_amount = 0.00
+		total_deduction = 0.00
+		net_pay = 0.00
+		for b in frappe.db.sql("select name, salary_component, amount from `tabSalary Detail` where parent = '{0}' and parentfield = 'earnings'".format(a.name), as_dict=True):
+			if b.salary_component == "Communication Allowance":
+				taxable_amount += (b.amount/2) 
+			else:
+				taxable_amount += b.amount
+	
+		for c in frappe.db.sql("select tax  from `tabSalary Tax Item` where lower_limit <= '{0}' and upper_limit >= '{0}'".format(taxable_amount), as_dict=True):
+			salary_tax_amt = c.tax
+		frappe.db.sql("update `tabSalary Detail` set amount = '{0}' where salary_component = 'Salary Tax' and parent = '{1}'".format(salary_tax_amt, a.name))
+		for d in frappe.db.sql("select name, salary_component, amount from `tabSalary Detail` where parent = '{0}' and parentfield = 'deductions'".format(a.name), as_dict=True):
+			total_deduction += d.amount
+
+		net_pay = total_earning - total_deduction
+		frappe.db.sql("update `tabSalary Structure` set total_deduction = '{0}', net_pay = '{1}' where name = '{2}'".format(total_deduction, net_pay, a.name))
+		print a.name, total_deduction, net_pay
+			
+
+def update_ss1():
+        for a in frappe.db.sql("select name from `tabSalary Structure` where is_active = 'Yes'", as_dict=True):
+                frappe.db.sql("delete from `tabSalary Detail` where parent = '{0}' and salary_component in ('Semso', 'Salary Arrears')".format(a.name))
+		total_earning = 0.00
+                for b in frappe.db.sql("select name, salary_component, amount from `tabSalary Detail` where parent = '{0}' and parentfield = 'earnings'".format(a.name), as_dict=True):
+                        total_earning += b.amount
+                frappe.db.sql("update `tabSalary Structure` set total_earning = '{0}' where name = '{1}'".format(total_earning, a.name))
+		print a.name, total_earning
+
+def calculate_rent_charges():
+	for a in frappe.db.sql("select name, rent_amount, allocated_date, percent_of_increment, no_of_year_for_increment from `tabTenant Information` where no_of_year_for_increment = 0", as_dict=True):
+		percentage = frappe.db.get_single_value("Rental Setting", "percent_of_increment")
+		increment_year = cint(frappe.db.get_single_value("Rental Setting", "no_of_year_for_increment"))
+		frappe.db.sql("update `tabTenant Information` set percent_of_increment = '{0}', no_of_year_for_increment = '{1}' where name = '{2}'".format(percentage, increment_year, a.name))
+		increment = 0.00
+		actual_rent = 0.00
+
+		start_date = get_first_day(a.allocated_date)
+		end_date = add_years(get_last_day(add_days(start_date, -10)), increment_year)
+
+		if percentage and increment_year:
+			for i in range(0, 10, increment_year):
+				if i > 1:
+					start_date = add_years(start_date, increment_year)
+					end_date = add_years(end_date, increment_year)
+					increment = flt(actual_rent) * flt(flt(percentage)/100) if actual_rent > 0 else flt(a.rent_amount) * flt(flt(percentage)/100)
+					actual_rent = flt(actual_rent) + flt(increment) if actual_rent > 0 else flt(a.rent_amount) + flt(increment)
+				actual_rent = actual_rent if actual_rent > 0 else a.rent_amount
+				frappe.db.sql("update `tabTenant Rental Charges` set increment = '{0}', rental_amount = '{1}' where from_date = '{2}' and to_date = '{3}' and parent = '{4}'".format(increment, round(actual_rent), start_date, end_date, a.name))
+				print a.name, increment, actual_rent
+
 def update_salary_st():
         count = 0
         for a in frappe.db.sql(""" select * from `tabSalary Advance` where docstatus = 1 and application_date >= '2020-01-01'""", as_dict = True):

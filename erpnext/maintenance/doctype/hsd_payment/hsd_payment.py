@@ -38,6 +38,8 @@ class HSDPayment(Document):
 		[self.remove(d) for d in to_remove]
 
 	def on_submit(self):
+		#if not self.fuel_book_attachment:
+		#	frappe.throw("Please attach Fuel Book")
 		self.adjust_outstanding()
 		self.update_general_ledger()
 

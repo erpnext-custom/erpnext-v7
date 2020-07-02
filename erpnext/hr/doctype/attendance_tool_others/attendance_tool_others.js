@@ -8,7 +8,8 @@ frappe.ui.form.on("Attendance Tool Others", {
 	},
 	
 	onload: function(frm) {
-		frm.set_value("date", get_today());
+		//frm.set_value("date", get_today());
+		frm.set_value("date", frappe.datetime.nowdate());
 	},
 
 	date: function(frm) {
@@ -170,7 +171,6 @@ erpnext.EmployeeSelector = Class.extend({
 						"branch": frm.doc.branch,
 						"employee_type": frm.doc.employee_type
 					},
-
 					callback: function(r) {
 						erpnext.attendance_tool_others.load_employees(frm);
 

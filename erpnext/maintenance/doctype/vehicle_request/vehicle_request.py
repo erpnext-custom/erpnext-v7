@@ -27,11 +27,14 @@ class VehicleRequest(Document):
 
 	def on_submit(self):
 		self.check_if_free()
-		self.send_email()
+		if not self.r_status:
+                        frappe.throw(" Approval Status is Mandiatory ")
 		if self.r_status == "Approved":
 			self.update_reservation_entry()
 		if self.r_status == "Rejected" and self.rejection_reason == None:
 			frappe.throw("Rejection Reason Is Mandatory")
+		self.send_email()
+
 
 	def on_cancel(self):
 		frappe.db.sql(""" delete from `tabEquipment Reservation Entry` where vehicle_request = '{0}'""".format(self.name)) 
@@ -58,7 +61,7 @@ class VehicleRequest(Document):
                                         select equipment
                                         from `tabEquipment Reservation Entry`
                                         where equipment = '{0}'
-                                        and docstatus = 1
+                                        and docstatus = 1 and reason = 'On Duty'
                                         and ('{1}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
                                                 or
                                                 '{2}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)

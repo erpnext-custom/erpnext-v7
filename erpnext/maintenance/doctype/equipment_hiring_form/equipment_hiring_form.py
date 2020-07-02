@@ -166,7 +166,7 @@ class EquipmentHiringForm(Document):
                                         select ehf_name
                                         from `tabEquipment Reservation Entry`
                                         where equipment = '{0}'
-                                        and docstatus = 1
+                                        and docstatus = 1 and reason != 'On Duty'
                                         and ('{1}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
                                                 or
                                                 '{2}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)

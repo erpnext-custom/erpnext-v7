@@ -26,15 +26,16 @@ class BreakDownReport(Document):
 	
 	def validate_equipment(self):
 		if self.owned_by in ['Own Company', 'Own Branch']:
-			eb = frappe.db.get_value("Equipment", self.equipment, "branch")
-			if self.owned_by == "Own Branch" and self.branch != eb:
-				frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to your branch")
-			if self.owned_by == "Own Company" and self.customer_branch != eb and self.out_source == 0:
-				frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to <b>" + str(self.customer_branch) + "</b>")
-			if self.owned_by == "Own Company" and self.cost_center == self.customer_cost_center:
-				frappe.throw("Equipment From your Branch should be 'Own Branch' and not 'Own Company'")
-		else:
-			self.equipment = ""
+                        eb = frappe.db.get_value("Equipment", self.equipment, "branch")
+                        if self.owned_by == "Own Branch" and self.branch != eb:
+                                frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to your branch")
+                        if self.owned_by == "Own Company" and self.customer_branch != eb:
+                                frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to <b>" + str(self.customer_branch) + "</b>")
+                        if self.owned_by == "Own Company" and self.cost_center == self.customer_cost_center:
+                                frappe.throw("Equipment From your Branch should be 'Own Branch' and not 'Own Company'")
+                else:
+                        self.equipment = ""
+
 
 	def assign_reservation(self):
 		if self.owned_by in ['Own Company', 'Own Branch']:

@@ -135,9 +135,13 @@ def get_data():
                                         "name": "Tenant Information",
                                         "doctype": "Tenant Information",
                                         "Label": _("Tenant Information")
-                                }
-
-
+                                },
+				{
+                                        "type": "report",
+                                        "name": "Accounts Receivable",
+                                        "doctype": "Sales Invoice",
+                                        "is_query_report": True
+                                },
 			]
 		},
 		   {
@@ -148,7 +152,10 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Tenant Updation Tool",
                                 },
-
+								{
+									"type": "doctype",
+									"name": "Draft ID"
+								},
                                  {
                                         "type": "doctype",
                                         "name": "Rental Bill Cancelation Tool",

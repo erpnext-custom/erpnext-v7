@@ -88,7 +88,7 @@ frappe.ui.form.on("Rental Payment Item", {
 });
 
 function get_rental_bills(frm){
-	if (frm.doc.branch && frm.doc.ministry_agency){
+	if (frm.doc.branch || frm.doc.ministry_agency){
 		return frappe.call({
                         method: "get_rental_bill_list",
                         doc: cur_frm.doc,
