@@ -28,6 +28,13 @@ frappe.ui.form.on("Item", {
                                           }
                                 }
                          });
+		cur_frm.set_query("expense_account", function() {
+                        return {
+                                "filters": [
+                                        ["is_group", "=", 0]
+                                ]
+                        }
+                });
 	},
 
 	refresh: function(frm) {

@@ -942,8 +942,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-02-03 11:57:22.661366", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2020-07-01 15:05:50.603888", 
+ "modified_by": "ucdorji@gyalsunginfra.bt", 
  "module": "HR", 
  "name": "GEP Employee", 
  "name_case": "", 
@@ -1071,7 +1071,7 @@
    "share": 1, 
    "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
-   "write": 1
+   "write": 0
   }
  ], 
  "quick_entry": 0, 

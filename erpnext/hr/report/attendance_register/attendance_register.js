@@ -17,13 +17,13 @@ frappe.query_reports["Attendance Register"] = {
 			"fieldtype": "Select",
 			"reqd": 1
 		},
-		{
-			"fieldname":"employee_type",
-			"label": __("Employee Type"),
-			"fieldtype": "Select",
-			"options": ['Muster Roll Employee', 'YELP Employee'],
-			"reqd": 1
-		},
+		//{
+		//	"fieldname":"employee_type",
+		//	"label": __("Employee Type"),
+		//	"fieldtype": "Select",
+		//	"options": ['Muster Roll Employee', ''],
+		//	"reqd": 1
+		//},
 		{
 			"fieldname":"cost_center",
 			"label": __("Cost Center"),

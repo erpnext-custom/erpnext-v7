@@ -109,13 +109,13 @@ class MaterialRequest(BuyingController):
 		if not self.items:
 			frappe.throw("Cannot save without items in material request")
 
-		if not self.approver:	
+		'''if not self.approver:	
 			app = frappe.db.get_value("Approver Item", {"cost_center": self.temp_cc}, "approver")	
 			if not app:
 				frappe.throw("Setup MR Approver for <b>" + str(self.temp_cc) + "</b> in Document Approver")
 			else:
 				self.approver = app
-
+		'''
 		# self.validate_qty_against_so()
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated
 		# Though the creation of Material Request from a Production Plan can be rethought to fix this

@@ -77,6 +77,17 @@ def get_data():
 					"name": "Muster Roll Employee",
 					"description": _("Muster Roll Employee Data"),
 				},
+				{
+					"type": "doctype",
+					"name": "MusterRoll Application",
+					"label": "Muster Roll Application",
+				},
+				{
+					"type": "doctype",
+					"name": "Attendance Tool Others",
+					"label": "Attendance Tool for Muster Roll",
+					"description": _("Attendance Tool for Others"),
+				},
 				#{
 				#	"type": "doctype",
 				#	"name": "Attendance Tool Others",
@@ -106,6 +117,22 @@ def get_data():
 					"name": "Process MR Payment",
 					"label": "Process Payment for MR",
 					"description": _("Process Payments for Project Muster Roll"),
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Attendance Register",
+					"label": "Attendance Register for Muster Roll",
+					"description": _("Attendance Sheet"),
+					"doctype": "Attendance Others"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Overtime Register",
+					"label": "Overtime Register for Muster Roll",
+					"description": _("Overtime Register"),
+					"doctype": "Overtime Entry"
 				},
 			]
 		},

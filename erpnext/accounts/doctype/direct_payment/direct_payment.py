@@ -83,6 +83,7 @@ class DirectPayment(AccountsController):
 		#self.posting_date = nowdate()
 		
 		total_amt = flt(self.net_amount) + flt(self.tds_amount) + flt(self.deduction_amount)
+		frappe.msgprint("net_amount {0}, tds_amount {1} deduction_amount {2}".format(self.net_amount, self.tds_amount, self.deduction_amount))
 		if total_amt == self.amount:
 			if self.payment_type == "Receive":
 				account_type = frappe.db.get_value("Account", self.debit_account, "account_type") or ""

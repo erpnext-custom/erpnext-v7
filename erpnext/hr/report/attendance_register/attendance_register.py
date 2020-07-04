@@ -77,7 +77,8 @@ def get_conditions(filters):
 
 def get_employee_details(employee_type):
 	emp_map = frappe._dict()
-	if employee_type == "Muster Roll Employee":
+	#Commented as the GEP is merged with Employee Master
+	'''if employee_type == "Muster Roll Employee":
 		for d in frappe.db.sql("""select name, person_name, id_card
 			from `tabMuster Roll Employee`""", as_dict=1):
 			emp_map.setdefault(d.name, d)
@@ -86,7 +87,11 @@ def get_employee_details(employee_type):
 			from `tabGEP Employee`""", as_dict=1):
 			emp_map.setdefault(d.name, d)
 	else:
-		frappe.throw("Select a Employee Type")
+		frappe.throw("Select a Employee Type")'''
+
+	for d in frappe.db.sql("""select name, person_name, id_card
+                        from `tabMuster Roll Employee`""", as_dict=1):
+                        emp_map.setdefault(d.name, d)
 	return emp_map
 
 @frappe.whitelist()
