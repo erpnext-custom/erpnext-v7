@@ -9,6 +9,13 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_ministry_dept():
+        for a in frappe.db.sql("select t.tenant as tenant from `tabRental Payment Item` t where exists(select 1 from `tabTenant Information` i where i.name = t.tenant)", as_dict=True):
+                doc = frappe.get_doc("Tenant Information", a.tenant)
+                frappe.db.sql("update `tabRental Payment Item` set ministry_agency = '{0}', department = '{1}' where tenant = '{2}'".format(doc.ministry_agency, doc.department, a.tenant))
+                #print(ministry, dept, a.tenant)
+
+
 def update_tenant_customer_code():
 	for a in frappe.db.sql("select name, cid from `tabTenant Information` where customer_code is NULL or customer_code =''", as_dict=True):
 		for b in frappe.db.sql("select customer_code from `tabCustomer` where customer_id = '{}'".format(a.cid), as_dict=1):

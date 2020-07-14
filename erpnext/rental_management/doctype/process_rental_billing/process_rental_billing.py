@@ -23,6 +23,7 @@ class ProcessRentalBilling(AccountsController):
                                select t1.name
                                from `tabTenant Information` t1
                                where t1.docstatus = "1"
+			       and t1.dzongkhag = "{3}"
 			       and (
 					(t1.status="Allocated" and t1.allocated_date <= '{3}') 
 					or 
@@ -37,7 +38,7 @@ class ProcessRentalBilling(AccountsController):
                                               and t2.month = '{1}'
                                               )
                                order by t1.ministry_agency, t1.department
-			""".format(self.fiscal_year, self.month, month_start, month_end), as_dict=True)
+			""".format(self.fiscal_year, self.month, month_start, month_end, self.dzongkhag), as_dict=True)
 		else:
 			tenant_list = frappe.db.sql("""
                                 select t1.name
@@ -45,10 +46,10 @@ class ProcessRentalBilling(AccountsController):
                                 where t1.fiscal_year = '{0}'
                                 and t1.month = '{1}'
 				and t1.branch = '{2}'
+				and t1.branch = '{3}'
                                 and t1.docstatus = 0
                                 order by t1.branch, t1.name
-                        """.format(self.fiscal_year, self.month, self.branch), as_dict=True)
-
+                        """.format(self.fiscal_year, self.month, self.branch, self.dzongkhag), as_dict=True)
 		return tenant_list	
 
 	def check_mandatory(self):

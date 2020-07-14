@@ -108,6 +108,8 @@ function get_rental_bills(frm){
 						row.allocated_amount = rec['rent_amount'];
 						row.fiscal_year = rec['fiscal_year'];
 						row.month = rec['month'];
+						row.ministry_agency = rec['ministry_agency'];
+                                                row.department = rec['department'];
 						amount_received = amount_received + rec['rent_amount'];
                                         });
 					cur_frm.set_value("amount_received", amount_received);

@@ -46,6 +46,20 @@ frappe.query_reports["Rental Register"] = {
 			"options": "Building Category",
 		},
 		{
+                        "fieldname": "ministry",
+                        "label": ("Ministry/Agency"),
+                        "fieldtype": "Link",
+                        "width": "80",
+                        "options": "Ministry and Agency",
+                },
+		{
+                        "fieldname": "department",
+                        "label": ("Department"),
+                        "fieldtype": "Link",
+                        "width": "80",
+                        "options": "Tenant Department",
+                },
+		{
                         "fieldname": "town",
                         "label": ("Town Category"),
                         "fieldtype": "Link",

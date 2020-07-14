@@ -13,8 +13,8 @@ def execute(filters=None):
 def get_columns():
 	return [
 		("Branch") + ":Link/Branch:120",
-		("CID No. ") + ":Link/Tanent Bill:120",
-		("Tanent Name") + ":Data:120",
+		("CID No. ") + ":Link/Tenant Bill:120",
+		("Tenant Name") + ":Data:120",
 		("Ministry/Agency.") + ":Data:120",
 		("Department") + ":Data:100",
 		("Dzongkhag") +":Data:100",
@@ -28,8 +28,8 @@ def get_columns():
 		("Month") + " :Data:80",
                 ("Rent Amount") + ":Currency:120",
 		("Paid Amount") + ":Currency:120",
-                ("Penalty.")+ ":Currency:120",
-                ("Total.") + ":Currency:120",
+                ("Penalty")+ ":Currency:120",
+                ("Balance Amount") + ":Currency:120",
 	
 	]
 
@@ -40,7 +40,7 @@ def get_data(filters):
 	if filters.get("status") == "Submitted":
 		status = "docstatus = 1"
 
-	query = """select branch, tenant,  tenant_name, ministry_agency, department, dzongkhag, location, town_category, building_category,'class', block_no, flat_no,fiscal_year, month,  rent_amount, received_amount, 'penalty', rent_amount from `tabRental Bill` where {0}""".format(status)
+	query = """select branch, tenant,  tenant_name, ministry_agency, department, dzongkhag, location, town_category, building_category,'class', block_no, flat_no,fiscal_year, month,  rent_amount, received_amount, 'penalty', (rent_amount - received_amount) as balance from `tabRental Bill` where {0}""".format(status)
 	if filters.get("dzongkhag"):
 		query += " and dzongkhag = \'" + str(filters.dzongkhag) + "\'"
 	if filters.get("location"):
@@ -49,6 +49,10 @@ def get_data(filters):
 		query += " and town_category = \'" + str(filters.town) + "\' "
 	if filters.get("building_category"):
 		query += " and building_category = \'" + str(filters.building_category) + "\' "
+	if filters.get("ministry"):
+		query += " and ministry_agency = \'" + str(filters.ministry) + "\' "
+	if filters.get("department"):
+		query += " and department = \'" + str(filters.department) + "\' "
 	if filters.get("month"):
 		query += " and month = {0}".format(filters.get("month"))
 	if filters.get("fiscal_year"):

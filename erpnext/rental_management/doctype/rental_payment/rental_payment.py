@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cint, cstr, flt, fmt_money, formatdate, nowtime, getdate
+from frappe.utils import cint, cstr, flt, fmt_money, formatdate, nowtime, getdate, nowdate
 from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.controllers.accounts_controller import AccountsController
 
@@ -43,6 +43,7 @@ class RentalPayment(AccountsController):
 					
 					
 	def on_submit(self):
+		self.update_tenant_dept()
 		self.update_rental_bill()
 		self.post_gl_entry()
 	
@@ -67,6 +68,51 @@ class RentalPayment(AccountsController):
 				received_amount = frappe.db.get_value("Rental Bill", a.rental_bill, "received_amount")
 				total_received_amount = received_amount + a.allocated_amount
 				frappe.db.sql("Update `tabRental Bill` set received_amount = '{0}', rental_payment = '{1}' where name = '{2}'".format(total_received_amount, self.name, a.rental_bill))
+
+	def update_tenant_dept(self):
+		for a in self.item:
+			doc = frappe.get_doc("Tenant Information", a.tenant)
+			flag = 0
+			if a.ministry_agency != doc.ministry_agency:
+				flag = 1
+			if a.department != doc.department:
+				flag = 1
+			if flag:
+				ti = frappe.get_doc("Tenant Information", a.tenant)
+				if not ti.tenant_history:
+					ti.append("tenant_history",{
+							"department": ti.department,
+							"ministry_agency": ti.ministry_agency,
+							"floor_area": ti.floor_area,
+							"from_date": ti.allocated_date,
+							"to_date" : nowdate(),
+							"creation": nowdate(),
+							"modified_by": frappe.session.user,
+							"modified": nowdate(),
+							})
+					ti.append("tenant_history",{
+							"department": a.department,
+							"ministry_agency": a.ministry_agency,
+							"floor_area": ti.floor_area,
+							"from_date": nowdate(),
+							"creation": nowdate(),
+							"modified_by": frappe.session.user,
+							"modified": nowdate()
+						      })
+
+				else:
+					ti.append("tenant_history",{
+							"department": a.department,
+							"ministry_agency": a.ministry_agency,
+							"floor_area": ti.floor_area,
+							"from_date": nowdate(),
+							"creation": nowdate(),
+							"modified_by": frappe.session.user,
+							"modified": nowdate()
+				})
+				ti.save()
+				frappe.db.sql("update `tabTenant Information` set ministry_agency = '{0}', department = '{1}' where name ='{2}'".format(a.ministry_agency, a.department, a.tenant))
+
 
 	def post_gl_entry(self):
 		gl_entries = []
@@ -148,7 +194,8 @@ class RentalPayment(AccountsController):
 			if self.dzongkhag:
 				condition += " and dzongkhag = '{0}'".format(self.dzongkhag)
 			bill_lists = frappe.db.sql("""
-			                         select name, tenant, tenant_name, customer_code, rent_amount, received_amount, fiscal_year, month
+			                         select name, tenant, tenant_name, customer_code, rent_amount, received_amount, fiscal_year, month,
+						 ministry_agency, department
                                                  from `tabRental Bill`
 						 where 	docstatus = 1
 		                                 and received_amount < rent_amount
@@ -160,7 +207,8 @@ class RentalPayment(AccountsController):
 				condition += " and tenant = '{0}'".format(self.tenant)
 
 			bill_lists = frappe.db.sql("""
-			                         select name, tenant, tenant_name, customer_code, rent_amount, received_amount, fiscal_year, month
+			                         select name, tenant, tenant_name, customer_code, rent_amount, received_amount, fiscal_year, month,
+						 ministry_agency, department
                                                  from `tabRental Bill`
 						 where 	docstatus = 1
 		                                 and received_amount < rent_amount
@@ -170,11 +218,11 @@ class RentalPayment(AccountsController):
                                                 
 		for a in bill_lists:
 			if a.received_amount == 0.00:
-				data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "rent_amount":a.rent_amount, "fiscal_year":a.fiscal_year, "month":a.month})
+				data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "rent_amount":a.rent_amount, "fiscal_year":a.fiscal_year, "month":a.month, "ministry_agency": a.ministry_agency, "department":a.department})
 			else:	
 				balance = flt(a.rent_amount) - flt(a.received_amount)
 				if balance > 0 and balance != a.rent_amount:
-					data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "rent_amount":balance, "fiscal_year":a.fiscal_year, "month":a.month})
+					data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "rent_amount":balance, "fiscal_year":a.fiscal_year, "month":a.month, "ministry_agency": a.ministry_agency, "department":a.department})
 
 		return data	
 
