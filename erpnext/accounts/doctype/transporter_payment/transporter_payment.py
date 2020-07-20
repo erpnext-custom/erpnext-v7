@@ -12,13 +12,41 @@ from erpnext.custom_utils import check_future_date, get_settings_value, check_un
 		check_budget_available, get_branch_cc
 from erpnext.accounts.doctype.transporter_rate.transporter_rate import get_transporter_rate
 from erpnext.accounts.utils import get_tds_account 
+import operator, math
 
 class TransporterPayment(AccountsController):
 	def validate(self):
 		self.validate_dates()
-		self.set_debit_account()
 		self.calculate_total()
-		self.calculate_on_save()
+		self.validate_defaults()
+
+	def on_submit(self):
+		self.check_paid()
+		self.check_budget()
+		self.make_gl_entry()
+		self.mark_paid(1)
+
+	def before_cancel(self):
+		if self.clearance_date:
+			frappe.throw("BRS Updated transactions cannot be cancelled.")
+
+		check_uncancelled_linked_doc(self.doctype, self.name)
+
+	def on_cancel(self):
+		self.make_gl_entry()
+		self.check_budget()
+		self.mark_paid(0)
+
+	def on_update_after_submit(self):
+		if not self.cheque_no or not self.cheque_date:
+			frappe.throw("Both Cheque No and Date are mandatory")
+
+	def validate_defaults(self):
+		if not self.get("items"):
+			frappe.throw("No Transportation Detail(s) for Equipment <b>{0} </b> ".format(self.equipment))
+
+		if not flt(self.gross_amount):
+			frappe.throw(_("Gross Amount cannot be empty"))
 
 	def validate_dates(self):
 		check_future_date(self.posting_date)
@@ -28,68 +56,80 @@ class TransporterPayment(AccountsController):
 		if not self.remarks:
 			self.remarks = "Payment for {0}".format(self.registration_no)
 	
-	def set_debit_account(self):
-		e = frappe.db.get_value("Equipment", self.equipment, "equipment_category")
-		self.debit_account = frappe.db.get_value("Equipment Category", e, "budget_account")
-	
-		if self.unloading_amount:
-			self.unloading_account = get_settings_value("Production Account Settings", self.company, "default_unloading_account")
-	def calculate_on_save(self):
-		trip_no = 0
+	def calculate_total(self):
+		settings = frappe.get_single("Accounts Settings")
+
+		# transfer and delivery charges
+		transfer_charges = 0
+		delivery_charges = 0
 		total_transporter_amount = 0
 		unloading_amount = 0
 		for i in self.items:
-			trip_no = trip_no + 1
-			total_transporter_amount = total_transporter_amount + i.transportation_amount
-			unloading_amount = unloading_amount + i.unloading_amount
+			if i.reference_type == 'Stock Entry':
+				transfer_charges += flt(i.transportation_amount)
 
-		self.total_trip = trip_no
-		self.transportation_amount = total_transporter_amount
-		self.unloading_amount = unloading_amount
-		self.gross_amount = total_transporter_amount + unloading_amount
-	
+			if i.reference_type == 'Delivery Note':
+				delivery_charges += flt(i.transportation_amount)
+		
+			total_transporter_amount += flt(i.transportation_amount)
+			unloading_amount += flt(i.unloading_amount)
+
+		self.transfer_charges 	= flt(transfer_charges)
+		self.delivery_charges  	= flt(delivery_charges)
+		self.transportation_amount = flt(total_transporter_amount)
+		self.unloading_amount 	= flt(unloading_amount)
+		self.gross_amount 	= flt(self.transportation_amount) + flt(self.unloading_amount)
+
+		# pol
 		pol_amount = 0
 		for j in self.pols:
-			if not j.allocated_amount:
-				j.allocated_amount = j.amount
-			pol_amount = pol_amount + j.allocated_amount
+			if not flt(j.allocated_amount):
+				j.allocated_amount = flt(j.amount)
+			pol_amount += flt(j.allocated_amount)
 
-		self.pol_amount = pol_amount
-		self.net_payable = self.gross_amount - self.pol_amount
+		self.pol_amount  	= flt(pol_amount)
+		self.net_payable 	= flt(self.gross_amount) - flt(self.pol_amount)
 
-		total_other_deduction = 0
+		# unloading
+		if self.unloading_amount:
+			self.unloading_account = get_settings_value("Production Account Settings", self.company, "default_unloading_account")
+			if not self.unloading_account:
+				frappe.throw(_("GL for {} is not set under {}")\
+					.format(frappe.bold("Default Unloading Account"), frappe.bold("Production Account Settings")))
 
-		if self.deductions:
-			for k in self.deductions:
-				total_other_deduction = total_other_deduction + k.amount			
-		
-		if total_other_deduction > 0:
-			if self.tds_amount > 0:		
-				self.other_deductions = total_other_deduction + self.tds_amount
-			else:
-				self.other_deductions= total_other_deduction
-		elif self.tds_amount > 0:
-			self.other_deductions = self.tds_amount
+		# security deposit
+		if self.security_deposit_percent:
+			self.security_deposit_amount = flt(self.gross_amount) * flt(self.security_deposit_percent) / 100.0
+                        self.security_deposit_account = settings.security_deposit_account 
+			if not self.security_deposit_account:
+				frappe.throw(_("GL for {} is not set under {}")\
+					.format(frappe.bold("Security Deposit Received"), frappe.bold("Accounts Settings")))
 		else:
-			pass
-
+			self.security_deposit_amount = 0
+			self.security_deposit_account= None
 			
-		self.amount_payable = self.net_payable - self.other_deductions
-		
-
-	def calculate_total(self):
-                other_deductions = 0
-
-
-
+		# tds
 		if self.tds_percent:
-			self.tds_amount = flt(self.gross_amount) * flt(self.tds_percent) / 100.0
+			self.tds_amount  = flt(self.gross_amount) * flt(self.tds_percent) / 100.0
 			self.tds_account = get_tds_account(self.tds_percent)
 		else:
-			self.tds_amount = None	
+			self.tds_amount  = 0
 			self.tds_account = None
 
-                ##### Ver 1.0.190312 Ends, Added by SHIV on 2019/03/12
+		# weighbridge
+		self.total_trip = len(self.get("items"))
+		if self.weighbridge_charge:
+			self.weighbridge_amount  = flt(self.total_trip) * flt(self.weighbridge_charge)
+			self.weighbridge_account = settings.weighbridge_account
+			if not self.weighbridge_account:
+				frappe.throw(_("GL for {} is not set under {}")\
+					.format(frappe.bold("Income from Weighbridge Account"), frappe.bold("Accounts Settings")))
+		else:
+			self.weighbridge_amount  = 0
+			self.weighbridge_account = None
+
+		# other deductions
+                other_deductions = 0
                 for d in self.get("deductions"):
                         if d.party_type == "Equipment" and not d.party:
                                 d.party = self.equipment
@@ -101,81 +141,111 @@ class TransporterPayment(AccountsController):
                                 frappe.throw(_("Row#{0} : Party is mandatory").format(d.idx), title="Missing Data")
                                 
                         other_deductions += flt(d.amount)
-                self.other_deductions = flt(other_deductions)+flt(self.tds_amount)
-                ##### Ver 1.0.190312 Ends
-                
-		self.net_payable = flt(self.gross_amount) - flt(self.pol_amount)
-		# Following line commented and subsequent added by SHIV on 2019/03/12
-		#self.amount_payable = flt(self.gross_amount) - flt(self.pol_amount) - flt(self.tds_amount) - flt(self.deduction_amount)
-		self.amount_payable = flt(self.net_payable) - flt(self.other_deductions)			
+
+                self.other_deductions 	= flt(other_deductions) + flt(self.tds_amount) + flt(self.security_deposit_amount)
+		self.amount_payable 	= flt(self.net_payable) - flt(self.weighbridge_amount) - flt(self.other_deductions)			
+
+	def get_stock_entries(self, cost_center):
+		return frappe.db.sql("""select b.name as reference_row, a.posting_date, 
+					'Stock Entry' as reference_type, a.name as reference_name, 
+					b.item_code, b.item_name, 
+					b.s_warehouse as from_warehouse, b.t_warehouse as receiving_warehouse, 
+					b.received_qty as qty, a.unloading_by, a.equipment 
+				from `tabStock Entry` a, `tabStock Entry Detail` b 
+				where a.docstatus = 1 
+				and a.transport_payment_done = 0 
+				and a.purpose = 'Material Transfer' 
+				and a.posting_date between "{0}" and "{1}" 
+				and a.equipment = "{2}"
+				and b.parent = a.name
+				and b.cost_center = "{3}"
+				""".format(self.from_date, self.to_date, self.equipment, cost_center), as_dict = True)
+
+	def get_delivery_notes(self, cost_center):
+		return frappe.db.sql("""select b.name as reference_row, a.posting_date, 
+					'Delivery Note' as reference_type, a.name as reference_name, 
+					b.item_code, b.item_name, 
+					b.warehouse as from_warehouse, a.customer as receiving_warehouse, 
+					b.qty as qty, '' as unloading_by, a.equipment 
+				from `tabDelivery Note` a, `tabDelivery Note Item` b 
+				where a.docstatus = 1 
+				and a.posting_date between "{0}" and "{1}" 
+				and a.equipment = "{2}" 
+				and a.transport_payment_done = 0
+				and b.parent = a.name
+				and b.cost_center = "{3}"
+				""".format(self.from_date, self.to_date, self.equipment, cost_center), as_dict = True)
 
 	def get_payment_details(self):
 		production = []
+		self.set('items', [])
+		self.set('pols', [])
+
+		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
+		if not cost_center:
+			frappe.throw("Branch {0} is not linked to any Cost Center".format(frappe.get_desk_link("Branch", self.branch)))
+
 		'''
 		# Commented by SHIV on 2019/09/12 upon request from Dorji
 		query = "select b.name as reference_row, a.posting_date, 'Production' as reference_type, a.name as reference_name, b.item_code, b.item_name, a.warehouse as receiving_warehouse, b.qty, b.unloading_by, b.equipment from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and a.docstatus = 1 and b.transport_payment_done = 0 and a.posting_date between %s and %s and b.equipment = %s"	
 		production = frappe.db.sql(query, (self.from_date, self.to_date, self.equipment), as_dict=True)
 		'''
-		query = "select b.name as reference_row, a.posting_date, 'Stock Entry' as reference_type, a.name as reference_name, b.item_code, b.item_name, b.t_warehouse as receiving_warehouse, b.received_qty as qty, a.unloading_by, a.equipment from `tabStock Entry` a, `tabStock Entry Detail` b where a.name = b.parent and a.docstatus = 1 and a.transport_payment_done = 0 and a.purpose = 'Material Transfer' and a.posting_date between %s and %s  and a.equipment = %s"
-
-		stock_transfer = frappe.db.sql(query, (self.from_date, self.to_date, self.equipment), as_dict=True)
+		
+		# get stock entries
+		stock_transfer = self.get_stock_entries(cost_center) 
 	
-		query = "select b.name as reference_row, a.posting_date, 'Delivery Note' as reference_type, a.name as reference_name, b.item_code, b.item_name, a.customer as receiving_warehouse, b.qty as qty, '' as unloading_by, a.equipment from `tabDelivery Note` a, `tabDelivery Note Item` b where a.name = b.parent and a.docstatus = 1 and a.posting_date between %s and %s and a.equipment = %s and transport_payment_done = 0"
-		delivery_note = frappe.db.sql(query, (self.from_date, self.to_date, self.equipment), as_dict = True)
-		entries = production + stock_transfer+delivery_note
+		# get delivery notes
+		delivery_note  = self.get_delivery_notes(cost_center) 
 
+		entries = production + stock_transfer + delivery_note
 		if not entries:
-			frappe.throw("No Transportation Detail(s) for Equipment <b>{0}</b>".format(self.equipment))
-
-		self.set('items', [])
-		self.set('pols', [])
+			frappe.throw("No Transportation Detail(s) for Equipment <b>{0} </b> ".format(self.equipment))
 
 		self.total_trip = len(entries)
+		trans_amount    = unload_amount = pol_amount = 0
 
-		trans_amount = unload_amount = pol_amount = 0
-
+		# populate items
 		for d in entries:
 			equipment_type = frappe.db.get_value("Equipment", d.equipment,"equipment_type")
-			#doc = get_transporter_rate(d.receiving_warehouse, d.posting_date, equipment_type, d.item_code)[0]
-			doc = get_transporter_rate(d.receiving_warehouse, d.posting_date, equipment_type, d.item_code)
-			d.transporter_rate = doc['name']
-			if cint(self.total_trip) > flt(doc['threshold_trip']):
-				d.transportation_rate = flt(doc['higher_rate'])
+			tr = get_transporter_rate(d.from_warehouse, d.receiving_warehouse, d.posting_date, equipment_type, d.item_code)
+
+			d.transporter_rate = tr.name
+			if cint(self.total_trip) > flt(tr.threshold_trip):
+				d.transportation_rate = flt(tr.higher_rate)
 			else:
-				d.transportation_rate = flt(doc['lower_rate'])
-			d.transportation_amount = round(flt(d.transportation_rate) * flt(d.qty), 2)
-			d.unloading_rate = doc['unloading_rate']
+				d.transportation_rate = flt(tr.lower_rate)
+
+			d.unloading_rate  = tr.unloading_rate
 			if d.unloading_by == "Transporter":
 				d.unloading_amount = round(flt(d.unloading_rate) * flt(d.qty), 2)
 			else:
 				d.unloading_amount = 0
 			
-			d.total_amount = flt(d.unloading_amount) + flt(d.transportation_amount)
+			d.expense_account 	= tr.expense_account
+			d.transportation_amount = round(flt(d.transportation_rate) * flt(d.qty), 2)
+			d.total_amount 		= flt(d.unloading_amount) + flt(d.transportation_amount)
+			trans_amount 		+= flt(d.transportation_amount)
+			unload_amount 		+= flt(d.unloading_amount)
 
 			row = self.append('items', {})
 			row.update(d)
-			
-			trans_amount = trans_amount + flt(d.transportation_amount)
-			unload_amount = unload_amount + flt(d.unloading_amount)
-
+	
 		#POL Details
-		query = "select posting_date, name as pol, pol_type as item_code, item_name, qty, rate, total_amount as amount, total_amount as allocated_amount from tabPOL where docstatus = 1 and transport_payment_done = 0 and posting_date between %s and %s and equipment = %s"
-		for a in frappe.db.sql(query, (self.from_date, self.to_date, self.equipment), as_dict=1):
+		query = """select posting_date, name as pol, pol_type as item_code, 
+				item_name, qty, rate, total_amount as amount, 
+				total_amount as allocated_amount,
+				fuelbook_branch 
+			from `tabPOL` 
+			where cost_center = %s 
+			and docstatus = 1 
+			and transport_payment_done = 0 
+			and posting_date between %s and %s and equipment = %s"""
+		for a in frappe.db.sql(query, (cost_center, self.from_date, self.to_date, self.equipment), as_dict=1):
 			row = self.append('pols', {})
 			row.update(a)
-			pol_amount = pol_amount + flt(a.amount)
 	
-		self.transportation_amount = trans_amount
-		self.unloading_amount = unload_amount
-		self.gross_amount = trans_amount + unload_amount
-		self.pol_amount = pol_amount
 		self.calculate_total()
-
-	def on_submit(self):
-		self.check_paid()
-		self.check_budget()
-		self.make_gl_entry()
-		self.mark_paid(1)
+		return flt(self.amount_payable)
 
 	def check_paid(self):
 		for a in self.items:
@@ -189,7 +259,8 @@ class TransporterPayment(AccountsController):
 			elif a.reference_type == "Stock Entry":
 				eq = frappe.db.get_value("Stock Entry", a.reference_name, "equipment")
 				if eq != self.equipment:
-					frappe.throw("Transportation Details are not for " + str(self.equipment))
+					frappe.throw(_("Transportation Details are not for {} under Stock Entry {}")\
+						.format(frappe.get_desk_link('Equipment',self.equipment), frappe.get_desk_link('Stock Entry', a.reference_name)))
 				paid = frappe.db.get_value("Stock Entry", a.reference_name, "transport_payment_done")
 				if paid:
 					frappe.throw("Payment Already Done")
@@ -204,6 +275,17 @@ class TransporterPayment(AccountsController):
 			else:
 				pass
 
+	def return_wh(self):
+		pass
+		'''con = ''
+		if self.item_code = '500075':
+			cond = ""
+		if self.item_code = '300021':
+			con = "from_warehouse = 'Dzongthong Warehouse Plant 1 - SMCL' and to_warehouse = 'Dzungdi Warehouse Plant 2 - SMCL'"	
+
+		if self.item_code = ''
+		'''
+
 	def check_budget(self):
 		if self.docstatus == 2:
 			frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
@@ -212,13 +294,12 @@ class TransporterPayment(AccountsController):
 
 		cc = get_branch_cc(self.branch)
 		trans_amount = flt(self.transportation_amount) - flt(self.pol_amount)
-		if trans_amount:
-			check_budget_available(cc, self.debit_account, self.posting_date, trans_amount)
-			self.consume_budget(cc, self.debit_account, trans_amount)
+		if (flt(self.transfer_charges) +  flt(self.delivery_charges)) > 0:
+			items = self.get_expense_gl()
 
-		if self.unloading_amount:
-			check_budget_available(cc, self.unloading_account, self.posting_date, self.unloading_amount)
-			self.consume_budget(cc, self.unloading_account, self.unloading_amount)
+			for k,v in items.iteritems():
+				check_budget_available(cc, k, self.posting_date, v)
+				self.consume_budget(cc, k, v)
 	
         def consume_budget(self, cc, account, amount):
                 bud_obj = frappe.get_doc({
@@ -250,17 +331,33 @@ class TransporterPayment(AccountsController):
                 consume.flags.ignore_permissions=1
                 consume.submit()
 
+        def get_expense_gl(self):
+                items = {}
+                total_transportation_amount = 0
+		for i in self.get("items"): 
+			if str(i.expense_account) in items:
+				items[str(i.expense_account)] = flt(items[str(i.expense_account)]) + flt(i.transportation_amount)
+			else:
+				items.setdefault(str(i.expense_account),flt(i.transportation_amount))
+			total_transportation_amount += flt(i.transportation_amount)
 
-	def before_cancel(self):
-		if self.clearance_date:
-			frappe.throw("BRS Updated transactions cannot be cancelled.")
+                # pro-rate POL expenses against each expense GL
+                if flt(total_transportation_amount) and flt(self.pol_amount):
+                        deduct_pct  = 0
+                        deduct_amt  = 0
+                        balance_amt = flt(self.pol_amount)
+                        counter     = 0
+                        for k,v in sorted(items.items(), key=operator.itemgetter(1)):
+                                counter += 1
+                                if counter == len(items):
+                                        deduct_amt = balance_amt
+                                else:
+                                        deduct_pct = floor((flt(v)/flt(total_transportation_amount))*0.01)
+                                        deduct_amt = floor(flt(self.pol_amount)*deduct_pct*0.01)
+                                        balance_amt= balance_amt - deduct_amt
 
-		check_uncancelled_linked_doc(self.doctype, self.name)
-
-	def on_cancel(self):
-		self.make_gl_entry()
-		self.check_budget()
-		self.mark_paid(0)
+                                items[k] -= flt(deduct_amt)
+                return items
 
 	def make_gl_entry(self):
 		from erpnext.accounts.general_ledger import make_gl_entries
@@ -271,13 +368,15 @@ class TransporterPayment(AccountsController):
 			frappe.throw("{0} is not linked to any Cost Center".format(self.branch))
 		
 		
-		account_type = frappe.db.get_value("Account", self.credit_account, "account_type")
 		party = party_type = None
-		if account_type == "Receivable" or account_type == "Payable":
-			party = self.equipment
-			party_type = "Equipment"
+		# amount_payable - CR
+		if flt(self.amount_payable):
+			party = party_type = None
+			account_type = frappe.db.get_value("Account", self.credit_account, "account_type")
+			if account_type == "Receivable" or account_type == "Payable":
+				party = self.equipment
+				party_type = "Equipment"
 
-		if self.amount_payable >= 0.0:
 			gl_entries.append(
 				self.get_gl_dict({
 				       "account": self.credit_account,
@@ -291,20 +390,38 @@ class TransporterPayment(AccountsController):
 				}, self.currency)
 			)
 
-		trans_amount = flt(self.transportation_amount) - flt(self.pol_amount)
-		if trans_amount > 0:
-			gl_entries.append(
-				self.get_gl_dict({
-				       "account":  self.debit_account,
-				       "debit": trans_amount,
-				       "debit_in_account_currency": trans_amount,
-				       "against_voucher": self.name,
-				       "against_voucher_type": self.doctype,
-				       "cost_center": cost_center,
-				}, self.currency)
-			)
+                # transportaion_amount - DR
+		if (flt(self.transfer_charges) +  flt(self.delivery_charges)) > 0:
+			items = self.get_expense_gl()
+                        
+			for k,v in items.iteritems():
+				party = party_type = None
+				account_type = frappe.db.get_value("Account", k, "account_type")
+				if account_type == "Receivable" or account_type == "Payable":
+					party = self.equipment
+					party_type = "Equipment"
 
-		if self.unloading_amount:
+                                gl_entries.append(
+                                        self.get_gl_dict({
+                                                "account":  k,
+                                                "debit": flt(v),
+                                                "debit_in_account_currency": flt(v),
+                                                "against_voucher": self.name,
+                                                "against_voucher_type": self.doctype,
+					        "party_type": party_type,
+					        "party": party,
+                                                "cost_center": cost_center,
+                                        }, self.currency)
+                                )
+
+                # unloading_amount - DR
+		if flt(self.unloading_amount):
+			party = party_type = None
+			account_type = frappe.db.get_value("Account", self.unloading_account, "account_type")
+			if account_type == "Receivable" or account_type == "Payable":
+				party = self.equipment
+				party_type = "Equipment"
+
 			gl_entries.append(
 				self.get_gl_dict({
 				       "account":  self.unloading_account,
@@ -312,11 +429,20 @@ class TransporterPayment(AccountsController):
 				       "debit_in_account_currency": self.unloading_amount,
 				       "against_voucher": self.name,
 				       "against_voucher_type": self.doctype,
+					"party_type": party_type,
+					"party": party,
 				       "cost_center": cost_center,
 				}, self.currency)
 			)
 
-		if self.tds_amount:
+                # tds_amount - CR
+		if flt(self.tds_amount):
+			party = party_type = None
+			account_type = frappe.db.get_value("Account", self.tds_account, "account_type")
+			if account_type == "Receivable" or account_type == "Payable":
+				party = self.equipment
+				party_type = "Equipment"
+
 			gl_entries.append(
 				self.get_gl_dict({
 				       "account":  self.tds_account,
@@ -324,25 +450,62 @@ class TransporterPayment(AccountsController):
 				       "credit_in_account_currency": self.tds_amount,
 				       "against_voucher": self.name,
 				       "against_voucher_type": self.doctype,
+				       "party_type": party_type,
+				       "party": party,
 				       "cost_center": cost_center,
 				}, self.currency)
 			)
 
-		##### Ver 1.0.190312 Begins, Following code replaced by subsequent by SHIV on 2019/03/12
-		'''
-		if self.deduction_amount:
+                # security_deposit_amount - CR
+		if flt(self.security_deposit_amount):
+			party = party_type = None
+			account_type = frappe.db.get_value("Account", self.security_deposit_account, "account_type")
+			if account_type == "Receivable" or account_type == "Payable":
+				party = self.equipment
+				party_type = "Equipment"
+
 			gl_entries.append(
-                                self.get_gl_dict({
-                                       "account":  self.gl_account,
-                                       "credit": self.deduction_amount,
-                                       "credit_in_account_currency": self.deduction_amount,
-                                       "against_voucher": self.name,
-                                       "against_voucher_type": self.doctype,
-                                       "cost_center": cost_center,
-                                }, self.currency)
-                        )
-		'''
+				self.get_gl_dict({
+				       "account":  self.security_deposit_account,
+				       "credit": self.security_deposit_amount,
+				       "credit_in_account_currency": self.security_deposit_amount,
+				       "against_voucher": self.name,
+				       "against_voucher_type": self.doctype,
+				       "party_type": party_type,
+				       "party": party,
+				       "cost_center": cost_center,
+				}, self.currency)
+			)
+
+                # weighbridge amount - CR
+		if flt(self.weighbridge_amount):
+			party = party_type = None
+			account_type = frappe.db.get_value("Account", self.weighbridge_account, "account_type")
+			if account_type == "Receivable" or account_type == "Payable":
+				party = self.equipment
+				party_type = "Equipment"
+
+			gl_entries.append(
+				self.get_gl_dict({
+				       "account":  self.weighbridge_account,
+				       "credit": self.weighbridge_amount,
+				       "credit_in_account_currency": self.weighbridge_amount,
+				       "against_voucher": self.name,
+				       "against_voucher_type": self.doctype,
+				       "party_type": party_type,
+				       "party": party,
+				       "cost_center": cost_center,
+				}, self.currency)
+			)
+
+                # deductions - CR
 		for d in self.get("deductions"):
+			party = party_type = None
+			account_type = frappe.db.get_value("Account", d.account, "account_type")
+			if account_type == "Receivable" or account_type == "Payable":
+				party = self.equipment
+				party_type = "Equipment"
+
                         if d.amount:
                                 gl_entries.append(
                                         self.get_gl_dict({
@@ -356,7 +519,6 @@ class TransporterPayment(AccountsController):
                                                "party": d.party
                                         }, self.currency)
                                 )
-		##### Ver 1.0.190312 Ends
 		make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 		
 	def mark_paid(self, submit=1):
@@ -375,7 +537,4 @@ class TransporterPayment(AccountsController):
 		for b in self.pols:
 			frappe.db.sql("update tabPOL set transport_payment_done = %s where name = %s", (submit, b.pol))
 
-	def on_update_after_submit(self):
-		if not self.cheque_no or not self.cheque_date:
-			frappe.throw("Both Cheque No and Date are mandatory")
 

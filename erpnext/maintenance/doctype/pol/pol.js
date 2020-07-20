@@ -2,6 +2,8 @@
 // For license information, please see license.txt
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
+cur_frm.add_fetch("equipment", "equipment_type", "equipment_type")
+cur_frm.add_fetch("equipment", "equipment_category", "equipment_category")
 cur_frm.add_fetch("fuelbook", "branch", "fuelbook_branch")
 cur_frm.add_fetch("equipment", "fuelbook", "own_fb")
 cur_frm.add_fetch("pol_type", "item_name", "item_name")

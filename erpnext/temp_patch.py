@@ -6,6 +6,21 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+# submitting backdated production entry, by SHIV on 2020/07/13
+def submit_doc(debug=1):
+	for i in ('SR/000033', 'SR/000035', 'SR/000036'):
+		print(i)
+		doc = frappe.get_doc('Stock Reconciliation', i)
+		if debug:
+			print(i, doc.docstatus)
+		else:
+			if doc.docstatus == 0:
+				doc.submit()
+				frappe.db.commit()
+				print('Submitted successfully')
+			else:
+				print('Cannot submit records with docstatus: {}'.format(doc.docstatus))
+
 # back dated production entries 2019/07/02
 def backdate_production():
 	query = """

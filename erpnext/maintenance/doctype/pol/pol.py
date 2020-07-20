@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cstr, flt, fmt_money, formatdate, nowtime, getdate
 from erpnext.accounts.utils import get_fiscal_year
@@ -248,6 +249,7 @@ class POL(StockController):
 		return expense_account
 
 	def on_cancel(self):
+		self.check_hsd_payment()
 		self.update_stock_ledger()
 		self.update_general_ledger(1)
 		docstatus = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
@@ -258,6 +260,11 @@ class POL(StockController):
 
 		self.cancel_budget_entry()
 		self.delete_pol_entry()
+
+	# check of the HSD Payment is already done against the POL
+	def check_hsd_payment(self):
+		for i in frappe.db.sql("select parent from `tabHSD Payment Item` where pol = '{}' and docstatus < 2".format(self.name), as_dict=True):
+			frappe.throw(_("HSD Payment is already done via {}").format(frappe.get_desk_link("HSD Payment", i.parent)))
 
 	##
 	# Cancel budget check entry

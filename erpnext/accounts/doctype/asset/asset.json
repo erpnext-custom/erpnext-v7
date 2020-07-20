@@ -1255,7 +1255,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "serial_number", 
@@ -1416,8 +1416,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-01-24 22:50:24.863193", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2020-06-04 14:36:18.987361", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Asset", 
  "name_case": "", 

@@ -20,7 +20,9 @@ def get_columns(filters):
                 _("Employee Name") + ":Data:120",
                 _("Designation") + ":Data:120",
                 _("Department") + ":Data:160",
-                _("Hourly Rate") + ":Data:90",
+                _("Bank") + ":Link/Financial Institution:120",
+		_("Account No") + ":Data:120",
+		_("Hourly Rate") + ":Data:90",
                 _("Total Hour") + ":Int:80",
                 _("Total Amount") + ":Currency:100",
                 _("Purpose(Regular)") + ":Data:160",
@@ -33,7 +35,7 @@ def get_columns(filters):
 def get_data(filters):
 	data = []
 	data1 = []
-	query =  """ select ot.name, ot.branch, ot.posting_date, ot.employee, ot.employee_name,
+	query =  """ select ot.name, ot.branch, ot.posting_date, ot.employee, ot.employee_name, ot.bank_name, ot.bank_no,
 			(select e1.designation from `tabEmployee` e1 where e1.name = ot.employee) as designation,
 			(select e2.department from `tabEmployee` e2 where e2.name = ot.employee) as department, ot.rate, ot.total_hours, 
 			ot.total_amount, ot.purpose, ot.payment_jv from `tabOvertime Application` ot where ot.docstatus =1"""
@@ -47,12 +49,12 @@ def get_data(filters):
 	for d in frappe.db.sql(query, as_dict = True):
 		status = payment_status(d.payment_jv)
 		if filters.status and filters.status == status:
-			row1 = [d.name, d.branch, d.posting_date, d.employee, d.employee_name, d.designation, d.department, d.rate, d.total_hours, \
+			row1 = [d.name, d.branch, d.posting_date, d.employee, d.employee_name, d.designation, d.department,d.bank_name, d.bank_no, d.rate, d.total_hours, \
 			d.total_amount, d.purpose, d.payment_jv, status]
 			data.append(row1)
 
 		if not filters.status:
-			row = [d.name, d.branch, d.posting_date, d.employee, d.employee_name, d.designation, d.department, d.rate, d.total_hours, \
+			row = [d.name, d.branch, d.posting_date, d.employee, d.employee_name, d.designation, d.department,d.bank_name, d.bank_no,  d.rate, d.total_hours, \
 			d.total_amount, d.purpose, d.payment_jv, status]
 			data.append(row)
 	return data

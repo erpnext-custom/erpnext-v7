@@ -58,6 +58,13 @@ class PurchaseInvoice(BuyingController):
 			self.validate_supplier_invoice()
 
 
+                if self.charges:
+			total_charges = 0
+			for c in self.charges:
+				total_charges += c.charges
+
+			self.outstanding_amount = self.outstanding_amount - total_charges
+
 		# validate cash purchase
 		if (self.is_paid == 1):
 			self.validate_cash()
@@ -335,6 +342,7 @@ class PurchaseInvoice(BuyingController):
 		self.make_tax_gl_entries(gl_entries)
 		self.make_tds_gl_entry(gl_entries)
 		self.make_advance_gl_entry(gl_entries)
+		self.make_charges_gl_entry(gl_entries)
 
 		gl_entries = merge_similar_entries(gl_entries)
 
@@ -381,6 +389,39 @@ class PurchaseInvoice(BuyingController):
 					"against_voucher_type": self.doctype,
 				}, self.party_account_currency)
 			)
+
+        def make_charges_gl_entry(self, gl_entries):
+		if self.charges:
+			for c in self.charges:
+				if c.account:
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": c.account,
+							"against": self.supplier,
+							"party_type": "Supplier",
+							"party": self.supplier,
+							"credit": flt(c.charges),
+							"credit_in_account_currency": flt(c.charges),
+							"cost_center": self.buying_cost_center
+						})
+					)
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": self.credit_to,
+							"party_type": "Supplier",
+							"party": self.supplier,
+							"against": c.account,
+							"debit": flt(c.charges),
+							"debit_in_account_currency": flt(c.charges),
+							"against_voucher": self.return_against if cint(self.is_return) else self.name,
+							"against_voucher_type": self.doctype,
+							"cost_center": self.buying_cost_center,
+						})
+					)
+					
+				else:
+					frappe.throw("Please select an account under Deduction Charges")
+
 
 	def make_item_gl_entries(self, gl_entries):
 		# item gl entries

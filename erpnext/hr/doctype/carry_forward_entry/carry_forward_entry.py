@@ -41,7 +41,8 @@ class CarryForwardEntry(Document):
 		fy_start_end_date = frappe.db.get_value("Fiscal Year", self.fiscal_year, ["year_start_date", "year_end_date"])
 		if not fy_start_end_date:
 			frappe.throw(_("Fiscal Year {0} not found.").format(self.fiscal_year))
-	
+
+		frappe.msgprint('y_start {0}, y_end {1}'.format(fy_start_end_date[0], fy_start_end_date[1]))	
 		from_date = get_first_day(getdate(fy_start_end_date[0]))
 		to_date = get_last_day(getdate(fy_start_end_date[1]))
 		employee = ''

@@ -70,6 +70,8 @@ class LeaveApplication(Document):
 			self.validate_leave_approver()
 			self.validate_backdated_applications()
 
+		#self.check_approver()
+
 	def on_update(self):
 		self.validate_fiscal_year()
 		if (not self.previous_doc and self.leave_approver) or (self.previous_doc and \
@@ -93,6 +95,7 @@ class LeaveApplication(Document):
 			self.db_set("docstatus",1)
 			self.update_cf_entry('Submit')
 		self.update_for_backdated_applications()
+		#self.check_approver()
 
 	def on_cancel(self):
 		# notify leave applier about cancellation
@@ -100,7 +103,7 @@ class LeaveApplication(Document):
 		self.notify_employee("cancelled")
 		self.update_for_backdated_applications()
 		self.update_cf_entry('Cancel')
-
+		self.check_approver()
         # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
         # Following method created by SHIV on 2018/02/12
         def validate_backdated_applications(self):
@@ -276,6 +279,12 @@ class LeaveApplication(Document):
 		elif self.docstatus==1 and len(leave_approvers) and self.leave_approver != frappe.session.user:
 			frappe.throw(_("Only the selected Leave Approver can submit this Leave Application"),
 				LeaveApproverIdentityError)
+
+
+	def check_approver(self):
+		if self.workflow_state not in ("Draft", "Apply", "Reapply"):
+			if frappe.session.user == self.owner:
+				frappe.throw("You cannot {0} your own Leave Application".format(self.workflow_state))
 
 	def notify_employee(self, status):
 		employee = frappe.get_doc("Employee", self.employee)
