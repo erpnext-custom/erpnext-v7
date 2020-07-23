@@ -91,7 +91,7 @@ def get_data():
 			]
 		},
 		 {
-                        "label": _("Real State Management"),
+                        "label": _("Real Estate Management Services"),
                         "icon": "icon-star",
                         "items": [
                                 {

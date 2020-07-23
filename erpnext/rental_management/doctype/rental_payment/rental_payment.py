@@ -22,15 +22,21 @@ class RentalPayment(AccountsController):
 			if a.allocated_amount > a.amount:
 				frappe.throw("Allocated amount is bigger than Rent Amount for {0}".format(a.tenant_name))			
 		
-
 		self.amount_received = flt(received_amt)
 		if self.tds_amount:
 			self.net_amount = flt(self.amount_received) - flt(self.tds_amount)
 		else:
 			self.net_amount = self.amount_received
 			self.net_amount = flt(self.amount_received)
+		self.update_rental_official()
 
-	
+	def update_rental_official(self):
+		if frappe.db.exists("Employee", {"user_id":frappe.session.user}):	
+			rental_official, rental_official_name = frappe.db.get_value("Employee", {"user_id":frappe.session.user}, ["employee", "employee_name"])
+			if rental_official:
+				self.rental_official = rental_official
+				self.rental_official_name = rental_official_name		
+		
 	def get_rental_bill(self):
 		for i in self.item:
 			if i.tenant and not i.rental_bill:
@@ -43,6 +49,7 @@ class RentalPayment(AccountsController):
 					
 					
 	def on_submit(self):
+		self.update_rental_official()
 		self.update_tenant_dept()
 		self.update_rental_bill()
 		self.post_gl_entry()
@@ -111,7 +118,10 @@ class RentalPayment(AccountsController):
 							"modified": nowdate()
 				})
 				ti.save()
+				# Update Tenant Information
 				frappe.db.sql("update `tabTenant Information` set ministry_agency = '{0}', department = '{1}' where name ='{2}'".format(a.ministry_agency, a.department, a.tenant))
+				# Update Rental Bill
+				frappe.db.sql("update `tabRental Bill` set ministry_agency = '{0}', department = '{1}' where name ='{2}'".format(a.ministry_agency, a.department, a.rental_bill))
 
 
 	def post_gl_entry(self):

@@ -4,7 +4,7 @@
 frappe.ui.form.on('Rate Analysis', {
 	refresh: function(frm) {
 
-	}
+	},
 });
 
 frappe.ui.form.on("Rate Analysis Item", {
@@ -18,12 +18,24 @@ frappe.ui.form.on("Rate Analysis Item", {
 		c = locals[cdt][cdn];
 		cur_frm.add_fetch("item_code","item_name","item_name");
 		cur_frm.add_fetch("item_code","stock_uom","uom");
+		if(c.type =="Service")
+			cur_frm.add_fetch("item_code","cost","rate");
+		else if(c.type == "Item")
+			get_map(frm, cdt, cdn);
+		
         },
 	"rate": function(frm, cdt, cdn) {
 		c = locals[cdt][cdn];
 		if(c.qty){
 			frappe.model.set_value(cdt, cdn, "amount", c.rate * c.qty);
 			update_amount(frm, cdt, cdn);
+		}
+	},
+
+	"warehouse": function(frm, cdt, cdn) {
+		c = locals[cdt][cdn];
+		if(c.type == "Item"){
+			get_map(frm, cdt, cdn);
 		}
 	},
 	"qty": function(frm, cdt, cdn) {
@@ -56,6 +68,25 @@ cur_frm.fields_dict['item'].grid.get_field('item_code').get_query = function(frm
 			"item_group": c.service_category,
 		}
 	   }
+	}
+}
+
+function get_map(frm, cdt, cdn) 
+{	
+	c = locals[cdt][cdn];
+	if(frm.doc.posting_date && c.item_code && c.posting_time && c.warehouse){
+		frappe.call({
+			method: "erpnext.stock.doctype.stock_reconciliation.stock_reconciliation.get_stock_balance_for",
+			args: {
+				item_code: c.item_code,
+				warehouse: c.warehouse,
+				posting_date: frm.doc.posting_date,
+				posting_time: c.posting_time
+			},
+			callback: function(r) {
+				frappe.model.set_value(cdt, cdn, "rate", r.message.rate);
+			}
+		});
 	}
 }
 

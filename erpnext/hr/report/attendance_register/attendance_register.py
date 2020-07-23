@@ -56,8 +56,8 @@ def get_attendance_list(conditions, filters):
 			status from `tabAttendance` where docstatus = 1 %s order by employee, att_date""" %
 			conditions, filters, as_dict=1)
 	else:
-		attendance_list = frappe.db.sql("""select employee, day(att_date) as day_of_month,
-                status from `tabAttendance Others` where docstatus = 1 %s order by employee, att_date""" %
+		attendance_list = frappe.db.sql("""select employee, day(date) as day_of_month,
+                status from `tabAttendance Others` where docstatus = 1 %s order by employee, date""" %
                 conditions, filters, as_dict=1, debug = 1)
 
 	att_map = {}
@@ -76,7 +76,7 @@ def get_conditions(filters):
 
 	filters["total_days_in_month"] = monthrange(cint(filters.year), filters.month)[1]
 
-	conditions = " and month(att_date) = %(month)s and year(att_date) = %(year)s and branch = \'" + str(filters.cost_center) + "\' "
+	conditions = " and month(date) = %(month)s and year(date) = %(year)s and branch = \'" + str(filters.cost_center) + "\' "
 
 	return conditions, filters
 

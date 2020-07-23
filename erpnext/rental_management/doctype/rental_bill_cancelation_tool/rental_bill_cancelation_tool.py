@@ -32,6 +32,7 @@ class RentalBillCancelationTool(Document):
 
 	def get_rental_vouchers(self):
 		data = []
+		'''
 		voucher_like = "RB" + str(self.fiscal_year)[2:4] + str(self.month) + "%"	
 		vouchers = frappe.db.sql("""
 				select distinct(voucher_no) as d_voucher_no from `tabGL Entry` 
@@ -40,6 +41,17 @@ class RentalBillCancelationTool(Document):
 				and voucher_no like %s 
 				and docstatus = 1
 				""", (str(self.fiscal_year), str(voucher_like)), as_dict = True)
+		'''
+		
+		vouchers = frappe.db.sql("""
+				select distinct(gl_reference) as d_voucher_no
+				from `tabRental Bill`
+				where fiscal_year = %s
+				and month = %s
+				and docstatus = 1
+				and dzongkhag = %s
+				""", (str(self.fiscal_year), str(self.month), str(self.dzongkhag)), as_dict = True)
+
 		for v in vouchers:
 			for d in frappe.db.sql("select posting_date, sum(credit) as t_credit, sum(debit) as t_debit from `tabGL Entry` where voucher_no = %s", (str(v.d_voucher_no)), as_dict=1):
 				if d.t_credit == d.t_debit:
