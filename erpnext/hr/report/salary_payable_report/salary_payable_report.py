@@ -18,6 +18,7 @@ def get_columns():
         return [
                 ("Employee ID") + ":Link/Employee:120",
 		("Name")+ ":Data:150",
+		("Employment Type")+ ":Data:150",
 		("CID No. ") + ":Data: 110",
 		("Bank ") + ":Data: 110",
                 ("A/C No.") + ":Data:120",
@@ -27,7 +28,7 @@ def get_columns():
 
 def get_data(filters):
 	conditions, filters = get_conditions(filters)
-	query = """select ss.employee, ss.employee_name, e.passport_number, ss.bank_name, ss.bank_account_no, ss.net_pay, ss.branch 
+	query = """select ss.employee, ss.employee_name,e.employment_type, e.passport_number, ss.bank_name, ss.bank_account_no, ss.net_pay, ss.branch 
 			from `tabSalary Slip` ss, 
 			`tabEmployee` e
                         where ss.employee = e.name and ss.docstatus = 1 {0} order by ss.employee, ss.month""".format(conditions)
@@ -49,7 +50,7 @@ def get_conditions(filters):
 			"Dec"].index(filters.get("month")) + 1
 		filters["month"] = month
 		conditions += " and ss.month ={0}".format(month)
-	
+	if filters.get("employment_type"): conditions += " and e.employment_type = \'"+ str(filters.employment_type)+"\'"
 	if filters.get("fiscal_year"): conditions += " and ss.fiscal_year = \'" + str(filters.fiscal_year) + "\'"
 	if filters.get("company"): conditions += " and ss.company = \'" + str(filters.company) + "\'"
 	if filters.get("bank"): conditions += " and ss.bank_name = \'" + str(filters.bank) + "\'"

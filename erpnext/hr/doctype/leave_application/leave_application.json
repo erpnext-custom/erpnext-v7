@@ -665,7 +665,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 3, 
- "modified": "2020-03-26 14:16:19.369343", 
+ "modified": "2020-07-07 15:38:00.186891", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Leave Application", 
@@ -712,6 +712,26 @@
    "write": 1
   }, 
   {
+   "amend": 0, 
+   "apply_user_permissions": 0, 
+   "cancel": 0, 
+   "create": 1, 
+   "delete": 0, 
+   "email": 1, 
+   "export": 1, 
+   "if_owner": 0, 
+   "import": 0, 
+   "permlevel": 0, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "HR CTM", 
+   "set_user_permissions": 0, 
+   "share": 1, 
+   "submit": 0, 
+   "write": 1
+  }, 
+  {
    "amend": 1, 
    "apply_user_permissions": 1, 
    "cancel": 1, 
@@ -750,7 +770,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "user_permission_doctypes": "[\"Employee\"]", 
+   "user_permission_doctypes": "[\"Branch\",\"Employee\"]", 
    "write": 1
   }, 
   {
@@ -797,7 +817,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -813,6 +833,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

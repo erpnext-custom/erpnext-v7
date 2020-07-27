@@ -28,7 +28,7 @@ def execute(filters=None):
 	
 def get_columns(data):
 	columns = [
-		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140", _("Designation") + ":Link/Designation:120",
+		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140", _("Employment Type") + "::140", _("Designation") + ":Link/Designation:120",
                 _("CID") + "::120", _("TPN#") + "::80",
                 _("Basic Salary") + ":Currency:120", _("Allowances") + ":Currency:120", _("Arrears") + ":Currency:120",
                 _("Gross Salary(A)") + ":Currency:120", _("PF Amount(B)") + ":Currency:120", _("GIS Amount(C)") + ":Currency:120",
@@ -43,7 +43,7 @@ def get_data(filters):
 	conditions, filters = get_conditions(filters)
 
         data = frappe.db.sql("""
-                select t1.employee, t3.employee_name, t1.designation, t3.passport_number, t3.tpn_number,
+                select t1.employee, t3.employee_name, t3.employment_type, t1.designation, t3.passport_number, t3.tpn_number,
                         sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0) else 0 end) as basicpay,
                         sum(case when t2.parentfield = 'earnings'
                                  then (case when t2.salary_component = 'Basic Pay' then 0
@@ -91,7 +91,7 @@ def get_conditions(filters):
 			"Dec"].index(filters["month"]) + 1
 		filters["month"] = month
 		conditions += " and t1.month = %(month)s"
-	
+	if filters.get("employment_type"): conditions += " and t3.employment_type = %(employment_type)s"
 	if filters.get("fiscal_year"): conditions += " and t1.fiscal_year = %(fiscal_year)s"
 	if filters.get("company"): conditions += " and t1.company = %(company)s"
 	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"

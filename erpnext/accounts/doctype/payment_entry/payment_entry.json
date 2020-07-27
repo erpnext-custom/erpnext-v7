@@ -1376,8 +1376,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-10-25 17:58:22.202733", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2020-07-07 14:52:13.632637", 
+ "modified_by": "ucdorji@gyalsunginfra.bt", 
  "module": "Accounts", 
  "name": "Payment Entry", 
  "name_case": "", 
@@ -1405,7 +1405,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -1421,6 +1421,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }, 
   {

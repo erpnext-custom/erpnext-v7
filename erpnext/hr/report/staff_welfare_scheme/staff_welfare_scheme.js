@@ -25,6 +25,12 @@ frappe.query_reports["Staff Welfare Scheme"] = {
 			"options": "Employee"
 		},
 		{
+			"fieldname":"employment_type",
+			"label": __("Employment Type"),
+			"fieldtype": "Link",
+			"options": "Employment Type"
+		},
+		{
                         "fieldname":"branch",
                         "label": __("Branch"),
                         "fieldtype": "Link",

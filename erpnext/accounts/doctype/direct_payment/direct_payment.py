@@ -83,7 +83,6 @@ class DirectPayment(AccountsController):
 		#self.posting_date = nowdate()
 		
 		total_amt = flt(self.net_amount) + flt(self.tds_amount) + flt(self.deduction_amount)
-		frappe.msgprint("net_amount {0}, tds_amount {1} deduction_amount {2}".format(self.net_amount, self.tds_amount, self.deduction_amount))
 		if total_amt == self.amount:
 			if self.payment_type == "Receive":
 				account_type = frappe.db.get_value("Account", self.debit_account, "account_type") or ""
@@ -259,8 +258,8 @@ class DirectPayment(AccountsController):
 						)
 
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
-		else:
-			frappe.throw("Total Debit is not equal to Total Credit. It should be equal")
+			#else:
+			#frappe.throw("Total Debit is not equal to Total Credit. It should be equal")
 
 @frappe.whitelist()
 def get_tds_account(percent, payment_type):

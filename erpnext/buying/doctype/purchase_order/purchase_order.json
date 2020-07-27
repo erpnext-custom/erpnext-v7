@@ -2698,8 +2698,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-10-25 17:53:18.303260", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2020-07-07 14:40:43.183982", 
+ "modified_by": "ucdorji@gyalsunginfra.bt", 
  "module": "Buying", 
  "name": "Purchase Order", 
  "owner": "Administrator", 
@@ -2747,7 +2747,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -2763,11 +2763,12 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -2787,7 +2788,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -2803,6 +2804,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }, 
   {

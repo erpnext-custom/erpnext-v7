@@ -108,7 +108,6 @@ def get_active_employees(args, start_date, end_date):
                         iw.cost_center
 		from `tabMuster Roll Employee` as me, `tabEmployee Internal Work History` as iw
                 where me.docstatus < 2
-		and me.status = 'Active'
                 and iw.parent = me.name
                 and iw.branch = '{0}'
 		and (
@@ -129,7 +128,6 @@ def get_active_employees(args, start_date, end_date):
                         iw.cost_center
 		from `tabGEP Employee` as ge, `tabEmployee Internal Work History` as iw
 		where ge.docstatus < 2
-		and ge.status = 'Active'
                 and iw.parent = ge.name
                 and iw.branch = '{0}'
 		and (

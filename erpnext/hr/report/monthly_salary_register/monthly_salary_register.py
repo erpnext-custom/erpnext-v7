@@ -47,7 +47,7 @@ def execute(filters=None):
 		for e in earning_types:
 			row.append(ss_earning_map.get(ss.name, {}).get(e))
 			
-		row += [ss.arrear_amount, ss.leave_encashment_amount, ss.gross_pay]
+		row += [ss.leave_encashment_amount, ss.gross_pay]
 		
 		for d in ded_types:
 			row.append(ss_ded_map.get(ss.name, {}).get(d))
@@ -86,7 +86,7 @@ def get_columns(salary_slips):
                         (', '.join(['%s']*len(salary_slips))), tuple([d.name for d in salary_slips]))
 		
         columns = columns + [(e + ":Currency:120") for e in earning_types] + \
-                        ["Arrear Amount:Currency:120", "Leave Encashment Amount:Currency:150", 
+                        ["Leave Encashment Amount:Currency:150", 
                         "Gross Pay:Currency:120"] + [(d + ":Currency:120") for d in ded_types] + \
                         ["Total Deduction:Currency:120", "Net Pay:Currency:120"]
 

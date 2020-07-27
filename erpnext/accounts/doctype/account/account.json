@@ -511,8 +511,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-04-20 10:50:55.762628", 
- "modified_by": "Administrator", 
+ "modified": "2020-07-07 15:04:29.809006", 
+ "modified_by": "ucdorji@gyalsunginfra.bt", 
  "module": "Accounts", 
  "name": "Account", 
  "owner": "Administrator", 
@@ -599,7 +599,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -679,7 +679,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -879,7 +879,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -899,7 +899,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -919,7 +919,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 

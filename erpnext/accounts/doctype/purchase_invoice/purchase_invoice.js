@@ -373,6 +373,15 @@ frappe.ui.form.on("Purchase Invoice", {
 	}
 })
 
+frappe.ui.form.on("Purchase Invoice", "refresh", function(frm) {
+    cur_frm.set_query("buying_cost_center", function() {
+        return {
+            "filters": {
+		"is_group": 0
+            }
+        };
+    });
+})
 
 //custom Scripts
 cur_frm.cscript.type = function(doc) {

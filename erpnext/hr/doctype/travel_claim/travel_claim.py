@@ -41,7 +41,7 @@ class TravelClaim(Document):
 			frappe.throw("Cannot change records after approval by supervisor")
 		#self.check_return_date()
 		self.validate_dates()
-		self.check_approval()
+		#self.check_approval()
 		self.validate_dsa_ceiling()
 		employee = frappe.db.get_value("Employee", self.employee, "user_id")
 		self.update_travel_authorization()

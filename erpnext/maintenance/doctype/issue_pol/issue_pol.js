@@ -68,13 +68,13 @@ frappe.ui.form.on("Issue POL", "refresh", function(frm) {
 		};
 	    });
 	
-	cur_frm.set_query("tanker", function() {
+	/*cur_frm.set_query("tanker", function() {
 		return {
 			"query": "erpnext.maintenance.doctype.issue_pol.issue_pol.equipment_query",
 			filters: {'branch': frm.doc.branch}
 		}
 	})
-	
+	*/
 	cur_frm.set_query("warehouse", function() {
                 return {
                         query: "erpnext.controllers.queries.filter_branch_wh",

@@ -622,8 +622,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-10-19 13:49:02.785558", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2020-07-27 15:10:24.263518", 
+ "modified_by": "ucdorji@gyalsunginfra.bt", 
  "module": "Buying", 
  "name": "Asset Issue Details", 
  "name_case": "", 
@@ -754,7 +754,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -770,6 +770,7 @@
    "set_user_permissions": 1, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

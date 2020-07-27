@@ -29,10 +29,10 @@ class ProcessPayroll(Document):
 	def get_emp_list(self, process_type=None):
 		cond = self.get_filter_condition()
 		emp_cond = " and 1 = 1"	
-		if self.employment_type == 'GEP':
-			emp_cond = " and employment_type = 'GEP'"
+		if self.employment_type == 'GCE':
+			emp_cond = " and employment_type = 'GCE'"
 		if self.employment_type == 'Others':
-			emp_cond = " and employment_type != 'GEP'"
+			emp_cond = " and employment_type != 'GCE'"
 	
 		if process_type == "create":
                         cond += self.get_joining_releiving_condition()
@@ -66,11 +66,11 @@ class ProcessPayroll(Document):
 
 		cond = ''
 		if self.employment_type: 
-                        if self.employment_type == 'GEP':
-                                cond += " and t1.employment_type = 'GEP'"
+                        if self.employment_type == 'GCE':
+                                cond += " and t1.employment_type = 'GCE'"
 
                         else:
-                                cond += " and t1.employment_type != 'GEP'"
+                                cond += " and t1.employment_type != 'GCE'"
 
 		for f in ['company', 'employee']:
 			if self.get(f):
@@ -126,8 +126,8 @@ class ProcessPayroll(Document):
                                         format_string = 'href="#Form/Salary Slip/{0}"'.format(ss.name)
                                         return '<tr><td><a {0}>{1}</a></td><td><a {0}>{2}</a></td><td>{3}</td><td>{4}</td></tr>'.format(format_string, ss.name, ss.employee_name, msg, ss.branch)
                         except Exception, e:
-                                return '<div style="color:red;">Error: {0}</div>'.format(str(e))
-                                
+                                #return '<div style="color:red;">Error: {0}</div>'.format(str(e))
+				return None
 		return name
 
 	def create_sal_slip(self):

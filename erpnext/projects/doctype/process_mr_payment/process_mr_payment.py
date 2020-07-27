@@ -350,7 +350,6 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
 					from `tabAttendance Others`
                     where employee_type = '{employee_type}'
 					and employee = e.name
-					and e.status = 'Active'
                                         and date between '{from_date}' and '{to_date}'
                                         and cost_center = '{cost_center}'
                                         and status = 'Present'

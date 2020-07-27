@@ -30,5 +30,11 @@ frappe.query_reports["Earning Report"] = {
 		"options": "Fiscal Year",
 		"reqd": 1
 	},
+	{
+		"fieldname":"employment_type",
+		"label": __("Employment Type"),
+		"fieldtype": "Link",
+		"options": "Employment Type"
+	}
 	]
 }

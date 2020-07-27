@@ -237,6 +237,11 @@ def get_data():
 					"name": "Employee Benefits",
                                         "label": _("Process Employee Benefits"),
 				},
+				{
+					"type": "doctype",
+					"name": "Other Contribution",
+                                        "label": _("Other Contribution"),
+				}
 			]
 		},
 		{

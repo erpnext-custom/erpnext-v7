@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-04-12 10:14:37.093945", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2020-07-07 15:49:07.154266", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee TDS Certificate", 
  "owner": "Administrator", 
@@ -30,6 +30,9 @@
   }, 
   {
    "role": "HR Support"
+  }, 
+  {
+   "role": "HR CTM"
   }
  ]
 }

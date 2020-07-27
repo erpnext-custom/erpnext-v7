@@ -854,8 +854,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-12-02 14:21:12.841441", 
- "modified_by": "Administrator", 
+ "modified": "2020-07-14 15:38:16.319013", 
+ "modified_by": "ucdorji@gyalsunginfra.bt", 
  "module": "Projects", 
  "name": "Process MR Payment", 
  "name_case": "", 
@@ -946,7 +946,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
@@ -967,7 +967,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -983,13 +983,14 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }, 
   {
    "amend": 0, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
-   "create": 0, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -1008,7 +1009,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -1024,6 +1025,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

@@ -28,7 +28,7 @@ def execute(filters=None):
 	
 def get_columns(data):
 	columns = [
-		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140", _("Designation") + ":Link/Designation:120",
+		_("Employee") + ":Link/Employee:80", _("Employee Name") + "::140", _("Employment Type") + "::140", _("Designation") + ":Link/Designation:120",
                 _("CID") + "::140", _("Scheme Name") + "::200", _("Assignment Number") + "::140", _("Amount") + ":Currency:120",
                 _("Company") + ":Link/Branch:120", _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120",
                 _("Division") + ":Link/Division:120", _("Section") + ":Link/Section:120", _("Year") + "::80", _("Month") + "::80"
@@ -40,7 +40,7 @@ def get_data(filters):
 	conditions, filters = get_conditions(filters)
 
         data = frappe.db.sql("""
-                select t1.employee, t3.employee_name, t1.designation, t3.passport_number,
+                select t1.employee, t3.employee_name, t3.employment_type, t1.designation, t3.passport_number,
                         t2.reference_type, t2.reference_number, t2.amount,
                         t1.company, t1.branch, t1.department, t1.division, t1.section,
                         t1.fiscal_year, t1.month
@@ -70,7 +70,7 @@ def get_conditions(filters):
 			"Dec"].index(filters["month"]) + 1
 		filters["month"] = month
 		conditions += " and t1.month = %(month)s"
-	
+	if filters.get("employment_type"): conditions += " and t3.employment_type = %(employment_type)s"
 	if filters.get("fiscal_year"): conditions += " and t1.fiscal_year = %(fiscal_year)s"
 	if filters.get("company"): conditions += " and t1.company = %(company)s"
 	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"

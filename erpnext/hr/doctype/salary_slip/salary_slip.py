@@ -107,10 +107,10 @@ class SalarySlip(TransactionBase):
 			order by from_date
 			""",(self.employee, self.end_date, self.end_date, self.start_date), as_dict=True)
  
-		if not struct:
+		'''if not struct:
 			self.salary_structure = None
 			frappe.throw(_('No active or default Salary Structure found for employee <a href="#Form/Employee/{0}">{0} {1}</a> for the given dates')
-				.format(self.employee, self.employee_name), title=_('Salary Structure Missing'))
+				.format(self.employee, self.employee_name), title=_('Salary Structure Missing'))'''
 		return struct 
 
 	def pull_sal_struct(self, ss_doc, calc_days):                
