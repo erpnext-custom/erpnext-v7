@@ -35,7 +35,7 @@ class OvertimeApplication(Document):
                         total_hours += flt(i.number_of_hours)
 
                 self.total_hours  = flt(total_hours)
-                self.total_amount = flt(total_hours)*flt(self.rate)
+                self.total_amount = round(flt(total_hours)*flt(self.rate),0)
 
                 if flt(self.total_hours) <= 0:
                         frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")

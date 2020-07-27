@@ -1,6 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
+cur_frm.add_fetch("cost_center", "branch", "branch")
 frappe.ui.form.on('Vehicle Logbook', {
 	refresh: function(frm) {
 		total_ro = 1
@@ -14,6 +15,28 @@ frappe.ui.form.on('Vehicle Logbook', {
 		cur_frm.set_df_property("final_hour", "read_only", to_ro);
 		cur_frm.set_df_property("final_km", "read_only", to_ro);
 	},
+	
+	branch: function(frm){
+                if(frm.doc.branch){
+                        frappe.call({
+                                method: 'frappe.client.get_value',
+                                args: {
+                                        doctype: 'Cost Center',
+                                        filters: {
+                                                'branch': frm.doc.branch
+                                        },
+                                        fieldname: ['name']
+                                },
+                                callback: function(r){
+                                        if(r.message){
+                                                cur_frm.set_value("cost_center", r.message.name);
+                                                refresh_field('cost_center');
+                                        }
+                                }
+                        });
+                }
+        },
+
 	"vlogs_on_form_rendered": function(frm, grid_row, cdt, cdn) {
 		var row = cur_frm.open_grid_row();
 		if(!row.grid_form.fields_dict.operator.value) {
@@ -22,8 +45,8 @@ frappe.ui.form.on('Vehicle Logbook', {
 		}
 	},
 	"equipment": function(frm) {
-		if(frm.doc.ehf_name && frm.doc.equipment) {
-			frappe.call({
+		if(frm.doc.equipment) {
+			/*frappe.call({
 				"method": "erpnext.maintenance.doctype.equipment_hiring_form.equipment_hiring_form.get_rates",
 				args: {"form": frm.doc.ehf_name, "equipment": frm.doc.equipment},
 				callback: function(r) {
@@ -39,7 +62,7 @@ frappe.ui.form.on('Vehicle Logbook', {
 						cur_frm.refresh_fields()
 					}
 				}
-			})
+			})*/
 			frappe.call({
 				"method": "erpnext.maintenance.doctype.equipment.equipment.get_yards",
 				args: {"equipment": frm.doc.equipment},
@@ -294,17 +317,15 @@ function calculate_distance(frm, cdt, cdn) {
 }
 
 frappe.ui.form.on("Vehicle Logbook", "refresh", function(frm) {
-    cur_frm.set_query("ehf_name", function() {
+    cur_frm.set_query("equipment", function() {
         return {
             "filters": {
-                "payment_completed": 0,
-		"docstatus": 1,
-		"branch": frm.doc.branch
+		"equipment_type": frm.doc.equipment_type
             }
         };
     });
 
-    cur_frm.set_query("equipment", function() {
+    /*cur_frm.set_query("equipment", function() {
         return {
 	    query: "erpnext.maintenance.doctype.equipment.equipment.get_equipments",
             "filters": {
@@ -312,5 +333,6 @@ frappe.ui.form.on("Vehicle Logbook", "refresh", function(frm) {
             }
         };
     });
+    */	
 	
 });
