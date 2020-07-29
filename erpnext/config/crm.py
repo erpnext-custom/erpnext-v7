@@ -183,6 +183,24 @@ def get_data():
 			]
 		},
 		{
+			"label": _("Reports"),
+			"icon": "icon-list",
+			"items": [
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Site Registration Report",
+					"doctype": "Customer Order"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Online Payment Register",
+					"doctype": "Online Payment"
+				},
+			]
+		},
+		{
 			"label": _("Help"),
 			"items": [
 				{
