@@ -486,11 +486,14 @@ class SalarySlip(TransactionBase):
         def update_deduction_balance(self):
                 for ssl in self.deductions:
                         if (ssl.ref_docname and ssl.amount and ssl.total_deductible_amount):
+				frappe.msgprint("{} and {}".format(ssl.name, ssl.salary_component))
                                 sst = frappe.get_doc("Salary Detail", ssl.ref_docname)
+				
                                 if sst:
                                         sst.total_deducted_amount    += (-1*flt(ssl.amount) if self.docstatus == 2 else flt(ssl.amount))
                                         sst.total_outstanding_amount -= (-1*flt(ssl.amount) if self.docstatus == 2 else flt(ssl.amount))
                                         sst.save()
+		
 
 	def email_salary_slip(self):
 		receiver = frappe.db.get_value("Employee", self.employee, "company_email") or \

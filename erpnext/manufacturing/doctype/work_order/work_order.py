@@ -620,13 +620,16 @@ def make_stock_entry(work_order_id, purpose, qty=None):
 	stock_entry = frappe.new_doc("Stock Entry")
 	stock_entry.purpose = purpose
 	stock_entry.branch = work_order.branch
-	stock_entry.title = "SE for '{0}'".format(work_order.name)
+	stock_entry.title = "{0} - {1}".format(work_order.item_name, work_order.name)
 	stock_entry.work_order = work_order_id
 	stock_entry.company = work_order.company
 	stock_entry.from_bom = 1
 	stock_entry.bom_no = work_order.bom_no
 	stock_entry.use_multi_level_bom = work_order.use_multi_level_bom
 	stock_entry.fg_completed_qty = qty or (flt(work_order.qty) - flt(work_order.produced_qty))
+	###*** Added by Thukten for Job No ***###
+	stock_entry.job_no = work_order.job_no
+
 	if work_order.bom_no:
 		stock_entry.inspection_required = frappe.db.get_value('BOM',
 			work_order.bom_no, 'inspection_required')

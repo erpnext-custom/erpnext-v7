@@ -2,228 +2,149 @@
 # For license information, please see license.txt
 
 from __future__ import unicode_literals
-from erpnext.accounts.utils import get_child_cost_centers
-from frappe.utils import flt
 import frappe
 from frappe import _
+from erpnext.accounts.utils import get_child_cost_centers
 
 def execute(filters=None):
-	columns = get_columns(filters)
-	data = get_data(filters)
-	return columns, data
+        columns, data = get_columns(filters), get_data(filters)
+        return columns, data
 
-def get_data(filters):
-	data = []
-	cond = get_conditions(filters)
-	qty, group, amount = get_group_by(filters)
-	#frappe.msgprint("{0} and {1}".format(qty, group))
-	order_by = get_order_by(filters)
-	query = frappe.db.sql("""select *from 
-	(select so.name as so_name , so.customer, so.customer_name, so.branch, soi.qty as qty_approved, soi.delivered_qty, soi.rate, soi.item_code, 
-	soi.name as soi_name, soi.item_name, soi.item_group,
-	so.transaction_date from
-        `tabSales Order` so,  `tabSales Order Item` soi where so.name = soi.parent and so.docstatus = 1 {0}) as so_detail
-	inner join
-	(select dn.name, dni.so_detail as dni_name, 
-	dni.name as dni_detail, dni.against_sales_invoice from `tabDelivery Note` dn, `tabDelivery Note Item` dni
-        where dn.name = dni.parent and dn.docstatus =1) as dn_detail
-	on so_detail.soi_name = dn_detail.dni_name
-	inner join
-	(select si.name, sii.dn_detail, (select item_sub_group from tabItem where item_code = sii.item_code group by item_sub_group) as item_sub, sii.sales_order, sii.delivery_note, {1} as sii_qty, sii.rate as sii_rate, {3} as sii_amount  from `tabSales Invoice` si, `tabSales Invoice Item` sii where si.name = sii.parent and si.docstatus =1 {2}) 
-	as si_detail
-	on dn_detail.dni_detail = si_detail.dn_detail""".format(cond, qty, group, amount), as_dict = True)
-	agg_qty = agg_amount = qty = rate = amount =  qty_required  = qty_approved = balance_qty = delivered_qty = 0.0
-	row = {}
-	for d in query:
-		#customer detail
-		cust = get_customer(filter, d.customer)
-		row = {
-			"sales_order": d.so_name, "posting_date": d.transaction_date, "customer": cust.name, "customer_name": cust.customer_name, 
-			"customer_type": cust.customer_type, "customer_id": cust.customer_id, "customer_contact": cust.mobile_no, 
-			"item_code": d.item_code, "item_name": d.item_name, "qty_approved": flt(d.qty_approved),
-			"qty": flt(d.sii_qty),  "rate": flt(d.sii_rate),  "amount": flt(d.sii_amount), "receipt_no": d.name, 
-			"delivered_qty": flt(d.sii_qty), "agg_qty": flt(d.sii_qty),
-			"agg_amount": flt(d.sii_amount), "agg_branch": d.branch, "item_sub_group": d.item_sub
-			}
-		data.append(row)
-		agg_amount += flt(d.sii_amount)
-		qty +=  flt(d.sii_qty)  
-		rate +=  flt(d.sii_rate)
-		amount += flt(d.sii_amount)
-		qty_approved += flt(d.qty_approved)
-		delivered_qty =+ flt(d.sii_qty)
-		balance_qty += flt(d.qty_approved) - flt(d.sii_qty)
-		row = { "agg_qty": agg_qty, "agg_amount": agg_amount, "qty": qty, "rate": rate, "amount": amount, 
-		"qty_approved": qty_approved, "qty_required": qty_required, "qty_approved": qty_approved, "delivered_qty": delivered_qty,
-                "balance_qty":  balance_qty, "agg_branch": "'Total'", "sales_order": "'Total'"}
-	data.append(row)
-	return tuple(data)
 
-def get_customer(filters, cond):
-	return frappe.db.sql("""
-                        select name, customer_type, mobile_no, customer_name, customer_id from `tabCustomer` where name = "{0}"
-			""".format(cond), as_dict =1)[0]
-
-def get_group_by(filters):
-	group_by = " "
-	qty = 'sii.qty'
-	amount = 'sii.amount'
-	if filters.group_by == 'Sales Order':
-		group_by = " group by sii.sales_order"
-		qty = " sum(sii.qty)"
-		amount = " sum(sii.amount)"
+def get_columns(filters=None):
 	if filters.aggregate:
-		group_by = " group by item_sub, si.branch"
-		qty = " sum(sii.qty)"
-		amount = " sum(sii.amount)"
-	return qty, group_by, amount
+		if filters.report_by == "Sales Order":
+			columns = [
+				_("Branch") + ":Link/Sales Order:150", _("Location") + ":Data/120", _("Customer") + ":Link/Customer:150", _("Customer Name") + ":Data:200", _("Customer Group") + ":Data:200", _("Sub Item Group") + ":Data:150", _("Sales Qty") + ":Float:120",_("Delivered Qty") + ":Float:120", _("Amount") + ":Currency:120"
+			]
 
-def get_order_by(filters):
-	return " order by so.name"
+		else:
+			columns = [
+                                _("Branch") + ":Link/Sales Order:150", _("Location") + ":Data/120", _("Customer") + ":Link/Customer:150", _("Customer Name") + ":Data:200", _("Customer Group") + ":Data:200", _("Sub Item Group") + ":Data:150", _("Delivered Qty") + ":Float:120", _("Amount") + ":Currency:120"
+                        ]
+	else:
+		if filters.report_by == "Sales Order":
+			columns = [
+				  _("Sales Order") + ":Link/Sales Order:100", _("Branch") + ":Link/Branch:120", _("Customer") + ":Link/Customer:150", _("Customer Name") + ":Data:200", _("Customer Group") + ":Data:200", _("Posting Date") + ":Date:100", 
+				  _("Item Code") + ":Link/Item: 80", _("Item Name") + ":Data:150", _("Sub Group") + ":Data:100",
+				  _("Customer") + ":Link/Customer:140", _("Actual Qty") + ":Float:90", _("Qty Delivered") + ":Float:90",
+				  _("Rate") + ":Float:90", _("Amount") + ":Currency:100"
+				]
+		else:
+			columns = [
+				  _("Delivery Note") + ":Link/Delivery Note:100", _("Sales Order") + ":Link/Sales Order:100", _("Branch") + ":Link/Branch:120",
+				   _("Customer") + ":Link/Customer:150", _("Customer Name") + ":Data:200", _("Customer Group") + ":Data:200", 
+				  _("Posting Date") + ":Date:100", _("Item Code") + ":Link/Item: 80", _("Item Name") + ":Data:150", _("Sub Group") + ":Data:100",
+				  _("Customer") + ":Link/Customer:140", _("Qty Delivered") + ":Float:90", _("Rate") + ":Float:90", _("Amount") + ":Currency:100",
+				  _("Vehicle") + ":Link/Vehicle:120", _("Driver") + ":Data:120", _("Contact No") + ":Data:120",
+				  _("Transporation Rate") + ":Float:100", _("Distance") + ":Float:100", _("Transportation Charges") + ":Currency:100"
+				]
+        return columns
 
-def get_conditions(filters):
-	if not filters.cost_center:
-		return " and so.docstatus = 10"
-	all_ccs = get_child_cost_centers(filters.cost_center)
-	if not all_ccs:
-		return " and so.docstatus = 10"
+def get_data(filters=None):
+        cond = get_conditions(filters)
+        data = []
+	
+	if filters.report_by == "Sales Order":
+		if filters.aggregate:
+			cols = "so.branch, so.location, so.customer, so.customer_name, so.customer_group, i.item_sub_group, sum(soi.qty) as qty, sum(soi.delivered_qty), sum(soi.amount)"
+			group_by = "group by so.branch, i.item_sub_group"
+		else:
+			cols = "so.name, so.branch, so.customer, so.customer_name, so.customer_group, so.transaction_date, soi.item_code, soi.item_name, i.item_sub_group, so.customer, soi.qty as qty, soi.delivered_qty, soi.rate, soi.amount"
+			group_by = "and 1 = 1"
+		
+		
+		query = """
+			select {0}
+			from `tabSales Order` so 
+			inner join `tabSales Order Item` soi on so.name = soi.parent 
+			inner join `tabItem` i on soi.item_code = i.name
+			where so.docstatus = 1
+			{1} {2}
+			""".format(cols, cond, group_by)
 
-	all_branch = [str("DUMMY")]
-	for a in all_ccs:
-		branch = frappe.db.sql("select name from tabBranch where cost_center = %s", a, as_dict=1)
-		if branch:
-			all_branch.append(str(branch[0].name))
-	condition = " and so.branch in {0} ".format(tuple(all_branch))
-	if filters.from_date and filters.to_date:
-        	condition += " and so.transaction_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+	else:
+		if filters.aggregate:
+			cols = "dn.branch, dn.customer, dn.customer_name, dn.customer_group, dni.location, i.item_sub_group, sum(dni.qty) as qty, sum(dni.amount)"
+			group_by = "group by dn.branch, i.item_sub_group"
+		else:
+			cols = "dn.name, dn.customer, dn.customer_name, dn.customer_group, dni.against_sales_order, dn.branch, dn.posting_date, dni.item_code, dni.item_name, i.item_sub_group, dn.customer, dni.qty as qty, dni.rate, dni.amount, dn.vehicle, dn.drivers_name, dn.contact_no, dn.transportation_rate, dn.total_distance, dn.transportation_charges"
+			group_by = " and 1 = 1"
+		
+		query = """
+			select {0}
+			from `tabDelivery Note` dn 
+			inner join `tabDelivery Note Item` dni on dn.name = dni.parent
+			inner join `tabItem` i on dni.item_code = i.name
+			where dn.docstatus = 1
+			{1} {2}
+			""".format(cols, cond, group_by)
 
-	if filters.warehouse:
-                condition += " and soi.warehouse = '{0}'".format(filters.warehouse)
+		
+		
+
+        #frappe.throw(str(query))
+	data = frappe.db.sql(query)
+	#row = {}
+        #for a in  frappe.db.sql(query, as_dict=True):
+	#	row = {"":,""}
+        return data
+
+
+def get_conditions(filters=None):
+        cond=""
+
+        if filters.from_date and filters.to_date:
+		if filters.report_by == "Sales Order":
+                	cond += " and so.transaction_date between '" + str(filters.from_date) + "' and '" + str(filters.to_date) + "'"
+		else:
+			cond += " and dn.posting_date between'" + str(filters.from_date) + "' and '" + str(filters.to_date) + "'"
+
+        if filters.cost_center:
+                all_ccs = get_child_cost_centers(filters.cost_center)
+		else:
+				all_ccs = get_child_cost_centers("Wood Craft Center Limited - WCCL")
+		if filters.report_by == "Sales Order":
+			cond += " and so.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
+		else:
+			cond += " and dn.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
 
 	if filters.item_group:
-		 condition += " and soi.item_group = '{0}'".format(filters.item_group)
+		cond += " and i.item_group = '" + str(filters.item_group) + "'"
+	#	cond += " and exists (select 1 from `tabItem` i where i.item_group = '"+ str(filters.item_group) +"' and i.item_code = soi.item_code)"
+	
+	if filters.customer:
+		if filters.report_by == "Sales Order":
+			cond += " and so.customer = '"+str(filters.customer)+"'"
+		else:
+			cond += " and dn.customer = '"+str(filters.customer)+"'"
 
-	if filters.item:
-		condition += " and soi.item_code = '{0}'".format(filters.item)
+	if filters.customer_group:
+		if filters.report_by == "Sales Order":
+			cond += " and so.customer_group = '"+str(filters.customer_group)+"'"
+		else:
+			cond += " and dn.customer_group = '"+str(filters.customer_group)+"'"
 
 	if filters.item_sub_group:
-		condition += " and '{0}' in (select item_sub_group from `tabItem` where name = soi.item_code)".format(filters.item_sub_group)
+		cond += " and i.item_sub_group = '" + str(filters.item_sub_group) + "'"
+
+	if filters.item:
+		cond += " and i.item_code = '" + str(filters.item) + "'"
 	
-	return condition
 
+	if filters.warehouse:
+		if filters.report_by == "Sales Order":
+			cond += " and soi.warehouse = '" + str(filters.warehouse) + "'"
+		else:
+			cond += " and dni.warehouse = '" + str(filters.warehouse) + "'"
+	if filters.branch:
+		branch = str(filters.branch)
+		branch = branch.replace(' - NRDCL','')
+		if filters.report_by == "Sales Order":
+			cond += " and so.branch = '"+branch+"'"
+		else:
+			cond += " and dn.branch = '"+branch+"'"
+	if filters.location and filters.report_by == "Delivery Note":
+		cond += " and dni.location = '" + str(filters.location) + "'"	
 
-
-
-def get_columns(filters):
-	columns = [
-		{
-		  "fieldname": "sales_order",
-		  "label": "Sales Order",
-		  "fieldtype": "Link",
-		  "options": "Sales Order",
-		  "width": 100
-		},
-		{
-                  "fieldname": "posting_date",
-                  "label": "SO Date",
-                  "fieldtype": "Date",
-                  "width": 90
-                },
-		{
-                  "fieldname": "item_code",
-                  "label": "Material Code",
-                  "fieldtype": "Link",
-                  "options": "Item",
-                  "width": 100
-                },
-                {
-                  "fieldname": "item_name",
-                  "label": "Material Name",
-                  "fieldtype": "Data",
-                  "width": 125
-                },
-		{
-		  "fieldname": "customer",
-		  "label": "Customer Name",
-		  "fieldtype": "Link",
-          	  "options": "Customer",
-		  "width": 140
-		},
-		{
-		  "fieldname": "customer_type",
-		  "label": "Customer Type",
-		  "fieldtype": "Data",
-		  "width": 140
-		},
-        	{	
-		  "fieldname": "customer_id",
-		  "label": "Customer ID/Work Permit",
-		  "fieldtype": "Data",
-		  "width": 150
-		},
-		{
-		  "fieldname": "customer_contact",
-		  "label": "Customer Contact",
-		  "fieldtype": "Data",
-		  "width": 120
-		},	
-			
-		{
-                  "fieldname": "qty",
-                  "label": "Invoiced Qty",
-                  "fieldtype": "Float",
-                  "width": 90
-                },
-
-                {
-                  "fieldname": "rate",
-                  "label": "Rate",
-                  "fieldtype": "Float",
-                  "width": 70
-                },
-                {
-                  "fieldname": "amount",
-                  "label": "Amount",
-                  "fieldtype": "Currency",
-                  "width": 110
-                },
-	]
-
-	if filters.group_by == 'Delivery Note':
-		columns.insert(11,{
-                  "fieldname": "receipt_no",
-                  "label": "Sales Invoice No",
-                  "fieldtype": "Link",
-                  "options": "Sales Invoice",
-                  "width": 120
-                })
-
-	if filters.aggregate == 1:
-		columns = [
-		{
-                  "fieldname": "agg_branch",
-                  "label": "Branch",
-                  "fieldtype": "data",
-                  "width": 100
-                },
-		{
-                  "fieldname": "item_sub_group",
-                  "label": "Item Sub Group",
-                  "fieldtype": "data",
-                  "width": 100
-                },
-                {
-                  "fieldname": "qty",
-                  "label": "Sales Qty",
-                  "fieldtype": "Float",
-                  "width": 90
-                },
-                {
-                  "fieldname": "agg_amount",
-                  "label": "Amount",
-                  "fieldtype": "Currency",
-                  "width": 100
-                }
-		]
-
-	return columns
+        return cond
