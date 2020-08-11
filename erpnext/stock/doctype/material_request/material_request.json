@@ -65,7 +65,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "title1", 
@@ -608,8 +608,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2020-07-07 14:40:01.889951", 
- "modified_by": "ucdorji@gyalsunginfra.bt", 
+ "modified": "2020-07-29 12:52:14.226813", 
+ "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Material Request", 
  "owner": "Administrator", 
@@ -718,6 +718,26 @@
    "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
+  }, 
+  {
+   "amend": 0, 
+   "apply_user_permissions": 0, 
+   "cancel": 0, 
+   "create": 1, 
+   "delete": 0, 
+   "email": 1, 
+   "export": 1, 
+   "if_owner": 0, 
+   "import": 0, 
+   "permlevel": 0, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "Verifier", 
+   "set_user_permissions": 0, 
+   "share": 1, 
+   "submit": 0, 
+   "write": 1
   }, 
   {
    "amend": 0, 

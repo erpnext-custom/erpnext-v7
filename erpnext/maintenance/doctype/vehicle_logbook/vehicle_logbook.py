@@ -63,7 +63,7 @@ class VehicleLogbook(Document):
                 db_query = "select a.yard_hours, a.yard_distance from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{0}' and b.equipment_model = '{1}' and '{2}' between a.from_date and ifnull(a.to_date, now()) and '{3}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
                 data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, self.from_date, self.to_date), as_dict=True)
                 if not data:
-                        frappe.throw("There is either no Hire Charge defined or your logbook period overlaps with the Hire Charge period.")
+                        frappe.throw("Yardstick Not defined")
                 '''if based_on == "Hire Charge Parameter":
 			name = frappe.db.sql("select ha.name, ha.tender_hire_rate as thr from `tabHiring Approval Details` ha, `tabEquipment Hiring Form` h where ha.parent = h.name and h.docstatus = 1 and ha.equipment = %s and h.name = %s", (str(self.equipment), str(self.ehf_name)), as_dict=True)
 			if name and name[0]['thr'] == 0:

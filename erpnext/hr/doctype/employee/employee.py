@@ -80,7 +80,7 @@ class Employee(Document):
 	def validate(self):
 		from erpnext.controllers.status_updater import validate_status
 		validate_status(self.status, ["Active", "Left"])
-
+		#self.update_assign_branch()
 		self.employee = self.name
 		if self.reports_to:
 			self.approver_name = frappe.db.get_value("Employee", self.reports_to, "employee_name")
@@ -363,6 +363,12 @@ class Employee(Document):
 
 	def on_trash(self):
 		delete_events(self.doctype, self.name)
+
+
+	def update_assign_branch(self):
+		parent_cc = frappe.get_doc("Cost Center", self.cost_center).parent_cost_center
+		frappe.msgprint("{0}".format(parent_cc))
+
 
 	def post_casual_leave(self):
                 if not cint(self.casual_leave_allocated):

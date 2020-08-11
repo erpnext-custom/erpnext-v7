@@ -87,7 +87,7 @@ frappe.ui.form.on('MusterRoll Application Item', {
 	"rate_per_day": function(frm, cdt, cdn) {
 		doc = locals[cdt][cdn]
 		if(doc.rate_per_day) {
-			frappe.model.set_value(cdt, cdn, "rate_per_hour", (doc.rate_per_day * 1.5) / 8)
+			frappe.model.set_value(cdt, cdn, "rate_per_hour", (doc.rate_per_day * 1) / 8)
 			cur_frm.refresh_field("rate_per_hour")
 		}
 	},
@@ -106,6 +106,7 @@ frappe.ui.form.on('MusterRoll Application Item', {
 				frappe.model.set_value(cdt, cdn, "rate_per_hour", r.message.rate_per_hour);
 			}
 		})
+		frm.toggle_reqd("citizenship_id", frm.doc.is_existing == 0);
 	},	
 
 

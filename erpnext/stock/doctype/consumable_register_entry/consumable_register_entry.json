@@ -199,8 +199,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-05-16 12:51:20.298819", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2020-07-29 12:51:27.466802", 
+ "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Consumable Register Entry", 
  "name_case": "", 
@@ -328,7 +328,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -344,6 +344,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }
  ], 

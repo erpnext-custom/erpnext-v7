@@ -71,56 +71,56 @@ def get_data():
 			"label": _("Maintenance Transaction"),
 			"icon": "icon-star",
 			"items": [
-				 {
-				 	"type": "doctype",
-				 	"name": "Break Down Report",
-				 	"description": _("Break Down Reports"),
-				 },
-				 {
-				 	"type": "doctype",
-				 	"name": "Job Card",
-				 	"description": _("Create Job Card"),
-				 },
-				 {
-				 	"type": "doctype",
-				 	"name": "Mechanical Payment",
-				 	"description": _("Create Payment"),
-				 },
+				 #{
+				 #	"type": "doctype",
+				 #	"name": "Break Down Report",
+				 #	"description": _("Break Down Reports"),
+				 #},
+				 #{
+				 #	"type": "doctype",
+				 #	"name": "Job Card",
+				 #	"description": _("Create Job Card"),
+				 #},
+				 #{
+				 #	"type": "doctype",
+				 #	"name": "Mechanical Payment",
+				 #	"description": _("Create Payment"),
+				 #},
 			]
 		},
 		{
 			"label": _("Fleet Transaction"),
 			"icon": "icon-star",
 			"items": [
-				 {
-				 	"type": "doctype",
-				 	"name": "Equipment Request",
-				 },
-				{
-					"type": "doctype",
-					"name": "Equipment Hiring Form",
-					"description": _("Equipment Hiring Form"),
-				},
+				 #{
+				 #	"type": "doctype",
+				 #	"name": "Equipment Request",
+				 #},
+				#{
+				#	"type": "doctype",
+				#	"name": "Equipment Hiring Form",
+				#	"description": _("Equipment Hiring Form"),
+				#},
 				{
 					"type": "doctype",
 					"name": "Vehicle Logbook",
 					"description": _("Vehicle Logbook"),
 				},
-				{
-					"type": "doctype",
-					"name": "Hire Charge Invoice",
-					"description": _("Hire Charge Invoice"),
-				},
+				#{
+				#	"type": "doctype",
+				#	"name": "Hire Charge Invoice",
+				#	"description": _("Hire Charge Invoice"),
+				#},
 				# {
 				# 	"type": "doctype",
 				# 	"name": "Mechanical Payment",
 				# 	"description": _("Create Payment"),
 				# },
-				{
-					"type": "doctype",
-					"name": "Equipment Hiring Extension",
-					"description": _("Equipment Hiring Extension"),
-				},
+				#{
+				#	"type": "doctype",
+				#	"name": "Equipment Hiring Extension",
+				#	"description": _("Equipment Hiring Extension"),
+				#},
 			]
 		},
 		{

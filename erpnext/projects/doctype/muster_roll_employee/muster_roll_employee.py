@@ -37,11 +37,11 @@ class MusterRollEmployee(Document):
                 
 	def calculate_rates(self):
 		if not self.rate_per_hour:
-			self.rate_per_hour = (flt(self.rate_per_day) * 1.5) / 8
+			self.rate_per_hour = (flt(self.rate_per_day) * 1) / 8
 	def cal_rates(self):
         	for a in self.get('musterroll'):
 			if a.rate_per_day:
-				a.rate_per_hour = flt(a.rate_per_day * 1.5) / 8
+				a.rate_per_hour = flt(a.rate_per_day * 1) / 8
 	
 
 	def check_status(self):

@@ -6,11 +6,14 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import flt, nowdate
+from frappe.utils import flt, nowdate, getdate
 from erpnext.custom_utils import check_budget_available, get_branch_cc 
+#from erpnext.custom_workflow import verify_workflow
+
 
 class OvertimeApplication(Document):
 	def validate(self):
+		#verify_workflow(self)
 		self.validate_dates()
 		self.calculate_totals()
 
@@ -38,7 +41,7 @@ class OvertimeApplication(Document):
                 self.total_amount = round(flt(total_hours)*flt(self.rate),0)
 
                 if flt(self.total_hours) <= 0:
-                        frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")
+			frappe.throw(_(" <b> From Time cannot be greater than to time </b> "),title="Wrong Input")
 
                 
 	def check_status(self):
@@ -56,22 +59,22 @@ class OvertimeApplication(Document):
                 '''
                 
 		for a in self.items:
-                        if not a.date:
+                        if not a.from_date or not a.to_date:
                                 frappe.throw(_("Row#{0} : Date cannot be blank").format(a.idx),title="Invalid Date")
 
-                        if str(a.date) > str(nowdate()):
+                        if str(getdate(a.to_date)) > str(nowdate()):
                                 frappe.throw(_("Row#{0} : Future dates are not accepted").format(a.idx), title="Invalid Date")
                                 
 			for b in self.items:
-				if a.date == b.date and a.idx != b.idx:
+				if a.to_date == b.to_date and a.idx != b.idx:
 					frappe.throw("Duplicate Dates in row " + str(a.idx) + " and " + str(b.idx))
-
 	##
 	# Allow only the approver to submit the document
 	##
 	def validate_submitter(self):
 		if self.approver != frappe.session.user:
-			frappe.throw("Only the selected Approver can submit this document")
+			pass
+			#frappe.throw("Only the selected Approver can submit this document")
 
 
 	##

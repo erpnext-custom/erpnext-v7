@@ -98,7 +98,7 @@ def get_data(company, root_type, balance_must_be, period_list,
 
 	gl_entries_by_account = {}
 	for root in frappe.db.sql("""select lft, rgt from tabAccount
-			where root_type=%s and ifnull(parent_account, '') = ''""", root_type, as_dict=1):
+			where root_type=%s and ifnull(parent_account, '') = '' and account_type != 'Depreciation'""", root_type, as_dict=1):
 			
 		set_gl_entries_by_account(company, 
 			period_list[0]["year_start_date"] if only_current_fiscal_year else None,
@@ -218,8 +218,8 @@ def add_total_row(out, root_type, balance_must_be, period_list, company_currency
 		out.append({})
 
 def get_accounts(company, root_type):
-	return frappe.db.sql("""select name, parent_account, lft, rgt, root_type, account_type, report_type, account_name from `tabAccount`
-		where company=%s and root_type=%s order by lft""", (company, root_type), as_dict=True)
+	return frappe.db.sql("""select name, parent_account, lft, rgt, root_type, parent_account, account_type, report_type, account_name from `tabAccount`
+		where company=%s and root_type=%s and account_type != 'Depreciation' order by lft""", (company, root_type), as_dict=True)
 
 def filter_accounts(accounts, depth=10):
 	parent_children_map = {}

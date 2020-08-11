@@ -81,9 +81,27 @@ frappe.ui.form.on("Overtime Application Item", {
 	"number_of_hours": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn);
 	},
+	"from_date": function(frm, cdt, cdn) {
+		var child = locals[cdt][cdn]
+		var hours = moment(child.to_date).diff(moment(child.from_date), "seconds") / 3600;
+		if(child.to_date && child.from_date) {
+			frappe.model.set_value(cdt, cdn, "number_of_hours", hours);
+		}
+	},
+	
+	"to_date": function(frm, cdt, cdn) {
+        	var child = locals[cdt][cdn]
+        	var hours = moment(child.to_date).diff(moment(child.from_date), "seconds") / 3600;
+        	if(child.to_date && child.from_date) {
+		frappe.model.set_value(cdt, cdn, "number_of_hours", hours);
+		}
+        },
+
+
 	items_remove: function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn);
 	},
+	
 })
 
 function calculate_time(frm, cdt, cdn) {

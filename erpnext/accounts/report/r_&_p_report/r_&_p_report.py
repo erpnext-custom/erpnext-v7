@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt
-from erpnext.accounts.report.financial_statements import (get_period_list, get_columns, get_data)
+from erpnext.accounts.report.financial_statements1 import (get_period_list, get_columns, get_data)
 
 def execute(filters=None):
 	period_list = get_period_list(filters.fiscal_year, filters.periodicity)
@@ -68,7 +68,7 @@ def get_chart_data(filters, columns, income, expense, net_profit_loss):
 			
 	columns = [x_intervals]
 	if income_data:
-		columns.append(["Income"] + income_data)
+		columns.append(["Equity"] + income_data)
 	if expense_data:
 		columns.append(["Expense"] + expense_data)
 	if net_profit:

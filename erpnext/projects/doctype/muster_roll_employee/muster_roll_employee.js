@@ -11,7 +11,7 @@ frappe.ui.form.on('Muster Roll Employee', {
 
 	rate_per_day: function(frm) {
 		if(frm.doc.rate_per_day) {
-			frm.set_value("rate_per_hour", (frm.doc.rate_per_day * 1.5) / 8)
+			frm.set_value("rate_per_hour", (frm.doc.rate_per_day * 1) / 8)
 			frm.refresh_field("rate_per_hour")
 		}
 	},
@@ -70,7 +70,7 @@ frappe.ui.form.on('Musterroll', {
 	"rate_per_day": function(frm, cdt ,cdn) {
 	var wages =locals[cdt][cdn];
 	if(wages.rate_per_day) {
-		frappe.model.set_value(wages.doctype, wages.name, "rate_per_hour", (wages.rate_per_day * 1.5) /8 );
+		frappe.model.set_value(wages.doctype, wages.name, "rate_per_hour", (wages.rate_per_day * 1) /8 );
 		frm.refresh_field("rate_per_hour")
 		}
 	},
