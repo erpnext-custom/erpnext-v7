@@ -11,8 +11,16 @@ frappe.ui.form.on('Overtime Application', {
 		}
 	},
 	refresh: function(frm){
-		enable_disable(frm);
-		set_approver(frm);
+		//enable_disable(frm);
+		frm.set_query("approver", function() {
+                        return {
+                                query: "erpnext.custom_workflow.approver_list",
+                                filters: {
+                                        employee: frm.doc.employee
+                                }
+                        };
+                });	
+		//set_approver(frm);
 	},
 	approver: function(frm) {
 		if(frm.doc.approver){
@@ -40,7 +48,7 @@ frappe.ui.form.on('Overtime Application', {
 });
 
 //Set Approver
-function set_approver(frm) {
+/*function set_approver(frm) {
 	if(frm.doc.docstatus == 0){
 		frm.set_df_property("approver", "read_only", 1);
 		frm.set_query("approver", function() {
@@ -75,7 +83,7 @@ function set_approver(frm) {
 		}
 	}
 }
-
+*/
 //Overtime Item  Details
 frappe.ui.form.on("Overtime Application Item", {
 	"number_of_hours": function(frm, cdt, cdn) {

@@ -72,7 +72,7 @@ class LeaveApplication(Document):
 		self.show_block_day_warning()
 		self.validate_block_days()
 		self.validate_salary_processed_days()
-		self.validate_leave_approver()
+		#self.validate_leave_approver()
 		self.validate_backdated_applications()
                 
 	def on_update(self):
