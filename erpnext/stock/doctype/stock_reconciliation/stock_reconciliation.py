@@ -29,6 +29,7 @@ class StockReconciliation(StockController):
 		self.validate_expense_account()
 
 	def on_submit(self):
+		#frappe.db.auto_commit_on_many_writes = 1
                 posting_date = str(get_datetime(str(self.posting_date) + ' ' + str(self.posting_time)))
 		self.update_stock_ledger()
 		self.make_gl_entries()
@@ -36,6 +37,7 @@ class StockReconciliation(StockController):
                 for a in self.items:
                         self.repost_issue_pol(a, posting_date)
                         self.repost_production_gl(a, posting_date)
+		#frappe.db.auto_commit_on_many_writes = 0
 
 	def on_cancel(self):
                 posting_date = str(get_datetime(str(self.posting_date) + ' ' + str(self.posting_time)))

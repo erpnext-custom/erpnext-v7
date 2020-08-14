@@ -92,7 +92,13 @@ class POL(StockController):
                         cc = self.hiring_cost_center
                 else:
                         cc = get_branch_cc(self.equipment_branch)
-		account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
+
+		# Following line replaced with subsequent by SHIV on 2020/07/30
+		# Budget Account from Equipment Category is no longer applicable as the GL changes as per
+		#	the delivery, eg: for delivery to customer and stock transfer within warehouses have
+		#	different GLs
+		#account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
+		account = self.budget_account
 		if not self.is_hsd_item:
 			account = frappe.db.get_value("Item", self.pol_type, "expense_account")
 
@@ -232,7 +238,12 @@ class POL(StockController):
 	def get_expense_account(self):
 		if self.direct_consumption or getdate(self.posting_date) <= getdate("2018-03-31"):
 			if self.is_hsd_item:
-				expense_account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
+				# Following line replaced with subsequent by SHIV on 2020/07/30
+				# Budget Account from Equipment Category is no longer applicable as the GL changes as per
+				#	the delivery, eg: for delivery to customer and stock transfer within warehouses have
+				#	different GLs
+				#expense_account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
+				expense_account = self.budget_account
 			else:
 				expense_account = frappe.db.get_value("Item", self.pol_type, "expense_account")
 

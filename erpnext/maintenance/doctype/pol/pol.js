@@ -96,6 +96,18 @@ frappe.ui.form.on("POL", "refresh", function(frm) {
         };
     });
 
+	// Following code added by SHIV on 2020/07/30
+	// budget_account is created, as the GL from Equipment Category is no longer applicable as the 
+	//	GL changes as per the type of delivery
+	cur_frm.set_query("budget_account", function() {
+        return {
+            "filters": {
+						"root_type": "Expense",
+						"is_group": 0
+            }
+        };
+    });
+
    cur_frm.set_query("fuelbook", function() {
 	if(frm.doc.book_type && frm.doc.supplier) {
 		if(frm.doc.book_type == "Own") {
