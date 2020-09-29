@@ -120,94 +120,54 @@ class TravelClaim(Document):
                 return collections.OrderedDict(sorted(counts.items()))
         
         def validate_dsa_ceiling(self):
-                max_days_per_month  = 0
-                tt_list             = []
-                local_count         = {}
-                claimed_count       = {}
-                mapped_count        = {}
-                months              = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-                cond1               = ""
-                cond2               = ""
-                cond3               = ""
-                format_string       = ""
+		total_count = 0
                 lastday_dsa_percent = frappe.db.get_single_value("HR Settings", "return_day_dsa")
-                
-                if self.place_type.lower().replace("-","") == "incountry":
-                        max_days_per_month = frappe.db.get_single_value("HR Settings", "max_days_incountry")
-                        if max_days_per_month:
-                                tt_list = frappe.db.sql_list("select travel_type from `tabHR Settings Incountry`")
-                else:
-                        max_days_per_month = frappe.db.get_single_value("HR Settings", "max_days_outcountry")
-                        if max_days_per_month:
-                                tt_list = frappe.db.sql_list("select travel_type from `tabHR Settings Outcountry`")
+                for i in self.get("items"):
+                        i.remarks        = ""
+                        i.days_allocated = 0
+                        if i.last_day and not lastday_dsa_percent:
+                                i.days_allocated = 0
+                                i.half_dsa_days = 0
+                                continue
 
-                if tt_list:
-                        format_string = ("'"+"','".join(['%s'] * len(tt_list))+"'") % tuple(tt_list)
-                        cond1 += "and t1.travel_type in ({0}) ".format(format_string, self.travel_type)
+                        from_date = i.date
+                        to_date     = i.date if not i.till_date else i.till_date
+                        i.no_days = date_diff(to_date, from_date) + 1
+                        total_count += i.no_days
+                        counted = total_count - flt(i.no_days)
+                        #if counted >= 30:
+                        #       counted = 30 
+                        #frappe.msgprint("Testing count {0}, amount {1}, counted {2}".format(total_count, i.amount, counted))
+			if flt(total_count) <= 15:
+                                i.days_allocated = i.no_days
+                                i.half_dsa_days = 0
 
-                if max_days_per_month and (not tt_list or self.travel_type in (format_string)):
-                        local_count    = self.get_monthly_count(self.items)
-                        for k in local_count:
-                                cond2 += " '{0}' between date_format(t2.`date`,'%Y%m') and date_format(ifnull(t2.`till_date`,t2.`date`),'%Y%m') or".format(k)
-                        cond2 = cond2.rsplit(' ',1)[0]
-                        cond2 = "and (" + cond2 + ")"
-                        cond3 = "and t2.last_day = 0" if not lastday_dsa_percent else ""
+                        if 15 < flt(total_count) <= 30:
+                                i.half_dsa_days = flt(total_count) - 15
+                                if flt(counted) > 15:
+                                        i.half_dsa_days = flt(total_count) - flt(counted)
+                                i.days_allocated = i.no_days - i.half_dsa_days
 
-                        query = """
-                                        select
-                                                t2.date,
-                                                t2.till_date,
-                                                t2.no_days
-                                        from
-                                                `tabTravel Claim` as t1,
-                                                `tabTravel Claim Item` as t2
-                                        where t1.employee = '{0}'
-                                        and t1.docstatus = 1
-                                        and t1.place_type = '{1}'
-                                        {2}                                        
-                                        and t2.parent = t1.name
-                                        {3}
-                                        {4}
-                        """.format(self.employee, self.place_type, cond1, cond2, cond3)
+                        if flt(total_count) > 30:
+                                #lapse = flt(total_count) - flt(counted) - 30
+                                lapse = flt(total_count) - 30
+                                if flt(counted) > 30:
+                                        lapse = flt(total_count) - flt(counted)
+                                eligible = flt(i.no_days) - flt(lapse)
+                                if flt(eligible) > 15:
+                                        i.days_allocated = 15 - flt(counted)
+                                        i.half_dsa_days = flt(eligible) - i.days_allocated
+                                elif 0 < flt(eligible) <= 15:
+                                        i.days_allocated = 0.0
+                                        i.half_dsa_days =  flt(eligible)
 
-                        tc_list = frappe.db.sql(query, as_dict=True)
+                                else:
+                                        i.days_allocated = 0.0
+                                        i.half_dsa_days = 0.0
 
-                        if tc_list:
-                                claimed_count = self.get_monthly_count(tc_list)
-
-                        for k,v in local_count.iteritems():
-                                mapped_count[k] = {'local': v, 'claimed': claimed_count.get(k,0), 'balance': flt(max_days_per_month)-flt(claimed_count.get(k,0))}
-
-                        for i in self.get("items"):
-                                i.remarks        = ""
-                                i.days_allocated = 0                                
-                                if i.last_day and not lastday_dsa_percent:
-                                        i.days_allocated = 0
-                                        continue
-                                
-                                record_count     = self.get_monthly_count([i])
-                                for k,v in record_count.iteritems():                
-                                        lapsed  = 0
-                                        counter = 0
-                                        if mapped_count[k]['balance'] >= v:
-                                                i.days_allocated = flt(i.days_allocated) + v
-                                                mapped_count[k]['balance'] -= v
-                                        else:
-                                                if mapped_count[k]['balance'] < 0:
-                                                        lapsed = v
-                                                else:
-                                                        lapsed = v - mapped_count[k]['balance']
-                                                        i.days_allocated = flt(i.days_allocated) + mapped_count[k]['balance']
-                                                        mapped_count[k]['balance'] = 0
-                                                        
-                                                if lapsed:
-                                                        counter += 1
-                                                        frappe.msgprint(_("Row#{0}: You have crossed the DSA({4} days) limit by {1} days for the month {2}-{3}").format(i.idx, int(lapsed), months[int(str(k)[4:])-1], str(k)[:4],max_days_per_month))
-                                                        i.remarks = str(i.remarks)+"{3}) {0} Day(s) lapsed for the month {1}-{2}\n".format(int(lapsed), months[int(str(k)[4:])-1], str(k)[:4], counter)
-                else:
-                        for i in self.get("items"):
-                                i.remarks        = ""
-                                i.days_allocated = 0 if i.last_day and not lastday_dsa_percent else i.no_days 
+			if i.last_day and lastday_dsa_percent:
+                                i.days_allocated = i.no_days
+                                i.half_dsa_days = 0
 
         def update_amounts(self):
                 #dsa_per_day         = flt(frappe.db.get_value("Employee Grade", self.grade, "dsa"))
@@ -221,8 +181,8 @@ class TravelClaim(Document):
                         #i.dsa             = flt(dsa_per_day)
                         i.dsa              = flt(i.dsa) 
                         i.dsa_percent      = lastday_dsa_percent if i.last_day else i.dsa_percent
-                        i.amount           = (flt(i.days_allocated)*(flt(i.dsa)*flt(i.dsa_percent)/100)) + (flt(i.mileage_rate) * flt(i.distance))
-                        i.actual_amount    = flt(i.amount) * flt(exchange_rate)
+        		i.amount           = (flt(i.days_allocated)*(flt(i.dsa)*flt(i.dsa_percent)/100)) + (flt(i.mileage_rate) * flt(i.distance)) + flt(i.half_dsa_days * i.dsa * 0.5)                
+			i.actual_amount    = flt(i.amount) * flt(exchange_rate)
                         total_claim_amount = flt(total_claim_amount) +  flt(i.actual_amount)
 
                 self.total_claim_amount = flt(total_claim_amount)

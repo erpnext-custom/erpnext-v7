@@ -103,6 +103,7 @@ frappe.ui.form.on('Travel Authorization', {
 		frm.toggle_reqd("estimated_amount", frm.doc.need_advance==1);
 		frm.toggle_reqd("currency", frm.doc.need_advance==1);
 		frm.toggle_reqd("advance_amount", frm.doc.need_advance==1);
+		alculate_advance(frm);
 	},
 	"advance_amount": function(frm) {
 		if(frm.doc.advance_amount && !frm.doc.estimated_amount){
@@ -175,6 +176,9 @@ frappe.ui.form.on("Travel Authorization Item", {
 			}
 		}
 		*/
+		if(frm.doc.need_advance) {
+                        calculate_advance(frm);
+                }
 
 	},
 		
@@ -211,7 +215,22 @@ frappe.ui.form.on("Travel Authorization Item", {
 			frappe.model.set_value(cdt, cdn, "till_date", item.temp_till_date || item.date);
 		}
 	},
+	items_remove: function(frm)
+                {
+                if(frm.doc.need_advance) {
+                        calculate_advance(frm);
+                }
+        }
+
 });
+
+
+function calculate_advance(frm) {
+         frm.call({
+                        method: "set_estimate_amount",
+                        doc: frm.doc
+                });
+        }
 
 function update_advance_amount(frm) {
 	frappe.call({

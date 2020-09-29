@@ -743,15 +743,15 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 3, 
- "modified": "2020-08-12 21:47:04.190823", 
- "modified_by": "Administrator", 
+ "modified": "2020-08-26 16:01:38.914901", 
+ "modified_by": "ucdorji@gyalsunginfra.bt", 
  "module": "HR", 
  "name": "Leave Application", 
  "owner": "Administrator", 
  "permissions": [
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -767,6 +767,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

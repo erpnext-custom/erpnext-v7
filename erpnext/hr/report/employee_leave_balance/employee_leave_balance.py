@@ -38,8 +38,8 @@ def get_columns(leave_types):
 def get_data(filters, leave_types):
 
 	allocation_records_based_on_to_date = get_leave_allocation_records(filters.to_date)
-	filters_dict = { "status": "Active", "company": filters.company}
-
+	#filters_dict = { "status": "Active", "company": filters.company}
+	filters_dict = { "company": filters.company}
         if filters.branch:
                 filters_dict['branch'] = filters.branch
         if filters.employee:

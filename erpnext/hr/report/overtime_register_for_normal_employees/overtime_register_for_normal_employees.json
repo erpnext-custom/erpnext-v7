@@ -1,0 +1,23 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 0, 
+ "creation": "2020-09-14 11:12:28.818640", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2020-09-15 15:09:26.262284", 
+ "modified_by": "Administrator", 
+ "module": "HR", 
+ "name": "Overtime Register For Normal Employees", 
+ "owner": "Administrator", 
+ "ref_doctype": "Overtime Application", 
+ "report_name": "Overtime Register For Normal Employees", 
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "OT Supervisor"
+  }
+ ]
+}

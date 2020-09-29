@@ -1042,7 +1042,7 @@
    "precision": "", 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
-   "read_only": 0, 
+   "read_only": 1, 
    "report_hide": 0, 
    "reqd": 0, 
    "search_index": 0, 
@@ -1415,7 +1415,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-07-28 10:08:13.457527", 
+ "modified": "2020-09-01 19:52:46.115000", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Authorization", 
@@ -1587,7 +1587,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -1603,6 +1603,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

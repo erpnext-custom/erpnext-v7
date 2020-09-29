@@ -14,7 +14,12 @@ from datetime import datetime
 import os
 import subprocess
 
+def update_tci():
+	for a in ('TC200800017', 'TC200800022', 'TC200800019', 'TC200800018'):
+		doc = frappe.get_doc("Travel Claim Item", {'parent': a}).name
+		doc.reload()
 
+ 
 def update_branch():
 	count = 0
 	for d in frappe.db.sql(" select name, branch from `tabEmployee` where status = 'Active'", as_dict =1):

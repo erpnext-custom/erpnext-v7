@@ -262,7 +262,8 @@ class SalaryStructure(Document):
                         for m in sst_map[ed]:
 				calc_amt = 0
 				if self.get(m['field_method']) == 'Percent' and flt(self.get(m['field_value'])) > 100:
-					frappe.throw(_("Percentage cannot exceed 100 for component <b>{0}</b>").format(m['name']), title="Invalid Data")	
+					if m['name'] != 'Contract Allowance':
+						frappe.throw(_("Percentage cannot exceed 100 for component <b>{0}</b>").format(m['name']), title="Invalid Data")	
 				if ed =='earnings':
                                 	if self.get(m['field_name']):
                                         	calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))

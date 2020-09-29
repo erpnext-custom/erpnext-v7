@@ -47,21 +47,23 @@ class LeaveAdjustment(Document):
 					if cancel:
 						carry_forwarded = flt(doc.carry_forwarded_leaves) + flt(a.difference)
 						balance = flt(doc.total_leaves_allocated) + flt(a.difference)
-					
-					if flt(carry_forwarded) > flt(le.encashment_lapse):
-						carry_forwarded = le.encashment_lapse
-					if flt(balance) > flt(le.encashment_lapse):
-						balance = le.encashment_lapse
+				
+					if le.name != 'GCE':
+                                                if flt(carry_forwarded) > flt(le.encashment_lapse):
+                                                        carry_forwarded = le.encashment_lapse
+                                                if flt(balance) > flt(le.encashment_lapse):
+                                                        balance = le.encashment_lapse	
 					doc.db_set("carry_forwarded_leaves", carry_forwarded)
 					doc.db_set("total_leaves_allocated", balance)
 
 	def get_employees(self):
 		self.check_mandatory()
-		query = "select name as employee, employee_name from tabEmployee where status = 'Active' and date_of_joining <= %s"
+		# query = "select name as employee, employee_name from tabEmployee where status = 'Active' and date_of_joining <= %s"
+		query = "select name as employee, employee_name from tabEmployee where status = 'Active' and date_of_joining <= %s and employment_type = %s"
 		if self.branch:
 			query += " and branch = \'"+str(self.branch)+"\'"
 
-		entries = frappe.db.sql(query, self.adjustment_date, as_dict=True)
+		entries = frappe.db.sql(query, [self.adjustment_date, self.employment_type], as_dict=True)
 		self.set('items', [])
 
 		for d in entries:
