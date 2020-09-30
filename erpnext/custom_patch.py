@@ -9,6 +9,27 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_bom():
+	cost = 0.00
+	for a in frappe.db.sql("select name, overhead_cost, total_cost from `tabBOM` where name = 'BOM-11108-001' and overhead_cost > 0", as_dict=True):
+		print("name : " + str(a.name) + " overhead : " + str(a.overhead_cost))
+		cost = flt(a.total_cost) - flt(a.overhead_cost)
+		frappe.db.sql("update `tabBOM` set total_cost = '{0}',  base_total_cost = '{0}' where name ='{1}'".format(cost, a.name))
+
+def update_direct_payment():
+        for a in frappe.db.sql("select name, party_type, party, amount, taxable_amount, tds_amount, net_amount from `tabDirect Payment` i where not exists (select 1 from `tabDirect Payment Item` d where d.parent = i.name)", as_dict=1):
+                doc = frappe.get_doc("Direct Payment", a.name)
+                rowobj = doc.append("item",{
+                                                "party_type": a.party_type,
+                                                "party": a.party,
+                                                "amount": a.amount,
+                                                "taxable_amount": a.taxable_amount,
+                                                "tds_amount": a.tds_amount,
+                                                "net_amount": a.net_amount
+                                        })
+                rowobj.save()
+
+
 def check_bom():
 	doc = frappe.get_doc("BOM", 'BOM-200123-001')
 	doc.submit()

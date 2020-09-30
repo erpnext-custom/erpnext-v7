@@ -118,21 +118,27 @@ def get_data():
                                 {
                                         "type": "report",
                                         "is_query_report": True,
-                                        "name": "Work Orders in Progress",
+                                        "name": "Work Order Report",
                                         "doctype": "Work Order"
                                 },
+                                # {
+                                #         "type": "report",
+                                #         "is_query_report": True,
+                                #         "name": "Work Orders in Progress",
+                                #         "doctype": "Work Order"
+                                # },
                                 {
                                         "type": "report",
                                         "is_query_report": True,
                                         "name": "Issued Items Against Work Order",
                                         "doctype": "Work Order"
                                 },
-                                {
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Completed Work Orders",
-                                        "doctype": "Work Order"
-                                },
+                                # {
+                                #         "type": "report",
+                                #         "is_query_report": True,
+                                #         "name": "Completed Work Orders",
+                                #         "doctype": "Work Order"
+                                # },
 				{
                                         "type": "report",
                                         "is_query_report": True,

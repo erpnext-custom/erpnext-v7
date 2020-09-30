@@ -68,7 +68,7 @@ def get_data(filters=None):
 			cols = "dn.branch, dn.customer, dn.customer_name, dn.customer_group, dni.location, i.item_sub_group, sum(dni.qty) as qty, sum(dni.amount)"
 			group_by = "group by dn.branch, i.item_sub_group"
 		else:
-			cols = "dn.name, dn.customer, dn.customer_name, dn.customer_group, dni.against_sales_order, dn.branch, dn.posting_date, dni.item_code, dni.item_name, i.item_sub_group, dn.customer, dni.qty as qty, dni.rate, dni.amount, dn.vehicle, dn.drivers_name, dn.contact_no, dn.transportation_rate, dn.total_distance, dn.transportation_charges"
+			cols = "dn.name, dni.against_sales_order, dn.branch, dn.customer, dn.customer_name, dn.customer_group, dn.posting_date, dni.item_code, dni.item_name, i.item_sub_group, dn.customer, dni.qty as qty, dni.rate, dni.amount, dn.vehicle, dn.drivers_name, dn.contact_no, dn.transportation_rate, dn.total_distance, dn.transportation_charges"
 			group_by = " and 1 = 1"
 		
 		query = """
@@ -102,8 +102,6 @@ def get_conditions(filters=None):
 
         if filters.cost_center:
                 all_ccs = get_child_cost_centers(filters.cost_center)
-		else:
-				all_ccs = get_child_cost_centers("Wood Craft Center Limited - WCCL")
 		if filters.report_by == "Sales Order":
 			cond += " and so.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
 		else:
@@ -139,7 +137,7 @@ def get_conditions(filters=None):
 			cond += " and dni.warehouse = '" + str(filters.warehouse) + "'"
 	if filters.branch:
 		branch = str(filters.branch)
-		branch = branch.replace(' - NRDCL','')
+		branch = branch.replace(' - WCCL','')
 		if filters.report_by == "Sales Order":
 			cond += " and so.branch = '"+branch+"'"
 		else:

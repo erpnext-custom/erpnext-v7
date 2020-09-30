@@ -31,7 +31,7 @@ def get_notification_config():
 			"Delivery Note": {"docstatus": 0},
 			"Stock Entry": {"docstatus": 0},
 			"Material Request": {
-				"rejection_reason": ("not in", ("Rejected")),
+				"docstatus": ("<", 2),
 				"status": ("not in", ("Stopped","Cancelled")),
 				"per_ordered": ("<", 100)
 			},

@@ -49,9 +49,10 @@ class BOM(WebsiteGenerator):
 		self.route = frappe.scrub(self.name).replace('_', '-')
 		
 		#Get Overhead Cost from Cost Sheet
-		overhead = frappe.db.get_value("Cost Sheet", {"item":self.item}, "production_cost")
-		if overhead:
-			self.overhead_cost = overhead 		
+		#overhead = frappe.db.get_value("Cost Sheet", {"item":self.item}, "production_cost")
+		
+		#if overhead:
+		#	self.overhead_cost = overhead 		
 
 		self.clear_operations()
 		self.validate_main_item()
@@ -439,8 +440,10 @@ class BOM(WebsiteGenerator):
 		self.calculate_op_cost()
 		self.calculate_rm_cost()
 		self.calculate_sm_cost()
-		self.total_cost = self.operating_cost + self.raw_material_cost - self.scrap_material_cost + self.overhead_cost
-		self.base_total_cost = self.base_operating_cost + self.base_raw_material_cost - self.base_scrap_material_cost + self.overhead_cost
+		#self.total_cost = self.operating_cost + self.raw_material_cost - self.scrap_material_cost + self.overhead_cost
+		self.total_cost = self.operating_cost + self.raw_material_cost - self.scrap_material_cost
+		#self.base_total_cost = self.base_operating_cost + self.base_raw_material_cost - self.base_scrap_material_cost + self.overhead_cost
+		self.base_total_cost = self.base_operating_cost + self.base_raw_material_cost - self.base_scrap_material_cost
 
 	def calculate_op_cost(self):
 		"""Update workstation rate and calculates totals"""

@@ -21,7 +21,7 @@ def get_invoices(purpose = None, branch=None, start_date=None, end_date=None, td
 	if tds_rate == '1234567890' and purpose == 'Leave Encashment':
 		query = "select \'" + str(purpose) + "\' as purpose, name, application_date as posting_date, concat(employee_name, \" (\",  name, \")\") bill_no FROM `tabLeave Encashment` AS a WHERE a.docstatus = 1 AND a.application_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND a.branch = \'"+ str(branch)+"\' AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"
 	else:
-		query = "select \'" + str(purpose) + "\' as purpose, name, posting_date, bill_no, supplier FROM `tabPurchase Invoice` AS a WHERE docstatus = 1 AND posting_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND tds_rate = " + str(tds_rate) + " AND a.branch = \'"+ str(branch)+"\' AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name) UNION select \'" + str(purpose) + "\' as purpose, name, posting_date, name as bill_no, party as supplier FROM `tabDirect Payment` AS a WHERE docstatus = 1 AND posting_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND tds_percent = " + str(tds_rate) + " AND a.branch = \'"+ str(branch)+"\' AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"
+		query = "select 'Purchase Invoice' as type, \'" + str(purpose) + "\' as purpose, name, posting_date, bill_no, supplier FROM `tabPurchase Invoice` AS a WHERE docstatus = 1 AND posting_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND tds_rate = " + str(tds_rate) + " AND a.branch = \'"+ str(branch)+"\' AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name) UNION select 'Direct Payment' as type, \'" + str(purpose) + "\' as purpose, name, posting_date, name as bill_no, party as supplier FROM `tabDirect Payment` AS a WHERE docstatus = 1 AND posting_date BETWEEN \'" + str(start_date) + "\' AND \'" + str(end_date) + "\' AND tds_percent = " + str(tds_rate) + " AND a.branch = \'"+ str(branch)+"\' AND NOT EXISTS (SELECT 1 FROM `tabRRCO Receipt Entries` AS b WHERE b.purchase_invoice = a.name);"
 	invoice_list = frappe.db.sql(query, as_dict=True);
 	return {
 		"marked": invoices_marked,
@@ -33,17 +33,35 @@ def get_invoices(purpose = None, branch=None, start_date=None, end_date=None, td
 def mark_invoice(branch=None, invoice_list=None, receipt_number=None, receipt_date=None, cheque_number=None, cheque_date=None):
 	invoice_list = json.loads(invoice_list)
 	for invoice in invoice_list:
-		rrco = frappe.new_doc("RRCO Receipt Entries")
-		rrco.purpose = invoice['purpose']
-                rrco.supplier = invoice['supplier']
-                rrco.bill_no = invoice['bill_no']
-		rrco.purchase_invoice = invoice['name']
-		rrco.receipt_date = str(receipt_date)
-		rrco.receipt_number = str(receipt_number)
-		rrco.cheque_number = str(cheque_number)
-		rrco.cheque_date = str(cheque_date)
-		rrco.branch = str(branch)
-		rrco.submit()
+		if invoice['type'] == "Direct Payment":
+			for a in frappe.db.sql("""select party_type, party
+						from `tabDirect Payment Item`
+						where parent = '{}'
+						""".format(invoice['name']), as_dict=True):
+				if a.party_type == "Supplier":
+					rrco = frappe.new_doc("RRCO Receipt Entries")
+					rrco.purpose = invoice['purpose']
+					rrco.supplier = a.party
+					rrco.bill_no = invoice['bill_no']
+					rrco.purchase_invoice = invoice['name']
+					rrco.receipt_date = str(receipt_date)
+					rrco.receipt_number = str(receipt_number)
+					rrco.cheque_number = str(cheque_number)
+					rrco.cheque_date = str(cheque_date)
+					rrco.branch = str(branch)
+					rrco.submit()
+		else:
+			rrco = frappe.new_doc("RRCO Receipt Entries")
+			rrco.purpose = invoice['purpose']
+			rrco.supplier = invoice['supplier']
+			rrco.bill_no = invoice['bill_no']
+			rrco.purchase_invoice = invoice['name']
+			rrco.receipt_date = str(receipt_date)
+			rrco.receipt_number = str(receipt_number)
+			rrco.cheque_number = str(cheque_number)
+			rrco.cheque_date = str(cheque_date)
+			rrco.branch = str(branch)
+			rrco.submit()
 
 @frappe.whitelist()
 def updateSalaryTDS(purpose=None, branch=None, month=None, fiscal_year=None, receipt_number=None, receipt_date=None, cheque_number=None,cheque_date=None):

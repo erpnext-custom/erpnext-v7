@@ -14,10 +14,7 @@ from erpnext.custom_utils import check_future_date
 class DirectPayment(AccountsController):
 	def validate(self):
 		check_future_date(self.posting_date)
-		if self.payment_type == "Receive":
-			inter_company = frappe.db.get_value("Customer", self.party, "inter_company")
-			if inter_company == 0:
-				frappe.throw(_("Selected Customer {0} is not inter company ".format(self.party)))
+		self.validate_data()
 		self.clearance_date = None
 
 	def on_submit(self):
@@ -30,6 +27,34 @@ class DirectPayment(AccountsController):
 		self.post_gl_entry()
 		self.cancel_budget_entry()
 
+	def validate_data(self):
+		tds_amt = gross_amt = net_amt = taxable_amt = 0.00
+		for a in self.item:
+			if self.payment_type == "Receive":
+				inter_company = frappe.db.get_value("Customer", self.party, "inter_company")
+				if inter_company == 0:
+					frappe.throw(_("Selected Customer {0} is not inter company ".format(self.party)))
+
+			if self.payment_type == "Payment" and a.party_type == "Customer":
+				frappe.throw(_("Party Type should be Supplier in Child table when Payment Type is Payment"))
+			elif self.payment_type == "Receive" and a.party_type == "Supplier":
+				frappe.throw(_("Party Type should be Customer in Child Table when Payment Type is Receive"))
+			if self.tds_percent and self.tds_percent > 0:
+				a.tds_amount = flt(a.taxable_amount) * flt(self.tds_percent) / 100
+			else:
+				a.tds_amount = 0.00
+
+			a.net_amount = flt(a.amount) - flt(a.tds_amount)
+			tds_amt += flt(a.tds_amount)
+			gross_amt += flt(a.amount)
+			net_amt += flt(a.net_amount)
+			taxable_amt += flt(a.taxable_amount)
+
+		self.tds_amount = tds_amt
+		self.gross_amount = gross_amt
+		self.net_amount = net_amt
+		self.taxable_amount = taxable_amt
+		
 	##
         # Update the Committedd Budget for checking budget availability
         ##

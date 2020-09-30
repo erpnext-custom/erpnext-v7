@@ -158,6 +158,14 @@ def get_conditions(filters):
 
 	if filters.get("item_code"):
 		conditions += " and item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
+	
+	if filters.get("item_group") and not filters.get("item_code"):
+		conditions += """
+			and exists(select 1
+				from `tabItem` 
+				where `tabItem`.name = `tabStock Ledger Entry`.item_code
+				and `tabItem`.item_group = "{}")
+		""".format(filters.get("item_group"))
 
 	if filters.get("cost_center"):
 		conditions += " and warehouse IN (select wh.name from `tabWarehouse` wh inner join `tabWarehouse Branch` wi on wh.name=wi.parent \
