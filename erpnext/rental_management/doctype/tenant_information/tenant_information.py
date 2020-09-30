@@ -70,12 +70,12 @@ class TenantInformation(Document):
 						frappe.throw("Allocation Date {0} cannot be before surrendered date {1}".format(self.allocated_date, surrendered_date))
 
 	def on_submit(self):
+		if not self.rental_charges and self.building_category != "Pilot Housing":
+			self.calculate_rent_charges()
+
 		self.create_customer()
 		if not self.customer_code:
 			frappe.throw("Customer ID is missing. You cannot submit without Customer ID.")
-
-		if not self.rental_charges and self.building_category != "Pilot Housing":
-			self.calculate_rent_charges()
 				
 	
 	def update_rental_charges(self):
@@ -132,7 +132,8 @@ class TenantInformation(Document):
 			cus = frappe.get_doc("Customer", {"customer_id":self.cid, "customer_group": "Rental"})
 			existing_customer_code = frappe.db.get_value("Customer", {"customer_id":self.cid, "customer_group": "Rental"}, "customer_code")
 			if existing_customer_code:
-				self.customer_code = existing_customer_code
+				#self.customer_code = existing_customer_code
+				self.db_set("customer_code", existing_customer_code)
 			else:
 				last_customer_code = frappe.db.sql("select customer_code from tabCustomer where customer_group='Rental' order by customer_code desc limit 1;");
 				if last_customer_code:
@@ -158,7 +159,6 @@ class TenantInformation(Document):
 				if not customer_code:
 					frappe.throw("Setup Customer Code Base in Rental Customer Group")
 			self.db_set("customer_code", customer_code)
-
 			cus_name = self.tenant_name + "-" + customer_code
 
 			cus = frappe.new_doc("Customer")
@@ -173,7 +173,7 @@ class TenantInformation(Document):
 			cus.dzongkhag = self.dzongkhag
 			cus.cost_center = "Real Estate Management - NHDCL"
 			cus.branch = self.branch
-			cus.insert()
+			cus.save()
 		
 
 @frappe.whitelist()

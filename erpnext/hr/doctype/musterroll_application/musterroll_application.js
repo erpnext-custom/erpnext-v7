@@ -9,7 +9,13 @@ frappe.ui.form.on('MusterRoll Application', {
 		frm.get_docfield("items").allow_bulk_edit = 1;
 	},
 	refresh: function(frm) {
-
+		frm.set_query("unit", function() {
+                        return {
+                                "filters": {
+                                        "branch": frm.doc.branch
+                                }
+                        };
+                });
 	},
 	onload: function(frm) {
 		if (!frm.doc.posting_date) {

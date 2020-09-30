@@ -87,6 +87,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Rental Payment",
 				},
+				{
+					"type": "doctype",
+					"name": "Rental Advance Adjustment"
+				}
 				
 			]
 		},

@@ -65,6 +65,8 @@ def get_item_conditions(filters):
 		conditions.append("name=%(item_code)s")
 	if filters.get("brand"):
 		conditions.append("brand=%(brand)s")
+	if filters.get("item_sub_group"):
+		conditions.append("item_sub_group=%(item_sub_group)s")
 
 	return "where {}".format(" and ".join(conditions)) if conditions else ""
 

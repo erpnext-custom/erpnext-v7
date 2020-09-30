@@ -20,24 +20,24 @@ class ProcessRentalBilling(AccountsController):
 		month_end = get_last_day(rental_bill_date)
 		if process_type == "create":
 			tenant_list = frappe.db.sql("""
-                               select t1.name
-                               from `tabTenant Information` t1
-                               where t1.docstatus = "1"
-			       and t1.dzongkhag = "{3}"
+			       select t1.name
+			       from `tabTenant Information` t1
+			       where t1.docstatus = "1"
+			       and t1.dzongkhag = "{4}"
 			       and (
-					(t1.status="Allocated" and t1.allocated_date <= '{3}') 
-					or 
+					(t1.status="Allocated" and t1.allocated_date <= '{3}')
+					or
 					(t1.status="Surrendered" and t1.surrendered_date >= '{2}')
 				   )
-			       and t1.allocated_date <= '{3}'	
-                               and not exists(select 1
-                                              from `tabRental Bill` as t2
-                                              where t2.tenant = t1.name
-                                              and t2.docstatus != 2 
-                                              and t2.fiscal_year = '{0}'
-                                              and t2.month = '{1}'
-                                              )
-                               order by t1.ministry_agency, t1.department
+			       and t1.allocated_date <= '{3}'
+			       and not exists(select 1
+					      from `tabRental Bill` as t2
+					      where t2.tenant = t1.name
+					      and t2.docstatus != 2
+					      and t2.fiscal_year = '{0}'
+					      and t2.month = '{1}'
+					      )
+			       order by t1.ministry_agency, t1.department
 			""".format(self.fiscal_year, self.month, month_start, month_end, self.dzongkhag), as_dict=True)
 		else:
 			tenant_list = frappe.db.sql("""
@@ -46,7 +46,7 @@ class ProcessRentalBilling(AccountsController):
                                 where t1.fiscal_year = '{0}'
                                 and t1.month = '{1}'
 				and t1.branch = '{2}'
-				and t1.branch = '{3}'
+				and t1.dzongkhag = '{3}'
                                 and t1.docstatus = 0
                                 order by t1.branch, t1.name
                         """.format(self.fiscal_year, self.month, self.branch, self.dzongkhag), as_dict=True)
@@ -116,7 +116,6 @@ class ProcessRentalBilling(AccountsController):
 						for d in dtls:
 							cost_center = frappe.db.get_value("Branch", d.branch, "cost_center") 
 							company = frappe.db.get_value("Branch", d.branch, "company")
-							 
 							rb = frappe.get_doc({
 								"doctype": "Rental Bill",
 								"tenant": name,
@@ -140,23 +139,46 @@ class ProcessRentalBilling(AccountsController):
 								"allocation_date": d.allocated_date,
 								"yearmonth": yearmonth,
 								"rent_amount": d.rental_amount,
+								"receivable_amount": d.rental_amount,
 								"cost_center": cost_center,
 								"company": company
 							})
 							rb.insert()
+							rb_no = frappe.db.get_value("Rental Bill", {"tenant":name, "month":self.month, "fiscal_year": self.fiscal_year, "docstatus":0}, "name")
 						msg = "Rental Bill Created Successfully for {0} amount Nu. {1}".format(d.tenant_name, d.rental_amount)
 					else:
 						msg = '<span style="color:red;"> FAILED. Previous month rentall bill might not have process or <br/> rental charges might be missing in tenant information</span>'
 				else:
 					if process_type == "remove":
-						rb = frappe.get_doc("Rental Bill", name)
                                                 rb_list = frappe.db.sql("delete from `tabRental Bill` where name='{0}'".format(name))
                                                 frappe.db.commit()
                                                 msg = "Rental Bill Removed Successfully"
                                         else:
-                                                rb = frappe.get_doc("Rental Bill", name)
-                                                rb.submit()
-                                                msg = "Rental Bill Submitted Successfully"
+						rb = frappe.get_doc("Rental Bill", name)
+						if frappe.db.exists("Rental Advance Adjustment", {"tenant":rb.tenant}):
+							doc = frappe.get_doc("Rental Advance Adjustment",{"tenant":rb.tenant})
+							if doc.advance_balance > 0:
+								if doc.advance_balance > rb.rent_amount:
+									receivable_amount = 0.00
+									adjustable_balance = flt(doc.advance_balance) - flt(rb.rent_amount)
+									adjusted_amount = rb.rent_amount
+								else:
+									receivable_amount = flt(rb.rent_amount) - flt(doc.advance_balance)
+									adjustable_balance = 0.00
+									adjusted_amount = doc.advance_balance
+			
+								doc.advance_balance = flt(adjustable_balance)
+								doc.append("advance_adjusted_item",{
+									"rental_bill": name,
+									"rent_amount": rb.rent_amount,
+									"adjusted_amount": adjusted_amount,
+									"adjusted_date": nowdate()
+								})
+								doc.save()
+
+								rb.receivable_amount = receivable_amount 
+						rb.submit()
+						msg = "Rental Bill Submitted Successfully"
 
 				format_string = 'href="#Form/Rental Bill/{0}"'.format(name)
 				return '<tr><td><a {0}>{1}</a></td><td><a {0}>{2}</a></td></tr>'.format(format_string, name, msg)
@@ -180,7 +202,8 @@ class ProcessRentalBilling(AccountsController):
                               and month = '{2}'
 			      and docstatus = 1
 			      and gl_entry = 0
-		           """.format(self.branch, self.fiscal_year, self.month), as_dict=True)	
+			      and dzongkhag = '{3}'
+		           """.format(self.branch, self.fiscal_year, self.month, self.dzongkhag), as_dict=True)
 		if bills[0]['rental_amount'] > 0:
 			x = "RB" + str(self.fiscal_year)[2:4] + str(self.month)
 			voucher_nos = frappe.db.sql("select voucher_no from `tabGL Entry` Where voucher_no like '{0}%' order by voucher_no desc limit 1".format(x), as_dict=1)
@@ -195,7 +218,7 @@ class ProcessRentalBilling(AccountsController):
 				voucher_no = x + no
 			else:
 				voucher_no = x + str("01")
-				
+
 			for b in bills:
 				total_debit = b.rental_amount
 				gl_entries.append(
@@ -209,7 +232,7 @@ class ProcessRentalBilling(AccountsController):
 					    #'party': b.customer_code,
 					    #'party_type': 'Customer',
 					    "company": self.company,
-					    "remarks": "Monthly Rental Bill for Year " + str(self.fiscal_year) + " Month " + str(self.month),
+					    "remarks": str(self.dzongkhag) + " Monthly Rental Bill for Year " + str(self.fiscal_year) + " Month " + str(self.month),
 					    "business_activity": business_activity
 					})
 				  )
@@ -222,8 +245,9 @@ class ProcessRentalBilling(AccountsController):
 				      and month = '{2}'
 				      and docstatus = 1
 				      and gl_entry = 0
+				      and dzongkhag = '{3}'
 				      group by building_category 
-				   """.format(self.branch, self.fiscal_year, self.month), as_dict=True)	
+				   """.format(self.branch, self.fiscal_year, self.month, self.dzongkhag), as_dict=True)	
 					  
 			if credit_bills:
 				
@@ -257,7 +281,7 @@ class ProcessRentalBilling(AccountsController):
 									"voucher_type": "Rental Bill",
 									"cost_center": cost_center,
 									"company": self.company,
-									"remarks": "Rental Bill for " + str(c.building_category) +" Year "+ str(self.fiscal_year) + " Month " +str(self.month),
+									"remarks": str(self.dzongkhag) + " Rental Bill for " + str(c.building_category) +" Year "+ str(self.fiscal_year) + " Month " +str(self.month),
 									"business_activity": business_activity
 									})
 							    )
@@ -277,14 +301,14 @@ class ProcessRentalBilling(AccountsController):
 								"voucher_type": "Rental Bill",
 								"cost_center": cost_center,
 								"company": self.company,
-								"remarks": "Rental Bill for " + str(c.building_category) +" Year "+ str(self.fiscal_year) + " Month " +str(self.month),
+								"remarks": str(self.dzongkhag) + " Rental Bill for " + str(c.building_category) +" Year "+ str(self.fiscal_year) + " Month " +str(self.month),
 								"business_activity": business_activity
 								})
 						    )
 			if total_credit and total_debit:	
 				#frappe.msgprint("{0}".format(gl_entries))
 				make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)	
-				frappe.db.sql("update `tabRental Bill` set gl_entry = 1, gl_reference = '{3}'  where branch='{0}' and fiscal_year='{1}' and month = '{2}' and docstatus=1".format(self.branch, self.fiscal_year, self.month, voucher_no))
+				frappe.db.sql("update `tabRental Bill` set gl_entry = 1, gl_reference = '{3}'  where branch='{0}' and fiscal_year='{1}' and month = '{2}' and docstatus=1 and dzongkhag = '{4}'".format(self.branch, self.fiscal_year, self.month, voucher_no, self.dzongkhag))
 				msg = "<b>Rental Bills Successfully posted to account and updated</b>"
 			else:
 				msg = "Failed to post to account as Total Credit: {0} is not equal to Total Debit: {1} ".format(total_credit, total_debit)

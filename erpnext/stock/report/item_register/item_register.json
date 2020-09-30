@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-20 10:49:51.677861", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2020-08-06 11:21:29.697757", 
+ "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Item Register", 
  "owner": "Administrator", 
@@ -43,6 +43,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "MR User"
   }
  ]
 }
