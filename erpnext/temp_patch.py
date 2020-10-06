@@ -7,8 +7,41 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, n
 from erpnext.custom_utils import get_branch_cc
 
 # submitting backdated production entry, by SHIV on 2020/07/13
-def submit_doc(debug=1):
-	for i in ('SR/000033', 'SR/000035', 'SR/000036'):
+# time bench execute erpnext.temp_patch.submit_production --args "[''],1,"
+def submit_production(pr_list=[], debug=1):
+	for i in pr_list:
+		print(i)
+		doc = frappe.get_doc('Production', i)
+		if debug:
+			print(i, doc.docstatus)
+		else:
+			if doc.docstatus == 0:
+				doc.submit()
+				frappe.db.commit()
+				print('Submitted successfully')
+			else:
+				print('Cannot submit records with docstatus: {}'.format(doc.docstatus))
+
+# bench execute erpnext.temp_patch.cancel_sr --args "['SR/000035'],1,"
+def cancel_sr(sr_list=[], debug=1):
+	#for i in ('SR/000033', 'SR/000035', 'SR/000036'):
+	for i in sr_list:
+		print(i)
+		doc = frappe.get_doc('Stock Reconciliation', i)
+		if debug:
+			print(i, doc.docstatus)
+		else:
+			if doc.docstatus == 1:
+				doc.cancel()
+				frappe.db.commit()
+				print('Submitted successfully')
+			else:
+				print('Cannot submit records with docstatus: {}'.format(doc.docstatus))
+
+# bench execute erpnext.temp_patch.submit_sr --args "['SR/000035-1'],1,"
+def submit_sr(sr_list=[], debug=1):
+	#for i in ('SR/000033', 'SR/000035', 'SR/000036'):
+	for i in sr_list:
 		print(i)
 		doc = frappe.get_doc('Stock Reconciliation', i)
 		if debug:

@@ -32,7 +32,8 @@ class ReceivablePayableReport(object):
 		return columns, data, None, chart
 
 	def get_columns(self, party_naming_by, args):
-		columns = [_("Posting Date") + ":Date:80", _(args.get("party_type")) + ":Link/" + args.get("party_type") + ":200"]
+		columns = [_("Posting Date") + ":Date:80", _(args.get("party_type")) + ":Link/" + args.get("party_type") + ":200",
+					_("Customer Type") + ":Data:130"]
 
 		if party_naming_by == "Naming Series":
 			columns += [args.get("party_type") + " Name::110"]
@@ -107,7 +108,9 @@ class ReceivablePayableReport(object):
 				#if outstanding_amount: #abs(outstanding_amount) > 0.1/10**currency_precision:
 
 				row = [gle.posting_date, gle.party]
-
+				if args.get("party_type") == "Customer":
+					row += [self.get_customer_type(gle.party)]
+				
 				# customer / supplier name
 				if party_naming_by == "Naming Series":
 					row += [self.get_party_name(gle.party_type, gle.party)]
@@ -196,17 +199,20 @@ class ReceivablePayableReport(object):
 	def get_territory(self, party_name):
 		return self.get_party_map("Customer").get(party_name, {}).get("territory") or ""
 
+	def get_customer_type(self, party_name):
+		return self.get_party_map("Customer").get(party_name, {}).get("customer_type") or ""
+
 	def get_supplier_type(self, party_name):
 		return self.get_party_map("Supplier").get(party_name, {}).get("supplier_type") or ""
 
 	def get_party_map(self, party_type):
 		if not hasattr(self, "party_map"):
 			if party_type == "Customer":
-				self.party_map = dict(((r.name, r) for r in frappe.db.sql("""select {0}, {1}, {2} from `tab{3}`"""
-					.format("name", "customer_name", "territory", party_type), as_dict=True)))
+				self.party_map = dict(((r.name, r) for r in frappe.db.sql("""select {}, {}, {}, {} from `tab{}`"""
+					.format("name", "customer_name", "customer_type", "territory", party_type), as_dict=True)))
 
 			elif party_type == "Supplier":
-				self.party_map = dict(((r.name, r) for r in frappe.db.sql("""select {0}, {1}, {2} from `tab{3}`"""
+				self.party_map = dict(((r.name, r) for r in frappe.db.sql("""select {}, {}, {} from `tab{}`"""
 					.format("name", "supplier_name", "supplier_type", party_type), as_dict=True)))
 
 		return self.party_map
@@ -235,12 +241,22 @@ class ReceivablePayableReport(object):
                         exempt_gls = " and account not in ('{0}','{1}')".format(*exempt_gls)
                         # Ver 1.0 Ends
                         
-			if self.filters.inter_company_customer:
-				cus_query = " and exists (select 1 from `tabCustomer` as c where c.inter_company = 1 and c.name = `tabGL Entry`.party)"
+			cus_query = ""
+			if party_type == "Customer":
+				if self.filters.customer_type != "All":
+					if self.filters.inter_company_customer:
+						cus_query = """ and exists (select 1 from `tabCustomer` as c 
+											where c.name = `tabGL Entry`.party and c.inter_company = 1
+											and c.customer_type = "{}")""".format(self.filters.customer_type)
+					else:
+						cus_query = """ and exists (select 1 from `tabCustomer` as c 
+										where c.name = `tabGL Entry`.party 
+										and c.customer_type = "{}")""".format(self.filters.customer_type)
+				else:
+					if self.filters.inter_company_customer:
+						cus_query = " and exists (select 1 from `tabCustomer` as c where c.inter_company = 1 and c.name = `tabGL Entry`.party)"
 			elif self.filters.inter_company_supplier:
 				cus_query = " and exists (select 1 from `tabSupplier` as c where c.inter_company = 1 and c.name = `tabGL Entry`.party)"
-			else:
-				cus_query = ""
 
 			if self.filters.get(scrub(party_type)):
 				select_fields = "debit_in_account_currency as debit, credit_in_account_currency as credit"

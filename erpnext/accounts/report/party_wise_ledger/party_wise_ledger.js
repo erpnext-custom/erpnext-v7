@@ -48,7 +48,41 @@ frappe.query_reports["Party Wise Ledger"] = {
 			"label": __("Party Type"),
 			"fieldtype": "Select",
 			"options": ["Customer", "Supplier", "Employee", "Equipment"],
-			"default": "Customer"
+			"default": "Customer",
+			"on_change": function (query_report) {
+					var party_type = query_report.get_values().party_type;
+					var customer_type_filter = query_report.filters_by_name["customer_type"];
+					var supplier_type_filter = query_report.filters_by_name["supplier_type"];
+
+					if (party_type == 'Customer') {
+						customer_type_filter.toggle(true);
+						supplier_type_filter.toggle(false);
+					} else if(party_type == 'Supplier') {
+						customer_type_filter.toggle(false);
+						supplier_type_filter.toggle(true);
+					} else {
+						customer_type_filter.toggle(false);
+						supplier_type_filter.toggle(false);
+					}
+
+					query_report.refresh();
+					customer_type_filter.refresh();
+					supplier_type_filter.refresh();
+			}
+		},
+		{
+			"fieldname":"customer_type",
+			"label": __("Customer Type"),
+			"fieldtype": "Select",
+			"options": ["All","Domestic Customer", "International Customer"],
+			"default": "All"
+		},
+		{
+			"fieldname":"supplier_type",
+			"label": __("Supplier Type"),
+			"fieldtype": "Link",
+			"options": "Supplier Type",
+			"default": "All"
 		},
 		{
 			"fieldname":"accounts",

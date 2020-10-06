@@ -82,7 +82,7 @@ def get_conditions(filters):
 def get_stock_ledger_entries(filters):
 	conditions = get_conditions(filters)
 	return frappe.db.sql("""select item_code, warehouse, posting_date, actual_qty, valuation_rate,
-			company, voucher_type, qty_after_transaction, stock_value_difference
+			company, voucher_type, voucher_no, qty_after_transaction, stock_value_difference
 		from `tabStock Ledger Entry` sle force index (posting_sort_index)
 		where docstatus < 2 %s order by posting_date, posting_time, name""" %
 		conditions, as_dict=1)
@@ -112,17 +112,43 @@ def get_item_warehouse_map(filters):
 		else:
 			qty_diff = flt(d.actual_qty)
 
+		#if d.voucher_no == "SE20010342":
+		#	frappe.msgprint(_("{}").format(flt(d.stock_value_difference)))
 		value_diff = flt(d.stock_value_difference)
 
 		if d.posting_date < from_date:
+			# Following if condition added by SHIV on 2020/09/30
+			if d.voucher_type == "Stock Reconciliation" and not flt(d.qty_after_transaction):
+				qty_dict.opening_qty = 0
+				qty_dict.opening_val = 0
+				qty_diff = 0
+				value_diff = 0
+				qty_dict.bal_qty = 0
+				qty_dict.bal_val = 0
 			qty_dict.opening_qty += qty_diff
 			qty_dict.opening_val += value_diff
 
 		elif d.posting_date >= from_date and d.posting_date <= to_date:
 			if qty_diff > 0:
+				# Following if condition added by SHIV on 2020/09/30
+				if d.voucher_type == "Stock Reconciliation" and not flt(d.qty_after_transaction):
+					qty_diff = 0
+					value_diff = 0
+					qty_dict.in_qty = 0
+					qty_dict.in_val = 0
+					qty_dict.bal_qty = 0
+					qty_dict.bal_val = 0
 				qty_dict.in_qty += qty_diff
 				qty_dict.in_val += value_diff
 			else:
+				# Following if condition added by SHIV on 2020/09/30
+				if d.voucher_type == "Stock Reconciliation" and not flt(d.qty_after_transaction):
+					qty_diff = 0
+					value_diff = 0
+					qty_dict.out_qty = 0
+					qty_dict.out_val = 0
+					qty_dict.bal_qty = 0
+					qty_dict.bal_val = 0
 				qty_dict.out_qty += abs(qty_diff)
 				qty_dict.out_val += abs(value_diff)
 

@@ -48,9 +48,35 @@ def get_data(filters, show_party_name):
                 parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
         else:
                 if not filters.get("inter_company"):
-                        parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
+					if filters.get("party_type") == "Customer": 
+						if not filters.get("customer_type") or filters.get("customer_type") != "All":
+							parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field, "customer_type"], 
+											filters = {"customer_type": filters.get("customer_type")}, order_by="name")
+						else:
+							parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field, "customer_type"], order_by="name")
+					elif filters.get("party_type") == "Supplier": 
+						if not filters.get("supplier_type") or filters.get("supplier_type") != "All":
+							parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field, "supplier_type"], 
+											filters = {"supplier_type": filters.get("supplier_type")}, order_by="name")
+						else:
+							parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field, "supplier_type"], order_by="name")
+					else:
+						parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
                 else:
-                        parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], filters = {"inter_company": 1}, order_by="name")
+					if filters.get("party_type") == "Customer": 
+						if not filters.get("customer_type") or filters.get("customer_type") != "All":
+							parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field, "customer_type"], 
+										filters = {"inter_company": 1, "customer_type": filters.get("customer_type")}, order_by="name")
+						else:
+							parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field, "customer_type"], filters = {"inter_company": 1}, order_by="name")
+					elif filters.get("party_type") == "Supplier": 
+						if not filters.get("supplier_type") or filters.get("supplier_type") != "All":
+							parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field, "supplier_type"], 
+										filters = {"inter_company": 1, "supplier_type": filters.get("supplier_type")}, order_by="name")
+						else:
+							parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field, "supplier_type"], filters = {"inter_company": 1}, order_by="name")
+					else:
+						parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], filters = {"inter_company": 1}, order_by="name")
 	""" ++++++++++ Ver 1.0.190404 Ends ++++++++++ """
 	
 	company_currency = frappe.db.get_value("Company", filters.company, "default_currency")
@@ -61,6 +87,12 @@ def get_data(filters, show_party_name):
 	total_debit, total_credit = 0, 0
 	for party in parties:
 		row = { "party": party.name }
+
+		if filters.get("party_type") == "Customer":
+			row["customer_type"] = party.get("customer_type")
+		elif filters.get("party_type") == "Supplier":
+			row["supplier_type"] = party.get("supplier_type")
+
 		if show_party_name:
 			row["party_name"] = party.get(party_name_field)
 		
@@ -191,14 +223,31 @@ def toggle_debit_credit(debit, credit):
 	return debit, credit
 	
 def get_columns(filters, show_party_name):
-	columns = [
-		{
+	columns = []
+	columns.extend([{
 			"fieldname": "party",
 			"label": _(filters.party_type),
 			"fieldtype": "Link",
 			"options": filters.party_type,
 			"width": 200
-		},
+	}])
+
+	if filters.get("party_type")=="Customer":
+		columns.extend([{
+			"fieldname": "customer_type",
+			"label": _("Customer Type"),
+			"fieldtype": "Data",
+			"width": 130
+		}])
+	elif filters.get("party_type")=="Supplier":
+		columns.extend([{
+			"fieldname": "supplier_type",
+			"label": _("Supplier Type"),
+			"fieldtype": "Data",
+			"width": 130
+		}])
+
+	columns.extend([
 		{
 			"fieldname": "opening_debit",
 			"label": _("Opening (Dr)"),
@@ -248,7 +297,7 @@ def get_columns(filters, show_party_name):
 			"options": "Currency",
 			"hidden": 1
 		}
-	]
+	])
 	
 	if show_party_name:
 		columns.insert(1, {
