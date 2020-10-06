@@ -197,7 +197,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2019-04-09 12:37:51.426185", 
+ "modified": "2019-11-20 16:55:14.976612", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Vehicle Request Item", 
@@ -209,5 +209,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

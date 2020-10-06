@@ -197,7 +197,7 @@ function hide_fields(doc) {
 		for (i in parent_fields) {
 			var docfield = frappe.meta.docfield_map[doc.doctype][parent_fields[i]];
 			if(!docfield.hidden) unhide_field(parent_fields[i]);
-		}
+		} 
 
 	}
 
@@ -205,8 +205,8 @@ function hide_fields(doc) {
 
 	cur_frm.fields_dict['items'].grid.set_column_disp(item_fields_stock,
 		(cint(doc.update_stock)==1 ? true : false));
-
-	cur_frm.refresh_fields();
+	
+	cur_frm.refresh_fields(); 
 }
 
 cur_frm.cscript.update_stock = function(doc, dt, dn) {
@@ -449,3 +449,20 @@ cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(
         }
 }
 
+
+frappe.ui.form.on("Purchase Invoice Item", {
+        "void_deduction": function(frm, cdt, cdn) {
+                		var item = locals[cdt][cdn];
+				if(item.void_deduction > 0 && item.qty > 0 && item.rate > 0){
+					var void_amount = (item.rate * item.qty) * (item.void_deduction/100);
+					frappe.model.set_value(cdt, cdn, "void_amount", void_amount);
+				}
+				total_void_amt = 0
+				items = frm.doc.items || []
+				for(var i = 0; i < items.length; i++ ){
+         			       total_void_amt += items[i].void_amount;
+        			}
+
+				frm.set_value("total_void_amount", total_void_amt);
+			}
+});

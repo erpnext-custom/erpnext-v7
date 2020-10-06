@@ -38,6 +38,7 @@ class PurchaseInvoice(BuyingController):
 			'percent_join_field': 'purchase_order',
 			'overflow_type': 'billing'
 		}]
+
 	
 	def validate(self):
 		check_future_date(self.posting_date)
@@ -78,6 +79,16 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset()
 		self.validate_fixed_asset_account()
 		self.create_remarks()
+		self.calculate_void_deduction()
+	
+	def calculate_void_deduction(self):
+		# Void Deduction for NHDCL
+		t_void_amount = 0.00
+		for a in self.items:
+			if a.void_amount > 0:
+				t_void_amount += a.void_amount
+
+		self.total_void_amount = t_void_amount
 
 	def validate_tds(self):
 		if not self.type:
@@ -374,6 +385,26 @@ class PurchaseInvoice(BuyingController):
 
 
 	def make_supplier_gl_entry(self, gl_entries):
+		if self.total_void_amount:
+			total_void_in_company_currency = flt(self.total_void_amount * self.conversion_rate,
+				self.precision("total_void_amount"))
+			void_account = frappe.db.get_single_value("Sales Accounts Settings", "void_account")
+
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": void_account,
+					"cost_center": self.buying_cost_center,
+					"business_activity": self.business_activity,
+					"party_type": "Supplier",
+					"party": self.supplier,
+					"against": self.against_expense_account,
+					"credit": total_void_in_company_currency,
+					"credit_in_account_currency": total_void_in_company_currency \
+						if self.party_account_currency==self.company_currency else self.total_void_amount,
+					"against_voucher": self.return_against if cint(self.is_return) else self.name,
+					"against_voucher_type": self.doctype,
+				}, self.party_account_currency)
+			)
 		if self.grand_total:
 			# Didnot use base_grand_total to book rounding loss gle
 			grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
@@ -394,6 +425,7 @@ class PurchaseInvoice(BuyingController):
 					"against_voucher_type": self.doctype,
 				}, self.party_account_currency)
 			)
+
 
 	def make_item_gl_entries(self, gl_entries):
 		# item gl entries
@@ -570,7 +602,8 @@ class PurchaseInvoice(BuyingController):
 					"against_voucher_type": self.doctype,
 				}, self.party_account_currency)
 			)
-
+			
+			
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.cash_bank_account,
@@ -580,6 +613,7 @@ class PurchaseInvoice(BuyingController):
 						if bank_account_currency==self.company_currency else self.paid_amount
 				}, bank_account_currency)
 			)
+			
 
 	def make_write_off_gl_entry(self, gl_entries):
 		# writeoff account includes petty difference in the invoice amount

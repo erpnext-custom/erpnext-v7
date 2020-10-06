@@ -5,10 +5,18 @@ cur_frm.add_fetch("project", "branch", "branch")
 frappe.ui.form.on("Attendance Tool Others", {
 	refresh: function(frm) {
 		frm.disable_save();
+		frm.set_query("unit", function(){
+			return{
+				"filters": {
+					"branch":frm.doc.branch
+				}
+			}
+		});
 	},
 	
 	onload: function(frm) {
-		frm.set_value("date", get_today());
+		//frm.set_value("date", get_today());
+		frm.set_value("date", frappe.datetime.nowdate());
 	},
 
 	date: function(frm) {
@@ -25,6 +33,10 @@ frappe.ui.form.on("Attendance Tool Others", {
 	},
 
 	branch: function(frm) {
+		//erpnext.attendance_tool_others.load_employees(frm);
+	},
+
+	unit: function(frm) {
 		erpnext.attendance_tool_others.load_employees(frm);
 	},
 
@@ -43,7 +55,8 @@ erpnext.attendance_tool_others = {
 					date: frm.doc.date,
 					cost_center: frm.doc.cost_center,
 					branch: frm.doc.branch,
-					employee_type: frm.doc.employee_type
+					employee_type: frm.doc.employee_type,
+					unit: frm.doc.unit
 				},
 				callback: function(r) {
 					if(r.message['unmarked'].length > 0) {
@@ -168,9 +181,9 @@ erpnext.EmployeeSelector = Class.extend({
 						"date": frm.doc.date,
 						"cost_center": frm.doc.cost_center,
 						"branch": frm.doc.branch,
-						"employee_type": frm.doc.employee_type
+						"employee_type": frm.doc.employee_type,
+						"unit": frm.doc.unit
 					},
-
 					callback: function(r) {
 						erpnext.attendance_tool_others.load_employees(frm);
 
@@ -196,7 +209,8 @@ erpnext.EmployeeSelector = Class.extend({
 						"date": frm.doc.date,
 						"cost_center": frm.doc.cost_center,
 						"branch": frm.doc.branch,
-						"employee_type": frm.doc.employee_type
+						"employee_type": frm.doc.employee_type,
+						"unit": frm.doc.unit
 					},
 
 					callback: function(r) {

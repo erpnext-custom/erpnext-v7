@@ -1,6 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
+
 cur_frm.add_fetch("employee", "employee_name", "employee_name")
 cur_frm.add_fetch("employee", "employee_subgroup", "grade")
 cur_frm.add_fetch("employee", "designation", "designation")
@@ -28,7 +29,6 @@ frappe.ui.form.on('Travel Authorization', {
 			{fieldname: 'till_date', columns: 2},
 		];
 	},
-	
 	refresh: function(frm) {
 		//show the document status field and submit button
 		if (in_list(user_roles, "Expense Approver") && frappe.session.user == frm.doc.supervisor) {

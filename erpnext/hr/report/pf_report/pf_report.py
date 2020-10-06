@@ -45,13 +45,14 @@ def get_data(filters):
                         sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0) else 0 end) as basicpay,
                         t3.nppf_number,
                         sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end) as employeepf,
-                        sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end) as employerpf,
-                        sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0)*2 else 0 end) as total,
+                        round(sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0)*(t4.employer_pf/100) else 0 end)) as employerpf,
+                        sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end)+round(sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0)*(t4.employer_pf/100) else 0 end)) as total,
                         t1.company, t1.branch, t1.department, t1.division, t1.section,
                         t1.fiscal_year, t1.month
-                from `tabSalary Slip` t1, `tabSalary Detail` t2, `tabEmployee` t3
+                from `tabSalary Slip` t1, `tabSalary Detail` t2, `tabEmployee` t3,`tabEmployee Group` t4
                 where t1.docstatus = 1 %s
                 and t3.employee = t1.employee
+				and t3.employee_group = t4.name
                 and t2.parent = t1.name
                 and t2.salary_component in ('Basic Pay','PF')
                 group by t1.employee, t3.employee_name, t1.designation, t3.passport_number,

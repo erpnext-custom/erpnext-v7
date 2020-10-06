@@ -29,8 +29,7 @@ cur_frm.fields_dict.equipment.get_query = function(doc) {
 		filters:{
 			'not_cdcl': 0,
 			'is_disabled': 0,
-			'equipment_type': doc.equipment_type,
-			'branch':doc.branch,
+			'equipment_type': doc.equipment_type
 		}
 	}
 }
@@ -40,6 +39,6 @@ cur_frm.fields_dict['items'].grid.get_field('employee').get_query = function(frm
         var d = locals[cdt][cdn];
         return {
                 query: "erpnext.controllers.queries.employee_query",
-		filters: {'branch': frm.branch}
+		filters: {'status': 'Active'}
         }
 }

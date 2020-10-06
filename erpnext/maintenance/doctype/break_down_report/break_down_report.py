@@ -14,7 +14,7 @@ class BreakDownReport(Document):
 	def validate(self):
 		check_future_date(self.date)
 		self.validate_equipment()
-
+		self.job_card = None
 	def on_submit(self):
 		self.assign_reservation()
 		self.post_equipment_status_entry()

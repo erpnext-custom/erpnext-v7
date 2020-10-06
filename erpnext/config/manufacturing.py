@@ -9,23 +9,28 @@ def get_data():
                         "items": [
                                 {
                                         "type": "doctype",
-                                        "name": "Work Order",
-                                        "description": _("Orders released for production."),
-                                },
-                                {
-                                        "type": "doctype",
                                         "name": "Production Plan",
                                         "description": _("Generate Material Requests (MRP) and Work Orders."),
                                 },
                                 {
                                         "type": "doctype",
-                                        "name": "Stock Entry",
+                                        "name": "Monthly Indent",
+                                        "description": _("Monthly Indent"),
                                 },
                                 {
                                         "type": "doctype",
-                                        "name": "Timesheet",
-                                        "description": _("Time Sheet for manufacturing."),
+                                        "name": "Work Order",
+                                        "description": _("Orders released for production."),
                                 },
+                                {
+                                        "type": "doctype",
+                                        "name": "Stock Entry",
+                                },
+                            #    {
+                            #            "type": "doctype",
+                            #            "name": "Manufacturing Timesheet",
+                            #            "description": _("Time Sheet for manufacturing."),
+                            #    },
 
                         ]
                 },
@@ -39,19 +44,14 @@ def get_data():
                                         "description": _("Bill of Materials (BOM)"),
                                         "label": _("Bill of Materials")
                                 },
-                                {
-                                        "type": "doctype",
-                                        "name": "BOM",
-                                        "icon": "fa fa-sitemap",
-                                        "label": _("BOM Browser"),
-                                        "description": _("Tree of Bill of Materials"),
-                                        "link": "Tree/BOM",
-                                },
-                                {
-                                        "type": "doctype",
-                                        "name": "Item",
-                                        "description": _("All Products or Services."),
-                                },
+                        #        {
+                        #               "type": "doctype",
+                        #                "name": "BOM",
+                        #                "icon": "fa fa-sitemap",
+                        #                "label": _("BOM Browser"),
+                        #                "description": _("Tree of Bill of Materials"),
+                        #                "link": "Tree/BOM",
+                        #        },
                                 {
                                         "type": "doctype",
                                         "name": "Workstation",
@@ -62,6 +62,12 @@ def get_data():
                                         "name": "Operation",
                                         "description": _("Details of the operations carried out."),
                                 },
+				{
+					"type": "doctype",
+					"name": "Routing",
+					"description": _("Manufacturing Routing")
+				},
+				
 			]
 		},
 		{
@@ -82,20 +88,36 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Manufacturing Settings",
                                         "description": _("Global settings for all manufacturing processes."),
-                                }
+                                },
+				 {
+                                        "type": "doctype",
+                                        "name": "Job Specification",
+                                        "description": _("Job Specification"),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Product and Labour Hour",
+                                        "description": _("Product and Labour Hour"),
+                                },
+				  {
+                                        "type": "doctype",
+                                        "name": "Cost Sheet",
+		                        "description": _("Cost Sheet"),
+                		}                
+
                         ]
                 },
 		 {
                         "label": _("Reports"),
                         "icon": "fa fa-list",
                         "items": [
-                                {
+				{       
                                         "type": "report",
                                         "is_query_report": True,
                                         "name": "Open Work Orders",
                                         "doctype": "Work Order"
                                 },
-                                {
+                                {       
                                         "type": "report",
                                         "is_query_report": True,
                                         "name": "Work Orders in Progress",
@@ -113,7 +135,7 @@ def get_data():
                                         "name": "Completed Work Orders",
                                         "doctype": "Work Order"
                                 },
-				{
+                                {
                                         "type": "report",
                                         "is_query_report": True,
                                         "name": "Production Analytics",
@@ -122,14 +144,14 @@ def get_data():
                                 {
                                         "type": "report",
                                         "is_query_report": True,
-                                        "name": "BOM Search",
-                                        "doctype": "BOM"
+                                        "name": "Production plan Report",
+                                        "doctype": "Production Plan"
                                 },
-                                {
+				{
                                         "type": "report",
                                         "is_query_report": True,
-                                        "name": "BOM Stock Report",
-                                        "doctype": "BOM"
+                                        "name": "Monthly Indent",
+                                        "doctype": "Monthly Indent"
                                 },
                         ]
                }

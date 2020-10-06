@@ -45,14 +45,15 @@ frappe.ui.form.on('Maintenance Application Form', {
 
 
 	refresh: function(frm) {
-		if(!frm.doc.technical_sanction){
-			 frm.add_custom_button("Create Technical Sanction", function() {
-				frappe.model.open_mapped_doc({
-					method: "erpnext.rental_management.doctype.maintenance_application_form.maintenance_application_form.make_technical_sanction",	
-					frm: cur_frm
+		if(frm.doc.docstatus == 1 && !frm.doc.technical_sanction && frm.doc.workflow_state == 'Approved'){
+			 	frm.add_custom_button("Create Technical Sanction", function() {
+					frappe.model.open_mapped_doc({
+						method: "erpnext.rental_management.doctype.maintenance_application_form.maintenance_application_form.make_technical_sanction",	
+						frm: cur_frm
 				});
 			});
 		}
+		
 	//	cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 	},
 

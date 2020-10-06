@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, get_datetime, nowdate
+from frappe.utils import flt, get_datetime, nowdate, cint
 
 class VehicleRequest(Document):
 	def validate(self):
@@ -27,11 +27,13 @@ class VehicleRequest(Document):
 
 	def on_submit(self):
 		self.check_if_free()
-		self.send_email()
+		if not self.r_status:
+			frappe.throw(" Approval Status is Mandiatory ")
 		if self.r_status == "Approved":
 			self.update_reservation_entry()
 		if self.r_status == "Rejected" and self.rejection_reason == None:
 			frappe.throw("Rejection Reason Is Mandatory")
+		self.send_email()
 
 	def on_cancel(self):
 		frappe.db.sql(""" delete from `tabEquipment Reservation Entry` where vehicle_request = '{0}'""".format(self.name)) 
@@ -58,7 +60,7 @@ class VehicleRequest(Document):
                                         select equipment
                                         from `tabEquipment Reservation Entry`
                                         where equipment = '{0}'
-                                        and docstatus = 1
+                                        and docstatus = 1 and reason = 'On Duty'
                                         and ('{1}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
                                                 or
                                                 '{2}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
@@ -73,7 +75,6 @@ class VehicleRequest(Document):
 		import datetime
                 from_time = datetime.datetime.strptime(self.from_date, '%Y-%m-%d %H:%M:%S')
 		to_time = datetime.datetime.strptime(self.to_date, '%Y-%m-%d %H:%M:%S')
-                frappe.msgprint("{0}".format(from_time.time()))
 		doc = frappe.new_doc("Equipment Reservation Entry")
 		doc.equipment = self.equipment
 		doc.vehicle_request = self.name
@@ -83,6 +84,7 @@ class VehicleRequest(Document):
 		doc.to_date = self.to_date
 		doc.from_time = from_time.time()
 		doc.to_time = to_time.time()
+		#doc.pool_entry = cint(1)
 		doc.submit()
 
 	def send_email(self):

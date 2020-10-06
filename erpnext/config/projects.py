@@ -72,44 +72,39 @@ def get_data():
 			"label": _("Manpower Management"),
 			"icon": "icon-facetime-video",
 			"items": [
-                                {
-					"type": "doctype",
-					"name": "DES Employee",
-					"description": _("DES Employee Master Data"),
-				},
 				{
 					"type": "doctype",
 					"name": "Muster Roll Employee",
 					"description": _("Muster Roll Employee Data"),
 				},
-				#{
-				#	"type": "doctype",
-				#	"name": "Attendance Tool Others",
-				#	"label": "Attendance Tool for GEP & MR",
-				#	"description": _("Attendance Tool for Others"),
-				#},
+				{
+					"type": "doctype",
+					"name": "Attendance Tool Others",
+					"label": "Attendance Tool for MR",
+					"description": _("Attendance Tool for Others"),
+				},
 				{
 					"type": "doctype",
 					"name": "Upload Attendance Others",
-					"label": "Upload Bulk Attendance for GEP & MR",
+					"label": "Upload Bulk Attendance for MR",
 					"description": _("Attendance Tool for Others"),
 				},
-				#{
-				#	"type": "doctype",
-				#	"name": "Project Overtime Tool",
-				#	"label": "Overtime Tool for GEP & MR",
-				#	"description": _("Overtime Tool for MR and GEP"),
-				#},
+				{
+					"type": "doctype",
+					"name": "Project Overtime Tool",
+					"label": "Overtime Tool for MR",
+					"description": _("Overtime Tool for MR "),
+				},
 				{
 					"type": "doctype",
 					"name": "Upload Overtime Entries",
-					"label": "Upload Overtime Entry for GEP & MR",
+					"label": "Upload Overtime Entry for MR",
 					"description": _("Overtime Tool for Others"),
 				},
 				{
 					"type": "doctype",
 					"name": "Process MR Payment",
-					"label": "Process Payment for GEP & MR",
+					"label": "Process Payment for MR",
 					"description": _("Process Payments for Project Muster Roll"),
 				},
 			]
@@ -150,6 +145,11 @@ def get_data():
 					"type": "doctype",
 					"name": "MusterRoll Application",
 					"label": "Muster Roll Application",
+				},
+				{
+					"type": "doctype",
+					"name": "Unit",
+					"label": "Units",
 				},
 			]
 		},
@@ -223,6 +223,30 @@ def get_data():
 					"name": "Items Register",
 					"doctype": "Consumable Register Entry"
 				},
+				 {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Attendance Register",
+					"label": "Attendance Register",
+					"description": _("Attendance Sheet"),
+					"doctype": "Attendance Others"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Overtime Register",
+					"label": "Overtime Register",
+					"description": _("Overtime Register"),
+					"doctype": "Overtime Entry"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "MR Payment",
+					"label": "MR Payment",
+					"description": _("MR Payment"),
+					"doctype": "Process MR Payment"
+				}
 			]
 		},
 	]

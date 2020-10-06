@@ -20,8 +20,8 @@ frappe.ui.form.on('Salary Advance', {
 	
 	refresh: function(frm){
 		enable_disable(frm);
-	},
-			
+                        
+	},	
 	total_claim: function(frm){
 		cur_frm.set_value("monthly_deduction", Math.ceil(parseFloat(frm.doc.total_claim)/ frm.doc.deduction_month));
 	},

@@ -107,6 +107,7 @@ class ReceivablePayableReport(object):
 				outstanding_amount = self.get_outstanding_amount(gle, self.filters.report_date, dr_or_cr)
 				if not filters.show_zero and outstanding_amount ==  0.0:
 					continue
+					
 				#if outstanding_amount: #abs(outstanding_amount) > 0.1/10**currency_precision:
 				row = [gle.posting_date, gle.party]
 
@@ -199,7 +200,8 @@ class ReceivablePayableReport(object):
 			out_amt = frappe.db.get_value("Hire Charge Invoice", gle.voucher_no, "outstanding_amount")
 		elif gle.voucher_type == "POL":
 			out_amt = frappe.db.get_value("POL", gle.voucher_no, "outstanding_amount")
-                # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+
+        # +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		elif gle.voucher_type == "Rental Bill":
 			inv_amount = frappe.db.get_value("Rental Bill", gle.voucher_no, "rent_amount")
 			out_am = frappe.db.get_value("Rental Bill", gle.voucher_no, "received_amount")
@@ -309,7 +311,7 @@ class ReceivablePayableReport(object):
 				where docstatus < 2 and party_type = '{4}' and  (tenant_name is not null and tenant_name != '') {5}) as gg
 				group by gg.posting_date, gg.party_type, gg.party, gg.voucher_type, gg.voucher_no,
 				gg.against_voucher_type, gg.against_voucher, gg.account_currency, gg.cost_center"""
-				.format(select_fields, conditions, cus_query, exempt_gls, party_type, ren_cond), values, as_dict=True, debug =True)
+				.format(select_fields, conditions, cus_query, exempt_gls, party_type, ren_cond), values, as_dict=True)
 		return self.gl_entries
 
 	

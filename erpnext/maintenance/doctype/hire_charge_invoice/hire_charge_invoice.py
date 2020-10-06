@@ -399,11 +399,11 @@ def make_payment_entry(source_name, target_doc=None):
                 target.actual_amount = obj.outstanding_amount
                 target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
 
-                target.append("items", {
-                        "reference_type": "Hire Charge Invoice",
-                        "reference_name": obj.name,
-                        "outstanding_amount": obj.outstanding_amount,
-                        "allocated_amount": obj.outstanding_amount
+                target.append("maintenace_payment_item", {
+                        "technical_sanction": obj.name,
+                        "service_charges": obj.total_amount,
+                        "material_charges": obj.material_charges,
+			"payable_amount": flt(obj.total_amount) - flt(obj.material_charges)
                 })
 	
 	doc = get_mapped_doc("Hire Charge Invoice", source_name, {

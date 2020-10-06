@@ -12,6 +12,13 @@ erpnext.hr.MRAttendanceControlPanel = frappe.ui.form.Controller.extend({
 	refresh: function() {
 		this.frm.disable_save();
 		this.show_upload();
+/*		this.frm.set_query("unit", function(){ 
+			return {
+				"filters":{ 
+					"branch": this.frm.doc.branch 
+				}
+			}
+		}); */
 	},
 
 	get_template:function() {
@@ -20,11 +27,12 @@ erpnext.hr.MRAttendanceControlPanel = frappe.ui.form.Controller.extend({
 			return;
 		}
 		window.location.href = repl(frappe.request.url +
-			'?cmd=%(cmd)s&fiscal_year=%(fiscal_year)s&month=%(month)s&branch=%(branch)s', {
+			'?cmd=%(cmd)s&fiscal_year=%(fiscal_year)s&month=%(month)s&branch=%(branch)s&unit=%(unit)s', {
 				cmd: "erpnext.hr.doctype.upload_attendance_others.upload_attendance_others.get_template",
 				branch: this.frm.doc.branch,
 				fiscal_year: this.frm.doc.fiscal_year,
 				month: this.frm.doc.month,
+				unit: this.frm.doc.unit,
 			});
 	},
 

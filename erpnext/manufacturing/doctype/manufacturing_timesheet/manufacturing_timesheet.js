@@ -38,7 +38,7 @@ frappe.ui.form.on("Manufacturing Timesheet", {
 		}
 
 		if (frm.is_new()) {
-			set_employee_and_company(frm);
+			//set_employee_and_company(frm);
 		}
 	},
 
@@ -100,7 +100,6 @@ frappe.ui.form.on("Manufacturing Timesheet", {
 				(frappe.working_hours = message.standard_working_hours || 0);
 			});
 	},
-
 	make_invoice: function(frm) {
 		let dialog = new frappe.ui.Dialog({
 			title: __("Select Item (optional)"),

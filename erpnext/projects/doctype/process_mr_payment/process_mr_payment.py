@@ -8,9 +8,12 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, cint
 from calendar import monthrange
+from erpnext.hr.hr_custom_functions import get_officiating_employee
+from erpnext.hr.doctype.approver_settings.approver_settings import get_final_approver
 
 class ProcessMRPayment(Document):
 	def validate(self):
+		self.validate_workflow()
                 # Setting `monthyear`
 		month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(self.month) + 1
 		month = str(month) if cint(month) > 9 else str("0" + str(month))
@@ -50,8 +53,47 @@ class ProcessMRPayment(Document):
 			self.total_overall_amount = total
 			if a.employee_type == "DES Employee":
 				self.total_health_amount = total_health
-			
 
+	def validate_workflow(self):
+		# Verified By Supervisor
+		# Forwarding by Unit Managers
+		if self.workflow_state == "Verified By Supervisor":
+			unit_manager, unit_manager_name = frappe.db.get_value("Unit", self.unit, ["employee", "employee_name"])
+			if not unit_manager:
+				frappe.throw("Please assgin Unit Manager for {0} unit".format(self.unit))
+				
+			unit_manager_userid = frappe.db.get_value("Employee", unit_manager, "user_id")
+			officiating = get_officiating_employee(unit_manager)
+			if officiating:
+				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+				if frappe.session.user != officiating[0]:
+					frappe.throw("Only Officiating Unit Manager {} will be able to forward the Payment".format(officiating[1]))
+			else:
+				if frappe.session.user != unit_manager_userid:				
+					frappe.throw("Only Unit Manager {0} ({1}) is allowed to forward MR Payment".format(unit_manager, unit_manager_name))
+		# BY Respective GM
+		elif self.workflow_state == "Waiting Approval":
+			final_approver = frappe.db.get_value("Employee", {"user_id": get_final_approver(self.branch)}, ["user_id","employee_name","designation","name"])
+			officiating = get_officiating_employee(final_approver[3])
+			if officiating:
+				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+				if frappe.session.user != officiating[0]:
+					frappe.throw("Only Officiating GM {} will be able to forward the Payment".format(officiating[1]))
+			else:
+				if frappe.session.user != final_approver[0]:				
+					frappe.throw("Only GM {0} ({1}) is allowed to forward MR Payment".format(final_approver[1], final_approver[0]))
+
+		elif self.workflow_state == "Approved":
+			approver = frappe.db.get_value("Employee", {"designation":"Chief Executive Officer"}, ["user_id","employee_name","designation","name"])
+			officiating = get_officiating_employee(approver[3])
+			if officiating:
+				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+				if frappe.session.user != officiating[0]:
+					frappe.throw("Only Officiating CEO {} will be able to forward the Payment".format(officiating[1]))
+			else:
+				if frappe.session.user != approver[0]:				
+					frappe.throw("Only CEO, {0} ({1}) is allowed to forward MR Payment".format(approver[1], approver[0]))
+			
 	def on_submit(self):
 		self.post_journal_entry()
 
@@ -99,7 +141,11 @@ class ProcessMRPayment(Document):
 		if self.employee_type == "DES Employee":
 			query = "select 'DES Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabDES Employee` where status = 'Active'"
 		elif self.employee_type == "Muster Roll Employee":
-			query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabMuster Roll Employee` where status = 'Active'"
+                        #Added by cheten on 06-10-2020
+                        if not is_lumpsum:
+			        query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabMuster Roll Employee` where status = 'Active'"
+                        else:
+                                query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, lumpsum from `tabMuster Roll Employee` where status = 'Active'"
 		else:
 			frappe.throw("Select employee record first!")
 	
@@ -382,7 +428,6 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
         to_date   = str(fiscal_year) + '-' + str(month) + '-' + str(total_days)
 
         data = []
-
         li = frappe.db.sql("""
                                 select employee,
                                         sum(number_of_days) as number_of_days,
@@ -414,9 +459,11 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                 ) as abc
                                 group by employee
                         """.format(employee_type, from_date, to_date, cost_center, total_days), as_dict=True)
+        frappe.msgprint(str(li))
 
         for i in li:
-                rest = frappe.db.sql("""
+                if not i.is_lumpsum:
+                        rest = frappe.db.sql("""
                                 select
                                         '{0}' as type,
                                         name,
@@ -441,10 +488,38 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         and m.cost_center = '{5}'
                                 )
                         """.format(employee_type, i.employee, fiscal_year, fiscal_month, dn, cost_center), as_dict=True)
+                
+                else:
+                        rest = frappe.db.sql("""
+                                select
+                                        '{0}' as type,
+                                        name,
+                                        person_name,
+                                        id_card,
+                                        business_activity,
+                                        lumpsum,
+                                        salary
+                                from `tab{0}` as e
+                                where name = '{1}'
+                                and not exists(
+                                        select 1
+                                        from `tabMR Payment Item` i, `tabProcess MR Payment` m
+                                        where i.employee = e.name
+                                        and i.employee_type = '{0}'
+                                        and i.fiscal_year = '{2}'
+                                        and i.month = '{3}'
+                                        and m.docstatus in (0,1)
+                                        and i.parent != '{4}'
+                                        and m.name = i.parent
+                                        and m.cost_center = '{5}'
+                                )
+                        """.format(employee_type, i.employee, fiscal_year, fiscal_month, dn, cost_center), as_dict=True)
 
                 if rest:
                         rest[0].update(i)
                         data.append(rest[0])
+
+
         '''
         # 2nd Try
         data = frappe.db.sql("""

@@ -632,7 +632,7 @@ frappe.ui.form.on("Journal Entry", "onload", function(frm){
             "filters": [
                 ["status", "!=", "Used"],
                 ["docstatus", "=", "1"],
-		["branch", "=", frm.doc.branch]
+	/*	["branch", "=", frm.doc.branch] */
             ]
         }
     });

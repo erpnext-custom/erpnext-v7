@@ -22,6 +22,13 @@ frappe.ui.form.on('Process MR Payment', {
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
 		}
+		frm.set_query("unit", function() {
+                        return {
+                                "filters": {
+                                        "branch": frm.doc.branch,
+                                }
+                        };
+                });
 	},
 
 	onload: function(frm) {

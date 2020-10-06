@@ -53,6 +53,11 @@ def get_data():
                                         "description":_("SWS Application"),
                                         "label": _("SWS Application")
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "Vehicle Request",
+                                        "label": "Vehicle Request"
+                                },
 			]
 		},
 		{
@@ -114,7 +119,7 @@ def get_data():
 					"label": "Overtime Register",
 					"description": _("Overtime Register"),
 					"doctype": "Overtime Entry"
-				},
+				}
 			]
 		},
 		{
@@ -476,6 +481,19 @@ def get_data():
                                         "name": "Travel Report",
                                         "doctype": "Travel Claim"
                                 },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Salary Advance Report",
+                                        "doctype": "Salary Advance"
+                                },
+								{
+					"type": "report",
+					"is_query_report": True,
+					"name": "MR Payment",
+					"label": "MR Payment",
+					"doctype": "Process MR Payment"
+				},
 			]
 		},
 	]

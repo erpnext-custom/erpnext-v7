@@ -78,7 +78,7 @@ class ProcessPayroll(Document):
 			and ifnull(t1.date_of_joining, '0000-00-00') <= '%(month_end_date)s'
 			and ifnull(t1.relieving_date, '%(month_end_date)s') >= '%(month_start_date)s'
 		""" % m
-		
+		frappe.msgprint("{0}".format(cond))	
 		return cond
 
 	def check_mandatory(self):

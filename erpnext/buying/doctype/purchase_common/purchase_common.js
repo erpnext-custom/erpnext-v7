@@ -227,7 +227,6 @@ erpnext.buying.BuyingController = erpnext.TransactionController.extend({
 			});
 		}
 	},
-
 	project: function(doc, cdt, cdn) {
 		var item = frappe.get_doc(cdt, cdn);
 		if(item.project) {

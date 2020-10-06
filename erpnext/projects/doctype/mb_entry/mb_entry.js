@@ -96,7 +96,7 @@ frappe.ui.form.on("MB Entry BOQ",{
 	},
 	entry_amount: function(frm, cdt, cdn){
 		var child = locals[cdt][cdn];
-		var amount = flt(child.entry_quantity || 0.0)*flt(child.entry_rate || 0.0);
+		var amount = flt(child.entry_quantity || 0.00)*flt(child.entry_rate || 0.00);
 		
 		if(child.entry_amount > child.act_amount){
 			msgprint(__("Invoice Amount cannot be greater than balance amount."));
@@ -114,7 +114,7 @@ frappe.ui.form.on("MB Entry BOQ",{
 
 var calculate_totals = function(frm){
 	var me = frm.doc.mb_entry_boq || [];
-	var total_entry_amount = 0.0, net_entry_amount =0.0;
+	var total_entry_amount = 0.00, net_entry_amount =0.00;
 	
 	if(frm.doc.docstatus != 1)
 	{

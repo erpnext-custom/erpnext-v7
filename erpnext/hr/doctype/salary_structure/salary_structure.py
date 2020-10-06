@@ -60,7 +60,8 @@ class SalaryStructure(Document):
 		set_employee_name(self)
 		self.check_multiple_active()
 		self.update_salary_structure()
-		
+
+	
 	def on_update(self):
 		self.assign_employee_details()
 
@@ -140,7 +141,7 @@ class SalaryStructure(Document):
                                         else:
                                                 child.amount = flt(sc.default_amount)
                                         vars(self)[sc.field_name] = sc.default
-                                vars(self)[sc.field_method] = sc.payment_method
+				vars(self)[sc.field_method] = sc.payment_method
                                 vars(self)[sc.field_value]  = flt(sc.default_amount)
                                 
 	def check_overlap(self):
@@ -208,11 +209,14 @@ class SalaryStructure(Document):
                                 table but amounts do not match, then update the respective row.
                 '''
                 self.validate_salary_component()
-                basic_pay = comm_allowance = gis_amt = pf_amt = health_cont_amt = tax_amt = basic_pay_arrears = 0 
+                basic_pay = housing_allowance = comm_allowance = gis_amt = pf_amt = health_cont_amt = tax_amt = basic_pay_arrears = 0 
                 total_earning = total_deduction = net_pay = 0
                 settings      = get_payroll_settings(self.employee)
                 settings      = settings if settings else {}
-                
+                if self.employment_type == 'GEP':
+			self.eligible_for_pbvi = 0
+			self.eligible_for_hra = 0
+
                 tbl_list      = {'earnings': 'Earning', 'deductions': 'Deduction'}
 
                 for ed in ['earnings','deductions']:
@@ -236,6 +240,7 @@ class SalaryStructure(Document):
                                                                 amount = flt(new_basic_pay)
                                                         basic_pay = amount
                                                         ed_item.amount = basic_pay
+							
                                                 # Following condition added by SHIV on 2019/04/29
                                                 elif frappe.db.exists("Salary Component", {"name": ed_item.salary_component, "is_pf_deductible": 1}):
                                                         basic_pay_arrears += flt(ed_item.amount)
@@ -254,13 +259,35 @@ class SalaryStructure(Document):
 
                                 if self.get(m['field_method']) == 'Percent' and flt(self.get(m['field_value'])) > 100:
                                         frappe.throw(_("Percentage cannot exceed 100 for component <b>{0}</b>").format(m['name']), title="Invalid Data")
-                                        
-                                if ed == 'earnings':
+                                       
+				if m['name'] == 'HRA' and basic_pay and self.get(m['field_name']):
+					hra_allowance = frappe.db.get_single_value("HR Settings", "hra")
+					if not hra_allowance:
+						frappe.throw("Setup HRA in HR Settings")
+
+					housing = round(flt(basic_pay)*flt(hra_allowance)*0.01)
+					if flt(housing) <= 3500.00:
+						calc_amt  = 3500.00
+					else:
+						calc_amt  = housing
+					total_earning += calc_amt
+                                        calc_map.append({'salary_component': m['name'], 'amount': flt(calc_amt)})  
+                                if ed == 'earnings' and m['name'] != 'HRA':
                                         if self.get(m['field_name']):
+						'''if m['name'] == 'HRA':
+							housing = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01)
+							if flt(housing) <= 3500.00:
+								calc_amt = 3500.00
+								self.hra_method = 'Lumpsum'
+							else:
+								calc_amt = flt(housing)
+								self.hra_methof = 'Percent'''
+						total_earning += calc_amt
                                                 calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))
                                                 comm_allowance += round(flt(calc_amt) if m['name'] == 'Communication Allowance' else 0)
                                                 total_earning += calc_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
+						 
                                 else:
                                         if self.get(m['field_name']) and m['name'] == 'SWS':
                                                 sws_amt = round(flt(settings.get("sws_contribution")))

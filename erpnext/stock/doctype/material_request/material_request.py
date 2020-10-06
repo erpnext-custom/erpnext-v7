@@ -83,9 +83,9 @@ class MaterialRequest(BuyingController):
 			#creator_dtls = frappe.get_doc("Employee", {"user_id": frappe.session.user})
 			#self.creator = creator_dtls[2]
 			#self.creator_name = creator_dtls[1]
-			if creator_dtls:
-				self.creator = creator_dtls.name
-				self.creator_name = creator_dtls.employee_name
+			#if creator_dtls:
+			#self.creator = creator_dtls.name
+			#self.creator_name = creator_dtls.employee_name
 		
 
 		if not self.status:

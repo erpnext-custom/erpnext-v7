@@ -7,6 +7,13 @@ cur_frm.add_fetch("project", "branch", "branch")
 
 frappe.ui.form.on('Muster Roll Employee', {
 	refresh: function(frm) {
+		 frm.set_query("unit", function() {
+                        return {
+                                "filters": {
+                                        "branch": frm.doc.branch
+                                }
+                        };
+                });
 	},
 
 	rate_per_day: function(frm) {

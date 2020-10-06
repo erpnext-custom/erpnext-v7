@@ -8,6 +8,130 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settings, get_salary_tax
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
+import frappe.model.rename_doc as rd
+
+
+def update_tenant_cid():
+	for a in frappe.db.sql("select name, tenant, tenant_name from `tabRental Bill`", as_dict=True):
+		cid = frappe.db.get_value("Tenant Information", a.tenant, "cid")
+		# frappe.db.sql("update `tabRental Bill` set cid = '{}' where name ='{}'".format(cid, a.name))
+		frappe.db.sql("update `tabRental Payment Item` set cid = '{}' where tenant ='{}'".format(cid, a.tenant))
+		print("cid: " + str(cid) + "  name : " + str(a.name))
+
+def rename_tenant():
+	'''
+	tenant_list = frappe.get_all("Tenant Information", fields=["name", "cid", "tenant_name", "dzongkhag"], order_by="allocated_date desc")
+	for a in tenant_list:
+ 		dz = a.dzongkhag
+		dzo_prefix = dz[:3]
+		prefix = dzo_prefix.upper()
+		pre_name = prefix + "20"
+		for b in frappe.db.sql("select ifnull(substring(max(name),6,4),0) as code from `tabTenant Information` where name like '{0}%'""".format(pre_name), as_dict=True):
+			sl = cint(b.code)
+		if sl > 0:
+			sl += 1
+		else:
+			sl = 1
+
+		if len(str(sl)) == 1:
+			serial = "000" + str(sl)
+		elif len(str(sl)) == 2:
+			serial = "00" + str(sl)
+		elif len(str(sl)) == 3:
+			serial = "0" + str(sl)
+		else:
+			serial = str(sl)
+		
+			
+		new_name = prefix + "20" + serial
+	'''
+	old = "DAG200060"
+	new = "11704002088"
+	print("Old Name: " + str(old) + " renamed to New Name: " + str(new))
+	rd.rename_doc("Tenant Information", old, new, force=False, merge=False, ignore_permissions=True)
+		
+		#print(str(a.name) + str(a.cid) + str(a.tenant_name)) 
+
+def update_ministry_dept():
+	for a in frappe.db.sql("select t.tenant as tenant from `tabRental Payment Item` t where exists(select 1 from `tabTenant Information` i where i.name = t.tenant)", as_dict=True):
+		doc = frappe.get_doc("Tenant Information", a.tenant)
+		frappe.db.sql("update `tabRental Payment Item` set ministry_agency = '{0}', department = '{1}' where tenant = '{2}'".format(doc.ministry_agency, doc.department, a.tenant))
+		#print(ministry, dept, a.tenant)
+
+def update_customer_code_tenante():
+	for a in frappe.db.sql("select name, cid from `tabTenant Information` where customer_code is NULL or customer_code =''", as_dict=True):
+		print("test")
+		for b in frappe.db.sql("select customer_code from `tabCustomer` where customer_id = '{}'".format(a.cid)):
+			if b.customer_code:
+				frappe.db.sql("update `tabTenant Information` set customer_code = '{}' where name = '{}'".format(b.customer_code, a.name))
+		print(a.name)
+
+def calculate_rent_charges():
+	for a in frappe.db.sql("select name, rent_amount, allocated_date, percent_of_increment, no_of_year_for_increment from `tabTenant Information` where no_of_year_for_increment = 0", as_dict=True):
+		percentage = frappe.db.get_single_value("Rental Setting", "percent_of_increment")
+		increment_year = cint(frappe.db.get_single_value("Rental Setting", "no_of_year_for_increment"))
+		frappe.db.sql("update `tabTenant Information` set percent_of_increment = '{0}', no_of_year_for_increment = '{1}' where name = '{2}'".format(percentage, increment_year, a.name))
+		increment = 0.00
+		actual_rent = 0.00
+
+		start_date = get_first_day(a.allocated_date)
+		end_date = add_years(get_last_day(add_days(start_date, -10)), increment_year)
+
+		if percentage and increment_year:
+			for i in range(0, 10, increment_year):
+				if i > 1:
+					start_date = add_years(start_date, increment_year)
+					end_date = add_years(end_date, increment_year)
+					increment = flt(actual_rent) * flt(flt(percentage)/100) if actual_rent > 0 else flt(a.rent_amount) * flt(flt(percentage)/100)
+					actual_rent = flt(actual_rent) + flt(increment) if actual_rent > 0 else flt(a.rent_amount) + flt(increment)
+				actual_rent = actual_rent if actual_rent > 0 else a.rent_amount
+				frappe.db.sql("update `tabTenant Rental Charges` set increment = '{0}', rental_amount = '{1}' where from_date = '{2}' and to_date = '{3}' and parent = '{4}'".format(increment, round(actual_rent), start_date, end_date, a.name))
+				print a.name, increment, actual_rent
+
+def update_salary_st():
+	count = 0
+	for a in frappe.db.sql(""" select * from `tabSalary Advance` where docstatus = 1 and application_date >= '2020-01-01'""", as_dict = True):
+		doc = frappe.get_doc("Salary Structure", {"employee": a.employee, "is_active": "Yes"})
+		update = 'Yes'
+		adv = frappe.get_doc("Salary Advance", a.name)
+		for c in doc.get("deductions"):
+			if c.salary_component == a.salary_component and a.name in (c.reference_number, c.ref_docname):
+				update = 'No'
+		if update == 'Yes':
+			count += 1
+			row = doc.append("deductions",{})
+			row.salary_component        = a.salary_component
+			row.from_date               = a.recovery_start_date
+			row.to_date                 = a.recovery_end_date
+			row.amount                  = flt(a.monthly_deduction)
+			row.default_amount          = flt(a.monthly_deduction)
+			row.reference_number        = a.name
+			row.ref_docname             = a.name
+			row.total_deductible_amount = flt(a.total_claim)
+			row.total_deducted_amount   = 0
+			row.total_outstanding_amount= flt(a.total_claim)
+			row.total_days_in_month     = 0
+			row.working_days            = 0
+			row.leave_without_pay       = 0
+			row.payment_days            = 0
+			doc.save(ignore_permissions=True)
+			adv.db_set("salary_structure", doc.name)
+		print count, a.name, doc.name
+
+
+def update_locationid_structure_no():
+	for a in frappe.db.sql("select name, location, block_no from `tabTenant Information`", as_dict=True):
+		if a.block_no and a.location:
+			location_id = frappe.db.get_value("Locations", a.location, "location_id")
+			structure_no = location_id + "/" + a.block_no
+			frappe.db.sql("Update `tabTenant Information` set location_id = '{0}', structure_no = '{1}' where name = '{2}'".format(location_id, structure_no, a.name))
+		else:
+			print("No Location and Block No") 
+
+def update_security_deposit():
+        for a in frappe.db.sql("select name, rent_amount from `tabTenant Information`", as_dict=True):
+                security_deposit = flt(2 * flt(a.rent_amount))
+                frappe.db.sql("Update `tabTenant Information` set security_deposit = '{0}' where name = '{1}'".format(security_deposit, a.name))
 
 def test_process_bill():
 	rb = frappe.get_doc({

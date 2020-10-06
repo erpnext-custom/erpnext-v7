@@ -410,7 +410,11 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 		this.frm.doc.grand_total = flt(tax_count ? this.frm.doc["taxes"][tax_count - 1].total : this.frm.doc.net_total);
 
 		if(in_list(["Purchase Receipt", "Purchase Invoice"], this.frm.doc.doctype)) {
-			this.frm.doc.grand_total = this.frm.doc.total + this.frm.doc.total_tax_amount + this.frm.doc.total_add_ded
+			if(this.frm.doc.total_void_amount > 0)
+				this.frm.doc.grand_total = this.frm.doc.total + this.frm.doc.total_tax_amount + this.frm.doc.total_add_ded - this.frm.doc.total_void_amount;
+			else
+				this.frm.doc.grand_total = this.frm.doc.total + this.frm.doc.total_tax_amount + this.frm.doc.total_add_ded
+				
 		}
 
 		if(in_list(["Quotation", "Sales Order", "Delivery Note", "Sales Invoice"], this.frm.doc.doctype)) {
@@ -555,6 +559,7 @@ erpnext.taxes_and_totals = erpnext.payments.extend({
 	},
 
 	calculate_outstanding_amount: function(update_paid_amount) {
+		console.log("testing")
 		// NOTE:
 		// paid_amount and write_off_amount is only for POS Invoice
 		// total_advance is only for non POS Invoice

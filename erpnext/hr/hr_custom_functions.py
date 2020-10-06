@@ -19,8 +19,6 @@ from erpnext.custom_utils import get_year_start_date, get_year_end_date
 import json
 import logging
 
-# ++++++++++++++++++++ VER#2.0#CDCL#886 BEGINS ++++++++++++++++++++
-# VER#2.0#CDCL#886: Following method introduced by SHIV on 02/10/2018
 def post_leave_credits(today=None):
         """
            :param today: First day of the month
@@ -55,7 +53,7 @@ def post_leave_credits(today=None):
         #if first_day_of_month or first_day_of_year:        
 	elist = frappe.db.sql("""
 		select
-                        t1.name, t1.employee_name, t1.date_of_joining,
+                        t1.name, t1.employee_name, t1.date_of_joining, t1.employment_type,
                         (
                         case
                                 when day(t1.date_of_joining) > 1 and day(t1.date_of_joining) <= 15
@@ -94,17 +92,19 @@ def post_leave_credits(today=None):
 			continue
 
 		# Monthly credits
-		#if first_day_of_month and flt(e.credits_per_month) > 0:
-		if flt(e.credits_per_month) > 0:
-			# For Earned Leaved monthly credits are given for previous month
-			start_date = get_first_day(add_days(today, -20))
-			end_date   = get_last_day(start_date)
+		# if first_day_of_month and flt(e.credits_per_month) > 0:
+		# Don't allocate EL during Probation Period
+		if e.employment_type != "Probation":
+			if flt(e.credits_per_month) > 0:
+				# For Earned Leaved monthly credits are given for previous month
+				start_date = get_first_day(add_days(today, -20))
+				end_date   = get_last_day(start_date)
 
-			leave_allocation.append({
-				'from_date': str(start_date),
-				'to_date': str(end_date),
-				'new_leaves_allocated': flt(e.credits_per_month)
-			})
+				leave_allocation.append({
+					'from_date': str(start_date),
+					'to_date': str(end_date),
+					'new_leaves_allocated': flt(e.credits_per_month)
+				})
 
 		# Yearly credits
 		#if first_day_of_year and flt(e.credits_per_year) > 0:
@@ -174,7 +174,7 @@ def post_earned_leaves():
 	start = get_first_day(date);
 	end = get_last_day(date);
 	
-	employees = frappe.db.sql("select name, employee_name, date_of_joining from `tabEmployee` where status = 'Active'", as_dict=True)
+	employees = frappe.db.sql(" select name, employee_name, date_of_joining from `tabEmployee` where status = 'Active'", as_dict=True)
 	for e in employees:
 		if cint(date_diff(end, getdate(e.date_of_joining))) > 14:
 			la = frappe.new_doc("Leave Allocation")

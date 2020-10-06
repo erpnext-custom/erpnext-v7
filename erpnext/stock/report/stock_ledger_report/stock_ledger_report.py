@@ -21,7 +21,7 @@ def execute(filters=None):
 		if sle.voucher_type == "POL":
 			sle.voucher_type = "Receive POL"
 
-		data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group, item_detail.item_sub_group,
+		data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group, item_detail.item_sub_group, item_detail.item_sub_group_type,
 			sle.warehouse,
 			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
 			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
@@ -31,7 +31,7 @@ def execute(filters=None):
 	return columns, data
 
 def get_columns():
-	return [_("Date") + ":Datetime:95", _("Material Code") + ":Link/Item:130", _("Material Name") + "::120", _("Material Group") + ":Link/Item Group:100", _("Material Sub Group") + ":Link/Item Sub Group:100",
+	return [_("Date") + ":Datetime:95", _("Material Code") + ":Link/Item:130", _("Material Name") + "::120", _("Material Group") + ":Link/Item Group:100", _("Material Sub Group") + ":Link/Item Sub Group:100", _("Type") + ":Link/Item Sub Group Type:100",
 		_("Warehouse") + ":Link/Warehouse:100",
 		_("Stock UOM") + ":Link/UOM:100", _("Qty") + ":Float:50", _("Balance Qty") + ":Float:100",
 		_("Incoming Rate") + ":Currency:110", _("MAP") + ":Currency:110", _("Balance Value") + ":Currency:110",
@@ -65,6 +65,8 @@ def get_item_conditions(filters):
 		conditions.append("name=%(item_code)s")
 	if filters.get("brand"):
 		conditions.append("brand=%(brand)s")
+	if filters.get("item_sub_group"):
+		conditions.append("item_sub_group=%(item_sub_group)s")
 
 	return "where {}".format(" and ".join(conditions)) if conditions else ""
 

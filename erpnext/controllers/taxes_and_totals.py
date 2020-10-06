@@ -317,7 +317,13 @@ class calculate_taxes_and_totals(object):
 			if self.doc.get("taxes") else self.doc.net_total)
 
 		if self.doc.doctype in ['Purchase Receipt','Purchase Invoice']:
-			self.doc.grand_total = flt(self.doc.total) + flt(self.doc.total_tax_amount) + flt(self.doc.total_add_ded)
+			if self.doc.doctype == "Purchase Invoice":
+				if self.doc.total_void_amount > 0:
+					self.doc.grand_total = flt(self.doc.total) + flt(self.doc.total_tax_amount) + flt(self.doc.total_add_ded) - flt(self.doc.total_void_amount)
+				else:
+					self.doc.grand_total = flt(self.doc.total) + flt(self.doc.total_tax_amount) + flt(self.doc.total_add_ded)
+			else:
+				self.doc.grand_total = flt(self.doc.total) + flt(self.doc.total_tax_amount) + flt(self.doc.total_add_ded)
 
 		self.doc.total_taxes_and_charges = flt(self.doc.grand_total - self.doc.net_total,
 			self.doc.precision("total_taxes_and_charges"))

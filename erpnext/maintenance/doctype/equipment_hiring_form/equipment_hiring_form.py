@@ -143,6 +143,7 @@ class EquipmentHiringForm(Document):
 			doc.hours = a.total_hours
 			doc.to_time = a.to_time
 			doc.from_time = a.from_time
+			#doc.pool_entry = cint(0)
 			doc.submit()
 
 	def check_equipment_free(self):
@@ -166,7 +167,7 @@ class EquipmentHiringForm(Document):
                                         select ehf_name
                                         from `tabEquipment Reservation Entry`
                                         where equipment = '{0}'
-                                        and docstatus = 1
+                                        and docstatus = 1 and reason != 'On Duty'
                                         and ('{1}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
                                                 or
                                                 '{2}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)

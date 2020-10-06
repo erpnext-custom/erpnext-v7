@@ -34,7 +34,7 @@ def add_header(w):
 	w.writerow(["Please DO NOT change the template headings"])
 	w.writerow([""])
 	#w.writerow(["Employee", "Employee Name", "Basic", "Corporate", "Contract", "Communication", "Fuel", "Underground", "Shift", "PSA", "PDA", "Deputation", "Officiating", "Scarcity", "Difficulty", "High Altitude", "Cash Handling", "Component 1", "Amount 1", "Scheme 1", "Bank 1", "Number 1",  "Component 2", "Amount 2", "Scheme 2", "Bank 2", "Number 2", "Component 3", "Amount 3", "Scheme 3", "Bank 3", "Number 3"])
-	w.writerow(["Employee", "Employee Name", "Basic", "Corporate", "Contract", "Communication", "Fuel", "Shift", "PSA", "PDA", "Deputation", "Officiating", "Scarcity", "Difficulty", "High Altitude", "Cash Handling", "Component 1", "Amount 1", "Scheme 1", "Bank 1", "Number 1",  "Component 2", "Amount 2", "Scheme 2", "Bank 2", "Number 2", "Component 3", "Amount 3", "Scheme 3", "Bank 3", "Number 3", "Component 4", "Amount 4", "Scheme 4", "Bank 4", "Number 4", "Component 5", "Amount 5", "Scheme 5", "Bank 5", "Number 5", "Component 6", "Amount 6", "Scheme 6", "Bank 6", "Number 6", "Component 7", "Amount 7", "Scheme 7", "Bank 7", "Number 7", "Component 8", "Amount 8", "Scheme 8", "Bank 8", "Number 8", "Component 9", "Amount 9", "Scheme 9", "Bank 9", "Number 9", "Component 10", "Amount 10", "Scheme 10", "Bank 10", "Number 10"])
+	w.writerow(["Employee", "Employee Name", "Basic", "hra","pbvi", "Contract", "Communication", "Fuel", "Shift", "PSA", "PDA", "Deputation", "Officiating", "Scarcity", "Difficulty", "High Altitude", "Cash Handling", "Component 1", "Amount 1", "Scheme 1", "Bank 1", "Number 1",  "Component 2", "Amount 2", "Scheme 2", "Bank 2", "Number 2", "Component 3", "Amount 3", "Scheme 3", "Bank 3", "Number 3", "Component 4", "Amount 4", "Scheme 4", "Bank 4", "Number 4", "Component 5", "Amount 5", "Scheme 5", "Bank 5", "Number 5", "Component 6", "Amount 6", "Scheme 6", "Bank 6", "Number 6", "Component 7", "Amount 7", "Scheme 7", "Bank 7", "Number 7", "Component 8", "Amount 8", "Scheme 8", "Bank 8", "Number 8", "Component 9", "Amount 9", "Scheme 9", "Bank 9", "Number 9", "Component 10", "Amount 10", "Scheme 10", "Bank 10", "Number 10"])
 
 	# Ver 3.0 Begins, Added by SHIV on 2018/10/24
 	# Header
@@ -120,13 +120,21 @@ def upload():
 				else:
 					frappe.throw("No Basic Pay record on row " + str(row_idx))
                                 
-				if d.corporate:
-					doc.eligible_for_corporate_allowance = 1
-					doc.ca = d.corporate
-					doc.ca_method = 'Percent'
+				if d.hra:
+					if emp.employment_type != 'GEP':
+						doc.eligible_for_hra = 1
 					#amount = flt(d.basic) * 0.01 * flt(d.corporate)
 					#doc.append("earnings",{"salary_component": "Corporate Allowance", "amount": amount})	
-					#ear += flt(amount)	
+					#ear += flt(amount)
+					else:
+						doc.eligible_for_hra = 0	
+				if d.pbvi:
+					if emp.employment_type != 'GEP':
+						doc.eligible_for_pbvi = 1
+						doc.pbvi = d.pbvi
+						doc.pbvi_method = 'Percent'
+					else:
+						doc.eligible_for_pbvi = 0
 				if d.contract:
 					doc.eligible_for_contract_allowance = 1
 					doc.contract_allowance = d.contract
@@ -138,11 +146,11 @@ def upload():
 					doc.eligible_for_communication_allowance = 1
 					doc.communication_allowance = d.communication
 					doc.communication_allowance_method = 'Lumpsum'
-					#amount = flt(d.communication)
-					#doc.append("earnings",{"salary_component": "Communication Allowance", "amount": amount})
-					#ear += amount	
+					amount = flt(d.communication)
+					doc.append("earnings",{"salary_component": "Communication Allowance", "amount": amount})
+					ear += amount	
 				if d.fuel:
-					doc.eligible_fuel_allowances = 1
+					doc.eligible_for_fuel_allowances = 1
 					doc.fuel_allowances = d.fuel
 					doc.fuel_allowances_method = 'Lumpsum'
 					#amount = flt(d.fuel)
@@ -209,7 +217,7 @@ def upload():
 				if d.high_altitude:
 					doc.eligible_for_high_altitude = 1
 					doc.high_altitude = d.high_altitude
-					doc.high_altitude_method = 'Lumbsum'
+					doc.high_altitude_method = 'Lumpsum'
 					#amount = flt(d.high_altitude)
 					#doc.append("earnings",{"salary_component": "High Altitude Allowance", "amount": amount})
 					#ear += amount	

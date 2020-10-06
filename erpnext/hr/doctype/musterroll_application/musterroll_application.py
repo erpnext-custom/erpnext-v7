@@ -51,13 +51,19 @@ class MusterRollApplication(Document):
                         self.branch = frappe.db.get_value("Branch", {"cost_center": self.cost_center}, "name")
         
 	def get_employees(self):
-		if not self.from_project:
+		cond = "1 = 1"
+		if not (self.from_project or self.from_branch):
 			frappe.throw("Select From Project Before Clicking the button")
 
-		query = "select name as existing_cid, person_name, rate_per_day, rate_per_hour, business_activity from `tabMuster Roll Employee` where project = %s and status = 'Active'"
+		if self.from_project:
+			cond += " and branch = '{0}'".format(self.from_branch)
+		if self.from_branch:
+			cond += " and project = '{0}'".format(self.from_project)
+
+		query = "select name as existing_cid, person_name, rate_per_day, rate_per_hour, business_activity from `tabMuster Roll Employee` where %s and status = 'Active'"
 
 		#query = "select name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes')"
-		entries = frappe.db.sql(query, self.from_project, as_dict=True)
+		entries = frappe.db.sql(query, cond, as_dict=True)
 		self.set('items', [])
 
 		for d in entries:

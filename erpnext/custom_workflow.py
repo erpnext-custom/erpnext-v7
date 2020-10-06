@@ -35,41 +35,34 @@ def validate_workflow_states(doc):
 	reports_to        = frappe.db.get_value("Employee", frappe.db.get_value("Employee", doc.employee, "reports_to"), ["user_id","employee_name","designation","name"])
 	final_approver    = frappe.db.get_value("Employee", {"user_id": get_final_approver(doc.branch)}, ["user_id","employee_name","designation","name"])
 	workflow_state    = doc.get("workflow_state").lower()
+	login_user        = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","designation","name"])
+	if not login_user:
+		frappe.throw("{0} is not added as the employee".format(frappe.session.user))
 
 
         if doc.doctype == "Salary Advance":
+		#CEO is set as the approver for Salary Advance.
                 ''' employee --> final_approver(branch)/reports_to(final_approver(branch)) '''
-                if workflow_state == "Draft".lower():
-                        vars(doc)[document_approver[0]] = employee[0]
-                        vars(doc)[document_approver[1]] = employee[1]
-                        vars(doc)[document_approver[2]] = employee[2]
-                elif workflow_state == "Waiting Approval".lower():
-			salary_advance_approver = frappe.db.get_value("Employee", frappe.db.get_value("Employee", {"user_id": final_approver[0]}, "reports_to"), ["user_id","employee_name","designation","name"])
-                        if employee[0] == salary_advance_approver[0]:
-                                officiating = get_officiating_employee(reports_to[3])
-                                if officiating:
-                                        officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-                                        
-                                vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
-                                vars(doc)[document_approver[1]] = officiating[1] if officiating else reports_to[1]
-                                vars(doc)[document_approver[2]] = officiating[2] if officiating else reports_to[2]
-                        else:
-                                officiating = get_officiating_employee(salary_advance_approver[3])
-                                if officiating:
-                                        officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-
-                                vars(doc)[document_approver[0]] = officiating[0] if officiating else salary_advance_approver[0]
-                                vars(doc)[document_approver[1]] = officiating[1] if officiating else salary_advance_approver[1]
-                                vars(doc)[document_approver[2]] = officiating[2] if officiating else salary_advance_approver[2]
-                elif workflow_state == "Approved".lower():
+                advance_doc  = frappe.get_doc("Employee", {"designation": 'Chief Executive Officer', "status": 'Active'})
+		vars(doc)[document_approver[0]] = advance_doc.user_id
+                vars(doc)[document_approver[1]] = advance_doc.employee_name
+                vars(doc)[document_approver[2]] = advance_doc.designation
+		officiating = get_officiating_employee(advance_doc.name)
+                if officiating:
+                	officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+			vars(doc)[document_approver[0]] = officiating[0] if officiating else document_approver[0]
+                        vars(doc)[document_approver[1]] = officiating[1] if officiating else document_approver[1]
+                        vars(doc)[document_approver[2]] = officiating[2] if officiating else document_approver[2]
+		if workflow_state == "Approved".lower():
                         if doc.get(document_approver[0]) != frappe.session.user:
-                                frappe.throw(_("Only <b>{0}, {1}</b> can approve this application").format(doc.get(document_approver[2]),doc.get(document_approver[1])), title="Invalid Operation")
+                                frappe.throw(_("Only <b>{0}, {1}</b> can approve this application").format(doc.get(document_approver[1]),doc.get(document_approver[1])), title="Invalid Operation")
                 elif workflow_state == "Rejected".lower():
                         if doc.get(document_approver[0]) and doc.get(document_approver[0]) != frappe.session.user:
                                 if workflow_state != doc.get_db_value("workflow_state"):
-                                        frappe.throw(_("Only <b>{0}, {1}</b> can reject this application").format(doc.get(document_approver[2]),doc.get(document_approver[1])), title="Invalid Operation")
+                                        frappe.throw(_("Only <b>{0}, {1}</b> can reject this application").format(doc.get(document_approver[1]),doc.get(document_approver[1])), title="Invalid Operation")
                 else:
                         pass
+
 	elif doc.doctype == "Request EL Allocation":
 		hr_user = frappe.db.get_single_value("HR Settings", "hr_approver")
 		hr_approver = frappe.db.get_value("Employee", hr_user, ["user_id","employee_name","designation","name"])
@@ -110,20 +103,21 @@ def validate_workflow_states(doc):
 			pass
 
 	elif doc.doctype == "Leave Encashment":
-		if workflow_state == "Waiting for Verification".lower():
-			officiating = get_officiating_employee(final_approver[3])
-                        if officiating:
-                                officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-                        vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
-                        vars(doc)[document_approver[1]] = officiating[1] if officiating else reports_to[1]
-		elif workflow_state == "Wating for Approval".lower():
-			if doc.approver != frappe.session.user:
-				frappe.throw("Only {0} can only approve Overtime Application".format(doc.approver))
+		if workflow_state == "Waiting Approval".lower():
+			hr_user = frappe.db.get_single_value("HR Settings", "hr_approver")
+			hr_approver = frappe.db.get_value("Employee", hr_user, ["user_id","employee_name","designation","name"])
+			officiating = get_officiating_employee(hr_approver[3])
+			if officiating:
+				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+			vars(doc)[document_approver[0]] = officiating[0] if officiating else hr_approver[0]
+			vars(doc)[document_approver[1]] = officiating[1] if officiating else hr_approver[1]
+
 		elif workflow_state == "Approved".lower():
-			approver_dtl = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","designation","name"])
-			vars(doc)[document_approver[0]] = approver_dtl[0]
-			vars(doc)[document_approver[1]] = approver_dtl[1]		
-	
+			if frappe.session.user != doc.approver:
+				frappe.throw("Only '{0}' is allowed to Approved the Leave Encashment".format(doc.supervisor))
+			if doc.docstatus == 0 and workflow_state == "Approved":
+				doc.workflow_state = "Waiting Approval"
+		
 
 	elif doc.doctype in ["Overtime Claim","Overtime Authorization"]:
 		hr_user = frappe.db.get_single_value("HR Settings", "hr_approver")
@@ -187,27 +181,38 @@ def validate_workflow_states(doc):
 		hr_approver = frappe.db.get_value("Employee", hr_user, ["user_id","employee_name","designation","name"])
 
 		if workflow_state == "Draft".lower():
-			if doc.purpose == "Separation" and hr_approver[0] != frappe.session.user:
-				frappe.throw("Only HR user {0}, {1} is allowed to create the application with Purpose Separation.".format(hr_approver[1], hr_approver[0]))
+			if doc.purpose == "Separation":
+				if not "HR User" in frappe.get_roles(frappe.session.user):
+					frappe.throw("Only HR user with role HR User can create the employee benefit with purpose Separation")
+
 			vars(doc)[document_approver[0]] = frappe.session.user
 			login_user        = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","designation","name"])
 		  	vars(doc)[document_approver[1]] = login_user[1]
 		elif workflow_state == "Waiting Approval".lower():
-			if doc.purpose == "Separation" and hr_approver[0] != frappe.session.user:
-				frappe.throw("Only HR user {0}, {1} is allowed to create the application with Purpose Separation.".format(hr_approver[1], hr_approver[0]))
-			# If employee is RM|HR Manager, it will look for Officiating, else it will go their Supervisor
-			if employee[0] == final_approver[0]:
-				officiating = get_officiating_employee(reports_to[3])
+			if doc.purpose == "Separation":
+				if not "HR User" in frappe.get_roles(frappe.session.user):
+					frappe.throw("Only HR user with role HR User can create the employee benefit with purpose Separation")
+
+				officiating = get_officiating_employee(hr_approver[3])
 				if officiating:
 					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-				vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
-				vars(doc)[document_approver[1]] = officiating[1] if officiating else reports_to[1]
+
+				vars(doc)[document_approver[0]] = officiating[0] if officiating else hr_approver[0]
+				vars(doc)[document_approver[1]] = officiating[1] if officiating else hr_approver[1]
 			else:
-				officiating = get_officiating_employee(final_approver[3])
-				if officiating:
-					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-				vars(doc)[document_approver[0]] = officiating[0] if officiating else final_approver[0]
-				vars(doc)[document_approver[1]] = officiating[1] if officiating else final_approver[1]
+				# If employee is RM|HR Manager, it will look for Officiating, else it will go their Supervisor
+				if employee[0] == final_approver[0]:
+					officiating = get_officiating_employee(reports_to[3])
+					if officiating:
+						officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+					vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
+					vars(doc)[document_approver[1]] = officiating[1] if officiating else reports_to[1]
+				else:
+					officiating = get_officiating_employee(final_approver[3])
+					if officiating:
+						officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+					vars(doc)[document_approver[0]] = officiating[0] if officiating else final_approver[0]
+					vars(doc)[document_approver[1]] = officiating[1] if officiating else final_approver[1]
 		elif workflow_state == "Approved".lower():
 			if doc.docstatus == 0 and doc.workflow_state == "Approved":
 				doc.workflow_state = "Waiting Approval"
@@ -226,15 +231,31 @@ def validate_workflow_states(doc):
 		if workflow_state == "Draft".lower():
 			vars(doc)[document_approver[0]] = employee[0]
 			vars(doc)[document_approver[1]] = employee[1]
-		elif workflow_state == "Approved".lower():
-			if doc.docstatus == 0 and doc.workflow_state == "Approved":
-				doc.workflow_state = "Verified By Supervisor"
-			if  doc.leave_approver != frappe.session.user:
-				frappe.throw("Only {0} can submit the leave application".format(doc.leave_approver))
 
-			if doc.leave_type in ["Casual Leave", "Earned Leave"]:
+		elif workflow_state == "Waiting CEO Approval".lower():
+			if doc.leave_type != "Medical Leave":
+				frappe.throw("You can only forward Medical Leaves")
+
+		elif workflow_state == "Approved".lower():
+			if doc.leave_type == "Medical Leave":
+				if "CEO" not in frappe.get_roles(frappe.session.user) and doc.leave_type == "Medical Leave":
+					frappe.throw("Only CEO is be allowed to approve Medical Leaves ") 
+				if doc.docstatus == 0 and workflow_state == "Appproved":
+					doc.workflow_state = "Waiting CEO Approval"
+			else:
+				if  doc.leave_approver != frappe.session.user:
+					frappe.throw("Only {0} can submit the leave application".format(doc.leave_approver))
+
+				if doc.docstatus == 0 and workflow_state == "Appproved":
+					doc.workflow_state = "Verified By Supervisor"
+
+				# Checking of Final Approval have assinged an Officiating
+				officiating = get_officiating_employee(final_approver[3])
+				if officiating:
+					final_approver = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
 				if final_approver[0] != doc.leave_approver and employee[0] != final_approver[0]:
 					frappe.throw("Only {0} can approve your leave application".format(frappe.bold(final_approver[0])))
+
 			#Change employment status in  Employee Master -- Author: Thukten Dendup<thukten.dendup@bt.bt>
 			doc.status= "Approved"
 			emp_status = frappe.db.get_value("Leave Type", doc.leave_type, ["check_employment_status","employment_status"])
@@ -244,17 +265,11 @@ def validate_workflow_states(doc):
 				emp.save()
 
 		elif workflow_state == "Waiting Supervisor Approval".lower():
-			if doc.leave_type in ["Casual Leave", "Earned Leave"]:
-				officiating = get_officiating_employee(reports_to[3])
-				if officiating:
-					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-				vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
-				vars(doc)[document_approver[1]] = officiating[1] if officiating else reports_to[1]
-			else:
-				officiating = get_officiating_employee(hr_approver[3])
-				if officiating:
-					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-				vars(doc)[document_approver[0]] = officiating[0] if officiating else hr_approver[0]
+			officiating = get_officiating_employee(reports_to[3])
+			if officiating:
+				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+			vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
+			vars(doc)[document_approver[1]] = officiating[1] if officiating else reports_to[1]
 			if doc.leave_approver == employee[0]:
 				frappe.throw("Leave Application submitter {0} cannot be the supervisor ".format(doc.leave_approver))
 
@@ -262,18 +277,14 @@ def validate_workflow_states(doc):
 			if  doc.leave_approver != frappe.session.user:
 				frappe.throw("Only {0} can submit the leave application".format(doc.leave_approver))
 
-			if doc.leave_type in ["Casual Leave", "Earned Leave"]:
-				if final_approver[0] != employee[0]:
-					officiating = get_officiating_employee(final_approver[3])
-					if officiating:
-						officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-					vars(doc)[document_approver[0]] = officiating[0] if officiating else final_approver[0]
-					vars(doc)[document_approver[1]] = officiating[1] if officiating else final_approver[1]
-			else:
-				officiating = get_officiating_employee(hr_approver[3])
+			#Check for GM's Leaves as it will be verified and approved by GM's Supervisor(CEO)
+			#Employee's beside GM will be approved by HoD(GM)
+			if final_approver[0] != employee[0]:
+				officiating = get_officiating_employee(final_approver[3])
 				if officiating:
 					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-				vars(doc)[document_approver[0]] = officiating[0] if officiating else hr_approver[0]
+				vars(doc)[document_approver[0]] = officiating[0] if officiating else final_approver[0]
+				vars(doc)[document_approver[1]] = officiating[1] if officiating else final_approver[1]
 
 		elif workflow_state in ['Rejected', 'Rejected By Supervisor']:
 			if workflow_state == "Rejected".lower():
@@ -292,9 +303,9 @@ def validate_workflow_states(doc):
 
 		elif workflow_state == "Waiting Supervisor Approval".lower():
 			officiating = get_officiating_employee(reports_to[3])
-                        if officiating:
-                                officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-                        vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
+			if officiating:
+				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+			vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
 			
 			if doc.supervisor == employee[0]:
 				frappe.throw("Travel Authorization submitter {0} cannot be the supervisor ".format(doc.supervisor))
@@ -302,52 +313,10 @@ def validate_workflow_states(doc):
 		elif workflow_state == "Approved".lower():
 			if doc.supervisor != frappe.session.user:
 				frappe.throw("Only {0} can Approve the Travel Authorization".format(doc.supervisor))
-                        if final_approver[0] != doc.supervisor and employee[0] != final_approver[0]:
-                                frappe.throw("Only {0} can approve your Travel Authorization".format(frappe.bold(final_approver[0])))
-                        doc.status= "Approved"
-
-                elif workflow_state == "Verified By Supervisor".lower():
-			if doc.supervisor != frappe.session.user:
-				frappe.throw("Only {0} can submit the Travel Authorization".format(doc.supervisor))
-			officiating = get_officiating_employee(final_approver[3])
-			if officiating:
-				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-			vars(doc)[document_approver[0]] = officiating[0] if officiating else final_approver[0]
-			vars(doc)[document_approver[1]] = officiating[1] if officiating else final_approver[1]
-		
-                elif workflow_state in ['Rejected', 'Rejected By Supervisor']:
-                        if workflow_state == "Rejected".lower():
-                                doc.status = "Rejected"
-			vars(doc)[document_approver[0]] = reports_to[0]
-	elif doc.doctype == "Travel Claim":
-		hr_user = frappe.db.get_single_value("HR Settings", "hr_approver")
-		hr_approver = frappe.db.get_value("Employee", hr_user, ["user_id","employee_name","designation","name"])
-		if workflow_state == "Draft".lower():
-			vars(doc)[document_approver[0]] = employee[0]
-
-		elif workflow_state == "Waiting Supervisor Approval".lower():
-			if doc.place_type == "In-Country":
-				officiating = get_officiating_employee(reports_to[3])
-				if officiating:
-					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-				vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
-			elif doc.place_type == "Out-Country":
-				officiating = get_officiating_employee(hr_approver[3])
-                                if officiating:
-                                        officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
-                                vars(doc)[document_approver[0]] = officiating[0] if officiating else hr_approver[0]
-				
-		elif workflow_state == "Approved".lower():
-			if doc.supervisor != frappe.session.user:
-				frappe.throw("Only {0} can submit the Travel Authorization".format(doc.supervisor))
-			if doc.place_type == "In-Country":
-				if final_approver[0] != doc.supervisor and employee[0] != final_approver[0]:
-					frappe.throw("Only {0} can approve your Travel Authorization".format(frappe.bold(final_approver[0])))
-				doc.status = "claimed"
-			elif doc.place_type == "Out-Country":
-				if doc.supervisor != hr_approver[0]:
-					frappe.throw("Only {0} can approve your Out Country Travel Claims".format(hr_approver[1]))
-				doc.status = "Claimed"
+			if employee[0] == doc.supervisor:
+				frappe.throw("Not allowed to approve his/her own Travel Authorization")
+			if doc.docstatus == 0 and workflow_state == "Approved":
+				doc.workflow_state = "Verified By Supervisor"
 
 		elif workflow_state == "Verified By Supervisor".lower():
 			if doc.supervisor != frappe.session.user:
@@ -362,6 +331,22 @@ def validate_workflow_states(doc):
 			if workflow_state == "Rejected".lower():
 				doc.status = "Rejected"
 			vars(doc)[document_approver[0]] = reports_to[0]
-	
+
+	elif doc.doctype == "Travel Claim":
+		if workflow_state == "Waiting Approval".lower():
+			hr_user = frappe.db.get_single_value("HR Settings", "hr_approver")
+			hr_approver = frappe.db.get_value("Employee", hr_user, ["user_id","employee_name","designation","name"])
+			officiating = get_officiating_employee(hr_approver[3])
+			if officiating:
+				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+			vars(doc)[document_approver[0]] = officiating[0] if officiating else hr_approver[0]
+			vars(doc)[document_approver[1]] = officiating[1] if officiating else hr_approver[1]
+
+		if workflow_state == "Claimed".lower():
+			if frappe.session.user != doc.supervisor:
+				frappe.throw("Only '{0}' is allowed to Approved the Travel Claim".format(doc.supervisor))
+			if doc.docstatus == 0 and workflow_state == "Claimed":
+				doc.workflow_state = "Waiting Approval"
+		
 	else:
 		pass

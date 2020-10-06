@@ -71,8 +71,18 @@ frappe.ui.form.on('Bonus', {
 		else {
 			msgprint("Select Fiscal Year First")
 		}
-	}
+	},
+	"no_of_months": function(frm) { 
+		month_frequency(frm);	
+		}
 });
+
+var month_frequency = function(frm) {
+	var child =frm.doc.items || [];
+	for(var id in child) { 
+		frappe.model.set_value("Bonus Details", child[id].name, "noof_months_granted", frm.doc.no_of_months);
+	}
+	}
 
 frappe.ui.form.on("Bonus Details", { 
 	/*"percent": function(frm, cdt, cdn) {

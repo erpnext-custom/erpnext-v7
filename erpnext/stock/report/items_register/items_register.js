@@ -4,19 +4,19 @@
 frappe.query_reports["Items Register"] = {
 	"filters": [
 		{
-			"fieldname":"branch",
+			"fieldname": "branch",
 			"label": ("Branch"),
 			"fieldtype": "Link",
-			"options" : "Branch",
+			"options": "Branch",
 			"reqd": 1
 		},
 		{
-			"fieldname":"from_date",
+			"fieldname": "from_date",
 			"label": ("From Date"),
 			"fieldtype": "Date",
 		},
 		{
-			"fieldname":"to_date",
+			"fieldname": "to_date",
 			"label": ("To Date"),
 			"fieldtype": "Date",
 		}

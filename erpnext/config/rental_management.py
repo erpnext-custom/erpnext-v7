@@ -87,11 +87,15 @@ def get_data():
 					"type": "doctype",
 					"name": "Rental Payment",
 				},
+				{
+					"type": "doctype",
+					"name": "Rental Advance Adjustment"
+				}
 				
 			]
 		},
 		 {
-                        "label": _("Real State Management"),
+                        "label": _("Real Estate Management"),
                         "icon": "icon-star",
                         "items": [
                                 {
@@ -110,6 +114,11 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Service",
                                 },
+				{
+					"type": "doctype",
+					"name": "Upload Service List",
+					"Description" : "Upload Bulk Service List"
+				},
 
                         ]
                 },
@@ -130,6 +139,13 @@ def get_data():
                                         "name": "Tenant Information",
                                         "doctype": "Tenant Information",
                                         "Label": _("Tenant Information")
+                                },
+								{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Monthly Rental Collection",
+                                        "doctype": "Rental Payment",
+                                        "Label": _("Rental Payment")
                                 }
 
 

@@ -7,7 +7,6 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import cint, flt, nowdate
 from frappe import _
-#from erpnext.hr.doctype.salary_increment.salary_increment import get_employee_payscale
 from erpnext.hr.hr_custom_functions import get_month_details
 import calendar
 
