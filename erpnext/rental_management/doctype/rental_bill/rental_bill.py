@@ -10,7 +10,7 @@ from frappe.utils import cint, cstr, flt, fmt_money, formatdate, nowtime, getdat
 
 class RentalBill(Document):
 	def autoname(self):
-                customer_code = frappe.db.get_value("Customer", {"customer_id":self.tenant}, "customer_code")
+                customer_code = frappe.db.get_value("Customer", {"customer_id":self.cid}, "customer_code")
 		if not customer_code:
 			frappe.throw("No Customer Code for Tenant CID : {}. Tenant CID might have changed".format(self.tenant))
 

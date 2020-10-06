@@ -488,6 +488,13 @@ def get_data():
                                         "name": "Salary Advance Report",
                                         "doctype": "Salary Advance"
                                 },
+                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "MR Payment",
+					"label": "MR Payment",
+					"doctype": "Process MR Payment"
+				},
 				
 			]
 		},

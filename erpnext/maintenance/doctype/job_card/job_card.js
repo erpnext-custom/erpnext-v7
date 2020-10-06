@@ -102,16 +102,17 @@ frappe.ui.form.on('Job Card', {
 });
 
 //Job Card Item  Details
+// CALCULATE THE TOTAL CHARGE AMOUNT. Added by phuntsho norbu on Oct 6, 2020
 frappe.ui.form.on("Job Card Item", {
-	"start_time": function (frm, cdt, cdn) {
-		calculate_datetime(frm, cdt, cdn)
+	start_time: function (frm, cdt, cdn) {
+		calculate_datetime(frm, cdt, cdn);
 	},
-	"end_time": function (frm, cdt, cdn) {
-		calculate_datetime(frm, cdt, cdn)
+	end_time: function (frm, cdt, cdn) {
+		calculate_datetime(frm, cdt, cdn);
 	},
-	"job": function (frm, cdt, cdn) {
-		var item = locals[cdt][cdn]
-
+	job: function (frm, cdt, cdn) {
+		var item = locals[cdt][cdn];
+		var vendor = frm.doc.supplier
 		if (item.job) {
 			frappe.call({
 				method: "frappe.client.get_value",
@@ -119,19 +120,54 @@ frappe.ui.form.on("Job Card Item", {
 					doctype: item.which,
 					fieldname: ["item_name", "cost"],
 					filters: {
-						name: item.job
-					}
+						name: item.job,
+					},
 				},
 				callback: function (r) {
-					frappe.model.set_value(cdt, cdn, "job_name", r.message.item_name)
-					frappe.model.set_value(cdt, cdn, "amount", r.message.cost)
-					cur_frm.refresh_field("job_name")
-					cur_frm.refresh_field("amount")
-				}
-			})
+					frappe.model.set_value(cdt, cdn, "job_name", r.message.item_name);
+					if (item.which == "Item") {
+						frappe.call({
+							method: "erpnext.maintenance.doctype.job_card.job_card.update_child_table_rate",
+							args: {
+								item_code: item.job,
+								supplier: vendor
+							},
+							callback: function (r) {
+								var charge_amount = item.quantity * r.message;
+								frappe.model.set_value(cdt, cdn, "amount", r.message);
+								frappe.model.set_value(cdt, cdn, "charge_amount", charge_amount);
+							},
+						})
+					} else {
+						var charge_amount = item.quantity * r.message.cost;
+						frappe.model.set_value(cdt, cdn, "amount", r.message.cost);
+						frappe.model.set_value(cdt, cdn, "charge_amount", charge_amount);
+					}
+					cur_frm.refresh_field("job_name");
+					cur_frm.refresh_field("amount");
+					cur_frm.refresh_field("charge_amount")
+				},
+			});
+
 		}
-	}
-})
+	},
+	quantity: function (frm, cdt, cdn) {
+		var item = locals[cdt][cdn];
+		update_rate_quantity_amount(item, frm, cdt, cdn)
+
+	},
+	amount: function (frm, cdt, cdn) {
+		var item = locals[cdt][cdn];
+		update_rate_quantity_amount(item, frm, cdt, cdn)
+	},
+});
+
+function update_rate_quantity_amount(item, frm, cdt, cdn) {
+	var charge_amount = item.quantity * item.amount;
+	frappe.model.set_value(cdt, cdn, "charge_amount", charge_amount);
+	cur_frm.refresh_field("charge_amount")
+}
+// ---------- end of code ------------
 
 function calculate_datetime(frm, cdt, cdn) {
 	var item = locals[cdt][cdn]

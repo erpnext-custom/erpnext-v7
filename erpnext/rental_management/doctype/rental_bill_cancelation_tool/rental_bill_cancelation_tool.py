@@ -26,7 +26,7 @@ class RentalBillCancelationTool(Document):
 					frappe.throw("Not able to cancel as Rental Bill {0} is linked with rental Payment no {1}".format(a.name, a.rental_payment))
 
 			#cancelling of GL Entries
-			frappe.db.sql("delete `tabGL Entry` where voucher_no = %s and voucher_type = 'Rental Bill'",(str(i.voucher_no)))
+			frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s and voucher_type = 'Rental Bill'",(str(i.voucher_no)))
 			frappe.db.sql("update `tabRental Bill` set docstatus = 2 where gl_reference = %s",(str(i.voucher_no)))
 
 

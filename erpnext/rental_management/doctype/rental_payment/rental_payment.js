@@ -121,6 +121,7 @@ function get_rental_bills_tenant_wise(frm, row){
 						frappe.model.set_value(row.doctype, row.name, "amount", r.message[0]['receivable_amount']);
 						frappe.model.set_value(row.doctype, row.name, "amount_received", r.message[0]['rent_amount']);
 						frappe.model.set_value(row.doctype, row.name, "allocated_amount", r.message[0]['rent_amount']);
+						frappe.model.set_value(row.doctype, row.name, "cid", r.message[0]['cid']);
 						frappe.model.set_value(row.doctype, row.name, "customer_code", r.message[0]['customer_code']);
 						frappe.model.set_value(row.doctype, row.name, "rental_bill", r.message[0]['bill_no']);
 						frappe.model.set_value(row.doctype, row.name, "fiscal_year", r.message[0]['fiscal_year']);
@@ -149,6 +150,7 @@ function get_rental_bills(frm){
 						var row = frappe.model.add_child(cur_frm.doc, "Rental Payment Item", "item");
 						row.tenant = rec['tenant'];
 						row.tenant_name = rec['tenant_name'];
+						row.cid = rec['cid'];
 						row.customer_code = rec['customer_code'];
 						row.rental_bill = rec['bill_no'];
 						row.actual_rent_amount = rec['rent_amount'];

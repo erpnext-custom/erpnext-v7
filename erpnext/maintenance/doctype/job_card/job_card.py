@@ -25,9 +25,9 @@ class JobCard(AccountsController):
 		self.services_amount = self.goods_amount = 0;
 		for a in self.items:
 			if cc_amount.has_key(a.which):
-				cc_amount[a.which] = flt(cc_amount[a.which]) + flt(a.amount)
+				cc_amount[a.which] = flt(cc_amount[a.which]) + flt(a.charge_amount)
 			else:
-				cc_amount[a.which] = flt(a.amount);
+				cc_amount[a.which] = flt(a.charge_amount);
 		if cc_amount.has_key('Service'):
 			self.services_amount = cc_amount['Service']
 		if cc_amount.has_key('Item'):
@@ -475,3 +475,21 @@ def make_payment(source_name, target_doc=None):
                 }, target_doc)
         return doc
 
+# ADDED by Phuntsho Norbu on Oct 6, 2020
+@frappe.whitelist()
+def update_child_table_rate (item_code, supplier): 
+	price = frappe.db.sql("""
+		SELECT
+			ati.rate
+		FROM 
+			`tabAnnual Tender Item` as ati
+		JOIN 
+			`tabAnnual Tender` as at 
+		ON 
+			ati.parent = at.name
+		WHERE 
+			ati.item = {} and at.supplier = '{}'
+		""".format(item_code, supplier), as_dict=True)
+
+	return (price[0]["rate"])
+# -------- End of new code ----------

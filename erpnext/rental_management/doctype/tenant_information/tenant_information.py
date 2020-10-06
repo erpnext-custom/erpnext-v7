@@ -8,9 +8,35 @@ from frappe.model.document import Document
 from frappe.utils.data import get_first_day, get_last_day, add_days, add_years
 from frappe.utils import cint, flt, nowdate, money_in_words
 from frappe.utils import cint, flt, nowdate, getdate, date_diff, nowdate
-
+import datetime
 
 class TenantInformation(Document):
+	def autoname(self):
+		if not self.dzongkhag:
+			frappe.throw("Dzongkhag name is missing")
+		dz = self.dzongkhag
+		dzo_prefix = dz[:3]
+		prefix = dzo_prefix.upper()
+		dt = datetime.datetime.today()
+		current_year = str(dt.year)
+		pre_name = prefix + current_year[2:]
+		for b in frappe.db.sql("select ifnull(substring(max(name),6,4),0) as code from `tabTenant Information` where name like '{0}%'""".format(pre_name), as_dict=True):
+			sl = cint(b.code)
+		if sl > 0:
+			sl += 1
+		else:
+			sl = 1
+		if len(str(sl)) == 1:
+			serial = "000" + str(sl)
+		elif len(str(sl)) == 2:
+			serial = "00" + str(sl)
+		elif len(str(sl)) == 3:
+			serial = "0" + str(sl)
+		else:
+			serial = str(sl)
+
+		self.name = pre_name + serial
+
 	def validate(self):
 		if self.building_category != "Pilot Housing":
 			self.rent_amount = round(flt(self.floor_area) * flt(self.rate_per_sq_ft))

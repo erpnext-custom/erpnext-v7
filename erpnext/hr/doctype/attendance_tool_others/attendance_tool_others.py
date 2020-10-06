@@ -13,11 +13,11 @@ class AttendanceToolOthers(Document):
 
 
 @frappe.whitelist()
-def get_employees(date, employee_type, cost_center, branch):
+def get_employees(date, employee_type, cost_center, branch, unit):
 	attendance_not_marked = []
 	attendance_marked = []
 	employee_list = frappe.get_list(employee_type, fields=["name", "person_name"], filters={
-		"status": "Active", "cost_center": cost_center, "branch": branch}, order_by="person_name")
+		"status": "Active", "cost_center": cost_center, "branch": branch, "unit": unit}, order_by="person_name")
 	marked_employee = {}
 	for emp in frappe.get_list("Attendance Others", fields=["employee", "status"],
 							   filters={"date": date}):
@@ -36,7 +36,7 @@ def get_employees(date, employee_type, cost_center, branch):
 
 
 @frappe.whitelist()
-def mark_employee_attendance(employee_list, status, date, employee_type, cost_center, branch):
+def mark_employee_attendance(employee_list, status, date, employee_type, cost_center, branch, unit):
 	employee_list = json.loads(employee_list)
 	for employee in employee_list:
 		attendance = frappe.new_doc("Attendance Others")
@@ -46,4 +46,5 @@ def mark_employee_attendance(employee_list, status, date, employee_type, cost_ce
 		attendance.cost_center = cost_center
 		attendance.branch = branch
 		attendance.status = status
+		attendance.unit = unit
 		attendance.submit()

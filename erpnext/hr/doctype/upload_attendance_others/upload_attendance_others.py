@@ -34,7 +34,7 @@ def add_header(w, args):
 	w.writerow(["Notes:"])
 	w.writerow(["Please do not change the template headings"])
 	w.writerow(["Status should be P if Present, A if Absent"])
-	hd = ["Branch", "Cost Center", "Employee Type", "Employee ID", "Employee Name", "Year", "Month"]
+	hd = ["Branch", "Unit", "Cost Center", "Employee Type", "Employee ID", "Employee Name", "Year", "Month"]
 
 	month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
 		"Dec"].index(args.month) + 1
@@ -60,7 +60,7 @@ def add_data(w, args):
 	for e in employees:
                 status = ''
 		row = [
-			e.branch, e.cost_center, e.etype, "\'"+str(e.name)+"\'", e.person_name, args.fiscal_year, args.month
+			e.branch, e.unit, e.cost_center, e.etype, "\'"+str(e.name)+"\'", e.person_name, args.fiscal_year, args.month
 		]
 		
 		for day in range(cint(total_days)):
@@ -105,11 +105,13 @@ def get_active_employees(args, start_date, end_date):
                         me.name,
                         me.person_name,
                         iw.branch,
+			me.unit,
                         iw.cost_center
 		from `tabMuster Roll Employee` as me, `tabEmployee Internal Work History` as iw
                 where me.docstatus < 2
                 and iw.parent = me.name
                 and iw.branch = '{0}'
+		and me.unit = '{3}'
 		and (
                         ('{1}' between iw.from_date and ifnull(iw.to_date,now()))
                         or
@@ -125,6 +127,7 @@ def get_active_employees(args, start_date, end_date):
                         ge.name,
                         ge.person_name,
                         iw.branch,
+			'unit' as unit,
                         iw.cost_center
 		from `tabDES Employee` as ge, `tabEmployee Internal Work History` as iw
 		where ge.docstatus < 2
@@ -139,7 +142,7 @@ def get_active_employees(args, start_date, end_date):
                         or
                         (ifnull(iw.to_date,now()) between '{1}' and '{2}')
                 )
-		""".format(args.branch, start_date, end_date), {"branch": args.branch}, as_dict=1)
+		""".format(args.branch, start_date, end_date, args.unit), {"branch": args.branch, "unit": args.unit}, as_dict=1)
 
 	return employees
 
@@ -156,7 +159,7 @@ def upload():
 	if not rows:
 		msg = [_("Please select a csv file")]
 		return {"messages": msg, "error": msg}
-	columns = [scrub(f) for f in rows[3]]
+	columns = [scrub(f) for f in rows[4]]
 	ret = []
 	error = False
 
@@ -167,10 +170,10 @@ def upload():
 		if not row: continue
 		try:
 			row_idx = i + 4
-			for j in range(8, len(row) + 1):
-                                month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(row[6]) + 1	
+			for j in range(9, len(row) + 1):
+                                month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(row[7]) + 1	
 				month = str(month) if cint(month) > 9 else str("0" + str(month))
-				day = str(cint(j) - 7) if cint(j) > 9 else str("0" + str(cint(j) - 7))
+				day = str(cint(j) - 8) if cint(j) > 9 else str("0" + str(cint(j) - 8))
 				status = ''
 				
 				if str(row[j -1]) in ("P","p"):
@@ -181,25 +184,27 @@ def upload():
                                         status = ''
                                         
 				#frappe.msgprint(str(j))
-                                old = frappe.db.get_value("Attendance Others", {"employee": row[3].strip('\''), "date": str(row[5]) + '-' + str(month) + '-' + str(day)}, ["status","name"], as_dict=1)
+                                old = frappe.db.get_value("Attendance Others", {"employee": row[4].strip('\''), "date": str(row[6]) + '-' + str(month) + '-' + str(day)}, ["status","name"], as_dict=1)
                                 # Following IF condition enabled temporarily by SHIV on 2018/02/01
                                 if old:
                                         doc = frappe.get_doc("Attendance Others", old.name)
                                         doc.db_set('status', status if status in ('Present','Absent') else doc.status)
                                         doc.db_set('branch', row[0])
-                                        doc.db_set('cost_center', row[1])
+					doc.db_set('unit', row[1])
+                                        doc.db_set('cost_center', row[2])
                                 #else:
                                 if not old and status in ('Present','Absent'):
                                         doc = frappe.new_doc("Attendance Others")
                                         doc.status = status
                                         doc.branch = row[0]
-                                        doc.cost_center = row[1]
-                                        doc.employee = str(row[3]).strip('\'')
-                                        doc.date = str(row[5]) + '-' + str(month) + '-' + str(day)
+					doc.unit = row[1]
+                                        doc.cost_center = row[2]
+                                        doc.employee = str(row[4]).strip('\'')
+                                        doc.date = str(row[6]) + '-' + str(month) + '-' + str(day)
                                         
-                                        if str(row[2]) == "MR":
+                                        if str(row[3]) == "MR":
                                                 doc.employee_type = "Muster Roll Employee"
-                                        elif str(row[2]) == "DES":
+                                        elif str(row[3]) == "DES":
                                                 doc.employee_type = "DES Employee"
                                     	
 					#Prevent future dates creation
@@ -208,7 +213,7 @@ def upload():
 		except Exception, e:
 			error = True
 			ret.append('Error for row (#%d) %s : %s' % (row_idx,
-				len(row)>1 and row[4] or "", cstr(e)))
+				len(row)>1 and row[5] or "", cstr(e)))
 			frappe.errprint(frappe.get_traceback())
 
 	if error:

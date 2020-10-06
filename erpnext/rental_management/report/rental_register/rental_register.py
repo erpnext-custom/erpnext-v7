@@ -11,7 +11,8 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		("CID No. ") + ":Link/Tenant Bill:120",
+		("Tenant Code. ") + ":Link/Tenant Bill:120",
+		("CID No.") + ":Data:120",
         ("Tenant Name") + ":Data:120",
         ("Ministry/Agency.") + ":Data:120",
         ("Department") + ":Data:100",
@@ -47,6 +48,7 @@ def get_data(filters):
 	query = """
 		SELECT 
 			rb.tenant,  
+			rb.cid,
 			rb.tenant_name, 
 			rb.ministry_agency, 
 			rb.department, 

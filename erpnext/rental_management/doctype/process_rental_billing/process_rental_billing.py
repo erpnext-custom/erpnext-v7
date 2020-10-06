@@ -85,7 +85,7 @@ class ProcessRentalBilling(AccountsController):
 					yearmonth = str(self.fiscal_year) + str(self.month)
 
 					query = """
-                                                            select tenant_name, customer_code, block_no, business_activity, flat_no, 
+                                                            select cid, tenant_name, customer_code, block_no, business_activity, flat_no, 
                                                             ministry_agency, location, branch, department, dzongkhag, designation, 
                                                             mobile_no, town_category, building_category, allocated_date, 
 							    (Case 
@@ -119,6 +119,7 @@ class ProcessRentalBilling(AccountsController):
 							rb = frappe.get_doc({
 								"doctype": "Rental Bill",
 								"tenant": name,
+								"cid" : d.cid,
 								"customer_code": d.customer_code,
 								"posting_date": posting_date,
 								"tenant_name": d.tenant_name,
@@ -176,7 +177,7 @@ class ProcessRentalBilling(AccountsController):
 								})
 								doc.save()
 
-								rb.receivable_amount = receivable_amount 
+								rb.receivable_amount = receivable_amount if receivable_amount > 0 else "0.00" 
 						rb.submit()
 						msg = "Rental Bill Submitted Successfully"
 

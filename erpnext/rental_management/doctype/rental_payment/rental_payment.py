@@ -63,8 +63,7 @@ class RentalPayment(AccountsController):
 						start_penalty_from = add_days(bill_date, cint(examption_days))
 						date1 = datetime.strptime(str(start_penalty_from), '%Y-%m-%d')
 						date2 = datetime.strptime(str(self.posting_date), '%Y-%m-%d')
-						r = relativedelta.relativedelta(date2, date1)
-						months = r.months
+						months = (date2.year - date1.year) * 12 + (date2.month - date1.month)
 						penalty_amt = 0.00
 						if flt(no_of_days) > flt(examption_days):
 							penalty_amt =  flt(penalty_rate)/100.00 * flt(months +1) * flt(a.amount)
@@ -79,6 +78,10 @@ class RentalPayment(AccountsController):
 					
 			self.penalty_amount = flt(total_penalty)
 		else:
+			for a in self.item:
+				a.write_off_penalty = 1
+				a.penalty = 0.00
+
 			self.penalty_amount = 0.00
 	
 	def get_rental_bill(self):
@@ -89,6 +92,7 @@ class RentalPayment(AccountsController):
 				if data:
 					#frappe.msgprint(_("{}").format(data[0]['tenant_name']))
 					i.tenant_name 	  = data[0]['tenant_name']
+					i.cid   	  = data[0]['cid']
 					i.customer_code   = data[0]['customer_code']
 					i.rental_bill 	  = data[0]['bill_no']
 					i.actual_rent_amount = data[0]['rent_amount']
@@ -327,7 +331,7 @@ class RentalPayment(AccountsController):
 			if self.dzongkhag:
 				condition += " and dzongkhag = '{0}'".format(self.dzongkhag)
 			bill_lists = frappe.db.sql("""
-			                         select name, tenant, tenant_name, customer_code, rent_amount, receivable_amount, received_amount, fiscal_year, month,
+			                         select name, tenant, tenant_name, customer_code, cid, rent_amount, receivable_amount, received_amount, fiscal_year, month,
 						 ministry_agency, department
                                                  from `tabRental Bill`
 						 where 	docstatus = 1
@@ -340,7 +344,7 @@ class RentalPayment(AccountsController):
 				condition += " and tenant = '{0}'".format(self.tenant)
 
 			bill_lists = frappe.db.sql("""
-			                         select name, tenant, tenant_name, customer_code, rent_amount, receivable_amount, received_amount, fiscal_year, month,
+			                         select name, tenant, tenant_name, customer_code, cid, rent_amount, receivable_amount, received_amount, fiscal_year, month,
 						 ministry_agency, department
                                                  from `tabRental Bill`
 						 where 	docstatus = 1
@@ -350,11 +354,11 @@ class RentalPayment(AccountsController):
 					""".format(condition), as_dict=True)
 		for a in bill_lists:
 			if a.received_amount == 0.00:
-				data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "rent_amount":a.rent_amount, "receivable_amount":a.receivable_amount, "fiscal_year":a.fiscal_year, "month":a.month, "ministry_agency": a.ministry_agency, "department":a.department})
+				data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "cid":a.cid, "rent_amount":a.rent_amount, "receivable_amount":a.receivable_amount, "fiscal_year":a.fiscal_year, "month":a.month, "ministry_agency": a.ministry_agency, "department":a.department})
 			else:
 				balance = flt(a.receivable_amount) - flt(a.received_amount)
 				if balance > 0:
-					data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "rent_amount":a.rent_amount, "receivable_amount":balance, "fiscal_year":a.fiscal_year, "month":a.month, "ministry_agency": a.ministry_agency, "department":a.department})
+					data.append({"bill_no":a.name, "tenant":a.tenant, "tenant_name":a.tenant_name, "customer_code":a.customer_code, "cid":a.cid, "rent_amount":a.rent_amount, "receivable_amount":balance, "fiscal_year":a.fiscal_year, "month":a.month, "ministry_agency": a.ministry_agency, "department":a.department})
 
 		return data	
 

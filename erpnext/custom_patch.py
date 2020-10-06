@@ -8,6 +8,49 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settings, get_salary_tax
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
+import frappe.model.rename_doc as rd
+
+# Inserts the tenant CID into rental bill and rental payment(through rental payment item.)
+def update_tenant_cid():
+	for a in frappe.db.sql("select name, tenant, tenant_name from `tabRental Bill`", as_dict=True):
+		cid = frappe.db.get_value("Tenant Information", a.tenant, "cid")
+		frappe.db.sql("update `tabRental Bill` set cid = '{}' where name ='{}'".format(cid, a.name)) # Insert CID in rental bill
+		frappe.db.sql("update `tabRental Payment Item` set cid = '{}' where tenant ='{}'".format(cid, a.tenant)) # Insert CID in rental payment
+		print("cid" + str(cid) + "name :" + str(a.name))
+
+def rename_tenant():
+        #tenant_list = frappe.get_all("Tenant Information", fields=["name", "cid", "tenant_name", "dzongkhag"], order_by="allocated_date desc")
+	i = 1
+        for a in frappe.db.sql("select name, cid, dzongkhag from `tabTenant Information`  where dzongkhag not in ('Thimphu','Chukha') order by allocated_date limit 600, 200", as_dict=True):
+                dz = a.dzongkhag
+                dzo_prefix = dz[:3]
+                prefix = dzo_prefix.upper()
+                pre_name = prefix + "20"
+                for b in frappe.db.sql("select ifnull(substring(max(name),6,4),0) as code from `tabTenant Information` where name like '{0}%'""".format(pre_name), as_dict=True):
+                        sl = cint(b.code)
+		if pre_name not in str(a.name):
+			if sl > 0:
+				sl += 1
+			else:
+				sl = 1
+
+			if len(str(sl)) == 1:
+				serial = "000" + str(sl)
+			elif len(str(sl)) == 2:
+				serial = "00" + str(sl)
+			elif len(str(sl)) == 3:
+				serial = "0" + str(sl)
+			else:
+				serial = str(sl)
+
+			new_name = prefix + "20" + serial
+			rd.rename_doc("Tenant Information", a.name, new_name, force=False, merge=False, ignore_permissions=True)
+			print("SL " + str(i) + "Old Name: " + str(a.name) + " renamed to New Name: " + str(new_name))
+		print("sl" + str(i) + "Name :" + str(a.name))
+		i = i + 1
+		
+			#frappe.db.sql("update `tabTenant Information` set cid = '{}' where name = '{}'".format(a.name, new_name))
+
 
 def update_ministry_dept():
         for a in frappe.db.sql("select t.tenant as tenant from `tabRental Payment Item` t where exists(select 1 from `tabTenant Information` i where i.name = t.tenant)", as_dict=True):
