@@ -12,7 +12,7 @@ Version          Author         Ticket#           CreatedOn          ModifiedOn 
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from erpnext.hr.doctype.approver_settings.approver_settings import get_final_approver
+#from erpnext.hr.doctype.approver_settings.approver_settings import get_final_approver
 from erpnext.hr.hr_custom_functions import get_officiating_employee
 
 def validate_workflow_states(doc):
@@ -36,9 +36,9 @@ def validate_workflow_states(doc):
 	if not reports_to:
 		frappe.throw("Set Up Reports to in Employee Master")
 
-	final_approver    = frappe.db.get_value("Employee", {"user_id": get_final_approver(doc.branch)}, ["user_id","employee_name","designation","name"])
+	'''final_approver    = frappe.db.get_value("Employee", {"user_id": get_final_approver(doc.branch)}, ["user_id","employee_name","designation","name"])
 	workflow_state    = doc.get("workflow_state").lower()
-	
+	'''
 	#Leave Encashment, Employee(Apply) ---> HR(Approves) ---> Accounts for Payment
 	if doc.doctype == "Leave Encashment":
 		hr_user = frappe.db.get_single_value("HR Settings", "hr_approver")
@@ -423,7 +423,7 @@ def verify_workflow(doc):
 		if doc.get_db_value("workflow_state") != "Verified By Supervisor":
 			doc.workflow_state = "Verified By Supervisor"
 			doc.docstatus = 0
-			fappe.throw("Only Verified Document Can be approved")
+			frappe.throw("Only Verified Document Can be approved")
 		doc.workflow_state = "Approved"
 		doc.docstatus = 1
 

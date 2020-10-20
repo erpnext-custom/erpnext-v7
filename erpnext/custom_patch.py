@@ -14,6 +14,17 @@ from datetime import datetime
 import os
 import subprocess
 
+
+def update_pe():
+        for b in frappe.db.sql("""
+                select pe.name from `tabPayment Entry` pe, `tabPayment Entry Deduction` ped where ped.parent = pe.name and pe.docstatus = 1""", as_dict = 1):
+                doc = frappe.get_doc("Payment Entry", b.name)
+                loss_and_gain = sum([flt(d.amount) for d in doc.get("deductions")])
+                frappe.db.sql("""
+                        update `tabPayment Entry` set loss_and_gain = {0} where name = '{1}'""".format(loss_and_gain, b.name))
+                print b.name
+
+
 def update_tci():
 	for a in ('TC200800017', 'TC200800022', 'TC200800019', 'TC200800018'):
 		doc = frappe.get_doc("Travel Claim Item", {'parent': a}).name

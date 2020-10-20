@@ -11,6 +11,7 @@ from erpnext.accounts.utils import get_account_currency, get_fiscal_year
 import collections
 from erpnext.hr.doctype.travel_authorization.travel_authorization import get_exchange_rate
 from erpnext.custom_utils import check_budget_available, get_branch_cc
+from erpnext.custom_workflow import verify_workflow_tc
 
 class TravelClaim(Document):
 	def get_status(self):
@@ -63,7 +64,8 @@ class TravelClaim(Document):
 				self.db_set("workflow_state", 'Waiting Approval')
                                 frappe.throw("You cannot approve your own claim.")
 		
-		
+		verify_workflow_tc(self)
+
 	def on_update(self):
 		self.check_double_dates()
 

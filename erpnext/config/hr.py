@@ -429,6 +429,12 @@ def get_data():
 					"name": "Employee Leave Balance",
 					"doctype": "Leave Application"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Overtime Register For Normal Employees",
+					"doctype": "Overtime Application"
+				},
                                 {
 					"type": "report",
 					"is_query_report": True,

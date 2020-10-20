@@ -8,14 +8,13 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, nowdate, getdate
 from erpnext.custom_utils import check_budget_available, get_branch_cc 
-#from erpnext.custom_workflow import verify_workflow_tc
-
+from erpnext.custom_workflow import verify_workflow
 
 class OvertimeApplication(Document):
 	def validate(self):
-		#verify_workflow_tc(self)
 		self.validate_dates()
 		self.calculate_totals()
+		verify_workflow(self)
 
 	def on_submit(self):
 		#self.check_status()

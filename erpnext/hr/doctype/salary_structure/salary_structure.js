@@ -221,6 +221,24 @@ frappe.ui.form.on('Salary Structure', {
 	cash_handling_method: function(frm){
 		calculate_others(frm.doc);
 	},
+	eligible_for_banking_allowance: function(frm) {
+                calculate_others(frm.doc);
+        },
+        banking_allowance_methods: function(frm){
+                calculate_others(frm.doc);
+        },
+        banking_allowance: function(frm){
+                calculate_others(frm.doc)
+        },
+        eligible_for_project_allowance: function(frm) {
+                calculate_others(frm.doc);
+        },
+        project_allowance_method: function(frm){
+                calculate_others(frm.doc);
+        },
+        project_allowance: function(frm){
+                calculate_others(frm.doc)
+        }
 })
 
 frappe.ui.form.on('Salary Detail', {

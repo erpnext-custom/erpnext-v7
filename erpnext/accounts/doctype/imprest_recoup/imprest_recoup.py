@@ -65,12 +65,13 @@ class ImprestRecoup(AccountsController):
                                 frappe.throw(_("Row#{0} : Please input valid data for quantity.").format(i.idx),title="Invalid Quantity")
                         elif flt(i.rate) <= 0.0:
                                 frappe.throw(_("Row#{0} : Please input valid data for rate.").format(i.idx),title="Invalid Rate")
-                        elif flt(i.amount) < 0.0:
+                        
+			elif flt(i.amount) < 0.0:
                                 frappe.throw(_("Row#{0} : Amount cannot be a negative value.").format(i.idx),title="Invalid Amount")
                         
 
                         self.purchase_amount += flt(i.amount)
-                self.purchase_amount = round(self.purchase_amount)
+                self.purchase_amount = round(self.purchase_amount, 2)
                 
         def update_amounts(self):
                 opening_balance = get_opening_balance(self.branch, self.imprest_type, self.name, self.entry_date)

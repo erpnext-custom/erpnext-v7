@@ -17,6 +17,7 @@ from erpnext.accounts.utils import get_account_currency, get_fiscal_year
 from frappe.utils.data import add_days, date_diff
 from frappe.model.mapper import get_mapped_doc
 from datetime import timedelta
+from erpnext.custom_workflow import verify_workflow
 
 class TravelAuthorization(Document):
 	def get_status(self):
@@ -39,6 +40,7 @@ class TravelAuthorization(Document):
                 self.check_double_dates()
 		self.assign_end_date()
 		self.validate_advance()
+		verify_workflow(self)
 
         def validate_advance(self):
                 self.advance_amount     = 0 if not self.need_advance else self.advance_amount

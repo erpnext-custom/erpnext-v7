@@ -218,6 +218,13 @@ def get_data():
 					"hide_count": True
 				},
 				{
+                                        "type": "doctype",
+                                        "name": "TDS Remittance",
+                                        "description": "TDS Remittance Tool",
+                                        "hide_count": True
+                                },
+
+				{
 					"type": "doctype",
 					"name": "Fund Requisition",
 					"description": "Fund Requisition",
@@ -240,6 +247,12 @@ def get_data():
 					"doctype": "Journal Entry",
 					"is_query_report": True
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "TDS Remittance",
+                                        "description": "TDS Remittance Tool",
+                                        "hide_count": True
+                                },
 				{
 					"type": "report",
 					"name": "TDS Certificate",

@@ -72,6 +72,7 @@ class PaymentEntry(AccountsController):
 		self.validate_transaction_reference()
 		self.set_title()
 		self.set_remarks()
+		self.loss_and_gain = sum([flt(d.amount) for d in self.get("deductions")])
 		
 	def set_status(self):
                 self.status = {

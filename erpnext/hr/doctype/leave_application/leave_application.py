@@ -25,6 +25,8 @@ from erpnext.hr.doctype.employee_leave_approver.employee_leave_approver import g
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
 from datetime import timedelta, date
 
+from erpnext.custom_workflow import verify_workflow, approver_list
+
 class LeaveDayBlockedError(frappe.ValidationError): pass
 class OverlapError(frappe.ValidationError): pass
 class InvalidLeaveApproverError(frappe.ValidationError): pass
@@ -74,7 +76,7 @@ class LeaveApplication(Document):
 		self.validate_salary_processed_days()
 		#self.validate_leave_approver()
 		self.validate_backdated_applications()
-                
+		verify_workflow(self)                
 	def on_update(self):
 		self.validate_fiscal_year()
 		if (not self.previous_doc and self.leave_approver) or (self.previous_doc and \
