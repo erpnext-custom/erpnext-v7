@@ -862,7 +862,7 @@
    "in_list_view": 0, 
    "label": "Received Amount", 
    "length": 0, 
-   "no_copy": 0, 
+   "no_copy": 1, 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -914,7 +914,7 @@
    "in_list_view": 0, 
    "label": "GL Reference", 
    "length": 0, 
-   "no_copy": 0, 
+   "no_copy": 1, 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -1065,7 +1065,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-10-05 12:02:48.910759", 
+ "modified": "2020-10-15 09:44:52.808655", 
  "modified_by": "Administrator", 
  "module": "Rental Management", 
  "name": "Rental Bill", 
@@ -1073,7 +1073,7 @@
  "owner": "Administrator", 
  "permissions": [
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
@@ -1093,7 +1093,7 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 

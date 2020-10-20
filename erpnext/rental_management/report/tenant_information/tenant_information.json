@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2020-01-14 11:16:46.888832", 
+ "modified": "2019-11-21 16:06:58.284698", 
  "modified_by": "dorji2392@bt.bt", 
  "module": "Rental Management", 
  "name": "Tenant Information", 
@@ -24,6 +24,9 @@
   }, 
   {
    "role": "Rental User"
+  }, 
+  {
+   "role": "Rental Manager"
   }
  ]
 }

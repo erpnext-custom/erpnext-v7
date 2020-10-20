@@ -140,6 +140,14 @@ def get_data():
                                         "doctype": "Tenant Information",
                                         "Label": _("Tenant Information")
                                 },
+								{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Monthly Rental Collection",
+                                        "doctype": "Rental Payment",
+                                        "Label": _("Rental Payment")
+                                },
+
 				{
                                         "type": "report",
                                         "name": "Accounts Receivable",

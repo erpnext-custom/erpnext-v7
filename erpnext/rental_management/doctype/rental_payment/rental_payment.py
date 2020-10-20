@@ -68,7 +68,7 @@ class RentalPayment(AccountsController):
 						if flt(no_of_days) > flt(examption_days):
 							penalty_amt =  flt(penalty_rate)/100.00 * flt(months +1) * flt(a.amount)
 
-						a.penalty = flt(penalty_amt)
+						a.penalty = round(penalty_amt)
 						total_penalty += a.penalty
 					else:
 						frappe.throw("Penalty Rate and Payment Due Date are missing in Rental Setting")
@@ -76,7 +76,7 @@ class RentalPayment(AccountsController):
 				else:
 					a.penalty = 0.00
 					
-			self.penalty_amount = flt(total_penalty)
+			self.penalty_amount = round(total_penalty)
 		else:
 			for a in self.item:
 				a.write_off_penalty = 1
@@ -128,7 +128,7 @@ class RentalPayment(AccountsController):
 	
 	def update_advance_adjustment(self):
 		for a in self.item:
-			if a.amount_received > a.amount:
+			if cint(a.amount_received) > cint(a.amount):
 				if self.docstatus == 2:
 					frappe.db.sql("delete from `tabRental Advance Received` where rental_bill = '{}'".format(a.rental_bill))	
 				else:

@@ -23,6 +23,13 @@ frappe.query_reports["MR Payment"] = {
 			"label": __("Month"),
 			"fieldtype": "Select",
 			"options": "Jan\nFeb\nMar\nApr\nMay\nJun\nJul\nAug\nSep\nOct\nNov\nDec",
-		}
+		},
+		{
+			"fieldname": "unit",
+			"label": __("Unit"),
+			"fieldtype": "Link",
+			"options": "Unit",
+		},
+
 	]
 }

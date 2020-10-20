@@ -10,6 +10,13 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 import frappe.model.rename_doc as rd
 
+def update_penalty_writeoff():
+	for a in frappe.db.sql("select name from `tabRental Payment` where docstatus = 1 and write_off_penalty = 1 and penalty_amount < 1", as_dict=True):
+		for b in frappe.db.sql("select name, penalty from `tabRental Payment Item` where parent = '{}' and penalty > 0".format(a.name), as_dict=True):
+			#frappe.db.sql("update `tabRental Payment Item` set penalty = 0, write_off_penalty = 1  where name = '{}'".format(b.name))
+			print("RP : " + str(a.name) + " Penalty: " + str(b.penalty) + " name: " + str(b.name))
+		
+
 # Inserts the tenant CID into rental bill and rental payment(through rental payment item.)
 def update_tenant_cid():
 	for a in frappe.db.sql("select name, tenant, tenant_name from `tabRental Bill`", as_dict=True):

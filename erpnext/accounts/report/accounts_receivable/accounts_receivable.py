@@ -38,7 +38,7 @@ class ReceivablePayableReport(object):
 		if party_naming_by == "Naming Series":
 			columns += [args.get("party_type") + " Name::110"]
 
-		columns += [_("Voucher Type") + "::110", _("Voucher No") + ":Dynamic Link/"+_("Voucher Type")+":120",
+		columns += [_("Customer Group")+":Data:90",_("Voucher Type") + "::110", _("Voucher No") + ":Dynamic Link/"+_("Voucher Type")+":120",
 			_("Due Date") + ":Date:80"]
 
 		if args.get("party_type") == "Supplier":
@@ -108,8 +108,35 @@ class ReceivablePayableReport(object):
 				outstanding_amount = self.get_outstanding_amount(gle, self.filters.report_date, dr_or_cr)
 				if not filters.show_zero and outstanding_amount ==  0.0:
 					continue
+					
+				if flt(outstanding_amount) < 0:
+					continue
+
+				# --- added by phuntsho on Oct9 ---
+				# fetch the customer group
+				customer_code = frappe.db.get_value("Rental Bill", gle.voucher_no, "customer_code")
+				customer_group = frappe.db.sql("select customer_group from `tabCustomer` where customer_code = '{}'".format(customer_code),as_dict=True)
+				customer_group_value = ""
+				if customer_group: 
+					customer_group_value = customer_group[0]["customer_group"]
+				
+				if self.filters.customer_group != None:
+					if customer_group:
+						if customer_group[0]["customer_group"] != self.filters.customer_group: 
+							continue
+					else:
+						continue
+
+				row = [gle.posting_date, gle.party, customer_group_value]
+				
+				# -----end of code----
+
 				#if outstanding_amount: #abs(outstanding_amount) > 0.1/10**currency_precision:
-				row = [gle.posting_date, gle.party]
+				customer_code = frappe.db.get_value("Rental Bill", gle.voucher_no, "customer_code")
+				customer_group = frappe.db.sql("select customer_group from `tabCustomer` where customer_code = '{}'".format(customer_code))
+
+				row = [gle.posting_date, gle.party,customer_group]
+
 
 				# customer / supplier name
 				if party_naming_by == "Naming Series":

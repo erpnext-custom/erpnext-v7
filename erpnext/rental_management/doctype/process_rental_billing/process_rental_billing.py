@@ -158,7 +158,7 @@ class ProcessRentalBilling(AccountsController):
 						rb = frappe.get_doc("Rental Bill", name)
 						if frappe.db.exists("Rental Advance Adjustment", {"tenant":rb.tenant}):
 							doc = frappe.get_doc("Rental Advance Adjustment",{"tenant":rb.tenant})
-							if doc.advance_balance > 0:
+							if cint(doc.advance_balance) > 0:
 								if doc.advance_balance > rb.rent_amount:
 									receivable_amount = 0.00
 									adjustable_balance = flt(doc.advance_balance) - flt(rb.rent_amount)

@@ -79,6 +79,13 @@ frappe.query_reports["Rental Register"] = {
       options: "Employee",
     },
     {
+      fieldname: "building_classification",
+      label: __("Building Classification"),
+      fieldtype: "Link",
+      width: "90",
+      options: "Building Classification"
+    },
+    {
       fieldname: "status",
       label: "Status",
       fieldtype: "Select",
