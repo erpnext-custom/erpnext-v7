@@ -9,6 +9,44 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def update_customer_order_dn():
+	for a in frappe.db.sql("""select d.name, i.against_sales_order, (select customer_order from `tabSales Order` where name = i.against_sales_order) as customer_order from `tabDelivery Note` d, `tabDelivery Note Item` i where d.name = i.parent and d.customer_order is NULL and d.posting_date between '2020-09-14' and '2020-09-17'  and exists (select 1 from `tabSales Order` s where s.name = i.against_sales_order and s.customer_order is not NULL) and d.docstatus = 1""", as_dict=True):
+		
+		frappe.db.sql("update `tabDelivery Note` set customer_order = '{0}' where name = '{1}'".format(a.customer_order, a.name))
+
+def create_delivery_confirmation():
+	i =1
+	for a in frappe.db.sql(""" select d.branch, d.name, d.vehicle, d.drivers_name, d.customer, d.creation, d.contact_no, 
+				(select customer_order from `tabSales Order` where name = i.against_sales_order) as customer_order,
+				(select sum(qty) from `tabDelivery Note Item` where parent = d.name) as total_qty
+				from `tabDelivery Note` d, `tabDelivery Note Item` i 
+				where d.name = i.parent and d.customer_order is NULL and d.posting_date between '2020-09-14' and '2020-09-17'  
+				and not exists(select 1 from `tabDelivery Confirmation` c where c.delivery_note = d.name) 
+				and exists (select 1 from `tabSales Order` s where s.name = i.against_sales_order and s.customer_order is not NULL) 
+				and d.docstatus = 1;
+			""", as_dict=True):
+		transport_mode, customer_user = frappe.db.get_value("Customer Order", a.customer_order, ["transport_mode", "user"])
+		# Create Delivery Confirmation document
+		dc_doc = frappe.new_doc("Delivery Confirmation")
+		dc_doc.branch = a.branch
+		dc_doc.confirmation_status = "In Transit"
+		dc_doc.exit_date_time = a.creation
+		dc_doc.delivery_note = a.name
+		dc_doc.user = customer_user
+		dc_doc.customer = a.customer
+		dc_doc.vehicle = a.vehicle
+		dc_doc.drivers_name = a.drivers_name
+		dc_doc.contact_no = a.contact_no
+		dc_doc.customer_order = a.customer_order
+		dc_doc.transport_mode = transport_mode
+		dc_doc.qty = a.total_qty
+		dc_doc.save(ignore_permissions=True)
+		dc_doc.submit()
+
+		
+		print("count: " + str(a.total_qty) + "Branch : " + str(a.branch) +"mode: " + str(transport_mode) + " , user : " + str(customer_user))
+		i=i+1
+
 def update_ss():
         count = 1
         for a in frappe.db.sql(" select name from `tabSalary Structure` where is_active = 'Yes'", as_dict = 1):
@@ -320,9 +358,17 @@ def populate_wh_branch():
 		row.save()
 
 def insert_vehicle():
-	doc = frappe.get_doc("Customer Order", "ORDR200400174")
-	for a in frappe.db.sql("select name as vehicle, drivers_name, contact_no, driver_cid, vehicle_capacity, '2' as noof_truck_load, '16' as quantity from `tabVehicle` where name = 'BP-2-A8593'", as_dict=True):
-		row = doc.append("vehicles", {})
+	doc = frappe.get_doc("Customer Order", "ORDR201000062")
+	for a in frappe.db.sql("select name as vehicle, drivers_name, contact_no, driver_cid, vehicle_capacity, '2' as noof_truck_load, '5' as quantity from `tabVehicle` where name in ('BP-1A-2920','BP-1A-3892','BP-1A-4042')", as_dict=True):
+		row = doc.append("vehicles", {
+				"vehicle": a.vehicle,
+				"drivers_name": a.drivers_name,
+				"vehicle_capacity": a.vehicle_capacity,
+				"contact_no": a.contact_no,
+				"driver_cid": a.driver_cid,
+				"noof_truck_load": a.noof_truck_load,
+				"quantity": a.quantity
+			})
 		row.save(ignore_permissions = True)
 
 

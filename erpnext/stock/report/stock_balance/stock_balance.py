@@ -140,19 +140,23 @@ def get_item_warehouse_map(filters):
 	return iwb_map
 
 def get_item_details(filters):
-	condition = ''
-	value = ()
+	condition = 'where 1 = 1'
 	if filters.get("item_code"):
-		condition = "where item_code=%s"
-		value = (filters["item_code"],)
+		condition += " and item_code='{}'".format(filters.get("item_code"))
+
+	if filters.get("item_group"):
+		condition += " and item_group='{}'".format(filters.get("item_group"))
+
+	if filters.get("item_sub_group"):
+		condition += " and item_sub_group='{}'".format(filters.get("item_sub_group"))
 
 	items = frappe.db.sql("""select name, item_name, stock_uom, item_group, item_sub_group, brand, description
-		from tabItem {condition}""".format(condition=condition), value, as_dict=1)
+		from tabItem {}""".format(condition), as_dict=1)
 
 	return dict((d.name, d) for d in items)
 
 def validate_filters(filters):
-	if not (filters.get("item_code") or filters.get("warehouse")):
+	if not (filters.get("item_code") or filters.get("warehouse") or filters.get("item_sub_group	") or filters.get("item_group")):
 		sle_count = flt(frappe.db.sql("""select count(name) from `tabStock Ledger Entry`""")[0][0])
 		if sle_count > 500000:
 			frappe.throw(_("Please set filter based on Item or Warehouse"))

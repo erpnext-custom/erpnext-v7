@@ -15,58 +15,164 @@ frappe.query_reports["Production Report"] = {
 			"fieldname": "cost_center",
 			"label": ("Parent Branch"),
 			"fieldtype": "Link",
- 			"options": "Cost Center",
+			"options": "Cost Center",
 			"get_query": function() {
-				var company = frappe.query_report.filters_by_name.company.get_value();
-				return {
-					'doctype': "Cost Center",
-					'filters': [
-						['is_disabled', '!=', '1'], 
-						['company', '=', company]
-					]
-				}
-			},
-			"on_change": function(query_report) {
-				var cost_center = query_report.get_values().cost_center;
-				query_report.filters_by_name.branch.set_input(null);
-				query_report.filters_by_name.location.set_input(null);
-				query_report.filters_by_name.adhoc_production.set_input(null);
-				query_report.trigger_refresh();
-				if (!cost_center) {
-					return;
-				}
-				frappe.call({
-					method: "erpnext.custom_utils.get_branch_from_cost_center",
-					args: {
-						"cost_center": cost_center,
-					},
-					callback: function(r) {
-						query_report.filters_by_name.branch.set_input(r.message)
-						query_report.trigger_refresh();
+					var company = frappe.query_report.filters_by_name.company.get_value();
+					return {
+							'doctype': "Cost Center",
+							'filters': [
+									['is_disabled', '!=', '1'],
+									['company', '=', company],
+									['is_group', '=', '1']
+							]
 					}
-				})
 			},
+			"on_change": function(){
+				var cost_center = frappe.query_report.filters_by_name.cost_center.get_value();
+				var from_date = frappe.query_report.filters_by_name.from_date.get_value();
+				var to_date = frappe.query_report.filters_by_name.to_date.get_value();
+				if(cost_center)
+				{
+					frappe.call({
+						method: "erpnext.production.report.production_report.production_report.get_cc_challan",
+						args:{"cost_center":cost_center, "from_date":from_date, "to_date": to_date},
+						callback: function(r){
+							if(r.message)
+							{
+								options = []
+								for (i = 0; i < r.message.length; i++) { 
+									options[i]= r.message[i].challan_no
+								}
+								console.log(options)
+								frappe.query_report.filters_by_name.challan_no.refresh();
+								frappe.query_reports["Production Report"].filters[19].options = options
+								frappe.query_report.filters_by_name.challan_no.refresh();
+								frappe.query_report.refresh();
+							}
+						}
+						
+					});
+				}
+				// frappe.call({
+				// 	method: "erpnext.production.report.production_report.production_report.get_cc_challan",
+				// 	args:{"filters":frappe.query_reports["Production Report"].filters},
+				// 	callback: function(r){
+				// 		if(r.message)
+				// 		{
+				// 			frappe.msgprint(r.message)
+				// 			// options = []
+				// 			// for (i = 0; i < r.message.length; i++) { 
+				// 			// 	options[i]= r.message[i].challan_no
+				// 			// }
+				// 			// console.log(options)
+				// 			// frappe.query_reports["Production Report"].filters[19].options = options
+				// 			// frappe.query_report.filters_by_name.challan_no.refresh();
+				// 			// frappe.query_report.refresh();
+				// 		}
+				// 	}
+					
+				// });
+			},
+			// "on_change": function(query_report) {
+			// 	var cost_center = query_report.get_values().cost_center;
+			// 	query_report.filters_by_name.branch.set_input(null);
+			// 	query_report.filters_by_name.location.set_input(null);
+			// 	query_report.filters_by_name.adhoc_production.set_input(null);
+			// 	query_report.trigger_refresh();
+			// 	if (!cost_center) {
+			// 		return;
+			// 	}
+			// 	frappe.call({
+			// 		method: "erpnext.custom_utils.get_branch_from_cost_center",
+			// 		args: {
+			// 			"cost_center": cost_center,
+			// 		},
+			// 		callback: function(r) {
+			// 			query_report.filters_by_name.branch.set_input(r.message)
+			// 			query_report.trigger_refresh();
+			// 		}
+			// 	})
+			// },
 			"reqd": 1,
 		},
 		{
 			"fieldname": "branch",
 			"label": ("Branch"),
 			"fieldtype": "Link",
- 			"options": "Branch",
-			"read_only": 1,
+			"options": "Cost Center",
 			"get_query": function() {
-				var company = frappe.query_report.filters_by_name.company.get_value();
-				return {"doctype": "Branch", "filters": {"company": company, "is_disabled": 0}}
+					var cost_center = frappe.query_report.filters_by_name.cost_center.get_value();
+					var company = frappe.query_report.filters_by_name.company.get_value();
+					if(cost_center!= 'Natural Resource Development Corporation Ltd - NRDCL')
+					{
+							return {"doctype": "Cost Center", "filters": {"company": company, "is_disabled": 0, "parent_cost_center": cost_center}}
+					}
+					else
+					{
+							return {"doctype": "Cost Center", "filters": {"company": company, "is_disabled": 0, "is_group": 0}}
+					}
+			},
+			"on_change": function(){
+				var branch = frappe.query_report.filters_by_name.branch.get_value();
+				var from_date = frappe.query_report.filters_by_name.from_date.get_value()
+				var to_date = frappe.query_report.filters_by_name.to_date.get_value()
+				if(branch)
+				{
+					frappe.call({
+						method: "erpnext.production.report.production_report.production_report.get_branch_challan",
+						args:{"branch":branch, "from_date":from_date, "to_date": to_date},
+						callback: function(r){
+							if(r.message)
+							{
+								options = []
+								for (i = 0; i < r.message.length; i++) { 
+									options[i]= r.message[i].challan_no
+								}
+								console.log(options)
+								frappe.query_reports["Production Report"].filters[19].options = options
+								frappe.query_report.filters_by_name.challan_no.refresh();
+								frappe.query_report.refresh();
+							}
+						}
+					})
+				}
+
 			}
 		},
 		{
 			"fieldname": "location",
 			"label": ("Location"),
 			"fieldtype": "Link",
- 			"options": "Location",
+			"options": "Location",
 			"get_query": function() {
-				var branch = frappe.query_report.filters_by_name.branch.get_value();
-				return {"doctype": "Location", "filters": {"branch": branch, "is_disabled": 0}}
+					var branch = frappe.query_report.filters_by_name.branch.get_value();
+					branch = branch.replace(' - NRDCL','');
+					return {"doctype": "Location", "filters": {"branch": branch, "is_disabled": 0}}
+			},
+			"on_change": function(){
+				var location = frappe.query_report.filters_by_name.location.get_value();
+				var from_date = frappe.query_report.filters_by_name.from_date.get_value()
+				var to_date = frappe.query_report.filters_by_name.to_date.get_value()
+				if(location)
+				{
+					frappe.call({
+						method: "erpnext.production.report.production_report.production_report.get_location_challan",
+						args:{"location":location, "from_date":from_date, "to_date": to_date},
+						callback: function(r){
+							if(r.message)
+							{
+								options = []
+								for (i = 0; i < r.message.length; i++) { 
+									options[i]= r.message[i].challan_no
+								}
+								console.log(options)
+								frappe.query_reports["Production Report"].filters[19].options = options
+								frappe.query_report.filters_by_name.challan_no.refresh();
+								frappe.query_report.refresh();
+							}
+						}
+					})
+				}
 			}
 		},
 		{
@@ -204,5 +310,12 @@ frappe.query_reports["Production Report"] = {
 			"default": "Normal",
 			"reqd" : 1
 		},
+		{
+			"fieldname": "challan_no",
+			"label": ("Challan No"),
+			"fieldtype": "Select",
+			"width": "80",
+			"options": [],
+		}
 	]
 }

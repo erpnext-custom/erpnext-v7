@@ -155,12 +155,18 @@ class DeliveryNote(SellingController):
 				if self.select_vehicle_queue or transport_mode == "Common Pool":
 					local_distance_limit = frappe.db.get_value("CRM Branch Setting", self.branch, "local_distance")
 					if self.total_distance > flt(local_distance_limit):
-						for a in frappe.db.sql("select name, vehicle, token from `tabLoad Request` where load_status = 'Queued' and crm_branch = '{0}' and vehicle_capacity = {1} order by requesting_date_time, token limit 1".format(self.branch, total_qty), as_dict=True):
-							if a.vehicle == self.vehicle:
-								self.load_request = a.name
-							else:
-								frappe.throw("Selected vehicle is already loaded or not from Queue List.")
-
+						if not self.amended_from:
+							for a in frappe.db.sql("select name, vehicle, token from `tabLoad Request` where load_status = 'Queued' and crm_branch = '{0}' and vehicle_capacity = {1} order by requesting_date_time, token limit 1".format(self.branch, total_qty), as_dict=True):
+								if a.vehicle == self.vehicle:
+									self.load_request = a.name
+								else:
+									frappe.throw("Selected vehicle is already loaded or not from Queue List.")
+						
+						if self.amended_from and self.load_request:
+							doc = frappe.get_doc("Load Request", self.load_request)
+							if doc.load_status == "Cancelled" or doc.docstatus == 2:
+								frappe.db.sql("update `tabLoad Request` set load_status = 'Queued', docstatus = 0 where name = '{}'".format(self.load_request))
+						
 						if not self.load_request:
 							frappe.throw("Vehicle {0} is not registered for queue".format(self.vehicle))
 

@@ -58,12 +58,18 @@ class SalesOrder(SellingController):
 
 	def validate_lot_list(self):
 		for item in self.items:
+			lot_number = ""
 			item_sub_group = frappe.db.get_value("Item", item.item_code, "item_sub_group")
 			lot_check = frappe.db.get_value("Item Sub Group", item_sub_group, "lot_check")
 		#	sub_groups = ["Pole","Log","Block","Sawn", "Hakaries","Block (Special Size)"]
 		#	if item_sub_group in sub_groups:
 			if lot_check:
-				data = frappe.db.sql("select name, total_volume from `tabLot List` where branch='{0}' and item = '{1}' and name='{2}' and docstatus=1 and (sales_order is NULL OR sales_order ='')".format(self.branch, item.item_code, item.lot_number), as_dict=1)
+				if "'" in item.lot_number:
+					lot_number = item.lot_number.replace("'","\\'")
+				else:
+					lot_number = item.lot_number
+
+				data = frappe.db.sql("select name, total_volume from `tabLot List` where branch='{0}' and item = '{1}' and name='{2}' and docstatus=1 and (sales_order is NULL OR sales_order ='')".format(self.branch, item.item_code, lot_number), as_dict=1)
 				if not data:
 					frappe.throw("Invalid Lot selection, Please check Branch and Material")
 				#else:
@@ -557,6 +563,7 @@ def make_delivery_note(source_name, target_doc=None):
 			"doctype": "Delivery Note",
 			"field_map": {
 				"naming_series": "naming_series",
+				"customer_order": "customer_order",
 			},
 			"validation": {
 				"docstatus": ["=", 1]

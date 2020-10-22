@@ -52,9 +52,15 @@ class QuantityExtension(Document):
 		total_quantity = 0
 		for i in self.get("items"):
 			count += 1
-			if flt(i.additional_quantity) < 0:
-				frappe.throw(_("Row#{0} : <b>Additional Quantity</b> cannot be a negative value").format(i.idx))
-			elif not i.site_item_name:
+
+			# Commented by SHIV on 2020/08/03
+			# To allow negative quantity in order to allow quantity adjustment as the back office
+			# 	users approve mistakenly some times 
+
+			#if flt(i.additional_quantity) < 0:
+			#	frappe.throw(_("Row#{0} : <b>Additional Quantity</b> cannot be a negative value").format(i.idx))
+
+			if not i.site_item_name:
 				frappe.throw(_("Row#{0} : <b>Site Item Name</b> not found").format(i.idx))
 			initial_quantity = frappe.db.get_value("Site Item", i.site_item_name, "overall_expected_quantity")
 
@@ -77,6 +83,11 @@ class QuantityExtension(Document):
 		for i in self.get("items"):
 			doc = frappe.get_doc("Site Item", i.site_item_name)
 			extended_quantity = -1*flt(i.additional_quantity) if self.docstatus == 2 else flt(i.additional_quantity)
+
+			# check for negative quantity adjustment
+			if flt(extended_quantity) < 0 and (flt(doc.balance_quantity)+flt(extended_quantity)) < 0:
+				frappe.throw(_("Row#{}: Quantity adjustment cannot be beyond the available balance {}").format(i.idx,flt(doc.balance_quantity)))
+
 			doc.overall_expected_quantity = flt(doc.expected_quantity) + flt(doc.extended_quantity) + flt(extended_quantity)
 			doc.balance_quantity = flt(doc.expected_quantity) + flt(doc.extended_quantity) + flt(extended_quantity) - flt(doc.ordered_quantity)
 			doc.extended_quantity         = flt(doc.extended_quantity) + flt(extended_quantity)

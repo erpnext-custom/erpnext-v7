@@ -39,7 +39,7 @@ class Bonus(Document):
 		if self.items:
 			tot = tax = net = 0
 			for a in self.items:
-				a.amount = flt(a.noof_months_granted) * flt(a.basic_pay)
+				# a.amount = flt(a.noof_months_granted) * flt(a.basic_pay)
 				if flt(a.amount) > 0:
 					a.tax_amount = get_salary_tax(a.amount)
 				a.balance_amount = flt(a.amount) - flt(a.tax_amount)
@@ -77,13 +77,13 @@ class Bonus(Document):
                                                         greatest(e.date_of_joining,'{1}'))+1 days_worked,
                                         (
                                                 select
-                                                        sd.amount
+                                                        sum(sd.amount)
                                                 from
                                                         `tabSalary Detail` sd,
                                                         `tabSalary Slip` sl
                                                 where sd.parent = sl.name
                                                 and sl.employee = e.name
-                                                and sd.salary_component = 'Basic Pay'
+                                                and sd.salary_component in ('Basic Pay','Basic Pay Arrears')
                                                 and sl.actual_basic = 0
                                                 and sl.docstatus = 1
                                                 and sl.fiscal_year = '{0}'
@@ -93,7 +93,7 @@ class Bonus(Document):
                                                                 and ss.name = ssi.salary_structure
                                                                 and ss.eligible_for_annual_bonus = 1)
                                                 order by sl.month desc limit 1
-                                        ) as basic_pay
+                                        ) as annual_basic_pay
                                 from tabEmployee e, `tabSalary Structure` st
                                 where e.name = st.employee and st.is_active = 'Yes' and st.eligible_for_annual_bonus = 1 and (
                                         ('{3}' = 'Active' and e.date_of_joining <= '{2}' and ifnull(e.relieving_date,'9999-12-31') > '{2}')
@@ -142,7 +142,8 @@ class Bonus(Document):
                         d.days_worked = cint(d.days_worked) + 1
                         '''
                         d.amount = 0
-			if flt(d.basic_pay) > 0:
+			if flt(d.annual_basic_pay) > 0:
+				d.basic_pay = flt(d.annual_basic_pay) / 12
 				row = self.append('items', {})
 				row.update(d)
 

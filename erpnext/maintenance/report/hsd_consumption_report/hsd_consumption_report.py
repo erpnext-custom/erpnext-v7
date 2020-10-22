@@ -24,7 +24,7 @@ def get_data(filters):
 	if filters.get("from_date") and filters.get("to_date"):
                 vl_date = " and vl.from_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\' and vl.to_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 
-		eh_cond = " and (('{1}' between eh.from_date and ifnull(eh.to_date, now())) or ('{1}' between eh.from_date and ifnull(eh.to_date, now())))".format(filters.get("from_date"), filters.get("to_date"))
+		eh_cond = " and (('{0}' between eh.from_date and ifnull(eh.to_date, now())) or ('{1}' between eh.from_date and ifnull(eh.to_date, now())))".format(filters.get("from_date"), filters.get("to_date"))
         if filters.get("not_cdcl"):
                not_cdcll = " and e.not_cdcl = 0"
 
@@ -64,7 +64,7 @@ def get_data(filters):
 			ifnull(sum(vl.distance_km),0) as km,
 			ifnull(sum(vl.consumption),0) as consumed from
 			`tabVehicle Logbook` vl where vl.equipment_number = '{2}' {6} and
-			vl.docstatus = 1""".format(eq.name, eq.equipment_type, eq.equipment_number, eq.branch, eq.hsd_type, eq.equipment_model, vl_date)
+			vl.docstatus = 1 having sum(vl.consumption)>0""".format(eq.name, eq.equipment_type, eq.equipment_number, eq.branch, eq.hsd_type, eq.equipment_model, vl_date)
 		datas = frappe.db.sql(query, as_dict=1)
 		for d in datas:
                 	d.drawn = get_pol_between("Receive", d.name, filters.from_date, filters.to_date, d.hsd_type)

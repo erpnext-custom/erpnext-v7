@@ -22,40 +22,48 @@ frappe.query_reports["Timber Sales Report"] = {
 									'doctype': "Cost Center",
 									'filters': [
 											['is_disabled', '!=', '1'],
-											['company', '=', company]
+											['company', '=', company],
+											['is_group', '=', '1']
 									]
 							}
 					},
-					"on_change": function(query_report) {
-							var cost_center = query_report.get_values().cost_center;
-							query_report.filters_by_name.branch.set_input(null);
-							query_report.filters_by_name.location.set_input(null);
-							query_report.trigger_refresh();
-							if (!cost_center) {
-									return;
-							}
-					frappe.call({
-									method: "erpnext.custom_utils.get_branch_from_cost_center",
-									args: {
-											"cost_center": cost_center,
-									},
-									callback: function(r) {
-											query_report.filters_by_name.branch.set_input(r.message)
-											query_report.trigger_refresh();
-									}
-							})
-					},
+					// "on_change": function(query_report) {
+					//         var cost_center = query_report.get_values().cost_center;
+					//         query_report.filters_by_name.branch.set_input(null);
+					//         query_report.filters_by_name.location.set_input(null);
+					//         query_report.trigger_refresh();
+					//         if (!cost_center) {
+					//                 return;
+					//         }
+					// frappe.call({
+					//                 method: "erpnext.custom_utils.get_branch_from_cost_center",
+					//                 args: {
+					//                         "cost_center": cost_center,
+					//                 },
+					//                 callback: function(r) {
+					//                         query_report.filters_by_name.branch.set_input(r.message)
+					//                         query_report.trigger_refresh();
+					//                 }
+					//         })
+					// },
 					"reqd": 1,
 			},
 			{
 					"fieldname": "branch",
 					"label": ("Branch"),
 					"fieldtype": "Link",
-					"options": "Branch",
-					"read_only": 1,
+					"options": "Cost Center",
 					"get_query": function() {
+							var cost_center = frappe.query_report.filters_by_name.cost_center.get_value();
 							var company = frappe.query_report.filters_by_name.company.get_value();
-							return {"doctype": "Branch", "filters": {"company": company, "is_disabled": 0}}
+							if(cost_center!= 'Natural Resource Development Corporation Ltd - NRDCL')
+							{
+									return {"doctype": "Cost Center", "filters": {"company": company, "is_disabled": 0, "parent_cost_center": cost_center}}
+							}
+							else
+							{
+									return {"doctype": "Cost Center", "filters": {"company": company, "is_disabled": 0, "is_group": 0}}
+							}
 					}
 			},
 			{
@@ -65,6 +73,7 @@ frappe.query_reports["Timber Sales Report"] = {
 					"options": "Location",
 					"get_query": function() {
 							var branch = frappe.query_report.filters_by_name.branch.get_value();
+							branch = branch.replace(' - NRDCL','');
 							return {"doctype": "Location", "filters": {"branch": branch, "is_disabled": 0}}
 					}
 			},
@@ -95,14 +104,54 @@ frappe.query_reports["Timber Sales Report"] = {
 			//         },
 			// },
 			{
+				"fieldname": "item_group",
+				"label": ("Material Group"),
+				"fieldtype": "Link",
+				"options": "Item Sub Group",
+				"get_query": function() {
+						return {"doctype": "Item Sub Group", "filters": {"for_report": 1}}
+				},
+				"on_change": function(){
+					var item_group = frappe.query_report.filters_by_name.item_group.get_value();
+					// frappe.msgprint(branch)
+					frappe.call({
+						method:"erpnext.selling.report.timber_sales_report.timber_sales_report.get_item_sub_group",
+						args:{"item_group":item_group},
+						callback: function(r){
+							// console.log(r.message)
+							// frappe.query_report.filters_by_name.warehouse.set_option(r.message)					
+							if(r.message)
+							{
+								options = []
+								for (i = 0; i < r.message.length; i++) { 
+									options[i]= r.message[i].name
+								}
+								console.log(options)
+								frappe.query_reports["Timber Sales Report"].filters[8].options = options
+								frappe.query_report.filters_by_name.item_sub_group.refresh();
+								frappe.query_report.refresh();
+															// **I have set options dynamically to the below select fieldtype but I need to refresh that field to show that new options.**
+								// console.log(frappe.query_reports["Stock Balance Report"].filters[4].options)
+							}
+						}
+						/*	console.log(r.message)
+							$.each(r.message, function(i, data){
+								$('.input-with-feedback').append(new Option(data.name))
+							});
+						frappe.query_reports.filters[1].refresh();
+						} */
+					});
+				}
+			},
+			{
 					"fieldname": "item_sub_group",
 					"label": ("Material Sub Group"),
-					"fieldtype": "Link",
-					"options": "Item Sub Group",
-					"get_query": function() {
-							var item_group = "Timber Products";
-							return {"doctype": "Item Sub Group", "filters": {"item_group": item_group}}
-					}
+					"fieldtype": "Select",
+					"options": [],
+					// "get_query": function() {
+					// 		var item_group = "Timber Products";
+					// 		return {"doctype": "Item Sub Group", "filters": {"item_group": item_group}}
+					// }
 			},
 			{
 					"fieldname": "item",
@@ -158,6 +207,21 @@ frappe.query_reports["Timber Sales Report"] = {
 		"options": ["Sales Order","Delivery Note"],
 		"default": "Sales Order"
 	},
+			{
+					"fieldname": "customer",
+					"label": ("Customer"),
+					"fieldtype": "Link",
+					"options": "Customer",
+					"get_query": function() {
+							return {"doctype": "Customer", "filters": {"disabled": 0}}
+					}
+			},
+			{
+					"fieldname": "customer_group",
+					"label": ("Customer Group"),
+					"fieldtype": "Link",
+					"options": "Customer Group"
+			},
 			{
 					"fieldname": "aggregate",
 					"label": ("Show Aggregate"),

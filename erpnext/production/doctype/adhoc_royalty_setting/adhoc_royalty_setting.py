@@ -13,27 +13,31 @@ class AdhocRoyaltySetting(Document):
 
 	def convert_to_inches(self):
 		for a in self.items:
-			if not a.from_reading:
-				a.from_reading = 0
-			if not a.to_reading:
-				a.a.to_reading = 0
+			item_sub_group = ""
+			if a.based_on == 'Item':
+				item_sub_group = frappe.db.get_value("Item",a.particular, "item_sub_group")
+			if item_sub_group != "Firewood" or item_sub_group == "":
+				if not a.from_reading:
+					a.from_reading = 0
+				if not a.to_reading:
+					a.a.to_reading = 0
 
-			in_inches = 0
-			f = str(a.from_reading).split(".")
-			in_inches = cint(f[0]) * 12
-			if len(f) > 1:
-				if cint(f[1]) > 11:
-					frappe.throw("Inches in 'From Reading' should be smaller than 12 on row {0}".format(a.idx))
-				in_inches += cint(f[1])
-			a.from_inch = in_inches
+				in_inches = 0
+				f = str(a.from_reading).split(".")
+				in_inches = cint(f[0]) * 12
+				if len(f) > 1:
+					if cint(f[1]) > 11:
+						frappe.throw("Inches in 'From Reading' should be smaller than 12 on row {0}".format(a.idx))
+					in_inches += cint(f[1])
+				a.from_inch = in_inches
 
-			in_inches = 0
-			f = str(a.to_reading).split(".")
-			in_inches = cint(f[0]) * 12
-			if len(f) > 1:
-				if cint(f[1]) > 11:
-					frappe.throw("Inches in 'To Reading' should be smaller than 12 on row {0}".format(a.idx))
-				in_inches += cint(f[1])
-			a.to_inch = in_inches
+				in_inches = 0
+				f = str(a.to_reading).split(".")
+				in_inches = cint(f[0]) * 12
+				if len(f) > 1:
+					if cint(f[1]) > 11:
+						frappe.throw("Inches in 'To Reading' should be smaller than 12 on row {0}".format(a.idx))
+					in_inches += cint(f[1])
+				a.to_inch = in_inches
 
 

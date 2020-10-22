@@ -383,6 +383,26 @@ def filter_branch_wh(doctype, txt, searchfield, start, page_len, filters):
                 frappe.throw("Select Branch First")
 	return frappe.db.sql("select a.parent from `tabWarehouse Branch` a, tabWarehouse b where a.parent = b.name and a.branch = %s and b.disabled = 0", filters.get("branch"))
 
+@frappe.whitelist()
+def filter_location_rng(doctype, txt, searchfield, start, page_len, filters):
+	if not filters.get("location"):
+		return frappe.db.sql("select a.parent from `tabRange Location` a, tabRange b where a.parent = b.name and a.branch = '{0}' and b.is_disabled = 0".format(filters.get("branch")))
+	else:
+		return frappe.db.sql("select a.parent from `tabRange Location` a, tabRange b where a.parent = b.name and a.location = '{0}' and a.branch = '{1}' and b.is_disabled = 0".format(filters.get("location"),filters.get("branch")))
+
+@frappe.whitelist()
+def filter_branch_rng(doctype, txt, searchfield, start, page_len, filters):
+        if not filters.get("branch"):
+                frappe.throw("Select Branch First")
+	return frappe.db.sql("select distinct a.parent from `tabRange Location` a, tabRange b where a.parent = b.name and a.branch = '{0}' and b.is_disabled = 0".format(filters.get("branch")))
+
+@frappe.whitelist()
+def filter_range_location(doctype, txt, searchfield, start, page_len, filters):
+        if not filters.get("range"):
+                frappe.throw("Select Range First")
+	return frappe.db.sql("select a.location from `tabRange Location` a, tabRange b where a.parent = b.name and b.name= '{0}' and b.is_disabled = 0".format(filters.get("range")))
+
+
 
 @frappe.whitelist()
 def filter_lots(doctype, txt, searchfield, start, page_len, filters):

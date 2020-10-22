@@ -6,48 +6,90 @@ import frappe
 from frappe import _
 
 def execute(filters=None):
-	columns = get_columns(filters)
-	data = get_data(filters)
+
+	if filters.get("report_type") == "Register":
+		columns = get_register_columns(filters) 
+		data = get_register_data(filters)
+
+	else: 
+		columns = get_monthly_summary_columns(filters)
+		data = get_monthly_summary_data(filters)
+	
 	return columns, data
 
-def get_data(filters=None): 
-	conditions = get_conditions(filters)
-	payment_info = """ 
+def get_monthly_summary_columns(filters=None):
+	data=[{
+		"fieldname" : "dzongkhags", 
+		"label" : 'Dzongkhag', 
+		"fieldtype" : "Link",
+		"options": "Dzongkhags",
+		"width" : 100
+	}]
+	months = frappe.db.sql_list("""
 		SELECT 
-			customer.customer as customer_name,
-			customer.dzongkhag as dzongkhag, 
-			customer.site as site, 
-			fin_ins.name as bank_name,
-			online_payment.bank_account as bank_account, 
-			online_payment.amount as amount,
-			online_payment.name as payment_id, 
-			online_payment.transaction_id as bfs_trans_id, 
-			online_payment.transaction_time as bfs_trans_time, 
-			online_payment.status as status, 
-			online_payment.customer_order as customer_order
-			
+			MONTHNAME(transaction_time)
 		FROM 
+			`tabOnline Payment` 
+		WHERE 
+			year(transaction_time) = {fiscal_year}
+		GROUP BY 
+			MONTHNAME(transaction_time)
+		ORDER BY
+			MONTH(transaction_time)
+		""".format(
+				fiscal_year = filters.get("fiscal_year")
+			)
+		)
+	month_lst = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'Sepetember', 'October', 'November', 'December']
+	for info in month_lst:
+		temp_data= {
+			"fieldname" : info, 
+			"label" : info, 
+			"fieldtype" : "Currency",
+			"width" : 130,
+			"hidden": 0 if info in months else 1 
+		}
+		data.append(temp_data)	
+	return (data)
+
+def get_monthly_summary_data(filters=None):
+	cond = get_conditions(filters)
+	sql = """
+		SELECT 
+			customer.dzongkhag,
+			SUM(IF(month(online_payment.transaction_time) = 1,online_payment.amount,0)) January,
+			SUM(IF(month(online_payment.transaction_time) = 2,online_payment.amount,0)) February,
+			SUM(IF(month(online_payment.transaction_time) = 3,online_payment.amount,0)) March,
+			SUM(IF(month(online_payment.transaction_time) = 4,online_payment.amount,0)) April,
+			SUM(IF(month(online_payment.transaction_time) = 5,online_payment.amount,0)) May,
+			SUM(IF(month(online_payment.transaction_time) = 6,online_payment.amount,0)) June,
+			SUM(IF(month(online_payment.transaction_time) = 7,online_payment.amount,0)) July,
+			SUM(IF(month(online_payment.transaction_time) = 8,online_payment.amount,0)) August,
+			SUM(IF(month(online_payment.transaction_time) = 9,online_payment.amount,0)) September,
+			SUM(IF(month(online_payment.transaction_time) = 10,online_payment.amount,0)) October,
+			SUM(IF(month(online_payment.transaction_time) = 11,online_payment.amount,0)) November,
+			SUM(IF(month(online_payment.transaction_time) = 12,online_payment.amount,0)) December
+		FROM
 			`tabOnline Payment` as online_payment 
-		JOIN 
-			`tabFinancial Institution` as fin_ins 
-		ON 
-			online_payment.bank_code = fin_ins.bank_code
-		JOIN 
+		JOIN
 			`tabCustomer Order` as customer 
 		ON 
 			online_payment.customer_order = customer.name
 		WHERE 
-			online_payment.transaction_time between '{from_date}' and '{to_date}' 
-			{cond} 
+			year(online_payment.transaction_time) = {fiscal_year}
+		AND online_payment.status = 'Successful'
+		{conditions}
+
+		GROUP BY 
+			customer.dzongkhag
 		""".format(
-				from_date=filters.get("from_date"), 
-				to_date=filters.get("to_date"),
-				cond = conditions 
+				fiscal_year = filters.get("fiscal_year"), 
+				conditions = cond
 			)
+	return frappe.db.sql(sql)
 
-	return frappe.db.sql(payment_info)
 
-def get_columns(filters=None): 
+def get_register_columns(filters=None): 
 	columns = [
 		{
 		  	"fieldname": "customer_name",
@@ -93,7 +135,7 @@ def get_columns(filters=None):
 		  	"fieldname": "payment_id",
 		  	"label": "Payment Id",
 		  	"fieldtype": "Link",
-			"options": "Customer Order",
+			"options": "Online Payment",
 		  	"width": 130
 		},
 		{
@@ -117,18 +159,60 @@ def get_columns(filters=None):
 		{
 		  	"fieldname": "customer_order",
 		  	"label": "Customer Order",
-		  	"fieldtype": "Data",
+		  	"fieldtype": "Link",
+			"options" : "Customer Order",
 		  	"width": 130
 		},
 	]
 	return columns
 
-def get_conditions(filters):
-	cond=""
-	if filters.get("dzongkhag"):
-		cond += """ and customer.dzongkhag = "{}" """.format(filters.get("dzongkhag"))
 
-	if filters.get("status") and filters.get("status") != "All": 
-		cond += """ and online_payment.status = "{}" """.format(filters.get("status"))
-	return cond
+def get_register_data(filters=None): 
+	cond = get_conditions(filters)
+	payment_info = """ 
+		SELECT 
+			customer.customer as customer_name,
+			customer.dzongkhag as dzongkhag, 
+			customer.site as site, 
+			fin_ins.name as bank_name,
+			online_payment.bank_account as bank_account, 
+			online_payment.amount as amount,
+			online_payment.name as payment_id, 
+			online_payment.transaction_id as bfs_trans_id, 
+			online_payment.transaction_time as bfs_trans_time, 
+			online_payment.status as status, 
+			online_payment.customer_order as customer_order
+			
+		FROM 
+			`tabOnline Payment` as online_payment 
+		JOIN 
+			`tabFinancial Institution` as fin_ins 
+		ON 
+			online_payment.bank_code = fin_ins.bank_code
+		JOIN 
+			`tabCustomer Order` as customer 
+		ON 
+			online_payment.customer_order = customer.name
+		WHERE 
+			online_payment.transaction_time between '{from_date}' and '{to_date}' 
+			{conditions} 
+		""".format(
+				from_date=filters.get("from_date"), 
+				to_date=filters.get("to_date"),
+				conditions = cond 
+			)
+	return frappe.db.sql(payment_info)
+
+
+def get_conditions(filters):
+	conditions=""
+	if filters.get("report_type") == "Register": 
+		if filters.get("status") and filters.get("status") != "All": 
+			conditions += """ and online_payment.status = "{}" """.format(filters.get("status"))
+
+	if filters.get("dzongkhag"):
+		conditions += """ and customer.dzongkhag = "{}" """.format(filters.get("dzongkhag"))
+
+	return conditions
+
 

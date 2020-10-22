@@ -223,6 +223,14 @@ def get_data():
 					"name": "Items Register",
 					"doctype": "Consumable Register Entry"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "MR Payment",
+					"label": "MR Payment",
+					"description": _("MR Payment"),
+					"doctype": "Process MR Payment"
+				},
 			]
 		},
 	]

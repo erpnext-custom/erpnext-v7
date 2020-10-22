@@ -9,6 +9,23 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+
+# create by SHIV on 2020/10/22
+def submit_stock_reconciliation(submit=0):
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabStock Reconciliation`
+		where name in ('SR/000110','SR/000154','SR/000153','SR/000085','SR/000086','SR/000112','SR/000113','SR/000156','SR/000157')""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Stock Reconciliation', i.name)
+		print counter, doc.name, doc.docstatus
+		if submit:
+			try:
+				doc.submit()
+			except Exception, e:
+				print 'ERROR: ', str(e)
+			print 'Submitted successfully...'
+		frappe.db.commit()
+
 # Created by SHIV on 2019/12/12
 def refresh_salary_structures(debug=1):
         counter = 0
@@ -215,8 +232,11 @@ def create_new_salary_structures(debug=1):
         
 # 2019/05/22 Birkha->Shiv
 def cancel_dn():
-	doc = frappe.get_doc("Delivery Note", "DN19043483")
+	#doc = frappe.get_doc("Delivery Note", "DN19043483")
+	doc = frappe.get_doc("Delivery Note", "DN20031357") #Req on 2020/10/01
+	print 'Cancelling DN20031357...'
 	doc.cancel()
+	frappe.db.commit()
 	print doc.name, doc.docstatus
 
 # 2019/04/01

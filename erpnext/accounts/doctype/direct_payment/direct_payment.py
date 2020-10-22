@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate, get_datetime, get_url, nowdate, now_datetime, money_in_words
 from erpnext.accounts.general_ledger import make_gl_entries
@@ -73,7 +74,7 @@ class DirectPayment(AccountsController):
 	def post_gl_entry(self):
 		gl_entries      = []
 		total_amount    = 0.0
-		if (self.net_amount + self.tds_amount) == self.amount:
+		if flt(flt(self.net_amount) + flt(self.tds_amount), 2) == flt(self.amount, 2):
 			if self.payment_type == "Receive":
 				account_type = frappe.db.get_value("Account", self.debit_account, "account_type") or ""
 				if account_type == "Receivable" or account_type == "Payable":
@@ -230,6 +231,7 @@ class DirectPayment(AccountsController):
 						)
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 		else:
+			frappe.msgprint(_("{} - {}").format(flt(self.net_amount + self.tds_amount), flt(self.amount)))
 			frappe.throw("Total Debit is not equal to Total Credit. It should be equal")
 
 @frappe.whitelist()

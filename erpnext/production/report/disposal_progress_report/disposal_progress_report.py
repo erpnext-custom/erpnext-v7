@@ -163,11 +163,17 @@ def get_order_by(filters):
 	return " order by region, location"
 
 def get_cc_conditions(filters):
+	condition = ""
 	if not filters.cost_center:
 		return " and pe.docstatus = 10"
 
 	all_ccs = get_child_cost_centers(filters.cost_center)
-	condition = " and cc.name in {0} ".format(tuple(all_ccs))	
+	condition += " and cc.name in {0} ".format(tuple(all_ccs))	
+
+	if filters.branch:
+		branch = str(filters.branch)
+		branch = branch.replace(' - NRDCL','')
+		condition += " and pe.branch = '"+branch+"'"
 
 	return condition
 

@@ -431,7 +431,36 @@ class SalarySlip(TransactionBase):
                 # Ver 1.0 Ends
                 self.update_deduction_balance()
 		self.post_sws_entry()
+		# self.update_salary_structure()
 
+
+	# ADDED BY PHUNTSHO NORBU ON SEPTEMBER 25 2020
+	# DELETES THE EXPIRED ROWS IN EARNINGS AND DEDUCTIONS IN SALARY STRUCTURE. 
+	def update_salary_structure (self): 
+		for items in self.get("items"):
+			salary_struc = frappe.get_doc("Salary Structure", items.salary_structure)
+			for data in salary_struc.deductions:
+				if (data.to_date != None and data.from_date != None):
+					if  getdate(self.fiscal_year+"-"+self.month+"-1") > getdate(data.to_date):
+						row = salary_struc.append('salary_detail_backup', {})
+						row.salary_component = data.salary_component
+						row.amount = data.amount
+						row.institution_name = data.institution_name
+						row.reference_type = data.reference_type
+						row.reference_number = data.reference_number
+						row.total_deductible_amount = data.total_deductible_amount
+						row.total_deducted_amount = data.total_deducted_amount
+						row.total_outstanding_amount = data.total_outstanding_amount
+						row.salary_component_type = data.salary_component_type
+						row.to_date = data.to_date
+						row.from_date = data.from_date
+						row.primary_id = data.name
+						row.primary_backup_key = data.name
+						salary_struc.remove(data)
+						salary_struc.save()
+						row.save()
+	# ------------- end of code ---------------
+	
 	def post_sws_entry(self):
 		sws = frappe.db.get_single_value("SWS Settings", "salary_component")
 		amount = 0

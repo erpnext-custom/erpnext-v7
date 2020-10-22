@@ -66,13 +66,13 @@ def get_data(filters):
 					row = [a.region, target]
 				else:
 					target = get_target_value("Production", a.cost_center, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
+					# frappe.msgprint(str(target))
 					row = [a.branch, target]
 					cond = " and cost_center = '{0}'".format(a.cost_center)
 			total = 0
 			for b in get_production_groups(filters.production_group):
 	#			query = "select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond)
 	#			frappe.msgprint("{0}".format(query))
-
 				qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))
 				qty = qty and qty[0][0] or 0
 				row.append(rounded(qty, 2))
@@ -83,7 +83,7 @@ def get_data(filters):
 				target = 1
 			if filters.production_group == "Timber":
 				row.append(total_timber)
-			row.insert(3, rounded(100 * total/target, 2))
+			row.insert(3, rounded(100 * (total/target), 2))
 			if target > 1:
 				overall_target +=  target
 			overall_achieved += total 
@@ -150,7 +150,7 @@ def get_data(filters):
 				overall_achieved += total 
 					
 				row.append(month)
-				frappe.msgprint("{0} and {1}".format(target, total))
+				# frappe.msgprint("{0} and {1}".format(target, total))
 				data.append(row)
 	if overall_target > 0:
 		overall_achieved_percent = rounded((overall_achieved/overall_target)*100, 2)
@@ -176,11 +176,17 @@ def get_order_by(filters):
 	return " order by region, location"
 
 def get_cc_conditions(filters):
+	condition = ""
 	if not filters.cost_center:
 		return " and pe.docstatus = 10"
 
 	all_ccs = get_child_cost_centers(filters.cost_center)
-	condition = " and cc.name in {0} ".format(tuple(all_ccs))	
+	condition += " and cc.name in {0} ".format(tuple(all_ccs))	
+
+	if filters.branch:
+		branch = str(filters.branch)
+		branch = branch.replace(' - NRDCL','')
+		condition += " and pe.branch = '"+branch+"'"
 
 	return condition
 

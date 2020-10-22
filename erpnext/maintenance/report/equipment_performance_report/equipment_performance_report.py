@@ -24,9 +24,9 @@ def get_conditions(filters):
                 branch_cond = " and eh.branch like '%' "
 
         if filters.get("not_cdcl"):
-                not_cdcll = " and not_cdcl = 0"
+                not_cdcll = " and e.not_cdcl = 0"
         else:
-                not_cdcll = " and not_cdcl like '%' "
+                not_cdcll = " and e.not_cdcl like '%' "
 
         if filters.get("include_disabled"):
                dis = " and is_disabled like '%' "
@@ -54,7 +54,7 @@ def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	eh_cond = ""
 	from_date,to_date,no_of_months, from_date1, to_date1, ra = get_date_conditions(filters)
 	if from_date_column:
-		cond1 = ("{0} between '%(from_date)s'  and '%(to_date)s'").format(from_date_column)
+		cond1 = ("{0} >= '%(from_date)s'  and {0} <= '%(to_date)s'").format(from_date_column)
 	if to_date_column:
 		if module in ("op","ss", "benchmark"):
 			cond2 = str(" or {0} between '%(from_date)s' and '%(to_date)s'").format(to_date_column)
@@ -81,7 +81,6 @@ def get_date_conditions(filters):
                 from_date1 = getdate(filters.get("fy") + "-" + str(from_month) + "-" + "01")
                 to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(to_month) + "-" + "01"))
                 return from_date1, to_date1
-
 
 
 	if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
@@ -148,7 +147,9 @@ def get_data(filters):
 
                 # `tabVehicle Logbook`
         	vl = frappe.db.sql("""
-                        	select sum(ifnull(consumption,0)) as consumption
+                        	select sum(ifnull(consumption,0)) as consumption,
+							sum(ifnull(total_work_time,0)) as total_work_time,
+							sum(ifnull(total_idle_time,0)) as total_idle_time
                         	from `tabVehicle Logbook`
                         	where equipment = '{0}'
                         	and   docstatus = 1
@@ -208,7 +209,12 @@ def get_data(filters):
 		travel_claim = 0.0
 		e_amount     = 0.0
 		gross_pay    = 0.0
+		total_work_time = 0
+		total_idle_time = 0
 		total_exp    = 0.0
+		total_pol_exp = 0.0
+		total_rm_exp = 0.0
+		total_op_exp = 0.0
 		total_sal    = 0.0
 		total_rev    = 0.0
 
@@ -284,7 +290,12 @@ def get_data(filters):
 				gross_pay    += flt(total_sal)
 				#frappe.msgprint(str(pol.rate))
 			total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(reg.r_amount) + flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
+			total_pol_exp +=(flt(vl.consumption)*flt(pol.rate))
+			total_rm_exp += (flt(ins.insurance)+flt(reg.r_amount)+flt(jc.goods_amount)+flt(jc.services_amount))
+			total_op_exp += travel_claim + e_amount + gross_pay
 			total_rev    = flt(revn.rev)
+			total_work_time = vl.total_work_time
+			total_idle_time = vl.total_idle_time
 		pro_target = 0.0
 		
 		#benchmar
@@ -309,12 +320,12 @@ def get_data(filters):
 			if a.fr >= from_date and a.t <= to_date:
 				rate.append(a.rat) 
 				bench.append(a.bn)
-				total_hc   += flt(a.rat)*flt(a.bn)*8*no_of_months
+				total_hc   += flt(a.rat)*flt(a.bn)*no_of_months
 		
 			if a.fr <= from_date and a.t >= to_date:
                                 rate.append(a.rat)
                                 bench.append(a.bn)
-                                total_hc += flt(a.rat)*flt(a.bn)*no_of_months*8
+                                total_hc += flt(a.rat)*flt(a.bn)*no_of_months
 
 			#if filters.get("period") not in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 			if from_date  < a.fr < to_date  and (a.t > to_date) and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
@@ -328,7 +339,7 @@ def get_data(filters):
 			if to_date > a.t > from_date and  a.fr < from_date and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
 				rate.append(a.rat)
 				bench.append(a.bn)
-				ta3  += flt(a.rat)*flt(a.bn)*8
+				ta3  += flt(a.rat)*flt(a.bn)
 				bench_date = date_diff(to_date, from_date) + 1
 				cal_date = date_diff(a.t, from_date)+1
 				total_hc += cal_date*ta3/bench_date 
@@ -342,12 +353,12 @@ def get_data(filters):
 						bench.append(a.bn)
 						cal_date = date_diff(to_date1, a.fr) + 1
 						bench_date = date_diff(to_date1, from_date1) + 1
-						ta4   += flt(a.rat)*flt(a.bn)*8
+						ta4   += flt(a.rat)*flt(a.bn)
 						total_hc += cal_date*ta4/bench_date
 					else:
 						rate.append(a.rat)
                                                 bench.append(a.bn)
-						total_hc   += flt(a.rat)*flt(a.bn)*8
+						total_hc   += flt(a.rat)*flt(a.bn)
 			if to_date > a.t >= from_date and  (a.fr < from_date) and filters.get("period")	in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 				for i in  ra:
 					from_date1 = getdate(filters.get("fy") + "-" + str(i) + "-" + "01")
@@ -357,12 +368,12 @@ def get_data(filters):
                                                 bench.append(a.bn)
                                                 cal_date = date_diff(a.t, from_date1) + 1
                                                 bench_date = date_diff(to_date1, from_date1) + 1
-                                                ta4   = flt(a.rat)*flt(a.bn)*8
+                                                ta4   = flt(a.rat)*flt(a.bn)
                                                 total_hc += cal_date*ta4/bench_date
                                         elif (from_date1 < a.fr and a.t < to_date1) or (a.fr < from_date1 and a.t > to_date1):
                                                 rate.append(a.rat)
                                                 bench.append(a.bn)
-                                                total_hc   += flt(a.rat)*flt(a.bn)*8
+                                                total_hc   += flt(a.rat)*flt(a.bn)
 				
 		if not benchmark:
 			benchmark = {"rat": 0, "bn": 0, "fr": '', "t": ''}
@@ -394,9 +405,14 @@ def get_data(filters):
 			eq.equipment_number,
 			eq.equipment_type,
 			eq.equipment_model,
+			total_pol_exp,
+			total_rm_exp,
+			total_op_exp,
 			total_exp,
 			total_rev,
 			flt(total_rev-total_exp),
+			total_work_time,
+			total_idle_time,
 			list(set(rate)),
 			list(set(bench)),
 			flt(total_hc),
@@ -411,11 +427,16 @@ def get_columns(filters):
 		("Registration No") + ":Data:120",
 		("Equipment Type") + ":Data:120",
 		("Equipment Model") + ":Data:120",
+		("Expense(POL)") + ":Currency:120",
+		("Expense (Repair and Maintenance)") + ":Currency:180",
+		("Expense (Operator)") + ":Currency:120",
 		("Total Expense") + ":Currency:120",
 		("Total Revenue") + ":Currency:120",
 		("R-E") + ":Currency:120",
+		("Total Hours Worked")+":Data:140",
+		("Total Idle Hours")+":Data:140",
 		("HC Rate/Hour") + ":Currency:120",
-		("Utility/Month") + ":Data:120",
+		("Utility(Hours/Month)") + ":Data:140",
 		("Benchmark Amount") + ":Currency:120",
 		("Utility %") + ":Data:120"
 	]

@@ -334,7 +334,7 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 			return {
 			    "filters": {
 				"disabled": 0,
-				"customer_group": "Internal"
+				"customer_group": "Internal-NRDCL"
 			    }
 			};
 		}

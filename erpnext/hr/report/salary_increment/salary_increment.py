@@ -23,9 +23,14 @@ def get_columns():
                 ("Current Basic") + ":Currency:120",
                 ("Increment") + ":Currency:80",
                 ("New Basic") + ":Currency:120",
+                ("Payscale Minimum") + "::150",
+                ("Payscale Increment") + "::150",
+                ("Payscale Maximum") + "::150",
+                ("Payscale_Format") + "::150",
                 ("Division") + ":Data:150",
-                ("Remarks") + ":Data:150",
+                ("Remarks") + ":Data:150"
         ]
+        #########Payscale Minimum, Payscale Increment, Payscale Maximum and Payscale Format added by Cheten on 7/09/2020################
 def get_data(filters):
 	#docstatus = ""
         if filters.uinput == "Draft":
@@ -34,15 +39,28 @@ def get_data(filters):
                 docstatus = 1
         if filters.uinput == "All":
                 docstatus = "si.docstatus"
-        query =  """select si.branch, si.employee, si.employee_name,
-                        e.designation, si.employee_subgroup, e.date_of_joining,
-                        si.fiscal_year, si.month,
-                        si.old_basic, si.increment, si.new_basic,
-                        si.division, si.remarks
-                    from `tabSalary Increment` si, `tabEmployee` e
-                    where si.docstatus = {0}
-                    and e.name = si.employee
-                """.format(docstatus)
+        query =  """SELECT 
+                        si.branch, 
+                        si.employee, 
+                        si.employee_name,
+                        e.designation, 
+                        si.employee_subgroup, 
+                        e.date_of_joining,
+                        si.fiscal_year, 
+                        si.month,
+                        si.old_basic, 
+                        si.increment, 
+                        si.new_basic, 
+                        si.payscale_minimum,
+                        si.payscale_increment,
+                        si.payscale_maximum,
+                        CONCAT_WS('-', round(si.payscale_minimum,2), round(si.payscale_increment,2), round(si.payscale_maximum,2))as Payscale_Format,
+                        si.division, 
+                        si.remarks
+                    FROM `tabSalary Increment` si, `tabEmployee` e
+                    WHERE si.docstatus = {0}
+                    AND e.name = si.employee
+                """.format(docstatus) 
         if filters.get("fiscal_year"):
                 query += " and fiscal_year = \'"+ str(filters.fiscal_year) + "\'"
         if filters.get("increment_and_promotion_cycle"):

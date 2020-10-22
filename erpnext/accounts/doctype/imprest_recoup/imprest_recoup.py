@@ -35,9 +35,10 @@ class ImprestRecoup(AccountsController):
 		if self.clearance_date:
 			frappe.throw("Already done bank reconciliation.")
 		
-                for t in frappe.get_all("Imprest Receipt", ["name"], {"name": self.imprest_receipt, "docstatus":1}):
-                        msg = '<b>Reference# : <a href="#Form/Imprest Receipt/{0}">{0}</a></b>'.format(t.name)
-                        frappe.throw(_("You need to cancel dependent Imprest Receipt entry first.<br>{0}").format(msg),title="Invalid Operation")
+		if self.imprest_receipt:
+			for t in frappe.get_all("Imprest Receipt", ["name"], {"name": self.imprest_receipt, "docstatus":1}):
+				msg = '<b>Reference# : <a href="#Form/Imprest Receipt/{0}">{0}</a></b>'.format(t.name)
+				frappe.throw(_("You need to cancel dependent Imprest Receipt entry first.<br>{0}").format(msg),title="Invalid Operation")
                         
                 self.post_gl_entry()
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)

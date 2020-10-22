@@ -28,8 +28,9 @@ class EmployeeBenefits(Document):
 				employee_group = frappe.db.get_value("Employee", self.employee, "employee_group")
 				today_date = date.today()
 				years_in_service = abs(((today_date - date_of_joining).days)/364)
-				if years_in_service < 5 and employee_group != "ESP":
-					frappe.throw("Should have minimum of 5 years in service for Gratuity. Only <b>{0}</b> year/s in Services as of now ".format(years_in_service))
+				if frappe.db.get_value("Employee", self.employee, "employment_type") != "Contract":
+					if years_in_service < 5 and employee_group != "ESP":
+						frappe.throw("Should have minimum of 5 years in service for Gratuity. Only <b>{0}</b> year/s in Services as of now ".format(years_in_service))
 				elif employee_group == "ESP" and years_in_service < 1:
 					frappe.throw("ESP Employee should have minimum of 1 years in service for Gratuity. Only <b>{0}</b> year/s in Services as of now ".format(years_in_service))
 					
@@ -76,10 +77,12 @@ class EmployeeBenefits(Document):
 
 	def update_employee(self):
 		emp = frappe.get_doc("Employee", self.employee)
-		emp.status = "Left"
-		emp.relieving_date = self.separation_date
-		emp.reason_for_resignation = self.reason_for_resignation
-
+		if emp.status != "Left":
+			emp.status = "Left"
+			emp.relieving_date = self.separation_date
+			emp.reason_for_resignation = self.reason_for_resignation
+			emp.save()	
+			
 		for a in self.items:
 			doc = frappe.new_doc("Separation Benefits")
 			doc.parent = self.employee
@@ -88,7 +91,6 @@ class EmployeeBenefits(Document):
 			doc.s_b_type = a.benefit_type
 			doc.s_b_currency = a.amount
 			doc.save()
-		emp.save()	
 
 	def on_cancel(self):
 		self.check_journal()

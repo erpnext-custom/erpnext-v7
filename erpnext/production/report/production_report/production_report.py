@@ -8,21 +8,20 @@ from frappe.utils import flt
 def execute(filters=None):
 	columns = get_columns(filters)
 	data = get_data(filters)
-
 	return columns, data
 
 def get_data(filters):
 	data = []
 	conditions = get_conditions(filters)
-
 	group_by = get_group_by(filters)
 	order_by = get_order_by(filters)
 	total_qty = '1'
 	if filters.show_aggregate:
-		total_qty = "sum(qty) as total_qty"
+		total_qty = "sum(pe.qty) as total_qty"
 
-	query = "select pe.name as production_number, pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0}, pe.cable_line_no as cable_line_no, pe.production_area as production_area from `tabProduction Entry` pe, `tabCost Center` cc where cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
+	query = "select distinct pe.name as production_number, pr.name as ref_doc, ppi.challan_no, pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0}, pe.cable_line_no as cable_line_no, pe.production_area as production_area from `tabProduction Entry` pe, `tabCost Center` cc, `tabProduction` pr, `tabProduction Product Item` ppi where cc.name = pe.cost_center and pe.ref_doc = pr.name and pr.name = ppi.parent {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
+
 	total_qty = 0
 	for a in frappe.db.sql(query, as_dict=1):
 		a.region = str(a.region).replace(abbr, "")
@@ -36,7 +35,8 @@ def get_data(filters):
 
 def get_group_by(filters):
 	if filters.show_aggregate:
-		group_by = " group by pe.branch, pe.location, pe.item_sub_group"
+		group_by = " group by region, pe.branch, pe.item_sub_group"
+		# group_by = " group by pe.branch, pe.location, pe.item_sub_group"
 	else:
 		group_by = ""
 
@@ -47,19 +47,27 @@ def get_order_by(filters):
 
 def get_conditions(filters):
 	if not filters.cost_center:
-		return " and pe.docstatus = 10"
+		return " and pe.docstatus = 1"
 
-	all_ccs = get_child_cost_centers(filters.cost_center)
-	if not all_ccs:
-		return " and pe.docstatus = 10"
+	# all_ccs = get_child_cost_centers(filters.cost_center)
+	# if not all_ccs:
+	# 	return " and pe.docstatus = 10"
 
-	all_branch = [str("DUMMY")]
-	for a in all_ccs:
-		branch = frappe.db.sql("select name from tabBranch where cost_center = %s", a, as_dict=1)
+	if not filters.branch:	
+		all_branch = [str("DUMMY")]
+		# for a in all_ccs:
+		branch = frappe.db.sql("select b.name as name from tabBranch b, `tabCost Center` cc where cc.parent_cost_center = %s and b.cost_center = cc.name", filters.cost_center, as_dict=True)
+	
+
 		if branch:
-			all_branch.append(str(branch[0].name))
+			for a in branch:
+				all_branch.append(str(a['name']))
 
-	condition = " and pe.branch in {0} ".format(tuple(all_branch))
+		condition = " and pe.branch in {0} ".format(tuple(all_branch))
+	else:
+		branch = str(filters.branch)
+		branch = branch.replace(' - NRDCL','')
+		condition = " and pe.branch = '"+branch+"'"
 
 	if filters.production_type != "All":
 		condition += " and pe.production_type = '{0}'".format(filters.production_type)
@@ -83,7 +91,7 @@ def get_conditions(filters):
 		condition += " and pe.item_code = '{0}'".format(filters.item)
 
 	if filters.from_date and filters.to_date:
-		condition += " and CAST(pe.posting_date as DATE) between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
+		condition += " and date(pe.posting_date) between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
 
 	if filters.timber_species:
 		condition += " and pe.timber_species = '{0}'".format(filters.timber_species)
@@ -96,18 +104,14 @@ def get_conditions(filters):
 	
 	if filters.production_area:
 		condition += " and pe.production_area = '{0}'".format(filters.production_area)
+	
+	if filters.challan_no:
+		condition += " and ppi.challan_no = '{}'".format(filters.challan_no)
 
 	return condition
 
 def get_columns(filters):
 	columns = [
-		{
-			"fieldname": "production_number",
-			"label": "Production No",
-			"fieldtype": "Link",
-			"options": "Production Entry",
-			"width": 120
-		},
 		{
 			"fieldname": "region",
 			"label": "Region",
@@ -157,6 +161,27 @@ def get_columns(filters):
 	]
 
 	if not filters.show_aggregate:
+		columns.insert(0,{
+			"fieldname": "production_number",
+			"label": "Production No",
+			"fieldtype": "Link",
+			"options": "Production Entry",
+			"width": 120
+		})
+		columns.insert(1,{
+			"fieldname": "ref_doc",
+			"label": "PR Reference",
+			"fieldtype": "Link",
+			"options": "Production",
+			"width": 120
+		})
+		columns.insert(2,{
+			"fieldname": "challan_no",
+			"label": "Challan No",
+			"fieldtype": "Data",
+			"width": 120
+		})
+
 		columns.insert(3, {
 			"fieldname": "posting_date",
 			"label": "Posting Date",
@@ -204,5 +229,34 @@ def get_columns(filters):
                         "fieldtype": "Data",
                         "width": 100
                 })
+	
 	return columns
 
+@frappe.whitelist()
+def get_cc_challan(cost_center, from_date, to_date):
+	# 	frappe.msgprint(filters)
+	# 	return frappe.db.sql(""" select ppi.challan_no as challan_no from `tabProduction` pr, `tabProduction Product Item` ppi where pr.name = ppi.parent and ppi.challan_no != \'\' """, as_dict=True)
+	fd = from_date.split("-")
+	td = to_date.split("-")
+	from_d = fd[2]+"-"+fd[1]+"-"+fd[0]
+	to_d = td[2]+"-"+td[1]+"-"+td[0]
+	all_ccs = get_child_cost_centers(cost_center)
+	return frappe.db.sql(""" select distinct ppi.challan_no as challan_no from `tabProduction` pr, `tabProduction Product Item` ppi, `tabProduction Entry` pe where pr.name = ppi.parent and ppi.challan_no != \'\' and pe.ref_doc = pr.name and pe.docstatus = 1 and date(pe.posting_date) between '{1}' and '{2}' and pr.branch in (select name from `tabBranch` b where b.cost_center in {0} )""".format(tuple(all_ccs),from_d,to_d), as_dict=True)
+
+@frappe.whitelist()
+def get_branch_challan(branch, from_date, to_date):
+	branch = branch.replace(' - NRDCL','')
+	fd = from_date.split("-")
+	td = to_date.split("-")
+	from_d = fd[2]+"-"+fd[1]+"-"+fd[0]
+	to_d = td[2]+"-"+td[1]+"-"+td[0]
+	return frappe.db.sql(""" select distinct ppi.challan_no as challan_no from `tabProduction` pr, `tabProduction Product Item` ppi, `tabProduction Entry` pe where pr.name = ppi.parent and ppi.challan_no != \'\' and pe.ref_doc = pr.name and pe.docstatus = 1 and date(pe.posting_date) between '{1}' and '{2}' and pr.branch = '{0}'""".format(branch,from_d,to_d), as_dict=True)
+
+@frappe.whitelist()
+def get_location_challan(location, from_date, to_date):
+	fd = from_date.split("-")
+	td = to_date.split("-")
+	from_d = fd[2]+"-"+fd[1]+"-"+fd[0]
+	to_d = td[2]+"-"+td[1]+"-"+td[0]
+	return frappe.db.sql(""" select distinct ppi.challan_no as challan_no from `tabProduction` pr, `tabProduction Product Item` ppi, `tabProduction Entry` pe where pr.name = ppi.parent and ppi.challan_no != \'\' and pe.ref_doc = pr.name and pe.docstatus = 1 and date(pe.posting_date) between '{1}' and '{2}' and pe.location = '{0}'""".format(location,from_d,to_d), as_dict=True)
+		

@@ -19,6 +19,7 @@ def execute(filters=None):
 def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
+	# frappe.msgprint(str(datas))
 	for d in datas:
 		row = [d.month, "Salary", d.basic_pay, round(flt(d.gross_pay) - flt(d.basic_pay) - (flt(d.comm_all) / 2), 2), round(flt(d.gross_pay)-(flt(d.comm_all) / 2),2), round(flt(d.gross_pay)-(flt(d.comm_all) / 2),2), d.nppf,d.gis, flt(d.gross_pay) - flt(d.nppf) - flt(d.gis) - (flt(d.comm_all) / 2), d.tds, d.health, d.receipt_number, d.receipt_date]
 		data.append(row);
@@ -90,8 +91,8 @@ def construct_query(filters=None):
         r.receipt_number, r.receipt_date
          from `tabSalary Slip` a, `tabRRCO Receipt Entries` r
          where a.fiscal_year = r.fiscal_year and a.month = r.month and a.docstatus = 1
-	 and exists (select 1 from `tabCost Center` where a.cost_center in (select name from `tabCost Center` where parent_cost_center 
-	 in (select name from `tabCost Center` where parent_cost_center = r.cost_center))) 
+	 and exists (select 1 from `tabCost Center` where case when r.cost_center != 'Corporate Head Office - NRDCL' then a.cost_center in (select name from `tabCost Center` where parent_cost_center = r.cost_center) else name in (select name from `tabCost Center` where parent_cost_center 
+         in (select name from `tabCost Center` where parent_cost_center = r.cost_center)) end) 
          and r.purpose = 'Employee Salary' and a.fiscal_year = """ + str(filters.fiscal_year)
 
 	if filters.employee:

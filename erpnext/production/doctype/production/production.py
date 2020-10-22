@@ -31,12 +31,17 @@ class Production(StockController):
 		self.validate_lot_list()
 
 	def validate_data(self):
-		if self.production_type == "Adhoc" and not self.adhoc_production:
-			frappe.throw("Select Adhoc Production to Proceed")
+		#Please uncomment below if NRDCL decide to use adhoc_production again
+		# if self.production_type == "Adhoc" and not self.adhoc_production:
+		# 	frappe.throw("Select Adhoc Production to Proceed")
 		if self.production_type == "Planned":
 			self.adhoc_production = None
 		if self.work_type == "Private" and not self.supplier:
 			frappe.throw("Contractor is Mandatory if work type is private")
+
+		# if self.business_activity == 'Timber' or self.business_activity == 'Firewood':
+		# 	if not self.range:
+		# 		frappe.throw("Range is Mandatory")
 
 	def validate_lot_list(self):
 		for item in self.raw_materials:
@@ -103,8 +108,12 @@ class Production(StockController):
 					item.reading = "5.5"
 				elif item.reading_select == "5 ft Below (Log)":
 					item.reading = "4.5"
+				elif item.reading_select == "0 - 6 ft (Post)":
+					item.reading = "5.5"
+				
 				elif item.reading_select == "0 - 6 ft (Pole)":
 					item.reading = "5.5"
+
 				elif item.reading_select == "6.1 - 12 ft (Pole)":
 					item.reading = "10"
 				elif item.reading_select == "12.1 - 17.11 ft (Pole)":
@@ -113,6 +122,12 @@ class Production(StockController):
 					item.reading = "19"
 				elif item.reading_select == "0 - 6 ft (Hakaries)":
 					item.reading = "5.5"
+				elif item.reading_select == "1.2 - 2.11 ft (Pole)":
+					item.reading = "1.5"
+				elif item.reading_select == "4.11 ft and Below (Log)":
+					item.reading = "3.5"
+				
+
 				else:
 					pass
 
@@ -123,10 +138,10 @@ class Production(StockController):
 			if flt(item.cop) <= 0:
 				frappe.throw(_("COP for <b>{0}</b> cannot be zero or less").format(item.item_code))
 		
-			if self.production_type == "Planned":
-				continue
-			if item.item_sub_group == "Pole" and flt(item.qty_in_no) <= 0:
-				frappe.throw("Number of Poles is required for Adhoc Loggings")
+			# if self.production_type == "Planned":
+			# 	continue
+			# if item.item_sub_group == "Pole" and flt(item.qty_in_no) <= 0:
+			# 	frappe.throw("Number of Poles is required for Adhoc Loggings")
 			reading_required, par, min_val, max_val = frappe.db.get_value("Item Sub Group", item.item_sub_group, ["reading_required", "reading_parameter", "minimum_value", "maximum_value"])
 			if reading_required:
 				if not flt(min_val) <= flt(item.reading) <=  flt(max_val):

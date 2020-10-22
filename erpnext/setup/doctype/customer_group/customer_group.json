@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:customer_group_name", 
  "beta": 0, 
  "creation": "2013-01-10 16:34:23", 
@@ -359,7 +359,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-11-27 09:30:41.949686", 
+ "modified": "2020-07-27 11:57:26.037315", 
  "modified_by": "Administrator", 
  "module": "Setup", 
  "name": "Customer Group", 

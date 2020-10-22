@@ -523,7 +523,7 @@
   {
    "allow_on_submit": 0, 
    "bold": 0, 
-   "collapsible": 1, 
+   "collapsible": 0, 
    "depends_on": "customer", 
    "fieldname": "contact_info", 
    "fieldtype": "Section Break", 
@@ -3330,7 +3330,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2020-06-01 11:30:20.685783", 
+ "modified": "2020-09-16 12:47:00.456832", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Delivery Note", 

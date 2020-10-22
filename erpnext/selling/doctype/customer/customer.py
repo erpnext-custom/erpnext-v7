@@ -46,6 +46,16 @@ class Customer(TransactionBase):
 		validate_party_accounts(self)
 		self.status = get_party_status(self)
 		self.check_id_required()
+		if self.customer_group == 'Domestic' or self.customer_group == 'Rural':
+			if len(self.customer_id) != 11 and not self.get_db_value("customer_id"):
+				frappe.throw("Customer ID should be 11 characters")
+				
+		# elif self.customer_group == 'Private Construction Company':
+		# 	if not self.license_no or not self.reference_no:
+		# 		frappe.throw("License Number and Reference Number Are Mandatory")
+		else:
+			if not self.reference_no:
+				frappe.throw("Reference Number Is Mandatory")
 
 	def check_id_required(self):
 		if self.customer_group == "Domestic" and not self.customer_id:

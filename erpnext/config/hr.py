@@ -214,6 +214,13 @@ def get_data():
 					"doctype": "Salary Slip",
 					"is_query_report": True
 				},
+				{
+					"type": "report",
+					"name": "PBVA & Bonus Report",
+					"label": "PBVA & Bonus Report",
+					"doctype": "Salary Slip",
+					"is_query_report": True
+				}
 			]
 		},
 		{
@@ -525,6 +532,13 @@ def get_data():
                                         "name": "Salary Advance Report",
                                         "doctype": "Salary Advance"
                                 },
+								{
+					"type": "report",
+					"is_query_report": True,
+					"name": "MR Payment",
+					"label": "MR Payment",
+					"doctype": "Process MR Payment"
+				},
 			]
 		},
 	]

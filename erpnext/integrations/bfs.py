@@ -117,13 +117,13 @@ class BFSSecure:
 		print payload
 
 		start_time   = time.time()
-		request      =  self.post_request(payload, timeout=5)
+		request      =  self.post_request(payload, timeout=10)
 		elapsed_time = time.time() - start_time
 		print
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 		if request.get('error'):
 			response  = None
-			error_msg = "AR Error: {0}".format(request.get('error'))
+			error_msg = "Authorization Request Failed: {0}".format(request.get('error'))
 			status    = 'Failed'
 		else:
 			print '==========> AR RESPONSE <=========='
@@ -142,7 +142,7 @@ class BFSSecure:
 					error_msg = res.get('bfs_responseDesc')[0]
 					status = 'Failed'
 			else:
-				error_msg = 'AR Error: RC not received'
+				error_msg = 'Authorization Request Failed: RC not received'
 				status	  = 'Failed'
 		out = frappe._dict({'response': response, 
 			'error_msg': error_msg, 
@@ -164,7 +164,7 @@ class BFSSecure:
 		print payload
 
 		start_time = time.time()
-		request =  self.post_request(payload, timeout=5)
+		request =  self.post_request(payload, timeout=10)
 		elapsed_time = time.time() - start_time
 		print
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
@@ -187,13 +187,13 @@ class BFSSecure:
 		print payload
 
 		start_time = time.time()
-		request =  self.post_request(payload, timeout=10)
+		request =  self.post_request(payload, timeout=20)
 		elapsed_time = time.time() - start_time
 		print
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 		if request.get('error'):
 			response  = None
-			error_msg = "AE Error: {0}".format(request.get('error'))
+			error_msg = "Account Inquiry Failed: {0}".format(request.get('error'))
 			status    = 'Failed'
 		else:
 			print '==========> AE RESPONSE <=========='
@@ -208,7 +208,7 @@ class BFSSecure:
 					error_msg = res.get('bfs_responseDesc')[0]
 					status = 'Failed'
 			else:
-				error_msg = 'AE Error: EC not received'
+				error_msg = 'Account Inquiry Failed: EC not received'
 				status	  = 'Failed'
 		out = frappe._dict({'response': response, 
 			'error_msg': error_msg, 
@@ -242,7 +242,7 @@ class BFSSecure:
 		print 'Elapsed time to BFS: {0}'.format(time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
 		if request.get('error'):
 			response  = None
-			error_msg = "DR Error: {0}".format(request.get('error'))
+			error_msg = "Debit Request Failed: {0}".format(request.get('error'))
 			status    = 'Failed'
 		else:
 			print '==========> AC RESPONSE <=========='
@@ -263,7 +263,7 @@ class BFSSecure:
 						else:
 							error_msg = 'DR Error: Unknown AC response code'
 			else:
-				error_msg = 'DR Error: AC not received'
+				error_msg = 'Debit Request Failed: AC not received'
 				status	  = 'Failed'
 		out = frappe._dict({'response': response, 
 			'error_msg': error_msg, 
@@ -335,14 +335,15 @@ class BFSSecure:
 				#sys.exit(1)
 		'''
 		try:
-			res = requests.post(self.url, headers=headers, data=payload, timeout=timeout, verify=False)
+			res = requests.post(self.url, headers=headers, data=payload, timeout=timeout, verify=True)
 			print 'RES'
 			print res.text
 		except requests.exceptions.Timeout as e:
+			out.update({'error': str(e)})
 			print 'EXCEPTION requests.exceptions.Timeout'
 			print str(e)
 		except requests.exceptions.RequestException as e:
-			out.update({'error': e})
+			out.update({'error': str(e)})
 			print 'EXCEPTION requests.exceptions.RequestException'
 			print str(e)
 			#sys.exit(1)
@@ -353,7 +354,8 @@ class BFSSecure:
 			else:
 				out.update({'error': res.text})
 		else:
-			out.update({'error': 'Request failed!!!'})
+			if not out.get('error'):
+				out.update({'error': 'Request failed!!!'})
 		return out
 
 	def get_checksum(self, message):

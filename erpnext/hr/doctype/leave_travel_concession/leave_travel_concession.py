@@ -26,9 +26,14 @@ class LeaveTravelConcession(Document):
 		self.post_journal_entry(cc_amount)
 
 	def validate_duplicate(self):
-		doc = frappe.db.sql("select name from `tabLeave Travel Concession` where docstatus != 2 and fiscal_year = \'"+str(self.fiscal_year)+"\' and name != \'"+str(self.name)+"\'" )		
-		if doc:
-			frappe.throw("Cannot create multiple LTC for the same year")
+		if not self.employee:
+			doc = frappe.db.sql("select name from `tabLeave Travel Concession` where docstatus != 2 and fiscal_year = \'"+str(self.fiscal_year)+"\' and name != \'"+str(self.name)+"\'" )		
+			if doc:
+				frappe.throw("Cannot create multiple LTC for the same year")
+		else:
+			doc = frappe.db.sql("select b.employee from `tabLTC Details` b, `tabLeave Travel Concession` a where a.name = b.parent and b.employee = \'"+str(self.employee)+"\' and a.fiscal_year = \'"+str(self.fiscal_year)+"\' and a.docstatus not in (0,2)")
+			if doc:
+				frappe.throw("Cannot create multiple LTC for \'"+str(self.employee)+"\' for the same year")
 
 	def calculate_values(self):
 		if self.items:
@@ -92,7 +97,9 @@ class LeaveTravelConcession(Document):
 	#@frappe.whitelist()
 	def get_ltc_details(self):
 		start, end = frappe.db.get_value("Fiscal Year", self.fiscal_year, ["year_start_date", "year_end_date"])
-		query = """
+		
+		if not self.employee:
+			query = """
 			select
 				e.date_of_joining, e.name as employee, e.employee_name,
 				e.employment_type, e.employee_group, e.employee_subgroup, 
@@ -120,8 +127,41 @@ class LeaveTravelConcession(Document):
 					and ifnull(sst.to_date,greatest(now(),'{end_date}'))   >= '{end_date}'
 					)
 		""".format(start_date=str(start), end_date=str(end))
-		query += " order by e.branch"
-		entries = frappe.db.sql(query, as_dict=True)
+			query += " order by e.branch"
+			entries = frappe.db.sql(query, as_dict=True)
+		else:
+			query = """
+			select
+				e.date_of_joining, e.name as employee, e.employee_name,
+				e.employment_type, e.employee_group, e.employee_subgroup, 
+				e.designation, e.branch,
+				ifnull((
+					select sd.amount
+					from `tabSalary Structure` sst, `tabSalary Detail` sd
+					where sst.employee = e.name
+					and sst.eligible_for_ltc = 1
+					and sst.from_date <= '{end_date}'
+					and ifnull(sst.to_date,greatest(now(),'{end_date}')) >= '{end_date}'
+					and sd.parent = sst.name
+					and sd.salary_component = 'Basic Pay'
+					order by ifnull(sst.to_date,greatest(now(),'{end_date}')) desc
+					limit 1 
+				),0) as amount,
+				e.bank_name, e.bank_ac_no
+			from `tabEmployee` e
+			where e.date_of_joining <= '{start_date}'
+			and ifnull(e.relieving_date,greatest(now(),'{end_date}')) >= '{end_date}'
+			and exists(select 1
+					from `tabSalary Structure` sst
+					where sst.employee = e.name
+					and sst.eligible_for_ltc = 1
+					and ifnull(sst.to_date,greatest(now(),'{end_date}'))   >= '{end_date}'
+					)
+			and e.employee = '{employee}'
+		""".format(start_date=str(start), end_date=str(end), employee=str(self.employee))
+			query += " order by e.branch"
+			entries = frappe.db.sql(query, as_dict=True)
+
 		self.set('items', [])
 
 		for d in entries:

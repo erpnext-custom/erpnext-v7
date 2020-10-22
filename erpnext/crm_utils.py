@@ -1065,20 +1065,31 @@ def filter_vehicle_customer_order(doctype, txt, searchfield, start, page_len, fi
 
 	if transport_mode in ["Self Owned Transport", "Private Pool"]:
 		cond = " and v.user = '{0}'".format(user_id) if transport_mode == "Self Owned Transport" else ""
-			
-                return frappe.db.sql("""select name, drivers_name, contact_no from `tabVehicle` v
-                                        where v.vehicle_status = 'Active'
-					{0}
-					and exists(
-						select 1 from `tabCustomer Order Vehicle` c 
-						where c.parent = '{1}' 
-						and c.vehicle = v.name  
-					)
-					{match_condition}
-                                """.format(cond, filters.get("customer_order"), key=frappe.db.escape(searchfield),
-                                 match_condition=get_match_cond(doctype)), {
-                                'txt': "%%%s%%" % frappe.db.escape(txt)
-                        })
+		user_id = frappe.db.get_value("Customer Order", filters.get("customer_order"),"user")
+		cond += " and v.user = '{}'".format(user_id)
+		if transport_mode == "Private Pool":
+			return frappe.db.sql("""select name, drivers_name, contact_no from `tabVehicle` v
+						where v.vehicle_status = 'Active'
+						{0}
+						and exists(
+							select 1 from `tabCustomer Order Vehicle` c 
+							where c.parent = '{1}' 
+							and c.vehicle = v.name  
+						)
+						{match_condition}
+					""".format(cond, filters.get("customer_order"), key=frappe.db.escape(searchfield),
+					 match_condition=get_match_cond(doctype)), {
+					'txt': "%%%s%%" % frappe.db.escape(txt)
+				})
+		else:
+			return frappe.db.sql("""select name, drivers_name, contact_no from `tabVehicle` v
+						where v.vehicle_status = 'Active'
+						{0}
+						{match_condition}
+					""".format(cond, filters.get("customer_order"), key=frappe.db.escape(searchfield),
+					 match_condition=get_match_cond(doctype)), {
+					'txt': "%%%s%%" % frappe.db.escape(txt)
+				})
 	else:
 		'''
                 return frappe.db.sql("""select vehicle_no, drivers_name, contact_no from `tabVehicle`

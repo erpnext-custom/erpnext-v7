@@ -28,7 +28,34 @@ frappe.ui.form.on('Royalty Payment', {
 			freeze: true,
 			freeze_message: "Loading Royalty Details..... Please Wait"
 		});
-	}
+    },
+    "discount_amount": function(frm) {
+        if(frm.doc.discount_amount > frm.doc.total_royalty){
+					frappe.throw("Discount amount cannot be greater than the total royalty.");
+        }
+        else{
+            cur_frm.set_value("net_royalty",frm.doc.total_royalty-frm.doc.discount_amount);
+        }
+
+    },
+    // "less_cft": function(frm) {
+    //     if(frm.doc.less_cft > frm.doc.total_cft){
+	// 				frappe.throw("Volume to be subtracted cannot be greater than the total volume.")
+    //     }
+    //     else{
+    //         cur_frm.set_value("net_cft",frm.doc.total_cft-frm.doc.less_cft);
+    //     }
+
+    // }
+    "less_qty": function(frm) {
+        if(frm.doc.less_qty > frm.doc.total_qty){
+					frappe.throw("Quantity to be subtracted cannot be greater than the total quantity.")
+        }
+        else{
+            cur_frm.set_value("net_qty",frm.doc.total_qty-frm.doc.less_qty);
+        }
+
+    }
 });
 
 frappe.ui.form.on("Royalty Payment", "refresh", function(frm) {
@@ -52,12 +79,12 @@ frappe.ui.form.on("Royalty Payment", "refresh", function(frm) {
         };
     });
 
-    cur_frm.set_query("range_name", function() {
+    cur_frm.set_query("range_name", function () {
         return {
+		    "query": "erpnext.controllers.queries.filter_branch_rng",
             "filters": {
                 "branch": frm.doc.branch,
-                "location": frm.doc.location,
-		"is_disabled": 0
+                "is_disabled": 0
             }
         };
     });

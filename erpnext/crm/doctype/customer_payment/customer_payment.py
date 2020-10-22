@@ -74,6 +74,7 @@ class CustomerPayment(Document):
 		default_company = frappe.db.get_single_value('Global Defaults', 'default_company')
 		cost_center 	= frappe.db.get_value("Branch", self.branch, "cost_center")
 		party_details 	= get_party_details(default_company, "Customer", self.customer, now())
+		paid_from	= frappe.db.get_single_value('Accounts Settings', 'advance_from_customer')
 		paid_to 	= get_bank_cash_account(self.mode_of_payment, default_company)	
 		sales_order 	= frappe.db.get_value("Customer Order", self.customer_order, "sales_order")
 		if flt(self.paid_amount) > flt(self.total_balance_amount):
@@ -90,7 +91,8 @@ class CustomerPayment(Document):
 			"payment_type": "Receive",
 			"party_type": "Customer",
 			"party": self.customer,
-			"paid_from": party_details['party_account'],
+			#"paid_from": party_details['party_account'],
+			"paid_from": paid_from,
 			"paid_from_account_currency": party_details['party_account_currency'],
 			"paid_from_account_balance": flt(party_details['account_balance']),
 			"party_balance": flt(party_details['party_balance']),

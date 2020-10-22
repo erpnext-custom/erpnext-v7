@@ -60,7 +60,7 @@ class HSDPayment(Document):
 				else:
 					paid_amount = flt(doc.paid_amount) + flt(a.allocated_amount)
 					if round(paid_amount,2) > round(doc.total_amount,2):
-						frappe.throw("Paid Amount cannot be greater than the Total Amount for Receive POl <b>"+str(a.pol)+"</b>")
+						frappe.throw("Paid Amount cannot be greater than the Total Amount for Receive POL <b>"+str(a.pol)+"</b>"+" paid amount is"+str(paid_amount))
 					doc.db_set("paid_amount", paid_amount)
 					doc.db_set("outstanding_amount", a.balance_amount)	
 

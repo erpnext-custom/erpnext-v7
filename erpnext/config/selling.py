@@ -159,6 +159,13 @@ def get_data():
                                         "label": "Customer Group Wise Sales Report",
                                         "doctype": "Sales Invoice"
                                 },
+								{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Customer Report",
+                                        "label": "Customer Report",
+                                        "doctype": "Customer"
+                                },
 				{
                                         "type": "report",
 					"name": "General Sales Order Report",

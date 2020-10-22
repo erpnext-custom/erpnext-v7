@@ -19,7 +19,13 @@ frappe.query_reports["Sales History Report"] = {
 			"fieldname": "customer",
 			"label": __("Customer"),
 			"fieldtype": "Link",
-			"options": "Customer",
+			"options": "Customer"
+		},
+		{
+			"fieldname": "customer_group",
+			"label": __("Customer Group"),
+			"fieldtype": "Link",
+			"options": "Customer Group"
 		}
 	]
 }

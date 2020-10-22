@@ -5,6 +5,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate
+from erpnext.accounts.utils import get_child_cost_centers
+
 
 def execute(filters=None):
 	if not filters: filters = {}
@@ -16,11 +18,12 @@ def execute(filters=None):
 	iwb_map = get_item_warehouse_map(filters)
 
 	data = []
-	for (company, item, warehouse) in sorted(iwb_map):
-		qty_dict = iwb_map[(company, item, warehouse)]
+	for (company, item, branch, warehouse) in sorted(iwb_map):
+		qty_dict = iwb_map[(company, item, branch, warehouse)]
 		data.append([item, item_map[item]["item_name"],
 			item_map[item]["item_group"],
 			item_map[item]["item_sub_group"],
+			branch,
 			warehouse,
 			item_map[item]["rack"],
 			item_map[item]["stock_uom"], qty_dict.opening_qty,
@@ -77,6 +80,12 @@ def get_columns():
 		{
                         "label": "Material Sub Group",
                         "fieldtype": "Data",
+                        "width": 100
+                },
+						{
+                        "label": "Branch",
+                        "fieldtype": "Link",
+                        "options": "Branch",
                         "width": 100
                 },
 		{
@@ -152,29 +161,42 @@ def get_conditions(filters):
 		frappe.throw(_("'From Date' is required"))
 
 	if filters.get("to_date"):
-		conditions += " and posting_date <= '%s'" % frappe.db.escape(filters["to_date"])
+		conditions += " and sle.posting_date <= '%s'" % frappe.db.escape(filters["to_date"])
 	else:
 		frappe.throw(_("'To Date' is required"))
 
 	if filters.get("item_code"):
-		conditions += " and item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
+		conditions += " and sle.item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
+	
+	if filters.get("item_group") and not filters.get("item_code"):
+		conditions += """
+			and exists(select 1
+				from `tabItem` 
+				where `tabItem`.name = `tabStock Ledger Entry`.item_code
+				and `tabItem`.item_group = "{}")
+		""".format(filters.get("item_group"))
 
 	if filters.get("cost_center"):
-		conditions += " and warehouse IN (select wh.name from `tabWarehouse` wh inner join `tabWarehouse Branch` wi on wh.name=wi.parent \
-		inner join `tabBranch` b on b.name=wi.branch inner join `tabCost Center` cc on b.cost_center = cc.name \
+		conditions += " and p.branch IN (select b.name from `tabBranch` b inner join `tabCost Center` cc on b.cost_center = cc.name \
 		where cc.name = '%s' or cc.parent_cost_center = '%s')"%(filters.get("cost_center"), filters.get("cost_center"))
 
+	if filters.get("branch"):
+		branch = filters.get("branch")
+		branch = branch.replace("- NRDCL","")
+		conditions += " and p.branch IN (select b.name from `tabBranch` b where b.name = '%s')"%(branch)
+		
+
 	if filters.get("warehouse"):
-		conditions += " and warehouse = '%s'" % frappe.db.escape(filters.get("warehouse"), percent=False)
+		conditions += " and sle.warehouse = '%s'" % frappe.db.escape(filters.get("warehouse"), percent=False)
 
 	return conditions
 
 def get_stock_ledger_entries(filters):
 	conditions = get_conditions(filters)
-	return frappe.db.sql("""select item_code, warehouse, posting_date, actual_qty, valuation_rate,
-			company, voucher_type, qty_after_transaction, stock_value_difference
-		from `tabStock Ledger Entry` force index (posting_sort_index)
-		where docstatus < 2 %s order by posting_date, posting_time, name""" %
+	return frappe.db.sql("""select sle.item_code, p.branch, sle.warehouse, sle.posting_date, sle.actual_qty, sle.valuation_rate,
+			sle.company, sle.voucher_type, sle.qty_after_transaction, sle.stock_value_difference
+		from `tabStock Ledger Entry` sle force index (posting_sort_index), `tabProduction` p 
+		where sle.voucher_no = p.name and sle.docstatus < 2 %s order by sle.posting_date, sle.posting_time, sle.name""" %
 		conditions, as_dict=1)
 
 def get_item_warehouse_map(filters):
@@ -185,7 +207,7 @@ def get_item_warehouse_map(filters):
 	sle = get_stock_ledger_entries(filters)
 
 	for d in sle:
-		key = (d.company, d.item_code, d.warehouse)
+		key = (d.company, d.item_code, d.branch, d.warehouse)
 		if key not in iwb_map:
 			iwb_map[key] = frappe._dict({
 				"opening_qty": 0.0, "opening_val": 0.0,
@@ -195,7 +217,7 @@ def get_item_warehouse_map(filters):
 				"val_rate": 0.0, "uom": None
 			})
 
-		qty_dict = iwb_map[(d.company, d.item_code, d.warehouse)]
+		qty_dict = iwb_map[(d.company, d.item_code, d.branch, d.warehouse)]
 
 		if d.voucher_type == "Stock Reconciliation":
 			qty_diff = flt(d.qty_after_transaction,5) - flt(qty_dict.bal_qty,5)
@@ -239,4 +261,15 @@ def validate_filters(filters):
 		sle_count = flt(frappe.db.sql("""select count(name) from `tabStock Ledger Entry`""")[0][0])
 		if sle_count > 500000:
 			frappe.throw(_("Please set filter based on Item or Warehouse"))
+	
+
+@frappe.whitelist()
+def get_warehouse(cost_center):
+	all_ccs = get_child_cost_centers(cost_center)
+	# frappe.msgprint(cost_center)
+	# branch = frappe.db.get_value("Branch", {"cost_center":cost_center}, "name")
+	# branch = branch.replace(' - NRDCL','')
+	sql = """ select distinct w.name as name from `tabWarehouse` w, `tabWarehouse Branch` wb where w.name = wb.parent and wb.branch in (select name from `tabBranch` b where b.cost_center in {0} ) """.format(tuple(all_ccs))
+	return frappe.db.sql(sql,as_dict=True)
+
 	

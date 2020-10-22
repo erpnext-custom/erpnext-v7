@@ -22,39 +22,47 @@ frappe.query_reports["Disposal Progress Report"] = {
 					'doctype': "Cost Center",
 					'filters': [
 						['is_disabled', '!=', '1'], 
+						['is_group', '=', '1'],
 						['company', '=', company]
 					]
 				}
 			},
-			"on_change": function(query_report) {
-				var cost_center = query_report.get_values().cost_center;
-				query_report.filters_by_name.branch.set_input(null);
-				query_report.trigger_refresh();
-				if (!cost_center) {
-					return;
-				}
-				frappe.call({
-					method: "erpnext.custom_utils.get_branch_from_cost_center",
-					args: {
-						"cost_center": cost_center,
-					},
-					callback: function(r) {
-						query_report.filters_by_name.branch.set_input(r.message)
-						query_report.trigger_refresh();
-					}
-				})
-			},
+			// "on_change": function(query_report) {
+			// 	var cost_center = query_report.get_values().cost_center;
+			// 	query_report.filters_by_name.branch.set_input(null);
+			// 	query_report.trigger_refresh();
+			// 	if (!cost_center) {
+			// 		return;
+			// 	}
+			// 	frappe.call({
+			// 		method: "erpnext.custom_utils.get_branch_from_cost_center",
+			// 		args: {
+			// 			"cost_center": cost_center,
+			// 		},
+			// 		callback: function(r) {
+			// 			query_report.filters_by_name.branch.set_input(r.message)
+			// 			query_report.trigger_refresh();
+			// 		}
+			// 	})
+			// },
 			"reqd": 1,
 		},
 		{
 			"fieldname": "branch",
 			"label": ("Branch"),
 			"fieldtype": "Link",
- 			"options": "Branch",
-			"read_only": 1,
+			"options": "Cost Center",
 			"get_query": function() {
-				var company = frappe.query_report.filters_by_name.company.get_value();
-				return {"doctype": "Branch", "filters": {"company": company, "is_disabled": 0}}
+					var cost_center = frappe.query_report.filters_by_name.cost_center.get_value();
+					var company = frappe.query_report.filters_by_name.company.get_value();
+					if(cost_center!= 'Natural Resource Development Corporation Ltd - NRDCL')
+					{
+							return {"doctype": "Cost Center", "filters": {"company": company, "is_disabled": 0, "parent_cost_center": cost_center}}
+					}
+					else
+					{
+							return {"doctype": "Cost Center", "filters": {"company": company, "is_disabled": 0, "is_group": 0}}
+					}
 			}
 		},
 		{

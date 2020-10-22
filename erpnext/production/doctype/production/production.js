@@ -99,9 +99,17 @@ frappe.ui.form.on("Production", "refresh", function(frm) {
 	
     cur_frm.set_query("location", function() {
         return {
+			"query":"erpnext.controllers.queries.filter_range_location",
+            "filters": {
+                "range": frm.doc.range,
+            }
+        };
+	});
+    cur_frm.set_query("range", function () {
+        return {
+		    "query": "erpnext.controllers.queries.filter_branch_rng",
             "filters": {
                 "branch": frm.doc.branch,
-		"is_disabled": 0
             }
         };
     });
@@ -109,7 +117,6 @@ frappe.ui.form.on("Production", "refresh", function(frm) {
         return {
             "filters": {
                 "branch": frm.doc.branch,
-                "location": frm.doc.location,
 		"is_disabled": 0
             }
         };

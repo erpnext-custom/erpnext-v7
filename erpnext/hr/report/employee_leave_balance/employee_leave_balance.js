@@ -52,6 +52,13 @@ frappe.query_reports["Employee Leave Balance"] = {
 					return {"doctype": "Employee", "filters": {"status": "Active"}}
 				}
 			}
-                }
+				},
+				{
+					"fieldname":"status",
+					"label": __("Employment Status"),
+					"fieldtype": "Select",
+					"options": ["Active","Left"],
+					"default": "Active"
+			}
 	]
 }

@@ -6,6 +6,8 @@ import frappe
 from frappe.utils import cstr, cint, getdate
 from frappe import msgprint, _
 from calendar import monthrange
+from erpnext.accounts.utils import get_child_cost_centers
+
 
 def execute(filters=None):
 	validate_filters(filters)
@@ -19,19 +21,31 @@ def validate_filters(filters):
 		frappe.throw(_("From Date cannot be greater than To Date"))
 
 def get_data(filters):
-	query = "select case when sales_order != 'NULL' then 'Sold' when production != 'NULL' then 'Taken For Sawing' when stock_entry != 'NULL' then 'Stock Transfered' else 'Unsold' end as status , item as item_code, item_name, item_sub_group as type,total_volume as volume,lot_no, monthname(posting_date) as month,branch,warehouse from `tabLot List` where posting_date >= \'"+str(filters.from_date)+"\' and posting_date <= \'"+str(filters.to_date)+"\'"
+	query = "select * from (select case when ll.sales_order != 'NULL' then 'Sold' when ll.production != 'NULL' then 'Taken For Sawing' when ll.stock_entry != 'NULL' then 'Stock Transfered' else 'Unsold' end as status , CASE WHEN (select ts.timber_class from `tabTimber Species` ts, `tabItem` i where ts.species = i.species and ll.item = i.name) is not null then (select ts.timber_class from `tabTimber Species` ts, `tabItem` i where ts.species = i.species and ll.item = i.name) else 'NULL' end as timber_class , ll.posting_date as posting_date, ll.item as item_code, ll.item_name, ll.item_sub_group as type, ll.total_volume as volume, ll.total_pieces as pieces, ll.lot_no, monthname(ll.posting_date) as month,ll.branch,ll.warehouse from `tabLot List` ll) as data where posting_date >= \'"+str(filters.from_date)+"\' and posting_date <= \'"+str(filters.to_date)+"\'"
+
+	if filters.cost_center:
+        	all_ccs = get_child_cost_centers(filters.cost_center)
+		query += " and branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
 
 	if filters.branch:
-		query+=" and branch = \'"+filters.branch+"\'"
+		branch = str(filters.branch)
+		branch = branch.replace(' - NRDCL','')
+		query += " and branch = '"+branch+"'"
 
 	if filters.warehouse:
 		query+=" and warehouse = \'"+filters.warehouse+"\'"
 
-	if filters.type:
-		query+=" and item_sub_group = \'"+filters.type+"\'"
+	if filters.item_group:
+		query+=" and type in (select distinct i.item_sub_group from `tabItem` i where i.item_group = \'"+filters.item_group+"\')"
 
 	if filters.item_code:
 		query+=" and item = \'"+filters.item_code+"\'"
+	
+	if filters.status:
+		query+=" and status = \'"+filters.status+"\'"
+	
+	if filters.timber_class:
+		query+=" and timber_class = \'"+filters.timber_class+"\'"
 
 	data = frappe.db.sql(query, as_dict=True)
 	
@@ -58,15 +72,28 @@ def get_columns():
 			"fieldtype": "Data",
 			"width": 130
 		},
-		{
-			"fieldname": "volume",
-			"label": _("Total Volume(cft)"),
+			{
+			"fieldname": "timber_class",
+			"label": _("Timber Class"),
 			"fieldtype": "Data",
 			"width": 130
 		},
 		{
 			"fieldname": "lot_no",
 			"label": _("Lot Number"),
+			"fieldtype": "Link",
+			"options": "Lot List",
+			"width": 120
+		},
+		{
+			"fieldname": "pieces",
+			"label": _("Total Pieces"),
+			"fieldtype": "Data",
+			"width": 120
+		},
+		{
+			"fieldname": "volume",
+			"label": _("Total Volume"),
 			"fieldtype": "Data",
 			"width": 120
 		},
@@ -93,7 +120,7 @@ def get_columns():
 			"label": _("Warehouse"),
 			"fieldtype": "Data",
 			"width": 130
-		},
+		}
 	]
 	
 	return columns

@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt, cint,add_days, cstr, flt, getdate, nowdate, rounded, date_diff
+from erpnext.accounts.utils import get_child_cost_centers
 
 def execute(filters=None):
 	columns = get_columns(filters)
@@ -18,6 +19,7 @@ def get_columns(filters):
 		("Material Name")+":data:120",
 		("Material Group")+":data:120",
 		("Material Sub Group")+":data:150",
+		("Warehouse")+":data:150",
 		("UoM") + ":data:50",
 		("Qty")+":data:50",
 		("Valuation Rate")+":data:120",
@@ -36,9 +38,13 @@ def get_columns(filters):
 
 def get_data(filters):
 	if filters.purpose == 'Material Transfer':
-		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, (select i.item_sub_group from tabItem i where i.item_code = sed.item_code) as item_sub_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.lot_list, sed.t_warehouse, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Transfer'"
+		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, (select i.item_sub_group from tabItem i where i.item_code = sed.item_code) as item_sub_group, sed.s_warehouse, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.lot_list, sed.t_warehouse, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Transfer'"
 	elif filters.purpose == 'Material Issue':
-		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, (select i.item_sub_group from tabItem i where i.item_code = sed.item_code) as item_sub_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.lot_list, sed.cost_center, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Issue'"
+		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, (select i.item_sub_group from tabItem i where i.item_code = sed.item_code) as item_sub_group, sed.s_warehouse, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.lot_list, sed.cost_center, se.name FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Issue'"
+	
+	if filters.cost_center:
+		all_ccs = get_child_cost_centers(filters.cost_center)
+		data += " and se.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
 	if filters.get("warehouse"):
 		data += " and sed.s_warehouse = \'" + str(filters.warehouse) + "\'"
 	if filters.get("item_code"):

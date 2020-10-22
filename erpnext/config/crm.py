@@ -195,6 +195,12 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
+					"name": "Online Order Register",
+					"doctype": "Customer Order"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
 					"name": "Online Payment Register",
 					"doctype": "Online Payment"
 				},
