@@ -12,11 +12,12 @@ import time
 from datetime import datetime
 
 def SendSMS(sender, receiver, message, debug=0):
-	SMSC_HOST = '119.2.115.41'
-	SMSC_PORT = '9000'
-	SYSTEM_ID = 'nrdcl2'
-	SYSTEM_PASS = 'nrdcl@btl'
-	USER_TYPE = "bind_transceiver"
+	doc = frappe.get_single("SMS Settings")
+	SMSC_HOST = doc.smsc_host
+	SMSC_PORT = doc.smsc_port
+	SYSTEM_ID = doc.system_id
+	SYSTEM_PASS = doc.system_pass
+	USER_TYPE = doc.user_type
 	SENDER_ID =  str(sender)
 	DESTINATION_NO = str(receiver)
 	MESSAGE   = str(message)
