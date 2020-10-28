@@ -10,6 +10,22 @@ import collections
 from frappe.model.naming import make_autoname
 
 
+# create by SHIV on 2020/10/23
+def submit_production(submit=0):
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabProduction`
+		where name in ('PRO200900180-3','PRO201000312','PRO201000313','PRO201000315','PRO201000316')""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Production', i.name)
+		print counter, doc.name, doc.docstatus
+		if submit:
+			try:
+				doc.submit()
+			except Exception, e:
+				print 'ERROR: ', str(e)
+			print 'Submitted successfully...'
+		frappe.db.commit()
+
 # create by SHIV on 2020/10/22
 def submit_stock_reconciliation(submit=0):
 	counter = 0
