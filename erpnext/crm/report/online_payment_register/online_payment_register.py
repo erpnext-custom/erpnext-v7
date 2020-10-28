@@ -194,7 +194,7 @@ def get_register_data(filters=None):
 		ON 
 			online_payment.customer_order = customer.name
 		WHERE 
-			online_payment.transaction_time between '{from_date}' and '{to_date}' 
+			DATE(online_payment.transaction_time) between '{from_date}' and '{to_date}' 
 			{conditions} 
 		""".format(
 				from_date=filters.get("from_date"), 

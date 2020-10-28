@@ -49,7 +49,7 @@ def get_data(filters):
 				from `tabCustomer Order` as customer 
 					left join `tabUser Account` as ua on customer.user = ua.cid 
 				where customer.docstatus = 1 and
-					posting_date between '{from_date}' and '{to_date}'
+					DATE(posting_date) between '{from_date}' and '{to_date}'
 				{condition} 
 			""".format(
                 from_date = filters.from_date,
