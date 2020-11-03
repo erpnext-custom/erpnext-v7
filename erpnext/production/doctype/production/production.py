@@ -183,11 +183,14 @@ class Production(StockController):
 
 			if item.reading_select:
 				if not frappe.db.exists("Item Sub Group Measurement", {"parent": item.item_sub_group, "material_measurement": item.reading_select}):
-					frappe.throw(_("Row#{}: Reading {} is not permitted for {}").format(item.idx, frappe.bold(item.reading_select), frappe.get_desk_link(item.item_sub_group)))
+					frappe.throw(_("Row#{}: Reading {} is not permitted for material {}").format(item.idx, frappe.bold(item.reading_select), frappe.get_desk_link("Item", item.item_code)))
 
 				measurement, uom = frappe.db.get_value("Material Measurement", item.reading_select, ["measurement", "uom"])
 				item.reading = measurement
-		
+			else:
+				if frappe.db.exists("Item Sub Group Measurement", {"parent": item.item_sub_group}):
+					frappe.throw(_("Row#{}: Reading is mandatory for material {}").format(item.idx, frappe.get_desk_link("Item", item.item_code)))
+
 			# if self.production_type == "Planned":
 			# 	continue
 			# if item.item_sub_group == "Pole" and flt(item.qty_in_no) <= 0:
