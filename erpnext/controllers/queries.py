@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.desk.reportview import get_match_cond
 from frappe.model.db_query import DatabaseQuery
 from frappe.utils import nowdate
@@ -475,6 +476,7 @@ def filter_branch_cost_center(doctype, txt, searchfield, start, page_len, filter
                 frappe.throw("Select Branch First")
 	return frappe.db.sql("select cost_center from `tabBranch` where name = %s", filters.get("branch"))
 
+@frappe.whitelist()
 def get_cop_list(doctype, txt, searchfield, start, page_len, filters):
         if not filters.get("branch") or not filters.get("item_code") or not filters.get("posting_date"):
                 frappe.throw("Select Item Code or Branch or Posting Date")
@@ -514,3 +516,29 @@ def price_template_list(doctype,txt, searchfield, start, page_len, filters):
 		frappe.throw("Rate for Item: <b> '{0}' </b> Is Not Defined In Selling Price List, Please Define The Rate".format(filters.get('item_code')))
 	return item_price
 
+''' ########## Ver.2020.11.03 Begins ########## '''
+# following method created by SHIV on 2020/11/03
+@frappe.whitelist()
+def get_measurements(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
+	app_list = []
+	cond = ""
+	if not filters.get("item_sub_group"):
+		frappe.throw(_("Please select Material Sub Group first."))
+
+	if filters.get("item_code"):
+		cond = """and exists(select 1
+				from `tabItem` i
+				where i.name = '{}'
+				and (i.material_measurement is null or i.material_measurement = mm.name)
+			)""".format(filters.get("item_code"))
+
+	li = frappe.db.sql("""select isgm.material_measurement
+		from `tabItem Sub Group Measurement` isgm, `tabMaterial Measurement` mm
+		where isgm.parent = '{}'
+		and mm.name = isgm.material_measurement
+		{}
+		order by mm.measurement
+	""".format(filters.get("item_sub_group"), cond))
+
+	return li
+''' ########## Ver.2020.11.03 Ends ########## '''

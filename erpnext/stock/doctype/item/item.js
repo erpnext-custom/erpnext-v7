@@ -125,7 +125,11 @@ frappe.ui.form.on("Item", {
 
 	has_variants: function(frm) {
 		erpnext.item.toggle_attributes(frm);
-	}
+	},
+
+	item_sub_group: function(frm){
+		cur_frm.set_value("material_measurement", null);
+	},
 });
 
 frappe.ui.form.on('Item Reorder', {
@@ -180,6 +184,19 @@ $.extend(erpnext.item, {
 				]
 			}
 		}
+
+		// Ver.2020.11.01 Begins, following code added by SHIV on 2020/11/01
+		// Material Measurement(Reading) is introduced to get rid off hardcode under production.py
+		frm.set_query("material_measurement", function() {
+		        return {
+				query: "erpnext.controllers.queries.get_measurements",
+		                filters: {
+					item_sub_group: frm.doc.item_sub_group
+		                }
+		        };
+                });
+		// Ver.2020.11.01 Ends
+
 
 		frm.fields_dict.customer_items.grid.get_field("customer_name").get_query = function(doc, cdt, cdn) {
 			return { query: "erpnext.controllers.queries.customer_query" }

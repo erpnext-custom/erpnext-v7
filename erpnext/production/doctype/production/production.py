@@ -30,6 +30,50 @@ class Production(StockController):
 		self.validate_posting_time()
 		self.validate_lot_list()
 
+	def before_submit(self):
+		self.assign_default_dummy()
+		self.check_cop()
+		if not self.items:
+			frappe.throw("Product Item is mandatory to submit the production")
+
+	def on_submit(self):
+		if self.raw_materials:
+			self.update_lot_list(action="submit")
+
+		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+		# Following lines commented by SHIV on 2019/04/01
+		#self.make_products_sl_entry()
+		#self.make_products_gl_entry()
+		#self.make_raw_material_stock_ledger()
+		#self.make_raw_material_gl_entry()
+
+		if not self.items:
+			frappe.throw("There should be atleast one Product Item")
+
+		# Following lines added by SHIV on 2019/04/01
+		self.update_stock_ledger()
+		self.make_gl_entries()
+		""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+		self.make_production_entry()
+
+	def on_cancel(self):
+		self.assign_default_dummy()
+		if self.raw_materials:
+			self.update_lot_list(action="cancel")
+
+		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+		# Following lines commented by SHIV on 2019/04/01
+		#self.make_products_sl_entry()
+		#self.make_products_gl_entry()
+		#self.make_raw_material_stock_ledger()
+		#self.make_raw_material_gl_entry()
+
+		# Following lines added by SHIV on 2019/04/01
+		self.update_stock_ledger()
+		self.make_gl_entries_on_cancel()
+		""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+		self.delete_production_entry()
+
 	def validate_data(self):
 		#Please uncomment below if NRDCL decide to use adhoc_production again
 		# if self.production_type == "Adhoc" and not self.adhoc_production:
@@ -55,6 +99,7 @@ class Production(StockController):
 						""".format(item.lot_list), as_dict = True)
 				if not lot_dtl:
 					frappe.throw("Lot No {0} is either sold or previously transferred".format(item.lot_list))
+
 	def update_lot_list(self, action):
 		for item in self.raw_materials:
 			if item.lot_list:
@@ -67,32 +112,137 @@ class Production(StockController):
 		self.validate_warehouse_branch(self.warehouse, self.branch)
 
 	def validate_supplier(self):
-                if self.work_type == "Private" and not self.supplier:
-                        frappe.throw("Supplier Is Mandiatory For Production Carried Out By Others")
+		if self.work_type == "Private" and not self.supplier:
+				frappe.throw("Supplier Is Mandiatory For Production Carried Out By Others")
 
-	def validate_items(self):
-		prod_items = self.get_production_items()
-		total_raw_material_qty = total_production_qty = 0
+	########## Ver.2020.11.02 Begins ##########
+	# following method created by SHIV on 2020/11/02 
+	def validate_raw_materials(self):
+		''' validation for raw materials '''
+		total_raw_material_qty = 0
+
 		for item in self.get("raw_materials"):
 			if item.item_code not in prod_items:
 				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
 			if flt(item.qty) <= 0:
 				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
 
-                        """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-                        # Following code added by SHIV on 2019/04/01
-                        item.business_activity = self.business_activity
-                        item.cost_center = self.cost_center
-                        item.warehouse = self.warehouse
-                        item.expense_account = get_expense_account(self.company, item.item_code)
-                        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+			""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+			# Following code added by SHIV on 2019/04/01
+			item.business_activity = self.business_activity
+			item.cost_center = self.cost_center
+			item.warehouse = self.warehouse
+			item.expense_account = get_expense_account(self.company, item.item_code)
+			""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+
+			if self.business_activity == "Timber":
+				if item.uom == "Cft":
+					total_raw_material_qty += item.qty
+			else:
+				total_raw_material_qty += item.qty
+
+		self.total_raw_material_qty = total_raw_material_qty
+
+	# following method created by SHIV on 2020/11/02
+	def validate_production_materials(self):
+		''' validation for production materials '''
+		prod_items = self.get_production_items()
+		total_production_qty = 0
+
+		for item in self.get("items"):
+			doc = frappe.get_doc("Item", item.item_code)
+			item.production_type = self.production_type
+			item.item_name = doc.item_name
+			item.item_group = doc.item_group
+			item.item_sub_group = doc.item_sub_group
+			item.timber_species = doc.species
+
+			if self.business_activity == "Timber":
+				if item.uom == "Cft":
+					total_production_qty += item.qty
+			else:
+				total_production_qty += item.qty
+
+			""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+			# Following code added by SHIV on 2019/04/01
+			item.business_activity = self.business_activity
+			item.cost_center = self.cost_center
+			item.warehouse = self.warehouse
+			item.expense_account = get_expense_account(self.company, item.item_code)
+			""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+
+			if item.item_code not in prod_items:
+				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
+			elif flt(item.qty) <= 0:
+				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
+			elif flt(item.cop) <= 0:
+				frappe.throw(_("COP for <b>{0}</b> cannot be zero or less").format(item.item_code))
+
+			if doc.material_measurement and item.reading_select and doc.material_measurement != item.reading_select:
+				frappe.throw(_("Row#{}: Only Reading {} is permitted for material {}").format(item.idx, frappe.bold(doc.material_measurement), frppe.get_desk_link("Item", item.item_code)))
+
+			if item.reading_select:
+				if not frappe.db.exists("Item Sub Group Measurement", {"parent": item.item_sub_group, "material_measurement": item.reading_select}):
+					frappe.throw(_("Row#{}: Reading {} is not permitted for {}").format(item.idx, frappe.bold(item.reading_select), frappe.get_desk_link(item.item_sub_group)))
+
+				measurement, uom = frappe.db.get_value("Material Measurement", item.reading_select, ["measurement", "uom"])
+				item.reading = measurement
+		
+			# if self.production_type == "Planned":
+			# 	continue
+			# if item.item_sub_group == "Pole" and flt(item.qty_in_no) <= 0:
+			# 	frappe.throw("Number of Poles is required for Adhoc Loggings")
+			reading_required, par, min_val, max_val = frappe.db.get_value("Item Sub Group", item.item_sub_group, ["reading_required", "reading_parameter", "minimum_value", "maximum_value"])
+			if reading_required:
+				if not flt(min_val) <= flt(item.reading) <=  flt(max_val):
+					frappe.throw("<b>{0}</b> reading should be between {1} and {2} for {3} for Adhoc Production".format(par, frappe.bold(min_val), frappe.bold(max_val), frappe.bold(item.item_code)))
+			elif not item.reading:
+				item.reading = 0
+			
+			# convert to inches
+			in_inches = 0
+			f = str(item.reading).split(".")
+			in_inches = cint(f[0]) * 12
+			if len(f) > 1:
+				if cint(f[1]) > 11:
+					frappe.throw("Inches should be smaller than 12 on row {0}".format(item.idx))
+				in_inches += cint(f[1])
+			item.reading_inches = in_inches
+
+		self.total_production_qty = total_production_qty
+
+	def validate_items(self):
+		self.validate_raw_materials()
+		self.validate_production_materials()
+
+	# following method replaced with the above one by SHIV on 2020/11/02
+	'''
+	def validate_items(self):
+		prod_items = self.get_production_items()
+		total_raw_material_qty = total_production_qty = 0
+
+		# raw materials validation
+		for item in self.get("raw_materials"):
+			if item.item_code not in prod_items:
+				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
+			if flt(item.qty) <= 0:
+				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
+
+			""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+			# Following code added by SHIV on 2019/04/01
+			item.business_activity = self.business_activity
+			item.cost_center = self.cost_center
+			item.warehouse = self.warehouse
+			item.expense_account = get_expense_account(self.company, item.item_code)
+			""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+
 			if self.business_activity == "Timber":
 				if item.uom == "Cft":
 					total_raw_material_qty += item.qty
 			else:
 				total_raw_material_qty += item.qty
 				
-
+		# production materials validation
 		for item in self.get("items"):
 			if self.business_activity == "Timber":
 				if item.uom == "Cft":
@@ -100,11 +250,27 @@ class Production(StockController):
 			else:
 				total_production_qty += item.qty
 				
+			if item.reading_select == '6.1 - 12 ft (Length)(Post)':
+				if item.item_code != '600271':
+					frappe.throw("The reading "+str(item.reading_select)+" is only applicable for item 600271: Dangchung (6\'1\" to 12\' -Others) Post")
+			
+			elif item.reading_select == '12.1 - 17.11 ft (Length)(Post)':
+				if item.item_code != '600272':
+					frappe.throw("The reading "+str(item.reading_select)+" is only applicable for item 600272: Flag Post (12\'1\" to 17\'11\")- Others Post")
+
+			elif item.reading_select == '18 ft and above (Length)(Post)':
+				if item.item_code != '600273':
+					frappe.throw("The reading "+str(item.reading_select)+" is only applicable for item 600273: Tsim (18\' Above -others) Post")
+			
+			else:
+				if item.reading_select and item.item_code not in ('600040', '600023', '600077', '600271', '600272', '600273', '600346'):
+					#frappe.msgprint(_("{}, {}").format(item.reading_select, item.item_code))
+					frappe.throw(_("Row#{}: The reading {} is not applicable for the selected item").format(item.idx, item.reading_select))
 
 			item.production_type = self.production_type
 			item.item_name, item.item_group, item.item_sub_group, item.timber_species = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group", "species"])
 			if item.item_group != "Mineral Products":
-				if item.reading_select == "5 ft Above (Log)":
+				if item.reading_select == "5 ft and Above (Log)":
 					item.reading = "5.5"
 				elif item.reading_select == "5 ft Below (Log)":
 					item.reading = "4.5"
@@ -126,8 +292,12 @@ class Production(StockController):
 					item.reading = "1.5"
 				elif item.reading_select == "4.11 ft and Below (Log)":
 					item.reading = "3.5"
-				
-
+				elif item.reading_select == "6.1 - 12 ft (Length)(Post)":
+					item.reading = "7"
+				elif item.reading_select == "12.1 - 17.11 ft (Length)(Post)":
+					item.reading = "14"
+				elif item.reading_select == "18 ft and above (Length)(Post)":
+					item.reading = "19"
 				else:
 					pass
 
@@ -159,19 +329,20 @@ class Production(StockController):
 			item.reading_inches = in_inches
 
 			""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-                        # Following code added by SHIV on 2019/04/01
-                        item.business_activity = self.business_activity
+			# Following code added by SHIV on 2019/04/01
+			item.business_activity = self.business_activity
 			item.cost_center = self.cost_center
-                        item.warehouse = self.warehouse
-                        item.expense_account = get_expense_account(self.company, item.item_code)
-                        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+			item.warehouse = self.warehouse
+			item.expense_account = get_expense_account(self.company, item.item_code)
+			""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
-			############# Change applied by Thukten on reading  ########
-				
+		############# Change applied by Thukten on reading  ########
 		self.total_raw_material_qty = total_raw_material_qty
-                self.total_production_qty = total_production_qty
+		self.total_production_qty = total_production_qty
+		######### End Changes ###########
+	'''
+	########## Ver.2020.11.02 Ends ##########
 
-			######### End Changes ###########
 	def check_cop(self):
 		for a in self.items:
 			branch = frappe.db.sql("select 1 from `tabCOP Branch` where parent = %s and branch = %s", (a.price_template, self.branch))
@@ -185,87 +356,47 @@ class Production(StockController):
 			if flt(a.cop) <= 0:
 				frappe.throw("COP Cannot be zero or less")
 
-	def before_submit(self):
-		self.assign_default_dummy()
-		self.check_cop()
-		if not self.items:
-			frappe.throw("Product Item is mandatory to submit the production")
 
-	def on_submit(self):
-		if self.raw_materials:
-			self.update_lot_list(action="submit")
+	""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+	# update_stock_ledger() method added by SHIV on 2019/04/01
+	def update_stock_ledger(self):
+			sl_entries = []
 
-		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-                # Following lines commented by SHIV on 2019/04/01
-		#self.make_products_sl_entry()
-		#self.make_products_gl_entry()
-		#self.make_raw_material_stock_ledger()
-		#self.make_raw_material_gl_entry()
+			# make sl entries for source warehouse first, then do the target warehouse
+			for d in self.get('raw_materials'):
+					if cstr(d.warehouse):
+							sl_entries.append(self.get_sl_entries(d, {
+									"warehouse": cstr(d.warehouse),
+									"actual_qty": -1 * flt(d.qty),
+									"incoming_rate": 0
+							}))
+							
+			for d in self.get('items'):
+					if cstr(d.warehouse):
+							sl_entries.append(self.get_sl_entries(d, {
+									"warehouse": cstr(d.warehouse),
+									"actual_qty": flt(d.qty),
+									"incoming_rate": flt(d.cop, 2)
+							}))
 
-		if not self.items:
-			frappe.throw("There should be atleast one Product Item")
+			if self.docstatus == 2:
+					sl_entries.reverse()
 
-                # Following lines added by SHIV on 2019/04/01
-                self.update_stock_ledger()
-                self.make_gl_entries()
-                """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
-		self.make_production_entry()
+			self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 
-	def on_cancel(self):
-		self.assign_default_dummy()
-		if self.raw_materials:
-			self.update_lot_list(action="cancel")
-
-		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-                # Following lines commented by SHIV on 2019/04/01
-		#self.make_products_sl_entry()
-		#self.make_products_gl_entry()
-		#self.make_raw_material_stock_ledger()
-		#self.make_raw_material_gl_entry()
-
-                # Following lines added by SHIV on 2019/04/01
-		self.update_stock_ledger()
-		self.make_gl_entries_on_cancel()
-		""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
-		self.delete_production_entry()
-
-        """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-        # update_stock_ledger() method added by SHIV on 2019/04/01
-        def update_stock_ledger(self):
-                sl_entries = []
-
-                # make sl entries for source warehouse first, then do the target warehouse
-                for d in self.get('raw_materials'):
-                        if cstr(d.warehouse):
-                                sl_entries.append(self.get_sl_entries(d, {
-                                        "warehouse": cstr(d.warehouse),
-                                        "actual_qty": -1 * flt(d.qty),
-                                        "incoming_rate": 0
-                                }))
-                                
-                for d in self.get('items'):
-                        if cstr(d.warehouse):
-                                sl_entries.append(self.get_sl_entries(d, {
-                                        "warehouse": cstr(d.warehouse),
-                                        "actual_qty": flt(d.qty),
-                                        "incoming_rate": flt(d.cop, 2)
-                                }))
-
-                if self.docstatus == 2:
-                        sl_entries.reverse()
-
-                self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
-
-        # get_gl_entries() method added by SHIV on 2019/04/01
-        def get_gl_entries(self, warehouse_account):
-                gl_entries = super(Production, self).get_gl_entries(warehouse_account)
-                return gl_entries
-        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+	# get_gl_entries() method added by SHIV on 2019/04/01
+	def get_gl_entries(self, warehouse_account):
+			gl_entries = super(Production, self).get_gl_entries(warehouse_account)
+			return gl_entries
+	""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
 	def assign_default_dummy(self):
 		self.pol_type = None
 		self.stock_uom = None 
 
+	""" ++++++++++ Ver.2020.11.02 Begins ++++++++++++ """
+	# Following code is commented by SHIV on 2020/11/02 as the code is no more relevant 
+	'''
 	def make_products_sl_entry(self):
 		sl_entries = []
 
@@ -295,7 +426,7 @@ class Production(StockController):
 
 		expense_account = get_settings_value("Production Account Settings", self.company, "default_production_account")
 		if not expense_account:
-                        frappe.throw("Setup Default Production Account in Production Account Settings")
+						frappe.throw("Setup Default Production Account in Production Account Settings")
 
 		for a in self.items:
 			amount = flt(a.qty) * flt(a.cop)
@@ -351,7 +482,7 @@ class Production(StockController):
 
 		for a in self.raw_materials:
 			stock_qty, map_rate = get_stock_balance(a.item_code, self.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
-                        amount = flt(a.qty) * flt(map_rate)
+						amount = flt(a.qty) * flt(map_rate)
 
 			expense_account = frappe.db.get_value("Item", a.item_code, "expense_account")
 			if not expense_account:
@@ -378,6 +509,8 @@ class Production(StockController):
 		if gl_entries:
 			from erpnext.accounts.general_ledger import make_gl_entries
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
+	'''
+	""" ++++++++++ Ver.2020.11.02 Ends ++++++++++++ """
 
 	def make_production_entry(self):
 		for a in self.items:
@@ -415,7 +548,7 @@ class Production(StockController):
 
 @frappe.whitelist()
 def get_expense_account(company, item):
-        expense_account = frappe.db.get_value("Production Account Settings", {"company": company}, "default_production_account")
-        if not expense_account:
-                expense_account = frappe.db.get_value("Item", item, "expense_account")
-        return expense_account
+		expense_account = frappe.db.get_value("Production Account Settings", {"company": company}, "default_production_account")
+		if not expense_account:
+				expense_account = frappe.db.get_value("Item", item, "expense_account")
+		return expense_account

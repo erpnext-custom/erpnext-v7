@@ -13,6 +13,7 @@ cur_frm.add_fetch("item_code", "stock_uom", "uom")
 cur_frm.add_fetch("item_code", "item_group", "item_group")
 cur_frm.add_fetch("item_code", "species", "timber_species")
 cur_frm.add_fetch("item_code", "item_sub_group", "item_sub_group")
+cur_frm.add_fetch("item_code", "material_measurement", "reading_select")
 
 frappe.ui.form.on('Production', {
 	onload: function(frm) {
@@ -22,6 +23,8 @@ frappe.ui.form.on('Production', {
 	},
 
 	setup: function(frm) {
+		//frm.get_docfield("raw_materials").allow_bulk_edit = 1;
+		//frm.get_docfield("items").allow_bulk_edit = 1;
 		frm.get_field('raw_materials').grid.editable_fields = [
 			{fieldname: 'item_code', columns: 3},
 			{fieldname: 'qty', columns: 2},
@@ -135,7 +138,7 @@ frappe.ui.form.on("Production Product Item", {
 				"posting_date": cur_frm.doc.posting_date 
 			},
 			callback: function(r) {
-				frappe.model.set_value(cdt, cdn, "cop", r.message)
+				frappe.model.set_value(cdt, cdn, "cop", r.message);
 				cur_frm.refresh_field("cop")
 			}
 		})
@@ -146,7 +149,12 @@ frappe.ui.form.on("Production Product Item", {
 		// Following code added by SHIV on 2019/04/01
 		update_expense_account(frm, cdt, cdn);
 		/* ++++++++++ Ver 1.0.190401 Ends ++++++++++++*/
-		frappe.model.set_value(cdt, cdn, "production_type", frm.doc.production_type)
+		frappe.model.set_value(cdt, cdn, "production_type", frm.doc.production_type);
+
+		/// ########## Var.2020.11.03 Begins ##########
+		// Following code added by SHIV on 2020/11/03
+		frappe.model.set_value(cdt, cdn, "reading_select", null);
+		// ########## Var.2020.11.03 Ends ##########
 		cur_frm.refresh_fields()
 	},
 	
@@ -158,6 +166,45 @@ frappe.ui.form.on("Production Product Item", {
 		frappe.model.set_value(cdt, cdn, "cost_center", frm.doc.cost_center);
 	},
 	/* ++++++++++ Ver 1.0.190401 Ends ++++++++++++*/
+	
+	// Followng code is commented by SHIV on 2020/11/03 as the code is hard coded
+	// //Following code added by Kinley on 2020/10/29
+	// reading_select: function(frm, cdt, cdn){
+	// 	row = locals[cdt][cdn]
+	// 	if(row.reading_select == "6.1 - 12 ft (Length)(Post)")
+	// 	{
+	// 		if(row.item_code != '600271')
+	// 		{
+	// 			frappe.model.set_value(cdt, cdn, "reading_select","")
+	// 			frappe.throw("This reading is only applicable for item 600271: Dangchung (6\'1\" to 12\' -Others) Post")
+	// 		}
+	// 	}
+	// 	else if(row.reading_select == "12.1 - 17.11 ft (Length)(Post)")
+	// 	{
+	// 		if(row.item_code != '600272')
+	// 		{
+	// 			frappe.model.set_value(cdt, cdn, "reading_select","")
+	// 			frappe.throw("This reading is only applicable for item 600272: Flag Post (12\'1\" to 17\'11\")- Others Post")
+	// 		}
+	// 	}
+	// 	else if(row.reading_select == "18 ft and above (Length)(Post)")
+	// 	{
+	// 		if(row.item_code != '600273')
+	// 		{
+	// 			frappe.model.set_value(cdt, cdn, "reading_select","")
+	// 			frappe.throw("This reading is only applicable for item 600273: Tsim (18\' Above -others) Post")	
+	// 		}
+	// 	}
+	// 	else
+	// 	{
+	// 		if(row.item_code == "600271" || row.item_code == "600272" || row.item_code == "600273")
+	// 		{
+	// 			frappe.model.set_value(cdt, cdn, "reading_select","")
+	// 			frappe.throw("This reading is not applicable for this item")
+	// 		}
+	// 	}
+	// }
+	// /* +++++++++++++++++++++++++++++++++++++++++++*/
 })
 
 /* ++++++++++ Ver 1.0.190401 Begins ++++++++++*/
@@ -211,6 +258,21 @@ var update_items = function(frm){
 		frappe.model.set_value("Production Material Item", raw_materials[i].name, "warehouse", frm.doc.warehouse);
 	}
 }
+
+// ########## Ver.2020.11.03 BEGINS ##########
+// following code added by SHIV on 2020/11/03 inorder to remove existing hardcoding
+cur_frm.fields_dict['items'].grid.get_field('reading_select').get_query = function(frm, cdt, cdn){
+	var row = locals[cdt][cdn];
+	return {
+		query: "erpnext.controllers.queries.get_measurements",
+		filters: {
+			item_code: row.item_code,
+			item_sub_group: row.item_sub_group
+		}
+	};
+}
+// ########## Ver.2020.11.03 ENDS ##########
+
 
 cur_frm.fields_dict['items'].grid.get_field('expense_account').get_query = function(frm, cdt, cdn){
 	return {

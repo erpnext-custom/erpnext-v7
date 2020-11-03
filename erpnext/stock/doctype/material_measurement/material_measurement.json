@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "field:measurement_label", 
  "beta": 0, 
@@ -99,7 +99,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-11-01 06:24:00.883296", 
+ "modified": "2020-11-01 06:28:54.368655", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Material Measurement", 
