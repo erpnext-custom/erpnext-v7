@@ -1,7 +1,15 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
-
+'''
+--------------------------------------------------------------------------------------------------------------------------
+Version          Author          CreatedOn          ModifiedOn          Remarks
+------------ --------------- ------------------ -------------------  -----------------------------------------------------
+NA		  NORBU		                   NOV/03/2020        User now allocate the amount manually rather 
+								      than automatic like before. 
+		  
+--------------------------------------------------------------------------------------------------------------------------                                                                          
+'''
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
@@ -23,26 +31,47 @@ class HSDPayment(Document):
                 }[str(self.docstatus or 0)]
 
 	def validate_allocated_amount(self):
-		if not self.amount > 0:
-			frappe.throw("Amount should be greater than 0")	
-		total = flt(self.amount)
+		# Code added by phuntsho on nov 3 2020
+		# Manual amount allocation given the previous automatic method didn't allow users to select individual payment. 
+		total = 0 
 		to_remove = []
-
 		for d in self.items:
-			allocated = 0
-			if total > 0 and total >= d.payable_amount:
-				allocated = d.payable_amount
-			elif total > 0 and total < d.payable_amount:
-				allocated = total
-			else:
-				allocated = 0
-				to_remove.append(d)		
+			if not total > self.actual_amount:  
+				if not d.allocated_amount > 0: 
+					to_remove.append(d)
+				else:  
+					total += d.allocated_amount
 
-			d.allocated_amount = allocated
-			d.balance_amount = d.payable_amount - allocated
-			total-=allocated
+				d.balance_amount = d.payable_amount - d.allocated_amount
+			else: 
+				frappe.throw("Total amount cannot be greater than actual amount")
 
+		self.amount = total
 		[self.remove(d) for d in to_remove]
+		# --------- end of code --------
+
+		# --------- legacy code -----------
+		# if not self.amount > 0:
+		# 	frappe.throw("Amount should be greater than 0")	
+		# total = flt(self.amount)
+		# to_remove = []
+
+		# for d in self.items:
+		# 	allocated = 0
+		# 	if total > 0 and total >= d.payable_amount:
+		# 		allocated = d.payable_amount
+		# 	elif total > 0 and total < d.payable_amount:
+		# 		allocated = total
+		# 	else:
+		# 		allocated = 0
+		# 		to_remove.append(d)		
+
+		# 	d.allocated_amount = allocated
+		# 	d.balance_amount = d.payable_amount - allocated
+		# 	total-=allocated
+
+		# [self.remove(d) for d in to_remove]
+		# ----------- end of legacy code ------------
 
 	def on_submit(self):
 		self.adjust_outstanding()
@@ -70,6 +99,7 @@ class HSDPayment(Document):
 						frappe.throw("Paid Amount cannot be greater than the Total Amount for Receive POl <b>"+str(a.pol)+"</b>")
 					doc.db_set("paid_amount", paid_amount)
 					doc.db_set("outstanding_amount", a.balance_amount)	
+
 
 	def update_general_ledger(self):
 		gl_entries = []
@@ -126,4 +156,3 @@ class HSDPayment(Document):
 			row.update(d)
 		self.amount = total_amount
 		self.actual_amount = total_amount
-
