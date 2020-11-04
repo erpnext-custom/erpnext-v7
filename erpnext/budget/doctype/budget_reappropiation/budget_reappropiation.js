@@ -28,3 +28,25 @@ cur_frm.fields_dict.from_cost_center.get_query = function(doc) {
 		}
 	}
 }
+
+
+frappe.ui.form.on("Budget Reappropiation Detail", "amount", function(frm, cdt, cdn) {
+
+    calculate_value(frm, cdt, cdn);
+});
+
+function calculate_value(frm, cdt, cdn) {
+        var re_amount = 0;
+        frm.doc.items.forEach(function(d) {
+                if(d.amount) {
+
+                        re_amount += d.amount
+                }
+
+        })
+        frm.set_value("total_amount", re_amount);
+        cur_frm.refresh_field("total_amount");
+
+}
+
+

@@ -212,7 +212,7 @@ def make_round_off_gle(gl_map, debit_credit_diff):
 
 def delete_gl_entries(gl_entries=None, voucher_type=None, voucher_no=None,
 		adv_adj=False, update_outstanding="Yes"):
-
+	
 	from erpnext.accounts.doctype.gl_entry.gl_entry import validate_balance_type, \
 		check_freezing_date, update_outstanding_amt, validate_frozen_account
 
@@ -222,7 +222,6 @@ def delete_gl_entries(gl_entries=None, voucher_type=None, voucher_no=None,
 			voucher_type, voucher_no, against_voucher_type, against_voucher, cost_center
 			from `tabGL Entry`
 			where voucher_type=%s and voucher_no=%s""", (voucher_type, voucher_no), as_dict=True)
-
 	if gl_entries:
 		check_freezing_date(gl_entries[0]["posting_date"], adv_adj)
 

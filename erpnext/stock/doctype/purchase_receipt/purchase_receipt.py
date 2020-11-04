@@ -21,7 +21,10 @@ from erpnext.accounts.utils import get_account_currency
 from frappe.desk.notifications import clear_doctype_notifications
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
+from frappe.utils import flt, cint, getdate, get_datetime, get_url, nowdate, now_datetime, money_in_words
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from frappe.utils import flt, getdate, formatdate, cstr
+
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -71,6 +74,15 @@ class PurchaseReceipt(BuyingController):
 
 		pc_obj = frappe.get_doc('Purchase Common')
 		self.check_for_closed_status(pc_obj)
+		self.pr_po_date()
+
+        def pr_po_date(self):
+                for a in self.items:
+                        if a.purchase_order:
+                                po_date = frappe.db.get_value("Purchase Order", a.purchase_order, "transaction_date")
+                                if getdate(self.posting_date) <  getdate(po_date):
+                                        frappe.throw("Purchase Reciept Date cannot be before Purchase Order Date.")
+
 
 	def validate_with_previous_doc(self):
 		super(PurchaseReceipt, self).validate_with_previous_doc({

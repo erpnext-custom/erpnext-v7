@@ -60,7 +60,7 @@ class LeaveAllocation(Document):
 		self.new_leaves_allocated = round5(self.new_leaves_allocated)
 		balance = self.new_leaves_allocated
 		if self.carry_forward:
-			balance = round5(self.new_leaves_allocated) + round5(self.carry_forwarded_leaves)
+			balance = round5(self.new_leaves_allocated) + round5(self.carry_forwarded_leaves) + round5(self.cl_balance)
 		self.total_leaves_allocated = round5(balance)
 		#if flt(self.new_leaves_allocated) % 0.5:
 		#	frappe.throw(_("Leaves must be allocated in multiples of 0.5"), ValueMultiplierError)
@@ -105,7 +105,7 @@ class LeaveAllocation(Document):
 		self.carry_forwarded_leaves = get_carry_forwarded_leaves(self.employee, 
 			self.leave_type, self.from_date, self.carry_forward)
 
-		self.total_leaves_allocated = flt(self.carry_forwarded_leaves) + flt(self.new_leaves_allocated)
+		self.total_leaves_allocated = flt(self.carry_forwarded_leaves) + flt(self.new_leaves_allocated) + flt(self.cl_balance)
 
 		# Ver 1.0 Begins added by SSK on 22/08/2016, following block is added
 		if self.leave_type == 'Earned Leave' :
@@ -138,7 +138,8 @@ class LeaveAllocation(Document):
 			self.from_date, self.to_date)
 		
 		if flt(leaves_taken) > flt(self.total_leaves_allocated):
-			frappe.throw(_("Total allocated leaves {0} cannot be less than already approved leaves {1} for the period").format(self.total_leaves_allocated, leaves_taken), LessAllocationError)
+			pass
+			#frappe.throw(_("Total allocated leaves {0} cannot be less than already approved leaves {1} for the period").format(self.total_leaves_allocated, leaves_taken), LessAllocationError)
 
 @frappe.whitelist()
 def get_carry_forwarded_leaves(employee, leave_type, date, carry_forward=None):

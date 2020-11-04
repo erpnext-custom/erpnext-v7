@@ -319,7 +319,6 @@ class PurchaseInvoice(BuyingController):
 
 		# this sequence because outstanding may get -negative
 		self.make_gl_entries()
-
 		self.update_project()
 		self.update_fixed_asset()
 		self.consume_budget()
@@ -702,6 +701,8 @@ class PurchaseInvoice(BuyingController):
 					"cost_center": a.advance_cost_center
 				}, advance_account_currency)
 			)
+	def before_cancel(self):
+                self.set_status()
 
 	def on_cancel(self):
 		check_uncancelled_linked_doc(self.doctype, self.name)

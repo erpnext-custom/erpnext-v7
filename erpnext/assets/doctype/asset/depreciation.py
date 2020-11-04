@@ -15,22 +15,28 @@ from frappe import _
 from frappe.utils import flt, today, getdate
 from erpnext.accounts.accounts_custom_functions import update_jv
 
-def post_depreciation_entries(date=None):
+def post_depreciation_entries(asset=None, date=None):
 	if not date:
 		date = today()
-	for asset in get_depreciable_assets(date):
+	for asset in get_depreciable_assets(asset, date):
 		make_depreciation_entry(asset, date)
 		frappe.db.commit()
 
-def get_depreciable_assets(date):
-	return frappe.db.sql_list("""select a.name
+def get_depreciable_assets(asset, date):
+	cond = " and a.name = '{}'".format(asset) if asset else ""
+	return frappe.db.sql_list("""select distinct a.name
 		from tabAsset a, `tabDepreciation Schedule` ds
-		where a.name = ds.parent and a.docstatus=1 and ds.schedule_date<=%s
-			and a.disable_depreciation = 0 
-			and ifnull(ds.journal_entry, '')=''""", date)
+		where a.name = ds.parent 
+		and a.docstatus=1 
+		and ds.schedule_date<=%s
+		and a.disable_depreciation = 0 
+		and ifnull(ds.journal_entry, '')=''
+		{}
+	""".format(cond), date)
 
 @frappe.whitelist()
 def make_depreciation_entry(asset_name, date=None):
+	print('Posting entries for Asset : {}'.format(asset_name))
 	frappe.has_permission('Journal Entry', throw=True)
 	
 	if not date:
@@ -51,6 +57,7 @@ def make_depreciation_entry(asset_name, date=None):
 	value_after_dep = 0
 	for d in asset.get("schedules"):
 		if not d.journal_entry and getdate(d.schedule_date) <= getdate(date):
+			print('{}'.format(d.schedule_date))
 			je = frappe.new_doc("Journal Entry")
 			je.voucher_type = "Depreciation Entry"
 			je.posting_date = d.schedule_date

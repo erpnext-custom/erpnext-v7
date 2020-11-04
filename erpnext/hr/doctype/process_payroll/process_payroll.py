@@ -488,6 +488,7 @@ class ProcessPayroll(Document):
                 company_cc              = frappe.db.get_value("Company", self.company,"company_cost_center")
                 default_gpf_account     = frappe.db.get_single_value("HR Accounts Settings", "employee_contribution_pf")
                 salary_component_pf     = "PF"
+		ic_account 		= frappe.db.get_single_value("Accounts Settings", "intra_company_account")
 
                 # Filters
                 cond = self.get_filter_condition()
@@ -546,6 +547,7 @@ class ProcessPayroll(Document):
                                 (case when ifnull(sc.make_party_entry,0) = 1 then 'Payable' else 'Other' end),
                                 (case when ifnull(sc.make_party_entry,0) = 1 then 'Employee' else 'Other' end),
                                 (case when ifnull(sc.make_party_entry,0) = 1 then t1.employee else 'Other' end)
+                        having sum(ifnull(sd.amount,0)) != 0
                         order by t1.cost_center, sc.type, sc.name
                 """.format(self.fiscal_year, self.month, cond),as_dict=1)
 
@@ -584,8 +586,10 @@ class ProcessPayroll(Document):
                                 for r in remit_gl_list:
                                         remit_amount += flt(rec.amount)
                                         if r == default_gpf_account:
+						total_gpf_amount  = 0
+						# Cost Center wise Employer Contribution
                                                 for i in self.get_cc_wise_entries(salary_component_pf):
-                                                      posting.setdefault(rec.salary_component,[]).append({
+                                                        posting.setdefault(rec.salary_component,[]).append({
                                                                 "account"       : r,
                                                                 "debit_in_account_currency" : flt(i.amount),
                                                                 "cost_center"   : i.cost_center,
@@ -593,7 +597,34 @@ class ProcessPayroll(Document):
                                                                 "account_type"   : i.account_type if i.party_type == "Employee" else "",
                                                                 "party_type"     : i.party_type if i.party_type == "Employee" else "",
                                                                 "party"          : i.party if i.party_type == "Employee" else "" 
-                                                        })  
+                                                        })
+
+                                                        # Ver.20201007 Begins, by SHIV on 2020/10/07
+                                                        # Intra Company transaction for Employer PF
+                                                        # req.by CDCL Ticket#178, followed up by Ugyen Thinley
+							total_gpf_amount += flt(i.amount)
+							posting.setdefault(rec.salary_component,[]).append({
+								"account"       : ic_account,
+								"credit_in_account_currency" : flt(i.amount),
+								"cost_center"   : i.cost_center,
+								"party_check"   : 0
+							})
+                                                        # Ver.20201007 Ends
+
+						# Ver.20201007 Begins, by SHIV on 2020/10/07
+						# Intra Company transaction for Employer PF
+						# req.by CDCL Ticket#178, followed up by Ugyen Thinley
+						if flt(total_gpf_amount):
+							if not ic_account:
+								frappe.throw(_("Please setup <b>Intra Company Account</b> under <b>Accounts Settings</b>"))
+
+							posting.setdefault(rec.salary_component,[]).append({
+								"account"       : ic_account,
+								"debit_in_account_currency" : flt(total_gpf_amount),
+								"cost_center"   : company_cc,
+								"party_check"   : 0
+							})
+                                                # Ver.20201007 Ends
                                         else:
                                                 posting.setdefault(rec.salary_component,[]).append({
                                                         "account"       : r,
@@ -634,7 +665,6 @@ class ProcessPayroll(Document):
                         })
 			# Intra Company Entries
 			if cc_wise_totals:
-				ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
 				total_ic_amount = 0
 				if not ic_account:
 					frappe.throw(_("Please setup <b>Intra Company Account</b> under <b>Accounts Settings</b>"))
@@ -660,7 +690,7 @@ class ProcessPayroll(Document):
                 #
                 if posting:
                         # Budget check
-                        #self.check_budget(posting)
+                        self.check_budget(posting)
 			#self.inter_company_jv(posting)
                         for i in posting:
                                 if i == "to_payables":

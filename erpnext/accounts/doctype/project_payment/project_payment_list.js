@@ -19,8 +19,8 @@ frappe.listview_settings['Project Payment']={
 			//return [__(doc.status), colors[doc.status], "status,=," + doc.status];
 			return [__(doc.status), "red", "status,=," + doc.status];
 		}
-		else if(doc.docstatus==1 || doc.status == "Payment Received"){
-			return [__("Payment Received"), "green", "status,=," + doc.status];
+		else if(doc.docstatus==1 || doc.status == "Received" || doc.status == "Paid"){
+			return [__(doc.status), "green", "status,=," + doc.status];
 		}
 		else if(doc.docstatus==2 || doc.status == "Cancelled"){
 			return [__("Cancelled"), "dark grey", "status,=," + doc.status];

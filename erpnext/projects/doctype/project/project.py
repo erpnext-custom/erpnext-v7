@@ -49,13 +49,25 @@ class Project(Document):
 			self.load_tasks()
 		'''
 
-                # Following code added by SHIV on 11/08/2017 
-		if not self.get('__unsaved') and not self.get("activity_tasks"):
-			self.load_activity_tasks()
-			self.load_additional_tasks()
-			self.load_boq()
-			self.load_advance()
-			self.load_invoice()
+                # Following code added by SHIV on 11/08/2017
+                if not self.get('__unsaved'):
+                        if not self.get("activity_tasks"):
+                                self.load_activity_tasks()
+
+                        if not self.get("additional_tasks"):
+                                self.load_additional_tasks()
+
+                        # Following code commented by SHIV on 2019/06/20
+                        '''
+                        if not self.get("project_boq_item"):
+                                self.load_boq()
+
+                        if not self.get("project_advance_item"):
+                                self.load_advance()
+
+                        if not self.get("project_invoice_item"):
+                                self.load_invoice()
+                        '''
 
                 # Following code is commented and the subsequent is added by SHIV on 20/09/2017
                 """
@@ -81,6 +93,8 @@ class Project(Document):
 	def validate(self):
 		self.validate_dates()
 		self.validate_branch_cc()
+		self.validate_project_type_and_party()
+                self.update_party_info()
 
 		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
 		# Follwoing 2 lines are commented by SHIV on 2017/08/11
@@ -100,15 +114,63 @@ class Project(Document):
                         self.sync_additional_tasks()
 		self.activity_tasks = []
 		self.additional_tasks = []
+		
+		# Following code commented by SHIV on 2019/06/20
+                '''
 		self.project_advance_item = []
 		self.project_boq_item = []
 		self.project_invoice_item = []
-
+                '''
+                
 		# Following method added by SHIV on 03/11/2017
 		self.validate_branch_change()
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.send_welcome_email()
 
+        def validate_project_type_and_party(self):
+                """ Restrict user from changing party if there are advance/invoice transactions """
+
+                if not self.project_type:
+                        frappe.throw(_("Project type cannot be empty"), title="Data Missing")
+                elif self.party_type and not self.party:
+                        frappe.throw(_("Party cannot be empty"),title="Data Missing")
+                elif not self.party_type and self.party:
+                        frappe.throw(_("Party Type cannot be empty"),title="Data Missing")
+                else:
+                        #project_type = {"Internal": ["Employee","None"], "External": ["Supplier","Customer"]}
+                        project_type = {"Internal": ["Customer"], "External": ["Supplier"]}
+                        for key,value in project_type.iteritems():
+                                if self.project_type == key and (self.party_type or "None") not in value:
+                                        frappe.throw(_("Party type should be {0} for {1} projects").format("/".join(value),key), title="Invalid Data")
+
+                        prev_project_type = self.get_db_value("project_type") 
+                        prev_party        = self.get_db_value("party")
+
+                        fields = []
+                        if prev_project_type and prev_project_type != self.project_type:
+                                fields.append("Project Type")
+                        elif prev_party and prev_party != self.party:
+                                fields.append("Party")
+                        
+                        if fields:
+                                self.check_dependencies(fields[0])
+
+        def check_dependencies(self, field):
+                for dt in ["Project Advance", "Project Invoice"]:
+                        for t in frappe.get_all(dt, ["name"], {"project": self.name,"docstatus":("<",2)}):
+                                msg = '<b>Reference# : <a href="#Form/{1}/{0}">{0}</a></b>'.format(t.name,dt)
+                                frappe.throw(_("{2} cannot be changed for projects already having {1}<br>{0}").format(msg,dt,field), title="Invalid Operation")
+                                                
+        def update_party_info(self):
+                if self.project_type:
+                        if self.party_type and self.party:
+                                doc = frappe.get_doc(self.party_type, self.party)
+                                self.party_address = doc.get("customer_details") if self.party_type == "Customer" else doc.get("supplier_details") if self.party_type == "Supplier" else doc.get("employee_name")
+                                self.party_image = doc.image
+                        else:
+                                self.party_address = None
+                                self.party_image = None
+                                        
 	def validate_branch_cc(self):
                 if self.flags.dont_sync_tasks: return
                 
@@ -521,6 +583,8 @@ class Project(Document):
                         self.append("project_advance_item",{
                                 "advance_name": item.name,
                                 "advance_date": item.advance_date.strftime("%d-%m-%Y"),
+                                "advance_amount": flt(item.received_amount)+flt(item.paid_amount),
+                                "paid_amount": flt(item.paid_amount),
                                 "received_amount": flt(item.received_amount),
                                 "adjustment_amount": flt(item.adjustment_amount),
                                 "balance_amount": flt(item.balance_amount)
@@ -988,17 +1052,36 @@ def get_cost_center_name(project):
 @frappe.whitelist()
 def make_project_advance(source_name, target_doc=None):
         def update_master(source_doc, target_doc, source_partent):
-                target_doc.customer = source_doc.customer
+                #target_doc.customer = source_doc.customer
+                pass
         
         doclist = get_mapped_doc("Project", source_name, {
                 "Project": {
                                 "doctype": "Project Advance",
                                 "field_map":{
                                         "name": "project",
-                                        "customer": "customer"
+                                        "party_type": "party_type",
+                                        "party": "party",
+                                        "party_address": "party_address"
                                 },
                                 "postprocess": update_master
                         }
         }, target_doc)
         return doclist
 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+
+@frappe.whitelist()
+def make_boq(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_partent):
+                pass
+        
+        doclist = get_mapped_doc("Project", source_name, {
+                "Project": {
+                                "doctype": "BOQ",
+                                "field_map":{
+                                        "name": "project",
+                                },
+                                "postprocess": update_master
+                        }
+        }, target_doc)
+        return doclist

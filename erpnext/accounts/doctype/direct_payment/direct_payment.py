@@ -34,6 +34,9 @@ class DirectPayment(AccountsController):
 		self.post_gl_entry()
 		self.consume_budget()
 
+	def before_cancel(self):
+                self.set_status()
+
 	def on_cancel(self):
 		self.post_gl_entry()
 		self.cancel_budget_entry()
@@ -83,7 +86,7 @@ class DirectPayment(AccountsController):
 		#self.posting_date = nowdate()
 		
 		total_amt = flt(self.net_amount) + flt(self.tds_amount) + flt(self.deduction_amount)
-		if total_amt == self.amount:
+		if round(total_amt,2) == round(self.amount,2):
 			if self.payment_type == "Receive":
 				account_type = frappe.db.get_value("Account", self.debit_account, "account_type") or ""
 				if account_type == "Receivable" or account_type == "Payable":
@@ -256,7 +259,6 @@ class DirectPayment(AccountsController):
 							"remarks": self.remarks
 							})
 						)
-
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 		else:
 			frappe.throw("Total Debit is not equal to Total Credit. It should be equal")

@@ -174,8 +174,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-04-17 15:20:27.223547", 
- "modified_by": "Administrator", 
+ "modified": "2020-03-16 11:01:11.390704", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Maintenance", 
  "name": "Branch Fleet Manager", 
  "name_case": "", 
@@ -203,7 +203,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -219,6 +219,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }
  ], 

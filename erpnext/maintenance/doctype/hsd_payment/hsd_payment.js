@@ -4,6 +4,7 @@ cur_frm.add_fetch("branch", "expense_bank_account", "bank_account")
 cur_frm.add_fetch("fuelbook", "supplier", "supplier")
 cur_frm.add_fetch("branch", "expense_bank_account", "bank_account")
 
+
 frappe.ui.form.on('HSD Payment', {
 	onload: function(frm) {
 		if(!frm.doc.posting_date) {
@@ -94,4 +95,43 @@ frappe.ui.form.on("HSD Payment", "refresh", function(frm) {
 		};
 	    });
 })
-	
+
+frappe.ui.form.on("HSD Payment Item", {
+        "pol": function(frm, cdt, cdn) {
+                var item = locals[cdt][cdn]
+                rec_amount = flt(frm.doc.amount)
+                act_amount = flt(frm.doc.actual_amount)
+                if (item.pol) {
+                        frappe.call({
+                                method: "frappe.client.get_value",
+                                args: {
+                                        doctype: item.reference_type,
+                                        fieldname: ["payable_amount"],
+                                        filters: {
+                                                name: item.pol
+                                        }
+                                },
+                                callback: function(r) {
+                                        frappe.model.set_value(cdt, cdn, "payable_amount", r.message.payable_amount)
+                                        frappe.model.set_value(cdt, cdn, "allocated_amount", r.message.payable_amount)
+                                        cur_frm.refresh_field("payable_amount")
+                                        cur_frm.refresh_field("allocated_amount")
+
+                                        cur_frm.set_value("actual_amount", act_amount + flt(r.message.payable_amount))
+                                        cur_frm.refresh_field("actual_amount")
+                                        cur_frm.set_value("amount", rec_amount + flt(r.message.payable_amount))
+                                        cur_frm.refresh_field("amount")
+                                }
+                        })
+                }
+        },
+
+	 "before_items_remove": function(frm, cdt, cdn) {
+                doc = locals[cdt][cdn]
+                amount = flt(frm.doc.amount)
+                ac_amount = flt(frm.doc.actual_amount) - flt(doc.payable_amount)
+                cur_frm.set_value("actual_amount", ac_amount)
+                cur_frm.refresh_field("actual_amount")
+                cur_frm.trigger("amount")
+        }
+})

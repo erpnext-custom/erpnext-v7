@@ -27,3 +27,21 @@ cur_frm.fields_dict['items'].grid.get_field('account').get_query = function(frm,
 	}
 }
 
+frappe.ui.form.on("Supplementary Budget Item", "amount", function(frm, cdt, cdn) {
+
+    calculate_value(frm, cdt, cdn);
+});
+
+function calculate_value(frm, cdt, cdn) {
+        var sup_amount = 0;
+        frm.doc.items.forEach(function(d) {
+                if(d.amount) {
+
+                        sup_amount += d.amount
+                }
+
+        })
+        frm.set_value("total_amount", sup_amount);
+        cur_frm.refresh_field("total_amount");
+
+}

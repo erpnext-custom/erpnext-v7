@@ -11,9 +11,88 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse, prepare_gl
 from erpnext.accounts.utils import make_asset_transfer_gl
 from datetime import datetime
+from erpnext.assets.doctype.asset.depreciation import make_depreciation_entry
+from frappe.utils import today
 import os
 import subprocess
 
+
+def update_design():
+	for a in frappe.db.sql("select  employee, designation, employee_subgroup from `tabEmployee` where employee = 'CDCL9401003'", as_dict=True):
+		for b in frappe.db.sql("select name, employee, designation, grade from `tabTravel Claim` where name = 'CDCL9401003'", as_dict = True):
+			if a.designation != b.designation:
+				print("TC Desig: " + b.designation + "EM Design :" + a.designation)
+
+def update_ta_tc():
+	for a in frappe.db.sql("select name, employee, employee_name, ta from `tabTravel Claim` where name in ('TC180400029','TC180600209','TC181000204','TC181000205','TC190300191','TC190400026','TC190400095','TC190500013','TC190500098','TC190500160','TC190600017','TC190600096','TC190700098','TC190700181','TC190800137','TC190900013','TC190900014','TC190900109')", as_dict=True):
+		for b in frappe.db.sql("select name from `tabTravel Authorization` where name = '{}'".format(a.ta), as_dict=True):
+			frappe.db.sql("update `tabTravel Authorization` set employee ='CDCL0403002' where name = '{}'".format(b.name))
+			frappe.db.sql("update `tabTravel Claim` set employee = 'CDCL0403002' where name = '{}'".format(a.name))
+			print(str(a.name) + " and " + str(b.name))
+		
+
+def update_le():
+	count = 0
+	for a in frappe.db.sql("""
+			select name, employee, from_date from `tabLeave Allocation` where 
+			cl_balance + carry_forwarded_leaves + new_leaves_allocated != total_leaves_allocated - encashed_days and docstatus = 1 and leave_type = 'Earned Leave' and from_date >= '2020-01-01'
+		""", as_dict = 1):
+		
+		frappe.db.sql("""
+			update `tabLeave Allocation` set total_leaves_allocated = new_leaves_allocated + carry_forwarded_leaves + encashed_days + cl_balance where name = '{0}'""".format(a.name))
+		
+		for b in frappe.db.sql(""" select name from `tabLeave Allocation` where employee = '{0}' and from_date > '{1}' order by from_date asc""".format(a.employee, a.from_date), as_dict =1): 
+			d = frappe.get_doc('Leave Allocation', b.name)
+			d.save()
+			d.submit()
+			count += 1
+			print b.name, count
+
+def depreciate_assets():
+        count = 0
+        for a in frappe.db.sql("""
+                select a.name, a.value_after_depreciation-1 as value_after_depreciation,  
+                (select b.accumulated_depreciation_amount from `tabDepreciation Schedule` b where b.parent = a.name 
+        and b.journal_entry is not null order by b.idx desc limit 1) as accumulated_depreciation_amount from `tabAsset` a
+        where a.asset_sub_category = 'Semi Permanent Structure' and a.docstatus =1 and 
+        a.name = 'ASSET171100066'""", as_dict = 1):
+                'ASSET190600028-1'
+                '''doc = frappe.get_doc("Asset", a.name)
+                amt = 42285.76 + a.accumulated_depreciation_amount
+                row = doc.append ("schedules",{})
+                row.schedule_date = today()
+                row.depreciation_amount  = flt(42285.75)
+                row.depreciation_income_tax = flt(42285.75)
+                row.accumulated_depreciation_amount = amt
+                row.accumulated_depreciation_income_tax = amt
+                row.save()
+                row.submit()
+                make_depreciation_entry(a.name, today())
+                count += 1'''
+                print a.name, count
+
+def update_travel():
+	import csv
+	with open('/home/kinley/erp/travel.csv') as f:
+		data = csv.reader(f)
+		for row in data:
+			print("Employee ID :" + str(row[0]) + " Travel Claim : " + str(row[2]))
+			ta = frappe.db.get_value("Travel Claim", row[2], "ta")
+			
+
+def update_asset_depreciation():
+	import csv
+	with open('/home/kinley/erp/asset_for_depreciation.csv','r')as f:
+		data = csv.reader(f)
+		for row in data:
+			for a in frappe.db.sql("""select name, schedule_date, parent
+                      		from `tabDepreciation Schedule`
+                      		where schedule_date > now()
+                      		and parent = '{}'""".format(row[0]), as_dict=True):
+            
+            			frappe.db.sql("update `tabDepreciation Schedule` set schedule_date=now() where name ='{0}'".format(a.name))
+            			print("Changed schedule date for asset : " + row[0] + " Schedule Date: " + str(a.schedule_date))
+			
 def update_mr():
 	doc = frappe.get_doc("Process MR Payment", 'MRP200200016')
 	print doc.name
@@ -36,7 +115,7 @@ def check_stock_gl():
 			cc = "Dummy"
 
 def update_gl_stock_2019():
-	for a in frappe.db.sql("select name from `tabStock Entry` where name = 'SEMT18070012'", as_dict=1):
+	for a in frappe.db.sql("select name from `tabStock Entry` where name = 'SEMT18120032'", as_dict=1):
 		print(str(a.name))
 		self = frappe.get_doc("Stock Entry", a.name)
 		self.make_gl_entries()

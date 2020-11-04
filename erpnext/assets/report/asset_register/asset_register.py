@@ -162,7 +162,7 @@ def get_data(filters):
                         '''
                         # Ver 3.0.190131 Ends
                                 
-			net_useful_life = flt(a.gross_purchase_amount) - flt(actual_dep) - flt(opening)  
+			net_useful_life = flt(a.gross_purchase_amount) - flt(actual_dep) - flt(opening) 
 
 			net_income_tax = flt(a.gross_purchase_amount) - flt(a.iopening) - flt(a.depreciation_income_tax) - flt(a.opening_income)
 
@@ -172,7 +172,6 @@ def get_data(filters):
 			total_income += flt(a.depreciation_income_tax, 2)
 			total_net_income += flt(net_income_tax, 2)
 			total_opening += flt(opening, 2)
-			
 			row = {
 				"asset_code": a.name,
 				"asset_name": a.asset_name,

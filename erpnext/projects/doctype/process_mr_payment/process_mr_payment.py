@@ -19,15 +19,15 @@ class ProcessMRPayment(Document):
                 total_days = monthrange(cint(self.fiscal_year), cint(month))[1]
                 
 		if self.items:
-			total_ot = total_wage = total_health = salary = 0.0
+			total_ot = total_wages = total_health = salary = 0.0
 			
 			for a in self.items:
                                 self.duplicate_entry_check(a.employee, a.employee_type, a.idx)
                                 a.fiscal_year   = self.fiscal_year
                                 a.month         = self.month
                                 
-				#a.total_ot_amount = flt(a.hourly_rate) * flt(a.number_of_hours)
-				#a.total_wage = flt(a.daily_rate) * flt(a.number_of_days)
+			#	a.total_ot_amount = flt(a.hourly_rate) * flt(a.number_of_hours)
+			#	a.total_wage = flt(a.daily_rate) * flt(a.number_of_days)
 				
 				if a.employee_type == "GEP Employee":
                                         salary = frappe.db.get_value("GEP Employee", a.employee, "salary")
@@ -35,7 +35,7 @@ class ProcessMRPayment(Document):
                                                 a.total_wage = flt(salary)
 
                                         if flt(total_days) == flt(a.number_of_days):
-                                                a.total_wage = flt(salary)
+                                        	a.total_wage = flt(salary)
                                         
 				# Ver.1.0.20200205 Begins, Following code added by SHIV on 2020/01/05
 				a.total_wage = round(a.total_wage)
@@ -44,18 +44,18 @@ class ProcessMRPayment(Document):
 
 				a.total_amount = flt(a.total_ot_amount) + flt(a.total_wage)
 				total_ot += flt(a.total_ot_amount)
-				total_wage += flt(a.total_wage)
+				total_wages += flt(a.total_wage)
 				if a.employee_type == "GEP Employee":
 					# Ver.1.0.20200205 Begins, Following code added by SHIV on 2020/01/05
 					# Follwoing line replcaed by subsequent by SHIV
 					#a.health = flt(a.total_wage) * 0.01
-					a.health = round(flt(a.total_wage) * 0.01)
+					#a.health = round(flt(a.total_wage) * 0.01)
 					# Ver.1.0.20200205 Ends
 					a.wage_payable = flt(a.total_wage) - flt(a.health)
 					total_health += flt(a.health)
 				
-			total = total_ot + total_wage
-			self.wages_amount = flt(total_wage)
+			total = total_ot + total_wages
+			self.wages_amount = flt(total_wages)
 			self.ot_amount = flt(total_ot)
 			self.total_overall_amount = flt(total)
 			if a.employee_type == "GEP Employee":
@@ -326,7 +326,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         id_card,
                                         rate_per_day,
                                         rate_per_hour,
-										status,
+					status,
 					designation,
 					bank,
 					account_no,

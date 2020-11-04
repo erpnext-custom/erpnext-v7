@@ -53,7 +53,9 @@ def post_leave_credits(today=None):
         first_day_of_month = 1 if today.day == 1 else 0
         first_day_of_year  = 1 if today.day == 1 and today.month == 1 else 0
                 
-#        if first_day_of_month or first_day_of_year:
+	#if first_day_of_month or first_day_of_year:
+        f_date = get_first_day(add_days(today, -today.day))
+        t_date   = get_last_day(f_date)
 	elist = frappe.db.sql("""
 		select
 			t1.name, t1.employee_name, t1.date_of_joining,
@@ -72,8 +74,17 @@ def post_leave_credits(today=None):
 		and t1.employee_group = t2.parent
 		and (t2.credits_per_month > 0 or t2.credits_per_year > 0)
 		and t3.name = t2.leave_type
+		and not exists(select 1
+                                      from `tabLeave Allocation` as t4
+                                      where t4.employee = t1.name
+                                      and t4.docstatus != 2
+                                      and t4.from_date = '{1}'
+                                      and t4.to_date = '{2}'
+                                      and t4.leave_type = t3.name
+                                      )
+
 		order by t1.name, t2.leave_type
-	""".format(str(today)), as_dict=1)
+	""".format(str(today), f_date, t_date), as_dict=1)
 
 	counter = 0
 	for e in elist:
@@ -87,10 +98,11 @@ def post_leave_credits(today=None):
 			continue
 
 		# Monthly credits
-		if first_day_of_month and flt(e.credits_per_month) > 0:
+		if flt(e.credits_per_month) > 0:
 			# For Earned Leaved monthly credits are given for previous month
 			if e.leave_type == "Earned Leave":
 				start_date = get_first_day(add_days(today, -20))
+				#start_date = get_first_day(add_days(today, -today.day))
 				end_date   = get_last_day(start_date)
 			else:
 				start_date = get_first_day(today)
@@ -115,6 +127,7 @@ def post_leave_credits(today=None):
 
 		for la in leave_allocation:
 			if not frappe.db.exists("Leave Allocation", {"employee": e.name, "leave_type": e.leave_type, "from_date": la['from_date'], "to_date": la['to_date'], "docstatus": ("<",2)}):
+					
 				try:
 					doc = frappe.new_doc("Leave Allocation")
 					doc.employee             = e.name
@@ -128,6 +141,10 @@ def post_leave_credits(today=None):
 					logger.info("{0}|{1}|{2}|{3}|{4}|{5}".format("SUCCESS",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
 				except Exception as ex:
 					logger.exception("{0}|{1}|{2}|{3}|{4}|{5}".format("FAILED",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
+				'''
+				if e.leave_type == "Earned Leave":	
+					print("Leave Credit" + str(la['new_leaves_allocated']) + "leave Type :" + e.leave_type + "Employee :" + e.name + " Employee Name: "+ e.employee_name + "From Date :" +str(la['from_date']))
+				'''
 			else:
 				logger.warning("{0}|{1}|{2}|{3}|{4}|{5}".format("ALREADY ALLOCATED",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
 #        else:
@@ -205,7 +222,8 @@ def get_salary_tax(gross_amt):
                 """)
 
         if flt(flt(gross_amt) if flt(gross_amt) else 0.00) > flt(flt(max_limit[0][0]) if flt(max_limit[0][0]) else 0.00):
-                tax_amount = flt((((flt(gross_amt) if flt(gross_amt) else 0.00)-83333.00)*0.25)+11875.00)
+               # tax_amount = flt((((flt(gross_amt) if flt(gross_amt) else 0.00)-83333.00)*0.25)+11875.00)
+		tax_amount = flt((((flt(gross_amt) if flt(gross_amt) else 0.00)-125000.00)*0.30)+20208.00)
         else:
                 result = frappe.db.sql("""select b.tax from
                         `tabSalary Tax` a, `tabSalary Tax Item` b

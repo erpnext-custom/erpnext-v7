@@ -9,6 +9,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 */
 
 cur_frm.add_fetch("employee", "employee_name", "employee_name")
+cur_frm.add_fetch("employee", "approver_name", "approver_name")
 cur_frm.add_fetch("employee", "employee_subgroup", "grade")
 cur_frm.add_fetch("employee", "designation", "designation")
 cur_frm.add_fetch("employee", "department", "department")

@@ -96,9 +96,9 @@ erpnext.stock.PurchaseReceiptController = erpnext.buying.BuyingController.extend
 			} */
 
 			if(this.frm.doc.docstatus == 1 && this.frm.doc.status!="Closed") {
-				/*if (this.frm.has_perm("submit")) {
+				if (this.frm.has_perm("submit")) {
 					cur_frm.add_custom_button(__("Close"), this.close_purchase_receipt, __("Status"))
-				} */
+				} 
 			
 				if (this.frm.doc.status != "Completed") {
 					cur_frm.add_custom_button(__('Return'), this.make_purchase_return, __("Make"));

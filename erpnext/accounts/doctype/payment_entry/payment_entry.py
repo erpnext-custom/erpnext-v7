@@ -72,6 +72,7 @@ class PaymentEntry(AccountsController):
 		self.validate_transaction_reference()
 		self.set_title()
 		self.set_remarks()
+		self.d_amount = sum([flt(d.amount) for d in self.get("deductions")])
 		
 	def set_status(self):
                 self.status = {
@@ -86,7 +87,10 @@ class PaymentEntry(AccountsController):
 			frappe.throw(_("Difference Amount must be zero"))
 		self.make_gl_entries()
 		self.update_advance_paid()
-		
+
+	def before_cancel(self):
+                self.set_status()
+	
 	def on_cancel(self):
 		self.setup_party_account_field()
 		self.make_gl_entries(cancel=1)

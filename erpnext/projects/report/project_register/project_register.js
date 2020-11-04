@@ -16,10 +16,10 @@ frappe.query_reports["Project Register"] = {
 			"options":		"Branch"
 		},
 		{
-			"fieldname": 	"cost_center",
-			"label": 		("Cost Center"),
+			"fieldname": 	"project_category",
+			"label": 	("Project Category"),
 			"fieldtype": 	"Link",
-			"options":		"Cost Center"
+			"options":	"Project Category"
 		},		
 		{
 			"fieldname":	"from_date",

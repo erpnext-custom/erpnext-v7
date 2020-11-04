@@ -25,7 +25,10 @@ class TravelAuthorization(Document):
                 if self.workflow_state == "Rejected":
                         self.document_status = "Rejected"
                 if self.workflow_state == "Approved":
-                        self.document_status = "Approved"
+			if self.docstatus == 1:
+				self.document_status = "Approved"
+			else:
+				self.workflow_state = "Waiting Approval"
 
 	def validate(self):
 		if not self.branch:

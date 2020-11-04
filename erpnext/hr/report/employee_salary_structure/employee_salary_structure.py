@@ -32,8 +32,8 @@ def execute(filters=None):
 		row = [ss.employee, ss.employee_name,
                         ss.bank_name, ss.bank_account_no, 
 			ss.company, ss.branch, ss.department,
-                        ss.division, ss.section, ss.designation, 
-                        status,
+                        ss.division, ss.section, ss.designation, ss.employee_grade, 
+                        ss.employment_type, status,
                         ss.from_date, ss.to_date]
 			
 		for e in earning_types:
@@ -60,8 +60,8 @@ def get_columns(salary_structures):
 		_("Bank Name")+ "::80", _("Bank A/C#")+"::100", 
 		_("Company") + ":Link/Company:120",
                 _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120", _("Division") + ":Link/Division:120",
-                _("Section") + ":Link/Section:120", _("Designation") + ":Link/Designation:120",
-		_("Status") + "::100",
+                _("Section") + ":Link/Section:120", _("Designation") + ":Link/Designation:120",_("Grade") + "::100", 
+		_("Employment Type") +"::100",	_("Status") + "::100",
                 _("From Date") + ":Date:80", _("To Date") + ":Date:80"
 	]
 	earning_types = []

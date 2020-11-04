@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-06-07 11:13:32.670056", 
+ "modified": "2020-10-15 10:34:40.612106", 
  "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Budget", 
  "name": "Committed Budget Report", 
@@ -37,6 +37,9 @@
   }, 
   {
    "role": "HR Manager"
+  }, 
+  {
+   "role": "Projects User"
   }
  ]
 }

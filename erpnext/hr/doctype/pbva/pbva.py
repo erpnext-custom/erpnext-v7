@@ -140,6 +140,12 @@ class PBVA(Document):
                                                 and sl.actual_basic = 0
                                                 and sl.docstatus = 1
                                                 and sl.fiscal_year = {0}
+						and (sd.salary_component = 'Basic Pay'
+                                                        or exists(select 1 from `tabSalary Component` sc
+                                                                        where sc.name = sd.salary_component
+                                                                        and sc.is_pf_deductible = 1
+                                                                        and sc.type = 'Earning')
+                                                )
                                                 and exists(select 1
                                                                 from `tabSalary Slip Item` ssi, `tabSalary Structure` ss
                                                                 where ssi.parent = sl.name

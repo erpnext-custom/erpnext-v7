@@ -85,7 +85,7 @@ class Bonus(Document):
                                                 and sl.docstatus = 1
                                                 and sl.fiscal_year = '{0}'
                                                 and exists(select 1
-                                                                from `tabSalary Structure Item` ssi, `tabSalary Structure` ss
+                                                                from `tabSalary Slip Item` ssi, `tabSalary Structure` ss
                                                                 where ssi.parent = sl.name
                                                                 and ss.name = ssi.salary_structure
                                                                 and ss.eligible_for_annual_bonus = 1)

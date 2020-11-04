@@ -137,6 +137,7 @@ class SalesInvoice(SellingController):
 		self.update_time_sheet(self.name)
 
 	def before_cancel(self):
+		self.set_status()
 		self.update_time_sheet(None)
 
 	def on_cancel(self):

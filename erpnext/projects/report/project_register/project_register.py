@@ -31,6 +31,8 @@ def get_columns(filters):
                                 ("Balance(A+B-C-D-E-F)")+ ":Currency:150",
                                 ("Branch")              + ":Link/Branch:120",
                                 ("Cost Center")         + ":Link/Cost Center:120",
+				("Project Category")    + ":Link/Project Category:120",
+				("Sub Category")        + ":Link/Project Sub Category:120",
                                 ("Created By")          + ":Data:120",
                                 ("Created Date")        + ":Date:120",
                                 ("Modified By")         + ":Data:120",
@@ -47,7 +49,8 @@ def get_columns(filters):
                                 ("Exp End Date")        + ":Date:120",
                                 ("Project Value (A)")   + ":Currency:120",
                                 ("Branch")              + ":Link/Branch:120",
-                                ("Cost Center")         + ":Link/Cost Center:120"
+				("Project Category")    + ":Link/Project Category:120",
+				("Sub Category")        + ":Link/Project Sub Category:120"
                         ]                
 
         return cols
@@ -65,8 +68,9 @@ def get_data(filters):
                                         expected_start_date,
                                         expected_end_date,
                                         ifnull(project_value,0) as project_value,
-                                        branch,
-                                        cost_center,
+                                        branch, cost_center,
+					project_category,
+					project_sub_category,
                                         owner,
                                         creation,
                                         modified_by,
@@ -86,7 +90,8 @@ def get_data(filters):
                                         expected_end_date,
                                         ifnull(project_value,0) as project_value,
                                         branch,
-                                        cost_center
+					project_category,
+					project_sub_category
                                 from `tabProject` p
                                 {0}
                                 order by creation desc
@@ -173,8 +178,8 @@ def get_conditions(filters):
         if filters.get("branch"):
                 cond.append('branch = "{0}"'.format(filters.get("branch")))
 
-        if filters.get("cost_center"):
-                cond.append('cost_center = "{0}"'.format(filters.get("cost_center")))
+        if filters.get("project_category"):
+                cond.append('project_category = "{0}"'.format(filters.get("project_category")))
 
         if filters.get("from_date"):
                 cond.append("expected_start_date >= \'{0}\'".format(str(filters.get("from_date"))))

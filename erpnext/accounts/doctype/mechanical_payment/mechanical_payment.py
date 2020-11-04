@@ -101,6 +101,9 @@ class MechanicalPayment(AccountsController):
 		self.make_gl_entry()
 		self.update_ref_doc()
 
+	def before_cancel(self):
+                self.set_status()
+	
 	def on_cancel(self):	
 		if self.clearance_date:
                         frappe.throw("Already done bank reconciliation.")
