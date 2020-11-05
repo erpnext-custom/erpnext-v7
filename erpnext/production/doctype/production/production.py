@@ -117,10 +117,9 @@ class Production(StockController):
 
 	########## Ver.2020.11.02 Begins ##########
 	# following method created by SHIV on 2020/11/02 
-	def validate_raw_materials(self):
+	def validate_raw_materials(self, prod_items):
 		''' validation for raw materials '''
 		total_raw_material_qty = 0
-
 		for item in self.get("raw_materials"):
 			if item.item_code not in prod_items:
 				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
@@ -144,9 +143,8 @@ class Production(StockController):
 		self.total_raw_material_qty = total_raw_material_qty
 
 	# following method created by SHIV on 2020/11/02
-	def validate_production_materials(self):
+	def validate_production_materials(self, prod_items):
 		''' validation for production materials '''
-		prod_items = self.get_production_items()
 		total_production_qty = 0
 
 		for item in self.get("items"):
@@ -215,8 +213,9 @@ class Production(StockController):
 		self.total_production_qty = total_production_qty
 
 	def validate_items(self):
-		self.validate_raw_materials()
-		self.validate_production_materials()
+		prod_items = self.get_production_items()
+		self.validate_raw_materials(prod_items)
+		self.validate_production_materials(prod_items)
 
 	# following method replaced with the above one by SHIV on 2020/11/02
 	'''
