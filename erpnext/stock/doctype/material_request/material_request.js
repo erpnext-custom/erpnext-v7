@@ -44,6 +44,21 @@ frappe.ui.form.on('Material Request', {
                 	row.grid_form.fields_dict.warehouse.refresh()
 		}
 	}, */
+	title1: function(frm) {
+                        if(frm.doc.title1 == 'Stock Request'){
+                                frm.set_value("material_request_type", "Purchase");
+                        }
+                        else if (frm.doc.title1 = 'Material Request') {
+                                frm.set_value("material_request_type", "Material Issue");
+                        }
+                        else
+                                {
+                                frm.set_value("material_request_type", frm.doc.material_request_type);
+                                }
+
+                },
+
+
 	onload: function(frm) {
 		if(!frm.doc.creation_date) {
 			frm.set_value("creation_date", get_today())

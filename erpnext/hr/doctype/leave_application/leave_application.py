@@ -545,7 +545,8 @@ def get_leave_balance_on(employee, leave_type, ason_date, allocation_records=Non
         if allocation:
                 leaves_taken = get_approved_leaves_for_period(employee, leave_type, allocation.from_date, ason_date)
 		if leave_type == "Medical Leave":
-			frappe.msgprint(str(leaves_taken))
+			pass
+			#frappe.msgprint(str(leaves_taken))
                 balance      = flt(allocation.total_leaves_allocated) - flt(leaves_taken) + flt(leaves)
                 if balance <= 0:
                         balance = flt(allocation.total_leaves_allocated) - flt(leaves_taken)

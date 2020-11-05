@@ -1692,7 +1692,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-08-05 10:52:37.838265", 
+ "modified": "2020-10-27 10:17:56.685759", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Vehicle Logbook", 
@@ -1784,7 +1784,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -1800,6 +1800,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }, 
   {

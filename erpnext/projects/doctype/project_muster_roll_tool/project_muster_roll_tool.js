@@ -4,27 +4,27 @@ frappe.ui.form.on("Project Muster Roll Tool", {
 	},
 	
 	onload: function(frm) {
-		erpnext.project_muster_roll_tool.load_employees(frm);
+		erpnext.to_cost_center_muster_roll_tool.load_employees(frm);
 	},
 
-	current_project: function(frm) {
-		erpnext.project_muster_roll_tool.load_employees(frm);
+	current_to_cost_center: function(frm) {
+		erpnext.to_cost_center_muster_roll_tool.load_employees(frm);
 	},
 
-	project: function(frm) {
-		erpnext.project_muster_roll_tool.load_employees(frm);
+	to_cost_center: function(frm) {
+		erpnext.to_cost_center_muster_roll_tool.load_employees(frm);
 	},
 });
 
 
-erpnext.project_muster_roll_tool = {
+erpnext.to_cost_center_muster_roll_tool = {
 	load_employees: function(frm) {
-		if(frm.doc.project) {
+		if(frm.doc.to_cost_center) {
 			frappe.call({
-				method: "erpnext.projects.doctype.project_muster_roll_tool.project_muster_roll_tool.get_employees",
+				method: "erpnext.to_cost_centers.doctype.project_muster_roll_tool.project_muster_roll_tool.get_employees",
 				args: {
-					project: frm.doc.project,
-					current_project: frm.doc.current_project,
+					to_cost_center: frm.doc.to_cost_center,
+					current_to_cost_center: frm.doc.from_cost_center,
 				},
 				callback: function(r) {
 					if(r.message['unmarked'].length > 0) {
@@ -143,15 +143,15 @@ erpnext.EmployeeSelector = Class.extend({
 				});
 				if (frm.doc.date_of_transfer) {
 					frappe.call({
-						method: "erpnext.projects.doctype.project_muster_roll_tool.project_muster_roll_tool.transfer",
+						method: "erpnext.to_cost_centers.doctype.project_muster_roll_tool.project_muster_roll_tool.transfer",
 						args:{
 							"employee_list":employee_present,
-							"project":frm.doc.project,
+							"to_cost_center":frm.doc.to_cost_center,
 							date_of_transfer: frm.doc.date_of_transfer,
 						},
 
 						callback: function(r) {
-							erpnext.project_muster_roll_tool.load_employees(frm);
+							erpnext.to_cost_center_muster_roll_tool.load_employees(frm);
 
 						}
 					});

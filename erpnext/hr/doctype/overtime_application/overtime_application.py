@@ -20,7 +20,7 @@ class OvertimeApplication(Document):
 		#self.check_status()
 		self.validate_submitter()
          	#self.check_budget()
-		self.post_journal_entry()
+		#self.post_journal_entry()
 
 	def on_cancel(self):
 		self.check_journal()

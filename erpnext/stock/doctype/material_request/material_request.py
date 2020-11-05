@@ -25,6 +25,9 @@ from erpnext.manufacturing.doctype.production_order.production_order import get_
 from frappe.model.naming import make_autoname
 from erpnext.custom_autoname import get_auto_name
 from erpnext.custom_utils import check_future_date
+from erpnext.custom_workflow import verify_mr_workflow
+
+
 
 # form_grid_templates = {
 # 	"items": "templates/form_grid/material_request_grid.html"
@@ -115,6 +118,13 @@ class MaterialRequest(BuyingController):
 				frappe.throw("Setup MR Approver for <b>" + str(self.temp_cc) + "</b> in Document Approver")
 			else:
 				self.approver = app
+
+		if self.title1 == 'Stock Request':
+                        if 'MR Manager' not in frappe.get_roles(frappe.session.user):
+                                frappe.throw("""<b> You Cannot Apply Material Request of Type Stock Request,
+                                Contact Admin/Store Manager </b> """)
+
+                verify_mr_workflow(self)
 		
 		# self.validate_qty_against_so()
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated

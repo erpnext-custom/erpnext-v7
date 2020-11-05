@@ -15,6 +15,47 @@ import os
 import subprocess
 
 
+def update_tds():
+        count = 0
+        for a in frappe.db.sql("""
+                select name, account from `tabTDS Remittance` where docstatus = 1""", as_dict = 1):
+                branch = frappe.db.get_value("Branch", {'expense_bank_account': a.account}, "name")
+                cost_center = frappe.get_doc("Cost Center", {'branch': branch}).name
+                gl = frappe.db.sql(""" select name from `tabGL Entry` where voucher_type = 'TDS Remittance' and voucher_no = '{0}'
+                """.format(a.name), as_dict = 1)
+                for b in gl:
+                        frappe.db.sql(""" update `tabGL Entry` set cost_center = '{0}' where name = '{1}' and voucher_type = 'TDS Remittance' and voucher_no = '{2}'""".format(cost_center, b.name, a.name))
+                
+		count += 1
+        	print count, a.name
+
+def upload_att():
+        import csv
+        with open('/home/frappe/erp/att1.csv','r')as f:
+                data = csv.reader(f)
+                count = 1
+                for row in data:
+                        doc = frappe.new_doc("Attendance")
+                        doc.branch = 'NS-Head Office'
+                        doc.company = 'GYALSUNG INFRA'
+                        doc.employee = row[0]
+                        doc.employee_name = row[1]
+                        doc.status = row[3]
+                        doc.att_date = row[2]
+                        doc.save()
+                        doc.submit()
+                        count += 1
+                        print count, doc.name, doc.att_date
+
+def update_cc():
+	for a in frappe.db.sql("select name from `tabCost Center` where modified >= '2020-10-23'", as_dict = 1):
+		activity_code = a.name[0:4] + '0'
+		activity_sub_code = a.name[0:5]
+		
+		frappe.db.sql(""" update `tabCost Center` set activity_code = '{0}', activity_sub_code = '{1}' where name = '{2}'
+			""".format(activity_code, activity_sub_code, a.name))
+		print type(activity_code), activity_code, activity_sub_code, a.name
+
 def update_pe():
         for b in frappe.db.sql("""
                 select pe.name from `tabPayment Entry` pe, `tabPayment Entry Deduction` ped where ped.parent = pe.name and pe.docstatus = 1""", as_dict = 1):

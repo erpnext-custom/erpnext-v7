@@ -46,7 +46,8 @@ class AssignBranch(Document):
 		for doc, names in user_perms.items():
 			if doc == 'Branch':
 				for a in names:
-					frappe.permissions.remove_user_permission(doc, a, self.user)
+					pass
+					#frappe.permissions.remove_user_permission(doc, a, self.user)
 			
 		#Add the branch permissions back as per assigned branches
 		frappe.permissions.add_user_permission("Branch", self.current_branch, self.user)

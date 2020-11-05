@@ -97,6 +97,12 @@ def get_data():
 					"description": _("Overtime Register"),
 					"doctype": "Overtime Entry"
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "Project Muster Roll Tool",
+                                        "label": "Project Muster Roll Tool",
+                                        "description": _("MR Transfer tool"),
+                                },
 			]
 		},
 		{

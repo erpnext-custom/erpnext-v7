@@ -584,7 +584,7 @@ cur_frm.cscript.initial_stock_templates = function(doc) {
                 new_row.qty = 0;
                 new_row.basic_rate = r.message[0]['rate_amount'];
                 new_row.expense_account = r.message[0]['expense_account'];
-                new_row.cost_center = r.message[0]['selling_cost_center'];
+                //new_row.cost_center = r.message[0]['selling_cost_center'];
                 new_row.t_warehouse = doc.to_warehouse;
                 refresh_field("items");
             }
@@ -633,8 +633,7 @@ cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(
 	return {
             "filters": {
                 "is_disabled": 0,
-                "is_group": 0,
-                "branch": frm.branch
+                "is_group": 0
             }
         };
 }
