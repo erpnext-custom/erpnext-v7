@@ -3,7 +3,7 @@
 
 frappe.ui.form.on('Equipment Hiring Form', {
 	refresh: function(frm) {
-		if(frm.doc.private == "Private") {
+		/*if(frm.doc.private == "Private") {
 			cur_frm.set_df_property("advance_amount", "reqd", 1)
 		}
 
@@ -15,13 +15,13 @@ frappe.ui.form.on('Equipment Hiring Form', {
 				};
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
-		}
+		}*/
 
 		cur_frm.add_custom_button(__('Logbooks'), function() {
 			frappe.route_options = {
-				"Vehicle Logbook.ehf_name": me.frm.doc.name,
+				"Logbook.equipment_hiring_form": me.frm.doc.name,
 			};
-			frappe.set_route("List", "Vehicle Logbook");
+			frappe.set_route("List", "Logbook");
 		}, __("View"));
 
 		cur_frm.add_custom_button(__('Invoices'), function() {
@@ -43,7 +43,7 @@ frappe.ui.form.on('Equipment Hiring Form', {
 			frm.set_value("request_date", get_today());
 		}
 		
-		if(frm.doc.__islocal) {
+		/*if(frm.doc.__islocal) {
                         frappe.call({
                                 method: "erpnext.custom_utils.get_user_info",
                                 args: {"user": frappe.session.user},
@@ -52,9 +52,9 @@ frappe.ui.form.on('Equipment Hiring Form', {
                                         cur_frm.set_value("branch", r.message.branch);
                                 }
                         });
-                }
+                }*/
 	},
-	"total_hiring_amount": function(frm) {
+	/*"total_hiring_amount": function(frm) {
 		if(frm.doc.docstatus != 1 && frm.doc.private == "Private") {
 			frm.set_value("advance_required", frm.doc.total_hiring_amount);
 			if(frm.doc.prev_advance_balance > 0){
@@ -85,10 +85,11 @@ frappe.ui.form.on('Equipment Hiring Form', {
 			frm.set_value("advance_amount", frm.doc.advance_required - frm.doc.prev_advance_balance);
 		else
 			frm.set_value("advance_amount", -frm.doc.prev_advance_balance);
-	} 	
+	} */	
 });
 
 cur_frm.add_fetch("tc_name", "terms", "terms")
+cur_frm.add_fetch("equipment", "supplier", "supplier")
 
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("customer", "location", "address")
@@ -298,7 +299,7 @@ function calculate_amount(frm, cdt, cdn) {
 	
 }
 
-//Filter equipments based on branch
+/*//Filter equipments based on branch
 frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 	frm.fields_dict['approved_items'].grid.get_field('equipment').get_query = function(doc, cdt, cdn) {
 		doc = locals[cdt][cdn]
@@ -342,6 +343,7 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 		}
 	});
 });
+*/
 
 cur_frm.cscript.update_status = function(){
 	var doc = cur_frm.doc;
@@ -371,7 +373,7 @@ frappe.ui.form.on("Hiring Approval Detail", "refresh", function(frm) {
     });
 })
 
-cur_frm.fields_dict['approved_items'].grid.get_field('tender_hire_rate').get_query = function(frm, cdt, cdn) {
+/*cur_frm.fields_dict['approved_items'].grid.get_field('tender_hire_rate').get_query = function(frm, cdt, cdn) {
 	var d = locals[cdt][cdn];
 	return {
 		filters: [
@@ -383,7 +385,7 @@ cur_frm.fields_dict['approved_items'].grid.get_field('tender_hire_rate').get_que
 		['Tender Hire Rate', 'equipment_type', '=', d.equipment_type]
 		]
 	}
-}
+}*/
 
 function get_advance_balance(form) {
 	if(form.doc.branch && form.doc.private && form.doc.customer)

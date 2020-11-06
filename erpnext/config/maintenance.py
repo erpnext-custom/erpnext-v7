@@ -50,6 +50,21 @@ def get_data():
 					"name": "Equipment Modifier Tool",
 					"description": _("Equipment Modifier Tool"),
 				},
+				{
+					"type": "doctype",
+					"name": "Expense Head",
+					"label": "Define Expense Heads",
+				},
+				{
+					"type": "doctype",
+					"name": "Downtime Reason",
+					"label": "Define Downtime Reasons",
+				},
+				{
+					"type": "doctype",
+					"name": "Offence",
+					"label": "Define Offence",
+				},
 			]
 		},
 		{
@@ -108,6 +123,50 @@ def get_data():
                                         "doctype": "POL"
                                 },
 
+			]
+		},
+		{
+			"label": _("EME Reports"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Daily EME Expenses",
+					"doctype": "Logbook"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Expense and Performance Summary",
+					"doctype": "Logbook"
+				},
+			]
+		},
+		{
+			"label": _("EME Transactions"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Equipment Hiring Form",
+					"label": "Equipment Hiring Form",
+				},
+				{
+					"type": "doctype",
+					"name": "Logbook",
+					"label": "Logbooks",
+				},
+				{
+					"type": "doctype",
+					"name": "EME Payment",
+					"label": "EME Payment",
+				},
+				{
+					"type": "doctype",
+					"name": "Incident",
+					"label": "Report Incident",
+				},
 			]
 		},
 	]

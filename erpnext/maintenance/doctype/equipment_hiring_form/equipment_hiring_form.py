@@ -12,7 +12,30 @@ from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 class EquipmentHiringForm(Document):
 	def validate(self):
-		check_future_date(self.request_date)
+		self.validate_date()
+		self.validate_amount()
+		self.validate_supplier()
+		self.fetch_reading()
+
+	def validate_date(self):
+		if self.start_date > self.end_date:
+			frappe.throw("Start Date cannot be greater than End Date")
+
+	def validate_amount(self):
+		if not self.rate > 0:
+			frappe.throw("Hiring Rate should be greater than zero")
+	
+	def validate_supplier(self):
+		if not self.supplier:
+			frappe.throw("Setup supplier in Equipment Master")
+
+	def fetch_reading(self):
+		self.reading_based_on = frappe.db.get_value("Equipment Model", self.equipment_model, "reading_based_on")
+		if not self.reading_based_on:
+			frappe.throw("Set Reading Based On in Equipment Model")	
+
+
+"""		check_future_date(self.request_date)
 		self.check_date_approval()
 		self.check_duplicate()
 		self.calculate_totals()
@@ -142,7 +165,7 @@ class EquipmentHiringForm(Document):
                                 to_datetime = str(get_datetime(str(a.to_date) + ' ' + str(a.to_time)))
 
                                 result = frappe.db.sql("""
-                                        select ehf_name
+"""                                        select ehf_name
                                         from `tabEquipment Reservation Entry`
                                         where equipment = '{0}'
                                         and docstatus = 1
@@ -152,7 +175,7 @@ class EquipmentHiringForm(Document):
                                                 or
                                                 ('{3}' <= concat(from_date,' ',from_time) and '{4}' >= concat(to_date,' ',to_time))
                                         )
-                                """.format(a.equipment, from_datetime, to_datetime, from_datetime, to_datetime), as_dict=True)
+"""                                """.format(a.equipment, from_datetime, to_datetime, from_datetime, to_datetime), as_dict=True)
 
 				for r in result:
                                         frappe.throw(_("The equipment {0} is already in use from by {1}").format(a.equipment, r.ehf_name))
@@ -231,7 +254,7 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
         # Needs to be set back later
         '''
 	return frappe.db.sql("""
-                        select
+"""                        select
                                 e.name,
                                 e.equipment_type,
                                 e.equipment_number
@@ -248,11 +271,11 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
                                                 (a.from_date between %s and %s or a.to_date between %s and %s)
                                                 )
                                         and a.equipment = e.name)
-                        """, (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
+"""                        """, (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
         '''
         
         return frappe.db.sql("""
-                        select
+"""                        select
                                 e.name,
                                 e.equipment_type,
                                 e.equipment_number
@@ -276,7 +299,7 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
                                 idx desc,
                                 name, equipment_type, equipment_number
                         limit %(start)s, %(page_len)s
-                        """.format(**{
+"""                        """.format(**{
                                 'key': searchfield,
                                 'mcond': get_match_cond(doctype)
                         }),
@@ -316,3 +339,5 @@ def get_advance_balance(branch, customer):
 		return data
 	else:
 		frappe.throw("Select Equipment Hiring Form first!")
+"""
+

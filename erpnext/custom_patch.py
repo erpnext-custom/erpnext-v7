@@ -6,6 +6,11 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def update_order():
+	for a in frappe.db.sql("select name from `tabExpense Head`", as_dict=1):
+		doc = frappe.get_doc("Expense Head", a.name)
+		doc.db_set("order_index", doc.order)
+
 #addded bank name and bank account name in overtime application and updated for previous transactions (Tashi)
 def update_ot():
 	for ot in frappe.db.sql("select name, employee from `tabOvertime Application` where docstatus <= 1", as_dict = 1):

@@ -48,6 +48,9 @@ def get_notification_config():
 				"claim_status": ("not in", ("Rejected by HR", "Rejected by Supervisor"))
 			},
 			"Leave Encashment": {"docstatus": 0},
-			"Overtime Application": {"docstatus": 0}
+			"Overtime Application": {"docstatus": 0},
+			"Equipment Hiring Form": {"docstatus": 0},
+			"Logbook": {"docstatus": 0},
+			"EME Payment": {"docstatus": 0}
 		}
 	}
