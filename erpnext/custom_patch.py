@@ -15,6 +15,13 @@ import os
 import subprocess
 
 
+def update_ot_cc():
+        for b in frappe.db.sql(" select name, branch from `tabOvertime Application` where docstatus <= 1", as_dict = 1):
+                doc = frappe.get_doc("Overtime Application", b.name)
+                cc = frappe.get_doc("Cost Center", {'branch': b.branch}).name
+                doc.db_set("cost_center", cc)
+                print doc.name, cc
+
 def update_tds():
         count = 0
         for a in frappe.db.sql("""

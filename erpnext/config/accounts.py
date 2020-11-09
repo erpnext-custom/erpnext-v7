@@ -230,6 +230,13 @@ def get_data():
 					"description": "Fund Requisition",
 					"hide_count": True
 				},
+			
+				{
+                                        "type": "doctype",
+                                        "name": "Process Overtime Payment",
+                                        "description": "Process Overtime Payment",
+                                        "hide_count": False
+                                },
 			]
 		},
 		{

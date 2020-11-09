@@ -2698,8 +2698,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-07-07 14:40:43.183982", 
- "modified_by": "ucdorji@gyalsunginfra.bt", 
+ "modified": "2020-11-06 15:35:42.831764", 
+ "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Purchase Order", 
  "owner": "Administrator", 
@@ -2707,7 +2707,7 @@
   {
    "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -2721,7 +2721,7 @@
    "role": "Purchase Manager HQ", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "write": 1
   }, 
   {
