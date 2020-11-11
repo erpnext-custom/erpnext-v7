@@ -75,13 +75,16 @@ frappe.ui.form.on('Production', {
 		update_items(frm);
 	},
 	/* ++++++++++ Ver 1.0.190401 Ends ++++++++++++*/
+	get_product: function(frm){
+		get_finish_product(frm);
+	}
 });
 
 frappe.ui.form.on("Production", "refresh", function(frm) {
     cur_frm.set_query("warehouse", function() {
         return {
-                query: "erpnext.controllers.queries.filter_branch_wh",
-                filters: {'branch': frm.doc.branch}
+            query: "erpnext.controllers.queries.filter_branch_wh",
+            filters: {'branch': frm.doc.branch}
         }
     });
 
@@ -242,13 +245,37 @@ cur_frm.fields_dict['items'].grid.get_field('vehicle_no').get_query = function(f
 							        };
 }
 
-
-/*cur_frm.fields_dict['items'].grid.get_field('vehicle_no').get_query = function(frm, cdt, cdn) {
-                var d = locals[cdt][cdn];
-                return {
-                          query: "erpnext.controllers.queries.get_equipment_no",
-			  filters: {"is_disabled": 0}
-                             }
+function get_finish_product(frm){
+	if (frm.doc.branch && frm.doc.raw_materials){
+		return frappe.call({
+				method: "get_finish_product",
+				doc: cur_frm.doc,
+				callback: function(r, rt){					
+					if(r.message){
+						console.log(r.message);
+						cur_frm.clear_table("items");
+						r.message.forEach(function(rec) {
+							var row = frappe.model.add_child(cur_frm.doc, "Production Product Item", "items");
+							row.item_code = rec['item_code'];
+							row.item_name = rec['item_name'];		
+							row.qty = rec['qty'];
+							row.uom = rec['uom'];
+							row.item_group = rec['item_group'];
+							row.price_template = rec['price_template'];
+							row.cop = rec['cop'];
+							row.cost_center = rec['cost_center'];
+							row.warehouse = rec['warehouse'];
+							row.expense_account = rec['expense_account'];
+						});
+					}
+					else
+					{
+						cur_frm.clear_table("items");
+					}					
+				cur_frm.refresh();
+				},
+            });     
+	}else{
+		frappe.msgprint("To get the finish product, please enter the branch and raw material");
+	}
 }
-*/
-

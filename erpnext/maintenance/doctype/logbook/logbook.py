@@ -75,6 +75,10 @@ class Logbook(Document):
 						ot_hours += a.hours
 				else:
 					frappe.throw("Initial and Final Readings are mandatory")
+		if total_hours > 24:
+			frappe.throw("Total hours cannot be more than 24 hours")
+
+
 		self.total_hours = total_hours
 		self.total_ot = ot_hours
 
@@ -92,7 +96,9 @@ class Logbook(Document):
 		if difference < 0:
 			frappe.throw("Total of work hours ({0}) and downtime hours ({1}) should be more or equal scheduled hours ({2})".format(frappe.bold(self.total_hours), frappe.bold(self.total_downtime_hours), frappe.bold(self.scheduled_working_hour)))
 		if difference > 0:
-			frappe.msgprint("The total hours exceeds the scheduled working hour by {0} hours".format(difference))
+			if flt(self.total_hours) + flt(self.total_downtime_hours) >= 24:
+				frappe.throw("Total hours should be less than 24 hours")
+			frappe.msgprint("<a style='color:red; font-size:large;'}><b>The total hours exceeds the scheduled working hour by "+str(difference)+" hours</b></a>")
 
 	def on_submit(self):
 		pass

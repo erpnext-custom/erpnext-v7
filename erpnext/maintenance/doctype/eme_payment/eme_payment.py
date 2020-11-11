@@ -18,6 +18,8 @@ class EMEPayment(Document):
 	def check_remarks(self):
 		if not self.remarks:
 			self.remarks = "EME payment to {0}".format(self.supplier)
+		if self.deduction_amount and not self.deduction_remarks:
+			frappe.throw("Deduction Remarks is mandatory")
 
         def get_logbooks(self):
 		if not self.supplier:
@@ -59,7 +61,12 @@ class EMEPayment(Document):
                         self.tds_amount  = 0
                         self.tds_account = None
 
-		self.payable_amount = self.total_amount - self.tds_amount
+		if self.deduction_amount and not self.deduction_account:
+			self.deduction_account = settings.eme_deduction_account
+			if not self.deduction_account:
+				frappe.throw("Set EME Deduction Account in Account Settings")
+
+		self.payable_amount = self.total_amount - self.tds_amount - self.deduction_amount
 
 	def on_submit(self):
 		self.validate_logbook()
@@ -119,7 +126,20 @@ class EMEPayment(Document):
 						 "party": self.supplier,
 						})
 				)
-			
+	
+		if self.deduction_amount:
+			gl_entries.append(
+				prepare_gl(self, {"account": self.deduction_account,
+						 "credit": flt(self.deduction_amount),
+						 "credit_in_account_currency": flt(self.deduction_amount),
+						 "cost_center": self.cost_center,
+						 "party_type": "Supplier",
+						 "party": self.supplier,
+						 "remarks": self.deduction_remarks
+						})
+				)
+	
+		
 		gl_entries.append(
 			prepare_gl(self, {"account": self.bank_account,
 			 "credit": flt(self.payable_amount) ,
