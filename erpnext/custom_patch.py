@@ -11,6 +11,13 @@ def update_order():
 		doc = frappe.get_doc("Expense Head", a.name)
 		doc.db_set("order_index", doc.order)
 
+def update_item_name():
+	for a in frappe.db.sql("select item_code, item_name, name from `tabSales Invoice Item` where warehouse = 'Dzungdi Warehouse Plant 2 - SMCL'", as_dict=True):
+		i_name = frappe.db.get_value("Item", a.item_code, "item_name")
+		if a.item_name != i_name:
+			frappe.db.sql("update `tabSales Invoice Item` set item_name = '{}' where name = '{}'".format(i_name, a.name))
+			print("Item Name " + a.item_name + " Changed to " + i_name )
+
 #addded bank name and bank account name in overtime application and updated for previous transactions (Tashi)
 def update_ot():
 	for ot in frappe.db.sql("select name, employee from `tabOvertime Application` where docstatus <= 1", as_dict = 1):
