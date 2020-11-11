@@ -56,7 +56,14 @@ def get_data():
 					 "type": "doctype",
 					 "name": "Transporter Rate",
 				},
-
+				{
+					 "type": "doctype",
+					 "name": "Production Settings",
+				},
+				{
+					 "type": "doctype",
+					 "name": "Production Parameter",
+				},
 			]
 		},
 		{

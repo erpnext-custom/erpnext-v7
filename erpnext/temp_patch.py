@@ -222,6 +222,31 @@ def update_production_sle(update="No"):
                         frappe.db.commit()
         frappe.db.commit()
                 
+# Following method created by SHIV on 2020/10/06
+def make_gl_for_dn(post=0):
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabDelivery Note`
+		where name in ('DN19092718','DN19100773','DN19100774','DN19100775',
+				'DN19100904','DN19100905','DN19100906','DN19100918',
+				'DN19102603','DN19102604','DN19102605','DN19110002',
+				'DN19110041','DN19110043','DN19110146','DN19110530',
+				'DN19110531','DN19110533','DN19110534','DN19110535',
+				'DN19110908','DN19110909','DN19110910','DN19111110',
+				'DN19111113','DN19120203','DN19120204','DN19120205',
+				'DN19120206','DN19120254','DN19120256','DN19120332',
+				'DN19120435','DN19120615','DN19120616','DN19120618'
+				)
+		""", as_dict=True):
+		counter += 1
+		print counter, i.name
+		if post:
+			print '\tdeleting gl...'
+			frappe.db.sql("delete from `tabGL Entry` where voucher_type = 'Delivery Note' and voucher_no= '{}'".format(i.name))
+			print '\tposting gl...'
+			doc = frappe.get_doc("Delivery Note", i.name)
+			doc.make_gl_entries(repost_future_gle=False)
+	frappe.db.commit()
+
 def production_gl():
 	qry = """
 	select name
