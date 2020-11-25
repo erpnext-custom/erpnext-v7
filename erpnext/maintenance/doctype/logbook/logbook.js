@@ -28,6 +28,16 @@ frappe.ui.form.on('Logbook', {
                         freeze: true,
                 });
         },
+	posting_date: function(frm) {
+                return frappe.call({
+                        method: "get_ehf",
+                        doc: frm.doc,
+                        callback: function(r, rt) {
+                                frm.refresh_fields();
+                        },
+                        freeze: true,
+                });
+        },
 });
 
 frappe.ui.form.on("Logbook Item", {
