@@ -753,7 +753,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-10-29 17:34:48.329681", 
+ "modified": "2020-11-16 19:11:00.490602", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Equipment Hiring Form", 
@@ -824,7 +824,7 @@
  "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
- "search_fields": "", 
+ "search_fields": "equipment, start_date, end_date", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "track_seen": 0
