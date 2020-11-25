@@ -359,10 +359,11 @@ class Production(StockController):
 				for a in frappe.db.sql("""
 						select parameter_type, ratio, item_code, item_name
 						from `tabProduction Settings Item` 
-						where parent = '{0}' and parameter_type= "item"				
+						where parent = '{0}'				
 				""".format(production_seting_code), as_dict=True):
 					price_template = ""
 					cop = ""
+					product_qty = 0.00
 					for b in frappe.db.sql("""select c.name, b.cop_amount 
 						from `tabCost of Production` c, `tabCOP Branch` a, `tabCOP Rate Item` b 
 						where c.name = a.parent and c.name = b.parent
@@ -372,16 +373,20 @@ class Production(StockController):
 					""",(str(self.branch), str(a.item_code), str(self.posting_date)), as_dict=True):
 						price_template = b.name
 						cop = b.cop_amount
+					if flt(a.ratio) > 0:
 						product_qty = (flt(a.ratio) * flt(raw_material_qty))/100
-					data.append({"item_code":a.item_code, 
+					data.append({
+								"parameter_type": a.parameter_type,
+								"item_code":a.item_code, 
 								"item_name":a.item_name, 
-								"qty":product_qty,
+								"qty": product_qty,
 								"uom": raw_material_unit,
 								"price_template": price_template,
 								"cop": cop,
 								"cost_center": cost_center,
 								"warehouse": warehouse,
-								"expense_account": expense_account
+								"expense_account": expense_account,
+								"ratio": flt(a.ratio)
 								})
 				#frappe.msgprint("{}".format(data))
 		if data:			
