@@ -15,7 +15,7 @@ class EquipmentHiringForm(Document):
 		self.validate_date()
 		self.validate_amount()
 		self.validate_supplier()
-		self.fetch_reading()
+		#self.fetch_reading()
 
 	def validate_date(self):
 		if self.start_date > self.end_date:

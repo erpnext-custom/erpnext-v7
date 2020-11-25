@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cstr, flt, fmt_money, formatdate, getdate, get_datetime
+from frappe.utils import cstr, flt, fmt_money, formatdate, getdate, get_datetime, time_diff_in_hours
 from frappe.desk.reportview import get_match_cond
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
@@ -51,8 +51,6 @@ class Logbook(Document):
 			a.equipment = self.equipment
 			if not a.uom:
 				frappe.throw("Reading Unit is mandatory")
-			if a.uom != self.reading_based_on:
-				frappe.msgprint("Reading Unit is different from defined unit")
 			if a.uom == "Trip":
 				a.final_reading = 0
 				if a.initial_reading and a.initial_reading > 0:
@@ -64,7 +62,7 @@ class Logbook(Document):
 						ot_hours += a.hours
 				else:
 					frappe.throw("Achieved Trip is mandatory")
-			else:
+			elif a.uom == "Hour":
 				a.target_trip = 0
 				if a.initial_reading and a.final_reading:
 					if a.initial_reading > a.final_reading:
@@ -75,8 +73,23 @@ class Logbook(Document):
 						ot_hours += a.hours
 				else:
 					frappe.throw("Initial and Final Readings are mandatory")
-		if total_hours > 24:
-			frappe.throw("Total hours cannot be more than 24 hours")
+			else:
+				if a.initial_time and a.final_time:
+					start = "{0} {1}".format(str(self.posting_date), str(a.initial_time))
+					end = "{0} {1}".format(str(self.posting_date), str(a.final_time))
+					if getdate(start) > getdate(end):
+						frappe.throw("Final time should not be smaller than inital")
+					a.hours = time_diff_in_hours(end, start) - a.idle_time
+					if a.hours <= 0:
+						frappe.throw("Difference of time and idle time should be more than 0")  
+					total_hours += a.hours
+					if a.is_overtime:
+						ot_hours += a.hours
+				else:
+					frappe.throw("Initial and Final Readings are mandatory")
+		act_sch = self.scheduled_working_hour + 5
+		if total_hours > act_sch:
+			frappe.throw("Total hours cannot be more than {0} hours".format(act_sch))
 
 
 		self.total_hours = total_hours
@@ -103,4 +116,14 @@ class Logbook(Document):
 	def on_submit(self):
 		pass
 
+	def get_ehf(self):
+		if not self.equipment or not self.posting_date:
+			frappe.throw("Equipment and Log Date are mandatory")
+		ehfs = frappe.db.sql("select name from `tabEquipment Hiring Form` where docstatus = 1 and equipment = %(equipment)s and %(logdate)s between start_date and end_date order by name", {"equipment": self.equipment, "logdate": self.posting_date}, as_dict=1)
 
+		if ehfs:
+			self.equipment_hiring_form = ehfs[0]['name']
+		else:
+			frappe.throw("No Equipment Hiring Form found!")
+		for a in ehfs:
+			frappe.msgprint(str(a.name))	
