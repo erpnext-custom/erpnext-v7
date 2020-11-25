@@ -19,9 +19,41 @@ def get_data(filters):
 	order_by = get_order_by(filters)
 	total_qty = '1'
 	if filters.show_aggregate:
-		total_qty = "sum(qty) as total_qty"
+		total_qty = "sum(pe.qty) as total_qty"
 
-	query = "select pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.equipment_number, pe.equipment_model, pe.transporter_type, pe.unloading_by, pe.group, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.group, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0} from `tabProduction Entry` pe, `tabCost Center` cc where pe.docstatus = 1 and cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
+	query = """
+	select	
+		pe.posting_date, 
+		pe.item_code, 
+		pe.item_name, 
+		pe.item_group, 
+		pe.item_sub_group, 
+		pe.qty, 
+		pe.uom, 
+		pe.equipment_number, 
+		pe.equipment_model, 
+		pe.transporter_type, 
+		pe.unloading_by, 
+		pe.group, 
+		pe.branch, 
+		pe.location, 
+		pe.adhoc_production, 
+		pe.company, 
+		pe.warehouse, 
+		pe.group, 
+		pe.timber_class, 
+		pe.timber_type, 
+		pe.timber_species, 
+		cc.parent_cost_center as region,
+		{0} 
+	from 
+		`tabProduction Entry` pe, 
+		`tabCost Center` cc
+	where 
+		pe.docstatus = 1 
+	and 
+		cc.name = pe.cost_center {1} {2} {3}""".format(total_qty, conditions, group_by, order_by)
+	
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
 
 	total_qty = 0
@@ -31,7 +63,6 @@ def get_data(filters):
 		total_qty += flt(a.qty)
 		data.append(a)
 	data.append({"qty": total_qty, "branch": frappe.bold("TOTAL")})
-
 	return data
 
 def get_group_by(filters):
@@ -115,6 +146,12 @@ def get_columns(filters):
 		{
 			"fieldname": "qty",
 			"label": "Quantity",
+			"fieldtype": "Float",
+			"width": 100
+		},
+		{
+			"fieldname": "handling_loss",
+			"label": "Handling Loss",
 			"fieldtype": "Float",
 			"width": 100
 		},

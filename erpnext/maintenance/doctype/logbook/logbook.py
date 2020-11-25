@@ -125,5 +125,3 @@ class Logbook(Document):
 			self.equipment_hiring_form = ehfs[0]['name']
 		else:
 			frappe.throw("No Equipment Hiring Form found!")
-		for a in ehfs:
-			frappe.msgprint(str(a.name))	

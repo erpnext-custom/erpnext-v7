@@ -254,18 +254,31 @@ function get_finish_product(frm){
 					if(r.message){
 						console.log(r.message);
 						cur_frm.clear_table("items");
+						cur_frm.clear_table("production_waste");
 						r.message.forEach(function(rec) {
-							var row = frappe.model.add_child(cur_frm.doc, "Production Product Item", "items");
-							row.item_code = rec['item_code'];
-							row.item_name = rec['item_name'];		
-							row.qty = rec['qty'];
-							row.uom = rec['uom'];
-							row.item_group = rec['item_group'];
-							row.price_template = rec['price_template'];
-							row.cop = rec['cop'];
-							row.cost_center = rec['cost_center'];
-							row.warehouse = rec['warehouse'];
-							row.expense_account = rec['expense_account'];
+							if(rec['parameter_type'] == "Item")
+							{	
+								var row = frappe.model.add_child(cur_frm.doc, "Production Product Item", "items");
+								row.item_code = rec['item_code'];
+								row.item_name = rec['item_name'];		
+								row.qty = rec['qty'];
+								row.uom = rec['uom'];
+								row.item_group = rec['item_group'];
+								row.price_template = rec['price_template'];
+								row.cop = rec['cop'];
+								row.cost_center = rec['cost_center'];
+								row.warehouse = rec['warehouse'];
+								row.expense_account = rec['expense_account'];
+								row.ratio = rec['ratio'];
+							}
+							else{
+								var row = frappe.model.add_child(cur_frm.doc, "Production Waste", "production_waste");
+								row.parameter_code = rec['item_code'];
+								row.item_name = rec['item_name'];
+								row.ratio = rec['ratio'];		
+								row.qty = rec['qty'];
+								row.uom = rec['uom'];
+							}
 						});
 					}
 					else
