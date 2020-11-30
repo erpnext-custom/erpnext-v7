@@ -44,6 +44,12 @@ frappe.ui.form.on("Logbook Item", {
 	"uom": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
 	},
+	"reading_initial": function(frm, cdt, cdn) {
+		calculate_time(frm, cdt, cdn)
+	},
+	"reading_final": function(frm, cdt, cdn) {
+		calculate_time(frm, cdt, cdn)
+	},
 	"initial_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
 	},
@@ -68,6 +74,7 @@ function calculate_time(frm, cdt, cdn) {
 	var hour = 0
 	var item = locals[cdt][cdn]
 	if(item.uom == "Hour") {
+		console.log("UMMM ", item.reading_final, item.reading_initial)
 		hour = item.reading_final - item.reading_initial
 	}
 	else if(item.uom == "Time") {
