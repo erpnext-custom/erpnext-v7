@@ -68,10 +68,10 @@ class Logbook(Document):
 					frappe.throw("Achieved Trip is mandatory")
 			elif a.uom == "Hour":
 				a.target_trip = 0
-				if a.initial_reading and a.final_reading:
-					if a.initial_reading > a.final_reading:
+				if a.reading_initial and a.reading_final:
+					if a.reading_initial > a.reading_final:
 						frappe.throw("Final reading should not be smaller than inital")
-					a.hours = a.final_reading - a.initial_reading
+					a.hours = a.reading_final - a.reading_initial
 					total_hours += a.hours
 					if a.is_overtime:
 						ot_hours += a.hours
