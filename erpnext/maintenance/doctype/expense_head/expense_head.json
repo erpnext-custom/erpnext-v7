@@ -148,7 +148,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-10-30 18:45:42.179494", 
+ "modified": "2020-11-11 22:46:31.315879", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Expense Head", 
@@ -239,7 +239,7 @@
  "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
- "sort_field": "modified", 
+ "sort_field": "order_index", 
  "sort_order": "DESC", 
  "track_seen": 0
 }

@@ -36,8 +36,12 @@ class Logbook(Document):
 			frappe.throw("Log Date should be between {0} and {1}".format(from_date, to_date))
 
 	def check_target_hour(self):
+		if self.equipment_hiring_form:
+			self.target_hours = frappe.db.get_value("Equipment Hiring Form", self.equipment_hiring_form, "target_hour")
 		if 0 >= self.scheduled_working_hour:
 			frappe.throw("Scheduled Working Hour is mandatory")
+		if 0 >= self.target_hours:
+			frappe.throw("Target Hour is mandatory")
 	
 	def get_reading_based(self):
 		self.reading_based_on = frappe.db.get_value("Equipment Model", self.equipment_model, "reading_based_on")
@@ -56,7 +60,7 @@ class Logbook(Document):
 				if a.initial_reading and a.initial_reading > 0:
 					if 0 >= a.target_trip:
 						frappe.throw("Target Trip is mandatory on row {0}".format(a.idx))
-					a.hours = (a.initial_reading * self.scheduled_working_hour) / a.target_trip
+					a.hours = (a.initial_reading * self.target_hours) / a.target_trip
 					total_hours += a.hours
 					if a.is_overtime:
 						ot_hours += a.hours
@@ -64,10 +68,10 @@ class Logbook(Document):
 					frappe.throw("Achieved Trip is mandatory")
 			elif a.uom == "Hour":
 				a.target_trip = 0
-				if a.initial_reading and a.final_reading:
-					if a.initial_reading > a.final_reading:
+				if a.reading_initial and a.reading_final:
+					if a.reading_initial > a.reading_final:
 						frappe.throw("Final reading should not be smaller than inital")
-					a.hours = a.final_reading - a.initial_reading
+					a.hours = a.reading_final - a.reading_initial
 					total_hours += a.hours
 					if a.is_overtime:
 						ot_hours += a.hours

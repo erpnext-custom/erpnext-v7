@@ -44,7 +44,16 @@ frappe.ui.form.on("Logbook Item", {
 	"uom": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
 	},
+	"reading_initial": function(frm, cdt, cdn) {
+		calculate_time(frm, cdt, cdn)
+	},
+	"reading_final": function(frm, cdt, cdn) {
+		calculate_time(frm, cdt, cdn)
+	},
 	"initial_time": function(frm, cdt, cdn) {
+		calculate_time(frm, cdt, cdn)
+	},
+	"final_time": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
 	},
 	"initial_reading": function(frm, cdt, cdn) {
@@ -65,14 +74,18 @@ function calculate_time(frm, cdt, cdn) {
 	var hour = 0
 	var item = locals[cdt][cdn]
 	if(item.uom == "Hour") {
-		hour = item.final_reading - item.initial_reading
+		console.log("UMMM ", item.reading_final, item.reading_initial)
+		hour = item.reading_final - item.reading_initial
 	}
 	else if(item.uom == "Time") {
-		hour = frappe.datetime.get_hour_diff("2020-12-12 " + item.initial_time, "2020-12-12 " + item.final_time) - item.idle_time
+		var fdate = new Date("October 13, 2014 " + item.final_time)
+		var tdate = new Date("October 13, 2014 " + item.initial_time)
+		var diff = (fdate.getTime() - tdate.getTime()) / 1000;
+		var hour = diff / 3600 - item.idle_time;
 	}
 	else {
 		if (item.target_trip) {
-			hour = item.initial_reading/item.target_trip*frm.doc.scheduled_working_hour
+			hour = (item.initial_reading/item.target_trip)*frm.doc.target_hours
 		}
 	}
 	frappe.model.set_value(cdt, cdn,"hours", hour)
