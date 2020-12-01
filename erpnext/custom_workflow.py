@@ -152,7 +152,7 @@ def verify_workflow_tc(doc):
 	if doc.workflow_state == "Waiting HR Verification":
                 if approver != frappe.session.user:
                         doc.workflow_state = "Verified By Supervisor"
-                        frappe.throw("Only Mr/Mrs. <b> {0} </b> can Approve this Document".format(frappe.get_doc("User", verifier).full_name))
+                        frappe.throw("Only Mr/Mrs. <b> {0} </b> can Approve this Document".format(frappe.get_doc("User", approver).full_name))
                 doc.workflow_state = "Waiting HR Verification"
                 doc.docstatus = 0
                 doc.approver = approver
@@ -160,9 +160,9 @@ def verify_workflow_tc(doc):
  
 	if doc.workflow_state == "Approved":
 		approver_hr = hr_officiating[0] if hr_officiating else  hr_approver[0]
-		if approver_hr != frappe.session.user:
-			doc.workflow_state = "Verified"
-			frappe.throw("Only Mr/Mrs. <b> {0} </b> can approve this Document".format(frappe.get_doc("User", approver_hr).full_name))
+		if frappe.session.user not in ('sonamyangchen@gyalsunginfra.bt', 'thinleydema@gyalsunginfra.bt'):
+			doc.workflow_state = "Waiting HR Verification"
+			frappe.throw("Only Mr/Mrs. <b> Sonam Yangchen/Thinley Dema  </b> can approve this Document")
 		doc.workflow_state = "Approved"
 		doc.docstatus = 1
 		doc.hr_approver = approver_hr

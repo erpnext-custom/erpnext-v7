@@ -40,7 +40,6 @@ frappe.ui.form.on('Process MR Payment', {
 		cur_frm.set_df_property("load_records", "disabled",  true);
 		//msgprint ("Processing wages.............")
 		if(frm.doc.from_date && frm.doc.cost_center && frm.doc.employee_type && frm.doc.from_date < frm.doc.to_date) {
-			console.log(frm.doc.employee_type, frm.doc.fiscal_year, frm.doc.month, frm.doc.from_date, frm.doc.to_date, frm.doc.cost_center, frm.doc.branch, frm.doc.name)
 			get_records(frm.doc.employee_type, frm.doc.fiscal_year, frm.doc.month, frm.doc.from_date, frm.doc.to_date, frm.doc.cost_center, frm.doc.branch, frm.doc.name)
 		}
 		else if(frm.doc.from_date && frm.doc.from_date > frm.doc.to_date) {
@@ -86,6 +85,7 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 				var total_overall_amount = 0;
 				var ot_amount = 0; 
 				var wages_amount = 0;
+				var gratuity_amount = 0;
 				//cur_frm.clear_table("items");
 				console.log(r.message);
 				r.message.forEach(function(mr) {
@@ -103,46 +103,51 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						row.bank = "BOBL"; //mr['bank'];
 						row.account_no = mr['account_no'];
 						row.designation = mr['designation'];
-						if(mr['type'] == 'GEP Employee'){
+						if(mr['type'] == 'Operator'){
 							row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
-							row.hourly_rate     = parseFloat(mr['salary']*1.5)/parseFloat(mr['noof_days_in_month']*8);
+							row.hourly_rate     = parseFloat(mr['salary']*1.0)/parseFloat(mr['noof_days_in_month']*8);
 							row.total_ot_amount = parseFloat(row.number_of_hours) * parseFloat(row.hourly_rate);
 							row.total_wage      = parseFloat(row.daily_rate) * parseFloat(row.number_of_days);
-							console.log(row.total_ot_amount);
 							if((parseFloat(row.total_wage) > parseFloat(mr['salary']))||(parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days']))){
 								row.total_wage = parseFloat(mr['salary']);
 							}
-						} else {
+							row.gratuity_amount = 0
+						}
+
+						if(mr['type'] == 'Open Air Prisoner') {
+							row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
+                                                        row.hourly_rate     = parseFloat(mr['salary']*1.0)/parseFloat(mr['noof_days_in_month']*8);
+                                                        row.total_ot_amount = parseFloat(row.number_of_hours) * parseFloat(row.hourly_rate);
+                                                        row.total_wage      = parseFloat(row.daily_rate) * parseFloat(row.number_of_days);
+							row.gratuity_amount = parseFloat(mr['total_wage']) * 0.75
+						}
+						 else {
 							//row.daily_rate 	= mr['rate_per_day'];
 							//row.hourly_rate 	= mr['rate_per_hour'];
+							row.gratuity_amount = 0
 							row.total_ot_amount = parseFloat(mr['total_ot']);
 							row.total_wage 		= parseFloat(mr['total_wage']);
 						}
 						
-						/*
-						if(mr['type'] == 'GEP Employee' && parseFloat(row.total_wage) > parseFloat(mr['salary'])){
-							row.total_wage = parseFloat(mr['salary']);
-						}
-						else if(mr['type'] == 'GEP Employee' && parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days'])){
-							row.total_wage = parseFloat(mr['salary']);
-						}
-						*/
 						
-						row.total_amount 	= parseFloat(row.total_ot_amount) + parseFloat(row.total_wage);
+						row.total_amount 	= parseFloat(row.total_ot_amount) + parseFloat(row.total_wage) - parseFloat(row.gratuity_amount);
 						refresh_field("items");
 
 						total_overall_amount += row.total_amount;
 						ot_amount 			 += row.total_ot_amount;
 						wages_amount 		 += row.total_wage;
+						gratuity_amount     += row.gratuity_amount
 					}
 				});
 
 				cur_frm.set_value("total_overall_amount", total_overall_amount)
 				cur_frm.set_value("wages_amount", flt(wages_amount))
 				cur_frm.set_value("ot_amount", flt(ot_amount))
+				cur_frm.set_value("gratuity_amount", flt(gratuity_amount))
 				cur_frm.refresh_field("total_overall_amount")
 				cur_frm.refresh_field("wages_amount")
 				cur_frm.refresh_field("ot_amount")
+				cur_frm.refresh_field("gratuity_amount")
 				cur_frm.refresh_field("items");
 			}
 			else {

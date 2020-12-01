@@ -69,14 +69,27 @@ def get_data():
                         ]
                 },
 		{
-			"label": _("Manpower Management"),
-			"icon": "icon-facetime-video",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Muster Roll Employee",
-					"description": _("Muster Roll Employee Data"),
-				},
+                        "label": _("Muster Roll Employee/Operator/Open Air Prisoner"),
+                        "icon": "icon-facetime-video",
+                        "items": [
+                                {
+                                        "type": "doctype",
+                                        "name": "Muster Roll Employee",
+                                        "description": _("Muster Roll Employee Data"),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Operator",
+                                        "label": "Operator List",
+                                        "description": _("Master Data of Operators"),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Open Air Prisoner",
+                                        "label": "OAP List",
+                                        "description": _("Open Air Prisoner"),
+                                },
+
 				{
 					"type": "doctype",
 					"name": "MusterRoll Application",
@@ -85,44 +98,38 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Attendance Tool Others",
-					"label": "Attendance Tool for Muster Roll",
+					"label": "Attendance Tool",
 					"description": _("Attendance Tool for Others"),
 				},
 				#{
 				#	"type": "doctype",
-				#	"name": "Attendance Tool Others",
-				#	"label": "Attendance Tool for GEP & MR",
+				#	"name": "Upload Attendance Others",
+				#	"label": "Upload Bulk Attendance for Muster Roll",
 				#	"description": _("Attendance Tool for Others"),
 				#},
 				{
 					"type": "doctype",
-					"name": "Upload Attendance Others",
-					"label": "Upload Bulk Attendance for MR",
-					"description": _("Attendance Tool for Others"),
+					"name": "Project Overtime Tool",
+					"label": "Overtime Tool",
+					"description": _("Overtime Tool"),
 				},
 				#{
 				#	"type": "doctype",
-				#	"name": "Project Overtime Tool",
-				#	"label": "Overtime Tool for GEP & MR",
-				#	"description": _("Overtime Tool for MR and GEP"),
+				#	"name": "Upload Overtime Entries",
+				#	"label": "Upload Overtime Entry for Muster Roll",
+				#	"description": _("Overtime Tool for Others"),
 				#},
 				{
 					"type": "doctype",
-					"name": "Upload Overtime Entries",
-					"label": "Upload Overtime Entry for MR",
-					"description": _("Overtime Tool for Others"),
-				},
-				{
-					"type": "doctype",
 					"name": "Process MR Payment",
-					"label": "Process Payment for MR",
-					"description": _("Process Payments for Project Muster Roll"),
+					"label": "Process Payment",
+					"description": _("Process Payments"),
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Attendance Register",
-					"label": "Attendance Register for Muster Roll",
+					"label": "Attendance Register",
 					"description": _("Attendance Sheet"),
 					"doctype": "Attendance Others"
 				},
@@ -130,10 +137,16 @@ def get_data():
 					"type": "report",
 					"is_query_report": True,
 					"name": "Overtime Register",
-					"label": "Overtime Register for Muster Roll",
+					"label": "Overtime Register",
 					"description": _("Overtime Register"),
 					"doctype": "Overtime Entry"
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "Project Muster Roll Tool",
+                                        "label": "Project Muster Roll Tool",
+                                        "description": _("MR Transfer tool"),
+                                },
 			]
 		},
 		{

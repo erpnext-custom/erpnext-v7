@@ -20,6 +20,11 @@ class ProcessOvertimePayment(Document):
 	
 		if not self.branch:
 			frappe.throw(" Branch is Mandiatory")
+		
+		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+		self.expense_bank_account = expense_bank_account
+		if not self.expense_bank_account:
+			frappe.throw("Expense Bank Account is Missing!. Refresh Cost Center Field")
 
 		self.check_duplicate_entries()
 
@@ -47,12 +52,13 @@ class ProcessOvertimePayment(Document):
 		m = get_month_details(self.fiscal_year, self.month)
                 from_date = m['month_start_date']
                 to_date = m['month_end_date']
-		query = """select employee, employee_name, rate as hourly_rate, sum(total_hours) as total_hours, 
-			sum(total_amount) as total_ot_amount
+		query = """select name as reference_doc, employee, employee_name, rate as hourly_rate, total_hours, 
+			total_amount as total_ot_amount
 			from `tabOvertime Application` where docstatus = 1 and workflow_state = 'Approved' 
-			and ifnull(payment_jv, '') = '' and posting_date between '{0}' and '{1}' and  
-			cost_center in (select cost_center from `tabCost Center` where parent = '{2}' )  group by employee
-		""".format(from_date, to_date, self.cost_center)
+			and ifnull(payment_jv, '') = '' and  
+			bank_name = '{3}' and 
+			cost_center in (select name from `tabCost Center` where parent_cost_center = '{2}') order by employee desc
+		""".format(from_date, to_date, self.cost_center, self.bank_name)
 		
 		entries = frappe.db.sql(query, as_dict=True, debug = 1)
                 if not entries:
@@ -66,7 +72,8 @@ class ProcessOvertimePayment(Document):
                         row.bank_name = doc.bank_name
 			row.bank_account = doc.bank_ac_no
 			row.designation = doc.designation
-			row.grade = doc.employee_subgroup	
+			row.grade = doc.employee_subgroup
+			row.cost_center = doc.cost_center	
 			row.update(d)
 
 		total = 0.0
@@ -85,18 +92,12 @@ class ProcessOvertimePayment(Document):
                         frappe.throw("Setup Default Expense Bank Account for your Branch")
                 if not ot_account:
                         frappe.throw("Setup Default Overtime Account in HR Account Setting")
-
-		
-		m = get_month_details(self.fiscal_year, self.month)
-                from_date = m['month_start_date']
-                to_date = m['month_end_date']
+	
 		query = """
-                        select cost_center, sum(total_amount) as total_ot_amount 
-                        from `tabOvertime Application` where docstatus = 1 and workflow_state = 'Approved'
-                        and posting_date between '{0}' and '{1}' and 
-			cost_center in (select cost_center from `tabCost Center` where parent = '{2}')  
+                        select cost_center, sum(total_ot_amount) as total_ot_amount 
+                        from `tabOvertime Payment Item` where docstatus = 1 and parent = '{0}'  
 			group by cost_center
-                """.format(from_date, to_date, self.cost_center)
+                """.format(self.name)
                 for d in frappe.db.sql(query, as_dict = True):
 			check_budget_available(d.cost_center, ot_account, self.posting_date, d.total_ot_amount, throw_error=True)
 			gl_entries.append(
@@ -120,22 +121,12 @@ class ProcessOvertimePayment(Document):
                                          	"company": self.company
 						})
 				)
-
-			from erpnext.accounts.general_ledger import make_gl_entries
-			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)
+		from erpnext.accounts.general_ledger import make_gl_entries
+		make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)
 		self.update_ot()
 
 
 	def update_ot(self):
-                m = get_month_details(self.fiscal_year, self.month)
-                from_date = m['month_start_date']
-                to_date = m['month_end_date']
-                query = """
-                        select name 
-                        from `tabOvertime Application` where docstatus = 1 and workflow_state = 'Approved'
-                        and ifnull(payment_jv, '') = '' and posting_date between '{0}' and '{1}' and 
-                        cost_center in (select cost_center from `tabCost Center` where parent = '{2}')  
-                """.format(from_date, to_date, self.cost_center)
-                for d in frappe.db.sql(query, as_dict = True):
-                        doc = frappe.get_doc("Overtime Application", d.name)
+                for d in self.get('items'):
+                        doc = frappe.get_doc("Overtime Application", d.reference_doc)
                         doc.db_set("payment_jv", self.name)	

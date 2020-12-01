@@ -80,11 +80,11 @@ def get_data():
 					"label": _("Unit of Measure") + " (UOM)",
 					"description": _("e.g. Kg, Unit, Nos, m")
 				},
-				{
-					"type": "doctype",
-					"name": "Quality Inspection",
-					"description": _("Incoming quality inspection.")
-				}
+				#{
+				#	"type": "doctype",
+				#	"name": "Quality Inspection",
+				#	"description": _("Incoming quality inspection.")
+				#}
 			]
 		},
 		{
@@ -146,31 +146,31 @@ def get_data():
 					"doctype": "Stock Ledger Entry",
 					"label": _("Stock Balance")
 				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Stock Projected Quantity",
-					"doctype": "Item",
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Stock Ageing Report",
-					"doctype": "Item",
-					"label": _("Stock Ageing")
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Material Shortage Report",
-					"doctype": "Bin",
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Requested Materials To Be Transferred",
-					"doctype": "Material Request"
-				},
+				#{
+				#	"type": "report",
+				#	"is_query_report": True,
+				#	"name": "Stock Projected Quantity",
+				#	"doctype": "Item",
+				#},
+				#{
+				#	"type": "report",
+				#	"is_query_report": True,
+				#	"name": "Stock Ageing Report",
+				#	"doctype": "Item",
+				#	"label": _("Stock Ageing")
+				#},
+				#{
+				#	"type": "report",
+				#	"is_query_report": True,
+				#	"name": "Material Shortage Report",
+				#	"doctype": "Bin",
+				#},
+				#{
+				#	"type": "report",
+				#	"is_query_report": True,
+				#	"name": "Requested Materials To Be Transferred",
+				#	"doctype": "Material Request"
+				#},
 				{
 					"type": "report",
 					"is_query_report": True,

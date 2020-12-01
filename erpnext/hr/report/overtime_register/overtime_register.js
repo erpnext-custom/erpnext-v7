@@ -24,7 +24,14 @@ frappe.query_reports["Overtime Register"] = {
 			"options": "Cost Center",
 			"reqd": 1,
 			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1'], ['Cost Center', 'is_group', '!=', '1']]}}
-		}
+		},
+		{
+                        "fieldname":"employee_type",
+                        "label": __("Employee Type"),
+                        "fieldtype": "Select",
+                        "options": ['', 'Muster Roll Employee', 'Operator', 'Open Air Prisoner'],
+                        "reqd": 1
+                }
 	],
 
 	"onload": function(me) {

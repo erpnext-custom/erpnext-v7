@@ -1144,8 +1144,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-07-31 14:34:28.942911", 
- "modified_by": "ucdorji@gyalsunginfra.bt", 
+ "modified": "2020-11-16 11:17:36.855140", 
+ "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Muster Roll Employee", 
  "name_case": "", 
@@ -1259,7 +1259,7 @@
    "amend": 0, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
-   "create": 0, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -1274,7 +1274,7 @@
    "share": 1, 
    "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
-   "write": 0
+   "write": 1
   }, 
   {
    "amend": 0, 

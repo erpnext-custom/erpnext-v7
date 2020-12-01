@@ -37,15 +37,29 @@ def get_data():
 				},                  
 			]
 		},
+				
 		{
-			"label": _("MR Management"),
-			"icon": "icon-facetime-video",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Muster Roll Employee",
-					"description": _("Muster Roll Employee Data"),
-				},
+                        "label": _("Muster Roll Employee/Operator/Open Air Prisoner"),
+                        "icon": "icon-facetime-video",
+                        "items": [
+                                {
+                                        "type": "doctype",
+                                        "name": "Muster Roll Employee",
+                                        "description": _("Muster Roll Employee Data"),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Operator",
+                                        "label": "Operator List",
+                                        "description": _("Master Data of Operators"),
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Open Air Prisoner",
+                                        "label": "OAP List",
+                                        "description": _("Open Air Prisoner"),
+                                },
+
 				{
 					"type": "doctype",
 					"name": "MusterRoll Application",
@@ -54,7 +68,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Attendance Tool Others",
-					"label": "Attendance Tool for Muster Roll",
+					"label": "Attendance Tool",
 					"description": _("Attendance Tool for Others"),
 				},
 				{
@@ -66,8 +80,8 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Project Overtime Tool",
-					"label": "Overtime Tool for Muster Roll",
-					"description": _("Overtime Tool for MR"),
+					"label": "Overtime Tool",
+					"description": _("Overtime Tool"),
 				},
 				{
 					"type": "doctype",
@@ -78,14 +92,14 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Process MR Payment",
-					"label": "Process Payment for Muster Roll",
-					"description": _("Process Payments for Project Muster Roll"),
+					"label": "Process Payment",
+					"description": _("Process Payments"),
 				},
 				{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Attendance Register",
-					"label": "Attendance Register for Muster Roll",
+					"label": "Attendance Register",
 					"description": _("Attendance Sheet"),
 					"doctype": "Attendance Others"
 				},
@@ -93,7 +107,7 @@ def get_data():
 					"type": "report",
 					"is_query_report": True,
 					"name": "Overtime Register",
-					"label": "Overtime Register for Muster Roll",
+					"label": "Overtime Register",
 					"description": _("Overtime Register"),
 					"doctype": "Overtime Entry"
 				},
@@ -220,18 +234,18 @@ def get_data():
                                         "label": _("Process LTC"),
 					"description": _("LTC process"),
 				},
-				{
-					"type": "doctype",
-					"name": "PBVA",
-                                        "label": _("Process PBVA"),
-					"description": _("PBVA process"),
-				},
-				{
-					"type": "doctype",
-					"name": "Bonus",
-                                        "label": _("Process Bonus"),
-					"description": _("Bonus Process"),
-				},
+				#{
+				#	"type": "doctype",
+				#	"name": "PBVA",
+                                #       "label": _("Process PBVA"),
+				#	"description": _("PBVA process"),
+				#},
+				#{
+				#	"type": "doctype",
+				#	"name": "Bonus",
+                                #       "label": _("Process Bonus"),
+				#	"description": _("Bonus Process"),
+				#},
 				{
 					"type": "doctype",
 					"name": "Overtime Application",
@@ -264,12 +278,12 @@ def get_data():
 				#	"name": "Leave Encashment Settings",
 				#	"description": _("Leave Encashment Settings"),
 				#},                                
-				{
-					"type": "doctype",
-					"name": "Department Director",
-					"label": "Department\'s Director",
-					"description": _("Assign Directors to Departments")
-				},
+				#{
+				#	"type": "doctype",
+				#	"name": "Department Director",
+				#	"label": "Department\'s Director",
+				#	"description": _("Assign Directors to Departments")
+				#},
 				{
 					"type": "doctype",
 					"name": "Assign Branch",

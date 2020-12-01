@@ -14,12 +14,21 @@ from datetime import datetime
 import os
 import subprocess
 
+def update_ot_acc():
+	count = 0
+        for b in frappe.db.sql(" select name, branch from `tabProcess Overtime Payment`", as_dict =1):
+                expense_bank_account = frappe.get_doc("Branch", b.branch).expense_bank_account
+                frappe.db.sql(" update `tabProcess Overtime Payment` set expense_bank_account = '{0}' where name = '{1}'".format(expense_bank_account, b.name))
+
+	count += 1 
+	print b.name, count
 
 def update_ot_cc():
-        for b in frappe.db.sql(" select name, branch from `tabOvertime Application` where docstatus <= 1", as_dict = 1):
+        for b in frappe.db.sql(" select name, employee, branch from `tabOvertime Application`", as_dict = 1):
                 doc = frappe.get_doc("Overtime Application", b.name)
-                cc = frappe.get_doc("Cost Center", {'branch': b.branch}).name
-                doc.db_set("cost_center", cc)
+                #cc = frappe.get_doc("Cost Center", {'branch': b.branch}).name
+                cc = frappe.get_doc("Employee", b.employee).bank_name
+                doc.db_set("bank_name", cc)
                 print doc.name, cc
 
 def update_tds():

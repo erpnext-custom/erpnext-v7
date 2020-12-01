@@ -17,7 +17,7 @@ class TravelClaim(Document):
 	def get_status(self):
                 if self.workflow_state =="Verified By Supervisor":
                         self.supervisor_approval = 1
-			self.seupervisor_approved_on = nowdate()
+			self.supervisor_approved_on = nowdate()
                 elif self.workflow_state == "Approved":
                         self.hr_approval =1
 			self.hr_approved_on = nowdate()
@@ -38,8 +38,8 @@ class TravelClaim(Document):
 		if frappe.session.user == self.supervisor and not self.supervisor_approval:
 			self.db_set("supervisor_approved_on", '')
 			self.supervisor_approved_on = ''
-		if self.supervisor_approved_on and not hr_role:
-			frappe.throw("Cannot change records after approval by supervisor")
+		#if self.supervisor_approved_on and not hr_role:
+		#	frappe.throw("Cannot change records after approval by supervisor")
 		#self.check_return_date()
 		self.validate_dates()
 		#self.check_approval()

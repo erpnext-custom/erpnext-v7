@@ -10,9 +10,10 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
-cur_frm.add_fetch("cost_center", "branch", "branch")
-cur_frm.add_fetch("customer", "image", "customer_image" );
-cur_frm.add_fetch("customer", "customer_details", "customer_address" );
+//cur_frm.add_fetch("cost_center", "branch", "branch")
+//cur_frm.add_fetch("customer", "image", "customer_image" );
+//cur_frm.add_fetch("customer", "customer_details", "customer_address" );
+cur_frm.add_fetch("branch", "cost_center", "cost_center");
 
 frappe.ui.form.on("Project", {
 	// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++

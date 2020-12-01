@@ -1425,7 +1425,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-10-08 14:22:39.013537", 
+ "modified": "2020-11-10 14:23:15.084450", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Payment Entry", 
@@ -1498,7 +1498,7 @@
    "amend": 0, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
-   "create": 0, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -1513,7 +1513,7 @@
    "share": 1, 
    "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
-   "write": 0
+   "write": 1
   }, 
   {
    "amend": 1, 
