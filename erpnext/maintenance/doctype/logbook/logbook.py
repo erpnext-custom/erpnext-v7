@@ -60,7 +60,7 @@ class Logbook(Document):
 				if a.initial_reading and a.initial_reading > 0:
 					if 0 >= a.target_trip:
 						frappe.throw("Target Trip is mandatory on row {0}".format(a.idx))
-					a.hours = (a.initial_reading * self.target_hours) / a.target_trip
+					a.hours = flt((a.initial_reading * self.target_hours * 1.00) / a.target_trip, 1)
 					total_hours += a.hours
 					if a.is_overtime:
 						ot_hours += a.hours
@@ -71,7 +71,7 @@ class Logbook(Document):
 				if a.reading_initial and a.reading_final:
 					if a.reading_initial > a.reading_final:
 						frappe.throw("Final reading should not be smaller than inital")
-					a.hours = a.reading_final - a.reading_initial
+					a.hours = flt(a.reading_final - a.reading_initial, 1)
 					total_hours += a.hours
 					if a.is_overtime:
 						ot_hours += a.hours
@@ -83,7 +83,7 @@ class Logbook(Document):
 					end = "{0} {1}".format(str(self.posting_date), str(a.final_time))
 					if getdate(start) > getdate(end):
 						frappe.throw("Final time should not be smaller than inital")
-					a.hours = time_diff_in_hours(end, start) - a.idle_time
+					a.hours = flt(time_diff_in_hours(end, start) - a.idle_time, 1)
 					if a.hours <= 0:
 						frappe.throw("Difference of time and idle time should be more than 0")  
 					total_hours += a.hours
@@ -123,9 +123,10 @@ class Logbook(Document):
 	def get_ehf(self):
 		if not self.equipment or not self.posting_date:
 			frappe.throw("Equipment and Log Date are mandatory")
-		ehfs = frappe.db.sql("select name from `tabEquipment Hiring Form` where docstatus = 1 and equipment = %(equipment)s and %(logdate)s between start_date and end_date order by name", {"equipment": self.equipment, "logdate": self.posting_date}, as_dict=1)
+		ehfs = frappe.db.sql("select name, target_hour from `tabEquipment Hiring Form` where docstatus = 1 and equipment = %(equipment)s and %(logdate)s between start_date and end_date order by name", {"equipment": self.equipment, "logdate": self.posting_date}, as_dict=1)
 
 		if ehfs:
 			self.equipment_hiring_form = ehfs[0]['name']
+			self.target_hours = ehfs[0]['target_hour']
 		else:
 			frappe.throw("No Equipment Hiring Form found!")
