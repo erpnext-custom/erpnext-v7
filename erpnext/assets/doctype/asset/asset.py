@@ -389,7 +389,6 @@ def transfer_asset(args):
 @frappe.whitelist()
 def get_item_details(item_code):
 	asset_category = frappe.db.get_value("Item", item_code, "asset_category")
-
 	if not asset_category:
 		frappe.throw(_("Please enter Asset Category in Item {0}").format(item_code))
 

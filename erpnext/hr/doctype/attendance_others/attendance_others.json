@@ -227,7 +227,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-11-30 17:54:21.480096", 
+ "modified": "2020-12-15 20:06:00.018887", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Attendance Others", 
@@ -341,6 +341,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
- "track_seen": 0
+ "track_changes": 1, 
+ "track_seen": 1
 }

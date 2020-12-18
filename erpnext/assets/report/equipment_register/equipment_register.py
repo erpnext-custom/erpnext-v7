@@ -16,25 +16,28 @@ def execute(filters=None):
 
 def get_columns(filters):
 	columns = [
-		_("Equipment Code") + ":Link/Equipment:120",
-	 	_("Registration No") + "::90",
-	 	_("Equipment Type") + "::120",
-	 	_("Equipment Model") + "::140",
-	 	_("Branch") + "::120",
-		_("Belongs To") + "::120"		 
+		 _("Equipment Code") + ":Link/Equipment:120",	
+	 	 _("Registration No") + "::90",	
+	 	 _("Equipment Type") + "::120",	
+	 	 _("Equipment Model") + "::140",	
+	 	 _("Equipment Category.") + "::140", 
+	         _("Amount") + " :Currency:100",
+		_("Branch") + "::140"	
+
 	]
-	if filters.get("owner") == 'Own':
-		columns.append(_("Employee") + ":Link/Employee:120")
-		columns.append(_("Employee Name") + "::120")
-	return columns
+	
+	return columns	
 
 def get_data(filters):
-	equipment_query = frappe.db.sql(""" select e.name, e.equipment_number, e.equipment_type, e.equipment_model, e.owned_by from `tabEquipment` e 
-			where 1 = 1 and e.not_cdcl = 1""".format(owner))
+	data = """ select e.name, e.equipment_number, e.equipment_type, e.equipment_model, e.equipment_category, (select gross_purchase_amount from `tabAsset` where name = e.asset_code) as amount, e.branch from `tabEquipment` e where 1 = 1"""
+	if filters.get("owner"):
+		if filters.get("owner") == 'Own':		
+			data += " and e.not_cdcl = 0"	
 
-	other_asset_query = frappe.db.sql(""" select a.name, a.asset_name, a.brand, a.model, a.owned_by from `tabAsset Others` a where 1 = 1""")
+		if filters.get("owner") == 'Others':
+			data += " and e.not_cdcl = 1"
 
-	data = list(equipment_query) + list(other_asset_query)
+	if filters.get("branch"): 		
+		data += " and e.branch = '{0}'".format(filters.branch)	
 
-	
 	return frappe.db.sql(data)

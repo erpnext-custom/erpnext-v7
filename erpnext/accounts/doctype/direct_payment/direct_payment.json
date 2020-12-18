@@ -1351,8 +1351,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-07-07 14:51:10.144100", 
- "modified_by": "ucdorji@gyalsunginfra.bt", 
+ "modified": "2020-12-15 19:51:29.770117", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Direct Payment", 
  "name_case": "", 
@@ -1466,6 +1466,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

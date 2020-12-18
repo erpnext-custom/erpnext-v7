@@ -16,12 +16,12 @@ frappe.query_reports["Equipment Register"] = {
 			"options": ['', "Own", "Others"]
 		},
 
-		{
-			"fieldname": "include_disabled",
-			"label": __("Include Disabled"),
-			"fieldtype": "Check",
-			"default": 0,
-		},
+		//{
+		//	"fieldname": "include_disabled",
+		//	"label": __("Include Disabled"),
+		//	"fieldtype": "Check",
+		//	"default": 0,
+		//},
 
 	]
 }

@@ -130,7 +130,7 @@ class PurchaseInvoice(BuyingController):
 		if not default_currency:
 			throw(_('Please enter default currency in Company Master'))
 		if (self.currency == default_currency and flt(self.conversion_rate) != 1.00) or not self.conversion_rate or (self.currency != default_currency and flt(self.conversion_rate) == 1.00):
-			if self.currency != 'INR':
+			if self.currency not in ('INR', 'Nu'):
 				throw(_("Conversion rate cannot be 0 or 1"))
 
 	def validate_credit_to_acc(self):

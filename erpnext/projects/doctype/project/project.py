@@ -31,12 +31,13 @@ from frappe.model.naming import make_autoname
 from erpnext.custom_utils import get_branch_cc
 
 class Project(Document):
-        def autoname(self):
-                cur_year  = str(today())[0:4]
-                cur_month = str(today())[5:7]
-                serialno  = make_autoname("PRJ.####")
-                self.name = serialno[0:3] + cur_year + cur_month + serialno[3:]
-                
+        '''def autoname(self):
+                #cur_year  = str(today())[0:4]
+                #cur_month = str(today())[5:7]
+                #serialno  = make_autoname("PRJ.####")
+                #self.name = serialno[0:3] + cur_year + cur_month + serialno[3:]
+                self.name = self.project_name	
+	'''	
 	def get_feed(self):
 		return '{0}: {1}'.format(_(self.status), self.project_name)
 
@@ -79,6 +80,7 @@ class Project(Document):
         '''
         
 	def validate(self):
+		self.name = self.project_name
 		self.validate_dates()
 		self.validate_branch_cc()
 

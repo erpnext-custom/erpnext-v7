@@ -152,6 +152,44 @@ def get_data():
 				},
 			]	
 		},
+		 {
+                        "label": _("Asset Management"),
+                        "icon": "icon-list",
+                        "items": [
+                                {
+                                        "type":"report",
+                                        "is_query_report": True,
+                                        "name": "Asset Register",
+                                        "doctype": "Asset"
+                                },
+                                {
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Equipment Register",
+                                        "doctype": "Asset"
+                                },
+                                {
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Employee Asset Report",
+                                        "doctype": "Asset"
+                                },
+                                {
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Others' Asset Report",
+                                        "doctype":"Asset Others"
+                                },
+				#{
+				#	"type": "report",
+				#	"is_query_report": True,
+				#	"name": "Asset Balance Report",
+				#	"doctype": "Asset Received Entries"
+				#}
+
+                        ]
+                },
+
 	]
 
 

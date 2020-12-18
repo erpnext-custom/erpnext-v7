@@ -1017,7 +1017,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-11-03 12:39:24.141644", 
+ "modified": "2020-12-15 20:00:06.006321", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Imprest Recoup", 
@@ -1196,5 +1196,5 @@
  "sort_order": "DESC", 
  "title_field": "title", 
  "track_changes": 1, 
- "track_seen": 0
+ "track_seen": 1
 }

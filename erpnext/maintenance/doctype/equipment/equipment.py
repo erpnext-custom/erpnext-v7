@@ -21,8 +21,11 @@ class Equipment(Document):
 			self.equipment_number = self.name
 		'''if self.equipment_history:
 			self.set("equipment_history", {})'''
+		if not self.from_date:
+			self.from_date = nowdate()
+
 		if not self.equipment_history:
-                        self.create_equipment_history(branch = self.branch, on_date = '2017-01-01', ref_doc = self.name, purpose = 'Submit')
+                        self.create_equipment_history(branch = self.branch, on_date = self.from_date, ref_doc = self.name, purpose = 'Submit')
 		
 		if len(self.operators) > 1:
 			for a in range(len(self.operators)-1):
@@ -38,6 +41,17 @@ class Equipment(Document):
 				frappe.throw("Asset Code is mandatory, Please Fill the Asset Code!")
 		self.set_name()
 
+	def create_asset_others(self):
+		doc = frappe.new_doc("Asset Others")
+		doc.asset_category = 'Machinery & Equipment(6 Years)'
+		doc.asset_name = self.equipment_number
+		doc.model = self.equipment_model
+		doc.brand = self.equipment_type
+		doc.serial_number = self.name
+		doc.from_date = self.from_date
+		doc.issued_to = self.get("operators").operator
+		doc.owned_by = self.owne_by
+		#doc.contact_details = self.get("operators")
 
 	def create_equipment_history(self, branch, on_date, ref_doc, purpose):
                 from_date = on_date

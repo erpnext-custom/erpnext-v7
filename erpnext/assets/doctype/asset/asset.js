@@ -396,6 +396,7 @@ frappe.call({
 
 };
 
+
 // gross amount calculation
 frappe.ui.form.on("Asset", "asset_rate", function(frm) {
     if (frm.doc.asset_quantity_) {

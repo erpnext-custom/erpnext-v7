@@ -176,7 +176,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-10 14:35:27.434919", 
+ "modified": "2020-12-15 19:51:02.250996", 
  "modified_by": "Administrator", 
  "module": "Assets", 
  "name": "Asset Movement", 
@@ -289,6 +289,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

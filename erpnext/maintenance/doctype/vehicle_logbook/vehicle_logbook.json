@@ -473,7 +473,7 @@
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
-   "in_list_view": 0, 
+   "in_list_view": 1, 
    "label": "From Date", 
    "length": 0, 
    "no_copy": 0, 
@@ -547,7 +547,7 @@
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
-   "in_list_view": 0, 
+   "in_list_view": 1, 
    "label": "To Date", 
    "length": 0, 
    "no_copy": 0, 
@@ -1692,7 +1692,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-10-27 10:17:56.685759", 
+ "modified": "2020-12-15 20:09:42.633409", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Vehicle Logbook", 
@@ -1851,6 +1851,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "branch", 
- "track_changes": 0, 
- "track_seen": 0
+ "track_changes": 1, 
+ "track_seen": 1
 }

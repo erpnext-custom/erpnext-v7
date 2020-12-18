@@ -230,12 +230,25 @@ def verify_mr_workflow(doc):
 
         verifier = verifier_officiating[0] if verifier_officiating else reports_to[0]
         approver = approver_officiating[0] if approver_officiating else final_approver[0]
+	
+	#Email
+	subject = "Material Request(ERP)"
+	if doc.workflow_state == "Draft":
+                if doc.owner != frappe.session.user:
+                        frappe.throw("Only Mr/Mrs. <b> '{0}' </b>  can Save this Document".format(frappe.get_doc("User", doc.owner).full_name))
+	
 	if doc.workflow_state == "Waiting Approval":
                 if doc.owner != frappe.session.user:
                         doc.workflow_state = "Draft"
                         frappe.throw("Only Mr/Mrs. <b> '{0}' </b>  can Apply/Reapply this Document".format(frappe.get_doc("User", doc.owner).full_name))
                 doc.workflow_state = "Waiting Approval"
                 doc.docstatus = 0
+		message = """Dear Sir/Madam, <br>  {0} has requested you to verify the Material Request <b> {1}. Check ERP System for More Info. </b> <br> Thank You""".format(frappe.get_doc("User", doc.owner).full_name, str(frappe.get_desk_link("Material Request", doc.name)))
+                try:
+                        frappe.sendmail(recipients=verifier, sender=None, subject=subject, message=message)
+                except:
+                        pass
+
 
         if doc.workflow_state == "Verified By Supervisor":
                 #verifier = verifier_officiating[0] if verifier_officiating else reports_to[0]
@@ -245,6 +258,12 @@ def verify_mr_workflow(doc):
                 doc.workflow_state == "Verified By Supervisor"
                 doc.docstatus = 0
                 doc.verifier = verifier
+		message = """Dear Sir/Madam, <br>  {0} has requested you to Approve the Material Request <b> {1}. Check ERP System for More Info. </b> <br> Thank You""".format(frappe.get_doc("User", doc.owner).full_name, str(frappe.get_desk_link("Material Request", doc.name)))
+                try:
+                        frappe.sendmail(recipients=approver, sender=None, subject=subject, message=message)
+			frappe.sendmail(recipients= doc.owner, sender = None, subject = subject, message = "Material Request {0} verified".format(str(frappe.get_desk_link("Material Request", doc.name))))
+                except:
+                        pass
 
 	if doc.workflow_state == "Approved":
                 #approver = approver_officiating[0] if approver_officiating else final_approver[0]
@@ -258,6 +277,11 @@ def verify_mr_workflow(doc):
                 doc.workflow_state = "Approved"
                 doc.docstatus = 1
                 doc.w_approver = approver
+		message = """Dear {0}, <br>  Your Material Request {1} is approved. Check ERP System for More Info. <br>  Thank You""".format(frappe.get_doc("User", doc.owner).full_name, str(frappe.get_desk_link("Material Request", doc.name)))
+                try:
+                        frappe.sendmail(recipients=doc.owner, sender=None, subject=subject, message=message)
+                except:
+                        pass
 
         if doc.workflow_state in ("Rejected", "Cancelled"):
                 if doc.get_db_value("workflow_state") == 'Waiting Approval':
@@ -271,4 +295,9 @@ def verify_mr_workflow(doc):
                         if approver != frappe.session.user:
                                 doc.workflow_state = doc.get_db_value("workflow_state")
                                 frappe.throw("Only Mr/Mrs. <b> {0} </b> can reject/cancel this Document".format(frappe.get_doc("User", approver).full_name))
-                doc.rejector = frappe.session.user	
+                doc.rejector = frappe.session.user
+		message = """Dear {0},  Your Material Request {1} is <b> {2} </b>. Check ERP System for More Info. <br> Thank You""".format(frappe.get_doc("User", doc.owner).full_name, str(frappe.get_desk_link("Material Request", doc.name)))
+                try:
+                        frappe.sendmail(recipients=doc.owner, sender=None, subject=subject, message=message)
+                except:
+                        pass	

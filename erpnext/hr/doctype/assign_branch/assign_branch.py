@@ -26,19 +26,23 @@ class AssignBranch(Document):
 			emp = frappe.get_doc(self.employee_type, self.employee)
 			self.user = emp.user_id
 			self.current_branch = emp.branch
-		else:
-			frappe.throw("Employee ID is Mandatory")
+		#else:
+		#frappe.throw("Employee ID is Mandatory")
 
 	def check_employee_duplicate(self):
 		docs = frappe.db.sql("select name from `tabAssign Branch` where employee = %s and user = %s and name != %s", (self.employee, self.user, self.name), as_dict=True)
 		if docs:
 			frappe.throw("The Employee has been already assigned Branch through <b>" + str(docs[0].name) + "</b>")
 
-	def check_duplicate(self):		
+	def check_duplicate(self):
+		to_remove = []		
 		for a in self.items:
 			for b in self.items:
 				if a.branch == b.branch and a.idx != b.idx:
-					frappe.throw("Duplicate Entries in row " + str(a.idx) + " and " + str(b.idx))
+					#to_remove.append(list(a))
+					self.remove(a)
+        				#[self.remove(a) for a in to_remove]
+					#frappe.throw("Duplicate Entries in row " + str(a.idx) + " and " + str(b.idx))
 
 	def assign_branch(self):
 		#Clear user branch permissions 
@@ -61,10 +65,10 @@ class AssignBranch(Document):
 		query = """ select b.name as branch from tabBranch b, `tabCost Center` c where b.name = c.branch and b.is_disabled != 1"""
 		if self.parent_cc:
 			query += " and c.parent = '{0}'".format(self.parent_cc)
- 
+
 		entries = frappe.db.sql(query, as_dict=True)
 		self.set('items', [])
-
+		
 		for d in entries:
 			row = self.append('items', {})
 			row.update(d)

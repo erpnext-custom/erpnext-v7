@@ -582,7 +582,7 @@
    "precision": "", 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
-   "read_only": 1, 
+   "read_only": 0, 
    "report_hide": 0, 
    "reqd": 1, 
    "search_index": 0, 
@@ -728,7 +728,7 @@
    "label": "Parent Organization", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "Supplier", 
+   "options": "Organization", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -926,7 +926,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-10-12 11:49:04.197432", 
+ "modified": "2020-12-15 20:03:08.518141", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Operator", 
@@ -1066,5 +1066,5 @@
  "sort_order": "DESC", 
  "title_field": "person_name", 
  "track_changes": 1, 
- "track_seen": 0
+ "track_seen": 1
 }

@@ -39,7 +39,7 @@ def get_data(filters):
     query = frappe.db.sql("""
             select distinct
 			mr.name                             as mr_name,
-			concat_ws('-', mr.branch,'CDCL')    as mr_cost_center,
+			mr.branch    			as mr_cost_center,
 			mr.creation_date                    as mr_create_date,
 			date(mr.submission)                 as mr_submit_date,
 			mr.workflow_state                   as mr_status,

@@ -40,7 +40,7 @@ def get_provisional_profit_loss(asset, liability, equity, period_list, company):
 	if asset and (liability or equity):
 		total=0
 		provisional_profit_loss = {
-			"account_name": "'" + _("Provisional Profit / Loss (Credit)") + "'",
+			"account_name": "'" + _("Balance Equity") + "'",
 			"account": None,
 			"warn_if_negative": True,
 			"currency": frappe.db.get_value("Company", company, "default_currency")

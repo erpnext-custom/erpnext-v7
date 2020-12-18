@@ -425,8 +425,8 @@ def get_data():
 				 {
                                         "type" : "report",
                                         "is_query_report": True,
-                                        "name": "MR Payment Report",
-                                        "label": _("MR Payment Report"),
+                                        "name": "Payment Report",
+                                        "label": _("Muster Roll Employee/Operator/Open Air Prisoner Payment Report"),
                                         "doctype": "Process MR Payment"
                                 }
 

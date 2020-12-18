@@ -65,8 +65,18 @@ frappe.ui.form.on('Equipment', {
 		}
 	},
 	not_cdcl: function(frm) {
-		cur_frm.toggle_reqd("asset_code", frm.doc.not_cdcl == 0) 
-	}
+		cur_frm.toggle_reqd("asset_code", frm.doc.not_cdcl == 0)
+		cur_frm.toggle_reqd("owned_by", frm.doc.not_cdcl == 1) 
+	},
+
+	/*branch: function(frm){
+                if(!this.frm.doc.__islocal){
+                        cur_frm.set_value("date_of_transfer",frappe.datetime.nowdate());
+                        refresh_many(["date_of_transfer"]);
+                        validate_prev_doc(this.frm,__("Please select date of transfer to new cost center"));
+                }
+        },
+	*/
 	//equipment_type: function(frm) {
 	//	cur_frm.toggle_reqd("asset_code", frm.doc.equipment_type != "Fabrication Product")
 //	}
@@ -116,13 +126,12 @@ cur_frm.fields_dict['operators'].grid.get_field('operator').get_query = function
 	if (d.employee_type == "Employee") {
 		return {
 			filters: [
-			['Employee', 'designation', 'in', ['Operator', 'Driver']],
 			['Employee', 'branch', '=', frm.branch],
 			['Employee', 'status', '=', 'Active']
 			]
 		}
 	}
-	else {
+	else if(d.employee_type == 'Muster Roll Employee') {
 		return {
 			filters: [
 				['Muster Roll Employee', 'branch', '=', frm.branch],
@@ -130,6 +139,14 @@ cur_frm.fields_dict['operators'].grid.get_field('operator').get_query = function
 			]
 		}
 	}
+	else if(d.employee_type == 'Operator') {
+		return {
+			filters: [
+				['Operator', 'branch', '=', frm.branch],
+				['Operator', 'status', '=', 'Active']
+			]
+		}
+	}	
 }
 
 frappe.ui.form.on('Equipment History', {
@@ -141,3 +158,28 @@ frappe.ui.form.on('Equipment History', {
         }
 
 });
+
+
+
+function validate_prev_doc(frm, title){
+        return frappe.call({
+                                method: "erpnext.custom_utils.get_prev_doc_eq",
+                                args: {doctype: frm.doctype, docname: frm.docname, col_list: "cost_center,branch"},
+                                callback: function(r) {
+                                        if(frm.doc.cost_center && (frm.doc.cost_center !== r.message.cost_center)){
+                                                var d = frappe.prompt({
+                                                        fieldtype: "Date",
+                                                        fieldname: "date_of_transfer",
+                                                        reqd: 1,
+                                                        description: __("*This information shall be recorded in employee internal work history.")},
+                                                        function(data) {
+                                                                cur_frm.set_value("date_of_transfer",data.date_of_transfer);
+                                                                refresh_many(["date_of_transfer"]);
+                                                        },
+                                                        title,
+                                                        __("Update")
+                                                );
+                                        }
+                                }
+                });
+}

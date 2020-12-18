@@ -16,11 +16,11 @@ frappe.ui.form.on('Operator', {
 		}	
 	},
 
-	salary: function(frm) {
-		cur_frm.set_value("rate_per_day", ((frm.doc.salary)/ (30)))
+	/*salary: function(frm) {
+		//cur_frm.set_value("rate_per_day", ((frm.doc.salary)/ (30)))
 		//cur_frm.set_value("rate_per_hour", ((frm.doc.salary * 1.5)/ (30 * 8)))
 	},
-
+	*/
 	"status": function(frm) {
 		cur_frm.toggle_reqd("date_of_separation", frm.doc.status == "Left")
 	},

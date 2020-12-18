@@ -630,8 +630,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-04-18 11:20:48.795520", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2020-12-15 19:56:55.867302", 
+ "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Ledger Entry", 
  "owner": "Administrator", 
@@ -803,6 +803,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
- "track_seen": 0
+ "track_changes": 1, 
+ "track_seen": 1
 }

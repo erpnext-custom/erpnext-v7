@@ -103,7 +103,7 @@ frappe.ui.form.on('Travel Authorization', {
 		frm.toggle_reqd("estimated_amount", frm.doc.need_advance==1);
 		frm.toggle_reqd("currency", frm.doc.need_advance==1);
 		frm.toggle_reqd("advance_amount", frm.doc.need_advance==1);
-		alculate_advance(frm);
+		calculate_advance(frm);
 	},
 	"advance_amount": function(frm) {
 		if(frm.doc.advance_amount && !frm.doc.estimated_amount){
@@ -120,6 +120,7 @@ frappe.ui.form.on('Travel Authorization', {
 				update_advance_amount(frm)
 			}
 		}
+		calculate_advance(frm);
 	},
 	"document_status": function(frm) {
 		if(frm.doc.document_status == "Rejected") {

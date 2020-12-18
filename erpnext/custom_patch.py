@@ -14,6 +14,30 @@ from datetime import datetime
 import os
 import subprocess
 
+
+def ipol():
+	doc = frappe.get_doc("Issue POL", 'IPOL201200086')
+	doc.submit()
+
+def email_test():
+	recipients = 'tashidorji@gyalsunginfra.bt'
+	subject = "testing"
+	doc = frappe.get_doc("Material Request", 'MRMR20120018')
+	message = """Dear Sir/Madam, <br>  {0} has requested you to verify the Material Request <b> {1}. Check ERP System for More Info. </b> <br> Thank You""".format(frappe.get_doc("User", doc.owner).full_name, str(frappe.get_desk_link("Material Request", doc.name)))
+	frappe.sendmail(recipients=recipients, sender=None, subject=subject, message=message)
+	print "message sent"
+
+def update_requested_by():
+	count = 0
+	for a in frappe.db.sql(""" select name, owner from `tabMaterial Request`""", as_dict = 1):
+		user = frappe.get_doc("Employee", {'user_id': a.owner})
+		frappe.db.sql(""" update `tabMaterial Request` set requested_by = "{0}({1})" where owner = '{2}' and name = '{3}'
+				""".format(user.employee_name, user.designation, a.owner, a.name), debug = 1)
+		count += 1
+		print a.name, count
+
+	
+
 def update_ot_acc():
 	count = 0
         for b in frappe.db.sql(" select name, branch from `tabProcess Overtime Payment`", as_dict =1):
