@@ -297,7 +297,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-09-08 16:53:41.267191", 
+ "modified": "2020-12-18 21:27:59.023097", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Leave Adjustment", 
@@ -370,6 +370,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
- "track_seen": 0
+ "track_changes": 1, 
+ "track_seen": 1
 }

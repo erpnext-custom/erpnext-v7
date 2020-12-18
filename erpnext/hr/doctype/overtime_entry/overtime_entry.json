@@ -276,7 +276,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-11-06 23:10:35.653570", 
+ "modified": "2020-12-18 21:25:27.194276", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Overtime Entry", 
@@ -435,6 +435,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
- "track_seen": 0
+ "track_changes": 1, 
+ "track_seen": 1
 }

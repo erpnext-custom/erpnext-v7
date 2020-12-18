@@ -774,7 +774,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-11-23 11:32:54.728805", 
+ "modified": "2020-12-18 21:22:34.119526", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Process Overtime Payment", 
@@ -827,6 +827,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
- "track_seen": 0
+ "track_changes": 1, 
+ "track_seen": 1
 }

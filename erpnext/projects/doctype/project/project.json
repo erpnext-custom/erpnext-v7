@@ -1205,7 +1205,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 4, 
- "modified": "2020-11-16 11:21:44.972430", 
+ "modified": "2020-12-18 21:23:11.020456", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project", 
@@ -1425,6 +1425,6 @@
  "sort_order": "DESC", 
  "timeline_field": "customer", 
  "title_field": "project_name", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 1
 }

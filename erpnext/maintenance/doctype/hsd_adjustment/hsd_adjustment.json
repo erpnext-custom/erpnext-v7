@@ -273,8 +273,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-08-14 12:34:05.519130", 
- "modified_by": "lhendrup.dorji@bt.bt", 
+ "modified": "2020-12-18 21:30:26.642874", 
+ "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "HSD Adjustment", 
  "name_case": "", 
@@ -366,6 +366,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
- "track_seen": 0
+ "track_changes": 1, 
+ "track_seen": 1
 }

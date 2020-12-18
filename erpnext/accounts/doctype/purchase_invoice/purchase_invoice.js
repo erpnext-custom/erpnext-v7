@@ -424,6 +424,7 @@ cur_frm.cscript.type = function(doc) {
     doUpdates(doc);
 
     if(percent > 0) {
+	console.log(percent);
 	frappe.call({
 		method: "erpnext.accounts.doctype.purchase_invoice.purchase_invoice.get_tds_accounts",
 		args: {

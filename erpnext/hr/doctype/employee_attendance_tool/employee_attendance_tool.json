@@ -278,8 +278,8 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-08-18 14:50:05.258063", 
- "modified_by": "sonam.zangmo@bt.bt", 
+ "modified": "2020-12-18 21:28:41.630857", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee Attendance Tool", 
  "name_case": "", 
@@ -414,6 +414,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
- "track_seen": 0
+ "track_changes": 1, 
+ "track_seen": 1
 }

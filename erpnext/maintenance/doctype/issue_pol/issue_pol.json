@@ -583,7 +583,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-10-27 10:17:28.262885", 
+ "modified": "2020-12-18 21:26:50.111097", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Issue POL", 
@@ -758,11 +758,11 @@
    "write": 1
   }
  ], 
- "quick_entry": 1, 
+ "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
- "track_seen": 0
+ "track_changes": 1, 
+ "track_seen": 1
 }

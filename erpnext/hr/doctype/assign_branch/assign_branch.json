@@ -275,7 +275,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-08-21 11:04:40.408291", 
+ "modified": "2020-12-18 21:28:09.424398", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Assign Branch", 
@@ -370,6 +370,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "employee", 
- "track_changes": 0, 
- "track_seen": 0
+ "track_changes": 1, 
+ "track_seen": 1
 }
