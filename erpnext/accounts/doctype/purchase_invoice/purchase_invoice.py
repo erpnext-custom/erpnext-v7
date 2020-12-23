@@ -83,6 +83,9 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset_account()
 		self.create_remarks()
 
+		if self.type and not self.tds_account:
+			frappe.throw("TDS Account is not Pulled")
+
 	def set_status(self):
                 self.status = {
                         "0": "Draft",
@@ -320,7 +323,7 @@ class PurchaseInvoice(BuyingController):
 		# this sequence because outstanding may get -negative
 		self.make_gl_entries()
 
-		self.update_project()
+		#self.update_project()
 		self.update_fixed_asset()
 		self.consume_budget()
 		self.update_rrco_receipt()

@@ -1,4 +1,5 @@
 {
+ "_seen": "[\"Administrator\"]", 
  "allow_copy": 1, 
  "allow_import": 0, 
  "allow_rename": 0, 
@@ -293,7 +294,7 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 1, 
- "modified": "2020-12-18 21:29:01.078895", 
+ "modified": "2020-12-19 09:51:00.026471", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Upload Attendance", 
@@ -405,5 +406,5 @@
  "read_only_onload": 0, 
  "sort_order": "ASC", 
  "track_changes": 1, 
- "track_seen": 1
+ "track_seen": 0
 }

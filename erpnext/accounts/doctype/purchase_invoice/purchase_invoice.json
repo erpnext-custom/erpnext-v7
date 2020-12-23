@@ -3059,7 +3059,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2020-12-15 19:46:59.711632", 
+ "modified": "2020-12-19 11:29:31.295548", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Purchase Invoice", 
@@ -3344,5 +3344,5 @@
  "timeline_field": "supplier", 
  "title_field": "title", 
  "track_changes": 1, 
- "track_seen": 1
+ "track_seen": 0
 }

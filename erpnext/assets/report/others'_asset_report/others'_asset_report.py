@@ -30,7 +30,7 @@ def get_data(filters):
         
 	eqp_query = """ select e.name, e.equipment_number, e.equipment_type, e.equipment_model, e.branch, e.owned_by, e.current_operator 
                         from `tabEquipment` e 
-                        where 1 != 1 and e.not_cdcl = 1"""
+                        where 1 = 1 and e.not_cdcl = 1"""
 
 	ast_query = """ select a.name, a.asset_name, a.brand, a.model, a.branch, a.owned_by, a.issued_to from `tabAsset Others` a where 1 = 1"""
 	if filters.get("branch"):

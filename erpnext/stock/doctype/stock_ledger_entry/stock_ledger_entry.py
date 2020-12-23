@@ -69,7 +69,7 @@ class StockLedgerEntry(Document):
 
 		item_det = item_det[0]
 
-		if item_det.is_stock_item != 1:
+		if item_det.is_stock_item != 1 and item_det.name != '200020':
 			frappe.throw(_("Item {0} must be a stock Item").format(self.item_code))
 
 		# check if batch number is required

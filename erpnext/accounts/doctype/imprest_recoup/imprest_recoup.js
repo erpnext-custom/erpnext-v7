@@ -66,7 +66,6 @@ frappe.ui.form.on('Imprest Recoup', {
 		frm.fields_dict['items'].grid.get_field('budget_account').get_query = function(){
 			return{
 				filters: {
-					'root_type': 'Expense',
 					'is_group': 0
 				}
 			}
@@ -233,7 +232,7 @@ cur_frm.cscript.custom_before_submit = function(frm){
 */
 
 function enable_disable(frm){
-	var toggle_fields = ["final_settlement","settlement_account","party_type","party","revenue_bank_account","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
+	var toggle_fields = ["final_settlement", "settlement_account","party_type","party","revenue_bank_account","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
 	var other_fields  = ["company","title","branch","imprest_type","remarks","notes"];
 	
 	toggle_fields.forEach(function(field_name){

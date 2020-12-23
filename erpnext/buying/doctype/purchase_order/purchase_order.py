@@ -202,6 +202,11 @@ class PurchaseOrder(BuyingController):
 		self.update_requested_qty()
 		self.update_ordered_qty()
 
+		if self.naming_series not in ('Services Miscellaneous', 'Services Works'):
+                        if frappe.session.user != 'headpnl@gyalsunginfra.bt':
+                                frappe.throw("Only Head, Procurement & Liaison <b> Col. Karma Dorji </b> Can Submit Purchase Order for Material Purchases")
+
+
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype,
 			self.company, self.base_grand_total)
 

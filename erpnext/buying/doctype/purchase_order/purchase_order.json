@@ -1,4 +1,5 @@
 {
+ "_seen": "[\"Administrator\"]", 
  "allow_copy": 0, 
  "allow_import": 1, 
  "allow_rename": 0, 
@@ -2698,7 +2699,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-12-15 19:44:44.974409", 
+ "modified": "2020-12-19 08:55:02.068960", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Purchase Order", 

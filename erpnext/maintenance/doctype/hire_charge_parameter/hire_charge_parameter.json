@@ -641,7 +641,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-12-16 14:51:47.594189", 
+ "modified": "2020-12-23 17:03:49.931048", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Hire Charge Parameter", 
@@ -692,7 +692,7 @@
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 0, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -706,7 +706,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 0
+   "write": 1
   }, 
   {
    "amend": 0, 
@@ -815,5 +815,5 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "track_changes": 1, 
- "track_seen": 1
+ "track_seen": 0
 }
