@@ -11,6 +11,7 @@ from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 class Logbook(Document):
 	def validate(self):
+		self.validate_data()
 		check_future_date(self.posting_date)
 		self.check_duplicate_entry()
 		self.validate_supplier()
@@ -20,6 +21,18 @@ class Logbook(Document):
 		self.calculate_hours()
 		self.calculate_downtime()
 		self.validate_hours()
+
+	def validate_data(self):
+		is_disabled = frappe.db.get_value("Branch", self.branch, "is_disabled")
+		if is_disabled:
+			frappe.throw("Cannot use a disabled branch in transaction")
+
+		eqp = frappe.db.get_values("Equipment", self.equipment, ["branch", "is_disabled"], as_dict=1)
+		if eqp[0].is_disabled:
+			frappe.throw("Cannot use a disabled Equipment in transaction")
+		
+		if self.branch != eqp[0].branch:
+			frappe.throw("Cannot use equipments from other branch")
 
 	def check_duplicate_entry(self):
 		lbk = frappe.db.sql("select name as lb from tabLogbook where docstatus = 1 and equipment = %(equipment)s and posting_date = %(posting_date)s and name != %(name)s", {"equipment": self.equipment, "posting_date": self.posting_date, "name": self.name}, as_dict=1)
@@ -71,7 +84,7 @@ class Logbook(Document):
 				if a.reading_initial and a.reading_final:
 					if a.reading_initial > a.reading_final:
 						frappe.throw("Final reading should not be smaller than inital")
-					a.hours = flt(a.reading_final - a.reading_initial, 1)
+					a.hours = flt(a.reading_final - a.reading_initial - a.idle_time, 1)
 					total_hours += a.hours
 					if a.is_overtime:
 						ot_hours += a.hours
@@ -96,8 +109,8 @@ class Logbook(Document):
 			frappe.throw("Total hours cannot be more than {0} hours".format(act_sch))
 
 
-		self.total_hours = total_hours
-		self.total_ot = ot_hours
+		self.total_hours = flt(total_hours, 1)
+		self.total_ot = flt(ot_hours, 1)
 
 	def calculate_downtime(self):
 		total = 0
@@ -109,7 +122,7 @@ class Logbook(Document):
 		self.total_downtime_hours = total
 
 	def validate_hours(self):
-		difference = flt(self.total_hours) + flt(self.total_downtime_hours) - flt(self.scheduled_working_hour)
+		difference = flt(self.total_hours, 1) + flt(self.total_downtime_hours, 1) - flt(self.scheduled_working_hour, 1)
 		if difference < 0:
 			frappe.throw("Total of work hours ({0}) and downtime hours ({1}) should be more or equal scheduled hours ({2})".format(frappe.bold(self.total_hours), frappe.bold(self.total_downtime_hours), frappe.bold(self.scheduled_working_hour)))
 		if difference > 0:
@@ -121,9 +134,11 @@ class Logbook(Document):
 		pass
 
 	def get_ehf(self):
+		if not self.branch:
+			frappe.throw("Branch is mandatory")
 		if not self.equipment or not self.posting_date:
 			frappe.throw("Equipment and Log Date are mandatory")
-		ehfs = frappe.db.sql("select name, target_hour from `tabEquipment Hiring Form` where docstatus = 1 and equipment = %(equipment)s and %(logdate)s between start_date and end_date order by name", {"equipment": self.equipment, "logdate": self.posting_date}, as_dict=1)
+		ehfs = frappe.db.sql("select name, target_hour from `tabEquipment Hiring Form` where docstatus = 1 and equipment = %(equipment)s and %(logdate)s between start_date and end_date and branch = %(branch)s order by name", {"equipment": self.equipment, "logdate": self.posting_date, "branch": self.branch}, as_dict=1)
 
 		if ehfs:
 			self.equipment_hiring_form = ehfs[0]['name']

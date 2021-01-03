@@ -11,8 +11,9 @@ cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("item_code", "item_name", "item_name")
 cur_frm.add_fetch("item_code", "stock_uom", "uom")
 cur_frm.add_fetch("item_code", "item_group", "item_group")
-cur_frm.add_fetch("equipment", "equipment_model", "equipment_model")
-cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
+cur_frm.add_fetch("equipment", "equipment_model", "equipment_model");
+cur_frm.add_fetch("equipment", "equipment_number", "equipment_number");
+cur_frm.add_fetch("location", "distance", "distance");
 
 frappe.ui.form.on('Production', {
 	onload: function(frm) {
@@ -131,6 +132,12 @@ frappe.ui.form.on("Production Product Item", {
 				cur_frm.refresh_field("cop")
 			}
 		})
+	},
+	transporter_payment_eligible: function(frm, cdt, cdn) {
+		var row = locals[cdt][cdn];
+		if(row.transporter_payment_eligible){
+			cur_frm.get_field("items").grid.toggle_reqd("equipment", true);
+		}
 	},
 
 	item_code: function(frm, cdt, cdn) {

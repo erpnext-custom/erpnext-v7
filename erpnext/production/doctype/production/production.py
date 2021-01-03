@@ -28,6 +28,8 @@ class Production(StockController):
 		self.validate_supplier()
 		self.validate_items()
 		self.validate_posting_time()
+		self.validate_transportation()
+		self.validate_raw_material_product_qty()
 
 	def validate_data(self):
 		if self.production_type == "Adhoc" and not self.adhoc_production:
@@ -115,18 +117,18 @@ class Production(StockController):
 		self.check_cop()
 
 	def on_submit(self):
-                """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-                # Following lines commented by SHIV on 2019/04/01
+		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+		# Following lines commented by SHIV on 2019/04/01
 		#self.make_products_sl_entry()
 		#self.make_products_gl_entry()
 		#self.make_raw_material_stock_ledger()
 		#self.make_raw_material_gl_entry()
-                
-                # Following lines added by SHIV on 2019/04/01
-                self.update_stock_ledger()
-                self.make_gl_entries()
-                """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
-                
+
+		# Following lines added by SHIV on 2019/04/01 and modified by Thukten on 24/12/2020
+		self.update_stock_ledger()
+		self.make_gl_entries()
+
+		""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 		self.make_production_entry()
 
 	def on_cancel(self):
@@ -146,31 +148,50 @@ class Production(StockController):
 		self.delete_production_entry()
 
         """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-        # update_stock_ledger() method added by SHIV on 2019/04/01
-        def update_stock_ledger(self):
-                sl_entries = []
+	# update_stock_ledger() method added by SHIV on 2019/04/01
+	def update_stock_ledger(self):
+		sl_entries = []
 
-                # make sl entries for source warehouse first, then do the target warehouse
-                for d in self.get('raw_materials'):
-                        if cstr(d.warehouse):
-                                sl_entries.append(self.get_sl_entries(d, {
-                                        "warehouse": cstr(d.warehouse),
-                                        "actual_qty": -1 * flt(d.qty),
-                                        "incoming_rate": 0
-                                }))
-                                
-                for d in self.get('items'):
-                        if cstr(d.warehouse):
-                                sl_entries.append(self.get_sl_entries(d, {
-                                        "warehouse": cstr(d.warehouse),
-                                        "actual_qty": flt(d.qty),
-                                        "incoming_rate": flt(d.cop, 2)
-                                }))
+		# make sl entries for source warehouse first, then do the target warehouse
+		for d in self.get('raw_materials'):
+				if cstr(d.warehouse):
+						sl_entries.append(self.get_sl_entries(d, {
+								"warehouse": cstr(d.warehouse),
+								"actual_qty": -1 * flt(d.qty),
+								"incoming_rate": 0
+						}))
+						
+		for d in self.get('items'):
+				if cstr(d.warehouse):
+						sl_entries.append(self.get_sl_entries(d, {
+								"warehouse": cstr(d.warehouse),
+								"actual_qty": flt(d.qty),
+								"incoming_rate": flt(d.cop, 2)
+						}))
 
-                if self.docstatus == 2:
-                        sl_entries.reverse()
+		if self.transfer:
+			if not self.to_warehouse:
+				frappe.throw("Receiving warehouse is mandatory while transferring item")
+			
+			for d in self.get('items'):
+				if cstr(d.warehouse):
+						sl_entries.append(self.get_sl_entries(d, {
+								"warehouse": cstr(d.warehouse),
+								"actual_qty": -1 * flt(d.qty),
+								"incoming_rate": 0
+						}))
+						
+				if cstr(self.to_warehouse):
+						sl_entries.append(self.get_sl_entries(d, {
+								"warehouse": cstr(self.to_warehouse),
+								"actual_qty": flt(d.qty),
+								"incoming_rate": flt(d.cop, 2)
+						}))
 
-                self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+		if self.docstatus == 2:
+				sl_entries.reverse()
+
+		self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 
         # get_gl_entries() method added by SHIV on 2019/04/01
         def get_gl_entries(self, warehouse_account):
@@ -201,18 +222,15 @@ class Production(StockController):
 
 			self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 
-
 	def make_products_gl_entry(self):
 		gl_entries = []
-
 		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
 		if not wh_account:
 			frappe.throw(str(self.warehouse) + " is not linked to any account.")
-
 		expense_account = get_settings_value("Production Account Settings", self.company, "default_production_account")
 		if not expense_account:
                         frappe.throw("Setup Default Production Account in Production Account Settings")
-
+			
 		for a in self.items:
 			amount = flt(a.qty) * flt(a.cop)
 
@@ -231,6 +249,24 @@ class Production(StockController):
 						 "cost_center": self.cost_center,
 						})
 				)
+			
+			if self.transfer:
+				to_wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.to_warehouse}, "name")
+				frappe.throw("test " + to_wh_account)
+				gl_entries.append(
+					prepare_gl(self, {"account": to_wh_account,
+							"debit": flt(amount),
+							"debit_in_account_currency": flt(amount),
+							"cost_center": self.cost_center,
+							})
+					)
+				gl_entries.append(
+					prepare_gl(self, {"account": wh_account,
+							"credit": flt(amount),
+							"credit_in_account_currency": flt(amount),
+							"cost_center": self.cost_center,
+							})
+					)	
 
 		if gl_entries:
 			from erpnext.accounts.general_ledger import make_gl_entries
@@ -393,6 +429,62 @@ class Production(StockController):
 			return data
 		else:
 			frappe.msgprint("No records in production settings")
+
+	def validate_raw_material_product_qty(self):
+		if self.check_raw_material_product_qty:
+			raw_material_qty = 0.0
+			product_item_qty = 0.0
+			for a in self.raw_materials:
+				raw_material_qty += a.qty
+
+			for b in self.items:
+				product_item_qty += b.qty
+
+			for c in self.production_waste:
+				raw_material_qty += c.qty
+			if raw_material_qty <= product_item_qty:
+				frappe.throw("Sum of Crushed products is less than or equivalent to raw materials feed.")
+
+	def validate_transportation(self):
+		for d in self.items:
+			if not d.transporter_payment_eligible:
+				return
+			else:
+				if not self.transporter_rate_base_on:
+					frappe.throw("Please select transporter rate based on Location or Warehouse")
+
+			if not d.equipment:
+				frappe.throw("Please Select Equipment or Vehicle for transportation")
+
+			if self.transporter_rate_base_on == "Location":
+				rate = 0
+				expense_account = 0
+				qty = 0
+				if not self.distance:
+					self.distance = frappe.db.get_value("Location", self.location, "distance")
+
+				if self.distance > 0:
+					for a in frappe.db.sql(""" select r.name, d.rate, r.expense_account
+											from `tabTransporter Rate` r, `tabTransporter Distance Rate` d 
+											where r.name = d.parent
+											and '{0}' between r.from_date and r.to_date
+											and d.distance = '{1}'
+											and r.from_warehouse = '{2}'
+											""".format(self.posting_date, self.distance, self.warehouse), as_dict=True):
+						rate = a.rate
+						expense_account = a.expense_account
+						transporter_rate = a.name
+
+				if rate > 0:
+					d.rate = rate
+					d.transportation_expense_account = expense_account
+					d.transporter_rate = transporter_rate
+					if d.qty > 0:
+						d.amount = flt(d.rate) * flt(d.qty)
+					else:
+						frappe.throw("Please provide the Quantity")				
+				else:
+					frappe.throw("Define Transporter Rate for distance {} in Transporter Rate ".format(self.distance))
 
 @frappe.whitelist()
 def get_expense_account(company, item):

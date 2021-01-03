@@ -11,9 +11,15 @@ from erpnext.custom_utils import check_uncancelled_linked_doc, prepare_gl, check
 
 class EMEPayment(Document):
 	def validate(self):
+		self.validate_data()
 		check_future_date(self.posting_date)
 		self.check_remarks()
 		self.calculate_totals()
+
+	def validate_data(self):
+		is_disabled = frappe.db.get_value("Branch", self.branch, "is_disabled")
+		if is_disabled:
+			frappe.throw("Cannot use a disabled branch in transaction")
 
 	def check_remarks(self):
 		if not self.remarks:
@@ -22,14 +28,16 @@ class EMEPayment(Document):
 			frappe.throw("Deduction Remarks is mandatory")
 
         def get_logbooks(self):
+		if not self.branch:
+			frappe.throw("Select Branch")
 		if not self.supplier:
 			frappe.throw("Select Supplier")
 
 		if not self.from_date or not self.to_date:
 			frappe.throw("From Date and To Date are mandatory")
 
-		query = "select l.name as logbook, l.posting_date, l.equipment_hiring_form, li.expense_head, li.hours as total_hours, l.equipment from tabLogbook l, `tabLogbook Item` li where li.parent = l.name and l.docstatus = 1 and l.paid = 0 and l.supplier = %(supplier)s and l.posting_date between %(from_date)s and %(to_date)s"
-                entries = frappe.db.sql(query, {"supplier": self.supplier, "from_date": self.from_date, "to_date": self.to_date}, as_dict=True)
+		query = "select l.name as logbook, l.posting_date, l.equipment_hiring_form, li.expense_head, li.hours as total_hours, l.equipment from tabLogbook l, `tabLogbook Item` li where li.parent = l.name and l.docstatus = 1 and l.paid = 0 and l.supplier = %(supplier)s and l.branch = %(branch)s and l.posting_date between %(from_date)s and %(to_date)s order by l.posting_date, li.expense_head"
+                entries = frappe.db.sql(query, {"supplier": self.supplier, "from_date": self.from_date, "to_date": self.to_date, "branch": self.branch}, as_dict=True)
                 self.set('items', [])
 
 		if len(entries) == 0:
@@ -51,6 +59,8 @@ class EMEPayment(Document):
 		
 		for a in self.items:
 			total += a.amount
+			doc = frappe.get_doc("Equipment", equipment)
+			a.equipment_no = doc.equipment_number
 		self.total_amount = total
 
 		# tds
@@ -66,7 +76,7 @@ class EMEPayment(Document):
 			if not self.deduction_account:
 				frappe.throw("Set EME Deduction Account in Account Settings")
 
-		self.payable_amount = self.total_amount - self.tds_amount - self.deduction_amount
+		self.payable_amount = flt(self.total_amount, 2) - flt(self.tds_amount, 2) - flt(self.deduction_amount, 2)
 
 	def on_submit(self):
 		self.validate_logbook()

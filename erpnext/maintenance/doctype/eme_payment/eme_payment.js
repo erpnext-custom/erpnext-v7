@@ -4,6 +4,9 @@ cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("branch", "expense_bank_account", "bank_account")
 
 frappe.ui.form.on('EME Payment', {
+	setup: function(frm) {
+                frm.get_docfield("items").allow_bulk_edit = 1;
+        },
 	refresh: function(frm) {
                 if(frm.doc.docstatus===1){
                         frm.add_custom_button(__('Accounting Ledger'), function(){

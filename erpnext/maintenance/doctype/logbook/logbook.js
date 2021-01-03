@@ -16,6 +16,13 @@ frappe.ui.form.on('Logbook', {
 		};
 	    });
 
+	    cur_frm.set_query("branch", function() {
+		return {
+		    "filters": {
+			"is_disabled": 0,
+		    }
+		};
+	    });
 	},
 
 	equipment: function(frm) {
@@ -74,8 +81,7 @@ function calculate_time(frm, cdt, cdn) {
 	var hour = 0
 	var item = locals[cdt][cdn]
 	if(item.uom == "Hour") {
-		console.log("UMMM ", item.reading_final, item.reading_initial)
-		hour = item.reading_final - item.reading_initial
+		hour = item.reading_final - item.reading_initial - item.idle_time
 	}
 	else if(item.uom == "Time") {
 		var fdate = new Date("October 13, 2014 " + item.final_time)

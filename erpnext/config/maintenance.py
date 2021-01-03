@@ -126,6 +126,28 @@ def get_data():
 			]
 		},
 		{
+			"label": _("Transporter Transactions"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Transporter Rate",
+					"label": "Transportation Rate",
+					"description": _("Transportation Rate"),
+				},
+				{
+					"type": "doctype",
+					"name": "Transporter Trip Log",
+					"label": _("Transporter Trip Log"),
+					"description": _("Transporter Trip Log."),
+				},
+				{
+					"type": "doctype",
+					"name": "Transporter Payment",
+					"description": _("Transporter Payment.")
+				},
+			]
+		},
+		{
 			"label": _("EME Reports"),
 			"icon": "icon-star",
 			"items": [

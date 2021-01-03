@@ -6,6 +6,33 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def eme_eqp_update():
+	for a in frappe.db.sql("select name, equipment from `tabEME Payment Item`", as_dict=1):
+		doc = frappe.get_doc("Equipment", a.equipment)
+		frappe.db.sql("update `tabEME Payment Item` set equipment_no = '{0}' where name = '{1}'".format(doc.equipment_number, a.name))
+
+def eme_update_trans():
+	for e in frappe.db.sql("select name from tabEquipment where branch = 'Tshophangma'", as_dict=1):
+		print("Equipment {0}".format(e.name))
+		for h in frappe.db.sql("select name from `tabEquipment Hiring Form` where equipment = '{0}'".format(e.name), as_dict=1):
+			frappe.db.sql("update `tabEquipment Hiring Form` set branch = 'Tshophangma' where name = '{0}'".format(h.name))
+
+		for l in frappe.db.sql("select name from `tabLogbook` where equipment = '{0}'".format(e.name), as_dict=1):
+			frappe.db.sql("update `tabLogbook` set branch = 'Tshophangma' where name = '{0}'".format(l.name))
+			
+
+def eme_check():
+	for a in frappe.db.sql("select branch, name, equipment from `tabLogbook` where docstatus = 1", as_dict=1):
+		#print("Checking {0}".format(a.name))
+		branch = frappe.get_doc("Branch", a.branch)
+		if branch.is_disabled:
+			print("{0} branch is disabled".format(a.name) )
+		ep = frappe.get_doc("Equipment", a.equipment)
+		if ep.is_disabled:
+			print("{0} equipment is disabled".format(a.name) )
+		if ep.branch != a.branch:
+			print("{0} different".format(a.name) )
+
 def update_order():
 	for a in frappe.db.sql("select name from `tabExpense Head`", as_dict=1):
 		doc = frappe.get_doc("Expense Head", a.name)

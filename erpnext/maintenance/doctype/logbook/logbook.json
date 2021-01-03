@@ -777,7 +777,7 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 1, 
+   "reqd": 0, 
    "search_index": 0, 
    "set_only_once": 0, 
    "unique": 0
@@ -943,7 +943,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-11-30 18:27:15.100803", 
+ "modified": "2020-12-09 14:51:59.202297", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Logbook", 
