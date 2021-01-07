@@ -22,6 +22,10 @@ class RentalBill(Document):
 	def on_cancel(self):
 		if frappe.db.exists("Rental Advance Adjustment", {"tenant":self.tenant}):
 			if frappe.db.exists("Rental Advance Adjusted", {"rental_bill":self.name}):
+				rental_adjustment_no = frappe.db.get_value("Rental Advance Adjusted", {"rental_bill":self.name}, "parent")
+				frappe.throw("This rental bill is linked with Rental Advance Adjustment No. {}".format(rental_adjustment_no))
+
+			'''
 				frappe.db.sql("Delete from `tabRental Advance Adjusted` where rental_bill = '{}'".format(self.name))
 			doc = frappe.get_doc("Rental Advance Adjustment", {"tenant":self.tenant})
 			
@@ -38,3 +42,4 @@ class RentalBill(Document):
 			doc.advance_adjusted = flt(total_adjusted)
 			doc.advance_balance = flt(total_advance) - flt(total_adjusted) 
 			doc.save()
+			'''

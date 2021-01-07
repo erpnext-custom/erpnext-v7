@@ -91,9 +91,10 @@ class TenantInformation(Document):
 				frappe.throw("The Flat is already rented to a Tenant with CID No: {0}".format(cid))
 			else:
 				if frappe.db.exists("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus": 1, "status":"Surrendered"}):
-					surrendered_date = frappe.db.get_value("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus": 1, "status":"Surrendered"}, "surrendered_date")
+					
+					surrendered_date, tenant_code = frappe.db.get_value("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus": 1, "status":"Surrendered"}, ["surrendered_date","name"])
 					if surrendered_date and getdate(self.allocated_date) < getdate(surrendered_date):
-						frappe.throw("Allocation Date {0} cannot be before surrendered date {1}".format(self.allocated_date, surrendered_date))
+						frappe.throw("Allocation Date {0} cannot be before surrendered date {1} for tenant {2}".format(self.allocated_date, surrendered_date, tenant_code))
 
 	def on_submit(self):
 		if not self.rental_charges and self.building_category != "Pilot Housing":

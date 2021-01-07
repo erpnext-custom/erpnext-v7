@@ -12,12 +12,12 @@ class ProjectOvertimeTool(Document):
 	pass
 
 @frappe.whitelist()
-def get_employees(employee_type, cost_center, branch, date, number_of_hours):
+def get_employees(employee_type, cost_center, branch, date, number_of_hours,unit):
 	attendance_not_marked = []
 	attendance_marked = []
 
 	employee_list = frappe.get_list(employee_type, fields=["name", "person_name"], filters={
-		"status": "Active", "cost_center": cost_center, "branch": branch}, order_by="person_name")
+		"status": "Active", "cost_center": cost_center, "branch": branch, "unit":unit}, order_by="person_name")
 	marked_employee = {}
 	for emp in frappe.get_list("Overtime Entry", fields=["number", "number_of_hours"],
 							   filters={"date": date}):

@@ -82,6 +82,12 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Site Name",
+					"label": _("Site Name"),
+					"description": _("Site name master data"),
+				},
+				{
+					"type": "doctype",
 					"name": "UOM",
 					"label": _("Unit of Measure") + " (UOM)",
 					"description": _("e.g. Kg, Unit, Nos, m")
@@ -129,6 +135,13 @@ def get_data():
                 {
 			"label": _("Reports"),
 			"items": [
+					{
+                        "type": "report",
+                        "name": "Site Material Issued",
+                        "doctype": "Material Request",
+						"label": _("Site Material Issued"),
+						"is_query_report": True,
+                    },
                                 {
 					"type": "report",
 					"is_query_report": True,
@@ -200,7 +213,8 @@ def get_data():
                                         "is_query_report": True,
                                         "name": "Goods Return and Rejected Report",
                                         "doctype": "Purchase Receipt",
-                                }
+                                },
+								
 			]
 		},
 	]

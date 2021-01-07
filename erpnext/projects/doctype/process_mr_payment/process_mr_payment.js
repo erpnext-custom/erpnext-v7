@@ -48,7 +48,7 @@ frappe.ui.form.on('Process MR Payment', {
 		cur_frm.set_df_property("load_records", "disabled",  true);
 		//msgprint ("Processing wages.............")
 		if(frm.doc.from_date && frm.doc.cost_center && frm.doc.employee_type && frm.doc.from_date < frm.doc.to_date) {
-			get_records(frm.doc.employee_type, frm.doc.fiscal_year, frm.doc.month, frm.doc.from_date, frm.doc.to_date, frm.doc.cost_center, frm.doc.branch, frm.doc.name)
+			get_records(frm.doc.employee_type, frm.doc.fiscal_year, frm.doc.month, frm.doc.from_date, frm.doc.to_date, frm.doc.cost_center, frm.doc.branch, frm.doc.name, frm.doc.unit)
 		}
 		else if(frm.doc.from_date && frm.doc.from_date > frm.doc.to_date) {
 			msgprint("To Date should be smaller than From Date")
@@ -75,7 +75,7 @@ var update_details = function(doc){
 	});
 }
 
-function get_records(employee_type, fiscal_year, month, from_date, to_date, cost_center, branch, dn) {
+function get_records(employee_type, fiscal_year, month, from_date, to_date, cost_center, branch, dn, unit) {
 	frappe.call({
 		method: "erpnext.projects.doctype.process_mr_payment.process_mr_payment.get_records",
 		args: {
@@ -86,7 +86,8 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 			"cost_center": cost_center,
 			"branch": branch,
 			"employee_type": employee_type,
-			"dn": dn
+			"dn": dn,
+			"unit": unit,
 		},
 		callback: function(r) {
 			if(r.message) {

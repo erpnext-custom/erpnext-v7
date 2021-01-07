@@ -138,7 +138,6 @@ def validate_workflow_states(doc):
 					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
 				vars(doc)[document_approver[0]] = officiating[0] if officiating else hr_approver[0]
 				vars(doc)[document_approver[1]] = officiating[1] if officiating else hr_approver[1]
-				
 
 		elif workflow_state == "Claimed".lower():
 			if  hr_approver[0] != frappe.session.user:

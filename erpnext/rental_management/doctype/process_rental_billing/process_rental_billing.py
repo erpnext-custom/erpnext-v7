@@ -151,10 +151,21 @@ class ProcessRentalBilling(AccountsController):
 						msg = '<span style="color:red;"> FAILED. Previous month rentall bill might not have process or <br/> rental charges might be missing in tenant information</span>'
 				else:
 					if process_type == "remove":
-                                                rb_list = frappe.db.sql("delete from `tabRental Bill` where name='{0}'".format(name))
-                                                frappe.db.commit()
-                                                msg = "Rental Bill Removed Successfully"
-                                        else:
+						advance_exist = ""
+						for a in frappe.db.sql("""
+											select name 
+											from `tabRental Advance Adjustment` ra, `tabRental Advance Adjusted` aa 
+											where ra.name = aa.parent and aa.rental_bill = '{0}'
+											and ra.docstatus = 1
+											""".format(name), as_dict = True):
+							advance_exist = a.name
+						if not advance_exist:
+							rb_list = frappe.db.sql("delete from `tabRental Bill` where name='{0}'".format(name))
+							frappe.db.commit()
+							msg = "Rental Bill Removed Successfully"
+						else:
+							msg = "Cannot Remove the Rental Bill as its link with Advance Adjustment no. " + str(advance_exist)
+					else:
 						rb = frappe.get_doc("Rental Bill", name)
 						if frappe.db.exists("Rental Advance Adjustment", {"tenant":rb.tenant}):
 							doc = frappe.get_doc("Rental Advance Adjustment",{"tenant":rb.tenant})

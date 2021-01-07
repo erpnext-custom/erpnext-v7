@@ -29,24 +29,24 @@ frappe.query_reports["Monthly Rental Collection"] = {
 			fieldname: "month",
 			label: __("Month"),
 			fieldtype: "Select",
-			options: ["", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+			options: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
 			default: "01",
 		},
-		{
-			fieldname: "status",
-			label: "Status",
-			fieldtype: "Select",
-			width: "80",
-			options: ["Draft", "Submitted"],
-			reqd: 1
-		},
+		// {
+		// 	fieldname: "status",
+		// 	label: "Status",
+		// 	fieldtype: "Select",
+		// 	width: "80",
+		// 	options: ["Draft", "Submitted"],
+		// 	reqd: 1
+		// },
 		{
 			fieldname:"dzongkhag",
 			label: ("Dzongkhag"),
 			fieldtype: "Link",
 			width: "80",
 			options:"Dzongkhags",
-			//"reqd": 1
+			reqd: 1
 		},
 		{
 			fieldname:"location",

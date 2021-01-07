@@ -27,7 +27,7 @@ class ProcessMRPayment(Document):
                                 self.duplicate_entry_check(a.employee, a.employee_type, a.idx)
                                 a.fiscal_year   = self.fiscal_year
                                 a.month         = self.month
-                                if a.lumpsum == 0:
+                                if not a.lumpsum:
 				        a.total_ot_amount = flt(a.hourly_rate) * flt(a.number_of_hours)
 				        a.total_wage = flt(a.daily_rate) * flt(a.number_of_days)
                                 else:
@@ -156,7 +156,9 @@ class ProcessMRPayment(Document):
 		if not self.branch:
 			frappe.throw("Select branch first!")
 
-		query += " and branch = \'" + str(self.branch) + "\'"	
+		query += " and branch = \'" + str(self.branch) + "\'"
+                if self.unit:
+                        query += " and unit = \'" + str(self.unit) + "\'"        	
 			
 		entries = frappe.db.sql(query, as_dict=True)
 		if not entries:
@@ -423,7 +425,7 @@ class ProcessMRPayment(Document):
                         hjv.insert()
 
 @frappe.whitelist()
-def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, cost_center, branch, dn):
+def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, cost_center, branch, dn, unit):
         month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(fiscal_month) + 1
         month = str(month) if cint(month) > 9 else str("0" + str(month))
 
@@ -479,6 +481,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         salary
                                 from `tab{0}` as e
                                 where name = '{1}'
+                                and unit = '{6}'
                                 and not exists(
                                         select 1
                                         from `tabMR Payment Item` i, `tabProcess MR Payment` m
@@ -491,7 +494,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         and m.name = i.parent
                                         and m.cost_center = '{5}'
                                 )
-                        """.format(employee_type, i.employee, fiscal_year, fiscal_month, dn, cost_center), as_dict=True)
+                        """.format(employee_type, i.employee, fiscal_year, fiscal_month, dn, cost_center, unit), as_dict=True)
 
                 if rest:
                         rest[0].update(i)

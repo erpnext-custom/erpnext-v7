@@ -24,22 +24,58 @@ class RentalPayment(AccountsController):
 			self.tenant_name = ""
 
 		received_amt = 0
+		total_discount = 0
+		net_amount = 0
+		bill_amount = 0
 		for a in self.item:
-			if a.amount_received < a.amount:
-				a.allocated_amount = flt(a.amount_received)
+			if not self.apply_before_increment:
+				if self.discount_percent > 0:
+					if not a.dont_apply_discount:
+						discount_amount = flt(self.discount_percent)/100 * a.amount
+						a.discount_amount = round(discount_amount)
+						if not a.free_amount_received:
+							a.amount_received = round(a.amount - discount_amount)
+				else:
+					if not a.free_amount_received:
+						a.amount_received = round(a.amount)
 			else:
-				a.allocated_amount = flt(a.amount)
-	
-			received_amt += flt(a.amount_received)
+				initial_rent_amt = frappe.db.get_value("Tenant Information", a.tenant, "rent_amount")
+				if not a.dont_apply_discount and a.amount == a.actual_rent_amount:
+					if initial_rent_amt < a.actual_rent_amount:
+						discount_amount = flt(a.amount)/110 * 10
+						a.discount_amount = round(discount_amount)
+						if not a.free_amount_received:
+							a.amount_received = round(a.amount - discount_amount)
+						else:
+							a.amount_received = round(a.amount)
+				else:
+					if not a.free_amount_received:
+						a.amount_received = round(a.amount)
+				
+			if a.amount_received < a.amount:
+				a.allocated_amount = round(a.amount_received)
+			else:
+				a.allocated_amount = round(a.amount)
 
-		self.amount_received = flt(received_amt)
+			bill_amount += a.amount
+
+			received_amt += flt(a.amount_received)
+			if a.discount_amount > 0:
+				total_discount += cint(a.discount_amount)
+				
+		self.discount_amount = cint(total_discount)
+		self.total_bill_amount = cint(bill_amount)
+
+		self.amount_received = cint(received_amt)
+		if self.write_off_penalty:
+			self.penalty_amount = 0.00
+
 		if self.tds_amount > 0:
-			self.net_amount = flt(self.amount_received) - flt(self.tds_amount)
+			self.net_amount = cint(self.total_bill_amount) + cint(self.penalty_amount) - cint(self.tds_amount) - cint(self.discount_amount)
 		else:
-			self.net_amount = flt(self.amount_received)
-		if not self.write_off_penalty:
-			self.net_amount = flt(self.amount_received) - flt(self.tds_amount) + flt(self.penalty_amount)
-		
+			self.net_amount = cint(self.total_bill_amount) + cint(self.penalty_amount) - cint(self.discount_amount)
+		if self.discount_amount > 0:
+			self.discount_account = frappe.db.get_single_value("Rental Account Setting", "discount_account")
 
 	def update_rental_official(self):
 		if frappe.db.exists("Employee", {"user_id":frappe.session.user}):
@@ -130,7 +166,10 @@ class RentalPayment(AccountsController):
 		for a in self.item:
 			if cint(a.amount_received) > cint(a.amount):
 				if self.docstatus == 2:
-					frappe.db.sql("delete from `tabRental Advance Received` where rental_bill = '{}'".format(a.rental_bill))	
+					if frappe.db.exists("Rental Advance Adjustment", {"tenant": a.tenant, "docstatus": 1}):
+						if frappe.db.exists("Rental Advance Received", {"rental_bill": a.rental_bill}):
+							frappe.throw("You Cannot cancel this Rental Payment as its linked with Rental Advance Adjustment")							
+					#frappe.db.sql("delete from `tabRental Advance Received` where rental_bill = '{}'".format(a.rental_bill))	
 				else:
 					if frappe.db.exists("Rental Advance Adjustment", {"tenant": a.tenant}):
 						raa_no = frappe.db.get_value("Rental Advance Adjustment", {"tenant": a.tenant}, "name")
@@ -175,13 +214,13 @@ class RentalPayment(AccountsController):
 			for a in self.item:
 				doc = frappe.get_doc("Rental Bill", a.rental_bill)
 				received_amount = flt(doc.received_amount) - flt(a.amount_received)
-				frappe.db.sql("update `tabRental Bill` set `received_amount` = '{0}', `rental_payment` = '', balance_amount = 0.00  where name = '{1}'".format(received_amount, a.rental_bill))
+				frappe.db.sql("update `tabRental Bill` set `received_amount` = '{0}', `rental_payment` = '', balance_amount = 0.00, discount_amount = 0.00 where name = '{1}'".format(received_amount, a.rental_bill))
 		else:
 			for a in self.item:
 				doc = frappe.get_doc("Rental Bill", a.rental_bill)
 				balance_amount = flt(a.amount_received) - flt(a.amount) if a.amount_received > a.amount else 0.00
 				received_amount = flt(doc.received_amount) + flt(a.amount_received)
-				frappe.db.sql("update `tabRental Bill` set `received_amount` = '{0}', `rental_payment` = '{1}', balance_amount = '{2}' where name = '{3}'".format(received_amount, self.name, balance_amount, a.rental_bill))
+				frappe.db.sql("update `tabRental Bill` set `received_amount` = '{0}', `rental_payment` = '{1}', balance_amount = '{2}', discount_amount = '{3}' where name = '{4}'".format(received_amount, self.name, balance_amount, a.discount_amount, a.rental_bill))
 					
 	def update_tenant_dept(self):
 		for a in self.item:
@@ -261,10 +300,10 @@ class RentalPayment(AccountsController):
 		gl_entries.append(
 			self.get_gl_dict({
 				"account": credit_account,
-				"credit": self.amount_received,
-				"credit_in_account_currency": self.amount_received,
-	        	       	"voucher_no": self.name,
-		               	"voucher_type": "Rental Payment",
+				"credit": self.total_bill_amount,
+				"credit_in_account_currency": self.total_bill_amount,
+	        	"voucher_no": self.name,
+		        "voucher_type": "Rental Payment",
 				"cost_center": cost_center,
 				"company": self.company,
 				"remarks": self.remarks,
@@ -286,6 +325,24 @@ class RentalPayment(AccountsController):
 					"business_activity": business_activity
 					})
 				)
+
+		if self.discount_account > 0:
+			if not self.discount_account:
+				frappe.throw("Discount Account is not set in Rental Account Setting")
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": self.discount_account,
+					"debit": self.discount_amount,
+					"debit_in_account_currency": self.discount_amount,
+					"voucher_no": self.name,
+					"voucher_type": self.doctype,
+					"cost_center": cost_center,
+					"company": self.company,
+					"remarks": self.remarks,
+					"business_activity": business_activity
+					})
+				)
+
 		if self.penalty_amount > 0 and not self.write_off_penalty:
 			penalty_acc = frappe.db.get_single_value("Rental Account Setting", "penalty_account")
 			if not penalty_acc:
@@ -331,13 +388,13 @@ class RentalPayment(AccountsController):
 			if self.dzongkhag:
 				condition += " and dzongkhag = '{0}'".format(self.dzongkhag)
 			bill_lists = frappe.db.sql("""
-			                         select name, tenant, tenant_name, customer_code, cid, rent_amount, receivable_amount, received_amount, fiscal_year, month,
-						 ministry_agency, department
-                                                 from `tabRental Bill`
-						 where 	docstatus = 1
-		                                 and received_amount < receivable_amount
+			            select name, tenant, tenant_name, customer_code, cid, rent_amount, receivable_amount, received_amount, fiscal_year, month,
+						ministry_agency, department
+                        from `tabRental Bill`
+						where 	docstatus = 1
+		                and (rental_payment = "" or rental_payment is NULL or received_amount < receivable_amount)
 			                         {0}
-						 order by tenant_name	
+						order by tenant_name	
 					""".format(condition), as_dict=True)
 		else:
 			if self.tenant:
@@ -348,7 +405,7 @@ class RentalPayment(AccountsController):
 						 ministry_agency, department
                                                  from `tabRental Bill`
 						 where 	docstatus = 1
-		                                 and received_amount < receivable_amount
+		                and (rental_payment = "" or rental_payment is NULL or received_amount < receivable_amount)
 			                         {0}
 						 order by tenant_name
 					""".format(condition), as_dict=True)

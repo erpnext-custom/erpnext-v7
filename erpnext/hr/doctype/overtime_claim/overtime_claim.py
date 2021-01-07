@@ -17,9 +17,8 @@ class OvertimeClaim(Document):
 		self.calculate_totals()
 		check_future_date(self.posting_date)
 		check_future_date(self.from_date)
-
+		
 	def on_submit(self):
-		self.validate_submitter()
 		self.post_journal_entry()
 		self.update_authorization(action='submit')
 
@@ -68,14 +67,6 @@ class OvertimeClaim(Document):
 			for b in self.items:
 				if a.date == b.date and a.idx != b.idx:
 					frappe.throw("Duplicate Dates in row " + str(a.idx) + " and " + str(b.idx))
-
-	##
-	# Allow only the approver to submit the document
-	##
-	def validate_submitter(self):
-		if self.approver != frappe.session.user:
-			frappe.throw("Only the selected Approver can submit this document")
-
 
 	##
 	# Post journal entry

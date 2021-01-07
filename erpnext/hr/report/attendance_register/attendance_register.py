@@ -1,6 +1,9 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
-
+# ------------------------------------------------------------
+# Date				Description							Author
+# Oct-31-2020			Added a unit filter and field					Phuntsho
+# ------------------------------------------------------------
 from __future__ import unicode_literals
 import frappe
 from frappe.utils import cstr, cint, getdate
@@ -13,14 +16,15 @@ def execute(filters=None):
 	conditions, filters = get_conditions(filters)
 	columns = get_columns(filters)
 	att_map = get_attendance_list(conditions, filters)
-	emp_map = get_employee_details(filters.employee_type)
+	emp_map = get_employee_details(filters.employee_type, filters)
+
 	data = []
 	for emp in sorted(att_map):
 		emp_det = emp_map.get(emp)
 		if not emp_det:
 			continue
 
-		row = [emp_det.name, emp_det.employee_name, emp_det.employment_type]
+		row = [emp_det.person_name, emp_det.id_card, emp_det.unit]
 
 		total_p = total_a = 0.0
 		for day in range(filters["total_days_in_month"]):
@@ -40,7 +44,7 @@ def execute(filters=None):
 
 def get_columns(filters):
 	columns = [
-		_("EMP ID") + "::140", _("Name")+ "::120", _("Employment Type")+ "::150"
+		_("Name") + "::140", _("CID")+ "::120", _("Unit")+"::100"
 	]
 
 	for day in range(filters["total_days_in_month"]):
@@ -50,15 +54,9 @@ def get_columns(filters):
 	return columns
 
 def get_attendance_list(conditions, filters):
-	attendance_list = {}
-	if filters.employee_type == "GEP":
-		attendance_list = frappe.db.sql("""select employee, day(att_date) as day_of_month,
-			status from `tabAttendance` where docstatus = 1 %s order by employee, att_date""" %
-			conditions, filters, as_dict=1)
-	else:
-		attendance_list = frappe.db.sql("""select employee, day(date) as day_of_month,
-                status from `tabAttendance Others` where docstatus = 1 %s order by employee, date""" %
-                conditions, filters, as_dict=1, debug = 1)
+	attendance_list = frappe.db.sql("""select employee, day(date) as day_of_month,
+		status from `tabAttendance Others` where docstatus = 1 %s order by employee, date""" %
+		conditions, filters, as_dict=1)
 
 	att_map = {}
 	for d in attendance_list:
@@ -76,33 +74,29 @@ def get_conditions(filters):
 
 	filters["total_days_in_month"] = monthrange(cint(filters.year), filters.month)[1]
 
-	conditions = " and month(date) = %(month)s and year(date) = %(year)s and branch = \'" + str(filters.cost_center) + "\' "
+	conditions = " and month(date) = %(month)s and year(date) = %(year)s and cost_center = \'" + str(filters.cost_center) + "\' "
 
 	return conditions, filters
 
-def get_employee_details(employee_type):
+
+def get_employee_details(employee_type,filters):
 	emp_map = frappe._dict()
 	if employee_type == "Muster Roll Employee":
-		for d in frappe.db.sql(""" select name, person_name as employee_name, '{0}' as employment_type from `tabMuster Roll Employee`""".format(employee_type), as_dict = 1):
+		# added unit by phuntsho on oct 30
+		for d in frappe.db.sql("""select name, person_name, id_card, unit
+			from `tabMuster Roll Employee` where unit = '{}'""".format(filters.get("unit")), as_dict=1):
 			emp_map.setdefault(d.name, d)
-	else:
-		for d in frappe.db.sql(""" select name, employee_name, employment_type from `tabEmployee` where employment_type = '{0}'""".format(employee_type), as_dict = 1):
-			emp_map.setdefault(d.name, d)
-	'''if employee_type == "Muster Roll Employee":
-			for d in frappe.db.sql("""select name, person_name, id_card
-				from `tabMuster Roll Employee`""", as_dict=1):
-			emp_map.setdefault(d.name, d)
-	elif employee_type == "GEP":
+	elif employee_type == "DES Employee":
 		for d in frappe.db.sql("""select name, person_name, id_card
 			from `tabDES Employee`""", as_dict=1):
 			emp_map.setdefault(d.name, d)
 	else:
-		frappe.throw("Select a Employee Type")'''
+		frappe.throw("Select a Employee Type")
 	return emp_map
 
 @frappe.whitelist()
 def get_years():
-	year_list = frappe.db.sql_list("""select distinct YEAR(att_date) from `tabAttendance` ORDER BY YEAR(att_date) DESC""")
+	year_list = frappe.db.sql_list("""select distinct YEAR(date) from `tabAttendance Others` ORDER BY YEAR(date) DESC""")
 	if not year_list:
 		year_list = [getdate().year]
 

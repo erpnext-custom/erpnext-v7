@@ -143,7 +143,7 @@ def get_data():
 								{
                                         "type": "report",
                                         "is_query_report": True,
-                                        "name": "Monthly Rental Collection",
+                                        "name": "Monthly Rental Collection and Dues",
                                         "doctype": "Rental Payment",
                                         "Label": _("Rental Payment")
                                 },

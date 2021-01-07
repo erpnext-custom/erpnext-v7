@@ -4,7 +4,7 @@
 frappe.query_reports["Attendance Register"] = {
 	"filters": [
 		{
-			"fieldname":"month",
+			"fieldname": "month",
 			"label": __("Month"),
 			"fieldtype": "Select",
 			"options": "Jan\nFeb\nMar\nApr\nMay\nJun\nJul\nAug\nSep\nOct\nNov\nDec",
@@ -12,40 +12,40 @@ frappe.query_reports["Attendance Register"] = {
 				"Dec"][frappe.datetime.str_to_obj(frappe.datetime.get_today()).getMonth()],
 		},
 		{
-			"fieldname":"year",
+			"fieldname": "year",
 			"label": __("Year"),
 			"fieldtype": "Select",
 			"reqd": 1
 		},
 		{
-			"fieldname":"employee_type",
+			"fieldname": "employee_type",
 			"label": __("Employee Type"),
 			"fieldtype": "Select",
-			"options": ['Muster Roll Employee', 'GEP'],
+			"options": ['Muster Roll Employee', 'DES Employee'],
 			"reqd": 1
 		},
-		/*{
-			"fieldname":"cost_center",
+		{
+			"fieldname": "cost_center",
 			"label": __("Cost Center"),
 			"fieldtype": "Link",
 			"options": "Cost Center",
 			"reqd": 1,
-			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1'], ['Cost Center', 'is_group', '!=', '1']]}}
-		}*/
+			"get_query": function () { return { 'filters': [['Cost Center', 'is_disabled', '!=', '1'], ['Cost Center', 'is_group', '!=', '1']] } }
+		},
 		{
-                        "fieldname":"cost_center",
-                        "label": __("Cost Center"),
-                        "fieldtype": "Link",
-                        "options": "Branch",
-                        "reqd": 1
-                }
+			"fieldname": "unit",
+			"label": __("Unit"),
+			"fieldtype": "Link",
+			"options": "Unit",
+			"reqd": 1
+		}
 
 	],
 
-	"onload": function(me) {
-		return  frappe.call({
+	"onload": function (me) {
+		return frappe.call({
 			method: "erpnext.hr.report.attendance_register.attendance_register.get_years",
-			callback: function(r) {
+			callback: function (r) {
 				var year_filter = me.filters_by_name.year;
 				year_filter.df.options = r.message;
 				year_filter.df.default = r.message.split("\n")[0];

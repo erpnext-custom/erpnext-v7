@@ -1,8 +1,6 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
 
-
-
 frappe.provide("erpnext.hr");
 
 erpnext.hr.OvertimeControlPanel = frappe.ui.form.Controller.extend({
@@ -20,11 +18,12 @@ erpnext.hr.OvertimeControlPanel = frappe.ui.form.Controller.extend({
 			return;
 		}
 		window.location.href = repl(frappe.request.url +
-			'?cmd=%(cmd)s&fiscal_year=%(fiscal_year)s&month=%(month)s&branch=%(branch)s', {
+			'?cmd=%(cmd)s&fiscal_year=%(fiscal_year)s&month=%(month)s&branch=%(branch)s&unit=%(unit)s', {
 				cmd: "erpnext.hr.doctype.upload_overtime_entries.upload_overtime_entries.get_template",
 				branch: this.frm.doc.branch,
 				fiscal_year: this.frm.doc.fiscal_year,
 				month: this.frm.doc.month,
+				unit: this.frm.doc.unit,
 			});
 	},
 

@@ -12,10 +12,17 @@ frappe.query_reports["Rental Register"] = {
       reqd: 1,
     },
     {
-      fieldname: "month",
-      label: __("Month"),
+      fieldname: "from_month",
+      label: "From Month",
       fieldtype: "Select",
-      options: ["", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+      options: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+      default: "01",
+    },
+    {
+      fieldname: "to_month",
+      label: "To Month",
+      fieldtype: "Select",
+      options: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
       default: "01",
     },
     {
@@ -47,9 +54,6 @@ frappe.query_reports["Rental Register"] = {
       options: "Ministry and Agency",
     },
     {
-      fieldtype: "Break",
-    },
-    {
       fieldname: "department",
       label: "Department",
       fieldtype: "Link",
@@ -79,18 +83,12 @@ frappe.query_reports["Rental Register"] = {
       options: "Employee",
     },
     {
-      fieldname: "building_classification",
-      label: __("Building Classification"),
-      fieldtype: "Link",
-      width: "90",
-      options: "Building Classification"
-    },
-    {
       fieldname: "status",
       label: "Status",
       fieldtype: "Select",
       width: "80",
       options: ["Draft", "Submitted"],
+      default: "Submitted",
       reqd: 1,
     },
   ],

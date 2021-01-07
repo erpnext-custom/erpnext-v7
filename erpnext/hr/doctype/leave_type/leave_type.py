@@ -7,4 +7,7 @@ import frappe
 from frappe.model.document import Document
 
 class LeaveType(Document):
-	pass
+	def validate(self):
+		if self.name == "Casual Leave":
+			if self.is_carry_forward:
+				frappe.throw("You are not allowed to tick for 'Is Carry Forward' for Casual Leave")
