@@ -60,13 +60,13 @@ def get_columns():
 		{
 		  "fieldname": "total_qty",
 		  "label": "Total Quantity",
-		  "fieldtype": "Data",
+		  "fieldtype": "Float",
 		  "width": 120
 		},
 		{
 		  "fieldname": "issued_qty",
 		  "label": "Issued Quantity",
-		  "fieldtype": "Data",
+		  "fieldtype": "Float",
 		  "width": 120
 		},
 		{

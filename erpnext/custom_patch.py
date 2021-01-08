@@ -14,9 +14,21 @@ from datetime import datetime
 import os
 import subprocess
 
+def update_asset_details():
+	count = 0
+	for a in frappe.db.sql(" select name, issued_to from `tabAsset Issue Details`", as_dict = 1):
+		emp = frappe.get_doc("Employee", a.issued_to).employee_name
+		frappe.db.sql(""" update `tabAsset Issue Details` set issued_to_name = "{0}" where name = '{1}'""".format(emp, a.name), debug = 1)
+		count += 1
+		print a.name, count
 
 def ipol():
-	doc = frappe.get_doc("Issue POL", 'IPOL201200086')
+	doc = frappe.get_doc("Issue POL", 'IPOL201200313')
+	doc.submit()
+
+
+def rpol():
+	doc = frappe.get_doc("POL", 'POL210100029')
 	doc.submit()
 
 def email_test():

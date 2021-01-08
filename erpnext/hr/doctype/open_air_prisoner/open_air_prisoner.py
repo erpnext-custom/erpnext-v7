@@ -16,8 +16,8 @@ class OpenAirPrisoner(Document):
 		self.populate_work_history()
 
 	def calculate_rates(self):
-		if not self.rate_per_day:
-			self.rate_per_day = flt(self.salary) / 30
+		'''if not self.rate_per_day:
+			self.rate_per_day = flt(self.salary) / 30'''
 
 		if not self.gratuity_fund:
 			self.gratuity_fund = 0.75 * flt(self.salary)

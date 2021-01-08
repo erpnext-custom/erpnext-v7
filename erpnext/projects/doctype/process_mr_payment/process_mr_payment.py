@@ -17,7 +17,6 @@ class ProcessMRPayment(Document):
 		month = str(month) if cint(month) > 9 else str("0" + str(month))
                 self.monthyear = str(self.fiscal_year)+str(month)
                 total_days = monthrange(cint(self.fiscal_year), cint(month))[1]
-                
 		if self.items:
 			total_ot = total_wage = total_health = salary = total_gratuity = 0.0
 			
@@ -25,9 +24,17 @@ class ProcessMRPayment(Document):
                                 self.duplicate_entry_check(a.employee, a.employee_type, a.idx)
                                 a.fiscal_year   = self.fiscal_year
                                 a.month         = self.month
- 	
-				if a.employee_type in ("Operator", "Open Air Prisoner"):
+ 				
+				if a.employee_type  == "Operator":
+                                        #"Open Air Prisoner"):
                                         salary = frappe.db.get_value(a.employee_type, a.employee, "salary")
+                                        if flt(a.total_wage) > flt(salary):
+                                                a.total_wage = flt(salary)
+
+                                        if flt(total_days) == flt(a.number_of_days):
+                                                a.total_wage = flt(salary)
+                                if a.employee_type == 'Open Air Prisoner':
+                                        salary = flt(total_days) * flt(a.daily_rate)
                                         if flt(a.total_wage) > flt(salary):
                                                 a.total_wage = flt(salary)
 
@@ -40,14 +47,15 @@ class ProcessMRPayment(Document):
 				a.gratuity_amount = round(a.gratuity_amount)
 				# Ver.1.0.20200205 Ends
 
-				a.total_amount = flt(a.total_ot_amount) + flt(a.total_wage)
-				total_ot += flt(a.total_ot_amount)
-				total_wage += flt(a.total_wage)
-				total_gratuity += flt(a.gratuity_amount)
 				if a.employee_type == "Open Air Prisoner":
+					gratuity_percent = frappe.db.get_single_value("HR Settings", "gratuity_percent")
 					a.wage_payable = flt(a.total_wage) - flt(a.gratuity_amount)
-					a.total_gratuity = 0.75 * flt(total_wage)
-
+					#a.total_gratuity = 0.5 * flt(total_wage)
+					a.total_gratuity = flt(gratuity_percent)/100 * flt(total_wage)
+				a.total_amount = flt(a.total_ot_amount) + flt(a.total_wage)
+                                total_ot += flt(a.total_ot_amount)
+                                total_wage += flt(a.total_wage)
+                                total_gratuity += flt(a.gratuity_amount)
 			total = total_ot + total_wage
 			self.wages_amount = flt(total_wage)
 			self.ot_amount = flt(total_ot)
@@ -275,7 +283,6 @@ def update_mr_rates(employee_type, employee, cost_center, from_date, to_date):
 		to_date=to_date
 	),
 	as_dict=True)
-#	frappe.msgprint('{0}'.format(rates))
 	for r in rates:
 		frappe.db.sql("""
 			update `tabAttendance Others`
@@ -463,8 +470,11 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
 
 
         for r in rest_list:
+		gratuity = 0.0
+                gratuity_percent = frappe.db.get_single_value("HR Settings", "gratuity_percent")
                 if master.get(r.employee) and (flt(r.total_wage)+flt(r.total_ot)):
 			r.employee_type = r.type
+                       	r.gratuity = flt(gratuity_percent)/100 * flt(r.total_wage)
 			master[r.employee].update(r)
 			data.append(master[r.employee])
                    

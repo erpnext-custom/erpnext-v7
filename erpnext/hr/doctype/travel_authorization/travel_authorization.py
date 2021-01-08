@@ -283,7 +283,9 @@ class TravelAuthorization(Document):
                         from_date = i.date
                         to_date     = i.date if not i.till_date else i.till_date
                         no_days = date_diff(to_date, from_date) + 1
-                        total_days  += no_days
+                        if i.quarantine:
+				no_days = 0
+			total_days  += no_days
                 if flt(total_days) <= 15:
                         full_dsa = flt(total_days) - flt(return_day)
                         half_dsa = 0.0

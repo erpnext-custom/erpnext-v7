@@ -64,6 +64,8 @@ class TravelClaim(Document):
 				self.db_set("workflow_state", 'Waiting Approval')
                                 frappe.throw("You cannot approve your own claim.")
 		
+		if self.workflow_state not in ('Cancelled', 'Approved'):
+			self.db_set("docstatus", 0)
 		verify_workflow_tc(self)
 
 	def on_update(self):
@@ -134,8 +136,12 @@ class TravelClaim(Document):
 
                         from_date = i.date
                         to_date     = i.date if not i.till_date else i.till_date
-                        i.no_days = date_diff(to_date, from_date) + 1
-                        total_count += i.no_days
+                       	i.no_days = date_diff(to_date, from_date) + 1
+                        '''if i.no_days and not i.quarantine:
+                                total_count += i.no_days'''
+			if i.quarantine:
+				i.no_days = 0
+			total_count += i.no_days
                         counted = total_count - flt(i.no_days)
                         #if counted >= 30:
                         #       counted = 30 
@@ -171,6 +177,10 @@ class TravelClaim(Document):
                                 i.days_allocated = i.no_days
                                 i.half_dsa_days = 0
 
+			if i.quarantine:
+                                i.days_allocated = 0
+                                i.half_dsa_days = 0
+
         def update_amounts(self):
                 #dsa_per_day         = flt(frappe.db.get_value("Employee Grade", self.grade, "dsa"))
                 lastday_dsa_percent = frappe.db.get_single_value("HR Settings", "return_day_dsa")
@@ -181,8 +191,11 @@ class TravelClaim(Document):
                 for i in self.get("items"):
                         exchange_rate      = 1 if i.currency == company_currency else get_exchange_rate(i.currency, company_currency)
                         #i.dsa             = flt(dsa_per_day)
-                        i.dsa              = flt(i.dsa) 
+			i.dsa              = flt(i.dsa) 
                         i.dsa_percent      = lastday_dsa_percent if i.last_day else i.dsa_percent
+			if i.quarantine:
+				i.dsa = 0.0
+				i.dsa_percent = 0.0
         		i.amount           = (flt(i.days_allocated)*(flt(i.dsa)*flt(i.dsa_percent)/100)) + (flt(i.mileage_rate) * flt(i.distance)) + flt(i.half_dsa_days * i.dsa * 0.5)                
 			i.actual_amount    = flt(i.amount) * flt(exchange_rate)
                         total_claim_amount = flt(total_claim_amount) +  flt(i.actual_amount)

@@ -37,7 +37,7 @@ frappe.ui.form.on('Process MR Payment', {
 	},
 
 	load_records: function(frm) {
-		cur_frm.set_df_property("load_records", "disabled",  true);
+		//cur_frm.set_df_property("load_records", "disabled",  true);
 		//msgprint ("Processing wages.............")
 		if(frm.doc.from_date && frm.doc.cost_center && frm.doc.employee_type && frm.doc.from_date < frm.doc.to_date) {
 			get_records(frm.doc.employee_type, frm.doc.fiscal_year, frm.doc.month, frm.doc.from_date, frm.doc.to_date, frm.doc.cost_center, frm.doc.branch, frm.doc.name)
@@ -100,14 +100,15 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						row.month 			= month;
 						row.number_of_days 	= mr['number_of_days'];
 						row.number_of_hours = parseFloat(mr['number_of_hours']);
-						row.bank = "BOBL"; //mr['bank'];
+						//row.bank = "BOBL"; //mr['bank'];
+						row.bank = mr['bank'];
 						row.account_no = mr['account_no'];
 						row.designation = mr['designation'];
 						if(mr['type'] == 'Operator'){
 							row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
 							row.hourly_rate     = parseFloat(mr['salary']*1.0)/parseFloat(mr['noof_days_in_month']*8);
 							row.total_ot_amount = parseFloat(row.number_of_hours) * parseFloat(row.hourly_rate);
-							row.total_wage      = parseFloat(row.daily_rate) * parseFloat(row.number_of_days);
+							row.total_wage      = parseFloat(row.daily_rate) * parseFloat(30);
 							if((parseFloat(row.total_wage) > parseFloat(mr['salary']))||(parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days']))){
 								row.total_wage = parseFloat(mr['salary']);
 							}
@@ -115,11 +116,13 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						}
 
 						if(mr['type'] == 'Open Air Prisoner') {
-							row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
-                                                        row.hourly_rate     = parseFloat(mr['salary']*1.0)/parseFloat(mr['noof_days_in_month']*8);
-                                                        row.total_ot_amount = parseFloat(row.number_of_hours) * parseFloat(row.hourly_rate);
+							//row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
+                                                        //row.hourly_rate     = parseFloat(mr['salary']*1.0)/parseFloat(mr['noof_days_in_month']*8);
+                                                        row.daily_rate        = mr['rate_per_day'];
+                                                        row.hourly_rate       = mr['rate_per_hour']
+							row.total_ot_amount = parseFloat(row.number_of_hours) * parseFloat(row.hourly_rate);
                                                         row.total_wage      = parseFloat(row.daily_rate) * parseFloat(row.number_of_days);
-							row.gratuity_amount = parseFloat(mr['total_wage']) * 0.75
+							row.gratuity_amount = mr['gratuity']
 						}
 						 else {
 							//row.daily_rate 	= mr['rate_per_day'];

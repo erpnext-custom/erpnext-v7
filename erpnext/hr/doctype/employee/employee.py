@@ -304,6 +304,12 @@ class Employee(Document):
 		elif self.contract_end_date and self.date_of_joining and (getdate(self.contract_end_date) <= getdate(self.date_of_joining)):
 			throw(_("Contract End Date must be greater than Date of Joining"))
 
+		if self.employment_type == 'Contract' and not self.increment_date:
+			frappe.throw("Incremet Date is Mandatory for Contract Employees </b> ")
+		
+		if self.employment_type == 'Deputation' and not self.external_work_history:
+                        frappe.throw("Work History In Required for Employees on Deputation")  
+
 	def validate_email(self):
 		if self.company_email:
 			validate_email_add(self.company_email, True)

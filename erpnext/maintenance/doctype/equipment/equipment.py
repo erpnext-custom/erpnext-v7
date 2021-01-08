@@ -50,7 +50,7 @@ class Equipment(Document):
 		doc.serial_number = self.name
 		doc.from_date = self.from_date
 		doc.issued_to = self.get("operators").operator
-		doc.owned_by = self.owne_by
+		doc.owned_by = self.owned_by
 		#doc.contact_details = self.get("operators")
 
 	def create_equipment_history(self, branch, on_date, ref_doc, purpose):

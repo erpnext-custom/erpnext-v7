@@ -726,7 +726,7 @@ class PurchaseInvoice(BuyingController):
 			self.update_stock_ledger()
 
 		self.make_gl_entries_on_cancel()
-		self.update_project()
+		#self.update_project()
 		self.update_fixed_asset()
 		self.cancel_consumed()
 

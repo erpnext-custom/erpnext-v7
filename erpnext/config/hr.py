@@ -159,6 +159,11 @@ def get_data():
 					"name": "Leave Adjustment",
 					"label": _("Leave Adjustment Tool"),
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "Carry Forward Entry",
+                                        "label": _("CL TO EL Converter"),
+                                },
 			]
 		},
 		{
