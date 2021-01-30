@@ -14,6 +14,46 @@ from datetime import datetime
 import os
 import subprocess
 
+def travel_advance():
+	doc = frappe.get_doc("Travel Authorization", 'TA201200016-2')
+	doc.check_advance()
+	print doc.name
+
+def update_mrr():
+        for a in frappe.db.sql(""" select name from `tabMuster Roll Employee`""", as_dict = 1):
+                rate = frappe.db.sql(""" select rate_per_day from `tabMusterroll` where parent = '{0}' and docstatus <= 1 order by from_date desc limit 1""".format(a.name), as_dict = 1)
+                doc = frappe.get_doc("Muster Roll Employee", a.name)
+                doc.db_set("rate_per_day", rate[0].rate_per_day)
+                print doc.name
+
+def cancel_ipol():
+	count = 0
+	for a in frappe.db.sql(""" select name from `tabIssue POL` where cost_center in ('Jamtsholing - GYALSUNG', 'GA-Jamtsholing - GYALSUNG') and docstatus <= 1 order by posting_date desc""", as_dict =1):
+		doc = frappe.get_doc("Issue POL", a.name)
+		doc.db_set("docstatus", 2)
+		count += 1
+		doc.add_comment('Comment', text='Cancelled As there is issue while cancelling from Fleet Manager/DPM account') 
+		print a.name, count
+
+def update_ipol_branch():
+	count = 0
+	for a in frappe.db.sql(""" select equipment, name from `tabPOL Issue Report Item`""", as_dict = 1):
+		doc = frappe.get_doc("Equipment", a.equipment).branch
+		frappe.db.sql(""" update `tabPOL Issue Report Item` set equipment_branch = '{0}' where name = '{1}'""".format(doc, a.name))
+		count += 1 
+		print a.name , count
+
+
+def update_pol_branch():
+	count = 0
+	for a in frappe.db.sql(""" select name, equipment from `tabPOL`""", as_dict = 1):
+		eq = frappe.get_doc("Equipment", a.equipment).branch
+		frappe.db.sql(""" update `tabPOL` set equipment_branch = '{0}' where name = '{1}'""".format(eq, a.name))
+		count +=1 
+		print a.name, count
+		
+		
+
 def update_asset_details():
 	count = 0
 	for a in frappe.db.sql(" select name, issued_to from `tabAsset Issue Details`", as_dict = 1):
@@ -23,9 +63,19 @@ def update_asset_details():
 		print a.name, count
 
 def ipol():
-	doc = frappe.get_doc("Issue POL", 'IPOL201200313')
+	doc = frappe.get_doc("Issue POL", 'IPOL210100148')
 	doc.submit()
 
+def ipol1():
+	import csv
+        with open('/home/frappe/erp/ipol.csv','r') as f:
+                data = csv.reader(f)
+                count = 1
+                for row in data:
+			doc = frappe.get_doc("Issue POL", row[0])
+			doc.submit()
+			#doc.cancel()
+			print doc.name
 
 def rpol():
 	doc = frappe.get_doc("POL", 'POL210100029')

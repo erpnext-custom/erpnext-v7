@@ -19,7 +19,7 @@ frappe.ui.form.on('Process MR Payment', {
 			}, __("View"));
 		}
 	},
-
+	
 	onload: function(frm) {
 		if(!frm.doc.from_date) {
 			frm.set_value("from_date", frappe.datetime.month_start(get_today()))	
@@ -31,9 +31,8 @@ frappe.ui.form.on('Process MR Payment', {
 			frm.set_value("posting_date", get_today())	
 		}
 	},
-
 	project: function(frm) {
-		cur_frm.set_df_property("cost_center", "read_only", frm.doc.project ? 1 : 0) 
+		cur_frm.set_df_property("cost_center", "read_only", frm.doc.project ? 1 : 0)
 	},
 
 	load_records: function(frm) {
@@ -46,6 +45,7 @@ frappe.ui.form.on('Process MR Payment', {
 			msgprint("To Date should be smaller than From Date")
 			frm.set_value("to_date", "")
 		}
+		//cur_frm.set_df_property("load_records", "disabled", true);
 	},
 	load_employee: function(frm) {
 		//load_accounts(frm.doc.company)
@@ -59,6 +59,7 @@ frappe.ui.form.on('Process MR Payment', {
 		});
 	}
 });
+
 
 function get_records(employee_type, fiscal_year, month, from_date, to_date, cost_center, branch, dn) {
 	cur_frm.clear_table("items");
@@ -98,9 +99,8 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						row.id_card 		= mr['id_card'];
 						row.fiscal_year 	= fiscal_year;
 						row.month 			= month;
-						row.number_of_days 	= mr['number_of_days'];
+						row.number_of_days 	= parseFloat(mr['number_of_days']);
 						row.number_of_hours = parseFloat(mr['number_of_hours']);
-						//row.bank = "BOBL"; //mr['bank'];
 						row.bank = mr['bank'];
 						row.account_no = mr['account_no'];
 						row.designation = mr['designation'];
@@ -108,18 +108,18 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 							row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
 							row.hourly_rate     = parseFloat(mr['salary']*1.0)/parseFloat(mr['noof_days_in_month']*8);
 							row.total_ot_amount = parseFloat(row.number_of_hours) * parseFloat(row.hourly_rate);
-							row.total_wage      = parseFloat(row.daily_rate) * parseFloat(30);
+							row.total_wage      = parseFloat(row.daily_rate) * parseFloat(row.number_of_days);
 							if((parseFloat(row.total_wage) > parseFloat(mr['salary']))||(parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days']))){
 								row.total_wage = parseFloat(mr['salary']);
 							}
 							row.gratuity_amount = 0
 						}
 
-						if(mr['type'] == 'Open Air Prisoner') {
+						else if(mr['type'] == 'Open Air Prisoner') {
 							//row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
                                                         //row.hourly_rate     = parseFloat(mr['salary']*1.0)/parseFloat(mr['noof_days_in_month']*8);
-                                                        row.daily_rate        = mr['rate_per_day'];
-                                                        row.hourly_rate       = mr['rate_per_hour']
+                                                        row.daily_rate 	      = mr['rate_per_day'];
+							row.hourly_rate       = mr['rate_per_hour']
 							row.total_ot_amount = parseFloat(row.number_of_hours) * parseFloat(row.hourly_rate);
                                                         row.total_wage      = parseFloat(row.daily_rate) * parseFloat(row.number_of_days);
 							row.gratuity_amount = mr['gratuity']
@@ -129,7 +129,8 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 							//row.hourly_rate 	= mr['rate_per_hour'];
 							row.gratuity_amount = 0
 							row.total_ot_amount = parseFloat(mr['total_ot']);
-							row.total_wage 		= parseFloat(mr['total_wage']);
+							//row.total_wage 		= parseFloat(mr['total_wage']);
+							row.total_wage = parseFloat(mr['rate_per_day'])*parseFloat(mr['number_of_days'])
 						}
 						
 						

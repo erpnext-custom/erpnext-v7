@@ -93,7 +93,9 @@ erpnext.MarkedEmployee = Class.extend({
 				attendance_icon = "icon-check-empty"
 				color_class = "text-muted";
 			}
-
+			else if(m.status == "Half Day") {
+                                attendance_icon = "icon-check-minus"
+                        }
 			if (i===0 || i % 4===0) {
 				row = $('<div class="row"></div>').appendTo(me.wrapper);
 			}
@@ -129,7 +131,8 @@ erpnext.EmployeeSelector = Class.extend({
 
 		var mark_employee_toolbar = $('<div class="col-sm-12 bottom-toolbar">\
 			<button class="btn btn-primary btn-mark-present btn-xs"></button>\
-			<button class="btn btn-default btn-mark-absent btn-xs"></button></div>')
+			<button class="btn btn-default btn-mark-absent btn-xs"></button>\
+			<button class="btn btn-default btn-mark-half btn-xs"></button></div>')
 
 		employee_toolbar.find(".btn-add")
 			.html(__('Check all'))
@@ -206,7 +209,33 @@ erpnext.EmployeeSelector = Class.extend({
 				});
 			});
 
+		mark_employee_toolbar.find(".btn-mark-half")
+                        .html(__('Mark Half Day'))
+                        .on("click", function() {
+                                var employee_half = [];
+                                $(me.wrapper).find('input[type="checkbox"]').each(function(i, check) {
+                                        if($(check).is(":checked")) {
+                                                employee_half.push(employee[i]);
+                                        }
+                                });
+                                console.log("INSIDE")
+                                frappe.call({
+                                        method: "erpnext.hr.doctype.attendance_tool_others.attendance_tool_others.mark_employee_attendance",
+                                        args:{
+                                                "employee_list": employee_half,
+                                                "status":"Half Day",
+                                                "date": frm.doc.date,
+                                                "cost_center": frm.doc.cost_center,
+                                                "branch": frm.doc.branch,
+                                                "employee_type": frm.doc.employee_type
+                                        },
 
+                                        callback: function(r) {
+                                                erpnext.attendance_tool_others.load_employees(frm);
+                                                console.log("INSIDE CALLBACK")
+                                        }
+                                });
+                        });
 		var row;
 		$.each(employee, function(i, m) {
 			if (i===0 || (i % 4) === 0) {

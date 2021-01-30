@@ -10,27 +10,17 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
-//cur_frm.add_fetch("cost_center", "branch", "branch")
-//cur_frm.add_fetch("customer", "image", "customer_image" );
-//cur_frm.add_fetch("customer", "customer_details", "customer_address" );
+//cur_frm.add_fetch("cost_center", "branch", "branch");
 cur_frm.add_fetch("branch", "cost_center", "cost_center");
+cur_frm.add_fetch("cost_center", "name", "project_name"); 
+cur_frm.add_fetch("project_name", "parent_cost_center", "parent_cost_center");
+cur_frm.add_fetch("project_name", "branch", "branch");
+cur_frm.add_fetch("parent_project", "mandays", "overall_mandays" );
+cur_frm.add_fetch("parent_project", "holiday_list", "holiday_list");
+cur_frm.add_fetch("reference_budget", "actual_total", "estimated_budget" );
+//cur_frm.add_fetch("supplier", "supplier_details", "supplier_details" );
 
 frappe.ui.form.on("Project", {
-	// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-	// Following code is commented by SHIV on 2017/08/11
-	/*
-	setup: function(frm) {
-		frm.get_field('tasks').grid.editable_fields = [
-			{fieldname: 'title', columns: 3},
-			{fieldname: 'status', columns: 3},
-			{fieldname: 'start_date', columns: 2},
-			{fieldname: 'end_date', columns: 2}
-		];
-
-	},
-	*/
-	
-	// Follwoing code is added by SHIV on 2017/08/11
 	setup: function(frm) {
 		frm.get_docfield("activity_tasks").allow_bulk_edit = 1;		
 		frm.get_docfield("additional_tasks").allow_bulk_edit = 1;		
@@ -40,8 +30,7 @@ frappe.ui.form.on("Project", {
 			{fieldname: 'is_group', columns: 1},
 			{fieldname: 'start_date', columns: 2},
 			{fieldname: 'end_date', columns: 2},
-			{fieldname: 'work_quantity', columns: 1},
-			{fieldname: 'work_quantity_complete', columns: 1}
+			{fieldname: 'task_completion_percent', columns: 2},
 		];
 		
 		frm.get_field('additional_tasks').grid.editable_fields = [
@@ -53,89 +42,43 @@ frappe.ui.form.on("Project", {
 			{fieldname: 'work_quantity_complete', columns: 1}
 		];
 		
-		frm.get_field('project_advance_item').grid.editable_fields = [
-			{fieldname: 'advance_name', columns: 2},
-			{fieldname: 'advance_date', columns: 2},
-			{fieldname: 'received_amount', columns: 2},
-			{fieldname: 'adjustment_amount', columns: 2},
-			{fieldname: 'balance_amount', columns: 2}
-		];		
-		
-		frm.get_field('project_boq_item').grid.editable_fields = [
-			{fieldname: 'boq_name', columns: 2},
-			{fieldname: 'boq_date', columns: 2},
-			{fieldname: 'total_amount', columns: 2},
-			{fieldname: 'received_amount', columns: 2},
-			{fieldname: 'balance_amount', columns: 2}
-		];				
-		
-		frm.get_field('project_invoice_item').grid.editable_fields = [
-			{fieldname: 'invoice_name', columns: 2},
-			{fieldname: 'invoice_date', columns: 2},
-			{fieldname: 'net_invoice_amount', columns: 2},
-			{fieldname: 'total_received_amount', columns: 2},
-			{fieldname: 'total_balance_amount', columns: 2}
-		];						
 	},	
-	// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 	
 	onload: function(frm) {
-		var so = frappe.meta.get_docfield("Project", "sales_order");
-		so.get_route_options_for_new_doc = function(field) {
-			if(frm.is_new()) return;
-			return {
-				"customer": frm.doc.customer,
-				"project_name": frm.doc.name
-			}
-		}
+		enable_disable(frm);
+		cur_frm.fields_dict['parent_project'].get_query = function(doc, dt, dn) {
+                   return {
+                                filters:{"is_group": 1}
+                   }
+                }
 
-		frm.set_query('customer', 'erpnext.controllers.queries.customer_query');
-		
-		frm.set_query("user", "users", function() {
-					return {
-						query:"erpnext.projects.doctype.project.project.get_users_for_project"
-					}
-				});
-
-		// sales order
-		frm.set_query('sales_order', function() {
-			var filters = {
-				'project': ["in", frm.doc.__islocal ? [""] : [frm.doc.name, ""]]
-			};
-
-			if (frm.doc.customer) {
-				filters["customer"] = frm.doc.customer;
-			}
-
-			return {
-				filters: filters
-			}
-		});
 	},
 	refresh: function(frm) {
-		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-		// Following code added SHIV on 02/09/2017
-		frm.add_custom_button(__("Advance"), function(){frm.trigger("make_project_advance")},__("Make"), "icon-file-alt");
-		frm.add_custom_button(__("Project Register"), function(){
-				frappe.route_options = {
-					project: frm.doc.name,
-					additional_info: 1
-				};
-				frappe.set_route("query-report", "Project Register");
-			},__("Reports"), "icon-file-alt"
-		);
-		frm.add_custom_button(__("Manpower"), function(){
-				frappe.route_options = {
-					project: frm.doc.name
-				};
-				frappe.set_route("query-report", "Project Manpower");
-			},__("Reports"), "icon-file-alt"
-		);
-		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		enable_disable(frm);
+		if(!frm.doc.__islocal){
+			frm.add_custom_button(__("Project Progress Report"), function(){
+					frappe.route_options = {
+						activity: frm.doc.name,
+						from_date: frm.doc.expected_start_date,
+						to_date: frm.doc.expected_end_date
+					};
+					frappe.set_route("query-report", "Project Progress Report");
+				},__("Reports"), "icon-file-alt"
+			);
+			frm.add_custom_button(__("Project Progress Graph"), function(){
+					frappe.route_options = {
+						activity: frm.doc.name,
+						from_date: frm.doc.expected_start_date,
+						to_date: frm.doc.expected_end_date
+					};
+					frappe.set_route("query-report", "Project Progress Graphs");
+				},__("Reports"), "icon-file-alt"
+			);
+		}
 		
 		if(frm.doc.__islocal) {
 			frm.web_link && frm.web_link.remove();
-		} else {
+		} /*else {
 			frm.add_web_link("/projects?project=" + encodeURIComponent(frm.doc.name));
 
 			if(frappe.model.can_read("Task")) {
@@ -148,22 +91,47 @@ frappe.ui.form.on("Project", {
 
 			frm.trigger('show_dashboard');
 		}
-		
-		if(frm.doc.docstatus === 0){
-			enable_disable_items(frm);
-		}
+		*/
+
+	if (frm.doc.docstatus===1 && !frm.doc.__islocal) {
+                        frm.trigger('show_progress');
+                }
+
 	},
-	
-	// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-	// Following function created by SHIV on 02/09/2017
-	make_project_advance: function(frm){
-		frappe.model.open_mapped_doc({
-			method: "erpnext.projects.doctype.project.project.make_project_advance",
-			frm: frm
-		});
-	},
-	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-	
+
+	show_progress: function(frm) {
+                var bars = [];
+                var message = '';
+                var added_min = false;
+
+       
+                var title = __('{0} Percent Completed', [parseFloat(frm.doc.percent_completed, 2)]);
+                bars.push({
+                        'title': title,
+                        'width': parseFloat(frm.doc.percent_completed) + '%',
+                        'progress_class': 'progress-bar-success'
+                });
+                if (bars[0].width == '0%') {
+                        bars[0].width = '0.5%';
+                        added_min = 0.5;
+                }
+                message = title;
+                if(frm.doc.percent_completed !== 100){
+                        var pending_complete = 100 - frm.doc.percent_completed;
+                        if(pending_complete) {
+                                var title = __('{0} Remaining to Complete the Activity', [pending_complete]);
+                                var width = parseFloat(pending_complete) - added_min
+                                bars.push({
+                                        'title': title,
+                                        'width': (width > 100 ? "99.5" : width)  + '%',
+                                        'progress_class': 'progress-bar-warning'
+                                })
+                                message = message + '. ' + title;
+                        }
+                }
+                frm.dashboard.add_progress(__('Status'), bars, message);
+        },
+			
 	tasks_refresh: function(frm) {
 		var grid = frm.get_field('tasks').grid;
 		grid.wrapper.find('select[data-fieldname="status"]').each(function() {
@@ -174,67 +142,7 @@ frappe.ui.form.on("Project", {
 			}
 		});
 	},
-	show_dashboard: function(frm) {
-		// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-		// Following code is replaced by following code by SHIV on 20/09/2017
-		/*
-		if(frm.doc.__onload.activity_summary.length) {
-			var hours = $.map(frm.doc.__onload.activity_summary, function(d) { return d.total_hours });
-			var max_count = Math.max.apply(null, hours);
-			var sum = hours.reduce(function(a, b) { return a + b; }, 0);
-			var section = frm.dashboard.add_section(
-				frappe.render_template('project_dashboard',
-					{
-						data: frm.doc.__onload.activity_summary,
-						max_count: max_count,
-						sum: sum
-					}));
-
-			section.on('click', '.time-sheet-link', function() {
-				var activity_type = $(this).attr('data-activity_type');
-				frappe.set_route('List', 'Timesheet',
-					{'activity_type': activity_type, 'project': frm.doc.name});
-			});
-		}
-		*/
-		if(frm.doc.__onload.activity_summary.length) {
-			var days = $.map(frm.doc.__onload.activity_summary, function(d) { return d.total_days });
-			var max_count = Math.max.apply(null, days);
-			var sum = days.reduce(function(a, b) { return a + b; }, 0);
-			/*
-			var section = frm.dashboard.add_section(
-				frappe.render_template('project_dashboard',
-					{
-						data: frm.doc.__onload.activity_summary,
-						max_count: max_count,
-						sum: sum
-					}));
-			*/
-			
-			var section = frm.dashboard.add_section(
-				frappe.render_template('test_dashboard',
-					{
-						sum: sum
-					}
-			));
-			
-			section.on('click', '.time-sheet-link', function() {
-				var activity_type = $(this).attr('data-activity_type');
-				frappe.set_route('List', 'Timesheet',
-					{'activity_type': activity_type, 'project': frm.doc.name});
-			});
-		}
-		// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-	},
-	
-	imprest_limit: function(frm){
-		if (parseFloat(frm.doc.imprest_limit || 0.0) < parseFloat(frm.doc.imprest_received || 0.0)){
-			msgprint(__("Imprest Limit cannot be less than already received amount."));
-		}
-		else {
-			cur_frm.set_value("imprest_receivable",parseFloat(frm.doc.imprest_limit || 0.0)-parseFloat(frm.doc.imprest_received || 0.0))
-		}
-	},
+		
 	branch: function(frm){
 		// Update Cost Center
 		if(frm.doc.branch){
@@ -256,89 +164,130 @@ frappe.ui.form.on("Project", {
 			});
 		}
 	},
+	
+	project_category: function(){
+		cur_frm.set_value('project_sub_category','');
+		cur_frm.fields_dict['project_sub_category'].get_query = function(doc, dt, dn) {
+		   return {
+				filters:{"project_category": doc.project_category}
+		   }
+		}
+	}
+	,
+
+	expected_start_date: function(cur_frm) {
+		if(cur_frm.doc.expected_end_date) {
+			calculate_duration(cur_frm, cur_frm.doc.expected_start_date, cur_frm.doc.expected_end_date);
+	//cur_frm.set_value('total_duration', frappe.datetime.get_day_diff(cur_frm.doc.expected_end_date, cur_frm.doc.expected_start_date) + 1)
+		}
+	},
+	
+	
+	expected_end_date: function() {
+		if(cur_frm.doc.expected_start_date) {
+			calculate_duration(cur_frm, cur_frm.doc.expected_start_date, cur_frm.doc.expected_end_date);
+	//cur_frm.set_value('total_duration', frappe.datetime.get_day_diff(cur_frm.doc.expected_end_date, cur_frm.doc.expected_start_date) + 1)
+		}
+	},
+	mandays: function() {
+		cur_frm.set_value("physical_progress_weightage", (parseFloat(cur_frm.doc.mandays)/parseFloat(cur_frm.doc.overall_mandays)*100).toFixed(3))
+		cur_frm.set_value("man_power_required", Math.round(parseFloat(cur_frm.doc.mandays)/parseFloat(cur_frm.doc.total_duration)))
+	},
+	overall_mandays: function() {
+		cur_frm.set_value("physical_progress_weightage", (parseFloat(cur_frm.doc.mandays)/parseFloat(cur_frm.doc.overall_mandays)*100).toFixed(3))
+	},
+	total_duration: function() {
+		cur_frm.set_value("man_power_required", Math.round(parseFloat(cur_frm.doc.mandays)/parseFloat(cur_frm.doc.total_duration)))
+	},
+	physical_progress_weightage: function() {
+		//cur_frm.set_value("percent_completed", (parseFloat(cur_frm.doc.physical_progress)/parseFloat(cur_frm.doc.physical_progress_weightage) *100).toFixed(4))
+		cur_frm.set_value("physical_progress", (parseFloat(cur_frm.doc.percent_completed)/100 * parseFloat(cur_frm.doc.physical_progress_weightage)).toFixed(4))
+	},
+	percent_completed: function() {
+		cur_frm.set_value("physical_progress", (parseFloat(cur_frm.doc.percent_completed)/100 * parseFloat(cur_frm.doc.physical_progress_weightage)).toFixed(4))
+	}
 });
 
 frappe.ui.form.on("Project Task", {
-	edit_task: function(frm, doctype, name) {
+	/*edit_task: function(frm, doctype, name) {
 		var doc = frappe.get_doc(doctype, name);
 		if(doc.task_id) {
 			frappe.set_route("Form", "Task", doc.task_id);
 		} else {
 			msgprint(__("Save the document first."));
 		}
-	},
+	},*/
 	status: function(frm, doctype, name) {
 		frm.trigger('tasks_refresh');
 	},
 });
 
-frappe.ui.form.on("Project Advance Item",{
-	view_advance: function(frm, doctype, name){
-		var doc = frappe.get_doc(doctype, name);
-		frappe.set_route("Form", "Project Advance", doc.advance_name);
-	}
-});
 
 // ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
 // Following block of code added by SHIV on 11/08/2017
 frappe.ui.form.on("Activity Tasks", {
-	activity_tasks_remove: function(frm, doctype, name){
-		calculate_work_quantity(frm);
+	
+	task_category: function(frm, doctype, name) {
+		var child = locals[doctype][name]
+		frm.set_query('task_sub_category', 'activity_tasks', function() {
+			return {
+				'filters': {
+					'task_category': child.task_category
+				}
+			};
+		});
 	},
-	edit_task: function(frm, doctype, name) {
-		var doc = frappe.get_doc(doctype, name);
-		if(doc.task_id) {
-			frappe.set_route("Form", "Task", doc.task_id);
-		} else {
-			msgprint(__("Save the document first."));
+	
+	start_date: function(frm, doctype, name) {
+		var item = locals[doctype][name]
+		var at = frm.doc.activity_tasks || [];
+        	var task_duration = 0.0
+        	if(item.end_date) {
+			calculate_duration1(frm, doctype, name, item.start_date, item.end_date);
 		}
+		for(var i=0; i<at.length; i++){
+                        task_duration += parseFloat(at[i].task_duration || 0.0);
+                }
+		cur_frm.set_value('duration_sum', task_duration)
+		//frappe.model.set_value(doctype, name, "task_weightage", (parseFloat(item.task_duration)/parseFloat(task_duration) * parseFloat(cur_frm.doc.physical_progress_weightage)).toFixed(7));
+		frappe.model.set_value(doctype, name, "task_weightage", (parseFloat(item.task_duration)/parseFloat(task_duration)*100).toFixed(7));
+		frappe.model.set_value(doctype, name, "one_day_weightage", (parseFloat(item.task_weightage)/parseFloat(item.task_duration)).toFixed(7))
 	},
-	view_timesheet: function(frm, doctype, name){
-		var doc = frappe.get_doc(doctype, name);
-		if(doc.task_id){
-			frappe.route_options = {"project": frm.doc.name, "task": doc.task_id}
-			frappe.set_route("List", "Timesheet");
-		} else {
-			msgprint(__("Save the document first."));
+	end_date: function(frm, doctype, name) {
+		var item = locals[doctype][name]
+		var at = frm.doc.activity_tasks || [];
+                var task_duration = 0.0
+		if(item.start_date) {
+			calculate_duration1(frm, doctype, name, item.start_date, item.end_date);
 		}
+                for(var i=0; i<at.length; i++){
+                        task_duration += parseFloat(at[i].task_duration || 0.0);
+                }
+		cur_frm.set_value('duration_sum', task_duration);
+                //frappe.model.set_value(doctype, name, "task_weightage", (parseFloat(item.task_duration)/parseFloat(task_duration)* parseFloat(cur_frm.doc.physical_progress_weightage)).toFixed(7));
+                frappe.model.set_value(doctype, name, "task_weightage", (parseFloat(item.task_duration)/parseFloat(task_duration)*100).toFixed(7));
+		frappe.model.set_value(doctype, name, "one_day_weightage", (parseFloat(item.task_weightage)/parseFloat(item.task_duration)).toFixed(7))
+
+},
+	task_completion_percent: function(frm, doctype, name) {
+		var item = locals[doctype][name]
+		frappe.model.set_value(doctype, name, "task_achievement_percent", (parseFloat(item.task_completion_percent/100)*parseFloat(item.task_weightage)).toFixed(7));
+		frappe.model.set_value(doctype, name, "one_day_achievement", (parseFloat(item.task_achievement_percent)/parseFloat(item.task_duration).toFixed(7)))
+	
 	},
-	status: function(frm, doctype, name) {
-		frm.trigger('tasks_refresh');
+	task_duration: function(frm, doctype, name) {
 	},
-	work_quantity: function(frm, doctype, name){
-		calculate_work_quantity(frm);
-	},
+	task_achievement_percent: function(frm, doctype, name) {
+	var at = frm.doc.activity_tasks || [];
+        var task_achievement_percent = 0.0
+        for(var i=0; i<at.length; i++){
+                        task_achievement_percent += parseFloat(at[i].task_achievement_percent || 0.0);
+                }
+        cur_frm.set_value("percent_completed", (parseFloat(task_achievement_percent)).toFixed(4))
+	cur_frm.set_value("physical_progress", (parseFloat(cur_frm.doc.percent_completed)/100 * parseFloat(cur_frm.doc.physical_progress_weightage)).toFixed(4))
+	}
 });
 
-frappe.ui.form.on("Additional Tasks", {
-	activity_tasks_remove: function(frm, doctype, name){
-		calculate_work_quantity(frm);
-	},
-	edit_task: function(frm, doctype, name) {
-		var doc = frappe.get_doc(doctype, name);
-		if(doc.task_id) {
-			frappe.set_route("Form", "Task", doc.task_id);
-		} else {
-			msgprint(__("Save the document first."));
-		}
-	},
-	view_timesheet: function(frm, doctype, name){
-		var doc = frappe.get_doc(doctype, name);
-		if(doc.task_id){
-			frappe.route_options = {"project": frm.doc.name, "task": doc.task_id}
-			frappe.set_route("List", "Timesheet");
-		} else {
-			msgprint(__("Save the document first."));
-		}
-	},
-	status: function(frm, doctype, name) {
-		frm.trigger('tasks_refresh');
-	},
-	work_quantity: function(frm, doctype, name){
-		calculate_work_quantity(frm);
-	},
-});
-// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
 frappe.ui.form.on("Project", "refresh", function(frm) {
     cur_frm.set_query("cost_center", function() {
@@ -351,6 +300,70 @@ frappe.ui.form.on("Project", "refresh", function(frm) {
     });
 })
 
+
+function calculate_duration(cur_frm, from_date, to_date) {
+        frappe.call({
+                method: "erpnext.projects.doctype.project.project.calculate_durations",
+                 args: {
+                        "hol_list": cur_frm.doc.holiday_list,
+                        "from_date": from_date,
+                        "to_date": to_date
+                   },
+                callback: function(r) {
+                        if(r.message) {
+                        	cur_frm.set_value('total_duration', r.message);
+			}
+		}
+        })
+}
+
+function calculate_duration1(cur_frm, doctype, name, from_date, to_date) {
+        frappe.call({
+                method: "erpnext.projects.doctype.project.project.calculate_durations",
+                 args: {
+                        "hol_list": cur_frm.doc.holiday_list,
+                        "from_date": from_date,
+                        "to_date": to_date
+                   },
+                callback: function(r) {
+                       if(r.message){
+                           frappe.model.set_value(doctype, name, 'task_duration', r.message);
+                        }
+                }
+        })
+}
+
+
+var enable_disable = function(frm){
+        //Display tasks only after the project is saved
+        cur_frm.toggle_display("activity_and_tasks", !frm.doc.__islocal);
+        cur_frm.toggle_display("activity_tasks", !frm.doc.__islocal);
+        cur_frm.toggle_display("sb_additional_tasks", !frm.doc.__islocal);
+        cur_frm.toggle_display("additional_tasks", !frm.doc.__islocal);
+}
+
+
+cur_frm.fields_dict['activity_tasks'].grid.get_field('task_sub_category').get_query = function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        return {
+                filters: [
+                ['Task Sub Category', 'task_category', '=', d.task_category]
+                ]
+                }
+        }
+frappe.ui.form.on("Project Task", {
+        /*edit_task: function(frm, doctype, name) {
+                var doc = frappe.get_doc(doctype, name);
+                if(doc.task_id) {
+                        frappe.set_route("Form", "Task", doc.task_id);
+                } else {
+                        msgprint(__("Save the document first."));
+                }
+        },*/
+        status: function(frm, doctype, name) {
+                frm.trigger('tasks_refresh');
+        },
+});
 
 // ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
 // Following function created by SHIV on 2017/08/17
@@ -385,10 +398,10 @@ var calculate_work_quantity = function(frm){
 }
 // +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
-/*
 frappe.ui.form.on("Activity Tasks","is_group", function(frm, cdt, cdn){
 	var child = locals[cdt][cdn];
 	cur_frm.doc.activity_tasks.forEach(function(child){
+	
 		var sel = format('div[data-fieldname="activity_tasks"] > div.grid-row[data-idx="{0}"]',[child.idx]);
 		if (child.is_group == 1){
 			$(sel).css('background-color',"#ff5858");
@@ -397,21 +410,13 @@ frappe.ui.form.on("Activity Tasks","is_group", function(frm, cdt, cdn){
 		}
 	});
 });
-*/
 
-function enable_disable_items(frm){
-	var toggle_fields = ["branch"];
-	
-	if(frm.doc.branch){
-		if(in_list(user_roles, "CPBD")){
-			toggle_fields.forEach(function(field_name){
-				frm.set_df_property(field_name, "read_only", 0);
-			});
-		}
-		else {
-			toggle_fields.forEach(function(field_name){
-				frm.set_df_property(field_name, "read_only", 1);
-			});
-		}
-	}
+
+var update_party_info=function(doc){
+        cur_frm.call({
+                method: "update_party_info",
+                doc:doc
+        });
 }
+
+

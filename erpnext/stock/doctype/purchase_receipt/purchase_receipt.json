@@ -2446,7 +2446,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2020-12-15 19:48:12.608727", 
+ "modified": "2021-01-26 18:30:46.984864", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Purchase Receipt", 
@@ -2664,7 +2664,7 @@
   {
    "amend": 1, 
    "apply_user_permissions": 1, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -2732,5 +2732,5 @@
  "timeline_field": "supplier", 
  "title_field": "title", 
  "track_changes": 1, 
- "track_seen": 1
+ "track_seen": 0
 }

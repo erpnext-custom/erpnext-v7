@@ -52,8 +52,8 @@ def get_branch_cc(branch):
         if not branch:
                 frappe.throw("No Branch Argument Found")
         cc = frappe.db.get_value("Cost Center", {"branch": branch, "is_disabled": 0, "is_group": 0}, "name")
-	#if not cc:
-        #        frappe.throw(str(branch) + " is not linked to any cost center")
+        if not cc:
+                frappe.throw(str(branch) + " is not linked to any cost center")
         return cc
 
 ##
@@ -225,15 +225,6 @@ def get_prev_doc(doctype,docname,col_list=""):
         else:
                 return frappe.get_doc(doctype,docname)
 
-
-
-@frappe.whitelist()
-def get_prev_doc_eq(doctype,docname,col_list=""):
-        if col_list:
-                return frappe.db.get_value(doctype,docname,col_list.split(","),as_dict=1)
-        else:
-                return frappe.get_doc(doctype,docname)
-
 ##
 # Prepre the basic stock ledger 
 ##
@@ -249,6 +240,27 @@ def prepare_sl(d, args):
                 "voucher_detail_no": d.name,
                 "actual_qty": 0,
                 "stock_uom": d.stock_uom,
+                "incoming_rate": 0,
+                "company": d.company,
+                "batch_no": "",
+                "serial_no": "",
+                "project": "",
+                "is_cancelled": d.docstatus==2 and "Yes" or "No"
+        })
+
+        sl_dict.update(args)
+        return sl_dict
+
+def prepare_sli(d, args):
+        sl_dict = frappe._dict({
+                "warehouse": d.warehouse,
+                "posting_date": d.posting_date,
+                "posting_time": d.posting_time,
+                'fiscal_year': get_fiscal_year(d.posting_date, company=d.company)[0],
+                "voucher_type": d.doctype,
+                "voucher_no": d.name,
+                "voucher_detail_no": d.name,
+                "actual_qty": 0,
                 "incoming_rate": 0,
                 "company": d.company,
                 "batch_no": "",
@@ -291,7 +303,7 @@ def prepare_gl(d, args):
 def check_budget_available(cost_center, budget_account, transaction_date, amount, throw_error=True):
 	if str(frappe.db.get_value("Account", budget_account, "budget_check")) == "Ignore":
                 return
-        budget_amount = frappe.db.sql("select b.action_if_annual_budget_exceeded as action, ba.budget_check, ba.budget_amount, b.from_date, b.to_date from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and %s between b.from_date and b.to_date", (budget_account, cost_center, getdate(transaction_date)), as_dict=True)
+        budget_amount = frappe.db.sql("select b.action_if_annual_budget_exceeded as action, ba.budget_check, ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (budget_account, cost_center, str(transaction_date)[0:4]), as_dict=True)
 	error= []
         #action = frappe.db.sql("select action_if_annual_budget_exceeded as action from tabBudget where docstatus = 1 and cost_center = \'" + str(cost_center) + "\' and fiscal_year = " + str(transaction_date)[0:4] + " ", as_dict=True)
         if budget_amount and budget_amount[0].action == "Ignore":
@@ -455,3 +467,14 @@ def approver_query(doctype, txt, searchfield, start, page_len, filters):
 
         return lists
 
+@frappe.whitelist()
+def same_branch(branch = None):
+	parent = frappe.get_doc("Cost Center", {'branch': branch}).parent_cost_center
+	same_branch = frappe.get_doc("Cost Center", {"parent" : parent}).branch
+	same_cc = frappe.get_doc("Cost Center", {"parent" : parent}).name
+	
+
+
+@frappe.whitelist()
+def same_cc(cc = None):
+	pass

@@ -198,7 +198,8 @@ class TravelClaim(Document):
 				i.dsa_percent = 0.0
         		i.amount           = (flt(i.days_allocated)*(flt(i.dsa)*flt(i.dsa_percent)/100)) + (flt(i.mileage_rate) * flt(i.distance)) + flt(i.half_dsa_days * i.dsa * 0.5)                
 			i.actual_amount    = flt(i.amount) * flt(exchange_rate)
-                        total_claim_amount = flt(total_claim_amount) +  flt(i.actual_amount)
+                        if not i.quarantine:
+				total_claim_amount = flt(total_claim_amount) +  flt(i.actual_amount)
 
                 self.total_claim_amount = flt(total_claim_amount)
                 self.total_claim_amount = flt(self.claim_amount) + flt(self.extra_claim_amount)

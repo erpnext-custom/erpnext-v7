@@ -97,7 +97,6 @@ def update_bin(args, allow_negative_stock=False, via_landed_cost_voucher=False):
 		return bin
 	else:
 		frappe.msgprint(_("Item {0} ignored since it is not a stock item").format(args.get("item_code")))
-	return bin
 
 @frappe.whitelist()
 def get_incoming_rate(args):

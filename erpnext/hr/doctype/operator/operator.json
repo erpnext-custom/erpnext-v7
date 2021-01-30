@@ -368,7 +368,7 @@
    "collapsible": 0, 
    "fieldname": "project", 
    "fieldtype": "Link", 
-   "hidden": 0, 
+   "hidden": 1, 
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
@@ -926,7 +926,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-12-15 20:03:08.518141", 
+ "modified": "2021-01-13 16:13:06.379513", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Operator", 
@@ -1066,5 +1066,5 @@
  "sort_order": "DESC", 
  "title_field": "person_name", 
  "track_changes": 1, 
- "track_seen": 1
+ "track_seen": 0
 }

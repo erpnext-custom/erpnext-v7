@@ -24,23 +24,23 @@ class ProcessMRPayment(Document):
                                 self.duplicate_entry_check(a.employee, a.employee_type, a.idx)
                                 a.fiscal_year   = self.fiscal_year
                                 a.month         = self.month
- 				
+ 	
 				if a.employee_type  == "Operator":
-                                        #"Open Air Prisoner"):
+					#"Open Air Prisoner"):
                                         salary = frappe.db.get_value(a.employee_type, a.employee, "salary")
                                         if flt(a.total_wage) > flt(salary):
                                                 a.total_wage = flt(salary)
 
-                                        if flt(total_days) == flt(a.number_of_days):
+                                        if flt(total_days) == round(flt(a.number_of_days),2):
                                                 a.total_wage = flt(salary)
                                 if a.employee_type == 'Open Air Prisoner':
-                                        salary = flt(total_days) * flt(a.daily_rate)
-                                        if flt(a.total_wage) > flt(salary):
+					salary = flt(total_days) * flt(a.daily_rate)
+					if flt(a.total_wage) > flt(salary):
                                                 a.total_wage = flt(salary)
 
-                                        if flt(total_days) == flt(a.number_of_days):
+                                        if flt(total_days) == round(flt(a.number_of_days),2):
                                                 a.total_wage = flt(salary)
-                                        
+        
 				# Ver.1.0.20200205 Begins, Following code added by SHIV on 2020/01/05
 				a.total_wage = round(a.total_wage)
 				a.total_ot_amount = round(a.total_ot_amount)
@@ -49,13 +49,15 @@ class ProcessMRPayment(Document):
 
 				if a.employee_type == "Open Air Prisoner":
 					gratuity_percent = frappe.db.get_single_value("HR Settings", "gratuity_percent")
-					a.wage_payable = flt(a.total_wage) - flt(a.gratuity_amount)
-					#a.total_gratuity = 0.5 * flt(total_wage)
+					#gratuity changed from 75% to 50% on 28/12/2020 as per instruction from Ms. Thinley Dema
+					#a.total_gratuity = 0.75 * flt(total_wage)
 					a.total_gratuity = flt(gratuity_percent)/100 * flt(total_wage)
+					a.wage_payable = flt(a.total_wage) - flt(a.gratuity_amount)
 				a.total_amount = flt(a.total_ot_amount) + flt(a.total_wage)
                                 total_ot += flt(a.total_ot_amount)
                                 total_wage += flt(a.total_wage)
                                 total_gratuity += flt(a.gratuity_amount)
+
 			total = total_ot + total_wage
 			self.wages_amount = flt(total_wage)
 			self.ot_amount = flt(total_ot)
@@ -263,7 +265,7 @@ class ProcessMRPayment(Document):
                         frappe.throw("Invalid Employee Type")
 
                 return expense_bank_account, ot_account, wage_account, gratuity_account
-
+	
 
 def update_mr_rates(employee_type, employee, cost_center, from_date, to_date):
 	# Updating wage rate
@@ -283,6 +285,7 @@ def update_mr_rates(employee_type, employee, cost_center, from_date, to_date):
 		to_date=to_date
 	),
 	as_dict=True)
+#	frappe.msgprint('{0}'.format(rates))
 	for r in rates:
 		frappe.db.sql("""
 			update `tabAttendance Others`
@@ -290,7 +293,7 @@ def update_mr_rates(employee_type, employee, cost_center, from_date, to_date):
 			where employee_type = '{employee_type}'
 			and employee = '{employee}'
 			and `date` between '{from_date}' and '{to_date}'
-			and status = 'Present'
+			and status in ('Present', 'Half Day')
 			and docstatus = 1 
 		""".format(
 			rate_per_day=r.rate_per_day,
@@ -362,7 +365,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
 					and employee = e.name
                                         and date between '{from_date}' and '{to_date}'
                                         and cost_center = '{cost_center}'
-                                        and status = 'Present'
+                                        and status in ('Present', 'Half Day')
                                         and docstatus = 1
 					)
 					or
@@ -408,7 +411,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                         set rate_per_day = {rate_per_day}
                         where employee_type = '{employee_type}'
                         and employee = '{employee}'
-                        and status = 'Present'
+                        and status in ('Present', 'Half Day')
                         and docstatus = 1 
                 """.format(
                         rate_per_day=flt(e.rate_per_day),
@@ -452,6 +455,20 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         and status = 'Present'
                                         and docstatus = 1
                                         UNION ALL
+					select distinct
+                                                employee,
+                                                date,
+                                                .5                     as number_of_days,
+                                                0                       as number_of_hours,
+                                                ifnull(rate_per_day,0)  as total_wage,
+                                                0                       as total_ot
+                                        from `tabAttendance Others`
+                                        where employee_type = '{0}'
+                                        and date between '{1}' and '{2}'
+                                        and cost_center = '{3}'
+                                        and status = 'Half Day'
+                                        and docstatus = 1
+					UNION ALL
                                         select distinct
                                                 number                  as employee,
 						date,
@@ -466,15 +483,15 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         and docstatus = 1
                                 ) as abc
                                 group by employee
-        """.format(employee_type, from_date, to_date, cost_center, total_days), as_dict=True, debug = 1)
+        """.format(employee_type, from_date, to_date, cost_center, total_days), as_dict=True)
 
 
         for r in rest_list:
 		gratuity = 0.0
                 gratuity_percent = frappe.db.get_single_value("HR Settings", "gratuity_percent")
-                if master.get(r.employee) and (flt(r.total_wage)+flt(r.total_ot)):
+		if master.get(r.employee) and (flt(r.total_wage)+flt(r.total_ot)):
 			r.employee_type = r.type
-                       	r.gratuity = flt(gratuity_percent)/100 * flt(r.total_wage)
+			r.gratuity = flt(gratuity_percent)/100 * flt(r.total_wage)
 			master[r.employee].update(r)
 			data.append(master[r.employee])
                    
@@ -482,3 +499,4 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
 		return data
 	else:
 		frappe.throw(_("No data found!"),title="No Data Found!")
+

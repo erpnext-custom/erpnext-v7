@@ -1,15 +1,7 @@
 frappe.listview_settings['Project'] = {
-	add_fields: ["priority", "is_active", "tot_wq_percent_complete", "tot_wq_percent", "expected_end_date", "status"],
+	add_fields: ["priority", "status", "physical_progress_weightage", "physical_progress", "percent_completed", "expected_end_date", "status"],
 	filters:[["status","=", "Ongoing"]],
-	colwidths: {"name":2, "status":2, "expected_start_date":2},
 	get_indicator: function(doc) {
-		console.log('inside');
-		if(parseFloat(doc.tot_wq_percent_complete) < parseFloat(doc.tot_wq_percent)){
-			return [__("{0}% Complete", [Math.round(doc.tot_wq_percent_complete)]), "orange", "tot_wq_percent_complete,>=,0|status,=,Ongoing"];
-		} else if(parseFloat(doc.tot_wq_percent_complete) >= parseFloat(doc.tot_wq_percent)){
-			return [__("{0}% Complete", [Math.round(doc.tot_wq_percent_complete)]), "green", "tot_wq_percent_complete,>=,"+doc.tot_wq_percent+"|status,=,"+doc.status];
-		} else {
 			return [__(doc.status), frappe.utils.guess_colour(doc.status), "status,=," + doc.status];
 		}
-	},
-};
+	}

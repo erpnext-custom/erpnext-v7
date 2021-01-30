@@ -68,8 +68,9 @@ frappe.ui.form.on('Travel Claim', {
 			var ti = frm.doc.items || [];
 			var total = 0.0;
 
-			frm.doc.items.forEach(function(d) { 
-				total += parseFloat(d.actual_amount || 0.0)
+			frm.doc.items.forEach(function(d) {
+				if(!d.quarantine) { 
+				total += parseFloat(d.actual_amount || 0.0)}
 			})
 			
 			if(parseFloat(total) != parseFloat(frm.doc.claim_amount)){
@@ -121,8 +122,9 @@ frappe.ui.form.on("Travel Claim Item", {
 	},
 	"actual_amount": function(frm, cdt, cdn) {
 		var total = 0;
-		frm.doc.items.forEach(function(d) { 
-			total += d.actual_amount	
+		frm.doc.items.forEach(function(d) {
+			if(!d.quarantine) { 
+			total += d.actual_amount }
 		})
 		frm.set_value("claim_amount", total)
 	}
