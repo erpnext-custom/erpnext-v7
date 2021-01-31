@@ -90,7 +90,6 @@ class LeaveEncashment(Document):
 			if docstat != 2:
 				frappe.throw("You cannot cancel this document without cancelling the journal entry")
 
-
         def validate_leave_application(self):
                 from_date, to_date = self.get_current_year_dates()
                 ref_docs = ''

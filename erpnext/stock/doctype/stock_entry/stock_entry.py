@@ -347,12 +347,13 @@ class StockEntry(StockController):
 				d.additional_cost = 0
 		
 			##### Changes made by Thukten to calculate additional cost from BOM ######
+			'''
 			if self.purpose == "Manufacture":
 				if d.bom_no:
 					overhead_cost = frappe.db.get_value("BOM", d.bom_no, "overhead_cost")
 					if overhead_cost > 0:
 						d.additional_cost = flt(d.additional_cost) + (flt(overhead_cost) * flt(d.qty))
-
+			'''
 
 	def update_valuation_rate(self):
 		for d in self.get("items"):

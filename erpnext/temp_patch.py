@@ -8,6 +8,26 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff,
 from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
+
+
+def cancel_je():
+        i = 1
+        for a in frappe.db.sql("""select distinct(e.name) as jv_name 
+                        from `tabJournal Entry` e, `tabJournal Entry Account` a 
+                        where e.name = a.parent and e.docstatus = 1 
+                        and a.reference_type="Asset" 
+                        and not exists(select 1 
+                                from `tabAsset` 
+                                where name = a.reference_name)
+                        """, as_dict=True):
+                doc = frappe.get_doc("Journal Entry", a.jv_name) #Req on 2020/10/31
+                print 'Cancelling JEJV191200112...'
+                doc.cancel()
+                frappe.db.commit()
+                print i, doc.name, doc.docstatus
+                i+=1
+
+
 def testing_purpose():
 	print("Tesing Scheduler")
 

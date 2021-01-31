@@ -1366,7 +1366,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2020-04-10 12:03:49.963010", 
+ "modified": "2020-11-19 15:57:50.005482", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Journal Entry", 
@@ -1587,6 +1587,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "title", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

@@ -43,7 +43,20 @@ def construct_query(filters=None):
 	if filters.get("cost_center"):
 		pi_cost_center = "p.tds_cost_center = '{0}'".format(filters.get("cost_center"))
 		dp_cost_center = "d.cost_center = '{0}'".format(filters.get("cost_center"))
-	query = " SELECT s.vendor_tpn_no, s.name, p.bill_no, p.bill_date, p.tds_taxable_amount, p.tds_rate, p.tds_amount, p.tds_cost_center as cost_center  FROM `tabPurchase Invoice` as p, `tabSupplier` as s WHERE p.docstatus = 1 and p.supplier = s.name AND p.tds_amount > 0 AND p.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND p.tds_rate = " + filters.tds_rate + " UNION SELECT ss.vendor_tpn_no, ss.name, d.name as bill_no, d.posting_date as bill_date, d.amount as tds_taxable_amount, d.tds_percent as tds_rate, d.tds_amount, d.cost_center as cost_center FROM `tabDirect Payment` as d, `tabSupplier` as ss WHERE d.docstatus = 1 and d.supplier = ss.name AND d.tds_amount > 0 AND d.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'  AND d.tds_percent = " + filters.tds_rate + ""
+	query = """
+		SELECT s.vendor_tpn_no, s.name, p.bill_no, p.bill_date, p.tds_taxable_amount, p.tds_rate, p.tds_amount, p.tds_cost_center as cost_center  
+		FROM `tabPurchase Invoice` as p, `tabSupplier` as s 
+		WHERE p.docstatus = 1 and p.supplier = s.name AND p.tds_amount > 0 
+		AND p.posting_date BETWEEN '{0}' AND '{1}'
+		AND p.tds_rate = '{2}' 
+		UNION 
+		SELECT ss.vendor_tpn_no, ss.name, d.name as bill_no, d.posting_date as bill_date, di.taxable_amount as tds_taxable_amount, d.tds_percent as tds_rate, di.tds_amount, d.cost_center as cost_center 
+		FROM `tabDirect Payment` as d, `tabDirect Payment Item` as di, `tabSupplier` as ss 
+		WHERE d.name = di.parent and d.docstatus = 1 
+		AND di.party = ss.name 
+		AND di.tds_amount > 0 AND d.posting_date BETWEEN '{0}' AND '{1}'  
+		AND d.tds_percent = '{2}'
+		""".format(str(filters.from_date), str(filters.to_date), filters.tds_rate)
 	return query;
 
 def validate_filters(filters):

@@ -8,6 +8,38 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settings, get_salary_tax
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
+import frappe.model.rename_doc as rd
+
+def adjust_leave_allocation():
+	i = 0
+	for a in frappe.db.sql("""select to_date, leave_encashment, new_leaves_allocated, carry_forwarded_leaves, total_leaves_allocated, to_date, name  
+			from `tabLeave Allocation` where employee = "WCCL0906002" 
+			and to_date >= "2020-06-30" 
+			and leave_type="Earned Leave" order by to_date;""", as_dict=True):
+		unused_leave = 0
+		total_allocation = 0
+		if a.leave_encashment:
+			frappe.db.sql("update `tabLeave Allocation` set total_leaves_allocated = '30', encashed_days = '30' where name = '{}'".format(a.name))		
+		unused_leave = flt(27.5) + (flt(2.5) * flt(i))
+		total_allocation = flt(30) + (flt(2.5) * flt(i))
+		frappe.db.sql("update `tabLeave Allocation` set total_leaves_allocated = '{}', carry_forwarded_leaves = '{}' where name = '{}'".format(total_allocation, unused_leave, a.name))		
+		i +=1
+		print("Date: " + str(a.to_date) + "unused Leave : " + str(unused_leave) + " total leave allocated: " + str(total_allocation))
+
+def rename_item_code():
+	for a in frappe.db.sql("select name, item_group from `tabItem` where item_group = 'Furniture & fixtures'", as_dict=True):
+		if a.item_group != "Finished Goods":
+			item_code = frappe.db.sql("select item_code from tabItem where item_group='Finished Goods' order by item_code desc limit 1")
+			if item_code:
+				material_code = str(int(item_code[0][0]) + 1)
+			else:
+				base = frappe.db.get_value("Item Group", "Finished Goods", "item_code_base")
+				if not base:
+					print("Item Group Base Code not defined")
+				material_code = str(base)
+			frappe.db.sql("update `tabItem` set item_group = 'Finished Goods' where name = '{}'".format(a.name))
+			rd.rename_doc("Item", a.name, material_code, force=True)
+			print("Rename from " + str(a.name) + " to " + str(material_code))
 
 def update_bom():
 	cost = 0.00
@@ -33,7 +65,6 @@ def update_direct_payment():
 def check_bom():
 	doc = frappe.get_doc("BOM", 'BOM-200123-001')
 	doc.submit()
-
 
 def update_pilot_housing_rent():
 	for a in frappe.db.sql("select name, original_monthly_instalment from `tabTenant Information` where building_category = 'Pilot Housing' and docstatus = 1", as_dict=1):

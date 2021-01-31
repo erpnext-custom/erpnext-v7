@@ -26,9 +26,9 @@ def get_columns(filters=None):
 		if filters.report_by == "Sales Order":
 			columns = [
 				  _("Sales Order") + ":Link/Sales Order:100", _("Branch") + ":Link/Branch:120", _("Customer") + ":Link/Customer:150", _("Customer Name") + ":Data:200", _("Customer Group") + ":Data:200", _("Posting Date") + ":Date:100", 
-				  _("Item Code") + ":Link/Item: 80", _("Item Name") + ":Data:150", _("Sub Group") + ":Data:100",
+				  _("Item Code") + ":Link/Item: 80", _("Item Name") + ":Data:150", _("Sub Group") + ":Data:100", _("Item Sub Group Type") + "::150",
 				  _("Customer") + ":Link/Customer:140", _("Actual Qty") + ":Float:90", _("Qty Delivered") + ":Float:90",
-				  _("Rate") + ":Float:90", _("Amount") + ":Currency:100"
+				  _("Rate") + ":Float:90", _("Amount") + ":Currency:100" 
 				]
 		else:
 			columns = [
@@ -44,13 +44,13 @@ def get_columns(filters=None):
 def get_data(filters=None):
         cond = get_conditions(filters)
         data = []
-	
+
 	if filters.report_by == "Sales Order":
 		if filters.aggregate:
 			cols = "so.branch, so.location, so.customer, so.customer_name, so.customer_group, i.item_sub_group, sum(soi.qty) as qty, sum(soi.delivered_qty), sum(soi.amount)"
 			group_by = "group by so.branch, i.item_sub_group"
 		else:
-			cols = "so.name, so.branch, so.customer, so.customer_name, so.customer_group, so.transaction_date, soi.item_code, soi.item_name, i.item_sub_group, so.customer, soi.qty as qty, soi.delivered_qty, soi.rate, soi.amount"
+			cols = "so.name, so.branch, so.customer, so.customer_name, so.customer_group, so.transaction_date, soi.item_code,i.item_sub_group_type, soi.item_name, i.item_sub_group, so.customer, soi.qty as qty, soi.delivered_qty, soi.rate, soi.amount"
 			group_by = "and 1 = 1"
 		
 		

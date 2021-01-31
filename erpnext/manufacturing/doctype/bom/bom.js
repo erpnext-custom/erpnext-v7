@@ -5,6 +5,8 @@ frappe.provide("erpnext.bom");
 
 frappe.ui.form.on("BOM", {
 	setup: function(frm) {
+		frm.get_docfield("items").allow_bulk_edit = 1;
+
 		frm.set_query("bom_no", "items", function() {
 			return {
 				filters: {
@@ -143,6 +145,7 @@ frappe.ui.form.on("BOM", {
 		}
 	},
 	item: function(frm) {
+		/*
 	      if(frm.doc.item){
 		console.log("Test" + frm.doc.item);	
 		frappe.model.get_value('Cost Sheet', {'item': frm.doc.item}, 'production_cost',
@@ -151,7 +154,7 @@ frappe.ui.form.on("BOM", {
                             	cur_frm.set_value("overhead_cost", e.production_cost);
 			    }
                 });	
-	      }	
+	      }	*/
 	}
 });
 

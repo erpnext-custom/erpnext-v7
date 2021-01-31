@@ -121,6 +121,12 @@ def get_data():
                                         "name": "Work Order Report",
                                         "doctype": "Work Order"
                                 },
+                                {
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Selling Price Report",
+                                        "doctype": "Cost Sheet"
+                                },
                                 # {
                                 #         "type": "report",
                                 #         "is_query_report": True,

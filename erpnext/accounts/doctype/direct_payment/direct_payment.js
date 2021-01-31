@@ -5,16 +5,14 @@ frappe.ui.form.on('Direct Payment', {
 		cur_frm.set_query("debit_account", function(){
 			return {
 				"filters": [
-					["is_group", "=", "0"],
-					
+					["is_group", "=", "0"],					
 				]
 			}
 		});
 		cur_frm.set_query("credit_account", function(){
 			return {
 				"filters": [
-					["is_group", "=", "0"],
-					
+					["is_group", "=", "0"],					
 				]
 			}
 		});
@@ -46,7 +44,7 @@ frappe.ui.form.on('Direct Payment', {
 	}
 	},
 	"party_type": function(frm){
-		frm.set_value("party","");	
+		//frm.set_value("party","");	
 	},
         "payment_type": function(frm){
 		/*
@@ -82,24 +80,39 @@ frappe.ui.form.on('Direct Payment', {
 	},
 	"tds_percent": function(frm) {
 		calculate_tds(frm);
+		var net_amt = 0.00, tds_amt = 0.00;
 		if(frm.doc.tds_percent < 1 || frm.doc.tds_percent == ""){
 			cur_frm.set_value("tds_account", "");
 			cur_frm.set_value("tds_amount", 0.00);
-			frm.doc.item.forEach(function(d) {
-				d.tds_amount = 0.00;
-				d.net_amount = d.amount;
-			});
+			if(!frm.doc.single_party_multiple_payments){
+				frm.doc.item.forEach(function(d) {
+					d.tds_amount = 0.00;
+					d.net_amount = d.amount;
+				});
+			}
+			else{
+				frm.doc.multiple_account.forEach(function(d) {
+					net_amt += d.amount;
+				});
+			}
 		}else{
-			var net_amt = 0.00, tds_amt = 0.00;
-			frm.doc.item.forEach(function(d) {
-				d.tds_amount = parseFloat(frm.doc.tds_percent) * parseFloat(d.taxable_amount) / 100;
-				d.net_amount = parseFloat(d.taxable_amount) - parseFloat(d.tds_amount);
-				tds_amt += d.tds_amount;
-				net_amt += d.net_amount;
-			});
-			frm.set_value("tds_amount", tds_amt);
-			frm.set_value("net_amount", net_amt);
+			if(!frm.doc.single_party_multiple_payments){
+				frm.doc.item.forEach(function(d) {
+					d.tds_amount = parseFloat(frm.doc.tds_percent) * parseFloat(d.taxable_amount) / 100;
+					d.net_amount = parseFloat(d.taxable_amount) - parseFloat(d.tds_amount);
+					tds_amt += d.tds_amount;
+					net_amt += d.net_amount;
+				});
+			}
+			else{
+				frm.doc.multiple_account.forEach(function(d) {
+					net_amt += d.amount;
+				});
+				tds_amt = parseFloat(frm.doc.tds_percent) * parseFloat(d.net_amt) / 100;
+			}
 		}
+		frm.set_value("tds_amount", tds_amt);
+		frm.set_value("net_amount", net_amt);
 		cur_frm.set_df_property("tds_account", "reqd", (frm.doc.tds_percent > 0)? 1:0);
 	},
 	"taxable_amount": function(frm) {
@@ -226,9 +239,10 @@ function calculate_total(frm, cdt, cdn){
 		total_net_amount += d.net_amount;
 		total_taxable_amount += d.taxable_amount;
 		total_tds_amount += d.tds_amount;
-		frm.set_value("amount", gross_amount);
-		frm.set_value("taxable_amount", total_taxable_amount);
-		frm.set_value("net_amount", total_net_amount);
-		frm.set_value("tds_amount", total_tds_amount);
 	});
+	frm.set_value("amount", gross_amount);
+	frm.set_value("taxable_amount", total_taxable_amount);
+	frm.set_value("net_amount", total_net_amount);
+	frm.set_value("tds_amount", total_tds_amount);
+	
 }

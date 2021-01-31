@@ -63,7 +63,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "to_date", 
@@ -580,7 +580,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-09-16 12:23:35.313185", 
+ "modified": "2020-10-22 09:45:39.247429", 
  "modified_by": "Administrator", 
  "module": "Manufacturing", 
  "name": "Cost Sheet", 
@@ -590,7 +590,7 @@
   {
    "amend": 0, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 1, 
    "email": 1, 

@@ -29,71 +29,109 @@ class DirectPayment(AccountsController):
 
 	def validate_data(self):
 		tds_amt = gross_amt = net_amt = taxable_amt = 0.00
-		for a in self.item:
-			if self.payment_type == "Receive":
-				inter_company = frappe.db.get_value("Customer", self.party, "inter_company")
-				if inter_company == 0:
-					frappe.throw(_("Selected Customer {0} is not inter company ".format(self.party)))
+		if not self.single_party_multiple_payments:
+			for a in self.item:
+				if self.payment_type == "Receive":
+					inter_company = frappe.db.get_value("Customer", self.party, "inter_company")
+					if inter_company == 0:
+						frappe.throw(_("Selected Customer {0} is not inter company ".format(self.party)))
 
-			if self.payment_type == "Payment" and a.party_type == "Customer":
-				frappe.throw(_("Party Type should be Supplier in Child table when Payment Type is Payment"))
-			elif self.payment_type == "Receive" and a.party_type == "Supplier":
-				frappe.throw(_("Party Type should be Customer in Child Table when Payment Type is Receive"))
-			if self.tds_percent and self.tds_percent > 0:
-				a.tds_amount = flt(a.taxable_amount) * flt(self.tds_percent) / 100
-			else:
-				a.tds_amount = 0.00
+				if self.payment_type == "Payment" and a.party_type == "Customer":
+					frappe.throw(_("Party Type should be Supplier in Child table when Payment Type is Payment"))
+				elif self.payment_type == "Receive" and a.party_type == "Supplier":
+					frappe.throw(_("Party Type should be Customer in Child Table when Payment Type is Receive"))
+				if self.tds_percent and self.tds_percent > 0:
+					a.tds_amount = flt(a.taxable_amount) * flt(self.tds_percent) / 100
+				else:
+					a.tds_amount = 0.00
 
-			a.net_amount = flt(a.amount) - flt(a.tds_amount)
-			tds_amt += flt(a.tds_amount)
-			gross_amt += flt(a.amount)
-			net_amt += flt(a.net_amount)
-			taxable_amt += flt(a.taxable_amount)
+				a.net_amount = flt(a.amount) - flt(a.tds_amount)
+				tds_amt += flt(a.tds_amount)
+				gross_amt += flt(a.amount)
+				net_amt += flt(a.net_amount)
+				taxable_amt += flt(a.taxable_amount)
+		else:
+			for a in self.multiple_account:
+				gross_amt += flt(a.amount)
+				
+			taxable_amt = gross_amt
+		
+			if self.tds_percent:
+				tds_amt = flt(self.tds_percent) * flt(taxable_amt) / 100
+
+			net_amt = flt(gross_amt) - flt(tds_amt)
 
 		self.tds_amount = tds_amt
 		self.gross_amount = gross_amt
+		self.amount = gross_amt
 		self.net_amount = net_amt
 		self.taxable_amount = taxable_amt
 		
 	##
-        # Update the Committedd Budget for checking budget availability
-        ##
-        def consume_budget(self):
-                if self.payment_type == "Payment":
-                        bud_obj = frappe.get_doc({
-                                "doctype": "Committed Budget",
-                                "account": self.debit_account,
-                                "cost_center": self.cost_center,
-                                "po_no": self.name,
-                                "po_date": self.posting_date,
-                                "amount": self.amount,
-                                "poi_name": self.name,
-                                "date": frappe.utils.nowdate()
-                                })
-                        bud_obj.flags.ignore_permissions = 1
-                        bud_obj.submit()
-
-                        consume = frappe.get_doc({
-                                "doctype": "Consumed Budget",
-                                "account": self.debit_account,
-                                "cost_center": self.cost_center,
-                                "po_no": self.name,
-                                "po_date": self.posting_date,
-                                "amount": self.amount,
-                                "pii_name": self.name,
-                                "com_ref": bud_obj.name,
-                                "date": frappe.utils.nowdate()})
-                        consume.flags.ignore_permissions=1
-                        consume.submit()
-
-
-
+	# Update the Committedd Budget for checking budget availability
 	##
-        # Cancel budget check entry
-        ##
-        def cancel_budget_entry(self):
-                frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
-                frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
+	def consume_budget(self):
+		if self.payment_type == "Payment":
+			if not self.single_party_multiple_payments:
+				bud_obj = frappe.get_doc({
+						"doctype": "Committed Budget",
+						"account": self.debit_account,
+						"cost_center": self.cost_center,
+						"po_no": self.name,
+						"po_date": self.posting_date,
+						"amount": self.amount,
+						"poi_name": self.name,
+						"date": frappe.utils.nowdate()
+						})
+				bud_obj.flags.ignore_permissions = 1
+				bud_obj.submit()
+
+				consume = frappe.get_doc({
+						"doctype": "Consumed Budget",
+						"account": self.debit_account,
+						"cost_center": self.cost_center,
+						"po_no": self.name,
+						"po_date": self.posting_date,
+						"amount": self.amount,
+						"pii_name": self.name,
+						"com_ref": bud_obj.name,
+						"date": frappe.utils.nowdate()})
+				consume.flags.ignore_permissions=1
+				consume.submit()
+			else:
+				for a in self.multiple_account:
+					bud_obj = frappe.get_doc({
+						"doctype": "Committed Budget",
+						"account": a.debit_account,
+						"cost_center": self.cost_center,
+						"po_no": self.name,
+						"po_date": self.posting_date,
+						"amount": a.amount,
+						"poi_name": self.name,
+						"date": frappe.utils.nowdate()
+						})
+					bud_obj.flags.ignore_permissions = 1
+					bud_obj.submit()
+
+					consume = frappe.get_doc({
+							"doctype": "Consumed Budget",
+							"account": a.debit_account,
+							"cost_center": self.cost_center,
+							"po_no": self.name,
+							"po_date": self.posting_date,
+							"amount": a.amount,
+							"pii_name": self.name,
+							"com_ref": bud_obj.name,
+							"date": frappe.utils.nowdate()})
+					consume.flags.ignore_permissions=1
+					consume.submit()
+										
+	##
+	# Cancel budget check entry
+	##
+	def cancel_budget_entry(self):
+		frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
+		frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 
 	def post_gl_entry(self):
 		gl_entries      = []
@@ -177,37 +215,72 @@ class DirectPayment(AccountsController):
 							})
 						)
 			else:
-				account_type = frappe.db.get_value("Account", self.debit_account, "account_type") or ""
-				if account_type == "Payable" or account_type == "Receivable":
-					gl_entries.append(
-						self.get_gl_dict({
-							"account": self.debit_account,
-							"debit": self.amount,
-							"debit_in_account_currency": self.amount,
-							"voucher_no": self.name,
-							"voucher_type": self.doctype,
-							"cost_center": self.cost_center,
-							'party': self.party,
-							'party_type': 'Supplier',						
-							"company": self.company,
-							"remarks": self.remarks,
-							"business_activity": self.business_activity
-							})
-						)
+				if not self.single_party_multiple_payments:
+					account_type = frappe.db.get_value("Account", self.debit_account, "account_type") or ""
+					if account_type == "Payable" or account_type == "Receivable":
+						gl_entries.append(
+							self.get_gl_dict({
+								"account": self.debit_account,
+								"debit": self.amount,
+								"debit_in_account_currency": self.amount,
+								"voucher_no": self.name,
+								"voucher_type": self.doctype,
+								"cost_center": self.cost_center,
+								'party': self.party,
+								'party_type': 'Supplier',						
+								"company": self.company,
+								"remarks": self.remarks,
+								"business_activity": self.business_activity
+								})
+							)
+					else:
+						gl_entries.append(
+							self.get_gl_dict({
+								"account": self.debit_account,
+								"debit": self.amount,
+								"debit_in_account_currency": self.amount,
+								"voucher_no": self.name,
+								"voucher_type": self.doctype,
+								"cost_center": self.cost_center,						
+								"company": self.company,
+								"remarks": self.remarks,
+								"business_activity": self.business_activity
+								})
+							)
 				else:
-					gl_entries.append(
-						self.get_gl_dict({
-							"account": self.debit_account,
-							"debit": self.amount,
-							"debit_in_account_currency": self.amount,
-							"voucher_no": self.name,
-							"voucher_type": self.doctype,
-							"cost_center": self.cost_center,						
-							"company": self.company,
-							"remarks": self.remarks,
-							"business_activity": self.business_activity
-							})
-						)
+					for a in self.multiple_account:
+						account_type = frappe.db.get_value("Account", a.debit_account, "account_type") or ""
+						if account_type == "Payable" or account_type == "Receivable":
+							gl_entries.append(
+								self.get_gl_dict({
+									"account": a.debit_account,
+									"debit": a.amount,
+									"debit_in_account_currency": a.amount,
+									"voucher_no": self.name,
+									"voucher_type": self.doctype,
+									"cost_center": self.cost_center,
+									'party': self.party,
+									'party_type': 'Supplier',						
+									"company": self.company,
+									"remarks": self.remarks,
+									"business_activity": self.business_activity
+									})
+								)
+						else:
+							gl_entries.append(
+								self.get_gl_dict({
+									"account": a.debit_account,
+									"debit": a.amount,
+									"debit_in_account_currency": a.amount,
+									"voucher_no": self.name,
+									"voucher_type": self.doctype,
+									"cost_center": self.cost_center,						
+									"company": self.company,
+									"remarks": self.remarks,
+									"business_activity": self.business_activity
+									})
+								)
+
 				if self.tds_amount > 0:
 					gl_entries.append(
 						self.get_gl_dict({
@@ -253,7 +326,7 @@ class DirectPayment(AccountsController):
 							"business_activity": self.business_activity
 							})
 						)
-			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
+			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)
 		else:
 			frappe.throw("Total Debit is not equal to Total Credit. It has to be equal")
 

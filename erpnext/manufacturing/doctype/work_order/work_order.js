@@ -586,6 +586,7 @@ erpnext.work_order = {
 		} else {
 			var max = flt(frm.doc.qty) - flt(frm.doc.produced_qty);
 		}
+		console.log("material_transferred_for_manufacturing" + frm.doc.material_transferred_for_manufacturing + "produced_qty" + frm.doc.produced_qty)
 
 		max = flt(max, precision("qty"));
 		frappe.prompt({fieldtype:"Float", label: __("Qty for {0}", [purpose]), fieldname:"qty",

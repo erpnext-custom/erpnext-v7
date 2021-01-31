@@ -59,6 +59,12 @@ def get_columns():
         '''
         
 	columns = [
+				# {
+                #         "label": "Item Sub Group Type",
+                #         "fieldtype": "Link",
+                #         "options": "Item Sub Group Type",
+				# 		"width" : "150"
+                # },
                 {
                         "label": "Material Code",
                         "fieldtype": "Link",
@@ -141,7 +147,8 @@ def get_columns():
                         "width": 100
                 },
 		_("MAP")+":Float:90",
-		_("Company")+":Link/Company:100"
+		_("Company")+":Link/Company:100",
+		_("Item Sub Group Type") + ":Link/Item Sub Group Type:150"
 	]
 
 	return columns
@@ -179,11 +186,21 @@ def get_conditions(filters):
 
 def get_stock_ledger_entries(filters):
 	conditions = get_conditions(filters)
-	return frappe.db.sql("""select item_code, warehouse, posting_date, actual_qty, valuation_rate,
-			company, voucher_type, qty_after_transaction, stock_value_difference
+	# return frappe.db.sql("""select item_code, warehouse, posting_date, actual_qty, valuation_rate,
+	# 		company, voucher_type, qty_after_transaction, stock_value_difference
+	# 	from `tabStock Ledger Entry` force index (posting_sort_index)
+	# 	where docstatus < 2 %s order by posting_date, posting_time, name""" %
+	# 	conditions, as_dict=1)
+	###########code edited by cheten on 13/10/2020##############################################
+	return frappe.db.sql("""select `tabStock Ledger Entry`.item_code, `tabStock Ledger Entry`.warehouse, `tabStock Ledger Entry`.posting_date, 
+			`tabStock Ledger Entry`.actual_qty, `tabStock Ledger Entry`.valuation_rate,
+			`tabStock Ledger Entry`.company,i.item_sub_group_type, `tabStock Ledger Entry`.voucher_type, `tabStock Ledger Entry`.qty_after_transaction, 
+			`tabStock Ledger Entry`.stock_value_difference
 		from `tabStock Ledger Entry` force index (posting_sort_index)
-		where docstatus < 2 %s order by posting_date, posting_time, name""" %
+		left join `tabItem` i on `tabStock Ledger Entry`.item_code=i.name
+		where `tabStock Ledger Entry`.docstatus < 2 %s order by `tabStock Ledger Entry`.posting_date, `tabStock Ledger Entry`.posting_time, `tabStock Ledger Entry`.name""" %
 		conditions, as_dict=1)
+
 
 def get_item_warehouse_map(filters):
 	iwb_map = {}
