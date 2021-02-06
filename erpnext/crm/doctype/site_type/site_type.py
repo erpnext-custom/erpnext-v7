@@ -12,6 +12,21 @@ class SiteType(Document):
 	def validate(self):
 		self.validate_payment_type()
 		self.set_default()
+		self.validate_advance_settings()
+
+	# following method created by SHIV on 2020/12/30 to accommodate Phase-II
+	# advance payment settings are moved to newly created child table
+	def validate_advance_settings(self):
+		for row in self.get("advances"):
+			if cint(row.advance_required) and flt(row.advance_percent) <= 0:
+				frappe.throw(_("Row#{}: Advance Percentage should be more than 0 under Advance Pay Settings").format(row.idx))
+			elif cint(row.advance_required) and not row.product_category:
+				frappe.throw(_("Row#{}: Product Category is mandatory under Advance Pay Settings").format(row.idx))
+			elif cint(row.advance_required) and not row.product_group:
+				if frappe.db.sql("""select count(*) as count from `tabProduct Category Item`
+					where parent = "{}" and product_group is not null
+					""".format(row.product_category))[0][0]:
+					frappe.throw(_("Row#{}: Product Group is mandatory under Advance Pay Settings").format(row.idx))
 
 	def set_default(self):
 		msg = ""
