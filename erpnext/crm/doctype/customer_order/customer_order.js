@@ -8,6 +8,10 @@ cur_frm.add_fetch("site","dzongkhag","dzongkhag");
 cur_frm.add_fetch("site","plot_no","plot_no");
 cur_frm.add_fetch("site","location","site_location");
 cur_frm.add_fetch("site_type","payment_required","payment_required");
+cur_frm.add_fetch("item", "item_name", "item_name");
+cur_frm.add_fetch("item", "item_sub_group", "item_sub_group");
+cur_frm.add_fetch("item", "stock_uom", "uom");
+
 frappe.ui.form.on('Customer Order', {
 	setup: function(frm){
 		frm.get_field('pool_vehicles').grid.editable_fields = [
@@ -15,39 +19,72 @@ frappe.ui.form.on('Customer Order', {
 			{fieldname: 'noof_truck_load', columns: 3},
 			{fieldname: 'quantity', columns: 3},
 		];
+		frm.get_field('sawns').grid.editable_fields = [
+			{fieldname: 'item', columns: 2},
+			{fieldname: 'size', columns: 2},
+			{fieldname: 'length', columns: 2},
+			{fieldname: 'qty', columns: 2},
+		];
 	},
 	onload: function(frm){
-		cur_frm.set_query("user",function(){
-			return {
-				"filters": [
-					["account_type", "=", "CRM"]
-				]
+		cur_frm.set_query("user", function(){
+			return{
+					"query": "erpnext.controllers.queries.get_crm_users"
 			}
 		});
-
+	
 		cur_frm.set_query("site", function(){
 			return {
 				"filters": [
 					["user", "=", frm.doc.user],
 					["enabled", "=", "1"],
+					["product_category", "=", frm.doc.product_category]
 				]
 			}
 		});
+		
+		cur_frm.set_query("lot_allotment_no",function(){
+			return{
+				"filters": [
+					["customer_id", "=", frm.doc.user],
+					["docstatus", "=", "1"],
+					["site", "=", frm.doc.site ]
+				]
+			}
+		})
+		
+		cur_frm.fields_dict.item_type.get_query = function() {
+			return {
+				"query": "erpnext.crm_utils.get_item_types_query",
+				filters: {
+					'product_category': frm.doc.product_category,
+				}
+			}
+		}
+
 		cur_frm.fields_dict.item.get_query = function() {
 			return {
 				"query": "erpnext.crm_utils.get_site_items",
-				filters: {'site': frm.doc.site}
+				filters: {
+					'product_category': frm.doc.product_category,
+					'item_type': frm.doc.item_type,
+					'site': frm.doc.site}
 			}
 		}
+
 		cur_frm.fields_dict.branch.get_query = function() {
 			return {
 				"query": "erpnext.crm_utils.get_branch_rate_query",
 				filters: {
 					'site': frm.doc.site,
-					'item': frm.doc.item
+					'item': frm.doc.item,
+					'product_group': frm.doc.product_group,
+					'destination_dzongkhag': frm.doc.destination_dzongkhag,
+					'product_category': frm.doc.product_category 
 				}
 			}
 		}
+
 		cur_frm.fields_dict.location.get_query = function() {
 			return {
 				"query": "erpnext.crm_utils.get_branch_location_query",
@@ -57,15 +94,7 @@ frappe.ui.form.on('Customer Order', {
 				}
 			}
 		}
-		/*
-		frm.fields_dict['vehicles'].grid.get_field('vehicle').get_query = function(){
-			return{
-				filters: {
-					'user': frm.doc.user,
-				}
-			}
-		};
-		*/
+	
 		frm.fields_dict['pool_vehicles'].grid.get_field('vehicle_capacity').get_query = function(){
 			return{
 				filters: {
@@ -73,6 +102,7 @@ frappe.ui.form.on('Customer Order', {
 				}
 			}
 		};
+		
 		frm.fields_dict['vehicles'].grid.get_field('vehicle').get_query = function(){
 			return{
 				"query": "erpnext.crm_utils.get_vehicles_query",
@@ -83,30 +113,93 @@ frappe.ui.form.on('Customer Order', {
 				}
 			}
 		};
+		
+		cur_frm.fields_dict.product_group.get_query = function() {
+			return {
+				"query": "erpnext.crm_utils.get_product_groups_query",
+				filters: {
+					'product_category': frm.doc.product_category
+				}
+			}
+		};
 	},
+
 	refresh: function(frm) {
-		apply_local_settings(frm);
+		// apply_local_settings(frm);
 		custom.apply_default_settings(frm);
 		add_custom_buttons(frm);
-		set_transport_mode(frm);
-		get_branch_location(frm);
 		get_user_details(frm,'refresh');
+
+		if(cur_frm.doc.selection_based_on!="Lot" && cur_frm.doc.selection_based_on!="Measurement"){
+			set_transport_mode(frm);
+			get_branch_location(frm);
+		}
+
+		if(cur_frm.doc.selection_based_on)
+		{
+			check_selection_based_on(frm,cur_frm.doc.selection_based_on,1)
+		}
+		check_product_group(frm);
+		apply_product_category_settings(frm);
 	},
+
 	user: function(frm){
 		cur_frm.set_value("site", null);
 		get_user_details(frm,'update');
 	},
+
+
+	product_category: function(frm){
+		cur_frm.set_value("site", null);
+		cur_frm.set_value("site_type", null);
+		cur_frm.set_value("item", null);
+		cur_frm.set_value("selection_based_on",null)
+		check_product_group(frm)
+		apply_product_category_settings(frm);
+		update_total_quantity(frm);
+	},
+
+	product_group: function(frm){
+		if(cur_frm.doc.product_group == ""){
+			cur_frm.set_value("selection_based_on",null)
+		}
+		check_selection_based_on(frm, cur_frm.doc.selection_based_on,0)
+	},
+
+	lot_allotment_no: function(frm){
+		if(cur_frm.doc.lot_allotment_no == ""){
+			cur_frm.set_value("lot_allotment_no",null)
+			cur_frm.set_value("branch",null)
+		}
+		if(cur_frm.doc.site != null && cur_frm.doc.lot_allotment_no != null){
+			if(cur_frm.doc.selection_based_on == "Lot"){
+			cur_frm.clear_table("lots")
+			populate_lots(frm, cur_frm.doc.lot_allotment_no);
+			}
+		}
+	},
+
 	site: function(frm){
+		if(cur_frm.doc.site == ""){
+			cur_frm.set_value("site",null)
+		}
 		cur_frm.set_value("item", null);
 		if(!frm.doc.site){
+			cur_frm.clear_table("lots")
 			cur_frm.set_value("dzongkhag", null);
 			cur_frm.set_value("plot_no", null);
 			cur_frm.set_value("site_location", null);
 			cur_frm.set_value("longitude", null);
 			cur_frm.set_value("latitude", null);
 		}
+			cur_frm.refresh_fields();
 		get_limit_details(frm);
 	},
+
+	item_type: function(frm){
+		cur_frm.set_value("item", null);
+	},
+
 	item: function(frm){
 		//get_branch_items(frm);	//NEED TO LOOK INTO THIS
 		cur_frm.set_value("branch", null);
@@ -117,18 +210,29 @@ frappe.ui.form.on('Customer Order', {
 		}
 		get_limit_details(frm);
 	},
+
 	branch: function(frm){
-		cur_frm.set_value("location", "");
-		frm.refresh_field('location');
-		get_branch_location(frm);
-		cur_frm.set_value("transport_mode", "");
-		get_branch_item(frm);
-		get_limit_details(frm);
-		set_transport_mode(frm,'update');
+		if(cur_frm.doc.selection_based_on != "Measurement" && cur_frm.doc.selection_based_on != "Lot"){
+			cur_frm.set_value("location", "");
+			frm.refresh_field('location');
+			get_branch_location(frm);
+			cur_frm.set_value("transport_mode", "");
+			if (cur_frm.doc.product_category != "Timber")
+			{
+				get_branch_item(frm);
+			}
+			get_limit_details(frm);
+			set_transport_mode(frm,'update');
+		}
+		else{
+			cur_frm.clear_table("sawns");
+		}
 	},
-	"location": function(frm){
+
+	location: function(frm){
 		get_branch_location_item(frm);
 	},
+
 	has_common_pool: function(frm){
 		/*
 		if(frm.doc.branch && !frm.doc.has_common_pool){
@@ -139,23 +243,33 @@ frappe.ui.form.on('Customer Order', {
 		}
 		*/
 	},
+
 	transport_mode: function(frm){
 		//get_distance(frm);
 		cur_frm.set_value("vehicles","");
+		apply_product_category_settings(frm);
 		update_total_quantity(frm);
 	},
+
 	vehicle_capacity: function(frm){
 		update_total_quantity(frm);
 	},
+
 	noof_truck_load: function(frm){
 		update_total_quantity(frm);
 	},
+
+	quantity: function(frm){
+		update_total_quantity(frm);
+	},
+
 	distance: function(frm, cdt, cdn){
 		update_total_quantity(frm);
 	},
+
 	place_order: function(frm){
 		create_order_and_payment(frm);
-	}
+	},
 });
 
 frappe.ui.form.on('Customer Order Vehicle', {
@@ -171,6 +285,71 @@ frappe.ui.form.on('Customer Order Vehicle', {
 	},
 });
 
+frappe.ui.form.on("Customer Order","branch", function(frm){
+	cur_frm.set_query("item", "sawns", function (frm) {
+		if(cur_frm.doc.branch == "" || cur_frm.doc.branch == null){
+			frappe.throw("Please Select Branch First")
+		}
+		else{
+        return {
+			"query":"erpnext.controllers.queries.get_sawn_items",
+            "filters": {
+				"branch":cur_frm.doc.branch
+            }
+		}
+		}
+	});
+	cur_frm.set_query("size", "sawns", function (frm, cdt, cdn) {
+		var row = locals[cdt][cdn];
+        return {
+			"query":"erpnext.controllers.queries.get_sawn_items",
+            "filters": {
+				"branch":cur_frm.doc.branch,
+				"item":row.item
+            }
+        }
+	});
+	cur_frm.set_query("length", "sawns", function (frm, cdt, cdn) {
+		var row = locals[cdt][cdn];
+        return {
+			"query":"erpnext.controllers.queries.get_sawn_items",
+            "filters": {
+				"branch":cur_frm.doc.branch,
+				"item":row.item,
+				"size":row.size
+            }
+        }
+	});
+});
+
+frappe.ui.form.on("Customer Order Sawn", {
+	length: function(frm, cdt, cdn){
+		var row = locals[cdt][cdn];
+		frappe.call({
+			method:"erpnext.crm_utils.get_sawn_timber",
+			args: {'branch':cur_frm.doc.branch, 'item':row.item, 'size':row.size, 'length':row.length},
+			callback: function(r, rt){
+				if(r.message){
+					r.message.forEach(function(v){
+						frappe.model.set_value(cdt, cdn, "price_template", v['price_template']);
+						frappe.model.set_value(cdt, cdn, "rate", v['selling_price']);
+						frappe.model.set_value(cdt, cdn, "unit_cft", v['unit_cft']);
+					});
+				}
+				refresh_field("sawns");
+			}
+		})
+	},
+	qty: function(frm, cdt, cdn){
+		var row = locals[cdt][cdn];
+		if(row.price_template != null && row.rate != null){
+			frappe.model.set_value(cdt, cdn, "amount", row.rate*row.qty*row.unit_cft.toFixed(2));
+			frappe.model.set_value(cdt, cdn, "total_cft", row.qty*row.unit_cft.toFixed(2))
+
+		}
+	}
+});
+
 frappe.ui.form.on('Customer Order Pool', {
 	noof_truck_load: function(frm, cdt, cdn){
 		var row = locals[cdt][cdn];
@@ -183,6 +362,104 @@ frappe.ui.form.on('Customer Order Pool', {
 		update_total_quantity(frm);
 	},
 });
+
+//following method created by Kinley Dorji on 2020/11/27
+var populate_lots = function(frm, lot_allotment_no){
+	if(frm.doc.docstatus == 0){
+		frappe.call({
+			method:"get_lots",
+			doc: cur_frm.doc,
+			args: {'lot_allotment_no': lot_allotment_no},
+			callback: function(r, rt){
+				if(r.message){
+					r.message.forEach(function(v){
+					var rows = frappe.model.add_child(frm.doc, "Customer Order Lots","lots");
+					rows.lot_number = v['lot_number'];
+					rows.total_volume = v['total_volume'];
+					rows.discount = v['discount'];
+					rows.additional = v['additional'];
+					rows.payable_amount = v['payable_amount'];
+					rows.pieces = v['pieces'];
+					});
+				}
+				refresh_field("lots");
+			}
+		})
+	}
+}
+//#######################################################
+
+var apply_product_category_settings = function(frm){
+	if(frm.doc.product_category){
+		frappe.call({
+			method: 'frappe.client.get_value',
+			args: {
+				doctype: 'Product Category',
+				filters: {
+					'name': frm.doc.product_category
+				},
+				fieldname: '*'
+			},
+			callback: function(r){
+				if(r.message){
+					// Toggle for Timber By Products
+					if(frm.doc.product_category == "Timber By Products"){
+						cur_frm.toggle_display(["item_type", "destination_dzongkhag"], 1);
+						cur_frm.toggle_reqd(["item_type", "destination_dzongkhag"], 1);
+					} else {
+						cur_frm.toggle_display(["item_type", "destination_dzongkhag"], 0);
+						cur_frm.toggle_reqd(["item_type", "destination_dzongkhag"], 0);
+					}
+
+					// Toggle Site
+					cur_frm.toggle_display("sb_site_details", r.message.site_required);
+					cur_frm.toggle_reqd("site", r.message.site_required);
+
+					// Toggle Transport Mode
+					cur_frm.toggle_display("transport_mode", r.message.transport_mode_required);
+					cur_frm.toggle_display("quantity", !r.message.transport_mode_required);
+					cur_frm.toggle_display("has_common_pool", r.message.transport_mode_required);
+					cur_frm.toggle_display("lead_time", r.message.transport_mode_required);
+					// cur_frm.set_value("transport_mode", "");
+					if(r.message.transport_mode_required){
+						if(frm.doc.transport_mode){
+							if(frm.doc.transport_mode == "Common Pool" || frm.doc.transport_mode == "Others"){
+								cur_frm.toggle_display("pool_vehicles", 1);
+								cur_frm.toggle_display("vehicles", 0);
+							} else {
+								cur_frm.toggle_display("pool_vehicles", 0);
+								cur_frm.toggle_display("vehicles", 1);
+							}
+						} else {
+							cur_frm.toggle_display("pool_vehicles", 0);
+							cur_frm.toggle_display("vehicles", 0);
+						}
+					} else {
+						cur_frm.toggle_display("pool_vehicles", r.message.transport_mode_required);
+						cur_frm.toggle_display("vehicles", r.message.transport_mode_required);
+					}
+					
+					cur_frm.toggle_reqd("transport_mode", r.message.transport_mode_required);
+					cur_frm.toggle_reqd("quantity", !r.message.transport_mode_required);
+				}
+			}
+		});
+	} else {
+		// Toggle for Timber By Products
+		cur_frm.toggle_display(["item_type", "destination_dzongkhag"], 0);
+		cur_frm.toggle_reqd(["item_type", "destination_dzongkhag"], 0);
+
+		// Toggle Site
+		cur_frm.toggle_display("sb_site_details", 0);
+		cur_frm.toggle_reqd("site", 0);
+
+		// Toggle Transport Mode
+		cur_frm.toggle_display("transport_mode", 1);
+		cur_frm.toggle_reqd("transport_mode", 1);
+		cur_frm.toggle_display("quantity", 0);
+		cur_frm.toggle_reqd("quantity", 0);
+	} 
+}
 
 var get_user_details = function(frm, mode){
 	if(frm.doc.user){
@@ -263,12 +540,12 @@ var create_order_and_payment = function(frm, payment_type){
 	}
 }
 
-var apply_local_settings = function(frm){
-	let pay_now = '[data-fieldname="place_order"][data-doctype="Customer Order"]';
-	$(pay_now).removeClass();
-	$(pay_now).addClass("btn btn-success btn-block");
-	$(pay_now).width("50%");
-}
+// var apply_local_settings = function(frm){
+// 	let pay_now = '[data-fieldname="place_order"][data-doctype="Customer Order"]';
+// 	$(pay_now).removeClass();
+// 	$(pay_now).addClass("btn btn-success btn-block");
+// 	$(pay_now).width("50%");
+// }
 
 var get_distance = function(frm){
 	if(frm.doc.site && frm.doc.item && frm.doc.branch){
@@ -322,7 +599,7 @@ var get_limit_details = function(frm){
 		reset_quota_details(frm);
 		frappe.call({
 			method: "erpnext.crm_utils.get_limit_details",
-			args: {"site": frm.doc.site, "branch": frm.doc.branch, "item": frm.doc.item},
+			args: {"product_category": frm.doc.product_category, "customer": frm.doc.user, "site": frm.doc.site, "branch": frm.doc.branch, "item": frm.doc.item, "selection_based_on":""},
 			callback: function(r, rt) {
 				if(r.message){
 					cur_frm.set_value("site_item_name", r.message.site_item_name);
@@ -409,27 +686,83 @@ var get_vehicles = function(frm){
 }
 */
 
+/*########## Ver.2020.11.23 Begins ##########*/
+// following method is created as a replacement for the following one by SHIV on 2020/11/23 to accommodate Phase-II
 var update_total_quantity = function(frm){
 	var tbl = ((["Common Pool", "Others"].includes(frm.doc.transport_mode))?frm.doc.pool_vehicles:frm.doc.vehicles) || [];	
 	var total_quantity = 0;
 	var total_transportation_rate = 0;
 
-	for(var i=0; i<tbl.length; i++){
-		total_quantity += flt(tbl[i].quantity);
-	}
-
-	if(["Common Pool", "Others"].includes(frm.doc.transport_mode)){
-		if(frm.doc.transport_mode=="Common Pool"){
-			total_transportation_rate = flt(frm.doc.distance)*flt(total_quantity)*flt(frm.doc.transport_rate);
+	if(frm.doc.product_category){
+		frappe.call({
+			method: 'frappe.client.get_value',
+			args: {
+				doctype: 'Product Category',
+				filters: {
+					'name': frm.doc.product_category
+				},
+				fieldname: '*'
+			},
+			callback: function(r){
+				if(r.message){
+					if(r.message.transport_mode_required){
+						for(var i=0; i<tbl.length; i++){
+							total_quantity += flt(tbl[i].quantity);
+						}
+					
+						if(["Common Pool", "Others"].includes(frm.doc.transport_mode)){
+							if(frm.doc.transport_mode=="Common Pool"){
+								total_transportation_rate = flt(frm.doc.distance)*flt(total_quantity)*flt(frm.doc.transport_rate);
+							}
+							//cur_frm.set_value("quantity", total_quantity);
+						}
+					} else {
+						total_quantity = flt(frm.doc.quantity);
+						total_transportation_rate = 0;
+					}
+				}
+				cur_frm.set_value("total_quantity", total_quantity);
+				if(cur_frm.doc.selection_based_on != "Lot")
+				{
+					cur_frm.set_value("total_item_rate", flt(total_quantity)*flt(frm.doc.item_rate));
+					cur_frm.set_value("total_transportation_rate", total_transportation_rate);
+					cur_frm.set_value("total_payable_amount", (flt(total_quantity)*flt(frm.doc.item_rate))+flt(total_transportation_rate));
+				}
+			}
+		});
+	} else {
+		cur_frm.set_value("total_quantity", total_quantity);
+		if(cur_frm.doc.selection_based_on != "Lot"){
+		cur_frm.set_value("total_item_rate", flt(total_quantity)*flt(frm.doc.item_rate));
+		cur_frm.set_value("total_transportation_rate", total_transportation_rate);
+		cur_frm.set_value("total_payable_amount", (flt(total_quantity)*flt(frm.doc.item_rate))+flt(total_transportation_rate));
 		}
-		cur_frm.set_value("quantity", total_quantity);
 	}
-	
-	cur_frm.set_value("total_quantity", total_quantity);
-	cur_frm.set_value("total_item_rate", flt(total_quantity)*flt(frm.doc.item_rate));
-	cur_frm.set_value("total_transportation_rate", total_transportation_rate);
-	cur_frm.set_value("total_payable_amount", (flt(total_quantity)*flt(frm.doc.item_rate))+flt(total_transportation_rate));
 }
+
+// following method is replaced with the above one by SHIV on 2020/11/23 to accommodate Phase-II
+// var update_total_quantity = function(frm){
+// 	var tbl = ((["Common Pool", "Others"].includes(frm.doc.transport_mode))?frm.doc.pool_vehicles:frm.doc.vehicles) || [];	
+// 	var total_quantity = 0;
+// 	var total_transportation_rate = 0;
+
+// 	for(var i=0; i<tbl.length; i++){
+// 		total_quantity += flt(tbl[i].quantity);
+// 	}
+
+// 	if(["Common Pool", "Others"].includes(frm.doc.transport_mode)){
+// 		if(frm.doc.transport_mode=="Common Pool"){
+// 			total_transportation_rate = flt(frm.doc.distance)*flt(total_quantity)*flt(frm.doc.transport_rate);
+// 		}
+// 		cur_frm.set_value("quantity", total_quantity);
+// 	}
+	
+// 	cur_frm.set_value("total_quantity", total_quantity);
+// 	cur_frm.set_value("total_item_rate", flt(total_quantity)*flt(frm.doc.item_rate));
+// 	cur_frm.set_value("total_transportation_rate", total_transportation_rate);
+// 	cur_frm.set_value("total_payable_amount", (flt(total_quantity)*flt(frm.doc.item_rate))+flt(total_transportation_rate));
+// }
+/*########## Ver.2020.11.23 Ends ##########*/
 
 var cleanup_branch = function(frm){
 	cur_frm.set_value("has_common_pool", null);
@@ -449,11 +782,11 @@ var cleanup_location = function(frm){
 var set_transport_mode = function(frm,action='refresh'){
 	var options = [];
 
-	if(frm.doc.docstatus==0 && frm.doc.branch && frm.doc.site){
+	if(frm.doc.docstatus==0 && frm.doc.branch && (frm.doc.site || frm.doc.product_category)){
 		cur_frm.set_df_property("transport_mode", "read_only", 0);
 		frappe.call({
 			method: "erpnext.crm_utils.get_transport_mode",
-			args: {"site": frm.doc.site, "branch": frm.doc.branch},
+			args: {"site": frm.doc.site, "branch": frm.doc.branch, "product_category": frm.doc.product_category},
 			callback: function(r){
 				if(r.message){
 					r.message.forEach(function(m){
@@ -497,7 +830,7 @@ var get_branch_location = function(frm){
 		frm.set_df_property("location", "options", []);
 		frappe.call({
 			method: "erpnext.crm_utils.get_branch_location",
-			args: {"site": frm.doc.site, "branch": frm.doc.branch, "item": frm.doc.item},
+			args: {"site": frm.doc.site || null, "branch": frm.doc.branch, "item": frm.doc.item},
 			callback: function(r, rt) {
 				set_branch_location(frm, r);
 			},
@@ -520,7 +853,6 @@ var get_branch_location_item = function(frm){
 						cur_frm.set_value("selling_price", r.message[0].selling_price);
 						cur_frm.set_value("item_rate", r.message[0].item_rate);
 					} else {
-						console.log('Multiple rates found');
 						cleanup_location(frm);
 					}
 				} else {
@@ -535,6 +867,9 @@ var get_branch_location_item = function(frm){
 	}
 }
 
+/*########## Ver.2020.11.19 Begins ##########*/
+// following code is no longer required, commented by SHIV on 2020/11/19 
+/*
 var get_branch_location_old = function(frm){
 	cur_frm.set_df_property("location", "read_only", 0);
 	cur_frm.toggle_reqd("location", 1);
@@ -567,6 +902,8 @@ var get_branch_location_old = function(frm){
 		update_total_quantity(frm);
 	}
 }
+*/
+/*########## Ver.2020.11.19 Ends ##########*/
 
 var get_branch_item = function(frm){
 	if(frm.doc.branch && frm.doc.item){
@@ -700,7 +1037,9 @@ var add_custom_buttons = function(frm){
 	}).addClass("btn-warning");
 	*/
 
-	if(!frm.doc.__islocal && flt(frm.doc.total_balance_amount) > 0 && frm.doc.docstatus != 2){
+	// following if condition is replaced by SHIV on 2020/11/23 to accommodate Phase-II
+	//if(!frm.doc.__islocal && flt(frm.doc.total_balance_amount) > 0 && frm.doc.docstatus != 2){
+	if(!frm.doc.__islocal && frm.doc.site && flt(frm.doc.total_balance_amount) > 0 && frm.doc.docstatus != 2){
 		frappe.call({
 			method: 'frappe.client.get_value',
 			args: {
@@ -725,3 +1064,187 @@ var add_custom_buttons = function(frm){
 		});
 	}
 }
+
+var check_product_group = function(frm){
+	if(frm.doc.product_category){
+		frappe.call({
+			method:"erpnext.crm_utils.get_product_groups",
+			args:{
+				"product_category":frm.doc.product_category
+			},
+			callback: function(r){
+				if(r.message){
+					cur_frm.toggle_display("product_group",1);
+					cur_frm.toggle_reqd("product_group",1);
+					cur_frm.toggle_display("selection_based_on",1);
+				}
+				else{
+					clear_fields();
+				}
+			}
+		});
+	}
+	else{
+		clear_fields();
+	}
+	cur_frm.refresh_fields()
+}
+var clear_fields = function(){
+	cur_frm.set_value("product_group",null);
+	cur_frm.set_value("selection_based_on",null);
+	cur_frm.set_value("challan_cost",null);
+	cur_frm.set_value("lot_allotment_no",null);
+	cur_frm.toggle_reqd("product_group",0);
+	cur_frm.toggle_display("product_group",0);
+	cur_frm.toggle_display("selection_based_on",0);
+	cur_frm.toggle_display("challan_cost",0);
+	cur_frm.toggle_display("lot_allotment_no",0);
+	cur_frm.clear_table("lots");
+ }
+
+ var check_selection_based_on = function(frm, selection_based_on, refresh){
+	if(selection_based_on == "Item"){
+		cur_frm.clear_table("lots");
+		cur_frm.clear_table("sawns");
+		cur_frm.toggle_display("section_break_lots",0);
+		cur_frm.toggle_reqd("item",1);
+		cur_frm.toggle_reqd("branch",1);
+		cur_frm.toggle_reqd("location",1);
+		cur_frm.toggle_reqd("lot_allotment_no",0);
+		cur_frm.toggle_reqd("transport_mode",1);
+		cur_frm.toggle_display("transport_mode",1);
+		cur_frm.toggle_display("total_quantity",1);
+		cur_frm.toggle_display("total_item_rate",1);
+		cur_frm.set_value("challan_cost",null);
+		cur_frm.toggle_display("lot_allotment_no",null);
+		cur_frm.toggle_display("challan_cost",0);
+		cur_frm.toggle_display("lot_allotment_no",0);
+		cur_frm.toggle_display("sb_sawn",0);
+		apply_product_category_settings(frm);
+		cur_frm.refresh_fields();
+	}
+	else if(selection_based_on == "Lot"){
+		cur_frm.toggle_reqd("item",0);
+		cur_frm.toggle_reqd("branch",0);
+		cur_frm.toggle_reqd("location",0);
+		cur_frm.toggle_reqd("transport_mode",0);
+		cur_frm.toggle_reqd("lot_allotment_no",1);
+		if(refresh==0){
+		cur_frm.set_value("transport_mode",null);
+		cur_frm.set_value("vehicle_capacity",null);
+		cur_frm.set_value("noof_truck_load",null);
+		cur_frm.set_value("total_item_rate",null);
+		cur_frm.set_value("total_transportation_rate",null);
+		cur_frm.set_value("item",null);
+		cur_frm.set_value("item_name",null);
+		cur_frm.set_value("item_sub_group",null);
+		cur_frm.set_value("uom",null);
+		cur_frm.set_value("site_item_name",null);
+		cur_frm.set_value("location",null);
+		cur_frm.set_value("has_common_pool",null);
+		cur_frm.set_value("item_rate",null);
+		cur_frm.set_value("has_common_pool",null);
+		cur_frm.set_value("lead_time",null);
+		cur_frm.set_value("transport_rate",null);
+		cur_frm.set_value("distance",null);
+		cur_frm.set_value("challan_cost",null);
+		}
+		cur_frm.clear_table("vehicles");
+		cur_frm.clear_table("pool_vehicles");
+		cur_frm.clear_table("sources");
+		cur_frm.clear_table("sawns");
+		cur_frm.toggle_display("item",0);
+		cur_frm.toggle_display("item_name",0);
+		cur_frm.toggle_display("item_sub_group",0);
+		cur_frm.toggle_display("uom",0);
+		cur_frm.toggle_display("site_item_name",0);
+		cur_frm.toggle_display("has_common_pool",0);
+		cur_frm.toggle_display("location",0);
+		cur_frm.toggle_display("item_rate",0);
+		cur_frm.toggle_display("lead_time",0);
+		cur_frm.toggle_display("transport_rate",0);
+		cur_frm.toggle_display("distance",0);
+		cur_frm.toggle_display("sources",0);
+		cur_frm.toggle_display("transport_mode",0);
+		cur_frm.toggle_display("vehicle_capacity",0);
+		cur_frm.toggle_display("noof_truck_load",0);
+		cur_frm.toggle_display("total_item_rate",0);
+		cur_frm.toggle_display("sb_sawn",0);
+		cur_frm.toggle_display("total_transportation_rate",0);
+		cur_frm.toggle_display("section_break_lots",1);
+		cur_frm.toggle_display("challan_cost",1);
+		cur_frm.toggle_display("lot_allotment_no",1);
+		cur_frm.toggle_display("challan_cost",1);
+		if(cur_frm.doc.lot_allotment_no && refresh == 0){
+			populate_lots(frm, cur_frm.doc.lot_allotment_no)
+		}
+		else{
+			cur_frm.refresh_fields();
+		}
+	}
+	else if(selection_based_on == "Measurement"){
+		cur_frm.toggle_reqd("item",0);
+		cur_frm.toggle_reqd("location",0);
+		cur_frm.toggle_reqd("transport_mode",0);
+		cur_frm.toggle_reqd("lot_allotment_no",0);
+		cur_frm.toggle_reqd("quantity",0);
+		if(refresh==0){
+		cur_frm.set_value("transport_mode",null);
+		cur_frm.set_value("vehicle_capacity",null);
+		cur_frm.set_value("noof_truck_load",null);
+		cur_frm.set_value("total_item_rate",null);
+		cur_frm.set_value("total_transportation_rate",null);
+		cur_frm.set_value("item",null);
+		cur_frm.set_value("item_name",null);
+		cur_frm.set_value("item_sub_group",null);
+		cur_frm.set_value("uom",null);
+		cur_frm.set_value("site_item_name",null);
+		cur_frm.set_value("location",null);
+		cur_frm.set_value("has_common_pool",null);
+		cur_frm.set_value("item_rate",null);
+		cur_frm.set_value("has_common_pool",null);
+		cur_frm.set_value("lead_time",null);
+		cur_frm.set_value("transport_rate",null);
+		cur_frm.set_value("distance",null);
+		}
+		cur_frm.clear_table("vehicles");
+		cur_frm.clear_table("pool_vehicles");
+		cur_frm.clear_table("sources");
+		cur_frm.toggle_display("item",0);
+		cur_frm.toggle_display("item_name",0);
+		cur_frm.toggle_display("item_sub_group",0);
+		cur_frm.toggle_display("item_rate",0);
+		cur_frm.toggle_display("uom",0);
+		cur_frm.toggle_display("location",0);
+		cur_frm.toggle_display("transport_mode",0);
+		cur_frm.toggle_display("vehicle_capacity",0);
+		cur_frm.toggle_display("noof_truck_load",0);
+		cur_frm.toggle_display("total_item_rate",0);		
+		cur_frm.toggle_display("total_transportation_rate",0);
+		cur_frm.toggle_display("sb_sawn",1);
+		cur_frm.toggle_display("section_break_lots",1);
+		cur_frm.toggle_display("challan_cost",0);
+		cur_frm.toggle_display("lot_allotment_no",);
+		cur_frm.refresh_fields();
+	}
+	else{
+		cur_frm.clear_table("lots");
+		cur_frm.clear_table("sawns");
+		cur_frm.toggle_display("section_break_lots",0);
+		cur_frm.toggle_display("sb_sawn",0);
+		cur_frm.toggle_reqd("item",1);
+		cur_frm.toggle_reqd("branch",1);
+		cur_frm.toggle_reqd("location",1);
+		cur_frm.toggle_reqd("lot_allotment_no",0);
+		cur_frm.toggle_reqd("transport_mode",1);
+		cur_frm.toggle_display("transport_mode",1);
+		cur_frm.toggle_display("total_quantity",1);
+		cur_frm.toggle_display("total_item_rate",1);
+		cur_frm.set_value("lot_allotment_no",null);
+		cur_frm.set_value("challan_cost",null);
+		cur_frm.toggle_display("lot_allotment_no",0);
+		cur_frm.toggle_display("challan_cost",0);
+		apply_product_category_settings(frm);
+		cur_frm.refresh_fields();
+	}
+ }

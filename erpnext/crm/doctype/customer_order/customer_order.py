@@ -15,9 +15,16 @@ class CustomerOrder(Document):
 	def validate(self):
 		self.check_for_duplicates()
 		self.get_site_details()
-		self.get_item_details()
-		self.update_item_rate()
-		self.validate_transportation()
+
+		if self.selection_based_on == "Lot":
+			self.validate_lot_allotment()
+		elif self.selection_based_on == "Measurement":
+			self.validate_sawn_timber()
+		else:
+			self.get_item_details()
+			self.update_item_rate()
+			self.validate_transportation()
+			
 		self.update_payable_amount()
 		self.validate_quantity_limits()
 		self.update_user_details()
@@ -27,6 +34,8 @@ class CustomerOrder(Document):
 
 	def on_submit(self):
 		self.update_site()
+		if self.selection_based_on == "Measurement":
+			self.update_sawn_balance()
 		self.make_sales_order()
 		self.sendsms()
 
@@ -34,9 +43,18 @@ class CustomerOrder(Document):
 		self.update_site()
 
 	def check_for_duplicates(self):
-		if frappe.db.sql("""select count(*) from `tabCustomer Order` where user = "{}" and site = "{}" 
-			and docstatus = 0 and name != "{}" """.format(self.user, self.site, self.name))[0][0]:
-			frappe.throw(_("New orders not allowed as you already have unpaid order(s). Please complete the payment/cancel the previous order(s)"))
+		frappe.errprint("check_for_duplicates")
+		# following 4 lines commented by SHIV on 2020/12/29 to allow multiple orders in Draft, needs to be uncommented
+		# if self.site:
+		# 	if frappe.db.sql("""select count(*) from `tabCustomer Order` where user = "{}" and site = "{}" 
+		# 		and docstatus = 0 and name != "{}" """.format(self.user, self.site, self.name))[0][0]:
+		# 		frappe.throw(_("New orders not allowed as you already have unpaid order(s). Please complete the payment/cancel the previous order(s)"))
+		
+		#Please change after demo
+		# else:
+		# 	if frappe.db.sql("""select count(*) from `tabCustomer Order` where user = "{}"
+		# 		and docstatus = 0 and name != "{}" """.format(self.user, self.name))[0][0]:
+		# 		frappe.throw(_("New orders not allowed as you already have unpaid order(s). Please complete the payment/cancel the previous order(s)"))
 
 	def update_user_details(self):
 		if frappe.db.exists("User Account", self.user):
@@ -58,21 +76,40 @@ class CustomerOrder(Document):
 		if self.bank_code and self.bank_account:
 			init_payment(self.name, self.bank_code, self.bank_account, flt(self.total_balance_amount))
 
+	#to fetch the challan cost from lot allotment Kinley Dorji 2020/11/30
+	def validate_lot_allotment(self):
+		challan_cost = 0
+		for i in self.lots:
+			c = frappe.db.get_value("Lot Allotment",self.lot_allotment_no,"challan_cost")
+			if c != 0:
+				challan_cost = c
+		self.challan_cost = challan_cost
+		self.branch = frappe.db.get_value("Lot Allotment",self.lot_allotment_no,"branch")
+	
+	def validate_sawn_timber(self):
+		entries = []
+		for d in self.sawns:
+			entries.append(str(d.item)+str(d.size)+str(d.length))
+		n_dup = set(entries)
+		
+		if len(entries) != len(n_dup):
+			frappe.throw("There cannot be duplicate sawn timber with same measurements"+str(entries))		
+
 	def validate_quantity_limits(self):
 		# quantity validations
 		if not flt(self.total_quantity):
-			frappe.throw(_("Total Quantity cannot be empty"))
+			frappe.throw(_("Total Quantity cannot be empty "+str(self.total_quantity)))
 
-		self.site_item_name 	= None
+		self.site_item_name = None
 		self.total_available_quantity = None
-		limits 			= get_limit_details(self.site, self.branch, self.item)
+		limits = get_limit_details(self.product_category, self.user, self.site, self.branch, self.item, self.selection_based_on)
 		if limits:
+			frappe.errprint("limits"+str(limits))
 			self.site_item_name = limits.site_item_name
-			self.total_available_quantity = flt(limits.total_available_quantity)
+			self.total_available_quantity = flt(limits.total_available_quantity) if flt(limits.total_available_quantity) >= 0 else flt(self.total_quantity)
 		if flt(self.total_quantity) > flt(self.total_available_quantity):
 			frappe.throw(_("You have crossed your overall quota by quantity {0} {1}")\
 				.format(flt(self.total_quantity)-flt(self.total_available_quantity), self.uom),title="Insufficient Balance")
-
 		if 'has_limit' in limits:
 			limits 		= limits.has_limit
 			self.order_limit_type = limits.limit_type
@@ -163,12 +200,19 @@ class CustomerOrder(Document):
 		self.uom		= item.stock_uom
 		
 		self.total_available_quantity = 0
-		if frappe.db.exists("Site Item", {"parent": self.site, "item_sub_group": self.item_sub_group}):
-			doc = frappe.get_doc("Site Item", {"parent": self.site, "item_sub_group": self.item_sub_group})
-			self.site_item_name     = doc.name
-			self.total_available_quantity = flt(doc.balance_quantity)
-		else:
-			frappe.throw(_("Material {0} not found under Site").format(self.item_sub_group))
+
+		# if condition is added on the existing block of code by SHIV on 2020/11/19
+		if self.site and frappe.db.exists('Product Category', {'name': self.product_category, 'site_required': 1}):
+			# following line is replanced with subsequent one to accommodate Phase-II by SHIV on 2020/11/19
+			#if frappe.db.exists("Site Item", {"parent": self.site, "item_sub_group": self.item_sub_group}):
+			if frappe.db.exists("Site Item", {"parent": self.site, "product_category": self.product_category}):
+				# following line is replaced with subsequent one to accommodate Phase-II by SHIV on 2020/11/19
+				#doc = frappe.get_doc("Site Item", {"parent": self.site, "item_sub_group": self.item_sub_group})
+				doc = frappe.get_doc("Site Item", {"parent": self.site, "product_category": self.product_category})
+				self.site_item_name     = doc.name
+				self.total_available_quantity = flt(doc.balance_quantity)
+			else:
+				frappe.throw(_("Material {0} not found under Site").format(self.item_sub_group))
 
 	def update_site(self):
 		""" update Site Item quantity """
@@ -177,7 +221,16 @@ class CustomerOrder(Document):
 		#elif self.approval_status == "Pending":
 		#	frappe.throw(_("Request cannot be submitted in <b>Pending</b> status"))
 	
-		doc = frappe.get_doc("Site Item", {"parent": self.site, "item_sub_group": self.item_sub_group})
+		# following condition is added by SHIV on 2020/11/23 to accommodate Phase-II
+		# do not update Site for product categories which do not require site
+		if self.site:
+			pass
+		elif not frappe.db.exists('Product Category', {'name': self.product_category, 'site_required': 1}):
+			return
+
+		# following line is replaced with subsequent one to accommodate Phase-II by SHIV on 2020/11/20
+		#doc = frappe.get_doc("Site Item", {"parent": self.site, "item_sub_group": self.item_sub_group})
+		doc = frappe.get_doc("Site Item", {"parent": self.site, "product_category": self.product_category})
 		total_quantity = -1*flt(self.total_quantity) if self.docstatus == 2 else flt(self.total_quantity)
 		doc.ordered_quantity = flt(doc.ordered_quantity) + flt(total_quantity)
 		doc.balance_quantity = flt(doc.expected_quantity) + flt(doc.extended_quantity) - flt(doc.ordered_quantity)
@@ -190,7 +243,42 @@ class CustomerOrder(Document):
 			co.balance_quantity = flt(doc.balance_quantity)
 			co.save(ignore_permissions=True)
 		'''
-
+#Method to update sawn balance in Standard Sawn Balance doctype by creating new record //Kinley Dorji 2021/01/16
+	def update_sawn_balance(self):
+		for i in self.sawns:
+			doc = frappe.db.sql("select balance_qty, balance_cft, qty, unit_cft, total_cft from `tabStandard Sawn Balance` where branch = '{}' and item = {} and size = '{}' and length = '{}' and docstatus = 1 order by posting_date desc limit 1".format(self.branch, i.item, i.size, i.length),as_dict=True)
+			if not doc:
+				frappe.throw("No Balance For Item "+frappe.db.get_value("Item",i.item,"item_name"))
+			total_qty = -1*flt(i.qty) if self.docstatus == 1 else flt(i.qty)
+			total_cft = -1*flt(i.total_cft) if self.docstatus == 1 else flt(i.total_cft)
+			balance_qty = 0
+			balance_cft = 0
+			unit_cft = None
+			qty = 0
+			total_cft = 0
+			for d in doc:
+				if d.balance_qty == 0:
+					frappe.throw("No Balance For Item "+frappe.db.get_value("Item",i.item,"item_name"))
+				else:
+					balance_qty = flt(d.balance_qty) + flt(total_qty)
+					balance_cft = flt(d.balance_cft) + flt(total_cft)
+					qty = d.qty
+					unit_cft = flt(d.unit_cft)
+					total_cft = flt(d.total_cft)
+			n_doc = frappe.new_doc('Standard Sawn Balance')
+			n_doc.branch = self.branch
+			n_doc.item = i.item
+			n_doc.item_name = frappe.get_value("Item",i.item,"item_name")
+			n_doc.size = i.size
+			n_doc.length = i.length
+			n_doc.balance_qty = balance_qty
+			n_doc.balance_cft = balance_cft
+			n_doc.qty = qty
+			n_doc.unit_cft = unit_cft
+			n_doc.total_cft = total_cft
+			n_doc.save(ignore_permissions=True)
+			n_doc.submit()
+			
 	def update_distance(self):
 		distance = 0
 		if self.transport_mode == "Common Pool":
@@ -200,21 +288,29 @@ class CustomerOrder(Document):
 				frappe.throw(_("Distance not available between {0} and site location").format(self.branch))
 
 	def make_sales_order(self):
-		if frappe.db.exists("Site Type", {"name": self.site_type, "payment_required": 1}) \
-			and not frappe.db.exists("Customer Payment", {"customer_order": self.name, "docstatus": 1}):
-			frappe.throw(_("You need to make payment first to place the order"))
-
-		item = frappe.get_doc("Item", self.item)
-		wh = frappe.db.get_value("CRM Branch Setting", {"branch": self.branch}, "default_warehouse")
-		if not wh:
-			frappe.throw(_("Default warehouse is not linked for the branch {0}").format(self.branch))
-
-		if frappe.db.exists("Business Activity", item.item_sub_group):
-			business_activity = item.item_sub_group
+		if self.selection_based_on != "Measurement":
+			if frappe.db.exists("Site Type", {"name": self.site_type, "payment_required": 1}) \
+				and not frappe.db.exists("Customer Payment", {"customer_order": self.name, "docstatus": 1}):
+				frappe.throw(_("You need to make payment first to place the order"))
+		if self.selection_based_on == "Lot":
+			lot_items = []
+		elif self.selection_based_on == "Measurement":
+			sawn_items = []
 		else:
-			business_activity = frappe.db.get_value("Business Activity", {"is_default": 1})
-
-		doc = frappe.get_doc({
+			item = frappe.get_doc("Item", self.item)
+		
+		if self.selection_based_on != "Lot": 
+			wh = frappe.db.get_value("CRM Branch Setting", {"branch": self.branch}, "default_warehouse")
+			if not wh:
+				frappe.throw(_("Default warehouse is not linked for the branch {0}").format(self.branch))
+		if not(self.selection_based_on == "Lot" or self.selection_based_on == "Measurement"):
+			if frappe.db.exists("Business Activity", item.item_sub_group):
+				business_activity = item.item_sub_group
+			else:
+				business_activity = frappe.db.get_value("Business Activity", {"is_default": 1})
+		
+		if self.selection_based_on != "Lot" and self.selection_based_on != "Measurement":
+			doc = frappe.get_doc({
 				"doctype": "Sales Order",
 				"branch": self.branch,
 				"site": self.site,
@@ -244,20 +340,139 @@ class CustomerOrder(Document):
 					"business_activity": business_activity
 				}]
 			})
-		doc.save(ignore_permissions=True)
-		doc.submit()
+			doc.save(ignore_permissions=True)
+			doc.submit()
+		elif self.selection_based_on == "Lot":
+			discount = additional = 0
+			for i in self.lots:
+				if i.discount != None:
+					discount += i.discount
+				if i.additional != None:
+					additional += i.additional
+				lot_list = frappe.db.sql("""
+					select a.item, a.item_name, a.lot_number, c.warehouse, a.total_volume, a.total_pieces,
+					a.price_list_rate, a.rate, a.amount, a.price_template from
+					`tabLot Allotment Details` a, `tabLot Allotment` b, `tabLot List` c
+					where b.name = a.parent and b.name = '{}' and
+					a.lot_number = '{}' and a.lot_number = c.name and b.docstatus = 1
+				""".format(self.lot_allotment_no, i.lot_number), as_dict=True)
+				for a in lot_list:
+					item_l = frappe.get_doc("Item", a.item)
+					if frappe.db.exists("Business Activity", item_l.item_sub_group):
+						business_activity_l = item_l.item_sub_group
+					else:
+						business_activity_l = frappe.db.get_value("Business Activity", {"is_default": 1})
+					lot_items.append({"item": a.item, "item_name": a.item_name, "lot_number":a.lot_number, "warehouse": a.warehouse, "total_volume":a.total_volume, "total_pieces":a.total_pieces, "price_template":a.price_template, "price_list_rate":a.price_list_rate, "rate":a.rate, "amount":a.amount, "discount_amount":a.discount_amount, "additional_cost":a.additional_cost, "business_activity":business_activity_l})
+			doc = frappe.get_doc({
+				"doctype": "Sales Order",
+				"branch": self.branch,
+				"site": self.site,
+				"customer_order": self.name,
+				"title": "Sale of {0}({1})".format(self.product_group, self.name),	
+				"naming_series": "Timber Products",
+				"customer": self.customer,
+				"transaction_date": now(),
+				"order_type": "Sales",
+				"currency": "BTN",
+				"conversion_rate": 1,
+				"price_list_currency": "BTN",
+				"plc_conversion_rate": 1,
+				"rate_template": self.transportation_rate if self.transport_mode == "Common Pool" else None,
+				"total_distance": flt(self.distance) if self.transport_mode == "Common Pool" else 0,
+				"transportation_charges": self.total_transportation_rate if self.transport_mode == "Common Pool" else None,
+				"transportation_rate": self.transport_rate if self.transport_mode == "Common Pool" else None,
+				"total_quantity": self.total_quantity,	
+				"delivery_date": add_days(now(), cint(self.lead_time)),
+				"discount_or_cost_amount": discount,
+				"additional_cost": additional,
+				"challan_cost": self.challan_cost
+			})
+			# frappe.throw(str(lot_items[0]["item"]))
+			for d in lot_items:
+				doc.append('items', {
+					"item_code": d["item"],
+					"item_name": d["item_name"],
+					"lot_number": d["lot_number"],
+					"price_template": d["price_template"],
+					"qty": flt(d["total_volume"], 2),
+					"price_list_rate": flt(d["price_list_rate"], 2),
+					"rate": flt(d["rate"], 2),
+					"amount": flt(d["amount"], 2),
+					"total_pieces": d["total_pieces"],
+					"warehouse": d["warehouse"],
+					"business_activity": d["business_activity"]
+				})
+			doc.save(ignore_permissions=True)
+			doc.submit()
+		elif self.selection_based_on == "Measurement":
+			doc = frappe.get_doc({
+				"doctype": "Sales Order",
+				"branch": self.branch,
+				"site": self.site,
+				"customer_order": self.name,
+				"title": "Sale of {0}({1})".format(self.product_group, self.name),	
+				"naming_series": "Timber Products",
+				"customer": self.customer,
+				"transaction_date": now(),
+				"order_type": "Sales",
+				"currency": "BTN",
+				"conversion_rate": 1,
+				"price_list_currency": "BTN",
+				"plc_conversion_rate": 1,
+				"rate_template": self.transportation_rate if self.transport_mode == "Common Pool" else None,
+				"total_distance": flt(self.distance) if self.transport_mode == "Common Pool" else 0,
+				"transportation_charges": self.total_transportation_rate if self.transport_mode == "Common Pool" else None,
+				"transportation_rate": self.transport_rate if self.transport_mode == "Common Pool" else None,
+				"total_quantity": self.total_quantity,	
+				"delivery_date": add_days(now(), cint(self.lead_time)),
+				"challan_cost": self.challan_cost if self.challan_cost else None
+			})
+			# frappe.throw(str(lot_items[0]["item"]))
+			for d in self.sawns:
+				item_s = frappe.get_doc("Item", d.item)
+				if frappe.db.exists("Business Activity", item_s.item_sub_group):
+					business_activity_s = item_s.item_sub_group
+				else:
+					business_activity_s = frappe.db.get_value("Business Activity", {"is_default": 1})				
+				doc.append('items', {
+					"item_code": d.item,
+					"item_name": d.item_name,
+					"price_template": d.price_template,
+					"qty": flt(d.total_cft, 2),
+					"price_list_rate": flt(d.rate, 2),
+					"rate": flt(d.rate, 2),
+					"amount": flt(d.amount, 2),
+					"total_pieces": d.qty,
+					"warehouse": wh,
+					"business_activity": business_activity_s
+				})
+			doc.save(ignore_permissions=True)
+			doc.submit()
 		self.db_set("sales_order", doc.name)
 
 	def get_site_details(self):
-		if not self.site:
+		'''########## Ver.2020.11.19 Begins ##########'''
+		# following code is commented by SHIV on 2020/11/19 to accommodate Phase-II
+		#if not self.site:
+		#	frappe.throw(_("Please select a Site first"))
+
+		# following code added by SHIV on 2020/11/19 to accommodate Phase-II 
+		if not self.product_category:
+			frappe.throw(_("Please select the product category first"))
+
+		if not self.site and frappe.db.exists("Product Category", {"name": self.product_category, "site_required": 1}):
 			frappe.throw(_("Please select a Site first"))
-		doc = frappe.get_doc("Site", self.site) 
-		self.site_type	= doc.site_type
-		self.latitude	= doc.latitude
-		self.longitude	= doc.longitude
-		self.dzongkhag	= doc.dzongkhag
-		self.plot_no	= doc.plot_no
-		self.site_location	= doc.location
+		'''########## Ver.2020.11.19 Ends ##########'''
+
+		# just if condition is added to the existing block of code by SHIV on 2020/11/19
+		if self.site:
+			doc = frappe.get_doc("Site", self.site) 
+			self.site_type	= doc.site_type
+			self.latitude	= doc.latitude
+			self.longitude	= doc.longitude
+			self.dzongkhag	= doc.dzongkhag
+			self.plot_no	= doc.plot_no
+			self.site_location	= doc.location
 
 		if not frappe.db.exists("Customer", {"customer_id": self.user}):
 			frappe.throw(_("Customer account not found"))
@@ -265,6 +480,15 @@ class CustomerOrder(Document):
 
 	def validate_transportation(self):
 		noof_truck_load = 0
+
+		# following condition added by SHIV on 2020/11/23 to accommodate Phase-II
+		# validations for product categories where transport mode is not required
+		if frappe.db.exists('Product Category', {'name': self.product_category, 'transport_mode_required': 0}):
+			if flt(self.quantity) <= 0:
+				frappe.throw(_("Invalid Quantity"))
+			self.noof_truck_load = 0
+			return
+
 		if not self.transport_mode:
 			frappe.throw(_("Please select preferred Transport Mode"))
 		elif self.transport_mode == "Common Pool":
@@ -349,7 +573,7 @@ class CustomerOrder(Document):
 
 		if not self.selling_price:
 			frappe.throw(_("Selling Price not available"))
-		if not self.transport_mode:
+		if not self.transport_mode and frappe.db.exists('Product Category', {'name': self.product_category, 'transport_mode_required': 1}):
 			frappe.throw(_("Please choose a Transport Mode"))
 		if not cint(self.has_common_pool) and self.transport_mode == "Common Pool":
 			frappe.throw(_("Selected Warehouse does not offer transportation facility. Choose another Warehouse \
@@ -358,23 +582,60 @@ class CustomerOrder(Document):
 	def update_payable_amount(self):
 		''' update total payable amount '''
 		import math
-		tbl = self.get("pool_vehicles") if self.transport_mode in("Common Pool","Others") else self.get("vehicles")
-		total_quantity   	  = 0
-		total_transportation_rate = 0
+		#Added Selection Based On Check by Kinley Dorji 2020/11/30
+		if self.selection_based_on != "Lot" and self.selection_based_on != "Measurement":
+			tbl = self.get("pool_vehicles") if self.transport_mode in("Common Pool","Others") else self.get("vehicles")
+			total_quantity   	  = 0
+			total_transportation_rate = 0
 
+			if frappe.db.exists('Product Category', {'name': self.product_category, 'transport_mode_required': 1}):
+				for i in tbl:
+					i.quantity	  = flt(i.vehicle_capacity) * flt(i.noof_truck_load)
+					total_quantity	 += i.quantity
 
-		for i in tbl:
-			i.quantity	  = flt(i.vehicle_capacity) * flt(i.noof_truck_load)
-			total_quantity	 += i.quantity
+				if self.transport_mode == "Common Pool":
+					total_transportation_rate = flt(self.distance) * flt(total_quantity) * flt(self.transport_rate) 
+			else:
+				total_quantity = flt(self.quantity)
+				total_transportation_rate = 0
 
-		if self.transport_mode == "Common Pool":
-			total_transportation_rate = flt(self.distance) * flt(total_quantity) * flt(self.transport_rate) 
+			self.total_quantity  	   	= total_quantity
+			self.total_item_rate 	  	= flt(total_quantity) * flt(self.item_rate)
+			self.total_transportation_rate	= flt(total_transportation_rate) 
+			self.total_payable_amount  	= flt(flt(self.total_item_rate) + flt(self.total_transportation_rate),2)
+			#if flt(self.total_payable_amount,2) - math.floor(flt(self.total_payable_amount,2)) != 0.50:
+			#	self.total_payable_amount = round(self.total_payable_amount)
 
-		self.total_quantity  	   	= total_quantity
-		self.total_item_rate 	  	= flt(total_quantity) * flt(self.item_rate)
-		self.total_transportation_rate	= flt(total_transportation_rate) 
-		self.total_payable_amount  	= flt(flt(self.total_item_rate) + flt(self.total_transportation_rate),2)
-		#if flt(self.total_payable_amount,2) - math.floor(flt(self.total_payable_amount,2)) != 0.50:
-		#	self.total_payable_amount = round(self.total_payable_amount)
+			self.total_balance_amount	= flt(self.total_payable_amount,2)
+		
+		elif self.selection_based_on == "Lot":
+			self.total_payable_amount = self.total_quantity = 0
+			for i in self.lots:
+				self.total_payable_amount += flt(i.payable_amount, 2)
+				self.total_quantity += flt(i.total_volume, 2)
+			self.total_payable_amount += self.challan_cost
+			self.total_balance_amount = self.total_payable_amount
+			self.quantity = self.total_quantity
+		
+		else:
+			self.total_payable_amount = self.total_quantity = 0
+			for i in self.sawns:
+				self.total_payable_amount += flt(i.amount, 2)
+				self.total_quantity += flt(i.total_cft, 2)
+			self.total_balance_amount = self.total_payable_amount
+			self.quantity = self.total_quantity
 
-		self.total_balance_amount	= flt(self.total_payable_amount,2)
+	def get_lots(self, lot_allotment_no = None):
+		data = []
+		if lot_allotment_no != None:
+			lots = frappe.db.sql("""
+				select a.lot_number, a.total_volume, a.discount, a.additional, a.payable_amount, a.pieces
+				from `tabLot Allotment Lots` a, `tabLot Allotment` b
+				where b.name = a.parent and b.name = '{}' and b.docstatus = 1
+			""".format(lot_allotment_no),as_dict=True)
+		if lots:
+			for a in lots:
+				data.append({"lot_number": a.lot_number, "total_volume": a.total_volume, "discount":a.discount, "additional":a.discount, "payable_amount": a.payable_amount, "pieces": a.pieces})
+			return data
+		else:
+			frappe.throw("No Lots Alloted")
