@@ -4,7 +4,7 @@
 frappe.ui.form.on('Site', {
 	setup: function(frm){
 		frm.get_field('items').grid.editable_fields = [
-			{fieldname: 'item_sub_group', columns: 2},
+			{fieldname: 'product_category', columns: 2},
 			{fieldname: 'overall_expected_quantity', columns: 2},
 			{fieldname: 'uom', columns: 1},
 			{fieldname: 'branch', columns: 3},
@@ -23,13 +23,24 @@ frappe.ui.form.on('Site', {
 		];
 	},
 	onload: function(frm){
-		frm.fields_dict['items'].grid.get_field('item_sub_group').get_query = function(){
+		/*########## Ver.2020.11.09 Begins, Phase-II  ##########*/
+		// Following code commented by SHIV on 2020/11/09 Phase-II
+		// frm.fields_dict['items'].grid.get_field('item_sub_group').get_query = function(){
+		// 	return{
+		// 		filters: {
+		// 			'is_crm_item': 1,
+		// 		}
+		// 	}
+		// };
+		frm.fields_dict['items'].grid.get_field('product_category').get_query = function(){
 			return{
 				filters: {
 					'is_crm_item': 1,
 				}
 			}
 		};
+		/*########## Ver.2020.11.09 Ends ##########*/
+		
 		frm.fields_dict['private_pool'].grid.get_field('vehicle').get_query = function(){
 			return{
 				filters: {

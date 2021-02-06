@@ -58,11 +58,22 @@ class Site(Document):
 	def validate_items(self):
 		dup = {}
 		for i in self.get("items"):
+			'''########## Ver.2020.11.10 Begins, Phase-II by SHIV ##########'''
+			# following code is added as a replacement for the subsequent by SHIV on 2020/11/10 as part of Phase-II
+			if i.product_category in dup:
+				frappe.throw(_("Row#{0}: Duplication of material {1} not permitted").format(i.idx, i.product_category))
+			else:
+				dup[i.product_category] = 1
+
+			# following code is replaced by the above one by SHIV on 2020/11/10 as part of Phase-II
+			'''
 			if i.item_sub_group in dup:
 				frappe.throw(_("Row#{0}: Duplication of material {1} not permitted").format(i.idx, i.item_sub_group))
 			else:
 				dup[i.item_sub_group] = 1
-
+			'''
+			'''########## Ver.2020.11.10 Ends, Phase-II ##########'''
+			
 			if flt(i.expected_quantity) < 0:
 				frappe.throw(_("Row#{0}: Expected Quantity cannot be a negative value").format(i.idx))
 			i.overall_expected_quantity  = flt(i.expected_quantity) + flt(i.extended_quantity)
