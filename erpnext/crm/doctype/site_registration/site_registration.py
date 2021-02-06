@@ -12,6 +12,7 @@ from frappe.core.doctype.user.user import send_sms
 
 class SiteRegistration(Document):
 	def validate(self):
+		self.validate_site_registration()
 		self.validate_user()
 		self.update_user_details()
 		self.update_status()
@@ -40,6 +41,11 @@ class SiteRegistration(Document):
 
 	def on_update(self):
 		self.get_distance()
+
+	# following method created by SHIV on 2020/11/23 to accommodate Phase-II
+	def validate_site_registration(self):
+		if self.product_category and not frappe.db.exists('Product Category', {'name': self.product_category, 'site_required': 1}):
+			frappe.throw(_("Site Registration is not applicable for {}").format(self.product_category))
 
 	def attach_cid(self):
 		target_doc = None
@@ -119,9 +125,9 @@ class SiteRegistration(Document):
 	def sendsms(self,msg=None):
 		if self.docstatus == 1:
 			if self.approval_status == "Rejected":
-				msg = "Your request for site registration is {0}. Tran Ref No {1}. {2}".format(str(self.approval_status).lower(),self.name,self.rejection_reason)	
+				msg = "Your request for site registration for {} is {}. Tran Ref No {}. {}".format(self.product_category, str(self.approval_status).lower(),self.name,self.rejection_reason)	
 			else:
-				msg = "Your request for site registration is {0}. Tran Ref No {1}".format(str(self.approval_status).lower(),self.name)	
+				msg = "Your request for site registration for {} is {}. Tran Ref No {}".format(self.product_category, str(self.approval_status).lower(),self.name)	
 		mobile_no = frappe.db.get_value("User", self.user, "mobile_no")
 		if mobile_no:
 			send_sms(mobile_no, msg)
@@ -167,10 +173,21 @@ class SiteRegistration(Document):
 	def validate_items(self):
 		dup = {}
 		for i in self.get("items"):
+			'''########## Ver.2020.11.10 Begins, Phase-II by SHIV ##########'''
+			# following code is added as a replacement for the subsequent by SHIV on 2020/11/10 as part of Phase-II
+			if i.product_category in dup:
+				frappe.throw(_("Row#{0}: Duplication of material {1} not permitted").format(i.idx, i.product_category))
+			else:
+				dup[i.product_category] = 1
+
+			# following code is replaced by the above one by SHIV on 2020/11/10 as part of Phase-II
+			'''
 			if i.item_sub_group in dup:
 				frappe.throw(_("Row#{0}: Duplication of material {1} not permitted").format(i.idx, i.item_sub_group))
 			else:
 				dup[i.item_sub_group] = 1
+			'''
+			'''########## Ver.2020.11.10 Ends, Phase-II ##########'''
 
 			if flt(i.expected_quantity) < 0:
 				frappe.throw(_("Row#{0}: Expected Quantity cannot be a negative value").format(i.idx))
@@ -223,7 +240,9 @@ class SiteRegistration(Document):
 			frappe.db.sql("""update `tabSite` set enabled=0,docstatus=2 where name="{0}" """.format(doc.name))
 			frappe.db.sql("""update `tabSite Item` set docstatus=2 where parent="{0}" """.format(doc.name))
 
-
+'''########## Ver.2020.11.09 Phase-II Begins, by SHIV ##########'''
+# following method is commented as it is no longer in use by SHIV on 2020/11/20
+'''
 @frappe.whitelist()
 def get_distance_old(site):
 	qry = """
@@ -241,7 +260,37 @@ def get_distance_old(site):
 		order by cbs.branch, i.name
 	""".format(site)
 	return frappe.db.sql(qry, as_dict=True)
+'''
 
+# following method is created as replacedment for the next method by SHIV on 2020/11/09
+@frappe.whitelist()
+def get_distance(site):
+	qry = """
+		select distinct cbs.branch, i.item_sub_group
+		from 
+			`tabSite Registration` sr,
+			`tabCRM Branch Setting` cbs,
+			`tabCRM Branch Setting Item` cbsi,
+			`tabItem` i
+		where sr.name = "{}" 
+		and cbs.product_category = sr.product_category
+		and cbsi.parent = cbs.name
+		and cbs.has_common_pool = 1
+		and cbsi.item 	= i.name
+		and exists(select 1
+			from `tabProduct Category Item` pci
+			where pci.parent = sr.product_category
+			and pci.item_sub_group = i.item_sub_group)
+		and exists(select 1
+			from `tabTransportation Rate` tr
+			where tr.branch = cbs.branch
+			and tr.item_sub_group = i.item_sub_group)
+		order by cbs.branch, i.item_sub_group
+	""".format(site)
+	return frappe.db.sql(qry, as_dict=True)
+
+# following code is replaced with above code by SHIV on 2020/11/09, Phase-II
+'''
 @frappe.whitelist()
 def get_distance(site):
 	qry = """
@@ -263,3 +312,5 @@ def get_distance(site):
 		order by cbs.branch, i.item_sub_group
 	""".format(site)
 	return frappe.db.sql(qry, as_dict=True)
+'''
+'''########## Ver.2020.11.09 Phase-II Ends ##########'''

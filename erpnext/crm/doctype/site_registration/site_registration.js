@@ -5,11 +5,11 @@ cur_frm.add_fetch("construction_type", "is_building", "is_building");
 frappe.ui.form.on('Site Registration', {
 	setup: function(frm){
 		frm.get_field('items').grid.editable_fields = [
-			{fieldname: 'item_sub_group', columns: 2},
 			{fieldname: 'expected_quantity', columns: 2},
 			{fieldname: 'uom', columns: 1},
 			{fieldname: 'branch', columns: 3},
 			{fieldname: 'transport_mode', columns: 2},
+			{fieldname: 'remarks', columns: 2},
 		];
 		frm.get_field('distance').grid.editable_fields = [
 			{fieldname: 'branch', columns: 6},
@@ -32,13 +32,33 @@ frappe.ui.form.on('Site Registration', {
 				]
 			}
 		});
-		frm.fields_dict['items'].grid.get_field('item_sub_group').get_query = function(){
+		/*########## Ver.2020.11.09 Begins, Phase-II  ##########*/
+		// Following code commented by SHIV on 2020/11/09 Phase-II
+		//frm.fields_dict['items'].grid.get_field('item_sub_group').get_query = function(){
+		//	return{
+		//		filters: {
+		//			'is_crm_item': 1,
+		//		}
+		//	}
+		//};
+		// Following method added by SHIV on 2020/11/20
+		cur_frm.set_query("product_category",function(){
+			return {
+				"filters": [
+					["is_crm_item", "=", 1],
+					["site_required", "=", 1]
+				]
+			}
+		});
+		// Following code is added by SHIV on 2020/11/09 Phase-II
+		frm.fields_dict['items'].grid.get_field('product_category').get_query = function(){
 			return{
 				filters: {
 					'is_crm_item': 1,
 				}
 			}
 		};
+		/*########## Ver.2020.11.09 Ends ##########*/
 	},
 	user: function(frm){
 		get_user_details(frm,'update');
@@ -60,11 +80,18 @@ frappe.ui.form.on('Site Registration', {
 });
 
 frappe.ui.form.on('Site Registration Item', {
-	item_sub_group: function(frm, cdt, cdn){
+	// Following code is commented by SHIV on 2020/11/09 as the item_sub_group is replaced with product_category for Phase-II
+	//item_sub_group: function(frm, cdt, cdn){
+	//	frappe.model.set_value(cdt, cdn, "branch", null);	
+	//},
+	product_category: function(frm, cdt, cdn){
 		frappe.model.set_value(cdt, cdn, "branch", null);	
 	}
 });
 
+/*########## Ver.2020.11.09 Begins, Phase-II  ##########*/
+// following code is replaced by the next following code by SHIV on 2020/11/09
+/*
 frappe.ui.form.on("Site Registration", "refresh", function(frm) {
 	frm.fields_dict['items'].grid.get_field('branch').get_query = function(doc, cdt, cdn) {
 		doc = locals[cdt][cdn];
@@ -74,6 +101,26 @@ frappe.ui.form.on("Site Registration", "refresh", function(frm) {
 		}
 	}
 });
+*/
+
+// following code is created as a replacement for the above  code by SHIV on 2020/11/09
+frappe.ui.form.on("Site Registration", "refresh", function(frm) {
+	frm.fields_dict['items'].grid.get_field('product_category').get_query = function(doc, cdt, cdn) {
+		doc = locals[cdt][cdn];
+		return {
+			filters: {'name': frm.doc.product_category}
+		}
+	}
+
+	frm.fields_dict['items'].grid.get_field('branch').get_query = function(doc, cdt, cdn) {
+		doc = locals[cdt][cdn];
+		return {
+			"query": "erpnext.crm_utils.get_branch_source_query",
+			filters: {'product_category': doc.product_category}
+		}
+	}
+});
+/*########## Ver.2020.11.09 Ends ##########*/
 
 var get_user_details = function(frm, mode){
 	if(frm.doc.user){
@@ -113,7 +160,7 @@ var update_distance_table = function(frm){
 						row.branch 		= v['branch'];
 						row.item_sub_group	= v['item_sub_group'];
 						//row.item		= v['item'];
-						//row.item_name 		= v['item_name'];
+						//row.item_name 	= v['item_name'];
 						row.distance		= 0;
 					});
 				}
