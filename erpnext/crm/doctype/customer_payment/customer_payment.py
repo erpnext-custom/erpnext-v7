@@ -8,6 +8,7 @@ from frappe import _
 from frappe.utils import cint, flt, now
 from frappe.model.document import Document
 from frappe.core.doctype.user.user import send_sms
+import math
 
 class CustomerPayment(Document):
 	def validate(self):
@@ -16,11 +17,13 @@ class CustomerPayment(Document):
 		self.validate_amount()
 
 	def after_insert(self):
-		doc = frappe.get_doc("Site Type", frappe.db.get_value("Site", self.site, "site_type"))
-		credit_allowed = frappe.db.get_value("Mode of Payment", self.mode_of_payment, "credit_allowed")
-		if cint(doc.credit_allowed) and cint(credit_allowed):
-			msg = "You Credit Request is placed successfully. You will be notified upon approval by NRDCL. Tran Ref No {0}".format(self.name)
-			self.sendsms(msg)
+		# following if condition added on existing code block by SHIV on 2020/11/24 to accommodate Phase-II
+		if self.site:
+			doc = frappe.get_doc("Site Type", frappe.db.get_value("Site", self.site, "site_type"))
+			credit_allowed = frappe.db.get_value("Mode of Payment", self.mode_of_payment, "credit_allowed")
+			if cint(doc.credit_allowed) and cint(credit_allowed):
+				msg = "You Credit Request is placed successfully. You will be notified upon approval by NRDCL. Tran Ref No {0}".format(self.name)
+				self.sendsms(msg)
 
 	def on_submit(self):
 		''' create sales order and payment entry '''
@@ -29,14 +32,33 @@ class CustomerPayment(Document):
 		elif self.approval_status == "Pending":
 			frappe.throw(_("Request cannot be submitted in <b>Pending</b> status"))
 
+		# create sales order
 		self.make_sales_order()
-		doc = frappe.get_doc("Site Type", frappe.db.get_value("Site", self.site, "site_type"))
-		credit_allowed = frappe.db.get_value("Mode of Payment", self.mode_of_payment, "credit_allowed")
-		if cint(doc.credit_allowed) and cint(credit_allowed):
-			self.validate_documents()
+
+		"""########## Ver.2020.11.24 Begins ##########"""
+		# following code is created as the replcament for the following one by SHIV on 2020/11/23
+		# credit checks should be performed only if the site exist
+		if self.site:
+			doc = frappe.get_doc("Site Type", frappe.db.get_value("Site", self.site, "site_type"))
+			credit_allowed = frappe.db.get_value("Mode of Payment", self.mode_of_payment, "credit_allowed")
+			if cint(doc.credit_allowed) and cint(credit_allowed):
+				self.validate_documents()
+			else:
+				self.make_payment_entry()
+				self.update_balance_amount()
 		else:
 			self.make_payment_entry()
 			self.update_balance_amount()
+
+		# following code is replaced with the above one by SHIV on 2020/11/24 to accommodate Phase-II 
+		# doc = frappe.get_doc("Site Type", frappe.db.get_value("Site", self.site, "site_type"))
+		# credit_allowed = frappe.db.get_value("Mode of Payment", self.mode_of_payment, "credit_allowed")
+		# if cint(doc.credit_allowed) and cint(credit_allowed):
+		# 	self.validate_documents()
+		# else:
+		# 	self.make_payment_entry()
+		# 	self.update_balance_amount()
+		"""########## Ver.2020.11.24 Ends ##########"""
 
 	def before_cancel(self):
 		self.update_balance_amount()
@@ -141,6 +163,58 @@ class CustomerPayment(Document):
 		self.total_paid_amount	  = flt(doc.total_paid_amount)
 		self.total_balance_amount = flt(doc.total_balance_amount)
 
+	"""########## Ver.2020.11.24 Begins ##########"""
+	# following method is created as a replacement for the old one to accommodate Phase-II by SHIV on 2020/11/24
+	def validate_amount(self):
+		if self.site:
+			site_type = frappe.db.get_value("Site", self.site, "site_type")
+			doc = frappe.get_doc("Site Type", site_type)
+			credit_allowed = frappe.db.get_value("Mode of Payment", self.mode_of_payment, "credit_allowed")
+			if cint(doc.credit_allowed) and cint(credit_allowed):
+				self.paid_amount = flt(self.total_balance_amount)
+			elif not cint(doc.credit_allowed) and cint(credit_allowed):
+				frappe.throw(_("Credit payment not permitted for sites of type {0}").format(doc.name))
+			else:
+				if self.mode_of_payment == "Online Payment" and not self.online_payment:
+						frappe.throw(_("Online Payment entry not found"))	
+				else:
+					# advance payment checks
+					ord = frappe.get_doc("Customer Order", self.customer_order)
+					cond = """ and product_category = "{}" """.format(ord.product_category)
+					if ord.product_group:
+						cond += """ and product_group = "{}" """.format(ord.product_group)
+
+					adv = frappe.db.sql("""select * from `tabSite Type Advance` 
+							where parent = "{}" 
+							and advance_required = 1 
+							{cond}
+							""".format(site_type, cond=cond), as_dict=True)
+					if adv:
+						adv = adv[0]
+						min_payment_required = math.floor(flt(self.total_payable_amount)*flt(adv.advance_percent)*0.01)
+
+						if flt(self.paid_amount) <= 0:
+							frappe.throw(_("Payment amount must be more than 0"))
+						if not flt(self.total_paid_amount) and flt(self.paid_amount,2) < flt(min_payment_required,2):
+							# if not frappe.db.exists("Customer Payment", {"customer_order": self.customer_order, "docstatus": 1}):
+							if ord.selection_based_on == "Lot" and ord.lot_allotment_no:
+								if frappe.db.get_value("Lot Allotment", ord.lot_allotment_no, "allotment_type") == "Monthly Allotment":
+									frappe.throw(_("You need to make minimum {}% i.e Nu.{}/- as advance payment to confirm your order")\
+										.format(adv.advance_percent, '{:,.2f}'.format(min_payment_required)))
+							else:
+								frappe.throw(_("You need to make minimum {}% i.e Nu.{}/- as advance payment to confirm your order")\
+									.format(adv.advance_percent, '{:,.2f}'.format(min_payment_required)))
+		else:
+			if flt(self.paid_amount) <= 0:
+				frappe.throw(_("Payment amount must be more than 0"))
+			elif self.mode_of_payment == "Online Payment" and not self.online_payment:
+					frappe.throw(_("Online Payment entry not found"))	
+
+		if flt(self.paid_amount) > flt(self.total_balance_amount):
+			frappe.throw(_("Paid amount cannot be more than balance payable amount"))
+
+	# following method is replaced with the above one to accommodate Phase-II by SHIV on 2020/11/24
+	'''
 	def validate_amount(self):
 		doc = frappe.get_doc("Site Type", frappe.db.get_value("Site", self.site, "site_type"))
 		credit_allowed = frappe.db.get_value("Mode of Payment", self.mode_of_payment, "credit_allowed")
@@ -163,6 +237,8 @@ class CustomerPayment(Document):
 							frappe.throw(_("You need to make minimum payment of Nu. {0}/-").format('{:,.2f}'.format(min_payment_required)))
 		if flt(self.paid_amount) > flt(self.total_balance_amount):
 			frappe.throw(_("Paid amount cannot be more than balance payable amount"))
+	'''
+	"""########## Ver.2020.11.24 Ends ##########"""
 
 	def submit_customer_payment(self, doc):
 		#doc.flags.ignore_permissions=True
