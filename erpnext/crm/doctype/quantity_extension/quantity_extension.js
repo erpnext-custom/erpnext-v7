@@ -18,13 +18,24 @@ frappe.ui.form.on('Quantity Extension', {
 				]
 			}
 		});
-		frm.fields_dict['items'].grid.get_field('item_sub_group').get_query = function(){
+		/*########## Ver.2020.11.09 Begins, Phase-II  ##########*/
+		// Following code commented by SHIV on 2020/11/09 Phase-II
+		//frm.fields_dict['items'].grid.get_field('item_sub_group').get_query = function(){
+		//	return{
+		//		filters: {
+		//			'is_crm_item': 1,
+		//		}
+		//	}
+		//};
+		// Following code is added by SHIV on 2020/11/09 Phase-II
+		frm.fields_dict['items'].grid.get_field('product_category').get_query = function(){
 			return{
 				filters: {
 					'is_crm_item': 1,
 				}
 			}
 		};
+		/*########## Ver.2020.11.09 Ends ##########*/
 	},
 	refresh: function(frm) {
 		custom.apply_default_settings(frm);
@@ -90,6 +101,7 @@ var load_items = function(frm){
 				r.message.forEach(function(i){
 					var row = frappe.model.add_child(frm.doc, "Quantity Extension Item", "items");
 					row.site_item_name	= i['name'];
+					row.product_category = i['product_category'];
 					row.item_sub_group	= i['item_sub_group'];
 					row.uom			= i['uom'];
 					row.initial_quantity	= flt(i['overall_expected_quantity']); 

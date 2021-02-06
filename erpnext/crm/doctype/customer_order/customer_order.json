@@ -2038,7 +2038,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-04-16 14:35:34.466352", 
+ "modified": "2020-11-27 16:47:31.669870", 
  "modified_by": "Administrator", 
  "module": "CRM", 
  "name": "Customer Order", 
@@ -2068,7 +2068,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
@@ -2084,6 +2084,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
