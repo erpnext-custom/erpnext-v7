@@ -43,18 +43,14 @@ class CustomerOrder(Document):
 		self.update_site()
 
 	def check_for_duplicates(self):
-		frappe.errprint("check_for_duplicates")
-		# following 4 lines commented by SHIV on 2020/12/29 to allow multiple orders in Draft, needs to be uncommented
-		# if self.site:
-		# 	if frappe.db.sql("""select count(*) from `tabCustomer Order` where user = "{}" and site = "{}" 
-		# 		and docstatus = 0 and name != "{}" """.format(self.user, self.site, self.name))[0][0]:
-		# 		frappe.throw(_("New orders not allowed as you already have unpaid order(s). Please complete the payment/cancel the previous order(s)"))
-		
-		#Please change after demo
-		# else:
-		# 	if frappe.db.sql("""select count(*) from `tabCustomer Order` where user = "{}"
-		# 		and docstatus = 0 and name != "{}" """.format(self.user, self.name))[0][0]:
-		# 		frappe.throw(_("New orders not allowed as you already have unpaid order(s). Please complete the payment/cancel the previous order(s)"))
+		if self.site:
+	 		if frappe.db.sql("""select count(*) from `tabCustomer Order` where user = "{}" and site = "{}" 
+		 		and docstatus = 0 and name != "{}" """.format(self.user, self.site, self.name))[0][0]:
+		 		frappe.throw(_("New orders not allowed as you already have unpaid order(s). Please complete the payment/cancel the previous order(s)"))
+		else:
+			if frappe.db.sql("""select count(*) from `tabCustomer Order` where user = "{}"
+				and docstatus = 0 and name != "{}" """.format(self.user, self.name))[0][0]:
+				frappe.throw(_("New orders not allowed as you already have unpaid order(s). Please complete the payment/cancel the previous order(s)"))
 
 	def update_user_details(self):
 		if frappe.db.exists("User Account", self.user):
