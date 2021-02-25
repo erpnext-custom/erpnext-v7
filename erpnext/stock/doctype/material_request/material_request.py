@@ -119,11 +119,11 @@ class MaterialRequest(BuyingController):
 			else:
 				self.approver = app
 
-		if self.title1 == 'Stock Request':
+		'''if self.title1 == 'Stock Request':
                         if 'MR Manager' not in frappe.get_roles(frappe.session.user):
                                 frappe.throw("""<b> You Cannot Apply Material Request of Type Stock Request,
                                 Contact Admin/Store Manager </b> """)
-
+		'''
                 verify_mr_workflow(self)
 
 		requested_by = frappe.get_doc("Employee", {"user_id": self.owner})

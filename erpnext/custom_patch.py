@@ -14,6 +14,69 @@ from datetime import datetime
 import os
 import subprocess
 
+def update_budget_tot():
+	count = 1
+	for a in frappe.db.sql(""" select name from `tabBudget` where actual_total = '' and docstatus = 1""", as_dict = 1):
+		doc = frappe.get_doc("Budget", a.name)
+		doc.validate()
+		doc.submit()
+		count += 1
+		print count, a.name
+
+def update_project():
+	for a in frappe.db.sql(""" select name from `tabProject` """, as_dict = 1, debug = 1):
+		doc = frappe.get_doc("Project", a.name)
+		doc.save()
+		doc.submit()
+		print a.name
+
+'''def update_progress():
+	count = 1
+	for a in frappe.db.sql(""" select name, physical_progress_weightage from `tabProject` where is_group = 1""", as_dict = 1):
+		frappe.db.sql(""" update `tabProject` set parent_weightage = {0} where name = '{1}'
+		""".format(a.physical_progress_weightage, a.name))
+		count += 1 
+		print count, a.name
+'''
+def add_comment():
+	count = 0
+	for a in frappe.db.sql(""" select name from `tabLeave Allocation` b where b.from_date = '2021-01-01' and b.to_date = '2021-12-31' and b.leave_type = 'Earned Leave' and b.docstatus = 2""", as_dict = 1):
+		doc = frappe.get_doc("Leave Allocation", a.name)
+		doc.add_comment('Comment', text='Cancelled the Allocation as the system is configured to allocate el on monthly basis')
+		count+=1 
+		print count, doc.name
+
+
+def update_musterroll2():
+	for a in frappe.db.sql(" select name, cost_center, payment_jv, month, fiscal_year, employee_type from `tabProcess MR Payment` where fiscal_year = '2021' and month = 'Jan'", as_dict = 1):
+		
+		frappe.db.sql(""" update `tabProcess MR Payment` set docstatus = 0 where name = '{0}'""".format(a.name))
+		frappe.db.sql(""" update `tabMR Payment Item` set docstatus = 0 where parent = '{0}'""".format(a.name))
+		if a.payment_jv:
+			frappe.db.sql(""" delete from `tabJournal Entry` where name = '{0}'""".format(a.payment_jv))
+		doc = frappe.get_doc("Process MR Payment", a.name)
+		doc.save()
+		print  a.name, a.cost_center, a.payment_jv, a.month, a.fiscal_year, a.employee_type
+
+def update_musterroll1():
+	count = 1
+	for a in frappe.db.sql(" select parent, rate_per_day, rate_per_hour from `tabMusterroll` order by parent, from_date asc", as_dict = 1):
+		doc = frappe.get_doc("Muster Roll Employee", a.parent)
+		if doc.status == 'Active':
+			doc.db_set("project", '')
+			doc.db_set("rate_per_day", a.rate_per_day)
+			doc.db_set("rate_per_hour", flt(a.rate_per_day)/8)
+			count += 1
+			#doc.save()
+			print count, doc.name, a.parent, a.rate_per_day, a.rate_per_hour
+
+
+def update_pro():
+	for a in frappe.db.sql(" select name from `tabProject` where is_group = 0", as_dict = 1):
+		doc = frappe.get_doc("Project", a.name)
+		doc.save()
+		print doc.name
+
 def travel_advance():
 	doc = frappe.get_doc("Travel Authorization", 'TA201200016-2')
 	doc.check_advance()

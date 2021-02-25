@@ -3,7 +3,7 @@
 
 frappe.query_reports["Project Progress Graphs"] = {
 	"filters": [
-		  /*{
+		{
                         "fieldname": "project",
                         "label": ("Gyalsung Academy"),
                         "fieldtype": "Link",
@@ -26,21 +26,8 @@ frappe.query_reports["Project Progress Graphs"] = {
                                         var parent_project = frappe.query_report.filters_by_name.project.get_value();
                                         return { 'doctype': "Project",
                                                 'filters': [
-                                                        ['is_group', '=', '0'], 
+                                                        ['is_group', '=', '0'],
                                                         ['parent_project', '=', parent_project]
-                                ]
-                        }
-                }
-                },*/
-		{
-                        "fieldname": "activity",
-                        "label": ("Activity"),
-                        "fieldtype": "Link",
-                        "options": "Project",
-                        "get_query": function() {
-                                        return { 'doctype': "Project",
-                                                'filters': [
-                                                        ['is_group', '=', '0']
                                 ]
                         }
                 }
@@ -64,8 +51,7 @@ frappe.query_reports["Project Progress Graphs"] = {
                         label: __("Range"),
                         fieldtype: "Select",
                         options: [
-				{ "value": "Monthly", "label": __("Monthly") },
-                                { "value": "Quarterly", "label": __("Quarterly") },
+				{ "value": "Monthly", "label": __("Monthly") }
                         ],
                         default: "Monthly",
                         reqd: 0

@@ -106,11 +106,15 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						row.designation = mr['designation'];
 						if(mr['type'] == 'Operator'){
 							row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
+							//row.daily_rate  = 300.00
 							row.hourly_rate     = parseFloat(mr['salary']*1.0)/parseFloat(mr['noof_days_in_month']*8);
 							row.total_ot_amount = parseFloat(row.number_of_hours) * parseFloat(row.hourly_rate);
 							row.total_wage      = parseFloat(row.daily_rate) * parseFloat(row.number_of_days);
 							if((parseFloat(row.total_wage) > parseFloat(mr['salary']))||(parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days']))){
 								row.total_wage = parseFloat(mr['salary']);
+								if(row.total_wage> 9000) {
+									row.total_wage = 9000
+								}
 							}
 							row.gratuity_amount = 0
 						}

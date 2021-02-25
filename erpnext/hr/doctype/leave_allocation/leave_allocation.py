@@ -104,7 +104,6 @@ class LeaveAllocation(Document):
 	def set_total_leaves_allocated(self):
 		self.carry_forwarded_leaves = get_carry_forwarded_leaves(self.employee, 
 			self.leave_type, self.from_date, self.carry_forward)
-
 		self.total_leaves_allocated = flt(self.carry_forwarded_leaves) + flt(self.new_leaves_allocated)
 
 		# Ver 1.0 Begins added by SSK on 22/08/2016, following block is added

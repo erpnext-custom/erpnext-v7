@@ -13,30 +13,53 @@ def execute(filters=None):
 
 def get_data(filters):
 	data = []
-	row = tot = {}
-	duration = mandays = manpower =  weightage = physical_progress = percent_completed = 0.0
+	row  = {}
+	duration = mandays = manpower = exp =  weightage = physical_progress = percent_completed = estimated_budget = expense = 0.0
 	query = construct_query(filters)
 	for a in frappe.db.sql(query, as_dict = True):
-		row = {"name": a.name, "expected_start_date": a.expected_start_date, 
-		"expected_end_date": a.expected_end_date, "total_duration": a.total_duration, "estimated_budget": a.estimated_budget,  "physical_progress_weightage": a.physical_progress_weightage, 
-		"physical_progress":  a.physical_progress, "percent_completed": a.percent_completed, "status": a.status, 
-		"project_engineer": a.project_engineer, "engineer_name": a.pe_name, "contact": a.contact}
+		#expense = get_expense(filters, a.name)	
+		progress_weightage = round(flt(a.physical_progress_weightage), 4)
+		physical_achievement =   round(flt(a.physical_progress), 4)
+		completion = round(flt(physical_achievement)/flt(progress_weightage) * 100, 4)
+		row = {"name": a.name, "expected_start_date": a.expected_start_date, "expected_end_date": a.expected_end_date, 
+		"total_duration": flt(a.total_duration), "estimated_budget": flt(a.estimated_budget), 
+		"expense_incured": flt(expense),	
+		"physical_progress_weightage": progress_weightage, 
+		"physical_progress":  physical_achievement, 
+		"percent_completed": flt(completion),
+		"status": a.status, "project_engineer": a.project_engineer, 
+		"engineer_name": a.pe_name, "contact": a.contact}
 		data.append(row)	
 		duration += flt(a.total_duration)
-                mandays += flt(a.mandays)
-                manpower += flt(a.man_power_required)
-                weightage += flt(a.physical_progress_weightage)
-                physical_progress += flt(a.physical_progress)
-                percent_completed += flt(a.percent_completed)
-		row = {"name": "<b> Overall </b> ", "expected_start_date": a.expected_start_date, 
-                "expected_end_date": a.expected_end_date, "total_duration": duration, "mandays": mandays, 
-                "man_power_required":  manpower, "physical_progress_weightage": weightage, 
-                "physical_progress":  physical_progress, "percent_completed": percent_completed, "project_engineer": ""}
-	data.append(row)
+                estimated_budget += flt(a.estimated_budget)
+                exp += flt(expense)
+		weightage += flt(progress_weightage)
+		physical_progress += flt(physical_achievement)
+		percent_completed  = flt(physical_progress)/flt(weightage) * 100
+	row1 = {"name": "<b> GYALSUNG INFRA </b> ", "total_duration": duration, "estimated_budget": estimated_budget, 
+                "expense_incured": exp, "physical_progress_weightage": round(weightage, 4),
+                "physical_progress":  physical_progress, "percent_completed": round(percent_completed, 4),  "project_engineer": ""}
+	data.append(row1)
 	return data
+
+def get_expense(filters, cost_center):
+	if filters.get("show_all"):
+		cond = "cost_center = '{0}'".format(cost_center)
+		
+	else:
+		parent = frappe.get_doc("Cost Center", {'name': cost_center}).parent_cost_center
+		if parent:
+                	cc = frappe.db.get_list("Cost Center", filters = {'parent_cost_center':parent}, fields = ['name'])
+			cond = " cost_center in '{0}'".format(cc)
+	query = frappe.db.sql(""" select sum(debit) - sum(credit) as expense from `tabGL Entry` where 
+                        1 = 1  and  {0} and 
+                        account in (select name from `tabAccount`  where root_type = 'Expense') and 
+                docstatus = 1""".format(cond), as_dict = 1, debug  = 1)
+	return query[0].expense if query else 0.0
 
 def construct_query(filters):
 	cond = " and is_group = 1"
+	fields = " ifnull(physical_progress_weightage,0) as physical_progress_weightage, case physical_progress when 'NaN' then 0.0 else physical_progress end as physical_progress"
 	if filters.get("project"):
 		if filters.get("show_all"):
 			frappe.throw("Cannot use filters with Show All, Un-Check <b> Show All </b>  to use other filters")
@@ -49,16 +72,11 @@ def construct_query(filters):
 		cond = " and status = '{0}'".format(filters.get("status"))
 	if filters.get("show_all"):
 		cond = " and is_group != 1"
+		fields = " physical_progress_weightage /100 * parent_weightage as physical_progress_weightage, physical_progress / 100 * parent_weightage as physical_progress"
 	
-	query = """ select name, project_name, expected_start_date, expected_end_date, total_duration, estimated_budget, physical_progress_weightage, physical_progress, percent_completed, status, project_engineer, pe_name, contact from `tabProject` where docstatus <= 1 """
-	'''if filters.get("company"):
-		cond =  " and parent_cost_center = '{0}'".format(filters.company)
-
-	if filters.get("cost_center"):
-		cond = " and parent_cost_center = '{0}' and is_group != 1".format(filters.get("cost_center"))
-
-	if filters.get("branch"):
-		cond = " and project_name = '{0}'".format(filters.get("branch"))'''
+	query = """ select name, project_name, expected_start_date, expected_end_date, ifnull(total_duration, 0) as total_duration, 
+		ifnull(estimated_budget,0) as estimated_budget, {0},
+		  status, project_engineer, pe_name, contact from `tabProject` where docstatus <= 1 """.format(fields)
 	query += cond 
 	return query
 
@@ -71,9 +89,9 @@ def get_columns(filters):
                 { "fieldname": "total_duration", "label": _("Duration(Days)"),  "fieldtype": "Int", "width": 100 },
 		{ "fieldname": "estimated_budget", "label": _("Estimated Budget"),  "fieldtype": "Currency", "width": 150 },
                 { "fieldname": "expense_incured", "label": _("Expense Incurred"),  "fieldtype": "Currency", "width": 130 },
-                { "fieldname": "physical_progress_weightage", "label": _("Weightage"),  "fieldtype": "Percent",  "width": 90 },
-                { "fieldname": "physical_progress", "label": _("Achievement"),  "fieldtype": "Percent", "width": 100 },	
-		{ "fieldname": "percent_completed", "label": _("Progress(%)"),  "fieldtype": "Percent", "width": 100 },
+                { "fieldname": "physical_progress_weightage", "label": _("Weightage"),  "fieldtype": "Data",  "width": 90 },
+                { "fieldname": "physical_progress", "label": _("Achievement"),  "fieldtype": "Data", "width": 100 },	
+		{ "fieldname": "percent_completed", "label": _("Progress(%)"),  "fieldtype": "Data", "width": 100 },
                 { "fieldname": "status", "label": _("Status(%)"),  "fieldtype": "Data", "width": 100 },
 		{ "fieldname": "project_engineer", "label": _("Project Engineer/Manager"),  "fieldtype": "Link",  "options": "Employee", "width": 140 },
 		{ "fieldname": "engineer_name", "label": _("PE/PM Name"),  "fieldtype": "Data", "width": 140 },

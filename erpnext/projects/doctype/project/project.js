@@ -33,14 +33,14 @@ frappe.ui.form.on("Project", {
 			{fieldname: 'task_completion_percent', columns: 2},
 		];
 		
-		frm.get_field('additional_tasks').grid.editable_fields = [
+		/*frm.get_field('additional_tasks').grid.editable_fields = [
 			{fieldname: 'task', columns: 3},
 			{fieldname: 'is_group', columns: 1},
 			{fieldname: 'start_date', columns: 2},
 			{fieldname: 'end_date', columns: 2},
 			{fieldname: 'work_quantity', columns: 1},
 			{fieldname: 'work_quantity_complete', columns: 1}
-		];
+		];*/
 		
 	},	
 	
@@ -55,7 +55,7 @@ frappe.ui.form.on("Project", {
 	},
 	refresh: function(frm) {
 		enable_disable(frm);
-		if(!frm.doc.__islocal){
+		if(!frm.doc.__islocal && !frm.doc.is_group){
 			frm.add_custom_button(__("Project Progress Report"), function(){
 					frappe.route_options = {
 						activity: frm.doc.name,
@@ -63,7 +63,7 @@ frappe.ui.form.on("Project", {
 						to_date: frm.doc.expected_end_date
 					};
 					frappe.set_route("query-report", "Project Progress Report");
-				},__("Reports"), "icon-file-alt"
+				},__("<b style='color: blue; font-size: 110%;'> Progress Reports </b>"), "icon-file-alt"
 			);
 			frm.add_custom_button(__("Project Progress Graph"), function(){
 					frappe.route_options = {
@@ -72,7 +72,7 @@ frappe.ui.form.on("Project", {
 						to_date: frm.doc.expected_end_date
 					};
 					frappe.set_route("query-report", "Project Progress Graphs");
-				},__("Reports"), "icon-file-alt"
+				},__("<b style='color: blue; font-size: 110%;'> Progress Graphs </b>"), "icon-file-alt"
 			);
 		}
 		
@@ -105,7 +105,7 @@ frappe.ui.form.on("Project", {
                 var added_min = false;
 
        
-                var title = __('{0} Percent Completed', [parseFloat(frm.doc.percent_completed, 2)]);
+                var title = __('<b style="color: green; font-size: 110%;">  {0} Percent Completed </b>', [parseFloat(frm.doc.percent_completed, 2)]);
                 bars.push({
                         'title': title,
                         'width': parseFloat(frm.doc.percent_completed) + '%',
@@ -201,11 +201,11 @@ frappe.ui.form.on("Project", {
 	},
 	physical_progress_weightage: function() {
 		//cur_frm.set_value("percent_completed", (parseFloat(cur_frm.doc.physical_progress)/parseFloat(cur_frm.doc.physical_progress_weightage) *100).toFixed(4))
-		cur_frm.set_value("physical_progress", (parseFloat(cur_frm.doc.percent_completed)/100 * parseFloat(cur_frm.doc.physical_progress_weightage)).toFixed(4))
+		//cur_frm.set_value("physical_progress", (parseFloat(cur_frm.doc.percent_completed)/100 * parseFloat(cur_frm.doc.physical_progress_weightage)).toFixed(4))
 	},
-	percent_completed: function() {
-		cur_frm.set_value("physical_progress", (parseFloat(cur_frm.doc.percent_completed)/100 * parseFloat(cur_frm.doc.physical_progress_weightage)).toFixed(4))
-	}
+	//percent_completed: function() {
+		//cur_frm.set_value("physical_progress", (parseFloat(cur_frm.doc.percent_completed)/100 * parseFloat(cur_frm.doc.physical_progress_weightage)).toFixed(4))
+	//}
 });
 
 frappe.ui.form.on("Project Task", {
@@ -279,11 +279,11 @@ frappe.ui.form.on("Activity Tasks", {
 	},
 	task_achievement_percent: function(frm, doctype, name) {
 	var at = frm.doc.activity_tasks || [];
-        var task_achievement_percent = 0.0
+        var task_achievement_percent1 = 0.0
         for(var i=0; i<at.length; i++){
-                        task_achievement_percent += parseFloat(at[i].task_achievement_percent || 0.0);
+                        task_achievement_percent1 += parseFloat(at[i].task_achievement_percent || 0.0);
                 }
-        cur_frm.set_value("percent_completed", (parseFloat(task_achievement_percent)).toFixed(4))
+        cur_frm.set_value("percent_completed", (parseFloat(task_achievement_percent1)).toFixed(4))
 	cur_frm.set_value("physical_progress", (parseFloat(cur_frm.doc.percent_completed)/100 * parseFloat(cur_frm.doc.physical_progress_weightage)).toFixed(4))
 	}
 });

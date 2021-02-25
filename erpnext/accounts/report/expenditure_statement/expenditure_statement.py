@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt
-from erpnext.accounts.report.financial_statements_emines import (get_period_list, get_columns, get_data)
+from erpnext.accounts.report.financial_statements_gyalsung  import (get_period_list, get_columns, get_data)
 
 def execute(filters=None):
 	if filters.show_zero_values:

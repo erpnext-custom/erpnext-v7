@@ -336,7 +336,7 @@ class SalarySlip(TransactionBase):
                         where status = 'Absent'
                         and employee = %s
                         and att_date between %s and %s
-                """, (self.employee, start_date, end_date) )
+                """, (self.employee, start_date, end_date))
                 if absentes:
                         absent = absentes[0][0]
                 return absent

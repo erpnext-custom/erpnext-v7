@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cint, flt, nowdate
+from frappe.utils import cint, flt, nowdate, getdate
 from frappe import _
 #from erpnext.hr.doctype.salary_increment.salary_increment import get_employee_payscale
 from erpnext.hr.hr_custom_functions import get_month_details
@@ -14,17 +14,17 @@ import calendar
 class ProcessIncrement(Document):
         # Following method created by SHIV on 2018/10/10
         def get_emp_list(self, process_type=None):
+		prev_fy = int(self.fiscal_year) - int(1)
+		date = getdate(str(prev_fy) + "-10-01")
 		cond = self.get_filter_condition()
-
 		if process_type == "create":
                         cond += self.get_joining_releiving_condition()
                         emp_list = frappe.db.sql("""
-                                select t1.name
+                                select t1.name, t1.date_of_joining
                                   from `tabEmployee` as t1
-                                 where t1.status = 'Active'
-                                   and t1.increment_and_promotion_cycle = '{0}'
-				   and t1.employment_type != 'Deputation'
-                                   and not exists(select 1
+                                 where t1.status = 'Active' and name != 'GYAL20413'
+                                and t1.date_of_joining <= '{4}'   
+				and not exists(select 1
                                                    from `tabSalary Increment` as t3
                                                    where t3.employee = t1.employee
                                                    and t3.docstatus != 2
@@ -32,7 +32,7 @@ class ProcessIncrement(Document):
                                                    and t3.month = '{2}')
                                    {3}
                                  order by t1.branch, t1.name
-                        """.format(calendar.month_name[int(self.month)],self.fiscal_year,self.month,cond),as_dict=True)
+                        """.format(calendar.month_name[int(self.month)],self.fiscal_year,self.month,cond, date),as_dict=True)
 		else:
                         emp_list = frappe.db.sql("""
                                 select t1.name
@@ -40,62 +40,17 @@ class ProcessIncrement(Document):
                                 where t1.fiscal_year = '{0}'
                                 and t1.month = '{1}'
                                 and t1.docstatus = 0
-				and t1.employment_type != 'Deputation'
                                 {2}
                                 order by t1.branch, t1.name
                         """.format(self.fiscal_year, self.month, cond), as_dict=True)
 		
 		return emp_list
 
-        # Following method commented by SHIV on 2018/10/10
-        '''
-        def get_emp_list(self):
-		"""
-			Returns list of active employees based on selected criteria
-			and for which salary structure exists
-		"""
-		import calendar
-		
-		cond = self.get_filter_condition()
-		cond += self.get_joining_releiving_condition()
-
-                increment_month = calendar.month_name[int(self.month)]
-
-                ### Ver 2.0 Begins
-                # Following line added by shiv on 26/01/2018
-                increment_date  = str(self.fiscal_year)+'-'+str(self.month)+'-01'
-                ### Ver 2.0 Ends
-                
-		emp_list = frappe.db.sql("""
-			select
-                                t1.name, t1.employee_subgroup, t1.company, t1.branch,
-                                t1.department, t1.division, t1.section, t1.employee_name,
-                                t1.date_of_joining,
-                                (
-                                case
-                                        when day(t1.date_of_joining) > 1 and day(t1.date_of_joining) <= 15
-                                        then timestampdiff(MONTH,t1.date_of_joining,'%s')+1 
-                                        else timestampdiff(MONTH,t1.date_of_joining,'%s')       
-                                end
-                                ) as no_of_months
-			  from
-                                `tabEmployee` t1,
-                                `tabSalary Structure` t2
-			 where t1.docstatus!=2 and t2.docstatus != 2
-			   and t1.increment_and_promotion_cycle = '%s'
-			   and ifnull(t2.salary_slip_based_on_timesheet,0) = 0
-			   and t1.name = t2.employee
-			   and t2.is_active = 'Yes'
-		%s """% (increment_date, increment_date, increment_month,cond),as_dict=True)
-
-		return emp_list
-        '''
-
 	def get_filter_condition(self):
 		self.check_mandatory()
 
 		cond = ''
-		for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
+		for f in ['company', 'branch', 'department', 'division', 'designation', 'employee', 'employment_type']:
 			if self.get(f):
 				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 
@@ -103,7 +58,7 @@ class ProcessIncrement(Document):
 
 
         def check_mandatory(self):
-		for f in ['company', 'month', 'fiscal_year']:
+		for f in ['company', 'month', 'fiscal_year', 'employment_type']:
 			if not self.get(f):
 				frappe.throw(_("Please set {0}").format(f))
 
@@ -120,7 +75,6 @@ class ProcessIncrement(Document):
         def process_increment(self, process_type=None, name=None):
                 self.check_permission('write')
 		msg = ""
-		
 		if name:
                         try:
                                 if process_type == "create":
@@ -150,111 +104,7 @@ class ProcessIncrement(Document):
 
                 return name
 
-	def create_increment(self):
-		"""
-			Creates salary increment for selected employees if already not created
-		"""
-
-		emp_list = self.get_emp_list()
-		si_list = []
-		for emp in emp_list:
-			if not frappe.db.sql("""select name from `tabSalary Increment`
-					where docstatus!= 2 and employee = %s and month = %s and fiscal_year = %s and company = %s
-					""", (emp.name, self.month, self.fiscal_year, self.company)) and flt(emp.no_of_months) >= 3:
-                                payscale = get_employee_payscale(emp.name, emp.employee_subgroup, self.fiscal_year, self.month)
-
-                                # Prorate based on noof months
-                                minimum_months       = 3
-                                total_months         = flt(emp.no_of_months)
-                                calculated_factor    = 1 if flt(total_months)/12 >= 1 else round(flt(total_months)/12,2)
-                                calculated_increment = round(flt(payscale.increment)*flt(calculated_factor))
-				
-				if payscale:
-                                        si = frappe.get_doc({
-                                                "doctype": "Salary Increment",
-                                                "fiscal_year": self.fiscal_year,
-                                                "employee": emp.name,
-                                                "month": self.month,
-                                                "company": emp.company,
-                                                "branch": emp.branch,
-                                                "department": emp.department,
-                                                "division": emp.division,
-                                                "section": emp.section,
-                                                "employee_subgroup": emp.employee_subgroup,
-                                                "payscale_minimum": payscale.minimum,
-                                                "payscale_increment": payscale.increment,
-                                                "payscale_maximum": payscale.maximum,
-                                                "old_basic": payscale.old_basic,
-                                                "new_basic": flt(payscale.old_basic)+flt(calculated_increment),
-                                                "increment": calculated_increment,
-                                                "employee_name": emp.employee_name,
-						"salary_structure": payscale.salary_structure,
-                                                "minimum_months": minimum_months,
-                                                "total_months": total_months,
-                                                "calculated_factor": calculated_factor,
-                                                "calculated_increment": calculated_increment,
-                                                "date_of_reference": emp.date_of_joining
-                                        })
-                                        si.insert()
-                                        si_list.append(si.name)
-
-		return self.create_log(si_list)
-
-        def remove_increment(self):
-                cond = ''
-		for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
-			if self.get(f):
-				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
-
-		si_list = frappe.db.sql_list("""
-                                select t1.name from `tabSalary Increment` as t1
-                                where t1.fiscal_year = '%s'
-                                and t1.month = '%s'
-                                and t1.docstatus = 0
-                                %s
-                                """ % (self.fiscal_year, self.month, cond))
-                si_log = []
-                if si_list:
-                        for row in si_list:
-                                frappe.delete_doc("Salary Increment", frappe.db.sql_list("""
-                                        select t1.name from `tabSalary Increment` as t1
-                                        where t1.name = '%s'
-                                        """ % row), for_reload=True)
-                                si_log.append(row)
-
-                return self.remove_log(si_log)
-        
-        def submit_increment(self):
-		"""
-			Submit all salary increments based on selected criteria
-		"""
-		cond = ''
-		for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
-			if self.get(f):
-				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
-
-		si_list = frappe.db.sql_list("""
-                                select t1.name from `tabSalary Increment` as t1
-                                where t1.fiscal_year = '%s'
-                                and t1.month = '%s'
-                                and t1.docstatus = 0
-                                %s
-                                """ % (self.fiscal_year, self.month, cond))
-                si_log = []
-                not_submitted_si = []
-                
-		for row in si_list:
-			si_obj = frappe.get_doc("Salary Increment",row)
-			try:
-                                si_log.append(row)
-				si_obj.submit()
-			except Exception,e:
-				not_submitted_si.append(row)
-				frappe.msgprint(e)
-				continue
-
-		return self.submit_log(si_log, not_submitted_si)
-
+ 
 	def create_log(self, si_list):
 		log = "<p>" + _("No employee for the above selected criteria OR salary increment already created") + "</p>"
 		if si_list:

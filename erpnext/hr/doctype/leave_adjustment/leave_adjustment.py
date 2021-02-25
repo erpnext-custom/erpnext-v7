@@ -42,10 +42,15 @@ class LeaveAdjustment(Document):
 				las = frappe.db.sql("select name from `tabLeave Allocation` where employee = %s and leave_type = %s and to_date >= %s", (a.employee, self.leave_type, self.adjustment_date), as_dict=True)
 				for l in las:
 					doc = frappe.get_doc("Leave Allocation", l.name)
-					carry_forwarded = flt(doc.carry_forwarded_leaves) - flt(a.difference)
+					cl = doc.carry_forwarded_leaves
+					carry_forwarded = flt(cl) - flt(a.difference)
 					balance = flt(doc.total_leaves_allocated) - flt(a.difference)
+					if self.leave_type == 'Casual Leave':
+						carry_forwarded = 0
+						balance = flt(doc.total_leaves_allocated) - flt(cl) - flt(a.difference) 
+
 					if cancel:
-						carry_forwarded = flt(doc.carry_forwarded_leaves) + flt(a.difference)
+						carry_forwarded = flt(cl) + flt(a.difference)
 						balance = flt(doc.total_leaves_allocated) + flt(a.difference)
 				
 					if le.name != 'GCE':
@@ -62,6 +67,9 @@ class LeaveAdjustment(Document):
 		query = "select name as employee, employee_name from tabEmployee where status = 'Active' and date_of_joining <= %s and employment_type = %s"
 		if self.branch:
 			query += " and branch = \'"+str(self.branch)+"\'"
+		
+		if self.employee:
+			query += " and employee = \'"+str(self.employee)+"\'"
 
 		entries = frappe.db.sql(query, [self.adjustment_date, self.employment_type], as_dict=True)
 		self.set('items', [])

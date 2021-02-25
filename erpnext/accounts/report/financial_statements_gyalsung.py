@@ -18,7 +18,9 @@ def get_period_list(fiscal_year, periodicity):
 		frappe.throw(_("Fiscal Year {0} not found.").format(fiscal_year))
 
 	# start with first day, so as to avoid year to_dates like 2-April if ever they occur]
-	year_start_date = get_first_day(getdate(fy_start_end_date[0]))
+	#added year_start_date
+        year_start_date = get_first_day(getdate('2020-01-01'))
+	#year_start_date = get_first_day(getdate(fy_start_end_date[0]))
 	year_end_date = getdate(fy_start_end_date[1])
 
 	if periodicity == "Yearly":
@@ -297,27 +299,7 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 				"lft": root_lft,
 				"rgt": root_rgt
 			},
-			as_dict=True)
-
-		'''
-		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from 
-			`tabGL Entry` 
-			where voucher_no in ( select voucher_no from `tabGL Entry` where account
- 			in (select name from `tabAccount` where account_type in ('Bank', 'Cash'))) and
-			 company=%(company)s
-			{additional_conditions}
-			and account in (select name from `tabAccount`
-				where lft >= %(lft)s and rgt <= %(rgt)s)
-			order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
-			{
-				"company": company,
-				"from_date": from_date,
-				"to_date": to_date,
-				"lft": root_lft,
-				"rgt": root_rgt
-			},
-			as_dict=True)
-		'''
+			as_dict=True, debug = 1)
 	else:
 		cost_centers = get_child_cost_centers(cost_center);
 		additional_conditions.append("and cost_center IN %(cost_center)s")
@@ -335,26 +317,7 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 				"lft": root_lft,
 				"rgt": root_rgt
 			},
-			as_dict=True)
-		'''
-		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`
-			from `tabGL Entry` 
-			where voucher_no in ( select voucher_no from `tabGL Entry` where account
- 			in (select name from `tabAccount` where account_type in ('Bank', 'Cash')) and company=%(company)s
-			{additional_conditions}
-			and account in (select name from `tabAccount`
-				where lft >= %(lft)s and rgt <= %(rgt)s)
-			order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
-			{
-				"cost_center": cost_centers,
-				"company": company,
-				"from_date": from_date,
-				"to_date": to_date,
-				"lft": root_lft,
-				"rgt": root_rgt
-			},
-			as_dict=True)
-		'''
+			as_dict=True, debug = 1)
 
 	for entry in gl_entries:
 		gl_entries_by_account.setdefault(entry.account, []).append(entry)
@@ -423,12 +386,10 @@ def set_gl_entries_by_account1(cost_center, company, from_date, to_date, root_lf
 
         if not cost_center:
                 gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`
-                        from `tabGL Entry` 
-			where voucher_no in ( select voucher_no from `tabGL Entry` where account
- 			in (select name from `tabAccount` where account_type in ('Bank', 'Cash')) and company=%(company)s
+                        where company=%(company)s
                         {additional_conditions}
                         and account in (select name from `tabAccount`
-                                where lft >= %(lft)s and rgt <= %(rgt)s)
+                                where lft >= %(lft)s and rgt <= %(rgt)s and account_type in ('Bank', 'Cash', 'Income Account', 'Expense Account'))
                         order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
                         {
                                 "company": company,
@@ -443,12 +404,10 @@ def set_gl_entries_by_account1(cost_center, company, from_date, to_date, root_lf
                 cost_centers = get_child_cost_centers(cost_center);
                 additional_conditions.append("and cost_center IN %(cost_center)s")
                 gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`
-                        from `tabGL Entry` 
-			where voucher_no in ( select voucher_no from `tabGL Entry` where account
- 			in (select name from `tabAccount` where account_type in ('Bank', 'Cash')) and  company=%(company)s
+                        where company=%(company)s
                         {additional_conditions}
                         and account in (select name from `tabAccount`
-                                where lft >= %(lft)s and rgt <= %(rgt)s)
+                                where lft >= %(lft)s and rgt <= %(rgt)s and account_type in ('Bank', 'Cash', 'Income Account', 'Expense Account'))
                         order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
                         {
                                 "cost_center": cost_centers,
@@ -464,5 +423,4 @@ def set_gl_entries_by_account1(cost_center, company, from_date, to_date, root_lf
                 gl_entries_by_account.setdefault(entry.account, []).append(entry)
 
         return gl_entries_by_account
-
 
