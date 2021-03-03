@@ -1,6 +1,6 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-frappe.require("assets/erpnext/js/financial_statements.js", function() {
+frappe.require("assets/erpnext/js/financial_statements1.js", function() {
 
 	frappe.query_reports["Expenditure Statement"] = erpnext.financial_statements;
 	

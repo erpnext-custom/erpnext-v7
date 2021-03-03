@@ -43,14 +43,16 @@ def get_data(filters):
 	return data
 
 def get_expense(filters, cost_center):
+	ccenter = []
 	if filters.get("show_all"):
-		cond = "cost_center = '{0}'".format(cost_center)
+		cond = """ cost_center = "{0}" """.format(cost_center)
 		
 	else:
 		parent = frappe.get_doc("Cost Center", {'name': cost_center}).parent_cost_center
 		if parent:
-                	cc = frappe.db.get_list("Cost Center", filters = {'parent_cost_center':parent}, fields = ['name'])
-			cond = " cost_center in '{0}'".format(cc)
+                	cc = frappe.get_doc("Cost Center", {'parent_cost_center': parent}).name
+			#cc = frappe.db.get_list("Cost Center", filters = {'parent_cost_center':parent}, fields = ['name'])
+			cond = """ cost_center in ("{0}") """.format(cc)
 	query = frappe.db.sql(""" select sum(debit) - sum(credit) as expense from `tabGL Entry` where 
                         1 = 1  and  {0} and 
                         account in (select name from `tabAccount`  where root_type = 'Expense') and 

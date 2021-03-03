@@ -293,4 +293,11 @@ def get_data():
                         "label": _("Budget Management"),
                         "type": "module"
                 },
+		{
+                        "module_name": "Knowledge And Support",
+                        "color": "#2c3e50",
+                        "icon": "icon-phone",
+                        "label": _("Knowledge And Support"),
+                        "type": "module"
+                }
 	]

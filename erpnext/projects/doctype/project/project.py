@@ -394,4 +394,3 @@ def holiday_list(from_date, to_date, hol_list):
 	where h1.parent = h2.name and h1.holiday_date between %s and %s
 	and h2.name = %s""", (from_date, to_date, hol_list))[0][0]
 	return holidays
-
