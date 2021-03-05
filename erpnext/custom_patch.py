@@ -6,10 +6,168 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def remove_gl_party():
+	i  = 1
+	for a in frappe.db.sql("""select g.name, g.party, g.party_type, g.account, a.account_type
+						from `tabGL Entry` g, `tabAccount` a 
+						where g.account = a.name and 
+						a.account_type NOT IN ('Receivable', 'Payable')
+						and length(g.party) > 0
+						""", as_dict=True):
+		#frappe.db.sql("update `tabGL Entry` set party = '', party_type = '' where name = '{}'".format(a.name))
+		#frappe.db.commit()
+		print("Done" + str(i) + " | " +str(a.name) +" | " + str(a.account) + " | " + str(a.party) + "|"+ str(a.account_type))
+		i+=1
+
+def copy_issue_to_employee():
+	for a in frappe.db.sql("""
+		SELECT 
+			name, issued_to
+		FROM 
+			`tabStock Entry Detail`
+		""",as_dict=True):
+		if 'EMP/' in str(a.issued_to):
+			frappe.db.sql("""
+				UPDATE
+					`tabStock Entry Detail`
+				SET 
+					issued_to_employee = '{0}'
+				WHERE 
+					name = '{1}'
+			""".format(a.issued_to,a.name))
+		elif 'EQUIP' in str(a.issued_to):
+			frappe.db.sql("""
+				UPDATE
+					`tabStock Entry Detail`
+				SET 
+					issued_to_equipment = '{0}'
+				WHERE 
+					name = '{1}'
+			""".format(a.issued_to,a.name))
+
+def update_ot_jv():
+	i = 0
+	for a in frappe.db.sql("""select name, payment_jv, posting_date
+				from `tabOvertime Application` 
+				where (payment_jv is NOT NULL or payment_jv !='') 
+				and posting_date between '2021-01-01' and '2021-02-11'""", as_dict=True):
+		if frappe.db.exists("Journal Entry", a.payment_jv):
+			doc = frappe.get_doc("Journal Entry", a.payment_jv)
+			'''
+			if doc.docstatus == 1:
+				frappe.db.sql("delete from `tabGL Entry` where voucher_no = '{}'".format(a.payment_jv))
+			frappe.db.sql("delete from `tabJournal Entry` where name ='{}'".format(a.payment_jv))
+			frappe.db.sql("delete from `tabJournal Entry Account` where parent='{}'".format(a.payment_jv))
+			frappe.db.sql("update `tabOvertime Application` set payment_jv='' where name ='{}'".format(a.name))
+			frappe.db.commit()
+			'''
+			i+=1
+			print(str(i) + " JV :" + a.payment_jv + " Docstatus : " + str(doc.docstatus) + " posting_date : " + str(doc.posting_date))
+		else:
+			print("Does not exisit" + str(i) + " JV :" + str(a.payment_jv) + " Name: " + str(a.name))
+
+
+def update_transportation_se():
+	for a in frappe.db.sql("""
+						Select 
+						name, 
+						equipment, 
+						equipment_number,
+						equipment_type,
+						weight_slip_no,
+						gross_vehicle_weight,
+						tyre_weight,
+						pol_slip_no, 
+						equipment_model,
+						transporter_name,
+						vehicle_dispatch_date_and_time,
+						project,
+						remarks,
+						customers,
+						location,
+						rate_base_on_distance,
+						distance,
+						transportation_rate,
+						unloading_by from `tabStock Entry` 
+						where (equipment !='' OR equipment is NOT NULL) 
+						and transport_payment_done = 0""", as_dict=True):
+		child_count = 0
+		for b in frappe.db.sql("select count(*) as count from `tabStock Entry Detail` where parent = '{}'".format(a.name), as_dict=True):
+			child_count = b.count
+		if child_count == 1:
+			frappe.db.sql("""
+				UPDATE `tabStock Entry Detail` 
+				SET equipment = '{0}',
+				equipment_number = '{1}',
+				equipment_type = '{2}',
+				weight_slip_no = '{3}',
+				gross_vehicle_weight = '{4}',
+				tyre_weight = {5},
+				pol_slip_no = '{6}',
+				equipment_model ='{7}',
+				transporter_name = '{8}',
+				vehicle_dispatch_date_and_time='{9}',
+				project='{10}',
+				customers='{11}',
+				location='{12}',
+				rate_base_on_distance='{13}',
+				distance='{14}',
+				transportation_rate={15},
+				unloading_by='{16}'
+				WHERE parent = '{17}'
+			""".format(a.equipment,a.equipment_number,a.equipment_type,a.weight_slip_no,
+			a.gross_vehicle_weight,a.tyre_weight,a.pol_slip_no,a.equipment_model,
+			a.transporter_name,a.vehicle_dispatch_date_and_time,a.project,
+			a.customers,a.location,a.rate_base_on_distance,a.distance,a.transportation_rate,a.unloading_by,a.name))
+
+# bench execute erpnext.custom_patch.update_transportation_se
+# following method created by SHIV on 2021/01/28 to remove expired salary advance entries
+def remove_expired_salary_advance(submit=0):
+	expiry_date = "2020-12-31"
+	salary_component = "Salary Advance Deductions"
+
+	li = frappe.db.sql("""
+		SELECT sd.name salary_detail, sst.name salary_structure, sst.employee, 
+			sst.employee_name, sd.from_date, sd.to_date, sd.amount
+		FROM `tabSalary Detail` sd, `tabSalary Structure` sst, `tabEmployee` e
+		WHERE sst.is_active = 'Yes'
+		AND e.name = sst.employee
+		AND sd.parent = sst.name
+		AND sd.salary_component = '{salary_component}'
+		AND sd.parentfield = 'deductions'
+		AND (
+				(sd.to_date IS NOT NULL AND sd.to_date <= '{expiry_date}' )
+				OR
+				(sd.amount = 0)
+			)
+		AND EXISTS(SELECT 1
+				FROM tmp_sa t
+				WHERE t.employee = sst.employee)
+		ORDER BY sst.employee
+	""".format(expiry_date = expiry_date, salary_component = salary_component), as_dict=True)
+
+	counter = 0
+	for i in li:
+		counter += 1
+		print counter, i.salary_detail, i.employee, i.salary_structure, i.from_date, i.to_date, i.amount, i.employee_name
+
+		# create backup record
+		if submit:
+			frappe.db.sql("insert into `tabSalary Detail Backup` select * from `tabSalary Detail` where name = '{}'".format(i.salary_detail))
+			frappe.db.sql("delete from `tabSalary Detail` where name = '{}'".format(i.salary_detail))
+			sst = frappe.get_doc("Salary Structure", i.salary_structure)
+			sst.save(ignore_permissions=True)
+			frappe.db.commit()
+
+def pass_eme_payment():
+	for a in frappe.db.sql("select name from `tabEME Payment` where docstatus = 1", as_dict=1):
+		doc = frappe.get_doc("EME Payment", a.name)
+		doc.update_general_ledger()
+
 def eme_eqp_update():
 	for a in frappe.db.sql("select name, equipment from `tabEME Payment Item`", as_dict=1):
 		doc = frappe.get_doc("Equipment", a.equipment)
-		frappe.db.sql("update `tabEME Payment Item` set equipment_no = '{0}' where name = '{1}'".format(doc.equipment_number, a.name))
+		frappe.db.sql("update `tabEME Payment Item` set equipment_type = '{0}' where name = '{1}'".format(doc.equipment_type, a.name))
 
 def eme_update_trans():
 	for e in frappe.db.sql("select name from tabEquipment where branch = 'Tshophangma'", as_dict=1):

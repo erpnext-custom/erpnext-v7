@@ -41,10 +41,20 @@ def get_data():
 					"name": "Transporter Payment",
 				},
 				{
-                                        "type": "doctype",
-                                        "name": "TDS Remittance",
-                                        "description": _("TDS Remittance")
-                                },
+					"type": "doctype",
+					"name": "TDS Remittance",
+					"description": _("TDS Remittance")
+				},
+				{
+					"type": "doctype",
+					"name": "Overtime Payment",
+					"description": _("Employee Overtime Payment")
+				},
+				{
+					"type": "doctype",
+					"name": "EME Payment",
+					"description": _("EME Payment")
+				},
 			]
 		},
 		{

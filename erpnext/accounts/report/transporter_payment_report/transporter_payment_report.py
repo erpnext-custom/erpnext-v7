@@ -15,6 +15,7 @@ def get_data(filters):
 	data1 = []
 	query = """
 		select 
+			name,
 			branch, 
 			(select cost_center from `tabBranch` where name = branch limit 1), 
 			posting_date, equipment, registration_no, 
@@ -32,21 +33,22 @@ def get_data(filters):
 		cc = frappe.get_doc("Branch", d.branch).cost_center
 		eq = frappe.db.get_values("Equipment", {"name": d.equipment, "is_disabled": 0}, ["equipment_type", "owner_name", "bank_name", \
 					"account_number", "ifs_code"], as_dict=True)
-		equipment_type = eq[0].equipment_type 
-		owner_name = eq[0].owner_name
-		bank_name = eq[0].bank_name
-		account_number = eq[0].account_number
-		ifs_code = eq[0].ifs_code
-		if filters.get("equipment_type") and equipment_type == filters.get("equipment_type"):
-			row = [d.branch, cc, d.posting_date, d.equipment, d.registration_no, equipment_type, d.total_trip, d.gross_amount, \
-			d.pol_amount, d.other_deductions, d.amount_payable, d.cheque_no, d.cheque_date, owner_name, bank_name, account_number, \
-			ifs_code]
-			data.append(row)
-		else:
-			row = [d.branch, cc, d.posting_date, d.equipment, d.registration_no, equipment_type, d.total_trip, d.gross_amount, \
-			d.pol_amount, d.other_deductions, d.amount_payable, d.cheque_no, d.cheque_date, owner_name, bank_name, account_number, \
-			ifs_code]
-			data1.append(row)
+		if eq:
+			equipment_type = eq[0].equipment_type 
+			owner_name = eq[0].owner_name
+			bank_name = eq[0].bank_name
+			account_number = eq[0].account_number
+			ifs_code = eq[0].ifs_code
+			if filters.get("equipment_type") and equipment_type == filters.get("equipment_type"):
+				row = [d.name,d.branch, cc, d.posting_date, d.equipment, d.registration_no, equipment_type, d.total_trip, d.gross_amount, \
+				d.pol_amount, d.other_deductions, d.amount_payable, d.cheque_no, d.cheque_date, owner_name, bank_name, account_number, \
+				ifs_code]
+				data.append(row)
+			else:
+				row = [d.name,d.branch, cc, d.posting_date, d.equipment, d.registration_no, equipment_type, d.total_trip, d.gross_amount, \
+				d.pol_amount, d.other_deductions, d.amount_payable, d.cheque_no, d.cheque_date, owner_name, bank_name, account_number, \
+				ifs_code]
+				data1.append(row)
 	if filters.get("equipment_type"):
 		return data
 	else:
@@ -54,6 +56,7 @@ def get_data(filters):
 
 def get_columns():
 	return [
+		_("Transporter Number") + ":Link/Transporter Payment:100",
 		_("Branch") + ":Link/Branch:170",
 		_("Cost Center") + ":Link/Cost Center:170",
 		_("Posting Date") + ":Date:100",

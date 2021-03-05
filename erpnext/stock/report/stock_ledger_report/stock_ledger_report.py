@@ -41,10 +41,10 @@ def get_stock_ledger_entries(filters):
 	return frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
 			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
 			stock_value, voucher_type, voucher_no, batch_no, serial_no, 
-			CASE voucher_type WHEN 'Stock Entry' THEN (select equipment_number from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select lr_no from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as vehicle_no, 
-			CASE voucher_type WHEN 'Stock Entry' THEN (select unloading_by from `tabStock Entry` where name = voucher_no) ELSE ''  END as unloading_by, 
-			CASE voucher_type WHEN 'Delivery Note' THEN (select customer from `tabDelivery Note` where name = voucher_no) ELSE '' END as customer, 
-			CASE voucher_type WHEN 'Stock Entry' THEN (select transporter_name from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select transporter_name1 from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as transporter_name, company
+			CASE voucher_type WHEN 'Stock Entry' THEN (select COALESCE(se.equipment_number,sed.equipment_number) from `tabStock Entry` se, `tabStock Entry Detail` sed where se.name = voucher_no and sed.parent = voucher_no limit 1) WHEN 'Delivery Note' THEN (select lr_no from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as vehicle_no, 
+			CASE voucher_type WHEN 'Stock Entry' THEN (select COALESCE(se.unloading_by,sed.unloading_by) from `tabStock Entry` se, `tabStock Entry Detail` sed where se.name = voucher_no and sed.parent = voucher_no limit 1) WHEN 'Delivery Note' THEN (select lr_no from `tabDelivery Note` where name = voucher_no) ELSE ''  END as unloading_by, 
+			CASE voucher_type WHEN 'Delivery Note' THEN (select customer from `tabDelivery Note` where name = voucher_no) ELSE '' END as customer, 			
+			CASE voucher_type WHEN 'Stock Entry' THEN (select COALESCE(se.transporter_name,sed.transporter_name) from `tabStock Entry` se, `tabStock Entry Detail` sed where se.name = voucher_no and sed.parent = voucher_no limit 1) WHEN 'Delivery Note' THEN (select transporter_name1 from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as transporter_name, company
 		from `tabStock Ledger Entry`
 		where company = %(company)s and
 			posting_date between %(from_date)s and %(to_date)s

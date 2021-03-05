@@ -1,12 +1,6 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-/*
-------------------------------------------------------------------------------------------------------------------------------------------
-Version          Author         Ticket#           CreatedOn          ModifiedOn          Remarks
------------- --------------- --------------- ------------------ -------------------  -----------------------------------------------------
-1.0.190401       SHIV		                                     	2019/04/01         Refined process for making SL and GL entries
-------------------------------------------------------------------------------------------------------------------------------------------                                                                          
-*/
+
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("item_code", "item_name", "item_name")
 cur_frm.add_fetch("item_code", "stock_uom", "uom")
@@ -23,8 +17,11 @@ frappe.ui.form.on('Production', {
 	},
 
 	setup: function(frm) {
+		frm.get_docfield("raw_materials").allow_bulk_edit = 1;	
+		frm.get_docfield("items").allow_bulk_edit = 1;
 		frm.get_field('raw_materials').grid.editable_fields = [
 			{fieldname: 'item_code', columns: 3},
+			{fieldname: 'item_type', columns: 3},
 			{fieldname: 'qty', columns: 2},
 			{fieldname: 'uom', columns: 1},
 		];
@@ -32,8 +29,8 @@ frappe.ui.form.on('Production', {
 			{fieldname: 'item_code', columns: 3},
 			{fieldname: 'qty', columns: 2},
 			{fieldname: 'uom', columns: 1},
-			{fieldname: 'price_template', columns: 2},
-			{fieldname: 'cop', columns: 2},
+			{fieldname: 'item_type', columns: 2},
+			{fieldname: 'equipment_number', columns: 2},
 		];
 	},
 
@@ -75,10 +72,13 @@ frappe.ui.form.on('Production', {
 	cost_center: function(frm){
 		update_items(frm);
 	},
-	/* ++++++++++ Ver 1.0.190401 Ends ++++++++++++*/
 	get_product: function(frm){
 		get_finish_product(frm);
+	},
+	get_raw_material: function(frm){
+		get_raw_materials(frm);
 	}
+
 });
 
 frappe.ui.form.on("Production", "refresh", function(frm) {
@@ -116,7 +116,9 @@ frappe.ui.form.on("Production", "refresh", function(frm) {
     });
 })
 
-frappe.ui.form.on("Production Product Item", { 
+frappe.ui.form.on("Production Product Item", {
+	"refresh": function(frm, cdt, cdn) {
+	}, 
 	"price_template": function(frm, cdt, cdn) {
 		d = locals[cdt][cdn]
 		frappe.call({
@@ -245,6 +247,20 @@ cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = functi
         }
 }
 
+cur_frm.fields_dict['items'].grid.get_field('item_type').get_query = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+			filters: {'item_code': d.item_code}
+	}
+}
+
+cur_frm.fields_dict['raw_materials'].grid.get_field('item_type').get_query = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+			filters: {'item_code': d.item_code}
+	}
+}
+
 cur_frm.fields_dict['items'].grid.get_field('vehicle_no').get_query = function(frm, cdt, cdn) {
 	        var d = locals[cdt][cdn];
 		        return {
@@ -267,7 +283,8 @@ function get_finish_product(frm){
 							{	
 								var row = frappe.model.add_child(cur_frm.doc, "Production Product Item", "items");
 								row.item_code = rec['item_code'];
-								row.item_name = rec['item_name'];		
+								row.item_name = rec['item_name'];
+								row.item_type = rec['item_type'];		
 								row.qty = rec['qty'];
 								row.uom = rec['uom'];
 								row.item_group = rec['item_group'];
@@ -297,5 +314,41 @@ function get_finish_product(frm){
             });     
 	}else{
 		frappe.msgprint("To get the finish product, please enter the branch and raw material");
+	}
+}
+
+function get_raw_materials(frm){
+	if (frm.doc.branch && frm.doc.items){
+		return frappe.call({
+				method: "get_raw_material",
+				doc: cur_frm.doc,
+				callback: function(r, rt){					
+					if(r.message){
+						console.log(r.message);
+						cur_frm.clear_table("raw_materials");
+						r.message.forEach(function(rec) {
+							if(rec['parameter_type'] == "Item")
+							{	
+								var row = frappe.model.add_child(cur_frm.doc, "Production Material Item", "raw_materials");
+								row.item_code = rec['item_code'];
+								row.item_name = rec['item_name'];	
+								row.item_type = rec['item_type'];	
+								row.qty = rec['qty'];
+								row.uom = rec['uom'];
+								row.cost_center = rec['cost_center'];
+								row.warehouse = rec['warehouse'];
+								row.expense_account = rec['expense_account'];
+							}
+						});
+					}
+					else
+					{
+						cur_frm.clear_table("raw_materials");
+					}					
+				cur_frm.refresh();
+				},
+            });     
+	}else{
+		frappe.msgprint("To get the Raw Materials, please enter the branch and finish product in Production Setting");
 	}
 }

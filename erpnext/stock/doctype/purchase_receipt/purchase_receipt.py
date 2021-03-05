@@ -55,7 +55,7 @@ class PurchaseReceipt(BuyingController):
 
 	def validate(self):
 		super(PurchaseReceipt, self).validate()
-
+		check_future_date(self.posting_date)
 		self.set_status()
 		self.po_required()
 		self.validate_with_previous_doc()

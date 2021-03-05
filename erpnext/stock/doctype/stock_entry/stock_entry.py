@@ -73,14 +73,15 @@ class StockEntry(StockController):
 		self.make_gl_entries_on_cancel()
 
 	def check_item_value(self):
-                if self.items:
-                        for a in self.items:
-                                if a.issued_to and not a.issue_to_employee:
-                                        a.issued_to = ''
-                                if flt(a.qty) == 0 or flt(a.basic_amount) == 0 or flt(a.amount) == 0:
-                                        frappe.throw("Either Quantity or Amount is 0 for Item <b>" + str(a.item_name) + "</b>")
-                else:
-                        frappe.throw("Stock Entry shoould have an Item Entry")
+		if self.items:
+			for a in self.items:
+				# if a.issued_to and not a.issue_to_employee:
+				#     a.issued_to = ''
+				if flt(a.qty) == 0 or flt(a.basic_amount) == 0 or flt(a.amount) == 0:
+					frappe.throw(
+						"Either Quantity or Amount is 0 for Item <b>" + str(a.item_name) + "</b>")
+		else:
+			frappe.throw("Stock Entry shoould have an Item Entry")
 
 	def validate_purpose(self):
 		valid_purposes = ["Material Issue", "Material Receipt", "Material Transfer", "Material Transfer for Manufacture",
@@ -106,9 +107,10 @@ class StockEntry(StockController):
 			if item.item_code not in stock_items:
 				frappe.throw(_("{0} is not a stock Item").format(item.item_code))
 
+			
 			item_details = self.get_item_details(frappe._dict({"item_code": item.item_code,
 				"company": self.company, "project": self.project, "uom": item.uom}), for_update=True)
-
+			
 			for f in ("uom", "stock_uom", "description", "item_name", "expense_account",
 				"cost_center", "conversion_factor"):
 					if f in ["stock_uom", "conversion_factor"] or not item.get(f):
@@ -260,6 +262,7 @@ class StockEntry(StockController):
 		self.update_valuation_rate()
 		self.set_total_incoming_outgoing_value()
 		self.set_total_amount()
+		self.set_total_material()
 
 	def set_basic_rate(self, force=False, update_finished_item_rate=True):
 		"""get stock and incoming rate on posting date"""
@@ -333,6 +336,9 @@ class StockEntry(StockController):
 	def set_total_amount(self):
 		self.total_amount = sum([flt(item.amount) for item in self.get("items")])
 
+	def set_total_material(self):
+		self.total_material = sum([flt(item.qty) for item in self.get("items")])
+		
 	def validate_purchase_order(self):
 		"""Throw exception if more raw material is transferred against Purchase Order than in
 		the raw materials supplied table"""

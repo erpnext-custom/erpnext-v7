@@ -35,7 +35,7 @@ def get_data(filters):
 
 		while True:
 			actual.append(0)
-			query = "select max(l.scheduled_working_hour) as swh, sum(li.hours) as hours, li.uom, l.target_trip, min(li.initial_reading) as ir, min(li.reading_initial) as hir, max(li.final_reading) as fr, max(li.reading_final) as hfr from `tabLogbook Item` li, tabLogbook l where l.name = li.parent and l.docstatus = 1 and l.posting_date = %(posting_date)s and li.expense_head = %(expense_head)s and l.equipment = %(eqp)s group by li.expense_head, li.uom"
+			query = "select max(l.scheduled_working_hour) as swh, sum(li.hours) as hours, li.uom, li.target_trip, min(li.initial_reading) as ir, min(li.reading_initial) as hir, max(li.final_reading) as fr, max(li.reading_final) as hfr from `tabLogbook Item` li, tabLogbook l where l.name = li.parent and l.docstatus = 1 and l.posting_date = %(posting_date)s and li.expense_head = %(expense_head)s and l.equipment = %(eqp)s group by li.expense_head, li.uom"
 			res = frappe.db.sql(query, {"posting_date": current_date, "expense_head": exp.name, "eqp": filters.equipment}, as_dict=1)
 			total_hour = 0
 			if res:

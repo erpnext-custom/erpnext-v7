@@ -17,14 +17,18 @@ class OvertimeApplication(Document):
 		self.calculate_amount()
 
 	def on_submit(self):
-		self.check_status()
-		#self.validate_submitter()
-		self.post_journal_entry()
+		enable_ot_bulk_payment = frappe.db.get_single_value("HR Settings", "enable_bulk_ot_payment")
+		if not enable_ot_bulk_payment:
+			self.check_status()
+			#self.validate_submitter()
+			self.post_journal_entry()
 
 	def on_cancel(self):
 		self.db_set("status", "Rejected")
-		self.check_journal()
-
+		enable_ot_bulk_payment = frappe.db.get_single_value("HR Settings", "enable_bulk_ot_payment")
+		if not enable_ot_bulk_payment:		
+			self.check_journal()
+			
 	'''def calculate_totals(self):
                 total_hours  = 0
                 for i in self.items:
@@ -141,7 +145,6 @@ class OvertimeApplication(Document):
 
 		self.db_set("payment_jv", je.name)
 		frappe.msgprint("Bill processed to accounts through journal voucher " + je.name)
-
 
 	##
 	# Check journal entry status (allow to cancel only if the JV is cancelled too)

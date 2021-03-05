@@ -94,8 +94,8 @@ def get_data():
 				},
 				{
                                         "type": "doctype",
-                                        "name": "Carry Forward Entry",
-                                        "label": _("Carry Forward Entry"),
+                                        "name": "Merge CL To EL",
+                                        "label": _("Merge CL To EL"),
                                         "description":_("Forward CL balances.")
                                 },
 			]
@@ -384,6 +384,13 @@ def get_data():
 					"is_query_report": True,
 					"name": "Summarized Employee Report",
 					"label": "Summarized Employee Report",
+					"doctype": "Employee"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Salary Advance Report",
+					"label": "Salary Advance Report",
 					"doctype": "Employee"
 				}
 

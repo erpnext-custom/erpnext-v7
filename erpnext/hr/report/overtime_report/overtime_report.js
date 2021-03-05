@@ -1,6 +1,6 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-
+var d = new Date()
 frappe.query_reports["Overtime Report"] = {
 	"filters": [
 		{
@@ -13,13 +13,13 @@ frappe.query_reports["Overtime Report"] = {
                         "fieldname": "from_date",
                         "label": __("From Date"),
                         "fieldtype": "Date",
-                        "default": frappe.defaults.get_user_default("year_start_date"),
+                        "default": frappe.datetime.month_start()
                 },
                 {
                         "fieldname": "to_date",
                         "label": __("To Date"),
                         "fieldtype": "Date",
-                        "default": frappe.defaults.get_user_default("year_end_date"),
+                        "default": frappe.datetime.month_end()
                 },
 
                 {

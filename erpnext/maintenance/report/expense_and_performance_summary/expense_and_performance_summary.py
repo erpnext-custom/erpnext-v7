@@ -11,10 +11,13 @@ def execute(filters=None):
 
 def get_data(filters):
 	data = []
-	if not filters.year:
-		frappe.throw("Year is mandatory")
-	start_date = str(filters.year) + "-01-01"
-	end_date = str(filters.year) + "-12-31"
+	#if not filters.year:
+	#	frappe.throw("Year is mandatory")
+	#start_date = str(filters.year) + "-01-01"
+	#end_date = str(filters.year) + "-12-31"
+
+	start_date = filters.from_date
+	end_date = filters.to_date
 	data.append(["<b>Expense Head</b>"])
 	
 	for a in frappe.db.sql("select name from `tabExpense Head` where is_disabled = 0 order by order_index", as_dict=1):

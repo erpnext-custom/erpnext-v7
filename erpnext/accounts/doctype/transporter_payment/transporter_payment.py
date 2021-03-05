@@ -48,6 +48,11 @@ class TransporterPayment(AccountsController):
 		if not flt(self.gross_amount):
 			frappe.throw(_("Gross Amount cannot be empty"))
 
+		if self.deductions:
+			for a in self.deductions:
+				a.party_type = "Equipment"
+				a.party = self.equipment
+
 	def validate_dates(self):
 		check_future_date(self.posting_date)
 		if self.from_date > self.to_date:
@@ -144,6 +149,18 @@ class TransporterPayment(AccountsController):
 			self.weighbridge_amount  = 0
 			self.weighbridge_account = None
 
+		# clearing charges
+		# implemented by Birendra(02/02/2021)
+
+		if self.clearing_charge:
+			self.clearing_amount = 	flt(self.total_trip) * flt(self.clearing_charge)
+			self.clearing_account = settings.clearing_account
+			if not self.clearing_account:
+				frappe.throw(_("GL for {} is not set under {}")\
+					.format(frappe.bold("Income from Clearing Account"), frappe.bold("Accounts Settings")))
+		else:
+			self.clearing_amount = 0
+			self.clearing_account = None
 		# other deductions
                 other_deductions = 0
                 for d in self.get("deductions"):
@@ -159,23 +176,60 @@ class TransporterPayment(AccountsController):
                         other_deductions += flt(d.amount)
 
                 self.other_deductions 	= flt(other_deductions) + flt(self.tds_amount) + flt(self.security_deposit_amount)
-		self.amount_payable 	= flt(self.net_payable) - flt(self.weighbridge_amount) - flt(self.other_deductions)			
+		self.amount_payable 	= flt(self.net_payable) - flt(self.weighbridge_amount) - flt(self.other_deductions)	- flt(self.clearing_amount)		
 
 	def get_stock_entries(self, cost_center):
-		return frappe.db.sql("""select b.name as reference_row, a.posting_date, 
-					'Stock Entry' as reference_type, a.name as reference_name, 
-					b.item_code, b.item_name, 
-					b.s_warehouse as from_warehouse, b.t_warehouse as receiving_warehouse, 
-					b.received_qty as qty, a.unloading_by, a.equipment 
+		# equipment = frappe.get_value("Stock Entry",)
+		# d = frappe.db.sql("""select b.name as reference_row, a.posting_date, 
+		# 			'Stock Entry' as reference_type, a.name as reference_name, 
+		# 			b.item_code, b.item_name, 
+		# 			b.s_warehouse as from_warehouse, b.t_warehouse as receiving_warehouse,
+		# 			b.received_qty as qty, a.unloading_by, a.equipment 
+		# 		from `tabStock Entry` a, `tabStock Entry Detail` b 
+		# 		where a.docstatus = 1 
+		# 		and a.transport_payment_done = 0 
+		# 		and a.purpose = 'Material Transfer' 
+		# 		and a.posting_date between "{0}" and "{1}" 
+		# 		and a.equipment = "{2}"
+		# 		and b.parent = a.name
+		# 		and b.cost_center = "{3}"
+		# 		""".format(self.from_date, self.to_date, self.equipment, cost_center), as_dict = True)
+		# if d:
+		# 	return d
+		#if transport info put under stock entry detail table 
+		# implemented by Birendra(02/02/2021)
+		# frappe.msgprint('value : {}'.format(d))
+		return frappe.db.sql("""
+			SELECT
+				b.name as reference_row, 
+				a.posting_date, 
+				'Stock Entry' as reference_type, 
+				a.name as reference_name, 
+				b.item_code, 
+				b.item_name, 
+				b.s_warehouse as from_warehouse, 
+				b.t_warehouse as receiving_warehouse, 
+				b.received_qty as qty, 
+				if( a.equipment, a.equipment, b.equipment) as equipment,
+				if(a.equipment, a.unloading_by, b.unloading_by) as unloading_by
 				from `tabStock Entry` a, `tabStock Entry Detail` b 
 				where a.docstatus = 1 
-				and a.transport_payment_done = 0 
-				and a.purpose = 'Material Transfer' 
-				and a.posting_date between "{0}" and "{1}" 
-				and a.equipment = "{2}"
-				and b.parent = a.name
-				and b.cost_center = "{3}"
+				AND a.transport_payment_done = 0  
+				AND a.purpose = 'Material Transfer' 
+				AND a.posting_date between "{0}" and "{1}" 
+				AND b.parent = a.name 
+				AND b.transport_payment_done = 0
+				AND b.equipment = "{2}"
+				AND b.cost_center = "{3}"
+				and NOT EXISTS(
+					select 1 
+					from `tabTransporter Payment` p, `tabTransporter Payment Item` i
+					where p.name = i.parent 
+					and (i.reference_row = b.name or i.reference_name = a.name)
+					and p.docstatus != 2 and p.equipment = b.equipment
+				)
 				""".format(self.from_date, self.to_date, self.equipment, cost_center), as_dict = True)
+
 
 	def get_delivery_notes(self, cost_center):
 		return frappe.db.sql("""select b.name as reference_row, a.posting_date, 
@@ -190,6 +244,13 @@ class TransporterPayment(AccountsController):
 				and a.transport_payment_done = 0
 				and b.parent = a.name
 				and b.cost_center = "{3}"
+				and NOT EXISTS(
+					select 1 
+					from `tabTransporter Payment` p, `tabTransporter Payment Item` i
+					where p.name = i.parent 
+					and i.reference_name = a.name
+					and p.docstatus != 2
+				)
 				""".format(self.from_date, self.to_date, self.equipment, cost_center), as_dict = True)
 
 	def get_transporter_trip_log(self, cost_center):
@@ -205,24 +266,59 @@ class TransporterPayment(AccountsController):
 				and b.equipment = "{2}"
 				and a.cost_center = "{3}"
 				and b.transport_payment_done = 0
+				and NOT EXISTS(
+					select 1 
+					from `tabTransporter Payment` p, `tabTransporter Payment Item` i
+					where p.name = i.parent 
+					and i.reference_row = b.name
+					and p.docstatus != 2
+				)
 				""".format(self.from_date, self.to_date, self.equipment, cost_center), as_dict = True)
 
 	#production Transporter Based on Transporter Rate Base on
 	def get_production_transportation(self, rate_base_on):
-		return frappe.db.sql("""select b.name as reference_row, a.posting_date, 'Production' as reference_type, 
-					a.name as reference_name, b.item_code, b.item_name, b.rate as transportation_rate, 
-					b.amount as transportation_amount, b.qty, b.unloading_by, b.equipment, a.warehouse as from_warehouse, 
-					if(a.transfer = 1, a.to_warehouse, a.warehouse) as receiving_warehouse, b.equipment,
-					b.transporter_rate as transporter_rate, b.transportation_expense_account as expense_account
-				from `tabProduction` a, `tabProduction Product Item` b
-				where a.name = b.parent and a.docstatus = 1 
-				and a.posting_date between "{0}" and "{1}" 
-				and b.equipment = "{2}"
-				and a.branch = '{3}'
-				and b.transporter_payment_eligible = 1
-				and b.transport_payment_done = 0
-				and a.transporter_rate_base_on = '{4}'
-				""".format(self.from_date, self.to_date, self.equipment, self.branch, rate_base_on), as_dict = True)
+		return frappe.db.sql("""
+					select
+						b.name as reference_row,
+						a.posting_date,
+						'Production' as reference_type,
+						a.name as reference_name,
+						b.item_code,
+						b.item_name,
+						b.rate as transportation_rate,
+						b.amount as transportation_amount,
+						b.qty,
+						b.unloading_by,
+						b.equipment,
+						a.warehouse as from_warehouse,
+						if(a.transfer = 1, a.to_warehouse, a.warehouse) as receiving_warehouse,
+						b.equipment,
+						b.transporter_rate as transporter_rate,
+						b.transportation_expense_account as expense_account 
+						from
+						`tabProduction` a,
+						`tabProduction Product Item` b 
+					where
+						a.name = b.parent 
+						and a.docstatus = 1 
+						and a.posting_date between "{0}" and "{1}" 
+						and b.equipment = "{2}" 
+						and a.branch = '{3}' 
+						and b.transporter_payment_eligible = 1 
+						and b.transport_payment_done = 0 
+						and a.transporter_rate_base_on = '{4}' 
+						and NOT EXISTS
+						(
+							select
+								1 
+							from
+								`tabTransporter Payment` p,
+								`tabTransporter Payment Item` i 
+							where
+								p.name = i.parent 
+								and i.reference_row = b.name 
+								and p.docstatus != 2 
+						)""".format(self.from_date, self.to_date, self.equipment, self.branch, rate_base_on), as_dict = True)
 
 	def get_payment_details(self):
 		self.set('items', [])
@@ -246,8 +342,8 @@ class TransporterPayment(AccountsController):
 
 		# get Trips from production warehouse based
 		production_warehouse = self.get_production_transportation("Warehouse")
-		
 		entries = production_warehouse + stock_transfer + delivery_note
+		# frappe.msgprint('stock entries : {}'.format(len(stock_transfer)))
 		if not entries and not within_warehouse_trips and not production_location:
 			frappe.throw("No Transportation Detail(s) for Equipment <b>{0} </b> ".format(self.equipment))
 
@@ -257,6 +353,7 @@ class TransporterPayment(AccountsController):
 		# populate items
 		for d in entries:
 			equipment_type = frappe.db.get_value("Equipment", d.equipment,"equipment_type")
+			# frappe.msgprint('equipment type : {}'.format(d))
 			tr = get_transporter_rate(d.from_warehouse, d.receiving_warehouse, d.posting_date, equipment_type, d.item_code)
 
 			d.transporter_rate = tr.name
@@ -321,11 +418,25 @@ class TransporterPayment(AccountsController):
 				if paid:
 					frappe.throw("Payment Already Done")
 			elif a.reference_type == "Stock Entry":
+				# check whether transport info is in stock entry or not
 				eq = frappe.db.get_value("Stock Entry", a.reference_name, "equipment")
+
+				# change as transport info added in child table
+				is_transport_info_in_parent_doc = True
+
+				if not eq:
+					is_transport_info_in_parent_doc = False
+					eq = frappe.db.get_value("Stock Entry Detail", a.reference_row, "equipment")
+
 				if eq != self.equipment:
 					frappe.throw(_("Transportation Details are not for {} under Stock Entry {}")\
 						.format(frappe.get_desk_link('Equipment',self.equipment), frappe.get_desk_link('Stock Entry', a.reference_name)))
-				paid = frappe.db.get_value("Stock Entry", a.reference_name, "transport_payment_done")
+			
+				if is_transport_info_in_parent_doc:
+					paid = frappe.db.get_value("Stock Entry", a.reference_name, "transport_payment_done")
+				else:
+					paid = frappe.db.get_value("Stock Entry Detail", a.reference_row, "transport_payment_done")
+				# frappe.msgprint('paid :{}'.format(paid))
 				if paid:
 					frappe.throw("Payment Already Done")
 			elif a.reference_type == "Delivery Note":
@@ -422,8 +533,8 @@ class TransporterPayment(AccountsController):
                                 if counter == len(items):
                                         deduct_amt = balance_amt
                                 else:
-                                        deduct_pct = floor((flt(v)/flt(total_transportation_amount))*0.01)
-                                        deduct_amt = floor(flt(self.pol_amount)*deduct_pct*0.01)
+                                        deduct_pct = math.floor((flt(v)/flt(total_transportation_amount))*0.01)
+                                        deduct_amt = math.floor(flt(self.pol_amount)*deduct_pct*0.01)
                                         balance_amt= balance_amt - deduct_amt
 
                                 items[k] -= flt(deduct_amt)
@@ -547,7 +658,7 @@ class TransporterPayment(AccountsController):
 				}, self.currency)
 			)
 
-                # weighbridge amount - CR
+        # weighbridge amount - CR
 		if flt(self.weighbridge_amount):
 			party = party_type = None
 			account_type = frappe.db.get_value("Account", self.weighbridge_account, "account_type")
@@ -567,7 +678,26 @@ class TransporterPayment(AccountsController):
 				       "cost_center": cost_center,
 				}, self.currency)
 			)
+			#clearing amount -CR implemented by Birendra(02/02/2021)
+			if flt(self.clearing_amount):
+				party = party_type = None
+				account_type = frappe.db.get_value("Account", self.clearing_account, "account_type")
+				if account_type == "Receivable" or account_type == "Payable":
+					party = self.equipment
+					party_type = "Equipment"
 
+				gl_entries.append(
+					self.get_gl_dict({
+						"account":  self.clearing_account,
+						"credit": self.clearing_amount,
+						"credit_in_account_currency": self.clearing_amount,
+						"against_voucher": self.name,
+						"against_voucher_type": self.doctype,
+						"party_type": party_type,
+						"party": party,
+						"cost_center": cost_center,
+					}, self.currency)
+				)
                 # deductions - CR
 		for d in self.get("deductions"):
 			party = party_type = None
@@ -596,18 +726,19 @@ class TransporterPayment(AccountsController):
 			if a.reference_type == "Production":
 				frappe.db.sql("update `tabProduction Product Item` set transport_payment_done = %s where name = %s", (submit, a.reference_row))
 			elif a.reference_type == "Stock Entry":
-				frappe.db.sql("update `tabStock Entry` set transport_payment_done = %s where name = %s", (submit, a.reference_name))
-			
+				eq = frappe.get_value("Stock Entry",a.reference_name,"equipment")
+				if eq:
+					frappe.db.sql("update `tabStock Entry` set transport_payment_done = %s where name = %s", (submit, a.reference_name))
+				else:
+					frappe.db.sql("update `tabStock Entry Detail` set transport_payment_done = %s where name = %s", (submit, a.reference_row))
+
 			elif a.reference_type == "Delivery Note":
 				frappe.db.sql("update `tabDelivery Note` set transport_payment_done = %s where name = %s", (submit, a.reference_name))
 			
 			elif a.reference_type == "Transporter Trip Log":
-				frappe.db.sql("update `tabTransporter Trip Log` set transport_payment_done = %s where name = %s", (submit, a.reference_name))
-
+				frappe.db.sql("update `tabTrip Log Item` set transport_payment_done = %s where name = %s", (submit, a.reference_row))
 			else:
 				pass
 
 		for b in self.pols:
 			frappe.db.sql("update tabPOL set transport_payment_done = %s where name = %s", (submit, b.pol))
-
-

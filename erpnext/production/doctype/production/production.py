@@ -365,26 +365,31 @@ class Production(StockController):
 		if not self.raw_materials:
 			frappe.throw("Please enter a raw material to get the Product")
 		else:
+			condition = ""
 			for a in self.raw_materials:
 				raw_material_item = a.item_code
 				raw_material_qty = a.qty
 				raw_material_unit = a.uom
-				item_group = frappe.db.get_value("Item", a.item_code, "item_group")
-				
+				item_group = frappe.db.get_value("Item", a.item_code, "item_group")				
 				cost_center = a.cost_center
 				warehouse = a.warehouse
 				expense_account = a.expense_account
+				item_type = a.item_type
+				if a.item_type:
+					condition += " and item_type = '" + str(a.item_type) + "'"
+				if a.warehouse:
+					condition += " and warehouse = '" + str(a.warehouse) + "'"
 		
 		if raw_material_item:
 			count = 0
 			production_seting_code = ""
 			for a in frappe.db.sql("""select name 
 							from `tabProduction Settings`
-							where branch = '{0}'
-							and warehouse = '{3}'
+							where branch = '{0}' and disable != 1
 							and raw_material = '{1}'
+							{3}
 							and '{2}' between from_date and ifnull(to_date,now())		
-				""".format(self.branch, raw_material_item, self.posting_date, self.warehouse), as_dict=True):
+				""".format(self.branch, raw_material_item, self.posting_date, condition), as_dict=True):
 				count += 1
 				production_seting_code = a.name
 			
@@ -393,10 +398,10 @@ class Production(StockController):
 
 			if production_seting_code:
 				for a in frappe.db.sql("""
-						select parameter_type, ratio, item_code, item_name
+						select parameter_type, ratio, item_code, item_name, item_type
 						from `tabProduction Settings Item` 
 						where parent = '{0}'				
-				""".format(production_seting_code), as_dict=True):
+					""".format(production_seting_code), as_dict=True):
 					price_template = ""
 					cop = ""
 					product_qty = 0.00
@@ -414,7 +419,8 @@ class Production(StockController):
 					data.append({
 								"parameter_type": a.parameter_type,
 								"item_code":a.item_code, 
-								"item_name":a.item_name, 
+								"item_name":a.item_name,
+								"item_type":a.item_type, 
 								"qty": product_qty,
 								"uom": raw_material_unit,
 								"price_template": price_template,
@@ -430,20 +436,88 @@ class Production(StockController):
 		else:
 			frappe.msgprint("No records in production settings")
 
+	def get_raw_material(self):
+		data = []
+		if not self.branch and not self.posting_date:
+			frappe.throw("Select branch and posting date to get the raw materials")
+
+		if not self.items:
+			frappe.throw("Please enter a product to get the raw material")
+		else:
+			condition = ""
+			for a in self.items:
+				product_item = a.item_code
+				product_qty = a.qty
+				product_unit = a.uom				
+				cost_center = a.cost_center
+				warehouse = a.warehouse
+				expense_account = a.expense_account
+				item_type = a.item_type
+				if a.item_type:
+					condition += " and item_type = '" + str(a.item_type) + "'"
+				if a.warehouse:
+					condition += " and warehouse = '" + str(a.warehouse) + "'"
+		
+		if product_item:
+			count = 0
+			production_seting_code = ""
+			for a in frappe.db.sql("""select name 
+							from `tabProduction Settings`
+							where branch = '{0}' and disable != 1
+							and product = '{1}'
+							{3}
+							and '{2}' between from_date and ifnull(to_date,now())		
+				""".format(self.branch, product_item, self.posting_date, condition), as_dict=True):
+				count += 1
+				production_seting_code = a.name
+			
+			if count > 1:
+				frappe.throw("There are more than 1 production setting for this production parameters")
+
+			if production_seting_code:
+				for a in frappe.db.sql("""
+						select parameter_type, ratio, item_code, item_name, item_type
+						from `tabProduction Settings Item` 
+						where parent = '{0}'				
+				""".format(production_seting_code), as_dict=True):
+					raw_material_qty = 0.00
+					if flt(a.ratio) > 0:
+						raw_material_qty = (flt(a.ratio) * flt(product_qty))/100
+					data.append({
+								"parameter_type": a.parameter_type,
+								"item_code":a.item_code, 
+								"item_name":a.item_name, 
+								"item_type":a.item_type,
+								"qty": raw_material_qty,
+								"uom": product_unit,
+								"cost_center": cost_center,
+								"warehouse": warehouse,
+								"expense_account": expense_account,
+								})
+		if data:			
+			return data
+		else:
+			frappe.msgprint("No records in production settings")
+
 	def validate_raw_material_product_qty(self):
+		raw_material_qty = 0.0
+		product_item_qty = 0.0
+		for a in self.raw_materials:
+			raw_material_qty += flt(a.qty)
+
+		for b in self.items:
+			product_item_qty += flt(b.qty)
+
+		for c in self.production_waste:
+			product_item_qty += flt(c.qty)
+
+		self.raw_material_qty = raw_material_qty
+		self.product_qty = product_item_qty
+		
 		if self.check_raw_material_product_qty:
-			raw_material_qty = 0.0
-			product_item_qty = 0.0
-			for a in self.raw_materials:
-				raw_material_qty += a.qty
-
-			for b in self.items:
-				product_item_qty += b.qty
-
-			for c in self.production_waste:
-				raw_material_qty += c.qty
-			if raw_material_qty <= product_item_qty:
-				frappe.throw("Sum of Crushed products is less than or equivalent to raw materials feed.")
+			if round(self.product_qty,4) > round(self.raw_material_qty,4):
+				#frappe.msgprint("product Qty is {} and Raw Material Qty is {} and difference is {}".format(cint(self.product_qty), cint(self.raw_material_qty), diff))
+				frappe.throw("Sum of Crushed products should be less than or equivalent to raw materials feed.")
 
 	def validate_transportation(self):
 		for d in self.items:

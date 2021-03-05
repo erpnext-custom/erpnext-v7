@@ -148,6 +148,17 @@ def get_data():
 			]
 		},
 		{
+			"label": _("Transporter Reports"),
+			"items": [
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Trip Log",
+					"doctype": "Transporter Trip Log"
+				},
+			]
+		},
+		{
 			"label": _("EME Reports"),
 			"icon": "icon-star",
 			"items": [

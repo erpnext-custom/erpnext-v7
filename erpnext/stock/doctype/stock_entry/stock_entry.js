@@ -5,7 +5,7 @@ frappe.provide("erpnext.stock");
 erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	setup: function() {
 		var me = this;
-
+		this.frm.get_docfield("items").allow_bulk_edit = 1;
 		this.frm.fields_dict.bom_no.get_query = function() {
 			return {
 				filters:{
@@ -60,13 +60,19 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		this.frm.get_field('items').grid.editable_fields = [
 			{fieldname: 'item_code', columns: 3},
 			{fieldname: 'qty', columns: 3},
-			{fieldname: 's_warehouse', columns: 2},
-			{fieldname: 't_warehouse', columns: 2}
+			({fieldname: 'equipment_number', columns: 2})
+			// {fieldname: 's_warehouse', columns: 2},
+			// {fieldname: 't_warehouse', columns: 2}
 		];
-
+		
 	},
 
 	onload_post_render: function() {
+		if(!this.frm.doc.posting_date){
+			this.frm.set_value("posting_date", frappe.datetime.get_today());
+		}
+
+
 		var me = this;
 		this.set_default_account(function() {
 			if(me.frm.doc.__islocal && me.frm.doc.company && !me.frm.doc.amended_from) {
@@ -78,7 +84,6 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 			this.item_selector = new erpnext.ItemSelector({frm: this.frm});
 		}
 	},
-
 	refresh: function() {
 		var me = this;
 		erpnext.toggle_naming_series();
@@ -98,7 +103,6 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	after_cancel: function() {
 		this.clean_up();
 	},
-
 	set_default_account: function(callback) {
 		var me = this;
 
@@ -274,7 +278,9 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	t_warehouse: function(doc, cdt, cdn) {
 		this.get_warehouse_details(doc, cdt, cdn)
 	},
-
+	posting_date:function(doc,cdt,cdn){
+		set_vehicle_dispatch_date_and_time(this.frm.doc);
+	},
 	get_warehouse_details: function(doc, cdt, cdn) {
 		var me = this;
 		var d = locals[cdt][cdn];
@@ -349,6 +355,22 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	},
 });
 
+// created on 2021/02/19
+var set_vehicle_dispatch_date_and_time = function(doc){
+	var tbl = doc.items || [];
+
+	for(i=0; i < tbl.length; i++){
+		frappe.model.set_value(tbl[i].doctype, tbl[i].name, "vehicle_dispatch_date_and_time", doc.posting_date);
+	}
+}
+
+frappe.ui.form.on('Stock Entry Detail', {
+	// amount: function(frm) {
+	// 	frm.cscript.calculate_amount();
+	// }
+})
+
+
 cur_frm.script_manager.make(erpnext.stock.StockEntry);
 
 cur_frm.cscript.toggle_related_fields = function(doc) {
@@ -357,8 +379,10 @@ cur_frm.cscript.toggle_related_fields = function(doc) {
 	cur_frm.toggle_enable("initial_stock_templates", doc.purpose == 'Material Receipt');
 	cur_frm.fields_dict["items"].grid.set_column_disp("s_warehouse", doc.purpose!='Material Receipt');
 	cur_frm.fields_dict["items"].grid.set_column_disp("t_warehouse", doc.purpose!='Material Issue');
-	cur_frm.fields_dict["items"].grid.set_column_disp("issue_to_employee", doc.purpose=='Material Issue');
-	cur_frm.fields_dict["items"].grid.set_column_disp("issued_to", doc.purpose=='Material Issue');
+	// cur_frm.fields_dict["items"].grid.set_column_disp("issue_to_employee", doc.purpose=='Material Issue'); 
+	// cur_frm.fields_dict["items"].grid.set_column_disp("issue_to_employee", doc.purpose=='Material Issue');
+	cur_frm.fields_dict["items"].grid.set_column_disp("issued_to_equipment", doc.purpose=='Material Issue');
+	cur_frm.fields_dict["items"].grid.set_column_disp("issued_to_employee", doc.purpose=='Material Issue'); 
 	cur_frm.fields_dict["items"].grid.set_column_disp("received_qty", doc.purpose=='Material Transfer');
 	cur_frm.fields_dict["items"].grid.set_column_disp("difference_qty", doc.purpose=='Material Transfer');
 	cur_frm.fields_dict["items"].grid.set_column_disp("basic_amount1", doc.purpose=='Material Transfer');
@@ -575,18 +599,23 @@ frappe.ui.form.on("Stock Entry", "purpose", function(frm){
          cur_frm.fields_dict.naming_series.df.options = "Consumable GR\nCapital Inventory GR\nCoal GR\nDolomite GR\nGypsum GR\nStone GR\nLimestone GR\nBauxite GR\nQuartzite GR\nTalc GR\n0-5 mm Dust GR\n10-20 mm Aggregates GR\n40 mm Aggregates GR";
       }
       if (cur_frm.fields_dict.purpose.value == 'Material Transfer'){
-         cur_frm.fields_dict.naming_series.df.options = "Inventory Transfer";
+		 cur_frm.fields_dict.naming_series.df.options = "Inventory Transfer";
+		//  cur_frm.set_value("naming_series","Inventory Transfer");
+
          console.log(cur_frm.fields_dict.purpose.value)
       }
       frm.set_df_property("naming_series", "reqd", true)
       refresh_field('naming_series');
 });
 
-frappe.ui.form.on('Stock Entry Detail', {
-        "issue_to_employee": function(frm, cdt, cdn) {
-                frappe.model.set_value(cdt, cdn, "issued_to", '');
-}
-})
+// frappe.ui.form.on('Stock Entry Detail', {
+//         "issue_to_employee": function(frm, cdt, cdn) {
+//                 frappe.model.set_value(cdt, cdn, "issued_to", '');
+// 		},
+// 		"issue_to_equipment": function(frm, cdt, cdn) {
+// 			frappe.model.set_value(cdt, cdn, "issued_to", '');
+// 		}
+// })
 
 frappe.ui.form.on("Stock Entry", {
         is_write_off_entry:  function(frm) {
@@ -603,20 +632,37 @@ frappe.ui.form.on("Stock Entry", {
         }
 )
 
-cur_frm.fields_dict['items'].grid.get_field('issued_to').get_query = function(frm, cdt, cdn) {
-        var d = locals[cdt][cdn];
-        if (d.issue_to_employee == "Employee") {
-                return {
-                        filters: [
-                        ['Employee', 'status', '=', 'Active']
-                        ]
-                }
-        }
-        else {
-                return {
-                        filters: [
-                        ['Equipment', 'not_cdcl', '=', 0]
-                        ]
-                }
-        }
-}
+// cur_frm.fields_dict['items'].grid.get_field('issued_to_employee').get_query = function(frm, cdt, cdn) {
+//         var d = locals[cdt][cdn];
+//         if (d.issue_to_employee == "Employee") {
+//                 return {
+//                         filters: [
+//                         ['Employee', 'status', '=', 'Active']
+//                         ]
+//                 }
+//         }
+//         else {
+//                 return {
+//                         filters: [
+//                         ['Equipment', 'not_cdcl', '=', 0]
+//                         ]
+//                 }
+//         }
+// }
+// cur_frm.fields_dict['items'].grid.get_field('issued_to_equipment').get_query = function(frm, cdt, cdn) {
+// 	var d = locals[cdt][cdn];
+	// if (d.issue_to_employee == "Employee") {
+			// return {
+			// 		filters: [
+			// 		['Employee', 'status', '=', 'Active']
+			// 		]
+			// }
+	// }
+	// else {
+			// return {
+			// 		filters: [
+			// 		['Equipment', 'not_cdcl', '=', 0]
+			// 		]
+			// }
+	// }
+// }

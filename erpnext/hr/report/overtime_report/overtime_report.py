@@ -38,30 +38,40 @@ def get_data(filters):
 	query =  """ select ot.name, ot.branch, ot.posting_date, ot.employee, ot.employee_name, ot.bank_name, ot.bank_no,
 			(select e1.designation from `tabEmployee` e1 where e1.name = ot.employee) as designation,
 			(select e2.department from `tabEmployee` e2 where e2.name = ot.employee) as department, ot.rate, ot.total_hours, 
-			ot.total_amount, ot.purpose, ot.payment_jv from `tabOvertime Application` ot where ot.docstatus =1"""
+			ot.total_amount, ot.purpose, ot.payment_jv, ot.overtime_payment
+			from `tabOvertime Application` ot where ot.docstatus =1"""
 	if filters.employee:
 		query += " and ot.employee = '{0}'".format(filters.employee)
 	if filters.cost_center:
 		query += " and ot.branch = '{0}'".format(filters.branch)
 	if filters.from_date and filters.to_date:
 		query += " and ot.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
-
+	if filters.branch:
+		query += " AND ot.branch = '{}'".format(filters.branch)
+		
 	for d in frappe.db.sql(query, as_dict = True):
-		status = payment_status(d.payment_jv)
-		if filters.status and filters.status == status:
-			row1 = [d.name, d.branch, d.posting_date, d.employee, d.employee_name, d.designation, d.department,d.bank_name, d.bank_no, d.rate, d.total_hours, \
-			d.total_amount, d.purpose, d.payment_jv, status]
-			data.append(row1)
+		jv_no = ""
+		status="Not Paid"
+		if d.payment_jv:
+			status = payment_status(d.payment_jv)
+			jv_no = d.payment_jv
+		elif d.overtime_payment:
+			status = "Not Paid"
+			doc_status = frappe.db.get_value("Overtime Payment", d.overtime_payment, "docstatus")
+			if doc_status == 1:
+				status = "Paid"
+			jv_no = d.overtime_payment
 
-		if not filters.status:
-			row = [d.name, d.branch, d.posting_date, d.employee, d.employee_name, d.designation, d.department,d.bank_name, d.bank_no,  d.rate, d.total_hours, \
-			d.total_amount, d.purpose, d.payment_jv, status]
-			data.append(row)
+		row1 = [d.name, d.branch, d.posting_date, d.employee, d.employee_name, d.designation, d.department,d.bank_name, d.bank_no, d.rate, d.total_hours, \
+		d.total_amount, d.purpose, jv_no, status]
+		data.append(row1)
+
 	return data
 
 def payment_status(payment_jv):
 	status = 'Not Paid'
-	jv = frappe.get_doc("Journal Entry", payment_jv).docstatus
-	if jv == 1:
-		status  = 'Paid'
+	if payment_jv:
+		jv = frappe.get_doc("Journal Entry", payment_jv).docstatus
+		if jv == 1:
+			status  = 'Paid'
 	return status
