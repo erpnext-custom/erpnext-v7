@@ -3,10 +3,12 @@
 # For license information, please see license.txt
 '''
 ------------------------------------------------------------------------------------------------------------------------------------------
-Version          Author         Ticket#           CreatedOn          ModifiedOn          Remarks
+#           CreatedOn          ModifiedOn          Remarks
+Version          Author         Ticket
 ------------ --------------- --------------- ------------------ -------------------  -----------------------------------------------------
 1.0.190401       SHIV		                                     2019/04/01         Refined process for making SL and GL entries
-------------------------------------------------------------------------------------------------------------------------------------------                                                                          
+				Biren			15/3/2021			added extra field in prodcution entry doctype
+------------------------------------------------------------------------------------------------------------------------------------------
 '''
 
 from __future__ import unicode_literals
@@ -18,6 +20,7 @@ from erpnext.accounts.utils import get_fiscal_year
 from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, prepare_sl, get_settings_value
 from erpnext.controllers.stock_controller import StockController
 from erpnext.stock.utils import get_stock_balance
+
 
 class Production(StockController):
 	def validate(self):
@@ -44,7 +47,8 @@ class Production(StockController):
 
 	def validate_supplier(self):
                 if self.work_type == "Private" and not self.supplier:
-                        frappe.throw("Supplier Is Mandiatory For Production Carried Out By Others")
+                        frappe.throw(
+                            "Supplier Is Mandiatory For Production Carried Out By Others")
 
 	def validate_items(self):
 		prod_items = self.get_production_items()
@@ -52,43 +56,51 @@ class Production(StockController):
 			if item.item_code not in prod_items:
 				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
 			if flt(item.qty) <= 0:
-				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
+				frappe.throw(
+				    _("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
 
                         """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
                         # Following code added by SHIV on 2019/04/01
                         item.cost_center = self.cost_center
                         item.warehouse = self.warehouse
-                        item.expense_account = get_expense_account(self.company, item.item_code)
+                        item.expense_account = get_expense_account(
+                            self.company, item.item_code)
                         """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
 		for item in self.get("items"):
 			item.production_type = self.production_type
-			item.item_name, item.item_group = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group"])
+			item.item_name, item.item_group = frappe.db.get_value(
+			    "Item", item.item_code, ["item_name", "item_group"])
 
 			if item.item_code not in prod_items:
 				frappe.throw(_("{0} is not a Production Item").format(item.item_code))
 			if flt(item.qty) <= 0:
-				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
+				frappe.throw(
+				    _("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
 			if flt(item.cop) <= 0:
-				frappe.throw(_("COP for <b>{0}</b> cannot be zero or less").format(item.item_code))
-		
+				frappe.throw(
+				    _("COP for <b>{0}</b> cannot be zero or less").format(item.item_code))
+
 			if self.production_type == "Planned":
 				continue
 			if item.item_sub_group == "Pole" and flt(item.qty_in_no) <= 0:
 				frappe.throw("Number of Poles is required for Adhoc Loggings")
-			reading_required, par, min_val, max_val = frappe.db.get_value("Item Sub Group", item.item_sub_group, ["reading_required", "reading_parameter", "minimum_value", "maximum_value"])
+			reading_required, par, min_val, max_val = frappe.db.get_value("Item Sub Group", item.item_sub_group, [
+			                                                              "reading_required", "reading_parameter", "minimum_value", "maximum_value"])
 			if reading_required:
-				if not flt(min_val) <= flt(item.reading) <=  flt(max_val):
-					frappe.throw("<b>{0}</b> reading should be between {1} and {2} for {3} for Adhoc Production".format(par, frappe.bold(min_val), frappe.bold(max_val), frappe.bold(item.item_code)))
+				if not flt(min_val) <= flt(item.reading) <= flt(max_val):
+					frappe.throw("<b>{0}</b> reading should be between {1} and {2} for {3} for Adhoc Production".format(
+					    par, frappe.bold(min_val), frappe.bold(max_val), frappe.bold(item.item_code)))
 			else:
 				item.reading = 0
-			
+
 			in_inches = 0
 			f = str(item.reading).split(".")
 			in_inches = cint(f[0]) * 12
 			if len(f) > 1:
 				if cint(f[1]) > 11:
-					frappe.throw("Inches should be smaller than 12 on row {0}".format(item.idx))
+					frappe.throw(
+					    "Inches should be smaller than 12 on row {0}".format(item.idx))
 				in_inches += cint(f[1])
 			item.reading_inches = in_inches
 
@@ -96,16 +108,19 @@ class Production(StockController):
                         # Following code added by SHIV on 2019/04/01
 			item.cost_center = self.cost_center
                         item.warehouse = self.warehouse
-                        item.expense_account = get_expense_account(self.company, item.item_code)
+                        item.expense_account = get_expense_account(
+                            self.company, item.item_code)
                         """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
 	def check_cop(self):
 		for a in self.items:
-			branch = frappe.db.sql("select 1 from `tabCOP Branch` where parent = %s and branch = %s", (a.price_template, self.branch))
+			branch = frappe.db.sql(
+			    "select 1 from `tabCOP Branch` where parent = %s and branch = %s", (a.price_template, self.branch))
 			if not branch:
 				frappe.throw("Selected COP is not defined for your Branch")
 
-			cop = frappe.db.sql("select cop_amount from `tabCOP Rate Item` where parent = %s and item_code = %s", (a.price_template, a.item_code), as_dict=1)
+			cop = frappe.db.sql("select cop_amount from `tabCOP Rate Item` where parent = %s and item_code = %s",
+			                    (a.price_template, a.item_code), as_dict=1)
 			if not cop:
 				frappe.throw("COP Rate is not defined for your Item")
 			a.cop = cop[0].cop_amount
@@ -119,10 +134,10 @@ class Production(StockController):
 	def on_submit(self):
 		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
 		# Following lines commented by SHIV on 2019/04/01
-		#self.make_products_sl_entry()
-		#self.make_products_gl_entry()
-		#self.make_raw_material_stock_ledger()
-		#self.make_raw_material_gl_entry()
+		# self.make_products_sl_entry()
+		# self.make_products_gl_entry()
+		# self.make_raw_material_stock_ledger()
+		# self.make_raw_material_gl_entry()
 
 		# Following lines added by SHIV on 2019/04/01 and modified by Thukten on 24/12/2020
 		self.update_stock_ledger()
@@ -135,20 +150,21 @@ class Production(StockController):
 		self.assign_default_dummy()
 		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
                 # Following lines commented by SHIV on 2019/04/01
-		#self.make_products_sl_entry()
-		#self.make_products_gl_entry()
-		#self.make_raw_material_stock_ledger()
-		#self.make_raw_material_gl_entry()
+		# self.make_products_sl_entry()
+		# self.make_products_gl_entry()
+		# self.make_raw_material_stock_ledger()
+		# self.make_raw_material_gl_entry()
 
                 # Following lines added by SHIV on 2019/04/01
 		self.update_stock_ledger()
 		self.make_gl_entries_on_cancel()
 		""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
-		
+
 		self.delete_production_entry()
 
         """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
 	# update_stock_ledger() method added by SHIV on 2019/04/01
+
 	def update_stock_ledger(self):
 		sl_entries = []
 
@@ -160,7 +176,7 @@ class Production(StockController):
 								"actual_qty": -1 * flt(d.qty),
 								"incoming_rate": 0
 						}))
-						
+
 		for d in self.get('items'):
 				if cstr(d.warehouse):
 						sl_entries.append(self.get_sl_entries(d, {
@@ -172,7 +188,7 @@ class Production(StockController):
 		if self.transfer:
 			if not self.to_warehouse:
 				frappe.throw("Receiving warehouse is mandatory while transferring item")
-			
+
 			for d in self.get('items'):
 				if cstr(d.warehouse):
 						sl_entries.append(self.get_sl_entries(d, {
@@ -180,7 +196,7 @@ class Production(StockController):
 								"actual_qty": -1 * flt(d.qty),
 								"incoming_rate": 0
 						}))
-						
+
 				if cstr(self.to_warehouse):
 						sl_entries.append(self.get_sl_entries(d, {
 								"warehouse": cstr(self.to_warehouse),
@@ -195,13 +211,14 @@ class Production(StockController):
 
         # get_gl_entries() method added by SHIV on 2019/04/01
         def get_gl_entries(self, warehouse_account):
-                gl_entries = super(Production, self).get_gl_entries(warehouse_account)
+                gl_entries = super(Production, self).get_gl_entries(
+                    warehouse_account)
                 return gl_entries
         """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
-        
+
 	def assign_default_dummy(self):
 		self.pol_type = None
-		self.stock_uom = None 
+		self.stock_uom = None
 
 	def make_products_sl_entry(self):
 		sl_entries = []
@@ -216,7 +233,7 @@ class Production(StockController):
 					"incoming_rate": flt(a.cop, 2)
 				}))
 
-		if sl_entries: 
+		if sl_entries:
 			if self.docstatus == 2:
 				sl_entries.reverse()
 
@@ -224,13 +241,16 @@ class Production(StockController):
 
 	def make_products_gl_entry(self):
 		gl_entries = []
-		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
+		wh_account = frappe.db.get_value(
+		    "Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
 		if not wh_account:
 			frappe.throw(str(self.warehouse) + " is not linked to any account.")
-		expense_account = get_settings_value("Production Account Settings", self.company, "default_production_account")
+		expense_account = get_settings_value(
+		    "Production Account Settings", self.company, "default_production_account")
 		if not expense_account:
-                        frappe.throw("Setup Default Production Account in Production Account Settings")
-			
+                        frappe.throw(
+                            "Setup Default Production Account in Production Account Settings")
+
 		for a in self.items:
 			amount = flt(a.qty) * flt(a.cop)
 
@@ -249,9 +269,10 @@ class Production(StockController):
 						 "cost_center": self.cost_center,
 						})
 				)
-			
+
 			if self.transfer:
-				to_wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.to_warehouse}, "name")
+				to_wh_account = frappe.db.get_value(
+				    "Account", {"account_type": "Stock", "warehouse": self.to_warehouse}, "name")
 				frappe.throw("test " + to_wh_account)
 				gl_entries.append(
 					prepare_gl(self, {"account": to_wh_account,
@@ -266,12 +287,12 @@ class Production(StockController):
 							"credit_in_account_currency": flt(amount),
 							"cost_center": self.cost_center,
 							})
-					)	
+					)
 
 		if gl_entries:
 			from erpnext.accounts.general_ledger import make_gl_entries
-			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
-
+			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),
+			                update_outstanding="No", merge_entries=True)
 
 	def make_raw_material_stock_ledger(self):
 		sl_entries = []
@@ -286,7 +307,7 @@ class Production(StockController):
 					"incoming_rate": 0
 				}))
 
-		if sl_entries: 
+		if sl_entries:
 			if self.docstatus == 2:
 				sl_entries.reverse()
 
@@ -295,17 +316,21 @@ class Production(StockController):
 	def make_raw_material_gl_entry(self):
 		gl_entries = []
 
-		wh_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
+		wh_account = frappe.db.get_value(
+		    "Account", {"account_type": "Stock", "warehouse": self.warehouse}, "name")
 		if not wh_account:
 			frappe.throw(str(self.warehouse) + " is not linked to any account.")
 
 		for a in self.raw_materials:
-			stock_qty, map_rate = get_stock_balance(a.item_code, self.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
+			stock_qty, map_rate = get_stock_balance(
+			    a.item_code, self.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
                         amount = flt(a.qty) * flt(map_rate)
 
-			expense_account = frappe.db.get_value("Item", a.item_code, "expense_account")
+			expense_account = frappe.db.get_value(
+			    "Item", a.item_code, "expense_account")
 			if not expense_account:
-				frappe.throw("Set Budget Account in {0}".format(frappe.get_desk_link("Item", a.item_code)))		
+				frappe.throw("Set Budget Account in {0}".format(
+				    frappe.get_desk_link("Item", a.item_code)))
 
 			gl_entries.append(
 				prepare_gl(self, {"account": wh_account,
@@ -325,7 +350,8 @@ class Production(StockController):
 
 		if gl_entries:
 			from erpnext.accounts.general_ledger import make_gl_entries
-			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
+			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),
+			                update_outstanding="No", merge_entries=True)
 
 	def make_production_entry(self):
 		for a in self.items:
@@ -337,9 +363,11 @@ class Production(StockController):
 			doc.qty = a.qty
 			doc.uom = a.uom
 			doc.cop = a.cop
+                        doc.transportation_rate = a.rate
+                        doc.transportation_amount = a.amount
 			doc.company = self.company
 			doc.currency = self.currency
-			doc.branch = self.branch
+			doc.branch = self.branch	
 			doc.location = self.location
 			doc.cost_center = self.cost_center
 			doc.warehouse = self.warehouse
@@ -350,9 +378,10 @@ class Production(StockController):
 			doc.equipment_number = a.equipment_number
 			doc.equipment_model = a.equipment_model
 			doc.transporter_type = frappe.db.get_value("Equipment", a.equipment, "equipment_type")
-			doc.unloading_by = a.unloading_by
-			doc.group = a.group
-			doc.submit()
+	                doc.unloading_by = a.unloading_by
+                        doc.transfer_to_warehouse = self.to_warehouse if self.transfer else ''
+                        doc.group = a.group
+		        doc.submit()
 
 	def delete_production_entry(self):
 		frappe.db.sql("delete from `tabProduction Entry` where ref_doc = %s", self.name)
@@ -430,7 +459,7 @@ class Production(StockController):
 								"expense_account": expense_account,
 								"ratio": flt(a.ratio)
 								})
-				#frappe.msgprint("{}".format(data))
+				# frappe.msgprint("{}".format(data))
 		if data:			
 			return data
 		else:
@@ -516,7 +545,7 @@ class Production(StockController):
 		
 		if self.check_raw_material_product_qty:
 			if round(self.product_qty,4) > round(self.raw_material_qty,4):
-				#frappe.msgprint("product Qty is {} and Raw Material Qty is {} and difference is {}".format(cint(self.product_qty), cint(self.raw_material_qty), diff))
+				# frappe.msgprint("product Qty is {} and Raw Material Qty is {} and difference is {}".format(cint(self.product_qty), cint(self.raw_material_qty), diff))
 				frappe.throw("Sum of Crushed products should be less than or equivalent to raw materials feed.")
 
 	def validate_transportation(self):

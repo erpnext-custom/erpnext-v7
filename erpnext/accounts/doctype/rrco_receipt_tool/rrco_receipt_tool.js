@@ -5,6 +5,13 @@ frappe.ui.form.on('RRCO Receipt Tool', {
 	refresh: function(frm) {
 
 	},
+	purpose: function(frm) {
+		if(frm.doc.purpose == "Leave Encashment" || frm.doc.purpose == "Purchase Invoices")
+		{	
+			cur_frm.set_df_property("to_date", "reqd", 1);
+			cur_frm.set_df_property("from_date", "reqd", 1);
+		}
+	},
 	get_invoices: function(frm) {
 		return frappe.call({
 			method: "get_invoices",

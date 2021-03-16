@@ -247,7 +247,12 @@ def get_data():
 					"label": _("Assign Supervisor Tool"),
 					"description": _("Bulk Assign of Suvervisor")
 				},
-
+				{
+					"type": "doctype",
+					"name": "NPPF Tier",
+					"label": _("NPPF Tiers"),
+					"description": _("NPPF Tiers")
+				},
 			]
 		},
 		{

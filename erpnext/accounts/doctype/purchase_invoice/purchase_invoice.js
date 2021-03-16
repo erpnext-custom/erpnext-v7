@@ -2,7 +2,7 @@
 // License: GNU General Public License v3. See license.txt
 
 frappe.provide("erpnext.accounts");
-{% include 'erpnext/buying/doctype/purchase_common/purchase_common.js' %};
+// {% include 'erpnext/buying/doctype/purchase_common/purchase_common.js' %};
 
 
 erpnext.accounts.PurchaseInvoice = erpnext.buying.BuyingController.extend({
@@ -273,12 +273,12 @@ cur_frm.fields_dict['select_print_heading'].get_query = function(doc, cdt, cdn) 
 	}
 }
 
-cur_frm.set_query("expense_account", "items", function(doc) {
-	return {
-		query: "erpnext.controllers.queries.get_expense_account",
-		filters: {'company': doc.company}
-	}
-});
+// cur_frm.set_query("expense_account", "items", function(doc) {
+// 	return {
+// 		query: "erpnext.controllers.queries.get_expense_account",
+// 		filters: {'company': doc.company}
+// 	}
+// });
 
 cur_frm.set_query("asset", "items", function(doc, cdt, cdn) {
 	var d = locals[cdt][cdn];

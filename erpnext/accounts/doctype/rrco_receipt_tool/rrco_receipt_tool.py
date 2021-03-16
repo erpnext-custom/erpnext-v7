@@ -25,6 +25,10 @@ class RRCOReceiptTool(Document):
 
 			if frappe.db.exists("RRCO Receipt Entries", {"fiscal_year":self.fiscal_year, "purpose": self.purpose}):
 				frappe.throw("RRCO Receipt and date has been already assigned for {} and fiscal year {}".format(self.purpose, self.fiscal_year))
+
+		elif self.purpose in ["Leave Encashment", "Purchase Invoices"]:
+			if not self.item:
+				frappe.throw("Not allowed to save as there is not records for the selected options")
 	
 	def on_submit(self):
 		self.rrco_receipt_entry()
@@ -44,11 +48,21 @@ class RRCOReceiptTool(Document):
 						single_party, party = frappe.db.get_value("Direct Payment", a.invoice_no, ["single_party_multiple_payments", "party"])
 						bill_no = a.invoice_no
 					elif a.transaction == "Leave Encashment":
-						employee, employee_name = frappe.db.get_value("Leave Encashment", a.invoice_no, ["employee","employee_name"])
+						employee, employee_name, cost_center = frappe.db.get_value("Leave Encashment", a.invoice_no, ["employee","employee_name","cost_center"])
 						bill_no = str(employee_name + "(" + a.invoice_no + ")")
 						party = employee
 					elif a.transaction == "Purchase Invoice":
 						party = frappe.db.get_value("Purchase Invoice", a.invoice_no, "supplier")
+						bill_no = a.invoice_no
+					elif a.transaction == "EME Payment":
+						party = frappe.db.get_value("EME Payment", a.invoice_no, "supplier")
+						bill_no = a.invoice_no
+					elif a.transaction == "Transporter Payment":
+						equipment = frappe.db.get_value("Transporter Payment", a.invoice_no, "equipment")
+						if equipment:
+							party = frappe.db.get_value("Equipment", equipment, "supplier")
+						if not party:
+							frappe.throw("Equipment {} is not link with any supplier. It should be linked with one of the supplier for TDS".format(equipment))
 						bill_no = a.invoice_no
 
 					if a.transaction == "Direct Payment" and not single_party:
@@ -63,6 +77,7 @@ class RRCOReceiptTool(Document):
 							rrco.cheque_number = self.cheque_number
 							rrco.cheque_date = self.cheque_date
 							rrco.branch = self.branch
+							rrco.cost_center = self.cost_center
 							rrco.rrco_receipt_tool = self.name
 							rrco.submit()
 					else:
@@ -76,6 +91,7 @@ class RRCOReceiptTool(Document):
 						rrco.cheque_number = self.cheque_number
 						rrco.cheque_date = self.cheque_date
 						rrco.branch = self.branch
+						rrco.cost_center = self.cost_center	if a.transaction != "Leave Encashment" else cost_center
 						rrco.rrco_receipt_tool = self.name
 						rrco.submit()
 						
@@ -102,31 +118,55 @@ class RRCOReceiptTool(Document):
 				query = """select  "Leave Encashment" as transaction, name, application_date as posting_date, encashment_amount as invoice_amount, tax_amount
 						FROM `tabLeave Encashment` AS a WHERE a.docstatus = 1 
 						AND a.application_date BETWEEN '{0}' AND '{1}' 
-						AND a.branch ='{2}' 
 						AND NOT EXISTS (SELECT 1 
 									FROM `tabRRCO Receipt Entries` AS b 
 									WHERE b.purchase_invoice = a.name)
-						""".format(self.from_date, self.to_date, self.branch)
+						AND a.tax_amount > 0 order by a.application_date
+						""".format(self.from_date, self.to_date)
 			else:
 				query = """select "Purchase Invoice" as transaction, name, posting_date, tds_taxable_amount as invoice_amount, tds_amount  as tax_amount
 						FROM `tabPurchase Invoice` AS a 
 						WHERE docstatus = 1 AND posting_date BETWEEN '{0}' AND '{1}' 
 						AND tds_rate = '{2}' 
-						AND a.branch = '{3}' 
+						AND a.cost_center = '{3}' 
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
 										WHERE b.purchase_invoice = a.name) 
+						AND a.tds_amount > 0 order by a.posting_date
 						UNION 
 						select "Direct Payment" as transaction, name, posting_date, amount as invoice_amount, tds_amount as tax_amount
 						FROM `tabDirect Payment` AS a 
 						WHERE docstatus = 1 
 						AND posting_date BETWEEN '{0}' AND '{1}'
 						AND tds_percent = '{2}' 
-						AND a.branch = '{3}' 
+						AND a.cost_center = '{3}' 
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
 										WHERE b.purchase_invoice = a.name)
-						""".format(self.from_date, self.to_date, self.tds_rate, self.branch)
+						AND a.tds_amount > 0 order by a.posting_date
+						UNION
+						select "EME Payment" as transaction, name, posting_date, total_amount as invoice_amount, tds_amount as tax_amount
+						FROM `tabEME Payment` AS a 
+						WHERE docstatus = 1 
+						AND posting_date BETWEEN '{0}' AND '{1}'
+						AND tds_percent = '{2}' 
+						AND a.cost_center = '{3}' 
+						AND NOT EXISTS (SELECT 1 
+										FROM `tabRRCO Receipt Entries` AS b 
+										WHERE b.purchase_invoice = a.name)
+						AND a.tds_amount > 0 order by a.posting_date
+						UNION
+						select "Transporter Payment" as transaction, name, posting_date, gross_amount as invoice_amount, tds_amount as tax_amount
+						FROM `tabTransporter Payment` AS a 
+						WHERE docstatus = 1 
+						AND posting_date BETWEEN '{0}' AND '{1}'
+						AND tds_percent = '{2}' 
+						AND a.cost_center = '{3}'
+						AND NOT EXISTS (SELECT 1 
+										FROM `tabRRCO Receipt Entries` AS b 
+										WHERE b.purchase_invoice = a.name)
+						AND a.tds_amount > 0 order by a.posting_date
+						""".format(self.from_date, self.to_date, self.tds_rate, self.cost_center)
 
 			self.set('item', [])
 			for a in frappe.db.sql(query, as_dict=True):

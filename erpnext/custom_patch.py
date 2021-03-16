@@ -6,6 +6,53 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def copy_to_production_entry():
+	for d in frappe.db.sql("""
+		SELECT
+			ref_doc,item_code, name
+		FROM `tabProduction Entry`
+		""",as_dict=True):
+
+		for a in frappe.db.sql("""
+			SELECT
+				p.to_warehouse,
+				pi.rate,
+				pi.amount
+			FROM
+				`tabProduction` p,
+				`tabProduction Product Item` pi
+			WHERE pi.parent = p.name 
+			AND p.name = '{}'
+			AND pi.item_code = '{}'
+		""".format(d.ref_doc,d.item_code),as_dict=True):
+
+			frappe.db.sql("""
+			UPDATE
+				`tabProduction Entry`
+			SET 
+				transfer_to_warehouse='{}',
+				transportation_rate = '{}',
+				transportation_amount = '{}'
+			WHERE 
+				ref_doc = '{}' 
+			AND 
+				item_code = '{}' 
+			AND 
+				name = '{}'
+			""".format(a.to_warehouse,a.rate,a.amount,d.ref_doc,d.item_code,d.name))
+
+def equipment_number_update():
+	for a in frappe.db.sql("""
+		SELECT 
+			name,
+			equipment_number
+		FROM `tabProduction Entry`
+		WHERE equipment_number = ' BP-1-A1423.'
+		""",as_dict=True):
+		frappe.db.sql("""
+		UPDATE `tabProduction Entry` SET equipment_number = 'BP-1-A1423' WHERE name = '{}'
+		""".format(a.name))
+		
 def remove_gl_party():
 	i  = 1
 	for a in frappe.db.sql("""select g.name, g.party, g.party_type, g.account, a.account_type
@@ -435,7 +482,6 @@ def cancel_si():
 		doc = frappe.get_doc("Sales Invoice", a.name)
 		doc.cancel()
 		frappe.db.commit()
-
 
 def cancel_production():
 	for a in frappe.db.sql("select name from tabProduction where docstatus = 1 order by timestamp(posting_date, posting_time) DESC", as_dict=1):

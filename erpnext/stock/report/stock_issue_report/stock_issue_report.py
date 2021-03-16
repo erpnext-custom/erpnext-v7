@@ -9,6 +9,7 @@ from frappe.utils import flt, cint, add_days, cstr, flt, getdate, nowdate, round
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ---------------------------------------------------------------------------------------------------------------------
 				PHUNTSHO		            		23/02/2021           query modified to include transport info from child table
+				Birendra							10/03/2021			 added account difference field
 ---------------------------------------------------------------------------------------------------------------------
 '''
 
@@ -22,19 +23,19 @@ def execute(filters=None):
 def get_columns(filters):
     cols = [
         ("Date") + ":date:100",
-        ("Material Code") + ":data:110",
+        ("Material Code") + ":data:80",
         ("Material Name")+":data:120",
         ("Material Group")+":data:120",
         ("UoM") + ":data:50",
         ("Qty")+":data:50",
-        ("Valuation Rate")+":data:120",
+        ("Valuation Rate")+":data:100",
         ("Amount")+":Currency:110",
     ]
 
     if filters.purpose in ("Material Issue", "Inventory Write Off"):
         cols.append(("Cost Center")+":data:170")
-        cols.append(("Issued To Employee")+":Link/Employee:120")
-        cols.append(("Issued To Equipment")+":Link/Equipment:120")
+        cols.append(("Issued To Employee")+":Link/Employee:100")
+        cols.append(("Issued To Equipment")+":Link/Equipment:100")
 
     if filters.purpose == "Material Transfer":
         cols.insert(6, {"fieldname": "received_qty",
@@ -43,9 +44,10 @@ def get_columns(filters):
                         "label": "Difference Qty", "fieldtype": "Data", "width": 100}),
         cols.append(("Source Warehouse")+":data:170")
         cols.append(("Destination Warehouse")+":data:170")
-        cols.append(("Equipment Model")+":data:140")
-        cols.append(("Equipment Number")+":data:170")
-    cols.append(("Stock Entry")+":Link/Stock Entry:170")
+        cols.append(("Equipment Model")+":data:120")
+        cols.append(("Equipment Number")+":data:120")
+    cols.append(("Stock Entry")+":Link/Stock Entry:120")
+    cols.append(("Difference Account")+":Link/Account:250")
     return cols
 
 
@@ -68,7 +70,8 @@ def get_data(filters):
 				sed.t_warehouse, 
 				COALESCE(se.equipment_model,sed.equipment_model)as equipment_model, 
 				COALESCE(se.equipment_number,sed.equipment_number) as equipment_number, 
-				se.name 
+				se.name,
+				sed.expense_account 
 			FROM 
 				`tabStock Entry` se
 			INNER JOIN  
@@ -101,7 +104,8 @@ def get_data(filters):
 			sed.cost_center, 
 			sed.issued_to_employee,
 			sed.issued_to_equipment, 
-			se.name 
+			se.name,
+			sed.expense_account 
 		FROM `tabStock Entry` se 
 		INNER JOIN 
 			`tabStock Entry Detail` sed 

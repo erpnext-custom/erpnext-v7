@@ -232,11 +232,14 @@ class TransporterPayment(AccountsController):
 
 
 	def get_delivery_notes(self, cost_center):
-		return frappe.db.sql("""select b.name as reference_row, a.posting_date, 
+		return frappe.db.sql("""
+				select b.name as reference_row, a.posting_date, 
 					'Delivery Note' as reference_type, a.name as reference_name, 
 					b.item_code, b.item_name, 
 					b.warehouse as from_warehouse, a.customer as receiving_warehouse, 
-					b.qty as qty, '' as unloading_by, a.equipment 
+					b.qty as qty, '' as unloading_by, a.equipment,
+					a.rate,a.transporter_rate_reference,
+					a.expense_account
 				from `tabDelivery Note` a, `tabDelivery Note Item` b 
 				where a.docstatus = 1 
 				and a.posting_date between "{0}" and "{1}" 
@@ -354,26 +357,30 @@ class TransporterPayment(AccountsController):
 		for d in entries:
 			equipment_type = frappe.db.get_value("Equipment", d.equipment,"equipment_type")
 			# frappe.msgprint('equipment type : {}'.format(d))
-			tr = get_transporter_rate(d.from_warehouse, d.receiving_warehouse, d.posting_date, equipment_type, d.item_code)
-
-			d.transporter_rate = tr.name
-			if cint(self.total_trip) > flt(tr.threshold_trip):
-				d.transportation_rate = flt(tr.higher_rate)
-			else:
-				d.transportation_rate = flt(tr.lower_rate)
-
-			d.unloading_rate  = tr.unloading_rate
-			if d.unloading_by == "Transporter":
-				d.unloading_amount = round(flt(d.unloading_rate) * flt(d.qty), 2)
-			else:
+			if d.transporter_rate_reference:
+				d.transportation_rate = d.rate
 				d.unloading_amount = 0
-			
-			d.expense_account 	= tr.expense_account
+				d.transporter_rate = d.transporter_rate_reference
+			else:
+				tr = get_transporter_rate(d.from_warehouse, d.receiving_warehouse, d.posting_date, equipment_type, d.item_code)
+
+				d.transporter_rate = tr.name
+				if cint(self.total_trip) > flt(tr.threshold_trip):
+					d.transportation_rate = flt(tr.higher_rate)
+				else:
+					d.transportation_rate = flt(tr.lower_rate)
+
+				d.unloading_rate  = tr.unloading_rate
+				if d.unloading_by == "Transporter":
+					d.unloading_amount = round(flt(d.unloading_rate) * flt(d.qty), 2)
+				else:
+					d.unloading_amount = 0
+				d.expense_account 	= tr.expense_account
+				
 			d.transportation_amount = round(flt(d.transportation_rate) * flt(d.qty), 2)
 			d.total_amount 		= flt(d.unloading_amount) + flt(d.transportation_amount)
 			trans_amount 		+= flt(d.transportation_amount)
 			unload_amount 		+= flt(d.unloading_amount)
-
 			row = self.append('items', {})
 			row.update(d)
 

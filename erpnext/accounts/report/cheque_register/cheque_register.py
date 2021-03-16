@@ -17,18 +17,91 @@ def execute(filters=None):
 def get_data(query):
 	data = []
 	datas = frappe.db.sql(query, as_dict=True);
+	total = {}
+	total_amount = 0
+	total_cancelled = 0
 	for d in datas:
-		row = [d.name, d.posting_date, d.cheque_no, d.cheque_date, d.total_amount, d.pay_to_recd_from, d.cheque_status, d.cancelled_amount]
-		data.append(row);
+		key = (d.cheque_no, d.cheque_date)
+		total[key] = flt(total.get(key)) + flt(d.amount)
+
+	for d in datas:
+		key = (d.cheque_no, d.cheque_date)
+		row = [d.voucher_type, d.voucher_no, d.voucher_date, d.cheque_no, d.cheque_date, d.amount, total[key],
+			d.recipient, d.cheque_status, d.cancelled_amount]
+		data.append(row)
+		total_amount += flt(d.amount)
+		total_cancelled += flt(d.cancelled_amount)
+
+	# Total row
+	row = ['Total', '', '', '', '', total_amount, '', '', '', total_cancelled]
+	data.append(row)
 
 	return data
 
 def construct_query(filters=None):
-	query = "SELECT je.name, je.posting_date, je.cheque_no, je.cheque_date, CASE je.docstatus WHEN 2 THEN 0 ELSE je.total_amount END AS total_amount, CASE je.docstatus WHEN 2 THEN je.total_amount ELSE 0 END AS cancelled_amount, je.pay_to_recd_from, CASE je.docstatus WHEN 2 THEN \"CANCELLED\" ELSE null END AS cheque_status FROM `tabJournal Entry` je WHERE je.naming_series IN ('Bank Payment Voucher') AND NOT isnull(je.cheque_no) AND je.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND NOT EXISTS (SELECT 1 from `tabJournal Entry` je1 where je1.amended_from = je.name) UNION ALL SELECT pe.name, pe.posting_date, pe.reference_no AS cheque_no, pe.reference_date AS cheque_date, CASE pe.docstatus WHEN 2 THEN 0 ELSE (CASE WHEN pe.base_paid_amount > 0 THEN pe.base_paid_amount ELSE pe.base_received_amount END) END AS total_amount, CASE pe.docstatus WHEN 2 THEN (CASE WHEN pe.base_paid_amount > 0 THEN pe.base_paid_amount ELSE pe.base_received_amount END) ELSE 0 END AS cancelled_amount, pe.pay_to_recd_from, CASE pe.docstatus WHEN 2 THEN 'CANCELLED' ELSE null END AS cheque_status FROM `tabPayment Entry` pe WHERE pe.naming_series IN ('Bank Payment Voucher') AND NOT isnull(pe.reference_no) AND pe.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND NOT EXISTS (SELECT 1 from `tabPayment Entry` pe1 where pe1.amended_from = pe.name) UNION ALL SELECT tp.name, tp.posting_date, tp.cheque_no, tp.cheque_date,CASE tp.docstatus WHEN 2 THEN 0 ELSE tp.amount_payable END AS total_amount, CASE tp.docstatus WHEN 2 THEN tp.amount_payable ELSE 0 END AS cancelled_amount, tp.registration_no, CASE tp.docstatus WHEN 2 THEN \"CANCELLED\" ELSE null END AS cheque_status FROM `tabTransporter Payment` tp WHERE NOT isnull(tp.cheque_no) AND tp.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND NOT EXISTS (SELECT 1 from `tabTransporter Payment` tp1 where tp1.amended_from = tp.name) UNION ALL SELECT dp.name, dp.posting_date, dp.cheque_no, dp.cheque_date, CASE dp.docstatus WHEN 2 THEN 0 ELSE dp.net_amount END AS total_amount, CASE dp.docstatus WHEN 2 THEN dp.net_amount ELSE 0 END AS cancelled_amount, dp.party, CASE dp.docstatus WHEN 2 THEN \"CANCELLED\" ELSE null END AS cheque_status FROM `tabDirect Payment` dp WHERE NOT isnull(dp.cheque_no) AND dp.posting_date BETWEEN  \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND NOT EXISTS (SELECT 1 from `tabDirect Payment` dp1 where dp1.amended_from = dp.name) UNION ALL SELECT eme.name, eme.posting_date, eme.cheque_no, eme.cheque_date, CASE eme.docstatus WHEN 2 THEN 0 ELSE eme.payable_amount END AS total_amount, CASE eme.docstatus WHEN 2 THEN eme.payable_amount ELSE 0 END AS cancelled_amount, eme.supplier, CASE eme.docstatus WHEN 2 THEN \"CANCELLED\" ELSE null END AS cheque_status FROM `tabEME Payment` as eme WHERE NOT isnull(eme.cheque_no) AND eme.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND NOT EXISTS(SELECT 1 from `tabEME Payment` eme1 where eme1.amended_from = eme.name)"
+	query = """SELECT 'Journal Entry' as voucher_type, je.name as voucher_no, je.posting_date as voucher_date, 
+			je.cheque_no, je.cheque_date, 
+			CASE je.docstatus WHEN 2 THEN 0 ELSE je.total_amount END AS amount, 
+			CASE je.docstatus WHEN 2 THEN je.total_amount ELSE 0 END AS cancelled_amount, 
+			je.pay_to_recd_from recipient, 
+			CASE je.docstatus WHEN 2 THEN 'CANCELLED' ELSE null END AS cheque_status 
+		FROM `tabJournal Entry` je 
+		WHERE je.naming_series IN ('Bank Payment Voucher') 
+		AND IFNULL(je.cheque_no,'') != '' 
+		AND je.posting_date BETWEEN '{from_date}' AND '{to_date}' 
+		AND NOT EXISTS (SELECT 1 from `tabJournal Entry` je1 where je1.amended_from = je.name) 
+		UNION ALL 
+		SELECT 'Payment Entry' as voucher_type, pe.name as voucher_no, pe.posting_date as voucher_date, 
+			pe.reference_no AS cheque_no, pe.reference_date AS cheque_date, 
+			CASE pe.docstatus WHEN 2 THEN 0 
+				ELSE (CASE WHEN pe.base_paid_amount > 0 THEN pe.base_paid_amount ELSE pe.base_received_amount END) 
+			END AS amount, 
+			CASE pe.docstatus WHEN 2 THEN (CASE WHEN pe.base_paid_amount > 0 THEN pe.base_paid_amount ELSE pe.base_received_amount END) 
+				ELSE 0 
+			END AS cancelled_amount, 
+			pe.pay_to_recd_from as recipient, 
+			CASE pe.docstatus WHEN 2 THEN 'CANCELLED' ELSE null END AS cheque_status 
+		FROM `tabPayment Entry` pe 
+		WHERE pe.naming_series IN ('Bank Payment Voucher') 
+		AND IFNULL(pe.reference_no,'') != '' 
+		AND pe.posting_date BETWEEN '{from_date}' AND '{to_date}' 
+		AND NOT EXISTS (SELECT 1 from `tabPayment Entry` pe1 where pe1.amended_from = pe.name) 
+		UNION ALL 
+		SELECT 'Transporter Payment' as voucher_type, tp.name as voucher_no, tp.posting_date as voucher_date, 
+			tp.cheque_no, tp.cheque_date,
+			CASE tp.docstatus WHEN 2 THEN 0 ELSE tp.amount_payable END AS amount, 
+			CASE tp.docstatus WHEN 2 THEN tp.amount_payable ELSE 0 END AS cancelled_amount, 
+			tp.registration_no as recipient, 
+			CASE tp.docstatus WHEN 2 THEN 'CANCELLED' ELSE null END AS cheque_status 
+		FROM `tabTransporter Payment` tp 
+		WHERE IFNULL(tp.cheque_no,'') != '' 
+		AND tp.posting_date BETWEEN '{from_date}' AND '{to_date}' 
+		AND NOT EXISTS (SELECT 1 from `tabTransporter Payment` tp1 where tp1.amended_from = tp.name) 
+		UNION ALL 
+		SELECT 'Direct Payment' as voucher_type, dp.name as voucher_no, dp.posting_date as voucher_date, 
+			dp.cheque_no, dp.cheque_date, CASE dp.docstatus WHEN 2 THEN 0 ELSE dp.net_amount END AS amount, 
+			CASE dp.docstatus WHEN 2 THEN dp.net_amount ELSE 0 END AS cancelled_amount, 
+			dp.party as recipient, 
+			CASE dp.docstatus WHEN 2 THEN 'CANCELLED' ELSE null END AS cheque_status 
+		FROM `tabDirect Payment` dp 
+		WHERE IFNULL(dp.cheque_no,'') != '' 
+		AND dp.posting_date BETWEEN  '{from_date}' AND '{to_date}' 
+		AND NOT EXISTS (SELECT 1 from `tabDirect Payment` dp1 where dp1.amended_from = dp.name) 
+		UNION ALL 
+		SELECT 'EME Payment' as voucher_type, eme.name as voucher_no, eme.posting_date as voucher_date, 
+			eme.cheque_no, eme.cheque_date, CASE eme.docstatus WHEN 2 THEN 0 ELSE eme.payable_amount END AS amount, 
+			CASE eme.docstatus WHEN 2 THEN eme.payable_amount ELSE 0 END AS cancelled_amount, 
+			eme.supplier as recipient, 
+			CASE eme.docstatus WHEN 2 THEN 'CANCELLED' ELSE null END AS cheque_status 
+		FROM `tabEME Payment` as eme 
+		WHERE IFNULL(eme.cheque_no,'') != ''
+		AND eme.posting_date BETWEEN '{from_date}' AND '{to_date}' 
+		AND NOT EXISTS(SELECT 1 from `tabEME Payment` eme1 where eme1.amended_from = eme.name)
+		""".format(from_date=filters.from_date, to_date=filters.to_date)
 	return query;
 
 def validate_filters(filters):
-
+	'''
 	if not filters.fiscal_year:
 		frappe.throw(_("Fiscal Year {0} is required").format(filters.fiscal_year))
 
@@ -61,15 +134,23 @@ def validate_filters(filters):
 		frappe.msgprint(_("To Date should be within the Fiscal Year. Assuming To Date = {0}")\
 			.format(formatdate(filters.year_end_date)))
 		filters.to_date = filters.year_end_date
-
+	'''
+	return
 
 def get_columns():
 	return [
 		{
+		  "fieldname": "voucher_type",
+		  "label": "Voucher Type",
+		  "fieldtype": "Data",
+		  "width": 100
+		},
+		{
 		  "fieldname": "voucher_no",
 		  "label": "Voucher No",
-		  "fieldtype": "Data",
-		  "width": 150
+		  "fieldtype": "Dynamic Link",
+		  "options": "voucher_type",
+		  "width": 120
 		},
 		{
 		  "fieldname": "voucher_date",
@@ -96,7 +177,13 @@ def get_columns():
 		  "width": 130
 		},
 		{
-		  "fieldname": "receipant",
+		  "fieldname": "total_amount",
+		  "label": "Total Amount",
+		  "fieldtype": "Currency",
+		  "width": 130
+		},
+		{
+		  "fieldname": "recipient",
 		  "label": "Recipient",
 		  "fieldtype": "Data",
 		  "width": 230
@@ -108,7 +195,7 @@ def get_columns():
 		  "width": 100
 		},
 		{
-		  "fieldname": "canaelled_amount",
+		  "fieldname": "cancelled_amount",
 		  "label": "Cancelled Amount",
 		  "fieldtype": "Currency",
 		  "width": 130

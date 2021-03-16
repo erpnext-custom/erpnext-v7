@@ -1,5 +1,10 @@
 # Copyright (c) 2013, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
+'''
+Author				Date				Remarks
+----------------------------------------------------------------------------------------
+Birendra			12/03/2021			extra column added as ticket 1512
+'''
 from __future__ import unicode_literals
 import frappe
 from erpnext.accounts.utils import get_child_cost_centers
@@ -19,9 +24,45 @@ def get_data(filters):
 	order_by = get_order_by(filters)
 	total_qty = '1'
 	if filters.show_aggregate:
-		total_qty = "sum(qty) as total_qty"
+		total_qty = "sum(pe.qty) as total_qty"
 
-	query = "select pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.equipment_number, pe.equipment_model, pe.transporter_type, pe.unloading_by, pe.group, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.group, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0} from `tabProduction Entry` pe, `tabCost Center` cc where pe.docstatus = 1 and cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
+	query = """
+	select	
+		pe.ref_doc,
+		pe.posting_date, 
+		pe.item_code, 
+		pe.item_name, 
+		pe.item_group, 
+		pe.item_sub_group, 
+		pe.qty, 
+		pe.uom, 
+		pe.equipment_number, 
+		pe.equipment_model, 
+		pe.transporter_type, 
+		pe.unloading_by, 
+		pe.group, 
+		pe.branch, 
+		pe.location, 
+		pe.adhoc_production, 
+		pe.company, 
+		pe.warehouse, 
+		pe.group, 
+		pe.timber_class, 
+		pe.timber_type, 
+		pe.timber_species, 
+		pe.transfer_to_warehouse,
+		pe.transportation_rate,
+		pe.transportation_amount,
+		cc.parent_cost_center as region,
+		{0} 
+	from 
+		`tabProduction Entry` pe, 
+		`tabCost Center` cc
+	where 
+		pe.docstatus = 1 
+	and 
+		cc.name = pe.cost_center {1} {2} {3}""".format(total_qty, conditions, group_by, order_by)
+	
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
 
 	total_qty = 0
@@ -31,7 +72,6 @@ def get_data(filters):
 		total_qty += flt(a.qty)
 		data.append(a)
 	data.append({"qty": total_qty, "branch": frappe.bold("TOTAL")})
-
 	return data
 
 def get_group_by(filters):
@@ -101,7 +141,7 @@ def get_columns(filters):
 		},
 		{
 			"fieldname": "item_group",
-			"label": "Group",
+			"label": "Item Group",
 			"fieldtype": "Data",
 			"width": 120
 		},
@@ -125,44 +165,74 @@ def get_columns(filters):
 			"options": "UoM",
 			"width": 100
 		},
+		{
+			"fieldname": "handling_loss",
+			"label": "Handling Loss",
+			"fieldtype": "Float",
+			"width": 100
+		},
 	]
 
 	if not filters.show_aggregate:
+		columns.insert(0,{
+			"fieldname": "ref_doc",
+			"label": "Reference",
+			"fieldtype": "Link",
+			"options": "Production",
+			"width": 120
+		}),
 		columns.insert(3, {
+			"fieldname": "transfer_to_warehouse",
+			"label": "Transfer to Warehouse",
+			"fieldtype": "Data",
+			"width": 150
+			})
+		columns.insert(5, {
 			"fieldname": "posting_date",
 			"label": "Posting Date",
 			"fieldtype": "Date",
 			"width": 100
 		})
-		columns.insert(7, {
-	                "fieldname": "equipment_number",	                        
-			"label": "Equipment Number",
-                        "fieldtype": "Data",														                      "width": 130									                
+		columns.insert(9, {
+			"fieldname": "transportation_rate",
+			"label": "Transportation rate",
+			"fieldtype": "Currency",
+			"width": 120
 			})
-		columns.insert(8, {
+		columns.insert(10, {
+			"fieldname": "transportation_amount",
+			"label": "Transportation Amount",
+			"fieldtype": "Currency",
+			"width": 150
+			})
+		columns.insert(11, {
+	        "fieldname": "equipment_number",	                        
+			"label": "Equipment Number",
+            "fieldtype": "Data",														                      "width": 130									                
+			})
+		columns.insert(12, {
 			"fieldname": "equipment_model",
 			"label": "Equipment Model",
 			"fieldtype": "Data",
 			"width": 130 
 			})
-		columns.insert(9, {
+		columns.insert(13, {
 			"fieldname": "transporter_type",
 			"label": "Transporter Type",
 			"fieldtype": "Data",
 			"width": 130
 			})
-		columns.insert(10, {
+		columns.insert(14, {
 			"fieldname": "unloading_by",
 			"label": "Unloading By",
 			"fieldtype": "Data",
 			"width": 120
 			})
-		columns.insert(11, {
+		columns.insert(15, {
 			"fieldname": "group",
 			"label": "Group",
 			"fieldtype": "Data",
 			"width": 120
 			})
-
 	return columns
 
