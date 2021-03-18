@@ -221,7 +221,7 @@ class TransporterPayment(AccountsController):
 				AND b.transport_payment_done = 0
 				AND b.equipment = "{2}"
 				AND b.cost_center = "{3}"
-				and NOT EXISTS(
+				AND NOT EXISTS(
 					select 1 
 					from `tabTransporter Payment` p, `tabTransporter Payment Item` i
 					where p.name = i.parent 
