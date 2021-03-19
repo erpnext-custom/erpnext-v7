@@ -1,5 +1,3 @@
-frappe.provide("erpnext.financial_statements");
-
 erpnext.financial_statements = {
 	"filters": [
 		{
@@ -23,6 +21,18 @@ erpnext.financial_statements = {
 			"label": __("Periodicity"),
 			"fieldtype": "Select",
 			"options": [
+				{"value": "07", "label": __("July")},
+				{"value": "08", "label": __("Aug")},
+				{"value": "09", "label": __("Sep")},
+				{"value": "10", "label": __("Oct")},
+				{"value": "11", "label": __("Nov")},
+				{"value": "12", "label": __("Dec")},
+				{"value": "01", "label": __("Jan")},
+				{"value": "02", "label": __("Feb")},
+				{"value": "03", "label": __("March")},
+				{"value": "04", "label": __("April")},
+				{"value": "05", "label": __("May")},
+				{"value": "06", "label": __("June")},
 				{ "value": "Monthly", "label": __("Monthly") },
 				{ "value": "Quarterly", "label": __("Quarterly") },
 				{ "value": "Half-Yearly", "label": __("Half-Yearly") },

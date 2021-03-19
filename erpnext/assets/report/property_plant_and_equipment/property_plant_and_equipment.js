@@ -8,7 +8,8 @@ frappe.query_reports["Property Plant and Equipment"] = {
 			"label": __("Company"),
 			"fieldtype": "Link",
 			"options": "Company",
-			"default": frappe.defaults.get_user_default("Company"),
+			// "default": frappe.defaults.get_user_default("Company"),
+			"default": "De-Suung",
 			"reqd": 1
 		},
 		{
@@ -18,12 +19,12 @@ frappe.query_reports["Property Plant and Equipment"] = {
 			"options": "Fiscal Year",
 			"default": frappe.defaults.get_user_default("fiscal_year"),
 			"reqd": 1,
-			"on_change": function(query_report) {
+			"on_change": function (query_report) {
 				var fiscal_year = query_report.get_values().fiscal_year;
 				if (!fiscal_year) {
 					return;
 				}
-				frappe.model.with_doc("Fiscal Year", fiscal_year, function(r) {
+				frappe.model.with_doc("Fiscal Year", fiscal_year, function (r) {
 					var fy = frappe.model.get_doc("Fiscal Year", fiscal_year);
 					query_report.filters_by_name.from_date.set_input(fy.year_start_date);
 					query_report.filters_by_name.to_date.set_input(fy.year_end_date);
@@ -48,7 +49,7 @@ frappe.query_reports["Property Plant and Equipment"] = {
 			"label": __("Cost Center"),
 			"fieldtype": "Link",
 			"options": "Cost Center",
-			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1']]}}
+			"get_query": function () { return { 'filters': [['Cost Center', 'is_disabled', '!=', '1']] } }
 		}
 	]
 }

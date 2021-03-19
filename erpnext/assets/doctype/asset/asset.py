@@ -433,4 +433,7 @@ def sync_cc_branch():
 	for a in objs:
 		frappe.db.sql("update tabAsset set branch = %s where name = %s", (a.branch, a.asset))
 
-
+@frappe.whitelist()
+def get_branch(cost_center):
+	branch = frappe.db.sql("select name from `tabBranch` where cost_center = '{}'".format(cost_center))
+	return branch

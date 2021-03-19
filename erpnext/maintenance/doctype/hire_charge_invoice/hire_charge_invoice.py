@@ -48,7 +48,7 @@ class HireChargeInvoice(AccountsController):
 		self.total_invoice_amount = total_amount
 
 	def set_amount(self):
-		self.balance_amount = flt(self.total_invoice_amount) - flt(self.advance_amount) - flt(self.discount_amount)
+		self.balance_amount = flt(self.total_invoice_amount) - flt(self.advance_amount) - flt(self.discount_amount) - flt(self.tds_amount)
 		self.outstanding_amount = self.balance_amount
 
 	def on_submit(self):
@@ -106,7 +106,7 @@ class HireChargeInvoice(AccountsController):
 					'against_voucher_type' : self.doctype,
 					'against_voucher'  : self.name,
 					'account' : d.advance_account,
-					'party_type': "Customer",
+					'party_type': "Supplier",
 					'party': self.customer,
 					'is_advance' : 'Yes',
 					'dr_or_cr' : "credit_in_account_currency",
@@ -238,9 +238,13 @@ class HireChargeInvoice(AccountsController):
 
 			default_ba = get_default_ba()
 
-			receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
-			if not receivable_account:
-				frappe.throw("Setup Reveivable Account in Maintenance Accounts Settings")
+			# receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
+			# if not receivable_account:
+			# 	frappe.throw("Setup Reveivable Account in Maintenance Accounts Settings")
+
+			credit_account = frappe.db.get_value("Company", "De-Suung", "default_payable_account")
+			if not credit_account:
+			 	frappe.throw("Setup Credit Account in Company Accounts Settings")
 
 			advance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_advance_account")
 			if not advance_account:
@@ -250,6 +254,10 @@ class HireChargeInvoice(AccountsController):
 			if not hire_account:
 				frappe.throw("Setup Hire Account in Maintenance Accounts Settings")
 
+			hire_expense_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_expense_account")
+			if not hire_account:
+				frappe.throw("Setup Hire Expense Account in Maintenance Accounts Settings")
+
 			discount_account = frappe.db.get_single_value("Maintenance Accounts Settings", "discount_account")
 			if not discount_account:
 				frappe.throw("Setup Discount Account in Maintenance Accounts Settings")
@@ -258,13 +266,24 @@ class HireChargeInvoice(AccountsController):
 			for a in self.items:
 				equip_ba = get_equipment_ba(a.equipment)
 
+				# gl_entries.append(
+				# 	self.get_gl_dict({
+				# 	       "account": hire_account,
+				# 	       "against_voucher_type": "Equipment Hiring Form",
+				# 	       "against": self.ehf_name,
+				# 	       "credit": a.total_amount,
+				# 	       "credit_in_account_currency": a.total_amount,
+				# 	       "cost_center": self.cost_center,
+				# 	       "business_activity": equip_ba
+				# 	}, self.currency)
+				# )
 				gl_entries.append(
 					self.get_gl_dict({
-					       "account": hire_account,
+					       "account": hire_expense_account,
 					       "against_voucher_type": "Equipment Hiring Form",
-					       "against": self.ehf_name,
-					       "credit": a.total_amount,
-					       "credit_in_account_currency": a.total_amount,
+					       "against": self.customer,
+					       "debit": a.total_amount,
+					       "debit_in_account_currency": a.total_amount,
 					       "cost_center": self.cost_center,
 					       "business_activity": equip_ba
 					}, self.currency)
@@ -287,7 +306,7 @@ class HireChargeInvoice(AccountsController):
 					self.get_gl_dict({
 					       "account": advance_account,
 					       "against": self.customer,
-					       "party_type": "Customer",
+					       "party_type": "Supplier",
 					       "party": self.customer,
 					       "debit": self.advance_amount,
 					       "debit_in_account_currency": self.advance_amount,
@@ -295,22 +314,50 @@ class HireChargeInvoice(AccountsController):
 					       "business_activity": default_ba
 					}, self.currency)
 				)
-
-			if self.balance_amount:
+			if self.balance_amount: 
 				gl_entries.append(
-					self.get_gl_dict({
-					       "account": receivable_account,
-					       "against": self.customer,
-					       "party_type": "Customer",
-					       "party": self.customer,
-					       "against_voucher": self.name,
-					       "against_voucher_type": self.doctype,
-					       "debit": self.balance_amount,
-					       "debit_in_account_currency": self.balance_amount,
-					       "cost_center": self.cost_center,
-					       "business_activity": default_ba
-					}, self.currency)
+						self.get_gl_dict({
+							"account": credit_account,
+							"against_voucher_type": "Equipment Hiring Form",
+							"against": self.customer,
+							"credit": self.balance_amount,
+							"credit_in_account_currency": self.balance_amount,
+							"cost_center": self.cost_center,
+							"business_activity": equip_ba,
+							"party": self.customer,
+							"party_type": "Supplier"
+						}, self.currency)
 				)
+			# added by phuntsho on march 16 2021
+			if self.tds_amount: 
+				gl_entries.append(
+						self.get_gl_dict({
+							"account": self.tds_account,
+							"against_voucher_type": "Equipment Hiring Form",
+							"against": self.customer,
+							"credit": self.tds_amount,
+							"credit_in_account_currency": self.tds_amount,
+							"cost_center": self.cost_center,
+							"business_activity": equip_ba
+						}, self.currency)
+				)
+
+
+			# if self.balance_amount:
+			# 	gl_entries.append(
+			# 		self.get_gl_dict({
+			# 		       "account": receivable_account,
+			# 		       "against": self.customer,
+			# 		       "party_type": "Supplier",
+			# 		       "party": self.customer,
+			# 		       "against_voucher": self.name,
+			# 		       "against_voucher_type": self.doctype,
+			# 		       "debit": self.balance_amount,
+			# 		       "debit_in_account_currency": self.balance_amount,
+			# 		       "cost_center": self.cost_center,
+			# 		       "business_activity": default_ba
+			# 		}, self.currency)
+			# 	)
                         make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 
 	def refund_of_excess_advance(self):
@@ -335,7 +382,7 @@ class HireChargeInvoice(AccountsController):
 				total_amount = total_amount + amount
 				je.append("accounts", {
 						"account": a.advance_account,
-						"party_type": "Customer",
+						"party_type": "Supplier",
 						"party": self.customer,
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
@@ -357,9 +404,31 @@ class HireChargeInvoice(AccountsController):
 			frappe.msgprint("Bill processed to accounts through journal voucher " + je.name)
 
 @frappe.whitelist()
+# by phuntsho on march 13 2021. Rewrite the entire query in order to match the changes made in vehicle logbook. 
 def get_vehicle_logs(form=None):
 	if form:
-		return frappe.db.sql("select a.name, a.equipment, a.rate_type, a.equipment_number, CASE WHEN a.rate_type IN ('Cft - Broadleaf', 'Cft - Conifer') THEN a.total_cft ELSE (a.total_work_time + a.hour_taken) END as total_work_time, CASE WHEN a.rate_type IN ('Cft - Broadleaf', 'Cft - Conifer') THEN 0 ELSE a.total_idle_time END as total_idle_time, a.work_rate, a.idle_rate, a.total_cft, (select count(1) from `tabVehicle Log` b where b.parent = a.name) as no_of_days from `tabVehicle Logbook` a where a.docstatus = 1 and a.invoice_created = 0 and a.ehf_name = \'" + str(form) + "\'", as_dict=True)
+		data =  frappe.db.sql("""
+			select 
+				a.name as name, 
+				a.registration_number as equipment_number, 
+				a.equipment as equipment, 
+				(select b.rate_based_on from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}') as rate_type, 
+				a.total_days as total_days,
+				a.grand_total_km as total_km,
+				(select b.rate from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}') as rate, 
+				(case when ((select b.rate_based_on from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}') = "Daily") 
+ 					THEN
+						a.total_days * (select b.rate from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}') 
+					ELSE
+						a.grand_total_km * (select b.rate from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}') 
+				END) as total_amount
+			from
+				`tabVehicle Logbook` a
+			where 
+				a.docstatus = 1 and 
+				a.invoice_created = 0 and 
+				a.equipment_hiring_form = '{equip_hire_from}'""".format(equip_hire_from = form), as_dict=True)
+		return data
 	else:
 		frappe.throw("Select Equipment Hiring Form first!")
 
@@ -390,30 +459,75 @@ def get_advances(hire_name):
 	else:
 		frappe.throw("Select Equipment Hiring Form first!")
 
+# @frappe.whitelist()
+# def make_payment_entry(source_name, target_doc=None): 
+# 	def update_docs(obj, target, source_parent):
+# 		target.posting_date = nowdate()
+# 		target.payment_for = "Hire Charge Invoice"
+# 		target.actual_amount = obj.outstanding_amount
+#                 target.outgoing_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
+# 		target.supplier = obj.customer
+#                 target.net_amount = obj.outstanding_amount
+#                 # target.actual_amount = obj.outstanding_amount
+#                 # target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
+
+#                 target.append("items", {
+#                         "reference_type": "Hire Charge Invoice",
+#                         "reference_name": obj.name,
+#                         "outstanding_amount": obj.outstanding_amount,
+#                         "allocated_amount": obj.outstanding_amount
+#                 })
+	
+# 	doc = get_mapped_doc("Hire Charge Invoice", source_name, {
+# 			"Hire Charge Invoice": {
+# 				"doctype": "Mechanical Payment",
+# 				"field_map": {
+# 					"outstanding_amount": "payable_amount",
+# 				},
+# 				"postprocess": update_docs,
+# 				"validation": {"docstatus": ["=", 1]}
+# 			},
+# 		}, target_doc)
+# 	return doc
+
 @frappe.whitelist()
-def make_payment_entry(source_name, target_doc=None): 
+def make_payment_entry(source_name, target_doc=None):
 	def update_docs(obj, target, source_parent):
+		target.payable_amount = obj.outstanding_amount
 		target.posting_date = nowdate()
 		target.payment_for = "Hire Charge Invoice"
-                target.net_amount = obj.outstanding_amount
-                target.actual_amount = obj.outstanding_amount
-                target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
-
-                target.append("items", {
-                        "reference_type": "Hire Charge Invoice",
-                        "reference_name": obj.name,
-                        "outstanding_amount": obj.outstanding_amount,
-                        "allocated_amount": obj.outstanding_amount
-                })
-	
-	doc = get_mapped_doc("Hire Charge Invoice", source_name, {
-			"Hire Charge Invoice": {
-				"doctype": "Mechanical Payment",
-				"field_map": {
-					"outstanding_amount": "receivable_amount",
-				},
-				"postprocess": update_docs,
-				"validation": {"docstatus": ["=", 1]}
+		target.net_amount = obj.outstanding_amount
+		target.actual_amount = obj.outstanding_amount
+		target.outgoing_account = frappe.db.get_value("Branch", obj.branch, "expense_bank_account")
+		target.supplier = obj.customer
+		target.append("items", {
+			"reference_type": "Hire Charge Invoice",
+			"reference_name": obj.name,
+			"outstanding_amount": obj.outstanding_amount,
+			"allocated_amount": obj.outstanding_amount
+		})
+	doc = get_mapped_doc("Hire Charge Invoice", source_name,
+	{"Hire Charge Invoice": {
+		"doctype": "Mechanical Payment",
+		"field_map": {
+			"total_amount": "payable_amount",
 			},
-		}, target_doc)
+		"postprocess": update_docs,
+		"validation": {"docstatus": ["=", 1]}
+		},
+	}, target_doc)
 	return doc
+
+
+# added by phuntsho on march 16 2021 to get the specific tds account
+@frappe.whitelist()
+def get_tds_account(percentage): 
+	data = frappe.db.sql("select field, value from `tabSingles` where doctype = 'Accounts Settings'",as_dict=True)
+	if percentage == "2": 
+		return data[23].value
+	elif percentage == "5": 
+		return data[25].value
+	else: 
+		frappe.throw("The only option is 2 percent or 5 percent")
+
+# eval:in_list(["Job Card", "Maintenance Payment", "Hire Charge Invoice"], doc.payment_for)

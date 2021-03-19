@@ -1,15 +1,11 @@
 from frappe import _
 
 data = {
-	'fieldname': 'ehf_name',
+	'fieldname': 'equipment_hiring_form',
 	'transactions': [
 		{
 			'label': _('Related'),
-			'items': ['Vehicle Logbook', 'Hire Charge Invoice']
-		},
-		{
-			'label': _('Reference'),
-			'items': ['Equipment Hiring Extension']
+			'items': ['Logbook']
 		},
 	]
 }

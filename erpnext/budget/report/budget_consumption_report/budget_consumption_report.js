@@ -51,6 +51,13 @@ frappe.query_reports["Budget Consumption Report"] = {
 			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1'], ['Cost Center', 'is_group', '=', '0']]}}
 		},
 		{
+			"fieldname": "business_activity",
+			"label": __("Business Activity"),
+			"fieldtype": "Link",
+			"options": "Business Activity",
+			"get_query": function() {return {'filters': [['Business Activity', 'is_disabled', '!=', '1']]}}
+		},
+		{
 			"fieldname": "group_by_account",
 			"label": __("Group By Account"),
 			"fieldtype": "Check",

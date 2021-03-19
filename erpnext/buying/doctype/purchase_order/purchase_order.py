@@ -276,6 +276,7 @@ class PurchaseOrder(BuyingController):
 				"doctype": "Committed Budget",
 				"account": a.budget_account,
 				"cost_center": a.cost_center,
+				"business_activity": a.business_activity,
 				"po_no": self.name,
 				"po_date": self.transaction_date,
 				"amount": amount,
@@ -291,13 +292,12 @@ class PurchaseOrder(BuyingController):
 	# Check budget availability in the budget head
 	##
 	def check_budget_available(self):
-		budgets = frappe.db.sql("select cost_center, budget_account, sum(base_net_amount) as base_net_amount, sum(base_amount) as base_amount from `tabPurchase Order Item` where parent = %s group by cost_center, budget_account", self.name, as_dict=True)	
+		budgets = frappe.db.sql("select cost_center, budget_account, sum(base_net_amount) as base_net_amount, sum(base_amount) as base_amount, business_activity from `tabPurchase Order Item` where parent = %s group by cost_center, budget_account", self.name, as_dict=True)	
 		for a in budgets:
 			amount = a.base_amount
 			if a.base_net_amount:
 				amount = a.base_net_amount
-			check_budget_available(a.cost_center, a.budget_account, self.transaction_date, amount)
-
+			check_budget_available(a.cost_center, a.budget_account, self.transaction_date, amount, a.business_activity)
 
 	##
 	# Cancel budget check entry
@@ -343,6 +343,7 @@ class PurchaseOrder(BuyingController):
                                         "doctype": "Committed Budget",
                                         "account": a.budget_account,
                                         "cost_center": a.cost_center,
+										"business_activity": a.business_activity,
                                         "po_no": self.name,
                                         "po_date": self.transaction_date,
                                         "amount": -1 * balance_amount,

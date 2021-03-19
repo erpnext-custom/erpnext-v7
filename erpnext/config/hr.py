@@ -26,7 +26,7 @@ def get_data():
 					"type": "doctype",
 					"name": "Upload Attendance",
 					"description":_("Upload attendance from a .csv file"),
-					"hide_count": True
+					#"hide_count": True
 				},
                                 {
 					"type": "doctype",

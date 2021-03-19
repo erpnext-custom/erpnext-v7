@@ -55,7 +55,7 @@ class JobCard(AccountsController):
 				frappe.throw("Job Out Date should be greater than or equal to Job In Date")
 			self.update_reservation()
 		#self.check_items()
-		if self.owned_by == "Own Branch":
+		if self.owned_by == "Own Branch" and self.out_source == 0:
 			self.db_set("outstanding_amount", 0)
 		if self.owned_by == "Own Company" and self.out_source == 0:
 			self.post_journal_entry()
@@ -100,7 +100,21 @@ class JobCard(AccountsController):
 					frappe.throw("Cannot submit job card without cost details")
 
 	def get_job_items(self):
-		items = frappe.db.sql("select se.name as stock_entry, sed.item_code as job, sed.item_name as job_name, sed.qty as quantity, sed.amount from `tabStock Entry Detail` sed, `tabStock Entry` se where se.docstatus = 1 and sed.parent = se.name and se.purpose = \'Material Issue\' and se.job_card = \'"+ str(self.name) +"\'", as_dict=True)
+		items = frappe.db.sql("""
+			select 
+				se.name as stock_entry, 
+				sed.item_code as job, 
+				sed.item_name as job_name, 
+				sed.qty as quantity, 
+				sed.amount 
+			from 
+				`tabStock Entry Detail` sed, 
+				`tabStock Entry` se 
+			where 
+				se.docstatus = 1 and 
+				sed.parent = se.name and 
+				se.purpose = \'Material Issue\' and 
+				se.job_card = \'"""+ str(self.name) +"\'", as_dict=True)
 
 		if items:
 			#self.set('items', [])

@@ -15,7 +15,7 @@ class AccountsSettings(Document):
 
 		if cint(self.auto_accounting_for_stock):
 			# set default perpetual account in company
-			for company in frappe.db.sql("select name from tabCompany"):
+			for company in frappe.db.sql("select name from `tabCompany`"):
 				company = frappe.get_doc("Company", company[0])
 				company.flags.ignore_permissions = True
 				company.save()

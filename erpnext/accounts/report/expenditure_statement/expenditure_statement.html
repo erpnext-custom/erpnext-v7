@@ -1,0 +1,46 @@
+<div style="margin-bottom: 7px;" class="text-center">
+	{%= frappe.boot.letter_heads[filters.letter_head || frappe.defaults.get_default("letter_head")] %}
+</div>
+<h3 class="text-center"><b>{%= __("Expenditure Statement") %}</b></h3>
+<h4 class="text-center">{%= filters.company %} {%= filters.cost_center %}</h4>
+<h5 class="text-center">
+	{%
+		function monthName(mon) {
+			return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][mon - 1];
+		 }
+	%}
+	For {% if(filters.periodicity != "Yearly") { %}{%= monthName(filters.periodicity) %}{% } %}{% if(filters.periodicity == "Yearly") { %}{%= filters.periodicity %}{% } %} {%= filters.fiscal_year %}
+</h5>
+<hr>
+<table class="table table-bordered" style="font-size: 8pt;">
+	<thead>
+        {% for(var i=0, l=report.columns.length; i<l; i++) { %}
+            <th>{%= report.columns[i].label %}</th>
+        {% } %}
+	</thead>
+	<tbody>
+        {% for(var j=0, k=data.length; j<k; j++) { %}
+        {%
+                    var row = data[j];
+
+        %}
+            <tr>
+            {% for(var l= 0, m=report.columns.length; l<m; l++) { %}
+				{% if(row.p_account != null && (row.parent_account != 'Assets - DS' || row.parent_acount != 'Payments - DS') ) { %}
+                	<td>
+                		<b>{%= row[report.columns[l].field] %}</b>
+                	</td>
+					<!-- {%= row.parent_account %} -->
+				{% } %}
+				{% if(row.p_account == null) { %}
+                	<td>
+                		{%= row[report.columns[l].field] %}
+                	</td>
+				{% } %}		
+            {% } %}
+            </tr> 
+        {% } %}
+        </tr>
+	</tbody>
+</table>
+<p class="text-right text-muted">Printed On {%= dateutil.str_to_user(dateutil.get_datetime_as_string()) %}</p>

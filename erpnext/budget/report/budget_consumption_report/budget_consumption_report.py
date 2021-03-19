@@ -8,16 +8,16 @@ from frappe.utils import flt, getdate, formatdate, cstr
 from erpnext.accounts.accounts_custom_functions import get_child_cost_centers
 
 def execute(filters=None):
-	validate_filters(filters);
-	columns = get_columns();
-	queries = construct_query(filters);
-	data = get_data(queries, filters);
+	validate_filters(filters)
+	columns = get_columns()
+	queries = construct_query(filters)
+	data = get_data(queries, filters)
 
 	return columns, data
 
 def get_data(query, filters):
 	data = []
-	datas = frappe.db.sql(query, as_dict=True);
+	datas = frappe.db.sql(query, as_dict=True)
 	ini = su = cm = co = ad = av = 0
 	for d in datas:
 		if filters.group_by_account:
@@ -25,8 +25,8 @@ def get_data(query, filters):
 			committed = frappe.db.sql("select SUM(amount) from `tabCommitted Budget` where account = %s and po_date BETWEEN %s and %s", (d.account, filters.from_date, filters.to_date))[0][0]
 			consumed = frappe.db.sql("select SUM(amount) from `tabConsumed Budget` where account = %s and po_date BETWEEN %s and %s", (d.account, filters.from_date, filters.to_date))[0][0]
 		else:
-			committed = frappe.db.sql("select SUM(amount) from `tabCommitted Budget` where cost_center = %s and account = %s and po_date BETWEEN %s and %s", (d.cost_center, d.account, filters.from_date, filters.to_date))[0][0]
-			consumed = frappe.db.sql("select SUM(amount) from `tabConsumed Budget` where cost_center = %s and account = %s and po_date BETWEEN %s and %s", (d.cost_center, d.account, filters.from_date, filters.to_date))[0][0]
+			committed = frappe.db.sql("select SUM(amount) from `tabCommitted Budget` where cost_center = %s and business_activity = %s and account = %s and po_date BETWEEN %s and %s", (d.cost_center, d.business_activity, d.account, filters.from_date, filters.to_date))[0][0]
+			consumed = frappe.db.sql("select SUM(amount) from `tabConsumed Budget` where cost_center = %s and business_activity = %s and account = %s and po_date BETWEEN %s and %s", (d.cost_center, d.business_activity, d.account, filters.from_date, filters.to_date))[0][0]
 		if not committed:
 			committed = 0
 		if not consumed:
@@ -43,6 +43,7 @@ def get_data(query, filters):
 		row = {
 			"account": d.account, 
 			"cost_center": d.cost_center,
+			"business_activity": d.business_activity,
 			"initial": flt(d.initial_budget),
 			"supplementary": supplement,
 			"adjustment": adjustment,
@@ -50,7 +51,7 @@ def get_data(query, filters):
 			"consumed": consumed,
 			"available": available
 		}
-		data.append(row);
+		data.append(row)
 		ini+=flt(d.initial_budget)
 		su+=supplement
 		cm+=committed
@@ -76,17 +77,25 @@ def construct_query(filters=None):
 	if filters.group_by_account:
 		filters.cost_center = None
 	#query = "select b.cost_center, ba.account, ba.budget_amount, ba.initial_budget, ba.budget_received as added, ba.budget_sent as deducted, ba.supplementary_budget as supplement, (select SUM(amount) from `tabCommitted Budget` cb where cb.cost_center = b.cost_center and cb.account = ba.account and cb.po_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as committed, (select SUM(amount) from `tabConsumed Budget` conb where conb.cost_center = b.cost_center and conb.account = ba.account and conb.po_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as consumed from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and b.name = ba.parent and b.fiscal_year = " + str(filters.fiscal_year)
-	query = "select b.cost_center, ba.account, SUM(ba.budget_amount) as budget_amount, SUM(ba.initial_budget) as initial_budget, SUM(ba.budget_received) as added, SUM(ba.budget_sent) as deducted, SUM(ba.supplementary_budget) as supplement from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and b.name = ba.parent and b.fiscal_year = " + str(filters.fiscal_year)
+	query = """select b.cost_center, b.business_activity, ba.account, SUM(ba.budget_amount) as budget_amount, 
+				SUM(ba.initial_budget) as initial_budget, SUM(ba.budget_received) as added, SUM(ba.budget_sent) as deducted, 
+				SUM(ba.supplementary_budget) as supplement 
+			from `tabBudget` b, `tabBudget Account` ba 
+			where b.docstatus = 1 
+			and b.name = ba.parent 
+			and b.fiscal_year = '""" + str(filters.fiscal_year) + """'
+			"""
 	if filters.cost_center:
 		query += " and b.cost_center = \'" + str(filters.cost_center) + "\' "
+	if filters.business_activity:
+		query += " and b.business_activity = \'" + str(filters.business_activity) + "\' "
 	if filters.group_by_account:
 		query += " group by ba.account"
 	else:
-		query += " group by ba.account, b.cost_center"
-	return query;
+		query += " group by ba.account, b.cost_center, b.business_activity"
+	return query
 
 def validate_filters(filters):
-
 	if not filters.fiscal_year:
 		frappe.throw(_("Fiscal Year {0} is required").format(filters.fiscal_year))
 
@@ -135,6 +144,13 @@ def get_columns():
 		  "label": "Cost Center",
 		  "fieldtype": "Link",
 		  "options": "Cost Center",
+		  "width": 130
+		},
+		{
+		  "fieldname": "business_activity",
+		  "label": "Business Activity",
+		  "fieldtype": "Link",
+		  "options": "Business Activity",
 		  "width": 130
 		},
 		{

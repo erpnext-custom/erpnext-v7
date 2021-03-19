@@ -9,6 +9,17 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 from frappe.model.naming import make_autoname
 
+# def change_parent():
+#         account_list = frappe.db.sql("""select name, parent from `tabAccount` where parent like '%- GCC%'""",as_dict=True)
+#         for i in account_list:
+#                 parent = i.parent
+#                 parent = parent.replace('- GCC','- DS')
+#                 frappe.db.sql("""
+#                         update `tabAccount` set parent = '{0}' where name = '{1}'
+#                 """.format(parent, i.name))
+#                 print(str(i.name))
+
+
 def create_project_items(project=None):
         def create_project_boq_item():
                 cond = "and t1.project = '{0}'".format(project) if project else ""

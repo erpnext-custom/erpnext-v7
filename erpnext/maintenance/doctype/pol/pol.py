@@ -22,7 +22,7 @@ from erpnext.accounts.doctype.business_activity.business_activity import get_def
 class POL(StockController):
 	def validate(self):
 		check_future_date(self.posting_date)
-		self.validate_dc()
+		# self.validate_dc() commented out by phuntsho on 2021-02-26, since not needed in de-suung. 
 		self.check_on_dry_hire()
 		self.validate_warehouse()
 		self.validate_data()
@@ -30,8 +30,8 @@ class POL(StockController):
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.validate_item()
 
-        def on_submit(self):
-		self.validate_dc()
+	def on_submit(self):
+		# self.validate_dc()
 		self.validate_data()
 		self.check_on_dry_hire()
 		self.check_budget()
@@ -47,7 +47,7 @@ class POL(StockController):
 		
 		self.make_pol_entry()
 
-        def on_cancel(self):
+	def on_cancel(self):
 		self.update_stock_ledger()
 		""" ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
 		# Ver 2.0.190509, Following method commented by SHIV on 2019/05/24
@@ -66,13 +66,14 @@ class POL(StockController):
 		self.cancel_budget_entry()
 		self.delete_pol_entry()
 
-	def validate_dc(self):
-		is_container, no_own_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type") , ["is_container", "no_own_tank"])
-		if not self.direct_consumption and not is_container:
-			frappe.throw("Non 'Direct Consumption' Receive POL is allowed only for Container Equipments")
+	# Commented out by phuntsho on 2021-02-26: Not needed for De-suung.  
+	# def validate_dc(self):
+		# is_container, no_own_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type") , ["is_container", "no_own_tank"])
+		# if not self.direct_consumption and not is_container:
+		# 	frappe.throw("Non 'Direct Consumption' Receive POL is allowed only for Container Equipments")
 
-		if self.direct_consumption and no_own_tank:
-                        frappe.throw("Direct Consumption not permitted for Equipments without own Tank")
+		# if self.direct_consumption and no_own_tank:
+        #                 frappe.throw("Direct Consumption not permitted for Equipments without own Tank")
 
 	def validate_warehouse(self):
 		self.validate_warehouse_branch(self.warehouse, self.branch)
@@ -128,8 +129,8 @@ class POL(StockController):
 		account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
 		if not self.is_hsd_item:
 			account = frappe.db.get_value("Item", self.pol_type, "expense_account")
-
-		check_budget_available(cc, account, self.posting_date, self.total_amount)
+		
+		check_budget_available(cc, account, self.posting_date, self.total_amount, self.business_activity)
 		self.consume_budget(cc, account)
 
 	##
@@ -145,6 +146,7 @@ class POL(StockController):
 			"amount": self.total_amount,
 			"item_code": self.pol_type,
 			"poi_name": self.name,
+			"business_activity": self.business_activity,
 			"date": frappe.utils.nowdate()
 			})
 		bud_obj.flags.ignore_permissions = 1
@@ -160,6 +162,7 @@ class POL(StockController):
 			"pii_name": self.name,
 			"item_code": self.pol_type,
 			"com_ref": bud_obj.name,
+			"business_activity": self.business_activity,
 			"date": frappe.utils.nowdate()})
 		consume.flags.ignore_permissions=1
 		consume.submit()

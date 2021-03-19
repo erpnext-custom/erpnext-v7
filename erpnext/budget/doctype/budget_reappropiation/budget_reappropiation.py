@@ -10,11 +10,16 @@ from erpnext.custom_utils import check_budget_available
 
 class BudgetReappropiation(Document):
 	def validate(self):
+		pass
+
+	def validate_cc_ba(self):
+		if self.from_cost_center == self.to_cost_center and self.from_business_activity == self.to_business_activity:
+			frappe.throw("From Cost Center and From Business Activity cannot be same as To Cost Center and To Business Activity")
+
 		for a in self.items:
 			if not flt(a.amount) > 0:
 				frappe.throw("Amount should be greater than 0 on row " + str(a.idx))
-			if self.from_cost_center == self.to_cost_center and a.from_account == a.to_account:
-				frappe.throw("From and To Account cannot be same")
+				
 	def on_submit(self):
 		self.budget_check()
 		for a in self.items:
@@ -29,22 +34,23 @@ class BudgetReappropiation(Document):
 	##
 	def budget_check(self):
 		#Get cost center & target details
+		year_start_date = frappe.db.get_value("Fiscal Year", self.fiscal_year, "year_start_date")
 		budgets = frappe.db.sql("select from_account, sum(amount) as amount from `tabBudget Reappropiation Detail` where parent = %s group by from_account", self.name, as_dict=True)
 		for a in budgets:
-			check_budget_available(self.from_cost_center, a.from_account, str(self.fiscal_year) + "-01-01", a.amount)
+			check_budget_available(self.from_cost_center, a.from_account, year_start_date, a.amount, self.from_business_activity)
 
 	##
 	# Get budget details from CC and Account
 	##
-	def get_cc_acc_budget(self, cc, acc, fiscal_year):
+	def get_cc_acc_budget(self, cc, acc, fiscal_year, business_activity):
 		if frappe.db.get_value("Fiscal Year", fiscal_year, "closed"):
 			frappe.throw("Fiscal Year " + fiscal_year + " has already been closed")
 		else:
 			return frappe.db.sql("""select ba.name, ba.parent, ba.budget_amount
 					from `tabBudget` b, `tabBudget Account` ba
-					where b.name=ba.parent and b.fiscal_year=%s and b.cost_center = %s and ba.account = %s and b.docstatus = 1
-					""", (fiscal_year, cc, acc), as_dict=True)
-
+					where b.name=ba.parent and b.fiscal_year=%s and b.cost_center = %s 
+					and ba.account = %s and b.docstatus = 1 and b.business_activity = %s
+					""", (fiscal_year, cc, acc, business_activity), as_dict=True)
 	##
 	# Method call from client to perform reappropriation
 	##
@@ -53,8 +59,8 @@ class BudgetReappropiation(Document):
 		to_cc = self.to_cost_center
 		fiscal_year = self.fiscal_year
 
-		to_account = self.get_cc_acc_budget(to_cc, to_acc, fiscal_year)
-		from_account = self.get_cc_acc_budget(from_cc, from_acc, fiscal_year)
+		to_account = self.get_cc_acc_budget(to_cc, to_acc, fiscal_year, self.to_business_activity)
+		from_account = self.get_cc_acc_budget(from_cc, from_acc, fiscal_year, self.from_business_activity)
 
 		if to_account and from_account:
 			#Deduct in the From Account and Cost Center
@@ -95,10 +101,10 @@ class BudgetReappropiation(Document):
 			return "DONE"
 
 		elif not to_account:
-			frappe.throw("Check your TO Cost Center and Account and try again")
+			frappe.throw("Check your TO Cost Center, TO Business Activity and Account and try again")
 			
 		elif not from_account:
-			frappe.throw("Check your From Cost Center and Account and try again")
+			frappe.throw("Check your From Cost Center, From Business Activity and Account and try again")
 		else:
 			frappe.throw("Sorry, something happened. Please try again")
 

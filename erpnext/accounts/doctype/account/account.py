@@ -29,6 +29,7 @@ class Account(Document):
 	def validate(self):
 		if frappe.local.flags.allow_unverified_charts:
 			return
+		self.validate_main_cash_bank()
 		self.check_duplicate_account_code()
 		self.validate_parent()
 		self.validate_root_details()
@@ -39,7 +40,24 @@ class Account(Document):
 		self.validate_frozen_accounts_modifier()
 		self.validate_balance_must_be_debit_or_credit()
 		self.validate_account_currency()
-
+	
+	def validate_main_cash_bank(self):
+		if self.parent_account in ('a - Bank - DS', 'b - Bank - DS', 'a - Cash - DS', 'b - Cash - DS'):
+			if self.is_main_bank == 1:
+				flag = 0
+				check = frappe.db.sql("select name from `tabAccount` where is_main_bank = 1 and name != '{0}'".format(self.name), as_dict = True)
+				if check:
+					flag = 1
+				if flag == 1:
+					frappe.throw("{0} is already set as the Main Bank Account".format(check[0].name))
+			elif self.is_main_cash == 1:
+				flag = 0
+				check = frappe.db.sql("select name from `tabAccount` where is_main_cash = 1 and name != '{0}'".format(self.name), as_dict = True)
+				if check:
+					flag = 1
+				if flag == 1:
+					frappe.throw("{0} is already set as the Main Cash Account".format(check[0].name))
+				
 	def check_duplicate_account_code(self):
 		if self.account_code:
 			dup = frappe.db.sql("select name from tabAccount where account_code = %s and name != %s", (self.account_code, self.name), as_dict=True)

@@ -93,6 +93,11 @@ def get_data():
 			"icon": "icon-star",
 			"items": [
 				{
+					"type": "doctype",
+					"name": "Vehicle Request",
+					"description": _("Vehicle Request"),
+				},
+				{
                                         "type": "doctype",
                                         "name": "Equipment Request",
                                         "description": _("Equipment Request"),

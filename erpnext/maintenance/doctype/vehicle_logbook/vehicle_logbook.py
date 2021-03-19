@@ -5,37 +5,28 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, cint, getdate, add_days, get_datetime
-from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date, get_date_diff
-
+from frappe.utils import flt, cint, getdate, add_days, get_datetime, datetime
+from erpnext.custom_utils import check_uncancelled_linked_doc
+import datetime
+# from datetime import date
 class VehicleLogbook(Document):
 	def validate(self):
-		check_future_date(self.to_date)
 		self.validate_date()
-		self.set_data()
+		#self.set_data()
 		self.check_dates()
 		self.check_double_vl()
-		self.check_branch()
-		self.check_hire_form()
-		self.check_hire_rate()
-		self.check_duplicate()
+		# self.check_hire_form()
+		# self.check_duplicate()
 		self.update_consumed()
 		self.calculate_totals()
 		self.update_operator()
-		self.check_consumed()
-		#self.vlogs_check()
-	
-	def check_branch(self):
-		if self.branch != frappe.db.get_value("Equipment Hiring Form", self.ehf_name, "branch"):
-			frappe.throw("VLB branch should be same as Equipment Hiring Form branch.")
-	
-	#def vlogs_check(self):
-	#	b = get_date_diff(self.from_date, self.to_date);
-	#	if len(self.vlogs) != b:
-		
-	#			frappe.throw(("Fill in all the VLB entries between '{0}' and '{1}'.").format(self.from_date, self.to_date))
+		self.check_consumed()	
+		self.calculate_grand_totals()
+		self.calculate_total_days()
 
 	def validate_date(self):
+		if self.posting_date > str(datetime.datetime.now()): 
+			frappe.throw("Cannot post for Future Date")
                 from_date = get_datetime(str(self.from_date) + ' ' + str(self.from_time))
                 to_date = get_datetime(str(self.to_date) + ' ' + str(self.to_time))
                 if to_date < from_date:
@@ -52,51 +43,46 @@ class VehicleLogbook(Document):
 			if flt(self.consumption) <= 0:
 				frappe.throw("Total consumption cannot be zero or less")
 
-	def check_hire_rate(self):
-                based_on = frappe.db.get_single_value("Mechanical Settings", "hire_rate_based_on")
-                if not based_on:
-                        frappe.throw("Set the <b>Hire Rate Based On</b> in <b>Mechanical Settings</b>")
-
-                e = frappe.get_doc("Equipment", self.equipment)
-
-                db_query = "select a.rate_fuel, a.rate_wofuel, a.idle_rate, a.yard_hours, a.yard_distance from `tabHire Charge Item` a, `tabHire Charge Parameter` b where a.parent = b.name and b.equipment_type = '{0}' and b.equipment_model = '{1}' and '{2}' between a.from_date and ifnull(a.to_date, now()) and '{3}' between a.from_date and ifnull(a.to_date, now()) LIMIT 1"
-                data = frappe.db.sql(db_query.format(e.equipment_type, e.equipment_model, self.from_date, self.to_date), as_dict=True)
-                if not data:
-                        frappe.throw("There is either no Hire Charge defined or your logbook period overlaps with the Hire Charge period.")
-		if based_on == "Hire Charge Parameter":
-                        name = frappe.db.sql("select ha.name, ha.tender_hire_rate as thr from `tabHiring Approval Details` ha, `tabEquipment Hiring Form` h where ha.parent = h.name and h.docstatus = 1 and ha.equipment = %s and h.name = %s", (str(self.equipment), str(self.ehf_name)), as_dict=True)
-                        if name and name[0]['thr'] == 0:
-                                self.idle_rate = data[0].idle_rate
-                                if self.rate_type == "With Fuel":
-                                        self.work_rate = data[0].rate_fuel
-                                if self.rate_type == "Without Fuel":
-                                        self.work_rate = data[0].rate_wofuel
-                self.ys_km = data[0].yard_distance
-                self.ys_hours = data[0].yard_hours
-
 	def on_update(self):
 		self.calculate_balance()
 
 	def on_submit(self):
 		self.check_double_vl()
-		self.check_hire_rate()
 		self.update_consumed()
 		self.calculate_totals()
-		self.check_consumption()
+		self.post_pol_entry()
+		#self.check_consumption()
 		self.update_hire()
-		self.post_equipment_status_entry()
+		#self.post_equipment_status_entry()
 		#self.check_tank_capacity()
-		#self.vlogs_check()
 	
-	def vlogs_check(self):
-               b = get_date_diff(self.from_date, self.to_date);
-               if len(self.vlogs) != b:
-			frappe.throw(("Fill in all the VLB entries between '{0}' and '{1}'.").format(self.from_date, self.to_date))
-	
-	def on_cancel(self):
-		check_uncancelled_linked_doc(self.doctype, self.name)
-                frappe.db.sql("delete from `tabEquipment Status Entry` where ehf_name = \'"+str(self.name)+"\'")
+	# by phuntsho on march 13 2021. 
+	# submit pol entry with every logbook for ease of generating vehicle history report. 
+	def post_pol_entry(self): 
+		for item in self.vlogs: 
+			doc = frappe.new_doc("POL Entry")
+			doc.flags.ignore_permissions = 1 
+			doc.branch = self.branch
+			doc.company = "De-Suung"
+			doc.equipment = self.equipment
+			doc.pol_type = "100268" #TODO: NEED TO ACTUALLY FETCH THIS FROM SOMEWHERE
+			doc.date = item.from_date
+			doc.posting_time = self.from_time
+			doc.qty = item.total_consumption
+			doc.reference_type = "Vehicle Logbook"
+			doc.reference_name = self.name
+			doc.type = "consumed"
+			doc.is_opening = 0 
+			doc.own_cost_center = 1
+			doc.submit()
 
+
+	def on_cancel(self):
+		self.cancel_pol_entry()
+		check_uncancelled_linked_doc(self.doctype, self.name)
+		#frappe.db.sql("delete from `tabEquipment Status Entry` where ehf_name = \'"+str(self.name)+"\'")
+	def cancel_pol_entry(self): 
+		frappe.db.sql("update `tabPOL Entry` set docstatus=2 where reference_name='{}' and reference_type='Vehicle Logbook'".format(self.name))
 
 	def check_dates(self):
 		if getdate(self.from_date) > getdate(self.to_date):
@@ -119,20 +105,11 @@ class VehicleLogbook(Document):
 		self.equipment_operator = frappe.db.get_value("Equipment", self.equipment, "current_operator")
 
 	def check_duplicate(self):		
-		for row in self.vlogs:
-			if row.work_date and row.work_date < self.from_date or row.work_date > self.to_date:
-				frappe.throw ("Work Date should be between From Date and To Date")
-			if row.work_time and row.work_time < 0:
-                                frappe.throw("Work Time cannot be negative value.") 
-			if row.idle_time and row.idle_time < 0:
-                                frappe.throw("Idle Time cannot be negative value.") 
-			if row.distance and row.distance < 0:
-				frappe.throw("Distance Cannot be negative value")
 		for a in self.vlogs:
 			for b in self.vlogs:
-				if a.work_date == b.work_date and a.idx != b.idx:
+				if a.date == b.date and a.idx != b.idx:
 					frappe.throw("Duplicate Dates in Vehicle Logs in row " + str(a.idx) + " and " + str(b.idx))
-		
+
 	def update_consumed(self):
 		pol_type = frappe.db.get_value("Equipment", self.equipment, "hsd_type")
 		closing = frappe.db.sql("select closing_balance, to_date from `tabVehicle Logbook` where docstatus = 1 and equipment = %s and to_date <= %s order by to_date desc limit 1", (self.equipment, self.from_date), as_dict=True)
@@ -145,13 +122,14 @@ class VehicleLogbook(Document):
 			self.hsd_received = qty[0].qty
 
 	def calculate_totals(self):
-		if self.vlogs:
-			total_w = total_i = 0
-			for a in self.vlogs:
-				total_w += flt(a.work_time)
-				total_i += flt(a.idle_time)
-			self.total_work_time = total_w
-			self.total_idle_time = total_i
+		# commented out by phuntsho since there is no such field in the child table
+		# if self.vlogs:
+			# total_w = total_i = 0
+			# for a in self.vlogs:
+			# 	total_w += flt(a.work_time)
+			# 	total_i += flt(a.idle_time)
+			# self.total_work_time = total_w
+			# self.total_idle_time = total_i
 
 		if self.include_km:
 			if flt(self.ys_km) > 0:
@@ -162,13 +140,11 @@ class VehicleLogbook(Document):
 		
 		self.consumption = flt(self.other_consumption) + flt(self.consumption_hours) + flt(self.consumption_km)
 		self.closing_balance = flt(self.hsd_received) + flt(self.opening_balance) - flt(self.consumption)
-		self.final_hour = flt(self.initial_hour) + flt(self.total_work_time)
-		self.final_km = flt(self.initial_km) + flt(self.distance_km)
 
 	def update_hire(self):
-		if self.ehf_name:
-			doc = frappe.get_doc("Equipment Hiring Form", self.ehf_name)
-			doc.db_set("hiring_status", 1)
+		#if self.ehf_name:
+		#	doc = frappe.get_doc("Equipment Hiring Form", self.ehf_name)
+		#	doc.db_set("hiring_status", 1)
 		e = frappe.get_doc("Equipment", self.equipment)
 
 		if self.final_km:
@@ -180,26 +156,17 @@ class VehicleLogbook(Document):
 			e.db_set("current_hr_reading", flt(self.final_hour))
 
 	def post_equipment_status_entry(self):
-		place = frappe.db.sql("select place from `tabHiring Approval Details` where parent = %s and equipment =%s", (self.ehf_name, self.equipment))[0]
-		for a in self.vlogs:
-			"""if workdates:
-				workdates = workdates + ", " + a.work_date
-			else:
-				workdates = a.work_date"""
-		
-			doc = frappe.new_doc("Equipment Status Entry")
-			doc.flags.ignore_permissions = 1 
-			doc.equipment = self.equipment
-			doc.company = self.company
-			doc.reason = "Hire"
-			doc.ehf_name = self.name
-			doc.from_date = a.work_date
-			doc.to_date = a.work_date
-			doc.hours = self.total_work_time
-			doc.to_time = self.to_time
-			doc.from_time = self.from_time
-			doc.place = place 
-			doc.submit()
+		doc = frappe.new_doc("Equipment Status Entry")
+		doc.flags.ignore_permissions = 1 
+		doc.equipment = self.equipment
+		doc.reason = "Hire"
+		doc.ehf_name = self.name
+		doc.from_date = self.from_date
+		doc.to_date = self.to_date
+		doc.hours = self.total_work_time
+		doc.to_time = self.to_time
+		doc.from_time = self.from_time
+		doc.submit()
 
 	def calculate_balance(self):
 		self.db_set("closing_balance", flt(self.opening_balance) + flt(self.hsd_received) - flt(self.consumption))
@@ -232,16 +199,17 @@ class VehicleLogbook(Document):
 		from_datetime = str(get_datetime(str(self.from_date) + ' ' + str(self.from_time)))
                 to_datetime = str(get_datetime(str(self.to_date) + ' ' + str(self.to_time)))
 
-                query = "select ehf_name from `tabVehicle Logbook` where equipment = '{equipment}' and docstatus in (1, 0) and ('{from_date}' between concat(from_date, ' ', from_time) and concat(to_date, ' ', to_time) OR '{to_date}' between concat(from_date, ' ', from_time) and concat(to_date, ' ', to_time) OR ( '{from_date}' <= concat(from_date, ' ', from_time) AND '{to_date}' >= concat(to_date, ' ', to_time) )) and name != '{vl_name}'" .format(from_date=from_datetime, to_date=to_datetime, vl_name=self.name, equipment=self.equipment)
+                query = "select name from `tabVehicle Logbook` where equipment = '{equipment}' and docstatus in (1, 0) and ('{from_date}' between concat(from_date, ' ', from_time) and concat(to_date, ' ', to_time) OR '{to_date}' between concat(from_date, ' ', from_time) and concat(to_date, ' ', to_time) OR ( '{from_date}' <= concat(from_date, ' ', from_time) AND '{to_date}' >= concat(to_date, ' ', to_time) )) and name != '{vl_name}'" .format(from_date=from_datetime, to_date=to_datetime, vl_name=self.name, equipment=self.equipment)
                 result = frappe.db.sql(query, as_dict=1)
+		# frappe.msgprint("this is the result of existing logbook : {}".format(result))
 		for a in result:
-			frappe.throw("The logbook for the same equipment, date, and time has been created at " + str(a.ehf_name))
+			frappe.throw("The logbook for the same equipment, date, and time has been created at " + str(a.name))
 
 	def check_consumption(self):
 		no_own_fuel_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type"), "no_own_tank")
 		if no_own_fuel_tank:
 			return
-		if self.customer_type == "Own Company":
+		if self.customer_type == "CDCL":
 			if flt(self.consumption_km) == 0 and flt(self.consumption_hours) == 0 and flt(self.consumption) == 0:
 				self.check_condition()	
 		else:
@@ -262,6 +230,23 @@ class VehicleLogbook(Document):
 				frappe.throw("Consumption is Mandatory")
 		else:
 			frappe.throw("Consumption is Mandatory")
+
+	def calculate_grand_totals(self): 
+		total_km_run = 0
+		total_consumption = 0
+		for item in self.vlogs:
+			total_km_run += item.total_km_run 
+			total_consumption += item.total_consumption
+		self.grand_total_km = total_km_run
+		self.grand_total_fuel_consumption = total_consumption
+	
+	def calculate_total_days(self): 
+		total_days = 0
+		for item in self.vlogs: 
+			difference = (datetime.datetime.strptime(item.to_date, "%Y-%m-%d") - datetime.datetime.strptime(item.from_date, "%Y-%m-%d")).days + 1
+			total_days += difference
+		self.total_days = total_days
+
 
 @frappe.whitelist()
 def get_opening(equipment, from_date, to_date, pol_type):
@@ -305,4 +290,33 @@ def get_opening(equipment, from_date, to_date, pol_type):
 
 	return result
 
-		
+@frappe.whitelist()
+def get_vehicle_request_details(vehicle_request):
+	return(frappe.db.sql("""
+		SELECT
+			from_date, 
+			to_date, 
+			equipment, 
+			equipment_type,
+			branch
+		FROM 
+			`tabVehicle Request` 
+		WHERE
+			name = '{vechicle_request_name}'
+	""".format(vechicle_request_name= vehicle_request)))
+
+@frappe.whitelist()
+def get_equipment_hiring_form(equipment, from_date,  to_date): 
+	# TODO : need to convert the from date and to date to date format, currently its in datetime format.
+	from_date = datetime.datetime.strptime(from_date, '%Y-%m-%d %H:%M:%S')
+	to_date = datetime.datetime.strptime(to_date, '%Y-%m-%d %H:%M:%S')
+	return (frappe.db.sql("""
+		SELECT
+			name
+		FROM 
+			`tabEquipment Hiring Form`
+		WHERE 
+			equipment  = '{}' and 
+			start_date = '{}' and
+			end_date = '{}'
+	""".format(equipment, from_date.date(), to_date.date())))

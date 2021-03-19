@@ -30,7 +30,7 @@ class BreakDownReport(Document):
                         if self.owned_by == "Own Branch" and self.branch != eb:
                                 frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to your branch")
                         if self.owned_by == "Own Company" and self.customer_branch != eb:
-                                frappe.throw("Equipment <b>" + str(self.equipment) + "</b> doesn't belong to <b>" + str(self.customer_branch) + "</b>")
+                                frappe.throw("Equipment <b>" + str(self.equipment) + "</b> ----> doesn't belong to <b>" + str(self.customer_branch) + "</b>")
                         if self.owned_by == "Own Company" and self.cost_center == self.customer_cost_center:
                                 frappe.throw("Equipment From your Branch should be 'Own Branch' and not 'Own Company'")
                 else:

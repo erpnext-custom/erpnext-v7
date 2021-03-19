@@ -372,7 +372,6 @@ class PurchaseInvoice(BuyingController):
 		elif self.docstatus == 2 and cint(self.update_stock) and self.auto_accounting_for_stock:
 			delete_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
 
-
 	def make_supplier_gl_entry(self, gl_entries):
 		if self.grand_total:
 			# Didnot use base_grand_total to book rounding loss gle
@@ -811,6 +810,7 @@ class PurchaseInvoice(BuyingController):
 						"doctype": "Consumed Budget",
 						"account": expense,
 						"cost_center": item.cost_center,
+						"business_activity": self.business_activity,
 						"po_no": self.name,
 						"company": self.company,
 						"po_date": po_date,

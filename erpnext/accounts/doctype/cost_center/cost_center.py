@@ -60,6 +60,7 @@ class CostCenter(NestedSet):
 		if self.cost_center_name != self.company and not self.parent_cost_center:
 			frappe.throw(_("Please enter parent cost center"))
 		elif self.cost_center_name == self.company and self.parent_cost_center:
+			frappe.msgprint("parent cost center: {}".format(self.parent_cost_center))
 			frappe.throw(_("Root cannot have a parent cost center"))
 			
 	def validate_accounts(self):

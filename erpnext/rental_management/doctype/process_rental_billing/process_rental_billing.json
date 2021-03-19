@@ -91,7 +91,7 @@
    "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
-   "default": "Real Estate Management", 
+   "default": "", 
    "fieldname": "branch", 
    "fieldtype": "Link", 
    "hidden": 0, 

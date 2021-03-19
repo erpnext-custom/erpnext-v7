@@ -14,10 +14,6 @@ class Equipment(Document):
 			item.idx = i
 
 	def validate(self):
-		if self.asset_code:
-			doc = frappe.get_doc("Asset", self.asset_code)
-			doc.db_set("equipment_number", self.name)
-
 		if not self.equipment_number:
 			self.equipment_number = self.name
 		

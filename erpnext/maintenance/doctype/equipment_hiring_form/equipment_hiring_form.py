@@ -6,14 +6,36 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cstr, flt, cint, fmt_money, formatdate, getdate, get_datetime
+from frappe.utils import cstr, flt, fmt_money, formatdate, getdate, get_datetime
 from frappe.desk.reportview import get_match_cond
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
-from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
 class EquipmentHiringForm(Document):
 	def validate(self):
-		check_future_date(self.request_date)
+		self.validate_date()
+		self.validate_amount()
+		self.validate_supplier()
+		#self.fetch_reading()
+
+	def validate_date(self):
+		if self.start_date > self.end_date:
+			frappe.throw("Start Date cannot be greater than End Date")
+
+	def validate_amount(self):
+		if not self.rate > 0:
+			frappe.throw("Hiring Rate should be greater than zero")
+	
+	def validate_supplier(self):
+		if not self.supplier:
+			frappe.throw("Setup supplier in Equipment Master")
+
+	def fetch_reading(self):
+		self.reading_based_on = frappe.db.get_value("Equipment Model", self.equipment_model, "reading_based_on")
+		if not self.reading_based_on:
+			frappe.throw("Set Reading Based On in Equipment Model")	
+
+
+"""		check_future_date(self.request_date)
 		self.check_date_approval()
 		self.check_duplicate()
 		self.calculate_totals()
@@ -72,7 +94,7 @@ class EquipmentHiringForm(Document):
 			frappe.db.sql("UPDATE `tabJournal Entry Account` SET `reference_name` = \'" + str(self.name) + "\' WHERE name = \'" + str(a.reference_row) + "\'")
 
 
-	'''def update_equipment_request(self, status):
+	def update_equipment_request(self, status):
 		total_percent = 0
 		er = None
 		for a in self.approved_items:
@@ -88,17 +110,7 @@ class EquipmentHiringForm(Document):
 				total = flt(total_percent) + flt(er.percent_completed)
 			else:
 				total = flt(er.percent_completed) - flt(total_percent) 
-			er.db_set("percent_completed", round(total))'''
-
-	def update_equipment_request(self, action):
-                if action == 'Cancell':
-                        ehf = ''
-                else:
-                        ehf = self.name
-                if self.er_reference:
-                        er = frappe.get_doc("Equipment Request", self.er_reference)
-                        er.db_set("ehf",ehf)
-
+			er.db_set("percent_completed", round(total))
 
 	def check_date_approval(self):
 		for a in self.approved_items:
@@ -118,17 +130,7 @@ class EquipmentHiringForm(Document):
 			self.total_hiring_amount = total
 			if self.private == "Private" and not self.advance_amount:
 				self.advance_amount = total
-
-	def get_transactions(self):
-                transactions = frappe.db.sql("""select eri.from_date, eri.to_date, eri.approved_qty, eri.equipment_type, 
-                                eri.rate_type, eri.approved_qty, eri.place from  `tabEquipment Request` er, `tabEquipment Request Item` eri 
-                                where eri.parent = er.name and er.name = '{0}'""".format(self.er_reference), as_dict = 1)
-                self.set('approved_items', [])
-                for d in transactions:
-                        for i in range(cint(d.approved_qty)):
-                                row = self.append('approved_items', {})
-                                row.place = d.place
-                                row.update(d)		
+		
 
 	def assign_hire_form_to_equipment(self):
 		for a in self.approved_items:
@@ -163,17 +165,17 @@ class EquipmentHiringForm(Document):
                                 to_datetime = str(get_datetime(str(a.to_date) + ' ' + str(a.to_time)))
 
                                 result = frappe.db.sql("""
-                                        select ehf_name
+"""                                        select ehf_name
                                         from `tabEquipment Reservation Entry`
                                         where equipment = '{0}'
-                                        and docstatus = 1 and reason != 'On Duty'
+                                        and docstatus = 1
                                         and ('{1}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
                                                 or
                                                 '{2}' between concat(from_date,' ',from_time) and concat(to_date,' ',to_time)
                                                 or
                                                 ('{3}' <= concat(from_date,' ',from_time) and '{4}' >= concat(to_date,' ',to_time))
                                         )
-                                """.format(a.equipment, from_datetime, to_datetime, from_datetime, to_datetime), as_dict=True)
+"""                                """.format(a.equipment, from_datetime, to_datetime, from_datetime, to_datetime), as_dict=True)
 
 				for r in result:
                                         frappe.throw(_("The equipment {0} is already in use from by {1}").format(a.equipment, r.ehf_name))
@@ -204,7 +206,6 @@ class EquipmentHiringForm(Document):
 					"cost_center": self.cost_center,
 					"credit_in_account_currency": flt(self.advance_amount),
 					"credit": flt(self.advance_amount),
-					"business_activity": get_default_ba(),
 					"is_advance": 'Yes'
 				})
 
@@ -213,7 +214,6 @@ class EquipmentHiringForm(Document):
 					"cost_center": self.cost_center,
 					"debit_in_account_currency": flt(self.advance_amount),
 					"debit": flt(self.advance_amount),
-					"business_activity": get_default_ba(),
 				})
 			je.insert()
 			self.db_set("advance_journal", je.name)
@@ -254,7 +254,7 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
         # Needs to be set back later
         '''
 	return frappe.db.sql("""
-                        select
+"""                        select
                                 e.name,
                                 e.equipment_type,
                                 e.equipment_number
@@ -271,11 +271,11 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
                                                 (a.from_date between %s and %s or a.to_date between %s and %s)
                                                 )
                                         and a.equipment = e.name)
-                        """, (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
+"""                        """, (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
         '''
         
         return frappe.db.sql("""
-                        select
+"""                        select
                                 e.name,
                                 e.equipment_type,
                                 e.equipment_number
@@ -299,7 +299,7 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
                                 idx desc,
                                 name, equipment_type, equipment_number
                         limit %(start)s, %(page_len)s
-                        """.format(**{
+"""                        """.format(**{
                                 'key': searchfield,
                                 'mcond': get_match_cond(doctype)
                         }),
@@ -339,3 +339,5 @@ def get_advance_balance(branch, customer):
 		return data
 	else:
 		frappe.throw("Select Equipment Hiring Form first!")
+"""
+

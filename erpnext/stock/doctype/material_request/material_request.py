@@ -79,15 +79,17 @@ class MaterialRequest(BuyingController):
 
 		# **** To record the details of Material Requester **** #
 		if self.workflow_state == "Draft":
-			creator_user_id, creator_employee_name, creator_name = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","name"]) or None
-			#creator_dtls = frappe.get_doc("Employee", {"user_id": frappe.session.user})
-			#self.creator = creator_dtls[2]
-			#self.creator_name = creator_dtls[1]
-			if creator_user_id:
-				self.creator = creator_name
-				self.creator_name = creator_employee_name
-		
-
+			if frappe.db.exists("Employee", {"user_id": frappe.session.user}):
+				creator_user_id, creator_employee_name, creator_name = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","name"]) or None
+				#creator_dtls = frappe.get_doc("Employee", {"user_id": frappe.session.user})
+				#self.creator = creator_dtls[2]
+				#self.creator_name = creator_dtls[1]
+				if creator_user_id:
+					self.creator = creator_name
+					self.creator_name = creator_employee_name	
+			else:
+				frappe.msgprint("MR Creater details will not be captured as the user is not the employee")	
+				
 		if not self.status:
 			self.status = "Draft"
 

@@ -2,7 +2,7 @@
 // License: GNU General Public License v3. See license.txt
 
 // render
-frappe.listview_settings['Equipment Hiring Form'] = {
+/*frappe.listview_settings['Equipment Hiring Form'] = {
 	add_fields: ["hiring_status", "docstatus", "payment_completed"],
 	has_indicator_for_draft: 1,
 	get_indicator: function(doc) {
@@ -28,4 +28,4 @@ frappe.listview_settings['Equipment Hiring Form'] = {
 			return ["Cancelled", "red", "docstatus,=,2"]
 		}
 	}
-};
+};*/

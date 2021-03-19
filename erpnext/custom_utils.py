@@ -210,11 +210,21 @@ def prepare_gl(d, args):
 ##
 # Check budget availability in the budget head
 ##
-def check_budget_available(cost_center, budget_account, transaction_date, amount):
+def check_budget_available(cost_center, budget_account, transaction_date, amount, business_activity):
 	if frappe.db.get_value("Account", budget_account, "budget_check"):
                 return
-        budget_amount = frappe.db.sql("select b.action_if_annual_budget_exceeded as action, ba.budget_check, ba.budget_amount from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and ba.parent = b.name and ba.account=%s and b.cost_center=%s and b.fiscal_year = %s", (budget_account, cost_center, str(transaction_date)[0:4]), as_dict=True)
-	
+        fiscal_year = frappe.db.sql("select name from `tabFiscal Year` where '{}' between year_start_date and year_end_date and disabled = 0".format(str(transaction_date)))[0][0]
+        budget_amount = frappe.db.sql("""select b.action_if_annual_budget_exceeded as action, ba.budget_check, ba.budget_amount 
+                                        from 
+                                                `tabBudget` b,
+                                                `tabBudget Account` ba 
+                                        where b.docstatus = 1 
+                                                and ba.parent = b.name 
+                                                and ba.account=%s 
+                                                and b.cost_center=%s 
+                                                and b.fiscal_year = %s
+                                                and b.business_activity = %s
+                                """, (budget_account, cost_center, fiscal_year, business_activity), as_dict=True)
         #action = frappe.db.sql("select action_if_annual_budget_exceeded as action from tabBudget where docstatus = 1 and cost_center = \'" + str(cost_center) + "\' and fiscal_year = " + str(transaction_date)[0:4] + " ", as_dict=True)
 	ig_or_stop = budget_amount and budget_amount[0].action or None
         ig_or_stop_gl = budget_amount and budget_amount[0].budget_check or None
@@ -222,8 +232,8 @@ def check_budget_available(cost_center, budget_account, transaction_date, amount
                 return
         else:
                 if budget_amount:
-                        committed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31"), as_dict=True)
-                        consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabConsumed Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31"), as_dict=True)
+                        committed = frappe.db.sql("select SUM(cb.amount) as total from `tabCommitted Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s and cb.business_activity =%s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31", business_activity), as_dict=True)
+                        consumed = frappe.db.sql("select SUM(cb.amount) as total from `tabConsumed Budget` cb where cb.cost_center=%s and cb.account=%s and cb.po_date between %s and %s and cb.business_activity =%s", (cost_center, budget_account, str(transaction_date)[0:4] + "-01-01", str(transaction_date)[0:4] + "-12-31", business_activity), as_dict=True)
 			if consumed and committed:
 				if consumed[0].total > committed[0].total:
 					committed = consumed
@@ -232,7 +242,7 @@ def check_budget_available(cost_center, budget_account, transaction_date, amount
                                 if flt(budget_amount[0].budget_amount) < flt(total_consumed_amount):
                                         frappe.throw("Not enough budget in <b>" + str(budget_account) + "</b> under <b>" + str(cost_center) + "</b>. Budget exceeded by <b>" + str(flt(total_consumed_amount) - flt(budget_amount[0].budget_amount)) + "</b>")
                 else:
-                        frappe.throw("There is no budget in <b>" + str(budget_account) + "</b> under <b>" + str(cost_center) + "</b>")
+                        frappe.throw("There is no budget in <b>" + str(budget_account) + "</b> under <b>" + str(cost_center) + "</b> and <b>" + str(business_activity) + "</b>")
 
 
 @frappe.whitelist()

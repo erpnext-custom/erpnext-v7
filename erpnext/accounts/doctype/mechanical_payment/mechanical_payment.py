@@ -40,6 +40,10 @@ class MechanicalPayment(AccountsController):
 			frappe.throw("Amount should be greater than 0")	
 		to_remove = []
 		total = flt(self.receivable_amount)
+		# added by phuntsho on 2021-03-05. previously, total would always be 0 for payables. 
+		if self.payable_amount: 
+			total = flt(self.payable_amount)
+
 		total_actual = 0
 		for d in self.items:
 			allocated = 0
@@ -116,6 +120,7 @@ class MechanicalPayment(AccountsController):
 			if a.reference_type == "Job Card":
 				payable_amount = doc.total_amount
 				self.total_amount = payable_amount
+			
 			else:
 				payable_amount = doc.balance_amount
 
@@ -288,6 +293,7 @@ class MechanicalPayment(AccountsController):
                                 "doctype": "Committed Budget",
                                 "account": self.transportation_account,
                                 "cost_center": self.cost_center,
+								"business_activity": self.business_activity,
                                 "po_no": self.name,
                                 "po_date": self.posting_date,
                                 "amount": self.net_amount,
@@ -301,6 +307,7 @@ class MechanicalPayment(AccountsController):
                                 "doctype": "Consumed Budget",
                                 "account": self.transportation_account,
                                 "cost_center": self.cost_center,
+								"business_activity": self.business_activity,
                                 "po_no": self.name,
                                 "po_date": self.posting_date,
                                 "amount": self.net_amount,

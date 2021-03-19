@@ -19,8 +19,9 @@ class SupplementaryBudget(Document):
 				frappe.throw("Amount should be greater than 0 on line " + str(a.idx))
 
 	def on_submit(self):
+		fiscal_year = frappe.db.sql("select name from `tabFiscal Year` where '{}' between year_start_date and year_end_date and disabled = 0".format(str(self.posting_date)))[0][0]
 		for a in self.items:
-			self.supplement(a.account, a.amount, str(self.posting_date)[0:4])
+			self.supplement(a.account, a.amount, str(fiscal_year))
 
 	def on_cancel(self):
 		for a in self.items:
@@ -35,9 +36,9 @@ class SupplementaryBudget(Document):
 		else:
 			return frappe.db.sql("""select ba.name, ba.parent, ba.budget_amount
 					from `tabBudget` b, `tabBudget Account` ba
-					where b.name=ba.parent and b.fiscal_year=%s and b.cost_center = %s and ba.account = %s and b.docstatus = 1
-					""", (fiscal_year, self.cost_center, acc), as_dict=True)
-
+					where b.name=ba.parent and b.fiscal_year=%s and b.cost_center = %s 
+					and ba.account = %s and b.docstatus = 1 and b.business_activity = %s
+					""", (fiscal_year, self.cost_center, acc, self.business_activity), as_dict=True)
 	##
 	# Method call from client to perform budget supplement
 	##
@@ -55,8 +56,7 @@ class SupplementaryBudget(Document):
 				total = flt(to_budget_account.budget_amount) - flt(amount)
 			to_budget_account.db_set("supplementary_budget", supplement)
 			to_budget_account.db_set("budget_amount", total)
-		
-			
+					
 			if self.docstatus == 1:
 				#Add the reappropriation details for record 
 				supp_details = frappe.new_doc("Supplementary Details")
@@ -71,5 +71,4 @@ class SupplementaryBudget(Document):
 				frappe.db.sql("delete from `tabSupplementary Details` where ref_doc = %s", self.name)
 		else:
 			frappe.throw("The budget head you specified doesn't exist. Please try again")
-
 

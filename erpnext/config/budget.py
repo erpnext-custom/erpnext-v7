@@ -11,10 +11,10 @@ def get_data():
 					"name": "Budget",
 					"description": _("Define budget for a financial year.")
 				},
-				{
-					"type": "doctype",
-					"name": "Revenue Target",
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Revenue Target",
+				# },
 			]
 		},
                 {
@@ -57,25 +57,26 @@ def get_data():
 					"name": "Committed Budget Report",
 					"doctype": "Committed Budget"
 				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Budget Proposal",
-					"doctype": "Budget"
-				},
-				{
-					"type": "report",
-					"label": _("Revenue Achievement"),
-					"is_query_report": True,
-					"name": "Revenue Target",
-					"doctype": "Revenue Target",
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Revenue Target Proposal",
-					"doctype": "Revenue Target"
-				},
+
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Budget Proposal",
+				# 	"doctype": "Budget"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"label": _("Revenue Achievement"),
+				# 	"is_query_report": True,
+				# 	"name": "Revenue Target",
+				# 	"doctype": "Revenue Target",
+				# },
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Revenue Target Proposal",
+				# 	"doctype": "Revenue Target"
+				# },
 			]
 		},
 	]

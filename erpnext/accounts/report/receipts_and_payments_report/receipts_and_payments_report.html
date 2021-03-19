@@ -1,0 +1,453 @@
+<div style="margin-bottom: 7px;" class="text-center">
+    {%= frappe.boot.letter_heads[filters.letter_head || frappe.defaults.get_default("letter_head")] %}
+</div>
+
+<h2 class="text-center">De-Suung.</h2>
+<h4 class="text-center">Receipts and Payments Statement for {%= filters.month %} {%= filters.fiscal_year %}</h4>
+{% if (filters.from_date) { %}
+<h4 class="text-center">{%= dateutil.str_to_user(filters.from_date) %} - {%= dateutil.str_to_user(filters.to_date) %}
+    </h3>
+    {% } %}
+    {% if (filters.cost_center) { %}
+    <h5 class="text-center">Cost Center: {%= filters.cost_center %}</h5>
+    {% } %}
+    <hr>
+    <table class="table table-bordered"
+        style="font-size: 8pt; padding: 0; word-wrap:normal; width: 100%; empty-cells: hide;">
+        <thead>
+            <tr>
+                <th>For the month of {%= filters.month %} {%= filters.fiscal_year %}</th>
+                <!-- <th colspan="2" style="text-align: center;">Opening</th> -->
+                <th colspan="2" style="text-align: center;">Receipt</th>
+                <th colspan="2" style="text-align: center;">Payment</th>
+                <th colspan="2" style="text-align: center;">Cumulative Balance</th>
+            </tr>
+
+            <tr>
+                <th>Group/Broad Head Of Account</th>
+
+                {% for(var i=2, l=report.columns.length; i<l; i++) 
+                    { %}
+                {% if (report.columns[i].label != "") 
+                            { %}
+                {% if(report.columns[i].label == "For the Month Credit") 
+                                    { %}
+                <th class="text-right" style="font-size:8pt;">For the Month (Nu.)</th>
+                {% } 
+                                %}
+
+                {% if(report.columns[i].label == "Annual Progressive Credit") 
+                                    { %}
+                <th class="text-right" style="font-size:8pt;">Annual Progressive (Nu.)</th>
+                {% } 
+                                %}
+
+                {% if(report.columns[i].label == "For The Month Debit") 
+                                    { %}
+                <th class="text-right" style="font-size:8pt;">For The Month (Nu.)</th>
+                {% } 
+                                %}
+
+                {% if(report.columns[i].label == "Annual Progressive Debit") 
+                                    { %}
+                <th class="text-right" style="font-size:8pt;">Annual Progressive (Nu.)</th>
+                {% } 
+                                %}
+
+                {% if(report.columns[i].label == "Closing (Dr)") 
+                                    { %}
+                <th class="text-right" style="font-size:8pt;">Dr (Nu.)</th>
+                {% } 
+                                 %}
+
+                {% if(report.columns[i].label == "Closing (Cr)") 
+                                    { %}
+                <th class="text-right" style="font-size:8pt;">Cr (Nu.)</th>
+                {% } 
+                                %}
+
+                {% if(report.columns[i].label == "Credit") 
+                                    { %}
+                <th class="text-right" style="font-size:8pt;">Receipts</th>
+                {% } 
+                                %}
+
+                {% if(report.columns[i].label == "Debit") 
+                                    { %}
+                <th class="text-right" style="font-size:8pt;">Payments</th>
+                {% } 
+                                %}
+                {% } 
+                        %}
+                {% } 
+                %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for(var j=0, k=data.length; j<k; j++) 
+                { %}
+            {%
+                        var row = data[j];
+                        var row_class = data[j].parent_account ? "" : "financial-statements-important";
+                        row_class += data[j].account_name ? "" : " financial-statements-blank-row";
+                    %}
+
+            <tr class="{%= row_class %}">
+                {% if (row.account_name != "Receipts" && row.account_name != "Total" && row.account_name != "Payments"  && data[j].indent == 0 && row.account_name == "Bank & Cash Balances" && j != 2 && j != 4) 
+                             { %}
+                <td>
+                    <!-- this is for the first column. -->
+                    <span style="font-weight: bold"> 1 - Opening Balances</span>
+                </td>
+                {% } 
+                         %}
+
+                {% if (row.account_name != "Receipts" && row.account_name != "Total" && row.account_name != "Payments"  && data[j].indent == 1 && row.account_name != "a - Cash" && row.account_name != "b - Bank" && j != 2 && j != 4) 
+                            { %}
+                <td>
+                    <!-- this is for the first column. -->
+                    <span style="font-weight: bold"> {%= row.account_name %}</span>
+                </td>
+                {% } 
+                        %}
+                {% if (row.account_name != "Receipts" && row.account_name != "Total" && row.account_name != "Payments"  && data[j].indent == 1 && row.account_name == "a - Cash" && j != 2 && j != 4)
+                            { %}
+                <td>
+                    <!-- this is for the first column. -->
+                    <span style="color: #464646; padding-left: 15px"> b - Cash</span>
+                </td>
+                {% } 
+                        %}
+                {% if (row.account_name != "Receipts" && row.account_name != "Total" && row.account_name != "Payments"  && data[j].indent == 1 && row.account_name == "b - Bank" && j != 2 && j != 4)
+                            { %}
+                <td>
+                    <!-- this is for the first column. -->
+                    <span style="color: #464646; padding-left: 15px"> a - Bank</span>
+                </td>
+                {% } 
+                        %}
+
+
+                {% if (row.account_name != "Receipts" && row.account_name != "Total" && row.account_name != "Payments"  && data[j].indent != 1 && data[j].indent != 3 && data[j].indent != 0 && j != 2 && j != 4) 
+                            { %}
+                <td>
+                    <!-- this is for the first column. -->
+                    <!-- <span style="color: #464646; padding-left: {%= (cint(data[j].indent)-1) * 2 %}em">{%= row.account_name %}</span> -->
+                    <span style="color: #464646; padding-left: 15px">{%= row.account_name %}</span>
+                </td>
+                {% }
+                        %}
+                <!-- ------- end of first column -------->
+
+                {% for(var i=4, l=report.columns.length; i<l; i++)
+                    { %}
+                {% if (report.columns[i].label != "" && row.account_name != "Receipts" && row.account_name != "Payments"  && data[j].indent != 3 && j <= 5 && i == 4 && row.account_name != "Total" && j != 2 && j != 4 && j == 0) 
+                            { %}
+                <td class="text-right">
+                    {% 
+                                        var fieldname = report.columns[2].field; 
+                                        var fieldname_1 = report.columns[3].field;
+                                    
+                                    %}
+                    {% if (!is_null(row[fieldname])) 
+                                        { %}
+                    <span style="font-weight: bold"> {{ format_number(row[fieldname]+row[fieldname_1]) }}</span>
+                    {% }
+                                    %}
+                </td>
+                {% } 
+                        %}
+                {% if (report.columns[i].label != "" && row.account_name != "Receipts" && row.account_name != "Payments"  && data[j].indent != 3 && j <= 5 && i == 9 && row.account_name != "Total" && j != 2 && j != 4 && j == 0) 
+                            { %}
+                <td class="text-right">
+                    <span>-</span>
+                </td>
+                {% } 
+                        %}
+                {% if (report.columns[i].label != "" && row.account_name != "Receipts" && row.account_name != "Payments"  && data[j].indent != 3 && j <= 5 && i == 4 && row.account_name != "Total" && j != 2 && j != 4 && j == 1) 
+                    { %}
+                <td class="text-right">
+                    {% 
+                                var fieldname = report.columns[2].field; 
+                                var fieldname_1 = report.columns[3].field;
+                            %}
+
+                    {% if (!is_null(row[fieldname])) 
+                                { %}
+                    {% if (row[fieldname] != "0.00")
+                                        { %}
+                    <span> {%= format_number(row[fieldname]) %}</span>
+                    {% }
+                                    %}
+
+                    {% if (row[fieldname_1] != "0.00")
+                                        { %}
+                    <span> {%= format_number(row[fieldname_1]) %}</span>
+                    {% }
+                                    %}
+                    {% }
+                            %}
+                </td>
+                {% } 
+                %}
+                {% if (report.columns[i].label != "" && row.account_name != "Receipts" && row.account_name != "Payments"  && data[j].indent != 3 && j <= 5 && i == 9 && row.account_name != "Total" && j != 2 && j != 4 && j == 1) 
+                        { %}
+                <td class="text-right">
+                    <span>-</span>
+                </td>
+                {% } 
+                %}
+
+                {% if (report.columns[i].label != "" && row.account_name != "Receipts" && row.account_name != "Payments"  && data[j].indent != 3 && j <= 5 && i == 4 && row.account_name != "Total" && j != 2 && j != 4 && j == 3) 
+                            { %}
+                <td class="text-right">
+                    {% 
+                                        var fieldname = report.columns[2].field; 
+                                        var fieldname_1 = report.columns[3].field;
+                                    
+                                    %}
+                    {% if (!is_null(row[fieldname])) 
+                                        { %}
+
+                    {% if (row[fieldname] != "0.00")
+                                                { %}
+                    <span> {%= format_number(row[fieldname]) %}</span>
+                    {% }
+                                            %}
+                    {% if (row[fieldname_1] != "0.00")
+                                                { %}
+                    <span> {%= format_number(row[fieldname_1]) %}</span>
+                    {% }
+                                            %}
+                    {% }
+                                    %}
+                </td>
+                {% } 
+                        %}
+                {% if (report.columns[i].label != "" && row.account_name != "Receipts" && row.account_name != "Payments"  && data[j].indent != 3 && j <= 5 && i == 9 && row.account_name != "Total" && j != 2 && j != 4 && j == 3) 
+                            { %}
+                <td class=" text-right">
+                    <span>-</span>
+                </td>
+                {% } 
+                        %}
+
+                {% if (report.columns[i].label != "" && row.account_name != "Receipts" && row.account_name != "Payments"  && data[j].indent != 3 && j <= 5 && i == 5 && row.account_name != "Total" && j != 2 && j != 4 && j != 3 && j != 0 && j!= 1) 
+                    { %}
+                <td class="text-right">
+                    {% var fieldname = report.columns[3].field; %}
+                    {% if (!is_null(row[fieldname])) 
+                                { %}
+                    {% if (fieldname == "account_code") 
+                                        { %}
+                    {%= row[fieldname] %}
+                    {% } 
+                                                    %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] != "0" && data[j].indent == 0) 
+                                                        { %}
+                    <span style="font-weight: bold"> {%= format_number(row[fieldname]) %}</span>
+                    {% } 
+                                                    %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] != "0" && data[j].indent == 1)
+                                                        { %}
+                    <span style="font-weight: bold"> {%= format_number(row[fieldname]) %}</span>
+                    {% } 
+                                                    %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] != "0" && data[j].indent == 2) 
+                                                        { %}
+                    <span>{%= format_number(row[fieldname]) %}</span>
+                    {% } 
+                                                    %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] == "0" && data[j].indent != 3) 
+                                                        { %}
+                    -
+                    {% }
+                                                    %}
+                    {% }
+                                            %}
+                </td>
+                {% } 
+                %}
+
+
+                {% if (report.columns[i].label != "" && row.account_name != "Receipts" && row.account_name != "Payments"  && data[j].indent != 3 && j <= 5 && i != 4 && i != 5 && row.account_name != "Total" && i < 8 && j != 2 && j != 4) 
+                    { %}
+                <td class="text-right">
+                    {% var fieldname = report.columns[i].field; %}
+                    {% if (!is_null(row[fieldname])) 
+                                { %}
+                    {% if (fieldname == "account_code") 
+                                        { %}
+                    {%= row[fieldname] %}
+                    {% } 
+                                    %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] != "0" && data[j].indent == 0) 
+                                        { %}
+                    <span style="font-weight: bold"> {%= format_number(row[fieldname]) %}</span>
+                    {% } 
+                                    %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] != "0" && data[j].indent == 1) 
+                                        { %}
+                    <span style="font-weight: bold"> {%= format_number(row[fieldname]) %}</span>
+                    {% } 
+                                    %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] != "0" && data[j].indent == 2) 
+                                        { %}
+                    <span> {%= format_number(row[fieldname]) %}</span>
+                    {% } 
+                                    %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] == "0" && data[j].indent != 3) 
+                                        { %}
+                    -
+                    {% }
+                                    %}
+                    {% }
+                            %}
+                </td>
+                {% } 
+                %}
+
+                <!------ this is for the rows less than 6 and columns more than or equal to 8 ----------->
+                {% if (report.columns[i].label != "" && row.account_name != "Receipts" && row.account_name != "Payments"  && data[j].indent != 3 && j <= 5 && i != 4 && i != 5 && row.account_name != "Total" && i > 7 && j != 2 && j != 4) 
+                                { %}
+                <td class="text-right">
+                    -
+                </td>
+                {% } 
+                            %}
+
+                <!-- end of the 6th row 8 or 9 column  -->
+                {% if (report.columns[i].label != "" && row.account_name != "Receipts" && row.account_name != "Payments"  && data[j].indent != 3 && j > 5 && i != 2 && i != 3 && row.account_name != "Total") 
+                                { %}
+                <td class="text-right">
+                    {% var fieldname = report.columns[i].field; %}
+                    {% if (!is_null(row[fieldname])) 
+                                            { %}
+                    {% if (fieldname == "account_code") 
+                                                    { %}
+                    {%= row[fieldname] %}
+                    {% } 
+                                                %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] != "0" && data[j].indent == 1) 
+                                                    { %}
+                    <span style="font-weight: bold"> {%= format_number(row[fieldname]) %}</span>
+                    {% } 
+                                                %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] != "0" && data[j].indent == 2) 
+                                                        { %}
+                    <span> {%= format_number(row[fieldname]) %}</span>
+                    {% } 
+                                                %}
+
+                    {% if (fieldname != "account_code" && row[fieldname] == "0" && data[j].indent != 3) 
+                        { %}
+                    -
+                    {% }
+                    %}
+                    {% }
+                                        %}
+                </td>
+                {% } 
+                            %}
+                {% } %}
+            </tr>
+            {% } 
+            %}
+
+            <tr style="text-align: right;">
+                {% 
+                    var row = data[0];
+                    var closing_dr = report.columns[8].field;
+                    var closing_cr = report.columns[9].field;
+                %}
+
+                <td style="text-align: left;font-weight:bold">Closing Balances</td>
+                <td> - </td>
+                <td> - </td>
+                <td style="font-weight:bold">{{ format_number(row[closing_dr] + row[closing_cr]) }}</td>
+                <td style="font-weight:bold">{{ format_number(row[closing_dr] + row[closing_cr]) }}</td>
+                <td> - </td>
+                <td> - </td>
+            </tr>
+            <!--###########################################################################################################-->
+            <!-- this is for bank (17th row) -->
+            <tr style="text-align: right;">
+                {% 
+                    var row = data[1];
+                    var fieldname = report.columns[8].field; 
+                    var fieldname_1 = report.columns[9].field;
+                %}
+                <td style="text-align: left;">a - Bank</td>
+                <td> - </td>
+                <td> - </td>
+                {% if (row[fieldname] == "0.00")
+                    { %}
+                <td>{%= format_number(row[fieldname_1]) %}</td>
+                <td>{%= format_number(row[fieldname_1]) %}</td>
+                {% }
+                %}
+                {% if (row[fieldname] != "0.00")
+                    { %}
+                <td>{%= format_number(row[fieldname]) %}</td>
+                <td>{%= format_number(row[fieldname]) %}</td>
+                {% }
+                %}
+                <td> - </td>
+                <td> - </td>
+            </tr>
+
+            <!-- this is for cash (18th row) -->
+            <tr style="text-align: right;">
+                {% 
+                    var row = data[3];
+                    var fieldname = report.columns[8].field; 
+                    var fieldname_1 = report.columns[9].field;
+                %}
+                <td style="text-align: left;">b - Cash</td>
+                <td> - </td>
+                <td> - </td>
+                {% if (row[fieldname] == "0.00")
+                    { %}
+                <td>{%= format_number(row[fieldname_1]) %}</td>
+                <td>{%= format_number(row[fieldname_1]) %}</td>
+                {% }
+                %}
+                {% if (row[fieldname] != "0.00")
+                    { %}
+                <td>{%= format_number(row[fieldname]) %}</td>
+                <td>{%= format_number(row[fieldname]) %}</td>
+                {% }
+                %}
+                <td> - </td>
+                <td> - </td>
+            </tr>
+            <tr style="text-align: right;">
+                {%  
+                    var length = data.length;
+                    var row = data[length-1];
+                    var fieldname = report.columns[4].field; 
+                    var fieldname_1 = report.columns[5].field;
+                    var fieldname_2 = report.columns[6].field;
+                    var fieldname_3 = report.columns[7].field;
+                %}
+                <td style="text-align: left;"><b>Total</b></td>
+                <td> <span> <b>{%= format_number(row[fieldname]) %}</b></span> </td>
+                <td> <span> <b>{%= format_number(row[fieldname_1]) %}</b></span> </td>
+                <td> <span><b> {%= format_number(row[fieldname_2]) %}</b></span> </td>
+                <td> <span><b> {%= format_number(row[fieldname_3]) %}</b></span> </td>
+                <td> - </td>
+                <td> - </td>
+            </tr>
+        </tbody>
+    </table>
+    <p class="text-right text-muted">Printed On {%= dateutil.str_to_user(dateutil.get_datetime_as_string()) %}</p>

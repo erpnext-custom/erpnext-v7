@@ -5,7 +5,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt
-from erpnext.accounts.report.financial_statements_emines import (get_period_list, get_columns, get_data)
+from erpnext.accounts.report.financial_statements import (get_period_list, get_columns, get_data)
+
 
 def execute(filters=None):
 	if filters.show_zero_values:
@@ -13,11 +14,14 @@ def execute(filters=None):
 	else:
 		show_zero = 0
 	period_list = get_period_list(filters.fiscal_year, filters.periodicity)
+ 	# Continue from here tomoroow
+	year_start_date = frappe.db.get_value("Fiscal Year", filters.fiscal_year, "year_start_date")
 
 	income = get_data(filters.cost_center, filters.business_activity, filters.company, "Income", "Credit", period_list,
 		accumulated_values=filters.accumulated_values, ignore_closing_entries=True, show_zero_values=show_zero)
 	expense = get_data(filters.cost_center, filters.business_activity, filters.company, "Expense", "Debit", period_list,
 		accumulated_values=filters.accumulated_values, ignore_closing_entries=True, show_zero_values=show_zero)
+	# set_gl_entries_by_account(filters.cost_center, filters.business_activity, filters.company, year_start_date, month_end, min_lft, max_rgt, gl_entries_by_account,  ignore_closing_entries=not flt(filters.with_period_closing_entry))
 
 	net_profit_loss = get_net_profit_loss(income, expense, period_list, filters.company)
 

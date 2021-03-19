@@ -10,6 +10,12 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 import frappe.model.rename_doc as rd
 
+def delete_data():
+	for a in frappe.db.sql("Select name from `tabDocType` where module = 'Rental Management' and issingle = 0", as_dict=True):
+		table = 'tab' + a.name
+		frappe.db.sql("delete from `{}`".format(table))
+		print("Deleted for table" + table) 
+
 def update_penalty_writeoff():
 	for a in frappe.db.sql("select name from `tabRental Payment` where docstatus = 1 and write_off_penalty = 1 and penalty_amount < 1", as_dict=True):
 		for b in frappe.db.sql("select name, penalty from `tabRental Payment Item` where parent = '{}' and penalty > 0".format(a.name), as_dict=True):
@@ -58,21 +64,6 @@ def rename_tenant():
 		
 			#frappe.db.sql("update `tabTenant Information` set cid = '{}' where name = '{}'".format(a.name, new_name))
 
-
-def update_ministry_dept():
-        for a in frappe.db.sql("select t.tenant as tenant from `tabRental Payment Item` t where exists(select 1 from `tabTenant Information` i where i.name = t.tenant)", as_dict=True):
-                doc = frappe.get_doc("Tenant Information", a.tenant)
-                frappe.db.sql("update `tabRental Payment Item` set ministry_agency = '{0}', department = '{1}' where tenant = '{2}'".format(doc.ministry_agency, doc.department, a.tenant))
-                #print(ministry, dept, a.tenant)
-
-
-def update_tenant_customer_code():
-	for a in frappe.db.sql("select name, cid from `tabTenant Information` where customer_code is NULL or customer_code =''", as_dict=True):
-		for b in frappe.db.sql("select customer_code from `tabCustomer` where customer_id = '{}'".format(a.cid), as_dict=1):
-			if b.customer_code:
-				frappe.db.sql("update `tabTenant Information` set customer_code = '{}' where name = '{}'".format(b.customer_code, a.name))
-				print(str(a.name) + "=>" + str(b.customer_code))
-		
 
 def update_ss():
 	for a in frappe.db.sql("select name from `tabSalary Structure` where is_active = 'Yes'", as_dict=True):
@@ -411,7 +402,6 @@ def update_so():
 		print(str(a.name) + " ==> " + str(distance))
 		frappe.db.sql("update `tabSales Order` set transportation_rate = %s, total_quantity = %s, total_distance = %s where name = %s", (13.23, flt(a.qty), flt(round(distance, 2)), a.name))
 
-#
 def update_equip():
 	for a in frappe.db.sql("select name, hsd_type from tabEquipment where hsd_type is not null", as_dict=1):
 		print a.name, a.hsd_type

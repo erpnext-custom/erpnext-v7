@@ -23,7 +23,7 @@ class Budget(Document):
 		self.calculate_budget()
 
 	def validate_duplicate(self):
-		existing_budget = frappe.db.get_value("Budget", {"cost_center": self.cost_center,
+		existing_budget = frappe.db.get_value("Budget", {"cost_center": self.cost_center, "business_activity": self.business_activity,
 			"fiscal_year": self.fiscal_year, "company": self.company,
 			"name": ["!=", self.name], "docstatus": ["!=", 2]})
 		if existing_budget:
@@ -55,7 +55,7 @@ class Budget(Document):
 					frappe.msgprint("Account <b>" + str(d.account) + "</b> not found on system")
 	#Populate Budget Accounts with Expense and Fixed Asset Accounts
 	def get_accounts(self):
-		query = "select name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes') order by account_code ASC"
+		query = "select parent_account, name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes') order by parent_account"
 		entries = frappe.db.sql(query, as_dict=True)
 		self.set('accounts', [])
 
@@ -63,7 +63,8 @@ class Budget(Document):
 			d.initial_budget = 0
 			row = self.append('accounts', {})
 			row.update(d)
-
+	# query = "select parent_account, name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes') order by parent_account"
+	# 	entries = frappe.db.sql(query, as_dict=True)
 	#calculate budgets
 	def calculate_budget(self):
 		if self.accounts:
@@ -77,7 +78,7 @@ def validate_expense_against_budget(args):
 		pass
 	elif frappe.db.get_value("Account", {"name": args.account, "root_type": "Expense"}) or frappe.db.get_value("Account", {"name": args.account, "root_type": "Asset", "account_type": "Fixed Asset"}):
 		if args.debit_in_account_currency:
-                        check_budget_available(args.cost_center, args.account, args.posting_date, flt(args.debit_in_account_currency))
+                        check_budget_available(args.cost_center, args.account, args.posting_date, flt(args.debit_in_account_currency), args.business_activity)
 	else:
 		pass
 

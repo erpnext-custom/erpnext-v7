@@ -15,8 +15,9 @@ class VehicleRequest(Document):
 		if not self.posting_date:
 			self.posting_date = nowdate()
 
-		if not self.items:
-			frappe.throw("Employee List Cannot be empty, Add Employees")
+		# NOT NEEDED AS PER NEW REQUIREMENT- commented by phuntsho on feb 25 2021
+		# if not self.items:
+		# 	frappe.throw("Employee List Cannot be empty, Add Employees")
 
 		if self.workflow_state == "Approved":
 			self.db_set("docstatus", 1)	
@@ -76,7 +77,7 @@ class VehicleRequest(Document):
 		import datetime
                 from_time = datetime.datetime.strptime(self.from_date, '%Y-%m-%d %H:%M:%S')
 		to_time = datetime.datetime.strptime(self.to_date, '%Y-%m-%d %H:%M:%S')
-                frappe.msgprint("{0}".format(from_time.time()))
+                # frappe.msgprint("{0}".format(from_time.time()))
 		doc = frappe.new_doc("Equipment Reservation Entry")
 		doc.equipment = self.equipment
 		doc.vehicle_request = self.name

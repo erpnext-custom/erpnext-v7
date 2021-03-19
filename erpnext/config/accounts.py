@@ -79,16 +79,16 @@ def get_data():
 					"name": "Project Payment",
 					"description": _("Payments agains Project Invoices.")
 				},
-                                {
-					"type": "doctype",
-					"name": "Deposit Work",
-				},
-				{	
-					"type": "report",
-					"name": "Deposit Work Report",
-					"doctype": "Deposit Work",
-					"is_query_report": True,
-				},
+                # {
+				# 	"type": "doctype",
+				# 	"name": "Deposit Work",
+				# },
+				# {	
+				# 	"type": "report",
+				# 	"name": "Deposit Work Report",
+				# 	"doctype": "Deposit Work",
+				# 	"is_query_report": True,
+				# },
 			]
 		},
 		{
@@ -117,37 +117,37 @@ def get_data():
 				},
 			]
 		},
-                {
-			"label": _("Imprest Management"),
-			"icon": "icon-cog",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Imprest Type",
-					"description": _("Imprest Types.")
-				},
-				{
-					"type": "doctype",
-					"name": "Imprest Receipt",
-					"label": "Receipt Entry",
-					"description": _("Imprest Receipt Entry.")
-				},
-				{
-					"type": "doctype",
-					"name": "Imprest Recoup",
-					"label": "Recoup Entry",
-					"description": _("Imprest Recoup Entry.")
-				},
-                                {
-					"type": "report",
-                                        "label": _("Imprest Register"),
-					"is_query_report": True,
-					"name": "Register Imprest",
-					"doctype": "Imprest Receipt"
-				},
-			]
-		},
-                {
+        # {
+		# 	"label": _("Imprest Management"),
+		# 	"icon": "icon-cog",
+		# 	"items": [
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Imprest Type",
+		# 			"description": _("Imprest Types.")
+		# 		},
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Imprest Receipt",
+		# 			"label": "Receipt Entry",
+		# 			"description": _("Imprest Receipt Entry.")
+		# 		},
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Imprest Recoup",
+		# 			"label": "Recoup Entry",
+		# 			"description": _("Imprest Recoup Entry.")
+		# 		},
+        #                         {
+		# 			"type": "report",
+        #                                 "label": _("Imprest Register"),
+		# 			"is_query_report": True,
+		# 			"name": "Register Imprest",
+		# 			"doctype": "Imprest Receipt"
+		# 		},
+		# 	]
+		# },
+        {
 			"label": _("Tools"),
 			"items": [
 				{
@@ -230,42 +230,56 @@ def get_data():
 		{
 			"label": _("Accounting Statements"),
 			"items": [
+				# {
+				# 	"type": "report",
+				# 	"name": "Statement of Trial Balance",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True,
+				# },
 				{
-					"type": "report",
-					"name": "Statement of Trial Balance",
-					"doctype": "GL Entry",
-					"is_query_report": True,
+				 	"type": "report",
+				 	"name": "Receipts and Payments Report",
+				 	"doctype": "GL Entry",
+					"label" :_("Receipts and Payment Report"),
+				 	"is_query_report": True,
 				},
 				{
+				 	"type": "report",
+				 	"name": "Cash Book",
+				 	"doctype": "Cash Book",
+					"label": _("Cash Book"),
+				 	"is_query_report": True,
+				 },
+				# {
+				# 	"type": "report",
+				# 	"name": "Statement of Financial Position",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True
+				# },
+				# {
+				# 	"type": "report",
+				# 	"name": "Statement of Cash Flow",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True
+				# },
+				{
 					"type": "report",
-					"name": "Statement of Financial Position",
+					"name": "Expenditure Statement",
 					"doctype": "GL Entry",
 					"is_query_report": True
 				},
-				{
-					"type": "report",
-					"name": "Statement of Cash Flow",
-					"doctype": "GL Entry",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Statement of Comprehensive Income",
-					"doctype": "GL Entry",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Comparative Statement",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
-                                {
-					"type": "report",
-					"name": "Profitability Analysis",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				}
+				# {
+				# 	"type": "report",
+				# 	"name": "Comparative Statement",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True,
+				# },
+                # {
+				# 	"type": "report",
+				# 	"name": "Profitability Analysis",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True,
+				# }
 			]
 		},
 		{
@@ -277,18 +291,18 @@ def get_data():
 					"doctype": "GL Entry",
 					"is_query_report": True,
 				},
-				{
-					"type": "report",
-					"name": "Accounts Receivable",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Accounts Payable",
-					"doctype": "Purchase Invoice",
-					"is_query_report": True
-				},
+				# {
+				# 	"type": "report",
+				# 	"name": "Accounts Receivable",
+				# 	"doctype": "Sales Invoice",
+				# 	"is_query_report": True
+				# },
+				# {
+				# 	"type": "report",
+				# 	"name": "Accounts Payable",
+				# 	"doctype": "Purchase Invoice",
+				# 	"is_query_report": True
+				# },
 				{
 					"type": "report",
 					"name": "Party Wise Ledger",
@@ -318,82 +332,82 @@ def get_data():
                     			"label": _("Update Bank Transaction Dates"),
 					"description": _("Update bank payment dates with journals.")
 				},
-                                {
-					"type": "doctype",
-					"name": "Bank Guarantee",
-				},
-                                {
-                                        "type": "doctype",
-                                        "name": "Fixed Deposit",
-                                },
-                		{
+                # {
+				# 	"type": "doctype",
+				# 	"name": "Bank Guarantee",
+				# },
+                # {
+                #     "type": "doctype",
+                #     "name": "Fixed Deposit",
+                # },
+                {
 					"type": "report",
 					"name": "Bank Reconciliation Statement",
                 			"is_query_report": True,
 					"doctype": "Journal Entry"
 				},
-                		{
+                {
 					"type": "report",
 					"name": "Bank Clearance Summary",
-                    			"is_query_report": True,
+                    "is_query_report": True,
 					"doctype": "Journal Entry"
 				},
-                		{
-					"type": "report",
-					"name": "Bank Guarantee Report",
-                    			"is_query_report": True,
-					"doctype": "Bank Guarantee"
-				},
-                                {
-                                        "type": "report",
-                                        "name": "Fixed Deposit Report",
-                                        "is_query_report": True,
-                                        "doctype": "Fixed Deposit"
-                                },
+                # {
+				# 	"type": "report",
+				# 	"name": "Bank Guarantee Report",
+                #     "is_query_report": True,
+				# 	"doctype": "Bank Guarantee"
+				# },
+                # {
+                #     "type": "report",
+                #     "name": "Fixed Deposit Report",
+                #     "is_query_report": True,
+                #     "doctype": "Fixed Deposit"
+                # },
 			]
 		},
 		{
 			"label": _("Other Reports"),
 			"icon": "icon-table",
 			"items": [
-				{
-					"type": "report",
-					"name": "Gross Profit",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Payment Period Based On Invoice Date",
-					"is_query_report": True,
-					"doctype": "Journal Entry"
-				},
-				{
-					"type": "report",
-					"name": "Item-wise Sales Register",
-					"is_query_report": True,
-					"doctype": "Sales Invoice",
-					"label":"Materialwise Sales Register"
-				},
-				{
-					"type": "report",
-					"name": "Item-wise Purchase Register",
-					"is_query_report": True,
-					"doctype": "Purchase Invoice",
-					"label":"Materialwise Purchase Register"
-				},
-				{
-					"type": "report",
-					"name": "Accounts Receivable Summary",
-					"doctype": "Sales Invoice",
-					"is_query_report": True
-				},
-				{
-					"type": "report",
-					"name": "Accounts Payable Summary",
-					"doctype": "Purchase Invoice",
-					"is_query_report": True
-				},
+				# {
+				# 	"type": "report",
+				# 	"name": "Gross Profit",
+				# 	"doctype": "Sales Invoice",
+				# 	"is_query_report": True
+				# },
+				# {
+				# 	"type": "report",
+				# 	"name": "Payment Period Based On Invoice Date",
+				# 	"is_query_report": True,
+				# 	"doctype": "Journal Entry"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"name": "Item-wise Sales Register",
+				# 	"is_query_report": True,
+				# 	"doctype": "Sales Invoice",
+				# 	"label":"Materialwise Sales Register"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"name": "Item-wise Purchase Register",
+				# 	"is_query_report": True,
+				# 	"doctype": "Purchase Invoice",
+				# 	"label":"Materialwise Purchase Register"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"name": "Accounts Receivable Summary",
+				# 	"doctype": "Sales Invoice",
+				# 	"is_query_report": True
+				# },
+				# {
+				# 	"type": "report",
+				# 	"name": "Accounts Payable Summary",
+				# 	"doctype": "Purchase Invoice",
+				# 	"is_query_report": True
+				# },
 			]
 		},
                 {
@@ -593,10 +607,10 @@ def get_data():
 					"name": "Sales Accounts Settings",
 					"description": _("Account Settings for Sales Accounting")
 				},
-				{
-					"type": "doctype",
-					"name": "Production Account Settings",
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Production Account Settings",
+				# },
 			]
 		},
 		{

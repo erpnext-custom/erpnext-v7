@@ -47,6 +47,7 @@ class StockController(AccountsController):
 
 		sle_map = self.get_stock_ledger_details()
 		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map, default_business_activity)
+		frappe.throw("{}".format(voucher_details))
 
 		gl_list = []
 		warehouse_with_no_account = []
@@ -103,15 +104,26 @@ class StockController(AccountsController):
 									"debit": flt(sle.stock_value_difference, 2),
 								}))
 						else:
-                                                        # from warehouse account
-							gl_list.append(self.get_gl_dict({
-								"account": warehouse_account[sle.warehouse]["name"],
-								"against": detail.expense_account,
-								"cost_center": detail.cost_center,
-                                                                "business_activity": detail.business_activity,
-								"remarks": self.get("remarks") or "Accounting Entry for Stock",
-								"debit": flt(sle.stock_value_difference, 2),
-							}, warehouse_account[sle.warehouse]["account_currency"]))
+							if self.doctype ="POL":
+								gl_list.append(self.get_gl_dict({
+									"account": warehouse_account[sle.warehouse]["name"],
+									"against": detail.expense_account,
+									"cost_center": detail.cost_center,
+									"business_activity": detail.business_activity,
+									"remarks": self.get("remarks") or "Accounting Entry for Stock",
+									"debit": flt(sle.stock_value_difference, 2),
+								}, warehouse_account[sle.warehouse]["account_currency"]))
+
+							else: 
+								# from warehouse account
+								gl_list.append(self.get_gl_dict({
+									"account": warehouse_account[sle.warehouse]["name"],
+									"against": detail.expense_account,
+									"cost_center": detail.cost_center,
+																	"business_activity": detail.business_activity,
+									"remarks": self.get("remarks") or "Accounting Entry for Stock",
+									"debit": flt(sle.stock_value_difference, 2),
+								}, warehouse_account[sle.warehouse]["account_currency"]))
 
 							# to target warehouse / expense account
 							gl_list.append(self.get_gl_dict({

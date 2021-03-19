@@ -1,7 +1,3 @@
-
-/*
- *	/home/frappe/erp/apps/erpnext/erpnext/public/css/erpnext.css
- */
 .erpnext-footer {
   margin: 11px auto;
   text-align: center;
@@ -216,15 +212,15 @@ body[data-route="pos"] .modal-dialog {
   width: 130px;
 }
 /******************************************
- *        CUSTOM CSS STARTS HERE          *
- ******************************************/
+ *  *        CUSTOM CSS STARTS HERE          *
+ *   ******************************************/
 
 /*get items from button in material request & quotation*/
 /*#page-Form\2f Quotation > div.container.page-body > div.page-wrapper > div > div.row.layout-main > div.col-md-10.layout-main-section-wrapper > div.layout-main-section > div.form-inner-toolbar > div,
-#page-Form\2f Material\20 Request > div.container.page-body > div.page-wrapper > div > div.row.layout-main > div.col-md-10.layout-main-section-wrapper > div.layout-main-section > div.form-inner-toolbar > button {
-	display: none;
-}
-*/
+ * #page-Form\2f Material\20 Request > div.container.page-body > div.page-wrapper > div > div.row.layout-main > div.col-md-10.layout-main-section-wrapper > div.layout-main-section > div.form-inner-toolbar > button {
+ * 	display: none;
+ * 	}
+ * 	*/
 #page-Form\2f RRCO\20 Receipt > div.page-head > div > div > div.col-md-7.col-sm-8.col-xs-6.page-title > h1 {
 	display: none!important;
 }
@@ -234,7 +230,7 @@ body[data-route="pos"] .modal-dialog {
 	background-image: url("");
 	background-repeat: no-repeat !important;
 	background-position: center !important;
-	background-color: #12880b !important;
+	background-color: #2b4d80 !important;
 }
 
 @media all {
@@ -260,10 +256,11 @@ body[data-route="pos"] .modal-dialog {
 }
 
 .page-head {
-       // background: url("http://cdcl.erp.bt/files/he_background.png") no-repeat center
+        background: url("http://cdcl.erp.bt/files/he_background.png") no-repeat center
 }
 
 #page-desktop {
- //       background: url("http://cdcl.erp.bt/files/de_background.png") no-repeat center
+        background: url("http://cdcl.erp.bt/files/de_background.png") no-repeat center
 }
+
 

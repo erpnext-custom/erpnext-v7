@@ -69,12 +69,12 @@ def get_data():
 					"doctype" : "Asset",
 					"is_query_report": True,
 				},
-				{
-					"type": "report",
-					"name": "Property Plant and Equipment",
-					"doctype": "GL Entry",
-					"is_query_report": True,
-				},
+				# {
+				# 	"type": "report",
+				# 	"name": "Property Plant and Equipment",
+				# 	"doctype": "GL Entry",
+				# 	"is_query_report": True,
+				# },
 				{
 					"type": "report",
 					"name": "Employee Asset Report",

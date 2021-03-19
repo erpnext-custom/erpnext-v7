@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr, rounded
-from erpnext.accounts.report.financial_statements_emines \
+from erpnext.accounts.report.financial_statements \
 	import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
 
 def execute(filters=None):
@@ -21,6 +21,8 @@ def get_accounts(filters):
 		dep_opening = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center, opening=True)[0]
 		acc_dep = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center)[0]
 		dep = get_values(a.dep, filters.to_date, filters.from_date, filters.cost_center)[0]
+
+		frappe.msgprint("gross opening #19: {} \n gross #20: {} \n dep_opening #21: {} \n acc_dep #22: {} \n dep #23: {}".format(a.fa, a.fa, a.acc, a.acc, a.dep))
 
 		g_open = flt(gross_opening.debit) - flt(gross_opening.credit)
 		g_addition = flt(gross.debit)
@@ -47,15 +49,25 @@ def get_accounts(filters):
 
 	#FOr CWIP Account
 	cwip_acc = []
-	cwip_account = frappe.db.get_single_value("Accounts Settings", "cwip_account")
-	cwip_accounts_gl = frappe.db.sql("select name from tabAccount where parent_account = %s", cwip_account, as_dict=True)
-	for account in cwip_accounts_gl:
-		cwip_acc.append(str(account.name))
-	cwip_accounts = tuple(cwip_acc)
+	# cwip_account = frappe.db.get_single_value("Accounts Settings", "cwip_account")
+	cwip_account = frappe.db.sql("select field, value  from `tabSingles` where doctype='Accounts Settings'", as_dict=1)
+	cwip_account = cwip_account[8].value
+	# # frappe.msgprint("the account '{}'".format(c_wip_account[8].value))
+	# frappe.msgprint("++++++++++++++++>{}".format(cwip_account))
+	# # cwip_accounts_gl = frappe.db.sql("select name from tabAccount where parent_account = %s", cwip_account, as_dict=True)
+	# cwip_accounts_gl = frappe.db.sql("select name from tabAccount where name = '{}'".format(cwip_account), as_dict=True)
+	# # frappe.msgprint("1. ##################>{}".format(cwip_accounts_gl))
 
-	cwip_open = get_values(cwip_accounts, filters.to_date, filters.from_date, filters.cost_center, opening=True, cwip=True)
+	# for account in cwip_accounts_gl:
+	# 	cwip_acc.append(str(cwip_accounts_gl[0]))
+
+	# cwip_accounts = cwip_acc
+	# frappe.msgprint("=?>{}".format(cwip_accounts))
+	# frappe.msgprint("here here here")
+
+	cwip_open = get_values(cwip_account, filters.to_date, filters.from_date, filters.cost_center, opening=True, cwip=True)
 	cwip = get_values(cwip_accounts, filters.to_date, filters.from_date, filters.cost_center, cwip=True)
-
+	frappe.msgprint("cwip open #56: {} \n cwip #57: {}".format(cwip_accounts, cwip_accounts))
 	cwip_open = cwip_open[0]
 	cwip = cwip[0]
 
@@ -78,20 +90,21 @@ def get_accounts(filters):
 	return data
 
 def get_values(account, to_date, from_date, cost_center=None, opening=False, cwip=False):
+	frappe.msgprint("this should match the above: {}".format(account))
 	if cwip:
-		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account in " + str(account) + " and docstatus = 1 "
+		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account in ({}) and docstatus = 1 ".format
 	else:
-		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \'" + str(account) + "\' and docstatus = 1 "
+		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \" + str(account) + "\ and docstatus = 1 "
 	if not opening:
 		query += " and posting_date between \'" + str(from_date) + "\' and \'" + str(to_date) + "\'"
 	else:
 		query += " and posting_date < \'" + str(from_date) + "\'"
 	if cost_center:
 		query += " and cost_center = \'" + str(cost_center) + "\'"
-
 	query += " and voucher_type not in ('Period Closing Voucher', 'Asset Movement', 'Bulk Asset Transfer')"
-	value = frappe.db.sql(query, as_dict=True)
-	return value
+	if account: 
+		value = frappe.db.sql(query, as_dict=True)
+		return value
 
 
 def get_columns():

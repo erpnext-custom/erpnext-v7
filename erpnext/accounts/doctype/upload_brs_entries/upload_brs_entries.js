@@ -27,7 +27,7 @@ erpnext.accounts.BRSControlPanel = frappe.ui.form.Controller.extend({
 			args: {
 				method: 'erpnext.accounts.doctype.upload_brs_entries.upload_brs_entries.upload'
 			},
-			sample_url: "e.g. http://emines.smcl.bt/somefile.csv",
+			sample_url: "e.g. http://erp.desuung.org.bt/somefile.csv",
 			callback: function(attachment, r) {
 				var $log_wrapper = $(cur_frm.fields_dict.import_log.wrapper).empty();
 

@@ -15,17 +15,17 @@ frappe.ui.form.on('TDS Remittance', {
 	},
 	refresh: function(frm) {
 		if(frm.doc.docstatus===1){
-                        frm.add_custom_button(__('Accounting Ledger'), function(){
-                                frappe.route_options = {
-                                        voucher_no: frm.doc.name,
-                                        from_date: frm.doc.from_date,
-                                        to_date: frm.doc_to_date,
-                                        company: frm.doc.company,
-                                        group_by_voucher: false
-                                };
-                                frappe.set_route("query-report", "General Ledger");
-                        }, __("View"));
-	}
+			frm.add_custom_button(__('Accounting Ledger'), function(){
+					frappe.route_options = {
+							voucher_no: frm.doc.name,
+							from_date: frm.doc.from_date,
+							to_date: frm.doc_to_date,
+							company: frm.doc.company,
+							group_by_voucher: false
+					};
+					frappe.set_route("query-report", "General Ledger");
+			}, __("View"));
+		}
 	},
 	tds_rate: function(frm){
 		switch(frm.doc.tds_rate){
@@ -63,3 +63,20 @@ frappe.ui.form.on('TDS Remittance', {
 		}
 	}
 });
+
+frappe.ui.form.on("TDS Remittance", "select_cheque_lot", function(frm) {
+	if(frm.doc.select_cheque_lot) {
+   frappe.call({
+	   method: "erpnext.accounts.doctype.cheque_lot.cheque_lot.get_cheque_no_and_date",
+	   args: {
+	   'name': frm.doc.select_cheque_lot
+	   },
+	   callback: function(r){
+		  if (r.message) {
+			  cur_frm.set_value("cheque_no", r.message[0].reference_no);
+			  cur_frm.set_value("cheque_date", r.message[1].reference_date);
+		  }
+		  }
+   });
+	}
+})
