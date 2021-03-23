@@ -43,7 +43,7 @@ def get_data(filters):
 	overall_achieved_percent = 0.0
 
 	#query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region, sum(qty) as total_qty from `tabProduction Entry` pe RIGHT JOIN `tabCost Center` cc ON cc.name = pe.cost_center where 1 = 1 {0} {1} {2} {3}".format(cc_condition, conditions, group_by, order_by)
-	query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region from `tabProduction Target` pe, `tabCost Center` cc where cc.name = pe.cost_center and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
+	query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region from `tabProduction Target` pe, `tabCost Center` cc where cc.name = pe.cost_center and cc.parent_cost_center != 'Regional Office - NRDCL' and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
 	#frappe.msgprint("{0}".format(query))	
 	for a in frappe.db.sql(query, as_dict=1):
 		#frappe.msgprint("{0}".format(a.location))
@@ -106,10 +106,12 @@ def get_data(filters):
 					tdate_split[2] = "29"
 						
 				if filters.branch:
+					branch = str(filters.branch)
+					branch = branch.replace(' - NRDCL','')
 					target = get_target_value("Production", a.location, filters.production_group, filters.fiscal_year, start_date, end_date, True)
 					row = [a.location, target]
 					cond = " and location = '{0}'".format(a.location)
-					cond += " and branch = '{0}'".format(filters.branch)
+					cond += " and branch = '{0}'".format(branch)
 				else:
 					if filters.is_company:
 						target = get_target_value("Production", a.region, filters.production_group, filters.fiscal_year, start_date, end_date)
@@ -131,6 +133,7 @@ def get_data(filters):
 					condition = " and DATE(pe.posting_date) between '"+ str(start_date) + "' and '"+ str(end_date) +"'"
 	#				query = "select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(condition, str(b), cond)
 					qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(condition, str(b), cond))
+					# frappe.msgprint(str(qty)+" "+str(condition)+" "+str(b)+" "+str(cond))
 					qty = qty and qty[0][0] or 0
 					row.append(rounded(qty, 2))
 					total += flt(qty)
@@ -154,6 +157,8 @@ def get_data(filters):
 				data.append(row)
 	if overall_target > 0:
 		overall_achieved_percent = rounded((overall_achieved/overall_target)*100, 2)
+		if overall_achieved_percent > flt(100):
+			overall_achieved_percent = flt(100)
 	else:
 		total_achieved_percent = 0.0
 	
@@ -179,14 +184,15 @@ def get_cc_conditions(filters):
 	condition = ""
 	if not filters.cost_center:
 		return " and pe.docstatus = 10"
+	else:
+		if filters.branch:
+			branch = str(filters.branch)
+			branch = branch.replace(' - NRDCL','')
+			condition += " and pe.branch = '"+branch+"'"
 
-	all_ccs = get_child_cost_centers(filters.cost_center)
-	condition += " and cc.name in {0} ".format(tuple(all_ccs))	
-
-	if filters.branch:
-		branch = str(filters.branch)
-		branch = branch.replace(' - NRDCL','')
-		condition += " and pe.branch = '"+branch+"'"
+		else:
+			all_ccs = get_child_cost_centers(filters.cost_center)
+			condition += " and cc.name in {0} ".format(tuple(all_ccs))	
 
 	return condition
 
@@ -205,7 +211,7 @@ def get_columns(filters):
 		columns = ["Location:Link/Location:150", "Target Qty:Float:120", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
 	else:
 		if filters.is_company:
-			columns = ["Region:Data:150", "Target Qty:Float:120", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
+			columns = ["Parent Cost Center:Data:150", "Target Qty:Float:120", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
 		else:
 			columns = ["Branch:Link/Branch:150", "Target Qty:Float:120", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
 

@@ -4,6 +4,7 @@
 frappe.ui.form.on('Transport Request', {
 	refresh: function(frm) {
 		custom.apply_default_settings(frm);
+		check_if_boulder_t(frm);
 	},
 	onload: function(frm) {
 		cur_frm.set_query("vehicle_capacity",function(){
@@ -20,9 +21,25 @@ frappe.ui.form.on('Transport Request', {
 				frm.set_value("owner_cid", d.login_id);
 			});
 		}
+	},
+	is_boulder: function(frm){
+			check_if_boulder_t(frm);
 	}
 });
 
+//below method added by Kinley Dorji to check boulder transport request on 2020/12/15
+var check_if_boulder_t = function(frm){
+	if(cur_frm.doc.is_boulder == 1){
+		cur_frm.toggle_reqd("vehicle_capacity",0)
+		cur_frm.toggle_reqd("owner_cid",0)
+		cur_frm.toggle_reqd("vehicle_owner",0)
+	}
+	else{
+		cur_frm.toggle_reqd("vehicle_capacity",1)
+		cur_frm.toggle_reqd("owner_cid",1)
+		cur_frm.toggle_reqd("vehicle_owner",1)
+	}
+}
 /*cur_frm.fields_dict['items'].grid.get_field('crm_branch').get_query = function(doc, cdt, cdn) {
         return {
                 filters:[

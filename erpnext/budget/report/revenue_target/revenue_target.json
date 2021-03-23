@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-08-06 21:12:05.155464", 
- "modified_by": "Administrator", 
+ "modified": "2020-12-08 14:43:58.898738", 
+ "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Budget", 
  "name": "Revenue Target", 
  "owner": "Administrator", 
@@ -33,6 +33,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "Production Manager"
   }
  ]
 }

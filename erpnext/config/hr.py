@@ -164,8 +164,8 @@ def get_data():
 				},
 				{
                                         "type": "doctype",
-                                        "name": "Carry Forward Entry",
-                                        "label": _("Carry Forward CL"),
+                                        "name": "Merge CL To EL",
+                                        "label": _("Merge CL Balances To EL"),
                                 }
 			]
 		},

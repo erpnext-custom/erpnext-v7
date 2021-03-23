@@ -92,7 +92,7 @@ frappe.ui.form.on("Royalty Payment", "refresh", function(frm) {
         return {
             "filters": {
                 "branch": frm.doc.branch,
-                "location": frm.doc.location,
+                // "location": frm.doc.location,
 		// "range_name": frm.doc.range_name,
 		"is_disabled": 0
             }

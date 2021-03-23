@@ -121,6 +121,12 @@ def get_data():
 					"name": "Lot List Report",
 					"doctype": "Lot List List"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Royalty Payment Report",
+					"doctype": "Royalty Payment"
+				},
 
 
 			]

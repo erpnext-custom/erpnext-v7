@@ -28,6 +28,7 @@ class SiteRegistration(Document):
 		pass
 
 	def on_submit(self):
+		self.validate_mandatory()
 		self.validate_documents()
 		self.validate_distance()
 		self.create_site()
@@ -41,6 +42,14 @@ class SiteRegistration(Document):
 
 	def on_update(self):
 		self.get_distance()
+
+	def validate_mandatory(self):
+		if not self.customer_type:
+			frappe.throw(_("Customer Type is mandatory"))	
+		elif not self.customer_group:
+			frappe.throw(_("Customer Group is mandatory"))	
+		elif not self.territory:
+			frappe.throw(_("Territory is mandatory"))	
 
 	# following method created by SHIV on 2020/11/23 to accommodate Phase-II
 	def validate_site_registration(self):

@@ -546,7 +546,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-02-13 11:34:51.547936", 
+ "modified": "2021-03-05 15:35:15.557785", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Hall Booking", 
@@ -596,7 +596,7 @@
   {
    "amend": 0, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 1, 
    "email": 1, 
@@ -656,7 +656,7 @@
   {
    "amend": 0, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 1, 
    "email": 1, 

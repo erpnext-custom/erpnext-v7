@@ -385,7 +385,10 @@ def get_lot_allotments(site=None):
 
 	for i in result:
 		data.append({"data":i.name+"-"+str(i.posting_date)})
-	return data
+	if data:
+		return data
+	else:
+		frappe.throw("There are no alloted lots for your site(s).")
 
 @frappe.whitelist()
 def get_lots(allotment_no = None):
@@ -410,6 +413,33 @@ def get_lots(allotment_no = None):
 	results.append({"details":result})
 
 	return results
+
+#below api added to get info on unsold lot info //Kinley Dorji 2021/02/13
+@frappe.whitelist()
+def lot_details(branch=None, lot_number=None):
+	if branch == None and lot_number ==None:
+		return frappe.db.sql("""
+			select distinct l.branch as branch from `tabLot List` l where l.sales_order is NULL and l.production is NULL and l.stock_entry is NULL and l.docstatus = 1
+			and not exists(select 1
+					from `tabLot Allotment Lots` la
+					where la.lot_number = l.name
+					and la.docstatus != 2)
+		""", as_dict=True)
+	elif branch and lot_number == None:
+		return frappe.db.sql("""
+			select name, branch, location, warehouse, total_volume from `tabLot List` l where l.sales_order is NULL and l.production is NULL and l.stock_entry is NULL and l.docstatus = 1
+			and l.branch = '{}'
+			and not exists(select 1
+					from `tabLot Allotment Lots` la
+					where la.lot_number = l.name
+					and la.docstatus != 2)
+		""".format(branch), as_dict = True)
+	
+	elif branch == None and lot_number:
+		return frappe.db.sql("""
+			select item, item_name, item_sub_group, t_species, timber_class, total_volume, total_pieces
+			from `tabLot List Details` where parent = '{}'
+		""".format(lot_number), as_dict = True)
 
 #to get lots details of a lot Kinley Dorji
 @frappe.whitelist()
@@ -482,6 +512,32 @@ def get_site_items(doctype=None, txt=None, searchfield=None, start=None, page_le
 		frappe.throw(_("No materials found"))
 	return il
 '''
+
+@frappe.whitelist()
+def get_crm_dzongkhags(product_category = None, item_type = None, item = None):
+	bl = frappe.db.sql("""
+		select distinct dzongkhag as name
+		from 
+			`tabCRM Branch Setting` cbs
+		inner join `tabBranch` b
+			on b.name = cbs.branch
+		inner join `tabCRM Branch Setting Item` cbsi 
+			on cbsi.parent = cbs.name
+			and cbsi.has_stock = 1
+		inner join `tabItem` i
+			on i.name = cbsi.item
+		where i.name = {item}
+		and cbs.product_category = '{product_category}'
+		and exists(select 1
+				from `tabSelling Price` sp, `tabSelling Price Branch` spb, `tabSelling Price Rate` spr
+				where DATE(now()) between sp.from_date and sp.to_date
+				and spb.parent = sp.name
+				and spb.branch = cbs.branch
+				and spr.parent = sp.name
+				and spr.price_based_on = 'Item'
+				and spr.particular = i.name)
+	""".format(item = item, product_category = product_category), as_dict=True)
+	return bl
 
 # following method is created as a replacement for the following one to accommodate Phase-II by SHIV on 2020/11/19
 @frappe.whitelist()
@@ -763,9 +819,12 @@ def get_branch_rate(branch=None, item_sub_group=None, item=None, site=None, prod
 	"""
 	cond 	  = []
 	site_cond = ""
+	tbp_cond = ""
 	columns   = ["cbs.branch", "cbs.has_common_pool", "cbs.allow_self_owned_transport", "cbs.allow_other_transport"]
 	if not item_sub_group and not item:
 		frappe.throw(_("Please select a material first"))
+	if destination_dzongkhag:
+		tbp_cond = """ and exists(select 1 from `tabBranch` b where b.name = cbs.branch and b.dzongkhag = '{}')""".format(destination_dzongkhag)
 
 	if branch:
 		cond.append('cbs.branch = "{0}" '.format(branch))
@@ -822,6 +881,7 @@ def get_branch_rate(branch=None, item_sub_group=None, item=None, site=None, prod
 			and tr.item_sub_group = i.item_sub_group
 			and ifnull(sd.distance,0) between tr.from_distance and tr.to_distance
 		where {cond}
+		{tbp_cond}
 		and exists(select 1
 				from `tabSelling Price` sp, `tabSelling Price Branch` spb, `tabSelling Price Rate` spr
 				where DATE(now()) between sp.from_date and sp.to_date
@@ -831,7 +891,7 @@ def get_branch_rate(branch=None, item_sub_group=None, item=None, site=None, prod
 				and spr.price_based_on = 'Item'
 				and spr.particular = i.name)
 		{site_cond}
-	""".format(cond=cond, site_cond=site_cond, columns=columns, site=site), as_dict=True)
+	""".format(cond=cond, site_cond=site_cond, tbp_cond=tbp_cond, columns=columns, site=site), as_dict=True)
 
 	#if not bl:
 	#	frappe.throw(_("Rates not available for this material"))
@@ -2240,7 +2300,7 @@ def get_sawn_timber(branch, item=None, size=None, length=None):
 							from `tabStandard Sawn Balance` a
 							where a.balance_qty > 0 and a.branch = '{0}'
 							and a.creation = (select max(b.creation) 
-								from `tabStandard Sawn Balance` b where
+								from `tabStandard Sawn Balance` b where b.docstatus = 1 and 
 								b.item=a.item and b.balance_qty > 0 and b.branch='{0}')
 						""".format(branch), as_dict=True)
 		else:
@@ -2251,8 +2311,9 @@ def get_sawn_timber(branch, item=None, size=None, length=None):
 					where a.balance_qty > 0 
 					and a.branch = '{0}'
 					and a.item = '{1}'
-					and a.creation= (select max(creation) from `tabStandard Sawn Balance` b
-						where b.item=a.item
+					and a.creation= (select max(creation) 
+						from `tabStandard Sawn Balance` b 
+						where b.docstatus = 1 and b.item=a.item 
 						and b.size = a.size
 						and b.branch='{0}')
 				""".format(branch, item), as_dict=True)
@@ -2261,12 +2322,12 @@ def get_sawn_timber(branch, item=None, size=None, length=None):
 					item_list = frappe.db.sql("""
 						select a.item, a.item_name, a.size, a.length, a.balance_qty
 						from `tabStandard Sawn Balance` a
-						where a.balance_qty > 0 
+						where a.docstatus = 1 and a.balance_qty > 0 
 						and a.branch = '{0}'
 						and a.item = '{1}'
 						and a.size = '{2}'
 						and a.creation = (select max(b.creation) from `tabStandard Sawn Balance` b
-                                                	where b.item=a.item
+                                                	where b.docstatus = 1 and b.item=a.item
                                                 	and b.size = a.size
                                                 	and b.branch='{0}' and b.length = a.length)
 					""".format(branch, item, size), as_dict=True)
@@ -2289,7 +2350,7 @@ def get_sawn_timber(branch, item=None, size=None, length=None):
 					item_list = frappe.db.sql("""
 						select a.name, a.item, a.item_name, a.size, a.length, a.balance_qty, a.unit_cft, '{0}' as selling_price, '{5}' as price_template
 						from `tabStandard Sawn Balance` a
-						where a.balance_qty > 0 
+						where a.docstatus = 1 and a.balance_qty > 0 
 						and a.branch = '{1}'
 						and a.item = '{2}'
 						and a.size = '{3}'
@@ -2297,6 +2358,42 @@ def get_sawn_timber(branch, item=None, size=None, length=None):
 						order by creation desc limit 1
 					""".format(sp, branch, item, size, length, price_template), as_dict=True)
 	return item_list
+
+@frappe.whitelist()
+def get_sawn_branch():
+	items = [str('DUMMY')]
+	sawn_items = []
+	sawn_items = frappe.db.sql("select distinct item from `tabStandard Sawn Balance`", as_dict=True)
+	if sawn_items:
+		for d in sawn_items:
+			items.append(str(d['item']))
+	if items == []:
+		bl = []
+	else:
+		bl = frappe.db.sql("""
+				select distinct cbs.branch, 
+				(case
+					when cbs.has_common_pool = 1 then 'Has Common Pool facility'
+					else '<span style = "color:white;padding: 0px 5px;border-radius: 2px; background-color:tomato;">Does not have Common Pool facility</span>'
+				end) as has_common_pool_msg
+			from 
+				`tabCRM Branch Setting` cbs
+			inner join `tabCRM Branch Setting Item` cbsi 
+				on cbsi.parent = cbs.name
+				and cbsi.has_stock = 1
+			where cbsi.item_sub_group = 'Sawn'
+			and exists(select 1 from `tabStandard Sawn Balance` ssb where ssb.branch = cbs.branch
+			and ssb.docstatus = 1
+			and ssb.balance_qty > 0
+			and ssb.item in {0}
+			and ssb.item = cbsi.item
+			and ssb.creation = (select b.creation
+				from `tabStandard Sawn Balance` b where
+			b.item=ssb.item and b.branch=ssb.branch and b.docstatus = 1 group by b.creation desc limit 1)
+			 )
+		""".format(tuple(items)), as_dict = True)
+
+	return bl
 
 @frappe.whitelist()
 def get_product_group_name(type=None):

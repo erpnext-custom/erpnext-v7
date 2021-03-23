@@ -13,7 +13,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.utils import cint, cstr, flt, fmt_money, formatdate, nowtime, getdate
+from frappe.utils import cint, cstr, flt, fmt_money, formatdate, nowtime, getdate, datetime
 from erpnext.accounts.utils import get_fiscal_year
 from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, prepare_sl, get_settings_value
 from erpnext.controllers.stock_controller import StockController
@@ -21,6 +21,17 @@ from erpnext.stock.utils import get_stock_balance
 
 class Production(StockController):
 	def validate(self):
+		if 'Production Master' not in frappe.get_roles(frappe.session.user):
+			today = datetime.datetime.now()
+			DD = datetime.timedelta(days=3)
+			earlier = today - DD
+			date = earlier.strftime("%Y-%m-%d")
+			if (self.posting_date < date ):
+				frappe.throw("You Can Not Create Submit For Posting Date Beyond Past 3 Days "+str(frappe.get_roles(frappe.session.user)))
+				frappe.validated = false
+		if self.business_activity == 'Timber':
+			if not self.range or self.range == "":
+				frappe.throw("Range is mandatory for Timber Products")
 		check_future_date(self.posting_date)
 		self.check_cop()
 		self.validate_data()

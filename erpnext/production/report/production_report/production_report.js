@@ -235,13 +235,54 @@ frappe.query_reports["Production Report"] = {
 			"fieldtype": "Break",
 		},
 		{
-			"fieldname": "production_type",
-			"label":("Production Type"),
-			"fieldtype" : "Select",
-			"width" :"80",
-			"options": ["All", "Planned","Adhoc"],
-			"default": "All",
-			"reqd" : 1
+			"fieldname": "timber_prod_group",
+			"label": ("Timber Product Group"),
+			"fieldtype": "Link",
+			"options": "Item Sub Group",
+			"get_query": function() {
+					return {"doctype": "Item Sub Group", "filters": {"for_report": 1}}
+			},
+			"on_change": function(){
+				var item_group = frappe.query_report.filters_by_name.timber_prod_group.get_value();
+				// frappe.msgprint(branch)
+				frappe.call({
+					method:"erpnext.selling.report.timber_sales_report.timber_sales_report.get_item_sub_group",
+					args:{"item_group":item_group},
+					callback: function(r){
+						// console.log(r.message)
+						// frappe.query_report.filters_by_name.warehouse.set_option(r.message)					
+						if(r.message)
+						{
+							options = []
+							for (i = 0; i < r.message.length; i++) { 
+								options[i]= r.message[i].name
+							}
+							console.log(options)
+							frappe.query_reports["Production Report"].filters[13].options = options
+							frappe.query_report.filters_by_name.tp_sub_group.refresh();
+							frappe.query_report.refresh();
+							// **I have set options dynamically to the below select fieldtype but I need to refresh that field to show that new options.**
+							// console.log(frappe.query_reports["Stock Balance Report"].filters[4].options)
+						}
+					}
+					/*	console.log(r.message)
+						$.each(r.message, function(i, data){
+							$('.input-with-feedback').append(new Option(data.name))
+						});
+					frappe.query_reports.filters[1].refresh();
+					} */
+				});
+			}
+		},
+		{
+			"fieldname": "tp_sub_group",
+			"label": ("Timber Product Sub Group"),
+			"fieldtype": "Select",
+			"options": [],
+			// "get_query": function() {
+			// 		var item_group = "Timber Products";
+			// 		return {"doctype": "Item Sub Group", "filters": {"item_group": item_group}}
+			// }
 		},
 		{
 			"fieldname": "timber_species",
@@ -250,7 +291,13 @@ frappe.query_reports["Production Report"] = {
  			"options": "Timber Species",
 			"get_query": function() {
 				var item_group = frappe.query_report.filters_by_name.item_group.get_value();
-				if (!item_group || item_group != "Timber Products") {
+				var timber_prod_group = frappe.query_report.filters_by_name.timber_prod_group.get_value();
+				
+				if(timber_prod_group)
+				{
+					return {"doctype": "Timber Species"}
+				}
+				else if(!item_group || item_group != "Timber Products") {
 					return {"doctype": "Timber Species", "filters": {"docstatus": 5}}
 				}
 				else {
@@ -265,13 +312,30 @@ frappe.query_reports["Production Report"] = {
  			"options": "Timber Class",
 			"get_query": function() {
 				var item_group = frappe.query_report.filters_by_name.item_group.get_value();
-				if (!item_group || item_group != "Timber Products") {
+				var timber_prod_group = frappe.query_report.filters_by_name.timber_prod_group.get_value();			
+				if(timber_prod_group)
+				{
+					return {"doctype": "Timber Class"}
+				}
+				else if (!item_group || item_group != "Timber Products") {
 					return {"doctype": "Timber Class", "filters": {"docstatus": 5}}
 				}
 				else {
 					return {"doctype": "Timber Class"}
 				}
 			}
+		},
+		{
+			"fieldname": "production_type",
+			"label":("Production Type"),
+			"fieldtype" : "Select",
+			"width" :"80",
+			"options": ["All", "Planned","Adhoc"],
+			"default": "All",
+			"reqd" : 1
+		},
+		{
+			"fieldtype": "Break",
 		},
 		{
 			"fieldname": "warehouse",
@@ -306,8 +370,8 @@ frappe.query_reports["Production Report"] = {
 			"label":("Production Area"),
 			"fieldtype" : "Select",
 			"width" :"80",
-			"options": ["Normal","Road Alignment","Fire Burnt Area","Transmission Line","Sanitation Work Area","Scientific Thinning Area"],
-			"default": "Normal",
+			"options": ["All","Normal","Road Alignment","Fire Burnt Area","Transmission Line","Sanitation Work Area","Scientific Thinning Area"],
+			"default": "All",
 			"reqd" : 1
 		},
 		{
@@ -316,6 +380,21 @@ frappe.query_reports["Production Report"] = {
 			"fieldtype": "Select",
 			"width": "80",
 			"options": [],
+		},
+		{
+			"fieldtype": "Break",
+		},
+		{
+			"fieldname": "uom",
+			"label": ("UOM"),
+			"fieldtype": "Link",
+ 			"options": "UOM"
+		},
+		{
+			"fieldname": "supplier",
+			"label": ("Contractor"),
+			"fieldtype": "Link",
+ 			"options": "Supplier"
 		}
 	]
 }

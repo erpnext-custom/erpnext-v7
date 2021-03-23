@@ -28,6 +28,41 @@ def get_data():
 					"name": "Vehicle Capacity",
 					"description": _("Vehicle Load Capacity"),
 				},
+								{
+					"type": "doctype",
+					"name": "Standard Sawn Size",
+					"description": _("Standard Sawn Size"),
+				},
+				{
+					"type": "doctype",
+					"name": "Standard Sawn Balance",
+					"description": _("Standard Sawn Balance"),
+				},
+				{
+					"type": "doctype",
+					"name": "Slider Images",
+					"description": _("Slider Images"),
+				},				{
+					"type": "doctype",
+					"name": "Faq",
+					"description": _("FAQ"),
+				},
+			]
+		},
+		{
+			"label": _("Lot Allocation"),
+			"icon": "icon-star",
+			"items": [
+				{
+					"type":"doctype",
+					"name":"Lot Allotment",
+					"description":_("Lot Allotment")
+				},
+				{
+					"type": "doctype",
+					"name": "Lot List",
+					"description":_("Lot List")
+				},
 			]
 		},
 		{
@@ -191,18 +226,6 @@ def get_data():
 					"is_query_report": True,
 					"name": "Site Registration Report",
 					"doctype": "Customer Order"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Online Order Register",
-					"doctype": "Customer Order"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Online Payment Register",
-					"doctype": "Online Payment"
 				},
 			]
 		},

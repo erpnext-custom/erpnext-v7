@@ -1,27 +1,61 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-cur_frm.add_fetch("item", "item_name", "item_name");
+// cur_frm.add_fetch("item", "item_name", "item_name");
 frappe.ui.form.on('Lot List', {
 	setup: function(frm){
-                frm.get_docfield("items").allow_bulk_edit = 1;
+                frm.get_docfield("lot_list_items").allow_bulk_edit = 1;
         },
 	refresh: function(frm) {
 			
 	},
+	onload: function(frm){
+	}
 });
+//Commented below code since item details are now moved into child table * Kinley Dorji 27/10/2020
+// frappe.ui.form.on("Lot List", "refresh", function(frm) {
+//     cur_frm.set_query("item", function() {
+//         return {
+//             "filters": {
+//                 "item_sub_group": frm.doc.item_sub_group,
+//                 "disabled" : 0
+//             }
+//         };
 
-frappe.ui.form.on("Lot List", "refresh", function(frm) {
-    cur_frm.set_query("item", function() {
+//     });
+// });
+
+// cur_frm.fields_dict['lot_list_items'].grid.get_field('item').get_query = function(frm, cdt, cdn) {
+// 	var d = locals[cdt][cdn];
+// 	return {
+// 		filters: [
+// 		[
+// 		'Item', 'item_sub_group', '=', d.item_sub_group
+// 		],
+// 		['Item', 'disabled', '!=', 1]
+// 		]
+// 	}
+// }
+
+frappe.ui.form.on("Lot List","refresh",function(frm){
+	cur_frm.set_query("warehouse", function() {
         return {
+			"query":"erpnext.controllers.queries.filter_branch_wh",
             "filters": {
-                "item_sub_group": frm.doc.item_sub_group,
-                "disabled" : 0
+                "branch": cur_frm.doc.branch
             }
         };
 
-    });
+	});
+	
+	cur_frm.set_query("location", function(){
+		return {
+				"filters": {
+						"branch": cur_frm.doc.branch,
+						"is_disabled": 0
+				}
+		}
 });
-
+})
 
 frappe.ui.form.on("Lot List Item", {
         "length": function(frm, cdt, cdn) {
@@ -58,8 +92,40 @@ frappe.ui.form.on("Lot List Item", {
                 },
 	"number_pieces": function(frm, cdt, cdn) {
 			update_volume(frm, cdt, cdn);
-		}
+				},
 });
+
+frappe.ui.form.on("Lot List Details",{
+	lot_list_items_upload_complete: function(frm, cdt, cdn)
+	{
+		console.log("complete")
+		var row = locals[cdt][cdn]
+		get_item_details(frm, row)
+		refresh_field("lot_list_items")
+
+	},
+	"item": function(frm,cdt,cdn)
+	{
+		var row = locals[cdt][cdn]
+		get_item_details(frm, row)
+	}
+})
+
+function get_item_details(frm, row){
+		return frappe.call({
+			method: "get_item_details",
+			doc: cur_frm.doc,
+			args: {'item': row.item},
+			callback: function(r, rt){
+					if(r.message){
+						frappe.model.set_value(row.doctype, row.name, "item_name", r.message[0]['item_name']);
+						frappe.model.set_value(row.doctype, row.name, "item_sub_group", r.message[0]['item_sub_group']);
+						frappe.model.set_value(row.doctype, row.name, "species", r.message[0]['species']);
+						frappe.model.set_value(row.doctype, row.name, "timber_class", r.message[0]['timber_class']);
+					} 
+			}
+		});
+}
 
 
 function update_volume(frm, cdt, cdn)

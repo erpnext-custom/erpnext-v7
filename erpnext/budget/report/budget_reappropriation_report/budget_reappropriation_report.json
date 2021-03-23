@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-08-24 12:59:26.990443", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2020-12-08 14:42:19.064664", 
+ "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Budget", 
  "name": "Budget Reappropriation Report", 
  "owner": "Administrator", 
@@ -33,6 +33,9 @@
   }, 
   {
    "role": "Regional Manager"
+  }, 
+  {
+   "role": "Production Manager"
   }
  ]
 }

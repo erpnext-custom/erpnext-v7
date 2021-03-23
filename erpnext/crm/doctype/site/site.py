@@ -39,10 +39,23 @@ class Site(Document):
 		customer_address = [i for i in customer_address if i]
 		customer_address = "\n".join(customer_address) if customer_address else doc.customer_details
 		doc.customer_name = ua.full_name if ua.full_name else frappe.db.get_value("User", self.user, "full_name")	
-		doc.customer_group= "Domestic"
-		doc.territory	  = "Bhutan"
-		doc.customer_type = "Domestic Customer"
-		doc.customer_id	  = ua.user
+		doc.customer_type = self.customer_type if self.customer_type else "Domestic Customer"
+		doc.customer_group= self.customer_group if self.customer_group else "Domestic"
+		doc.territory	  = self.territory if self.territory else "Bhutan"
+
+		if self.customer_group:
+			cg = frappe.get_doc("Customer Group", self.customer_group)
+			if cg.document_type == "Citizenship ID":
+				doc.customer_id = ua.user
+			elif cg.document_type == "License Number":
+				doc.license_no = ua.user
+			elif cg.document_type == "Reference Number":
+				doc.reference_no = ua.user
+			elif cg.document_type == "License/Reference Number":
+				doc.reference_no = ua.user
+		else:
+			doc.customer_id	  = ua.user
+
 		doc.dzongkhag	  = ua.billing_dzongkhag if ua.billing_dzongkhag else doc.dzongkhag
 		doc.mobile_no	  = ua.mobile_no if ua.mobile_no else doc.mobile_no
 		doc.customer_details = customer_address

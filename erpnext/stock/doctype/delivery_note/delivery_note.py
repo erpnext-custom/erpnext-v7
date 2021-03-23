@@ -8,6 +8,8 @@ from frappe.utils import flt, cint
 
 from frappe import msgprint, _
 import frappe.defaults
+from frappe.utils import datetime
+from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff, today, get_first_day, get_last_day
 from frappe.model.mapper import get_mapped_doc
 from erpnext.controllers.selling_controller import SellingController
 from frappe.desk.notifications import clear_doctype_notifications
@@ -97,9 +99,30 @@ class DeliveryNote(SellingController):
 					 frappe.throw(_("Sales Order required for Item {0}").format(d.item_code))
 
 	def validate(self):
+		if 'Sales Master' not in frappe.get_roles(frappe.session.user):
+			today = datetime.datetime.now()
+			DD = datetime.timedelta(days=3)
+			earlier = today - DD
+			date = earlier.strftime("%Y-%m-%d")
+			if (self.posting_date < date or get_first_day(self.posting_date)!=get_first_day(today)):
+				frappe.throw("You Can Not Save or Submit For Posting Date Beyond Past 3 Days or For Previous Month")
+				frappe.validated = false
 		check_future_date(self.posting_date)
 		self.calculate_transportation()
 		super(DeliveryNote, self).validate()
+		# discount = additional = self.additional_cost = self.discount_or_cost_amount = 0
+		# for d in self.items:
+		# 	discount   += d.discount_amount
+		# 	additional += d.additional_cost
+		# if additional != 0:
+		# 	self.additional_cost = additional
+			# self.base_net_total = self.total + self.additional_cost
+			# self.net_total = self.total + self.additional_cost
+			
+		# if discount != 0:
+		# 	self.discount_or_cost_amount = discount 
+			# self.base_net_total = self.total - self.discount_or_cost_amount
+			# self.net_total = self.total - self.discount_or_cost_amount
 		self.set_status()
 		self.so_required()
 		self.validate_proj_cust()
@@ -112,6 +135,7 @@ class DeliveryNote(SellingController):
 		#TTPL Code
 		self.check_transportation_detail()
 		self.update_shipping_address()
+
 		
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 		make_packing_list(self)
@@ -126,7 +150,8 @@ class DeliveryNote(SellingController):
 			self.shipping_address_name = frappe.db.get_value("Customer Order", self.customer_order, "site_location")
 		if self.customer:
 			self.contact_mobile = frappe.db.get_value("Customer", self.customer, "mobile_no")
-
+		
+		
         def calculate_transportation(self):
                 total_qty = 0
                 for a in self.items:
@@ -134,8 +159,8 @@ class DeliveryNote(SellingController):
 
                 self.total_quantity = total_qty
                 self.transportation_charges = round(flt(self.total_quantity) * flt(self.total_distance) * flt(self.transportation_rate), 2)
-                self.discount_amount = flt(self.discount_or_cost_amount) - flt(self.transportation_charges) - flt(self.loading_cost) - flt(self.additional_cost)
-
+                self.discount_amount = flt(self.discount_or_cost_amount) - flt(self.transportation_charges) - flt(self.loading_cost) - flt(self.additional_cost) - flt(self.challan_cost)
+				
 	def check_transportation_detail(self):
 		if self.naming_series == 'Mineral Products':
 			if not self.vehicle:
@@ -145,31 +170,24 @@ class DeliveryNote(SellingController):
 				total_qty = 0.00
 				for i in self.items:
 					total_qty += i.qty
-
 				if total_qty > 0:
+					is_boulder = frappe.db.get_value("Vehicle", self.vehicle, "is_boulder")
 					vehicle_capacity = frappe.db.get_value("Vehicle", self.vehicle, "vehicle_capacity")
-					if total_qty > vehicle_capacity:
-						frappe.throw("Vehicle Capacity is {0}, which is less than total quantity {1}".format(vehicle_capacity, self.total_quantity))
-
-				transport_mode = frappe.db.get_value("Customer Order", self.customer_order, "transport_mode")
+					if is_boulder == 1:
+						if total_qty > vehicle_capacity:
+							frappe.throw("Vehicle Capacity is {0}, which is less than total quantity {1}".format(vehicle_capacity, self.total_quantity))
+				transport_mode = frappe.db.get_value("Customer Order", self.customer_order, "transport_mode")	
 				if self.select_vehicle_queue or transport_mode == "Common Pool":
 					local_distance_limit = frappe.db.get_value("CRM Branch Setting", self.branch, "local_distance")
 					if self.total_distance > flt(local_distance_limit):
-						if not self.amended_from:
-							for a in frappe.db.sql("select name, vehicle, token from `tabLoad Request` where load_status = 'Queued' and crm_branch = '{0}' and vehicle_capacity = {1} order by requesting_date_time, token limit 1".format(self.branch, total_qty), as_dict=True):
-								if a.vehicle == self.vehicle:
-									self.load_request = a.name
-								else:
-									frappe.throw("Selected vehicle is already loaded or not from Queue List.")
-						
-						if self.amended_from and self.load_request:
-							doc = frappe.get_doc("Load Request", self.load_request)
-							if doc.load_status == "Cancelled" or doc.docstatus == 2:
-								frappe.db.sql("update `tabLoad Request` set load_status = 'Queued', docstatus = 0 where name = '{}'".format(self.load_request))
-						
+						for a in frappe.db.sql("select name, vehicle, token from `tabLoad Request` where load_status = 'Queued' and crm_branch = '{0}' and vehicle_capacity = {1} order by requesting_date_time, token limit 1".format(self.branch, total_qty), as_dict=True):
+							if a.vehicle == self.vehicle:
+								self.load_request = a.name
+							else:
+								frappe.throw("Selected vehicle is already loaded or not from Queue List.")
 						if not self.load_request:
 							frappe.throw("Vehicle {0} is not registered for queue".format(self.vehicle))
-
+		
 	def validate_with_previous_doc(self):
 		for fn in (("Sales Order", "against_sales_order", "so_detail"),
 				("Sales Invoice", "against_sales_invoice", "si_detail")):
@@ -215,6 +233,9 @@ class DeliveryNote(SellingController):
 					msgprint(_("Note: Item {0} entered multiple times").format(d.item_code))
 				else:
 					chk_dupl_itm.append(f)
+			if d.item_group == "Mineral Products":
+				if d.location == "" or d.location == None:
+					frappe.throw("Location inside the item table is mandatory for item "+str(d.item_code)+": "+str(d.item_name))
 
 	def validate_warehouse(self):
 		super(DeliveryNote, self).validate_warehouse()
@@ -240,10 +261,9 @@ class DeliveryNote(SellingController):
 
 	def on_submit(self):
 		self.validate_packed_qty()
-
 		# Check for Approving Authority
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype, self.company, self.base_grand_total, self)
-
+		
 		#Creation of DC and Update Load Request
 		self.create_delivery_confirmation()
 
@@ -255,6 +275,7 @@ class DeliveryNote(SellingController):
 
 		if not self.is_return:
 			self.check_credit_limit()
+
 
 		# Updating stock ledger should always be called after updating prevdoc status,
 		# because updating reserved qty in bin depends upon updated delivered qty in SO
@@ -276,6 +297,7 @@ class DeliveryNote(SellingController):
 		self.cancel_packing_slips()
 
 		self.make_gl_entries_on_cancel()
+
 		if self.is_return:
 			self.dupdate_return_status()
 
@@ -298,7 +320,6 @@ class DeliveryNote(SellingController):
 		target = frappe.get_doc("Delivery Note", self.return_against)
 		target.set_status(update=True)
 		return per_delivered
-
 	def check_credit_limit(self):
 		from erpnext.selling.doctype.customer.customer import check_credit_limit
 
@@ -383,8 +404,7 @@ class DeliveryNote(SellingController):
 
 			# Update Load Request Queue if transport mode is Common Pool
 			# TTPL New Update
-			local_distance_limit = frappe.db.get_value("CRM Branch Setting", self.branch, "local_distance")
-			if doc.transport_mode == "Common Pool" and self.total_distance > local_distance_limit:
+			if doc.transport_mode == "Common Pool":
 				if self.load_request:
 					queue_status = frappe.db.get_value("Load Request", self.load_request, "load_status")
 					if queue_status == "Queued":
@@ -393,7 +413,7 @@ class DeliveryNote(SellingController):
 						frappe.throw("Cannot select Vehicle status in Load Request(Queue) with {0}".format(queue_status))
 				else:
 					frappe.throw("Vehicle is not selected from Load Request Queue or Load Request is missing")
-
+			
 			# Create Delivery Confirmation document
 			dc_doc = frappe.new_doc("Delivery Confirmation")
 			dc_doc.branch = self.branch
@@ -406,10 +426,12 @@ class DeliveryNote(SellingController):
 			dc_doc.drivers_name = self.drivers_name
 			dc_doc.contact_no = self.contact_no
 			dc_doc.customer_order = self.customer_order
-			dc_doc.transport_mode = doc.transport_mode
+			dc_doc.transport_mode = doc.transport_mode	
 			dc_doc.qty = total_qty
 			dc_doc.save(ignore_permissions=True)
 			dc_doc.submit()
+
+
 
 def update_billed_amount_based_on_so(so_detail, update_modified=True):
 	# Billed against Sales Order directly
@@ -506,9 +528,9 @@ def make_sales_invoice(source_name, target_doc=None):
 		"Delivery Note": {
 			"doctype": "Sales Invoice",
 			"field_map": {
-				"naming_series": "naming_series",
+				"naming_series" : "naming_series",
 		#		"loading_rate" : "rate_per_unit",
-                 #               "loading_cost" : "total_loading_amount"
+		#		"loading_cost" : "total_loading_amount"  
 			},
 			"validation": {
 				"docstatus": ["=", 1]

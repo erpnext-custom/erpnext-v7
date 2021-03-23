@@ -34,9 +34,22 @@ frappe.ui.form.on('Other Contribution', {
                         "list_in_other_contribution": 1
                     }
                 };
-        });
+		});
+		cur_frm.set_query("contributing_branch", function (frm) {
+			return {
+				query:"erpnext.hr.doctype.other_contribution.other_contribution.get_branches",
+				filters: {
+					"parent_cost_center": cur_frm.doc.group_cost_center
+				}
+			}
+	});
+		
+
 		employee_details(frm);
 		total_html(frm);
+	},
+	group_cost_center: function(frm){
+		cur_frm.set_value("contributing_branch",null)
 	},
 	employee: function(frm){
 		employee_details(frm);
@@ -55,6 +68,10 @@ frappe.ui.form.on('Other Contribution', {
 		total_html(frm);
 	}
 });
+
+// frappe.ui.form.on('Other Contribution', function(frm){
+
+// });
 
 var update_data=function(doc, method){
 	cur_frm.call({

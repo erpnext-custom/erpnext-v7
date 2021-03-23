@@ -102,7 +102,7 @@ class ReceivablePayableReport(object):
 		company_currency = frappe.db.get_value("Company", self.filters.get("company"), "default_currency")
 
 		data = []
-		for gle in self.get_entries_till(self.filters.report_date, args.get("party_type")):
+		for gle in self.get_entries_till(self.filters.from_date, self.filters.report_date, args.get("party_type")):
 			if self.is_receivable_or_payable(gle, dr_or_cr, future_vouchers):
 				dn_no = ""
 				dn_status = ""
@@ -166,10 +166,10 @@ class ReceivablePayableReport(object):
 		return list(set([(e.voucher_type, e.voucher_no) for e in self.get_gl_entries(party_type)
 			if getdate(e.posting_date) > report_date]))
 
-	def get_entries_till(self, report_date, party_type):
+	def get_entries_till(self, from_date, report_date, party_type):
 		# returns a generator
 		return (e for e in self.get_gl_entries(party_type)
-			if getdate(e.posting_date) <= report_date)
+			if getdate(e.posting_date) <= report_date and getdate(e.posting_date) >= getdate(from_date))
 
 	def is_receivable_or_payable(self, gle, dr_or_cr, future_vouchers):
 		return (

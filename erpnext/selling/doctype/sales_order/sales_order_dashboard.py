@@ -4,10 +4,10 @@ data = {
 	'fieldname': 'sales_order',
 	'non_standard_fieldnames': {
 		'Delivery Note': 'against_sales_order',
-		'Payment Entry': 'so_reference',
+		'Payment Entry': 'reference_name',
 	},
 	'internal_links': {
-		'Quotation': ['items', 'prevdoc_docname']
+		'Quotation': ['items', 'prevdoc_docname'],
 	},
 	'transactions': [
 		{

@@ -23,15 +23,51 @@ frappe.ui.form.on("Customer", {
 		var grid = cur_frm.get_field("sales_team").grid;
 		grid.set_column_disp("allocated_amount", false);
 		grid.set_column_disp("incentives", false);
+		apply_customer_group_validations(frm);
 	},
 	validate: function(frm) {
 		if(frm.doc.lead_name) frappe.model.clear_doc("Lead", frm.doc.lead_name);
 	},
 
-	/*"customer_group": function(frm) {
-		frm.toggle_reqd("customer_id", frm.doc.customer_group == "Domestic");
-	}*/
+	customer_group: function(frm) {
+		apply_customer_group_validations(frm);
+	}
 });
+
+
+apply_customer_group_validations = function(frm){
+	cur_frm.toggle_display(["customer_id","license_no","reference_no"], 0);
+	if(frm.doc.customer_group){
+		frappe.call({
+			method: 'frappe.client.get_value',
+			args: {
+				doctype: 'Customer Group',
+				filters: {
+					'name': frm.doc.customer_group
+				},
+				fieldname: '*'
+			},
+			callback: function(r){
+				if(r.message){
+					cur_frm.toggle_reqd(["customer_id","license_no","reference_no"], 0);
+
+					if(r.message.document_type == "Citizenship ID"){
+						cur_frm.toggle_display("customer_id", 1);
+						cur_frm.toggle_reqd("customer_id", 1);
+					}else if(r.message.document_type == "License Number"){
+						cur_frm.toggle_display("license_no", 1);
+						cur_frm.toggle_reqd("license_no", 1);
+					}else if(r.message.document_type == "Reference Number"){
+						cur_frm.toggle_display("reference_no", 1);
+						cur_frm.toggle_reqd("reference_no", 1);
+					}else if(r.message.document_type == "License/Reference Number"){
+						cur_frm.toggle_display(["license_no","reference_no"], 1);
+					}
+				}
+			}
+		});
+	}
+}
 
 cur_frm.cscript.onload = function(doc, dt, dn) {
 	cur_frm.cscript.load_defaults(doc, dt, dn);

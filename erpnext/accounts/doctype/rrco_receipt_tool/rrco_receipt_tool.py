@@ -28,19 +28,43 @@ def get_invoices(branch=None, start_date=None, end_date=None, tds_rate=2):
 		"unmarked": invoice_list 
 	}
 
-
 @frappe.whitelist()
 def mark_invoice(branch=None, invoice_list=None, receipt_number=None, receipt_date=None, cheque_number=None, cheque_date=None):
 	invoice_list = json.loads(invoice_list)
 	for invoice in invoice_list:
-		rrco = frappe.new_doc("RRCO Receipt Entries")
-		rrco.purchase_invoice = invoice['name']
-		rrco.receipt_date = str(receipt_date)
-		rrco.receipt_number = str(receipt_number)
-		rrco.cheque_number = str(cheque_number)
-		rrco.cheque_date = str(cheque_date)
-		rrco.branch = str(branch)
-		rrco.submit()
+		single_party = 0
+		if invoice['type'] == "Direct Payment":
+			single_party = frappe.db.get_value("Direct Payment", invoice['name'], "single_party_multiple_payments")
+			
+		if invoice['type'] == "Direct Payment" and not single_party:
+			for a in frappe.db.sql("""select party_type, party
+						from `tabDirect Payment Item` 
+						where parent = '{}'
+						""".format(invoice['name']), as_dict=True):
+				if a.party_type == "Supplier" and not frappe.db.exists("RRCO Receipt Entries", {"purchase_invoice":invoice['name'], "supplier":a.party}):
+					rrco = frappe.new_doc("RRCO Receipt Entries")
+					rrco.purpose = invoice['purpose']
+					rrco.supplier = a.party
+					rrco.bill_no = invoice['bill_no']
+					rrco.purchase_invoice = invoice['name']
+					rrco.receipt_date = str(receipt_date)
+					rrco.receipt_number = str(receipt_number)
+					rrco.cheque_number = str(cheque_number)
+					rrco.cheque_date = str(cheque_date)
+					rrco.branch = str(branch)
+					rrco.submit()
+		else:
+			rrco = frappe.new_doc("RRCO Receipt Entries")
+			rrco.purpose = invoice['purpose']
+			rrco.supplier = invoice['supplier']
+			rrco.bill_no = invoice['bill_no']
+			rrco.purchase_invoice = invoice['name']
+			rrco.receipt_date = str(receipt_date)
+			rrco.receipt_number = str(receipt_number)
+			rrco.cheque_number = str(cheque_number)
+			rrco.cheque_date = str(cheque_date)
+			rrco.branch = str(branch)
+			rrco.submit()
 
 @frappe.whitelist()
 def updateSalaryTDS(purpose=None, branch=None, month=None, fiscal_year=None, receipt_number=None, receipt_date=None, cheque_number=None,cheque_date=None, cost_center = None):

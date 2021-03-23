@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-08-24 12:57:52.617644", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2020-12-08 14:41:53.593805", 
+ "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Budget", 
  "name": "Budget Consumption Report", 
  "owner": "Administrator", 
@@ -42,6 +42,9 @@
   }, 
   {
    "role": "Regional Manager"
+  }, 
+  {
+   "role": "Production Manager"
   }
  ]
 }

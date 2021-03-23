@@ -19,13 +19,13 @@ class RoyaltyPayment(Document):
 			# 	frappe.throw("Marking List is mandatory")
 			# if not self.planned_items:
 			# 	frappe.throw("Royalty Details is mandatory")
-			if not self.from_date < '2020-11-01' or self.to_date < '2020-11-01':
+			if self.from_date < '2020-11-01' or self.to_date < '2020-11-01':
 				if not self.production_type == "Planned":
 					if not self.adhoc_production:
-						frappe.throw("Please select Adhoc Production for production entries before 2020-11-01")
+						frappe.errprint("")
+						# frappe.throw("Please select Adhoc Production for production entries before 2020-11-01")
 				else:
 					self.adhoc_production = None
-
 			else:
 				if self.production_type == 'Planned':
 					self.adhoc_production = None
@@ -69,18 +69,18 @@ class RoyaltyPayment(Document):
 		if self.production_type == "Planned":
 			#COMMENT CODES FROM BELOW IF PLANNED PRODUCTION FLOW CHAGNES TO OLD FLOW 16/09/2020
 			if self.business_activity == "Firewood":
-				if self.from_date < '2020-10-19' or self.to_date < '2020-10-19':
-						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group = 'Firewood' and a.branch = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.from_date, self.to_date), as_dict=1)
+				if self.from_date < '2020-11-01' or self.to_date < '2020-11-01':
+						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group in ('Firewood','Firewood (Bhutan Ply)','Firewood, Bhutan Furniture') and a.branch = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 and a.production_type = %s group by b.item_code, b.reading", (self.branch, self.from_date, self.to_date, self.production_type), as_dict=1)
 				else:
 					if self.range_name:
-						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group = 'Firewood' and a.branch = %s and a.range = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.range_name, self.from_date, self.to_date), as_dict=1)
+						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group in ('Firewood','Firewood (Bhutan Ply)','Firewood, Bhutan Furniture') and a.branch = %s and a.range = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 and a.production_type = %s group by b.item_code, b.reading", (self.branch, self.range_name, self.from_date, self.to_date, self.production_type), as_dict=1)
 
 			else:
-				if self.from_date < '2020-10-19' or self.to_date < '2020-10-19':
-						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group != 'Firewood' and a.branch = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.from_date, self.to_date), as_dict=1)
+				if self.from_date < '2020-11-01' or self.to_date < '2020-11-01':
+						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group != 'Firewood' and a.branch = %s and a.posting_date between %s and %s and a.business_activity = %s and a.docstatus = 1 and a.royalty_paid = 0 and a.production_type = %s group by b.item_code, b.reading", (self.branch, self.from_date, self.to_date, self.business_activity, self.production_type), as_dict=1)
 				else:
 					if self.range_name:
-						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group != 'Firewood' and a.branch = %s and a.range = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.range_name, self.from_date, self.to_date), as_dict=1)
+						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group != 'Firewood' and a.branch = %s and a.range = %s and a.posting_date between %s and %s and a.business_activity = %s and a.docstatus = 1 and a.royalty_paid = 0 and a.production_type = %s group by b.item_code, b.reading", (self.branch, self.range_name, self.from_date, self.to_date, self.business_activity, self.production_type), as_dict=1)
 
 			self.set('adhoc_temp_items', [])
 			frappe.db.sql("delete from `tabRoyalty Adhoc Temp` where parent = %s or parent like %s", (self.name,("%" + "New Royalty Payment" + "%")))
@@ -89,12 +89,18 @@ class RoyaltyPayment(Document):
 				d = self.get_adhoc_royalty(a.item_code, a.reading_inches)
 				if d[0].based_on == "Item Sub Group":
 					d[0].par_name = frappe.db.get_value(d[0].based_on, d[0].particular, "reading_parameter")
-				d[0].qty = a.qty
-				# if a.item_sub_group == "Pole":
-				# 	d[0].qty = a.qty_in_no
+				if self.from_date < '2020-07-01' or self.to_date < '2020-07-01':
+					if a.item_sub_group == "Pole":
+						d[0].qty = a.qty_in_no
+						d[0].amount = a.qty_in_no * d[0].royalty_rate
+					else:
+						d[0].qty = a.qty
+						d[0].amount = a.qty * d[0].royalty_rate
+				else:
+					d[0].qty = a.qty
+					d[0].amount = a.qty * d[0].royalty_rate
 				d[0].uom = a.uom
 				d[0].reference_document = a.name
-				d[0].amount = a.qty * d[0].royalty_rate
 
 				row = self.append('adhoc_temp_items', {})
 				row.update(d[0])
@@ -140,38 +146,44 @@ class RoyaltyPayment(Document):
 
 			# self.set_total(total_royalty, total_m3, total_cft, log_amount, timber_amount, total_log, total_timber)
 		else:
-			if self.from_date > '2020-11-01' or self.to_date > '2020-11-01':
+			if self.from_date > '2020-10-31' or self.to_date > '2020-10-31':
 				if not self.range_name or not self.from_date or not self.to_date:
 					frappe.throw("Range, From Date and To Date are Mandatory")
 			else:
-				if not self.adhoc_production or not self.from_date or not self.to_date:
-					frappe.throw("Adhoc Production, From Date and To Date are Mandotory")
+				# if not self.adhoc_production or not self.from_date or not self.to_date:
+				# 	frappe.throw("Adhoc Production, From Date and To Date are Mandotory")
+				if not self.from_date or not self.to_date:
+					frappe.throw("From Date and To Date are Mandotory")
 			if self.business_activity == "Firewood":
-				if self.from_date > '2020-11-01' or self.to_date > '2020=11-01':
+				if self.from_date > '2020-10-31' or self.to_date > '2020-10-31':
 					if self.range_name:
-						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group = 'Firewood' and a.branch = %s and a.range = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.range_name, self.from_date, self.to_date), as_dict=1)
+						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group in ('Firewood','Firewood (Bhutan Ply)','Firewood, Bhutan Furniture') and a.branch = %s and a.range = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 and a.production_type = %s group by b.item_code, b.reading", (self.branch, self.range_name, self.from_date, self.to_date, self.production_type), as_dict=1)
 				else:
 					if self.adhoc_production:
-						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group = 'Firewood' and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
-
+						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group in ('Firewood','Firewood (Bhutan Ply)','Firewood, Bhutan Furniture') and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 and a.production_type = %s group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date, self.production_type), as_dict=1)
+					elif self.range_name:
+						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group in ('Firewood','Firewood (Bhutan Ply)','Firewood, Bhutan Furniture') and a.branch = %s and a.range = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 and a.production_type  = %s group by b.item_code, b.reading", (self.branch, self.range_name, self.from_date, self.to_date, self.production_type), as_dict=1)
 					else:
 						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, \
 						sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b \
-						where a.name = b.parent and a.branch = %s and b.item_sub_group = 'Firewood' \
+						where a.name = b.parent and a.branch = %s and b.item_sub_group in ('Firewood','Firewood (Bhutan Ply)','Firewood, Bhutan Furniture') \
 						and a.adhoc_production in (select adhoc_name from `tabAdhoc Production` \
 						where range_name = %s) and a.posting_date between %s and %s \
 						and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, \
 						b.reading", (self.branch, self.range_name, self.from_date, self.to_date), as_dict=1)
 				
 			else:
-				if self.from_date > '2020-11-01' or self.to_date > '2020-11-01':
+				if self.from_date > '2020-10-31' or self.to_date > '2020-10-31':
 					if self.range_name:
-						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group != 'Firewood' and a.branch = %s and a.range = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.range_name, self.from_date, self.to_date), as_dict=1)
+						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group != 'Firewood' and a.branch = %s and a.range = %s and a.posting_date between %s and %s and a.business_activity = %s and a.docstatus = 1 and a.royalty_paid = 0 and b.item_sub_group not in ('Sawn') and a.production_type = %s group by b.item_code, b.reading", (self.branch, self.range_name, self.from_date, self.to_date, self.business_activity, self.production_type), as_dict=1)
 				else:
 					if self.adhoc_production:
-						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group != 'Firewood' and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.docstatus = 1 and a.royalty_paid = 0 group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date), as_dict=1)
+						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group != 'Firewood' and a.branch = %s and a.adhoc_production = %s and a.posting_date between %s and %s and a.business_activity = %s and a.docstatus = 1 and a.royalty_paid = 0 and b.item_sub_group not in ('Sawn') and a.production_type = %s group by b.item_code, b.reading", (self.branch, self.adhoc_production, self.from_date, self.to_date, self.business_activity, self.production_type), as_dict=1)
 				
 					elif self.range_name:
+						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b where a.name = b.parent and b.item_sub_group != 'Firewood' and a.branch = %s and a.range = %s and a.posting_date between %s and %s and a.business_activity = %s and a.docstatus = 1 and a.royalty_paid = 0 and b.item_sub_group not in ('Sawn') and a.production_type = %s group by b.item_code, b.reading", (self.branch, self.range_name, self.from_date, self.to_date, self.business_activity, self.production_type), as_dict=1)
+
+					else:
 						entries = frappe.db.sql("select a.name, b.item_code, b.reading, sum(b.qty) as qty, b.uom, b.item_sub_group, \
 						sum(b.qty_in_no) as qty_in_no, b.reading_inches from `tabProduction` a, `tabProduction Product Item` b \
 						where a.name = b.parent and a.branch = %s and b.item_sub_group != 'Firewood' \
@@ -189,12 +201,16 @@ class RoyaltyPayment(Document):
 				d = self.get_adhoc_royalty(a.item_code, a.reading_inches)
 				if d[0].based_on == "Item Sub Group":
 					d[0].par_name = frappe.db.get_value(d[0].based_on, d[0].particular, "reading_parameter")
-				d[0].qty = a.qty
-				# if a.item_sub_group == "Pole":
-				# 	d[0].qty = a.qty_in_no
-				# 	d[0].amount = a.qty_in_no * d[0].royalty_rate
-				# else:
-				d[0].amount = a.qty * d[0].royalty_rate
+				if self.from_date < '2020-07-01' or self.to_date < '2020-07-01':
+					if a.item_sub_group == "Pole":
+						d[0].qty = a.qty_in_no
+						d[0].amount = a.qty_in_no * d[0].royalty_rate
+					else:
+						d[0].qty = a.qty
+						d[0].amount = a.qty * d[0].royalty_rate
+				else:
+					d[0].qty = a.qty
+					d[0].amount = a.qty * d[0].royalty_rate
 					
 					
 				d[0].uom = a.uom
@@ -225,13 +241,14 @@ class RoyaltyPayment(Document):
 
 	def get_adhoc_royalty(self, item_code, reading):
 		sub_group, species = frappe.db.get_value("Item", item_code, ["item_sub_group", "species"])
-
 		if species:
 			timber_class = frappe.db.get_value("Timber Species", species, "timber_class")
 			if not timber_class:
 				timber_class = 0
 		else:
 			timber_class = 0
+
+		#frappe.msgprint("Timber Class" + str(timber_class) + " Reading " + str(reading)) 
 
 		if reading < 1:
 			rate = frappe.db.sql("select b.based_on, b.particular, b.royalty_rate, b.timber_class, b.from_reading, b.to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where a.name = b.parent and b.particular = %s and %s between a.from_date and a.to_date and b.timber_class=''", (item_code, self.posting_date), as_dict=1)
@@ -242,7 +259,7 @@ class RoyaltyPayment(Document):
 		if not rate:
 			#frappe.msgprint("subgroup: {0} Date: {1} class: {2} reading: {3} reading:{4} ".format(sub_group, self.posting_date, timber_class, reading, reading))
 			if timber_class != 0:
-				rate = frappe.db.sql("select b.based_on, b.particular, b.royalty_rate, b.timber_class, b.from_reading, b.to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where a.name = b.parent and b.particular = %s and %s between a.from_date and a.to_date and b.timber_class = %s and %s >= from_inch and %s <= to_inch", (sub_group, self.posting_date, timber_class, reading, reading), as_dict=1, debug=1)
+				rate = frappe.db.sql("select b.based_on, b.particular, b.royalty_rate, b.timber_class, b.from_reading, b.to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where a.name = b.parent and b.particular = %s and %s between a.from_date and a.to_date and b.timber_class = %s and %s >= from_inch and %s <= to_inch", (sub_group, self.from_date, timber_class, reading, reading), as_dict=1, debug=1)
 		if not rate:
 			if sub_group:
 				rate = frappe.db.sql("select b.based_on, b.particular, b.royalty_rate, b.timber_class, b.from_reading, b.to_reading from `tabAdhoc Royalty Setting` a, `tabAdhoc Royalty Setting Item` b where a.name = b.parent and b.based_on = 'Item Sub Group' and b.particular = %s and %s between a.from_date and a.to_date and b.timber_class is NULL", (sub_group, self.posting_date), as_dict=1)
@@ -295,19 +312,23 @@ class RoyaltyPayment(Document):
 			je.title = "Royalty payment for " + self.range_name + " {" +self.name + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
-		je.remark = 'Payment against : ' + self.name;
+		je.remark = 'Payment against : ' + self.name
 		je.posting_date = frappe.utils.nowdate()
 		je.branch = self.branch
-
+		discount_account = None
 		royalty_account = frappe.db.get_value("Production Account Settings", self.company, "default_royalty_account")
 		if not royalty_account:
 			frappe.throw("Setup Default Royalty Account in Production Account Settings")	
-
+		if self.net_royalty:
+			discount_account = frappe.db.get_value("Production Account Settings", self.company, "discount_account")
+			if not discount_account:
+				frappe.throw("Setup Discount Account in Production Account Settings")
 		bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
 		if not bank_account:
-			frappe.throw("Setup Expense Bank Account in Branch")	
-
-		je.append("accounts", {
+			frappe.throw("Setup Expense Bank Account in Branch")
+		#Created if else block and put the old code in if block with the introduction in discount // Kinley Dorji 2021/01/11	
+		if self.net_royalty == 0 or self.net_royalty == None:
+			je.append("accounts", {
 				"account": royalty_account,
 				"reference_type": self.doctype,
 				"reference_name": self.name,
@@ -315,9 +336,9 @@ class RoyaltyPayment(Document):
 				"debit_in_account_currency": flt(self.total_royalty),
 				"debit": flt(self.total_royalty),
 				"business_activity": self.business_activity
-			})
+				})
 
-		je.append("accounts", {
+			je.append("accounts", {
 				"account": bank_account,
 				"reference_type": self.doctype,
 				"reference_name": self.name,
@@ -325,7 +346,36 @@ class RoyaltyPayment(Document):
 				"credit_in_account_currency": flt(self.total_royalty),
 				"credit": flt(self.total_royalty),
 				"business_activity": self.business_activity
-			})
+				})
+		else:
+			je.append("accounts", {
+				"account": royalty_account,
+				"reference_type": self.doctype,
+				"reference_name": self.name,
+				"cost_center": self.cost_center,
+				"debit_in_account_currency": flt(self.total_royalty),
+				"debit": flt(self.total_royalty),
+				"business_activity": self.business_activity
+				})
+
+			je.append("accounts", {
+				"account": bank_account,
+				"reference_type": self.doctype,
+				"reference_name": self.name,
+				"cost_center": self.cost_center,
+				"credit_in_account_currency": flt(self.net_royalty),
+				"credit": flt(self.net_royalty),
+				"business_activity": self.business_activity
+				})
+			je.append("accounts", {
+				"account": bank_account,
+				"reference_type": self.doctype,
+				"reference_name": self.name,
+				"cost_center": self.cost_center,
+				"credit_in_account_currency": flt(self.discount_amount),
+				"credit": flt(self.discount_amount),
+				"business_activity": self.business_activity
+				})
 		je.save()
 		self.db_set("journal_entry", je.name)
 		frappe.reload_doctype(self.doctype)

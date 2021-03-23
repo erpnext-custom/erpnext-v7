@@ -56,7 +56,6 @@ def get_target_value(which, cost_center, production_group, fiscal_year, from_dat
 	
 	query = "select sum(quantity) as total, sum(quarter1) as q1, sum(quarter2) as q2, sum(quarter3) as q3, sum(quarter4) as q4 from `tabProduction Target` a, `tab{0} Target Item` b where a.name = b.parent and {1} and a.fiscal_year = '{2}' and b.production_group = '{3}'".format(which, cond, fiscal_year, production_group)
 	qty = frappe.db.sql(query, as_dict=True)
-
 	q1 = qty and qty[0].q1 or 0
 	q2 = qty and qty[0].q2 or 0
 	q3 = qty and qty[0].q3 or 0
@@ -117,6 +116,7 @@ def get_propotional_target(from_date, to_date, q1, q2, q3, q4):
 			target = q1 + q2 + q3 + (q4 / 3) * 2
 		else:
 			frappe.throw("INVALID DATA RECEIVED")
+	# frappe.msgprint(str(rounded(target, 2)))
 	return rounded(target, 2)
 
 

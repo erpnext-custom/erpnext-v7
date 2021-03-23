@@ -90,7 +90,7 @@ def get_notification_config():
 			"Production" : {"docstatus": 0},
 			"Marking List" : {"docstatus": 0},
 			"Royalty Payment" : {"docstatus": 0},
-                        "Salary Advance" : {"docstatus": 0},
+                        "Salary Advance" : {"workflow_state": ("in",("Draft", "Waiting Approval"))},
 						"Asset Modifier": {"docstatus": 0},
 			"Asset Movement": {"docstatus": 0},
 			"Bulk Asset Transfer": {"docstatus": 0},

@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2020-01-08 10:04:08.117666", 
+ "modified": "2021-03-16 15:44:44.984817", 
  "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "HR", 
  "name": "Salary Increment", 
@@ -27,6 +27,9 @@
   }, 
   {
    "role": "Accounts User"
+  }, 
+  {
+   "role": "Auditor"
   }
  ]
 }

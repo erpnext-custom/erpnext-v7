@@ -34,21 +34,25 @@ frappe.ui.form.on("Sales Order", {
 			}
 		}*/
 	},
-
 	"discount_or_cost_amount": function(frm) {
-		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost)-flt(frm.doc.challan_cost))
 		cur_frm.refresh_field("discount_amount")
 	},
 
 	"transportation_charges": function(frm) {
-		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost)-flt(frm.doc.challan_cost))
 		cur_frm.refresh_field("discount_amount")
 	},
 
 	"additional_cost": function(frm) {
-		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost)-flt(frm.doc.challan_cost))
 		cur_frm.refresh_field("discount_amount")
         },
+
+	"challan_cost": function(frm) {
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost)-flt(frm.doc.challan_cost))
+		cur_frm.refresh_field("discount_amount")
+	},
 
 	"loading_rate": function(frm) {
 		var total_qty = 0;
@@ -60,9 +64,14 @@ frappe.ui.form.on("Sales Order", {
 		cur_frm.set_value("loading_cost", flt(total_qty) * flt(frm.doc.loading_rate));
 
 	},
+	"imo_quantity": function(frm) {
+		console.log("IMO rate:" + frm.doc.imo_rate);
+		cur_frm.set_value("total_imo_cost", flt(frm.doc.imo_rate) * flt(frm.doc.imo_quantity));
+
+	},
 
 	"loading_cost": function(frm) {
-		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
+		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost)-flt(frm.doc.challan_cost))
 		cur_frm.refresh_field("discount_amount")
 	},
 
@@ -194,6 +203,7 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 		if (this.frm.doc.docstatus===0) {
 			cur_frm.add_custom_button(__('Quotation'),
 				function() {
+					// cur_frm.clear_table("items");
 					erpnext.utils.map_current_doc({
 						method: "erpnext.selling.doctype.quotation.quotation.make_sales_order",
 						source_doctype: "Quotation",
@@ -209,6 +219,7 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 			
 			cur_frm.add_custom_button(__('Product Requisition'),
                                 function() {
+										// cur_frm.clear_table("items");
                                         erpnext.utils.map_current_doc({
                                                 method: "erpnext.selling.doctype.product_requisition.product_requisition.make_sales_order",
                                                 source_doctype: "Product Requisition",
@@ -217,8 +228,25 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
                                                         company: cur_frm.doc.company
                                                 }
                                         })
-                                }, __("Get items from"));
-
+								}, __("Get items from"));
+			
+			cur_frm.add_custom_button(__('Lot List'),
+				function() {
+						//Should create a method to check for duplicate entries here
+						// cur_frm.clear_table("items");
+						custom_map_current_doc({
+								method: "erpnext.production.doctype.lot_list.lot_list.make_sales_order",
+								source_doctype: "Lot List",
+								// get_query_filters: {
+								// 		docstatus: 1,
+								// 		company: cur_frm.doc.company
+								// }
+								get_query_filters: {
+									query: "erpnext.production.doctype.lot_list.lot_list.get_lot_list",
+									filters: {branch:cur_frm.doc.branch}
+								}
+						})
+				}, __("Get items from"));
 		}
 
 		this.order_type(doc);
@@ -310,6 +338,15 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 
 });
 
+// frappe.ui.form.on("Sales Order", "validate", function(frm) {
+// 	if(!frappe.user.has_role('Sales Master')){
+// 	var date = frappe.datetime.add_days(get_today(), -3);
+// 	if (frm.doc.posting_date < date ) {
+// 		frappe.throw(__("You Can Not Submit For Posting Date Beyond Past 3 Days"));
+// 		frappe.validated = false;
+// 	}
+// 	}
+// });
 // for backward compatibility: combine new and previous states
 $.extend(cur_frm.cscript, new erpnext.selling.SalesOrderController({frm: cur_frm}));
 
@@ -369,15 +406,14 @@ frappe.ui.form.on("Sales Order", "refresh", function(frm) {
             }
         };
     });
-    cur_frm.set_query("location", function() {
-        return{
-                "filters":{
-                        "branch": frm.doc.branch,
+   cur_frm.set_query("location", function() {
+	return{
+		"filters":{
+			"branch": frm.doc.branch,
 			"is_disabled": 0
-                }
-        };
-    });
-
+		}
+	};
+   });
 })
 
 /*
@@ -430,9 +466,10 @@ cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = functi
         var d = locals[cdt][cdn];
         return {
                 query: "erpnext.controllers.queries.price_template_list",
-	        filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch, 'location': frm.location}
-	}
+                filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch, 'location': frm.location}
+        }
 }
+
 
 cur_frm.fields_dict['items'].grid.get_field('warehouse').get_query = function(frm, cdt, cdn) {
 	item = locals[cdt][cdn]
@@ -449,20 +486,18 @@ cur_frm.fields_dict['items'].grid.get_field('lot_number').get_query = function(f
                 filters: {'branch': cur_frm.doc.branch, 'item':item.item_code},
                 searchfield : "lot_no"
         }
-}
-
+} 
 
 // on_selection of price_template, auto load the seling rate for items
 frappe.ui.form.on("Sales Order Item", {
         "price_template": function(frm, cdt, cdn) {
                 d = locals[cdt][cdn]
-		 if(cur_frm.doc.location){
-                         loc = cur_frm.doc.location;
-                 }else{
-                         loc = "NA";
-                 }
-		console.log("Loc :" + loc);
-                frappe.call({
+		if(cur_frm.doc.location){
+			loc = cur_frm.doc.location;
+		}else{
+			loc = "NA";
+		}
+		frappe.call({
                         method: "erpnext.production.doctype.selling_price.selling_price.get_selling_rate",
                         args: {
                                 "price_list": d.price_template,
@@ -481,16 +516,29 @@ frappe.ui.form.on("Sales Order Item", {
         },
 
 	"item_code": function(frm, cdt, cdn) {
-		var d = locals[cdt][cdn]; 
-		frappe.model.set_value(cdt, cdn, "price_template", "");
-		if(d.lot_number){ get_balance(frm, cdt, cdn); }
+		frappe.model.set_value(cdt, cdn, "price_template", "") 
 	},
 
-	"lot_number": function(frm, cdt, cdn) {
+        "lot_number": function(frm, cdt, cdn) {
 		var d = locals[cdt][cdn];
-		if(d.item_code && d.lot_number){ get_balance(frm, cdt, cdn); }
-        },
-})
+		if(d.item_code && d.lot_number) { get_balance(frm, cdt, cdn); }
+	},
+	"qty": function(frm, cdt, cdn) {
+		 if(frm.doc.naming_series == "Timber Products") { get_balance(frm, cdt, cdn); }
+	}
+
+});
+
+frappe.ui.form.on("Sales Order","naming_series", function(frm){
+	cur_frm.set_query("item_code", "items", function (frm) {
+        return {
+            "filters": {
+				"item_group": cur_frm.doc.naming_series,
+				"disabled":0
+            }
+        }
+    });
+});
 
 function get_balance(frm, cdt, cdn){
          var d = locals[cdt][cdn];
@@ -499,26 +547,25 @@ function get_balance(frm, cdt, cdn){
                         args: {
                                 "branch": cur_frm.doc.branch,
                                 "item_code": d.item_code,
-                                "lot_number": d.lot_number,
+								"lot_number": d.lot_number,
+								"total_pieces": d.total_pieces
                         },
                         callback: function(r) {
                                 console.log(r.message);
                                 if(r.message){
                                         var balance = r.message[0]['total_volume'];
-					var lot_check = r.message[0]['lot_check']; 
-			        //	var item_sub_group = r.message[0]['sub_group']; 
-				//	var sub_groups = ["Pole","Log","Block","Sawn", "Hakaries","Field Sawn","Block (Special Size)"];
-                			if(lot_check)
-                			{
-                                        	console.log(balance);
-						if(balance < 0){
-                                                	frappe.msgprint("Not available volume under the selected Lot");
-                                        	}
-                                        	else{
-                                                	frappe.model.set_value(cdt, cdn, "qty", balance);
-                                        	}
-                                	}
-				}
+                                        var lot_check = r.message[0]['lot_check'];
+                                        if(lot_check)
+                                        {
+                                                console.log(balance);
+                                                if(balance < 0){
+                                                        frappe.msgprint("No available volume under the selected Lot");
+                                                }
+                                                else{
+                                                        frappe.model.set_value(cdt, cdn, "qty", balance);
+                                                }
+                                        }
+                                }
                                 else{
                                         frappe.msgprint("Invalid Lot Number. Please verify the lot number with Material and Branch");
                                 }
@@ -526,3 +573,63 @@ function get_balance(frm, cdt, cdn){
                 });
 }
 
+
+var custom_map_current_doc = function(opts) {
+	if(opts.get_query_filters) {
+		opts.get_query = function() {
+			//return {filters: opts.get_query_filters};
+			return opts.get_query_filters;
+		}
+	}
+	var _map = function() {
+		// remove first item row if empty
+		if($.isArray(cur_frm.doc.items) && cur_frm.doc.items.length > 0) {
+			if(!cur_frm.doc.items[0].item_code) {
+				cur_frm.doc.items = cur_frm.doc.items.splice(1);
+			}
+		}
+
+		return frappe.call({
+			// Sometimes we hit the limit for URL length of a GET request
+			// as we send the full target_doc. Hence this is a POST request.
+			type: "POST",
+			method: opts.method,
+			args: {
+				"source_name": opts.source_name,
+				"target_doc": cur_frm.doc
+			},
+			callback: function(r) {
+				if(!r.exc) {
+					var doc = frappe.model.sync(r.message);
+					cur_frm.refresh();
+				}
+			}
+		});
+	}
+	if(opts.source_doctype) {
+		var d = new frappe.ui.Dialog({
+			title: __("Get From ") + __(opts.source_doctype),
+			fields: [
+				{
+					fieldtype: "Link",
+					label: __(opts.source_doctype),
+					fieldname: opts.source_doctype,
+					options: opts.source_doctype,
+					get_query: opts.get_query,
+					reqd:1
+				},
+			]
+		});
+		d.set_primary_action(__('Get Items'), function() {
+			var values = d.get_values();
+			if(!values)
+				return;
+			opts.source_name = values[opts.source_doctype];
+			d.hide();
+			_map();
+		})
+		d.show();
+	} else if(opts.source_name) {
+		_map();
+	}
+}

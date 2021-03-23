@@ -10,6 +10,73 @@ import collections
 from frappe.model.naming import make_autoname
 
 
+# following method created by SHIV to submit different entries together, 2021/01/05 req.by Birkha
+def submit_entries():
+	prod = frappe.get_doc("Production", "PRO201100933")
+	#prod = frappe.get_doc("Production", "PRO201200741")
+	#dn = frappe.get_doc("Delivery Note", "DN20112745-1")
+	
+	if prod.docstatus == 0:
+		print("Production", prod.name, "Submitting...")
+		prod.submit()
+		frappe.db.commit()
+	#if dn.docstatus == 0:
+	#	print("Delivery ", dn.name, "Submitting...")
+	#	dn.submit()
+	#	frappe.db.commit()
+
+# following method created by SHIV to submit DNs given by jamyang 2020/12/22
+# temporarily stopped as other transactions needs to be taken care first on priority
+def submit_dn(debug=1):
+	counter = 0
+	for i in frappe.db.sql("""select dn.name from `tabDelivery Note` dn
+				where exists(select 1 from temp t where t.name = dn.name)
+				and dn.docstatus = 0
+				order by dn.posting_date
+			""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Delivery Note', i.name)
+		print(now(), counter, doc.name, str(doc.posting_date), doc.docstatus)
+		if not debug:
+			doc.submit()
+			frappe.db.commit()
+
+# Lot list item updatgion, 2020/10/29, Shiv->Kinley Dorji
+# bench execute erpnext.temp_patch.create_lot_list_item
+def create_lot_list_item():
+	for i in frappe.db.get_all("Lot List", "name"):
+		print i
+		lot = frappe.get_doc("Lot List", i.name)
+		row = lot.append("lot_list_items", {})
+		row.item_sub_group = lot.item_sub_group
+                row.item = lot.item
+                row.item_name = frappe.db.get_value("Item", lot.item,"item_name")
+                row.t_species = frappe.db.get_value("Item",lot.item,"species")
+                row.timber_class = frappe.db.get_value("Timber Species",frappe.db.get_value("Item",lot.item,"species"),"timber_class")
+                row.total_volume = lot.total_volume
+                row.total_pieces = lot.total_pieces
+		row.save(ignore_permissions=True)
+
+def cancel_pr():
+        #for a in frappe.db.sql("select name from `tabPurchase Receipt` where name in ('PR20030002','PR20030106')", as_dict=True):
+	doc = frappe.get_doc("Purchase Receipt", "PR20030106")
+	doc.cancel()
+	frappe.db.commit()
+	print doc.name, doc.docstatus
+
+
+def submit_production1():
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabProduction`
+		where name in ('PRO201100110')""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Production', i.name)
+                doc.submit()
+                frappe.db.commit()
+		print counter, doc.name, doc.docstatus
+		print 'Submitted successfully...'
+		
+
 # create by SHIV on 2020/10/23
 def submit_production(submit=0):
 	counter = 0
@@ -248,9 +315,11 @@ def create_new_salary_structures(debug=1):
         
 # 2019/05/22 Birkha->Shiv
 def cancel_dn():
+	#dn = "DN20112745"
 	#doc = frappe.get_doc("Delivery Note", "DN19043483")
-	doc = frappe.get_doc("Delivery Note", "DN20031357") #Req on 2020/10/01
-	print 'Cancelling DN20031357...'
+	#doc = frappe.get_doc("Delivery Note", "DN20031357") #Req on 2020/10/01
+	doc = frappe.get_doc("Delivery Note", dn) #Req on 2020/12/16
+	print 'Cancelling {}...'.format(dn)
 	doc.cancel()
 	frappe.db.commit()
 	print doc.name, doc.docstatus

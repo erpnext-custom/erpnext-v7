@@ -137,12 +137,19 @@ def get_data():
 					"doctype": "Stock Ledger Entry",
 					"Label": _("Stock Ledger")
 				},
-                                {
+				{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Stock Issue Report",
 					"doctype": "Stock Entry",
 					"Label": _("Stock Issue Report")
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Stock Receipt Report",
+					"doctype": "Stock Entry",
+					"Label": _("Stock Receipt Report")
 				},
 				{
 					"type": "report",

@@ -55,6 +55,17 @@ frappe.ui.form.on("Purchase Order", {
 	}
 });
 
+frappe.ui.form.on("Purchase Order","naming_series", function(frm){
+	cur_frm.set_query("item_code", "items", function (frm) {
+        return {
+            "filters": {
+				"item_group": cur_frm.doc.naming_series,
+				"disabled":0
+            }
+        }
+    });
+});
+
 function calculate_discount(frm) {
 	cur_frm.set_value("total_add_ded", frm.doc.freight_and_insurance_charges + frm.doc.other_charges + frm.doc.tax - frm.doc.discount)
 	cur_frm.set_value("discount_amount", -frm.doc.freight_and_insurance_charges - frm.doc.other_charges - frm.doc.tax + frm.doc.discount)

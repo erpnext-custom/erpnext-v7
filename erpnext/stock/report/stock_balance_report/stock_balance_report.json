@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2019-07-26 17:16:45.510606", 
+ "modified": "2020-12-08 14:36:01.771740", 
  "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Stock", 
  "name": "Stock Balance Report", 
@@ -48,6 +48,9 @@
   }, 
   {
    "role": "Sales User"
+  }, 
+  {
+   "role": "Production User"
   }
  ]
 }

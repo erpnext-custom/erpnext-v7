@@ -51,9 +51,7 @@ class UserRequest(Document):
 			if self.approval_status == "Approved" and self.request_category == "CID Details" \
 				and not frappe.db.exists("User Request", {"name": ("!=",self.name),"user": self.user, \
 					"request_category": self.request_category, "docstatus":1, "approval_status": "Approved"}):
-				msg = """You are successfully registered for NRDCL online services. 
-					You can now login with your registered CID number and PIN received 
-					during registration process."""
+				msg = """You are successfully registered for NRDCL online services. You can now login with your registered CID number and PIN received during registration process."""
 			else:
 				if self.approval_status == "Rejected":
 					msg = "Your request for update in {0} is {1}. Tran Ref No {2}. {3}".format(str(self.request_category).lower(), str(self.approval_status).lower(),self.name,self.rejection_reason)

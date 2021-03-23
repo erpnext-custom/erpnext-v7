@@ -7,6 +7,8 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, nowdate
+from erpnext.accounts.utils import get_child_cost_centers
+
 
 class OtherContribution(Document):
 	def validate(self):
@@ -69,13 +71,13 @@ class OtherContribution(Document):
                         self.reference = None
                 
         def post_journal_entry(self):
-                expense_bank_account      = frappe.db.get_value("Branch", self.employee_branch, "expense_bank_account")
+                expense_bank_account      = frappe.db.get_value("Branch", self.contributing_branch, "expense_bank_account")
                 advance_other_account     = frappe.db.get_value("Salary Component", self.salary_component, "gl_head")
                 default_business_activity = frappe.db.get_value("Business Activity", {"is_default": 1}, "name")
                 default_cost_center       = frappe.db.get_value("Company", self.company, "company_cost_center")
 
                 if not expense_bank_account:
-                        frappe.throw(_("Please define <b>Expense Bank Account</b> for the branch <b>{0}</b>").format(self.employee_branch), title="Data missing")
+                        frappe.throw(_("Please define <b>Expense Bank Account</b> for the branch <b>{0}</b>").format(self.contributing_branch), title="Data missing")
                 elif not advance_other_account:
                         frappe.throw(_("Please define GL Head for the salary component <b>{0}</b>").format(self.salary_component), title="Data missing")
                 elif not default_business_activity:
@@ -92,7 +94,7 @@ class OtherContribution(Document):
                 je.naming_series = 'Bank Payment Voucher'
                 je.remark = 'Payment against : ' + je.title
                 je.posting_date = self.posting_date
-                je.branch = self.employee_branch
+                je.branch = self.contributing_branch
                 je.pay_to_recd_from = self.employee_name
 
                 for i in self.get("items"):
@@ -212,4 +214,15 @@ class OtherContribution(Document):
                                 row = self.append('items', {})
                                 row.update(e)
 
-                self.update_amounts()   
+                self.update_amounts()
+
+@frappe.whitelist()
+def get_branches(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
+        if filters.get("parent_cost_center"):
+                allccs = get_child_cost_centers(filters.get("parent_cost_center"))
+                return frappe.db.sql("""
+		        select name from `tabBranch`
+		        where cost_center in {} and is_disabled != 1 
+		        """.format(tuple(allccs)))   
+        else:
+                frappe.throw("Please select Contributing Group first.")

@@ -32,16 +32,7 @@ frappe.ui.form.on('Site Registration', {
 				]
 			}
 		});
-		/*########## Ver.2020.11.09 Begins, Phase-II  ##########*/
-		// Following code commented by SHIV on 2020/11/09 Phase-II
-		//frm.fields_dict['items'].grid.get_field('item_sub_group').get_query = function(){
-		//	return{
-		//		filters: {
-		//			'is_crm_item': 1,
-		//		}
-		//	}
-		//};
-		// Following method added by SHIV on 2020/11/20
+
 		cur_frm.set_query("product_category",function(){
 			return {
 				"filters": [
@@ -50,7 +41,7 @@ frappe.ui.form.on('Site Registration', {
 				]
 			}
 		});
-		// Following code is added by SHIV on 2020/11/09 Phase-II
+
 		frm.fields_dict['items'].grid.get_field('product_category').get_query = function(){
 			return{
 				filters: {
@@ -58,7 +49,6 @@ frappe.ui.form.on('Site Registration', {
 				}
 			}
 		};
-		/*########## Ver.2020.11.09 Ends ##########*/
 	},
 	user: function(frm){
 		get_user_details(frm,'update');
@@ -143,6 +133,7 @@ var get_user_details = function(frm, mode){
 }
 
 var enable_disable = function(frm){
+	frm.toggle_reqd(["customer_type", "customer_group", "territory"],in_list(user_roles, "CRM Back Office"));
 	frm.toggle_display("sb_distance",in_list(user_roles, "CRM Back Office"));
 	frm.refresh_field("distance");
 }

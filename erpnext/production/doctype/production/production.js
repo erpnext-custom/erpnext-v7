@@ -84,6 +84,16 @@ frappe.ui.form.on('Production', {
 	/* ++++++++++ Ver 1.0.190401 Ends ++++++++++++*/
 });
 
+frappe.ui.form.on("Production", "validate", function(frm) {
+	if(!frappe.user.has_role('Production Master')){
+	var date = frappe.datetime.add_days(get_today(), -3);
+	if (frm.doc.posting_date < date ) {
+		frappe.throw(__("You Can Not Create Submit For Posting Date Beyond Past 3 Days"));
+		frappe.validated = false;
+	}
+	}
+});
+
 frappe.ui.form.on("Production", "refresh", function(frm) {
     cur_frm.set_query("warehouse", function() {
         return {

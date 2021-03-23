@@ -5,7 +5,8 @@ from __future__ import unicode_literals
 import frappe
 import json
 import frappe.utils
-from frappe.utils import cstr, flt, getdate, comma_and, cint
+from frappe.utils import cstr, flt, getdate, comma_and, cint, datetime
+from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff, today
 from frappe import _
 from frappe.model.mapper import get_mapped_doc
 from erpnext.stock.stock_balance import update_bin_qty, get_reserved_qty
@@ -29,10 +30,37 @@ class SalesOrder(SellingController):
 		self.get_selling_rate()
 	
 	def validate(self):
+		if 'Sales Master' not in frappe.get_roles(frappe.session.user):
+			today = datetime.datetime.now()
+			DD = datetime.timedelta(days=3)
+			earlier = today - DD
+			date = earlier.strftime("%Y-%m-%d")
+			if (self.transaction_date < date or get_first_day(self.transaction_date)!=get_first_day(today)):
+				frappe.throw("You Can Not Save or Submit For Posting Date Beyond Past 3 Days or For Previous Month")
+				frappe.validated = false
+
 		check_future_date(self.transaction_date)
 		super(SalesOrder, self).validate()
 		self.calculate_transportation()
-
+		# discount = additional = 0
+		# for d in self.items:
+		# 	discount   += d.discount_amount
+		# 	additional += d.additional_cost
+		# if additional != 0:
+		# 	self.additional_cost = additional
+		# 	self.base_net_total += self.additional_cost
+		# 	self.net_total += self.additional_cost
+			
+		# if discount != 0:
+		# 	self.discount_or_cost_amount = discount 
+		# 	self.base_net_total -= self.discount_or_cost_amount
+		# 	self.net_total -= self.discount_or_cost_amount
+			# frappe.msgprint(self.total)
+		# if self.challan_cost:
+		# 	self.base_net_total += self.challan_cost
+		# 	self.net_total += self.challan_cost
+		# 	self.base_grand_total += self.challan_cost
+		# 	self.grand_total += self.challan_cost
 		self.validate_order_type()
 		self.validate_delivery_date()
 		self.validate_mandatory()
@@ -44,7 +72,8 @@ class SalesOrder(SellingController):
 		self.validate_drop_ship()
 		
 		if self.naming_series == "Timber Products":
-			self.validate_lot_list()
+			#Check for validation
+				self.validate_lot_list()
 
 
 		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
@@ -58,18 +87,12 @@ class SalesOrder(SellingController):
 
 	def validate_lot_list(self):
 		for item in self.items:
-			lot_number = ""
 			item_sub_group = frappe.db.get_value("Item", item.item_code, "item_sub_group")
 			lot_check = frappe.db.get_value("Item Sub Group", item_sub_group, "lot_check")
 		#	sub_groups = ["Pole","Log","Block","Sawn", "Hakaries","Block (Special Size)"]
 		#	if item_sub_group in sub_groups:
 			if lot_check:
-				if "'" in item.lot_number:
-					lot_number = item.lot_number.replace("'","\\'")
-				else:
-					lot_number = item.lot_number
-
-				data = frappe.db.sql("select name, total_volume from `tabLot List` where branch='{0}' and item = '{1}' and name='{2}' and docstatus=1 and (sales_order is NULL OR sales_order ='')".format(self.branch, item.item_code, lot_number), as_dict=1)
+				data = frappe.db.sql("select ll.name, lld.total_volume from `tabLot List` ll, `tabLot List Details` lld where ll.name = lld.parent and ll.branch='{0}' and lld.item = '{1}' and ll.name='{2}' and ll.docstatus=1 and (ll.sales_order is NULL OR ll.sales_order ='')".format(self.branch, item.item_code, item.lot_number), as_dict=1)
 				if not data:
 					frappe.throw("Invalid Lot selection, Please check Branch and Material")
 				#else:
@@ -97,7 +120,7 @@ class SalesOrder(SellingController):
 
 		self.total_quantity = total_qty
 		self.transportation_charges = round(flt(self.total_quantity) * flt(self.total_distance) * flt(self.transportation_rate), 2)
-		self.discount_amount = flt(self.discount_or_cost_amount) - flt(self.transportation_charges) - flt(self.loading_cost) - flt(self.additional_cost)
+		self.discount_amount = flt(self.discount_or_cost_amount) - flt(self.transportation_charges) - flt(self.loading_cost) - flt(self.additional_cost) - flt(self.challan_cost)
 
 	def validate_mandatory(self):
 		# validate transaction date v/s delivery date
@@ -208,6 +231,7 @@ class SalesOrder(SellingController):
 	def on_submit(self):
 		self.check_credit_limit()
 		self.update_reserved_qty()
+
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype, self.company, self.base_grand_total, self)
 
 		self.update_prevdoc_status('submit')
@@ -466,12 +490,12 @@ def get_list_context(context=None):
 @frappe.whitelist()
 def get_lot_detail(branch, item_code, lot_number):
 	re = []
-	data = frappe.db.sql('select name, total_volume from `tabLot List` where branch="{0}" and item = "{1}" and name="{2}" and docstatus = 1'.format(branch, item_code, lot_number), as_dict=1)
+	data = frappe.db.sql('select ll.name, lld.total_volume, lld.total_pieces from `tabLot List` ll, `tabLot List Details` lld where ll.name = lld.parent and ll.branch="{0}" and lld.item = "{1}" and ll.name="{2}" and ll.docstatus = 1'.format(branch, item_code, lot_number), as_dict=1)
 	sub_group = frappe.db.get_value("Item", item_code, "item_sub_group")
 	lot_check = frappe.db.get_value("Item Sub Group", sub_group, "lot_check")
 	if data:
 		for a in data:
-			re.append({'name':a.name, 'total_volume':a.total_volume, 'sub_group':sub_group, 'lot_check':lot_check})
+			re.append({'name':a.name, 'total_volume':a.total_volume, 'total_pieces':a.total_pieces, 'sub_group':sub_group, 'lot_check':lot_check})
 		return re
 
 
@@ -575,6 +599,8 @@ def make_delivery_note(source_name, target_doc=None):
 				"rate": "rate",
 				"name": "so_detail",
 				"parent": "against_sales_order",
+				# "discount_amount":"discount_amount",
+				# "additional_cost":"additional_cost"
 			},
 			"postprocess": update_item,
 			"condition": lambda doc: abs(doc.delivered_qty) < abs(doc.qty) and doc.delivered_by_supplier!=1
@@ -742,6 +768,8 @@ def make_purchase_order_for_drop_shipment(source_name, for_supplier, target_doc=
 			target.customer_contact_display = source.contact_display
 			target.customer_contact_mobile = source.contact_mobile
 			target.customer_contact_email = source.contact_email
+			target.dzongkhag = source.dzongkhag
+			target.customer_location = source.contact_location
 
 		else:
 			target.customer = ""
@@ -763,6 +791,8 @@ def make_purchase_order_for_drop_shipment(source_name, for_supplier, target_doc=
 				"contact_mobile",
 				"contact_email",
 				"contact_person"
+				"dzongkhag",
+				"contact_location"
 			],
 			"validation": {
 				"docstatus": ["=", 1]

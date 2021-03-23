@@ -17,6 +17,12 @@ frappe.query_reports["Accounts Receivable"] = {
 			"options": "Customer"
 		},
 		{
+			"fieldname": "from_date",
+			"label": __("From Date"),
+			"fieldtype": "Date",
+			"default": frappe.defaults.get_user_default("year_start_date"),
+		},
+		{
 			"fieldname":"report_date",
 			"label": __("As on Date"),
 			"fieldtype": "Date",

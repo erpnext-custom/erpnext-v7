@@ -342,7 +342,7 @@ function get_openings(equipment, from_date, to_date, pol_type) {
 }
 
 function total_time(frm, cdt, cdn) {
-	var total_idle = total_work = total_distance = total_cft = 0;
+	var total_idle = total_work = total_distance = total_cft = total_m3 = 0;
 	frm.doc.vlogs.forEach(function(d) {
 		if(d.idle_time) { 
 			total_idle += flt(d.idle_time)
@@ -356,16 +356,21 @@ function total_time(frm, cdt, cdn) {
 		if(d.qty_cft){
 			total_cft += flt(d.qty_cft)
 		}
+		if(d.qty_m3){
+			total_m3 += flt(d.qty_m3)
+		}
 	
 	})
 	frm.set_value("total_idle_time", total_idle)
 	frm.set_value("total_work_time", total_work)
 	frm.set_value("distance_km", total_distance)
 	frm.set_value("total_cft", total_cft)
+	frm.set_value("total_m3", total_m3)
 	cur_frm.refresh_field("total_work_time")
 	cur_frm.refresh_field("total_idle_time")
 	cur_frm.refresh_field("distance_km")
 	cur_frm.refresh_field("total_cft")
+	cur_frm.refresh_field("total_m3")
 }
 
 function calculate_time(frm, cdt, cdn) {

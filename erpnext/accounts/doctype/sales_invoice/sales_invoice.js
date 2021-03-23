@@ -304,26 +304,39 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 	},
 
 	"discount_or_cost_amount": function(frm) {
-		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
+		cur_frm.set_value("discount_amount", flt(this.frm.doc.discount_or_cost_amount) - flt(this.frm.doc.transportation_charges) - flt(this.frm.doc.additional_cost) - flt(this.frm.doc.loading_cost) - flt(this.frm.doc.challan_cost))
                 cur_frm.refresh_field("discount_amount")
         },
 
         "transportation_charges": function(frm) {
-		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
+		cur_frm.set_value("discount_amount", flt(this.frm.doc.discount_or_cost_amount) - flt(this.frm.doc.transportation_charges) - flt(this.frm.doc.additional_cost) - flt(this.frm.doc.loading_cost) - flt(this.frm.doc.challan_cost))
                 cur_frm.refresh_field("discount_amount")
-        },
+		},
+		"challan_cost": function(frm) {
+			cur_frm.set_value("discount_amount", flt(this.frm.doc.discount_or_cost_amount) - flt(this.frm.doc.transportation_charges) - flt(this.frm.doc.additional_cost) - flt(this.frm.doc.loading_cost)-flt(this.frm.doc.challan_cost))
+			cur_frm.refresh_field("discount_amount")
+		},
 
 	"additional_cost": function(frm) {
-		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
+		cur_frm.set_value("discount_amount", flt(this.frm.doc.discount_or_cost_amount) - flt(this.frm.doc.transportation_charges) - flt(this.frm.doc.additional_cost) - flt(this.frm.doc.loading_cost) - flt(this.frm.doc.challan_cost))
 		cur_frm.refresh_field("discount_amount")
         },
 
 	"loading_cost": function(frm) {
-		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost))
+		cur_frm.set_value("discount_amount", flt(this.frm.doc.discount_or_cost_amount) - flt(this.frm.doc.transportation_charges) - flt(this.frm.doc.additional_cost) - flt(this.doc.loading_cost) - flt(this.frm.doc.challan_cost))
 		cur_frm.refresh_field("discount_amount")
 	},
 });
 
+// frappe.ui.form.on("Sales Invoice", "validate", function(frm) {
+// 	if(!frappe.user.has_role('Sales Master') || !frappe.user.has_role('Administrator')){
+// 	var date = frappe.datetime.add_days(get_today(), -3);
+// 	if (frm.doc.posting_date < date ) {
+// 		frappe.throw(__("You Can Not Save or Submit For Posting Date Beyond Past 3 Days"));
+// 		frappe.validated = false;
+// 	}
+// 	}
+// });
 // for backward compatibility: combine new and previous states
 $.extend(cur_frm.cscript, new erpnext.accounts.SalesInvoiceController({frm: cur_frm}));
 

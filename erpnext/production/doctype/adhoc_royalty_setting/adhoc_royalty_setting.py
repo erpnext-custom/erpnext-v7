@@ -20,7 +20,7 @@ class AdhocRoyaltySetting(Document):
 				if not a.from_reading:
 					a.from_reading = 0
 				if not a.to_reading:
-					a.a.to_reading = 0
+					a.to_reading = 0
 
 				in_inches = 0
 				f = str(a.from_reading).split(".")

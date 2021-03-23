@@ -223,11 +223,30 @@ frappe.query_reports["Timber Sales Report"] = {
 					"options": "Customer Group"
 			},
 			{
+				"fieldname": "volume",
+				"label": ("Volume or Qty"),
+				"fieldtype": "Float" 
+			},
+			{
 					"fieldname": "aggregate",
 					"label": ("Show Aggregate"),
 					"fieldtype": "Check",
 					"default": 0
+			},
+			{
+					"fieldname": "summary",
+					"label": ("Show Summary"),
+					"fieldtype": "Check",
+					"default": 0
+			},
+			{
+				"fieldname": "mode",
+				"label": ("Report Mode"),
+				"fieldtype": "Select",
+				"default":"",
+				"options":["","Branch and Item Group Wise", "Order Wise"]
 			}
+
 	]
 
 }

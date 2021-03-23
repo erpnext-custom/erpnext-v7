@@ -291,8 +291,10 @@ def get_data(filters):
 				#frappe.msgprint(str(pol.rate))
 			total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(reg.r_amount) + flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
 			total_pol_exp +=(flt(vl.consumption)*flt(pol.rate))
-			total_rm_exp += (flt(ins.insurance)+flt(reg.r_amount)+flt(jc.goods_amount)+flt(jc.services_amount))
+			total_rm_exp = (flt(ins.insurance)+flt(reg.r_amount)+flt(jc.goods_amount)+flt(jc.services_amount))
+			# frappe.msgprint("insurance = "+str(flt(ins.insurance))+" reg_amount = "+str(flt(reg.r_amount))+" goods amount = "+str(flt(jc.goods_amount))+" services amount = "+str(flt(jc.services_amount)))
 			total_op_exp += travel_claim + e_amount + gross_pay
+			# frappe.msgprint("expense maintenance and repair = "+str(total_rm_exp))
 			total_rev    = flt(revn.rev)
 			total_work_time = vl.total_work_time
 			total_idle_time = vl.total_idle_time

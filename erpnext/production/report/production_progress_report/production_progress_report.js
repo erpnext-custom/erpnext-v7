@@ -100,6 +100,6 @@ frappe.query_reports["Production Progress Report"] = {
                         "label": "Display Monthly",
                         "fieldtype": "Check",
                         "default": 0
-                }
+		}
 	]
 }

@@ -49,25 +49,52 @@ def get_columns():
 	]
 
 def get_stock_ledger_entries(filters):
-	return frappe.db.sql("""select * from (select posting_date, posting_time,
-			item_code, CASE WHEN voucher_type='Stock Entry' THEN (select branch from `tabStock Entry` where name = voucher_no) WHEN voucher_type = 'Delivery Note' THEN (select branch from `tabDelivery Note` where name = voucher_no) WHEN voucher_type = 'Production' THEN
-			(select branch from `tabProduction` where name = voucher_no) WHEN voucher_type = 'Purchase Receipt' THEN (select branch from `tabPurchase Receipt` where name = voucher_no) ELSE 'None' END as branch, 
-			warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
-			stock_value, voucher_type, voucher_no, batch_no, serial_no, 
-			CASE voucher_type WHEN 'Stock Entry' THEN (select vehicle_no from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select lr_no from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as vehicle_no, 
-			CASE voucher_type WHEN 'Stock Entry' THEN (select transporter_name from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select transporter_name1 from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as transporter_name, company
-		from `tabStock Ledger Entry`
-		where company = %(company)s and
-			posting_date between %(from_date)s and %(to_date)s
-			{sle_conditions}
-			order by posting_date asc, posting_time asc, name asc) as data {branch_cond}"""\
-		.format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters)),  filters, as_dict=1)
+	return frappe.db.sql("""select * from (
+                select sle.posting_date, convert(sle.posting_time,time) as posting_time, sle.item_code,
+			(CASE
+                                WHEN sle.voucher_type = 'Stock Entry' THEN se.branch
+                                WHEN sle.voucher_type = 'Delivery Note' THEN dn.branch
+                                WHEN sle.voucher_type = 'Production' THEN prod.branch
+                                WHEN sle.voucher_type = 'Purchase Receipt' THEN pr.branch
+                                ELSE 'None' END) as branch, 
+			sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
+			sle.stock_value,
+			(CASE
+                                WHEN sle.voucher_type = 'Production' AND pmi.name = sle.voucher_detail_no THEN 'Raw Materials'
+                                ELSE sle.voucher_type
+                                END) as voucher_type,
+			sle.voucher_no, sle.batch_no, sle.serial_no, 
+			(CASE 
+                                WHEN sle.voucher_type = 'Stock Entry' THEN se.vehicle_no
+                                WHEN sle.voucher_type = 'Delivery Note' THEN dn.vehicle
+                                END) as vehicle_no, 
+			(CASE 
+                                WHEN sle.voucher_type = 'Stock Entry' THEN se.transporter_name 
+                                WHEN sle.voucher_type = 'Delivery Note' THEN dn.transporter_name1
+                                ELSE 'None' END) as transporter_name,
+                        sle.company
+		from
+                        `tabStock Ledger Entry` sle
+                        left join `tabStock Entry` se on se.name = sle.voucher_no
+                        left join `tabDelivery Note` dn on dn.name = sle.voucher_no
+                        left join `tabProduction` prod on prod.name = sle.voucher_no
+                        left join `tabProduction Material Item` pmi on pmi.parent = prod.name
+                        left join `tabPurchase Receipt` pr on pr.name = sle.voucher_no 
+		where sle.company = %(company)s
+		and sle.posting_date between %(from_date)s and %(to_date)s
+		{sle_conditions}
+		order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
+		""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters)),  filters, as_dict=1)
 
 def get_item_details(filters):
 	item_details = {}
-	for item in frappe.db.sql("""select i.name, i.item_name, CASE WHEN i.species is not null THEN (select ts.timber_class from `tabTimber Species` ts where i.species = ts.species) ELSE 'None' END as timber_class, i.description, i.item_group, i.item_sub_group,
-			i.brand, i.stock_uom from `tabItem` i {item_conditions}"""\
-			.format(item_conditions=get_item_conditions(filters)), filters, as_dict=1):
+	for item in frappe.db.sql("""select i.name, i.item_name,
+                        CASE
+                                WHEN i.species is not null THEN (select ts.timber_class from `tabTimber Species` ts where i.species = ts.species)
+                        ELSE 'None' END as timber_class,
+                        i.description, i.item_group, i.item_sub_group,
+			i.brand, i.stock_uom from `tabItem` i {item_conditions}
+		""".format(item_conditions=get_item_conditions(filters)), filters, as_dict=1):
 		item_details.setdefault(item.name, item)
 	return item_details
 
@@ -116,14 +143,19 @@ def get_sle_conditions(filters):
 	conditions = []
 	item_conditions=get_item_conditions(filters)
 	if item_conditions:
-		conditions.append("""item_code in (select name from tabItem
+		conditions.append("""sle.item_code in (select name from tabItem
 			{item_conditions})""".format(item_conditions=item_conditions))
 	if filters.get("warehouse"):
-		conditions.append("warehouse=%(warehouse)s")
+		conditions.append("sle.warehouse=%(warehouse)s")
 	if filters.get("voucher_no"):
-		conditions.append("voucher_no=%(voucher_no)s")
+		conditions.append("sle.voucher_no=%(voucher_no)s")
 	if filters.get("transaction_type"):
-		conditions.append("voucher_type=%(transaction_type)s")
+                if filters.get("transaction_type") == "Raw Materials":
+                        conditions.append("sle.voucher_type= 'Production' and pmi.name = sle.voucher_detail_no")
+                elif filters.get("transaction_type") == "Production":
+                        conditions.append("sle.voucher_type= 'Production' and (pmi.name is null or pmi.name != sle.voucher_detail_no)")
+                else:
+                        conditions.append("sle.voucher_type=%(transaction_type)s")
 
 	return "and {}".format(" and ".join(conditions)) if conditions else ""
 

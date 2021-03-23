@@ -1436,7 +1436,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-14 12:36:20.717201", 
+ "modified": "2020-10-30 10:09:08.396148", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Authorization", 
@@ -1606,7 +1606,7 @@
    "write": 0
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 

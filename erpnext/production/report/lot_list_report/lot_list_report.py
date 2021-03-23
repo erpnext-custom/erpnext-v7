@@ -21,7 +21,7 @@ def validate_filters(filters):
 		frappe.throw(_("From Date cannot be greater than To Date"))
 
 def get_data(filters):
-	query = "select * from (select case when ll.sales_order != 'NULL' then 'Sold' when ll.production != 'NULL' then 'Taken For Sawing' when ll.stock_entry != 'NULL' then 'Stock Transfered' else 'Unsold' end as status , CASE WHEN (select ts.timber_class from `tabTimber Species` ts, `tabItem` i where ts.species = i.species and ll.item = i.name) is not null then (select ts.timber_class from `tabTimber Species` ts, `tabItem` i where ts.species = i.species and ll.item = i.name) else 'NULL' end as timber_class , ll.posting_date as posting_date, ll.item as item_code, ll.item_name, ll.item_sub_group as type, ll.total_volume as volume, ll.total_pieces as pieces, ll.lot_no, monthname(ll.posting_date) as month,ll.branch,ll.warehouse from `tabLot List` ll) as data where posting_date >= \'"+str(filters.from_date)+"\' and posting_date <= \'"+str(filters.to_date)+"\'"
+	query = "select * from (select case when ll.sales_order != 'NULL' then 'Sold' when ll.production != 'NULL' then 'Taken For Sawing' when ll.stock_entry != 'NULL' then 'Stock Transfered' else 'Unsold' end as status , lld.timber_class as timber_class , ll.posting_date as posting_date, lld.item as item_code, lld.item_name, lld.item_sub_group as type, lld.total_volume as volume, lld.total_pieces as pieces, ll.lot_no, monthname(ll.posting_date) as month,ll.branch,ll.warehouse from `tabLot List` ll , `tabLot List Details` lld where ll.name = lld.parent) as data where posting_date >= \'"+str(filters.from_date)+"\' and posting_date <= \'"+str(filters.to_date)+"\'"
 
 	if filters.cost_center:
         	all_ccs = get_child_cost_centers(filters.cost_center)
@@ -82,19 +82,19 @@ def get_columns():
 			"fieldname": "lot_no",
 			"label": _("Lot Number"),
 			"fieldtype": "Link",
-			"options": "Lot List",
+			"options":"Lot List",
 			"width": 120
 		},
 		{
 			"fieldname": "pieces",
 			"label": _("Total Pieces"),
-			"fieldtype": "Data",
+			"fieldtype": "Int",
 			"width": 120
 		},
 		{
 			"fieldname": "volume",
 			"label": _("Total Volume"),
-			"fieldtype": "Data",
+			"fieldtype": "Float",
 			"width": 120
 		},
 		{

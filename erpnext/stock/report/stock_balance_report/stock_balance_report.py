@@ -18,12 +18,11 @@ def execute(filters=None):
 	iwb_map = get_item_warehouse_map(filters)
 
 	data = []
-	for (company, item, branch, warehouse) in sorted(iwb_map):
-		qty_dict = iwb_map[(company, item, branch, warehouse)]
+	for (company, item, warehouse) in sorted(iwb_map):
+		qty_dict = iwb_map[(company, item, warehouse)]
 		data.append([item, item_map[item]["item_name"],
 			item_map[item]["item_group"],
 			item_map[item]["item_sub_group"],
-			branch,
 			warehouse,
 			item_map[item]["rack"],
 			item_map[item]["stock_uom"], qty_dict.opening_qty,
@@ -77,15 +76,9 @@ def get_columns():
                         "fieldtype": "Data",
                         "width": 100
                 },
-		{
+				{
                         "label": "Material Sub Group",
                         "fieldtype": "Data",
-                        "width": 100
-                },
-						{
-                        "label": "Branch",
-                        "fieldtype": "Link",
-                        "options": "Branch",
                         "width": 100
                 },
 		{
@@ -161,42 +154,116 @@ def get_conditions(filters):
 		frappe.throw(_("'From Date' is required"))
 
 	if filters.get("to_date"):
-		conditions += " and sle.posting_date <= '%s'" % frappe.db.escape(filters["to_date"])
+		conditions += " and posting_date <= '%s'" % frappe.db.escape(filters["to_date"])
 	else:
 		frappe.throw(_("'To Date' is required"))
 
 	if filters.get("item_code"):
-		conditions += " and sle.item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
+		conditions += " and item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
 	
 	if filters.get("item_group") and not filters.get("item_code"):
+		if not filters.get("item_sub_group"):
+			conditions += """
+				and exists(select 1
+					from `tabItem` i
+					where i.name = `tabStock Ledger Entry`.item_code
+					and i.item_group = "{}")
+			""".format(filters.get("item_group"))
+		else:
+			conditions += """
+				and exists(select 1
+					from `tabItem` i
+					where i.name = `tabStock Ledger Entry`.item_code
+					and i.item_sub_group = "{}")
+			""".format(filters.get("item_sub_group"))
+	
+	if filters.get("timber_prod_group"):
+		if filters.get("tp_sub_group"):
+			conditions += """
+				and exists (select 1
+					from `tabItem` i
+					where i.name = `tabStock Ledger Entry`.item_code
+					and i.item_sub_group = "{}")
+			""".format(filters.get("tp_sub_group"))
+		
+		else:
+			if filters.timber_prod_group == "Timber By-Product":
+				conditions += """
+					and exists (select 1
+					 from `tabItem` i
+					 where i.name = `tabStock Ledger Entry`.item_code
+					 and i.item_sub_group in 
+					('Firewood, Bhutan Furniture','BBPL firewood','Firewood(BBPL)','Firewood (Bhutan Ply)','Firewood','Post','Bakals','Woodchips','Briquette','Off-cuts/Sawn timber waste','Off-Cuts','Saw Dust'))"""
+
+			elif filters.timber_prod_group == "Timber Finished Product":
+				conditions += """
+					and exists (select 1
+					 from `tabItem` i
+					 where i.name = `tabStock Ledger Entry`.item_code
+					 and i.item_sub_group in ('Joinery Products','Glulaminated Product'))"""
+
+			elif filters.timber_prod_group == "Nursery and Plantation":
+				conditions += """
+					and exists (select 1
+					 from `tabItem` i
+					 where i.name = `tabStock Ledger Entry`.item_code
+					 and i.item_sub_group in ('Tree Seedlings','Flower Seedlings'))"""
+
+			else:
+				conditions += """
+					and exists (select 1
+					 from `tabItem` i
+					 where i.name = `tabStock Ledger Entry`.item_code
+					 and i.item_sub_group in ('Log','Pole','Hakaries','Sawn','Field Sawn','Block','Block (Special Size)'))"""
+	
+	if filters.get("timber_class"):
 		conditions += """
-			and exists(select 1
-				from `tabItem` 
-				where `tabItem`.name = `tabStock Ledger Entry`.item_code
-				and `tabItem`.item_group = "{}")
-		""".format(filters.get("item_group"))
+			and exists (select 1
+				from `tabItem` i, `tabTimber Species` ts
+				where i.name = `tabStock Ledger Entry`.item_code
+				and i.species = ts.species
+				and ts.timber_class = '{}')
+		""".format(filters.get("timber_class"))
+
+	# if filters.get("cost_center"):
+	# 	all_ccs = get_child_cost_centers(filters.get("cost_center"))
+	# 	conditions += " and p.branch IN (select b.name from `tabCost Center` cc, `tabBranch` b where b.cost_center = cc.name and cc.name in {0})".format(tuple(all_ccs))
+
+	# if filters.get("branch"):
+	# 	branch = filters.get("branch")
+	# 	branch = branch.replace("- NRDCL","")
+	# 	conditions += " and p.branch IN (select b.name from `tabBranch` b where b.name = '%s')"%(branch)
 
 	if filters.get("cost_center"):
-		conditions += " and p.branch IN (select b.name from `tabBranch` b inner join `tabCost Center` cc on b.cost_center = cc.name \
-		where cc.name = '%s' or cc.parent_cost_center = '%s')"%(filters.get("cost_center"), filters.get("cost_center"))
-
-	if filters.get("branch"):
-		branch = filters.get("branch")
-		branch = branch.replace("- NRDCL","")
-		conditions += " and p.branch IN (select b.name from `tabBranch` b where b.name = '%s')"%(branch)
+		if filters.get("cost_center") != "Natural Resource Development Corporation Ltd - NRDCL":
+			if not filters.get("branch"):
+				conditions += " and warehouse IN (select wh.name from `tabWarehouse` wh inner join `tabWarehouse Branch` wi on wh.name=wi.parent \
+				inner join `tabBranch` b on b.name=wi.branch inner join `tabCost Center` cc on b.cost_center = cc.name \
+				where cc.name = '%s' or cc.parent_cost_center = '%s')"%(filters.get("cost_center"), filters.get("cost_center"))
+			else:
+				'''
+				conditions += " and warehouse IN (select wh.name from `tabWarehouse` wh inner join `tabWarehouse Branch` wi on wh.name=wi.parent \
+				inner join `tabBranch` b on b.name=wi.branch inner join `tabCost Center` cc on b.cost_center = cc.name \
+				where b.branch = '%s' and cc.name = '%s' or cc.parent_cost_center = '%s')"%(filters.get("branch"), filters.get("cost_center"), filters.get("cost_center"))		
+				'''
+				
+				branch_name = frappe.db.get_value("Branch",{"cost_center": filters.get("branch")}, "name") 
+				conditions += " and exists(select 1 from `tabWarehouse` wh inner join `tabWarehouse Branch` wi on wh.name=wi.parent \
+				where wi.branch = '%s')"%(branch_name)
+		# frappe.msgprint(str(conditions))	
 		
 
 	if filters.get("warehouse"):
-		conditions += " and sle.warehouse = '%s'" % frappe.db.escape(filters.get("warehouse"), percent=False)
+		conditions += " and warehouse = '%s'" % frappe.db.escape(filters.get("warehouse"), percent=False)
 
 	return conditions
 
 def get_stock_ledger_entries(filters):
 	conditions = get_conditions(filters)
-	return frappe.db.sql("""select sle.item_code, p.branch, sle.warehouse, sle.posting_date, sle.actual_qty, sle.valuation_rate,
-			sle.company, sle.voucher_type, sle.qty_after_transaction, sle.stock_value_difference
-		from `tabStock Ledger Entry` sle force index (posting_sort_index), `tabProduction` p 
-		where sle.voucher_no = p.name and sle.docstatus < 2 %s order by sle.posting_date, sle.posting_time, sle.name""" %
+	return frappe.db.sql("""select item_code, voucher_type, voucher_no, warehouse, posting_date, actual_qty, valuation_rate,
+			company, voucher_type, qty_after_transaction, stock_value_difference
+		from `tabStock Ledger Entry` force index (posting_sort_index)
+		where docstatus < 2 %s order by posting_date, posting_time, name""" %
 		conditions, as_dict=1)
 
 def get_item_warehouse_map(filters):
@@ -207,7 +274,7 @@ def get_item_warehouse_map(filters):
 	sle = get_stock_ledger_entries(filters)
 
 	for d in sle:
-		key = (d.company, d.item_code, d.branch, d.warehouse)
+		key = (d.company, d.item_code, d.warehouse)
 		if key not in iwb_map:
 			iwb_map[key] = frappe._dict({
 				"opening_qty": 0.0, "opening_val": 0.0,
@@ -217,7 +284,7 @@ def get_item_warehouse_map(filters):
 				"val_rate": 0.0, "uom": None
 			})
 
-		qty_dict = iwb_map[(d.company, d.item_code, d.branch, d.warehouse)]
+		qty_dict = iwb_map[(d.company, d.item_code, d.warehouse)]
 
 		if d.voucher_type == "Stock Reconciliation":
 			qty_diff = flt(d.qty_after_transaction,5) - flt(qty_dict.bal_qty,5)

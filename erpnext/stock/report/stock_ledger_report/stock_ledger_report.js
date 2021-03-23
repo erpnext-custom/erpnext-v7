@@ -210,7 +210,7 @@ frappe.query_reports["Stock Ledger Report"] = {
 			"label": __("Transaction Type"),
 			"fieldtype": "Select",
 			"width": "80",
-			"options": ["Stock Entry", "Production", "Delivery Note", "Stock Reconciliation", "Purchase Receipt"]
+			"options": ["Stock Entry", "Raw Materials", "Production", "Delivery Note", "Stock Reconciliation", "Purchase Receipt"]
 		},
 		{
 			"fieldname":"voucher_no",

@@ -37,6 +37,9 @@ class LotAllotment(Document):
 	
 	def on_submit(self):
 		self.sendsms()
+	
+	def on_cancel(self):
+		self.send_cancel_sms()
 
 	def check_duplicates(self):
 		entries = []
@@ -53,6 +56,16 @@ class LotAllotment(Document):
 			for d in self.lot_list_lot:
 				lots.append(d.lot_number)
 			msg = "Dear Customer, Timber Lot Number(s) {0} Are Alloted To Your Site {2}. Tran Ref No {1}.".format(tuple(lots),self.name, self.site)
+		mobile_no = frappe.db.get_value("User", self.customer_id, "mobile_no")
+		if mobile_no:
+			send_sms(mobile_no, msg)
+	
+	def send_cancel_sms(self,msg=None):
+		if self.docstatus == 1:
+			lots = []
+			for d in self.lot_list_lot:
+				lots.append(d.lot_number)
+			msg = "Dear Customer, Timber Lot Number(s) {0} which were alloted to your site {2} has been cancelled. Tran Ref No {1}.".format(tuple(lots),self.name, self.site)
 		mobile_no = frappe.db.get_value("User", self.customer_id, "mobile_no")
 		if mobile_no:
 			send_sms(mobile_no, msg)

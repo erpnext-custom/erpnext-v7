@@ -4,7 +4,8 @@
 from __future__ import unicode_literals
 import frappe
 import frappe.defaults
-from frappe.utils import cint, flt
+from frappe.utils import cint, flt, datetime
+from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff, today, get_first_day, get_last_day
 from frappe import _, msgprint, throw
 from erpnext.accounts.party import get_party_account, get_due_date
 from erpnext.controllers.stock_controller import update_gl_entries_after
@@ -54,6 +55,15 @@ class SalesInvoice(SellingController):
 			self.indicator_title = _("Paid")
 
 	def validate(self):
+		if 'Sales Master' not in frappe.get_roles(frappe.session.user):
+			today = datetime.datetime.now()
+			DD = datetime.timedelta(days=3)
+			earlier = today - DD
+			date = earlier.strftime("%Y-%m-%d")
+			if (self.posting_date < date or get_first_day(self.posting_date)!=get_first_day(today)):
+				frappe.throw("You Can Not Save or Submit For Posting Date Beyond Past 3 Days or For Previous Month")
+				frappe.validated = false
+
 		check_future_date(self.posting_date)
 		super(SalesInvoice, self).validate()
 		self.check_ba()
@@ -554,8 +564,8 @@ class SalesInvoice(SellingController):
 		self.make_gle_for_change_amount(gl_entries)
 
 		self.make_write_off_gl_entry(gl_entries)
-		if self.name =="SI19030062":
-			frappe.throw("{0}".format(gl_entries))
+		#if self.name =="SI19030062":
+		#	frappe.throw("{0}".format(gl_entries))
 		return gl_entries
 
 	def make_customer_gl_entry(self, gl_entries):
