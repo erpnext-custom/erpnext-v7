@@ -76,10 +76,8 @@ class SellingPrice(Document):
 def get_cop_amount(cop, branch, posting_date, item_code):
 	if not cop or not branch or not posting_date or not item_code:
 		frappe.throw("COP, Branch, Item Code and Posting Date are mandatory")
-	item_sub_group = frappe.db.get_value("Item", item_code, "item_sub_group")
-	if not item_sub_group:
-		frappe.db.sql("No Item Sub Group Assigned")
-	cop_amount = frappe.db.sql("select cop_amount from `tabCOP Rate Item` where parent = %s and item_sub_group = %s", (cop, item_sub_group), as_dict=1)
+
+	cop_amount = frappe.db.sql("select cop_amount from `tabCOP Rate Item` where parent = %s and item = %s", (cop, item_code), as_dict=1)
 	return cop_amount and flt(cop_amount[0].cop_amount) or 0.0
 
 

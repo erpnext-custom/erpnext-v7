@@ -18,6 +18,11 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Material Return",
+					"description": _("Return of Materials."),
+				},
+				{
+					"type": "doctype",
 					"name": "Delivery Note",
 					"description": _("Shipments to customers."),
 				},
@@ -85,6 +90,12 @@ def get_data():
 					"name": "Site Name",
 					"label": _("Site Name"),
 					"description": _("Site name master data"),
+				},
+				{
+					"type": "doctype",
+					"name": "Subsite Name",
+					"label": _("Subsite Name"),
+					"description": _("Subsite name master data"),
 				},
 				{
 					"type": "doctype",

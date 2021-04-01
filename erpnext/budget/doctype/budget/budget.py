@@ -18,6 +18,7 @@ class Budget(Document):
 		self.name = make_autoname(self.cost_center + "/" + self.fiscal_year + "/.###")
 
 	def validate(self):
+		# frappe.msgprint("fiscal year: {}".format(self.fiscal_year))
 		self.validate_duplicate()
 		self.validate_accounts()
 		self.calculate_budget()

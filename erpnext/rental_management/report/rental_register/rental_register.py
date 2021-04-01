@@ -111,10 +111,17 @@ def get_data(filters):
 		query += " and rpi_parent.payment_mode = '{0}'".format(filters.get("payment_mode"))
 
 	if filters.get("rental_official"):
-		query += " and rpi_parent.rental_official = '{0}'".format(filters.get("rental_official"))
+		if filters.get("rental_official") == 'Dorji Wangmo': 
+			# two dorji wangmo in the system. use the below
+			official = "NHDCL1905030"
+		else: 
+			emp = frappe.db.sql("select name from tabEmployee where employee_name = '{}'".format(filters.get("rental_official")), as_dict=True)
+			official = emp[0].name
+		query += " and rpi_parent.rental_official = '{0}'".format(official)
 
 	if filters.get("from_month") == filters.get("to_month"): 
 		query += " and rb.month = {0}".format(filters.get("from_month"))
+
 	if filters.get("from_month") != filters.get("to_month"): 
 		query += " and rb.month between {0} and {1}".format(filters.get("from_month"),filters.get("to_month"))
 	
@@ -123,7 +130,7 @@ def get_data(filters):
 	# # Cannot look at a month by itself.
 	# if filters.get("from_month") and filters.get("to_month"):
 	# 	query += " and rb.month between {0} and {1}".format(filters.get("from_month"),filters.get("to_month"))
-	
+
 	return frappe.db.sql(query)
 
 

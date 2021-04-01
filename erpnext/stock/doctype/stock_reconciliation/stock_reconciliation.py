@@ -271,13 +271,13 @@ class StockReconciliation(StockController):
 			self.append("items", item)
 
 	def submit(self):
-		if len(self.items) > 100:
+		if len(self.items) > 500:
 			self.queue_action('submit')
 		else:
 			self._submit()
 
 	def cancel(self):
-		if len(self.items) > 100:
+		if len(self.items) > 500:
 			self.queue_action('cancel')
 		else:
 			self._cancel()

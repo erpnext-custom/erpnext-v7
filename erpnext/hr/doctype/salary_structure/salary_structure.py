@@ -467,6 +467,12 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                 if d['salary_component'] == 'PF':
                                         percent = flt(settings.get("employee_pf"))
                                         pf = round((flt(basic_amt)+flt(basic_pay_arrears))*flt(percent)*0.01);
+                                        # added by phuntsho on feb 11 2021
+                                        # calculate the employer pf which is needed for journal entry
+                                        employer_percent = flt(settings.get("employer_pf"))
+                                        employer_pf_amount = round((flt(basic_amt)+flt(basic_pay_arrears))*flt(employer_percent)*0.01);
+                                        target.employer_pf = employer_pf_amount
+                                        # ----- end of code by phuntsho -----
                                         d['amount'] = pf
                                 if d['salary_component'] == 'Group Insurance Scheme':
                                         gis = flt(settings.get("gis"))

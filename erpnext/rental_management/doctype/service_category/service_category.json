@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "field:category", 
  "beta": 0, 
@@ -47,8 +47,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-08-29 17:18:08.112420", 
- "modified_by": "Administrator", 
+ "modified": "2021-03-02 16:01:41.122033", 
+ "modified_by": "dechen.lhaden@thimphutechpark.bt", 
  "module": "Rental Management", 
  "name": "Service Category", 
  "name_case": "", 

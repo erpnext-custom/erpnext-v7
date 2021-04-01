@@ -85,31 +85,31 @@ class ProcessRentalBilling(AccountsController):
 					yearmonth = str(self.fiscal_year) + str(self.month)
 
 					query = """
-                                                            select cid, tenant_name, customer_code, block_no, business_activity, flat_no, 
-                                                            ministry_agency, location, branch, department, dzongkhag, designation, 
-                                                            mobile_no, town_category, building_category, allocated_date, 
+								select cid, tenant_name, customer_code, block_no, business_activity, flat_no, 
+								ministry_agency, location, branch, department, dzongkhag, designation, 
+								mobile_no, town_category, building_category, allocated_date, 
 							    (Case 
 								WHEN building_category = 'Pilot Housing' Then original_monthly_instalment  
 								Else rental_amount 
 							    End) as rental_amount
-                                                            from `tabTenant Information` t 
-                                                            inner join `tabTenant Rental Charges` r 
-                                                            on t.name = r.parent 
-                                                            where '{0}' between r.from_date and r.to_date 
-						       	    and (exists(select 1
-								           from `tabRental Bill` as t2
-							                   where t2.tenant = t.name
-							                   and t2.docstatus != 2 
-							                   and t2.fiscal_year = '{2}'
-							                   and t2.month = '{3}'
-									) 
+								from `tabTenant Information` t 
+									inner join `tabTenant Rental Charges` r 
+									on t.name = r.parent 
+									where '{0}' between r.from_date and r.to_date 
+								and (exists(select 1
+									from `tabRental Bill` as t2
+										where t2.tenant = t.name
+										and t2.docstatus != 2 
+										and t2.fiscal_year = '{2}'
+										and t2.month = '{3}'
+								) 
 								or not exists(select 1
-	                                                                   from `tabRental Bill` as t3
-						                           where t3.tenant = '{1}'
-									   and t3.docstatus != 2	
+	                                    from `tabRental Bill` as t3
+						                	where t3.tenant = '{1}'
+									   		and t3.docstatus != 2	
 							      		))
 						            and t.name = '{1}';
-                                                            """.format(bill_date, name, prev_fiscal_year, prev_month)
+                            """.format(bill_date, name, prev_fiscal_year, prev_month)
 					dtls = frappe.db.sql(query, as_dict=True)
 
 					if dtls:

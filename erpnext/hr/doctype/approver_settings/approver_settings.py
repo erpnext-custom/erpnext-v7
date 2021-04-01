@@ -26,7 +26,13 @@ def get_final_approver(branch):
 	cc = frappe.db.get_value("Cost Center", get_branch_cc(branch), "parent_cost_center")
 	approver = frappe.db.get_value("Approver Settings", {"cost_center": cc}, "user_id")
 	if not approver:
-		frappe.throw("Setup the final approver in Approval Settings")
+		cc = frappe.db.get_value("Cost Center", cc, "parent_cost_center")
+		if cc:
+			approver = frappe.db.get_value("Approver Settings", {"cost_center": cc}, "user_id")
+			if not approver:
+				cc = frappe.db.get_value("Cost Center", cc, "parent_cost_center")
+				if cc: 
+					approver = frappe.db.get_value("Approver Settings", {"cost_center": cc}, "user_id")
+					if not approver:
+						frappe.throw("Setup the final approver in Approval Settings")
 	return approver
-
-

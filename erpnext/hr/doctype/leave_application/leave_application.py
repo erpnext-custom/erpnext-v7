@@ -152,18 +152,35 @@ class LeaveApplication(Document):
 		e = getdate(self.to_date)
 		days = date_diff(e, d) + 1
 		for a in (d + timedelta(n) for n in range(days)):
-			if getdate(a).weekday() != 6:
-				#create attendance
-				attendance = frappe.new_doc("Attendance")
-				attendance.flags.ignore_permissions = 1
-				attendance.employee = self.employee
-				attendance.employee_name = self.employee_name 
-				attendance.att_date = a
-				attendance.status = "Leave"
-				attendance.branch = self.branch
-				attendance.company = self.company
-				attendance.reference_name = self.name
-				attendance.submit()
+			if not self.half_day:
+				if getdate(a).weekday() != 6:
+					#create attendance
+					attendance = frappe.new_doc("Attendance")
+					attendance.flags.ignore_permissions = 1
+					attendance.employee = self.employee
+					attendance.employee_name = self.employee_name 
+					attendance.att_date = a
+					attendance.status = "Leave"
+					attendance.branch = self.branch
+					attendance.company = self.company
+					attendance.reference_name = self.name
+					#attendance.submit()
+			else:
+				if frappe.db.exists("Attendance", {"employee":self.employee, "att_date":a, "status":"Half Day"}):
+					frappe.db.sql("update `tabAttendance` set status = 'Leave' where employee = '{0}' and att_date = '{1}'".format(self.employee, a))
+				else:
+					if getdate(a).weekday() != 6:
+						#create attendance
+						attendance = frappe.new_doc("Attendance")
+						attendance.flags.ignore_permissions = 1
+						attendance.employee = self.employee
+						attendance.employee_name = self.employee_name 
+						attendance.att_date = a
+						attendance.status = "Half Day"
+						attendance.branch = self.branch
+						attendance.company = self.company
+						attendance.reference_name = self.name
+						#attendance.submit()
 
 	def cancel_attendance(self):
 		frappe.db.sql("update tabAttendance set docstatus = 2 where reference_name = %s", (self.name))

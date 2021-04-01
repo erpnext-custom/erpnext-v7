@@ -30,10 +30,6 @@ class Production(StockController):
 		self.validate_posting_time()
 
 	def validate_data(self):
-		if self.production_type == "Adhoc" and not self.adhoc_production:
-			frappe.throw("Select Adhoc Production to Proceed")
-		if self.production_type == "Planned":
-			self.adhoc_production = None
 		if self.work_type == "Private" and not self.supplier:
 			frappe.throw("Contractor is Mandatory if work type is private")
 
@@ -61,7 +57,6 @@ class Production(StockController):
                         """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
 		for item in self.get("items"):
-			item.production_type = self.production_type
 			item.item_name, item.item_group, item.item_sub_group, item.timber_species = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group", "species"])
 
 			if item.item_code not in prod_items:
@@ -71,33 +66,33 @@ class Production(StockController):
 			if flt(item.cop) <= 0:
 				frappe.throw(_("COP for <b>{0}</b> cannot be zero or less").format(item.item_code))
 		
-			if self.production_type == "Planned":
-				continue
-			if item.item_sub_group == "Pole" and flt(item.qty_in_no) <= 0:
-				frappe.throw("Number of Poles is required for Adhoc Loggings")
-			reading_required, par, min_val, max_val = frappe.db.get_value("Item Sub Group", item.item_sub_group, ["reading_required", "reading_parameter", "minimum_value", "maximum_value"])
-			if reading_required:
-				if not flt(min_val) <= flt(item.reading) <=  flt(max_val):
-					frappe.throw("<b>{0}</b> reading should be between {1} and {2} for {3} for Adhoc Production".format(par, frappe.bold(min_val), frappe.bold(max_val), frappe.bold(item.item_code)))
-			else:
-				item.reading = 0
+			# if self.production_type == "Planned":
+			# 	continue
+			# if item.item_sub_group == "Pole" and flt(item.qty_in_no) <= 0:
+			# 	frappe.throw("Number of Poles is required for Adhoc Loggings")
+			# reading_required, par, min_val, max_val = frappe.db.get_value("Item Sub Group", item.item_sub_group, ["reading_required", "reading_parameter", "minimum_value", "maximum_value"])
+			# if reading_required:
+			# 	if not flt(min_val) <= flt(item.reading) <=  flt(max_val):
+			# 		frappe.throw("<b>{0}</b> reading should be between {1} and {2} for {3} for Adhoc Production".format(par, frappe.bold(min_val), frappe.bold(max_val), frappe.bold(item.item_code)))
+			# else:
+			# 	item.reading = 0
 			
-			in_inches = 0
-			f = str(item.reading).split(".")
-			in_inches = cint(f[0]) * 12
-			if len(f) > 1:
-				if cint(f[1]) > 11:
-					frappe.throw("Inches should be smaller than 12 on row {0}".format(item.idx))
-				in_inches += cint(f[1])
-			item.reading_inches = in_inches
+			# in_inches = 0
+			# f = str(item.reading).split(".")
+			# in_inches = cint(f[0]) * 12
+			# if len(f) > 1:
+			# 	if cint(f[1]) > 11:
+			# 		frappe.throw("Inches should be smaller than 12 on row {0}".format(item.idx))
+			# 	in_inches += cint(f[1])
+			# item.reading_inches = in_inches
 
-			""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-                        # Following code added by SHIV on 2019/04/01
-                        item.business_activity = self.business_activity
-			item.cost_center = self.cost_center
-                        item.warehouse = self.warehouse
-                        item.expense_account = get_expense_account(self.company, item.item_code)
-                        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+			# """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+            #             # Following code added by SHIV on 2019/04/01
+            #             item.business_activity = self.business_activity
+			# item.cost_center = self.cost_center
+            #             item.warehouse = self.warehouse
+            #             item.expense_account = get_expense_account(self.company, item.item_code)
+            #             """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
 	def check_cop(self):
 		for a in self.items:
@@ -105,7 +100,7 @@ class Production(StockController):
 			if not branch:
 				frappe.throw("Selected COP is not defined for your Branch")
 
-			cop = frappe.db.sql("select cop_amount from `tabCOP Rate Item` where parent = %s and item_sub_group = %s", (a.price_template, str(frappe.db.get_value("Item", a.item_code, "item_sub_group"))), as_dict=1)
+			cop = frappe.db.sql("select cop_amount from `tabCOP Rate Item` where parent = %s and item = %s", (a.price_template, a.item_code), as_dict=1)
 			if not cop:
 				frappe.throw("COP Rate is not defined for your Item")
 			a.cop = cop[0].cop_amount
@@ -318,12 +313,11 @@ class Production(StockController):
 			doc.warehouse = self.warehouse
 			doc.posting_date = str(self.posting_date) + " " + str(self.posting_time)
 			doc.ref_doc = self.name
-			doc.production_type = self.production_type
-			doc.adhoc_production = self.adhoc_production
-			doc.timber_species = a.timber_species
-			doc.cable_line_no = self.cable_line_no
-			if a.timber_species:
-				doc.timber_class, doc.timber_type = frappe.db.get_value("Timber Species", a.timber_species, ["timber_class", "timber_type"])
+			# doc.production_type = self.production_type
+			# doc.timber_species = a.timber_species
+			# doc.cable_line_no = self.cable_line_no
+			# if a.timber_species:
+			# 	doc.timber_class, doc.timber_type = frappe.db.get_value("Timber Species", a.timber_species, ["timber_class", "timber_type"])
 			doc.submit()
 
 	def delete_production_entry(self):
@@ -335,3 +329,4 @@ def get_expense_account(company, item):
         if not expense_account:
                 expense_account = frappe.db.get_value("Item", item, "expense_account")
         return expense_account
+

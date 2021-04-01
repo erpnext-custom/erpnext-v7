@@ -130,6 +130,7 @@ class PurchaseReceipt(BuyingController):
 		frappe.db.set(self, 'status', 'Submitted')
 
 		self.update_po_detail()
+
 		if self.is_return:
 			self.update_bill_status_pr()
 		else:
@@ -264,6 +265,7 @@ class PurchaseReceipt(BuyingController):
 		frappe.db.set(self,'status','Cancelled')
 
 		self.update_po_detail()
+		
 		if self.is_return:
 			self.update_bill_status_pr()
 		else:

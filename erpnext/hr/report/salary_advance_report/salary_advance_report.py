@@ -42,7 +42,7 @@ def get_data(filters):
                                 where sd.reference_number = sa.name
                                 and sd.docstatus = 1
                                 ) total_collected
-                        from `tabSalary Advance` sa
+                        from `tabSalary Advance` sa\
                         where sa.docstatus = 1 %s
                 ) x
                 """ % conditions, filters)

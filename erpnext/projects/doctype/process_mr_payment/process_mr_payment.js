@@ -9,12 +9,12 @@ cur_frm.add_fetch("project", "cost_center", "cost_center")
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
 
 frappe.ui.form.on('Process MR Payment', {
-	setup: function(frm) {
+	setup: function (frm) {
 		frm.get_docfield("items").allow_bulk_edit = 1;
 	},
-	refresh: function(frm) {
+	refresh: function (frm) {
 		if (frm.doc.payment_jv && frappe.model.can_read("Journal Entry")) {
-			cur_frm.add_custom_button(__('Bank Entries'), function() {
+			cur_frm.add_custom_button(__('Bank Entries'), function () {
 				frappe.route_options = {
 					"Journal Entry Account.reference_type": me.frm.doc.doctype,
 					"Journal Entry Account.reference_name": me.frm.doc.name,
@@ -22,45 +22,45 @@ frappe.ui.form.on('Process MR Payment', {
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
 		}
-		frm.set_query("unit", function() {
-                        return {
-                                "filters": {
-                                        "branch": frm.doc.branch,
-                                }
-                        };
-                });
+		frm.set_query("unit", function () {
+			return {
+				"filters": {
+					"branch": frm.doc.branch,
+				}
+			};
+		});
 
 	},
 
-	onload: function(frm) {
-		if(!frm.doc.from_date) {
-			frm.set_value("from_date", frappe.datetime.month_start(get_today()))	
+	onload: function (frm) {
+		if (!frm.doc.from_date) {
+			frm.set_value("from_date", frappe.datetime.month_start(get_today()))
 		}
-		if(!frm.doc.to_date) {
-			frm.set_value("to_date", frappe.datetime.month_end(get_today()))	
+		if (!frm.doc.to_date) {
+			frm.set_value("to_date", frappe.datetime.month_end(get_today()))
 		}
-		if(!frm.doc.posting_date) {
-			frm.set_value("posting_date", get_today())	
+		if (!frm.doc.posting_date) {
+			frm.set_value("posting_date", get_today())
 		}
 	},
 
-	load_records: function(frm) {
-		cur_frm.set_df_property("load_records", "disabled",  true);
+	load_records: function (frm) {
+		cur_frm.set_df_property("load_records", "disabled", true);
 		//msgprint ("Processing wages.............")
-		if(frm.doc.from_date && frm.doc.cost_center && frm.doc.employee_type && frm.doc.from_date < frm.doc.to_date) {
+		if (frm.doc.from_date && frm.doc.cost_center && frm.doc.employee_type && frm.doc.from_date < frm.doc.to_date) {
 			get_records(frm.doc.employee_type, frm.doc.fiscal_year, frm.doc.month, frm.doc.from_date, frm.doc.to_date, frm.doc.cost_center, frm.doc.branch, frm.doc.name, frm.doc.unit)
 		}
-		else if(frm.doc.from_date && frm.doc.from_date > frm.doc.to_date) {
+		else if (frm.doc.from_date && frm.doc.from_date > frm.doc.to_date) {
 			msgprint("To Date should be smaller than From Date")
 			frm.set_value("to_date", "")
 		}
 	},
-	load_employee: function(frm) {
+	load_employee: function (frm) {
 		//load_accounts(frm.doc.company)
 		return frappe.call({
 			method: "load_employee",
 			doc: frm.doc,
-			callback: function(r, rt) {
+			callback: function (r, rt) {
 				frm.refresh_field("items");
 				frm.refresh_fields();
 			}
@@ -68,7 +68,7 @@ frappe.ui.form.on('Process MR Payment', {
 	}
 });
 
-var update_details = function(doc){
+var update_details = function (doc) {
 	cur_frm.call({
 		method: "update_details",
 		doc: doc
@@ -89,42 +89,87 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 			"dn": dn,
 			"unit": unit,
 		},
-		callback: function(r) {
-			if(r.message) {
+		callback: function (r) {
+			if (r.message) {
 				var total_overall_amount = 0;
-				var ot_amount = 0; 
+				var ot_amount = 0;
 				var wages_amount = 0;
 				console.log(r.message)
 				cur_frm.clear_table("items");
-				r.message.forEach(function(mr) {
-					if(mr['number_of_days'] > 0 || mr['number_of_hours'] > 0) {
-						var row = frappe.model.add_child(cur_frm.doc, "MR Payment Item", "items");
-						
-						row.employee_type 	= mr['type'];
-						row.employee 		= mr['name'];
-						row.person_name 	= mr['person_name'];
-						row.id_card 		= mr['id_card'];
-						row.business_activity = mr['business_activity'];
-						row.fiscal_year 	= fiscal_year;
-						row.month 			= month;
-						row.number_of_days 	= mr['number_of_days'];
-						row.daily_rate 		= mr['rate_per_day'];
-						row.number_of_hours = mr['number_of_hours'];
-						row.hourly_rate 	= mr['rate_per_hour'];
-						row.total_ot_amount = row.number_of_hours * row.hourly_rate;
-						row.total_wage 		= row.daily_rate * row.number_of_days;
-						
-						if(mr['type'] == 'DES Employee'){
-							row.daily_rate      = parseFloat(mr['salary'])/parseFloat(mr['noof_days_in_month']);
-							row.hourly_rate     = parseFloat(mr['salary']*1.5)/parseFloat(mr['noof_days_in_month']*8);
+				r.message.forEach(function (mr) {
+					if (mr['is_lumpsum'] == 0) {
+						if (mr['number_of_days'] > 0 || mr['number_of_hours'] > 0) {
+							console.log("Going through here 1 = " + mr + " and is lumpsum" + mr['is_lumpsum']);
+							var row = frappe.model.add_child(cur_frm.doc, "MR Payment Item", "items");
+
+							row.employee_type = mr['type'];
+							row.employee = mr['name'];
+							row.person_name = mr['person_name'];
+							row.id_card = mr['id_card'];
+							row.business_activity = mr['business_activity'];
+							row.fiscal_year = fiscal_year;
+							row.month = month;
+							row.number_of_days = mr['number_of_days'];
+							row.daily_rate = mr['rate_per_day'];
+							row.number_of_hours = mr['number_of_hours'];
+							row.hourly_rate = mr['rate_per_hour'];
 							row.total_ot_amount = row.number_of_hours * row.hourly_rate;
-							row.total_wage      = row.daily_rate * row.number_of_days;
-							
-							if((parseFloat(row.total_wage) > parseFloat(mr['salary']))||(parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days']))){
+							row.total_wage = row.daily_rate * row.number_of_days;
+
+							if (mr['type'] == 'DES Employee') {
+								row.daily_rate = parseFloat(mr['salary']) / parseFloat(mr['noof_days_in_month']);
+								row.hourly_rate = parseFloat(mr['salary'] * 1.5) / parseFloat(mr['noof_days_in_month'] * 8);
+								row.total_ot_amount = row.number_of_hours * row.hourly_rate;
+								row.total_wage = row.daily_rate * row.number_of_days;
+
+								if ((parseFloat(row.total_wage) > parseFloat(mr['salary'])) || (parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days']))) {
+									row.total_wage = parseFloat(mr['salary']);
+								}
+							}
+
+							/*
+							if(mr['type'] == 'DES Employee' && parseFloat(row.total_wage) > parseFloat(mr['salary'])){
+								row.total_wage = parseFloat(mr['salary']);
+							}
+							else if(mr['type'] == 'DES Employee' && parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days'])){
+								row.total_wage = parseFloat(mr['salary']);
+							}
+							*/
+
+							row.total_amount = row.total_ot_amount + row.total_wage;
+							refresh_field("items");
+
+							total_overall_amount += row.total_amount;
+							ot_amount += row.total_ot_amount;
+							wages_amount += row.total_wage;
+						}
+					}
+					else if (mr['is_lumpsum'] == 1) {
+						console.log("Going through here  = " + mr);
+						var row = frappe.model.add_child(cur_frm.doc, "MR Payment Item", "items");
+
+						row.employee_type = mr['type'];
+						row.employee = mr['name'];
+						row.person_name = mr['person_name'];
+						row.id_card = mr['id_card'];
+						row.business_activity = mr['business_activity'];
+						row.fiscal_year = fiscal_year;
+						row.month = month;
+						row.lumpsum = mr['lumpsum'];
+						row.total_ot_amount = 0;
+						row.total_wage = row.lumpsum;
+
+						if (mr['type'] == 'DES Employee') {
+							row.daily_rate = parseFloat(mr['salary']) / parseFloat(mr['noof_days_in_month']);
+							row.hourly_rate = parseFloat(mr['salary'] * 1.5) / parseFloat(mr['noof_days_in_month'] * 8);
+							row.total_ot_amount = row.number_of_hours * row.hourly_rate;
+							row.total_wage = row.daily_rate * row.number_of_days;
+
+							if ((parseFloat(row.total_wage) > parseFloat(mr['salary'])) || (parseFloat(mr['noof_days_in_month']) == parseFloat(mr['number_of_days']))) {
 								row.total_wage = parseFloat(mr['salary']);
 							}
 						}
-						
+
 						/*
 						if(mr['type'] == 'DES Employee' && parseFloat(row.total_wage) > parseFloat(mr['salary'])){
 							row.total_wage = parseFloat(mr['salary']);
@@ -133,13 +178,13 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 							row.total_wage = parseFloat(mr['salary']);
 						}
 						*/
-						
-						row.total_amount 	= row.total_ot_amount + row.total_wage;
+
+						row.total_amount = row.total_ot_amount + row.total_wage;
 						refresh_field("items");
 
 						total_overall_amount += row.total_amount;
-						ot_amount 			 += row.total_ot_amount;
-						wages_amount 		 += row.total_wage;
+						ot_amount += row.total_ot_amount;
+						wages_amount += row.total_wage;
 					}
 				});
 

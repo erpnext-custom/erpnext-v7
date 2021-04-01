@@ -9,6 +9,31 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 import frappe.model.rename_doc as rd
+import csv
+
+def remove_gl_entry():
+	for a in frappe.db.sql("select posting_date, name, voucher_type, voucher_no from `tabGL Entry` where posting_date < '2021-01-01' and voucher_type = 'Journal Entry'  and exists(select 1 from `tabJournal Entry` where name = voucher_no)", as_dict=True):
+		if a.voucher_type == "Journal Entry":
+			frappe.db.sql("delete from `tabJournal Entry` where name = '{}'".format(a.voucher_no))
+			frappe.db.sql("delete from `tabJournal Entry Account` where parent = '{}'".format(a.voucher_no))
+			print(str(a.voucher_no))
+
+	
+
+def submit_gl():
+	i=1
+	for a in frappe.db.sql("""
+						select name, posting_date from `tabJournal Entry` 
+						where posting_date < '2021-01-01' 
+						and docstatus = 0
+						and title not like 'Payment for Muster Roll Employee%'
+						and name not in ('JEBP210100002','JEBP201200040','JEBP200300023','JEBP200700031','JEBP200700048','JEBP200900006','JEBP200900014','JEBP201000003','JEBP201000004','JEBP201000005','JEBP201000006','JEBP201000007','JEBP201000008','JEBP201000009','JEBP201000010','JEBP201000011','JEBP201100005','JEBP201100006','JEBP201100007')""", as_dict=True):
+		doc = frappe.get_doc("Journal Entry", a.name)
+		print(str(a.name) + " and " + str(a.posting_date) + " SL " + str(i))
+		doc.submit()
+		frappe.db.commit()
+		print(str(a.name) + " Submitted")
+		i+=1
 
 def update_penalty_writeoff():
 	for a in frappe.db.sql("select name from `tabRental Payment` where docstatus = 1 and write_off_penalty = 1 and penalty_amount < 1", as_dict=True):
@@ -1969,3 +1994,31 @@ def assign_role_approver():
 			print "Success", emp.employee
 		else:
 			print "Failed", emp.employee
+
+def update_item_details(): 
+	with open("/home/frappe/erp/apps/erpnext/erpnext/MR_changes.csv") as f:
+		reader = csv.reader(f)
+		mylist = list(reader)
+		for i in mylist:
+			if i[3] == "delete": 
+				frappe.db.sql("""delete from `tabItem` where name='{}'""".format(i[0]))
+			if i[3] == "name change": 
+				frappe.db.sql("""update `tabItem` set item_name ='{}' where name= '{}'""".format(i[2], i[0]))
+			if i[4] == "unit change": 
+				frappe.db.sql("""update `tabItem` set stock_uom ='{}' where name= '{}'""".format(i[6], i[0]))
+def update_stock_ledger():
+	with open("/home/frappe/erp/apps/erpnext/erpnext/MR_changes.csv") as f:
+		reader = csv.reader(f)
+		mylist = list(reader)
+		for i in mylist:
+			data = frappe.db.sql("select name from tabItem where name ={}".format(i[0]))
+			if not data: 
+				print(i[0])
+				
+# written by phuntsho to update the branch, sitename and cost center for Material Request. 
+# def update_branch_site(): 
+# 	array = ["MR20040004","MR20080017","MR20080021","MR20090001","MR20090001","MR20090012","MR20090036","MR20090037","MR20090039","MR20090038","MR20090047","MR20090063","MR20100026","MR20100040","MR20100058","MR20100063","MR20100103","MR20100141","MR20100138","MR20100160","MR20100154","MR20100173","MR21000171","MR20110051","MR20110100","MR20110044","MR20110163","MR20120011","MR20120040-1","MR20120047","MR20120061","MR20120066","MR20120124","MR21030047","MR21030050","MR21030049","MR21030010","MR21030045","MR21030064","MR21030065","MR21030066","MR21030079","MR21030109-1"]
+# 	for i in array: 
+# 		# frappe.db.sql("update `tabMaterial Request` set branch='Chanjiji Site Office', site_name='Chanjiji Site Office' where name='{}'".format(i))
+# 		frappe.db.sql("update `tabMaterial Request Item` set cost_center_w = 'Chanjiji Site Office - NHDCL' where parent='{}'".format(i))
+# 	print("Done")

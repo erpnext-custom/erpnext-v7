@@ -11,34 +11,34 @@ cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("item_code", "item_name", "item_name")
 cur_frm.add_fetch("item_code", "stock_uom", "uom")
 cur_frm.add_fetch("item_code", "item_group", "item_group")
-cur_frm.add_fetch("item_code", "species", "timber_species")
+// cur_frm.add_fetch("item_code", "species", "timber_species")
 cur_frm.add_fetch("item_code", "item_sub_group", "item_sub_group")
 
 frappe.ui.form.on('Production', {
-	onload: function(frm) {
-                if (!frm.doc.posting_date) {
-                        frm.set_value("posting_date", get_today());
-                }
+	onload: function (frm) {
+		if (!frm.doc.posting_date) {
+			frm.set_value("posting_date", get_today());
+		}
 	},
 
-	setup: function(frm) {
+	setup: function (frm) {
 		frm.get_field('raw_materials').grid.editable_fields = [
-			{fieldname: 'item_code', columns: 3},
-			{fieldname: 'qty', columns: 2},
-			{fieldname: 'uom', columns: 1},
+			{ fieldname: 'item_code', columns: 3 },
+			{ fieldname: 'qty', columns: 2 },
+			{ fieldname: 'uom', columns: 1 },
 		];
 		frm.get_field('items').grid.editable_fields = [
-			{fieldname: 'item_code', columns: 3},
-			{fieldname: 'qty', columns: 2},
-			{fieldname: 'uom', columns: 1},
-			{fieldname: 'item_sub_group', columns: 2},
-			{fieldname: 'cop', columns: 2},
+			{ fieldname: 'item_code', columns: 3 },
+			{ fieldname: 'qty', columns: 2 },
+			{ fieldname: 'uom', columns: 1 },
+			{ fieldname: 'item_sub_group', columns: 2 },
+			{ fieldname: 'cop', columns: 2 },
 		];
 	},
 
-	refresh: function(frm) {
-		if(frm.doc.docstatus == 1) {
-			cur_frm.add_custom_button(__("Stock Ledger"), function() {
+	refresh: function (frm) {
+		if (frm.doc.docstatus == 1) {
+			cur_frm.add_custom_button(__("Stock Ledger"), function () {
 				frappe.route_options = {
 					voucher_no: frm.doc.name,
 					from_date: frm.doc.posting_date,
@@ -48,7 +48,7 @@ frappe.ui.form.on('Production', {
 				frappe.set_route("query-report", "Stock Ledger Report");
 			}, __("View"));
 
-			cur_frm.add_custom_button(__('Accounting Ledger'), function() {
+			cur_frm.add_custom_button(__('Accounting Ledger'), function () {
 				frappe.route_options = {
 					voucher_no: frm.doc.name,
 					from_date: frm.doc.posting_date,
@@ -60,64 +60,64 @@ frappe.ui.form.on('Production', {
 			}, __("View"));
 		}
 	},
-	
+
 	/* ++++++++++ Ver 1.0.190401 Begins ++++++++++*/
 	// Following code added by SHIV on 2019/04/01
-	branch: function(frm){
-		frm.set_value("warehouse","");
+	branch: function (frm) {
+		frm.set_value("warehouse", "");
 	},
-	
-	warehouse: function(frm){
+
+	warehouse: function (frm) {
 		update_items(frm);
 	},
-	
-	cost_center: function(frm){
+
+	cost_center: function (frm) {
 		update_items(frm);
 	},
-	
-	business_activity: function(frm){
+
+	business_activity: function (frm) {
 		update_items(frm);
 	},
 	/* ++++++++++ Ver 1.0.190401 Ends ++++++++++++*/
 });
 
-frappe.ui.form.on("Production", "refresh", function(frm) {
-    cur_frm.set_query("warehouse", function() {
-        return {
-                query: "erpnext.controllers.queries.filter_branch_wh",
-                filters: {'branch': frm.doc.branch}
-        }
-    });
+frappe.ui.form.on("Production", "refresh", function (frm) {
+	cur_frm.set_query("warehouse", function () {
+		return {
+			query: "erpnext.controllers.queries.filter_branch_wh",
+			filters: { 'branch': frm.doc.branch }
+		}
+	});
 
-	cur_frm.set_query("branch", function() {
-        return {
-            "filters": {
-		"is_disabled": 0
-            }
-        };
-    });
-	
-    cur_frm.set_query("location", function() {
-        return {
-            "filters": {
-                "branch": frm.doc.branch,
-		"is_disabled": 0
-            }
-        };
-    });
-    cur_frm.set_query("adhoc_production", function() {
-        return {
-            "filters": {
-                "branch": frm.doc.branch,
-                "location": frm.doc.location,
-		"is_disabled": 0
-            }
-        };
-    });
+	cur_frm.set_query("branch", function () {
+		return {
+			"filters": {
+				"is_disabled": 0
+			}
+		};
+	});
+
+	cur_frm.set_query("location", function () {
+		return {
+			"filters": {
+				"branch": frm.doc.branch,
+				"is_disabled": 0
+			}
+		};
+	});
+	// cur_frm.set_query("adhoc_production", function() {
+	//     return {
+	//         "filters": {
+	//             "branch": frm.doc.branch,
+	//             "location": frm.doc.location,
+	// 	"is_disabled": 0
+	//         }
+	//     };
+	// });
 })
 
-frappe.ui.form.on("Production Product Item", { 
-	"price_template": function(frm, cdt, cdn) {
+frappe.ui.form.on("Production Product Item", {
+	"price_template": function (frm, cdt, cdn) {
 		d = locals[cdt][cdn]
 		frappe.call({
 			method: "erpnext.production.doctype.cost_of_production.cost_of_production.get_cop_amount",
@@ -125,16 +125,16 @@ frappe.ui.form.on("Production Product Item", {
 				"cop": d.price_template,
 				"branch": cur_frm.doc.branch,
 				"item_code": d.item_code,
-				"posting_date": cur_frm.doc.posting_date 
+				"posting_date": cur_frm.doc.posting_date
 			},
-			callback: function(r) {
+			callback: function (r) {
 				frappe.model.set_value(cdt, cdn, "cop", r.message)
 				cur_frm.refresh_field("cop")
 			}
 		})
 	},
 
-	"item_code": function(frm, cdt, cdn) {
+	"item_code": function (frm, cdt, cdn) {
 		/* ++++++++++ Ver 1.0.190401 Begins ++++++++++*/
 		// Following code added by SHIV on 2019/04/01
 		update_expense_account(frm, cdt, cdn);
@@ -142,10 +142,10 @@ frappe.ui.form.on("Production Product Item", {
 		frappe.model.set_value(cdt, cdn, "production_type", frm.doc.production_type)
 		cur_frm.refresh_fields()
 	},
-	
+
 	/* ++++++++++ Ver 1.0.190401 Begins ++++++++++*/
 	// Following code added by SHIV on 2019/04/01
-	items_add: function(frm, cdt, cdn){
+	items_add: function (frm, cdt, cdn) {
 		frappe.model.set_value(cdt, cdn, "business_activity", frm.doc.business_activity);
 		frappe.model.set_value(cdt, cdn, "warehouse", frm.doc.warehouse);
 		frappe.model.set_value(cdt, cdn, "cost_center", frm.doc.cost_center);
@@ -156,26 +156,36 @@ frappe.ui.form.on("Production Product Item", {
 /* ++++++++++ Ver 1.0.190401 Begins ++++++++++*/
 // Following code added by SHIV on 2019/04/01
 frappe.ui.form.on("Production Material Item", {
-	item_code: function(frm, cdt, cdn){
+	item_code: function (frm, cdt, cdn) {
 		update_expense_account(frm, cdt, cdn);
 	},
-	raw_materials_add: function(frm, cdt, cdn){
+	raw_materials_add: function (frm, cdt, cdn) {
 		frappe.model.set_value(cdt, cdn, "business_activity", frm.doc.business_activity);
 		frappe.model.set_value(cdt, cdn, "warehouse", frm.doc.warehouse);
 		frappe.model.set_value(cdt, cdn, "cost_center", frm.doc.cost_center);
 	},
+	qty: function (frm, cdt, cdn) {
+		get_product_qty(frm, cdt, cdn)
+	}
 });
 
-var update_expense_account = function(frm, cdt, cdn){
+var get_product_qty = function (frm, cdt, cdn) {
+	var row = locals[cdt][cdn]
+	if (!cur_frm.doc.items) {
+		frappe.throw("Please enter product detail inside Product Details Table")
+	}
+}
+
+var update_expense_account = function (frm, cdt, cdn) {
 	var row = locals[cdt][cdn];
-	if(row.item_code){
+	if (row.item_code) {
 		frappe.call({
 			method: "erpnext.production.doctype.production.production.get_expense_account",
 			args: {
 				"company": frm.doc.company,
 				"item": row.item_code,
 			},
-			callback: function(r){
+			callback: function (r) {
 				frappe.model.set_value(cdt, cdn, "expense_account", r.message);
 				cur_frm.refresh_field("expense_account");
 			}
@@ -183,25 +193,25 @@ var update_expense_account = function(frm, cdt, cdn){
 	}
 }
 
-var update_items = function(frm){
+var update_items = function (frm) {
 	// Production Product Item
 	var items = frm.doc.items || [];
-	for(var i=0; i<items.length; i++){
+	for (var i = 0; i < items.length; i++) {
 		frappe.model.set_value("Production Product Item", items[i].name, "business_activity", frm.doc.business_activity);
 		frappe.model.set_value("Production Product Item", items[i].name, "cost_center", frm.doc.cost_center);
 		frappe.model.set_value("Production Product Item", items[i].name, "warehouse", frm.doc.warehouse);
 	}
-	
+
 	// Production Material Item
 	var raw_materials = frm.doc.raw_materials || [];
-	for(var i=0; i<raw_materials.length; i++){
+	for (var i = 0; i < raw_materials.length; i++) {
 		frappe.model.set_value("Production Material Item", raw_materials[i].name, "business_activity", frm.doc.business_activity);
 		frappe.model.set_value("Production Material Item", raw_materials[i].name, "cost_center", frm.doc.cost_center);
 		frappe.model.set_value("Production Material Item", raw_materials[i].name, "warehouse", frm.doc.warehouse);
 	}
 }
 
-cur_frm.fields_dict['items'].grid.get_field('expense_account').get_query = function(frm, cdt, cdn){
+cur_frm.fields_dict['items'].grid.get_field('expense_account').get_query = function (frm, cdt, cdn) {
 	return {
 		filters: {
 			"company": frm.company,
@@ -210,7 +220,7 @@ cur_frm.fields_dict['items'].grid.get_field('expense_account').get_query = funct
 	};
 }
 
-cur_frm.fields_dict['raw_materials'].grid.get_field('expense_account').get_query = function(frm, cdt, cdn){
+cur_frm.fields_dict['raw_materials'].grid.get_field('expense_account').get_query = function (frm, cdt, cdn) {
 	return {
 		filters: {
 			"company": frm.company,
@@ -220,30 +230,30 @@ cur_frm.fields_dict['raw_materials'].grid.get_field('expense_account').get_query
 }
 /* ++++++++++ Ver 1.0.190401 Ends ++++++++++++*/
 
-cur_frm.fields_dict['raw_materials'].grid.get_field('item_code').get_query = function(frm, cdt, cdn) {
+cur_frm.fields_dict['raw_materials'].grid.get_field('item_code').get_query = function (frm, cdt, cdn) {
 	return {
-            filters: {
-                "disabled": 0,
-                "is_production_item": 1,
-            }
-        };
+		filters: {
+			"disabled": 0,
+			"is_production_item": 1,
+		}
+	};
 }
 
-cur_frm.fields_dict['items'].grid.get_field('item_code').get_query = function(frm, cdt, cdn) {
+cur_frm.fields_dict['items'].grid.get_field('item_code').get_query = function (frm, cdt, cdn) {
 	return {
-            filters: {
-                "disabled": 0,
-                "is_production_item": 1,
-            }
-        };
+		filters: {
+			"disabled": 0,
+			"is_production_item": 1,
+		}
+	};
 }
 
-cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = function(frm, cdt, cdn) {
-        var d = locals[cdt][cdn];
-        return {
-                query: "erpnext.controllers.queries.get_cop_list",
-                filters: {'item_code': d.item_code, 'posting_date': frm.posting_date, 'branch': frm.branch}
-        }
+cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = function (frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+		query: "erpnext.controllers.queries.get_cop_list",
+		filters: { 'item_code': d.item_code, 'posting_date': frm.posting_date, 'branch': frm.branch }
+	}
 }
 
 

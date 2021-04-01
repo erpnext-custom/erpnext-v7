@@ -78,9 +78,9 @@ frappe.query_reports["Rental Register"] = {
     {
       fieldname: "rental_official",
       label: __("Rental Official"),
-      fieldtype: "Link",
+      fieldtype: "Select",
       width: "80",
-      options: "Employee",
+      options: ["", "Bumpa Dema", "Dik Maya Ghalley", "Rinzin Dema", "Seema Uroan", "Dorji Wangmo", "Sangay Pelden", "Sangay Dorji", "Sangay Dubjur", "Kunzang Choden"],
     },
     {
       fieldname: "status",
@@ -91,5 +91,5 @@ frappe.query_reports["Rental Register"] = {
       default: "Submitted",
       reqd: 1,
     },
-  ],
+  ]
 };

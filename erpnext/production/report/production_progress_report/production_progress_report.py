@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import frappe
 from erpnext.accounts.utils import get_child_cost_centers, get_period_date
 from frappe.utils import flt, rounded
-from erpnext.custom_utils import get_production_groups
+# from erpnext.custom_utils import get_production_groups
 from erpnext.production.doctype.production_target.production_target import get_target_value
 
 def execute(filters=None):
@@ -33,26 +33,25 @@ def get_data(filters):
 
 	for a in frappe.db.sql(query, as_dict=1):
 		if filters.branch:
-			target = get_target_value("Production", a.location, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date, True)
+			target = get_target_value("Production", a.location, filters.item, filters.fiscal_year, filters.from_date, filters.to_date, True)
 			row = [a.location, target]
 			cond = " and location = '{0}'".format(a.location)
 		else:
 			if filters.is_company:
-				target = get_target_value("Production", a.region, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
+				target = get_target_value("Production", a.region, filters.item, filters.fiscal_year, filters.from_date, filters.to_date)
 				all_ccs = get_child_cost_centers(a.region)
 				cond = " and cost_center in {0} ".format(tuple(all_ccs))	
 				a.region = str(a.region).replace(abbr, "")
 				row = [a.region, target]
 			else:
-				target = get_target_value("Production", a.cost_center, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
+				target = get_target_value("Production", a.cost_center, filters.item, filters.fiscal_year, filters.from_date, filters.to_date)
 				row = [a.branch, target]
 				cond = " and cost_center = '{0}'".format(a.cost_center)
 	
 		total = 0
-		for b in get_production_groups(filters.production_group):
-			qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))
-			qty = qty and qty[0][0] or 0
-			row.append(rounded(qty, 2))
+		qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item = '{1}' {2}".format(conditions, filters.item, cond))
+		qty = qty and qty[0][0] or 0
+		row.append(rounded(qty, 2))
 			total += flt(qty)
 		row.insert(2, rounded(total, 2))
 		if target == 0:
@@ -104,8 +103,7 @@ def get_columns(filters):
 		else:
 			columns = ["Branch:Link/Branch:150", "Target Qty:Float:120", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
 
-	for a in get_production_groups(filters.production_group):
-		columns.append(str(str(a) + ":Float:100"))
+	columns.append(str(filters.item + ":Float:100"))
 	
 	return columns
 

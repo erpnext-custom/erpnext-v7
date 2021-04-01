@@ -612,79 +612,79 @@ function validate_loss_tolerance(frm, cdt, cdn){
 
 // Validate on value change for Accepted_Qty
 frappe.ui.form.on("Sales Invoice Item","accepted_qty",function(frm, cdt, cdn){
-     if (cur_frm.doc.docstatus == 0)
-     {
-          validate_loss_tolerance(frm, cdt, cdn);
-     }
+    //  if (cur_frm.doc.docstatus == 0)
+    //  {
+    //       validate_loss_tolerance(frm, cdt, cdn);
+    //  }
 });
 
 // Validate on value change for Name_Tolerance
-frappe.ui.form.on("Sales Invoice Item","name_tolerance",function(frm, cdt, cdn){
-     if (cur_frm.doc.docstatus == 0)
-     {
-          validate_loss_tolerance(frm, cdt, cdn);
-     }
-});
+// frappe.ui.form.on("Sales Invoice Item","name_tolerance",function(frm, cdt, cdn){
+//      if (cur_frm.doc.docstatus == 0)
+//      {
+//           validate_loss_tolerance(frm, cdt, cdn);
+//      }
+// });
 
 // Validate on Tolerange method value change
-frappe.ui.form.on("Sales Invoice Item","loss_method",function(frm, cdt, cdn){
-     if (cur_frm.doc.docstatus == 0)
-     {
-          validate_loss_tolerance(frm, cdt, cdn);
-     }
-});
+// frappe.ui.form.on("Sales Invoice Item","loss_method",function(frm, cdt, cdn){
+//      if (cur_frm.doc.docstatus == 0)
+//      {
+//           validate_loss_tolerance(frm, cdt, cdn);
+//      }
+// });
 
-frappe.ui.form.on("Sales Invoice","items_on_form_rendered", function(frm, grid_row) {
-    cur_frm.call({
-        method: "erpnext.accounts.accounts_custom_functions.get_loss_tolerance",
-        callback: function(r) {
-             var grid_row = cur_frm.open_grid_row();
-             if (grid_row.grid_form.fields_dict.name_tolerance.value)
-             {
-                  console.log("Record Already Set")
-             }
-             else
-             {
-                  if (cur_frm.doc.docstatus == 0)
-                  {
-			grid_row.grid_form.fields_dict.name_tolerance.set_value(r.message[0][0]);
-			grid_row.grid_form.fields_dict.loss_tolerance.set_value(r.message[0][1]);
-			grid_row.grid_form.fields_dict.loss_qty_flat.set_value(r.message[0][2]);
-			grid_row.grid_form.fields_dict.loss_method.set_value("Quantity in %");
-                  }
-             }
+// frappe.ui.form.on("Sales Invoice","items_on_form_rendered", function(frm, grid_row) {
+//     cur_frm.call({
+//         method: "erpnext.accounts.accounts_custom_functions.get_loss_tolerance",
+//         callback: function(r) {
+//              var grid_row = cur_frm.open_grid_row();
+//              if (grid_row.grid_form.fields_dict.name_tolerance.value)
+//              {
+//                   console.log("Record Already Set")
+//              }
+//              else
+//              {
+//                   if (cur_frm.doc.docstatus == 0)
+//                   {
+// 			grid_row.grid_form.fields_dict.name_tolerance.set_value(r.message[0][0]);
+// 			grid_row.grid_form.fields_dict.loss_tolerance.set_value(r.message[0][1]);
+// 			grid_row.grid_form.fields_dict.loss_qty_flat.set_value(r.message[0][2]);
+// 			grid_row.grid_form.fields_dict.loss_method.set_value("Quantity in %");
+//                   }
+//              }
 
-             // Setting default quantity for accepted quantity
-             if (cur_frm.doc.docstatus == 0)
-             {
-                  if (grid_row.grid_form.fields_dict.accepted_qty.value > 0)
-                  {
-                       console.log("Accepted Qty is already set")
-                  }
-                  else
-                  {
-                       if (grid_row.grid_form.fields_dict.accepted_qty.value == 0)
-                       {
-                            var actual_qty = grid_row.grid_form.fields_dict.qty.value;
-                            grid_row.grid_form.fields_dict.accepted_qty.set_value(actual_qty);
-                            grid_row.grid_form.fields_dict.normal_loss.set_value(0);
-                            grid_row.grid_form.fields_dict.abnormal_loss.set_value(0);
-                            grid_row.grid_form.fields_dict.normal_loss_amt.set_value(0);
-                            grid_row.grid_form.fields_dict.abnormal_loss_amt.set_value(0);
-                       }
-                  }
-                  if(grid_row.grid_form.fields_dict.delivered_qty.value > 0)
-                  {
-                       console.log("Delivered Qty is already set.")
-                  }
-                  else
-                  {
-                       grid_row.grid_form.fields_dict.delivered_qty.set_value(grid_row.grid_form.fields_dict.qty.value);
-                  }
-             }
-        }
-   })
-})
+//              // Setting default quantity for accepted quantity
+//              if (cur_frm.doc.docstatus == 0)
+//              {
+//                   if (grid_row.grid_form.fields_dict.accepted_qty.value > 0)
+//                   {
+//                        console.log("Accepted Qty is already set")
+//                   }
+//                   else
+//                   {
+//                        if (grid_row.grid_form.fields_dict.accepted_qty.value == 0)
+//                        {
+//                             var actual_qty = grid_row.grid_form.fields_dict.qty.value;
+//                             grid_row.grid_form.fields_dict.accepted_qty.set_value(actual_qty);
+//                             grid_row.grid_form.fields_dict.normal_loss.set_value(0);
+//                             grid_row.grid_form.fields_dict.abnormal_loss.set_value(0);
+//                             grid_row.grid_form.fields_dict.normal_loss_amt.set_value(0);
+//                             grid_row.grid_form.fields_dict.abnormal_loss_amt.set_value(0);
+//                        }
+//                   }
+//                   if(grid_row.grid_form.fields_dict.delivered_qty.value > 0)
+//                   {
+//                        console.log("Delivered Qty is already set.")
+//                   }
+//                   else
+//                   {
+//                        grid_row.grid_form.fields_dict.delivered_qty.set_value(grid_row.grid_form.fields_dict.qty.value);
+//                   }
+//              }
+//         }
+//    })
+// })
 
 
 //cost Center

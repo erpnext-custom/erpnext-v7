@@ -39,14 +39,13 @@ def get_columns(data):
 	
 def get_data(filters):
 	conditions, filters = get_conditions(filters)
-
         data = frappe.db.sql("""
                 select t1.employee, t3.employee_name, t1.designation, t3.passport_number,t3.nppf_tiers,
                         sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0) else 0 end) as basicpay,
                         t3.nppf_number,
                         sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end) as employeepf,
-                        round(sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0)*(t4.employer_pf/100) else 0 end)) as employerpf,
-                        sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end)+round(sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0)*(t4.employer_pf/100) else 0 end)) as total,
+                       	t1.employer_pf,
+                        sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end)+t1.employer_pf as total,
                         t1.company, t1.branch, t1.department, t1.division, t1.section,
                         t1.fiscal_year, t1.month
                 from `tabSalary Slip` t1, `tabSalary Detail` t2, `tabEmployee` t3, `tabEmployee Group` t4

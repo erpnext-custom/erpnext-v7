@@ -275,7 +275,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-01-11 15:52:54.862458", 
+ "modified": "2021-03-25 10:46:39.076055", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Assign Branch", 
@@ -337,7 +337,7 @@
    "read": 1, 
    "report": 1, 
    "role": "Admin", 
-   "set_user_permissions": 0, 
+   "set_user_permissions": 1, 
    "share": 1, 
    "submit": 0, 
    "write": 1

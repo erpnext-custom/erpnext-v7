@@ -11,7 +11,7 @@ class Service(Document):
 		self.item_code = self.name
 		if self.bsr_service_item:
 			bsr_code_exist = 0
-			for a in frappe.db.sql("select count(*) as bsr_count from `tabService` where bsr_service_item = '1' and bsr_item_code = '{0}' and name != '{1}'".format(self.bsr_item_code, self.name), as_dict=True):
+			for a in frappe.db.sql("select count(*) as bsr_count from `tabService` where bsr_service_item = '1' and bsr_item_code = '{0}' and name != '{1}' and fiscal_year={2}".format(self.bsr_item_code, self.name, self.fiscal_year), as_dict=True):
 				if a.bsr_count > 0:
 					bsr_code_exist = 1
 			if bsr_code_exist:

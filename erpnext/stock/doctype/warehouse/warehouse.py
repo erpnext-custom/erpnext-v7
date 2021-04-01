@@ -99,7 +99,7 @@ class Warehouse(NestedSet):
 				frappe.db.set_value("Warehouse", self.name, "create_account_under", parent_account[0][0])
 				self.create_account_under = parent_account[0][0]
 		elif frappe.db.get_value("Account", self.create_account_under, "company") != self.company:
-			frappe.throw(_("Warehouse {0}: Parent account {1} does not bolong to the company {2}")
+			frappe.throw(_("Warehouse {0}: Parent account {1} does not belong to the company {2}")
 				.format(self.name, self.create_account_under, self.company))
 
 	def update_nsm_model(self):

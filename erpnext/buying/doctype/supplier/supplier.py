@@ -40,6 +40,11 @@ class Supplier(TransactionBase):
 				frappe.throw("Setup Supplier Code Base in Supplier Type")
 			return str(base)
 
+	def on_update(self):
+	#	if not self.naming_series:
+	#		self.naming_series = ''
+		self.update_address()
+		self.update_contact()
 
 	def update_address(self):
 		frappe.db.sql("""update `tabAddress` set supplier_name=%s, modified=NOW()
@@ -49,12 +54,7 @@ class Supplier(TransactionBase):
 		frappe.db.sql("""update `tabContact` set supplier_name=%s, modified=NOW()
 			where supplier=%s""", (self.supplier_name, self.name))
 
-	def on_update(self):
-#		if not self.naming_series:
-#			self.naming_series = ''
 
-		self.update_address()
-		self.update_contact()
 
 	def validate(self):
 		#validation for Naming Series mandatory field...

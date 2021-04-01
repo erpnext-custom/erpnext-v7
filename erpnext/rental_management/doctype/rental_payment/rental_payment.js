@@ -116,7 +116,6 @@ function get_rental_bills_tenant_wise(frm, row){
 			args: {'tenant': row.tenant},
 			callback: function(r, rt){
 					if(r.message){
-						console.log(r.message[0]);
 						frappe.model.set_value(row.doctype, row.name, "actual_rent_amount", r.message[0]['rent_amount']);
 						frappe.model.set_value(row.doctype, row.name, "amount", r.message[0]['receivable_amount']);
 						frappe.model.set_value(row.doctype, row.name, "amount_received", r.message[0]['rent_amount']);

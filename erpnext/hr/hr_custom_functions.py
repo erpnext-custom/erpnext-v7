@@ -159,15 +159,15 @@ def post_leave_credits(today=None):
 			})
 
 		# Yearly credits
-		# if first_day_of_year and flt(e.credits_per_year) > 0:
-		start_date = get_year_start_date(today)
-		end_date   = get_year_end_date(start_date)
+		if flt(e.credits_per_year) > 0:
+			start_date = get_year_start_date(today)
+			end_date   = get_year_end_date(start_date)
 
-		leave_allocation.append({
-			'from_date': str(start_date),
-			'to_date': str(end_date),
-			'new_leaves_allocated': flt(e.credits_per_year)
-		})
+			leave_allocation.append({
+				'from_date': str(start_date),
+				'to_date': str(end_date),
+				'new_leaves_allocated': flt(e.credits_per_year)
+			})
 
 		for la in leave_allocation:
 			if not frappe.db.exists("Leave Allocation", {"employee": e.name, "leave_type": e.leave_type, "from_date": la['from_date'], "to_date": la['to_date'], "docstatus": ("<",2)}):

@@ -18,6 +18,7 @@ def execute(filters=None):
 	data = []
 	for (company, item, warehouse) in sorted(iwb_map):
 		qty_dict = iwb_map[(company, item, warehouse)]
+		# frappe.msgprint("--{}".format(qty_dict))
 		data.append([item, item_map[item]["item_name"],
 			item_map[item]["item_group"],
 			item_map[item]["item_sub_group"],

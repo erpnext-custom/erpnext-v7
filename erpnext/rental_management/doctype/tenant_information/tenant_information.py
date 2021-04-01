@@ -97,8 +97,14 @@ class TenantInformation(Document):
 						frappe.throw("Allocation Date {0} cannot be before surrendered date {1} for tenant {2}".format(self.allocated_date, surrendered_date, tenant_code))
 
 	def on_submit(self):
+		if self.status == "Surrendered":
+			frappe.throw("Not allowed to submit a document with status Surrendered")
+
 		if not self.rental_charges and self.building_category != "Pilot Housing":
 			self.calculate_rent_charges()
+		
+		if not self.allocated_date:
+			frappe.throw("Rental Allocation date is mandatory")
 
 		self.create_customer()
 		if not self.customer_code:

@@ -163,6 +163,11 @@ def get_data():
 					"name": "Leave Adjustment",
 					"label": _("Leave Adjustment Tool"),
 				},
+				{
+					"type": "doctype",
+					"name": "Merge CL To EL",
+					"label": _("Merge CL To EL"),
+				},
 			]
 		},
 		{

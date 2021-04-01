@@ -23,6 +23,7 @@ from erpnext.stock.stock_balance import update_bin_qty, get_indented_qty
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.manufacturing.doctype.production_order.production_order import get_item_details
 from erpnext.custom_utils import check_future_date
+from erpnext.custom_workflow import validate_workflow_states
 
 # form_grid_templates = {
 # 	"items": "templates/form_grid/material_request_grid.html"
@@ -70,6 +71,7 @@ class MaterialRequest(BuyingController):
 	# Validate
 	# ---------------------
 	def validate(self):
+		validate_workflow_states(self)
 		check_future_date(self.transaction_date)
 		super(MaterialRequest, self).validate()
 
@@ -127,48 +129,50 @@ class MaterialRequest(BuyingController):
                 '''
                 # Following two methods introduced by SHIV on 2018/11/16
                 self.creation_date = nowdate() if not self.creation_date else self.creation_date
-                self.validate_multiple_approvers()
-                self.update_approver()
+                # the below two commented out by phuntsho on 28/01/2020
+				# self.validate_multiple_approvers()
+                # self.update_approver()
                 ### Ver 3.0 Ends
                 
 		# self.validate_qty_against_so()
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated
 		# Though the creation of Material Request from a Production Plan can be rethought to fix this
-
-        def validate_multiple_approvers(self):
-                self.prev_workflow_state = self.get_db_value("workflow_state")
-                self.cur_workflow_state = self.workflow_state
+		# commented out by phuntsho on 28/01/2021. This is now handled in custom workflow-only the person you report to will be able to approve. 
+        # def validate_multiple_approvers(self):
+        #         self.prev_workflow_state = self.get_db_value("workflow_state")
+        #         self.cur_workflow_state = self.workflow_state
                 
-                multiple_approvers = {}
-                for i in self.get("items"):
-                        app_list = frappe.db.sql("""
-                                select approver
-                                from `tabDocument Approver Item`
-                                where item_group='{0}'
-                                and workflow_state != 'Waiting CEO Approval'
-                        """.format(i.item_group))
-                        for a in app_list:
-                                if multiple_approvers.has_key(str(a)):
-                                        multiple_approvers[str(a)] += 1
-                                else:
-                                        multiple_approvers[str(a)] = 0
+        #         multiple_approvers = {}
+        #         for i in self.get("items"):
+        #                 app_list = frappe.db.sql("""
+        #                         select approver
+        #                         from `tabDocument Approver Item`
+        #                         where item_group='{0}'
+        #                         and workflow_state != 'Waiting CEO Approval'
+        #                 """.format(i.item_group))
+        #                 for a in app_list:
+        #                         if multiple_approvers.has_key(str(a)):
+        #                                 multiple_approvers[str(a)] += 1
+        #                         else:
+        #                                 multiple_approvers[str(a)] = 0
 
-                        if len(multiple_approvers) > 1:
-                                frappe.throw(_("Row# {0}: Multiple approvers found").format(i.idx), title="Operation not permitted")
+        #                 if len(multiple_approvers) > 1:
+        #                         frappe.throw(_("Row# {0}: Multiple approvers found").format(i.idx), title="Operation not permitted")
 
+		# commented out by phuntsho on 28/01/2021. this is now handled in custom workflow
+        # def update_approver(self):
+        #         if self.workflow_state == "Approved":
+        #                 return
                 
-        def update_approver(self):
-                if self.workflow_state == "Approved":
-                        return
-                
-                # Populating approver
-                app_li = frappe.db.sql("""
-                        select distinct approver
-                        from `tabDocument Approver Item`
-                        where workflow_state = '{0}'
-                        and item_group in ({1})
-                """.format(self.workflow_state, "'"+str("','".join([i.item_group for i in self.get("items")]))+"'"))
-                self.approver = app_li[0][0] if app_li else None
+        #         # Populating approver
+        #         app_li = frappe.db.sql("""
+        #                 select distinct approver
+        #                 from `tabDocument Approver Item`
+        #                 where workflow_state = '{0}'
+        #                 and item_group in ({1})
+        #         """.format(self.workflow_state, "'"+str("','".join([i.item_group for i in self.get("items")]))+"'"))
+        #         self.approver = app_li[0][0] if app_li else None
+		# ---- end of comment -----
                 
 	def set_title(self):
 	#	'''Set title as comma separated list of items'''
@@ -223,12 +227,16 @@ class MaterialRequest(BuyingController):
 
 	def on_cancel(self):
 		pc_obj = frappe.get_doc('Purchase Common')
-
 		pc_obj.check_for_closed_status(self.doctype, self.name)
 
 		self.update_requested_qty()
-
 		frappe.db.set(self,'status','Cancelled')
+		frappe.db.set(self, 'approver', '')
+		frappe.db.set(self, 'approver_name', '')
+		# frappe.db.set doesnt always work!
+		frappe.db.sql("update `tabMaterial Request` set approver='', approver_name='' where name='{}'".format(self.name))
+		if self.approver != '' or self.approver_name != '':
+			frappe.throw("Please cancel the document one more time!")
 
 	def update_completed_qty(self, mr_items=None, update_modified=True):
 		if self.material_request_type == "Purchase":
@@ -463,7 +471,7 @@ def make_stock_entry(source_name, target_doc=None):
 		qty = flt(obj.qty) - flt(obj.ordered_qty) \
 			if flt(obj.qty) > flt(obj.ordered_qty) else 0
 		target.qty = qty
-		target.uom = None
+		target.uom = obj.uom
 		target.transfer_qty = qty
 		target.conversion_factor = 1
 
