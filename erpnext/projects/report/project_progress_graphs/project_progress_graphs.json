@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2020-11-24 15:43:27.100635", 
+ "modified": "2021-03-15 16:12:15.085115", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Project Progress Graphs", 
@@ -30,6 +30,18 @@
   }, 
   {
    "role": "Project Supervisor"
+  }, 
+  {
+   "role": "Project Engineer"
+  }, 
+  {
+   "role": "Project Manager"
+  }, 
+  {
+   "role": "Technical Committee Member"
+  }, 
+  {
+   "role": "Management"
   }
  ]
 }

@@ -8,11 +8,11 @@ app_publisher = "Frappe Technologies Pvt. Ltd."
 app_description = """ERP made simple"""
 app_icon = "icon-th"
 app_color = "#e74c3c"
-app_email = "erpnext@dhi.bt"
+app_email = "tashidorji@gyalsunginfra.bt"
 app_license = "GNU General Public License (v3)"
 source_link = "https://github.com/frappe/erpnext"
 
-error_report_email = "erpnext@dhi.bt"
+error_report_email = "tashidorji@gyalsunginfra.bt"
 
 app_include_js = "assets/js/erpnext.min.js"
 app_include_css = "assets/css/erpnext.css"

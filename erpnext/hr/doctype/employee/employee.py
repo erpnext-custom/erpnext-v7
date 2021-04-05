@@ -397,7 +397,11 @@ class Employee(Document):
                                 new_leaves_allocated = round5((flt(no_of_months)/12)*flt(credits_per_year))
                                 new_leaves_allocated = new_leaves_allocated if new_leaves_allocated <= flt(credits_per_year) else flt(credits_per_year)
 
-                                if flt(new_leaves_allocated):
+				if self.employment_type == 'GCE':
+                                       to_date = self.contract_end_date
+                                       new_leaves_allocated = cint(5)
+
+				if flt(new_leaves_allocated):
                                         la = frappe.new_doc("Leave Allocation")
                                         la.employee = self.employee
                                         la.employee_name = self.employee_name

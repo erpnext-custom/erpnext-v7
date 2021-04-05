@@ -95,11 +95,11 @@ frappe.query_reports["Project Progress Report"] = {
                         "options": ['', 'Planning', 'Ongoing', 'Completed', 'Cancelled']
                 },
 
-		{
+		/*{
                         "fieldname": "show_all",
                         "label": __("Show All Activities"),
                         "fieldtype": "Check",
                         "default": 0
-                }
+                }*/
 
 ]}

@@ -559,7 +559,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 			else:
 				target.append('earnings', m)
 		for m in calc_map['deductions']:
-			if source.employment_type == 'Deputation' and m['salary_component'] not in ['SWS', 'Salary Tax', 'Health Contribution']:
+			if source.employment_type == 'Deputation' and m['salary_component'] not in ['SWS', 'Salary Tax', 'Health Contribution', 'Other deduction','Other Recoveries']:
 				continue
 			else:
 				target.append('deductions', m)

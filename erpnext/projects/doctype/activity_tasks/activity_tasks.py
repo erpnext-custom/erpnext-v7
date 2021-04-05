@@ -5,6 +5,12 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.model.naming import make_autoname
 
 class ActivityTasks(Document):
-	pass
+	def validate(self):
+		#x = make_autoname(str(self.task) + '.####')
+		#if self.is_group:
+                #	self.name = x
+		if self.is_group:
+			self.name = self.name + self.task

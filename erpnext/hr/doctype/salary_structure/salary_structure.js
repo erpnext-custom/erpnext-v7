@@ -238,7 +238,16 @@ frappe.ui.form.on('Salary Structure', {
         },
         project_allowance: function(frm){
                 calculate_others(frm.doc)
-        }
+        },
+	eligible_for_vha_allowance: function(frm){
+		calculate_others(frm.doc);
+	},
+	vha_method: function(frm){
+		calculate_others(frm.doc);
+	},
+	vha: function(frm){
+		calculate_others(frm.doc);
+	},
 })
 
 frappe.ui.form.on('Salary Detail', {

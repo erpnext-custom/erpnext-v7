@@ -314,7 +314,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-12-18 21:25:39.453448", 
+ "modified": "2021-03-30 21:26:48.784023", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Attendance", 
@@ -427,7 +427,7 @@
   {
    "amend": 1, 
    "apply_user_permissions": 0, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -575,5 +575,5 @@
  "sort_order": "DESC", 
  "title_field": "employee_name", 
  "track_changes": 1, 
- "track_seen": 1
+ "track_seen": 0
 }

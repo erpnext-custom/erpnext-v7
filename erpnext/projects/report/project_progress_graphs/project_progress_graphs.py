@@ -43,88 +43,114 @@ def get_periodic_data(filters, columns):
 	chart = 0
 	target = {'label': '<b> Target </b>'}
 	achievement = {'label': '<b> Achievement </b>'}
-	target_tot = 0.0
-	achievement_tot = 0.0
+	diff_field = {'label': '<b> Difference </b>'}
+	target_tot = achievement_tot = diff = 0.0
 	ranges = get_period_date_ranges(filters)
 	for from_date, to_date in ranges:
 		target_tot = get_target_query(filters, from_date, to_date)
 		achievement_tot  = get_achievement_query(filters, from_date, to_date)
+		diff = flt(achievement_tot)/flt(target_tot) * 100  if target_tot else 0.0
 		period = get_period(to_date, filters)
 		if target_tot:
-			target.setdefault(scrub(period), round(flt(target_tot), 2))
+			target.setdefault(scrub(period), round(flt(target_tot), 3))
 		else:
 			target.setdefault(scrub(period), None)
 
 		if achievement_tot:
-			achievement.setdefault(scrub(period), round(flt(achievement_tot), 2))
+			achievement.setdefault(scrub(period), round(flt(achievement_tot), 3))
 		else:
 			achievement.setdefault(scrub(period), None)
+		
+		if diff:
+                        diff_field.setdefault(scrub(period), round(flt(diff), 3))
+                else:
+                        diff_field.setdefault(scrub(period), None)
+
         data1.append(target)
 	data2.append(achievement)
-	chart = get_chart_data(columns, target,  achievement)
+	chart = get_chart_data(columns, target,  achievement, filters)
         return data1+data2, chart
 
 def get_target_query(filters, from_date, to_date):
-	query = """ select sum(a.percent_completed_overall/100* a.ga_weightage) as percent_completed from `tabTarget Entry Sheet`  a 
-			where a.to_date <= '{0}' and exists (select 1 from `tabTarget Entry Sheet` b where b.from_date >= '{0}')
-			""".format(to_date)
-	if filters.get("project"):
-		query = """ select sum(a.percent_completed/100 * a.activity_weightage) as percent_completed from 
-			`tabTarget Entry Sheet`  a  where a.to_date <= '{0}' 
-			and exists (select 1 from `tabTarget Entry Sheet` b where b.from_date >= '{0}')
+	query = """ select sum(ifnull(a.percent_completed_overall_gi,0)) as percent_completed from `tabTarget Entry Sheet`  a 
+                        where a.to_date <= '{0}' and exists (select 1 from `tabTarget Entry Sheet` b where b.from_date >= '{0}')
                         """.format(to_date)
-		query += """ and project_parent = '{0}'""".format(filters.get("project"))
 
+        if filters.get("project"):
+                query = """ select sum(ifnull(a.percent_completed_overall,0)) as percent_completed from 
+                        `tabTarget Entry Sheet`  a  where a.to_date <= '{0}' and a.project_parent = "{1}"
+                        and exists (select 1 from `tabTarget Entry Sheet` b where b.from_date >= '{0}')
+                        """.format(to_date, filters.get("project"))
+	
 	if filters.get("activity"):
 		query = """ select a.percent_completed from `tabTarget Entry Sheet`  a where 
-			a.to_date between '{0}' and '{1}' and project = '{2}'""".format(from_date, to_date, filters.get("activity"))
- 
+			a.to_date between '{0}' and '{1}' and project = "{2}" """.format(from_date, to_date, filters.get("activity"))
 	query += " order by a.to_date desc limit 1"
-	data = frappe.db.sql(query, as_dict = 1)
+	data = frappe.db.sql(query, as_dict = 1, debug = 1)
 	data   = data[0].percent_completed if data else 0.0
-	return flt(data)
-	
+	return flt(data)	
+
 def get_achievement_query(filters, from_date, to_date):
-	query = """ select sum(ifnull(a.percent_completed_overall, 0)) as percent_completed from `tabAchievement Entry Sheet` a where 
-		a.posting_date <= '{0}' and exists ( select 1 from `tabAchievement Entry Sheet` b 
-			where b.posting_date >= '{0}')""".format(to_date)
+        query = """ select sum(ifnull(a.percent_completed_overall_gi,0)) as percent_completed from `tabAchievement Entry Sheet` a where 
+                a.posting_date <= '{0}' and exists ( select 1 from `tabAchievement Entry Sheet` b 
+                        where b.posting_date >= '{0}')""".format(to_date)
 
-	if filters.get("project"):
-		query += " and project_parent = '{0}'".format(filters.get("project"))
+        if filters.get("project"):
+		query =  """ select sum(ifnull(a.percent_completed_overall,0)) as percent_completed  from `tabAchievement Entry Sheet` a 
+                        where a.project_parent = "{0}" and a.posting_date <= '{1}' and exists (select 1 from `tabAchievement Entry Sheet` b 
+                        where b.posting_date >= '{2}') """.format(filters.get('project'), to_date, from_date)
 
-	if filters.get("activity"):
-		query =  """ select sum(ifnull(a.percent_completed,0)) as percent_completed  from `tabAchievement Entry Sheet` a 
-			where a.project = '{0}' and a.posting_date <= '{1}' and exists (select 1 from `tabAchievement Entry Sheet` b 
-			where b.posting_date >= '{2}' and b.project = '{0}')""".format(filters.get('activity'), to_date, from_date)
+        if filters.get("activity"):
+                query =  """ select sum(ifnull(a.percent_completed,0)) as percent_completed  from `tabAchievement Entry Sheet` a 
+                        where a.project = "{0}" and a.posting_date <= '{1}' and exists (select 1 from `tabAchievement Entry Sheet` b 
+                        where b.posting_date >= '{2}' and b.project = "{0}") """.format(filters.get('activity'), to_date, from_date)
 
-	data = frappe.db.sql(query, as_dict = 1, debug =1)
-	data  = data[0].percent_completed if data else 0.0
-	return data
+        data = frappe.db.sql(query, as_dict = 1)
+        data  = data[0].percent_completed if data else 0.0
+        return data
 
 
-def get_chart_data(columns, target, achievement):
+def get_milestone_tasks(filters):
+	return frappe.db.sql(""" select task_weightage, task from `tabActivity Tasks` where is_milestone = 1 and 
+			parent = "{0}" order by idx""".format(filters.get('activity')), as_dict = 1)
+
+def get_chart_data(columns, target, achievement, filters):
         x_intervals = ['x'] + [d.get("label") for d in columns[1:]]
 
         asset_data, liability_data =  [], []
-	
-        for p in columns[1:]:
+	for p in columns[1:]:
                 if target:
                         asset_data.append(target.get(p.get("fieldname")))
                 if achievement:
                         liability_data.append(achievement.get(p.get("fieldname")))
-        columns = [x_intervals]
+	da = []
+	dic = {}
+	to = 0.0
+	if filters.get('activity'):
+		for a in get_milestone_tasks(filters):
+			to += flt(a.task_weightage)
+			dic.setdefault(scrub(a.task) , to)
+			val = dic[scrub(a.task)]
+			na = a.task
+			lis = a.task = []
+			for c in columns[1:]:
+				lis.append(val)			
+			da.append([na] + lis)
+	
+	columns = [x_intervals]
         if asset_data:
         	columns.append(["Target"] + asset_data)
         if liability_data:
        		columns.append(["Achievement"] + liability_data)
+	
+	columns += da
         chart =  {
                 "data": { 'x': 'x', 'columns': columns},
-		"size": {"width": 1100, "height": 500},
+		"size": {"width": 1100, "height": 450},
 		"grid": {'x': { 'show': 'true'}, 'y': {'show': 'true'}},
 		"zoom": {"enabled": "true"},
-		"color": { "pattern": ['#00ff00', '#0000ff']},
-		"padding": {"right": 0, "left": 80, "bottom":40},
-		"title": {"text": 'Progress Graph! if the achievement stroke(blue) is above the target stroke(green), it means we are ahead of our schedules at that point of time'},
+		"padding": {"right": 0, "left": 50, "bottom":30, "top": 20},
+		"title": {"text":  'Progress Graph! if the achievement line is above the target line, we are ahead of the schedule' },
 	}     
 	chart["chart_type"] = "spline"
 

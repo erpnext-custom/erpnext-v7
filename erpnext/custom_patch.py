@@ -14,6 +14,125 @@ from datetime import datetime
 import os
 import subprocess
 
+def update_iip():
+	for a in frappe.db.sql(""" select name, equipment from `tabPOL` where equipment = 'EQUIP210016'""", as_dict =1):
+		doc = frappe.get_doc("POL", a,name)
+		eq = frappe.get_doc("Equipment", a.equipment)
+		frappe.db.sql(""" update `tabPOL` set equipment_number '{0}' , equipment_type = '{1}', 
+			fuel_book = '{2}', equipment_category = '{2}' where name = '{3}'
+		""".format(eq.equipment_number, eq.equipment_type, eq.fuelbook, eq.equipment_category, a.name)) 
+def update_iipol():
+	count = 1
+	for a in frappe.db.sql(""" select name from `tabIssue POL` where branch = 'GA-Khotokha' and pol_type = '100167' 
+			and docstatus = 1""", as_dict = 1):
+		dat = frappe.db.sql(""" select name from `tabPOL Entry` where branch = 'GA-Khotokha' and 
+			pol_type = '100167' and type = 'Issue' and reference_type = 'Issue POL' 
+			and docstatus = 1 and reference_name = '{0}'""".format(a.name, as_dict = 1))
+		if not dat:
+			doc = frappe.get_doc("Issue POL", a.name)
+			con = frappe.new_doc("POL Entry")
+			con.flags.ignore_permissions = 1
+			con.equipment = doc.tanker
+			con.pol_type = doc.pol_type
+			con.branch = doc.branch
+			con.date = doc.posting_date
+			con.posting_time = doc.posting_time
+			con.qty = doc.total_quantity
+			con.reference_type = "Issue POL"
+			con.reference_name = doc.name
+			con.type = "Issue"
+			con.is_opening = 0
+			con.submit()
+			count += 1
+			print count
+
+def update_project_entry():
+        #for a in frappe.db.sql(""" select name from `tabTarget Entry Sheet`""", as_dict = 1):
+        for a in frappe.db.sql(""" select name from `tabAchievement Entry Sheet`""", as_dict = 1):
+                #doc = frappe.get_doc("Target Entry Sheet", a.name)
+                doc = frappe.get_doc("Achievement Entry Sheet", a.name)
+                print a.name
+                doc.save()
+
+def update_operator():
+	doc = frappe.get_doc("Muster Roll Employee", '12003000958')
+	row = doc.append ("internal_work_history",{})
+	row.branch  = "GA-Pemathang"
+	row.cost_center = "GA-Pemathang - GYALSUNG"
+	row.from_date = '2020-03-01'
+	row.save()
+
+def update_ot():
+        count = 0
+        for a in frappe.db.sql(""" select name from `tabProcess Overtime Payment`""", as_dict = 1):
+                doc = frappe.get_doc("Process Overtime Payment", a.name)
+                ot_account = frappe.db.get_single_value("HR Accounts Settings", "overtime_account")
+                frappe.db.sql(""" update `tabProcess Overtime Payment` set ot_account = '{0}' where name = '{1}'""".format(ot_account, doc.name))
+                print a.name, count
+		
+def update_pro():
+        for a in frappe.db.sql(""" select name, physical_progress_weightage from `tabProject` where is_group = 1""", as_dict = 1):
+                frappe.db.sql(""" update `tabProject` set parent_weightage = {0} where parent_project = "{1}" """.format(a.physical_progress_weightage, a.name))
+                print a.name
+
+
+def validate_proj():
+	count = 0
+	for a in frappe.db.sql(""" select name from `tabProject`""", as_dict = 1):
+		doc = frappe.get_doc("Project", a.name)
+		count += 1
+		doc.save()
+		print count, a.name
+
+def update_la():
+        count = 0
+        for a in frappe.db.sql(""" select name, employee from `tabLeave Allocation` where docstatus = 1""", as_dict = 1):
+                emp = frappe.get_doc("Employee", a.employee).employment_type
+                frappe.db.sql(""" update `tabLeave Allocation` set employee_type = '{0}' where name = '{1}'""".format(emp, a.name))
+                count += 1
+                print a.name, count
+
+def update_ipol():
+	import csv
+        with open('/home/frappe/erp/ipol.csv','r') as f:
+                data = csv.reader(f)
+                count = 1
+                for row in data:
+			dat = frappe.db.sql(""" select name from `tabPOL Entry` where branch = 'GA-Jamtsholing' and 
+				pol_type = '100167' and type = 'Issue' and reference_type = 'Issue POL' 
+				and docstatus = 1 and reference_name = '{0}'""".format(row[0], as_dict = 1))
+			if not dat:
+				doc = frappe.get_doc("Issue POL", row[0])
+				con = frappe.new_doc("POL Entry")
+				con.flags.ignore_permissions = 1
+				con.equipment = doc.tanker
+				con.pol_type = doc.pol_type
+				con.branch = doc.branch
+				con.date = doc.posting_date
+				con.posting_time = doc.posting_time
+				con.qty = doc.total_quantity
+				con.reference_type = "Issue POL"
+				con.reference_name = doc.name
+				con.type = "Issue"
+				con.is_opening = 0
+				con.submit()
+				count += 1 
+				print count
+	
+def update_dsa():
+	for a in ("TA210300019", "TA210200042", "TA210200041"):
+		doc = frappe.get_doc("Travel Authorization", a)
+		doc.set_dsa_rate()
+
+def update_la():
+        count = 0
+        for a in frappe.db.sql(""" select name, employee from `tabLeave Allocation` where docstatus = 1""", as_dict = 1):
+                emp = frappe.get_doc("Employee", a.employee).employment_type
+                frappe.db.sql(""" update `tabLeave Allocation` set employee_type = '{0}' where name = '{1}'""".format(emp, a.name))
+                count += 1
+                print a.name, count
+
+
 def update_budget_tot():
 	count = 1
 	for a in frappe.db.sql(""" select name from `tabBudget` where actual_total = '' and docstatus = 1""", as_dict = 1):
@@ -69,13 +188,6 @@ def update_musterroll1():
 			count += 1
 			#doc.save()
 			print count, doc.name, a.parent, a.rate_per_day, a.rate_per_hour
-
-
-def update_pro():
-	for a in frappe.db.sql(" select name from `tabProject` where is_group = 0", as_dict = 1):
-		doc = frappe.get_doc("Project", a.name)
-		doc.save()
-		print doc.name
 
 def travel_advance():
 	doc = frappe.get_doc("Travel Authorization", 'TA201200016-2')

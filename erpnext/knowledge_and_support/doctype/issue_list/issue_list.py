@@ -17,7 +17,9 @@ class IssueList(Document):
 				
                         self.resolved_by = doc.name
 			self.resolved_by_name = doc.employee_name
-			self.resolver = frappe.session.user 
+			self.resolver = frappe.session.user
+			self.designation = doc.designation
+			self.contact = doc.phone_number 
                         frappe.db.sql(""" update `tabIssue List` set docstatus = 1 where name ='{0}'""".format(self.name))
                         frappe.msgprint("Thanks, This issue is closed!")
                         self.db_set("docstatus", 1)

@@ -1,14 +1,5 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
-/*
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-2.0		  		  SHIV		     11/08/2017         					Default "Project Tasks" is replaced by custom
-																			"Activity Tasks"
-2.0				  SHIV           02/09/2017                             Introducing Project Advances
---------------------------------------------------------------------------------------------------------------------------                                                                          
-*/
 
 //cur_frm.add_fetch("cost_center", "branch", "branch");
 cur_frm.add_fetch("branch", "cost_center", "cost_center");
@@ -18,7 +9,6 @@ cur_frm.add_fetch("project_name", "branch", "branch");
 cur_frm.add_fetch("parent_project", "mandays", "overall_mandays" );
 cur_frm.add_fetch("parent_project", "holiday_list", "holiday_list");
 cur_frm.add_fetch("reference_budget", "actual_total", "estimated_budget" );
-//cur_frm.add_fetch("supplier", "supplier_details", "supplier_details" );
 
 frappe.ui.form.on("Project", {
 	setup: function(frm) {
@@ -27,21 +17,11 @@ frappe.ui.form.on("Project", {
 		
 		frm.get_field('activity_tasks').grid.editable_fields = [
 			{fieldname: 'task', columns: 3},
-			{fieldname: 'is_group', columns: 1},
+			{fieldname: 'is_milestone', columns: 1},
 			{fieldname: 'start_date', columns: 2},
 			{fieldname: 'end_date', columns: 2},
 			{fieldname: 'task_completion_percent', columns: 2},
-		];
-		
-		/*frm.get_field('additional_tasks').grid.editable_fields = [
-			{fieldname: 'task', columns: 3},
-			{fieldname: 'is_group', columns: 1},
-			{fieldname: 'start_date', columns: 2},
-			{fieldname: 'end_date', columns: 2},
-			{fieldname: 'work_quantity', columns: 1},
-			{fieldname: 'work_quantity_complete', columns: 1}
-		];*/
-		
+		];	
 	},	
 	
 	onload: function(frm) {
@@ -55,7 +35,8 @@ frappe.ui.form.on("Project", {
 	},
 	refresh: function(frm) {
 		enable_disable(frm);
-		if(!frm.doc.__islocal && !frm.doc.is_group){
+		if(!frm.doc.__islocal){
+			if(!frm.doc.is_group){
 			frm.add_custom_button(__("Project Progress Report"), function(){
 					frappe.route_options = {
 						activity: frm.doc.name,
@@ -74,6 +55,27 @@ frappe.ui.form.on("Project", {
 					frappe.set_route("query-report", "Project Progress Graphs");
 				},__("<b style='color: blue; font-size: 110%;'> Progress Graphs </b>"), "icon-file-alt"
 			);
+			}
+			else {
+			frm.add_custom_button(__("Project Progress Report"), function(){
+                                        frappe.route_options = {
+                                                project: frm.doc.name,
+                                                from_date: frm.doc.expected_start_date,
+                                                to_date: frm.doc.expected_end_date
+                                        };
+                                        frappe.set_route("query-report", "Project Progress Report");
+                                },__("<b style='color: blue; font-size: 110%;'> Progress Reports </b>"), "icon-file-alt"
+                        );
+                        frm.add_custom_button(__("Project Progress Graph"), function(){
+                                        frappe.route_options = {
+                                                project: frm.doc.name,
+                                                from_date: frm.doc.expected_start_date,
+                                                to_date: frm.doc.expected_end_date
+                                        };
+                                        frappe.set_route("query-report", "Project Progress Graphs");
+                                },__("<b style='color: blue; font-size: 110%;'> Progress Graphs </b>"), "icon-file-alt"
+                        );
+			}
 		}
 		
 		if(frm.doc.__islocal) {
@@ -93,7 +95,7 @@ frappe.ui.form.on("Project", {
 		}
 		*/
 
-	if (frm.doc.docstatus===1 && !frm.doc.__islocal) {
+	if (!frm.doc.__islocal) {
                         frm.trigger('show_progress');
                 }
 
@@ -132,16 +134,6 @@ frappe.ui.form.on("Project", {
                 frm.dashboard.add_progress(__('Status'), bars, message);
         },
 			
-	tasks_refresh: function(frm) {
-		var grid = frm.get_field('tasks').grid;
-		grid.wrapper.find('select[data-fieldname="status"]').each(function() {
-			if($(this).val()==='Open') {
-				$(this).addClass('input-indicator-open');
-			} else {
-				$(this).removeClass('input-indicator-open');
-			}
-		});
-	},
 		
 	branch: function(frm){
 		// Update Cost Center
@@ -208,19 +200,6 @@ frappe.ui.form.on("Project", {
 	//}
 });
 
-frappe.ui.form.on("Project Task", {
-	/*edit_task: function(frm, doctype, name) {
-		var doc = frappe.get_doc(doctype, name);
-		if(doc.task_id) {
-			frappe.set_route("Form", "Task", doc.task_id);
-		} else {
-			msgprint(__("Save the document first."));
-		}
-	},*/
-	status: function(frm, doctype, name) {
-		frm.trigger('tasks_refresh');
-	},
-});
 
 
 // ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
@@ -359,10 +338,10 @@ frappe.ui.form.on("Project Task", {
                 } else {
                         msgprint(__("Save the document first."));
                 }
-        },*/
+        },
         status: function(frm, doctype, name) {
                 frm.trigger('tasks_refresh');
-        },
+        },*/
 });
 
 // ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
@@ -398,18 +377,6 @@ var calculate_work_quantity = function(frm){
 }
 // +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 
-frappe.ui.form.on("Activity Tasks","is_group", function(frm, cdt, cdn){
-	var child = locals[cdt][cdn];
-	cur_frm.doc.activity_tasks.forEach(function(child){
-	
-		var sel = format('div[data-fieldname="activity_tasks"] > div.grid-row[data-idx="{0}"]',[child.idx]);
-		if (child.is_group == 1){
-			$(sel).css('background-color',"#ff5858");
-		} else {
-			$(sel).css('background-color','transparent');
-		}
-	});
-});
 
 
 var update_party_info=function(doc){

@@ -112,14 +112,14 @@ class MaterialRequest(BuyingController):
 		if not self.items:
 			frappe.throw("Cannot save without items in material request")
 
-		if not self.approver:	
+		'''if not self.approver:	
 			app = frappe.db.get_value("Approver Item", {"cost_center": self.temp_cc}, "approver")	
 			if not app:
 				frappe.throw("Setup MR Approver for <b>" + str(self.temp_cc) + "</b> in Document Approver")
 			else:
 				self.approver = app
 
-		'''if self.title1 == 'Stock Request':
+		if self.title1 == 'Stock Request':
                         if 'MR Manager' not in frappe.get_roles(frappe.session.user):
                                 frappe.throw("""<b> You Cannot Apply Material Request of Type Stock Request,
                                 Contact Admin/Store Manager </b> """)

@@ -20,11 +20,18 @@ class ProcessOvertimePayment(Document):
 	
 		if not self.branch:
 			frappe.throw(" Branch is Mandiatory")
-		
+	
+		#set up expense bank account	
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
 		self.expense_bank_account = expense_bank_account
 		if not self.expense_bank_account:
 			frappe.throw("Expense Bank Account is Missing!. Refresh Cost Center Field")
+
+		#set up Expense Account
+                ot_account = frappe.db.get_single_value("HR Accounts Settings", "overtime_account")
+                self.ot_account = ot_account
+                if not self.ot_account:
+                        frappe.throw("Expense Account Not Found, Kindly set up Overtime Account in HR Accounts Settings")
 
 		self.check_duplicate_entries()
 
@@ -60,7 +67,7 @@ class ProcessOvertimePayment(Document):
 			cost_center in (select name from `tabCost Center` where parent_cost_center = '{2}') order by employee desc
 		""".format(from_date, to_date, self.cost_center, self.bank_name)
 		
-		entries = frappe.db.sql(query, as_dict=True, debug = 1)
+		entries = frappe.db.sql(query, as_dict=True)
                 if not entries:
                         frappe.msgprint("OT Payment is already processed or there is no Approved OT to process")
 

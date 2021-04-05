@@ -36,6 +36,8 @@ class CarryForwardEntry(Document):
                         query += " and branch = '{0}'".format(self.branch)
 		if self.employment_type:
 			query += " and employment_type = '{0}'".format(self.employment_type)
+		if self.employee:
+			query += " and employee = '{0}'".format(self.employee)
 
                 doc = frappe.db.sql(query)
 
@@ -60,6 +62,9 @@ class CarryForwardEntry(Document):
 
 		if self.employment_type:
 			filters_dict['employment_type'] = self.employment_type
+
+		if self.employee:
+			filters_dict['name'] = self.employee
 
                 active_employees = frappe.get_all("Employee",
                         filters = filters_dict,

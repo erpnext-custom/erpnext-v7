@@ -26,6 +26,7 @@ class GLEntry(Document):
 		self.validate_party()
 		self.validate_currency()
 		self.validate_and_set_fiscal_year()
+		self.get_expense()
 
 	def on_update_with_args(self, adv_adj, update_outstanding = 'Yes'):
 		self.validate_account_details(adv_adj)
@@ -120,6 +121,26 @@ class GLEntry(Document):
 		if not self.fiscal_year:
 			self.fiscal_year = get_fiscal_year(self.posting_date, company=self.company)[0]
 
+
+	def get_expense(self):
+                total_exp = 0.0
+                if frappe.db.sql(""" select 1 from `tabAccount`  where root_type = 'Expense' 
+			and name = "{0}" """.format(self.account)):
+                        if frappe.db.exists("Project", self.cost_center):
+                                doc = frappe.get_doc("Project", self.cost_center)
+                                total_exp = frappe.db.sql(""" select sum(debit) - sum(credit) as expense 
+                                        from `tabGL Entry` where cost_center = "{0}" and 
+                                account in (select name from `tabAccount` where root_type = 'Expense')""".format(doc.name), as_dict = 1)
+                                frappe.db.sql(""" update `tabProject` set expense = {0} where 
+                                name = "{1}" """.format(flt(total_exp[0].expense), doc.name))
+                                if not doc.is_group:
+                                        parent = frappe.get_doc("Project", doc.parent_project)
+                                        total_exp = frappe.db.sql(""" select sum(debit) - sum(credit) as expense 
+                                        from `tabGL Entry` where cost_center in ( select name from `tabCost Center` 
+                                        where parent_cost_center  = "{0}") and
+                                        account in (select name from `tabAccount` where root_type = 'Expense')""".format(parent.name), as_dict = 1)
+                                        frappe.db.sql(""" update `tabProject` set expense = {0}
+                                        where name = "{1}" """.format(flt(total_exp[0].expense), parent.name))
 
 def validate_balance_type(account, adv_adj=False):
 	if not adv_adj and account:

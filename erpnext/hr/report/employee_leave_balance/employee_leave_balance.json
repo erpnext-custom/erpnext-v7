@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2020-07-08 15:21:56.937195", 
+ "modified": "2017-11-17 23:36:00.354163", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee Leave Balance", 
@@ -27,9 +27,6 @@
   }, 
   {
    "role": "Employee"
-  }, 
-  {
-   "role": "HR CTM"
   }
  ]
 }

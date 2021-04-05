@@ -25,7 +25,6 @@ def get_columns(leave_types):
 		_("Employee Name") + "::150",
 		_("Department") +"::150",
 		_("Branch") +"::160",
-		_("Employment Type") +"::160",
 
 	]
 
@@ -38,32 +37,33 @@ def get_columns(leave_types):
 def get_data(filters, leave_types):
 
 	allocation_records_based_on_to_date = get_leave_allocation_records(filters.to_date)
-	#filters_dict = { "status": "Active", "company": filters.company}
-	filters_dict = { "company": filters.company}
+	filters_dict = { "status": "Active", "company": filters.company}
+
         if filters.branch:
                 filters_dict['branch'] = filters.branch
         if filters.employee:
-                filters_dict['employee'] = filters.employee
-	if filters.employment_type:
-               filters_dict['employment_type'] = filters.employment_type
+                filters_dict['name'] = filters.employee
+
+	if filters.employee_type:
+		filters_dict['employment_type'] = filters.employee_type
 
 	active_employees = frappe.get_all("Employee",
 		filters = filters_dict,
-		fields = ["name", "employee_name", "department", "branch", "employment_type",])
+		fields = ["name", "employee_name", "department", "branch"])
 
 	data = []
 	for employee in active_employees:
-		row = [employee.name, employee.employee_name, employee.department, employee.branch, employee.employment_type]
+		row = [employee.name, employee.employee_name, employee.department, employee.branch]
 
 		for leave_type in leave_types:
 			# leaves taken
 			leaves_taken = get_approved_leaves_for_period(employee.name, leave_type,
 				filters.from_date, filters.to_date)
-
+			
 			# closing balance
 			closing = get_leave_balance_on(employee.name, leave_type, filters.to_date,
 				allocation_records_based_on_to_date.get(employee.name, frappe._dict()))
-
+			
 			row += [leaves_taken, closing]
 
 		data.append(row)
