@@ -223,7 +223,9 @@ def delete_gl_entries(gl_entries=None, voucher_type=None, voucher_no=None,
 			from `tabGL Entry`
 			where voucher_type=%s and voucher_no=%s""", (voucher_type, voucher_no), as_dict=True)
 	if gl_entries:
-		check_freezing_date(gl_entries[0]["posting_date"], adv_adj)
+		#check_freezing_date(gl_entries[0]["posting_date"], adv_adj)
+		for entry in gl_entries:
+			check_freezing_date(entry.get("posting_date"), adv_adj, entry.get("cost_center"))
 
 	frappe.db.sql("""delete from `tabGL Entry` where voucher_type=%s and voucher_no=%s""",
 		(voucher_type or gl_entries[0]["voucher_type"], voucher_no or gl_entries[0]["voucher_no"]))

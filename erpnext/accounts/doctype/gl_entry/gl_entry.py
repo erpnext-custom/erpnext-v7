@@ -30,7 +30,7 @@ class GLEntry(Document):
 	def on_update_with_args(self, adv_adj, update_outstanding = 'Yes'):
 		self.validate_account_details(adv_adj)
 		validate_frozen_account(self.account, adv_adj)
-		check_freezing_date(self.posting_date, adv_adj)
+		check_freezing_date(self.posting_date, adv_adj, self.cost_center)
 		validate_balance_type(self.account, adv_adj)
 
 		# Update outstanding amt on against voucher
@@ -132,13 +132,21 @@ def validate_balance_type(account, adv_adj=False):
 				(balance_must_be=="Credit" and flt(balance) > 0):
 				frappe.throw(_("Balance for Account {0} must always be {1}").format(account, _(balance_must_be)))
 
-def check_freezing_date(posting_date, adv_adj=False):
+def check_freezing_date(posting_date, adv_adj=False, cost_center=None):
 	"""
 		Nobody can do GL Entries where posting date is before freezing date
 		except authorized person
 	"""
+	acc_frozen_upto = None
 	if not adv_adj:
-		acc_frozen_upto = frappe.db.get_value('Accounts Settings', None, 'acc_frozen_upto')
+		if cost_center:
+			acc_frozen_upto = frappe.db.get_value("Cost Center", cost_center, "acc_frozen_upto")
+
+		if cost_center and acc_frozen_upto:
+			pass
+		else:
+			acc_frozen_upto = frappe.db.get_value('Accounts Settings', None, 'acc_frozen_upto')
+
 		if acc_frozen_upto:
 			frozen_accounts_modifier = frappe.db.get_value( 'Accounts Settings', None,'frozen_accounts_modifier')
 			if getdate(posting_date) <= getdate(acc_frozen_upto) \
