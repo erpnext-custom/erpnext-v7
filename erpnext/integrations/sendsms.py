@@ -13,17 +13,11 @@ from datetime import datetime
 
 def SendSMS(sender, receiver, message, debug=0):
 	doc = frappe.get_single("SMS Settings")
-	SMSC_HOST = doc.smsc_host
-	SMSC_PORT = doc.smsc_port
-	SYSTEM_ID = doc.system_id
-	SYSTEM_PASS = doc.system_pass
-	USER_TYPE = doc.user_type
 	SENDER_ID =  str(sender)
 	DESTINATION_NO = str(receiver)
 	MESSAGE   = str(message)
 	flag	  = 0
 	timestamp = datetime.now().strftime("%Y%m%d")
-
 	
 	if not sender or not receiver or not message:
 		return flag
@@ -33,6 +27,19 @@ def SendSMS(sender, receiver, message, debug=0):
 		return flag
 	else:
 		DESTINATION_NO = "975"+str(DESTINATION_NO)[-8:]
+
+	con = frappe.db.sql("""SELECT *
+				FROM `tabSMS Connectivity`
+				WHERE destination = SUBSTR('{}',1,LENGTH(destination))
+				LIMIT 1""".format(DESTINATION_NO), as_dict=True)
+	if not con:
+		return flag
+
+	SMSC_HOST = con[0].smsc_host
+	SMSC_PORT = con[0].smsc_port
+	SYSTEM_ID = con[0].system_id
+	SYSTEM_PASS = con[0].system_pass
+	USER_TYPE = con[0].user_type
 
 	try:
 		# if you want to know what's happening
@@ -58,8 +65,8 @@ def SendSMS(sender, receiver, message, debug=0):
 		client.connect()
 		if USER_TYPE == "bind_transceiver":
 			client.bind_transceiver(system_id=SYSTEM_ID, password=SYSTEM_PASS)
-		if USER_TYPE == "bind_tranmitter":
-			client.bind_tranmitter(system_id=SYSTEM_ID, password=SYSTEM_PASS)
+		if USER_TYPE == "bind_transmitter":
+			client.bind_transmitter(system_id=SYSTEM_ID, password=SYSTEM_PASS)
 
 		for part in parts:
 			pdu = client.send_message(
