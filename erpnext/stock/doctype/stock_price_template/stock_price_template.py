@@ -111,7 +111,8 @@ def get_template_list(doctype, txt, searchfield, start, page_len, filters):
 #Get item values from "Initial Stock Templates" during stock entry
 @frappe.whitelist()
 def get_initial_values(name):
-	result = frappe.db.sql("SELECT a.item_code, a.item_name, a.uom, a.rate_currency, a.rate_amount, b.expense_account, b.selling_cost_center, b.stock_uom FROM `tabStock Price Template` AS a, tabItem AS b WHERE a.item_name = b.item_name AND a.name = \'" + str(name) + "\'", as_dict=True);
+	result = frappe.db.sql("SELECT a.item_code, a.item_name, a.uom, a.rate_currency, a.rate_amount, b.expense_account, b.selling_cost_center, b.stock_uom FROM `tabStock Price Template` AS a, tabItem AS b WHERE a.item_name = b.item_name AND a.name = \'" + str(name) + "\'", as_dict=True)
+	# frappe.throw(str(result))
 	return result;
 
 #Get item rates

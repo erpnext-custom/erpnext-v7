@@ -59,7 +59,7 @@ class LeaveApplication(Document):
 		self.validate_salary_processed_days()
 #		self.validate_leave_approver()
 		self.validate_backdated_applications()
-                
+		
 	def on_update(self):
 		self.validate_fiscal_year()
 		if (not self.previous_doc and self.leave_approver) or (self.previous_doc and \

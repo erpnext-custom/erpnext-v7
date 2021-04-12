@@ -35,33 +35,25 @@ class RentalPayment(AccountsController):
 						a.discount_amount = round(discount_amount)
 						if not a.free_amount_received:
 							a.amount_received = round(a.amount - discount_amount)
+					else:
+						a.discount_amount = 0.00
 				else:
 					if not a.free_amount_received:
 						a.amount_received = round(a.amount)
+					a.discount_amount = 0.00
 			else:
 				initial_rent_amt = frappe.db.get_value("Tenant Information", a.tenant, "rent_amount")
-				if not a.dont_apply_discount and a.amount == a.actual_rent_amount:
-					if initial_rent_amt < a.actual_rent_amount:
-						discount_amount = flt(a.amount)/110 * 10
-						a.discount_amount = round(discount_amount)
-						if not a.free_amount_received:
-							a.amount_received = round(a.amount - discount_amount)
-						else:
-							a.amount_received = round(a.amount)
+				if not a.dont_apply_discount:
+					if a.amount == a.actual_rent_amount:
+						if initial_rent_amt < a.actual_rent_amount:
+							discount_amount = flt(a.amount)/110 * 10
+							a.discount_amount = round(discount_amount)
+							if not a.free_amount_received:
+								a.amount_received = round(a.amount - discount_amount)
 				else:
-					if not a.free_amount_received:
-						a.amount_received = round(a.amount)
-				
-			if a.amount_received < a.amount:
-				a.allocated_amount = round(a.amount_received)
-			else:
-				a.allocated_amount = round(a.amount)
-
-			bill_amount += a.amount
-
-			received_amt += flt(a.amount_received)
-			if a.discount_amount > 0:
-				total_discount += cint(a.discount_amount)
+					a.discount_amount = 0.00
+				if not a.amount_received:
+					a.amount_received = round(a.amount)
 				
 		self.discount_amount = cint(total_discount)
 		self.total_bill_amount = cint(bill_amount)

@@ -3652,7 +3652,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2021-03-30 11:05:21.799623", 
+ "modified": "2021-04-06 15:47:24.932113", 
  "modified_by": "sangay.dorji2695@bt.bt", 
  "module": "Accounts", 
  "name": "Purchase Invoice", 
@@ -3696,7 +3696,7 @@
    "role": "Purchase Manager", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 1, 
+   "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 

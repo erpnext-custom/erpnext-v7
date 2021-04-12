@@ -153,7 +153,7 @@ class ProcessRentalBilling(AccountsController):
 					if process_type == "remove":
 						advance_exist = ""
 						for a in frappe.db.sql("""
-											select name 
+											select ra.name 
 											from `tabRental Advance Adjustment` ra, `tabRental Advance Adjusted` aa 
 											where ra.name = aa.parent and aa.rental_bill = '{0}'
 											and ra.docstatus = 1

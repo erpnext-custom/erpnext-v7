@@ -10,13 +10,14 @@ from frappe.utils import cint, cstr, flt, fmt_money, formatdate, nowtime, getdat
 
 class RentalBill(Document):
 	def autoname(self):
-                customer_code = frappe.db.get_value("Customer", {"customer_id":self.cid}, "customer_code")
-		if not customer_code:
-			frappe.throw("No Customer Code for Tenant CID : {}. Tenant CID might have changed".format(self.tenant))
-
-		#customer_code = frappe.db.get_value("Tenant Information", self.tenant, "customer_code")
-                bill_code = "NHDCL/" + customer_code + "/" + self.fiscal_year + self.month + '/.#####'
-		#bill_code = "NHDCL/300635/2019/01/00001"
+		if not self.customer_code:
+			customer_code = frappe.db.get_value("Customer", {"customer_id":self.cid}, "customer_code")
+			if not customer_code:
+				frappe.throw("No Customer Code for Tenant CID : {}. Tenant CID might have changed".format(self.tenant))
+		else:
+			customer_code = self.customer_code
+		
+		bill_code = "NHDCL/" + str(customer_code) + "/" + str(self.fiscal_year) + str(self.month) + '/.#####'
 		self.name = make_autoname(bill_code)
 
 	def on_cancel(self):

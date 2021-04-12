@@ -33,11 +33,13 @@ class Supplier(TransactionBase):
 		supplier_code = frappe.db.sql("""select supplier_code from tabSupplier where supplier_type=%s order by supplier_code desc limit 1;""", self.supplier_type);
 
 		if supplier_code:
+			frappe.msgprint(str(int(supplier_code[0][0]) + 1))
 			return str(int(supplier_code[0][0]) + 1);
 		else:
 			base = frappe.db.get_value("Supplier Type", self.supplier_type, "supplier_code_base")
 			if not base:
 				frappe.throw("Setup Supplier Code Base in Supplier Type")
+			frappe.msgprint(str(base))
 			return str(base)
 
 	def on_update(self):

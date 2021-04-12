@@ -36,7 +36,7 @@ frappe.ui.form.on('Maintenance Application Form', {
 					r.message.forEach(function (rec) {
 						structure_options.push(rec);
 					});
-					console.log(structure_options);
+					// console.log(structure_options);
 					cur_frm.set_df_property("structure_no", "options", structure_options);
 				}
 			}
@@ -46,6 +46,7 @@ frappe.ui.form.on('Maintenance Application Form', {
 
 	refresh: function (frm) {
 		if (!frm.doc.technical_sanction && frm.doc.docstatus == 1) {
+			console.log("hell oworlsd")
 			frm.add_custom_button("Create Technical Sanction", function () {
 				frappe.model.open_mapped_doc({
 					method: "erpnext.rental_management.doctype.maintenance_application_form.maintenance_application_form.make_technical_sanction",
