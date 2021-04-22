@@ -42,7 +42,12 @@ class MBEntry(Document):
                 
         def default_validations(self):
                 for rec in self.mb_entry_boq:
-                        entry_amount = flt(rec.entry_quantity)*flt(rec.entry_rate)
+                        #LEGACY CODE: for some reason it wasn't converting the entry rate to 2 decimal place after changing the quantity decimal value to 5. 
+                        # entry_amount = flt(rec.entry_quantity)*flt(rec.entry_rate)
+                        # added by phuntsho on December 15. 
+                        entry_rate = "{:.2f}".format(rec.entry_rate)
+                        entry_amount = rec.entry_quantity * float(entry_rate)
+                        # ----- end of code ------
                         if flt(rec.entry_quantity) > flt(rec.act_quantity):
                                 frappe.throw(_("Row{0}: Entry Quantity cannot be greater than Balance Quantity").format(rec.idx))
                         elif flt(rec.entry_amount) > flt(rec.act_amount):

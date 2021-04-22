@@ -35,7 +35,7 @@ class Asset(Document):
                         frappe.throw("Gross Amount should be >= (Opening + Useful Life + Residual)")
 
 	def on_submit(self):
-		self.make_asset_gl_entry();
+		self.make_asset_gl_entry()
 		self.make_opening_accumulated_gl_entry()
 		self.set_status()
 

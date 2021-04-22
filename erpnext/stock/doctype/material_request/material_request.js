@@ -7,10 +7,11 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 2.0		          SHIV		     					26/11/2017         * "PR Type/material_request_type" should only be 
 																			allowed to change by "Stock User"
 																			as recommened by Payma, CDCL
+				Birendra							25/02/2021			Approver set while entering branch										
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 */
 
-{% include 'erpnext/buying/doctype/purchase_common/purchase_common.js' %};
+// {% include 'erpnext/buying/doctype/purchase_common/purchase_common.js' %};
 
 cur_frm.add_fetch("item_code", "stock_uom", "uom")
 
@@ -74,15 +75,30 @@ frappe.ui.form.on('Material Request', {
 		}
 		*/
 		
+		// if(frm.doc.__islocal) {
+		// 	frappe.call({
+		// 			method: "erpnext.custom_utils.get_user_info",
+		// 			args: {"user": frappe.session.user},
+		// 			callback(r) {
+		// 					cur_frm.set_value("temp_cc", r.message.cost_center);
+		// 					cur_frm.set_value("temp_wh", r.message.warehouse);
+		// 					cur_frm.set_value("approver", r.message.approver);
+		// 					cur_frm.set_value("branch", r.message.branch);
+		// 			}
+		// 	});
+        // }
+	},
+	branch:function(frm){
 		if(frm.doc.__islocal) {
 			frappe.call({
 					method: "erpnext.custom_utils.get_user_info",
-					args: {"user": frappe.session.user},
+					args: {"branch": frm.doc.branch},
 					callback(r) {
+						console.log(r.message.cost_center)
 							cur_frm.set_value("temp_cc", r.message.cost_center);
 							cur_frm.set_value("temp_wh", r.message.warehouse);
 							cur_frm.set_value("approver", r.message.approver);
-							cur_frm.set_value("branch", r.message.branch);
+							// cur_frm.set_value("branch", r.message.branch);
 					}
 			});
         }

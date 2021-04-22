@@ -135,7 +135,9 @@ def scrap_asset(asset_name, scrap_date):
 	for i in schedules:
 		total_amount += flt(i.depreciation_amount)
 		update_jv(i.journal_entry, 0.00)
-		frappe.db.set_value("Depreciation Schedule", i.name, "journal_entry", "")
+		# following line is replaced by subsequent by SHIV on 2021/04/14
+		#frappe.db.set_value("Depreciation Schedule", i.name, "journal_entry", "")
+		frappe.db.set_value("Depreciation Schedule", i.name, "journal_entry", None)
 
 	asset.value_after_depreciation = flt(asset.value_after_depreciation) + flt(total_amount)
 	frappe.db.set_value("Asset", asset_name, "value_after_depreciation", asset.value_after_depreciation)

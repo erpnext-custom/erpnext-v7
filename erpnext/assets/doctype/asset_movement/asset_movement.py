@@ -13,6 +13,7 @@ from erpnext.assets.asset_utils import check_valid_asset_transfer
 class AssetMovement(Document):
 	def validate(self):
 		self.assign_data()
+		self.asset_movement_workflow()
 		self.validate_asset()
 		if self.target_warehouse:
 			self.validate_warehouses()
@@ -29,6 +30,25 @@ class AssetMovement(Document):
 	def assign_data(self):
 		self.source_custodian = frappe.db.get_value("Asset", self.asset, "issued_to")
 		self.current_cost_center = frappe.db.get_value("Asset", self.asset, "cost_center")
+
+	def asset_movement_workflow(self):
+		if self.workflow_state == "Waiting For Verification":
+			# make sure only loggedIn user can apply for asset movement
+			if not self.source_custodian:
+				frappe.throw("Provide the Custodian User ID to move the asset")
+
+		# 	if frappe.db.get_value("Employee", self.source_custodian, "user_id") != frappe.session.user:
+		# 		frappe.throw("Only {} can apply for Asset Movement".format(self.source_custodian_name))
+
+		# elif self.workflow_state == "Verified":
+		# 	# make sure only loggedIn user can verify for asset movement
+		# 	if frappe.db.get_value("Employee", self.target_custodian, "user_id") != frappe.session.user:
+		# 		frappe.throw("{} can only approve this Asset Movement transaction".format(self.target_custodian_name))
+
+		elif self.workflow_state == "Approved":
+			self.docstatus == 1		
+		elif self.workflow_state == "Cancelled":
+			self.docstatus == 2
 
 	def validate_asset(self):
 		status, company = frappe.db.get_value("Asset", self.asset, ["status", "company"])

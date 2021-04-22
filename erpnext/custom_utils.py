@@ -12,6 +12,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
                                                                         like DocType, DocName, ListOf Columns to be fetched.
 2.0.190225        SHIV                             25/02/2018         * cancel_draft_doc()
                                                                         * code of `Leave Application` added
+                Birendra                        25/02/2021              based on branch condition added in get_user_info                                                                      
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -81,7 +82,7 @@ def get_year_end_date(date):
 
 # Ver 2.0 Begins, following method added by SHIV on 28/11/2017
 @frappe.whitelist()
-def get_user_info(user=None, employee=None, cost_center=None):
+def get_user_info(user=None, employee=None, cost_center=None, branch=None):
         info = {}
         
 	#cost_center,branch = frappe.db.get_value("Employee", {"user_id": user}, ["cost_center", "branch"])
@@ -115,7 +116,20 @@ def get_user_info(user=None, employee=None, cost_center=None):
                 if not cost_center:
                         cost_center = frappe.db.get_value("Muster Roll Employee", {"user_id": user}, "cost_center")
                         branch      = frappe.db.get_value("Muster Roll Employee", {"user_id": user}, "branch")
-		
+	elif branch:
+                cost_center = frappe.db.get_value("Cost Center", {"branch": branch}, "name")
+                # branch      = frappe.db.get_value("Employee", {"user_id": user}, "branch")
+
+                # GEP Employee
+                if not cost_center:
+                        cost_center = frappe.db.get_value("GEP Employee", {"user_id": user}, "cost_center")
+                        branch      = frappe.db.get_value("GEP Employee", {"user_id": user}, "branch")
+
+                # MR Employee
+                if not cost_center:
+                        cost_center = frappe.db.get_value("Muster Roll Employee", {"user_id": user}, "cost_center")
+                        branch      = frappe.db.get_value("Muster Roll Employee", {"user_id": user}, "branch")
+                        
 	warehouse   = frappe.db.get_value("Cost Center", cost_center, "warehouse")
 	approver    = frappe.db.get_value("Approver Item", {"cost_center": cost_center}, "approver")
         customer    = frappe.db.get_value("Customer", {"cost_center": cost_center}, "name")

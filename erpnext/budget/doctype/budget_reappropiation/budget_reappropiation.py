@@ -68,9 +68,12 @@ class BudgetReappropiation(Document):
 			from_budget_account.db_set("budget_amount", total)
 			
 			#Add in the To Account and Cost Center
+
 			to_budget_account = frappe.get_doc("Budget Account", to_account[0].name)
+			#frappe.msgprint("budget received {} and amount {}".format(to_budget_account.budget_amount, amount))
 			received = flt(to_budget_account.budget_received) + flt(amount)
 			total = flt(to_budget_account.budget_amount) + flt(amount)
+			#frappe.throw("{} and {}".format(received, total))
 			if cancel:
 				received = flt(to_budget_account.budget_received) - flt(amount)
 				total = flt(to_budget_account.budget_amount) - flt(amount)
@@ -102,5 +105,4 @@ class BudgetReappropiation(Document):
 		else:
 			frappe.throw("Sorry, something happened. Please try again")
 
-
-
+# select b.name,a.name,a.budget_received, a.budget_amount from `tabBudget Account` a, `tabBudget` b where a.parent = b.name and b.cost_center ='Construction of water supply and wastewater system for JSW School of law Pangbisa, Paro - CDCL' and a.account ='Building & Structure (10 years) - CDCL' and fiscal_year='2021' and b.docstatus=1;

@@ -5,26 +5,30 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-
+from frappe.utils import flt, cint, nowdate, getdate, formatdate
+from erpnext.accounts.utils import get_fiscal_year
 from erpnext.hr.doctype.leave_application.leave_application \
         import get_leave_allocation_records, get_leave_balance_on, get_approved_leaves_for_period
-
 from frappe.utils import getdate, get_first_day, get_last_day, flt
 
 class CarryForwardEntry(Document):
 	def validate(self):
-		self.validate_carry_forward()
+		#self.validate_carry_forward()
 		self.validate_duplicate()
 		self.get_data()
 		#self.update_allocation(cancel = True)
 	
+	'''
 	def validate_carry_forward(self):
 		is_carry_forward = frappe.get_doc("Leave Type", self.leave_type).is_carry_forward
 		if not is_carry_forward:
 			frappe.throw(" <b> {0} </b> cannot be carry forwarded ".format(self.leave_type))
-		
+	'''	
 
 	def validate_duplicate(self):
+		current_fiscal_year = get_fiscal_year(getdate(nowdate()), company=self.company)[0]
+		if self.fiscal_year == current_fiscal_year:
+			frappe.throw("You are not allowed to merge CL balance from current Fiscal year {} to EL".format(current_fiscal_year))
 		query = """select name from `tabCarry Forward Entry` where docstatus != 2 and fiscal_year = '{0}' and name != '{1}'
 			""".format(self.fiscal_year, self.name)
 		if self.branch:

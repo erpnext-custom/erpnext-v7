@@ -284,11 +284,15 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 			additional_conditions.append(" and posting_date BETWEEN %(from_date)s AND %(to_date)s and docstatus = 1 ")
 
 	if not cost_center:
+		#and account in (select name from `tabAccount`
+		#		where lft >= %(lft)s and rgt <= %(rgt)s)
+
 		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`
 			where company=%(company)s
 			{additional_conditions}
-			and account in (select name from `tabAccount`
-				where lft >= %(lft)s and rgt <= %(rgt)s)
+			and exists (select 1 from `tabAccount`
+				where `tabAccount`.name = `tabGL Entry`.account 
+				and lft >= %(lft)s and rgt <= %(rgt)s)
 			order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
 			{
 				"company": company,
@@ -304,8 +308,9 @@ def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft
 		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, is_opening from `tabGL Entry`
 			where company=%(company)s
 			{additional_conditions}
-			and account in (select name from `tabAccount`
-				where lft >= %(lft)s and rgt <= %(rgt)s)
+			and exists (select 1 from `tabAccount`
+				where `tabAccount`.name = `tabGL Entry`.account 
+				and lft >= %(lft)s and rgt <= %(rgt)s)
 			order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
 			{
 				"cost_center": cost_centers,

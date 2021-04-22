@@ -149,7 +149,8 @@ class TravelAuthorization(Document):
 	##
 	def check_advance(self):
 		if self.need_advance:
-			if self.currency and flt(self.advance_amount_nu) > 0:
+			amt = 0.00
+			if self.currency and (flt(self.advance_amount_nu) > 0 or flt(self.advance_amount) > 0):
 				cost_center = frappe.db.get_value("Employee", self.employee, "cost_center")
 				advance_account = frappe.db.get_single_value("HR Accounts Settings", "employee_advance_travel")
 				expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
@@ -168,7 +169,7 @@ class TravelAuthorization(Document):
 				je.remark = 'Advance Payment against Travel Authorization: ' + self.name;
 				je.posting_date = self.posting_date
 				je.branch = self.branch
-	
+				amt = flt(self.advance_amount_nu) if flt(self.advance_amount_nu) > 0 else flt(self.advance_amount)	
 				je.append("accounts", {
 					"account": advance_account,
 					"party_type": "Employee",
@@ -176,8 +177,8 @@ class TravelAuthorization(Document):
 					"reference_type": "Travel Authorization",
 					"reference_name": self.name,
 					"cost_center": cost_center,
-					"debit_in_account_currency": flt(self.advance_amount_nu),
-					"debit": flt(self.advance_amount_nu),
+					"debit_in_account_currency": flt(amt),
+					"debit": flt(amt),
 	
 					"is_advance": "Yes"
 				})
@@ -186,8 +187,8 @@ class TravelAuthorization(Document):
 					"account": expense_bank_account,
 					"cost_center": cost_center,
 					
-					"credit_in_account_currency": flt(self.advance_amount_nu),
-					"credit": flt(self.advance_amount_nu),
+					"credit_in_account_currency": flt(amt),
+					"credit": flt(amt),
 				})
 				
 				je.insert()

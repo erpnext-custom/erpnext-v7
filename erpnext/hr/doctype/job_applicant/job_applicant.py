@@ -9,6 +9,9 @@ import frappe
 from frappe import _
 from frappe.utils import comma_and, validate_email_add
 
+from frappe.utils import today
+from datetime import timedelta, date
+from frappe.utils import rounded, flt, cint, now, nowdate, getdate, get_datetime,now_datetime
 sender_field = "email_id"
 
 class DuplicationError(frappe.ValidationError): pass
@@ -32,6 +35,9 @@ class JobApplicant(Document):
 		if not self.applicant_name and self.email_id:
 			guess = self.email_id.split('@')[0]
 			self.applicant_name = ' '.join([p.capitalize() for p in guess.split('.')])
+
+		dep_sch = frappe.db.sql(""" select name, journal_entry, parent, schedule_date from `tabDepreciation Schedule` where parent = 'ASSET171100002' order by idx desc limit 1""", as_dict = 1)
+		frappe.msgprint("this {0} {1}".format(getdate(dep_sch[0].schedule_date), today()))
 
 	def check_email_id_is_unique(self):
 		if self.email_id:

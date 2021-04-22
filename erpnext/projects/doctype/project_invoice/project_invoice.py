@@ -106,11 +106,14 @@ class ProjectInvoice(AccountsController):
                         self.boq_type         = base_boq.boq_type
 
         # following method created by SHIV on 2019/06/20
-        def validate_mb_entries(self):
-                for i in self.get("project_invoice_mb"):
-                        for t in frappe.get_all("Project Invoice MB", ["parent"], {"entry_name": i.entry_name, "is_selected": 1, "docstatus": 1}, order_by="boq, subcontract, parent"):
-                                msg = '<b>Reference# : <a href="#Form/Project Invoice/{0}">{0}</a></b>'.format(t.parent)
-                                frappe.throw(_("Row#{0}: Measurement Book Entry {1} is already invoiced<br>{2}").format(i.idx,i.entry_name,msg))
+	def validate_mb_entries(self):
+		for i in self.get("project_invoice_mb"):
+			if cint(i.is_selected):
+				for t in frappe.get_all("Project Invoice MB", ["parent"], {"entry_name": i.entry_name, \
+						"is_selected": 1, "docstatus": 1, "parent": ("!=", self.name)}, order_by="boq, subcontract, parent"):
+					msg = '<b>Reference# : <a href="#Form/Project Invoice/{0}">{0}</a></b>'.format(t.parent)
+					frappe.throw(_("Row#{0}: Measurement Book Entry {1} is already invoiced<br>{2}").format(i.idx,i.entry_name,msg))
+
         # following method created by SHIV on 2019/06/19
         def get_name_list(self):
                 name_list = frappe._dict()

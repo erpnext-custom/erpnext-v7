@@ -57,7 +57,8 @@ frappe.query_reports["TDS Certificate"] = {
 					query_report.filters_by_name.vendor_tpn_no.set_input(fy.vendor_tpn_no);
 					query_report.trigger_refresh();
 				});
-			}
+			},
+                        "reqd": 1
 		},
 		{
 			"fieldname": "vendor_tpn_no",

@@ -146,10 +146,10 @@ def get_data():
 					"label": _("Leave Adjustment Tool"),
 				},
 				{
-                                        "type": "doctype",
-                                        "name": "Carry Forward Entry",
-                                        "label": _("Carry Forward CL"),
-                                }
+					"type": "doctype",
+					"name": "Merge CL To EL",
+					"label": _("Merge CL To EL")
+				},
 			]
 		},
 		{
@@ -444,6 +444,7 @@ def get_data():
 				},
 				{
 					"type": "report",
+					"is_query_report": True,
 					"name": "Employee Information",
 					"doctype": "Employee"
 				},
@@ -467,17 +468,22 @@ def get_data():
 					"doctype": "Employee"
 				},
 				{
-                                        "type": "report",
-                                        "name": "LTC Details",
-                                        "doctype": "Leave Travel Concession"
-                                },
+					"type": "report",
+					"name": "LTC Details",
+					"doctype": "Leave Travel Concession"
+				},
 				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Travel Report",
-                                        "doctype": "Travel Claim"
-                                },
-
+					"type": "report",
+					"is_query_report": True,
+					"name": "Travel Report",
+					"doctype": "Travel Claim"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Overtime Application Report",
+					"doctype": "Overtime Application"
+				}
 			]
 		},
 	]

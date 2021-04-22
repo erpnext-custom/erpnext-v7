@@ -80,21 +80,22 @@ class PeriodClosingVoucher(AccountsController):
                                                 "credit": abs(net_pl_balance) if net_pl_balance < 0 else 0
                                         }))
 
-		"""if net_pl_balance:
+		'''
+		if net_pl_balance:
 			gl_entries.append(self.get_gl_dict({
 				"account": self.closing_account_head,
 				"debit_in_account_currency": abs(net_pl_balance) if net_pl_balance > 0 else 0,
 				"debit": abs(net_pl_balance) if net_pl_balance > 0 else 0,
 				"credit_in_account_currency": abs(net_pl_balance) if net_pl_balance < 0 else 0,
 				"credit": abs(net_pl_balance) if net_pl_balance < 0 else 0
-			}))"""
+			}))
+		'''
 
 		from erpnext.accounts.general_ledger import make_gl_entries
 		make_gl_entries(gl_entries)
 
 	def get_pl_balances(self):
 		"""Get balance for pl accounts"""
-		frappe.msgprint(str(self.get("year_start_date")))
 		return frappe.db.sql("""
 			select
 				t1.account, t1.cost_center, t2.account_currency,

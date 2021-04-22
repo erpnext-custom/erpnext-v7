@@ -630,8 +630,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-09-19 10:35:24.016629", 
- "modified_by": "Administrator", 
+ "modified": "2021-03-09 11:48:03.052002", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Stock Ledger Entry", 
  "owner": "Administrator", 
@@ -654,7 +654,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 0
+   "write": 1
   }, 
   {
    "amend": 0, 

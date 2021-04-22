@@ -16,6 +16,27 @@ from frappe.utils import today
 import os
 import subprocess
 
+def remove_gl_party():
+	i  = 1
+	for a in frappe.db.sql("""select g.name, g.party, g.party_type, g.account, a.account_type
+						from `tabGL Entry` g, `tabAccount` a 
+						where g.account = a.name and 
+						a.account_type NOT IN ('Receivable', 'Payable')
+						and length(g.party) > 0
+						""", as_dict=True):
+		#frappe.db.sql("update `tabGL Entry` set party = '', party_type = '' where name = '{}'".format(a.name))
+		#frappe.db.commit()
+		print("Done" + str(i) + " | " +str(a.name) +" | " + str(a.account) + " | " + str(a.party) + "|"+ str(a.account_type))
+		i+=1
+
+def asset_depreciate():
+	# make_depreciation_entry("ASSET171101184", today())
+	for d in frappe.db.sql("""
+		select DISTINCT(journal_entry) from `tabDepreciation Schedule`
+	""",as_dict=True):
+		je = frappe.get_value("Journal Entry",{"name":d.journal_entry},"name")
+		if not je and d.journal_entry:
+			print(d.journal_entry,' ',je)
 
 def update_design():
 	for a in frappe.db.sql("select  employee, designation, employee_subgroup from `tabEmployee` where employee = 'CDCL9401003'", as_dict=True):
@@ -47,6 +68,11 @@ def update_le():
 			d.submit()
 			count += 1
 			print b.name, count
+
+def submit_ta():
+	doc = frappe.get_doc("Travel Authorization", "TA210400049")
+	doc.submit()
+	print doc.advance_amount
 
 def depreciate_assets():
         count = 0
@@ -586,7 +612,85 @@ def link_pol_je():
 	for d in docs:
 		frappe.db.sql("update tabPOL set jv = %s where name = %s", (d.parent, d.reference_name))
 		print(str(d.reference_name) + " ==> " + str(d.parent))
+
 """
+
+def test():
+	import csv
+        with open('/home/kinley/erp/asset_list.csv','r') as f:
+		data = csv.reader(f)
+		count = 0
+		for a in data:
+			ast = frappe.get_doc("Asset", a[0])
+			dep = frappe.db.sql(""" select sum(depreciation_amount) as amount from `tabDepreciation Schedule` where parent = '{0}' 
+				and journal_entry is not null  group by parent""".format(a[0]), as_dict = 1)
+			tot = flt(dep[0].amount) + flt(ast.opening_accumulated_depreciation) + flt(ast.residual_value)
+			# - flt(ast.expected_value_after_useful_life)
+			value_after_dep = flt(ast.gross_purchase_amount) - flt(tot)
+			if flt(value_after_dep) > 1:
+				'''frappe.db.sql(""" update `tabAsset` set disable_depreciation = 0 where name = '{}'""".format(ast.name))
+				row = ast.append ("schedules",
+                                        {"depreciation_amount":  value_after_dep - 1,
+                                        "schedule_date": today(),
+                                        "depreciation_income_tax": value_after_dep - 1,
+                                        "accumulated_depreciation_amount": flt(dep[0].amount) + flt(ast.opening_accumulated_depreciation) + flt(value_after_dep) - 1,
+                                        "accumulated_depreciation_income_tax":  flt(dep[0].amount) + flt(ast.opening_accumulated_depreciation) + flt(value_after_dep) - 1,
+                                        })
+                                row.save()
+                                row.submit()
+                               	make_depreciation_entry(ast.name, today())'''
+				count +=1 
+				print ast.name, ast.status, value_after_dep, count
+
+def update_ad1():
+	'''for b in frappe.db.sql(""" select a.name, s.schedule_date, s.parent from `tabAsset` a, `tabDepreciation Schedule` s 
+			where s.schedule_date < '2020-11-30' and ifnull(s.journal_entry, '') = '' and 
+			a.status not in ('Scrapped', 'Draft', 'Sold') and s.parent = a.name""", as_dict = 1):
+		print b.parent, b.schedule_date
+	'''
+	for b in frappe.db.sql(""" select schedule_date, parent from `tabDepreciation Schedule` where schedule_date = '2020-09-30' and ifnull(journal_entry, '') = ''""", as_dict = 1):
+		print b.parent, b.schedule_date
+ 
+def update_ad():
+        import csv
+        with open('/home/kinley/erp/asset_list.csv','r') as f:
+                data = csv.reader(f)
+                count = 0
+		d = []
+                for row in data:
+                        ast = frappe.get_doc("Asset", row[0])
+			if ast.value_after_depreciation > 1:
+				dep_amount = frappe.db.sql(""" select ifnull(sum(ds.depreciation_amount), 0) as dep from `tabDepreciation Schedule` ds where ds.parent = '{0}' group by ds.parent""".format(ast.name), as_dict = 1)
+				if dep_amount:
+					dep_amount = dep_amount[0].dep + ast.opening_accumulated_depreciation
+				else:
+					dep_amount = ast.opening_accumulated_depreciation
+
+				'''dep_sch = frappe.db.sql(""" update `tabDepreciation Schedule`  set schedule_date = '{0}'
+					where parent = '{1}' and ifnull(journal_entry, '') = ''""".format(getdate(today()), row[0]))'''	
+				value_after_dep = flt(ast.gross_purchase_amount) - flt(dep_amount) - flt(ast.residual_value) - 1
+				if flt(value_after_dep) > 1:
+					row = ast.append ("schedules",
+					{"depreciation_amount":  value_after_dep,
+					"schedule_date": today(),
+					"depreciation_income_tax": value_after_dep,
+					"accumulated_depreciation_amount": flt(dep_amount) + flt(value_after_dep),
+					"accumulated_depreciation_income_tax":  flt(dep_amount) + flt(value_after_dep),
+					})
+					row.save()
+					row.submit()
+					make_depreciation_entry(ast.name, today())
+				
+				#ast.db_set("value_after_depreciation", value_after_dep)
+				final_dep = frappe.db.sql(""" select name, schedule_date, parent from `tabDepreciation Schedule` where parent = '{0}' and ifnull(journal_entry, '') = '' order by idx desc limit 1""".format(ast.name), as_dict = 1)
+
+				'''if final_dep:
+					if getdate(final_dep[0].schedule_date) <= getdate(today()):
+						make_depreciation_entry(final_dep[0].parent, getdate(today()))
+				
+				ast.set_status()'''
+				count +=1 
+				print ast.name, count, value_after_dep
 
 
 def update_sst_payment_methods():

@@ -34,12 +34,26 @@ def get_columns(filters):
 
 def get_data(filters):
 	if filters.purpose == 'Material Transfer':
-		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, (select i.item_sub_group from tabItem i where i.item_code = sed.item_code) as item_sub_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.t_warehouse, sed.s_warehouse FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Transfer'"
+		data = """SELECT se.posting_date, sed.item_code, sed.item_name, 
+				i.item_group, i.item_sub_group, sed.uom, sed.qty, 
+				sed.valuation_rate,sed.amount, sed.t_warehouse, sed.s_warehouse 
+			FROM `tabStock Entry` se, `tabStock Entry Detail` sed, `tabItem` i
+			WHERE se.name = sed.parent 
+			AND se.docstatus = 1 
+			AND se.purpose = 'Material Transfer'
+			AND i.name = sed.item_code"""
 	elif filters.purpose == 'Material Issue':
-		data = "select se.posting_date, sed.item_code, sed.item_name, (select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, (select i.item_sub_group from tabItem i where i.item_code = sed.item_code) as item_sub_group, sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.cost_center, sed.s_warehouse FROM `tabStock Entry` se, `tabStock Entry Detail` sed WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Issue'"
+		data = """SELECT se.posting_date, sed.item_code, sed.item_name, 
+				i.item_group, i.item_sub_group, sed.uom, sed.qty, 
+				sed.valuation_rate,sed.amount, sed.cost_center, sed.s_warehouse 
+			FROM `tabStock Entry` se, `tabStock Entry Detail` sed, `tabItem` i
+			WHERE se.name = sed.parent 
+			AND se.docstatus = 1 
+			AND se.purpose = 'Material Issue'
+			AND i.name = sed.item_code"""
 	if filters.get("warehouse"):
-		data += " and sed.s_warehouse = \'" + str(filters.warehouse) + "\'"
+		data += " AND sed.s_warehouse = \'" + str(filters.warehouse) + "\'"
 	if filters.get("from_date") and filters.get("to_date"):
-		data += " and se.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+		data += " AND se.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'"+ str(filters.to_date) + "\'"
 
 	return frappe.db.sql(data)

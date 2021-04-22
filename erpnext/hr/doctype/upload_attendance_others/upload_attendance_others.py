@@ -23,7 +23,7 @@ def get_template():
 	w = UnicodeWriter()
 	w = add_header(w, args)
 	w = add_data(w, args)
-
+        frappe.msgprint("this is the data returned: {}".format(w))
 	# write out response as a type csv
 	frappe.response['result'] = cstr(w.getvalue())
 	frappe.response['type'] = 'csv'

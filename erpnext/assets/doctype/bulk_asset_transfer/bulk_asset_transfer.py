@@ -11,6 +11,10 @@ from erpnext.assets.asset_utils import check_valid_asset_transfer
 from erpnext.assets.doctype.asset_movement.asset_movement import save_equipment
 
 class BulkAssetTransfer(Document):
+
+	def validate(self):
+		self.asset_transfer_workflow()
+
 	def validate_data(self):
 		self.custodian_cost_center = frappe.db.get_value("Employee", self.custodian, "cost_center")
 		self.custodian_branch = frappe.db.get_value("Employee", self.custodian, "branch")
@@ -53,6 +57,23 @@ class BulkAssetTransfer(Document):
 					#save_equipment(equipment, self.custodian_branch, self.posting_date, self.name, "Submit")
 					#doc.db_set("branch", self.custodian_branch)
 				make_asset_transfer_gl(self, a.asset_code, self.posting_date, a.cost_center, self.custodian_cost_center)
+	
+	def asset_transfer_workflow(self):
+		if self.workflow_state == "Waiting For Verification":
+			if self.purpose == "Custodian":
+				if not self.custodian_id:
+					frappe.throw("Provide the Custodian User ID to transfer the asset")
+		# 		current_custodian = frappe.db.get_value("Employee", self.current_custodian, "user_id")
+		# 		if current_custodian != frappe.session.user:
+		# 			frappe.throw("Only {} can apply for Bulk Asset transfer".format(self.c_custodian_name))
+		# elif self.workflow_state == "Verified":
+		# 	if self.purpose == "Custodian":
+		# 		if self.custodian_id != frappe.session.user:
+		# 			frappe.throw("{} can only approve this Asset transfer transaction".format(self.custodian_name))
+		elif self.workflow_state == "Approved":
+			self.docstatus == 1		
+		elif self.workflow_state == "Cancelled":
+			self.docstatus == 2
 
 	def get_assets(self):
 		if not self.purpose:

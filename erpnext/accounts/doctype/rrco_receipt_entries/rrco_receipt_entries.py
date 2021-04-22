@@ -7,4 +7,6 @@ import frappe
 from frappe.model.document import Document
 
 class RRCOReceiptEntries(Document):
-	pass
+    def validate(self):
+		pass
+	

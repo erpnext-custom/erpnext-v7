@@ -2,6 +2,22 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Asset Modifier', {
+	onload: function(frm) {
+		frm.fields_dict['items'].grid.get_field('asset_account').get_query = function(){
+			return{
+				filters: {
+					'is_group': 0
+				}
+			}
+		};
+		frm.fields_dict['items'].grid.get_field('credit_account').get_query = function(){
+			return{
+				filters: {
+					'is_group': 0
+				}
+			}
+		};
+	},
 	refresh: function(frm) {
 
 	},

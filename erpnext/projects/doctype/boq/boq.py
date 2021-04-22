@@ -35,6 +35,11 @@ class BOQ(Document):
                 self.update_project_value()
                 self.project_boq_item_entry()
 
+        # this is added to address ticket #1088 as client request populate project_value even in draft status
+        def on_update(self):
+                self.update_project_value()
+                
+
         def on_update_after_submit(self):
                 self.project_boq_item_entry()
 

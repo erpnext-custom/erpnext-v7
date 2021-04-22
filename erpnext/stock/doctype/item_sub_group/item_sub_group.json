@@ -122,8 +122,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-07-25 15:03:48.097643", 
- "modified_by": "Administrator", 
+ "modified": "2021-03-09 11:47:38.581917", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Stock", 
  "name": "Item Sub Group", 
  "name_case": "", 
@@ -267,7 +267,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 0
+   "write": 1
   }, 
   {
    "amend": 0, 

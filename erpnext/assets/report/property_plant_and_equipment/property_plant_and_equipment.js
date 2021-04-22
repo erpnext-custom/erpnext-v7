@@ -49,6 +49,12 @@ frappe.query_reports["Property Plant and Equipment"] = {
 			"fieldtype": "Link",
 			"options": "Cost Center",
 			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1']]}}
+		},
+		{
+			"fieldname": "include_cwip",
+			"label": __("Include CWIP?"),
+			"fieldtype": "Check",
+			"default": 0
 		}
 	]
 }

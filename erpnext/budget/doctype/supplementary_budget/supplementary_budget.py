@@ -53,8 +53,10 @@ class SupplementaryBudget(Document):
 			if self.docstatus == 2:
 				supplement = flt(to_budget_account.supplementary_budget) - flt(amount)
 				total = flt(to_budget_account.budget_amount) - flt(amount)
-			to_budget_account.db_set("supplementary_budget", supplement)
-			to_budget_account.db_set("budget_amount", total)
+			frappe.db.sql("update `tabBudget Account` set supplementary_budget = '{0}', budget_amount='{1}' where name = '{2}'".format(supplement, total, to_account[0].name))
+			frappe.db.commit()
+			#to_budget_account.db_set("supplementary_budget", supplement)
+			#to_budget_account.db_set("budget_amount", total)
 		
 			
 			if self.docstatus == 1:

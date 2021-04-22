@@ -26,7 +26,8 @@ class AssetModifier(Document):
 		# Restrict cancelling if journal entry exists
 		for t in frappe.get_all("Journal Entry", {"name": self.journal_entry, "docstatus": ["<",2]}, ["name"]):
 			frappe.throw(_("You need to cancel Journal Entry {0} first").format(self.journal_entry), title="Invalid Operation")
-		self.change_value()
+                self.change_value()
+
 ##
 # Make GL Entry for the additional cost
 ##

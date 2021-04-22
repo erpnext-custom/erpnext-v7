@@ -298,6 +298,7 @@ def create_asset_schedules_b4(debug=1):
                                 row.depreciation_income_tax             = flt(prev.depreciation_income_tax)
                                 row.accumulated_depreciation_amount     = flt(prev.opening_accumulated_depreciation)+flt(i.depreciation)
                                 row.accumulated_depreciation_income_tax = flt(prev.accumulated_depreciation_income_tax)
+				row.docstatus				= 1
                                 row.save(ignore_permissions=True)
                                 frappe.db.sql("update `tabAsset` set residual_value=0 where name='{0}'".format(i.asset))
                                 frappe.db.sql("update maintenance.tmp_assetsb4 set flag=1 where asset='{0}'".format(i.asset))
@@ -337,6 +338,7 @@ def create_asset_schedule_me10me6ff(debug=1):
                         row.depreciation_income_tax             = 0
                         row.accumulated_depreciation_amount     = flt(i.opening_accumulated_depreciation)+flt(depreciation_amount)
                         row.accumulated_depreciation_income_tax = 0
+			row.docstatus				= 1
                         row.save(ignore_permissions=True)
                         frappe.db.sql("update `tabAsset` set residual_value=0 where name='{0}'".format(i.asset))
                         frappe.db.sql("update maintenance.tmp_asset_schedule_me10me6ff set flag=1 where asset='{0}'".format(i.asset))
@@ -380,6 +382,7 @@ def asset_schedule20200208(debug=1):
                                 row.depreciation_income_tax = flt(prev.depreciation_income_tax)
                                 row.accumulated_depreciation_amount = flt(accumulated_depreciation_amount)
                                 row.accumulated_depreciation_income_tax = flt(prev.accumulated_depreciation_income_tax)
+				row.docstatus = 1
                                 row.save(ignore_permissions=True)
                                 print j.asset, j.schedule_date, j.amount, accumulated_depreciation_amount
 
@@ -436,6 +439,7 @@ def create_asset_schedule_me10(debug=1):
                                 row.depreciation_income_tax = prev.depreciation_income_tax
                                 row.accumulated_depreciation_amount = flt(prev.accumulated_depreciation_amount)+flt(depreciation_amount)
                                 row.accumulated_depreciation_income_tax = flt(prev.accumulated_depreciation_income_tax)
+				row.docstatus = 1
                                 row.save(ignore_permissions=True)
                                 frappe.db.sql("update `tabAsset` set residual_value=0 where name='{0}'".format(i.asset))
                                 frappe.db.sql("update maintenance.tmp_asset_schedule_me10 set flag=1 where asset='{0}'".format(i.asset))
@@ -557,6 +561,7 @@ def asset_create_schedule():
 					row.depreciation_income_tax = latest[0].depreciation_income_tax
 					row.accumulated_depreciation_amount = flt(latest[0].accumulated_depreciation_amount)+flt(i.value_after_depreciation)-1
 					row.accumulated_depreciation_income_tax = latest[0].accumulated_depreciation_income_tax
+					row.docstatus = 1
 					row.save(ignore_permissions=True)
 					frappe.db.sql("update `tabAsset` set residual_value=0 where name='{0}'".format(i.name))
 					frappe.db.sql("update tmp_asset_schedule set flag=1,remarks='created' where asset='{0}'".format(i.name))

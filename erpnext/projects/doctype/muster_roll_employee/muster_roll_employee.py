@@ -86,6 +86,9 @@ class MusterRollEmployee(Document):
                                         if (self.status == 'Left' and self.separation_date):
                                                 if not wh.to_date:
                                                         wh.to_date = self.separation_date
+                                                        if wh.from_date > wh.to_date:
+                                                                frappe.throw("To date cannot be before From Date (Separation Date)")
+
                                                 elif prev_doc.separation_date:
                                                         if (getdate(prev_doc.separation_date) == getdate(wh.to_date)):
                                                                 wh.to_date = self.separation_date
