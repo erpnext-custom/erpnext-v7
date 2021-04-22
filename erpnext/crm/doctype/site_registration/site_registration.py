@@ -23,8 +23,6 @@ class SiteRegistration(Document):
 		self.attach_cid()
 
 	def after_insert(self):
-		#msg = "Your request for site registration is created successfully. You will be notified upon approval by NRDCL. Tran Ref No {0}".format(self.name)
-		#self.sendsms(msg)
 		pass
 
 	def on_submit(self):
@@ -90,13 +88,14 @@ class SiteRegistration(Document):
 		self.approval_no = str(self.approval_no).strip()
 
 		sr = frappe.db.sql("""
-				select name, site, docstatus, approval_status, approval_no
+				select name, site, docstatus, approval_status, approval_no, product_category
 				from `tabSite Registration`
 				where user = "{user}"
 				and docstatus != 2
 				and lower(approval_no) = "{approval_no}"
+				and product_category = "{product_category}"
 				and name != "{name}"
-			""".format(name=self.name, user=self.user, approval_no=str(self.approval_no).lower()), as_dict=True)
+			""".format(name=self.name, user=self.user, approval_no=str(self.approval_no).lower(), product_category = self.product_category), as_dict=True)
 		for i in sr:
 			if i.docstatus == 0:
 				link = frappe.get_desk_link("Site Registration", i.name)

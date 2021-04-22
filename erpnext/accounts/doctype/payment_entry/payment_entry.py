@@ -607,6 +607,8 @@ class PaymentEntry(AccountsController):
 		if self.payment_type in ("Receive", "Pay") and self.party:
 			for d in self.get("references"):
 				if d.allocated_amount and d.reference_doctype in ("Sales Order", "Purchase Order"):
+					# if frappe.session.user == "Administrator":
+					# 	frappe.throw(d.reference_name)
 					#frappe.msgprint("the refernce docs {0} and {1} and {2}".format(d.allocated_amount, d.reference_doctype, d.reference_name))
 					frappe.get_doc(d.reference_doctype, d.reference_name).set_total_advance_paid()
 

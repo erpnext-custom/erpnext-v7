@@ -92,7 +92,7 @@ class SalesOrder(SellingController):
 		#	sub_groups = ["Pole","Log","Block","Sawn", "Hakaries","Block (Special Size)"]
 		#	if item_sub_group in sub_groups:
 			if lot_check:
-				data = frappe.db.sql("select ll.name, lld.total_volume from `tabLot List` ll, `tabLot List Details` lld where ll.name = lld.parent and ll.branch='{0}' and lld.item = '{1}' and ll.name='{2}' and ll.docstatus=1 and (ll.sales_order is NULL OR ll.sales_order ='')".format(self.branch, item.item_code, item.lot_number), as_dict=1)
+				data = frappe.db.sql(""" select ll.name, lld.total_volume from `tabLot List` ll, `tabLot List Details` lld where ll.name = lld.parent and ll.branch='{0}' and lld.item = '{1}' and ll.name="{2}" and ll.docstatus=1 and (ll.sales_order is NULL OR ll.sales_order ='')""".format(self.branch, item.item_code, item.lot_number), as_dict=1)
 				if not data:
 					frappe.throw("Invalid Lot selection, Please check Branch and Material")
 				#else:

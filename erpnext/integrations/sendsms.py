@@ -70,11 +70,13 @@ def SendSMS(sender, receiver, message, debug=0):
 
 		for part in parts:
 			pdu = client.send_message(
-				source_addr_ton=smpplib.consts.SMPP_TON_INTL,
+				source_addr_ton=5,
+				#source_addr_ton=smpplib.consts.SMPP_TON_INTL,
 				#source_addr_npi=smpplib.consts.SMPP_NPI_ISDN,
 				# Make sure it is a byte string, not unicode:
 				source_addr=str(SENDER_ID),
-				dest_addr_ton=smpplib.consts.SMPP_TON_INTL,
+				dest_addr_ton=5,
+				#dest_addr_ton=smpplib.consts.SMPP_TON_INTL,
 				#dest_addr_npi=smpplib.consts.SMPP_NPI_ISDN,
 				# Make sure thease two params are byte strings, not unicode:
 				destination_addr=str(DESTINATION_NO),
@@ -83,10 +85,11 @@ def SendSMS(sender, receiver, message, debug=0):
 				esm_class=msg_type_flag,
 				registered_delivery=True,
 			)
-			#print(pdu.sequence)
+			print(pdu.sequence)
 			client.read_pdu()
+			#client.listen()
 		client.unbind()
-		client.disconnect()
+		#client.disconnect()
 		flag = 1
 	except ValueError, e:
 		print e

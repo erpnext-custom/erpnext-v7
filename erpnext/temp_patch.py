@@ -10,6 +10,75 @@ import collections
 from frappe.model.naming import make_autoname
 
 
+# given by Mani Gyeltshen, NRDCL 2021/04/15
+def submit_pr20210415():
+	print('SUBMIT===>')
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabProduction`
+		where name in ('PRO210401031', 'PRO210401032')
+		and docstatus = 0""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Production', i.name)
+		print counter, doc.name, doc.docstatus, 'Submitting...'
+                doc.submit()
+                frappe.db.commit()
+		print 'Submitted successfully...'
+
+	print('CANCEL===>')
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabProduction`
+		where name in ('PRO210100246', 'PRO210100250')
+		and docstatus = 1""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Production', i.name)
+		print counter, doc.name, doc.docstatus, 'Cancelling...'
+                doc.cancel()
+                frappe.db.commit()
+		print 'Cancelled successfully...'
+
+
+# given by Mani Gyeltshen, NRDCL 2021/04/08
+def submit_pr20210408():
+	print('CANCEL===>')
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabProduction`
+		where name in ('PRO210302090')
+		and docstatus = 1""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Production', i.name)
+                doc.cancel()
+                frappe.db.commit()
+		print counter, doc.name, doc.docstatus, 'Cancelling...'
+		print 'Cancelled successfully...'
+
+	print('SUBMIT===>')
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabProduction`
+		where name in ('PRO210400416','PRO210400429', 'PRO210400430','PRO210400431','PRO210400432','PRO210400433')
+		and docstatus = 0""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Production', i.name)
+                doc.submit()
+                frappe.db.commit()
+		print counter, doc.name, doc.docstatus, 'Submitting...'
+		print 'Submitted successfully...'
+
+# create by SHIV on 2021/04/08
+def submit_sr20210408(submit=0):
+	counter = 0
+	for i in frappe.db.sql("""select name from `tabStock Reconciliation`
+		where name in ('SR/000164', 'SR/000168')""", as_dict=True):
+		counter += 1
+		doc = frappe.get_doc('Stock Reconciliation', i.name)
+		print counter, doc.name, doc.docstatus
+		if submit:
+			try:
+				doc.submit()
+			except Exception, e:
+				print 'ERROR: ', str(e)
+			print 'Submitted successfully...'
+		frappe.db.commit()
+
 # following method created by SHIV to submit different entries together, 2021/01/05 req.by Birkha
 def submit_entries():
 	prod = frappe.get_doc("Production", "PRO201100933")

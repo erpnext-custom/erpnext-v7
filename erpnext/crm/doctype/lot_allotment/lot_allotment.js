@@ -94,7 +94,6 @@ function populate_lot_details (frm, row){
 			args: {'lot_number': row.lot_number, 'posting_date': cur_frm.doc.posting_date},
 			callback: function(r, rt){
 				if(r.message){
-					console.log(r.message[0])
 					r.message.forEach(function(v){
 						var rows = frappe.model.add_child(frm.doc, "Lot Allotment Details", "lot_list_details");
 						rows.lot_number 		= v['lot_number'];

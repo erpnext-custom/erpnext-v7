@@ -9,7 +9,27 @@ frappe.ui.form.on("Production Target",{
 
 });
 
-frappe.ui.form.on("Production Target", "refresh", function(frm) {
+// frappe.ui.form.on("Production Target", "refresh", function(frm) {
+//     cur_frm.set_query("location", function() {
+//         return {
+//             "filters": {
+//                 "branch": frm.doc.branch,
+//                 "is_disabled": 0
+//             }
+//         };
+//     });
+// });
+frappe.ui.form.on("Production Target Item", "refresh", function(frm) {
+    cur_frm.set_query("location", function() {
+        return {
+            "filters": {
+                "branch": frm.doc.branch,
+                "is_disabled": 0
+            }
+        };
+    });
+});
+frappe.ui.form.on("Disposal Target Item", "refresh", function(frm) {
     cur_frm.set_query("location", function() {
         return {
             "filters": {

@@ -10,11 +10,11 @@ from frappe.model.document import Document
 from erpnext.crm_utils import get_branch_rate, get_branch_location, get_vehicles, get_limit_details
 from erpnext.crm_api import init_payment
 from frappe.core.doctype.user.user import send_sms
+from erpnext.crm_utils import add_user_roles, remove_user_roles
 
 class CustomerOrder(Document):
 	def validate(self):
 		self.check_for_duplicates()
-		self.get_site_details()
 
 		if self.selection_based_on == "Lot":
 			self.validate_lot_allotment()
@@ -28,6 +28,8 @@ class CustomerOrder(Document):
 		self.update_payable_amount()
 		self.validate_quantity_limits()
 		self.update_user_details()
+		self.create_customer()
+		self.get_site_details()
 
 	def before_submit(self):
 		self.posting_date = now()
@@ -41,6 +43,37 @@ class CustomerOrder(Document):
 
 	def on_cancel(self):
 		self.update_site()
+
+	def create_customer(self):
+		""" create Customer entry automatically if the order doesn't require site """
+		if frappe.db.exists("Customer", {"customer_id": self.user}):
+			return
+
+		if self.product_category == "Timber" and self.product_group == "Sawn Timber" and flt(self.total_quantity) <= 25:
+			pass
+		elif frappe.db.exists('Product Category', {'name': self.product_category, 'site_required': 0}):
+			pass
+		else:
+			return
+
+		doc = frappe.new_doc("Customer")
+		ua  = frappe.get_doc("User Account", self.user)
+		customer_address = [ua.first_name, ua.last_name, ua.billing_address_line1, ua.billing_address_line2,
+					ua.billing_dzongkhag, ua.billing_gewog, ua.billing_pincode]
+		customer_address = [i for i in customer_address if i]
+		customer_address = "\n".join(customer_address) if customer_address else doc.customer_details
+		doc.customer_name = ua.full_name if ua.full_name else frappe.db.get_value("User", self.user, "full_name")	
+		doc.customer_type = "Domestic Customer"
+		doc.customer_group= "Domestic"
+		doc.territory	  = "Bhutan"
+		doc.customer_id	  = ua.user
+		doc.dzongkhag	  = ua.billing_dzongkhag
+		doc.mobile_no	  = ua.mobile_no
+		doc.customer_details = customer_address
+		doc.save(ignore_permissions=True)
+		
+		add_user_roles(self.user, "CRM Customer")
+		self.customer	  = doc.name
 
 	def check_for_duplicates(self):
 		if self.site:
@@ -95,12 +128,15 @@ class CustomerOrder(Document):
 		# quantity validations
 		if not flt(self.total_quantity):
 			frappe.throw(_("Total Quantity cannot be empty "+str(self.total_quantity)))
+		elif self.product_category == "Timber" and self.product_group == "Sawn Timber" and flt(self.total_quantity) <= 25:
+			return
 
+		# frappe.errprint("CUSTOM_ERROR_LOG: "+str(self.product_category)+str(self.product_group)+str(self.total_quantity))
 		self.site_item_name = None
 		self.total_available_quantity = None
 		limits = get_limit_details(self.product_category, self.user, self.site, self.branch, self.item, self.selection_based_on)
 		if limits:
-			frappe.errprint("limits"+str(limits))
+			# frappe.errprint("limits"+str(limits))
 			self.site_item_name = limits.site_item_name
 			self.total_available_quantity = flt(limits.total_available_quantity) if flt(limits.total_available_quantity) >= 0 else flt(self.total_quantity)
 		if flt(self.total_quantity) > flt(self.total_available_quantity):
@@ -224,6 +260,9 @@ class CustomerOrder(Document):
 		elif not frappe.db.exists('Product Category', {'name': self.product_category, 'site_required': 1}):
 			return
 
+		if self.product_category == "Timber" and self.product_group == "Sawn Timber" and flt(self.total_quantity) <= 25:
+			return
+
 		# following line is replaced with subsequent one to accommodate Phase-II by SHIV on 2020/11/20
 		#doc = frappe.get_doc("Site Item", {"parent": self.site, "item_sub_group": self.item_sub_group})
 		doc = frappe.get_doc("Site Item", {"parent": self.site, "product_category": self.product_category})
@@ -239,7 +278,8 @@ class CustomerOrder(Document):
 			co.balance_quantity = flt(doc.balance_quantity)
 			co.save(ignore_permissions=True)
 		'''
-#Method to update sawn balance in Standard Sawn Balance doctype by creating new record //Kinley Dorji 2021/01/16
+	
+	#Method to update sawn balance in Standard Sawn Balance doctype by creating new record //Kinley Dorji 2021/01/16
 	def update_sawn_balance(self):
 		for i in self.sawns:
 			doc = frappe.db.sql("select balance_qty, balance_cft, qty, unit_cft, total_cft from `tabStandard Sawn Balance` where branch = '{}' and item = {} and size = '{}' and length = '{}' and docstatus = 1 order by posting_date desc limit 1".format(self.branch, i.item, i.size, i.length),as_dict=True)
@@ -447,20 +487,10 @@ class CustomerOrder(Document):
 		self.db_set("sales_order", doc.name)
 
 	def get_site_details(self):
-		'''########## Ver.2020.11.19 Begins ##########'''
-		# following code is commented by SHIV on 2020/11/19 to accommodate Phase-II
-		#if not self.site:
-		#	frappe.throw(_("Please select a Site first"))
-
-		# following code added by SHIV on 2020/11/19 to accommodate Phase-II 
+		''' populate site related information '''
 		if not self.product_category:
 			frappe.throw(_("Please select the product category first"))
 
-		if not self.site and frappe.db.exists("Product Category", {"name": self.product_category, "site_required": 1}):
-			frappe.throw(_("Please select a Site first"))
-		'''########## Ver.2020.11.19 Ends ##########'''
-
-		# just if condition is added to the existing block of code by SHIV on 2020/11/19
 		if self.site:
 			doc = frappe.get_doc("Site", self.site) 
 			self.site_type	= doc.site_type
@@ -469,6 +499,12 @@ class CustomerOrder(Document):
 			self.dzongkhag	= doc.dzongkhag
 			self.plot_no	= doc.plot_no
 			self.site_location	= doc.location
+		else:
+			if frappe.db.exists("Product Category", {"name": self.product_category, "site_required": 1}):
+				if self.product_category == "Timber" and self.product_group == "Sawn Timber" and flt(self.total_quantity) <= 25:
+					pass
+				else:
+					frappe.throw(_("Please select a Site first"))
 
 		if not frappe.db.exists("Customer", {"customer_id": self.user}):
 			frappe.throw(_("Customer account not found"))

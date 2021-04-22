@@ -139,8 +139,9 @@ frappe.ui.form.on('Customer Order', {
 		{
 			check_selection_based_on(frm,cur_frm.doc.selection_based_on,1)
 		}
-		check_product_group(frm);
 		apply_product_category_settings(frm);
+		check_product_group(frm, 'refresh');
+		apply_qty_based_validations(frm);
 	},
 
 	user: function(frm){
@@ -154,7 +155,7 @@ frappe.ui.form.on('Customer Order', {
 		cur_frm.set_value("site_type", null);
 		cur_frm.set_value("item", null);
 		cur_frm.set_value("selection_based_on",null)
-		check_product_group(frm)
+		check_product_group(frm, 'update')
 		apply_product_category_settings(frm);
 		update_total_quantity(frm);
 	},
@@ -163,7 +164,8 @@ frappe.ui.form.on('Customer Order', {
 		if(cur_frm.doc.product_group == ""){
 			cur_frm.set_value("selection_based_on",null)
 		}
-		check_selection_based_on(frm, cur_frm.doc.selection_based_on,0)
+		check_selection_based_on(frm, cur_frm.doc.selection_based_on,0);
+		apply_qty_based_validations(frm);
 	},
 
 	lot_allotment_no: function(frm){
@@ -270,6 +272,10 @@ frappe.ui.form.on('Customer Order', {
 	place_order: function(frm){
 		create_order_and_payment(frm);
 	},
+
+	total_quantity: function(frm){
+		apply_qty_based_validations(frm);
+	}
 });
 
 frappe.ui.form.on('Customer Order Vehicle', {
@@ -389,6 +395,20 @@ var populate_lots = function(frm, lot_allotment_no){
 }
 //#######################################################
 
+// following method created by SHIV on 2021/03/19
+// site selection is not mandatory for Sawn Timber Orders with quantity <= 25
+var apply_qty_based_validations = function(frm){
+	if(frm.doc.product_category == "Timber" && frm.doc.product_group == "Sawn Timber"){
+		if(flt(frm.doc.total_quantity) <= 25){
+			cur_frm.toggle_display("sb_site_details", 0);
+			cur_frm.toggle_reqd("site", 0);
+		} else {
+			cur_frm.toggle_display("sb_site_details", 1);
+			cur_frm.toggle_reqd("site", 1);
+		}
+	}
+}
+
 var apply_product_category_settings = function(frm){
 	if(frm.doc.product_category){
 		frappe.call({
@@ -414,6 +434,13 @@ var apply_product_category_settings = function(frm){
 					// Toggle Site
 					cur_frm.toggle_display("sb_site_details", r.message.site_required);
 					cur_frm.toggle_reqd("site", r.message.site_required);
+
+					// following code added by SHIV on 2021/03/19
+					// site is not required for timber orders with qty <= 25
+					if(frm.doc.product_category == "Timber" && frm.doc.product_group == "Sawn Timber" && flt(frm.doc.total_quantity) <= 25){
+						cur_frm.toggle_reqd("site", 0);
+						cur_frm.toggle_display("sb_site_details", 0);
+					}
 
 					// Toggle Transport Mode
 					cur_frm.toggle_display("transport_mode", r.message.transport_mode_required);
@@ -1065,7 +1092,7 @@ var add_custom_buttons = function(frm){
 	}
 }
 
-var check_product_group = function(frm){
+var check_product_group = function(frm, mode){
 	if(frm.doc.product_category){
 		frappe.call({
 			method:"erpnext.crm_utils.get_product_groups",
@@ -1079,27 +1106,31 @@ var check_product_group = function(frm){
 					cur_frm.toggle_display("selection_based_on",1);
 				}
 				else{
-					clear_fields();
+					clear_fields(mode);
 				}
 			}
 		});
 	}
 	else{
-		clear_fields();
+		clear_fields(mode);
 	}
 	cur_frm.refresh_fields()
 }
-var clear_fields = function(){
-	cur_frm.set_value("product_group",null);
-	cur_frm.set_value("selection_based_on",null);
-	cur_frm.set_value("challan_cost",null);
-	cur_frm.set_value("lot_allotment_no",null);
+
+var clear_fields = function(mode="refresh"){
 	cur_frm.toggle_reqd("product_group",0);
 	cur_frm.toggle_display("product_group",0);
 	cur_frm.toggle_display("selection_based_on",0);
 	cur_frm.toggle_display("challan_cost",0);
 	cur_frm.toggle_display("lot_allotment_no",0);
-	cur_frm.clear_table("lots");
+
+	if(mode == "update"){
+		cur_frm.set_value("product_group",null);
+		cur_frm.set_value("selection_based_on",null);
+		cur_frm.set_value("challan_cost",null);
+		cur_frm.set_value("lot_allotment_no",null);
+		cur_frm.clear_table("lots");
+	}
  }
 
  var check_selection_based_on = function(frm, selection_based_on, refresh){

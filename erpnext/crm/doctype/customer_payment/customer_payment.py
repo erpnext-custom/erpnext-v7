@@ -99,6 +99,8 @@ class CustomerPayment(Document):
 		paid_from	= frappe.db.get_single_value('Accounts Settings', 'advance_from_customer')
 		paid_to 	= get_bank_cash_account(self.mode_of_payment, default_company)	
 		sales_order 	= frappe.db.get_value("Customer Order", self.customer_order, "sales_order")
+		# if frappe.session.user == "Administrator":
+		# 	frappe.throw(frappe.db.get_value("Customer Order", self.customer_order, "sales_order"))
 		if flt(self.paid_amount) > flt(self.total_balance_amount):
 			allocated_amount = flt(self.total_balance_amount)
 		else:

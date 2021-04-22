@@ -25,7 +25,7 @@
    "label": "Benefits Type", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "\nGratuity\nGPF\nGPA\nPension\nGroup Insurance", 
+   "options": "\nGratuity\nGPF\nGPA\nPension\nGroup Insurance\nOthers", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -123,7 +123,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2016-08-17 14:31:13.893320", 
+ "modified": "2021-04-12 11:09:12.476013", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Retirement Benefits Nominees", 
@@ -135,5 +135,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

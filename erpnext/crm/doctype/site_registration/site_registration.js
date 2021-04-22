@@ -66,6 +66,9 @@ frappe.ui.form.on('Site Registration', {
 	},
 	get_distance: function(frm){
 		update_distance_table(frm);
+	},
+	product_category: function(frm){
+		enable_disable(frm);
 	}
 });
 
@@ -136,6 +139,7 @@ var enable_disable = function(frm){
 	frm.toggle_reqd(["customer_type", "customer_group", "territory"],in_list(user_roles, "CRM Back Office"));
 	frm.toggle_display("sb_distance",in_list(user_roles, "CRM Back Office"));
 	frm.refresh_field("distance");
+	frm.fields_dict.items.grid.toggle_reqd("branch", frm.doc.product_category != "Timber");
 }
 
 var update_distance_table = function(frm){

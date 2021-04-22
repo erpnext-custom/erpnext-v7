@@ -136,6 +136,9 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 
 	price_list_rate: function(doc, cdt, cdn) {
 		var item = frappe.get_doc(cdt, cdn);
+		if(frappe.user.name == "Administrator"){
+			console.log(item)
+		}
 		frappe.model.round_floats_in(item, ["price_list_rate", "discount_percentage"]);
 
 		// check if child doctype is Sales Order Item/Qutation Item and calculate the rate
@@ -328,6 +331,9 @@ erpnext.selling.SellingController = erpnext.TransactionController.extend({
 	},
 
 	rate: function(doc, cdt, cdn){
+		if(frappe.user.name == "Administrator"){
+			console.log("here");
+		}
 		// if user changes the rate then set margin Rate or amount to 0
 		item = locals[cdt][cdn];
 		item.margin_type = "";

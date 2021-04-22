@@ -131,7 +131,14 @@ def get_lot_list(doctype=None, txt=None, searchfield=None, start=None, page_len=
 	else:
 		frappe.throw("Please select Branch first")
 
-	return frappe.db.sql("""
+	if frappe.session.user == "Administrator":
+		return frappe.db.sql("""
+			select name from `tabLot List` l
+			where name = 'D/87/2020'
+			{0}
+			""".format(cond))
+	else:
+		return frappe.db.sql("""
 		select name from `tabLot List` l
 		where (l.sales_order is NULL or l.sales_order = "")
         and (l.stock_entry is NULL or l.stock_entry = "")
