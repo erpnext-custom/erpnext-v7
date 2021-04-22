@@ -12,6 +12,7 @@ class TransporterTripLog(Document):
 		self.get_transporter_rate()
 
 	def get_transporter_rate(self):
+		qty = 0
 		for b in self.item:
 			rate = 0
 			expense_account = 0
@@ -25,15 +26,21 @@ class TransporterTripLog(Document):
 				rate = a.rate
 				expense_account = a.expense_account
 				transporter_rate = a.name
-
-			if rate > 0:
-				b.rate = rate
-				b.expense_account = expense_account
-				b.transporter_rate = transporter_rate
-				if b.qty:
-					b.amount = flt(b.rate) * flt(b.qty)
+				
+			qty = flt(qty) + flt(b.qty)
+			if b.transporter_payment_eligible:
+				if rate > 0:
+					b.rate = rate
+					b.expense_account = expense_account
+					b.transporter_rate = transporter_rate
+					if b.qty :
+						b.amount = flt(b.rate) * flt(b.qty)
+					else:
+						frappe.throw("Please provide the Quantity")	
 				else:
-					frappe.throw("Please provide the Quantity")				
+					frappe.throw("Define Transporter Rate for distance {} in Transporter Rate ".format(b.distance))
 			else:
-				frappe.throw("Define Transporter Rate for distance {} in Transporter Rate ".format(b.distance))
-	
+				b.rate = 0
+				b.amount = 0
+				b.expense_account = ''
+		self.total_qty = qty

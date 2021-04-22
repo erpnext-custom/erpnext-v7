@@ -3,7 +3,7 @@
 '''
 Author				Date				Remarks
 ----------------------------------------------------------------------------------------
-Birendra			12/03/2021			extra column added as ticket 1512
+Birendra			12/03/2021			extra column added as per ticket 1512
 '''
 from __future__ import unicode_literals
 import frappe
@@ -29,27 +29,27 @@ def get_data(filters):
 	query = """
 	select	
 		pe.ref_doc,
-		pe.posting_date,
+		pe.posting_date, 
 		pe.item_code, 
-		pe.item_name,
-		pe.item_group,
-		pe.item_sub_group,
-		pe.qty,
-		pe.uom,
-		pe.equipment_number,
-		pe.equipment_model,
-		pe.transporter_type,
-		pe.unloading_by,
-		pe.group,
-		pe.branch,
-		pe.location,
-		pe.adhoc_production,
-		pe.company,
-		pe.warehouse,
-		pe.group,
-		pe.timber_class,
-		pe.timber_type,
-		pe.timber_species,
+		pe.item_name, 
+		pe.item_group, 
+		pe.item_sub_group, 
+		pe.qty, 
+		pe.uom, 
+		pe.equipment_number, 
+		pe.equipment_model, 
+		pe.transporter_type, 
+		pe.unloading_by, 
+		pe.group, 
+		pe.branch, 
+		pe.location, 
+		pe.adhoc_production, 
+		pe.company, 
+		pe.warehouse, 
+		pe.group, 
+		pe.timber_class, 
+		pe.timber_type, 
+		pe.timber_species, 
 		pe.transfer_to_warehouse,
 		pe.transportation_rate,
 		pe.transportation_amount,
@@ -87,11 +87,11 @@ def get_order_by(filters):
 
 def get_conditions(filters):
 	if not filters.cost_center:
-		return " and pe.docstatus = 10"
+		return " and pe.docstatus = 1"
 
 	all_ccs = get_child_cost_centers(filters.cost_center)
 	if not all_ccs:
-		return " and pe.docstatus = 10"
+		return " and pe.docstatus = 1"
 
 	all_branch = [str("DUMMY")]
 	for a in all_ccs:
@@ -121,6 +121,8 @@ def get_conditions(filters):
 	if filters.warehouse:
 		condition += " and pe.warehouse = '{0}'".format(filters.warehouse)
 
+	if filters.branch:
+		condition += " and pe.branch = '{}' ".format(filters.branch)
 	return condition
 
 def get_columns(filters):

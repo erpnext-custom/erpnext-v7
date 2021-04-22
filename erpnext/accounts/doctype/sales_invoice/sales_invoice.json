@@ -1896,7 +1896,7 @@
    "precision": "2", 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
-   "read_only": 0, 
+   "read_only": 1, 
    "report_hide": 0, 
    "reqd": 0, 
    "search_index": 0, 
@@ -3963,8 +3963,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2019-07-08 18:19:17.055337", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2021-04-05 22:00:03.455622", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Sales Invoice", 
  "name_case": "Title Case", 
@@ -4159,5 +4159,6 @@
  "sort_order": "DESC", 
  "timeline_field": "customer", 
  "title_field": "title", 
+ "track_changes": 1, 
  "track_seen": 0
 }

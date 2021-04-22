@@ -725,7 +725,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-01-12 23:01:33.057405", 
+ "modified": "2021-04-05 22:03:05.859406", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Overtime Payment", 
@@ -773,7 +773,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
@@ -818,5 +818,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

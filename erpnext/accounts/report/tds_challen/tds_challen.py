@@ -20,7 +20,7 @@ def get_data(query, filters):
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
 		status = 'Not Paid'
-		bil = frappe.db.sql(""" select name from `tabRRCO Receipt Entries` where bill_no = '{0}' and docstatus =1""".format(d.bill_no), as_dict = 1)
+		bil = frappe.db.sql(""" select name from `tabRRCO Receipt Entries` where (bill_no = '{0}' or purchase_invoice = '{0}') and docstatus =1""".format(d.bill_no), as_dict = 1)
 		if bil:
 			status = 'Paid'
 		if filters.get("cost_center") and d.cost_center == filters.get("cost_center"):
@@ -48,7 +48,7 @@ def construct_query(filters=None):
 		SELECT
 			s.vendor_tpn_no,
 			s.name,
-			p.bill_no,
+			p.name as bill_no,
 			p.bill_date,
 			p.tds_taxable_amount,
 			p.tds_rate,
@@ -199,7 +199,8 @@ def get_columns():
 		{
 		  "fieldname": "invoice_no",
 		  "label": "Invoice No",
-		  "fieldtype": "Data",
+		  "fieldtype": "Link",
+		  "options":"Purchase Invoice",
 		  "width": 200
 		},
 		{

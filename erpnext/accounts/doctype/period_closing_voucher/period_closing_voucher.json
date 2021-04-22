@@ -258,7 +258,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-29 16:18:12.723200", 
+ "modified": "2021-04-05 22:02:14.483946", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Period Closing Voucher", 
@@ -312,5 +312,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "closing_account_head", 
+ "track_changes": 1, 
  "track_seen": 0
 }

@@ -20,6 +20,7 @@ def get_data(filters):
 	# frappe.msgprint(format(conds))
 	return frappe.db.sql("""
 		SELECT
+			ttl.name,
 			ttl.branch,
 			ttl.posting_date,
 			ttl.warehouse,
@@ -28,8 +29,8 @@ def get_data(filters):
 			tlt.equipment_model,
 			tlt.equipment_type,
 			tlt.distance,
-			tlt.rate,
 			tlt.qty,
+			tlt.rate,
 			tlt.amount
 		FROM
 			`tabTransporter Trip Log` as ttl
@@ -53,6 +54,13 @@ def get_conds(filters):
 	return conds
 def get_columns():
 	return [
+		{
+			"fieldname":"reference",
+			"label": ("Reference"),
+			"fieldtype": "Link",
+			"options":"Transporter Trip Log",
+			"width": 150
+		},
 		{
 			"fieldname":"branch",
 			"label": ("Branch"),
@@ -104,16 +112,16 @@ def get_columns():
 			"width": 100
 		},
 		{
-			"fieldname":"rate",
-			"label": ("Rate"),
-			"fieldtype": "Currency",
-			"width": 150
-		},
-		{
 			"fieldname":"qty",
 			"label": ("Quantity(MT)"),
 			"fieldtype": "Float",
 			"width": 100
+		},
+		{
+			"fieldname":"rate",
+			"label": ("Rate"),
+			"fieldtype": "Currency",
+			"width": 150
 		},
 		{
 			"fieldname":"amount",

@@ -551,43 +551,46 @@ class Production(StockController):
 	def validate_transportation(self):
 		for d in self.items:
 			if not d.transporter_payment_eligible:
-				return
+				d.rate = 0
+				d.transportation_expense_account = ''
+				d.transporter_rate = 0
+				d.amount = 0
 			else:
 				if not self.transporter_rate_base_on:
 					frappe.throw("Please select transporter rate based on Location or Warehouse")
 
-			if not d.equipment:
-				frappe.throw("Please Select Equipment or Vehicle for transportation")
+				if not d.equipment:
+					frappe.throw("Please Select Equipment or Vehicle for transportation")
 
-			if self.transporter_rate_base_on == "Location":
-				rate = 0
-				expense_account = 0
-				qty = 0
-				if not self.distance:
-					self.distance = frappe.db.get_value("Location", self.location, "distance")
+				if self.transporter_rate_base_on == "Location":
+					rate = 0
+					expense_account = 0
+					qty = 0
+					if not self.distance:
+						self.distance = frappe.db.get_value("Location", self.location, "distance")
 
-				if self.distance > 0:
-					for a in frappe.db.sql(""" select r.name, d.rate, r.expense_account
-											from `tabTransporter Rate` r, `tabTransporter Distance Rate` d 
-											where r.name = d.parent
-											and '{0}' between r.from_date and r.to_date
-											and d.distance = '{1}'
-											and r.from_warehouse = '{2}'
-											""".format(self.posting_date, self.distance, self.warehouse), as_dict=True):
-						rate = a.rate
-						expense_account = a.expense_account
-						transporter_rate = a.name
+					if self.distance > 0:
+						for a in frappe.db.sql(""" select r.name, d.rate, r.expense_account
+												from `tabTransporter Rate` r, `tabTransporter Distance Rate` d 
+												where r.name = d.parent
+												and '{0}' between r.from_date and r.to_date
+												and d.distance = '{1}'
+												and r.from_warehouse = '{2}'
+												""".format(self.posting_date, self.distance, self.warehouse), as_dict=True):
+							rate = a.rate
+							expense_account = a.expense_account
+							transporter_rate = a.name
 
-				if rate > 0:
-					d.rate = rate
-					d.transportation_expense_account = expense_account
-					d.transporter_rate = transporter_rate
-					if d.qty > 0:
-						d.amount = flt(d.rate) * flt(d.qty)
+					if rate > 0:
+						d.rate = rate
+						d.transportation_expense_account = expense_account
+						d.transporter_rate = transporter_rate
+						if d.qty > 0:
+							d.amount = flt(d.rate) * flt(d.qty)
+						else:
+							frappe.throw("Please provide the Quantity")				
 					else:
-						frappe.throw("Please provide the Quantity")				
-				else:
-					frappe.throw("Define Transporter Rate for distance {} in Transporter Rate ".format(self.distance))
+						frappe.throw("Define Transporter Rate for distance {} in Transporter Rate ".format(self.distance))
 
 @frappe.whitelist()
 def get_expense_account(company, item):

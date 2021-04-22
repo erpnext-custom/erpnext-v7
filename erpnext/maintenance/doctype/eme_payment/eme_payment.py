@@ -24,8 +24,8 @@ class EMEPayment(Document):
 	def check_remarks(self):
 		if not self.remarks:
 			self.remarks = "EME payment to {0}".format(self.supplier)
-		if self.deduction_amount and not self.deduction_remarks:
-			frappe.throw("Deduction Remarks is mandatory")
+		# if self.deduction_amount and not self.deduction_remarks:
+		# 	frappe.throw("Deduction Remarks is mandatory")
 
         def get_logbooks(self):
 		if not self.branch:
@@ -84,7 +84,7 @@ class EMEPayment(Document):
 			if not d.account:
 				frappe.throw("Account is mandatory for deductions")
 			total_deductions += flt(d.amount, 2)
-
+		self.deduction_amount = total_deductions
 		self.payable_amount = flt(self.total_amount, 2) - flt(self.tds_amount, 2) - flt(self.deduction_amount, 2) - flt(total_deductions, 2)
 
 	def on_submit(self):

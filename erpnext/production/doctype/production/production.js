@@ -139,6 +139,8 @@ frappe.ui.form.on("Production Product Item", {
 		var row = locals[cdt][cdn];
 		if(row.transporter_payment_eligible){
 			cur_frm.get_field("items").grid.toggle_reqd("equipment", true);
+		}else{
+			cur_frm.get_field("items").grid.toggle_reqd("equipment", false);
 		}
 	},
 

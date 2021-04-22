@@ -10,7 +10,6 @@ from erpnext.accounts.party import get_party_account, get_due_date
 from erpnext.controllers.stock_controller import update_gl_entries_after
 from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.doctype.sales_invoice.pos import update_multi_mode_option
-
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.accounts.utils import get_account_currency
 from erpnext.stock.doctype.delivery_note.delivery_note import update_billed_amount_based_on_so
@@ -51,10 +50,7 @@ class SalesInvoice(SellingController):
 			self.indicator_title = _("Paid")
 
 	def validate(self):
-		total = 0
-                for a in self.get("payment_deduction_or_lost"):
-                        total += flt(a.amount)
-                self.charges_total = total
+		self.calculate_amount()
 
 		super(SalesInvoice, self).validate()
 		self.validate_posting_time()
@@ -90,7 +86,15 @@ class SalesInvoice(SellingController):
 		self.validate_multiple_billing("Delivery Note", "dn_detail", "amount", "items")
 		self.update_packing_list()
 		self.calculate_billing_amount_from_timesheet()
-
+	def calculate_amount(self):
+		total = 0
+		qty = 0 
+		for d in self.get("items"):
+			qty = d.qty
+		for a in self.get("payment_deduction_or_lost"):
+			a.amount = flt(qty) * flt(a.rate)
+			total += flt(a.amount)
+		self.charges_total = total
 	def before_save(self):
 		set_account_for_mode_of_payment(self)
 

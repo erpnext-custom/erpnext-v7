@@ -40,6 +40,7 @@ frappe.query_reports["TDS Certificate"] = {
 			"label": __("Vendor Name"),
 			"fieldtype": "Link",
 			"options": "Supplier",
+			"reqd":1,
 			"on_change": function(query_report) {
 				var vendor = query_report.get_values().vendor_name;
 				if (!vendor) {

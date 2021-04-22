@@ -166,10 +166,10 @@ class TransporterPayment(AccountsController):
                 for d in self.get("deductions"):
                         if d.party_type == "Equipment" and not d.party:
                                 d.party = self.equipment
-                                
+                        '''        
                         if d.account_type != "Payable" and d.account_type != "Receivable" and d.party:
                                 frappe.throw(_("Row#{0} : Party is not allowed against Non-payable or Non-receivable accounts.").format(d.idx), title="Invalid Data")
-
+						'''
                         if (d.account_type == "Payable" or d.account_type == "Receivable") and not d.party:
                                 frappe.throw(_("Row#{0} : Party is mandatory").format(d.idx), title="Missing Data")
                                 
@@ -257,6 +257,8 @@ class TransporterPayment(AccountsController):
 				""".format(self.from_date, self.to_date, self.equipment, cost_center), as_dict = True)
 
 	def get_transporter_trip_log(self, cost_center):
+		# hardcoded posting_date in where clause added as client asked to integrate transporter_payment_eligible check in child table on 2021-04-11
+		# to avoid loss of past data it is added
 		return frappe.db.sql("""select b.name as reference_row, a.posting_date, 
 					'Transporter Trip Log' as reference_type, a.name as reference_name, 
 					b.item as item_code, b.item_name, b.amount as transportation_amount,
@@ -269,6 +271,7 @@ class TransporterPayment(AccountsController):
 				and b.equipment = "{2}"
 				and a.cost_center = "{3}"
 				and b.transport_payment_done = 0
+				and (b.transporter_payment_eligible = 1 or a.posting_date < '2021-04-12')
 				and NOT EXISTS(
 					select 1 
 					from `tabTransporter Payment` p, `tabTransporter Payment Item` i
@@ -356,7 +359,9 @@ class TransporterPayment(AccountsController):
 		# populate items
 		for d in entries:
 			equipment_type = frappe.db.get_value("Equipment", d.equipment,"equipment_type")
-			# frappe.msgprint('equipment type : {}'.format(d))
+			frappe.msgprint('equipment type : {}'.format(d))
+			# if frappe.session.user == "Administrator":
+			# 	frappe.msgprint(format(d.reference_name))
 			if d.transporter_rate_reference:
 				d.transportation_rate = d.rate
 				d.unloading_amount = 0
@@ -712,20 +717,30 @@ class TransporterPayment(AccountsController):
 			if account_type == "Receivable" or account_type == "Payable":
 				party = self.equipment
 				party_type = "Equipment"
-
-                        if d.amount:
-                                gl_entries.append(
-                                        self.get_gl_dict({
-                                               "account":  d.account,
-                                               "credit": flt(d.amount),
-                                               "credit_in_account_currency": flt(d.amount),
-                                               "against_voucher": self.name,
-                                               "against_voucher_type": self.doctype,
-                                               "cost_center": cost_center,
-                                               "party_type": d.party_type,
-                                               "party": d.party
-                                        }, self.currency)
-                                )
+				if d.amount:
+					gl_entries.append(
+						self.get_gl_dict({
+								"account":  d.account,
+								"credit": flt(d.amount),
+								"credit_in_account_currency": flt(d.amount),
+								"against_voucher": self.name,
+								"against_voucher_type": self.doctype,
+								"cost_center": cost_center,
+								"party_type": d.party_type,
+								"party": d.party
+						}, self.currency)
+					)
+			else:
+				gl_entries.append(
+						self.get_gl_dict({
+								"account":  d.account,
+								"credit": flt(d.amount),
+								"credit_in_account_currency": flt(d.amount),
+								"against_voucher": self.name,
+								"against_voucher_type": self.doctype,
+								"cost_center": cost_center,
+						}, self.currency)
+					)
 		make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 		
 	def mark_paid(self, submit=1):

@@ -8,7 +8,7 @@ from frappe.model.document import Document
 
 class RRCOReceiptTool(Document):
 	def validate(self):		
-		self.get_invoices()
+		#self.get_invoices()
 		self.validate_data()
 
 	def validate_data(self):
@@ -132,7 +132,7 @@ class RRCOReceiptTool(Document):
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
 										WHERE b.purchase_invoice = a.name) 
-						AND a.tds_amount > 0 order by a.posting_date
+						AND a.tds_amount > 0
 						UNION 
 						select "Direct Payment" as transaction, name, posting_date, amount as invoice_amount, tds_amount as tax_amount
 						FROM `tabDirect Payment` AS a 
@@ -143,7 +143,7 @@ class RRCOReceiptTool(Document):
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
 										WHERE b.purchase_invoice = a.name)
-						AND a.tds_amount > 0 order by a.posting_date
+						AND a.tds_amount > 0
 						UNION
 						select "EME Payment" as transaction, name, posting_date, total_amount as invoice_amount, tds_amount as tax_amount
 						FROM `tabEME Payment` AS a 
@@ -154,7 +154,7 @@ class RRCOReceiptTool(Document):
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
 										WHERE b.purchase_invoice = a.name)
-						AND a.tds_amount > 0 order by a.posting_date
+						AND a.tds_amount > 0
 						UNION
 						select "Transporter Payment" as transaction, name, posting_date, gross_amount as invoice_amount, tds_amount as tax_amount
 						FROM `tabTransporter Payment` AS a 
@@ -165,7 +165,8 @@ class RRCOReceiptTool(Document):
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
 										WHERE b.purchase_invoice = a.name)
-						AND a.tds_amount > 0 order by a.posting_date
+						AND a.tds_amount > 0 
+						order by posting_date
 						""".format(self.from_date, self.to_date, self.tds_rate, self.cost_center)
 
 			self.set('item', [])

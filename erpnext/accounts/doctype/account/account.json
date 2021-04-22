@@ -588,7 +588,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-03-21 16:45:39.245833", 
+ "modified": "2021-04-05 09:43:26.956593", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Account", 
@@ -821,5 +821,6 @@
  "search_fields": "", 
  "sort_field": "modified", 
  "sort_order": "ASC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

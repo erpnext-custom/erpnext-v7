@@ -1503,7 +1503,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-02-06 10:16:44.057686", 
+ "modified": "2021-04-05 21:59:04.696544", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Payment Entry", 
@@ -1577,5 +1577,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "title", 
+ "track_changes": 1, 
  "track_seen": 0
 }

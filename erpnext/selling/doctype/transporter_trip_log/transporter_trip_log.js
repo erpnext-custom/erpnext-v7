@@ -2,7 +2,7 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Transporter Trip Log', {
-	refresh: function(frm) {
-
+	setup: function(frm) {
+		frm.get_docfield("item").allow_bulk_edit = 1;
 	}
 });

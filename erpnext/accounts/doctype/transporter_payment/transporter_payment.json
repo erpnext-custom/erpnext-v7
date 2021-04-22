@@ -1883,7 +1883,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-03-06 08:23:53.955389", 
+ "modified": "2021-04-05 22:02:42.065670", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Transporter Payment", 
@@ -1911,7 +1911,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
@@ -1957,5 +1957,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "branch", 
+ "track_changes": 1, 
  "track_seen": 0
 }

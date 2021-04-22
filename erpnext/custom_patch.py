@@ -6,41 +6,172 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
-def copy_to_production_entry():
+def get_eme_payment():
 	for d in frappe.db.sql("""
-		SELECT
-			ref_doc,item_code, name
-		FROM `tabProduction Entry`
-		""",as_dict=True):
+		SELECT ep.equipment_type,ep.name
+			FROM 
+				(SELECT DISTINCT(epi.equipment_type), 
+					ep.branch,ep.posting_date, ep.name
+			FROM `tabEME Payment` ep, `tabEME Payment Item` epi 
+			WHERE epi.parent = ep.name and  ep.name = 'EP210400007') ep
+	""",as_dict = True):
+		# print(d.equipment_type,d.name)
+		data = frappe.db.sql("""
+			SELECT COUNT(*) from
+				(select distinct equipment_no  
+					from `tabEME Payment Item` 
+				where parent = '{0}' and equipment_type='{1}') c
+		""".format(d.name,d.equipment_type))
+		print(data)
 
-		for a in frappe.db.sql("""
-			SELECT
-				p.to_warehouse,
-				pi.rate,
-				pi.amount
-			FROM
-				`tabProduction` p,
-				`tabProduction Product Item` pi
-			WHERE pi.parent = p.name 
-			AND p.name = '{}'
-			AND pi.item_code = '{}'
-		""".format(d.ref_doc,d.item_code),as_dict=True):
 
-			frappe.db.sql("""
-			UPDATE
-				`tabProduction Entry`
-			SET 
-				transfer_to_warehouse='{}',
-				transportation_rate = '{}',
-				transportation_amount = '{}'
-			WHERE 
-				ref_doc = '{}' 
-			AND 
-				item_code = '{}' 
-			AND 
-				name = '{}'
-			""".format(a.to_warehouse,a.rate,a.amount,d.ref_doc,d.item_code,d.name))
 
+def copy_direct_payment():
+	for d in frappe.db.sql("""
+	select name,
+		amount,
+		taxable_amount,
+		tds_amount,
+		net_amount,
+		supplier,
+		party_type,
+		party,
+		owner,
+		parentfield,
+		parenttype
+	from `tabDirect Payment` 
+	where posting_date between '2020-01-01' and '2020-12-31'
+	""",as_dict=True):
+		frappe.db.sql("""
+		INSERT INTO `tabDirect Payment Item` (amount,tds_amount,taxable_amount,net_amount,party_type,party,parent,owner,parentfield,parenttype) 
+			values('{}','{}','{}','{}',
+			'{}','{}','{}','{}','{}','{}')
+		""".format(d.amount,d.tds_amount,d.taxable_amount,d.net_amount,d.party_type,d.party,d.name,d.owner,d.parentfield,d.parenttype))
+
+def copy_to_production_entry():
+	i = 0
+	for d in frappe.db.sql("""
+		select 
+			name,
+			transportation_amount,
+			qty,
+			transportation_rate,
+			item_code,
+			ref_doc,
+			transportation_rate * qty as amount,
+			equipment_number
+		from `tabProduction Entry`
+		where (transportation_rate * qty ) != transportation_amount
+	""",as_dict= True):
+		frappe.db.sql("""
+				UPDATE
+					`tabProduction Entry`
+				SET 
+					transportation_amount = '{}'
+				WHERE 
+					name = '{}' 
+				""".format(d.amount,d.name))
+		i+=1
+		print(d.name,d.equipment_number,d.ref_doc,d.item_code,d.transportation_amount,d.transportation_rate,d.qty,d.amount)
+	print(i)
+	# for d in frappe.db.sql("""
+	# 		select 
+	# 			p.rate,
+	# 			p.name,
+	# 			p.equipment_number,
+	# 			p.amount,
+	# 			pe.transportation_amount,
+	# 			pe.name as entry_name,
+	# 			p.item_code,
+	# 			pe.qty,
+	# 			p.rate
+	# 		from 
+	# 		(
+	# 			SELECT
+	# 				p.to_warehouse,
+	# 				pi.rate,
+	# 				pi.qty,
+	# 				pi.amount,
+	# 				pi.item_code,
+	# 				p.name,
+	# 				pi.equipment_number
+	# 			FROM
+	# 				`tabProduction` p
+	# 			INNER JOIN 
+	# 				`tabProduction Product Item` pi 
+	# 			ON p.name = pi.parent
+	# 			WHERE pi.parent = p.name
+	# 			and p.docstatus = 1 and (pi.equipment_number !="" or pi.equipment_number IS NOT NULL)
+	# 		) p 
+	# 		INNER JOIN `tabProduction Entry` pe
+	# 		on pe.ref_doc = p.name 
+	# 		where pe.ref_doc = p.name
+	# 		and	p.amount != pe.transportation_amount 
+	# 		and p.item_code = pe.item_code 
+	# 		and p.equipment_number = pe.equipment_number 
+	# 		and p.qty = pe.qty 
+	# 		and p.rate = pe.transportation_rate 
+	# 		and ( p.qty *  p.rate != pe.transportation_amount)
+	# 	""",as_dict=True):
+	# 	frappe.db.sql("""
+	# 			UPDATE
+	# 				`tabProduction Entry`
+	# 			SET 
+	# 				transportation_amount = '{}'
+	# 			WHERE 
+	# 				name = '{}' 
+	# 			AND ref_doc = '{}'
+	# 			AND item_code = '{}' 
+	# 			AND equipment_number ='{}' 
+	# 			AND qty = '{}' 
+	# 			AND transportation_rate = '{}'
+	# 			""".format(d.amount, d.entry_name,d.name,d.item_code,d.equipment_number,d.qty,d.rate))
+	# 	i += 1
+		
+# (348.66, u'PRO210102060', u'BP-2-A9129', 342.72, u'PRODE210104294', u'300034')
+# (346.14, u'PRO210102060', u'BP-2-A9129', 342.72, u'PRODE210104294', u'300034')
+# (354.78, u'PRO210102060', u'BP-2-A9129', 342.72, u'PRODE210104294', u'300034')
+# (342.36, u'PRO210102060', u'BP-2-A9129', 342.72, u'PRODE210104294', u'300034')
+# (341.46, u'PRO210102060', u'BP-2-A9129', 342.72, u'PRODE210104294', u'300034')
+# (345.24, u'PRO210102060', u'BP-2-A9129', 342.72, u'PRODE210104294', u'300034')
+# (346.14, u'PRO210102060', u'BP-2-A9129', 342.72, u'PRODE210104294', u'300034')
+# (348.66, u'PRO210102060', u'BP-2-A9129', 342.72, u'PRODE210104294', u'300034')
+# (348.66, u'PRO210102060', u'BP-2-A9129', 342.72, u'PRODE210104295', u'300034')
+	# i = 1
+	# for a in frappe.db.sql("""
+	# 		SELECT
+	# 			p.to_warehouse,
+	# 			pi.rate,
+	# 			pi.amount,
+	# 			pi.item_code,
+	# 			p.name,
+	# 			pi.equipment_number
+	# 		FROM
+	# 			`tabProduction` p
+	# 		INNER JOIN 
+	# 			`tabProduction Product Item` pi 
+	# 		ON p.name = pi.parent
+	# 		WHERE pi.parent = p.name
+	# 		and p.transfer = 1 and p.docstatus = 1 and (pi.equipment_number !="" or pi.equipment_number IS NOT NULL)
+	# 		and p.posting_date > '2021-01-01'
+	# 	""",as_dict=True):
+	# 	if frappe.db.exists("Production Entry", {"ref_doc":a.name, "item_code": a.item_code, "equipment_number": a.equipment_number}):
+	# 		doc = frappe.get_doc("Production Entry", {"ref_doc":a.name, "item_code": a.item_code, "equipment_number": a.equipment_number})
+	# 		frappe.db.sql("""
+	# 			UPDATE
+	# 				`tabProduction Entry`
+	# 			SET 
+	# 				transfer_to_warehouse='{}',
+	# 				transportation_rate = '{}',
+	# 				transportation_amount = '{}'
+	# 			WHERE 
+	# 				name = '{}'
+	# 			""".format(a.to_warehouse, a.rate, a.amount, doc.name))
+	# 		print("SL: " + str(i) + "PE : " + str(doc.name) + " Amount " + str(a.amount) + "Rate: " + str(a.rate) + "to_warehouse : " + str(a.to_warehouse))
+	# 		i+=1
+	# 	else:
+	# 		print("Doest not exists : " + a.name )	
+			
 def equipment_number_update():
 	for a in frappe.db.sql("""
 		SELECT 

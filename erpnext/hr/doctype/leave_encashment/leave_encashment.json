@@ -637,7 +637,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-03-11 13:08:34.836488", 
+ "modified": "2021-04-05 21:56:49.617358", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Leave Encashment", 
@@ -751,5 +751,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_seen": 1
+ "track_changes": 1, 
+ "track_seen": 0
 }

@@ -199,13 +199,13 @@ def get_columns():
 		},
 		{
 			"fieldname": "po_no",
-			"label": _("Customer PO No"),
+			"label": _("Dispatch"),
 			"fieldtype": "Data",
 			"width": 150
 		},
 		{
 			"fieldname": "po_date",
-			"label": _("Customer PO Date"),
+			"label": _("Dispatch Date"),
 			"fieldtype": "Date",
 			"width": 100
 		},
@@ -315,7 +315,7 @@ def get_columns():
 		},
 		{
 			"fieldname": "loading_charges",
-		 	"label": _("Loading Charges"),
+		 	"label": _("Other Charges"),
 			"fieldtype": "Currency",
 		 	"width": 150
 		},

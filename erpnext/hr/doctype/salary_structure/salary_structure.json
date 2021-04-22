@@ -2648,8 +2648,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-07-01 18:39:40.767032", 
- "modified_by": "kuenley.tshering@smcl.bt", 
+ "modified": "2021-04-05 21:52:25.052251", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Salary Structure", 
  "owner": "Administrator", 
@@ -2743,5 +2743,6 @@
  "sort_order": "DESC", 
  "timeline_field": "employee", 
  "title_field": "employee_name", 
+ "track_changes": 1, 
  "track_seen": 0
 }

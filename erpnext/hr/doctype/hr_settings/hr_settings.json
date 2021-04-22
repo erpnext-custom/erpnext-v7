@@ -579,7 +579,7 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-01-13 18:35:13.877047", 
+ "modified": "2021-04-05 21:57:46.169362", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "HR Settings", 
@@ -610,5 +610,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

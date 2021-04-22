@@ -379,6 +379,7 @@ def get_production_groups(group):
 
 @frappe.whitelist()
 def get_branch_from_cost_center(cost_center):
+        # if frappe.session.user == "Adminstrator"
         return frappe.db.get_value("Branch", {"cost_center": cost_center, "is_disabled": 0}, "name")
 
 ### 

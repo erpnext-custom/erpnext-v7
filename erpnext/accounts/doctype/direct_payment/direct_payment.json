@@ -1134,7 +1134,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-01-21 12:57:44.132455", 
+ "modified": "2021-04-05 22:01:41.645580", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Direct Payment", 
@@ -1187,5 +1187,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 1, 
  "track_seen": 0
 }

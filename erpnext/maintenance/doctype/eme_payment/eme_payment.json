@@ -550,7 +550,7 @@
    "collapsible": 0, 
    "fieldname": "deduction_account", 
    "fieldtype": "Link", 
-   "hidden": 0, 
+   "hidden": 1, 
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
@@ -1081,7 +1081,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-02-24 12:35:18.928719", 
+ "modified": "2021-04-21 21:21:37.297972", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "EME Payment", 
@@ -1129,7 +1129,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
@@ -1214,5 +1214,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 1, 
  "track_seen": 0
 }
