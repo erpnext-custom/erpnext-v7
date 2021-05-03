@@ -455,15 +455,19 @@ def get_number_of_leave_days(employee, leave_type, from_date, to_date, half_day=
 	number_of_days = date_diff(to_date, from_date) + 1
 
 	if not frappe.db.get_value("Leave Type", leave_type, "include_holiday"):
-		number_of_days = flt(number_of_days) - flt(get_holidays(employee, from_date, to_date))
+		number_of_days = flt(number_of_days) - flt(get_holidays(employee, from_date, to_date, leave_type))
 	else:
 		return number_of_days
 
 	d = from_date
-	half = frappe.db.get_value("Holiday List", get_holiday_list_for_employee(employee), "saturday_half")
+	hol_li = get_holiday_list_for_employee(employee)
+	if leave_type == "Bereavement Leave":
+		hol_li = "Thimphu Holiday"
+		
+	half = frappe.db.get_value("Holiday List", hol_li, "saturday_half")
 	while(getdate(d) <= getdate(to_date)):
 		#For Saturday half day work time
-		if getdate(d).weekday() == 5 and flt(get_holidays(employee, d, d)) == 0 and half:
+		if getdate(d).weekday() == 5 and flt(get_holidays(employee, d, d, leave_type)) == 0 and half:
 			number_of_days-=0.5
 		d = frappe.utils.data.add_days(d, 1)
 	
@@ -673,9 +677,11 @@ def get_leave_allocation_records(ason_date, employee=None):
 	return allocated_leaves
 
 
-def get_holidays(employee, from_date, to_date):
+def get_holidays(employee, from_date, to_date, leave_type):
 	'''get holidays between two dates for the given employee'''
 	holiday_list = get_holiday_list_for_employee(employee)
+	if leave_type == "Bereavement Leave":
+		holiday_list = "Thimphu Holiday"
 
 	holidays = frappe.db.sql("""select count(distinct holiday_date) from `tabHoliday` h1, `tabHoliday List` h2
 		where h1.parent = h2.name and h1.holiday_date between %s and %s

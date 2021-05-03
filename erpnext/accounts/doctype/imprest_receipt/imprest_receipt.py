@@ -51,8 +51,8 @@ class ImprestReceipt(Document):
                 self.receipt_amount  = flt(self.amount)
                 self.purchase_amount = 0.0
                 self.closing_balance = flt(self.opening_balance)+flt(self.receipt_amount)
-
-        def validate_amounts(self):
+        
+	def validate_amounts(self):
                 if flt(self.opening_balance) < 0:
                         frappe.throw("Opening balance cannot be a negative value.",title="Invalid Data")
                 elif flt(self.amount) < 0:
@@ -177,7 +177,7 @@ def get_opening_balance(branch = None, imprest_type = None, docname = None, entr
                                 and entry_date < '{2}'
                                 and docstatus = 1
                         ) as x
-        """.format(branch, docname, entry_date, imprest_type))
+        """.format(branch, docname, entry_date, imprest_type), debug = 1)
 
         if result:
                 return result[0][0]

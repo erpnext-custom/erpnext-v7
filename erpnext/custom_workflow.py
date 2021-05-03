@@ -284,4 +284,29 @@ def verify_mr_workflow(doc):
                 try:
                         frappe.sendmail(recipients=doc.owner, sender=None, subject=subject, message=message)
                 except:
-                        pass	
+                        pass
+
+
+#accounts 
+def set_user(doc):
+        #emp = frappe.get_doc("Employee", {'user_id': frappe.session.user}).name
+        #officiating = get_officiating_employee(emp)
+        #usr = officiating if officiating else frappe.session.user
+        if not frappe.db.exists("Workflow", {"document_type": doc.doctype, "is_active": 1}):
+
+                return
+        usr = frappe.session.user
+        if doc.workflow_state == "Waiting Approval":
+                doc.applied_by = usr
+                doc.workflow_state = "Waiting Approval"
+                doc.docstatus = 0
+
+        if doc.workflow_state == "Verified":
+                doc.verified_by = usr
+                doc.workflow_state == "Verified"
+                doc.docstatus = 0
+
+        if doc.workflow_state == "Approved":
+                doc.approved_by = usr
+                doc.workflow_state = "Approved"
+                doc.docstatus = 1	

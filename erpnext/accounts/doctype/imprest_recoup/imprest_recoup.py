@@ -23,7 +23,8 @@ class ImprestRecoup(AccountsController):
                 for t in frappe.get_all("Imprest Recoup", ["name"], {"branch": self.branch, "imprest_type": self.imprest_type, "entry_date":("<",self.entry_date),"docstatus":0}):
                         msg = '<b>Reference# : <a href="#Form/Imprest Recoup/{0}">{0}</a></b>'.format(t.name)
                         frappe.throw(_("Found unclosed entries. Previous entries needs to be either closed or cancelled in order to determine opening balance for the current transaction.<br>{0}").format(msg),title="Invalid Operation")
-                self.post_receipt_entry()
+		if not self.final_settlement:   # if condition added by SHIV on 2020/12/23 as per Ugyen Thinley's request, ticket#836
+                	self.post_receipt_entry()
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
                 self.post_gl_entry()
 		self.consume_budget()
@@ -32,9 +33,10 @@ class ImprestRecoup(AccountsController):
 		if self.clearance_date:
                         frappe.throw("Already done bank reconciliation.")
 
-                for t in frappe.get_all("Imprest Receipt", ["name"], {"name": self.imprest_receipt, "docstatus":1}):
-                        msg = '<b>Reference# : <a href="#Form/Imprest Receipt/{0}">{0}</a></b>'.format(t.name)
-                        frappe.throw(_("You need to cancel dependent Imprest Receipt entry first.<br>{0}").format(msg),title="Invalid Operation")
+		if self.imprest_receipt:
+			for t in frappe.get_all("Imprest Receipt", ["name"], {"name": self.imprest_receipt, "docstatus":1}):
+				msg = '<b>Reference# : <a href="#Form/Imprest Receipt/{0}">{0}</a></b>'.format(t.name)
+				frappe.throw(_("You need to cancel dependent Imprest Receipt entry first.<br>{0}").format(msg),title="Invalid Operation")
                         
                 self.post_gl_entry()
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
@@ -65,8 +67,7 @@ class ImprestRecoup(AccountsController):
                                 frappe.throw(_("Row#{0} : Please input valid data for quantity.").format(i.idx),title="Invalid Quantity")
                         elif flt(i.rate) <= 0.0:
                                 frappe.throw(_("Row#{0} : Please input valid data for rate.").format(i.idx),title="Invalid Rate")
-                        
-			elif flt(i.amount) < 0.0:
+                        elif flt(i.amount) < 0.0:
                                 frappe.throw(_("Row#{0} : Amount cannot be a negative value.").format(i.idx),title="Invalid Amount")
                         
 

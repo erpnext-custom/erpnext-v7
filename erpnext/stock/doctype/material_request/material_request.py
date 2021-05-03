@@ -129,7 +129,6 @@ class MaterialRequest(BuyingController):
 		requested_by = frappe.get_doc("Employee", {"user_id": self.owner})
                 requested_by = "{}({})".format(requested_by.employee_name, requested_by.designation)
                 self.requested_by = requested_by
-		
 		# self.validate_qty_against_so()
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated
 		# Though the creation of Material Request from a Production Plan can be rethought to fix this

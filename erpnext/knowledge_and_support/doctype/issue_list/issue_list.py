@@ -23,6 +23,7 @@ class IssueList(Document):
                         frappe.db.sql(""" update `tabIssue List` set docstatus = 1 where name ='{0}'""".format(self.name))
                         frappe.msgprint("Thanks, This issue is closed!")
                         self.db_set("docstatus", 1)
+			self.db_set("workflow_state", "Resolved")
 			frappe.sendmail(recipients= self.owner, sender='ERP System', subject="Ticket Resolved" , message="Your Ticket No {0} is closed.".format(self.name))
                 if not self.requested_by:
 			doc = frappe.get_doc("Employee", {'user_id': frappe.session.user})

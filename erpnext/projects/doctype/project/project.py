@@ -46,7 +46,7 @@ class Project(Document):
 		if self.get("activity_tasks"):
 			self.make_target_entries()
 			self.make_group()
-			self.make_tsk_group()
+			#self.make_tsk_group()
 
 	def on_submit(self):
 		self.flags.dont_sync_tasks = True
