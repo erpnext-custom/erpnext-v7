@@ -133,15 +133,15 @@ class TravelClaim(Document):
                                 i.days_allocated = 0
                                 i.half_dsa_days = 0
                                 continue
-
+			if not i.halt:
+				i.quarantine = 0
                         from_date = i.date
                         to_date     = i.date if not i.till_date else i.till_date
                        	i.no_days = date_diff(to_date, from_date) + 1
                         '''if i.no_days and not i.quarantine:
                                 total_count += i.no_days'''
-			if i.quarantine:
-				i.no_days = 0
-			total_count += i.no_days
+			if not i.quarantine:
+				total_count += i.no_days
                         counted = total_count - flt(i.no_days)
                         #if counted >= 30:
                         #       counted = 30 

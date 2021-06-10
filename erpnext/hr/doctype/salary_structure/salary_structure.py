@@ -423,6 +423,10 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                                 calc_amount = round(flt(amount)*(flt(working_days)/flt(days_in_month)))
 
                                 
+                                # following condition added by SHIV on 2021/05/28
+                                if not flt(calc_amount):
+                                        continue
+
                                 calc_map.setdefault(key,[]).append({
                                         'salary_component'         : d.salary_component,
                                         'depends_on_lwp'           : d.depends_on_lwp,

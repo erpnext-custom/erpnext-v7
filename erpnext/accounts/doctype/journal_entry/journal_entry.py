@@ -22,6 +22,7 @@ from erpnext.custom_utils import generate_receipt_no, check_future_date
 # Ver 1.0 by SSK on 09/08/2016, Following datetime, make_autoname imports are included
 import datetime
 from frappe.model.naming import make_autoname
+from erpnext.custom_workflow import set_user
 
 class JournalEntry(AccountsController):
 	def __init__(self, arg1, arg2=None):
@@ -101,6 +102,7 @@ class JournalEntry(AccountsController):
 		self.set_account_and_party_balance()
 		if not self.title:
 			self.title = self.get_title()
+		set_user(self)
 
 	def set_status(self):
                 self.status = {

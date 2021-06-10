@@ -48,6 +48,7 @@ frappe.ui.form.on("Invoice Item", {
 		}
         },
 	"item": function(frm, cdt, cdn) {
+		msgprint("this is printed");
 		var item = locals[cdt][cdn]
 		frm.add_fetch("item", "income_account", "income_account");
 		}

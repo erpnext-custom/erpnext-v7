@@ -13,6 +13,23 @@ from erpnext.accounts.utils import make_asset_transfer_gl
 from datetime import datetime
 import os
 import subprocess
+from erpnext.accounts.doctype.imprest_receipt.imprest_receipt import get_opening_balance, update_dependencies
+
+
+def update_aa():
+	for a in frappe.db.sql(""" select name from `tabSalary Slip` where employment_type = 'GCE' and fiscal_year = '2021' and month = '05'""", as_dict = 1):
+		frappe.db.sql(""" delete from `tabSalary Detail` where parent = '{0}'""".format(a.name))
+		print a.name
+
+def update_impp():
+	for a in frappe.db.sql(""" select name from `tabImprest Recoup` where name = 'IMPP2021000126'""", as_dict =1):
+		doc = frappe.get_doc("Imprest Recoup", a.name)
+		#doc.post_receipt_entry()
+		#update_dependencies(doc.branch, doc.imprest_type, doc.entry_date)
+                #doc.post_gl_entry()
+                #doc.consume_budget()
+		doc.on_submit()
+		print "Document is submitted"
 
 def update_iip():
 	for a in frappe.db.sql(""" select name, equipment from `tabPOL` where equipment = 'EQUIP210016'""", as_dict =1):

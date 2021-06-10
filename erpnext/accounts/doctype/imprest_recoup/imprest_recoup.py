@@ -10,6 +10,7 @@ from frappe.utils import flt, getdate, get_datetime, get_url, nowdate, now_datet
 from erpnext.accounts.doctype.imprest_receipt.imprest_receipt import get_opening_balance, update_dependencies
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.general_ledger import make_gl_entries
+from erpnext.custom_workflow import set_user_imprest
 
 class ImprestRecoup(AccountsController):
 	def validate(self):
@@ -18,6 +19,8 @@ class ImprestRecoup(AccountsController):
                 self.update_amounts()
                 self.validate_amounts()
 		self.clearance_date = None
+		set_user_imprest(self)
+
 
         def on_submit(self):
                 for t in frappe.get_all("Imprest Recoup", ["name"], {"branch": self.branch, "imprest_type": self.imprest_type, "entry_date":("<",self.entry_date),"docstatus":0}):

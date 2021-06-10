@@ -280,23 +280,57 @@ class TravelAuthorization(Document):
                 return_day = 1
                 full_dsa = half_dsa = 0
                 for i in self.items:
+			if not i.halt:
+				i.quarantine = 0
                         from_date = i.date
                         to_date     = i.date if not i.till_date else i.till_date
-                        no_days = date_diff(to_date, from_date) + 1
+			no_days = date_diff(to_date, from_date) + 1
                         if i.quarantine:
-				no_days = 0
-			total_days  += no_days
+                                no_days = 0
+                        total_days  += no_days
                 if flt(total_days) <= 15:
-                        full_dsa = flt(total_days) - flt(return_day)
+                        full_dsa = flt(total_days) - flt(return_day) 
                         half_dsa = 0.0
 
                 elif 15 < flt(total_days) <= 30:
                         full_dsa = 15
                         half_dsa = flt(total_days) -15 - flt(return_day)
-		elif flt(total_days) > 30:
+
+                elif flt(total_days) > 30:
                         full_dsa = 15
                         half_dsa = 15  - flt(return_day)
 
+                self.estimated_amount = (flt(full_dsa) * flt(dsa_rate)) + (flt(half_dsa) * 0.5 * flt(dsa_rate)) + flt(return_day) * (flt(return_dsa)/100)* flt(dsa_rate)
+
+	#checking
+	def set_estimate_amount1(self):
+                total_days = 0.0
+                dsa_rate  = frappe.db.get_value("Employee Grade", self.grade, "dsa")
+                if not dsa_rate:
+                        frappe.throw("No DSA Rate set for Grade <b> {0} /<b> ".format(self.grade))
+
+                return_dsa = frappe.get_doc("HR Settings").return_day_dsa
+                if not return_dsa:
+                        frappe.throw("Set Return Day DSA Percent in HR Settings")
+                return_day = 1
+                full_dsa = half_dsa = 0
+		
+                for i in self.items:
+                        from_date = i.date
+                        to_date     = i.date if not i.till_date else i.till_date
+                        no_days = date_diff(to_date, from_date) + 1
+                        if not i.quarantine:
+				total_days  += no_days
+			frappe.msgprint("{0} {1}".format(from_date, total_days))
+                if flt(total_days) <= 15:
+                        full_dsa = flt(total_days)
+                        half_dsa = 0.0
+                elif 15 < flt(total_days) <= 30:
+                        full_dsa = 15
+			half_dsa = flt(total_days) - 15
+		elif flt(total_days) > 30:
+                        full_dsa = 15
+                        half_dsa = 15  - flt(return_day)
                 self.estimated_amount = (flt(full_dsa) * flt(dsa_rate)) + (flt(half_dsa) * 0.5 * flt(dsa_rate)) + flt(return_day) * (flt(return_dsa)/100)* flt(dsa_rate)
 
 

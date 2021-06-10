@@ -13,15 +13,21 @@ class Invoice(Document):
 		total = 0.0
 		discount = 0.0
 		for a in self.get("items"):
-			a.amount = flt(a.qty) * flt(a.rate)
+			revenue_account = frappe.get_doc("Item", a.item).income_account
+			if not revenue_account:
+				frappe.throw("Set Up Revenue Account in Item Master")
+			a.income_account = revenue_account
+			a.amount = flt(a.qty) * flt(a.rate) - flt(a.discount)
 			if flt(a.amount) < 0:
 				frappe.throw("Amount Cannot be negative at row '{0}'".format(a.idx))
-			total += (flt(a.qty) * flt(a.rate))
-
+			total += (flt(a.qty) * flt(a.rate) - flt(a.discount))
+			discount += flt(a.discount)
 		self.total_amount = flt(total)
-		self.net_receivable = self.total_amount - self.discount_amount
+		self.total_discount = flt(discount)
+
+		#self.net_receivable = self.total_amount - self.discount_amount
 			
-		if flt(self.net_receivable) < 0:
+		if flt(self.total_amount) < 0:
 			frappe.throw("Receivable Amount cannot be negative")
 	
 	def  on_submit(self):
@@ -42,8 +48,8 @@ class Invoice(Document):
                                 prepare_gl(self, {"account": default_rv_account,
                                                  "party_type": "Customer",
                                                  "party": self.customer,
-                                                 "debit": flt(self.net_receivable),
-                                                 "debit_in_account_currency": flt(self.net_receivable),
+                                                 "debit": flt(self.total_amount),
+                                                 "debit_in_account_currency": flt(self.total_amount),
                                                  "cost_center": self.cost_center,
 					          "remarks": "{0}  {1}".format(self.title, self.cost_center)
                                                 })

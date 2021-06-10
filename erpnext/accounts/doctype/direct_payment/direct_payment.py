@@ -9,6 +9,7 @@ from erpnext.accounts.general_ledger import make_gl_entries
 from frappe import _
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import check_future_date
+from erpnext.custom_workflow import set_user
 
 class DirectPayment(AccountsController):
 	def validate(self):
@@ -22,7 +23,10 @@ class DirectPayment(AccountsController):
 		branch_name = frappe.db.get_value("Cost Center", self.cost_center, "branch")
 		if branch_name != self.branch:
 			frappe.throw(_("Branch {0} and Cost Center {1} doest not belong to each other".format(self.party)))
-		
+	
+		set_user(self)
+
+	
 	def set_status(self):
                 self.status = {
                         "0": "Draft",

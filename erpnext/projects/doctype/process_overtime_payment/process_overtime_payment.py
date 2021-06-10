@@ -9,6 +9,7 @@ from frappe.utils import flt, nowdate, getdate
 from frappe.model.document import Document
 from erpnext.hr.hr_custom_functions import get_month_details
 from erpnext.custom_utils import prepare_gl, check_future_date
+from erpnext.custom_workflow import set_user
 
 class ProcessOvertimePayment(Document):
 	def validate(self):
@@ -34,6 +35,8 @@ class ProcessOvertimePayment(Document):
                         frappe.throw("Expense Account Not Found, Kindly set up Overtime Account in HR Accounts Settings")
 
 		self.check_duplicate_entries()
+		set_user(self)
+
 
 	def check_duplicate_entries(self):
                 not_found = []
