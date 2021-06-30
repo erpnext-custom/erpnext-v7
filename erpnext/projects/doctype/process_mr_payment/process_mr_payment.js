@@ -100,7 +100,7 @@ function get_records(employee_type, fiscal_year, month, from_date, to_date, cost
 						row.month 			= month;
 						row.number_of_days 	= mr['number_of_days'];
 						row.number_of_hours = parseFloat(mr['number_of_hours']);
-						row.bank = "BOBL"; //mr['bank'];
+						row.bank = mr['bank'];
 						row.account_no = mr['account_no'];
 						row.designation = mr['designation'];
 						if(mr['type'] == 'GEP Employee'){

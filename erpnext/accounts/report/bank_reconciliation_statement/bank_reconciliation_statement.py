@@ -181,6 +181,7 @@ def get_entries(filters):
 		and docstatus = 1
 		and posting_date <= %(report_date)s 
 		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+		and final_settlement = 0
 	""", filters, as_dict=1)
 
 	mechanical_entries = frappe.db.sql("""

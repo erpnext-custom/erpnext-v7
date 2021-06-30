@@ -26,19 +26,19 @@ class BOQ(Document):
                 self.update_defaults()
                 self.validate_defaults()
                 self.update_boq_history()
+                self.update_project_value()
 
         def on_submit(self):
-                self.update_project_value()
+                # self.update_project_value()
                 self.project_boq_item_entry()
-
+                
+        # this is added to address ticket #1088 as client request populate project_value even in draft status
+        # def on_update(self):
+        #         self.update_project_value()
+                
         def on_cancel(self):
                 self.update_project_value()
                 self.project_boq_item_entry()
-
-        # this is added to address ticket #1088 as client request populate project_value even in draft status
-        def on_update(self):
-                self.update_project_value()
-                
 
         def on_update_after_submit(self):
                 self.project_boq_item_entry()
@@ -176,7 +176,19 @@ class BOQ(Document):
                 if self.total_amount:
                         pro_doc = frappe.get_doc("Project", self.project)
                         pro_doc.flags.dont_sync_tasks = True
-                        pro_doc.project_value = flt(pro_doc.project_value)+(-1*(self.total_amount) if self.docstatus==2 else flt(self.total_amount))
+                        if not self.latest_amount or self.docstatus == 2 :
+                                self.latest_amount = self.total_amount
+                                pro_doc.project_value = flt(pro_doc.project_value)+(-1*(self.latest_amount) if self.docstatus==2 else flt(self.latest_amount))
+                        if self.docstatus == 2:
+                                self.latest_amount = 0
+                        elif flt(self.latest_amount) < flt(self.total_amount):
+                                pro_doc.project_value = flt(pro_doc.project_value) - flt(self.latest_amount)
+                                pro_doc.project_value = flt(pro_doc.project_value) + flt(self.total_amount)
+                                self.latest_amount = self.total_amount
+                        elif flt(self.latest_amount) > flt(self.total_amount):
+                                pro_doc.project_value = flt(pro_doc.project_value) - flt(self.latest_amount)
+                                pro_doc.project_value = flt(pro_doc.project_value) + flt(self.total_amount)
+                                self.latest_amount = self.total_amount
                         pro_doc.save(ignore_permissions = True)
 
                 '''

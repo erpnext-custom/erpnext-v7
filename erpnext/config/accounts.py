@@ -430,6 +430,44 @@ def get_data():
 			]
 		},
 		{
+			"label": _("ePayment"),
+			# "icon": "icon-table",
+			"items": [
+       			{
+					"type": "doctype",
+					"name": "Bank Payment Settings",
+					"label": _("Bank Payment Settings"),
+					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "Bank Payment",
+					"label": _("Bank Payment"),
+					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "Utility Bill",
+					"label": _("Utility Bill Payment"),
+				},
+				{
+					"type": "doctype",
+					"name": "Utility Services",
+					"label": _("Utility Services"),
+				},
+				{
+					"type": "doctype",
+					"name": "Utility Service Type",
+					"label": _("Utility Service Type"),
+				},
+				{
+					"type": "doctype",
+					"name": "API Detail",
+					"label": _("API Detail"),
+				},
+			]
+		},
+		{
 			"label": _("Setup"),
 			"icon": "icon-cog",
 			"items": [

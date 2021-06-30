@@ -66,10 +66,17 @@ class StockEntry(StockController):
 		self.validate_finished_goods()
 		self.validate_with_material_request()
 		self.validate_batch()
-
+		self.validate_cost_center()
 		self.set_actual_qty()
 		self.calculate_rate_and_amount(update_finished_item_rate=False)
 
+	def validate_cost_center(self):
+		cost_center = frappe.db.get_value('Cost Center',{'branch':self.branch},['name'])
+		# frappe.msgprint(str(cost_center))
+		for index, item in enumerate(self.items):
+			if item.cost_center != cost_center:
+				self.items[index].cost_center = cost_center
+				
 	def check_transfer_wh(self):
 		if not self.from_warehouse:
 			frappe.throw("Source Warehouse is mandatory")

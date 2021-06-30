@@ -7,6 +7,7 @@ import frappe
 def execute(filters=None):
 	columns = get_columns()
 	data = get_data(filters)
+
 	return columns, data
 	
 def get_columns():
@@ -32,8 +33,8 @@ def get_data(filters):
 		UNION 
 		SELECT  
 			d.posting_date,  
-			if(d.single_party_multiple_payments = 1, d.taxable_amount, di.taxable_amount) as tds_taxable_amount, d.tds_percent as tds_rate,  
-			if(d.single_party_multiple_payments = 1, d.tds_amount, di.tds_amount) as tds_amount, 
+			di.taxable_amount as tds_taxable_amount, d.tds_percent as tds_rate,  
+			di.tds_amount as tds_amount, 
 			rr.cheque_number,  rr.cheque_date, rr.receipt_number, rr.receipt_date, rr.branch 
 		FROM 
 			`tabDirect Payment` AS d
@@ -42,9 +43,8 @@ def get_data(filters):
 		LEFT JOIN 
 			`tabDirect Payment Item` AS di ON di.parent = d.name 
 		WHERE d.posting_date BETWEEN '{0}' AND '{1}'
-		AND (
-			(d.single_party_multiple_payments = 1 AND d.party = '{2}')
+		AND (d.party = '{2}'
 			OR
-			(d.single_party_multiple_payments = 0 AND  di.party = '{2}')
-		)""".format(filters.from_date, filters.to_date, filters.vendor_name)
+   			di.party = '{2}')
+		""".format(filters.from_date, filters.to_date, filters.vendor_name)
 	return frappe.db.sql(query)

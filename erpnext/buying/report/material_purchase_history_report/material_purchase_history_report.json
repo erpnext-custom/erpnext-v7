@@ -1,0 +1,29 @@
+{
+ "add_total_row": 1, 
+ "apply_user_permissions": 1, 
+ "creation": "2021-05-31 11:40:33.816517", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 0, 
+ "is_standard": "Yes", 
+ "modified": "2021-05-31 12:47:18.404997", 
+ "modified_by": "Administrator", 
+ "module": "Buying", 
+ "name": "Material Purchase History Report", 
+ "owner": "Administrator", 
+ "ref_doctype": "Purchase Order", 
+ "report_name": "Material Purchase History Report", 
+ "report_type": "Script Report", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Purchase User"
+  }, 
+  {
+   "role": "Purchase Manager"
+  }
+ ]
+}

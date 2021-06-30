@@ -113,6 +113,7 @@
    "allow_on_submit": 0, 
    "bold": 0, 
    "collapsible": 0, 
+   "description": "<b>Try to upload data with minimum rows to avoid system slow. We recommend you upload in chunk wise rather than in bulk</b>", 
    "fieldname": "upload_attendance_data", 
    "fieldtype": "Section Break", 
    "hidden": 0, 
@@ -193,7 +194,7 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 1, 
- "modified": "2016-08-27 21:14:58.273106", 
+ "modified": "2021-06-15 14:08:27.139294", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Upload Attendance", 
@@ -224,5 +225,6 @@
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

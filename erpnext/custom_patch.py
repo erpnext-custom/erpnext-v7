@@ -16,6 +16,39 @@ from frappe.utils import today
 import os
 import subprocess
 
+def update_timesheet_docstatus_for_completed_project():
+	for a in frappe.db.sql("""
+		select a.timesheet 
+		from
+			(select t.name as timesheet
+				from `tabProject` p inner join `tabTimesheet` t 
+				on t.project = p.name where p.status = 'Completed' 
+				and t.docstatus = 0) a
+	""",as_dict=1):
+		frappe.db.sql("""
+			update `tabTimesheet` set docstatus=1 where name = '{}'
+		""".format(a.timesheet))
+
+def boq_update():
+    for d in frappe.db.sql("""
+                           select name, total_amount from `tabBOQ`
+                           """,as_dict=1):
+        frappe.db.sql("""
+                      update `tabBOQ` set latest_amount = {} where name = '{}'
+                      """.format(d.total_amount,d.name))
+def update_dp():
+	i = 0
+	for a in frappe.db.sql("select debit_account, credit_account, payment_type, name, invoice_no, invoice_date from `tabDirect Payment`", as_dict=True):
+		if a.payment_type == "Payment":
+			account = a.debit_account
+		else:
+			account = a.credit_account
+		if a.name != "DPAY1901011":
+			frappe.db.sql("update `tabDirect Payment Item` set account = '{}',  invoice_date='{}', docstatus = 1 where parent = '{}'".format(account, a.invoice_date, a.name))
+			frappe.db.commit()
+		i += 1
+		print(str(a.name) + " and Count : " + str(i))
+
 def remove_gl_party():
 	i  = 1
 	for a in frappe.db.sql("""select g.name, g.party, g.party_type, g.account, a.account_type

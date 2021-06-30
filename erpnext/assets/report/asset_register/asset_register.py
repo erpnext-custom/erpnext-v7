@@ -69,7 +69,6 @@ def get_depreciation_details(filters):
 			END) AS depreciation_income_tax
 		FROM `tabDepreciation Schedule` as ds
 		WHERE ds.schedule_date <= '{to_date}'
-		AND ds.docstatus = 1
 		AND IFNULL(ds.journal_entry,'') != ''
 		GROUP BY ds.parent
 	""".format(from_date=filters.from_date, to_date=filters.to_date)
@@ -195,7 +194,7 @@ def get_data(filters):
 
 			dep_opening 	= flt(a.opening_accumulated_depreciation,2) + flt(a.dep_opening,2)
 			dep_addition	= flt(a.dep_addition,2)
-			dep_adjustment 	= flt(a.dep_adjustment,2)
+			dep_adjustment 	= flt(a.dep_adjustment,2) if (dep_opening+dep_addition) else 0
 			dep_total	= dep_opening + dep_addition - dep_adjustment
 
 			'''

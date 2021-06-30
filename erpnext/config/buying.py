@@ -90,11 +90,17 @@ def get_data():
 					"name": "Material Request Pending for Supplier Quotation",
 					"doctype": "Material Request"
 				},
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Material Purchase History",
+				# 	"doctype": "Item"
+				# },
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Material Purchase History",
-					"doctype": "Item"
+					"name": "Material Purchase History Report",
+					"doctype": "Purchase Order"
 				},
 				{
 					"type": "report",

@@ -79,7 +79,6 @@ def get_data(filters):
 	data = filter_out_zero_value_rows(data, parent_children_map, 
 		show_zero_values=filters.get("show_zero_values"))
 
-	frappe.msgprint(_("{0}").format(data))		
 	return data
 
 def get_opening_balances(filters):

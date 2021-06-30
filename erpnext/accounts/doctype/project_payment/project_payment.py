@@ -172,7 +172,7 @@ class ProjectPayment(AccountsController):
                         allocated_amount = 0.0
                         if flt(inv.allocated_amount) > 0:
                                 total_balance_amount = frappe.db.get_value("Project Invoice", inv.reference_name, "total_balance_amount")
-
+                                
                                 if flt(total_balance_amount) < flt(inv.allocated_amount) and self.docstatus != 2:
                                         frappe.throw(_("Invoice#{0} : Allocated amount Nu. {1}/- cannot be more than Invoice Balance Nu. {2}/-").format(inv.reference_name, "{:,.2f}".format(flt(inv.allocated_amount)),"{:,.2f}".format(flt(total_balance_amount))))
                                 else:

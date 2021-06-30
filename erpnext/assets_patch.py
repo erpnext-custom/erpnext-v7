@@ -15,81 +15,110 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe import msgprint
-from frappe.utils import flt, cint, now
+from frappe.utils import flt, cint, now, getdate
 from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff, today, get_first_day, get_last_day
 
 
-def ppe():
-	from_date = '2020-01-01'
-	to_date = '2020-12-31'
-	for a in frappe.db.sql("SELECT a.name, b.fixed_asset_account as fa, b.accumulated_depreciation_account as acc, 
-				b.depreciation_expense_account as dep 
-			from `tabAsset Category` a, `tabAsset Category Account` b 
-			where a.name = b.parent", as_dict=True):
-		# gross opening
-		for i in frappe.db.sql("""
-			""") 
-			pass
+def post_depreciation_entries(asset=None):
+	for asset in get_depreciable_assets(asset):
+		make_depreciation_entry(asset)
+		frappe.db.commit()
 
-def ppe_temp():
-	data = []
-	for a in frappe.db.sql("SELECT a.name, b.fixed_asset_account as fa, b.accumulated_depreciation_account as acc, 
-				b.depreciation_expense_account as dep 
-			from `tabAsset Category` a, `tabAsset Category Account` b 
-			where a.name = b.parent", as_dict=True):
-		gross_opening = get_values(a.fa, filters.to_date, filters.from_date, filters.cost_center, opening=True)[0]
-		gross = get_values(a.fa, filters.to_date, filters.from_date, filters.cost_center)[0]
-		dep_opening = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center, opening=True)[0]
-		acc_dep = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center)[0]
-		# following line commented by SHIV on 2021/03/10 as it is not used anywhere
-		#dep = get_values(a.dep, filters.to_date, filters.from_date, filters.cost_center)[0]
-		adj = get_values(a.acc, filters.to_date, filters.from_date, filters.cost_center, adjustment=True)[0]		
+def get_depreciable_assets(asset):
+	cond = " and a.name = '{}'".format(asset) if asset else ""
+	return frappe.db.sql_list("""select distinct a.name
+		from `tabAsset` a, tmp_missingje_nov2020 t, `tabDepreciation Schedule` ds
+		where a.name = t.name
+		AND ds.parent = a.name
+		AND ds.schedule_date = '2021-01-01'
+		AND NOT EXISTS(SELECT 1
+			FROM `tabJournal Entry` je
+			WHERE je.name = ds.journal_entry)
+		{}
+	""".format(cond))
 
-		g_open = flt(gross_opening.debit) - flt(gross_opening.credit)
-		g_addition = flt(gross.debit)
-		g_adjustment = flt(gross.credit)
-		g_total = g_open + g_addition - g_adjustment 
-		d_open = -1 * (flt(dep_opening.debit) - flt(dep_opening.credit))
-		dep_adjust = flt(acc_dep.debit)
-		adj_adjust = flt(adj.credit)
-		dep_addition = flt(acc_dep.credit) - flt(adj.credit)
-		dep_add = flt(acc_dep.credit)
-		d_total = d_open + dep_add  - flt(dep_adjust)
+@frappe.whitelist()
+def make_depreciation_entry(asset_name, date=None):
+	print('Posting entries for Asset : {}'.format(asset_name))
+	frappe.has_permission('Journal Entry', throw=True)
+	
+	if not date:
+		date = today()
 
-		row = [ 
-			a.name,
-			g_open,
-			g_addition,
-			g_adjustment,
-			g_total,
-			d_open,
-			dep_addition,
-			dep_adjust,
-			adj_adjust,
-			d_total,
-			flt(g_total) - flt(d_total) 
-		]	
-		data.append(row)
+	asset = frappe.get_doc("Asset", asset_name)
+	
+	#if asset.disable_depreciation:
+	#	frappe.throw("Depreciation disabled for this asset")
 
-def get_values(account, to_date, from_date, cost_center=None, opening=False, cwip=False, adjustment=False):
-#	query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \'" + str(account) + "\' and docstatus = 1"
-	if cwip:
-		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account in " + str(account) + " and docstatus = 1 "
-	elif adjustment:
-		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \'" + str(account) + "\' and docstatus = 1 and is_depreciation_adjustment = 'Yes'"
-	else:
-		query = "select sum(debit) as debit, sum(credit) as credit from `tabGL Entry` where account = \'" + str(account) + "\' and docstatus = 1"
-	if not opening:
-		query += " and posting_date between \'" + str(from_date) + "\' and \'" + str(to_date) + "\'"
-	else:
-		query += " and posting_date < \'" + str(from_date) + "\'"
-	if cost_center:
-		query += " and cost_center = \'" + str(cost_center) + "\'"
 
-	query += " and voucher_type not in ('Period Closing Voucher', 'Asset Movement', 'Bulk Asset Transfer')"
-	#query += " and voucher_type not in ('Period Closing Voucher')"
-	#if account == "Machinery & Equipment(10 Years) - CDCL":
-	#	frappe.msgprint(" Query : {}".format(query))
-	value = frappe.db.sql(query, as_dict=True)
+	fixed_asset_account, accumulated_depreciation_account, depreciation_expense_account = \
+		get_depreciation_accounts(asset)
 
-	return value
+	#depreciation_cost_center = frappe.db.get_value("Company", asset.company, "depreciation_cost_center")
+	depreciation_cost_center = asset.cost_center
+	
+	value_after_dep = 0
+	for d in asset.get("schedules"):
+		if str(d.schedule_date) == '2021-01-01':
+			print('{}'.format(d.schedule_date))
+			je = frappe.new_doc("Journal Entry")
+			je.voucher_type = "Depreciation Entry"
+			je.posting_date = d.schedule_date
+			je.company = asset.company
+			je.branch = asset.branch
+			je.remark = "Depreciation Entry against {0} worth {1}".format(asset_name, d.depreciation_amount)
+
+			je.append("accounts", {
+				"account": accumulated_depreciation_account,
+				"credit_in_account_currency": d.depreciation_amount,
+				"reference_type": "Asset",
+				"reference_name": asset.name,
+				"cost_center": depreciation_cost_center
+			})
+
+			je.append("accounts", {
+				"account": depreciation_expense_account,
+				"debit_in_account_currency": d.depreciation_amount,
+				"reference_type": "Asset",
+				"reference_name": asset.name,
+				"cost_center": depreciation_cost_center
+			})
+
+			je.flags.ignore_permissions = True
+			je.submit()
+
+			d.db_set("journal_entry", je.name)
+			value_after_dep = flt(asset.gross_purchase_amount) - flt(d.accumulated_depreciation_amount) - flt(asset.residual_value)
+
+	#asset.db_set("value_after_depreciation", value_after_dep)
+	#asset.set_status()
+
+	return asset
+
+def get_depreciation_accounts(asset):
+	fixed_asset_account = accumulated_depreciation_account = depreciation_expense_account = None
+	
+	accounts = frappe.db.get_value("Asset Category Account",
+		filters={'parent': asset.asset_category, 'company_name': asset.company},
+		fieldname = ['fixed_asset_account', 'accumulated_depreciation_account',
+			'depreciation_expense_account'], as_dict=1)
+
+	if accounts:	
+		fixed_asset_account = accounts.fixed_asset_account
+		accumulated_depreciation_account = accounts.accumulated_depreciation_account
+		depreciation_expense_account = accounts.depreciation_expense_account
+		
+	if not accumulated_depreciation_account or not depreciation_expense_account:
+		accounts = frappe.db.get_value("Company", asset.company,
+			["accumulated_depreciation_account", "depreciation_expense_account"])
+		
+		if not accumulated_depreciation_account:
+			accumulated_depreciation_account = accounts[0]
+		if not depreciation_expense_account:
+			depreciation_expense_account = accounts[1]
+
+	if not fixed_asset_account or not accumulated_depreciation_account or not depreciation_expense_account:
+		frappe.throw(_("Please set Depreciation related Accounts in Asset Category {0} or Company {1}")
+			.format(asset.asset_category, asset.company))
+
+	return fixed_asset_account, accumulated_depreciation_account, depreciation_expense_account

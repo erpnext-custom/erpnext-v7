@@ -126,7 +126,17 @@ class Project(Document):
 		self.validate_branch_change()
 		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 		self.send_welcome_email()
+                self.check_timesheet_status()
+        def check_timesheet_status(self):
+                if self.status == 'Completed':
+                        if frappe.db.exists({
+                                'doctype': 'Timesheet',
+                                'docstatus': 0,
+                                'project':self.name
+                                }):
+                                frappe.throw('Submit all <b>Timesheet</b> related to this project to close the project')
 
+                        
         def validate_project_type_and_party(self):
                 """ Restrict user from changing party if there are advance/invoice transactions """
 

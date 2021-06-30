@@ -1,0 +1,594 @@
+/* defaults begins*/
+:root {
+    --primary-color: #01a4dc;
+    --secondary-color: #01a4dc61;
+  }
+  /* defaults ends*/
+  
+  
+  /**
+   * navbar begins 
+   */
+  .navbar-default {
+    background-color: var(--primary-color, #01a4dc);
+    border-color: #ebeff2;
+  }
+  
+  .navbar-default .navbar-nav>li>a {
+    color: #f5f5f5;
+  }
+  
+  #navbar-search {
+    background-color: white;
+  }
+  /* navbar end */
+  
+  /* navbar-icons begins */
+  .custom-icon::before {
+    font-family: FontAwesome;
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .user-profile-icon::before {
+    content: "\f007";
+  }
+  .my-settings-icon::before {
+    content: "\f013";
+  }
+  .session-defaults-icon::before {
+    content: "\f042";
+  }
+  .reload-icon::before {
+    content: "\f021";
+  }
+  .view-website-icon::before {
+    content: "\f0ac";
+  }
+  .toggle-full-width-icon::before {
+    content: "\f2d0";
+  }
+  .background-jobs-icon::before {
+    content: "\f138";
+  }
+  .logout-icon::before {
+    content: "\f08b";
+    color: tomato;
+  }
+  /* navbar-icons ends */
+  
+  /* listview-dropdown begins */
+  .dropdown-item [data-label="Import"]::before {
+    font-family: FontAwesome;
+    content: "\f019";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="User Permissions"]::before {
+    font-family: FontAwesome;
+    content: "\f138";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Role Permissions Manager"]::before {
+    font-family: FontAwesome;
+    content: "\f138";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Customize"]::before {
+    font-family: FontAwesome;
+    content: "\f044";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Show Totals"]::before {
+    font-family: FontAwesome;
+    content: "\f067";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Toggle Chart"]::before {
+    font-family: FontAwesome;
+    content: "\f080";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Toggle Sidebar"]::before {
+    font-family: FontAwesome;
+    content: "\f205";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Pick Columns"]::before {
+    font-family: FontAwesome;
+    content: "\f2a1";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Export"]::before {
+    font-family: FontAwesome;
+    content: "\f093";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Setup Auto Email"]::before {
+    font-family: FontAwesome;
+    content: "\f003";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Share URL"]::before {
+    font-family: FontAwesome;
+    content: "\f1e1";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Edit DocType"]::before {
+    font-family: FontAwesome;
+    content: "\f044";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  
+  .dropdown-item [data-label="Settings"]::before {
+    font-family: FontAwesome;
+    content: "\f013";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  /* listview-dropdown ends*/
+  
+  /* doc-edit-menu begins */
+  .dropdown-item [data-label="Print"]::before {
+    font-family: FontAwesome;
+    content: "\f013";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;  
+  }
+  /* doc-edit-menu ends*/
+  
+  /* action-buttons begins */
+  .btn-primary [data-label="Save"]::before{
+    font-family: FontAwesome;
+    content: "\f0c7";
+    /* color: var(--primary-color, #01a4dc); */
+    margin-right: 5px;
+    /* font-size: 1.5em; */
+  }
+  
+  .btn-primary [data-label="Amend"]::before{
+    font-family: FontAwesome;
+    content: "\f040";
+    /* color: var(--primary-color, #01a4dc); */
+    margin-right: 5px;
+    /* font-size: 1.5em; */
+  }
+  
+  .btn-primary [data-label="New"]::before{
+    font-family: FontAwesome;
+    content: "\f0fe";
+    /* color: var(--primary-color, #01a4dc); */
+    margin-right: 5px;
+    /* font-size: 1.5em; */
+  }
+  
+  .btn-secondary[data-label="Refresh"]::before{
+    font-family: FontAwesome;
+    content: "\f021";
+    /* color: var(--primary-color, #01a4dc); */
+    margin-right: 5px;
+    /* font-size: 1.5em; */
+  }
+  
+  .menu-btn-group .menu-btn-group-label[data-label="Menu"]::before{
+    font-family: FontAwesome;
+    content: "\f0ca";
+    /* color: var(--primary-color, #01a4dc); */
+    margin-right: 5px;
+    /* font-size: 1.5em; */
+  }
+  
+  .actions-btn-group-label[data-label="Actions"]::before{
+    font-family: FontAwesome;
+    content: "\f138";
+    /* color: var(--primary-color, #01a4dc); */
+    margin-right: 5px;
+    /* font-size: 1.5em; */
+  }
+  
+  .menu-item-label[data-label="Apply"]::before{
+    font-family: FontAwesome;
+    content: "\f046";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-item [data-label="Apply"]::before{
+    font-family: FontAwesome;
+    content: "\f046";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .menu-item-label[data-label="Forward"]::before{
+    font-family: FontAwesome;
+    content: "\f046";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-item [data-label="Forward"]::before{
+    font-family: FontAwesome;
+    content: "\f064";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .menu-item-label[data-label="Approve"]::before{
+    font-family: FontAwesome;
+    content: "\f046";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-item [data-label="Approve"]::before{
+    font-family: FontAwesome;
+    content: "\f046";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .menu-item-label[data-label="Reject"]::before{
+    font-family: FontAwesome;
+    content: "\f00d";
+    /* color: var(--primary-color, #01a4dc); */
+    color: tomato;
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-item [data-label="Reject"]::before{
+    font-family: FontAwesome;
+    content: "\f00d";
+    /* color: var(--primary-color, #01a4dc); */
+    color: tomato;
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .menu-item-label[data-label="Cancel"]::before{
+    font-family: FontAwesome;
+    content: "\f057";
+    /* color: var(--primary-color, #01a4dc); */
+    color: tomato;
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-item [data-label="Cancel"]::before{
+    font-family: FontAwesome;
+    content: "\f057";
+    /* color: var(--primary-color, #01a4dc); */
+    color: tomato;
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .menu-item-label[data-label="Help"]::before{
+    font-family: FontAwesome;
+    content: "\f128";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .menu-item-label[data-label="Cancel Document"]::before{
+    font-family: FontAwesome;
+    content: "\f057";
+    color: tomato;
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-menu [data-label="Print"]::before{
+    font-family: FontAwesome;
+    content: "\f02f";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-menu [data-label="Email"]::before{
+    font-family: FontAwesome;
+    content: "\f003";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-menu [data-label="Jump to field"]::before{
+    font-family: FontAwesome;
+    content: "\f002";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-menu [data-label="Links"]::before{
+    font-family: FontAwesome;
+    content: "\f0c1";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-menu [data-label="Reload"]::before{
+    font-family: FontAwesome;
+    content: "\f021";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-menu [data-label="Delete"]::before{
+    font-family: FontAwesome;
+    content: "\f1f8";
+    color: tomato;
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-menu [data-label="Duplicate"]::before{
+    font-family: FontAwesome;
+    content: "\f0c5";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  .dropdown-menu [data-label="Rename"]::before{
+    font-family: FontAwesome;
+    content: "\f040";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.5em;
+  }
+  
+  /************* sidebar*/
+  .assigned-to-label::before{
+    font-family: FontAwesome;
+    content: "\f0c0";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.1em;
+  }
+  
+  .attachments-label::before{
+    font-family: FontAwesome;
+    content: "\f0c6";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.1em;
+  }
+  
+  .tags-label::before{
+    font-family: FontAwesome;
+    content: "\f02c";
+    color: var(--primary-color, #01a4dc);
+    margin-right: 5px;
+    font-size: 1.1em;
+  }
+  /* action-button ends*/
+  
+  
+  /** 
+   *dropdown-menu begins 
+   */
+  .dropdown-menu>li>a {
+    padding: 5px;
+    white-space: normal;
+  }
+  
+  .dropdown-menu>li>a:hover {
+    font-weight: 600;
+  }
+  /* dropdown-menu ends */
+  
+  /** 
+   dashboard links begins 
+   */
+  .form-documents h6 {
+    margin-top: 15px;
+    color: purple;
+  }
+  
+  .form-links .document-link {
+    margin-bottom: 5px;
+    height: 22px;
+    color: var(--primary-color, #01a4dc);
+  }
+  /* dashboard links ends */
+  
+  /** 
+   * control-label begins 
+   */
+  .control-label {
+    margin-bottom: 3px;
+    font-weight: 500;
+    color: #5f94a7;
+  }
+  /* control-label ends */
+  
+  /** 
+   * title begins
+   */
+  .page-title .title-text {
+    color: var(--primary-color, #01a4dc);
+  }
+  /* title ends */
+  
+  /** 
+   * module dashboard begins 
+   */
+  .modules-page-container h4{
+    color: purple;
+  }
+  /* module dashboard ends */
+  
+  
+  /** 
+   * sectionbreak begin
+   */
+  .form-section {
+    margin: 0;
+    padding: 10px;
+  }
+  
+  .form-section-heading {
+    height: 35px;
+    border: 1px solid var(--secondary-color, #01a4dc61);
+    padding: 0 18px;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .form-section-heading::before {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 5px;
+    height: calc(100% + 2px);
+    top: -1px;
+    left: -1px;
+  }
+  
+  .form-section-heading::before {
+    background-color: var(--primary-color, #01a4dc);
+  }
+  
+  
+  .form-section-heading.uppercase {
+    color: inherit;
+    font-weight: bold;
+    background-color: var(--secondary-color, #01a4dc61);
+  }
+  
+  .row.form-section.visible-section {
+    border-bottom: none;
+  }
+  
+  .row.page-head {
+   margin-bottom: -45px;
+  }
+  
+  .page-content.with-sidebar {
+   padding: 15px;
+  }
+  /* sectionbreak end*/
+  
+  /** 
+   * collapsible sectionbreak begin
+   */
+  .section-head {
+    height: 35px;
+    border: 1px solid var(--secondary-color, #01a4dc61);
+    padding-left: 18px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: var(--secondary-color, #01a4dc61);
+  }
+  
+  .section-head::before {
+    content: "";
+    display: block;
+    position: absolute;
+    width: 5px;
+    height: calc(100% + 2px);
+    top: -1px;
+    left: -1px;
+  }
+  
+  .section-head::before {
+    background-color: var(--primary-color, #01a4dc);
+  }
+  
+  .form-section .section-head.collapsed {
+    margin-bottom: 0;
+    margin-right: 15px;
+  }
+  
+  .h6.uppercase{
+    color: inherit;
+    font-weight: bold;
+    /*background-color: #e4f3ec;*/
+  }
+  
+  .form-section .section-head .collapse-indicator {
+   color: inherit;
+   bottom: 1px;
+  }
+  
+  .form-section .section-head .collapse-indicator.octicon-chevron-up {
+    bottom: 1px;
+  }
+  
+  .form-section.visible-section .section-head {
+    margin: 0px 15px 10px 15px;
+  }
+  /* collapsible sectionbreak end*/
+  
+  
+  /** 
+   * disabled fields begin
+   */
+  .like-disabled-input {
+   /* border: 1px solid #cacaca; */
+   font-weight: 600;
+   background-color: #1000fd0d;
+   padding: 5px;
+  }
+  
+  /** 
+   * dropdown width increased 
+   */
+  /*
+  .awesomplete > ul{
+   min-width: 300px;
+  }
+  */
+  

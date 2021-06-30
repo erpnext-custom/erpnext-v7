@@ -22,7 +22,7 @@ def get_data(query):
 		bil = frappe.db.sql(""" select name from `tabRRCO Receipt Entries` where (bill_no = '{0}' or purchase_invoice = '{0}') and docstatus =1""".format(d.bill_no), as_dict = 1)
 		if bil:
 			status = 'Paid'
-		row = [d.vendor, d.vendor_tpn_no, d.bill_no, d.bill_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, status]
+		row = [d.vendor, d.vendor_tpn_no, d.bill_no, d.bill_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, d.cost_center, status]
 		data.append(row)
 	
 	return data
@@ -30,31 +30,34 @@ def get_data(query):
 def construct_query(filters=None):
 	if not filters.tds_rate:
 		filters.tds_rate = '2'
-
+	cond = ""
+	cond1 = ""
+	if filters.branch:
+		cond = "AND d.branch = '{}'".format(filters.branch)
+		cond1 = "AND p.branch = '{}'".format(filters.branch)
 	query = """
-			SELECT s.vendor_tpn_no, s.name as vendor, p.name as bill_no, p.bill_date, p.tds_taxable_amount, p.tds_rate, p.tds_amount
+			SELECT s.vendor_tpn_no, s.name as vendor, p.name as bill_no, p.bill_date, 
+   			p.tds_taxable_amount, p.tds_rate, p.tds_amount, p.buying_cost_center as cost_center
 			FROM `tabPurchase Invoice` as p, `tabSupplier` as s 
 			WHERE p.docstatus = 1 and p.supplier = s.name AND p.tds_amount > 0 
 			AND p.posting_date BETWEEN '{0}' AND '{1}'
-			AND p.tds_rate = '{2}' 
-			AND p.branch = '{3}'
+			AND p.tds_rate = '{2}'
+			{3}
 			UNION 
 			SELECT 
-				CASE 
-					when d.single_party_multiple_payments = 1 then (select vendor_tpn_no from `tabSupplier` where name = d.party) 
-					else (select vendor_tpn_no from `tabSupplier` where name = di.party)             
-				END
-				as vendor_tpn_no, 
-				if(d.single_party_multiple_payments = 1, d.party, di.party) as vendor, d.name as bill_no, d.posting_date as bill_date, 
-				if(d.single_party_multiple_payments = 1, d.taxable_amount, di.taxable_amount) as tds_taxable_amount, d.tds_percent as tds_rate, 
-				if(d.single_party_multiple_payments = 1, d.tds_amount, di.tds_amount) as tds_amount
+   				(select vendor_tpn_no from `tabSupplier` where name = di.party) as vendor_tpn_no, 
+				di.party as vendor, d.name as bill_no, d.posting_date as bill_date,
+    			di.taxable_amount as tds_taxable_amount, d.tds_percent as tds_rate, 
+       			di.tds_amount as tds_amount, d.cost_center as cost_center 
 			FROM `tabDirect Payment` as d
 			LEFT JOIN `tabDirect Payment Item` as di on di.parent = d.name
-			WHERE d.docstatus = 1 
+			WHERE d.docstatus = 1
+			AND d.payment_type = 'Payment'
 			AND d.tds_amount > 0 AND d.posting_date BETWEEN '{0}' AND '{1}'  
 			AND d.tds_percent = '{2}'
-			AND d.branch = '{3}'
-			""".format(str(filters.from_date), str(filters.to_date), filters.tds_rate,filters.branch)
+			AND di.tds_amount > 0
+			{4}
+			""".format(str(filters.from_date), str(filters.to_date), filters.tds_rate, cond1, cond)
 	return query
 
 def validate_filters(filters):
@@ -135,6 +138,13 @@ def get_columns():
 		  "fieldname": "tds_amount",
 		  "label": "TDS Amount",
 		  "fieldtype": "Currency",
+		  "width": 100
+		},
+      	{
+		  "fieldname": "cost_center",
+		  "label": "Cost Center",
+		  "fieldtype": "Link",
+		  "options": "Cost Center",
 		  "width": 100
 		},
 		{

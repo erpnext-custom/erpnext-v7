@@ -577,7 +577,7 @@ class SalesInvoice(SellingController):
 						if self.party_account_currency==self.company_currency else grand_total,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
-                                        "cost_center": cost_center_gl.name
+                    "cost_center": cost_center_gl.name
 				}, self.party_account_currency)
 			)
 		
