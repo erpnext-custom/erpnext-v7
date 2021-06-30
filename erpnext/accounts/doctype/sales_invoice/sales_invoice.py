@@ -55,14 +55,14 @@ class SalesInvoice(SellingController):
 			self.indicator_title = _("Paid")
 
 	def validate(self):
-		if 'Sales Master' not in frappe.get_roles(frappe.session.user):
-			today = datetime.datetime.now()
-			DD = datetime.timedelta(days=3)
-			earlier = today - DD
-			date = earlier.strftime("%Y-%m-%d")
-			if (self.posting_date < date or get_first_day(self.posting_date)!=get_first_day(today)):
-				frappe.throw("You Can Not Save or Submit For Posting Date Beyond Past 3 Days or For Previous Month")
-				frappe.validated = false
+		# if 'Sales Master' not in frappe.get_roles(frappe.session.user):
+		# 	today = datetime.datetime.now()
+		# 	DD = datetime.timedelta(days=3)
+		# 	earlier = today - DD
+		# 	date = earlier.strftime("%Y-%m-%d")
+		# 	if (self.posting_date < date or get_first_day(self.posting_date)!=get_first_day(today)):
+		# 		frappe.throw("You Can Not Save or Submit For Posting Date Beyond Past 3 Days or For Previous Month")
+		# 		frappe.validated = false
 
 		check_future_date(self.posting_date)
 		super(SalesInvoice, self).validate()

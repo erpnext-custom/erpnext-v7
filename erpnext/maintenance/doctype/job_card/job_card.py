@@ -87,9 +87,12 @@ class JobCard(AccountsController):
 		goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
 		services_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_services_account")
 		receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
-		maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
+		# maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
+		equipment_category = frappe.db.get_value("Equipment",{"equipment_number":self.equipment_number},"equipment_category")
+		maintenance_account = frappe.db.get_value("Equipment Category",equipment_category,"expense_account")
 
 		return goods_account, services_account, receivable_account, maintenance_account
+		# return goods_account, services_account, receivable_account
 
 	def check_items(self):
 		if not self.items:
@@ -122,6 +125,7 @@ class JobCard(AccountsController):
 	##
 	def post_journal_entry(self):
 		goods_account, services_account, receivable_account, maintenance_account = self.get_default_settings()
+		# goods_account, services_account, receivable_account = self.get_default_settings()
 
 		if goods_account and services_account and receivable_account:
 			je = frappe.new_doc("Journal Entry")
@@ -305,10 +309,13 @@ class JobCard(AccountsController):
                         self.posting_date = self.finish_date
                         ba = get_default_ba()
 
-                        maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
+                        # maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
                         payable_account = frappe.db.get_value("Company", "Natural Resources Development Corporation Ltd","default_payable_account")
+                        equipment_category = frappe.db.get_value("Equipment",{"equipment_number":self.equipment_number},"equipment_category")
+        
+                        maintenance_account = frappe.db.get_value("Equipment Category",equipment_category,"expense_account")
                         if not maintenance_account:
-                                frappe.throw("Setup Default Goods Account in Maintenance Setting")
+                                frappe.throw("Setup Default Maintenace Expense Account in Equipment Category")
                         if not payable_account:
                                 frappe.throw("Setup Default Payable Account in Company Setting")
 

@@ -248,7 +248,7 @@ def get_conditions(filters):
 				'''
 				
 				branch_name = frappe.db.get_value("Branch",{"cost_center": filters.get("branch")}, "name") 
-				conditions += " and exists(select 1 from `tabWarehouse` wh inner join `tabWarehouse Branch` wi on wh.name=wi.parent \
+				conditions += " and warehouse in (select wh.name from `tabWarehouse` wh inner join `tabWarehouse Branch` wi on wh.name=wi.parent \
 				where wi.branch = '%s')"%(branch_name)
 		# frappe.msgprint(str(conditions))	
 		
@@ -260,6 +260,7 @@ def get_conditions(filters):
 
 def get_stock_ledger_entries(filters):
 	conditions = get_conditions(filters)
+
 	return frappe.db.sql("""select item_code, voucher_type, voucher_no, warehouse, posting_date, actual_qty, valuation_rate,
 			company, voucher_type, qty_after_transaction, stock_value_difference
 		from `tabStock Ledger Entry` force index (posting_sort_index)
@@ -312,14 +313,17 @@ def get_item_warehouse_map(filters):
 	return iwb_map
 
 def get_item_details(filters):
-	condition = ''
+	condition = 'where 1 = 1'
 	value = ()
 	if filters.get("item_code"):
-		condition = "where item_code=%s"
-		value = (filters["item_code"],)
+		condition += " and item_code = '{}'".format(filters["item_code"])
+	
+	if filters.get("uom"):
+		condition += " and stock_uom = '{}'".format(filters["uom"])
+
 
 	items = frappe.db.sql("""select name, item_name, stock_uom, item_group, item_sub_group, brand, rack, description
-		from tabItem {condition}""".format(condition=condition), value, as_dict=1)
+		from tabItem {condition}""".format(condition=condition), as_dict=1)
 
 	return dict((d.name, d) for d in items)
 

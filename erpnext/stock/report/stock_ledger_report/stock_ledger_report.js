@@ -150,6 +150,13 @@ frappe.query_reports["Stock Ledger Report"] = {
 			"options": "Item Sub Group"
 		},
 		{
+			"fieldname": "uom",
+			"label": __("UOM"),
+			"fieldtype": "Link",
+			"width": "80",
+			"options": "UOM"
+		},
+		{
 			"fieldname": "timber_prod_group",
 			"label": ("Timber Product Group"),
 			"fieldtype": "Link",

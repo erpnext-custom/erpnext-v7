@@ -10,6 +10,8 @@ from frappe.utils import flt, getdate, get_datetime, get_url, nowdate, now_datet
 from erpnext.accounts.doctype.imprest_receipt.imprest_receipt import get_opening_balance, update_dependencies
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.general_ledger import make_gl_entries
+from datetime import datetime
+
 
 class ImprestRecoup(AccountsController):
 	def validate(self):
@@ -47,6 +49,12 @@ class ImprestRecoup(AccountsController):
         def validate_defaults(self):
                 if frappe.db.get_value("Branch Imprest Item", {"parent": self.branch, "imprest_type": self.imprest_type}, "imprest_status") == "Closed":
                         frappe.throw(_("Entries are not permitted for the closed imprest type <b>`{0}`</b>.").format(self.imprest_type), title="Imprest closed")
+                recoup_date = frappe.db.sql("""
+                        select DATE(entry_date) as entry_date from `tabImprest Receipt` where branch = '{0}' and imprest_type = '{1}' and docstatus = 1 order by entry_date desc limit 1
+                """.format(self.branch, self.imprest_type), as_dict = 1)
+                if datetime.strptime(str(recoup_date[0].entry_date),'%Y-%m-%d') > datetime.strptime(str(self.posting_date),'%Y-%m-%d'):
+                        frappe.throw(_("Imprest Recoup Date should be later than Imrest Receipt Date for imprest type '{0}'").format(self.imprest_type), title="Invalid Recoup Date")
+
         
         def update_defaults(self):
                 # Update entry_date
@@ -57,8 +65,8 @@ class ImprestRecoup(AccountsController):
                 if self.docstatus == 0 and self.workflow_state == "Recouped":
                         self.workflow_state = "Waiting Recoupment"
 
-		self.posting_date = nowdate()
-
+                #self.posting_date = nowdate() #Kinley 2021/06/09, Temporarily replaced with the following to enable backdating as requested by Birkha,NRDCL
+		self.posting_date = nowdate() if not self.posting_date else self.posting_date
                 # Update items
                 self.purchase_amount = 0.0
                 for i in self.items:
@@ -108,7 +116,7 @@ class ImprestRecoup(AccountsController):
                                 "company": self.company,
                                 "branch": self.branch,
                                 "title": "Recoupment for "+str(self.name),
-                                "entry_date": now_datetime(),
+                                "entry_date": self.posting_date,
                                 "imprest_type": self.imprest_type,
                                 "amount": flt(self.purchase_amount),
                                 "revenue_bank_account": self.revenue_bank_account,
@@ -196,7 +204,7 @@ class ImprestRecoup(AccountsController):
                                 "po_date": self.posting_date,
                                 "amount": i.amount,
                                 "poi_name": self.name,
-                                "date": frappe.utils.nowdate()
+                                "date": self.posting_date
                                 })
                         bud_obj.flags.ignore_permissions = 1
                         bud_obj.submit()
@@ -210,7 +218,7 @@ class ImprestRecoup(AccountsController):
                                 "amount": i.amount,
                                 "pii_name": self.name,
                                 "com_ref": bud_obj.name,
-                                "date": frappe.utils.nowdate()})
+                                "date": self.posting_date})
                         consume.flags.ignore_permissions=1
                         consume.submit()
 
@@ -264,7 +272,7 @@ class ImprestRecoup(AccountsController):
                         "naming_series": "Bank Payment Voucher",
                         "title": "Imprest Recoupment ("+str(self.name)+")",
                         "user_remark": "Imprest Recoupment ("+str(self.name)+")",
-                        "posting_date": nowdate(),
+                        "posting_date": self.posting_date,
                         "company": self.company,
                         "total_amount_in_words": money_in_words(total_amount),
                         "accounts": accounts,

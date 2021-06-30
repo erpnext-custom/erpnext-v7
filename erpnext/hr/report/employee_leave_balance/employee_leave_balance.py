@@ -25,7 +25,6 @@ def get_columns(leave_types):
 		_("Department") +"::150",
 		_("Branch") + "::160",
 		_("Status") + "::120"
-
 	]
 
 	for leave_type in leave_types:
@@ -35,17 +34,16 @@ def get_columns(leave_types):
 	return columns
 
 def get_data(filters, leave_types):
-
-	allocation_records_based_on_to_date = get_leave_allocation_records(filters.to_date)
+	allocation_records_based_on_to_date = get_leave_allocation_records(filters.to_date, filters.employee)
 	if filters.status == "Active":
 		filters_dict = { "status": "Active", "company": filters.company}
 	else:
 		filters_dict = { "status": "Left", "company": filters.company}
 
-        if filters.branch:
-                filters_dict['branch'] = filters.branch
-        if filters.employee:
-                filters_dict['name'] = filters.employee
+	if filters.branch:
+		filters_dict['branch'] = filters.branch
+	if filters.employee:
+		filters_dict['name'] = filters.employee
 
 	employees = frappe.get_all("Employee",
 		filters = filters_dict,

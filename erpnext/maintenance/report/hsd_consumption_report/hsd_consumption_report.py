@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr
+from frappe.utils.data import get_last_day
 from erpnext.maintenance.report.maintenance_report import get_pol_till, get_pol_between, get_pol_consumed_till
 
 def execute(filters=None):
@@ -41,6 +42,9 @@ def get_data(filters):
        	#query += " GROUP BY e.equipment_number, eh.branch "
 	datas = ''
 	query = ''
+	date = str(filters.from_date).split("-")
+	from_date = date[0]+"-"+date[1]+"-"+"01"
+	to_date = get_last_day(from_date)
 	equipments = frappe.db.sql("""
                         select e.name as name, eh.branch as branch, e.hsd_type, e.equipment_number as equipment_number, 
                                         e.equipment_type as equipment_type, e.hsd_type, e.equipment_model as equipment_model
@@ -53,7 +57,7 @@ def get_data(filters):
 		query = """ select '{0}' as name, '{1}' as ty, '{2}' as no, '{3}' as br, vl.branch, ifnull(MIN(vl.initial_km),0)  AS mink, ifnull(MAX(vl.final_km),0) AS maxk, ifnull(MIN(vl.initial_hour),0) as minh, 
                 	ifnull(MAX(vl.final_hour),0) as maxh, ifnull(vl.consumption_km,0) as ckm, ifnull(vl.consumption_hours,0) as ch,
                 	(select ifnull((sum(pol.qty*pol.rate)/sum(pol.qty)),0) from tabPOL pol 
-                        where pol.branch = '{3}' and pol.docstatus = 1 and pol.pol_type = '{4}') as rate,
+                        where pol.equipment_number = '{2}' and pol.posting_date between '{7}' and '{8}') as rate,
                 	(select em.tank_capacity from  `tabEquipment Model` em where em.name = '{5}') as cap, 
                 	CASE
 			WHEN vl.ys_km THEN vl.ys_km
@@ -66,7 +70,7 @@ def get_data(filters):
 			ifnull(sum(vl.distance_km),0) as km,
 			ifnull(sum(vl.consumption),0) as consumed from
 			`tabVehicle Logbook` vl where vl.equipment_number = '{2}' {6} and
-			vl.docstatus = 1 having sum(vl.consumption)>0""".format(eq.name, eq.equipment_type, eq.equipment_number, eq.branch, eq.hsd_type, eq.equipment_model, vl_date)
+			vl.docstatus = 1 having sum(vl.consumption)>0""".format(eq.name, eq.equipment_type, eq.equipment_number, eq.branch, eq.hsd_type, eq.equipment_model, vl_date, from_date, to_date)
 		datas = frappe.db.sql(query, as_dict=1)
 		for d in datas:
                 	d.drawn = get_pol_between("Receive", d.name, filters.from_date, filters.to_date, d.hsd_type)

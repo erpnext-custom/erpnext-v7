@@ -322,7 +322,7 @@ class Asset(Document):
 				"business_activity": self.business_activity,
 				"cost_center": self.cost_center
 				})
-			je.submit();
+			je.submit()
 		
 	def delete_asset_gl_entries(self):
 		gl_list = frappe.db.sql(""" select distinct je.name as journal_entry from `tabJournal Entry Account` as jea, `tabJournal Entry` as je where je.name = jea.parent and jea.reference_name = %s and je.docstatus = 1""", self.name, as_dict=True)

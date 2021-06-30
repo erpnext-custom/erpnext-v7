@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.query_reports["Production Target Report"] = {
+frappe.query_reports["Production and Disposal Target Report"] = {
 	"filters": [
 		{
                         "fieldname": "company",
@@ -25,7 +25,6 @@ frappe.query_reports["Production Target Report"] = {
                         "options": ["Production", "Disposal"],
                         "reqd" : 1,
                 },
-
 		{
                         "fieldname": "cost_center",
                         "label": ("Parent Branch"),
@@ -37,7 +36,8 @@ frappe.query_reports["Production Target Report"] = {
                                         'doctype': "Cost Center",
                                         'filters': [
                                                 ['is_disabled', '!=', '1'],
-                                                ['company', '=', company]
+                                                ['company', '=', company],
+                                                ['is_group','=','1']
                                         ]
                                 }
                         },
@@ -68,22 +68,58 @@ frappe.query_reports["Production Target Report"] = {
                         "label": ("Branch"),
                         "fieldtype": "Link",
                         "options": "Branch",
-                        "read_only": 1,
+                        // "read_only": 1,
+                        // "get_query": function() {
+                        //         var company = frappe.query_report.filters_by_name.company.get_value();
+                        //         return {"doctype": "Branch", "filters": {"company": company, "is_disabled": 0}}
+                        // }
                         "get_query": function() {
+                                var cost_center = frappe.query_report.filters_by_name.cost_center.get_value();
                                 var company = frappe.query_report.filters_by_name.company.get_value();
-                                return {"doctype": "Branch", "filters": {"company": company, "is_disabled": 0}}
+                                if(cost_center!= 'Natural Resource Development Corporation Ltd - NRDCL')
+                                {
+                                                return {"doctype": "Cost Center", "filters": {"company": company, "is_disabled": 0, "parent_cost_center": cost_center}}
+                                }
+                                else
+                                {
+                                                return {"doctype": "Cost Center", "filters": {"company": company, "is_disabled": 0, "is_group": 0}}
                         }
-		
+                }
                 },
-               	{
+                {
                         "fieldname": "location",
                         "label": ("Location"),
                         "fieldtype": "Link",
                         "options": "Location",
                         "get_query": function() {
-                                var branch = frappe.query_report.filters_by_name.branch.get_value();
-                                return {"doctype": "Location", "filters": {"branch": branch, "is_disabled": 0}}
-                        }
+                                        var branch = frappe.query_report.filters_by_name.branch.get_value();
+                                        branch = branch.replace(' - NRDCL','');
+                                        return {"doctype": "Location", "filters": {"branch": branch, "is_disabled": 0}}
                 }
+                },
+                {
+			"fieldname": "item_group",
+			"label": __("Material Group"),
+			"fieldtype": "Link",
+			"options": "Item Group",
+			// "reqd": 1,
+		},
+                // {
+                //         "fieldname": "item_sub_group",
+                //         "label": __("Material Sub Group"),
+                //         "fieldtype": "Link",
+                //         "options": "Item Sub Group",
+                //         "get_query": function(){
+                //                 var item_group = frappe.query_report.filters_by_name.item_group.get_value();
+                //                 return {"doctype": "Item Sub Group", "filters": {"item_group": item_group}}
+                //         }
+                // },
+                // {
+		// 	"fieldname": "uom",
+		// 	"label": __("UOM"),
+		// 	"fieldtype": "Link",
+		// 	"options": "UOM",
+		// 	// "reqd": 1,
+		// },
 	]
 }

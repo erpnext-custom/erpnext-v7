@@ -274,6 +274,44 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
                         """, (filters['equipment_type'], filters['branch'], filters['from_date'], filters['to_date'], filters['from_date'], filters['to_date']))
         '''
         
+        # return frappe.db.sql("""
+        #                 select
+        #                         e.name,
+        #                         e.equipment_type,
+        #                         e.equipment_number
+        #                 from `tabEquipment` e
+        #                 where e.equipment_type = %(equipment_type)s
+        #                 and e.branch = %(branch)s
+        #                 and e.is_disabled != 1
+        #                 and e.not_cdcl = 0
+        #                 and (
+        #                         {key} like %(txt)s
+        #                         or
+        #                         equipment_type like %(txt)s
+        #                         or
+        #                         equipment_number like %(txt)s
+        #                 )
+        #                 {mcond}
+        #                 order by
+        #                         if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
+        #                         if(locate(%(_txt)s, equipment_type), locate(%(_txt)s, equipment_type), 99999),
+        #                         if(locate(%(_txt)s, equipment_number), locate(%(_txt)s, equipment_number), 99999),
+        #                         idx desc,
+        #                         name, equipment_type, equipment_number
+        #                 limit %(start)s, %(page_len)s
+        #                 """.format(**{
+        #                         'key': searchfield,
+        #                         'mcond': get_match_cond(doctype)
+        #                 }),
+        #                 {
+		# 		"txt": "%%%s%%" % txt,
+		# 		"_txt": txt.replace("%", ""),
+		# 		"start": start,
+		# 		"page_len": page_len,
+        #                         "equipment_type": filters['equipment_type'],
+        #                         "branch": filters['branch']
+		# 	})
+
         return frappe.db.sql("""
                         select
                                 e.name,
@@ -281,7 +319,6 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
                                 e.equipment_number
                         from `tabEquipment` e
                         where e.equipment_type = %(equipment_type)s
-                        and e.branch = %(branch)s
                         and e.is_disabled != 1
                         and e.not_cdcl = 0
                         and (
@@ -308,8 +345,7 @@ def equipment_query(doctype, txt, searchfield, start, page_len, filters):
 				"_txt": txt.replace("%", ""),
 				"start": start,
 				"page_len": page_len,
-                                "equipment_type": filters['equipment_type'],
-                                "branch": filters['branch']
+                                "equipment_type": filters['equipment_type']
 			})
 
 @frappe.whitelist()        

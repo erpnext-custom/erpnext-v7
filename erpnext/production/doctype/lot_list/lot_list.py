@@ -124,6 +124,52 @@ def make_sales_order(source_name, target_doc=None):
 	return target_doc
 
 @frappe.whitelist()
+def make_stock_entry(source_name, target_doc=None):
+	def set_missing_values(source, target):
+		pass
+
+	def update_item(source, target, source_parent):
+		target.s_warehouse = source_parent.warehouse
+		sub_group = frappe.db.get_value("Item", source.item, "item_sub_group")
+		lot_check = frappe.db.get_value("Item Sub Group", sub_group, "lot_check")
+		target.item_name = frappe.db.get_value("Item", source.item, "item_name")
+		target.stock_uom = frappe.db.get_value("Item", source.item, "stock_uom")
+		target.uom = frappe.db.get_value("Item", source.item, "stock_uom")
+		if lot_check:
+			if source.total_volume < 0:
+				frappe.msgprint("Not available volume under the selected Lot")
+			else:
+				target.qty = source.total_volume
+
+
+	target_doc = get_mapped_doc("Lot List", source_name, {
+                "Lot List": {
+                        "doctype": "Stock Entry",
+                        "field_map": {
+				"branch": "branch",
+				"posting_date":"po_date",
+				# "currency": "price_list_currency"
+                #         },
+                #         "validation": {
+                #                 "docstatus": ["=", 1]
+                #         }
+						}
+                },
+                "Lot List Details": {
+                        "doctype": "Stock Entry Detail",
+                        "field_map": [
+								["parent", "lot_number"],
+                                ["item", "item_code"],
+                                ["total_volume", "qty"],
+                                ["total_volume", "transfer_qty"],
+                        ],
+						"postprocess": update_item,
+                },
+    }, target_doc, set_missing_values)
+
+	return target_doc
+
+@frappe.whitelist()
 def get_lot_list(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
 	cond = ""
 	if filters.get("branch"):
@@ -131,14 +177,14 @@ def get_lot_list(doctype=None, txt=None, searchfield=None, start=None, page_len=
 	else:
 		frappe.throw("Please select Branch first")
 
-	if frappe.session.user == "Administrator":
-		return frappe.db.sql("""
-			select name from `tabLot List` l
-			where name = 'D/87/2020'
-			{0}
-			""".format(cond))
-	else:
-		return frappe.db.sql("""
+	# if frappe.session.user == "Administrator":
+	# 	return frappe.db.sql("""
+	# 		select name from `tabLot List` l
+	# 		where name = 'D/87/2020'
+	# 		{0}
+	# 		""".format(cond))
+	# else:
+	return frappe.db.sql("""
 		select name from `tabLot List` l
 		where (l.sales_order is NULL or l.sales_order = "")
         and (l.stock_entry is NULL or l.stock_entry = "")

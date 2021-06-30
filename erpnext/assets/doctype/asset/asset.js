@@ -58,11 +58,9 @@ frappe.ui.form.on('Asset', {
 					});
 
 				} else if (frm.doc.status=='Scrapped') {
-					/*
 					frm.add_custom_button("Restore Asset", function() {
 						erpnext.asset.restore_asset(frm);
 					});
-					*/
 				}
 			}
 			frm.trigger("show_graph");

@@ -248,5 +248,11 @@ frappe.query_reports["Stock Balance Report"] = {
 			"fieldtype": "Link",
 			"options": "Timber Class"
 		},
+		{
+			"fieldname": "uom",
+			"label": ("UOM"),
+			"fieldtype": "Link",
+			"options": "UOM"
+		},
 	]
 }

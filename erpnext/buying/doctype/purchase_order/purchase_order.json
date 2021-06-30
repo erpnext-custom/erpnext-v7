@@ -3110,7 +3110,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-07-24 14:54:13.144732", 
+ "modified": "2021-05-06 12:15:45.026107", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Purchase Order", 
@@ -3160,7 +3160,7 @@
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
@@ -3176,6 +3176,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {

@@ -10,10 +10,10 @@
  "modified": "2019-09-19 17:00:52.265670", 
  "modified_by": "birkha.gaylal@nrdcl.bt", 
  "module": "Production", 
- "name": "Production Target Report", 
+ "name": "Production and Disposal Target Report", 
  "owner": "Administrator", 
  "ref_doctype": "Production Target", 
- "report_name": "Production Target Report", 
+ "report_name": "Production and Disposal Target Report", 
  "report_type": "Script Report", 
  "roles": [
   {

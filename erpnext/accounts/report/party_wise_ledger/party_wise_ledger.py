@@ -35,7 +35,7 @@ def execute(filters=None):
 # Following code added by SHIV on 2018/12/11
 # For better performance
 def get_data(filters, show_party_name):
-	party_name_field = "customer_name" if filters.get("party_type")=="Customer" else "supplier_name" if filters.get("party_type")=="Supplier" else "employee_name"
+	party_name_field = "customer_name" if filters.get("party_type")=="Customer" else "supplier_name" if filters.get("party_type")=="Supplier" else "employee_name" if filters.get("party_type")=="Employee" else "equipment_model"
 	if not filters.get("inter_company"):
 		parties = frappe.get_all(filters.get("party_type"), fields = ["name", party_name_field], order_by="name")
 	elif filters.get("party_type") == "Employee":
@@ -518,6 +518,9 @@ def is_party_name_visible(filters):
 	show_party_name = False
 	if filters.get("party_type") == "Customer":
 		party_naming_by = frappe.db.get_single_value("Selling Settings", "cust_master_name")
+	elif filters.get("party_type") == "Equipment":
+		party_naming_by = "Equipment Number"
+		show_party_name = True
 	else:
 		party_naming_by = frappe.db.get_single_value("Buying Settings", "supp_master_name")
 		

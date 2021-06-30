@@ -48,6 +48,8 @@ def get_data(filters):
 		data += " and sed.t_warehouse = \'" + str(filters.warehouse) + "\'"
 	if filters.get("item_code"):
 		data += " and sed.item_code = \'" + str(filters.item_code) + "\'"
+	if filters.get("item_group"):
+		data += " and sed.item_group = \'" + str(filters.item_group) + "\'"
 	if filters.get("from_date") and filters.get("to_date"):
 		data += " and se.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 	if filters.lot_number:

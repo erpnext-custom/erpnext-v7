@@ -48,10 +48,10 @@ def get_data(filters):
 
 	# and customer_group != 'Internal'
         if not filters.aggregate:
-                query = frappe.db.sql(""" select c.customer_name, c.customer_id, c.customer_group, sr.construction_type, sum(soi.qty), sum(soi.delivered_qty), c.branch, c.territory,
+                query = frappe.db.sql(""" select c.customer_name, c.customer_id, c.mobile_no, c.customer_group, so.name, sr.construction_type, sum(soi.qty), sum(soi.delivered_qty), c.branch, c.territory,
                         c.location, c.dzongkhag, soi.item_name, soi.item_group,i.item_sub_group, soi.warehouse, date(c.creation), c.mobile_no from `tabCustomer` c left join `tabSite Registration` sr on c.customer_id = sr.user, `tabItem` i, `tabSales Order` so, `tabSales Order Item` soi where so.customer = c.name and so.name = soi.parent and soi.item_code = i.name and so.docstatus = 1 {0} group by c.customer_name, soi.warehouse order by c.name asc""".format(cond), debug =1)
         else:
-                query = frappe.db.sql(""" select c.customer_name, so.name, c.location, soi.item_group, i.item_sub_group,  sum(soi.qty), sum(soi.delivered_qty) from `tabCustomer` c, `tabItem` i, `tabSales Order` so, `tabSales Order Item` soi where so.customer = c.name and so.name = soi.parent and soi.item_code = i.name and so.docstatus = 1 {0} group by c.customer_name order by c.name asc""".format(cond), debug =1)
+                query = frappe.db.sql(""" select c.customer_name, c.customer_id, c.mobile_no, c.customer_group, sr.construction_type, c.location, c.dzongkhag, soi.item_group, i.item_sub_group, sum(soi.qty), sum(soi.delivered_qty) from `tabCustomer` c left join `tabSite Registration` sr on c.customer_id = sr.user, `tabItem` i, `tabSales Order` so, `tabSales Order Item` soi where so.customer = c.name and so.name = soi.parent and soi.item_code = i.name and so.docstatus = 1 {0} group by c.customer_name order by c.name asc""".format(cond), debug =1)
 
         return query
 
@@ -61,8 +61,12 @@ def get_columns(filters):
         if filters.aggregate:
                 cols = [
                         ("Customer Name") + ":Data:180",
-                        ("Sales Order") + ":Link/Sales Order:120",
+                        ("Customer CID") + ":Data:120",
+                        ("Contact No") + ":Data:120",
+                        ("Customer Group") + ":Data:130",
+                        ("Construction Type") + ":Data:130",
                         ("Location") + ":Data:120",
+                        ("Dzongkhag") + ":Data:120",
                         ("Material Group") + ":Data:120",
                         ("Material Sub Group") + ":Data:120",
                         ("Sales Order Quantity") + ":Float:120",
@@ -73,7 +77,9 @@ def get_columns(filters):
                 cols = [
                         ("Customer Name") + ":Data:180",
                         ("Customer CID") + ":Data:120",
+                        ("Contact No") + ":Data:120",
                         ("Customer Group") + ":Data:130",
+                        ("Sales Order") + ":Link/Sales Order:120",
                         ("Construction Type") + ":Data:130",
                         ("Quantity Approved") + ":Float:130",
                         ("Quantity Delivered") + ":Float:130",

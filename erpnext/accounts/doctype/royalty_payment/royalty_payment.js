@@ -14,7 +14,9 @@ frappe.ui.form.on('Royalty Payment', {
 	refresh: function(frm) {
 
 	},
-	
+    production_type: function(frm){
+        cur_frm.set_df_property("range_name",cur_frm.doc.production_type == "Planned");
+    },	
 	get_royalty_details: function(frm) {
 		return frappe.call({
 			method: "get_royalty_details",

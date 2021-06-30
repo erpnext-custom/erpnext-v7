@@ -23,6 +23,8 @@ from erpnext.stock.stock_balance import update_bin_qty, get_indented_qty
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.manufacturing.doctype.production_order.production_order import get_item_details
 from erpnext.custom_utils import check_future_date
+from erpnext.custom_workflow import validate_workflow_states
+
 
 # form_grid_templates = {
 # 	"items": "templates/form_grid/material_request_grid.html"
@@ -70,6 +72,8 @@ class MaterialRequest(BuyingController):
 	# Validate
 	# ---------------------
 	def validate(self):
+		validate_workflow_states(self)
+
 		check_future_date(self.transaction_date)
 		super(MaterialRequest, self).validate()
 
@@ -79,9 +83,17 @@ class MaterialRequest(BuyingController):
 
 		# **** To record the details of Material Requester **** #
 		if self.workflow_state == "Draft":
-			creator_dtls = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","name"])
-			self.creator = creator_dtls[2]
-			self.creator_name = creator_dtls[1]
+			creator_user_id, creator_employee_name, creator_name = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","name"]) or None
+			# creator_dtls = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","name"])
+			# self.creator = creator_dtls[2]
+			# self.creator_name = creator_dtls[1]
+	
+		# added by kinley phuntsho on May 13th 2021. Sometimes the docstatus is not updated when the workflow is. 
+		if self.workflow_state == "Cancelled" and self.docstatus != 2: 
+			frappe.throw("Please try cancelling again!")
+		if self.workflow_state == "Approved" and self.docstatus != 1: 
+			frappe.throw("Please submit again!")
+		# ---- end of code by phuntsho. 
 
 		if not self.status:
 			self.status = "Draft"

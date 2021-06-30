@@ -37,47 +37,47 @@ def get_data(filters=None):
 		if filters.employee:
 			for b in bonus:
 				amt = frappe.db.sql("""
-				     	select a.employee as employee, a.employee_name, b.employee_group, b.employee_subgroup, a.branch,a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
+				     	select a.employee as employee, a.employee_name, b.tpn_number, b.bank_ac_no, b.employee_group, b.employee_subgroup, a.branch,a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
 						from `tabBonus Details` a, `tabEmployee` b
 						where a.parent = %s and a.employee = %s and a.employee = b.name 
 				     	 """, (b.name, filters.employee), as_dict=1)
 				for a in amt:
-					row = [a.employee, a.employee_name, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "Bonus", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
+					row = [a.employee, a.employee_name, a.tpn_number, a.bank_ac_no, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "Bonus", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
 					data.append(row)
 		else:
 			if not filters.cost_center and not filters.branch:
 				for b in bonus:
 					amt = frappe.db.sql("""
-				     	select b.employee, a.employee_name, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
+				     	select b.employee, a.employee_name, b.tpn_number, b.bank_ac_no, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
 						from `tabBonus Details` a, `tabEmployee` b
 						where a.parent = %s and a.employee = b.name
 				     	 """, (b.name), as_dict=1)
 					for a in amt:
-						row = [a.employee, a.employee_name, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "Bonus", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
+						row = [a.employee, a.employee_name, a.tpn_number, a.bank_ac_no, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "Bonus", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
 						data.append(row)
 
 			elif not filters.branch:
 				all_ccs = get_child_cost_centers(filters.cost_center)
 				for b in bonus:
 					amt = frappe.db.sql("""
-				     	select b.employee, a.employee_name, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
+				     	select b.employee, a.employee_name, b.tpn_number, b.bank_ac_no, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
 						from `tabBonus Details` a, `tabEmployee` b
 						where a.parent = %s and a.employee = b.name and a.branch in (select name from `tabBranch` where cost_center in %s)
 				     	 """, (b.name, tuple(all_ccs)), as_dict=1)
 					for a in amt:
-						row = [a.employee, a.employee_name, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "Bonus", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
+						row = [a.employee, a.employee_name, a.tpn_number, a.bank_ac_no, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "Bonus", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
 						data.append(row)
 			else:
 				branch = str(filters.branch)
 				branch = branch.replace(' - NRDCL','')
 				for b in bonus:
 					amt = frappe.db.sql("""
-				     	select b.employee, a.employee_name, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
+				     	select b.employee, a.employee_name, b.tpn_number, b.bank_ac_no, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
 						from `tabBonus Details` a, `tabEmployee` b
 						where a.parent = %s and a.employee = b.name and a.branch = %s
 				     	 """, (b.name, branch), as_dict=1)
 					for a in amt:
-						row = [a.employee, a.employee_name, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "Bonus", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
+						row = [a.employee, a.employee_name, a.tpn_number, a.bank_ac_no, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "Bonus", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
 						data.append(row)				
 
 			
@@ -92,35 +92,35 @@ def get_data(filters=None):
 		if filters.employee:
 			for b in pbva:
 				amt = frappe.db.sql("""
-				     	select a.employee, a.employee_name, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
+				     	select a.employee, a.employee_name, b.tpn_number, b.bank_ac_no, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
 						from `tabPBVA Details` a, `tabEmployee` b
 						where a.parent = %s and a.employee = %s and a.employee = b.name 
 				      """, (b.name, filters.employee), as_dict=1)
 				for a in amt:
-					row = [a.employee, a.employee_name, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "PBVA", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
+					row = [a.employee, a.employee_name, a.tpn_number, a.bank_ac_no, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "PBVA", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
 					data.append(row)
 		else:
 			if not filters.cost_center and not filters.branch:
 				for b in pbva:
 					amt = frappe.db.sql("""
-				     	select a.employee, a.employee_name, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
+				     	select a.employee, a.employee_name, b.tpn_number, b.bank_ac_no, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
 						from `tabPBVA Details` a, `tabEmployee` b
 						where a.parent = %s and a.employee = b.name
 				     	 """, (b.name), as_dict=1)
 					for a in amt:
-						row = [str(a.employee), a.employee_name, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "PBVA", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
+						row = [str(a.employee), a.employee_name, a.tpn_number, a.bank_ac_no, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "PBVA", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
 						data.append(row)
 
 			elif not filters.branch:
 				all_ccs = get_child_cost_centers(filters.cost_center)
 				for b in pbva:
 					amt = frappe.db.sql("""
-				     	select a.employee, a.employee_name, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
+				     	select a.employee, a.employee_name, b.tpn_number, b.bank_ac_no, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
 						from `tabPBVA Details` a, `tabEmployee` b
 						where a.parent = %s and a.employee = b.name and a.branch in (select name from `tabBranch` where cost_center in %s)
 				     	 """, (b.name, tuple(all_ccs)), as_dict=1)
 					for a in amt:
-						row = [str(a.employee), a.employee_name, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "PBVA", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
+						row = [str(a.employee), a.employee_name, a.tpn_number, a.bank_ac_no, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "PBVA", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
 						data.append(row)
 			
 			else:
@@ -128,12 +128,12 @@ def get_data(filters=None):
 				branch = branch.replace(' - NRDCL','')
 				for b in pbva:
 					amt = frappe.db.sql("""
-				     	select a.employee, a.employee_name, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
+				     	select a.employee, a.employee_name, b.tpn_number, b.bank_ac_no, b.employee_group, b.employee_subgroup, a.branch, a.basic_pay, a.amount, a.tax_amount, a.balance_amount  
 						from `tabPBVA Details` a, `tabEmployee` b
 						where a.parent = %s and a.employee = b.name and a.branch = %s
 				     	 """, (b.name, branch), as_dict=1)
 					for a in amt:
-						row = [str(a.employee), a.employee_name, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "PBVA", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
+						row = [str(a.employee), a.employee_name, a.tpn_number, a.bank_ac_no, a.employee_group, a.employee_subgroup, a.branch, str(b.posting_date)[5:7], "PBVA", a.basic_pay, a.amount, a.amount, a.amount, a.tax_amount, a.amount - a.tax_amount]	
 						data.append(row)
 
 
@@ -202,6 +202,18 @@ def get_columns(filters):
 			"fieldtype": "Data",
 			"width": 120
 			},
+			{
+			"fieldname": "tpn_number",
+			"label": "TPN Number",
+			"fieldtype": "Data",
+			"width": 120
+			},
+			{
+			"fieldname": "bank_ac_no",
+			"label": "Bank Account Number",
+			"fieldtype": "Data",
+			"width": 120
+			},	
 			{
 			"fieldname": "employee_group",
 			"label": "Designation",
@@ -304,6 +316,18 @@ def get_columns(filters):
 		  "fieldtype": "Data",
 		  "width": 120
 		},
+		{
+			"fieldname": "tpn_number",
+			"label": "TPN Number",
+			"fieldtype": "Data",
+			"width": 120
+		},
+		{
+			"fieldname": "bank_ac_no",
+			"label": "Bank Account Number",
+			"fieldtype": "Data",
+			"width": 120
+		},	
 		{
 		  "fieldname": "employee_group",
 		  "label": "Designation",

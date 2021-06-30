@@ -45,6 +45,7 @@ class Site(Document):
 
 		if self.customer_group:
 			cg = frappe.get_doc("Customer Group", self.customer_group)
+			doc.customer_id = ua.user
 			if cg.document_type == "Citizenship ID":
 				doc.customer_id = ua.user
 			elif cg.document_type == "License Number":

@@ -35,7 +35,8 @@ class StockReconciliation(StockController):
 		
 		for a in self.items:
 			self.repost_issue_pol(a, posting_date)
-			self.repost_production_gl(a, posting_date)
+			# commented by Kinley Dorji 2021-06-17
+			# self.repost_production_gl(a, posting_date)
 
 	def on_cancel(self):
 		posting_date = str(get_datetime(str(self.posting_date) + ' ' + str(self.posting_time)))
@@ -44,7 +45,8 @@ class StockReconciliation(StockController):
 
 		for a in self.items:
 			self.repost_issue_pol(a, posting_date)
-			self.repost_production_gl(a, posting_date)
+			# commented by Kinley Dorji 2021-06-17
+			# self.repost_production_gl(a, posting_date)
 
 	def repost_issue_pol(self, a, posting_date):
 		ipols = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1 and concat(posting_date,' ',posting_time) > %s and pol_type = %s and warehouse = %s", (posting_date, a.item_code, a.warehouse), as_dict=1)
@@ -271,13 +273,13 @@ class StockReconciliation(StockController):
 			self.append("items", item)
 
 	def submit(self):
-		if len(self.items) > 100:
+		if len(self.items) > 500:
 			self.queue_action('submit')
 		else:
 			self._submit()
 
 	def cancel(self):
-		if len(self.items) > 100:
+		if len(self.items) > 500:
 			self.queue_action('cancel')
 		else:
 			self._cancel()

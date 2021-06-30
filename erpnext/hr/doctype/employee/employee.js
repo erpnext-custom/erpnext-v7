@@ -30,6 +30,9 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 	refresh: function() {
 		var me = this;
 		//erpnext.toggle_naming_series();
+		/* ePayment Begins, added by SHIV on 2021/06/08 */
+		enable_disable(this.frm);
+		/* ePayment Ends */
 	},
 
 	date_of_birth: function() {
@@ -130,6 +133,12 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 	branch: function(){
 		cur_frm.add_fetch('branch', 'gis_policy_number', 'gis_policy_number');
 	},
+
+	/* ePayment Begins, added by SHIV on 2021/06/08 */
+	salary_mode: function(){
+		enable_disable(this.frm);
+	},
+	/* ePayment Ends */
 	
 /*	
 	department: function(){
@@ -145,6 +154,13 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
 	},
 */	
 });
+
+/* ePayment Begins, added by SHIV on 2021/06/08 */
+var enable_disable = function(frm){
+	frm.toggle_reqd(["bank_name", "bank_branch", "bank_account_type", "bank_acc_no"], frm.doc.salary_mode == "Bank");
+}
+/* ePayment Ends */
+
 
 function validate_prev_doc(frm, title){
 	return frappe.call({
@@ -222,3 +238,12 @@ cur_frm.fields_dict['village'].get_query = function(doc, dt, dn) {
        }
 }
 
+/* ePayment Begins */
+cur_frm.fields_dict['bank_branch'].get_query = function(doc, dt, dn) {
+	return {
+		filters:{
+		 	"financial_institution": doc.bank_name
+	 	}
+	}
+}
+/* ePayment Ends */

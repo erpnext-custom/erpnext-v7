@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-frappe.query_reports["Stock Issue Report"] = {
+frappe.query_reports["Stock Receipt Report"] = {
 	"filters": [
 		{
 			"fieldname": "company",
@@ -125,6 +125,13 @@ frappe.query_reports["Stock Issue Report"] = {
 			"fieldtype": "Link",
 			"width": "80",
 			"options": "Item"
+		},
+		{
+			"fieldname": "item_group",
+			"label": __("Material Group"),
+			"fieldtype": "Link",
+			"width": "80",
+			"options": "Item Group"
 		},
 		{
 			"fieldname": "lot_number",

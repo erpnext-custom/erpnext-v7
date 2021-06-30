@@ -12,6 +12,10 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 
 frappe.ui.form.on('Payment Entry', {
 	onload: function(frm) {
+		/* ePyment Begins */
+		create_custom_buttons(frm);
+		/* ePayment Ends */
+
 		if(frm.doc.__islocal) {
 			if (!frm.doc.paid_from) frm.set_value("paid_from_account_currency", null);
 			if (!frm.doc.paid_to) frm.set_value("paid_to_account_currency", null);
@@ -106,6 +110,10 @@ frappe.ui.form.on('Payment Entry', {
 	},
 
 	refresh: function(frm) {
+		/* ePyment Begins */
+		create_custom_buttons(frm);
+		/* ePayment Ends */
+
 		erpnext.hide_company();
 		frm.events.hide_unhide_fields(frm);
 		frm.events.set_dynamic_labels(frm);
@@ -923,3 +931,20 @@ cur_frm.fields_dict.pl_cost_center.get_query = function(doc) {
 		}
 	}
 }
+
+/* ePayment Begins */
+var create_custom_buttons = function(frm){
+	var status = ["Failed", "Upload Failed", "Cancelled"];
+
+	if(frm.doc.docstatus == 1 && frm.doc.payment_type == "Pay" && frm.doc.party_type == 'Supplier' /*&& !frm.doc.cheque_no*/){
+		if(!frm.doc.bank_payment || status.includes(frm.doc.status) ){
+			frm.page.set_primary_action(__('Process Payment'), () => {
+				frappe.model.open_mapped_doc({
+					method: "erpnext.accounts.doctype.payment_entry.payment_entry.make_bank_payment",
+					frm: cur_frm
+				})
+			});
+		}
+	}
+}
+/* ePayment Ends */

@@ -106,6 +106,9 @@ def get_item_conditions(filters):
 		conditions.append("brand=%(brand)s")
 	if filters.get("item_group"):
 		conditions.append("item_group=%(item_group)s")
+	if filters.get("uom"):
+		conditions.append("stock_uom=%(uom)s")
+
 	if filters.get("timber_prod_group"):
 		if filters.get("tp_sub_group"):
 			conditions.append("item_sub_group = '" + str(filters.tp_sub_group) + "'")

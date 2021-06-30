@@ -318,7 +318,8 @@ frappe.ui.form.on("Equipment Hiring Form", "refresh", function(frm) {
 		doc = locals[cdt][cdn]
 		return {
 			"query": "erpnext.maintenance.doctype.equipment_hiring_form.equipment_hiring_form.equipment_query",
-			filters: {'branch': frm.doc.branch, 'equipment_type': doc.equipment_type, "from_date": doc.from_date, "to_date": doc.to_date}
+			// filters: {'branch': frm.doc.branch, 'equipment_type': doc.equipment_type, "from_date": doc.from_date, "to_date": doc.to_date}
+			filters: {'equipment_type': doc.equipment_type, "from_date": doc.from_date, "to_date": doc.to_date}
 		}
 	}
 	cur_frm.set_query("tc_name", function() {

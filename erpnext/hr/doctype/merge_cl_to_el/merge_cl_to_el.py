@@ -95,14 +95,14 @@ class MergeCLToEL(Document):
 					and docstatus = 1 
 					order by to_date desc limit 1""".format(em.employee), as_dict=True):
 				leave_allocation_id = a.name
-			if not leave_allocation_id:
-				frappe.throw("No Leave Allocation found for employee {}".format(em.employee_name))
-
-			frappe.db.sql("""
-					update `tabLeave Allocation` set cl_balance = {0}, cf_reference = '{1}',
-					total_leaves_allocated = total_leaves_allocated + {0} 
-					where name  = '{2}'
-					""".format(em.leave_balance, em.parent, leave_allocation_id))
+			if leave_allocation_id:
+				frappe.db.sql("""
+						update `tabLeave Allocation` set cl_balance = {0}, cf_reference = '{1}',
+						total_leaves_allocated = total_leaves_allocated + {0} 
+						where name  = '{2}'
+						""".format(em.leave_balance, em.parent, leave_allocation_id))
+			else:
+				frappe.msgprint("Leave allocation not found for Employee {} ({})".format(em.employee_name, em.employee))
 
 	def on_cancel(self):
 		for em in self.get('items'):
@@ -118,7 +118,6 @@ class MergeCLToEL(Document):
 						employee = '{1}' and
 						cf_reference = '{2}'
 					""".format(em.leave_balance, em.employee, em.parent))
-        frappe.msgprint(" Updated Leave Allocation Record ")
 		
 		# for em in self.get('items'):
         #                 frappe.db.sql("""

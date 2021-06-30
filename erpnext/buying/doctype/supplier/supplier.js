@@ -20,7 +20,16 @@ frappe.ui.form.on("Supplier", {
 		  	unhide_field(['address_html','contact_html']);
 			erpnext.utils.render_address_and_contact(frm);
 		}
+		/* ePayment Beings, added by SHIV on 2021/06/11 */
+		enable_disable(frm);
+		/* ePayment Ends*/
 	},
+	/* ePayment Beings, added by SHIV on 2021/06/11 */
+	bank_name_new: function(frm){
+		enable_disable(frm);
+		cur_frm.set_value('bank_branch', null);
+	}
+	/* ePayment Ends*/
 });
 
 cur_frm.fields_dict['default_price_list'].get_query = function(doc, cdt, cdn) {
@@ -39,3 +48,24 @@ cur_frm.fields_dict['accounts'].grid.get_field('account').get_query = function(d
 		}
 	}
 }
+
+/* ePayment Begins */
+cur_frm.fields_dict['bank_branch'].get_query = function(doc, dt, dn) {
+	return {
+		filters:{
+		 	"financial_institution": doc.bank_name_new
+	 	}
+	}
+}
+
+var enable_disable = function(frm){
+	if(frm.doc.bank_name_new){
+		cur_frm.toggle_display(["bank_branch", "bank_account_type"], frm.doc.bank_name_new != "INR");
+		cur_frm.toggle_reqd(["bank_branch", "bank_account_type"], frm.doc.bank_name_new != "INR");
+
+		cur_frm.toggle_display(["inr_bank_code", "inr_purpose_code"], frm.doc.bank_name_new == "INR");
+		cur_frm.toggle_reqd(["inr_bank_code", "inr_purpose_code"], frm.doc.bank_name_new == "INR");
+	}
+}
+/* ePayment Ends */
+

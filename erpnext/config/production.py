@@ -105,7 +105,7 @@ def get_data():
 				{
                                         "type": "report",
                                         "is_query_report": True,
-                                        "name": "Production Target Report",
+                                        "name": "Production and Disposal Target Report",
                                         "doctype": "Production Target"
                                 },
 				{
@@ -127,7 +127,12 @@ def get_data():
 					"name": "Royalty Payment Report",
 					"doctype": "Royalty Payment"
 				},
-
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Selling Price Report",
+					"doctype": "Selling Price"
+				},
 
 			]
 		},

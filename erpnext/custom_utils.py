@@ -230,7 +230,6 @@ def check_budget_available(cost_center, budget_account, transaction_date, amount
                         if committed:
                                 total_consumed_amount = flt(committed[0].total) + flt(amount)
                                 if flt(budget_amount[0].budget_amount) < flt(total_consumed_amount):
-                                        frappe.msgprint(str(budget_amount[0].budget_amount)+" "+str(total_consumed_amount))
                                         frappe.throw("Not enough budget in <b>" + str(budget_account) + "</b> under <b>" + str(cost_center) + "</b>. Budget exceeded by <b>" + str(flt(total_consumed_amount) - flt(budget_amount[0].budget_amount)) + "</b>")
                 else:
                         frappe.throw("There is no budget in <b>" + str(budget_account) + "</b> under <b>" + str(cost_center) + "</b>")

@@ -92,3 +92,19 @@ cur_frm.fields_dict['parent_account'].get_query = function(doc) {
 		}
 	}
 }
+
+// ePayment Begins, added by SHIV on 2021/06/09
+cur_frm.cscript.bank_name = function(doc, cdt, cdn) {
+	cur_frm.set_value("bank_branch", null);
+}
+
+cur_frm.cscript.onload = function(doc, cdt, cdn){
+	cur_frm.set_query("bank_branch",function(){
+		return {
+			filters: {
+				"financial_institution": doc.bank_name
+			}
+		}
+	});
+}
+// ePayment Ends

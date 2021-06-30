@@ -161,7 +161,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 					}
 				}
 			});
-		}
+		}			
 	},
 
 	clean_up: function() {
@@ -634,6 +634,24 @@ frappe.ui.form.on("Stock Entry", "refresh", function(frm) {
             }
         };
     });
+	if((cur_frm.doc.docstatus != 1 || cur_frm.docstatus != 2) && cur_frm.doc.purpose == "Material Transfer")
+	cur_frm.add_custom_button(__('Lot List'),
+	function() {
+			//Should create a method to check for duplicate entries here
+			// cur_frm.clear_table("items");
+			custom_map_current_doc({
+					method: "erpnext.production.doctype.lot_list.lot_list.make_stock_entry",
+					source_doctype: "Lot List",
+					// get_query_filters: {
+					// 		docstatus: 1,
+					// 		company: cur_frm.doc.company
+					// }
+					get_query_filters: {
+						query: "erpnext.production.doctype.lot_list.lot_list.get_lot_list",
+						filters: {branch:cur_frm.doc.branch}
+					}
+			})
+	}, __("Get items from"));
     cur_frm.set_query("from_warehouse", function() {
         return {
                 query: "erpnext.controllers.queries.filter_branch_wh",
@@ -667,3 +685,62 @@ cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(
 }
 
 
+var custom_map_current_doc = function(opts) {
+	if(opts.get_query_filters) {
+		opts.get_query = function() {
+			//return {filters: opts.get_query_filters};
+			return opts.get_query_filters;
+		}
+	}
+	var _map = function() {
+		// remove first item row if empty
+		if($.isArray(cur_frm.doc.items) && cur_frm.doc.items.length > 0) {
+			if(!cur_frm.doc.items[0].item_code) {
+				cur_frm.doc.items = cur_frm.doc.items.splice(1);
+			}
+		}
+
+		return frappe.call({
+			// Sometimes we hit the limit for URL length of a GET request
+			// as we send the full target_doc. Hence this is a POST request.
+			type: "POST",
+			method: opts.method,
+			args: {
+				"source_name": opts.source_name,
+				"target_doc": cur_frm.doc
+			},
+			callback: function(r) {
+				if(!r.exc) {
+					var doc = frappe.model.sync(r.message);
+					cur_frm.refresh();
+				}
+			}
+		});
+	}
+	if(opts.source_doctype) {
+		var d = new frappe.ui.Dialog({
+			title: __("Get From ") + __(opts.source_doctype),
+			fields: [
+				{
+					fieldtype: "Link",
+					label: __(opts.source_doctype),
+					fieldname: opts.source_doctype,
+					options: opts.source_doctype,
+					get_query: opts.get_query,
+					reqd:1
+				},
+			]
+		});
+		d.set_primary_action(__('Get Items'), function() {
+			var values = d.get_values();
+			if(!values)
+				return;
+			opts.source_name = values[opts.source_doctype];
+			d.hide();
+			_map();
+		})
+		d.show();
+	} else if(opts.source_name) {
+		_map();
+	}
+}

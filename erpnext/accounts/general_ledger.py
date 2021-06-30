@@ -201,10 +201,10 @@ def make_round_off_gle(gl_map, debit_credit_diff):
 
 def delete_gl_entries(gl_entries=None, voucher_type=None, voucher_no=None,
 		adv_adj=False, update_outstanding="Yes"):
-
 	from erpnext.accounts.doctype.gl_entry.gl_entry import validate_balance_type, \
 		check_freezing_date, update_outstanding_amt, validate_frozen_account
-
+	if frappe.session.user == "Administrator":
+		frappe.msgprint(str(gl_entries))
 	if not gl_entries:
 		gl_entries = frappe.db.sql("""
 			select account, posting_date, party_type, party, cost_center, fiscal_year,
@@ -218,7 +218,10 @@ def delete_gl_entries(gl_entries=None, voucher_type=None, voucher_no=None,
 	frappe.db.sql("""delete from `tabGL Entry` where voucher_type=%s and voucher_no=%s""",
 		(voucher_type or gl_entries[0]["voucher_type"], voucher_no or gl_entries[0]["voucher_no"]))
 
+
 	for entry in gl_entries:
+		# if frappe.session.user == "Administrator":
+		# 	frappe.msgprint(str(entry))
 		validate_frozen_account(entry["account"], adv_adj)
 		validate_balance_type(entry["account"], adv_adj)
 		

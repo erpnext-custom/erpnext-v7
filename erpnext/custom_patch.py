@@ -8,6 +8,28 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settings, get_salary_tax
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
+def update_dp():
+	i = 0
+	for a in frappe.db.sql("select debit_account, credit_account, payment_type, name, invoice_no, invoice_date from `tabDirect Payment`", as_dict=True):
+		if a.payment_type == "Payment":
+			if a.debit_account:
+				account = a.debit_account
+				frappe.db.sql("update `tabDirect Payment Item` set account = '{}',  invoice_date='{}', docstatus = 1 where parent = '{}'".format(account, a.invoice_date, a.name))
+		else:
+			if a.credit_account:
+				account = a.credit_account
+				frappe.db.sql("update `tabDirect Payment Item` set account = '{}',  invoice_date='{}', docstatus = 1 where parent = '{}'".format(account, a.invoice_date, a.name))
+		frappe.db.commit()
+		i += 1
+		print(str(a.name) + " and Count : " + str(i))
+
+def ss_from_emp():
+	for a in frappe.db.sql("select name, employee_group, employee_subgroup from `tabEmployee` where earlier_id like 'WCCL%'", as_dict=True):
+		frappe.db.sql("Update `tabSalary Structure` set employee_group = '{}' where employee ='{}' and is_active = 'Yes'".format(a.employee_group, a.name))
+		#frappe.db.sql("Update `tabSalary Structure` set employee_grade = '{}' where employee ='{}' and is_active = 'Yes'".format(a.employee_subgroup, a.name))
+		print(str(a.name) + " and " + str(a.employee_group))
+
+
 
 def update_customer_order_dn():
 	for a in frappe.db.sql("""select d.name, i.against_sales_order, (select customer_order from `tabSales Order` where name = i.against_sales_order) as customer_order from `tabDelivery Note` d, `tabDelivery Note Item` i where d.name = i.parent and d.customer_order is NULL and d.posting_date between '2020-09-14' and '2020-09-17'  and exists (select 1 from `tabSales Order` s where s.name = i.against_sales_order and s.customer_order is not NULL) and d.docstatus = 1""", as_dict=True):
