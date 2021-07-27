@@ -16,9 +16,15 @@ frappe.ui.form.on("Item", {
 
 		// should never check Private
 		frm.fields_dict["website_image"].df.is_private = 0;
-
 	},
-
+	asset_category:function(frm){
+		frm.set_query("asset_sub_category", function(){
+				return {
+					query:"erpnext.stock.doctype.item.item.get_sub_category",
+					filters:{"asset_category":frm.doc.asset_category}
+				}
+		});
+	},
 	refresh: function(frm) {
 		if(frm.doc.is_stock_item) {
 			frm.add_custom_button(__("Balance"), function() {
@@ -98,14 +104,6 @@ frappe.ui.form.on("Item", {
 		}
 	},
 	
-	asset_category: function() {
-		cur_frm.fields_dict['asset_sub_category'].get_query = function(doc, dt, dn){
-			return {
-					filters:{"parent":doc.asset_category}	
-			}
-		}
-	},
-
 	page_name: frappe.utils.warn_page_name_change,
 
 	item_code: function(frm) {
@@ -447,11 +445,11 @@ frappe.ui.form.on("Item", "refresh", function(frm) {
     });*/ 
 })
 
-cur_frm.set_query("asset_sub_category", function(frm) {
-        return {
-            "filters": {
-                "parent": frm.doc.asset_category,
-            }
-        };
-    });
+// cur_frm.set_query("asset_sub_category", function(frm) {
+//         return {
+//             "filters": {
+//                 "parent": frm.doc.asset_category,
+//             }
+//         };
+//     });
 

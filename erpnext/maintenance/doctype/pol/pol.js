@@ -1,9 +1,10 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
+cur_frm.add_fetch("equipment", "fuelbook", "fuelbook")
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("fuelbook", "branch", "fuelbook_branch")
-cur_frm.add_fetch("equipment", "fuelbook", "own_fb")
+// cur_frm.add_fetch("equipment", "fuelbook", "own_fb")
 cur_frm.add_fetch("pol_type", "item_name", "item_name")
 cur_frm.add_fetch("pol_type", "stock_uom", "stock_uom")
 
@@ -61,9 +62,23 @@ frappe.ui.form.on('POL', {
 
 	"is_disabled": function (frm) {
 		cur_frm.toggle_reqd("disabled_date", frm.doc.is_disabled)
+	},
+	"get_advance":function(frm){
+		get_advance(frm)
 	}
 });
 
+var get_advance = function(frm){
+	if (frm.doc.fuelbook && frm.doc.total_amount) {
+		frappe.call({
+			method: 'populate_child_table',
+			doc: frm.doc,
+			callback:  () =>{
+				cur_frm.refresh_fields()
+			}
+		})
+	}
+}
 function calculate_total(frm) {
 	if (frm.doc.qty && frm.doc.rate) {
 		frm.set_value("total_amount", frm.doc.qty * frm.doc.rate)
@@ -94,28 +109,28 @@ frappe.ui.form.on("POL", "refresh", function (frm) {
 		};
 	});
 
-	cur_frm.set_query("fuelbook", function () {
-		if (frm.doc.book_type && frm.doc.supplier) {
-			// commented out by phuntsho on 2021-02-26, because the frm.doc.own_fb field is hidden anyways.
-			// if (frm.doc.book_type == "Own") {
-			// 	return {
-			// 		"filters": {
-			// 			"name": frm.doc.own_fb
-			// 		}
-			// 	}
-			// }
+	// cur_frm.set_query("fuelbook", function () {
+	// 	if (frm.doc.book_type && frm.doc.supplier) {
+	// 		// commented out by phuntsho on 2021-02-26, because the frm.doc.own_fb field is hidden anyways.
+	// 		// if (frm.doc.book_type == "Own") {
+	// 		// 	return {
+	// 		// 		"filters": {
+	// 		// 			"name": frm.doc.own_fb
+	// 		// 		}
+	// 		// 	}
+	// 		// }
 
-			if (frm.doc.book_type == "Common") {
-				return {
-					"filters": {
-						"supplier": frm.doc.supplier,
-						"type": "Common",
-						//"branch": frm.doc.branch
-					}
-				}
-			}
-		}
-	})
+	// 		if (frm.doc.book_type == "Common") {
+	// 			return {
+	// 				"filters": {
+	// 					"supplier": frm.doc.supplier,
+	// 					"type": "Common",
+	// 					//"branch": frm.doc.branch
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// })
 
 	cur_frm.set_query("pol_type", function () {
 		return {

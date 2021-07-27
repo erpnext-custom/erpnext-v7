@@ -677,6 +677,7 @@ class Item(WebsiteGenerator):
 
 			validate_item_variant_attributes(self, args)
 
+
 def get_timeline_data(doctype, name):
 	'''returns timeline data based on stock ledger entry'''
 	return dict(frappe.db.sql('''select unix_timestamp(posting_date), count(*)
@@ -834,15 +835,20 @@ def sync_item_code():
 		frappe.db.sql("update `tabMaterial Request Item` set item_code = %s where item_code = %s", (item.item_code, item.name))
 		frappe.db.sql("update `tabStock Entry Detail` set item_code = %s where item_code = %s", (item.item_code, item.name))
 
+@frappe.whitelist()
+def get_sub_category(doctype, txt, searchfield, start, page_len, filters):
+	return frappe.db.sql('''
+						select sub_category_name from `tabAsset Sub Category` where parent = '{}'
+						'''.format(filters['asset_category']))
 
 @frappe.whitelist()
 def get_item_list():
 	return frappe.db.sql("select item_code as value from tabItem where item_group = 'Sales Product'", as_dict=1)
 
-@frappe.whitelist()
-def get_sub_category(parent):
-	options=[]
-	for d in frappe.db.sql("select sub_category_name as value from `tabAsset Sub Category` where parent=%s", parent, as_dict=True):
-		options.append(d['value'])
+# @frappe.whitelist()
+# def get_sub_category(parent):
+# 	options=[]
+# 	for d in frappe.db.sql("select sub_category_name as value from `tabAsset Sub Category` where parent=%s", parent, as_dict=True):
+# 		options.append(d['value'])
 	
-	return options
+# 	return options

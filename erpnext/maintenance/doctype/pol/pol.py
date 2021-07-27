@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
-# For license information, please see license.txt
-'''
-------------------------------------------------------------------------------------------------------------------------------------------
-Version          Author         Ticket#           CreatedOn          ModifiedOn          Remarks
------------- --------------- --------------- ------------------ -------------------  -----------------------------------------------------
-2.0.190509       SHIV		                                     2019/05/09         Refined process for making SL and GL entries
-------------------------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
+# For license information, please see license.txtd
 
 from __future__ import unicode_literals
 import frappe
@@ -21,6 +14,7 @@ from erpnext.accounts.doctype.business_activity.business_activity import get_def
 
 class POL(StockController):
 	def validate(self):
+		self.assign_fuelbook_branch()
 		check_future_date(self.posting_date)
 		# self.validate_dc() commented out by phuntsho on 2021-02-26, since not needed in de-suung. 
 		self.check_on_dry_hire()
@@ -29,7 +23,35 @@ class POL(StockController):
 		self.validate_posting_time()
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.validate_item()
-
+		self.calculate_km_diff()
+	
+	def calculate_km_diff(self):
+		previous_km_reading = frappe.db.sql("""
+			SELECT 
+				current_km_reading
+			FROM `tabPOL` 
+			WHERE 
+				equipment = '{}'
+			AND
+				docstatus = 1
+			ORDER BY 
+				posting_date DESC,
+				posting_time DESC
+			limit 1;
+		""".format(self.equipment),as_dict=True)
+		pv_km = 0
+		if previous_km_reading:
+			pv_km = flt(previous_km_reading[0].current_km_reading)
+		if flt(pv_km) >= flt(self.current_km_reading):
+			frappe.throw("Current KM Reading cannot be less than Previous KM Reading for Vehicle Number <b>{}</b>".format(self.vehicle_number))
+		self.km_difference = flt(self.current_km_reading) - flt(pv_km)
+		self.mileage = flt(self.km_difference) / self.qty
+	def assign_fuelbook_branch(self):
+		self.fuelbook_branch = frappe.db.get_value('Fuelbook',self.fuelbook,['branch'])
+	def before_submit(self):
+		self.paid_amount = self.outstanding_amount
+		self.outstanding_amount = 0
+		
 	def on_submit(self):
 		# self.validate_dc()
 		self.validate_data()
@@ -37,16 +59,17 @@ class POL(StockController):
 		self.check_budget()
 		if not self.direct_consumption:
 			self.update_stock_ledger()
+		self.update_advance()
 		""" ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
 		# Ver 2.0.190509, Following method commented by SHIV on 2019/05/24
 		#self.update_general_ledger(1)
 
 		# Ver 2.0.190509, Following method added by SHIV on 2019/05/24
-		self.make_gl_entries()
+		self.make_gl_entries(repost_future_gle= False)
 		""" ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
 		
 		self.make_pol_entry()
-
+		# self.save()
 	def on_cancel(self):
 		self.update_stock_ledger()
 		""" ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
@@ -54,7 +77,7 @@ class POL(StockController):
 		#self.update_general_ledger(1)
 
 		# Ver 2.0.190509, Following method added by SHIV on 2019/05/24
-		self.make_gl_entries_on_cancel()
+		self.make_gl_entries_on_cancel(repost_future_gle= False)
 		""" ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
 		
 		docstatus = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
@@ -65,6 +88,7 @@ class POL(StockController):
 
 		self.cancel_budget_entry()
 		self.delete_pol_entry()
+		self.update_advance()
 
 	# Commented out by phuntsho on 2021-02-26: Not needed for De-suung.  
 	# def validate_dc(self):
@@ -73,7 +97,7 @@ class POL(StockController):
 		# 	frappe.throw("Non 'Direct Consumption' Receive POL is allowed only for Container Equipments")
 
 		# if self.direct_consumption and no_own_tank:
-        #                 frappe.throw("Direct Consumption not permitted for Equipments without own Tank")
+		#                 frappe.throw("Direct Consumption not permitted for Equipments without own Tank")
 
 	def validate_warehouse(self):
 		self.validate_warehouse_branch(self.warehouse, self.branch)
@@ -82,15 +106,15 @@ class POL(StockController):
 			self.validate_warehouse_branch(self.hiring_warehouse, self.hiring_branch)
 
 	def check_on_dry_hire(self):
-                record = get_without_fuel_hire(self.equipment, self.posting_date, self.posting_time)
-                if record:
-                        data = record[0]
-                        self.hiring_cost_center = data.cc
-                        self.hiring_branch =  data.br
-                else:
-                        self.hiring_cost_center = None
-                        self.hiring_branch =  None
-                        self.hiring_warehouse = None
+				record = get_without_fuel_hire(self.equipment, self.posting_date, self.posting_time)
+				if record:
+						data = record[0]
+						self.hiring_cost_center = data.cc
+						self.hiring_branch =  data.br
+				else:
+						self.hiring_cost_center = None
+						self.hiring_branch =  None
+						self.hiring_warehouse = None
 
 	def validate_data(self):
 		if not self.fuelbook_branch or not self.equipment_branch:
@@ -123,9 +147,9 @@ class POL(StockController):
 	
 	def check_budget(self):
 		if self.hiring_cost_center:
-                        cc = self.hiring_cost_center
-                else:
-                        cc = get_branch_cc(self.equipment_branch)
+			cc = self.hiring_cost_center
+		else:
+			cc = get_branch_cc(self.equipment_branch)
 		account = frappe.db.get_value("Equipment Category", self.equipment_category, "budget_account")
 		if not self.is_hsd_item:
 			account = frappe.db.get_value("Item", self.pol_type, "expense_account")
@@ -167,13 +191,13 @@ class POL(StockController):
 		consume.flags.ignore_permissions=1
 		consume.submit()
 
-        """ ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
-        # Ver 2.0.190509, Following method added by SHIV on 2019/05/24
+		""" ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
+		# Ver 2.0.190509, Following method added by SHIV on 2019/05/24
 	def update_stock_ledger(self):
 		if self.hiring_warehouse:
-                        wh = self.hiring_warehouse
-                else:
-                        wh = self.equipment_warehouse
+			wh = self.hiring_warehouse
+		else:
+			wh = self.equipment_warehouse
 
 		sl_entries = []
 		sl_entries.append(prepare_sl(self, 
@@ -188,13 +212,13 @@ class POL(StockController):
 
 		self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 
-        # Ver 2.0.190509, Following method commented by SHIV on 2019/05/24
-        '''
-        def update_stock_ledger(self):
+		# Ver 2.0.190509, Following method commented by SHIV on 2019/05/24
+		'''
+		def update_stock_ledger(self):
 		if self.hiring_warehouse:
-                        wh = self.hiring_warehouse
-                else:
-                        wh = self.equipment_warehouse
+						wh = self.hiring_warehouse
+				else:
+						wh = self.equipment_warehouse
 
 		sl_entries = []
 		sl_entries.append(prepare_sl(self, 
@@ -218,7 +242,7 @@ class POL(StockController):
 		self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 	'''
 
-        # Ver 2.0.190509, Following method created by SHIV on 2019/05/24
+		# Ver 2.0.190509, Following method created by SHIV on 2019/05/24
 	def get_gl_entries(self, warehouse_account):
 		gl_entries = []
 		
@@ -229,9 +253,9 @@ class POL(StockController):
 		expense_account = self.get_expense_account()
 
 		if self.hiring_cost_center:
-                        cost_center = self.hiring_cost_center
-                else:
-                        cost_center = get_branch_cc(self.equipment_branch)
+			cost_center = self.hiring_cost_center
+		else:
+			cost_center = get_branch_cc(self.equipment_branch)
 
 		ba = get_equipment_ba(self.equipment)
 		default_ba = get_default_ba()
@@ -253,15 +277,15 @@ class POL(StockController):
 					 "party_type": "Supplier",
 					 "party": self.supplier,
 					 "against_voucher": self.name,
-                                         "against_voucher_type": self.doctype,
+										 "against_voucher_type": self.doctype,
 					 "business_activity": default_ba
 					})
 			)
 
 		if self.hiring_branch:
-                        comparing_branch = self.hiring_branch
-                else:
-                        comparing_branch = self.equipment_branch
+			comparing_branch = self.hiring_branch
+		else:
+			comparing_branch = self.equipment_branch
 
 		if comparing_branch != self.fuelbook_branch:
 			allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
@@ -292,9 +316,9 @@ class POL(StockController):
 
 		return gl_entries
 
-        # Ver 2.0.190509, following code commented by SHIV on 2019/05/24
-        '''
-        def update_general_ledger(self, post=None):
+		# Ver 2.0.190509, following code commented by SHIV on 2019/05/24
+		'''
+		def update_general_ledger(self, post=None):
 		gl_entries = []
 		
 		creditor_account = frappe.db.get_value("Company", self.company, "default_payable_account")
@@ -304,9 +328,9 @@ class POL(StockController):
 		expense_account = self.get_expense_account()
 
 		if self.hiring_cost_center:
-                        cost_center = self.hiring_cost_center
-                else:
-                        cost_center = get_branch_cc(self.equipment_branch)
+						cost_center = self.hiring_cost_center
+				else:
+						cost_center = get_branch_cc(self.equipment_branch)
 
 		ba = get_equipment_ba(self.equipment)
 		default_ba = get_default_ba()
@@ -328,15 +352,15 @@ class POL(StockController):
 					 "party_type": "Supplier",
 					 "party": self.supplier,
 					 "against_voucher": self.name,
-                                         "against_voucher_type": self.doctype,
+										 "against_voucher_type": self.doctype,
 					 "business_activity": default_ba
 					})
 			)
 
 		if self.hiring_branch:
-                        comparing_branch = self.hiring_branch
-                else:
-                        comparing_branch = self.equipment_branch
+						comparing_branch = self.hiring_branch
+				else:
+						comparing_branch = self.equipment_branch
 
 		if comparing_branch != self.fuelbook_branch:
 			allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
@@ -371,8 +395,8 @@ class POL(StockController):
 		else:
 			return gl_entries
 	'''
-        """ ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
-        
+		""" ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
+		
 	def get_expense_account(self):
 		if self.direct_consumption or getdate(self.posting_date) <= getdate("2018-03-31"):
 			if self.is_hsd_item:
@@ -384,12 +408,12 @@ class POL(StockController):
 				frappe.throw("Set Budget Account in Equipment Category or Item Master")		
 		else:
 			if self.hiring_warehouse:
-                                wh = self.hiring_warehouse
-                        else:
-                                wh = self.equipment_warehouse
-                        expense_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": wh}, "name")
-                        if not expense_account:
-                                frappe.throw(str(wh) + " is not linked to any account.")
+				wh = self.hiring_warehouse
+			else:
+				wh = self.equipment_warehouse
+			expense_account = frappe.db.get_value("Account", {"account_type": "Stock", "warehouse": wh}, "name")
+			if not expense_account:
+					frappe.throw(str(wh) + " is not linked to any account.")
 		return expense_account
 
 	##
@@ -455,7 +479,7 @@ class POL(StockController):
 		
 	def make_pol_entry(self):
 		if getdate(self.posting_date) <= getdate("2018-03-31"):
-                        return
+						return
 		container = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type"), "is_container")
 		if self.equipment_branch == self.fuelbook_branch:
 			own = 1
@@ -517,3 +541,46 @@ class POL(StockController):
 	def delete_pol_entry(self):
 		frappe.db.sql("delete from `tabPOL Entry` where reference_name = %s", self.name)
 
+	def update_advance(self):
+	# added by  Birendra on 06/04/2021
+		if self.docstatus == 2 :
+			for item in self.items:
+				doc = frappe.get_doc("Pol Advance", {'name':item.reference,'equipment_number':self.equipment_number})
+				doc.balance_amount  = flt(doc.balance_amount) + flt(item.allocated_amount)
+				doc.adjusted_amount = flt(doc.adjusted_amount) - flt(item.allocated_amount)
+				doc.save(ignore_permissions=True)
+			return
+		for item in self.items:
+			doc = frappe.get_doc("Pol Advance", {'name':item.reference,'equipment_number':self.equipment_number})
+			doc.balance_amount  = flt(item.advance_balance) - flt(item.allocated_amount)
+			doc.adjusted_amount = flt(doc.adjusted_amount) + flt(item.allocated_amount)
+			doc.save(ignore_permissions=True)
+
+	def populate_child_table(self):
+		self.calculate_km_diff()
+		data = []
+		data = frappe.db.sql("""
+				SELECT 
+					a.name, a.amount,a.balance_amount
+				FROM `tabPol Advance` a
+				WHERE docstatus = 1 
+				AND fuelbook = '{}'
+				AND balance_amount > 0
+				AND equipment_number = '{}'
+				ORDER BY entry_date""".format(self.fuelbook,self.equipment_number),as_dict=True)
+		self.set('items',[])
+		allocated_amount = self.total_amount
+		for  d in data:
+			row = self.append('items',{})
+			row.reference         = d.name
+			row.advance_amount              = d.amount 
+			# row.allocated_amount    = self.total_amount
+			row.advance_balance      = d.balance_amount
+			if row.advance_balance >= allocated_amount:
+				row.allocated_amount = allocated_amount
+				allocated_amount = 0
+			elif row.advance_balance < allocated_amount:
+				row.allocated_amount = row.advance_balance
+				allocated_amount = flt(allocated_amount) - flt(row.advance_balance)
+			row.balance = flt(row.advance_balance) - flt(row.allocated_amount)
+			# row.update
