@@ -67,6 +67,11 @@ def get_data():
 					"name": "Project Register",
 					"doctype": "Project"
 				},
+				{
+                                        "type": "page",
+                                        "name": "project-management",
+                                        "label": "Project Management"
+                                },
 			]
 		},
 		{
@@ -101,7 +106,13 @@ def get_data():
                                         "is_query_report": True,
                                         "name": "MR Status Report",
                                         "doctype": "Buying"
-                                }
+                                },
+				{
+                                        "type": "page",
+                                        "name": "material-management",
+                                        "label": "Material Management"
+                                },
+
 			]
 		},
 		{
@@ -150,6 +161,11 @@ def get_data():
 					"name": "Employee Information",
 					"doctype": "Employee"
 				},
+				{
+                                        "type": "page",
+                                        "name": "human-resource",
+                                        "label": "Human Resource Management"
+                                }
 			]	
 		},
 		 {

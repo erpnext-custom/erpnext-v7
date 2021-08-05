@@ -14,6 +14,7 @@ class Invoice(Document):
 		discount = 0.0
 		for a in self.get("items"):
 			revenue_account = frappe.get_doc("Item", a.item).income_account
+			frappe.msgprint("{0}".format(revenue_account))
 			if not revenue_account:
 				frappe.throw("Set Up Revenue Account in Item Master")
 			a.income_account = revenue_account

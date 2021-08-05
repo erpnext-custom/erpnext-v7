@@ -1,0 +1,21 @@
+{
+ "content": null, 
+ "creation": "2021-08-04 12:25:23.023033", 
+ "docstatus": 0, 
+ "doctype": "Page", 
+ "idx": 0, 
+ "modified": "2021-08-04 12:25:23.023033", 
+ "modified_by": "Administrator", 
+ "module": "Management Dashboard", 
+ "name": "material-management", 
+ "owner": "Administrator", 
+ "page_name": "Material Management", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }
+ ], 
+ "script": null, 
+ "standard": "Yes", 
+ "style": null
+}

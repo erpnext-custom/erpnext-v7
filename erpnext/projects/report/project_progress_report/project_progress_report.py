@@ -18,14 +18,13 @@ def get_data(filters):
 	duration = mandays = manpower = exp =  weightage = physical_progress = percent_completed = estimated_budget = expense = 0.0
 	query = construct_query(filters)
 	for a in frappe.db.sql(query, as_dict = True, debug = 1):
-		expense = a.expense
 		parent = a.parent
 		progress_weightage = round(flt(a.physical_progress_weightage), 6)
 		physical_achievement =   round(flt(a.physical_progress), 4)
 		completion = round(flt(physical_achievement)/flt(progress_weightage) * 100, 4)
 		row = {"name": a.name, "expected_start_date": a.expected_start_date, "expected_end_date": a.expected_end_date, 
 		"total_duration": flt(a.total_duration), "estimated_budget": flt(a.estimated_budget), 
-		"expense_incured": flt(expense),	
+		"expense_incured": flt(a.expense),	
 		"physical_progress_weightage": progress_weightage, 
 		"physical_progress":  physical_achievement, 
 		"percent_completed": flt(completion),
@@ -34,7 +33,7 @@ def get_data(filters):
 		data.append(row)	
 		duration += flt(a.total_duration)
                 estimated_budget += flt(a.estimated_budget)
-                exp += flt(expense)
+                exp += flt(a.expense)
 		weightage += round(flt(progress_weightage), 3)
 		#weightage += flt(a.physical_progress_weightage)/100 * flt(a.parent_weightage)
 		#physical_progress += flt(a.physical_progress)/100 * flt(a.parent_weightage)
@@ -42,7 +41,7 @@ def get_data(filters):
 		percent_completed  = flt(physical_progress)/flt(weightage) * 100
 	row1 = {"name": '<b> {0} </b> '.format(parent), "total_duration": duration, "estimated_budget": estimated_budget, 
                 "expense_incured": exp, "physical_progress_weightage": round(weightage, 2),
-                "physical_progress":  round(physical_progress,2),  "percent_completed": round(physical_progress, 2),  "project_engineer": ""}
+                "physical_progress":  round(physical_progress,2),  "percent_completed": "",  "project_engineer": ""}
 	data.append(row1)
 	return data
 
@@ -87,8 +86,8 @@ def construct_query(filters):
 	query += cond 
 	return query
 
-def get_columns(filters):
-        return [
+def get_columns(filters):	
+        cols =  [
                 { "fieldname": "name", "label": _("Activity Name"),  "fieldtype": "Link",  "options": "Project", "width": 200 },
 		{ "fieldname": "expected_start_date", "label": _("Start Date"),  "fieldtype": "Date", "width": 80 },
 		{ "fieldname": "expected_end_date", "label": _("End Date"),  "fieldtype": "Date", "width": 80 },
@@ -96,10 +95,36 @@ def get_columns(filters):
 		{ "fieldname": "estimated_budget", "label": _("Estimated Budget"),  "fieldtype": "Currency", "width": 150 },
                 { "fieldname": "expense_incured", "label": _("Actual Expense"),  "fieldtype": "Currency", "width": 130 },
                 { "fieldname": "physical_progress_weightage", "label": _("Weightage(%)"),  "fieldtype": "Data",  "width": 100 },
-                { "fieldname": "physical_progress", "label": _("Achievement(%)"),  "fieldtype": "Data", "width": 120 },	
-		{ "fieldname": "percent_completed", "label": _("Progress(%)"),  "fieldtype": "Data", "width": 100 },
                 { "fieldname": "status", "label": _("Status(%)"),  "fieldtype": "Data", "width": 100 },
 		{ "fieldname": "project_engineer", "label": _("PM/PE ID"),  "fieldtype": "Link",  "options": "Employee", "width": 90 },
 		{ "fieldname": "engineer_name", "label": _("PM/PE Name"),  "fieldtype": "Data", "width": 140 },
 		{ "fieldname": "contact", "label": _("Contact No."),  "fieldtype": "Data", "width": 90 }
 	]
+	if not filters.get("project"):
+                 cols.insert(6,{
+                  "fieldname": "physical_progress",
+                  "label": "Project Progress(%)",
+                  "fieldtype": "Data",
+                  "width": 140
+                 })
+                 cols.insert(7,{
+                  "fieldname": "percent_completed",
+                  "label": "Site Progress(%)",
+                  "fieldtype": "Data",
+                  "width": 140
+                 })
+
+	else:
+		cols.insert(6,{
+                  "fieldname": "physical_progress",
+                  "label": "Site Progress(%)",
+                  "fieldtype": "Data",
+                  "width": 140
+                 })
+		cols.insert(7,{
+                  "fieldname": "percent_completed",
+                  "label": "Activity Progress(%)",
+                  "fieldtype": "Data",
+                  "width": 140
+                 })
+	return cols

@@ -41,12 +41,15 @@ class Project(Document):
 		self.physical_progress_weightage = round(flt(self.mandays)/flt(self.overall_mandays) * 100, 3)
 		#self.calculations()
 		#self.update_parent()
-		self.get_budget()
+		#self.get_budget()
 		self.update_expense()
 		if self.get("activity_tasks"):
 			self.make_target_entries()
 			self.make_group()
 			#self.make_tsk_group()
+
+		self.update_total_expense()
+
 
 	def on_submit(self):
 		self.flags.dont_sync_tasks = True
@@ -151,6 +154,10 @@ class Project(Document):
 		self.post_achievement_entries()
 		self.make_target_entries()
 		self.update_expense()	
+		self.update_total_expense()
+
+		
+
 	
 	def update_progress(self):
                 total_achievement = 0.0
@@ -184,20 +191,33 @@ class Project(Document):
 		#completed = round(flt(doc.physical_progress)/flt(doc.physical_progress_weightage), 4)
 		#frappe.db.sql(""" update `tabProject` set physical_progress = {0}, percent_completed = {1} where name = '{2}' and is_group = 1 and docstatus <= 1""".format(progress, completed, self.parent_project))
 
+
 	def get_budget(self):
                 self.reference_budget = None
                 self.estimated_budget = 0.0
-		budget = frappe.db.sql(""" select name, actual_total from `tabBudget` where cost_center = "%s" and docstatus = 1""" %self.project_name, as_dict =1)
-		if budget:
-			self.reference_budget = budget[0].name
-			self.estimated_budget = budget[0].actual_total
-			doc = frappe.db.sql(""" select sum(estimated_budget) as budget from `tabProject` 
-			where parent_project = '{0}' group by parent_project""".format(self.parent_project), as_dict = 1)
-			
-			if doc:
-				frappe.db.sql(""" update `tabProject` set estimated_budget = {0} where name = '{1}'
-				""".format(doc[0].budget, self.parent_project))
-	
+                from erpnext.accounts.accounts_custom_functions import get_child_cost_centers
+                parent_cc = frappe.get_doc("Cost Center", self.name).parent_cost_center
+                cost_centers = get_child_cost_centers(parent_cc)
+                budget = frappe.db.sql(""" select sum(actual_total) as actual_total from `tabBudget` 
+                where cost_center IN %(cost_center)s  and docstatus = 1""", {"cost_center": cost_centers}, as_dict =1)
+                if self.is_group:
+                        if budget:
+                                self.reference_budget = None
+                                self.estimated_budget = budget[0].actual_total
+                                frappe.db.sql(""" update `tabProject` set estimated_budget = {0} where name = '{1}'
+                                """.format(budget[0].actual_total, self.name))
+
+                else:
+                        budget1 = frappe.db.sql(""" select name, actual_total from `tabBudget` where cost_center = "%s" and 
+                                        docstatus = 1""" %self.project_name, as_dict =1)
+                        if budget1:
+                                self.reference_budget = budget1[0].name
+                                self.estimated_budget = budget1[0].actual_total
+                                frappe.db.sql(""" update `tabProject` set estimated_budget = {0} where name = '{1}'
+                                """.format(budget1[0].actual_total, self.name))
+
+                                frappe.db.sql(""" update `tabProject` set estimated_budget = {0} where name = '{1}'
+                                """.format(budget[0].actual_total, self.parent_project))	
 	def on_update(self):
 		self.flags.dont_sync_tasks = True
 		self.make_group()
@@ -417,6 +437,21 @@ class Project(Document):
 			where root_type = 'Expense') and docstatus = 1""".format(self.name), as_dict = 1)
 		if exp:
 			self.db_set('expense', flt(exp[0].expense))
+
+
+	def update_total_expense(self):
+                from erpnext.accounts.accounts_custom_functions import get_child_cost_centers
+                parent_cc = frappe.get_doc("Cost Center", self.parent_project).parent_cost_center
+                cost_centers = get_child_cost_centers(parent_cc)
+
+                exp = frappe.db.sql(""" select sum(debit) - sum(credit) as expense 
+                      from `tabGL Entry` where cost_center IN %(cost_center)s  and account in (select name from `tabAccount` 
+                        where root_type = 'Expense') and docstatus = 1""", {"cost_center": cost_centers}, as_dict = 1, debug = 1)
+
+                if exp:
+                        doc = frappe.get_doc("Project", self.parent_project)
+                        doc.db_set('expense', flt(exp[0].expense))
+
 
 	def notify_on_change(self):
 		pass

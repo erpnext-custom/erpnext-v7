@@ -47,7 +47,7 @@ frappe.ui.form.on("Purchase Order", {
 	tax: function(frm) {
 		calculate_discount(frm)
 	},
-	naming_series: function(frm) {
+	/*naming_series: function(frm) {
                 cur_frm.fields_dict['items'].grid.get_field('item_code').get_query = function(doc, cdt, cdn) {
                 var d = locals[cdt][cdn]
                 return {
@@ -57,7 +57,7 @@ frappe.ui.form.on("Purchase Order", {
 
                         }
                 }
-        },
+        },*/
 	annual_tender: function(frm) {
 		cur_frm.set_df_property("buying_price_list", "read_only", frm.doc.annual_tender != 1)
 		if(frm.doc.annual_tender == 1) {

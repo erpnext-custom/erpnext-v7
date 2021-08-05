@@ -15,6 +15,35 @@ import os
 import subprocess
 from erpnext.accounts.doctype.imprest_receipt.imprest_receipt import get_opening_balance, update_dependencies
 
+def update_parent_cc():
+	li = frappe.db.sql(""" select branch, name from `tabPurchase Order`""", as_dict =1)
+	for a in li:
+		if a.branch not in ('Commandant Residence (NS-B)'):
+			cc = frappe.get_doc("Cost Center", {'branch': a.branch})
+			parent = cc.parent_cost_center
+			if cc.is_group:
+				parent = cc.name
+			frappe.db.sql(""" update `tabPurchase Order` set parent_cc = '{0}' where name = '{1}'
+			""".format(parent, a.name))
+
+def dash_test():
+	import jwt
+	import time
+
+	METABASE_SITE_URL = "https://erp.ns.bt/metabase"
+	METABASE_SECRET_KEY = "8e8db02d3fdc1c5ae4252b4b9cdc036c9050f7c86659fce6ba043f7bcfe833d4"
+
+	payload = {
+	  "resource": {"dashboard": 3},
+	  "params": {
+	    
+	  }
+	}
+	token = jwt.encode(payload, METABASE_SECRET_KEY, algorithm="HS256")
+
+	iframeUrl = METABASE_SITE_URL + "/embed/dashboard/" + token + "#theme=night&bordered=true&titled=true"
+	print(iframeUrl)
+
 
 def update_aa():
 	for a in frappe.db.sql(""" select name from `tabSalary Slip` where employment_type = 'GCE' and fiscal_year = '2021' and month = '05'""", as_dict = 1):
