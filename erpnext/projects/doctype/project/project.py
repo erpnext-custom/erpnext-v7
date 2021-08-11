@@ -1095,3 +1095,8 @@ def make_boq(source_name, target_doc=None):
                         }
         }, target_doc)
         return doclist
+
+@frappe.whitelist()
+def change_status_ongoing(project_id):
+        frappe.db.sql("Update `tabProject` set status = 'Ongoing', docstatus = 0 where name = '{}'".format(project_id))
+        return 1

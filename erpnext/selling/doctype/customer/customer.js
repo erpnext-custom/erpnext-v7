@@ -24,13 +24,20 @@ frappe.ui.form.on("Customer", {
 		grid.set_column_disp("allocated_amount", false);
 		grid.set_column_disp("incentives", false);
 	},
+	// for consolidation purpose
+	inter_company: (frm)=>{
+		frm.toggle_reqd('company_code',frm.doc.inter_company);
+		if (!frm.doc.inter_company){
+			frm.set_value('company_code','')
+			frm.set_value('company_name','')
+		}
+	},
 	validate: function(frm) {
 		if(frm.doc.lead_name) frappe.model.clear_doc("Lead", frm.doc.lead_name);
 	},
-
 	"customer_group": function(frm) {
-		frm.toggle_reqd("customer_id", frm.doc.customer_group == "Domestic");
-	}
+                frm.toggle_reqd("customer_id", frm.doc.customer_group == "Domestic");
+        }
 });
 
 cur_frm.cscript.onload = function(doc, dt, dn) {

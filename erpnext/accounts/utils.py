@@ -542,6 +542,7 @@ def get_companies():
 
 @frappe.whitelist()
 def get_children():
+	display_balances = frappe.db.get_single_value('Accounts Setting', 'display_balances')
 	args = frappe.local.form_dict
 	doctype, company = args['doctype'], args['company']
 	fieldname = frappe.db.escape(doctype.lower().replace(' ','_'))
@@ -571,14 +572,15 @@ def get_children():
 			order by name""".format(fields=fields, fieldname=fieldname, doctype=doctype),
 				args['parent'], as_dict=1)
 
-	if doctype == 'Account':
-		company_currency = frappe.db.get_value("Company", company, "default_currency")
-		for each in acc:
-			each["company_currency"] = company_currency
-			each["balance"] = flt(get_balance_on(each.get("value"), in_account_currency=False))
+	if display_balances == 0:
+		if doctype == 'Account':
+			company_currency = frappe.db.get_value("Company", company, "default_currency")
+			for each in acc:
+				each["company_currency"] = company_currency
+				each["balance"] = flt(get_balance_on(each.get("value"), in_account_currency=False))
 
-			if each.account_currency != company_currency:
-				each["balance_in_account_currency"] = flt(get_balance_on(each.get("value")))
+				if each.account_currency != company_currency:
+					each["balance_in_account_currency"] = flt(get_balance_on(each.get("value")))
 
 	return acc
 

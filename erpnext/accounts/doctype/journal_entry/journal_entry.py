@@ -78,11 +78,13 @@ class JournalEntry(AccountsController):
 
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.check_inter_company()
 		if not self.is_opening:
 			self.is_opening='No'
-		self.set_status()
+		if not self.is_depreciation_adjustment:
+			self.is_depreciation_adjustment = 'No'
 		self.clearance_date = None
-
+		self.set_status()
 		self.validate_party()
 		# Ver 20160617.1, following line is commented
 		#self.validate_cheque_info()
@@ -101,14 +103,34 @@ class JournalEntry(AccountsController):
 		self.set_account_and_party_balance()
 		if not self.title:
 			self.title = self.get_title()
-
+   
+#   add for consolidation purpose
+	def check_inter_company(self):
+		for i, item in enumerate(self.accounts) :
+			if item.within_inter_company == 'Yes' and not item.dhi_company :
+				frappe.throw('You need to select DO Company at row {}'.format(i + 1))
+			elif item.within_inter_company == 'No' or not item.within_inter_company:
+				self.accounts[i].dhi_company = ''
+			elif item.within_inter_company == 'Yes' and item.dhi_company :
+				consolidation_party_type = 'Supplier'
+				party = frappe.db.get_value('Supplier',{'company_code': item.dhi_company },['name'])
+				if not party :
+					party = frappe.db.get_value('Customer',{'company_code': item.dhi_company },['name'])
+					consolidation_party_type = 'Customer'
+				if party:
+					self.accounts[i].consolidation_party = party
+					self.accounts[i].consolidation_party_type = consolidation_party_type
+    # consolidation end here
 	def set_status(self):
-                self.status = {
+		self.status = {
                         "0": "Draft",
                         "1": "Submitted",
                         "2": "Cancelled"
                 }[str(self.docstatus or 0)]
 
+	def before_cancel(self):
+		self.set_status()
+	
 	def on_submit(self):
 		self.check_credit_limit()
 		self.make_gl_entries()
@@ -118,8 +140,6 @@ class JournalEntry(AccountsController):
 		# Following method is created by SHIV on 04/09/2017
 		self.update_project_advance()
 		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-	def before_cancel(self):
-		self.set_status()	
 
 	def get_title(self):
 		return self.pay_to_recd_from or self.accounts[0].account
@@ -138,7 +158,7 @@ class JournalEntry(AccountsController):
 	def on_cancel(self):
 		from erpnext.accounts.utils import unlink_ref_doc_from_payment_entries
 		unlink_ref_doc_from_payment_entries(self.doctype, self.name)
-
+		self.set_status()
 		self.make_gl_entries(1)
 		self.update_advance_paid()
 		self.update_expense_claim()
@@ -475,49 +495,53 @@ class JournalEntry(AccountsController):
 		gl_map = []
 		for d in self.get("accounts"):
 			if d.debit or d.credit:
-                                if d.party_check:
-                                        gl_map.append(
-                                                self.get_gl_dict({
-                                                        "account": d.account,
-                                                        "party_type": d.party_type,
-                                                        "party": d.party,
-                                                        "against": d.against_account,
-                                                        "debit": flt(d.debit, d.precision("debit")),
-                                                        "credit": flt(d.credit, d.precision("credit")),
-                                                        "account_currency": d.account_currency,
-                                                        "debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
-                                                        "credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
-                                                        "against_voucher_type": d.reference_type,
-                                                        "against_voucher": d.reference_name,
-                                                        "remarks": self.remark,
-                                                        "cost_center": d.cost_center,
-                                                        "project": d.project,
-                                                        "party_check": 1,
-							"is_depreciation_adjustment" : self.is_depreciation_adjustment 
-                                                })
-                                        )
-                                else:
-                                        gl_map.append(
-                                                self.get_gl_dict({
-                                                        "account": d.account,
-                                                        "party_type": d.party_type,
-                                                        "party": d.party,
-                                                        "against": d.against_account,
-                                                        "debit": flt(d.debit, d.precision("debit")),
-                                                        "credit": flt(d.credit, d.precision("credit")),
-                                                        "account_currency": d.account_currency,
-                                                        "debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
-                                                        "credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
-                                                        "against_voucher_type": d.reference_type,
-                                                        "against_voucher": d.reference_name,
-                                                        "remarks": self.remark,
-                                                        "cost_center": d.cost_center,
-                                                        "project": d.project,
-                                                        "party_check": d.party_check,
-							"is_depreciation_adjustment" : self.is_depreciation_adjustment
-
-                                                })
-                                        )                                        
+				# frappe.msgprint(d.dhi_company)
+				if d.party_check:
+						gl_map.append(
+								self.get_gl_dict({
+										"account": d.account,
+										"party_type": d.party_type,
+										"party": d.party,
+										"against": d.against_account,
+										"debit": flt(d.debit, d.precision("debit")),
+										"credit": flt(d.credit, d.precision("credit")),
+										"account_currency": d.account_currency,
+										"debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
+										"credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
+										"against_voucher_type": d.reference_type,
+										"against_voucher": d.reference_name,
+										"remarks": self.remark,
+										"cost_center": d.cost_center,
+										"project": d.project,
+										"party_check": 1,
+										"is_depreciation_adjustment": self.is_depreciation_adjustment,
+										"consolidation_party_type":d.consolidation_party_type,
+										"consolidation_party":d.consolidation_party
+								})
+						)
+				else:
+						gl_map.append(
+								self.get_gl_dict({
+										"account": d.account,
+										"party_type": d.party_type,
+										"party": d.party,
+										"against": d.against_account,
+										"debit": flt(d.debit, d.precision("debit")),
+										"credit": flt(d.credit, d.precision("credit")),
+										"account_currency": d.account_currency,
+										"debit_in_account_currency": flt(d.debit_in_account_currency, d.precision("debit_in_account_currency")),
+										"credit_in_account_currency": flt(d.credit_in_account_currency, d.precision("credit_in_account_currency")),
+										"against_voucher_type": d.reference_type,
+										"against_voucher": d.reference_name,
+										"remarks": self.remark,
+										"cost_center": d.cost_center,
+										"project": d.project,
+										"party_check": d.party_check,
+										"is_depreciation_adjustment": self.is_depreciation_adjustment,
+										"consolidation_party_type":d.consolidation_party_type,
+										"consolidation_party":d.consolidation_party
+								})
+						)                                        
 
 		if gl_map:
 			make_gl_entries(gl_map, cancel=cancel, adv_adj=adv_adj)

@@ -12,7 +12,7 @@ frappe.ui.form.on('Bank Payment Settings', {
 		
 		return frappe.call({
 			method: "erpnext.integrations.bps.test_connectivity",
-			args: {'financial_institution': frm.doc.financial_institution},
+			args: {'bank': frm.doc.financial_institution},
 			callback: function(a, b) {
 				//cur_frm.refresh();
 			},

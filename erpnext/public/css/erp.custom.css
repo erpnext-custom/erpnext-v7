@@ -12,6 +12,7 @@
   .navbar-default {
     background-color: var(--primary-color, #01a4dc);
     border-color: #ebeff2;
+    border-bottom: 1px solid #87CEFA;
   }
   
   .navbar-default .navbar-nav>li>a {

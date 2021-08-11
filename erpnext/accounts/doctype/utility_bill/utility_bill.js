@@ -3,7 +3,25 @@
 cur_frm.add_fetch("branch","cost_center","cost_center");
 cur_frm.add_fetch("utility_services","expense_account","expense_account");
 cur_frm.add_fetch("utility_services","bank_account","bank_account");
+cur_frm.add_fetch("utility_service_type","party","party");
+cur_frm.add_fetch("utility_service_type","expense_account","debit_account");
 frappe.ui.form.on('Utility Bill', {
+	onload: function(frm){
+		if(frm.doc.workflow_state != "Draft" && !cur_frm.doc.__islocal){
+			cur_frm.set_df_property("item", "disabled", 1);
+			cur_frm.set_df_property("utility_services", "read_only", 1);
+			cur_frm.set_df_property("posting_date", "read_only", 1);
+			cur_frm.set_df_property("branch", "read_only", 1);
+			cur_frm.set_df_property("tds_percent", "read_only", 1);
+			cur_frm.set_df_property("get_details", "disabled", 1);
+		}
+		frappe.model.get_value('Bank Payment Settings', {'name': 'BOBL'}, 'enable_one_to_one',
+		function(d) {
+			if(d.enable_one_to_one == 0){
+				cur_frm.set_df_property("bank_balance", "hidden", 1);
+			}
+		});
+	},
 	refresh: function(frm) {
 		cur_frm.set_query("utility_services", function() {
 			return {
@@ -18,6 +36,7 @@ frappe.ui.form.on('Utility Bill', {
 	},
 	"branch": function(frm) {
 		cur_frm.set_value("utility_services","");
+		
 		frappe.model.get_value('Cost Center', {'branch': frm.doc.branch}, 'name',
 			function(d) {
 				cur_frm.set_value("cost_center",d.name);
@@ -25,18 +44,27 @@ frappe.ui.form.on('Utility Bill', {
 	
 	},
 	"utility_services": function(frm){
-		if(frm.doc.utility_services){
-			if(frm.doc.bank_account){
-				fetch_bank_balance(frm);
-			}
+		if(frm.doc.utility_services)
 			get_utility_services(frm);
-		}
 	},
 	"get_details": function(frm){
 		if(frm.doc.utility_services)
-			get_utility_services(frm);
+			get_utility_outstandings(frm);
 	}
 });
+
+function get_utility_outstandings(frm){
+	return frappe.call({
+		method: "get_utility_outstandings",
+		doc: cur_frm.doc,
+		callback: function(r, rt) {
+			frm.refresh_field("item");
+			frm.refresh_fields();
+		},
+		freeze: true,
+		freeze_message: "Fetching Utility Outstanding Amount..... Please Wait"
+	});     
+}
 
 function get_utility_services(frm){
 	if (frm.doc.utility_services && frm.doc.branch){
@@ -45,6 +73,7 @@ function get_utility_services(frm){
 			doc: cur_frm.doc,
 			callback: function(r, rt) {
 				frm.refresh_field("item");
+				frm.refresh_fields();
 			},
 			freeze: true,
 			freeze_message: "Fetching Utility Outstanding Amount..... Please Wait"
@@ -102,24 +131,4 @@ function calculate_net_amount(frm,cdt,cdn){
 	frm.set_value("total_bill_amount", total_inv_amount);
 	frm.set_value("total_tds_amount", total_tds_amount);
 	frm.set_value("net_payable_amount", total_net_amount);
-}
-
-var fetch_bank_balance = function(frm){
-	if(frm.doc.bank_account){
-		frappe.call({
-			method: "erpnext.integrations.bank_api.fetch_balance",
-			args: {
-				account_no: frm.doc.bank_account,
-			},
-			callback: function(r) {
-				if(r.message) {
-					console.log(r.message);
-					if(r.message.status == "0")
-						frm.set_value("bank_balance", r.message.balance_amount);
-					else	
-						frappe.throw("Unable to fetch Bank Balance");
-				}
-			}
-		});
-	}
 }

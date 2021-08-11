@@ -73,8 +73,17 @@ class MusterRollApplication(Document):
                         to_date   = ""
                         
                         cid       = i.citizenship_id if not i.is_existing else i.existing_cid
-                        from_date, to_date = frappe.get_value("Employee Internal Work History", {"parenttype": "Muster Roll Employee", "parent": cid, "reference_docname": self.name}, ["from_date","to_date"])
-
+                        # from_date, to_date = frappe.db.get_value("Employee Internal Work History", 
+                        #                                         {"parenttype": "Muster Roll Employee", 
+                        #                                          "parent": cid, 
+                        #                                          "reference_docname": self.name
+                        #                                         }, 
+                        #                                         ["from_date","to_date"])
+                        #code modified by cety on 8-02-2021
+                        get_date = frappe.db.sql("""select b.from_date, b.to_date from `tabMuster Roll Employee` a, `tabEmployee Internal Work History` b where a.name=b.parent and a.name='{0}' and b.reference_docname='{1}' """.format(cid, self.name), as_dict=True)
+                        from_date = [x[1] for x in enumerate(get_date) if x[0] in [0]]
+                        to_date = [x[1] for x in enumerate(get_date) if x[1] in [1]]
+                        
                         if from_date:
                                 if not to_date:
                                         to_date = today()

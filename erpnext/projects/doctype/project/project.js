@@ -125,8 +125,10 @@ frappe.ui.form.on("Project", {
 	refresh: function(frm) {
 		enable_disable(frm);
 		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-		// Following code added SHIV on 02/09/2017
 		if(!frm.doc.__islocal){
+			if(frappe.user.has_role("Admin")){
+				frm.add_custom_button(__("Change Status"), function(){frm.trigger("change_status_ongoing")},"icon-file-alt");
+			}
 			frm.add_custom_button(__("Advance"), function(){frm.trigger("make_project_advance")},__("Make"), "icon-file-alt");
 			frm.add_custom_button(__("BOQ"), function(){frm.trigger("make_boq")},__("Make"), "icon-file-alt");
 			frm.add_custom_button(__("Project Register"), function(){
@@ -185,6 +187,21 @@ frappe.ui.form.on("Project", {
 	},
 	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 	
+	change_status_ongoing: function(frm){
+		return frappe.call({
+			method: "erpnext.projects.doctype.project.project.change_status_ongoing",
+			args:{
+				'project_id': frm.doc.name
+			},
+			callback: function(r, rt) {
+				if(r.message){
+					frappe.msgprint("Project Status changed to Ongoing");
+				}
+				cur_frm.reload_doc()
+			},
+		});
+	},
+
 	tasks_refresh: function(frm) {
 		var grid = frm.get_field('tasks').grid;
 		grid.wrapper.find('select[data-fieldname="status"]').each(function() {

@@ -45,7 +45,6 @@ class BankPayment(Document):
 		if self.bank_account_no:
 			if not frappe.db.get_value('Bank Payment Settings', self.bank_name, 'enable_one_to_one'):
 				return
-
 			try:
 				result = fetch_balance(self.bank_account_no)
 			except Exception as e:
@@ -57,6 +56,8 @@ class BankPayment(Document):
 					frappe.msgprint(_("Unable to fetch Bank Balance.\n  {}").format(result['error']))
 
 	def check_for_transactions_in_progress(self):
+		if self.status in ("Failed", "Waiting Acknowledgement"):
+			frappe.throw(_("Cancellation is not permitted for status <b>{}</b>").format(self.status))
 		for i in frappe.get_all("Bank Payment Item", ["*"],{"parent": self.name, "status": "Completed"}):
 			frappe.throw(_("<b>Row#{}:</b> Cancellation is not permitted as payment for <b>{}</b> is already complete").format(i.idx, i.beneficiary_name), title="Failed")
 
@@ -122,7 +123,7 @@ class BankPayment(Document):
 			elif self.transaction_type == 'Payment Entry':
 				doc = frappe.get_doc('Payment Entry', i.transaction_id)
 				doc.payment_status = status
-				doc.save(ignore_permission=True)
+				doc.save(ignore_permissions=True)
 
 	def set_defaults(self):
 		self.posting_date = now()
@@ -130,13 +131,15 @@ class BankPayment(Document):
 	def validate_mandatory(self):
 		if not self.payment_type:
 			frappe.throw(_("<b>Payment Type</b> is mandatory"))
-
-		if frappe.db.get_value('Bank Payment Settings', self.bank_name, 'enable_one_to_one'):
-			if not flt(self.bank_balance) or (flt(self.total_amount) > flt(self.bank_balance)):
-				frappe.throw(_("Insufficient Bank Balance to proceed"))
+		if self.bank_name:
+			if frappe.db.get_value('Bank Payment Settings', self.bank_name, 'enable_one_to_one'):
+				if not flt(self.bank_balance) or (flt(self.total_amount) > flt(self.bank_balance)):
+					frappe.throw(_("Insufficient Bank Balance to proceed"))
+			else:
+				if self.payment_type == 'One-One Payment':
+					frappe.throw(_("One-One Payment is disabled"))
 		else:
-			if self.payment_type == 'One-One Payment':
-				frappe.throw(_("One-One Payment is disabled"))
+			frappe.throw("Bank details are missing. Try selecting the bank account")
 
 		# validate transactions
 		for rec in self.items:
@@ -146,7 +149,7 @@ class BankPayment(Document):
 				frappe.throw(_("Row#{} : <b>Beneficiary Bank</b> is missing for <b>{}</b>").format(rec.idx, rec.beneficiary_name))
 			elif not rec.bank_account_no:
 				frappe.throw(_("Row#{} : <b>Beneficiary Bank Account No.</b> is missing for <b>{}</b>").format(rec.idx, rec.beneficiary_name))
-			elif flt(rec.amount):
+			elif not flt(rec.amount):
 				frappe.throw(_("Row#{} : <b>Amount</b> should be greater than 0 <b>{}</b>").format(rec.idx, rec.beneficiary_name))
 
 			if rec.bank_name not in (self.bank_name, 'INR'):
@@ -256,8 +259,14 @@ class BankPayment(Document):
 		return frappe.db.sql("""SELECT "Direct Payment" transaction_type, dp.name transaction_id, 
 						dpi.name transaction_reference, dp.posting_date transaction_date, 
 						dpi.party as supplier, dpi.party as beneficiary_name,
-						s.bank_name_new as bank_name, s.account_number as bank_account_no,
-						dpi.net_amount amount,
+						s.bank_name_new as bank_name, s.bank_branch, s.bank_account_type, s.account_number as bank_account_no,
+						(dpi.net_amount-(select ifnull(sum(dpd.amount),0)
+											from `tabDirect Payment Deduction` dpd
+											where dpd.parent = dp.name 
+											and dpd.party_type = dpi.party_type
+											and dpd.party = dpi.party
+										)
+						) amount,
 						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_bank_code ELSE NULL END) inr_bank_code,
 						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_purpose_code ELSE NULL END) inr_purpose_code,
 						"Draft" status
@@ -265,11 +274,12 @@ class BankPayment(Document):
 					WHERE dp.branch = "{branch}" 
 					{cond}
 					AND dp.docstatus = 1
+					AND ifnull(dp.utility_bill,'') = ''
 					AND dpi.parent = dp.name
 					AND dpi.party_type = 'Supplier'
 					AND dpi.party IS NOT NULL
 					AND IFNULL(dpi.net_amount,0) > 0
-					AND (dpi.status IS NULL OR dpi.status = 'Failed' OR dpi.status = '')
+					AND ifnull(dpi.payment_status,'') IN ('','Failed','Payment Failed')
 					AND s.name = dpi.party
 					AND NOT EXISTS(select 1
 						FROM `tabBank Payment Item` bpi
@@ -294,8 +304,12 @@ class BankPayment(Document):
 		return frappe.db.sql("""SELECT "Payment Entry" transaction_type, pe.name transaction_id, 
 						pe.name transaction_reference, pe.posting_date transaction_date, 
 						pe.party as supplier, pe.party as beneficiary_name,
-						s.bank_name_new as bank_name, s.account_number as bank_account_no,
-						pe.paid_amount amount,
+						s.bank_name_new as bank_name, s.bank_branch, s.bank_account_type, s.account_number as bank_account_no,
+						(pe.paid_amount + (select ifnull(sum(ped.amount),0)
+											from `tabPayment Entry Deduction` ped
+											where ped.parent = pe.name
+											)
+						) amount,
 						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_bank_code ELSE NULL END) inr_bank_code,
 						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_purpose_code ELSE NULL END) inr_purpose_code,
 						"Draft" status
@@ -356,6 +370,7 @@ class BankPayment(Document):
 						t1.employee, t1.employee_name beneficiary_name, 
 						IFNULL(t1.bank_name, e.bank_name) bank_name, 
 						IFNULL(t1.bank_branch, e.bank_branch) bank_branch, fib.financial_system_code,
+						e.bank_account_type,
 						IFNULL(t1.bank_account_no, e.bank_ac_no) bank_account_no, t1.rounded_total amount,
 						'Salary for {month}-{salary_year}' remarks, "Draft" status						
 					FROM `tabSalary Slip` t1
@@ -595,7 +610,7 @@ def get_intra_bank_file(doc, filename, posting_date, account_type="01"):
 
 	# get credit records for transactions
 	for i in doc.get("items"):
-		narration 	= i.remarks[:30] if i.remarks else ""
+		narration 	= i.remarks if i.remarks else doc.remarks
 		if str(doc.bank_name) == str(i.bank_name) and i.status in ('Pending', 'Failed'):
 			slno += 1
 			frappe.get_doc('Bank Payment Item', i.name).db_set('file_name', filename+'.csv')
@@ -636,12 +651,12 @@ def get_inter_bank_file(doc, filename, posting_date, account_type="01"):
 
 	# get credit records for transactions
 	for i in doc.get("items"):
-		narration 	= i.remarks
+		narration 	= i.remarks if i.remarks else doc.remarks
 		if str(doc.bank_name) not in (str(i.bank_name),'INR') and i.status in ('Pending', 'Failed'):
 			slno += 1
 			frappe.get_doc('Bank Payment Item', i.name).db_set('file_name', filename+'.csv')
-			rec.append([slno, doc.bank_account_no, paying_customer, i.financial_system_code, account_type,
-   				i.bank_account_no, i.beneficiary_name, narration, "BTN", flt(i.amount,2),
+			rec.append([slno, doc.bank_account_no, paying_customer, i.financial_system_code, i.bank_account_type,
+   				i.bank_account_no, i.beneficiary_name[:50], narration[:100], "BTN", flt(i.amount,2),
 	   			posting_date.strftime("%Y%m%d"), 0, 0, filename.split("_")[-1]])
    
 			total_amount += flt(i.amount,2)

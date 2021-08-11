@@ -45,17 +45,17 @@ class Customer(TransactionBase):
 		validate_party_accounts(self)
 		self.status = get_party_status(self)
 		self.check_id_required()
-	#	self.check_duplication()
+		#self.check_duplication()
 
-       # def check_duplication(self):
-        #        customer = frappe.db.sql("""select customer_id, customer_name from tabCustomer where disabled != 1""",as_dict =1)
-         #       for a in customer:
-          #              if self.customer_id == a.customer_id:
-           #                     frappe.throw("Customer ID, {0} already exist for the customer {1}".format(self.customer_id, a.customer_name))		
+	def check_duplication(self):
+		customer = frappe.db.sql("""select customer_id, customer_name from tabCustomer where disabled != 1""",as_dict =1)
+		for a in customer:
+			if self.customer_id == a.customer_id:
+				frappe.throw("Customer ID, {0} already exist for the customer {1}".format(self.customer_id, a.customer_name))
 
-	def check_id_required(self):
-		if self.customer_group == "Domestic" and not self.customer_id:
-			frappe.throw("CID or License No is mandatory for domestic customers")
+        def check_id_required(self):
+                if self.customer_group == "Domestic" and not self.customer_id:
+                        frappe.throw("CID or License No is mandatory for domestic customers")
 
 	def update_lead_status(self):
 		if self.lead_name:
@@ -228,12 +228,3 @@ def get_credit_limit(customer, company):
 		credit_limit = frappe.db.get_value("Company", company, "credit_limit")
 
 	return flt(credit_limit)
-
-##
-# Run from hooks to correct the data
-##
-def check_cc_branch():
-	cus_list = frappe.db.sql("select name, cost_center, branch from tabCustomer where (branch is null and cost_center is not null) or (branch is not null and cost_center is null)", as_dict=True)
-	for a in cus_list:
-		frappe.db.sql("update tabCustomer set cost_center = null, branch = null where name = %s", a.name)
-

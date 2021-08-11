@@ -9,7 +9,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Company",
-					"description": _("Company (not Customer or Supplier) master.")
+					"description": _("Company (not Customer or Supplier) master."),
 				},
 				{
 					"type": "doctype",
@@ -83,7 +83,7 @@ def get_data():
 					"name": "Direct Payment",
 					"description": _("Direct Payment")
 				},
-				{
+                {
 					"type": "doctype",
 					"name": "TDS Remittance",
 					"description": _("TDS Remittance")
@@ -93,12 +93,16 @@ def get_data():
 					"name": "Period Closing Voucher",
 					"description": _("Close Balance Sheet and book Profit or Loss.")
 				},
-                                {
+				{
+					"type": "linebreak",
+					"name": "linebreak"
+				},
+                {
 					"type": "report",
 					"name": "Voucher Summary",
 					"doctype": "Journal Entry",
 					"is_query_report": True,
-                                        "style": {"color":"red"}
+                    "style": {"color":"red"}
 				},
 			]
 		},
@@ -225,25 +229,19 @@ def get_data():
 					"description": "Enter RRCO Receipts in Bulk",
 					"hide_count": True
 				},
-				{
-                                        "type": "doctype",
-                                        "name": "RRCO Receipt Modifier",
-                                        "description": "Enter RRCO Receipts Modification",
-                                        "hide_count": True
-                                },
-
                                 {
 					"type": "doctype",
 					"name": "Salary Remittance",
 					"description": "Bulk document generator for Salary Remittance",
 					"hide_count": True
 				},
-				{
-					"type": "doctype",
-					"name": "Fund Requisition",
-					"description": "Fund Requisition",
-					"hide_count": True
-				},
+				 {
+                                        "type": "doctype",
+                                        "name": "Fund Requisition",
+                                        "description": "Fund Requisition from Regions",
+                                        "hide_count": True
+                                },
+
 			]
 		},
 		{
@@ -288,14 +286,6 @@ def get_data():
 					"doctype": "Payment Entry",
 					"is_query_report": True
 				},
-				 {
-                                        "type": "report",
-                                        "name": "Money Receipt Issued",
-                                        "label": "Money Receipt Register",
-                                        "doctype": "Payment Entry",
-                                        "is_query_report": True
-                                },
-
 			]
 		},
 		{
@@ -371,13 +361,7 @@ def get_data():
 					"name": "Intra Company Report",
 					"doctype": "GL Entry",
 					"is_query_report": True,
-				},
-				{
-                                        "type": "report",
-                                        "name": "Inter Company Transaction Report",
-                                        "doctype": "Account",
-                                        "is_query_report": True,
-                                },
+				}
 			]
 		},
 		{
@@ -395,6 +379,14 @@ def get_data():
                     			"label": _("Update Bank Transaction Dates"),
 					"description": _("Update bank payment dates with journals.")
 				},
+                                {
+					"type": "doctype",
+					"name": "Bank Guarantee",
+				},
+                                {
+                                        "type": "doctype",
+                                        "name": "Fixed Deposit",
+                                },
                 		{
 					"type": "report",
 					"name": "Bank Reconciliation Statement",
@@ -408,63 +400,17 @@ def get_data():
 					"doctype": "Journal Entry"
 				},
                 		{
-					"type": "doctype",
-					"name": "Bank Guarantee",
-				},
-                		{
 					"type": "report",
 					"name": "Bank Guarantee Report",
                     			"is_query_report": True,
 					"doctype": "Bank Guarantee"
 				},
-				{
-                                        "type": "doctype",
-                                        "name": "Fixed Deposit",
-                                },
                                 {
                                         "type": "report",
                                         "name": "Fixed Deposit Report",
                                         "is_query_report": True,
                                         "doctype": "Fixed Deposit"
                                 },
-			]
-		},
-		{
-			"label": _("ePayment"),
-			# "icon": "icon-table",
-			"items": [
-       			{
-					"type": "doctype",
-					"name": "Bank Payment Settings",
-					"label": _("Bank Payment Settings"),
-					# "hide_count": True
-				},
-				{
-					"type": "doctype",
-					"name": "Bank Payment",
-					"label": _("Bank Payment"),
-					# "hide_count": True
-				},
-				{
-					"type": "doctype",
-					"name": "Utility Bill",
-					"label": _("Utility Bill Payment"),
-				},
-				{
-					"type": "doctype",
-					"name": "Utility Services",
-					"label": _("Utility Services"),
-				},
-				{
-					"type": "doctype",
-					"name": "Utility Service Type",
-					"label": _("Utility Service Type"),
-				},
-				{
-					"type": "doctype",
-					"name": "API Detail",
-					"label": _("API Detail"),
-				},
 			]
 		},
 		{
@@ -542,8 +488,52 @@ def get_data():
 					"doctype": "Purchase Invoice",
 					"is_query_report": True
 				},
+				 {
+                                        "type": "report",
+                                        "name": "Money Receipt Issued",
+                                        "doctype": "Payment Entry",
+                                        "is_query_report": True
+                                },
+			]
+		},{
+			"label": _("ePayment"),
+			# "icon": "icon-table",
+			"items": [
+       			{
+					"type": "doctype",
+					"name": "Bank Payment Settings",
+					"label": _("Bank Payment Settings"),
+					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "Bank Payment",
+					"label": _("Bank Payment"),
+					# "hide_count": True
+				},
+    {
+					"type": "doctype",
+					"name": "Utility Bill",
+					"label": _("Utility Bill Payment"),
+				},
+				{
+					"type": "doctype",
+					"name": "Utility Services",
+					"label": _("Utility Services"),
+				},
+				{
+					"type": "doctype",
+					"name": "Utility Service Type",
+					"label": _("Utility Service Type"),
+				},
+				{
+					"type": "doctype",
+					"name": "API Detail",
+					"label": _("API Detail"),
+				},
 			]
 		},
+  
                 {
 			"label": _("Salary Reports"),
 			"icon": "icon-list",
@@ -586,7 +576,7 @@ def get_data():
                                 {
 					"type": "report",
 					"is_query_report": True,
-					"name": "New GIS Report",
+					"name": "GIS Report",
                                         "label": _("GIS Report"),
 					"doctype": "Salary Slip"
 				},
@@ -639,7 +629,7 @@ def get_data():
                                         "doctype": "Salary Slip",
                                 },
                                  {
-                                        "type" : "report",
+                                         "type" : "report",
                                         "is_query_report": True,
                                         "name": "Staff Welfare Scheme",
                                         "label": _("Staff Welfare Scheme"),
@@ -660,6 +650,54 @@ def get_data():
                                 }
 
 
+			]
+		},
+        {
+			"label": _("DHI Consolidation"),
+			# "icon": "icon-table",
+			"items": [
+       			{
+					"type": "doctype",
+					"name": "DHI Setting",
+					"label": _("DHI Setting"),
+					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "DHI GCOA",
+					"label": _("Group Chart Of Account"),
+					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "DHI Company",
+					"label": "DHI Owned Company",
+					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "DHI GCOA Mapper",
+					"label": "GCOA Mapper To COA",
+					# "hide_count": True
+				},
+				{
+					"type": "report",
+					"name": "Consolidation Report",
+					"doctype": "DHI GCOA Mapper",
+					"is_query_report": True
+				},
+    			{
+					"type": "report",
+					"name": "DHI GCOA Mapper Report",
+					"doctype": "DHI GCOA Mapper",
+					"is_query_report": True
+				},
+       			{
+					"type": "report",
+					"name": "GCOA Wise Report",
+					"doctype": "GCOA Wise Report",
+					"is_query_report": True
+				}
 			]
 		},
 	]

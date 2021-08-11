@@ -63,8 +63,7 @@ frappe.ui.form.on("Journal Entry", {
 			});
 		}
 		if(cur_frm.fields_dict.naming_series) {
-			console.log("Naming Series")
-			cur_frm.toggle_display("naming_series", 1)
+			cur_frm.toggle_display("naming_series", 1);
 		}
 	},
 
@@ -145,7 +144,6 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 			if(jvd.reference_type==="Expense Claim") {
 				return {};
 			}
-			
 
 			// journal entry
 			if(jvd.reference_type==="Journal Entry") {
@@ -410,7 +408,19 @@ frappe.ui.form.on("Journal Entry Account", {
 		if(d.account) {
 			if(!frm.doc.company) frappe.throw(__("Please select Company first"));
 			if(!frm.doc.posting_date) frappe.throw(__("Please select Posting Date first"));
-
+			// frappe.call({
+			// 	method: "frappe.client.get_value",
+			// 	args: {
+			// 			doctype: "Account",
+			// 			fieldname: "applicable_to_doc",
+			// 			filters: {name: d.account}
+			// 	},
+			// 	callback: function(r) {
+			// 			if(r.message.applicable_to_doc) {
+			// 				cur_frm.fields_dict.accounts.grid.toggle_reqd("within_inter_company", r.message.applicable_to_doc)
+			// 			}
+			// 	}
+			// })
 			return frappe.call({
 				method: "erpnext.accounts.doctype.journal_entry.journal_entry.get_account_balance_and_party_type",
 				args: {
@@ -431,6 +441,15 @@ frappe.ui.form.on("Journal Entry Account", {
 			});
 		}
 	},
+	// within_inter_company:function(frm, dt, dn){
+	// 	var d = locals[dt][dn]
+	// 	if (d.within_inter_company == 'Yes'){
+	// 		cur_frm.fields_dict.accounts.grid.toggle_reqd("dhi_company", true)
+	// 	}else{
+	// 		cur_frm.fields_dict.accounts.grid.toggle_reqd("dhi_company", false)
+	// 		// frappe.model.set_value(cdt, cdn, "dhi_company","No")
+	// 	}
+	// },
 
 	debit_in_account_currency: function(frm, cdt, cdn) {
 		erpnext.journal_entry.set_exchange_rate(frm, cdt, cdn);

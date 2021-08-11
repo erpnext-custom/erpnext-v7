@@ -12,6 +12,8 @@ from frappe.model.document import Document
 class AccountsSettings(Document):
 	def on_update(self):
 		frappe.db.set_default("auto_accounting_for_stock", self.auto_accounting_for_stock)
+		frappe.db.set_default("display_balances", self.display_balances)
+
 
 		if cint(self.auto_accounting_for_stock):
 			# set default perpetual account in company

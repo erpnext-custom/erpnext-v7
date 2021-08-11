@@ -43,6 +43,11 @@ frappe.query_reports["Stock Issue Report"] = {
 			"width": "80",
 			"options": "Item"
 		},
+		{
+			"fieldname": "accumulate",
+			"label": __("accumulate"),
+			"fieldtype": "Check"
+		}
 
 	]
 }

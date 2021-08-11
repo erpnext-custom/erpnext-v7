@@ -158,6 +158,7 @@ class DirectPayment(AccountsController):
                 )
     
     def add_party_gl_entries(self, gl_entries):
+        # consolidation_party_type and consolidation_party this two field added for consolidation purpose
         for a in self.item:
             party = party_type = None
             account_type = frappe.db.get_value("Account", a.account, "account_type") or ""
@@ -177,6 +178,8 @@ class DirectPayment(AccountsController):
                         'party_type': party_type,						
                         "company": self.company,
                         "remarks": self.remarks,
+                        "consolidation_party_type":a.party_type,
+                        "consolidation_party":a.party
                         })
                     )
             else:
@@ -192,6 +195,8 @@ class DirectPayment(AccountsController):
                         'party_type': party_type,						
                         "company": self.company,
                         "remarks": self.remarks,
+                        "consolidation_party_type":a.party_type,
+                        "consolidation_party":a.party
                         })
                     )
         if self.deduct:
@@ -213,6 +218,8 @@ class DirectPayment(AccountsController):
                             "party_type": party_type,
                             "company": self.company,
                             "remarks": self.remarks,
+                            "consolidation_party_type":a.party_type,
+                            "consolidation_party":a.party
                             })
                         )
                

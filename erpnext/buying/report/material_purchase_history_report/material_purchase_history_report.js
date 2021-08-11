@@ -20,6 +20,29 @@ frappe.query_reports["Material Purchase History Report"] = {
             "label": __("Branch"),
             "fieldtype": "Link",
         	"options": "Branch"
+		},
+		{
+			"fieldname": "material_code",
+			"label": __("Material Code"),
+			"fieldtype": "Link",
+			"options": "Item"
+		},
+		{
+			"fieldname": "material_group",
+			"label": __("Material Group"),
+			"fieldtype": "Link",
+			"options": "Item Group"
+		},
+		{
+			"fieldname": "vendor",
+			"label": __("Vendor"),
+			"fieldtype": "Link",
+			"options": "Supplier"
+		},
+		{
+			"fieldname": "accumulate",
+			"label": __("Accumulate"),
+			"fieldtype": "Check"
 		}
 	]
 }

@@ -1468,8 +1468,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 4, 
- "modified": "2020-12-22 14:13:05.020484", 
- "modified_by": "Administrator", 
+ "modified": "2021-08-03 12:27:08.729909", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Projects", 
  "name": "Project", 
  "owner": "Administrator", 
@@ -1558,7 +1558,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 0, 
+   "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 0, 
    "delete": 0, 
@@ -1574,6 +1574,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
+   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 0
   }, 
   {

@@ -124,10 +124,15 @@ frappe.ui.form.on('Bank Payment', {
 		reset_entries(frm);
 	},
 	items_on_form_rendered:function(frm, grid_row, cdt, cdn){
-		$(".grid-delete-row").hide();
-		$(".grid-insert-row").hide();
-		$(".grid-append-row").hide();
-		$(".grid-footer-toolbar").hide();
+		// $(".grid-remove-rows").hide();
+		// $(".grid-move-row").hide();
+		// $(".grid-insert-row-below").hide();
+		// $(".grid-duplicate-row").hide();
+
+		// $(".grid-delete-row").hide();
+		// $(".grid-insert-row").hide();
+		// $(".grid-append-row").hide();
+		// $(".grid-footer-toolbar").hide();
    	},
 	get_transactions: function(frm){
 		get_entries(frm);
@@ -146,7 +151,10 @@ frappe.ui.form.on('Bank Payment Item', {
 
 		// frm.toggle_display(['bank_branch', 'financial_system_code'], (row.bank_name != frm.doc.bank_name && row.bank_name != 'INR'));
 		// frm.refresh_fields(['bank_branch', 'financial_system_code']);
-	}
+	},
+	// items_remove: function(frm, cdt, cdn){
+	// 	update_totals(frm);
+	// }
 });
 
 var fetch_bank_balance = function(frm){
@@ -170,13 +178,14 @@ var fetch_bank_balance = function(frm){
 }
 
 var create_custom_buttons = function(frm){
-	if(!frm.is_new()){
-		if(frm.doc.docstatus == 0){
+	if(!frm.is_new() && !frm.is_dirty()){
+		/*if(frm.doc.docstatus == 0){
 			frm.page.set_primary_action(__('Confirm Payment'), () => {
 				cur_frm.savesubmit();
 				frm.refresh();
 			});
-		} else if(frm.doc.docstatus == 1){
+		} else if(frm.doc.docstatus == 1){*/
+		if(frm.doc.docstatus == 1){
 			if(frm.doc.status == "Pending"){
 				frm.page.set_primary_action(__('Process Payment'), () => {
 					process_payment(frm);
@@ -222,9 +231,24 @@ var reupload_files = function(frm){
 			cur_frm.refresh();
 		},
 		freeze: true,
-        freeze_message: "Re-uploading the files.... Please Wait",
+		freeze_message: "Re-uploading the files.... Please Wait",
 	})
 }
+
+// var update_totals = function(frm){
+// 	frappe.call({
+// 		method: "update_totals",
+// 		doc: frm.doc,
+// 		callback: function(r){
+// 			if(r.message){
+// 				cur_frm.set_value('total_amount', r.message);
+// 			}
+// 			// cur_frm.refresh();
+// 		},
+// 		freeze: true,
+// 		freeze_message: "Updating totals.... Please Wait",
+// 	})
+// }
 
 // function calculate_entries(frm, cdt, cdn){
 // 	cur_frm.clear_table("banks");
@@ -265,17 +289,15 @@ function get_entries(frm){
 		frappe.call({
 			method: "get_entries",
 			doc: cur_frm.doc,
-			callback: function(r, rt){
-					cur_frm.save();
-					// cur_frm.refresh();
+			callback: function(r){
+				if(r.message){
+					cur_frm.set_value('total_amount', r.message);
+				}
+				cur_frm.refresh_fields();
 			},
 			freeze: true,
             freeze_message: "Fetching Transaction Details.... Please Wait",
 		});
 	}
-	frm.refresh_field("items");
-	frm.refresh_field("banks");
-	frm.refresh_field("debit_notes");
-	cur_frm.refresh();
+	cur_frm.refresh_fields();
 }
-

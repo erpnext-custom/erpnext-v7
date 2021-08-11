@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "naming_series:", 
  "beta": 0, 
  "creation": "2013-06-11 14:26:44", 
@@ -957,7 +957,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-19 11:31:56.728025", 
+ "modified": "2021-04-29 17:33:51.775441", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Customer", 
@@ -1405,7 +1405,7 @@
    "write": 1
   }
  ], 
- "quick_entry": 0, 
+ "quick_entry": 1, 
  "read_only": 0, 
  "read_only_onload": 0, 
  "search_fields": "customer_name,customer_group,territory", 

@@ -42,6 +42,7 @@ class PurchaseInvoice(BuyingController):
 	def autoname(self):
 		self.name = make_autoname(get_auto_name(self, self.naming_series) + ".####")
 
+
 	def validate(self):
 		check_future_date(self.posting_date)
 		self.set_status()
@@ -82,6 +83,10 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset()
 		self.validate_fixed_asset_account()
 		self.create_remarks()
+				
+	def adjust_add_ded(self):
+                self.total_add_ded = flt(self.freight_and_insurance_charges) - flt(self.discount) + flt(self.tax) + flt(self.other_charges)
+                self.discount_amount = -1 * flt(self.total_add_ded)
 
 	def set_status(self):
                 self.status = {
@@ -90,16 +95,11 @@ class PurchaseInvoice(BuyingController):
                         "2": "Cancelled"
                 }[str(self.docstatus or 0)]
 
-	def adjust_add_ded(self):
-                self.total_add_ded = flt(self.freight_and_insurance_charges) - flt(self.discount) + flt(self.tax) + flt(self.other_charges)
-                self.discount_amount = -1 * flt(self.total_add_ded)
-	
-
 	def validate_tds(self):
 		if not self.type:
 			self.tds_amount = 0
 			self.base_tds_amount = 0
-			self.tds_account = ""
+			self.tds_account = None
 
 	def validate_cash(self):
 		if not self.cash_bank_account and flt(self.paid_amount):
@@ -319,16 +319,17 @@ class PurchaseInvoice(BuyingController):
 
 		# this sequence because outstanding may get -negative
 		self.make_gl_entries()
+
 		self.update_project()
 		self.update_fixed_asset()
 		self.consume_budget()
 		self.update_rrco_receipt()
 
 	def check_po_closed(self):
-                for a in self.items:
-                        if a.purchase_order:
-                                if frappe.db.get_value("Purchase Order", a.purchase_order, "status") == "Closed":
-                                        frappe.throw("Cannot modify closed purchase order")
+		for a in self.items:
+			if a.purchase_order:
+				if frappe.db.get_value("Purchase Order", a.purchase_order, "status") == "Closed":
+					frappe.throw("Cannot modify closed purchase order")
 
 	def update_fixed_asset(self):
 		for d in self.get("items"):
@@ -415,6 +416,8 @@ class PurchaseInvoice(BuyingController):
 		warehouse_account = get_warehouse_account()
 
 		for item in self.get("items"):
+			# this item_expense_account is just for consolidation purpose will not affect any transaction
+			item_expense_account = frappe.db.get_value('Item',item.item_code,['expense_account'])
 			if flt(item.base_net_amount):
 				account_currency = get_account_currency(item.expense_account)
 
@@ -425,6 +428,17 @@ class PurchaseInvoice(BuyingController):
 					warehouse_debit_amount = flt(flt(item.valuation_rate, val_rate_db_precision)
 						* flt(item.qty)	* flt(item.conversion_factor), item.precision("base_net_amount"))
 
+					# gl_entries.append(
+					# 	self.get_gl_dict({
+					# 		"account": item.expense_account,
+					# 		"against": self.supplier,
+					# 		"debit": warehouse_debit_amount,
+					# 		"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
+					# 		"cost_center": item.cost_center,
+					# 		"project": item.project
+					# 	}, account_currency)
+					# )
+				# extra field add for dhi consoliadtion purpose it will not affect wth current flow of transaction
 					gl_entries.append(
 						self.get_gl_dict({
 							"account": item.expense_account,
@@ -432,7 +446,8 @@ class PurchaseInvoice(BuyingController):
 							"debit": warehouse_debit_amount,
 							"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 							"cost_center": item.cost_center,
-							"project": item.project
+							"project": item.project,
+							"exact_expense_acc":item_expense_account,
 						}, account_currency)
 					)
 
@@ -444,7 +459,7 @@ class PurchaseInvoice(BuyingController):
 							"cost_center": item.cost_center,
 							"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 							"credit": flt(item.landed_cost_voucher_amount),
-							"project": item.project
+							"project": item.project,				
 						}))
 
 					# sub-contracting warehouse
@@ -455,7 +470,7 @@ class PurchaseInvoice(BuyingController):
 							"against": item.expense_account,
 							"cost_center": item.cost_center,
 							"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
-							"credit": flt(item.rm_supp_cost)
+							"credit": flt(item.rm_supp_cost),
 						}, warehouse_account[self.supplier_warehouse]["account_currency"]))
 				else:
 					gl_entries.append(
@@ -467,7 +482,8 @@ class PurchaseInvoice(BuyingController):
 								item.precision("base_net_amount")) if account_currency==self.company_currency
 								else flt(item.net_amount, item.precision("net_amount"))),
 							"cost_center": item.cost_center,
-							"project": item.project
+							"project": item.project,
+							"exact_expense_acc":item_expense_account,
 						}, account_currency)
 					)
 
@@ -485,12 +501,30 @@ class PurchaseInvoice(BuyingController):
 									"account": self.stock_received_but_not_billed,
 									"against": self.supplier,
 									"debit": flt(item.item_tax_amount, item.precision("item_tax_amount")),
-									"remarks": self.remarks or "Accounting Entry for Stock"
+									"remarks": self.remarks or "Accounting Entry for Stock",
+									"exact_expense_acc":item_expense_account
 								})
 							)
 
 							self.negative_expense_to_be_booked += flt(item.item_tax_amount, \
 								item.precision("item_tax_amount"))
+	# def post_dhi_gl_entries(self):
+	# 	for item in self.get("items"):
+	# 		dhi_gl = frappe.new_doc("DHI GL Entry")
+	# 		expense_account = frappe.db.get_value('Item',item.item_code,['expense_account'])
+	# 		dhi_gl.update({
+	# 						"account": expense_account,
+	# 						"against": self.supplier,
+	# 						"debit": item.amount,
+	# 						"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
+	# 						"cost_center": item.cost_center,
+	# 						"party_type":"Supplier",
+	# 						"party":self.supplier,
+	# 						"posting_date":self.posting_date,
+	# 						"account_currency":self.currency
+	# 					})
+	# 		dhi_gl.save(ignore_permissions = True)
+
 
 	def make_tax_gl_entries(self, gl_entries):
 		# tax table gl entries
@@ -566,7 +600,7 @@ class PurchaseInvoice(BuyingController):
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.credit_to,
-					#"cost_center": self.buying_cost_center,
+					"cost_center": self.buying_cost_center,
 					"party_type": "Supplier",
 					"party": self.supplier,
 					"against": self.cash_bank_account,
@@ -605,7 +639,6 @@ class PurchaseInvoice(BuyingController):
 						if self.party_account_currency==self.company_currency else self.write_off_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
-					"cost_center": self.write_off_cost_center
 				}, self.party_account_currency)
 			)
 			if self.write_off_account == "Retention Money - SMCL":
@@ -701,8 +734,6 @@ class PurchaseInvoice(BuyingController):
 					"cost_center": a.advance_cost_center
 				}, advance_account_currency)
 			)
-	def before_cancel(self):
-                self.set_status()
 
 	def on_cancel(self):
 		check_uncancelled_linked_doc(self.doctype, self.name)
@@ -771,6 +802,14 @@ class PurchaseInvoice(BuyingController):
 				billed_amt = frappe.db.sql("""select sum(amount) from `tabPurchase Invoice Item`
 					where pr_detail=%s and docstatus=1""", d.pr_detail)
 				billed_amt = billed_amt and billed_amt[0][0] or 0
+
+				returned_amt = frappe.db.sql("""select sum(pri.amount) from `tabPurchase Receipt Item` pri, `tabPurchase Receipt` pr
+                                        where pr.name = pri.parent and pr.docstatus = 1 and pr.return_against = %s and purchase_order_item = %s
+                                        """, (d.purchase_receipt, d.po_detail))
+                                returned_amt = returned_amt and returned_amt[0][0] or 0
+
+                                billed_amt -= returned_amt
+
 				frappe.db.set_value("Purchase Receipt Item", d.pr_detail, "billed_amt", billed_amt, update_modified=update_modified)
 				updated_pr.append(d.purchase_receipt)
 			elif d.po_detail:
@@ -792,8 +831,8 @@ class PurchaseInvoice(BuyingController):
 	def consume_budget(self):
 		for item in self.get("items"):
 			expense, cost_center = frappe.db.get_value("Purchase Order Item", item.po_detail, ["budget_account", "cost_center"])
-			if cost_center != item.cost_center:
-				frappe.throw("Purchase Order and Invoice should have same Cost Center")
+			if expense != item.expense_account and cost_center != item.cost_center:
+				frappe.throw("Purchase Order and Invoice should have same Cost Center and Budget Account!")
 			if expense:
 				account_type = frappe.db.get_value("Account", expense, "account_type")
 				if account_type in ("Fixed Asset", "Expense Account"):
@@ -809,7 +848,6 @@ class PurchaseInvoice(BuyingController):
 						"po_no": self.name,
 						"po_date": po_date,
 						"amount": amount,
-						"poi_name": item.po_detail,
 						"pii_name": item.name,
 						"item_code": item.item_code,
 						"com_ref": item.purchase_order,

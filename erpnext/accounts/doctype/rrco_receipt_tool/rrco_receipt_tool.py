@@ -84,20 +84,22 @@ class RRCOReceiptTool(Document):
 				frappe.throw("Select the details to retrieve the invoices")
 			cond = ''
 			cond1 = ''
+			cond2 = ''
 			if self.branch:
 			    cond += " AND d.branch = '{}'".format(self.branch)
 			    cond1 += " AND p.branch = '{}'".format(self.branch)
+			    cond2 += " AND a.branch = '{}'".format(self.branch)
 
 			if self.purpose == 'Leave Encashment':
-				query = """select  "Leave Encashment" as transaction, name, encashment_date as posting_date, 
-    					encashment_amount as invoice_amount, encashment_tax, employee as party
+				query = """select  "Leave Encashment" as transaction, a.name, a.application_date as posting_date, 
+    					a.encashment_amount as invoice_amount, a.tax_amount, a.employee as party
 						FROM `tabLeave Encashment` AS a WHERE a.docstatus = 1 
-						AND a.encashment_date BETWEEN '{0}' AND '{1}' 
+						AND a.application_date BETWEEN '{0}' AND '{1}' 
 						{2} 
 						AND NOT EXISTS (SELECT 1 
 									FROM `tabRRCO Receipt Entries` AS b 
 									WHERE b.purchase_invoice = a.name)
-						""".format(self.from_date, self.to_date, cond)
+						""".format(self.from_date, self.to_date, cond2)
 			else:
 				query = """
           				select "Purchase Invoice" as transaction, name, posting_date, 
