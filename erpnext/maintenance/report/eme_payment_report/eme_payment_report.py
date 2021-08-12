@@ -31,6 +31,10 @@ def get_data_expense_account(filters, period_list):
 	grand_total = {}
 	exp_acc_total = {}
 	grand_tot = 0
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9961f6dcea9e5613e8e8a3f471116eb0ff69f515
 	for d in period_list:
 		grand_total[d.key] = 0
 	
@@ -65,7 +69,7 @@ def get_data_expense_account(filters, period_list):
 						inner join
 						`tabEME Payment Item` epi
 						on epi.parent = ep.name
-						where ep.docstatus = 1 and epi.expense_head = '{}' and ep.posting_date between '{}' and '{}' {}
+						where ep.docstatus=1 and epi.expense_head = '{}' and ep.posting_date between '{}' and '{}' {}
 					""".format(x.expense_head, d.from_date, d.to_date, conditions)
 				amt = frappe.db.sql(query, as_dict=1)
 				
@@ -91,7 +95,7 @@ def get_data_expense_account(filters, period_list):
 	r['expense_account'] = '<b> Grand Total </b>'
 	for d in period_list:
 		r[d.key] = grand_total[d.key]
-	r['total'] = grand_tot
+		r['total'] = grand_tot
 	data.append(r)
 	
 	return data
@@ -148,6 +152,7 @@ def get_data_expense_head(filters, period_list):
 			on epi.parent = ep.name
 		""", as_dict=1):
 	
+		# data.append({'expense_head': '<b>' + exp_head.expense_head + '</b>'})
 		row1 = {}
 		row_sum = 0
 		row1['expense_head'] = '<b>' + exp_head.expense_head + '</b>'
@@ -176,7 +181,7 @@ def get_data_expense_head(filters, period_list):
 						inner join
 						`tabEME Payment Item` epi
 						on epi.parent = ep.name
-						where ep.docstatus = 1 and epi.equipment_type = '{}' and epi.expense_head = '{}' and ep.posting_date between '{}' and '{}' {}
+						where ep.docstatus=1 and epi.equipment_type = '{}' and epi.expense_head = '{}' and ep.posting_date between '{}' and '{}' {}
 					""".format(equi_type.equipment_type, exp_head.expense_head, d.from_date, d.to_date, conditions)
 				
 				amt = frappe.db.sql(query, as_dict=1)

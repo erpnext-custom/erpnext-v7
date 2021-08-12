@@ -1503,8 +1503,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-05-16 16:20:37.921848", 
- "modified_by": "dorji2392@bt.bt", 
+ "modified": "2021-04-05 21:59:04.696544", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Payment Entry", 
  "name_case": "", 
@@ -1532,7 +1532,7 @@
   }, 
   {
    "amend": 1, 
-   "apply_user_permissions": 1, 
+   "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
    "delete": 0, 
@@ -1577,5 +1577,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "title", 
+ "track_changes": 1, 
  "track_seen": 0
 }

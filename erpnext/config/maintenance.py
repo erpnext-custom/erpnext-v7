@@ -117,12 +117,45 @@ def get_data():
 					"doctype": "POL"
 				},
 				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "POL Receive Report",
-                                        "doctype": "POL"
-                                },
+					"type": "report",
+					"is_query_report": True,
+					"name": "POL Receive Report",
+					"doctype": "POL"
+				},
 
+			]
+		},
+		{
+			"label": _("Transporter Transactions"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Transporter Rate",
+					"label": "Transportation Rate",
+					"description": _("Transportation Rate"),
+				},
+				{
+					"type": "doctype",
+					"name": "Transporter Trip Log",
+					"label": _("Transporter Trip Log"),
+					"description": _("Transporter Trip Log."),
+				},
+				{
+					"type": "doctype",
+					"name": "Transporter Payment",
+					"description": _("Transporter Payment.")
+				},
+			]
+		},
+		{
+			"label": _("Transporter Reports"),
+			"items": [
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Trip Log",
+					"doctype": "Transporter Trip Log"
+				},
 			]
 		},
 		{
@@ -138,9 +171,21 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
+					"name": "Daily EME Working Hour",
+					"doctype": "Logbook"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
 					"name": "Expense and Performance Summary",
 					"doctype": "Logbook"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "EME Payment Report",
+					"doctype": "EME Payment"
+				}
 			]
 		},
 		{
@@ -166,7 +211,7 @@ def get_data():
 					"type": "doctype",
 					"name": "Incident",
 					"label": "Report Incident",
-				},
+				}
 			]
 		},
 	]

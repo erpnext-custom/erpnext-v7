@@ -406,8 +406,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-08-26 14:23:48.406450", 
- "modified_by": "Administrator", 
+ "modified": "2021-08-02 11:58:47.407565", 
+ "modified_by": "dechen.lhaden@thimphutechpark.bt", 
  "module": "Maintenance", 
  "name": "Equipment Modifier Tool", 
  "name_case": "", 
@@ -432,6 +432,26 @@
    "share": 1, 
    "submit": 1, 
    "write": 1
+  }, 
+  {
+   "amend": 1, 
+   "apply_user_permissions": 0, 
+   "cancel": 1, 
+   "create": 1, 
+   "delete": 0, 
+   "email": 1, 
+   "export": 1, 
+   "if_owner": 0, 
+   "import": 0, 
+   "permlevel": 0, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "Mechanical Master", 
+   "set_user_permissions": 0, 
+   "share": 1, 
+   "submit": 1, 
+   "write": 1
   }
  ], 
  "quick_entry": 0, 
@@ -439,6 +459,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

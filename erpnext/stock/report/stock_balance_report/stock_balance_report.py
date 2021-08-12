@@ -109,37 +109,37 @@ def get_item_warehouse_map(filters):
 
 		if d.posting_date < from_date:
 			# Following if condition added by SHIV on 2020/09/30
-			if d.voucher_type == "Stock Reconciliation" and not flt(d.qty_after_transaction):
-				qty_dict.opening_qty = 0
-				qty_dict.opening_val = 0
-				qty_diff = 0
-				value_diff = 0
-				qty_dict.bal_qty = 0
-				qty_dict.bal_val = 0
+			# if d.voucher_type == "Stock Reconciliation" and not flt(d.qty_after_transaction):
+			# 	qty_dict.opening_qty = 0
+			# 	qty_dict.opening_val = 0
+			# 	qty_diff = 0
+			# 	value_diff = 0
+			# 	qty_dict.bal_qty = 0
+			# 	qty_dict.bal_val = 0
 			qty_dict.opening_qty += qty_diff
 			qty_dict.opening_val += value_diff
 
 		elif d.posting_date >= from_date and d.posting_date <= to_date:
 			if qty_diff > 0:
 				# Following if condition added by SHIV on 2020/09/30
-				if d.voucher_type == "Stock Reconciliation" and not flt(d.qty_after_transaction):
-					qty_diff = 0
-					value_diff = 0
-					qty_dict.in_qty = 0
-					qty_dict.in_val = 0
-					qty_dict.bal_qty = 0
-					qty_dict.bal_val = 0
+				# if d.voucher_type == "Stock Reconciliation" and not flt(d.qty_after_transaction):
+				# 	qty_diff = 0
+				# 	value_diff = 0
+				# 	qty_dict.in_qty = 0
+				# 	qty_dict.in_val = 0
+				# 	qty_dict.bal_qty = 0
+				# 	qty_dict.bal_val = 0
 				qty_dict.in_qty += qty_diff
 				qty_dict.in_val += value_diff
 			else:
 				# Following if condition added by SHIV on 2020/09/30
-				if d.voucher_type == "Stock Reconciliation" and not flt(d.qty_after_transaction):
-					qty_diff = 0
-					value_diff = 0
-					qty_dict.out_qty = 0
-					qty_dict.out_val = 0
-					qty_dict.bal_qty = 0
-					qty_dict.bal_val = 0
+				# if d.voucher_type == "Stock Reconciliation" and not flt(d.qty_after_transaction):
+				# 	qty_diff = 0
+				# 	value_diff = 0
+				# 	qty_dict.out_qty = 0
+				# 	qty_dict.out_val = 0
+				# 	qty_dict.bal_qty = 0
+				# 	qty_dict.bal_val = 0
 				qty_dict.out_qty += abs(qty_diff)
 				qty_dict.out_val += abs(value_diff)
 

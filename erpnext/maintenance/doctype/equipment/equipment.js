@@ -39,10 +39,10 @@ frappe.ui.form.on('Equipment', {
 	not_cdcl: function(frm) {
 		cur_frm.toggle_reqd("asset_code", frm.doc.not_cdcl == 0) 
 		if(frm.doc.not_cdcl == 1) {
-                        cur_frm.set_df_property("branch", "read_only", 0)
+                    cur_frm.set_df_property("branch", "read_only", 0)
                 }
                 else {
-                        cur_frm.set_df_property("branch", "read_only", 1)
+                    cur_frm.set_df_property("branch", "read_only", 1)
                 }
 
 	}

@@ -253,7 +253,7 @@ class SalaryStructure(Document):
                                                 calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))
                                                 comm_allowance += round(flt(calc_amt) if m['name'] == 'Communication Allowance' else 0)
                                                 total_earning += calc_amt
-                                                calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
+                                        calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
                                 else:
                                         if self.get(m['field_name']) and m['name'] == 'SWSS':
                                                 sws_amt = round(flt(settings.get("sws_contribution")))
@@ -391,6 +391,10 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                         else:
                                                 calc_amount = round(flt(amount)*(flt(working_days)/flt(days_in_month)))
                                 
+				# following condition added by SHIV on 2021/05/28
+                                if not flt(calc_amount):
+                                        continue
+
                                 calc_map.setdefault(key,[]).append({
                                         'salary_component'         : d.salary_component,
                                         'depends_on_lwp'           : d.depends_on_lwp,

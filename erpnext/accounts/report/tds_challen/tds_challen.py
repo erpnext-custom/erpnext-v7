@@ -20,7 +20,7 @@ def get_data(query, filters):
 	datas = frappe.db.sql(query, as_dict=True);
 	for d in datas:
 		status = 'Not Paid'
-		bil = frappe.db.sql(""" select name from `tabRRCO Receipt Entries` where bill_no = '{0}' and docstatus =1""".format(d.bill_no), as_dict = 1)
+		bil = frappe.db.sql(""" select name from `tabRRCO Receipt Entries` where (bill_no = '{0}' or purchase_invoice = '{0}') and docstatus =1""".format(d.bill_no), as_dict = 1)
 		if bil:
 			status = 'Paid'
 		if filters.get("cost_center") and d.cost_center == filters.get("cost_center"):
@@ -43,8 +43,108 @@ def construct_query(filters=None):
 	if filters.get("cost_center"):
 		pi_cost_center = "p.tds_cost_center = '{0}'".format(filters.get("cost_center"))
 		dp_cost_center = "d.cost_center = '{0}'".format(filters.get("cost_center"))
-	query = " SELECT s.vendor_tpn_no, s.name, p.bill_no, p.bill_date, p.tds_taxable_amount, p.tds_rate, p.tds_amount, p.tds_cost_center as cost_center  FROM `tabPurchase Invoice` as p, `tabSupplier` as s WHERE p.docstatus = 1 and p.supplier = s.name AND p.tds_amount > 0 AND p.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND p.tds_rate = " + filters.tds_rate + " UNION SELECT ss.vendor_tpn_no, ss.name, d.name as bill_no, d.posting_date as bill_date, d.amount as tds_taxable_amount, d.tds_percent as tds_rate, d.tds_amount, d.cost_center as cost_center FROM `tabDirect Payment` as d, `tabSupplier` as ss WHERE d.docstatus = 1 and d.party = ss.name AND d.tds_amount > 0 AND d.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'  AND d.tds_percent = " + filters.tds_rate + ""
-	return query;
+
+	query = """
+		SELECT
+			s.vendor_tpn_no,
+			s.name,
+			p.name as bill_no,
+			p.bill_date,
+			p.tds_taxable_amount,
+			p.tds_rate,
+			p.tds_amount,
+			p.cost_center as cost_center 
+			FROM
+			`tabPurchase Invoice` as p,
+			`tabSupplier` as s 
+		WHERE
+			p.docstatus = 1 
+		and p.supplier = s.name 
+		AND p.tds_amount > 0 
+		AND p.posting_date BETWEEN '{0}' AND '{1}' 
+		AND p.tds_rate = '{2}' 
+		UNION
+		SELECT
+			CASE
+				when
+					d.single_party_multiple_payments = 1 
+				then
+			(
+					select
+						vendor_tpn_no 
+					from
+						`tabSupplier` 
+					where
+						name = d.party) 
+					else
+			(
+						select
+						vendor_tpn_no 
+						from
+						`tabSupplier` 
+						where
+						name = di.party) 
+			END
+			as vendor_tpn_no,
+			if(d.single_party_multiple_payments = 1, d.party, di.party) as vendor,
+			d.name as bill_no,
+			d.posting_date as bill_date,
+			if(d.single_party_multiple_payments = 1, d.taxable_amount, di.taxable_amount) as tds_taxable_amount,
+			d.tds_percent as tds_rate,
+			if(d.single_party_multiple_payments = 1, d.tds_amount, di.tds_amount) as tds_amount,
+			d.cost_center as cost_center 
+		FROM
+		`tabDirect Payment` as d 
+		LEFT JOIN
+			`tabDirect Payment Item` as di 
+			on di.parent = d.name 
+		WHERE
+			d.docstatus = 1 
+		AND d.tds_amount > 0 
+		AND d.posting_date BETWEEN '{0}' AND '{1}' 
+		AND d.tds_percent = '{2}' 
+		UNION
+		SELECT
+			ss.vendor_tpn_no,
+			ss.name,
+			d.name as bill_no,
+			d.posting_date as bill_date,
+			d.total_amount as tds_taxable_amount,
+			d.tds_percent as tds_rate,
+			d.tds_amount,
+			d.cost_center as cost_center 
+		FROM
+		`tabEME Payment` as d,
+		`tabSupplier` as ss 
+		WHERE
+			d.docstatus = 1 
+		and d.supplier = ss.name 
+		AND d.tds_amount > 0 
+		AND d.posting_date BETWEEN '{0}' AND '{1}' 
+		AND d.tds_percent = '{2}' 
+		UNION
+		SELECT
+			ss.vendor_tpn_no,
+			ss.name,
+			d.name as bill_no,
+			d.posting_date as bill_date,
+			d.gross_amount as tds_taxable_amount,
+			d.tds_percent as tds_rate,
+			d.tds_amount,
+			d.cost_center as cost_center 
+		FROM
+		`tabTransporter Payment` as d,
+		`tabSupplier` as ss,
+		`tabEquipment` e 
+		WHERE
+		d.docstatus = 1 
+		and e.supplier = ss.name 
+		and d.equipment = e.name 
+		AND d.tds_amount > 0 
+		AND d.posting_date BETWEEN '{0}' AND '{1}' 
+		AND d.tds_percent = '{2}'
+			""".format(str(filters.from_date), str(filters.to_date), filters.tds_rate)
+	return query
 
 def validate_filters(filters):
 
@@ -99,7 +199,8 @@ def get_columns():
 		{
 		  "fieldname": "invoice_no",
 		  "label": "Invoice No",
-		  "fieldtype": "Data",
+		  "fieldtype": "Link",
+		  "options":"Purchase Invoice",
 		  "width": 200
 		},
 		{

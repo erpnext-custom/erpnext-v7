@@ -33,7 +33,8 @@ def get_data(filters):
 		t1.rate, 
 		t1.qty, 
 		t1.item_name, 
-		t1.item_code, 
+		t1.item_code,
+		t1.item_type,
 		t1.stock_uom, 
 		t1.warehouse, 
 		t1.delivery_note, 
@@ -66,6 +67,7 @@ def get_data(filters):
 		soi.qty, 
 		soi.item_name, 
 		soi.item_code, 
+		soi.item_type,
 		soi.stock_uom, 
 		soi.warehouse, 
 		dni.parent as delivery_note, 
@@ -135,6 +137,7 @@ def get_data(filters):
 				"qty": a.qty,
 				"item_name": a.item_name,
 				"item_code": a.item_code,
+				"item_type": a.item_type,
 				"stock_uom": a.stock_uom,
 				"warehouse": a.warehouse,
 				"invoice_no": a.invoice_no,
@@ -196,13 +199,13 @@ def get_columns():
 		},
 		{
 			"fieldname": "po_no",
-			"label": _("Customer PO No"),
+			"label": _("Dispatch"),
 			"fieldtype": "Data",
 			"width": 150
 		},
 		{
 			"fieldname": "po_date",
-			"label": _("Customer PO Date"),
+			"label": _("Dispatch Date"),
 			"fieldtype": "Date",
 			"width": 100
 		},
@@ -235,6 +238,12 @@ def get_columns():
 			"label": _("Material Name"),
 			"fieldtype": "Data",
 			"width": 120
+		},
+		{
+			"fieldname": "item_type",
+			"label": _("Material Type"),
+			"fieldtype": "Data",
+			"width": 150
 		},
 		{
 			"fieldname": "stock_uom",
@@ -306,7 +315,7 @@ def get_columns():
 		},
 		{
 			"fieldname": "loading_charges",
-		 	"label": _("Loading Charges"),
+		 	"label": _("Other Charges"),
 			"fieldtype": "Currency",
 		 	"width": 150
 		},
@@ -395,5 +404,6 @@ def get_columns():
 			"fieldtype": "Data",
 			"width": 150
 		}
+		
 	]
 

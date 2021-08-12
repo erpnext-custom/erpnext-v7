@@ -538,7 +538,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-12-27 00:52:59.443363", 
+ "modified": "2021-04-05 21:53:43.715705", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Salary Component", 
@@ -653,5 +653,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "salary_component", 
+ "track_changes": 1, 
  "track_seen": 0
 }

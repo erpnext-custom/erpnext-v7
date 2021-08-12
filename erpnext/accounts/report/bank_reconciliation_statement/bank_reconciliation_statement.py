@@ -144,6 +144,19 @@ def get_entries(filters):
 			and ifnull(clearance_date, '4000-01-01') > %(report_date)s
 	""", filters, as_dict=1)
 
+	eme_payment_entries = frappe.db.sql("""
+		select
+			"EME Payment" as payment_document, name as payment_entry,
+			cheque_no as cheque_number, cheque_date,
+			payable_amount as credit,
+			posting_date, branch as against_account, clearance_date
+		from `tabEME Payment`
+		where %(account)s IN (bank_account)
+			and docstatus = 1
+			and posting_date <= %(report_date)s
+			and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+	""", filters, as_dict=1)
+
 	direct_payment_entries = frappe.db.sql("""
 		select
 			"Direct Payment" as payment_document, name as payment_entry,
@@ -197,7 +210,7 @@ def get_entries(filters):
                         and ifnull(clearance_date, '4000-01-01') > %(report_date)s
                 """,filters, as_dict=1)       
         ##### Ver 1.0.190304 Ends        
-	return sorted(list(payment_entries)+list(journal_entries)+list(direct_payment_entries)+list(hsd_entries)+list(transporter_payment_entries)+list(tds_remittance_entries), 
+	return sorted(list(eme_payment_entries) + list(payment_entries)+list(journal_entries)+list(direct_payment_entries)+list(hsd_entries)+list(transporter_payment_entries)+list(tds_remittance_entries), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))
 			
 def get_amounts_not_reflected_in_system(filters):

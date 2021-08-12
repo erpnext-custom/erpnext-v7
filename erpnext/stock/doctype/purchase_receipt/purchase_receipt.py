@@ -55,7 +55,7 @@ class PurchaseReceipt(BuyingController):
 
 	def validate(self):
 		super(PurchaseReceipt, self).validate()
-
+		check_future_date(self.posting_date)
 		self.set_status()
 		self.po_required()
 		self.validate_with_previous_doc()
@@ -465,12 +465,14 @@ def make_purchase_invoice(source_name, target_doc=None):
 
 	def update_item(source_doc, target_doc, source_parent):
 		target_doc.qty = source_doc.qty - invoiced_qty_map.get(source_doc.name, 0)
-		cat = frappe.db.get_value("Item", source_doc.item_code, "item_group")
-		if cat == 'Fixed Asset':
+		is_fixed_asset = frappe.db.get_value("Item", source_doc.item_code, "is_fixed_asset")
+		# frappe.msgprint(format(cat))
+		if is_fixed_asset:
                         # Ver 2.0 Begins, following line is commented and replaced by subsequen by SHIV on 2018/08/28
 			# target_doc.expense_account = "Stock-Assets - SMCL"
-                        expense_account = source_parent.get_company_default("stock_received_but_not_billed")
-                        if not expense_account:
+			expense_account = source_parent.get_company_default("stock_received_but_not_billed")
+			# frappe.msgprint(format(expense_account))
+			if not expense_account:
 				frappe.throw("Setup Stock Asset Received But Not Billed in Company Setting")
 			target_doc.expense_account = expense_account
 			# Ver 2.0 Ends

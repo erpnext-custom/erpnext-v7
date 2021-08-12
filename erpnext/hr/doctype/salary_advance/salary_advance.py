@@ -209,14 +209,19 @@ class SalaryAdvance(Document):
 		
 	def post_journal_entry(self):
 		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
-		ic_account = frappe.db.get_single_value("HR Accounts Settings", "employee_advance_salary")
+                if not expense_bank_account:
+                        frappe.throw("Expense Bank Account is missing for Branch {}".format(self.branch))
 
+		ic_account = frappe.db.get_single_value("HR Accounts Settings", "employee_advance_salary")
+                if not ic_account:
+                        frappe.throw("Advance To Employee (Salary) Account is Missing")
+                        
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
 		je.title = "Salary Advance (" + self.name + ")"
 		je.voucher_type = 'Journal Entry'
 		je.naming_series = 'Journal Entry'
-		je.remark = 'Payment against : ' + self.name;
+		je.remark = 'Payment against : ' + self.name
 		je.posting_date = self.posting_date
 		je.branch = self.branch
 

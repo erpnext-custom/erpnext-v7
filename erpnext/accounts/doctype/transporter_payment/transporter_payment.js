@@ -5,6 +5,7 @@ cur_frm.add_fetch("branch", "expense_bank_account", "credit_account")
 cur_frm.add_fetch("settlement_account","account_type","settlement_account_type");
 frappe.ui.form.on('Transporter Payment', {
 	setup: function(frm) {
+		frm.get_docfield("items").allow_bulk_edit = 1;
 		frm.get_field('items').grid.editable_fields = [
                         {fieldname: 'receiving_warehouse', columns: 2},
                         {fieldname: 'posting_date', columns: 2},
@@ -86,6 +87,9 @@ frappe.ui.form.on('Transporter Payment', {
 	weighbridge_charge: function(frm){
 		calculate_totals(frm);
 	},
+	clearing_charge: function(frm){
+		calculate_totals(frm);
+	},
 	/*"deduction_amount": function(frm) {
 		var payable = flt(frm.doc.net_payable) - flt(frm.doc.deduction_amount)
 		frappe.msgprint(payable)
@@ -97,6 +101,17 @@ frappe.ui.form.on('Transporter Payment Item', {
         items_remove: function(frm, cdt, cdn){
 		calculate_totals(frm);
         },
+});
+
+frappe.ui.form.on('Transporter Payment Deduction', {
+	account: function (frm, cdt, cdn) {
+			frappe.model.set_value(cdt, cdn, "party_type", "Equipment");
+			frappe.model.set_value(cdt, cdn, "party", frm.doc.equipment);
+	},
+	amount: function (frm, cdt, cdn) {
+		frappe.model.set_value(cdt, cdn, "party_type", "Equipment");
+		frappe.model.set_value(cdt, cdn, "party", frm.doc.equipment);
+	},
 });
 
 // Ver.2020.06.23 Begins, by SHIV on 2020/06/23
@@ -176,10 +191,15 @@ var total_html = function(frm){
 	row += get_row('Delivery Charges', flt(frm.doc.delivery_charges), 0, "+");
 	row += get_row('Transportation Amount', flt(frm.doc.transportation_amount), 1);
 	row += get_row('Unloading Amount', flt(frm.doc.unloading_amount), 0, "+");
+	row += get_row('Transporter Trip Log Count', flt(frm.doc.within_warehouse_trip), 0);
+	row += get_row('Within Warehouse Transportation Amt.', flt(frm.doc.within_warehouse_amount), 1, '+');
+	row += get_row("Production Trip Count", flt(frm.doc.production_trip_count), 0);
+	row += get_row('Production Transportation Amt.', flt(frm.doc.production_transport_amount), 1, '+');
 	row += get_row('Gross Amount', flt(frm.doc.gross_amount), 1);
 	row += get_row('POL Amount', flt(frm.doc.pol_amount), 0, "-");
 	row += get_row('Net Amount', flt(frm.doc.net_payable), 1);
 	row += get_row('Weighbridge Charges', flt(frm.doc.weighbridge_amount), 0, "-");
+	row += get_row('Clearing Charges', flt(frm.doc.clearing_amount), 0, "-");
 	row += get_row('Other Deductions, TDS & SD', flt(frm.doc.other_deductions), 0, "-");
 	row += get_row('Payable Amount', flt(frm.doc.amount_payable), 1);
 	

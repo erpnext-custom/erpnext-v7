@@ -6,6 +6,80 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+# update SWSS for all the Salary Structures, by SHIV on 2021/02/17
+def update_swss_for_all_salary_structures(debug=1):
+        count = 0
+        for i in frappe.get_all("Salary Structure", {"is_active": "Yes"}):
+                count += 1
+                print(count,i.name)
+                if not debug:
+                        doc = frappe.get_doc("Salary Structure", i.name)
+                        doc.save(ignore_permissions=True)
+        frappe.db.commit()
+
+# adjustment for stock balance issue of 2019, by SHIV on 2021/02/16
+def adjust_stock_20210216():
+	doc = frappe.new_doc("Stock Ledger Entry")
+	doc.item_code = '100908'
+	doc.warehouse = 'Khothakpa Consumable Warehouse - SMCL'
+	doc.posting_date = '2019-12-31'
+	doc.posting_time = '23:56:14'
+	doc.voucher_type = 'Purchase Receipt'
+	doc.voucher_no = 'PR19110060'
+	doc.actual_qty = -6
+	doc.stock_uom = 'No'
+	doc.valuation_rate = 17685.04
+	doc.stock_value_difference = -106110.24
+	doc.company = 'State Mining Corporation Ltd'
+	doc.fiscal_year = '2019'
+	doc.save(ignore_permissions=True)
+	print(doc.name)
+	frappe.db.commit()
+
+def submit_sr20210208_2():
+	for i in frappe.db.sql("select * from `tabStock Reconciliation` where name in ('SR/000054', 'SR/000053') order by name desc", as_dict=True):
+		print(i.name, i.docstatus)
+		if i.docstatus == 0:
+			doc = frappe.get_doc("Stock Reconciliation", i.name)
+			doc.submit()
+		frappe.db.commit()
+
+def submit_sr20210208():
+	for i in frappe.db.sql("select * from `tabStock Reconciliation` where name in ('SR/000051', 'SR/000053') order by name", as_dict=True):
+		print(i.name, i.docstatus)
+		if i.docstatus == 0:
+			doc = frappe.get_doc("Stock Reconciliation", i.name)
+			doc.submit()
+		frappe.db.commit()
+
+def cancel_sr20210202():
+	doc = frappe.get_doc("Stock Reconciliation", "SR/000048")
+	doc.cancel()
+	frappe.db.commit()
+
+def submit_sr20210202():
+	doc = frappe.get_doc("Stock Reconciliation", "SR/000052")
+	doc.submit()
+	frappe.db.commit()
+
+# adjustment for stock balance issue of 2019, by SHIV on 2021/01/11
+def adjust_stock_2019():
+	doc = frappe.new_doc("Stock Ledger Entry")
+	doc.item_code = '300018'
+	doc.warehouse = 'Khothagpa Gypsum Mines - SMCL'
+	doc.posting_date = '2019-12-31'
+	doc.posting_time = '23:56:14'
+	doc.voucher_type = 'Stock Reconciliation'
+	doc.voucher_no = 'SR/000036'
+	doc.stock_uom = 'MT'
+	doc.valuation_rate = 1265.90
+	doc.stock_value_difference = -17556.28
+	doc.company = 'State Mining Corporation Ltd'
+	doc.fiscal_year = '2019'
+	doc.save(ignore_permissions=True)
+	print(doc.name)
+	frappe.db.commit()
+
 # submitting backdated production entry, by SHIV on 2020/07/13
 # time bench execute erpnext.temp_patch.submit_production --args "[''],1,"
 def submit_production(pr_list=[], debug=1):

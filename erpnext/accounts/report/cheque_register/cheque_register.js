@@ -3,6 +3,7 @@
 
 frappe.query_reports["Cheque Register"] = {
 	"filters": [
+		/*
 		{
 			"fieldname": "fiscal_year",
 			"label": __("Fiscal Year"),
@@ -34,6 +35,19 @@ frappe.query_reports["Cheque Register"] = {
 			"label": __("To Date"),
 			"fieldtype": "Date",
 			"default": frappe.defaults.get_user_default("year_end_date"),
+		},
+		*/
+		{
+			"fieldname": "from_date",
+			"label": __("From Date"),
+			"fieldtype": "Date",
+			"reqd": 1
+		},
+		{
+			"fieldname": "to_date",
+			"label": __("To Date"),
+			"fieldtype": "Date",
+			"reqd": 1
 		},
 	],
 }

@@ -36,7 +36,7 @@ class TransporterTripLog(Document):
 					if b.qty :
 						b.amount = flt(b.rate) * flt(b.qty)
 					else:
-						frappe.throw("Please provide the Quantity")		
+						frappe.throw("Please provide the Quantity")	
 				else:
 					frappe.throw("Define Transporter Rate for distance {} in Transporter Rate ".format(b.distance))
 			else:

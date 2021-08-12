@@ -19,8 +19,6 @@ class CoalRaisingPayment(Document):
 		
 	def on_submit(self):
 		self.post_journal_entry()
-		self.validate_workflow()
-		
 	def before_cancel(self):
 		cl_status = frappe.db.get_value("Journal Entry", self.claim_journal, "docstatus")
 		if flt(cl_status) < 2:
@@ -60,6 +58,7 @@ class CoalRaisingPayment(Document):
 			AND (coal_raising_type != '' or coal_raising_type is not null)
 			AND (`group` !='' or `group` is not null)
 		""".format(self.branch,self.from_date,self.to_date),as_dict=True):
+			# frappe.msgprint(str(d))
 			if d.group:
 				# data += self.get_tire_data_base_on_group(d.group)
 				data1 = frappe.db.sql("""
@@ -127,17 +126,11 @@ class CoalRaisingPayment(Document):
 		return row
 
 	def adjust_deduction(self):
-		total = 0
 		for dec in self.deduction:
-			total += flt(dec.amount)
 			for i,item in enumerate(self.items):
 				if dec.group == item.group_name:
 					self.items[i].total_amount = flt(item.total_amount) - flt(dec.amount)
-		self.total_deduction = total
 
-	def validate_workflow(self):
-		if self.workflow_state == "Paid" and self.docstatus == 0:
-			self.workflow_state = "Payment Pending"
 	def post_journal_entry(self):
 		credit_acc,debit_acc,penalty_acc = frappe.db.get_value('Coal Raising Master',self.branch,['account','expense_account','penalty_account'])
 		je = frappe.new_doc("Journal Entry")
@@ -177,16 +170,6 @@ class CoalRaisingPayment(Document):
 				"credit_in_account_currency": flt(self.total_penalty),
 				"credit": flt(self.total_penalty),
 			})
-		if self.deduction:
-			for item in self.deduction:
-				je.append("accounts", {
-					"account": item.account,
-					"reference_type": "Coal Raising Payment",
-					"reference_name": self.name,
-					"cost_center": self.cost_center,
-					"credit_in_account_currency": flt(item.amount),
-					"credit": flt(item.amount)
-				})
 
 		je.insert()
 		#Set a reference to the claim journal entry

@@ -16,7 +16,7 @@
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "distance", 
-   "fieldtype": "Float", 
+   "fieldtype": "Data", 
    "hidden": 0, 
    "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
@@ -72,7 +72,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-04-16 16:36:12.404366", 
+ "modified": "2020-12-30 20:01:56.224619", 
  "modified_by": "Administrator", 
  "module": "Selling", 
  "name": "Distance", 
@@ -163,8 +163,7 @@
  "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
- "sort_field": "distance", 
+ "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
  "track_seen": 0
 }

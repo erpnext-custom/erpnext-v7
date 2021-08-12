@@ -9,7 +9,6 @@ frappe.query_reports["EME Bill Report"] = {
 			"fieldtype":"Link",
 			"options":"EME Payment",
 			"reqd":1
-		},
-		
+		}
 	]
 }

@@ -3,13 +3,13 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import flt, getdate, add_days, formatdate
+from frappe.utils import cstr, cint, flt, getdate, add_days, formatdate
 from frappe import _
+from calendar import monthrange
 
 def execute(filters=None):
     columns = get_columns(filters)
     data = get_data(filters)
-    # frappe.msgprint(format(data))
 
     return columns, data
 
@@ -58,7 +58,7 @@ def get_data(filters):
 
     res = frappe.db.sql("""
         SELECT lb.equipment_type, e.equipment_number registration_number, 
-            {date_columns}, SUM(IFNULL((select round(sum(lbi.hours),2) from `tabLogbook Item` lbi where lb.name=lbi.parent),0)) as grand_total
+            {date_columns}, SUM(IFNULL((select sum(lbi.hours) from `tabLogbook Item` lbi where lb.name=lbi.parent),0)) as grand_total
         FROM `tabLogbook` lb, `tabEquipment` e
         WHERE e.name = lb.equipment
         AND lb.posting_date BETWEEN '{from_date}' AND '{to_date}'
@@ -66,7 +66,6 @@ def get_data(filters):
         GROUP BY lb.equipment_type, e.equipment_number
         ORDER BY lb.equipment_type, e.equipment_number
     """.format(date_columns=date_columns, from_date=filters.get("from_date"), to_date=filters.get("to_date"), cond=conditions), as_dict=True)
-    
     equip_type_wise_record = frappe._dict()
     for row in res:
         equip_type_wise_record.setdefault(row.equipment_type, []).append(row)

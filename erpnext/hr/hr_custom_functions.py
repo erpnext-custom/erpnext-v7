@@ -13,8 +13,8 @@ from erpnext.custom_utils import get_year_start_date, get_year_end_date
 def post_casual_leaves():
 	#date = add_days(frappe.utils.nowdate(), 10)
 	date = frappe.utils.nowdate()
-	start = get_year_start_date(date);
-	end = get_year_end_date(date);
+	start = get_year_start_date(date)
+	end = get_year_end_date(date)
 
         # Shiv 2019/01/22 ticket#1333, Following line replaced by subsequent
 	#employees = frappe.db.sql("select name, employee_name from `tabEmployee` where status = 'Active' and employment_type in (\'Regular employees\', \'Contract\')", as_dict=True)

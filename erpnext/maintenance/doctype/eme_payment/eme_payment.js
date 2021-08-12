@@ -4,9 +4,12 @@ cur_frm.add_fetch("branch", "cost_center", "cost_center")
 cur_frm.add_fetch("branch", "expense_bank_account", "bank_account")
 
 frappe.ui.form.on('EME Payment', {
-	refresh: function(frm) {
-                if(frm.doc.docstatus===1){
-                        frm.add_custom_button(__('Accounting Ledger'), function(){
+        setup: function (frm) {
+                frm.get_docfield("items").allow_bulk_edit = 1;
+        },
+        refresh: function (frm) {
+                if (frm.doc.docstatus === 1) {
+                        frm.add_custom_button(__('Accounting Ledger'), function () {
                                 frappe.route_options = {
                                         voucher_no: frm.doc.name,
                                         from_date: frm.doc.posting_date,
@@ -17,20 +20,26 @@ frappe.ui.form.on('EME Payment', {
                                 frappe.set_route("query-report", "General Ledger");
                         }, __("View"));
                 }
+                frm.add_custom_button(__('EME Bill Report'), function () {
+                        frappe.route_options = {
+                                name: frm.doc.name
+                        };
+                        frappe.set_route("query-report", "EME Bill Report");
+                }, __("View"));
+                cur_frm.page.set_inner_btn_group_as_primary(__('View'));
+        },
 
-	},
+        onload: function (frm) {
+                if (!frm.doc.posting_date) {
+                        cur_frm.set_value("posting_date", get_today())
+                }
+        },
 
-	onload: function(frm) {
-		if (!frm.doc.posting_date) {
-			cur_frm.set_value("posting_date", get_today())
-		}
-	},
-
-	get_logbooks: function(frm) {
+        get_logbooks: function (frm) {
                 return frappe.call({
                         method: "get_logbooks",
                         doc: frm.doc,
-                        callback: function(r, rt) {
+                        callback: function (r, rt) {
                                 frm.refresh_fields();
                         },
                         freeze: true,
@@ -38,18 +47,18 @@ frappe.ui.form.on('EME Payment', {
                 });
         },
 
-	tds_percent: function(frm) {
-		calculate_totals(frm)
-	}
+        tds_percent: function (frm) {
+                calculate_totals(frm)
+        }
 });
 
-function calculate_totals(frm){
-	cur_frm.call({
-		method: "calculate_totals",
-		doc:frm.doc,
-		callback: function(r, rt){
-			frm.refresh_fields();
-		},
-	});
+function calculate_totals(frm) {
+        cur_frm.call({
+                method: "calculate_totals",
+                doc: frm.doc,
+                callback: function (r, rt) {
+                        frm.refresh_fields();
+                },
+        });
 }
 

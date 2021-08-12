@@ -11,6 +11,7 @@ from frappe.utils import flt, cint
 class TransporterRate(Document):
 	def validate(self):
 		self.check_data()
+		self.validate_distance()
 
 	def on_update(self):
 		self.check_duplicate()
@@ -25,10 +26,11 @@ class TransporterRate(Document):
 
 			if not cint(a.threshold_trip) > 0:
 				frappe.throw("Threshold Trip should be greater than 0 for row {0}".format(frappe.bold(a.idx)))
-
+			'''
 			if flt(a.unloading_rate) <= 0:
 				frappe.throw("Unloading Rate should be greater than 0 for row {0}".format(frappe.bold(a.idx)))
-
+			'''
+			
 	def check_duplicate(self):
 		for i in self.get("items"):
 			for a in frappe.db.sql("""select t.name 
@@ -63,6 +65,19 @@ class TransporterRate(Document):
 					dup.setdefault(i.equipment_type, []).append(i.item_code)
 			else:
 				dup.setdefault(i.equipment_type, []).append(i.item_code)
+
+	def validate_distance(self):
+		if self.rate_base == "Location" and self.distance_rate:
+			i = 0
+			for a in self.distance_rate:
+				j = 0
+				for b in self.distance_rate:
+					if i != j:
+						if a.distance == b.distance:
+							frappe.throw("Distance cannot be same {} and {}".format(a.distance))
+					j+=1
+				i+=1
+				
 
 def get_transporter_rate(from_warehouse, receiving_warehouse, date, equipment_type, item_code):
 	rate = frappe.db.sql("""select a.name, b.threshold_trip, b.lower_rate, b.higher_rate, 

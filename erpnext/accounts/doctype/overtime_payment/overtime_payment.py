@@ -76,9 +76,8 @@ class OvertimePayment(AccountsController):
 	# Cancel budget check entry
 	##
 	def cancel_budget_entry(self):
-		if self.payment_type == "Payment":
-			frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
-			frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
+		frappe.db.sql("delete from `tabCommitted Budget` where po_no = %s", self.name)
+		frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 					
 	def post_gl_entry(self):
 		gl_entries = []

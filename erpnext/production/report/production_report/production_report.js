@@ -13,7 +13,7 @@ frappe.query_reports["Production Report"] = {
 		},
 		{
 			"fieldname": "cost_center",
-			"label": ("Parent Branch"),
+			"label": ("Cost Center"),
 			"fieldtype": "Link",
  			"options": "Cost Center",
 			"get_query": function() {
@@ -26,26 +26,26 @@ frappe.query_reports["Production Report"] = {
 					]
 				}
 			},
-			"on_change": function(query_report) {
-				var cost_center = query_report.get_values().cost_center;
-				query_report.filters_by_name.branch.set_input(null);
-				query_report.filters_by_name.location.set_input(null);
-				query_report.filters_by_name.adhoc_production.set_input(null);
-				query_report.trigger_refresh();
-				if (!cost_center) {
-					return;
-				}
-				frappe.call({
-					method: "erpnext.custom_utils.get_branch_from_cost_center",
-					args: {
-						"cost_center": cost_center,
-					},
-					callback: function(r) {
-						query_report.filters_by_name.branch.set_input(r.message)
-						query_report.trigger_refresh();
-					}
-				})
-			},
+			// "on_change": function(query_report) {
+			// 	var cost_center = query_report.get_values().cost_center;
+			// 	query_report.filters_by_name.branch.set_input(null);
+			// 	query_report.filters_by_name.location.set_input(null);
+			// 	query_report.filters_by_name.adhoc_production.set_input(null);
+			// 	query_report.trigger_refresh();
+			// 	if (!cost_center) {
+			// 		return;
+			// 	}
+			// 	frappe.call({
+			// 		method: "erpnext.custom_utils.get_branch_from_cost_center",
+			// 		args: {
+			// 			"cost_center": cost_center,
+			// 		},
+			// 		callback: function(r) {
+			// 			query_report.filters_by_name.branch.set_input(r.message)
+			// 			query_report.trigger_refresh();
+			// 		}
+			// 	})
+			// },
 			"reqd": 1,
 		},
 		{
@@ -53,10 +53,10 @@ frappe.query_reports["Production Report"] = {
 			"label": ("Branch"),
 			"fieldtype": "Link",
  			"options": "Branch",
-			"read_only": 1,
+			// "read_only": 1,
 			"get_query": function() {
 				var company = frappe.query_report.filters_by_name.company.get_value();
-				return {"doctype": "Branch", "filters": {"company": company, "is_disabled": 0}}
+				return {"doctype": "Branch", "filters": {"company": company, "is_disabled": 0,"cost_center":frappe.query_report.get_values().cost_center}}
 			}
 		},
 		{
@@ -95,14 +95,14 @@ frappe.query_reports["Production Report"] = {
 			"fieldname": "from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",
-			"default": frappe.defaults.get_user_default("year_start_date"),
+			"default": frappe.datetime.month_start(),
 			"reqd": 1,
 		},
 		{
 			"fieldname": "to_date",
 			"label": __("To Date"),
 			"fieldtype": "Date",
-			"default": frappe.defaults.get_user_default("year_end_date"),
+			"default": frappe.datetime.month_end(),
 			"reqd": 1,
 		},
 		{

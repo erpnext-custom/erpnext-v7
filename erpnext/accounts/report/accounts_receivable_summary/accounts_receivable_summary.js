@@ -16,6 +16,12 @@ frappe.query_reports["Accounts Receivable Summary"] = {
 			"fieldtype": "Link",
 			"options": "Customer"
 		},
+		// {
+		// 	"fieldname":"from_date",
+		// 	"label": __("Date"),
+		// 	"fieldtype": "Date",
+		// 	"default": frappe.datetime.year_start()
+		// },
 		{
 			"fieldname":"report_date",
 			"label": __("Date"),

@@ -1,5 +1,5 @@
 {
- "add_total_row": 1, 
+ "add_total_row": 0, 
  "apply_user_permissions": 0, 
  "creation": "2016-07-01 18:28:05.744468", 
  "disabled": 0, 
@@ -7,12 +7,13 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2016-07-01 18:59:28.492906", 
+ "modified": "2021-03-16 11:59:53.078089", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Cheque Register", 
  "owner": "Administrator", 
  "ref_doctype": "Journal Entry", 
  "report_name": "Cheque Register", 
- "report_type": "Script Report"
+ "report_type": "Script Report", 
+ "roles": []
 }

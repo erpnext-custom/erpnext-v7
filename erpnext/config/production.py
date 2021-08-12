@@ -33,6 +33,11 @@ def get_data():
 					 "name": "Departmental Group",
 					 "label": "Departmental Group"
 				},
+				{
+					 "type": "doctype",
+					 "name": "Item Type",
+					 "label": "Material Type"
+				},
 			]
 		},
 		{
@@ -66,21 +71,75 @@ def get_data():
 			]
 		},
 		{
-                        "label": _("Reports"),
-                        "icon": "icon-list",
-                        "items": [
-                                {
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Production Report",
-                                        "doctype": "Production"
-                                },
-                                {
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Production Progress Report",
-                                        "doctype": "Production"
-                                },
+			"label": _("Reports"),
+			"icon": "icon-list",
+			"items": [
+					{
+							"type": "report",
+							"is_query_report": True,
+							"name": "Production Report",
+							"doctype": "Production"
+					},
+					{
+							"type": "report",
+							"is_query_report": True,
+							"name": "Production Progress Report",
+							"doctype": "Production"
+					},
 			]
 		},
+		{
+			"label": _("Transporter Transactions"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Transporter Rate",
+					"label": "Transportation Rate",
+					"description": _("Transportation Rate"),
+				},
+				{
+					"type": "doctype",
+					"name": "Transporter Trip Log",
+					"label": _("Transporter Trip Log"),
+					"description": _("Transporter Trip Log."),
+				},
+				{
+					"type": "doctype",
+					"name": "Transporter Payment",
+					"description": _("Transporter Payment.")
+				},
+			]
+		},
+		{
+			"label": _("Coal Raising"),
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Tire",
+					"label": "Tire",
+				},
+				{
+					"type": "doctype",
+					"name": "Coal Raising Master",
+					"label": _("Coal Raising Master")
+				},
+				{
+					"type": "doctype",
+					"name": "Coal Raising Payment",
+					"label": _("Coal Raising Payment")
+				}
+			]
+		},
+		{
+			"label": _("Coal Raising Report"),
+			"items": [
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Coal Raising Report",
+					"label": "Coal Raising Report",
+					'doctype':'Production'
+				},
+			]
+		}
 	]

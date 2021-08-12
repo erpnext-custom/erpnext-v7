@@ -11,15 +11,29 @@ from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 
 class Logbook(Document):
 	def validate(self):
+		self.validate_data()
 		check_future_date(self.posting_date)
 		self.check_duplicate_entry()
-		self.validate_supplier()
-		self.check_date_validity()
-		self.check_target_hour()
+		if self.owned_by_smcl:
+			self.validate_supplier()
+			self.check_date_validity()
+			self.check_target_hour()
 		#self.get_reading_based()
 		self.calculate_hours()
 		self.calculate_downtime()
 		self.validate_hours()
+
+	def validate_data(self):
+		is_disabled = frappe.db.get_value("Branch", self.branch, "is_disabled")
+		if is_disabled:
+			frappe.throw("Cannot use a disabled branch in transaction")
+
+		eqp = frappe.db.get_values("Equipment", self.equipment, ["branch", "is_disabled"], as_dict=1)
+		if eqp[0].is_disabled:
+			frappe.throw("Cannot use a disabled Equipment in transaction")
+		
+		if self.branch != eqp[0].branch:
+			frappe.throw("Cannot use equipments from other branch")
 
 	def check_duplicate_entry(self):
 		lbk = frappe.db.sql("select name as lb from tabLogbook where docstatus = 1 and equipment = %(equipment)s and posting_date = %(posting_date)s and name != %(name)s", {"equipment": self.equipment, "posting_date": self.posting_date, "name": self.name}, as_dict=1)
@@ -60,10 +74,10 @@ class Logbook(Document):
 				if a.initial_reading and a.initial_reading > 0:
 					if 0 >= a.target_trip:
 						frappe.throw("Target Trip is mandatory on row {0}".format(a.idx))
-					a.hours = (a.initial_reading * self.target_hours) / a.target_trip
-					total_hours += a.hours
+					a.hours = flt((flt(a.initial_reading )* flt(self.target_hours))) / flt(a.target_trip)
+					total_hours += flt(round(a.hours,1))
 					if a.is_overtime:
-						ot_hours += a.hours
+						ot_hours += flt(a.hours)
 				else:
 					frappe.throw("Achieved Trip is mandatory")
 			elif a.uom == "Hour":
@@ -71,10 +85,10 @@ class Logbook(Document):
 				if a.reading_initial and a.reading_final:
 					if a.reading_initial > a.reading_final:
 						frappe.throw("Final reading should not be smaller than inital")
-					a.hours = a.reading_final - a.reading_initial
-					total_hours += a.hours
+					a.hours = flt(a.reading_final) - flt(a.reading_initial) - flt(a.idle_time)
+					total_hours += flt(round(a.hours,1))
 					if a.is_overtime:
-						ot_hours += a.hours
+						ot_hours += a.hours 
 				else:
 					frappe.throw("Initial and Final Readings are mandatory")
 			else:
@@ -83,10 +97,10 @@ class Logbook(Document):
 					end = "{0} {1}".format(str(self.posting_date), str(a.final_time))
 					if getdate(start) > getdate(end):
 						frappe.throw("Final time should not be smaller than inital")
-					a.hours = time_diff_in_hours(end, start) - a.idle_time
+					a.hours = time_diff_in_hours(end, start) - flt(a.idle_time)
 					if a.hours <= 0:
 						frappe.throw("Difference of time and idle time should be more than 0")  
-					total_hours += a.hours
+					total_hours += flt(round(a.hours,1))
 					if a.is_overtime:
 						ot_hours += a.hours
 				else:
@@ -95,9 +109,9 @@ class Logbook(Document):
 		if total_hours > act_sch:
 			frappe.throw("Total hours cannot be more than {0} hours".format(act_sch))
 
-
-		self.total_hours = total_hours
-		self.total_ot = ot_hours
+		self.total_hours = round(total_hours,1)
+		# frappe.msgprint(str(self.total_hours))
+		self.total_ot = round(ot_hours,1)
 
 	def calculate_downtime(self):
 		total = 0

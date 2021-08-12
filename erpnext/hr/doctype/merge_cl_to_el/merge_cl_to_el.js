@@ -17,8 +17,8 @@ frappe.ui.form.on('Merge CL To EL', {
 				method: "get_data",
 				doc: frm.doc,
 				callback: function(r, rt) {
-					frm.refresh_field("items");
-					frm.refresh_fields();
+				frm.refresh_field("items");
+							frm.refresh_fields();
 				}
 			});
 		}

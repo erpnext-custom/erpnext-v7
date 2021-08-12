@@ -10,7 +10,6 @@ from erpnext.accounts.party import get_party_account, get_due_date
 from erpnext.controllers.stock_controller import update_gl_entries_after
 from frappe.model.mapper import get_mapped_doc
 from erpnext.accounts.doctype.sales_invoice.pos import update_multi_mode_option
-
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.accounts.utils import get_account_currency
 from erpnext.stock.doctype.delivery_note.delivery_note import update_billed_amount_based_on_so
@@ -51,10 +50,7 @@ class SalesInvoice(SellingController):
 			self.indicator_title = _("Paid")
 
 	def validate(self):
-		total = 0
-                for a in self.get("payment_deduction_or_lost"):
-                        total += flt(a.amount)
-                self.charges_total = total
+		self.calculate_amount()
 
 		super(SalesInvoice, self).validate()
 		self.validate_posting_time()
@@ -90,7 +86,15 @@ class SalesInvoice(SellingController):
 		self.validate_multiple_billing("Delivery Note", "dn_detail", "amount", "items")
 		self.update_packing_list()
 		self.calculate_billing_amount_from_timesheet()
-
+	def calculate_amount(self):
+		total = 0
+		qty = 0 
+		for d in self.get("items"):
+			qty = d.qty
+		for a in self.get("payment_deduction_or_lost"):
+			a.amount = flt(qty) * flt(a.rate)
+			total += flt(a.amount)
+		self.charges_total = total
 	def before_save(self):
 		set_account_for_mode_of_payment(self)
 
@@ -838,35 +842,35 @@ class SalesInvoice(SellingController):
 	##
 	def make_advance_gl_entry(self, gl_entries):
 		for a in self.get("advances"):
-		    if flt(a.allocated_amount) and a.advance_account:
-			advance_account_currency = get_account_currency(a.advance_account)
-			allocated_amount = round(flt(a.allocated_amount), 2)
+			if flt(a.allocated_amount) and a.advance_account:
+				advance_account_currency = get_account_currency(a.advance_account)
+				allocated_amount = round(flt(a.allocated_amount), 2)
 
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": self.debit_to,
-					"party_type": "Customer",
-					"party": self.customer,
-					"against": a.advance_account,
-					"credit": allocated_amount,
-					"credit_in_account_currency": allocated_amount, 
-					"against_voucher": self.return_against if cint(self.is_return) else self.name,
-					"against_voucher_type": self.doctype,
-					"cost_center": a.advance_cost_center
-				}, advance_account_currency)
-			)
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": a.advance_account,
-					"party_type": "Customer",
-					"party": self.customer,
-					"against": self.customer,
-					"debit": allocated_amount,
-					"debit_in_account_currency": allocated_amount,
-					"cost_center": a.advance_cost_center
-				}, advance_account_currency)
-			)
-		
+				gl_entries.append(
+					self.get_gl_dict({
+						"account": self.debit_to,
+						"party_type": "Customer",
+						"party": self.customer,
+						"against": a.advance_account,
+						"credit": allocated_amount,
+						"credit_in_account_currency": allocated_amount, 
+						"against_voucher": self.return_against if cint(self.is_return) else self.name,
+						"against_voucher_type": self.doctype,
+						"cost_center": a.advance_cost_center
+					}, advance_account_currency)
+				)
+				gl_entries.append(
+					self.get_gl_dict({
+						"account": a.advance_account,
+						"party_type": "Customer",
+						"party": self.customer,
+						"against": self.customer,
+						"debit": allocated_amount,
+						"debit_in_account_currency": allocated_amount,
+						"cost_center": a.advance_cost_center
+					}, advance_account_currency)
+				)
+			
 
 
 	def update_billing_status_in_dn(self, update_modified=True):

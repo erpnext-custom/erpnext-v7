@@ -4,5 +4,12 @@
 frappe.ui.form.on('Departmental Group', {
 	refresh: function(frm) {
 
+	},
+	tire:function(frm){
+		if(frm.doc.tire == 'Tire 1- Bhutanese' || frm.doc.tire == 'Tire 2-Indian'){
+			frm.set_df_property('minimum_labor', 'reqd', 1)
+		}else{
+			frm.set_df_property('minimum_labor', 'reqd', 0)
+		}
 	}
 });

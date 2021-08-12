@@ -12,6 +12,7 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.controllers.selling_controller import SellingController
 from frappe.desk.notifications import clear_doctype_notifications
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 
 form_grid_templates = {
 	"items": "templates/form_grid/item_grid.html"
@@ -105,13 +106,41 @@ class DeliveryNote(SellingController):
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.validate_with_previous_doc()
 		self.per_delivered = 100
-		from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 		make_packing_list(self)
-
 		self.update_current_stock()
 
 		if not self.installation_status: self.installation_status = 'Not Installed'
+		# check location base
+		if self.from_warehouse:
+			self.get_distance_and_rate()
 
+	def get_distance_and_rate(self):
+		if not self.location:
+			frappe.throw('Location Not Selected')
+		rate_and_distance = frappe.db.sql("""
+				SELECT 
+					tdr.rate, tdr.distance,tr.name,tr.expense_account
+				FROM 
+					`tabTransporter Rate` tr,
+					`tabTransporter Distance Rate` tdr,
+					`tabLocation` l
+				WHERE 
+					tr.from_warehouse = '{0}' 
+				AND 
+					tr.name = tdr.parent
+				AND 
+					l.name = '{1}' 
+				AND 
+					tdr.distance = l.distance
+			""".format(self.from_warehouse, self.location),as_dict=True)
+		
+		if not rate_and_distance:
+			frappe.throw("There Is No Rate and Distance Defined Between Warehouse {0} and Location {1}".format(self.from_warehouse,self.location))
+		self.rate = rate_and_distance[0].rate
+		self.distance = rate_and_distance[0].distance
+		self.transporter_rate_reference = rate_and_distance[0].name
+		self.expense_account = rate_and_distance[0].expense_account
+		
 	def validate_with_previous_doc(self):
 		for fn in (("Sales Order", "against_sales_order", "so_detail"),
 				("Sales Invoice", "against_sales_invoice", "si_detail")):

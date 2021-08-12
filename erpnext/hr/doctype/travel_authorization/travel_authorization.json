@@ -1410,7 +1410,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-04-02 11:13:27.271453", 
+ "modified": "2021-04-05 21:55:13.872843", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Authorization", 
@@ -1547,5 +1547,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "employee_name", 
+ "track_changes": 1, 
  "track_seen": 0
 }

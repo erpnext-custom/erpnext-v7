@@ -92,7 +92,7 @@ def get_columns(filters):
 		_("Voucher Type") + "::120", _("Voucher No") + ":Dynamic Link/"+_("Voucher Type")+":160",
 		_("Against Account") + "::120", _("Party Type") + "::80", _("Party") + "::150",
 		_("Project") + ":Link/Project:100", _("Cost Center") + ":Link/Cost Center:100",
-		_("Remarks") + "::400"
+		_("Remarks") + "::400", _("Cheque No") + "::80", _("Cheque Date") + ":Date:90"
 	]
 
 	return columns
@@ -116,11 +116,43 @@ def get_gl_entries(filters):
 
 	gl_entries = frappe.db.sql("""
 		select
-			posting_date, account, party_type, party,
+			posting_date,account, party_type,
+			CASE gl.party_type
+				WHEN 'Equipment'
+				THEN (select equipment_number as party from `tabEquipment` where name = gl.party)
+				ELSE
+				gl.party
+			END AS party,
+			CASE gl.voucher_type
+				WHEN 'Payment Entry'
+					THEN (select reference_no as cheque_no from `tabPayment Entry` where name = gl.voucher_no)
+				WHEN 'Journal Entry'
+					THEN (select cheque_no from `tabJournal Entry` where name = gl.voucher_no)
+				WHEN 'Direct Payment'
+					THEN (select cheque_no from `tabDirect Payment` where name = gl.voucher_no)
+				WHEN 'Overtime Payment'
+					THEN (select cheque_no from `tabOvertime Payment` where name = gl.voucher_no)
+				WHEN 'EME Payment'
+					THEN (select cheque_no from `tabEME Payment` where name = gl.voucher_no)
+				ELSE ''
+			END as cheque_no,
+			CASE gl.voucher_type
+				WHEN 'Payment Entry'
+					THEN (select reference_date as cheque_date from `tabPayment Entry` where name = gl.voucher_no)
+				WHEN 'Journal Entry'
+					THEN (select cheque_date from `tabJournal Entry` where name = gl.voucher_no)
+				WHEN 'Direct Payment'
+					THEN (select cheque_date from `tabDirect Payment` where name = gl.voucher_no)
+				WHEN 'Overtime Payment'
+					THEN (select cheque_date from `tabOvertime Payment` where name = gl.voucher_no)
+				WHEN 'EME Payment'
+					THEN (select cheque_date from `tabEME Payment` where name = gl.voucher_no)
+				ELSE ''
+			END as cheque_date,
 			sum(debit) as debit, sum(credit) as credit,
 			voucher_type, voucher_no, cost_center, project,
 			remarks, against, is_opening {select_fields}
-		from `tabGL Entry`
+		from `tabGL Entry` gl
 		where docstatus = 1 and company=%(company)s {conditions}
 		{group_by_condition}
 		order by posting_date, account"""\
@@ -147,7 +179,10 @@ def get_conditions(filters):
 
 	if not (filters.get("account") or filters.get("party") or filters.get("group_by_account")):
 		conditions.append("posting_date >=%(from_date)s")
-
+	# cost center filter added by Birendra-13/03/2021
+	if filters.cost_center :
+		conditions.append("cost_center = '{}' ".format(filters.cost_center))
+		
 	from frappe.desk.reportview import build_match_conditions
 	match_conditions = build_match_conditions("GL Entry")
 	if match_conditions: conditions.append(match_conditions)
@@ -291,7 +326,7 @@ def get_result_as_list(data, filters):
 			row += [d.get("debit_in_account_currency"), d.get("credit_in_account_currency")]
 
 		row += [d.get("voucher_type"), d.get("voucher_no"), d.get("against"),
-			d.get("party_type"), d.get("party"), d.get("project"), d.get("cost_center"), d.get("remarks")
+			d.get("party_type"), d.get("party"), d.get("project"), d.get("cost_center"), d.get("remarks"), d.get("cheque_no"), d.get("cheque_date")
 		]
 
 		result.append(row)

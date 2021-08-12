@@ -19,27 +19,40 @@ frappe.ui.form.on('Logbook', {
 	},
 
 	equipment: function(frm) {
-                return frappe.call({
-                        method: "get_ehf",
-                        doc: frm.doc,
-                        callback: function(r, rt) {
-                                frm.refresh_fields();
-                        },
-                        freeze: true,
-                });
-        },
+			frappe.call({
+				'method': 'frappe.client.get',
+				'args': {
+					'doctype': 'Equipment',
+					'filters': {
+						'name': frm.doc.equipment
+					  },
+					'fields':['not_cdcl']
+					},
+				   callback: function(r){
+					   if (r.message) {
+						  frm.set_value('owned_by_smcl',r.message.not_cdcl)
+						  frm.set_df_property('equipment_hiring_form', 'reqd', r.message.not_cdcl)
+					   }
+				   }
+			});
+		get_ehf(frm)
+    },
 	posting_date: function(frm) {
-                return frappe.call({
-                        method: "get_ehf",
-                        doc: frm.doc,
-                        callback: function(r, rt) {
-                                frm.refresh_fields();
-                        },
-                        freeze: true,
-                });
-        },
+		get_ehf(frm)
+    },
 });
-
+const get_ehf = (frm)=>{
+	if (frm.doc.equipment && frm.doc.posting_date && frm.doc.owned_by_smcl){
+		return frappe.call({
+			method: "get_ehf",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.refresh_fields();
+			},
+			freeze: true,
+		});
+	}
+}
 frappe.ui.form.on("Logbook Item", {
 	"uom": function(frm, cdt, cdn) {
 		calculate_time(frm, cdt, cdn)
@@ -74,8 +87,9 @@ function calculate_time(frm, cdt, cdn) {
 	var hour = 0
 	var item = locals[cdt][cdn]
 	if(item.uom == "Hour") {
-		console.log("UMMM ", item.reading_final, item.reading_initial)
-		hour = item.reading_final - item.reading_initial
+		// console.log("UMMM ", item.reading_final, item.reading_initial)
+		console.log(item.idle_time)
+		hour = item.reading_final - item.reading_initial - item.idle_time
 	}
 	else if(item.uom == "Time") {
 		var fdate = new Date("October 13, 2014 " + item.final_time)

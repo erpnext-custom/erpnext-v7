@@ -1,5 +1,10 @@
 # Copyright (c) 2013, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
+'''
+Author				Date				Remarks
+----------------------------------------------------------------------------------------
+Birendra			12/03/2021			extra column added as ticket 1512
+'''
 from __future__ import unicode_literals
 import frappe
 from erpnext.accounts.utils import get_child_cost_centers
@@ -23,6 +28,7 @@ def get_data(filters):
 
 	query = """
 	select	
+		pe.ref_doc,
 		pe.posting_date, 
 		pe.item_code, 
 		pe.item_name, 
@@ -34,7 +40,8 @@ def get_data(filters):
 		pe.equipment_model, 
 		pe.transporter_type, 
 		pe.unloading_by, 
-		pe.group, 
+		pe.group,
+		pe.coal_raising_type, 
 		pe.branch, 
 		pe.location, 
 		pe.adhoc_production, 
@@ -44,6 +51,9 @@ def get_data(filters):
 		pe.timber_class, 
 		pe.timber_type, 
 		pe.timber_species, 
+		pe.transfer_to_warehouse,
+		pe.transportation_rate,
+		pe.transportation_amount,
 		cc.parent_cost_center as region,
 		{0} 
 	from 
@@ -78,11 +88,11 @@ def get_order_by(filters):
 
 def get_conditions(filters):
 	if not filters.cost_center:
-		return " and pe.docstatus = 10"
+		return " and pe.docstatus = 1"
 
 	all_ccs = get_child_cost_centers(filters.cost_center)
 	if not all_ccs:
-		return " and pe.docstatus = 10"
+		return " and pe.docstatus = 1"
 
 	all_branch = [str("DUMMY")]
 	for a in all_ccs:
@@ -112,6 +122,8 @@ def get_conditions(filters):
 	if filters.warehouse:
 		condition += " and pe.warehouse = '{0}'".format(filters.warehouse)
 
+	if filters.branch:
+		condition += " and pe.branch = '{}' ".format(filters.branch)
 	return condition
 
 def get_columns(filters):
@@ -132,7 +144,7 @@ def get_columns(filters):
 		},
 		{
 			"fieldname": "item_group",
-			"label": "Group",
+			"label": "Item Group",
 			"fieldtype": "Data",
 			"width": 120
 		},
@@ -162,44 +174,81 @@ def get_columns(filters):
 			"options": "UoM",
 			"width": 100
 		},
+		{
+			"fieldname": "handling_loss",
+			"label": "Handling Loss",
+			"fieldtype": "Float",
+			"width": 100
+		},
 	]
 
 	if not filters.show_aggregate:
+		columns.insert(0,{
+			"fieldname": "ref_doc",
+			"label": "Reference",
+			"fieldtype": "Link",
+			"options": "Production",
+			"width": 120
+		}),
 		columns.insert(3, {
+			"fieldname": "transfer_to_warehouse",
+			"label": "Transfer to Warehouse",
+			"fieldtype": "Data",
+			"width": 150
+			})
+		columns.insert(5, {
 			"fieldname": "posting_date",
 			"label": "Posting Date",
 			"fieldtype": "Date",
 			"width": 100
 		})
-		columns.insert(7, {
-	                "fieldname": "equipment_number",	                        
-			"label": "Equipment Number",
-                        "fieldtype": "Data",														                      "width": 130									                
+		columns.insert(9, {
+			"fieldname": "transportation_rate",
+			"label": "Transportation rate",
+			"fieldtype": "Currency",
+			"width": 120
 			})
-		columns.insert(8, {
+		columns.insert(10, {
+			"fieldname": "transportation_amount",
+			"label": "Transportation Amount",
+			"fieldtype": "Currency",
+			"width": 150
+			})
+		columns.insert(11, {
+	        "fieldname": "equipment_number",	                        
+			"label": "Equipment Number",
+            "fieldtype": "Data",														                      "width": 130									                
+			})
+		columns.insert(12, {
 			"fieldname": "equipment_model",
 			"label": "Equipment Model",
 			"fieldtype": "Data",
 			"width": 130 
 			})
-		columns.insert(9, {
+		columns.insert(13, {
 			"fieldname": "transporter_type",
 			"label": "Transporter Type",
 			"fieldtype": "Data",
 			"width": 130
 			})
-		columns.insert(10, {
+		columns.insert(14, {
 			"fieldname": "unloading_by",
 			"label": "Unloading By",
 			"fieldtype": "Data",
 			"width": 120
 			})
-		columns.insert(11, {
+		columns.insert(15, {
 			"fieldname": "group",
 			"label": "Group",
+			"fieldtype": "Link",
+			"options":"Departmental Group",
+			"width": 120
+			})
+		columns.insert(16, {
+			"fieldname": "coal_raising_type",
+			"label": "Coal Raising Type",
 			"fieldtype": "Data",
 			"width": 120
 			})
-
 	return columns
 
