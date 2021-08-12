@@ -14,7 +14,7 @@ class HSDPayment(Document):
 		check_future_date(self.posting_date)
 		self.validate_allocated_amount()
 		self.clearance_date = None
-
+				
 	def validate_allocated_amount(self):
 		if not self.amount > 0:
 			frappe.throw("Amount should be greater than 0")	
@@ -107,8 +107,15 @@ class HSDPayment(Document):
 	def get_invoices(self):
 		if not self.fuelbook:
 			frappe.throw("Select a Fuelbook to Proceed")
-		query = "select name as pol, pol_type as pol_item_code, outstanding_amount as payable_amount, item_name, memo_number from tabPOL where docstatus = 1 and outstanding_amount > 0 and fuelbook = %s order by posting_date, posting_time"
-		entries = frappe.db.sql(query, self.fuelbook, as_dict=True)
+		query = """select name as pol, pol_type as pol_item_code, 
+						outstanding_amount as payable_amount, 
+						item_name, memo_number 
+					from tabPOL where docstatus = 1 
+					and outstanding_amount > 0 
+					and fuelbook = '{0}'
+					and posting_date between '{1}' and '{2}'
+					order by posting_date, posting_time""".format(self.fuelbook,self.from_date,self.to_date)
+		entries = frappe.db.sql(query, as_dict=True)
 		self.set('items', [])
 
 		total_amount = 0

@@ -152,7 +152,7 @@ class LeaveEncashment(Document):
                 je.voucher_type = 'Bank Entry'
                 je.naming_series = 'Bank Payment Voucher'
                 je.company = employee.company
-                je.remark = 'Payment against Leave Encashment: ' + self.name;
+                je.remark = 'Payment against Leave Encashment: ' + self.name
                 je.posting_date = self.application_date
                 je.total_amount_in_words =  money_in_words(flt(basic_pay)-flt(salary_tax))
 
@@ -166,17 +166,17 @@ class LeaveEncashment(Document):
                         "cost_center": self.cost_center,
                         "party_check": 0
                 })
-
-                je.append("accounts", {
-                        "account": le.tax_account,
-                        "credit_in_account_currency": flt(salary_tax),
-                        "reference_type": "Leave Encashment",
-                        "reference_name": self.name,
-                        #"party_type": "Employee",
-                        #"party": self.employee,
-                        "cost_center": self.cost_center,
-                        "party_check": 0
-                })
+                if flt(salary_tax):
+                        je.append("accounts", {
+                                "account": le.tax_account,
+                                "credit_in_account_currency": flt(salary_tax),
+                                "reference_type": "Leave Encashment",
+                                "reference_name": self.name,
+                                #"party_type": "Employee",
+                                #"party": self.employee,
+                                "cost_center": self.cost_center,
+                                "party_check": 0
+                        })
 
                 '''je.append("accounts", {
                         "account": "Sundry Creditors - Employee - SMCL",

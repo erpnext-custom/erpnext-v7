@@ -10,6 +10,9 @@ frappe.ui.form.on('RRCO Receipt Tool', {
 		{	
 			cur_frm.set_df_property("to_date", "reqd", 1);
 			cur_frm.set_df_property("from_date", "reqd", 1);
+		}else{
+			cur_frm.set_df_property("to_date", "reqd", 0);
+			cur_frm.set_df_property("from_date", "reqd", 0);
 		}
 	},
 	get_invoices: function(frm) {

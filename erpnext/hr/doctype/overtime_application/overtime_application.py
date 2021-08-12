@@ -24,6 +24,7 @@ class OvertimeApplication(Document):
 			self.post_journal_entry()
 
 	def on_cancel(self):
+		self.check_workflow_state()
 		self.db_set("status", "Rejected")
 		enable_ot_bulk_payment = frappe.db.get_single_value("HR Settings", "enable_bulk_ot_payment")
 		if not enable_ot_bulk_payment:		
@@ -43,7 +44,9 @@ class OvertimeApplication(Document):
 	def check_status(self):
 		if self.status != "Approved":
 			frappe.throw("Only Approved documents can be submitted")
-	
+	def check_workflow_state(self):
+		if self.workflow_state == 'Approved' and self.docstatus != 1:
+			self.workflow_state = 'Waiting Approval'
 	##
 	# Dont allow duplicate dates
 	##

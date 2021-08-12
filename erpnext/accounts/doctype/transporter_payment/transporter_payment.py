@@ -359,7 +359,6 @@ class TransporterPayment(AccountsController):
 		# populate items
 		for d in entries:
 			equipment_type = frappe.db.get_value("Equipment", d.equipment,"equipment_type")
-			frappe.msgprint('equipment type : {}'.format(d))
 			# if frappe.session.user == "Administrator":
 			# 	frappe.msgprint(format(d.reference_name))
 			if d.transporter_rate_reference:

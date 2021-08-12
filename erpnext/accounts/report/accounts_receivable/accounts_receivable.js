@@ -17,11 +17,10 @@ frappe.query_reports["Accounts Receivable"] = {
 			"options": "Customer"
 		},
 		{
-			"fieldname":"customer_type",
-			"label": __("Customer Type"),
-			"fieldtype": "Select",
-			"options": ["All","Domestic Customer", "International Customer"],
-			"default": "All"
+			"fieldname":"from_date",
+			"label": __("From Date"),
+			"fieldtype":"Date",
+			"default":frappe.defaults.get_user_default("year_start_date")
 		},
 		{
 			"fieldname":"report_date",
@@ -35,6 +34,12 @@ frappe.query_reports["Accounts Receivable"] = {
 			"fieldtype": "Select",
 			"options": 'Posting Date' + NEWLINE + 'Due Date',
 			"default": "Posting Date"
+		},
+		{
+			"fieldname" : "cost_center",
+			"label": __ ("Cost Center"),
+			"fieldtype" : "Link",
+			"options": "Cost Center",
 		},
 		{
 			"fieldtype": "Break",

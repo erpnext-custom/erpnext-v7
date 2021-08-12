@@ -2,7 +2,7 @@
  "allow_copy": 0, 
  "allow_import": 0, 
  "allow_rename": 0, 
- "autoname": "hash", 
+ "autoname": "", 
  "beta": 0, 
  "creation": "2013-06-04 11:02:19", 
  "custom": 0, 
@@ -2144,7 +2144,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2021-02-24 14:31:43.779314", 
+ "modified": "2021-06-29 11:43:58.847154", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Sales Invoice Item", 
@@ -2156,5 +2156,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

@@ -86,7 +86,7 @@ class POL(StockController):
 			self.update_stock_ledger()
 		self.update_general_ledger(1)
 		self.make_pol_entry()
-	
+		self.transport_payment_done = 0
 	def check_budget(self):
 		if self.hiring_cost_center:
                         cc = self.hiring_cost_center

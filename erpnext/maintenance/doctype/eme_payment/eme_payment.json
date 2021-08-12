@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "EP.YY.MM.#####", 
  "beta": 0, 
@@ -1081,7 +1081,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-04-21 21:21:37.297972", 
+ "modified": "2021-05-10 09:55:57.519829", 
  "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "EME Payment", 

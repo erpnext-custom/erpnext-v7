@@ -180,7 +180,6 @@ class StatusUpdater(Document):
 
 	def update_qty(self, update_modified=True):
 		"""Updates qty or amount at row level
-
 			:param update_modified: If true, updates `modified` and `modified_by` for target parent doc
 		"""
 		for args in self.status_updater:
@@ -197,6 +196,7 @@ class StatusUpdater(Document):
 
 	def _update_children(self, args, update_modified):
 		"""Update quantities or amount in child table"""
+		# frappe.throw(str('args {} modified: {}').format(args,update_modified))
 		for d in self.get_all_children():
 			if d.doctype != args['source_dt']:
 				continue
@@ -220,6 +220,7 @@ class StatusUpdater(Document):
 			if args['detail_id']:
 				if not args.get("extra_cond"): args["extra_cond"] = ""
 
+				frappe.db.sql("select name from `tab%(target_dt)s` where name='%(detail_id)s' for update" % args)
 				frappe.db.sql("""update `tab%(target_dt)s`
 					set %(target_field)s = (
 						(select ifnull(sum(%(source_field)s), 0)

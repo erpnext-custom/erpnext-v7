@@ -3,7 +3,7 @@
 '''
 Author				Date				Remarks
 ----------------------------------------------------------------------------------------
-Birendra			12/03/2021			extra column added as per ticket 1512
+Birendra			12/03/2021			extra column added as ticket 1512
 '''
 from __future__ import unicode_literals
 import frappe
@@ -40,7 +40,8 @@ def get_data(filters):
 		pe.equipment_model, 
 		pe.transporter_type, 
 		pe.unloading_by, 
-		pe.group, 
+		pe.group,
+		pe.coal_raising_type, 
 		pe.branch, 
 		pe.location, 
 		pe.adhoc_production, 
@@ -233,6 +234,13 @@ def get_columns(filters):
 		columns.insert(15, {
 			"fieldname": "group",
 			"label": "Group",
+			"fieldtype": "Link",
+			"options":"Departmental Group",
+			"width": 120
+			})
+		columns.insert(16, {
+			"fieldname": "coal_raising_type",
+			"label": "Coal Raising Type",
 			"fieldtype": "Data",
 			"width": 120
 			})

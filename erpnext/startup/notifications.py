@@ -19,6 +19,7 @@ def get_notification_config():
 				"status": ("not in", ("Completed", "Closed")),
 				"docstatus": ("<", 2)
 			},
+			"Asset": {"docstatus": 0},
 			"Journal Entry": {"docstatus": 0},
 			"Sales Invoice": { "outstanding_amount": (">", 0), "docstatus": ("<", 2) },
 			"Purchase Invoice": {"docstatus": 0},

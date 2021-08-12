@@ -57,12 +57,15 @@ frappe.ui.form.on('Production', {
 				frappe.set_route("query-report", "General Ledger");
 			}, __("View"));
 		}
+		apply_filter(frm)
 	},
 	
 	/* ++++++++++ Ver 1.0.190401 Begins ++++++++++*/
 	// Following code added by SHIV on 2019/04/01
 	branch: function(frm){
 		frm.set_value("warehouse","");
+	//Added by Birendra on 10/05/2021
+		apply_filter(frm)
 	},
 	
 	warehouse: function(frm){
@@ -77,8 +80,12 @@ frappe.ui.form.on('Production', {
 	},
 	get_raw_material: function(frm){
 		get_raw_materials(frm);
+	},
+	//Added by Birendra on 10/05/2021
+	coal_raising_type:function(frm){
+		make_field_mandatory(frm)
+		apply_filter(frm)
 	}
-
 });
 
 frappe.ui.form.on("Production", "refresh", function(frm) {
@@ -92,7 +99,7 @@ frappe.ui.form.on("Production", "refresh", function(frm) {
     cur_frm.set_query("branch", function() {
         return {
             "filters": {
-		"is_disabled": 0
+			"is_disabled": 0
             }
         };
     });
@@ -151,12 +158,14 @@ frappe.ui.form.on("Production Product Item", {
 		/* ++++++++++ Ver 1.0.190401 Ends ++++++++++++*/
 		frappe.model.set_value(cdt, cdn, "production_type", frm.doc.production_type);
 		cur_frm.refresh_fields();
+		// added by Birendra for coal raising purpose on 20/05/2021
+		check_item_applicable_for_coal_raising(frm,cdt,cdn)
 	},
 	
 	items_add: function(frm, cdt, cdn){
 		frappe.model.set_value(cdt, cdn, "warehouse", frm.doc.warehouse);
 		frappe.model.set_value(cdt, cdn, "cost_center", frm.doc.cost_center);
-	},
+	}
 });
 
 /* ++++++++++ Ver 1.0.190401 Begins ++++++++++*/
@@ -353,4 +362,46 @@ function get_raw_materials(frm){
 	}else{
 		frappe.msgprint("To get the Raw Materials, please enter the branch and finish product in Production Setting");
 	}
+}
+
+var check_item_applicable_for_coal_raising =(frm,cdt,cdn)=>{
+	var row = locals[cdt][cdn];
+	frappe.call({
+		method:'erpnext.production.doctype.production.production.check_item_applicable_for_coal_raising',
+		args:{
+			'branch':frm.doc.branch,
+			'item':row.item_code
+		},
+		callback:function(r){
+			if(r.message){
+				frm.set_df_property('coal_raising_type', 'reqd', 1)
+			}else{
+				frm.set_df_property('coal_raising_type', 'reqd', 0)
+			}
+		}
+	})
+}
+
+var make_field_mandatory = (frm)=>{
+	if(frm.doc.coal_raising_type == 'Manual' || frm.doc.coal_raising_type == 'Machine Sharing'){
+		frm.set_df_property('group', 'reqd', 1)
+		frm.set_df_property('no_of_labours', 'reqd', 1)
+		if (frm.doc.coal_raising_type == 'Machine Sharing'){
+			frm.set_df_property('machine_hours', 'reqd', 1)
+		}
+	}else{
+		frm.set_df_property('group', 'reqd', 0)
+		frm.set_df_property('no_of_labours', 'reqd', 0)
+		frm.set_df_property('machine_hours', 'reqd', 0)
+	}
+}
+var apply_filter=(frm)=>{
+	cur_frm.set_query("group", function() {
+		return {
+			filters: [
+				['branch','=', frm.doc.branch],
+				["contract_end_date",'>=',frm.doc.posting_date]
+			]
+		}
+	})
 }

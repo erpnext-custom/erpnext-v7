@@ -42,8 +42,8 @@ def get_data(filters):
 			from `tabOvertime Application` ot where ot.docstatus =1"""
 	if filters.employee:
 		query += " and ot.employee = '{0}'".format(filters.employee)
-	if filters.cost_center:
-		query += " and ot.branch = '{0}'".format(filters.branch)
+	# if filters.cost_center:
+	# 	query += " and ot.branch = '{0}'".format(filters.branch)
 	if filters.from_date and filters.to_date:
 		query += " and ot.posting_date between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
 	if filters.branch:

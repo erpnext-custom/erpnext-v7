@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 1, 
+ "allow_rename": 0, 
  "autoname": "field:branch", 
  "beta": 0, 
  "creation": "2013-01-10 16:34:13", 
@@ -574,8 +574,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-12-26 11:42:13.542348", 
- "modified_by": "Administrator", 
+ "modified": "2021-08-02 12:10:12.565286", 
+ "modified_by": "dechen.lhaden@thimphutechpark.bt", 
  "module": "HR", 
  "name": "Branch", 
  "name_case": "Title Case", 
@@ -646,7 +646,7 @@
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 1, 
    "if_owner": 0, 
@@ -708,5 +708,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "branch", 
+ "track_changes": 1, 
  "track_seen": 0
 }

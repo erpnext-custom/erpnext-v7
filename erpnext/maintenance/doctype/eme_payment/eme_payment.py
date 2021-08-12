@@ -65,12 +65,12 @@ class EMEPayment(Document):
 		self.total_amount = total
 
 		# tds
-                if self.tds_percent:
-                        self.tds_amount  = flt(self.total_amount) * flt(self.tds_percent) / 100.0
-                        self.tds_account = get_tds_account(self.tds_percent)
-                else:
-                        self.tds_amount  = 0
-                        self.tds_account = None
+		if self.tds_percent:
+				self.tds_amount  = flt(self.total_amount) * flt(self.tds_percent) / 100.0
+				self.tds_account = get_tds_account(self.tds_percent)
+		else:
+				self.tds_amount  = 0
+				self.tds_account = None
 
 		if self.deduction_amount and not self.deduction_account:
 			self.deduction_account = settings.eme_deduction_account
@@ -85,7 +85,7 @@ class EMEPayment(Document):
 				frappe.throw("Account is mandatory for deductions")
 			total_deductions += flt(d.amount, 2)
 		self.deduction_amount = total_deductions
-		self.payable_amount = flt(self.total_amount, 2) - flt(self.tds_amount, 2) - flt(self.deduction_amount, 2) - flt(total_deductions, 2)
+		self.payable_amount = flt(self.total_amount, 2) - flt(self.tds_amount, 2) - flt(self.deduction_amount, 2)
 
 	def on_submit(self):
 		self.validate_workflow()
@@ -154,7 +154,7 @@ class EMEPayment(Document):
 						 "cost_center": self.cost_center,
 						})
 				)
-	
+		'''
 		if self.deduction_amount:
 			party = party_type = None
 			account_type = frappe.db.get_value("Account", self.deduction_account, "account_type") or ""
@@ -172,7 +172,8 @@ class EMEPayment(Document):
 					"remarks": self.deduction_remarks
 					})
 				)
-
+		'''
+		
 		for d in self.get('deduct_items'):
 			party = party_type = None
 			if d.account_type in ["Receivable", "Payable"]:

@@ -33,7 +33,8 @@ class Production(StockController):
 		self.validate_posting_time()
 		self.validate_transportation()
 		self.validate_raw_material_product_qty()
-
+		if self.coal_raising_type:
+			self.validate_coal_raising()
 	def validate_data(self):
 		if self.production_type == "Adhoc" and not self.adhoc_production:
 			frappe.throw("Select Adhoc Production to Proceed")
@@ -363,8 +364,8 @@ class Production(StockController):
 			doc.qty = a.qty
 			doc.uom = a.uom
 			doc.cop = a.cop
-                        doc.transportation_rate = a.rate
-                        doc.transportation_amount = a.amount
+			doc.transportation_rate = a.rate
+			doc.transportation_amount = a.amount
 			doc.company = self.company
 			doc.currency = self.currency
 			doc.branch = self.branch	
@@ -378,10 +379,11 @@ class Production(StockController):
 			doc.equipment_number = a.equipment_number
 			doc.equipment_model = a.equipment_model
 			doc.transporter_type = frappe.db.get_value("Equipment", a.equipment, "equipment_type")
-	                doc.unloading_by = a.unloading_by
-                        doc.transfer_to_warehouse = self.to_warehouse if self.transfer else ''
-                        doc.group = a.group
-		        doc.submit()
+			doc.unloading_by = a.unloading_by
+			doc.transfer_to_warehouse = self.to_warehouse if self.transfer else ''
+			doc.group = self.group
+			doc.coal_raising_type = self.coal_raising_type
+			doc.submit()
 
 	def delete_production_entry(self):
 		frappe.db.sql("delete from `tabProduction Entry` where ref_doc = %s", self.name)
@@ -591,6 +593,150 @@ class Production(StockController):
 							frappe.throw("Please provide the Quantity")				
 					else:
 						frappe.throw("Define Transporter Rate for distance {} in Transporter Rate ".format(self.distance))
+	
+    # added by Birendra for coal raising purpose on 20/05/2021
+	def validate_coal_raising(self):
+		self.validate_master_data()
+		is_exist = False
+		for item in self.items:
+			if frappe.db.exists({'doctype': 'Coal Raising Master Item','parent': self.branch,'item': item.item_code}):
+				is_exist = True
+				if not self.coal_raising_type:
+					frappe.throw("Coal Rasing Type is Required")
+		if not is_exist and self.coal_raising_type :
+			frappe.throw("Coal Rasing Type is Not Required for above item")
+
+		if self.coal_raising_type in ['Manual','Machine Sharing']:
+			if not self.group:
+				frappe.throw("Group is Required")
+			if not self.no_of_labours:
+				frappe.throw("No. of Labours is Required")
+			contract_end_date = frappe.db.get_value('Departmental Group',{'name':self.group},['contract_end_date'])
+			if getdate(self.posting_date) > getdate(contract_end_date):
+				frappe.throw(str("Group <b>{}</b> is not applicable as its contract date ended on <b>{}</b>".format(self.group,contract_end_date)))
+		
+		if self.coal_raising_type == 'Manual':
+			self.oms = flt(self.product_qty) / flt(self.no_of_labours)
+			self.manual_calculation()
+			self.machine_hours = 0
+
+		if self.coal_raising_type == 'Machine Sharing':
+			self.machine_sharing_calculation()
+			self.penalty_amount = 0
+
+		if self.coal_raising_type == 'SMCL Machine':
+			self.group = ''
+			self.no_of_labours = 0 
+			self.machine_hours = 0
+			self.tire = 0
+			self.oms = 0
+			self.amount = 0
+			self.penalty_amount = 0
+			self.machine_payable = 0
+			self.grand_amount = 0
+
+	def validate_master_data(self):
+		if not frappe.db.exists('Coal Raising Master',{'name':self.branch,'from_date':('<=',self.posting_date),'to_date':('>=',self.posting_date)}):
+			frappe.throw('Coal Raising Master is not valid for branch <b>{}</b>'.format(self.branch))
+
+	def manual_calculation(self):
+		grand_total = 0
+		min_labour = frappe.db.get_value('Departmental Group',self.group,['minimum_labor'])
+		rate1, rate2, rate_per_mt_tire2 = frappe.db.get_value('Coal Raising Master',self.branch,['oms1_tire1','oms2_tire1','rate_per_mt_tire2'])
+		total = 0
+		penalty = 0
+
+		if self.tire == 'Tire 1- Bhutanese':
+			if flt(self.oms) > 2:
+				oms1 = 2
+				oms2 = flt(self.oms) - flt(oms1)
+				amount1 = flt(self.no_of_labours) * flt(rate1) * flt(oms1)
+				amount2 = flt(self.no_of_labours) * flt(rate2) * flt(oms2)
+				total = flt(amount1) + flt(amount2)
+			else:
+				total = flt(self.no_of_labours) * flt(rate1) * flt(self.oms)
+				# frappe.msgprint(str(self.oms))
+
+			# calculate penalty
+			if flt(self.no_of_labours) < flt(min_labour):
+				p_oms = 0
+				previous_day_oms =frappe.db.sql("""
+					SELECT oms
+					FROM `tabProduction` 
+					WHERE docstatus = 1 
+					AND oms != 0 
+					AND posting_date < '{0}'
+					AND `group` = '{1}'
+					AND tire = '{2}'
+					AND coal_raising_type = '{3}'
+					ORDER BY posting_date desc, posting_time desc limit 1
+						""".format(self.posting_date,self.group,self.tire,self.coal_raising_type),as_dict=1)
+				if not previous_day_oms :
+					p_oms = frappe.db.get_value('Departmental Group',self.group,['default_oms'])
+				else:
+					p_oms = previous_day_oms[0].oms
+				penalty = (flt(min_labour) - flt(self.no_of_labours)) * flt(p_oms) * flt(rate1)
+				grand_total = flt(total) - flt(penalty)
+			else:
+				grand_total = total
+		
+		elif self.tire == 'Tire 2-Indian':
+			total = flt(rate_per_mt_tire2) * flt(self.product_qty)
+			if flt(self.no_of_labours) < flt(min_labour):
+				p_oms = 0
+				previous_day_oms =frappe.db.sql("""
+					SELECT oms 
+					FROM `tabProduction` 
+					WHERE docstatus = 1 
+					AND oms != 0 
+					AND posting_date < '{0}'
+					AND `group` = '{1}'
+					AND tire = '{2}'
+					AND coal_raising_type ='{3}'
+					ORDER BY posting_date desc, posting_time desc limit 1
+						""".format(self.posting_date,self.group,self.tire,self.coal_raising_type),as_dict=1)
+				if not previous_day_oms:
+					p_oms = frappe.db.get_value('Departmental Group',self.group,['default_oms'])
+				else:
+					p_oms = previous_day_oms[0].oms
+				penalty = (flt(min_labour) - flt(self.no_of_labours)) * flt(p_oms) * flt(rate_per_mt_tire2)
+			grand_total = flt(total) - flt(penalty)
+		self.penalty_amount = penalty
+		self.grand_amount = total
+		# frappe.msgprint(str(penalty))
+		self.amount = grand_total
+
+	def machine_sharing_calculation(self):
+
+		working_hr = frappe.db.get_value('Coal Raising Master',self.branch,['working_hr'])
+		amount,qty_payable = 0,0
+		rate1,rate_per_mt_tire2= frappe.db.get_value('Coal Raising Master',self.branch,['oms1_tire1','rate_per_mt_tire2'])
+		
+		oms_previous_month = frappe.db.sql("""
+			SELECT avg(oms) 
+			FROM `tabProduction` 
+			WHERE oms > 0 
+			AND posting_date between 
+				(SELECT DATE_FORMAT(LAST_DAY(DATE_ADD('{0}', INTERVAL -1 MONTH)),'%Y-%m-01') PREV_MONTH_START_DATE) 
+			AND 
+				(SELECT LAST_DAY(DATE_ADD('{0}', INTERVAL -1 MONTH)) PREV_MONTH_END_DATE) 
+			AND coal_raising_type = 'Manual'
+			AND docstatus = 1
+			AND `group` = '{1}'
+			AND tire = '{2}'
+		""".format(self.posting_date,self.group,self.tire))[0][0]
+		# assign default oms if previous month oms is null or 0
+		if not oms_previous_month:
+			oms_previous_month = frappe.db.get_value('Departmental Group',self.group,['default_oms'])
+		
+		if self.tire == 'Tire 1- Bhutanese':
+			qty_payable = flt(self.no_of_labours) * flt(self.machine_hours) * (flt(oms_previous_month)/flt(working_hr))
+			amount = flt(rate1) * flt(qty_payable)
+		elif self.tire == 'Tire 2-Indian':
+			amount =flt(rate_per_mt_tire2) * flt(self.no_of_labours) * flt(self.machine_hours) * (flt(oms_previous_month)/flt(working_hr))
+
+		self.amount, self.machine_payable,self.grand_amount,self.penalty_amount = amount,qty_payable,amount,0
+		self.oms = oms_previous_month
 
 @frappe.whitelist()
 def get_expense_account(company, item):
@@ -598,3 +744,12 @@ def get_expense_account(company, item):
         if not expense_account:
                 expense_account = frappe.db.get_value("Item", item, "expense_account")
         return expense_account
+
+@frappe.whitelist()
+def check_item_applicable_for_coal_raising(branch=None,item=None):
+    # added by Birendra for coal raising purpose on 20/05/2021
+	return frappe.db.exists({
+		'doctype': 'Coal Raising Master Item',
+		'parent': branch,
+		'item': item
+		})

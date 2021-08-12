@@ -6,6 +6,14 @@ from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
 
+def update_ss():
+	count = 1
+	for a in frappe.db.sql("select name from `tabSalary Structure` where is_active = 'Yes' and branch = 'Chunaikhola Dolomite Mine'", as_dict = 1):
+		doc = frappe.get_doc("Salary Structure", a.name)
+		count += 1
+		doc.save(ignore_permissions = True)
+		print(a.name)
+
 def get_eme_payment():
 	for d in frappe.db.sql("""
 		SELECT ep.equipment_type,ep.name
@@ -183,7 +191,22 @@ def equipment_number_update():
 		frappe.db.sql("""
 		UPDATE `tabProduction Entry` SET equipment_number = 'BP-1-A1423' WHERE name = '{}'
 		""".format(a.name))
-		
+	
+def logbook_total_hour_update():
+	for a in frappe.db.sql("""
+		SELECT 
+			l.name, l.total_hours, (SELECT sum(i.hours) FROM `tabLogbook Item` i WHERE i.parent = l.name) as hours
+		FROM `tabLogbook` l
+		WHERE 
+			l.branch='Khothakpa Gypsum Mine' AND l.posting_date between '2021-06-01' AND '2021-06-20' AND 
+			l.equipment_type='Tipper(Mining)' AND l.total_hours != (SELECT sum(i.hours) FROM `tabLogbook Item` i WHERE i.parent = l.name)
+		""",as_dict=True):
+
+		frappe.db.sql("""
+        UPDATE `tabLogbook` set total_hours = '{}' WHERE name = '{}'
+		""".format(a.hours,a.name))
+		print("HI 1998")
+
 def remove_gl_party():
 	i  = 1
 	for a in frappe.db.sql("""select g.name, g.party, g.party_type, g.account, a.account_type
@@ -388,14 +411,6 @@ def update_ot():
 		frappe.db.sql("update `tabOvertime Application` set bank_name = '{0}', bank_no = {1} where name = '{2}'".format(doc.bank_name, doc.bank_ac_no, ot.name))
 		print doc.bank_name
 	
-def update_ss():
-	count = 1
-	for a in frappe.db.sql(" select name from `tabSalary Structure` where is_active = 'Yes'", as_dict = 1):
-		doc = frappe.get_doc("Salary Structure", a.name)
-		count += 1
-		doc.save(ignore_permissions = True)
-		print a.name, count
-		print "hi"
 
 def pol_update():
 	for a in frappe.db.sql(" select pol from `tabHSD Payment Item` where parent = 'HSDP2002007'", as_dict = 1):
@@ -700,18 +715,18 @@ def cancel_dn():
 		doc = frappe.get_doc("Delivery Note", a.name)
 		doc.cancel()
 
-def update_ss():
-	empl = frappe.db.sql("select name from `tabEmployee`", as_dict=True)
-	for emp in empl:
-		e = frappe.get_doc("Employee", emp.name)
-		ss_name = frappe.db.sql("select name from `tabSalary Structure` where is_active = 'Yes' and employee = %s", (emp.name), as_dict=True)
-		for a in ss_name:
-			ss = frappe.get_doc("Salary Structure", a.name)
-			ss.db_set("branch", e.branch)
-			ss.db_set("department", e.department)
-			ss.db_set("division", e.division)
-			ss.db_set("section", e.section)
-			ss.db_set("designation", e.designation)
+# def update_ss():
+# 	empl = frappe.db.sql("select name from `tabEmployee`", as_dict=True)
+# 	for emp in empl:
+# 		e = frappe.get_doc("Employee", emp.name)
+# 		ss_name = frappe.db.sql("select name from `tabSalary Structure` where is_active = 'Yes' and employee = %s", (emp.name), as_dict=True)
+# 		for a in ss_name:
+# 			ss = frappe.get_doc("Salary Structure", a.name)
+# 			ss.db_set("branch", e.branch)
+# 			ss.db_set("department", e.department)
+# 			ss.db_set("division", e.division)
+# 			ss.db_set("section", e.section)
+# 			ss.db_set("designation", e.designation)
 
 def assign_date_ta():
 	tas = frappe.db.sql("select name from `tabTravel Authorization` where travel_claim is null", as_dict=True)

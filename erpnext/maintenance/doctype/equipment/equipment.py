@@ -20,10 +20,10 @@ class Equipment(Document):
 
 		#Maintain Equipment History for Others Equipments
 		if self.not_cdcl:
-                        self.create_equipment_history(branch = self.branch, on_date = nowdate(), ref_doc = None, purpose = 'Submit')
+			self.create_equipment_history(branch = self.branch, on_date = nowdate(), ref_doc = None, purpose = 'Submit')
 		
 		if not self.equipment_history:
-                        self.create_equipment_history(branch = self.branch, on_date = "2017-01-01", ref_doc = self.name, purpose = 'Submit')
+			self.create_equipment_history(branch = self.branch, on_date = "2017-01-01", ref_doc = self.name, purpose = 'Submit')
 
 		if len(self.operators) > 1:
 			for a in range(len(self.operators)-1):
@@ -51,27 +51,48 @@ class Equipment(Document):
 			self.set_to_date()
 			return
 				
-                if not self.equipment_history:
-                        self.append("equipment_history",{
-                                                "branch": self.branch,
-                                                "from_date": from_date,
-						"reference_document": ref_doc
-                        })
+		if not self.equipment_history:
+			self.append("equipment_history",{
+						"branch": self.branch,
+						"from_date": from_date,
+						"supplier":self.supplier if self.not_cdcl else '',
+						"owner_name":self.owner_name if self.not_cdcl else '',
+						"reference_document": ref_doc,
+						"bank_name":self.bank_name,
+						"account_number":self.account_number,
+						"ifs_code":self.ifs_code
+			})
 		else:
 			#doc = frappe.get_doc(self.doctype,self.name)
 			ln = len(self.equipment_history)-1
-			if self.branch != self.equipment_history[ln].branch:
+			if ln < 0:
 				self.append("equipment_history",{
 						"branch": self.branch,
 						"from_date": from_date,
-						"reference_document": ref_doc
+						"supplier":self.supplier if self.not_cdcl else '',
+						"owner_name":self.owner_name if self.not_cdcl else '',
+						"reference_document": ref_doc,
+						"bank_name":self.bank_name,
+						"account_number":self.account_number,
+						"ifs_code":self.ifs_code
+					})
+			elif self.branch != self.equipment_history[ln].branch or self.supplier != self.equipment_history[ln].supplier:
+				self.append("equipment_history",{
+						"branch": self.branch,
+						"from_date": from_date,
+						"supplier":self.supplier if self.not_cdcl else '',
+						"owner_name":self.owner_name if self.not_cdcl else '',
+						"reference_document": ref_doc,
+						"bank_name":self.bank_name,
+						"account_number":self.account_number,
+						"ifs_code":self.ifs_code
 			})
-		self.set_to_date()
+			self.set_to_date()
 
 	def set_to_date(self):
 		if len(self.equipment_history) > 1:
-                        for a in range(len(self.equipment_history)-1):
-                                self.equipment_history[a].to_date = frappe.utils.data.add_days(getdate(self.equipment_history[a + 1].from_date), -1)
+			for a in range(len(self.equipment_history)-1):
+				self.equipment_history[a].to_date = frappe.utils.data.add_days(getdate(self.equipment_history[a + 1].from_date), -1)
 		else:
 			self.equipment_history[0].to_date = None
 

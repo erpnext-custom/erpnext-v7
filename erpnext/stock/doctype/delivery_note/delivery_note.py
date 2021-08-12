@@ -113,6 +113,7 @@ class DeliveryNote(SellingController):
 		# check location base
 		if self.from_warehouse:
 			self.get_distance_and_rate()
+
 	def get_distance_and_rate(self):
 		if not self.location:
 			frappe.throw('Location Not Selected')

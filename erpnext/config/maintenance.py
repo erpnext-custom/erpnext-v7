@@ -117,11 +117,11 @@ def get_data():
 					"doctype": "POL"
 				},
 				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "POL Receive Report",
-                                        "doctype": "POL"
-                                },
+					"type": "report",
+					"is_query_report": True,
+					"name": "POL Receive Report",
+					"doctype": "POL"
+				},
 
 			]
 		},
@@ -171,9 +171,21 @@ def get_data():
 				{
 					"type": "report",
 					"is_query_report": True,
+					"name": "Daily EME Working Hour",
+					"doctype": "Logbook"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
 					"name": "Expense and Performance Summary",
 					"doctype": "Logbook"
 				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "EME Payment Report",
+					"doctype": "EME Payment"
+				}
 			]
 		},
 		{
@@ -199,7 +211,7 @@ def get_data():
 					"type": "doctype",
 					"name": "Incident",
 					"label": "Report Incident",
-				},
+				}
 			]
 		},
 	]

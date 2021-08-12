@@ -7,4 +7,10 @@ import frappe
 from frappe.model.document import Document
 
 class DepartmentalGroup(Document):
-	pass
+	def validate(self):
+		self.validate_min_labor()
+		
+	def validate_min_labor(self):
+		if self.tire == 'Tire 1- Bhutanese' or self.tire == 'Tire 2-Indian':
+			if not self.minimum_labor:
+				frappe.throw("Minimum Labours is Require")
