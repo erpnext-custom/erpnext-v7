@@ -383,8 +383,13 @@ class BankPayment(Document):
 
 		return frappe.db.sql("""SELECT "Direct Payment" transaction_type, dp.name transaction_id, 
 						dpi.name transaction_reference, dp.posting_date transaction_date, 
-						dpi.party as supplier, dpi.party as beneficiary_name,
-						s.bank_name_new as bank_name, s.bank_branch, s.bank_account_type, s.account_number as bank_account_no,
+						(CASE WHEN dpi.party_type = 'Supplier' THEN dpi.party ELSE NULL END) as supplier, 
+						(CASE WHEN dpi.party_type = 'Employee' THEN dpi.party ELSE NULL END) as employee, 
+						(CASE WHEN dpi.party_type = 'Supplier' THEN s.supplier_name ELSE e.employee_name END) as beneficiary_name,
+						(CASE WHEN dpi.party_type = 'Supplier' THEN s.bank_name_new ELSE e.bank_name END) as bank_name, 
+						(CASE WHEN dpi.party_type = 'Supplier' THEN s.bank_branch ELSE e.bank_branch END) as bank_branch, 
+						(CASE WHEN dpi.party_type = 'Supplier' THEN s.bank_account_type ELSE e.bank_account_type END) as bank_account_type, 
+						(CASE WHEN dpi.party_type = 'Supplier' THEN s.account_number ELSE e.bank_ac_no END) as bank_account_no,
 						(dpi.net_amount-(select ifnull(sum(dpd.amount),0)
 											from `tabDirect Payment Deduction` dpd
 											where dpd.parent = dp.name 
@@ -392,21 +397,23 @@ class BankPayment(Document):
 											and dpd.party = dpi.party
 										)
 						) amount,
-						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_bank_code ELSE NULL END) inr_bank_code,
-						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_purpose_code ELSE NULL END) inr_purpose_code,
+						(CASE WHEN dpi.party_type = 'Supplier' AND s.bank_name_new = "INR" THEN s.inr_bank_code 
+							ELSE NULL END) inr_bank_code,
+						(CASE WHEN dpi.party_type = 'Supplier' AND s.bank_name_new = "INR" THEN s.inr_purpose_code 
+							ELSE NULL END) inr_purpose_code,
 						"Draft" status
-					FROM `tabDirect Payment` dp, `tabDirect Payment Item` dpi, `tabSupplier` s
+					FROM `tabDirect Payment` dp 
+					INNER JOIN `tabDirect Payment Item` dpi ON dpi.parent = dp.name
+					LEFT JOIN `tabSupplier` s ON dpi.party_type = 'Supplier' AND s.name = dpi.party
+					LEFT JOIN `tabEmployee` e ON dpi.party_type = 'Employee' AND e.name = dpi.party
 					WHERE dp.branch = "{branch}" 
 					{cond}
 					AND dp.docstatus = 1
 					AND ifnull(dp.utility_bill,'') = ''
-					AND dpi.parent = dp.name
-					AND dpi.party_type = 'Supplier'
+					AND dpi.party_type IS NOT NULL
 					AND dpi.party IS NOT NULL
 					AND IFNULL(dpi.net_amount,0) > 0
 					AND ifnull(dpi.payment_status,'') IN ('','Failed','Payment Failed')
-					AND (dpi.payment_status IS NULL OR dpi.payment_status = 'Payment Failed' OR dpi.payment_status = '')
-					AND s.name = dpi.party
 					AND NOT EXISTS(select 1
 						FROM `tabBank Payment Item` bpi
 						WHERE bpi.transaction_type = 'Direct Payment'
