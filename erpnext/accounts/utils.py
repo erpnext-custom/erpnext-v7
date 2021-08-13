@@ -568,7 +568,7 @@ def get_children():
 			and docstatus<2
 			order by name""".format(fields=fields, fieldname=fieldname, doctype=doctype),
 				args['parent'], as_dict=1)
-	if display_balances == 0:
+	if flt(display_balances) == 0:
 		if doctype == 'Account':
 			company_currency = frappe.db.get_value("Company", company, "default_currency")
 			for each in acc:

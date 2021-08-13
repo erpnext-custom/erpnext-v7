@@ -38,7 +38,7 @@ frappe.treeview_settings["Account"] = {
 			description: __("Optional. Sets company's default currency, if not specified.")}
 	],
 	onrender: function(node) {
-		if(cint(frappe.defaults.get_default("display_balances"))) {
+		if(cint(frappe.defaults.get_default("display_balances")) == 0 ) {
 			var dr_or_cr = node.data.balance < 0 ? "Cr" : "Dr";
 			if (node.data && node.data.balance!==undefined) {
 				$('<span class="balance-area pull-right text-muted small">'

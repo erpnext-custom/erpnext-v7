@@ -31,10 +31,6 @@ def get_data_expense_account(filters, period_list):
 	grand_total = {}
 	exp_acc_total = {}
 	grand_tot = 0
-<<<<<<< HEAD
-=======
-
->>>>>>> 9961f6dcea9e5613e8e8a3f471116eb0ff69f515
 	for d in period_list:
 		grand_total[d.key] = 0
 	
