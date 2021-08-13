@@ -388,7 +388,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "bank_payment", 
@@ -500,7 +500,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2021-07-06 06:40:10.465850", 
+ "modified": "2021-08-13 11:33:23.700159", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Direct Payment Item", 
