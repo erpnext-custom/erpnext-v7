@@ -317,7 +317,7 @@ class BankPayment(Document):
 		row = {}
 		for a in frappe.db.sql("""SELECT je.name transaction_id, ja.name transaction_reference, ja.reference_type, ja.reference_name, 
 							je.posting_date transaction_date, ja.party_type, ja.party, 
-							ja.debit_in_account_currency as amount 
+							round(ja.debit_in_account_currency,2) as amount 
 							FROM `tabJournal Entry` je, `tabJournal Entry Account` ja
 							where je.branch = '{branch}' 
 							{cond}
@@ -390,13 +390,13 @@ class BankPayment(Document):
 						(CASE WHEN dpi.party_type = 'Supplier' THEN s.bank_branch ELSE e.bank_branch END) as bank_branch, 
 						(CASE WHEN dpi.party_type = 'Supplier' THEN s.bank_account_type ELSE e.bank_account_type END) as bank_account_type, 
 						(CASE WHEN dpi.party_type = 'Supplier' THEN s.account_number ELSE e.bank_ac_no END) as bank_account_no,
-						(dpi.net_amount-(select ifnull(sum(dpd.amount),0)
+						round((dpi.net_amount-(select ifnull(sum(dpd.amount),0)
 											from `tabDirect Payment Deduction` dpd
 											where dpd.parent = dp.name 
 											and dpd.party_type = dpi.party_type
 											and dpd.party = dpi.party
 										)
-						) amount,
+						),2) amount,
 						(CASE WHEN dpi.party_type = 'Supplier' AND s.bank_name_new = "INR" THEN s.inr_bank_code 
 							ELSE NULL END) inr_bank_code,
 						(CASE WHEN dpi.party_type = 'Supplier' AND s.bank_name_new = "INR" THEN s.inr_purpose_code 
@@ -438,11 +438,11 @@ class BankPayment(Document):
 						pe.name transaction_reference, pe.posting_date transaction_date, 
 						pe.party as supplier, pe.party as beneficiary_name,
 						s.bank_name_new as bank_name, s.bank_branch, s.bank_account_type, s.account_number as bank_account_no,
-						(pe.paid_amount + (select ifnull(sum(ped.amount),0)
+						round((pe.paid_amount + (select ifnull(sum(ped.amount),0)
 											from `tabPayment Entry Deduction` ped
 											where ped.parent = pe.name
 											)
-						) amount,
+						),2) amount,
 						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_bank_code ELSE NULL END) inr_bank_code,
 						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_purpose_code ELSE NULL END) inr_purpose_code,
 						"Draft" status
@@ -504,7 +504,8 @@ class BankPayment(Document):
 						IFNULL(t1.bank_name, e.bank_name) bank_name, 
 						IFNULL(t1.bank_branch, e.bank_branch) bank_branch, fib.financial_system_code,
 						e.bank_account_type,
-						IFNULL(t1.bank_account_no, e.bank_ac_no) bank_account_no, t1.net_pay amount,
+						IFNULL(t1.bank_account_no, e.bank_ac_no) bank_account_no, 
+						round(t1.net_pay,2) amount,
 						'Salary for {month}-{salary_year}' remarks, "Draft" status						
 					FROM `tabSalary Slip` t1
 						JOIN `tabEmployee` e ON t1.employee = e.name
