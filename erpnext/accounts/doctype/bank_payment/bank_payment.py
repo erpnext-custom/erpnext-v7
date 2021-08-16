@@ -640,6 +640,7 @@ def process_one_to_one_payment(doc, publish_progress=True):
   
 		doc.db_set('status', status)
 		doc.db_set('workflow_state', status)
+		doc.reload()
 		doc.update_transaction_status()
 		doc.reload()
 

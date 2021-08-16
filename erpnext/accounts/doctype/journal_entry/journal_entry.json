@@ -1215,8 +1215,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2021-08-09 17:00:11.961346", 
- "modified_by": "Administrator", 
+ "modified": "2021-08-12 13:44:28.965594", 
+ "modified_by": "deki.wangmo@thimphutechpark.bt", 
  "module": "Accounts", 
  "name": "Journal Entry", 
  "owner": "Administrator", 
@@ -1427,7 +1427,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 0, 
    "cancel": 1, 
    "create": 1, 
