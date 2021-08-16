@@ -39,7 +39,7 @@ def get_doc_company_amount(coa,filters):
 			from `tabGL Entry` where posting_date between '{0}' and '{1}' 
 			and (account = '{2}' or exact_expense_acc = '{2}') 
 			and (credit is not null or debit is not null)
-			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Imprest Recoup','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
+			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
 			""".format(filters.from_date,filters.to_date,coa.account),as_dict=True):
 		debit += flt(a.debit)
 		credit += flt(a.credit)
@@ -72,7 +72,7 @@ def other_expense_amount(is_inter_company,coa,filters):
 			from `tabGL Entry` where posting_date between '{0}' and '{1}' 
 			and (account = '{2}' or exact_expense_acc = '{2}') 
 			and (credit is not null or debit is not null) 
-			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Imprest Recoup','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
+			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
 			group by consolidation_party
 			""".format(filters.from_date,filters.to_date,coa.account),as_dict=True):
 		# frappe.msgprint(str(a))
@@ -117,7 +117,7 @@ def payable_receivable_amount(is_inter_company,coa,filters):
 			and gl.account = '{2}' 
 			and (gl.party is not null and gl.party != '')
 			and (gl.credit is not null or gl.debit is not null) 
-			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Imprest Recoup','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
+			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
 			group by party
 			""".format(filters.from_date,filters.to_date,coa.account)
    
