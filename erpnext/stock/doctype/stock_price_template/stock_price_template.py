@@ -105,7 +105,7 @@ def get_template_list(doctype, txt, searchfield, start, page_len, filters):
 		})
                 # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
-		return res;
+		return res
 	
 
 #Get item values from "Initial Stock Templates" during stock entry

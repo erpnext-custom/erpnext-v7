@@ -1767,7 +1767,7 @@
   {
    "amend": 1, 
    "apply_user_permissions": 1, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -1844,7 +1844,7 @@
    "role": "Fleet User", 
    "set_user_permissions": 0, 
    "share": 1, 
-   "submit": 0, 
+   "submit": 1, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }

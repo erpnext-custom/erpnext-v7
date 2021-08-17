@@ -11,6 +11,19 @@ frappe.ui.form.on("Job Card", {
   },
   refresh: function (frm) {
     if (frm.doc.docstatus === 1) {
+      // Added by sonam chophel to show payment status in job card
+      frappe.call({
+        method: "erpnext.maintenance.doctype.job_card.job_card.get_payment_entry",
+        args: {
+          doc_name: frm.doc.name,
+          total_amount: frm.doc.total_amount
+        },
+        callback: function (r) {
+          cur_frm.refresh_field("payment_status");
+
+        },
+      })
+
       frm.add_custom_button(
         __("Accounting Ledger"),
         function () {

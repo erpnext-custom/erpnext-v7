@@ -11,6 +11,7 @@ from erpnext.custom_utils import check_future_date, get_branch_cc, prepare_gl, p
 from erpnext.controllers.stock_controller import StockController
 from erpnext.maintenance.maintenance_utils import get_without_fuel_hire, get_equipment_ba
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
+from frappe import _
 
 class POL(StockController):
 	def validate(self):
@@ -54,9 +55,10 @@ class POL(StockController):
 		
 	def on_submit(self):
 		# self.validate_dc()
+		self.check_advance()
 		self.validate_data()
 		self.check_on_dry_hire()
-		self.check_budget()
+		# self.check_budget() #commented by Sonam Chophel as it is no longer needed
 		if not self.direct_consumption:
 			self.update_stock_ledger()
 		self.update_advance()

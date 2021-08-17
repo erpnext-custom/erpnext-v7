@@ -21,7 +21,7 @@ def execute(filters=None):
 		if sle.voucher_type == "POL":
 			sle.voucher_type = "Receive POL"
 
-		data.append([sle.date, sle.item_code, item_detail.item_name, item_detail.item_group, item_detail.item_sub_group,
+		data.append([sle.date, sle.stock_entry_type, sle.item_code, item_detail.item_name, item_detail.item_group, item_detail.item_sub_group,
 			sle.warehouse,
 			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
 			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
@@ -31,7 +31,7 @@ def execute(filters=None):
 	return columns, data
 
 def get_columns():
-	return [_("Date") + ":Datetime:95", _("Material Code") + ":Link/Item:130", _("Material Name") + "::120", _("Material Group") + ":Link/Item Group:100", _("Material Sub Group") + ":Link/Item Sub Group:100",
+	return [_("Date") + ":Datetime:95", _("Stock Entry Type") + ":Data:130", _("Material Code") + ":Link/Item:130" , _("Material Name") + "::120", _("Material Group") + ":Link/Item Group:100", _("Material Sub Group") + ":Link/Item Sub Group:100",
 		_("Warehouse") + ":Link/Warehouse:100",
 		_("Stock UOM") + ":Link/UOM:100", _("Qty") + ":Float:50", _("Balance Qty") + ":Float:100",
 		_("Incoming Rate") + ":Currency:110", _("MAP") + ":Currency:110", _("Balance Value") + ":Currency:110",
@@ -40,7 +40,7 @@ def get_columns():
 
 def get_stock_ledger_entries(filters):
 	return frappe.db.sql("""select concat_ws(" ", posting_date, posting_time) as date,
-			item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
+			stock_entry_type, item_code, warehouse, actual_qty, qty_after_transaction, incoming_rate, valuation_rate,
 			stock_value, voucher_type, voucher_no, batch_no, serial_no, 
 			CASE voucher_type WHEN 'Stock Entry' THEN (select vehicle_no from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select lr_no from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as vehicle_no, 
 			CASE voucher_type WHEN 'Stock Entry' THEN (select transporter_name from `tabStock Entry` where name = voucher_no) WHEN 'Delivery Note' THEN (select transporter_name1 from `tabDelivery Note` where name = voucher_no) ELSE 'None' END as transporter_name, company
@@ -80,6 +80,8 @@ def get_sle_conditions(filters):
 		conditions.append("warehouse=%(warehouse)s")
 	if filters.get("voucher_no"):
 		conditions.append("voucher_no=%(voucher_no)s")
+	if filters.get("stock_entry_type") and filters.get("stock_entry_type") != "":
+		conditions.append("stock_entry_type='{}'".format(filters.get("stock_entry_type")))
 
 	return "and {}".format(" and ".join(conditions)) if conditions else ""
 

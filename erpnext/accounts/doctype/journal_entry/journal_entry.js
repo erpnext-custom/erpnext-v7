@@ -190,7 +190,28 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 
 
 	},
-
+	branch: function(doc) {
+		// console.log("here");
+		this.set_cost_center_in_children(doc.accounts, "cost_center", doc.branch);
+	},
+	set_cost_center_in_children: function(child_table, cc_field, cc) {
+		// console.log("here")
+		this.autofill_cost_center(child_table, cc_field, cc);
+	},
+	autofill_cost_center : function (child_table, cc_field, cc) {
+		if (cc && child_table && child_table.length) {
+			console.log("here");
+			let doctype = child_table[0].doctype;
+			$.each(child_table || [], function(i, item) {
+				frappe.model.get_value("Branch",{"name":cc},['cost_center'],
+				function(d){
+					console.log(d.cost_center)
+					// item.cc_field = d.cost_center;
+					frappe.model.set_value(doctype, item.name, cc_field, d.cost_center);
+				})
+			});
+		}
+	},
 	setup_balance_formatter: function() {
 		var me = this;
 		$.each(["balance", "party_balance"], function(i, field) {
@@ -251,12 +272,19 @@ erpnext.accounts.JournalEntry = frappe.ui.form.Controller.extend({
 	accounts_add: function(doc, cdt, cdn) {
 		var row = frappe.get_doc(cdt, cdn);
 		$.each(doc.accounts, function(i, d) {
-			if(d.account && d.party && d.party_type) {
+			if(d.account && d.party && d.party_type && d.cost_center) {
 				row.account = d.account;
 				row.party = d.party;
 				row.party_type = d.party_type;
 			}
+			if(!row.cost_center){
+				frappe.model.get_value("Branch",{name:doc.branch},["cost_center"],
+				function(d){
+					row.cost_center = d.cost_center;
+				});
+			}
 		});
+		
 
 		// set difference
 		if(doc.difference) {
@@ -497,7 +525,6 @@ $.extend(erpnext.journal_entry, {
 			df.label = frm.doc.multi_currency ? (label + " in Account Currency") : label;
 		})
 	},
-
 	set_debit_credit_in_company_currency: function(frm, cdt, cdn) {
 		var row = locals[cdt][cdn];
 
@@ -542,7 +569,6 @@ $.extend(erpnext.journal_entry, {
 		}
 		refresh_field("exchange_rate", cdn, "accounts");
 	},
-
 	quick_entry: function(frm) {
 		var naming_series_options = frm.fields_dict.naming_series.df.options;
 		var naming_series_default = frm.fields_dict.naming_series.df.default || naming_series_options.split("\n")[0];
@@ -601,7 +627,6 @@ $.extend(erpnext.journal_entry, {
 
 		dialog.show();
 	},
-
 	account_query: function(frm) {
 		var filters = {
 			company: frm.doc.company,

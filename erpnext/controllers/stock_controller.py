@@ -26,8 +26,9 @@ class StockController(AccountsController):
 			delete_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
 
 		if cint(frappe.defaults.get_global_default("auto_accounting_for_stock")):
+			# frappe.msgprint("this is the default: {}".format(frappe.defaults.get_global_default("auto_accounting_for_stock")))
 			warehouse_account = get_warehouse_account()
-
+			# frappe.msgprint("this is the warehouse account: {}".format(warehouse_account))
 			if self.docstatus==1:
 				gl_entries = self.get_gl_entries(warehouse_account)
 				make_gl_entries(gl_entries)
@@ -39,15 +40,13 @@ class StockController(AccountsController):
 
         """ ++++++++++ Ver 2.0.190509 Begins ++++++++++ """
         # Ver 2.0.190509, Following method added by SHIV on 2019/05/24
-	def get_gl_entries(self, warehouse_account=None, default_expense_account=None,
-			default_cost_center=None, default_business_activity=None):
-
+	def get_gl_entries(self, warehouse_account=None, default_expense_account=None,default_cost_center=None, default_business_activity=None):
 		if not warehouse_account:
 			warehouse_account = get_warehouse_account()
 
 		sle_map = self.get_stock_ledger_details()
+
 		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map, default_business_activity)
-		frappe.throw("{}".format(voucher_details))
 
 		gl_list = []
 		warehouse_with_no_account = []
@@ -59,31 +58,30 @@ class StockController(AccountsController):
 						self.check_expense_account(detail)
 
 						to_cc = detail.cost_center
-                                                if self.doctype == "Stock Entry" and self.purpose == "Material Transfer":
-                                                        to_branch = frappe.db.get_value("Stock Entry", detail.parent, "branch")
-                                                        to_cc = get_branch_cc(to_branch)
-                                                if self.doctype == "Stock Entry" and self.purpose == "Material Transfer" and sle.stock_value_difference > 0:
-                                                        # from warehouse account
-                                                        gl_list.append(self.get_gl_dict({
-                                                                "account": warehouse_account[sle.warehouse]["name"],
-                                                                "against": detail.expense_account,
-                                                                "cost_center": to_cc,
-                                                                "business_activity": detail.business_activity,
-                                                                "remarks": self.get("remarks") or "Accounting Entry for Stock",
-                                                                "debit": flt(sle.stock_value_difference, 2),
-                                                        }, warehouse_account[sle.warehouse]["account_currency"]))
+						if self.doctype == "Stock Entry" and self.purpose == "Material Transfer":
+								to_branch = frappe.db.get_value("Stock Entry", detail.parent, "branch")
+								to_cc = get_branch_cc(to_branch)
+						if self.doctype == "Stock Entry" and self.purpose == "Material Transfer" and sle.stock_value_difference > 0:
+							# from warehouse account
+							gl_list.append(self.get_gl_dict({
+								"account": warehouse_account[sle.warehouse]["name"],
+								"against": detail.expense_account,
+								"cost_center": to_cc,
+								"business_activity": detail.business_activity,
+								"remarks": self.get("remarks") or "Accounting Entry for Stock",
+								"debit": flt(sle.stock_value_difference, 2),
+							}, warehouse_account[sle.warehouse]["account_currency"]))
 
-                                                        # to target warehouse / expense account
-                                                        gl_list.append(self.get_gl_dict({
-                                                                "account": detail.expense_account,
-                                                                "against": warehouse_account[sle.warehouse]["name"],
-                                                                "cost_center": detail.cost_center,
-                                                                "business_activity": detail.business_activity,
-                                                                "remarks": self.get("remarks") or "Accounting Entry for Stock",
-                                                                "credit": flt(sle.stock_value_difference, 2),
-                                                                "project": detail.get("project") or self.get("project")
-                                                        }))
-
+							# to target warehouse / expense account
+							gl_list.append(self.get_gl_dict({
+								"account": detail.expense_account,
+								"against": warehouse_account[sle.warehouse]["name"],
+								"cost_center": detail.cost_center,
+								"business_activity": detail.business_activity,
+								"remarks": self.get("remarks") or "Accounting Entry for Stock",
+								"credit": flt(sle.stock_value_difference, 2),
+								"project": detail.get("project") or self.get("project")
+							}))
 							allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
 							if allow_inter_company_transaction:
 								ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
@@ -104,30 +102,20 @@ class StockController(AccountsController):
 									"debit": flt(sle.stock_value_difference, 2),
 								}))
 						else:
-							if self.doctype ="POL":
-								gl_list.append(self.get_gl_dict({
-									"account": warehouse_account[sle.warehouse]["name"],
-									"against": detail.expense_account,
-									"cost_center": detail.cost_center,
-									"business_activity": detail.business_activity,
-									"remarks": self.get("remarks") or "Accounting Entry for Stock",
-									"debit": flt(sle.stock_value_difference, 2),
-								}, warehouse_account[sle.warehouse]["account_currency"]))
-
-							else: 
-								# from warehouse account
-								gl_list.append(self.get_gl_dict({
-									"account": warehouse_account[sle.warehouse]["name"],
-									"against": detail.expense_account,
-									"cost_center": detail.cost_center,
-																	"business_activity": detail.business_activity,
-									"remarks": self.get("remarks") or "Accounting Entry for Stock",
-									"debit": flt(sle.stock_value_difference, 2),
-								}, warehouse_account[sle.warehouse]["account_currency"]))
+							# from warehouse account
+							gl_list.append(self.get_gl_dict({
+								"account": warehouse_account[sle.warehouse]["name"],
+								"against": detail.expense_account,
+								"cost_center": detail.cost_center,
+                                                                "business_activity": detail.business_activity,
+								"remarks": self.get("remarks") or "Accounting Entry for Stock",
+								"debit": flt(sle.stock_value_difference, 2),
+							}, warehouse_account[sle.warehouse]["account_currency"]))
 
 							# to target warehouse / expense account
+							expense = frappe.db.get_single_value("Maintenance Accounts Settings", "pool_vehicle_pol_exepense")
 							gl_list.append(self.get_gl_dict({
-								"account": detail.expense_account,
+								"account": expense,
 								"against": warehouse_account[sle.warehouse]["name"],
 								"cost_center": detail.cost_center,
                                                                 "business_activity": detail.business_activity,
@@ -141,7 +129,6 @@ class StockController(AccountsController):
 		if warehouse_with_no_account:
 			frappe.throw(_("No accounting entries for the following warehouses") + ": \n" +
 				"\n".join(warehouse_with_no_account))
-
 		return process_gl_map(gl_list)
 
         # Ver 2.0.190509, Following method commented by SHIV on 2019/05/24
@@ -245,33 +232,31 @@ class StockController(AccountsController):
 
         # Ver 2.0.190509, Following method added by SHIV on 2019/05/24
         def get_voucher_details(self, default_expense_account, default_cost_center, sle_map, default_business_activity=None):
-                details = []
-                
-		if self.doctype == "Stock Reconciliation":
-			return [frappe._dict({ "name": voucher_detail_no, "expense_account": default_expense_account,
-				"cost_center": default_cost_center, "business_activity": default_business_activity }) for voucher_detail_no, sle in sle_map.items()]
-		else:
-			""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-			# Following line commented by SHIV on 2019/04/01
-			#details = self.get("items")
+			details = []
+			if self.doctype == "Stock Reconciliation":
+				return [frappe._dict({ "name": voucher_detail_no, "expense_account": default_expense_account,
+					"cost_center": default_cost_center, "business_activity": default_business_activity }) for voucher_detail_no, sle in sle_map.items()]
+			else:
+				""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+				# Following line commented by SHIV on 2019/04/01
+				#details = self.get("items")
 
-			# Following code added by SHIV on 2019/04/01
-			details = list(self.get("items"))
-                        if self.doctype == "Production":
-                                details.extend(self.get("raw_materials"))
-                        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
-
-                        if details:
-                                if default_expense_account or default_cost_center:
-                                        for d in details:
-                                                if default_expense_account and not d.get("expense_account"):
-                                                        d.expense_account = default_expense_account
-                                                if default_cost_center and not d.get("cost_center"):
-                                                        d.cost_center = default_cost_center
-                        else:
-                                details.append(self)
-                                
-			return details
+				# Following code added by SHIV on 2019/04/01
+				details = list(self.get("items"))
+				if self.doctype == "Production":
+					details.extend(self.get("raw_materials"))
+					""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+					if details:
+						if default_expense_account or default_cost_center:
+							for d in details:
+								if default_expense_account and not d.get("expense_account"):
+										d.expense_account = default_expense_account
+								if default_cost_center and not d.get("cost_center"):
+										d.cost_center = default_cost_center
+						else:
+							details.append(self)
+				# frappe.msgprint("----->{}".format(details))
+				return details
 
         # Ver 2.0.190509, Following method commented by SHIV on 2019/05/14
         '''

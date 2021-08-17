@@ -4,6 +4,16 @@
 frappe.ui.form.on('Hire Charge Invoice', {
 	refresh: function (frm) {
 		if (frm.doc.docstatus === 1) {
+			frappe.call({
+				method: "erpnext.maintenance.doctype.hire_charge_invoice.hire_charge_invoice.get_payment_entry",
+				args: {
+				  doc_name: frm.doc.name,
+				  total_amount: frm.doc.balance_amount
+				},
+				callback: function (r) {
+				  cur_frm.refresh_field("payment_status");
+				},
+			  })
 			frm.add_custom_button(__('Accounting Ledger'), function () {
 				frappe.route_options = {
 					voucher_no: frm.doc.name,
@@ -30,15 +40,15 @@ frappe.ui.form.on('Hire Charge Invoice', {
 			cur_frm.add_custom_button(__('Payment'), function() {
 				cur_frm.cscript.receive_payment()
 			}, __("Receive")); */
-			frm.add_custom_button("Receive Payment", function () {
+			frm.add_custom_button("Make Payment", function () {
 				frappe.model.open_mapped_doc({
 					method: "erpnext.maintenance.doctype.hire_charge_invoice.hire_charge_invoice.make_payment_entry",
 					frm: cur_frm
 				})
-			}, __("Receive"));
+			}, __("Payment"));
 		}
 		else {
-			cur_frm.toggle_display("receive_payment", 0)
+			cur_frm.toggle_display("make_payment", 0)
 		}
 	},
 	onload: function (frm) {

@@ -11,6 +11,18 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 
 frappe.ui.form.on('Break Down Report', {
 	refresh: function(frm) {
+		if( frm.doc.docstatus === 1){
+			frappe.call({
+				method: "erpnext.maintenance.doctype.break_down_report.break_down_report.get_job_card_entry",
+				args: {
+					doc_name: frm.doc.name
+				},
+				callback: function (r) {
+					cur_frm.refresh_field("job_card_status");
+				},
+			})
+		}
+
 		if (frm.doc.docstatus == 1 && !frm.doc.job_card) {
 			frm.add_custom_button("Create Job Card", function() {
 				frappe.model.open_mapped_doc({

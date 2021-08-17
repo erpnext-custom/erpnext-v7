@@ -5,11 +5,13 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt, cint, getdate, get_datetime, get_url, nowdate, now_datetime, money_in_words
+from frappe.utils import flt, cstr, cint, getdate, get_datetime, get_url, nowdate, now_datetime, money_in_words
 from erpnext.accounts.general_ledger import make_gl_entries
 from frappe import _
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import check_future_date
+from erpnext.accounts.utils import get_fiscal_year
+
 
 class DesuungSales(AccountsController):
 	#code to fetch selling price for items after selecting item_code
@@ -35,20 +37,23 @@ class DesuungSales(AccountsController):
 		self.get_amount()
 	
 	def get_amount(self):
+		
 		Amount = 0
 		for item in self.items:
 			if not item.qty or not item.rate:
 				frappe.throw("Please enter qty or rate")
-			item.amount += flt(item.qty) * flt(item.rate)
+			item.amount = flt(item.qty) * flt(item.rate)
 			Amount += item.amount
 		self.total = Amount
 	
 	def on_submit(self):
 		self.post_gl_entry()
+		self.update_stock_ledger()
 		#self.consume_budget()
 	
 	def on_cancel(self):
 		self.post_gl_entry()
+		self.update_stock_ledger()
 		#self.cancel_budget_entry()
 
 	def post_gl_entry(self):
@@ -82,16 +87,48 @@ class DesuungSales(AccountsController):
 				)
 		make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)
 
+	def update_stock_ledger(self):
+			sl_entries = []
+			for d in self.items:
+					if d.warehouse and self.docstatus==1:
+							sl_entries.append(self.get_sl_entries(d, {
+								"actual_qty": -1*flt(d.qty),
+								"incoming_rate": d.rate
+							}))
+					if d.warehouse and self.docstatus==2:
+							sl_entries.append(self.get_sl_entries(d, {
+								"actual_qty": -1*flt(d.qty),
+								"incoming_rate": d.rate
+							}))
+	
+			self.make_sl_entries(sl_entries)
 
-	# @frappe.whitelist()
-	# def item_query(filters=None):
-    # 	data = frappe.db.sql(
-	# 		"""
-    #     	SELECT item_group 
-    #     	FROM `tabItem`
-    #     	WHERE docstatus < 2 
-	# 		"""
-    # 	)
-	# 	return data
-# 'party': self.party,
-# 'party_type': self.party_type,
+	def get_sl_entries(self, d, args):
+		sl_dict = frappe._dict({
+			"item_code": d.get("item_code", None),
+			"warehouse": d.get("warehouse", None),
+			"posting_date": self.posting_date,
+			"posting_time": self.posting_time,
+			'fiscal_year': get_fiscal_year(self.posting_date, company=self.company)[0],
+			"voucher_type": self.doctype,
+			"voucher_no": self.name,
+			"voucher_detail_no": d.name,
+			"actual_qty": (self.docstatus==1 and 1 or -1)*flt(d.get("stock_qty")),
+			"stock_uom": frappe.db.get_value("Item", args.get("item_code") or d.get("item_code"), "stock_uom"),
+			"incoming_rate": 0,
+			"company": self.company,
+			"batch_no": cstr(d.get("batch_no")).strip(),
+			"serial_no": d.get("serial_no"),
+			"project": d.get("project"),
+			"is_cancelled": self.docstatus==2 and "Yes" or "No"
+		})
+
+		sl_dict.update(args)
+		return sl_dict
+
+	def make_sl_entries(self, sl_entries, is_amended=None, allow_negative_stock=False,
+			via_landed_cost_voucher=False):
+		from erpnext.stock.stock_ledger import make_sl_entries
+		make_sl_entries(sl_entries, is_amended, allow_negative_stock, via_landed_cost_voucher)
+
+	

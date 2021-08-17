@@ -16,7 +16,7 @@ frappe.provide("erpnext.stock");
 erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	setup: function() {
 		var me = this;
-
+		cur_frm.get_docfield("items").allow_bulk_edit = 1;
 		this.frm.fields_dict.bom_no.get_query = function() {
 			return {
 				filters:{
@@ -436,7 +436,7 @@ cur_frm.cscript.toggle_related_fields = function(doc) {
 
 	cur_frm.fields_dict["items"].grid.set_column_disp("s_warehouse", doc.purpose!='Material Receipt');
 	cur_frm.fields_dict["items"].grid.set_column_disp("t_warehouse", doc.purpose!='Material Issue');
-	cur_frm.fields_dict["items"].grid.set_column_disp("issue_to_employee", doc.purpose=='Material Issue');
+
 
 	cur_frm.cscript.toggle_enable_bom();
 
@@ -541,6 +541,7 @@ cur_frm.cscript.item_code = function(doc, cdt, cdn) {
 		});
 	    }
 	}
+	fetch_notice(doc,cdt,cdn)
 }
 
 cur_frm.cscript.barcode = function(doc, cdt, cdn) {
@@ -668,13 +669,62 @@ frappe.ui.form.on("Stock Entry", "refresh", function(frm) {
     });
 })
 
-frappe.ui.form.on("Stock Entry", "items_on_form_rendered", function(frm, grid_row, cdt, cdn) {
+frappe.ui.form.on("Stock Entry Detail",  {
+	uom: function(cdt,cdn){
+		row = locals[cdt][cdn]
+		frappe.model.set_value(row.doctype, row.docname, "stock_uom",row.uom);
+	}
+})
+
+frappe.ui.form.on("Stock Entry Detail",{
+	form_render: function(grid_row, cdt, cdn){
                 var row = cur_frm.open_grid_row();
                 if(!row.grid_form.fields_dict.cost_center.value) {
-                        row.grid_form.fields_dict.cost_center.set_value(frm.doc.user_cost_center)
-                        row.grid_form.fields_dict.cost_center.refresh()
+                        row.grid_form.fields_dict.cost_center.set_value(cur_frm.doc.user_cost_center)
                 }
-        })
+				if(cur_frm.doc.purpose == "Material Receipt" || cur_frm.doc.purpose == null || cur_frm.doc.purpose == ''){
+					console.log(cur_frm.doc.name)
+					frappe.meta.get_docfield("Stock Entry Detail","issue_to_employee", cur_frm.doc.name).hidden = 1
+					frappe.meta.get_docfield("Stock Entry Detail","issued_to_other", cur_frm.doc.name).hidden = 1
+				}
+				else{
+						frappe.meta.get_docfield("Stock Entry Detail", "issue_to_employee", cur_frm.doc.name).hidden = 0;
+						frappe.meta.get_docfield("Stock Entry Detail", "issued_to_other", cur_frm.doc.name).hidden = 0;
+				}
+				cur_frm.refresh_fields();
+	},
+	issue_to_employee: function(frm, cdt, cdn){
+		var item = locals[cdt][cdn];
+		if(item.issue_to_employee == 1){
+			frappe.meta.get_docfield("Stock Entry Detail", "issued_to_other", cur_frm.doc.name).hidden = 1;
+			frappe.meta.get_docfield("Stock Entry Detail", "issue_to_employee", cur_frm.doc.name).hidden = 0;
+			frappe.model.set_value(cdt,cdn,"issued_to_other",null);
+		}
+		else{
+			frappe.meta.get_docfield("Stock Entry Detail", "issued_to_other", cur_frm.doc.name).hidden = 0;
+			frappe.meta.get_docfield("Stock Entry Detail", "issue_to_employee", cur_frm.doc.name).hidden = 0;
+			frappe.model.set_value(cdt,cdn,"issued_to",null);
+			frappe.model.set_value(cdt,cdn,"employee_name",null);
+		}
+		cur_frm.refresh_fields()
+	},
+	issued_to_other: function(frm, cdt, cdn){
+		var item = locals[cdt][cdn];
+		if(item.issued_to_other != '' || item.issued_to_other != null){
+			frappe.meta.get_docfield("Stock Entry Detail", "issue_to_employee", cur_frm.doc.name).hidden = 1;
+			frappe.model.set_value(cdt,cdn,"issue_to_employee",0);
+			frappe.model.set_value(cdt,cdn,"issued_to",null);
+			frappe.model.set_value(cdt,cdn,"employee_name",null);
+			cur_frm.refresh_fields()
+		}
+		if(item.issued_to_other == '' || item.issued_to_other == null){
+			console.log("working")
+			frappe.meta.get_docfield("Stock Entry Detail", "issue_to_employee", cur_frm.doc.name).hidden = 0;
+			cur_frm.refresh_fields()
+		}
+		cur_frm.refresh_fields()
+	}
+})
 
 cur_frm.fields_dict['items'].grid.get_field('uom').get_query = function(frm, cdt, cdn) {
         var d = locals[cdt][cdn];
@@ -692,4 +742,25 @@ cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(
         }
 }
 
-
+cur_frm.cscript.issued_to = function(doc, cdt, cdn) {
+	fetch_notice(doc,cdt,cdn)
+}
+// cur_frm.cscript.item_code = function(doc, cdt, cdn) {
+	// fetch_notice(doc,cdt,cdn)
+// }
+function fetch_notice(doc,cdt,cdn){
+	console.log('child table')
+	var d = locals[cdt][cdn];
+	if (d.issued_to && d.item_code) {
+		frappe.call({
+			method: "erpnext.stock.doctype.stock_entry.stock_entry.fetch_notice",
+			args: {"item_code": d.item_code,"issued_to":d.issued_to},
+			callback: function(r) {
+				// if (r.message){
+				 	frappe.model.set_value(cdt, cdn, "notice", r.message);
+					cur_frm.refresh_field()
+				// }
+			}
+		});
+	}
+}

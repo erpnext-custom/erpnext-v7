@@ -40,7 +40,7 @@ frappe.query_reports["Cheque Register"] = {
 			"label": __("Branch"),
 			"fieldtype": "Link",
 			"options": "Branch",
-			"reqd": 1,
+			"reqd": 0,
 		}
 	],
 }

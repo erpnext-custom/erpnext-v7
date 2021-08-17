@@ -43,9 +43,6 @@ frappe.ui.form.on('Vehicle Logbook', {
 								if (data.message) {
 									cur_frm.set_value("equipment_hiring_form", data.message[0][0]);
 								}
-								else {
-									cur_frm.set_value("equipment_hiring_form", "No Hire Form");
-								}
 								cur_frm.refresh_fields()
 							}
 						});
@@ -288,4 +285,17 @@ frappe.ui.form.on("Vehicle Logbook", "refresh", function (frm) {
     });
     */
 
+});
+
+frappe.ui.form.on("Vehicle Logbook",{
+	refresh: function(frm){
+		if (frm.doc.docstatus == 1){
+			frm.add_custom_button("Make Hire Charge Invoice", function(){
+				frappe.model.open_mapped_doc({
+					method: "erpnext.maintenance.doctype.vehicle_logbook.vehicle_logbook.prepare_hire_charge_invoice",
+					frm: cur_frm
+				})
+			});
+		}
+	}
 });

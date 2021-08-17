@@ -54,14 +54,20 @@ class PurchaseOrder(BuyingController):
 		#self.validate_budget()
 		self.validate_uom_is_integer("uom", "qty")
 		self.validate_uom_is_integer("stock_uom", ["qty", "required_qty"])
-		self.validate_asset_brand()
+		# self.validate_asset_brand() // Commented out by Sonam Chophel as brand and model is not mandatory for Desuung
 
 		self.validate_with_previous_doc()
 		self.validate_for_subcontracting()
 		self.validate_minimum_order_qty()
 		self.create_raw_materials_supplied("supplied_items")
 		self.set_received_qty_for_drop_ship_items()
-
+		self.apply_business_activity()
+  
+	# Birendra added as business activity is common in all child table row recommeded by Karma
+	def apply_business_activity(self):
+		for indx, item in enumerate(self.items):
+			self.items[indx].business_activity = self.business_activity
+   
 	def validate_asset_brand(self):
 		for a in self.items:
 			if a.item_group == "Fixed Asset" and (not a.brand_name or not a.model_name):
@@ -392,6 +398,7 @@ def make_purchase_receipt(source_name, target_doc=None):
 			"doctype": "Purchase Receipt",
 			"field_map": {
 				"naming_series": "naming_series",
+				"business_activity":"business_activity"
 			},
 			"validation": {
 				"docstatus": ["=", 1],
@@ -431,6 +438,7 @@ def make_purchase_invoice(source_name, target_doc=None):
 			"doctype": "Purchase Invoice",
 			"field_map": {
 				"naming_series": "naming_series",
+				"business_activity":"business_activity"
 			},
 			"validation": {
 				"docstatus": ["=", 1],
@@ -486,3 +494,8 @@ def get_budget_account(item_code):
 		acc = frappe.db.get_value("Item", item_code, "expense_account")
 
 	return acc
+
+# Addded by phuntsho on july 29, 2021
+@frappe.whitelist()
+def budget_account_filter(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
+	return frappe.db.sql("select name from `tabAccount` where (account_type='Expense Account' or account_type='Asset Account') ")

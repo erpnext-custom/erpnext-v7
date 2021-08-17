@@ -14,8 +14,17 @@ source_link = "https://github.com/frappe/erpnext"
 
 error_report_email = "erpnext@dhi.bt"
 
-app_include_js = "assets/js/erpnext.min.js"
-app_include_css = "assets/css/erpnext.css"
+# app_include_js = "assets/js/erpnext.min.js"
+app_include_js = [
+	"assets/js/erpnext.min.js"
+]
+# app_include_css = "assets/css/erpnext.css"
+app_include_css = [
+	"assets/css/erpnext.css",
+	"assets/erpnext/css/erp.custom.css"
+]
+#app_include_js = "assets/js/erpnext.min.js"
+#app_include_css = "assets/css/erpnext.css"
 web_include_js = "assets/js/erpnext-web.min.js"
 web_include_css = "assets/erpnext/css/website.css"
 

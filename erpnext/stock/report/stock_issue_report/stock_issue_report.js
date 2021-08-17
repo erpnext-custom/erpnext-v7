@@ -43,6 +43,13 @@ frappe.query_reports["Stock Issue Report"] = {
 			"width": "80",
 			"options": "Item"
 		},
+		{
+			"fieldname": "stock_entry_type",
+			"label": __("Stock Entry Type"),
+			"fieldtype": "Select",
+			"width": "80",
+			"options": ["","Regular","Soelra"]
+		}
 
 	]
 }

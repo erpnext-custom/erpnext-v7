@@ -56,10 +56,10 @@ class TDSRemittance(AccountsController):
 
 	
 	def get_details(self):
-		query = """ select d.posting_date, d.party, d.name as invoice_no, d.taxable_amount as bill_amount, d.tds_amount from 
-                                `tabDirect Payment` d  where tds_percent = '{0}' 
+		query = """ select d.posting_date, di.party, d.name as invoice_no, di.taxable_amount as bill_amount, di.tds_amount from 
+                                `tabDirect Payment` d, `tabDirect Payment Item` di where di.parent = d.name and di.tds_amount != 0 and tds_percent = '{0}' 
                                 and d.posting_date >= '{1}' and d.posting_date <= '{2}' 
-                                and docstatus = 1 
+                                and d.docstatus = 1 
                                 and not exists (
                                         select 1 from `tabTDS Remittance Item` i
                                         inner join `tabTDS Remittance` t

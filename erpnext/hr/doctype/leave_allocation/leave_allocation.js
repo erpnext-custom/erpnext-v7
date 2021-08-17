@@ -17,8 +17,8 @@ frappe.ui.form.on("Leave Allocation", {
 	},
 
 	employee: function(frm) {
-		//frm.trigger("calculate_total_leaves_allocated");								// Commented by SHIV on 2018/10/15
-		get_leave_balance(frm.doc);														// Added by SHIV on 2018/10/15
+		//frm.trigger("calculate_total_leaves_allocated");		// Commented by SHIV on 2018/10/15
+		get_leave_balance(frm.doc);								// Added by SHIV on 2018/10/15
 	},
 
 	// Following function added by SHIV on 2018/10/15

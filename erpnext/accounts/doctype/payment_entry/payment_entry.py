@@ -72,7 +72,7 @@ class PaymentEntry(AccountsController):
 		self.validate_payment_against_negative_invoice()
 		self.validate_transaction_reference()
 		self.set_title()
-		self.set_remarks()
+		#self.set_remarks()
 		
 	def on_submit(self):
 		self.setup_party_account_field()
@@ -359,36 +359,36 @@ class PaymentEntry(AccountsController):
 			#if not self.reference_no or not self.reference_date:
 				#frappe.throw(_("Reference No and Reference Date is mandatory for Bank transaction"))
 				
-	def set_remarks(self):
-		if self.remarks: return
+	# def set_remarks(self):
+	# 	if self.remarks: return
 		
-		if self.payment_type=="Internal Transfer":
-			remarks = [_("Amount {0} {1} transferred from {2} to {3}")
-				.format(self.paid_from_account_currency, self.paid_amount, self.paid_from, self.paid_to)]
-		else:
+	# 	if self.payment_type=="Internal Transfer":
+	# 		remarks = [_("Amount {0} {1} transferred from {2} to {3}")
+	# 			.format(self.paid_from_account_currency, self.paid_amount, self.paid_from, self.paid_to)]
+	# 	else:
 			
-			remarks = [_("Amount {0} {1} {2} {3}").format(
-				self.party_account_currency,
-				self.paid_amount if self.payment_type=="Receive" else self.received_amount,
-				_("received from") if self.payment_type=="Receive" else _("to"), self.party
-			)]
+	# 		remarks = [_("Amount {0} {1} {2} {3}").format(
+	# 			self.party_account_currency,
+	# 			self.paid_amount if self.payment_type=="Receive" else self.received_amount,
+	# 			_("received from") if self.payment_type=="Receive" else _("to"), self.party
+	# 		)]
 			
-		if self.reference_no:
-			remarks.append(_("Transaction reference no {0} dated {1}")
-				.format(self.reference_no, self.reference_date))
+	# 	if self.reference_no:
+	# 		remarks.append(_("Transaction reference no {0} dated {1}")
+	# 			.format(self.reference_no, self.reference_date))
 
-		if self.payment_type in ["Receive", "Pay"]:
-			for d in self.get("references"):
-				if d.allocated_amount:
-					remarks.append(_("Amount {0} {1} against {2} {3}").format(self.party_account_currency, 
-						d.allocated_amount, d.reference_doctype, d.reference_name))
+	# 	if self.payment_type in ["Receive", "Pay"]:
+	# 		for d in self.get("references"):
+	# 			if d.allocated_amount:
+	# 				remarks.append(_("Amount {0} {1} against {2} {3}").format(self.party_account_currency, 
+	# 					d.allocated_amount, d.reference_doctype, d.reference_name))
 		
-		for d in self.get("deductions"):
-			if d.amount:
-				remarks.append(_("Amount {0} {1} deducted against {2}")
-					.format(self.company_currency, d.amount, d.account))
+	# 	for d in self.get("deductions"):
+	# 		if d.amount:
+	# 			remarks.append(_("Amount {0} {1} deducted against {2}")
+	# 				.format(self.company_currency, d.amount, d.account))
 
-		self.set("remarks", "\n".join(remarks))
+	# 	self.set("remarks", "\n".join(remarks))
 			
 	def make_gl_entries(self, cancel=0, adv_adj=0):
 		if self.payment_type in ("Receive", "Pay") and not self.get("party_account_field"):

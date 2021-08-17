@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-// frappe.require("assets/erpnext/js/financial_statements.js", function() {
+frappe.require("assets/erpnext/js/financial_statements.js", function() {
 
 	frappe.query_reports["Receipts and Payments Report"] = {
 	 "filters": [
@@ -43,7 +43,8 @@
 			 "default": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
 				 "Dec"][frappe.datetime.str_to_obj(frappe.datetime.get_today()).getMonth()],
 			 "reqd": 1	
-		 }, 
+		 },  
+ 
 		 {
 			 "fieldname": "cost_center",
 			 "label": __("Cost Center"),
@@ -63,13 +64,13 @@
 			 "fieldtype": "Check"
 		 },
 	 ],
-	//  "formatter": erpnext.financial_statements.formatter,
-	//  "tree": true,
-	//  "name_field": "account",
-	//  "parent_field": "parent_account",
-	//  "initial_depth": 3
+	 "formatter": erpnext.financial_statements.formatter,
+	 "tree": true,
+	 "name_field": "account",
+	 "parent_field": "parent_account",
+	 "initial_depth": 3
 	}
-//  });
+ });
  
  
  

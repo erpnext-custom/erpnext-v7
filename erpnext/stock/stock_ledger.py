@@ -389,7 +389,6 @@ def get_stock_ledger_entries(previous_sle, operator=None, order="desc", limit=No
 
 	if operator in (">", "<=") and previous_sle.get("name"):
 		conditions += " and name!=%(name)s"
-
 	return frappe.db.sql("""select *, timestamp(posting_date, posting_time) as "timestamp" from `tabStock Ledger Entry`
 		where item_code = %%(item_code)s
 		and warehouse = %%(warehouse)s

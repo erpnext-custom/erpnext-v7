@@ -95,15 +95,14 @@ class PurchaseCommon(BuyingController):
 			if not submitted:
 				frappe.throw(_("{0} {1} is not submitted").format(doctype, submitted[0][0]))
 
-	##
 	#Get the budget consumed in the financial year
-	##
+	
 	def get_budget_consumed(self, fiscal, com):
 		consumed_budgets = frappe.db.sql("""select gl.account, gl.debit, gl.credit,
 				gl.cost_center from `tabGL Entry` gl, `tabBudget Detail` bd
 				where gl.fiscal_year=%s and company=%s and bd.account=gl.account
 				and bd.parent=gl.cost_center"""% ('%s','%s'),
-				(fiscal, com), as_dict=True);
+				(fiscal, com), as_dict=True)
 
 		con_details = frappe._dict()
 		for d in consumed_budgets:

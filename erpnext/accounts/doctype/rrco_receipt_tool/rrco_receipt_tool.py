@@ -43,10 +43,15 @@ class RRCOReceiptTool(Document):
 					if a.transaction == "Direct Payment":
 						single_party, party = frappe.db.get_value("Direct Payment", a.invoice_no, ["single_party_multiple_payments", "party"])
 						bill_no = a.invoice_no
-					else:
-						employee, employee_name = frappe.db.get_value("Leave Encashment", a.invoice_no, ["employee","employee_name"])
+					elif a.transaction == "Leave Encashment":
+						employee, employee_name, cost_center = frappe.db.get_value("Leave Encashment", a.invoice_no, ["employee","employee_name","cost_center"])
 						bill_no = str(employee_name + "(" + a.invoice_no + ")")
 						party = employee
+					elif a.transaction == "Purchase Invoice":
+						party = frappe.db.get_value("Purchase Invoice", a.invoice_no, "supplier")
+						bill_no = a.invoice_no
+					else:
+						pass
 
 					if a.transaction == "Direct Payment" and not single_party:
 						for b in frappe.db.sql("select party_type, party from `tabDirect Payment Item` where parent = '{}'".format(a.invoice_no), as_dict=True):

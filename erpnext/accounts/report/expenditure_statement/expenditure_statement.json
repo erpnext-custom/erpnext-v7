@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2021-03-03 15:44:27.117842", 
+ "modified": "2021-04-07 12:41:15.335947", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Expenditure Statement", 
@@ -18,6 +18,12 @@
  "roles": [
   {
    "role": "System Manager"
+  }, 
+  {
+   "role": "Accounts Master"
+  }, 
+  {
+   "role": "Accounts Manager"
   }
  ]
 }

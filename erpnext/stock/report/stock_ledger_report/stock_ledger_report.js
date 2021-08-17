@@ -47,6 +47,12 @@ frappe.query_reports["Stock Ledger Report"] = {
 			"fieldname":"voucher_no",
 			"label": __("Voucher #"),
 			"fieldtype": "Data"
+		},
+		{
+			"fieldname":"stock_entry_type",
+			"label": __("Stock Entry Type"),
+			"fieldtype": "Select",
+			"options":["","Regular","Soelra"]
 		}
 	]
 }

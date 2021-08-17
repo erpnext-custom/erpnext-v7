@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:year", 
  "beta": 0, 
  "creation": "2013-01-22 16:50:25", 
@@ -407,7 +407,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-10-12 12:59:45.608780", 
+ "modified": "2021-07-19 13:04:21.145054", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Fiscal Year", 

@@ -79,6 +79,11 @@ frappe.query_reports["Party Wise Ledger"] = {
 			"fieldname":"group_by_party",
 			"label": __("Group by party?"),
 			"fieldtype": "Check",
+		},
+		{
+			"fieldname":"only_opening",
+			"label": __("Show opening only"),
+			"fieldtype": "Check",
 		}
 	]
 }

@@ -170,7 +170,6 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 		this.set_dynamic_labels();
 		this.setup_sms();
 	},
-
 	apply_default_taxes: function() {
 		var me = this;
 		var taxes_and_charges_field = frappe.meta.get_docfield(me.frm.doc.doctype, "taxes_and_charges",
@@ -1010,7 +1009,6 @@ erpnext.TransactionController = erpnext.taxes_and_totals.extend({
 			})
 		}
 	},
-
 	make_payment_entry: function() {
 		return frappe.call({
 			method: "erpnext.accounts.doctype.payment_entry.payment_entry.get_payment_entry",

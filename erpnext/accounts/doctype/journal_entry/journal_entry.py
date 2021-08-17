@@ -81,7 +81,9 @@ class JournalEntry(AccountsController):
 		if not self.is_opening:
 			self.is_opening='No'
 		self.clearance_date = None
-
+		if self.voucher_type == "Opening Entry":
+			if self.is_opening == "No":
+				frappe.throw("Is Opening shoud be Yes")
 		self.validate_party()
 		# Ver 20160617.1, following line is commented
 		#self.validate_cheque_info()

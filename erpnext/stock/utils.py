@@ -134,6 +134,7 @@ def get_incoming_rate(args):
 	else:
 		valuation_method = get_valuation_method(args.get("item_code"))
 		previous_sle = get_previous_sle(args)
+		# frappe.throw(str(previous_sle))
 		if valuation_method == 'FIFO':
 			if not previous_sle:
 				return 0.0
@@ -141,7 +142,7 @@ def get_incoming_rate(args):
 			in_rate = get_fifo_rate(previous_stock_queue, args.get("qty") or 0) if previous_stock_queue else 0
 		elif valuation_method == 'Moving Average':
 			in_rate = previous_sle.get('valuation_rate') or 0
-
+	# frappe.throw("Incoming Rate is "+str(in_rate))
 	return in_rate
 
 def get_avg_purchase_rate(serial_nos):
@@ -157,6 +158,7 @@ def get_valuation_method(item_code):
 	val_method = frappe.db.get_value('Item', item_code, 'valuation_method')
 	if not val_method:
 		val_method = frappe.db.get_value("Stock Settings", None, "valuation_method") or "FIFO"
+	# frappe.throw(str(val_method))
 	return val_method
 
 def get_fifo_rate(previous_stock_queue, qty):

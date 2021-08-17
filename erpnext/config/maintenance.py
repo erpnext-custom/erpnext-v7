@@ -38,35 +38,35 @@ def get_data():
 				},
 			]
 		},
-		{
-			"label": _("Settings and Tools"),
-			"icon": "icon-star",
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Mechanical Settings",
-				},
-				{
-					"type": "doctype",
-					"name": "Hire Charge Parameter",
-					"description": _("Hire Charge Parameter"),
-				},
-				{
-					"type": "doctype",
-					"name": "Branch Fleet Manager",
-					"label": "Mechanical Notification Settings",
-				},
-				{
-					"type": "doctype",
-					"name": "Tender Hire Rate",
-				},
-				{
-					"type": "doctype",
-					"name": "HSD Adjustment",
-					"description": _("Create Payment"),
-				},
-			]
-		},
+		# {
+		# 	"label": _("Settings and Tools"),
+		# 	"icon": "icon-star",
+		# 	"items": [
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Mechanical Settings",
+		# 		},
+		# 		# {
+		# 		# 	"type": "doctype",
+		# 		# 	"name": "Hire Charge Parameter",
+		# 		# 	"description": _("Hire Charge Parameter"),
+		# 		# },
+		# 		{
+		# 			"type": "doctype",
+		# 			"name": "Branch Fleet Manager",
+		# 			"label": "Mechanical Notification Settings",
+		# 		},
+		# 		# {
+		# 		# 	"type": "doctype",
+		# 		# 	"name": "Tender Hire Rate",
+		# 		# },
+		# 		# {
+		# 		# 	"type": "doctype",
+		# 		# 	"name": "HSD Adjustment",
+		# 		# 	"description": _("Create Payment"),
+		# 		# },
+		# 	]
+		# },
 		{
 			"label": _("Maintenance Transaction"),
 			"icon": "icon-star",
@@ -97,11 +97,11 @@ def get_data():
 					"name": "Vehicle Request",
 					"description": _("Vehicle Request"),
 				},
-				{
-                                        "type": "doctype",
-                                        "name": "Equipment Request",
-                                        "description": _("Equipment Request"),
-                                },
+				# {
+                #                         "type": "doctype",
+                #                         "name": "Equipment Request",
+                #                         "description": _("Equipment Request"),
+                #                 },
 				{
 					"type": "doctype",
 					"name": "Equipment Hiring Form",
@@ -122,11 +122,11 @@ def get_data():
 					"name": "Mechanical Payment",
 					"description": _("Create Payment"),
 				},
-				{
-					"type": "doctype",
-					"name": "Equipment Hiring Extension",
-					"description": _("Equipment Hiring Extension"),
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Equipment Hiring Extension",
+				# 	"description": _("Equipment Hiring Extension"),
+				# },
 			]
 		},
 		{
@@ -141,37 +141,36 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Issue POL",
-					"label": "Issue POL",
-					"description": _("Issue POL"),
+					"name": "Pol Advance",
+					"label": "Pol Advance",
 				},
-				{
-					"type": "doctype",
-					"name": "Equipment POL Transfer",
-				},
-				{
-					"type": "doctype",
-					"name": "HSD Payment",
-					"description": _("Create Payment"),
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Equipment POL Transfer",
+				# },
+				# {
+				# 	"type": "doctype",
+				# 	"name": "HSD Payment",
+				# 	"description": _("Create Payment"),
+				# },
 			]
 		},
 		{
 			"label": _("Maintenance Reports"),
 			"icon": "icon-star",
 			"items": [
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Job Card Imprest Report",
-					"doctype": "Job Card"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Workshop Progress Report",
-					"doctype": "Job Card"
-				},
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Job Card Imprest Report",
+				# 	"doctype": "Job Card"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Workshop Progress Report",
+				# 	"doctype": "Job Card"
+				# },
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -184,43 +183,49 @@ def get_data():
 			"label": _("Fleet Reports"),
 			"icon": "icon-star",
 			"items": [
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Equipment Hire Report",
+				# 	"doctype": "Hire Charge Invoice"
+				# },
 				{
 					"type": "report",
 					"is_query_report": True,
-					"name": "Equipment Hire Report",
-					"doctype": "Hire Charge Invoice"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Party Wise Billing",
-					"doctype": "Hire Charge Invoice"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "HSD Consumption Report",
+					"name": "Vehicle History",
 					"doctype": "Vehicle Logbook"
 				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Equipment Expense Report",
-					"doctype": "Equipment"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Equipment Performance Report",
-					"doctype": "Equipment"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Equipment Status",
-					"label": "Equipment Status Report",
-					"doctype": "Equipment"
-				},
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Party Wise Billing",
+				# 	"doctype": "Hire Charge Invoice"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "HSD Consumption Report",
+				# 	"doctype": "Vehicle Logbook"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Equipment Expense Report",
+				# 	"doctype": "Equipment"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Equipment Performance Report",
+				# 	"doctype": "Equipment"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "Equipment Status",
+				# 	"label": "Equipment Status Report",
+				# 	"doctype": "Equipment"
+				# },
 				{
 					"type": "report",
 					"is_query_report": True,
@@ -234,24 +239,24 @@ def get_data():
 			"label": _("POL Reports"),
 			"icon": "icon-star",
 			"items": [
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "POL Ledger",
-					"doctype": "POL Entry"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "POL Issue Report",
-					"doctype": "Consumed POL"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "POL Balance Report",
-					"doctype": "POL"
-				},
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "POL Ledger",
+				# 	"doctype": "POL Entry"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "POL Issue Report",
+				# 	"doctype": "Consumed POL"
+				# },
+				# {
+				# 	"type": "report",
+				# 	"is_query_report": True,
+				# 	"name": "POL Balance Report",
+				# 	"doctype": "POL"
+				# },
 				{
                                         "type": "report",
                                         "is_query_report": True,

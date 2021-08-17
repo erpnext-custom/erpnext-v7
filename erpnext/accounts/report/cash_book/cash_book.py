@@ -88,7 +88,7 @@ def set_account_currency(filters):
 
 def get_columns(filters):
 	columns = [
-		_("Date") + ":Date:90", _("Particulars") + ":Link/Account:200",
+		_("Date") + "::90", _("Particulars") + ":Link/Account:200",
 		_("Debit") + ":Float:100", _("Credit") + ":Float:100"
 	]
 
@@ -120,7 +120,7 @@ def get_result(filters, account_details, from_date, to_date):
 	# # if cash_entries == []:
 	# cash_opening = frappe.db.sql("""
 	# # 		select a.account, sum(a.debit), sum(a.credit) from `tabGL Entry` a
-	# # 		where a.docstatus = 1 and a.account in ('80.01-Cash in Hand - GCC') and a.posting_date < '{0}'
+	# # 		where a.docstatus = 1 and a.account in ('80.01-Cash in Hand - DS') and a.posting_date < '{0}'
 	# # 	""".format(from_date), as_dict=True)
 	# 	cash_opening.append({"posting_date":""})
 	# 	result += get_result_as_list(cash_opening, filters)
@@ -134,23 +134,40 @@ def get_gl_entries(filters, from_date):
 
 	group_by_condition = "group by a.voucher_type, a.voucher_no, a.account, a.cost_center" \
 		if filters.get("group_by_voucher") else "group by name"
-
-	gl_entries = frappe.db.sql("""
+	query = """
 		select
 			a.posting_date, a.account, a.party_type, a.party,
 			sum(a.debit) as debit, sum(a.credit) as credit,
 			a.voucher_type, a.voucher_no, a.cost_center, a.business_activity,
-			a.remarks, CASE WHEN a.voucher_type = "Journal Entry" THEN (select GROUP_CONCAT(DISTINCT(jea.account) SEPARATOR ',') as account from `tabJournal Entry Account` jea where jea.parent = a.voucher_no and jea.account != a.account) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.debit_account from `tabDirect Payment` dp where dp.name = a.voucher_no)
+			a.remarks, CASE WHEN a.voucher_type = "Journal Entry" THEN (select jea.account as account from `tabJournal Entry Account` jea where jea.parent = a.voucher_no and jea.account != a.account and (jea.debit_in_account_currency = a.debit or jea.credit_in_account_currency = a.credit)) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.debit_account from `tabDirect Payment` dp where dp.name = a.voucher_no)
 			WHEN a.voucher_type = "TDS Remittance" THEN (select tdr.tds_account from `tabTDS Remittance` tdr where tdr.name = a.voucher_no) END as against,
 			CASE WHEN a.voucher_type = "Journal Entry" THEN (select je.cheque_no from `tabJournal Entry` je where je.name = a.voucher_no) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.cheque_no from `tabDirect Payment` dp where dp.name = a.voucher_no)
 			WHEN a.voucher_type = "TDS Remittance" THEN (select tdr.cheque_no from `tabTDS Remittance` tdr where tdr.name = a.voucher_no) END as cheque_no,
 			a.is_opening {select_fields}
 		from `tabGL Entry` a
-		where a.docstatus = 1 and a.account in ('80.02-CD AC 202944097 - DS','80.01-Cash in Hand - DS') and a.company=%(company)s {conditions}
+		where a.docstatus = 1 and a.account in ('De-Suung fund AC 202944097 - DS','Cash in Hand - DS') and a.company='{company}' {conditions}
+		{group_by_condition}
+		order by a.posting_date, a.account"""\
+		.format(select_fields=select_fields, conditions=get_conditions(filters, from_date),
+			group_by_condition=group_by_condition, company = filters.company)
+	
+	gl_entries = frappe.db.sql("""
+		select
+			a.posting_date, a.account, a.party_type, a.party,
+			a.debit as debit, a.credit as credit,
+			a.voucher_type, a.voucher_no, a.cost_center, a.business_activity,
+			a.remarks, CASE WHEN a.voucher_type = "Journal Entry" THEN (select b.account from `tabGL Entry` b where b.voucher_no = a.voucher_no and b.debit != a.debit and b.credit != a.credit limit 1) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.debit_account from `tabDirect Payment` dp where dp.name = a.voucher_no)
+			WHEN a.voucher_type = "TDS Remittance" THEN (select tdr.tds_account from `tabTDS Remittance` tdr where tdr.name = a.voucher_no) END as against,
+			CASE WHEN a.voucher_type = "Journal Entry" THEN (select je.cheque_no from `tabJournal Entry` je where je.name = a.voucher_no) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.cheque_no from `tabDirect Payment` dp where dp.name = a.voucher_no)
+			WHEN a.voucher_type = "TDS Remittance" THEN (select tdr.cheque_no from `tabTDS Remittance` tdr where tdr.name = a.voucher_no) END as cheque_no,
+			a.is_opening {select_fields}
+		from `tabGL Entry` a
+		where a.docstatus = 1 and a.account in ('De-Suung fund AC 202944097 - DS','Cash in Hand - DS') and a.company=%(company)s {conditions}
 		{group_by_condition}
 		order by a.posting_date, a.account"""\
 		.format(select_fields=select_fields, conditions=get_conditions(filters, from_date),
 			group_by_condition=group_by_condition), filters, as_dict=1)
+	# frappe.throw(str(gl_entries))
 
 	return gl_entries
 
@@ -167,13 +184,13 @@ def get_bank_entries(filters, from_date):
 			a.posting_date, a.account, a.party_type, a.party,
 			sum(a.debit) as debit, sum(a.credit) as credit,
 			a.voucher_type, a.voucher_no, a.cost_center, a.business_activity,
-			a.remarks, CASE WHEN a.voucher_type = "Journal Entry" THEN (select GROUP_CONCAT(DISTINCT(jea.account) SEPARATOR ',') as account from `tabJournal Entry Account` jea where jea.parent = a.voucher_no and jea.account != a.account) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.debit_account from `tabDirect Payment` dp where dp.name = a.voucher_no)
+			a.remarks, CASE WHEN a.voucher_type = "Journal Entry" THEN (select GROUP_CONCAT(DISTINCT(jea.account) SEPARATOR '|') as account from `tabJournal Entry Account` jea where jea.parent = a.voucher_no and jea.account != a.account) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.debit_account from `tabDirect Payment` dp where dp.name = a.voucher_no)
 			WHEN a.voucher_type = "TDS Remittance" THEN (select tdr.tds_account from `tabTDS Remittance` tdr where tdr.name = a.voucher_no) END as against,
 			CASE WHEN a.voucher_type = "Journal Entry" THEN (select je.cheque_no from `tabJournal Entry` je where je.name = a.voucher_no) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.cheque_no from `tabDirect Payment` dp where dp.name = a.voucher_no)
 			WHEN a.voucher_type = "TDS Remittance" THEN (select tdr.cheque_no from `tabTDS Remittance` tdr where tdr.name = a.voucher_no) END as cheque_no,
 			a.is_opening {select_fields}
 		from `tabGL Entry` a
-		where a.docstatus = 1 and a.account in ('80.02-CD AC 202944097 - DS') and a.company=%(company)s {conditions}
+		where a.docstatus = 1 and a.account in ('80.02-CD AC 101214282 - DS') and a.company=%(company)s {conditions}
 		{group_by_condition}
 		order by a.posting_date, a.account"""\
 		.format(select_fields=select_fields, conditions=get_conditions(filters, from_date),
@@ -194,7 +211,7 @@ def get_cash_entries(filters, from_date):
 			a.posting_date, a.account, a.party_type, a.party,
 			sum(a.debit) as debit, sum(a.credit) as credit,
 			a.voucher_type, a.voucher_no, a.cost_center, a.business_activity,
-			a.remarks, CASE WHEN a.voucher_type = "Journal Entry" THEN (select GROUP_CONCAT(DISTINCT(jea.account) SEPARATOR ',') as account from `tabJournal Entry Account` jea where jea.parent = a.voucher_no and jea.account != a.account) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.debit_account from `tabDirect Payment` dp where dp.name = a.voucher_no)
+			a.remarks, CASE WHEN a.voucher_type = "Journal Entry" THEN (select GROUP_CONCAT(DISTINCT(jea.account) SEPARATOR '|') as account from `tabJournal Entry Account` jea where jea.parent = a.voucher_no and jea.account != a.account) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.debit_account from `tabDirect Payment` dp where dp.name = a.voucher_no)
 			WHEN a.voucher_type = "TDS Remittance" THEN (select tdr.tds_account from `tabTDS Remittance` tdr where tdr.name = a.voucher_no) END as against,
 			CASE WHEN a.voucher_type = "Journal Entry" THEN (select je.cheque_no from `tabJournal Entry` je where je.name = a.voucher_no) WHEN a.voucher_type = 'Direct Payment' THEN (select dp.cheque_no from `tabDirect Payment` dp where dp.name = a.voucher_no)
 			WHEN a.voucher_type = "TDS Remittance" THEN (select tdr.cheque_no from `tabTDS Remittance` tdr where tdr.name = a.voucher_no) END as cheque_no,
@@ -227,8 +244,11 @@ def get_conditions(filters, from_date):
 	if filters.get("party"):
 		conditions.append("a.party=%(party)s")
 
-	if not (filters.get("account") or filters.get("party") or filters.get("group_by_account")):
-		conditions.append("a.posting_date >='{0}'".format(from_date))
+	if not (filters.get("account") or filters.get("party")):
+		start_date = frappe.db.get_value("Fiscal Year",filters.fiscal_year,"year_start_date")
+		from_date_bc = str(start_date).split("-")[0]+"-06-01"
+		conditions.append("case when a.account in ('De-Suung fund AC 202944097 - DS','Cash in Hand - DS') then a.posting_date >= '{0}' else a.posting_date >= '{1}' end".format(from_date_bc, from_date))
+		# conditions.append("a.posting_date >= '{0}'".format(from_date))
 	#added filters for Business Activity
 	if filters.get("business_activity"):
 		conditions.append("a.business_activity = %(business_activity)s")
@@ -252,22 +272,22 @@ def get_data_with_opening_closing(filters, account_details, gl_entries, from_dat
 
 	if filters.get("group_by_account"):
 		for acc, acc_dict in gle_map.items():
-			if acc_dict.entries:
+			# if acc_dict.entries:
 				# Opening for individual ledger, if grouped by account
-				data.append(get_balance_row(_("Opening"), acc_dict.opening,
-					acc_dict.opening_in_account_currency))
+			data.append(get_balance_row(_("Opening"), acc_dict.opening,
+				acc_dict.opening_in_account_currency))
 
-				data += acc_dict.entries
+			data += acc_dict.entries
 
 				# Totals and closing for individual ledger, if grouped by account
-				account_closing = acc_dict.opening + acc_dict.total_debit - acc_dict.total_credit
-				account_closing_in_account_currency = acc_dict.opening_in_account_currency \
-					+ acc_dict.total_debit_in_account_currency - acc_dict.total_credit_in_account_currency
+			account_closing = acc_dict.opening + acc_dict.total_debit - acc_dict.total_credit
+			account_closing_in_account_currency = acc_dict.opening_in_account_currency \
+				+ acc_dict.total_debit_in_account_currency - acc_dict.total_credit_in_account_currency
 
-				data += [{"account": _("Totals"), "debit": acc_dict.total_debit,
-					"credit": acc_dict.total_credit},
-					get_balance_row(_("Closing"),
-						account_closing, account_closing_in_account_currency), {}]
+			data += [{"account": _("Totals"), "debit": acc_dict.total_debit,
+				"credit": acc_dict.total_credit},
+				get_balance_row(_("Closing"),
+					account_closing, account_closing_in_account_currency), {}]
 
 	else:
 		for gl in gl_entries:
@@ -328,7 +348,7 @@ def get_accountwise_gle(filters, gl_entries, gle_map, from_date, to_date):
 			gle_map[gle.account].opening += amount
 			if filters.get("show_in_account_currency"):
 				gle_map[gle.account].opening_in_account_currency += amount_in_account_currency
-
+			# frappe.msgprint(gle.account)
 			if filters.get("account") or filters.get("party"):
 				opening += amount
 				if filters.get("show_in_account_currency"):
@@ -370,15 +390,28 @@ def get_balance_row(label, balance, balance_in_account_currency=None):
 def get_result_as_list(data, filters):
 	result = []
 	for d in data:
-		row = [d.get("posting_date"), d.get("account"), d.get("debit"), flt(d.get("credit"))]
-
+		against = []
+		against_list = []
+		row = [formatdate(d.get("posting_date"),"dd") if d.get("posting_date") else None, d.get("account"), d.get("debit"), flt(d.get("credit"))]
 		if filters.get("show_in_account_currency"):
 			row += [d.get("debit_in_account_currency"), d.get("credit_in_account_currency")]
+		if d.get("against"):
+			against_list = str(d.get("against")).split("|")
+			if against_list:
+				for a in against_list:
+					parent_acc = frappe.db.get_value("Account", a, "parent_account")
+					against.append(parent_acc+" : "+a+"; ")
+					# frappe.throw(str(against))
 
-		row += [d.get("voucher_type"), d.get("voucher_no"), d.get("against"), d.get("cheque_no"),
+
+		row += [d.get("voucher_type"), d.get("voucher_no"), list(against) if against else None, d.get("cheque_no"),
 			d.get("party_type"), d.get("party"), d.get("cost_center"), d.get("business_activity"), d.get("remarks")
 		]
+		# row += [d.get("voucher_type"), d.get("voucher_no"), d.get("against"), d.get("cheque_no"),
+		# 	d.get("party_type"), d.get("party"), d.get("cost_center"), d.get("business_activity"), d.get("remarks")
+		# ]
 
 		result.append(row)
 
 	return result
+

@@ -1,38 +1,8 @@
 // Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 // License: GNU General Public License v3. See license.txt
-/*
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-2.0		  		  SHIV		     11/08/2017         					Default "Project Tasks" is replaced by custom
-																			"Activity Tasks"
-2.0				  SHIV           02/09/2017                             Introducing Project Advances
---------------------------------------------------------------------------------------------------------------------------                                                                          
-*/
 
-//cur_frm.add_fetch("cost_center", "branch", "branch");
 cur_frm.add_fetch("branch", "cost_center", "cost_center");
-//cur_frm.add_fetch("customer", "image", "customer_image" );
-//cur_frm.add_fetch("customer", "customer_details", "customer_address" );
-//cur_frm.add_fetch("supplier", "image", "customer_image" );
-//cur_frm.add_fetch("supplier", "supplier_details", "supplier_details" );
-
 frappe.ui.form.on("Project", {
-	// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-	// Following code is commented by SHIV on 2017/08/11
-	/*
-	setup: function(frm) {
-		frm.get_field('tasks').grid.editable_fields = [
-			{fieldname: 'title', columns: 3},
-			{fieldname: 'status', columns: 3},
-			{fieldname: 'start_date', columns: 2},
-			{fieldname: 'end_date', columns: 2}
-		];
-
-	},
-	*/
-	
-	// Follwoing code is added by SHIV on 2017/08/11
 	setup: function(frm) {
 		frm.get_docfield("activity_tasks").allow_bulk_edit = 1;		
 		frm.get_docfield("additional_tasks").allow_bulk_edit = 1;		
@@ -79,7 +49,6 @@ frappe.ui.form.on("Project", {
 			{fieldname: 'total_balance_amount', columns: 2}
 		];						
 	},	
-	// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 	
 	onload: function(frm) {
 		enable_disable(frm);
@@ -99,14 +68,6 @@ frappe.ui.form.on("Project", {
 						query:"erpnext.projects.doctype.project.project.get_users_for_project"
 					}
 				});
-			
-		/*
-		frm.set_query("party_type", function() {
-			return {
-				filters: {"name": ["in", ["Customer", "Supplier"]]}
-			}
-		});
-		*/
 
 		// sales order
 		frm.set_query('sales_order', function() {
@@ -125,8 +86,6 @@ frappe.ui.form.on("Project", {
 	},
 	refresh: function(frm) {
 		enable_disable(frm);
-		// ++++++++++++++++++++ Ver 1.0 BEGINS ++++++++++++++++++++
-		// Following code added SHIV on 02/09/2017
 		if(!frm.doc.__islocal){
 			frm.add_custom_button(__("Advance"), function(){frm.trigger("make_project_advance")},__("Make"), "icon-file-alt");
 			frm.add_custom_button(__("BOQ"), function(){frm.trigger("make_boq")},__("Make"), "icon-file-alt");
@@ -146,7 +105,6 @@ frappe.ui.form.on("Project", {
 				},__("Reports"), "icon-file-alt"
 			);
 		}
-		// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
 		
 		if(frm.doc.__islocal) {
 			frm.web_link && frm.web_link.remove();
@@ -197,42 +155,10 @@ frappe.ui.form.on("Project", {
 		});
 	},
 	show_dashboard: function(frm) {
-		// ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-		// Following code is replaced by following code by SHIV on 20/09/2017
-		/*
-		if(frm.doc.__onload.activity_summary.length) {
-			var hours = $.map(frm.doc.__onload.activity_summary, function(d) { return d.total_hours });
-			var max_count = Math.max.apply(null, hours);
-			var sum = hours.reduce(function(a, b) { return a + b; }, 0);
-			var section = frm.dashboard.add_section(
-				frappe.render_template('project_dashboard',
-					{
-						data: frm.doc.__onload.activity_summary,
-						max_count: max_count,
-						sum: sum
-					}));
-
-			section.on('click', '.time-sheet-link', function() {
-				var activity_type = $(this).attr('data-activity_type');
-				frappe.set_route('List', 'Timesheet',
-					{'activity_type': activity_type, 'project': frm.doc.name});
-			});
-		}
-		*/
 		if(frm.doc.__onload.activity_summary.length) {
 			var days = $.map(frm.doc.__onload.activity_summary, function(d) { return d.total_days });
 			var max_count = Math.max.apply(null, days);
 			var sum = days.reduce(function(a, b) { return a + b; }, 0);
-			/*
-			var section = frm.dashboard.add_section(
-				frappe.render_template('project_dashboard',
-					{
-						data: frm.doc.__onload.activity_summary,
-						max_count: max_count,
-						sum: sum
-					}));
-			*/
-			
 			var section = frm.dashboard.add_section(
 				frappe.render_template('test_dashboard',
 					{
@@ -246,7 +172,6 @@ frappe.ui.form.on("Project", {
 					{'activity_type': activity_type, 'project': frm.doc.name});
 			});
 		}
-		// +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 	},
 	
 	imprest_limit: function(frm){
@@ -257,31 +182,7 @@ frappe.ui.form.on("Project", {
 			cur_frm.set_value("imprest_receivable",parseFloat(frm.doc.imprest_limit || 0.0)-parseFloat(frm.doc.imprest_received || 0.0))
 		}
 	},
-	
-	/*
-	branch: function(frm){
-		// Update Cost Center
-		if(frm.doc.branch){
-			frappe.call({
-				method: 'frappe.client.get_value',
-				args: {
-					doctype: 'Cost Center',
-					filters: {
-						'branch': frm.doc.branch
-					},
-					fieldname: ['name']
-				},
-				callback: function(r){
-					if(r.message){
-						cur_frm.set_value("cost_center", r.message.name);
-						refresh_field('cost_center');
-					}
-				}
-			});
-		}
-	},
-	*/
-	
+		
 	project_type: function(frm){
 		enable_disable(frm);
 		update_party_info(frm.doc);
@@ -466,20 +367,6 @@ var calculate_work_quantity = function(frm){
 	cur_frm.set_value("tot_add_wq_percent_complete",total_add_work_quantity_complete);
 }
 // +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-
-/*
-frappe.ui.form.on("Activity Tasks","is_group", function(frm, cdt, cdn){
-	var child = locals[cdt][cdn];
-	cur_frm.doc.activity_tasks.forEach(function(child){
-		var sel = format('div[data-fieldname="activity_tasks"] > div.grid-row[data-idx="{0}"]',[child.idx]);
-		if (child.is_group == 1){
-			$(sel).css('background-color',"#ff5858");
-		} else {
-			$(sel).css('background-color','transparent');
-		}
-	});
-});
-*/
 
 function enable_disable_items(frm){
 	var toggle_fields = ["branch"];

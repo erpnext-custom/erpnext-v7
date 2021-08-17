@@ -71,6 +71,7 @@ def get_notification_config():
                         "Overtime Authorization": {"docstatus": 0},
                         "Overtime Claim": {"docstatus": 0},
                         "POL": {"docstatus": 0},
+                        "Pol Advance": {"docstatus": 0},
                         "Issue POL": {"docstatus": 0},
                         "Project Sales": {"docstatus": 0},
                         "Process MR Payment": {"docstatus": 0},

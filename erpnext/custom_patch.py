@@ -10,6 +10,57 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 import frappe.model.rename_doc as rd
 
+def update_dp_consumed_budget():
+    for a in frappe.db.sql("""select dp.name, dp.business_activity, dpi.account, dp.cost_center, 
+                           dp.posting_date, dpi.amount
+                           from `tabDirect Payment` dp, `tabDirect Payment Item` dpi 
+                           where dp.docstatus = 1
+                           and dp.name = dpi.parent
+                           """, as_dict=True):
+		bud_obj = frappe.get_doc({
+				"doctype": "Committed Budget",
+				"account": a.account,
+				"cost_center": a.cost_center,
+				"po_no": a.name,
+				"po_date": a.posting_date,
+				"amount": a.amount,
+				"poi_name": a.name,
+				"date": frappe.utils.nowdate(), 
+				"business_activity": a.business_activity
+			})
+		bud_obj.flags.ignore_permissions = 1
+		bud_obj.submit()
+
+		consume = frappe.get_doc({
+			"doctype": "Consumed Budget",
+			"account": a.account,
+			"cost_center": a.cost_center,
+			"po_no": a.name,
+			"po_date": a.posting_date,
+			"amount": a.amount,
+			"pii_name": a.name,
+			"com_ref": bud_obj.name,
+			"business_activity": a.business_activity,
+			"date": frappe.utils.nowdate()})
+		consume.flags.ignore_permissions = 1
+		consume.submit()
+        
+def update_ba_consumed_budget():
+    for a in frappe.db.sql("select name, po_no from `tabConsumed Budget` where po_no like 'PI%'", as_dict=True):
+        print(a.name)
+        ba = frappe.db.get_value("Purchase Invoice", a.po_no, "business_activity")
+        frappe.db.sql("update `tabConsumed Budget` set business_activity = '{}' where name ='{}'".format(ba, a.name))
+        print(ba, a.name)
+
+def update_business_activity():
+    for d in frappe.db.sql('''
+                           select name, (select business_activity from `tabPurchase Invoice Item` where parent = pi.name limit 1) as business_activity 
+                           from `tabPurchase Invoice` pi
+                           ''',as_dict= True):
+        # print(d.name,' ',d.business_activity)
+        frappe.db.sql('''
+                      update `tabPurchase Invoice` set business_activity = '{}' where name = '{}'
+                      '''.format(d.business_activity, d.name))
 def delete_data():
 	for a in frappe.db.sql("Select name from `tabDocType` where module = 'Rental Management' and issingle = 0", as_dict=True):
 		table = 'tab' + a.name
@@ -1959,3 +2010,12 @@ def assign_role_approver():
 			print "Success", emp.employee
 		else:
 			print "Failed", emp.employee
+
+def update_remarks_payment_entry(): 
+	payment_entries = frappe.db.sql("select name from `tabPayment Entry` where creation < '2021-07-28 12:59:03.124824'",as_dict =1)
+	for item in payment_entries:
+		pi_name = frappe.db.sql("select reference_name from `tabPayment Entry Reference` where parent='{}'".format(item.name))
+		remarks = frappe.db.sql("select remarks from `tabPurchase Invoice` where name = '{}'".format(pi_name[0][0]))
+		frappe.db.sql("update `tabPayment Entry` set remarks='{}' where name ='{}'".format(remarks[0][0], item.name))
+		print("\n updated: {} with the remarks: {}".format(item.name, remarks[0][0]))
+

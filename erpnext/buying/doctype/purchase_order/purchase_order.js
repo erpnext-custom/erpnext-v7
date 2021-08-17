@@ -340,6 +340,14 @@ frappe.ui.form.on("Purchase Order Item", "item_code", function(frm, cdt, cdn) {
         }
    })
 })
+//added by phuntsho on 29-07-2021 to reutnr only budget account with expense and assest account type!
+cur_frm.fields_dict['items'].grid.get_field('budget_account').get_query = function (frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+		query: "erpnext.buying.doctype.purchase_order.purchase_order.budget_account_filter",
+		filters: { 'branch': cur_frm.doc.branch }
+	}
+}
 
 //cost Center
 cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(frm, cdt, cdn) {

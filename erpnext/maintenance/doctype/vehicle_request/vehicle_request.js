@@ -4,7 +4,13 @@
 cur_frm.add_fetch('employee', 'branch', 'branch');
 frappe.ui.form.on('Vehicle Request', {
 	refresh: function (frm) {
-
+		if(frm.doc.workflow_state == "Waiting Approval" || frm.doc.workflow_state == "Verified By Supervisor"){
+			cur_frm.toggle_display("section_break_003", frappe.user.has_role(["ADM User","CEO"]));
+		}else if(frm.doc.workflow_state == "Approved"){
+			cur_frm.toggle_display("section_break_003", 1);
+		}else{
+			cur_frm.toggle_display("section_break_003", 0);
+		}
 	},
 	setup: function (frm) {
 		frm.get_field('items').grid.editable_fields = [
@@ -14,13 +20,6 @@ frappe.ui.form.on('Vehicle Request', {
 			{ fieldname: 'division', columns: 3 },
 		];
 	},
-	"r_status": function (frm) {
-		cur_frm.toggle_enable("equipment", frm.r_status != 'Approved');
-		cur_frm.toggle_enable("operator", frm.r_sttus != 'Approved');
-		cur_frm.toggle_reqd("equipment", frm.doc.r_status == "Approved");
-		cur_frm.toggle_reqd("operator", frm.doc.r_status == "Approved");
-		cur_frm.toggle_reqd("rejection_message", frm.doc.r_status == "Rejected");
-	}
 })
 
 //Returns own equipments
@@ -30,7 +29,7 @@ cur_frm.fields_dict.equipment.get_query = function (doc) {}
 /*cur_frm.fields_dict['items'].grid.get_field('employee').get_query = function(frm, cdt, cdn) {
         var d = locals[cdt][cdn];
         return {
-                query: "erpnext.controllers.queries.employee_query",
-		filters: {'branch': frm.branch}
+            query: "erpnext.controllers.queries.employee_query",
+			filters: {'branch': frm.branch}
         }
 }*/

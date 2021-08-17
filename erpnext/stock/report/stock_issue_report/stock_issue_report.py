@@ -14,6 +14,7 @@ def execute(filters=None):
 def get_columns(filters):
 	cols = [
 		("Date") + ":date:100",
+		("Stock Entry Type") + ":data:100",
 		("Material Code") + ":data:110",
 		("Material Name")+":data:120",
 		("Material Group")+":data:120",
@@ -26,30 +27,35 @@ def get_columns(filters):
 	if filters.purpose == "Material Issue":
 		cols.append(("Cost Center")+":data:170")
 		cols.append(("Issued To") + ":data:170")
+		cols.append(("Desuup Name") + ":data:170")
 
 
 	if filters.purpose == "Material Transfer":
 		cols.append(("Warehouse")+":data:170")
-	cols.append(("Stock Entry")+":Link/Stock Entry:170")
+		cols.append(("Stock Entry")+":Link/Stock Entry:170")
+		cols.append(("Issued To") + "::100")
+		cols.append(("Desuup Name") + "::150")
 	return cols
 
 def get_data(filters):
 	if filters.purpose == 'Material Transfer':
 		data = """
 		SELECT 
-			se.posting_date, sed.item_code, sed.item_name, 
+			se.posting_date, se.stock_entry_type, sed.item_code, sed.item_name, 
 			(select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, 
 			(select i.item_sub_group from tabItem i where i.item_code = sed.item_code) as item_sub_group, 
-			sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.t_warehouse, se.name 
+			sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.t_warehouse, se.name,
+			case when sed.issue_to_employee = 1 then sed.issued_to else sed.issued_to_other end, sed.employee_name
 		FROM `tabStock Entry` se, `tabStock Entry Detail` sed 
 		WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Transfer'"""
 	elif filters.purpose == 'Material Issue':
 		data = """
 		SELECT 
-			se.posting_date, sed.item_code, sed.item_name, 
+			se.posting_date, se.stock_entry_type, sed.item_code, sed.item_name, 
 			(select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, 
 			(select i.item_sub_group from tabItem i where i.item_code = sed.item_code) as item_sub_group, 
-			sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.cost_center, se.name, sed.issued_to 
+			sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.cost_center,
+   			case when sed.issue_to_employee = 1 then sed.issued_to else sed.issued_to_other end, sed.employee_name, se.name 
 		FROM `tabStock Entry` se, `tabStock Entry Detail` sed 
 		WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Issue'"""
 	if filters.get("warehouse"):
@@ -58,4 +64,6 @@ def get_data(filters):
 		data += " and sed.item_code = \'" + str(filters.item_code) + "\'"
 	if filters.get("from_date") and filters.get("to_date"):
 		data += " and se.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+	if filters.get("stock_entry_type") and filters.get("stock_entry_type") != "":
+		data += " and se.stock_entry_type = '{0}'".format(filters.get("stock_entry_type"))
 	return frappe.db.sql(data)

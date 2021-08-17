@@ -7,38 +7,45 @@ frappe.ui.form.on('Fund Requisition', {
 	setup: function(frm) {
 		frm.get_docfield("items").allow_bulk_edit = 1;		
 		frm.get_field('items').grid.editable_fields = [
-			{fieldname: 'accounts', columns: 4},
+			// {fieldname: 'accounts', columns: 4},
 			{fieldname: 'amount', columns: 2},
 			{fieldname: 'remarks', columns: 4},
 		];
 	},
 
-	onload: function(frm) {
-		frm.fields_dict['items'].grid.get_field('accounts').get_query = function(){
-                        return{
-                                filters: {
-                                        'is_group': 0
-                                }
-                        }
-                };
-		},
+	// onload: function(frm) {
+	// 	frm.fields_dict['items'].grid.get_field('accounts').get_query = function(){
+    //                     return{
+    //                             filters: {
+    //                                     'is_group': 0
+    //                             }
+    //                     }
+    //             };
+	// 	},
 	refresh: function(frm){
-		/*cur_frm.set_df_property("issuing_cost_center", "hidden", 1)
+		// cur_frm.set_df_property("issuing_cost_center", "hidden", 1)
 		cur_frm.set_df_property("bank_account", "hidden", 1)
+		cur_frm.set_df_property("advance_account", "hidden", 1)
 		cur_frm.set_df_property("issuing_branch", "hidden", 1)
 	
-		if (in_list(user_roles, "Accounts User") && (frm.doc.workflow_state == "Approved")){
-			cur_frm.set_df_property("issuing_cost_center", "hidden",  0)
+		if (frm.doc.workflow_state == "Verified By Supervisor"){
+			// cur_frm.set_df_property("issuing_cost_center", "hidden",  0)
 			cur_frm.set_df_property("issuing_branch", "hidden", 0)
+			cur_frm.set_df_property("advance_account", "hidden", 0)
 			cur_frm.set_df_property("bank_account", "hidden", 0)
-			}	*/
+			}
+		if (frm.doc.workflow_state == "Approved"){
+			// cur_frm.set_df_property("issuing_cost_center", "hidden",  0)
+			cur_frm.set_df_property("advance_account", "reqd", 1);
+			cur_frm.set_df_property("bank_account", "reqd", 1);
+			}
 		if (frm.doc.docstatus == 1){
 			/*cur_frm.set_df_property("issuing_cost_center", "hidden", 0)
 			cur_frm.set_df_property("issuing_branch", "hidden", 0)  
 			cur_frm.set_df_property("bank_account", "hidden", 0)
 			*/	
 			
-				 if (frappe.model.can_read("Journal Entry")){
+				 if (frm.doc.reference){
         	                        cur_frm.add_custom_button(__('Bank Entries'), function(){
                 	                frappe.route_options = {
                         	                "name": me.frm.doc.reference,

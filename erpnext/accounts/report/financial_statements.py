@@ -270,40 +270,40 @@ def prepare_data_es(periodicity, fiscal_year, cost_center, business_activity, ac
 			if not cost_center:
 				if business_activity:
 					if d.is_group == 1 and d.name not in ("Assets - DS", "Payments - DS"):
-						budget = frappe.db.sql("select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account in (select name from `tabAccount` a where a.parent_account = '{1}') and b.business_activity = '{2}' and ba.docstatus = 1".format(fiscal_year, d.name, business_activity), as_dict = True)
+						budget = frappe.db.sql(""" select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account in (select name from `tabAccount` a where a.parent_account = '{1}') and b.business_activity = '{2}' and ba.docstatus = 1""".format(fiscal_year, d.name, business_activity), as_dict = True)
 					elif d.is_group != 1:
-						budget = frappe.db.sql("select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account = '{1}' and b.business_activity = '{2}' and ba.docstatus = 1".format(fiscal_year, d.name, business_activity), as_dict = True)
+						budget = frappe.db.sql(""" select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account = "{1}" and b.business_activity = '{2}' and ba.docstatus = 1""".format(fiscal_year, d.name, business_activity), as_dict = True)
 				else:
 					if d.is_group == 1 and d.name not in ("Assets - DS", "Payments - DS"):
-						budget = frappe.db.sql("select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account in (select name from `tabAccount` a where a.parent_account = '{1}') and ba.docstatus = 1".format(fiscal_year, d.name), as_dict = True)
+						budget = frappe.db.sql(""" select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account in (select name from `tabAccount` a where a.parent_account = '{1}') and ba.docstatus = 1""".format(fiscal_year, d.name), as_dict = True)
 					elif d.is_group !=1:
-						budget = frappe.db.sql("select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account = '{1}' and ba.docstatus = 1".format(fiscal_year, d.name), as_dict = True)
+						budget = frappe.db.sql("""select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account = "{1}" and ba.docstatus = 1""".format(fiscal_year, d.name), as_dict = True)
 			else:
 				if business_activity:
 					if d.is_group == 1 and d.name not in ("Assets - DS", "Payments - DS"):
-						budget = frappe.db.sql("select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account in (select name from `tabAccount` a where a.parent_account = '{1}') and b.cost_center = '{2}' and b.business_activity = '{3}' and ba.docstatus = 1".format(fiscal_year, d.name, cost_center, business_activity), as_dict = True)
+						budget = frappe.db.sql(""" select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account in (select name from `tabAccount` a where a.parent_account = '{1}') and b.cost_center = '{2}' and b.business_activity = '{3}' and ba.docstatus = 1""".format(fiscal_year, d.name, cost_center, business_activity), as_dict = True)
 					if business_activity:
-						budget = frappe.db.sql("select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account = '{1}' and b.cost_center = '{2}' and b.business_activity = '{3}'and ba.docstatus = 1".format(fiscal_year, d.name, cost_center, business_activity), as_dict = True)
+						budget = frappe.db.sql("""select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account = "{1}" and b.cost_center = '{2}' and b.business_activity = '{3}'and ba.docstatus = 1""".format(fiscal_year, d.name, cost_center, business_activity), as_dict = True)
 					
 				else:
 					if d.is_group == 1 and d.name not in ("Assets - DS", "Payments - DS"):
-						budget = frappe.db.sql("select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account in (select name from `tabAccount` a where a.parent_account = '{1}') and b.cost_center = '{2}' and ba.docstatus = 1".format(fiscal_year, d.name, cost_center), as_dict = True)
+						budget = frappe.db.sql("""select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account in (select name from `tabAccount` a where a.parent_account = '{1}') and b.cost_center = '{2}' and ba.docstatus = 1""".format(fiscal_year, d.name, cost_center), as_dict = True)
 					elif d.is_group !=1:
-						budget = frappe.db.sql("select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account = '{1}' and b.cost_center = '{2}' and ba.docstatus = 1".format(fiscal_year, d.name, cost_center), as_dict = True)
+						budget = frappe.db.sql("""select sum(ba.budget_amount) as budget_amount from `tabBudget Account` ba, `tabBudget` b where b.name = ba.parent and b.fiscal_year = '{0}' and ba.account = "{1}" and b.cost_center = '{2}' and ba.docstatus = 1""".format(fiscal_year, d.name, cost_center), as_dict = True)
 			if budget:
 				actual_amount = flt(budget[0].budget_amount)
 			# ---------------------------------------------------------------------------------------------------
 		#for yearly, monthly, half yearly, and quarterly 
 		if periodicity in ("Yearly", "Monthly", "Half-Yearly","Quarterly"):
 			if d.is_group == 1 and d.name not in ("Assets - DS", "Payments - DS"):
-				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}') and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
+				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = "{0}") and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
 				progressive = frappe.db.sql("""
-					select sum(gle.debit-gle.credit) as progressive from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}') and gle.posting_date between '{1}' and '{2}' {3}
+					select sum(gle.debit-gle.credit) as progressive from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = "{0}") and gle.posting_date between '{1}' and '{2}' {3}
 				""".format(d.name, year_start_date, year_end_date), as_dict = True)
 			else:
-				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = '{0}' and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
+				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = "{0}" and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
 				progressive = frappe.db.sql("""
-					select sum(debit - credit) as progressive from `tabGL Entry` where account = '{0}' and posting_date between '{1}' and '{2}' {3}
+					select sum(debit - credit) as progressive from `tabGL Entry` where account = "{0}" and posting_date between '{1}' and '{2}' {3}
 				""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
 		#for individual month
 		else:
@@ -313,9 +313,9 @@ def prepare_data_es(periodicity, fiscal_year, cost_center, business_activity, ac
 					select sum(gle.debit-gle.credit) as progressive from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}') and gle.posting_date between '{1}' and '{2}' {3}
 				""".format(d.name, year_start_date, period_list[0].to_date, conditions), as_dict = True)
 			else:
-				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = '{0}' and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, period_list[0].from_date, period_list[0].to_date, conditions), as_dict = True)
+				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = "{0}" and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, period_list[0].from_date, period_list[0].to_date, conditions), as_dict = True)
 				progressive = frappe.db.sql("""
-					select sum(debit - credit) as progressive from `tabGL Entry` gle where account = '{0}' and posting_date between '{1}' and '{2}' {3}
+					select sum(debit - credit) as progressive from `tabGL Entry` gle where account = "{0}" and posting_date between '{1}' and '{2}' {3}
 				""".format(d.name, year_start_date, period_list[0].to_date, conditions), as_dict = True)
 
 		if progressive:
@@ -465,7 +465,7 @@ def add_total_row_es(out, balance_must_be, period_list, company_currency):
 
 def get_accounts(company, exclude, root_type):
 	accounts = frappe.db.sql("""select is_group, name, account_code, parent_account, lft, rgt, root_type, report_type, account_name from `tabAccount`
-		where company='{0}' and root_type='{1}' and name not in {2} order by lft""".format(company, root_type, tuple(exclude)), as_dict=True)
+		where company='{0}' and root_type='{1}' and name not in {2} order by name asc""".format(company, root_type, tuple(exclude)), as_dict=True)
 	# frappe.msgprint(str(accounts))
 	return accounts
 def filter_accounts(accounts, depth=10):

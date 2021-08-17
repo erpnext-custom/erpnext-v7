@@ -39,5 +39,12 @@ frappe.query_reports["Stock Balance Report"] = {
 			"width": "80",
 			"options": "Warehouse"
 		},
+		{
+			"fieldname": "stock_entry_type",
+			"label": __("Stock Entry Type"),
+			"fieldtype": "Select",
+			"width": "80",
+			"options": ["","Regular","Soelra"]
+		},
 	]
 }

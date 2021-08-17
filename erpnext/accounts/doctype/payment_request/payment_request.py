@@ -90,6 +90,8 @@ class PaymentRequest(Document):
 			party_account = ref_doc.debit_to
 		elif self.reference_doctype == "Purchase Invoice":
 			party_account = ref_doc.credit_to
+			frappe.throw("Here")
+			# for a in ref_doc.c
 		else:
 			party_account = get_party_account("Customer", ref_doc.get("customer"), ref_doc.company)
 

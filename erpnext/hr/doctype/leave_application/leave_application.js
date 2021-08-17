@@ -21,15 +21,24 @@ frappe.ui.form.on("Leave Application", {
 
 		//frm.set_query("employee", erpnext.queries.employee);
 		frm.set_query("employee", function() {
-			return {
-				"filters": {"status": "Active"}
+			if (frappe.session.user != "Administrator"){
+				return {
+					"filters":{
+						"user_id": frappe.session.user
+					}
+				}
 			}
-		});
+			else{
+				return {
+					"filters": {"status": "Active"} 
+				}
+			}
+		});	
 
-		if(frm.doc.__islocal) {
-			frm.trigger("get_employee_branch_costcenter");
+		// if(frm.doc.__islocal) {				//Commented Out By Sonam Chophel
+		// 	frm.trigger("get_employee_branch_cost_center");
 
-		}	
+		// }	
 	
 	},
 
@@ -76,7 +85,7 @@ frappe.ui.form.on("Leave Application", {
 	},
 
 	employee: function(frm) {
-		frm.trigger("get_employee_branch_costcenter")
+		frm.trigger("get_employee_branch_cost_center")
 		frm.trigger("get_leave_balance");
 	},
 
@@ -112,7 +121,7 @@ frappe.ui.form.on("Leave Application", {
 		frm.trigger("calculate_total_days");
 	},
 
-	get_employee_branch_costcenter: function(frm){
+	get_employee_branch_cost_center: function(frm){
 		/*
 		if((frm.doc.docstatus==0 || frm.doc.__islocal) && frm.doc.employee){
 			frappe.call({
@@ -125,10 +134,25 @@ frappe.ui.form.on("Leave Application", {
 			});
 		}
 		*/
-		if((frm.doc.docstatus==0 || frm.doc.__islocal) && frm.doc.employee){
-			cur_frm.add_fetch("employee", "branch", "branch");
-			cur_frm.add_fetch("employee", "cost_center", "cost_center");
-		}
+		frappe.call({
+			'method': "frappe.client.get",
+			'args': {
+				'doctype': "Employee",
+				'filters': {
+					"name": frm.doc.employee
+				},
+				'fields': ["branch", "cost_center"]				
+			},
+			callback: function(r){
+				console.log(r.message)
+				if((frm.doc.docstatus==0 || frm.doc.__islocal) && frm.doc.employee){
+					cur_frm.set_value("branch", r.message.branch);
+					cur_frm.set_value("cost_center", r.message.cost_center);
+					cur_frm.refresh_field("branch")
+					cur_frm.refresh_field("cost_center")
+				}
+			}
+		});
 	},
 	
 	get_leave_balance: function(frm) {

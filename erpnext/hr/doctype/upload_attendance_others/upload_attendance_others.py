@@ -111,7 +111,6 @@ def get_active_employees(args, start_date, end_date):
                 where me.docstatus < 2
                 and iw.parent = me.name
                 and iw.branch = '{0}'
-		and me.unit = '{3}'
 		and (
                         ('{1}' between iw.from_date and ifnull(iw.to_date,now()))
                         or

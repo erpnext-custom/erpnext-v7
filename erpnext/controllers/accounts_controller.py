@@ -260,7 +260,6 @@ class AccountsController(TransactionBase):
 			'project': self.get("project")
 		})
 		gl_dict.update(args)
-
 		if not account_currency:
 			account_currency = get_account_currency(gl_dict.account)
 

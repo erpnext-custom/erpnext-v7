@@ -604,19 +604,3 @@ def get_advance_list(project, party_type, party):
                 """.format(project=project, party_type=party_type, party=party), as_dict=True)
 
         return result
-
-# Following code commented by SHIV on 2019/06/19
-'''
-@frappe.whitelist()
-def get_advance_list(project):
-        result = frappe.db.sql("""
-                select *
-                from `tabProject Advance`
-                where project = %s
-                and docstatus = 1
-                and balance_amount > 0
-                """, (project), as_dict=True)
-
-        return result
-'''
-# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++

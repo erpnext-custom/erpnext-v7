@@ -48,6 +48,7 @@ class StockEntry(StockController):
 			item.update(get_bin_details(item.item_code, item.s_warehouse))
 
 	def validate(self):
+     
 		check_future_date(self.posting_date)
 		self.check_transfer_wh()
 		self.check_item_value()
@@ -57,7 +58,6 @@ class StockEntry(StockController):
 			if self.purpose == "Material Transfer for Manufacture":
 				if self.get("__islocal"):	
 					self.create_mr()
-
 		self.validate_posting_time()
 		self.validate_purpose()
 		self.validate_item()
@@ -102,7 +102,10 @@ class StockEntry(StockController):
 
 	def check_item_value(self):
 		if self.items:
+			count = 1
 			for a in self.items:
+				if not a.business_activity:
+					frappe.throw("Business Activity misisng in Table, row "+str(count))
 				a.item_group = frappe.db.get_value("Item", a.item_code, "item_group")
 				if a.issued_to and not a.issue_to_employee:
 					a.issued_to = None 
@@ -111,6 +114,7 @@ class StockEntry(StockController):
 				if self.purpose == "Material Issue" and frappe.db.get_value("Item Group", a.item_group, "return_needed"):
 					if not a.old_item_returned or not a.old_item_detail:
 						frappe.throw("Old Item should be returned before issuing new item")
+				count += 1
 		else:
 			frappe.throw("Stock Entry should have an Item Entry")
 
@@ -454,11 +458,11 @@ class StockEntry(StockController):
 
 	def get_gl_entries(self, warehouse_account):
 		expenses_included_in_valuation = self.get_company_default("expenses_included_in_valuation")
-
+		# frappe.msgprint(str(expenses_included_in_valuation))
+		
 		gl_entries = super(StockEntry, self).get_gl_entries(warehouse_account)
 
 		default_business_activity = frappe.db.get_value("Business Activity",{"is_default":1}, "name")
-
 		for d in self.get("items"):
 			additional_cost = flt(d.additional_cost, d.precision("additional_cost"))
 			if additional_cost:

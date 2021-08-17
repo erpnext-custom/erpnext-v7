@@ -1,13 +1,6 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and contributors
 # For license information, please see license.txt
-'''
---------------------------------------------------------------------------------------------------------------------------
-Version          Author          CreatedOn          ModifiedOn          Remarks
------------- --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SHIV		                    2017/08/15         Original Version
---------------------------------------------------------------------------------------------------------------------------                                                                          
-'''
 from __future__ import unicode_literals
 import frappe
 from frappe import _
@@ -17,12 +10,7 @@ from frappe.model.naming import make_autoname
 from frappe.utils import cstr, flt, getdate, today, nowdate, now_datetime
 
 class BOQ(Document):
-        """
-        def autoname(self):
-                self.name = make_autoname(str('BOQ')+'.YYYY.MM.####')
-        """
-                
-	def validate(self):
+        def validate(self):
                 self.update_defaults()
                 self.validate_defaults()
                 self.update_boq_history()

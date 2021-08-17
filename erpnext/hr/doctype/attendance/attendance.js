@@ -5,8 +5,12 @@ cur_frm.add_fetch('employee', 'company', 'company');
 cur_frm.add_fetch('employee', 'employee_name', 'employee_name');
 cur_frm.add_fetch('employee', 'employment_type', 'employment_type');
 
+
 cur_frm.cscript.onload = function(doc, cdt, cdn) {
 	if(doc.__islocal) cur_frm.set_value("att_date", get_today());
+	if(doc.__islocal) cur_frm.set_value('attendance_time', frappe.datetime.now_time());
+
+
 }
 
 cur_frm.fields_dict.employee.get_query = function(doc,cdt,cdn) {

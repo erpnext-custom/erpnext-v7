@@ -30,10 +30,19 @@ def validate_workflow_states(doc):
 	
 	if not approver_field.has_key(doc.doctype) or not frappe.db.exists("Workflow", {"document_type": doc.doctype, "is_active": 1}):
 		return
-	document_approver = approver_field[doc.doctype]
+	try:
+		document_approver = approver_field[doc.doctype]
+	except Exception as e:
+		frappe.throw("Approver or Supervisor might not be assigned. Details: "+e)
 	employee          = frappe.db.get_value("Employee", doc.employee, ["user_id","employee_name","designation","name"])
-	reports_to        = frappe.db.get_value("Employee", frappe.db.get_value("Employee", doc.employee, "reports_to"), ["user_id","employee_name","designation","name"])
-	final_approver    = frappe.db.get_value("Employee", {"user_id": get_final_approver(doc.branch)}, ["user_id","employee_name","designation","name"])
+	try:
+		reports_to    = frappe.db.get_value("Employee", frappe.db.get_value("Employee", doc.employee, "reports_to"), ["user_id","employee_name","designation","name"])
+	except Exception as e:
+		frappe.throw("Approver or Supervisor might not be assigned. Details: "+e)
+	try:
+		final_approver    = frappe.db.get_value("Employee", {"user_id": get_final_approver(doc.branch)}, ["user_id","employee_name","designation","name"])
+	except Exception as e:
+		frappe.throw(_("Final Approver might not be assigned. Details: " + "{}").format(e))
 	workflow_state    = doc.get("workflow_state").lower()
 	login_user        = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","designation","name"])
 	if not login_user:
@@ -238,13 +247,16 @@ def validate_workflow_states(doc):
 			if doc.leave_type == "Medical Leave":
 				if "CEO" not in frappe.get_roles(frappe.session.user) and doc.leave_type == "Medical Leave":
 					frappe.throw("Only CEO is be allowed to approve Medical Leaves ") 
-				if doc.docstatus == 0 and workflow_state == "Appproved":
+				if doc.docstatus == 0 and workflow_state == "Approved":
 					doc.workflow_state = "Waiting CEO Approval"
 			else:
-				if  doc.leave_approver != frappe.session.user:
-					frappe.throw("Only {0} can submit the leave application".format(doc.leave_approver))
+				# if  doc.leave_approver != frappe.session.user:
+				# 	frappe.throw("Only {0} can submit the leave application".format(doc.leave_approver))
 
-				if doc.docstatus == 0 and workflow_state == "Appproved":
+				if reports_to[0] != login_user[0]:
+					frappe.throw("Only {0} can approve the leave applicatoin".format(reports_to[1]))
+
+				if doc.docstatus == 0 and workflow_state == "Approved":
 					doc.workflow_state = "Verified By Supervisor"
 
 				# Checking of Final Approval have assinged an Officiating

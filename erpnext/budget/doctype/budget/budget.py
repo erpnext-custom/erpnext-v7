@@ -54,13 +54,29 @@ class Budget(Document):
 				else:
 					frappe.msgprint("Account <b>" + str(d.account) + "</b> not found on system")
 	#Populate Budget Accounts with Expense and Fixed Asset Accounts
+	# def get_accounts(self):
+	# 	query = "select parent_account, name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes') order by parent_account"
+	# 	entries = frappe.db.sql(query, as_dict=True)
+	# 	self.set('accounts', [])
+
+	# 	for d in entries:
+	# 		d.initial_budget = 0
+	# 		row = self.append('accounts', {})
+	# 		row.update(d)
+
+	#Populate Budget Accounts with Expense and Fixed Asset Accounts
 	def get_accounts(self):
-		query = "select parent_account, name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes') order by parent_account"
+		query = "select parent_account, name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes') order by parent_account ASC"
 		entries = frappe.db.sql(query, as_dict=True)
 		self.set('accounts', [])
 
+		p_account = ""
 		for d in entries:
 			d.initial_budget = 0
+			if d.parent_account == p_account:
+				d.parent_account = ""
+			else:
+				p_account = d.parent_account
 			row = self.append('accounts', {})
 			row.update(d)
 	# query = "select parent_account, name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes') order by parent_account"

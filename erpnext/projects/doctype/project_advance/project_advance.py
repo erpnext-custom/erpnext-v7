@@ -129,6 +129,7 @@ class ProjectAdvance(Document):
                 if not adv_gl:
                         frappe.throw(_("Advance GL is not defined in Projects Accounts Settings."))
                 adv_gl_det = frappe.db.get_value(doctype="Account", filters=adv_gl, fieldname=["account_type","is_an_advance_account"], as_dict=True)
+                #frappe.throw("adv_gl_del:{}".format(adv_gl_det))
 
                 # Fetching Revenue & Expense GLs
                 rev_gl, exp_gl = frappe.db.get_value("Branch",self.branch,["revenue_bank_account", "expense_bank_account"])

@@ -22,29 +22,29 @@ def get_data():
 					"name": "Timesheet",
 					"description": _("Timesheet for all tasks."),
 				},
-                                {
-					"type": "doctype",
-					"name": "BOQ",
-					"description": _("Bill of Quantities."),
-				},
-                                {
-					"type": "doctype",
-					"name": "BOQ Adjustment",
-					"description": _("Adjustments for Bill of Quantities."),
-				},
-                                {
-					"type": "doctype",
-					"name": "MB Entry",
-                                        "label": "Measurement Book Entries",
-					"description": _("Measurement Book Entries."),
-				},
-				{
-					"type": "report",
-					"route": "Gantt/Task",
-					"doctype": "Task",
-					"name": "Gantt Chart",
-					"description": _("Gantt chart of all tasks.")
-				},
+                #                 {
+				# 	"type": "doctype",
+				# 	"name": "BOQ",
+				# 	"description": _("Bill of Quantities."),
+				# },
+                #                 {
+				# 	"type": "doctype",
+				# 	"name": "BOQ Adjustment",
+				# 	"description": _("Adjustments for Bill of Quantities."),
+				# },
+                #                 {
+				# 	"type": "doctype",
+				# 	"name": "MB Entry",
+                #                         "label": "Measurement Book Entries",
+				# 	"description": _("Measurement Book Entries."),
+				# },
+				# {
+				# 	"type": "report",
+				# 	"route": "Gantt/Task",
+				# 	"doctype": "Task",
+				# 	"name": "Gantt Chart",
+				# 	"description": _("Gantt chart of all tasks.")
+				# },
 			]
 		},
                 {
@@ -56,16 +56,16 @@ def get_data():
                                         "name": "Project Advance",
                                         "description": _("Project Advances."),
                                 },
-                                {
-                                        "type": "doctype",
-                                        "name": "Project Invoice",
-                                        "description": _("Project Invoices."),
-                                },
-                                {
-                                        "type": "doctype",
-                                        "name": "Project Payment",
-                                        "description": _("Project Payments."),
-                                },
+                                # {
+                                #         "type": "doctype",
+                                #         "name": "Project Invoice",
+                                #         "description": _("Project Invoices."),
+                                # },
+                                # {
+                                #         "type": "doctype",
+                                #         "name": "Project Payment",
+                                #         "description": _("Project Payments."),
+                                # },
                         ]
                 },
 		{
@@ -169,67 +169,67 @@ def get_data():
 					"name": "Project Work Plan",
 					"doctype": "Project"
 				},
-                                {
-					"type": "report",
-					"is_query_report": True,
-					"name": "Project Manpower",
-					"doctype": "Project"
-				},
-				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Project Equipment",
-                                        "doctype": "Project"
-                                },
-                                {
-					"type": "report",
-					"is_query_report": True,
-					"name": "BOQ Register",
-					"doctype": "BOQ"
-				},
-                                {
-					"type": "report",
-					"is_query_report": True,
-					"name": "Measurement Book Register",
-					"doctype": "MB Entry"
-				},
-                                {
+        #                         {
+		# 			"type": "report",
+		# 			"is_query_report": True,
+		# 			"name": "Project Manpower",
+		# 			"doctype": "Project"
+		# 		},
+		# 		{
+        #                                 "type": "report",
+        #                                 "is_query_report": True,
+        #                                 "name": "Project Equipment",
+        #                                 "doctype": "Project"
+        #                         },
+        #                         {
+		# 			"type": "report",
+		# 			"is_query_report": True,
+		# 			"name": "BOQ Register",
+		# 			"doctype": "BOQ"
+		# 		},
+        #                         {
+		# 			"type": "report",
+		# 			"is_query_report": True,
+		# 			"name": "Measurement Book Register",
+		# 			"doctype": "MB Entry"
+		# 		},
+              {
 					"type": "report",
 					"is_query_report": True,
 					"name": "Advance Payment Register",
 					"doctype": "Project Advance"
 				},
-                                {
-					"type": "report",
-					"is_query_report": True,
-					"name": "Invoice Register",
-					"doctype": "Project Invoice"
-				},
-                                {
-					"type": "report",
-					"is_query_report": True,
-					"name": "Payment Register",
-					"doctype": "Project Payment"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Project wise Stock Tracking",
-					"doctype": "Project"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Items Register",
-					"doctype": "Consumable Register Entry"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "MR Payment",
-					"label": "MR Payment",
-					"doctype": "Process MR Payment"
-				}
+        #                         {
+		# 			"type": "report",
+		# 			"is_query_report": True,
+		# 			"name": "Invoice Register",
+		# 			"doctype": "Project Invoice"
+		# 		},
+        #                         {
+		# 			"type": "report",
+		# 			"is_query_report": True,
+		# 			"name": "Payment Register",
+		# 			"doctype": "Project Payment"
+		# 		},
+		# 		{
+		# 			"type": "report",
+		# 			"is_query_report": True,
+		# 			"name": "Project wise Stock Tracking",
+		# 			"doctype": "Project"
+		# 		},
+		# 		{
+		# 			"type": "report",
+		# 			"is_query_report": True,
+		# 			"name": "Items Register",
+		# 			"doctype": "Consumable Register Entry"
+		# 		},
+		# 		{
+		# 			"type": "report",
+		# 			"is_query_report": True,
+		# 			"name": "MR Payment",
+		# 			"label": "MR Payment",
+		# 			"doctype": "Process MR Payment"
+		# 		}
 			]
 		},
 	]

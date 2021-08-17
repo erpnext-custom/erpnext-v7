@@ -514,5 +514,38 @@ def update_child_table_rate (item_code, supplier,posting_date):
 		return (price[0]["rate"])
 	else: 
 		return
+
+
+# Added by Sonam Chophel to update the payment status on august 03/08/2021
+@frappe.whitelist()
+def get_payment_entry(doc_name, total_amount):
+    """ see if there exist a payment entry submitted for the job card """
+    payment_entry = """
+        SELECT 
+            sum(a.total_amount) as total_amount
+        FROM 
+            `tabMechanical Payment` as a, 
+            `tabMechanical Payment Item` as b
+        WHERE 
+            a.payment_for = "Job Card" and
+            b.reference_type = "Job Card" and 
+            b.reference_name= '{name}' and 
+            b.parent = a.name and 
+            a.docstatus = 1""".format(name=doc_name)
+    payment_entry = frappe.db.sql(payment_entry, as_dict=1)
 	
+    if len(payment_entry) >= 1 and payment_entry[0].total_amount > 0:
+		if flt(payment_entry[0].total_amount) == flt(total_amount):
+			frappe.db.set_value("Job Card", doc_name, "payment_status", "Paid")
+			return ("Paid")
+		else:
+			frappe.db.set_value("Job Card", doc_name, 'payment_status', "Partially Paid")
+			return ("Partially Paid")
+
+    else:
+		frappe.db.set_value("Job Card", doc_name, 'payment_status', "Not Paid")
+		return ("Not Paid")
+
+
+
 # -------- End of new code ----------

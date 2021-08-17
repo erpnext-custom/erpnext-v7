@@ -18,6 +18,10 @@ class FiscalYearError(frappe.ValidationError): pass
 @frappe.whitelist()
 def get_fiscal_year(date=None, fiscal_year=None, label="Date", verbose=1, company=None, as_dict=False):
 	return get_fiscal_years(date, fiscal_year, label, verbose, company, as_dict=as_dict)[0]
+@frappe.whitelist()
+def get_cost_center(cost_center):
+	cost_center = frappe.db.get_value("Cost Center",cost_center,"name")
+	return cost_center
 
 def get_fiscal_years(transaction_date=None, fiscal_year=None, label="Date", verbose=1, company=None, as_dict=False):
 	# if year start date is 2012-04-01, year end date should be 2013-03-31 (hence subdate)
