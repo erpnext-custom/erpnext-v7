@@ -55,6 +55,38 @@ frappe.ui.form.on('Hire Charge Invoice', {
 		if (!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today());
 		}
+		if (frm.doc.branch){
+			frappe.call({
+				'method': "frappe.client.get",
+				'args': {
+					'doctype': "Branch",
+					'filters': {
+						"name": frm.doc.branch
+					},
+					'fields': ["cost_center"]				
+				},
+				callback: function(r){
+					cur_frm.set_value("cost_center", r.message.cost_center);
+					cur_frm.refresh_field("cost_center")
+				}
+			});
+		}
+		if (frm.doc.ehf_name){
+			frappe.call({
+				'method': "frappe.client.get",
+				'args': {
+					'doctype': "Equipment Hiring Form",
+					'filters': {
+						"name": frm.doc.ehf_name
+					},
+					'fields': ["supplier"]				
+				},
+				callback: function(r){
+					cur_frm.set_value("customer", r.message.supplier);
+					cur_frm.refresh_field("customer")
+				}
+			});
+		}
 	},
 	"tds_percentage": function (frm) {
 		if (frm.doc.tds_percentage != "") {
@@ -70,7 +102,7 @@ frappe.ui.form.on('Hire Charge Invoice', {
 		}
 	},
 	"get_vehicle_logbooks": function (frm) {
-		get_vehicle_logs(frm.doc.ehf_name)
+		get_vehicle_logs(frm.doc.ehf_name, frm.doc.branch)
 	},
 	"advance_amount": function (frm) {
 		calculate_balance(frm)
@@ -130,9 +162,9 @@ function calculate_balance(frm) {
 	}
 }
 
-cur_frm.add_fetch("ehf_name", "customer", "customer")
+// cur_frm.add_fetch("ehf_name", "customer", "customer")
 cur_frm.add_fetch("ehf_name", "private", "owned_by")
-cur_frm.add_fetch("branch", "cost_center", "cost_center")
+// cur_frm.add_fetch("branch", "cost_center", "cost_center")
 //cur_frm.add_fetch("ehf_name","advance_amount","advance_amount")
 
 
@@ -198,12 +230,13 @@ function calculate_discount_total(frm) {
 	frm.refresh_field("discount_amount")
 }
 
-function get_vehicle_logs(form) {
+function get_vehicle_logs(form, branch) {
 	frappe.call({
 		method: "erpnext.maintenance.doctype.hire_charge_invoice.hire_charge_invoice.get_vehicle_logs",
 		async: false,
 		args: {
 			"form": form,
+			"branch": branch,
 		},
 		callback: function (r) {
 			if (r.message) {

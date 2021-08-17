@@ -432,7 +432,7 @@ class HireChargeInvoice(AccountsController):
 #     else:
 #         frappe.throw("Select Equipment Hiring Form first!")
 @frappe.whitelist()
-def get_vehicle_logs(form=None):
+def get_vehicle_logs(form=None, branch=None):
     if form:
         data =  frappe.db.sql("""
             select 
@@ -454,7 +454,8 @@ def get_vehicle_logs(form=None):
             where 
                 a.docstatus = 1 and 
                 a.invoice_created = 0 and 
-                a.equipment_hiring_form = '{equip_hire_from}'""".format(equip_hire_from = form), as_dict=True)
+                a.branch = '{branch}'and 
+                a.equipment_hiring_form = '{equip_hire_from}'""".format(equip_hire_from = form, branch=branch), as_dict=True)
         return data
     else:
         frappe.throw("Select Equipment Hiring Form first!")
