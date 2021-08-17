@@ -14,9 +14,9 @@ class VehicleRequest(Document):
 		if not self.posting_date:
 			self.posting_date = nowdate()
 		self.check_duplicate()
-		# if self.workflow_state == "Rejected":
-		# 	if not self.rejection_reason:
-		# 		frappe.throw("Rejection Reason Is Mandatory")
+		if self.workflow_state == "Rejected":
+			if not self.rejection_reason:
+				frappe.throw("Rejection Reason Is Mandatory")
 		self.update_verifier_approver()
 
 	def update_verifier_approver(self):
