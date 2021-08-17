@@ -5,6 +5,7 @@ cur_frm.add_fetch('employee', 'branch', 'branch');
 frappe.ui.form.on('Vehicle Request', {
 	refresh: function (frm) {
 		if(frm.doc.workflow_state == "Waiting MTO Approval" || frm.doc.workflow_state == "Waiting DG Approval"){
+			console.log("SONAM HERE")
 			cur_frm.toggle_display("section_break_003", frappe.user.has_role(["ADM User","CEO"]));
 		}else if(frm.doc.workflow_state == "Approved"){
 			cur_frm.toggle_display("section_break_003", 1);
