@@ -22,11 +22,13 @@ class VehicleRequest(Document):
 	def update_verifier_approver(self):
 		if frappe.db.exists("Employee", {"user_id":frappe.session.user}):
 			verifier_approver = frappe.db.get_value("Employee", {"user_id":frappe.session.user}, "employee_name")
+			approver_designation = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, "designation")
 		else:
 			verifier_approver = frappe.session.user
 
 		if self.workflow_state == "Approved":
 			self.approver = str(verifier_approver)
+			self.approver_designation = str(approver_designation)
 		elif self.workflow_state == "Verified By Supervisor":
 			self.verifier = str(verifier_approver)
 
