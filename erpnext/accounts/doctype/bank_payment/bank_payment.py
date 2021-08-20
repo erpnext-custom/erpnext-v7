@@ -316,10 +316,10 @@ class BankPayment(Document):
 		data = []
 		row = {}
 		for a in frappe.db.sql("""SELECT je.name transaction_id, ja.name transaction_reference, ja.reference_type, ja.reference_name, 
-							je.posting_date transaction_date, ja.party_type, ja.party, 
-							round(ja.debit_in_account_currency,2) as amount 
+								je.posting_date transaction_date, ja.party_type, ja.party, 
+								round(ja.debit_in_account_currency,2) as amount 
 							FROM `tabJournal Entry` je, `tabJournal Entry Account` ja
-							where je.branch = '{branch}' 
+							where je.branch = "{branch}"
 							{cond}
 							and je.name = ja.parent 
 							and je.voucher_type = 'Bank Entry' 
