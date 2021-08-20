@@ -63,9 +63,9 @@ def get_conditions(filters):
 
 	if filters.get("from_date") > filters.get("to_date"):
 		frappe.throw(_("To Date cannot be before From Date"))
-
-	if filters.get("from_date") and filters.get("to_date"):
-		conditions += " and posting_date between '{from_date}' and  '{to_date}'".format(from_date=filters.get("from_date"), to_date=filters.get("to_date"))
+	
+	if filters.get("to_date"):
+		conditions += " and posting_date <= '%s'" % frappe.db.escape(filters["to_date"])
 	else:
 		frappe.throw(_("'To Date' is required"))
 
