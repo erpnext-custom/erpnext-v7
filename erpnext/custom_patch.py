@@ -5,6 +5,7 @@ from frappe import msgprint
 from frappe.utils import flt, cint
 from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, nowdate, add_days
 from erpnext.custom_utils import get_branch_cc
+import csv
 
 def update_ss():
 	count = 1
@@ -936,3 +937,12 @@ def update_branch_permission():
         for e in frappe.db.sql("select name, branch, user_id from `tabEmployee` where status = 'Active' and ifnull(user_id,'x') != 'x'",as_dict=True):
                 print e.name, e.branch, e.user_id
                 frappe.permissions.add_user_permission("Branch", e.branch, e.user_id)
+
+def update_item_sub_group(): 
+	with open("/home/frappe/erp/apps/erpnext/erpnext/3_Purchase___Stores_Vo_81.csv") as f:
+		reader = csv.reader(f)
+		mylist = list(reader)
+		for i in mylist:
+			frappe.db.sql("""update `tabItem` set item_sub_group = '{}' where name = '{}' """.format(i[5], i[2]))
+			print("SRNO: {} ".format(i[0]))
+			# 	print("DONE FOR ITEM: {}  --- mgroup: {} -----msubgroup: {} ".format(i[2], i[4], i[5]))
