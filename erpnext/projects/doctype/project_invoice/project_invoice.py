@@ -389,7 +389,8 @@ class ProjectInvoice(AccountsController):
                         self.posting_date = self.invoice_date
 
                         if self.party_type == "Customer":
-                                inv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="project_invoice_account")
+                                # inv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="project_invoice_account")
+                                inv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="project_accrued_income_account")
                                 rec_gl = frappe.db.get_value(doctype="Company",filters=self.company,fieldname="default_receivable_account")
                         elif self.party_type == "Supplier":
                                 inv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="invoice_account_supplier")
