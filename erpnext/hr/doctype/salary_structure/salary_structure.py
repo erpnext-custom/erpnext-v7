@@ -44,6 +44,7 @@ from frappe.model.document import Document
 from erpnext.hr.utils import set_employee_name
 from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settings, get_salary_tax
 from erpnext.accounts.accounts_custom_functions import get_number_of_days
+from erpnext.hr.doctype.sws_membership.sws_membership import get_sws_contribution
 from erpnext.custom_utils import nvl
 from frappe.desk.reportview import get_match_cond
 import operator
@@ -269,7 +270,10 @@ class SalaryStructure(Document):
                                                 calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
                                 else:
                                         if self.get(m['field_name']) and m['name'] == 'SWS':
-                                                sws_amt = round(flt(settings.get("sws_contribution")))
+                                                if settings.get("sws_type") == "Based on Grade":
+                                                    sws_amt = round(flt(settings.get("sws_contribution")))
+                                                else:
+                                                    sws_amt = round(flt(get_sws_contribution(self.employee)))
                                                 calc_amt = sws_amt
                                                 calc_map.append({'salary_component': m['name'], 'amount': flt(sws_amt)})
                                         elif self.get(m['field_name']) and m['name'] == 'Group Insurance Scheme':
@@ -345,6 +349,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 		# Copy earnings and deductions table from source salary structure
 		calc_map = {}
 		for key in ('earnings', 'deductions'):
+                        
 			for d in source.get(key):
                                 amount          = flt(d.amount)
                                 deductible_amt  = 0.0
@@ -435,41 +440,45 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 
                 # Calculating PF, Group Insurance Scheme, Health Contribution
 		sws = pf = gis = health = 0.00
-		for d in calc_map['deductions']:
-                        if not flt(gross_amt):
-                                d['amount'] = 0
-                        else:
-                                if d['salary_component'] == 'SWS':
-                                        sws = flt(settings.get("sws_contribution"));
-                                        d['amount'] = sws
-                                if d['salary_component'] == 'PF':
-                                        percent = flt(settings.get("employee_pf"))
-                                        pf = round((flt(basic_amt)+flt(basic_pay_arrears))*flt(percent)*0.01);
-                                        d['amount'] = pf
-                                if d['salary_component'] == 'Group Insurance Scheme':
-                                        gis = flt(settings.get("gis"))
-                                        d['amount'] = gis
-                                if d['salary_component'] == 'Health Contribution':
-                                        percent = flt(settings.get("health_contribution"))
-                                        health = round(gross_amt*flt(percent)*0.01);
-                                        d['amount'] = health
+                # if condition added by phuntsho on july 26,2021. There are some CPE grade emp that dont have any deductions. 
+                if "deductions" in calc_map:
+                        for d in calc_map['deductions']:
+                                if not flt(gross_amt):
+                                        d['amount'] = 0
+                                else:
+                                        if d['salary_component'] == 'SWS':
+                                                sws = flt(settings.get("sws_contribution"));
+                                                d['amount'] = sws
+                                        if d['salary_component'] == 'PF':
+                                                percent = flt(settings.get("employee_pf"))
+                                                pf = round((flt(basic_amt)+flt(basic_pay_arrears))*flt(percent)*0.01);
+                                                d['amount'] = pf
+                                        if d['salary_component'] == 'Group Insurance Scheme':
+                                                gis = flt(settings.get("gis"))
+                                                d['amount'] = gis
+                                        if d['salary_component'] == 'Health Contribution':
+                                                percent = flt(settings.get("health_contribution"))
+                                                health = round(gross_amt*flt(percent)*0.01);
+                                                d['amount'] = health
 
 
                 # Calculating Salary Tax
 		tax_included = 0
-		for d in calc_map['deductions']:
-                        if not flt(gross_amt):
-                                d['amount'] = 0
-                        else:
-                                if d['salary_component'] == 'Salary Tax':
-                                        if not tax_included:
-                                                tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
-                                                d['amount'] = flt(tax_amt)
-                                                tax_included = 1
+                if "deductions" in calc_map:
+                        for d in calc_map['deductions']:
+                                if not flt(gross_amt):
+                                        d['amount'] = 0
+                                else:
+                                        if d['salary_component'] == 'Salary Tax':
+                                                if not tax_included:
+                                                        tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
+                                                        d['amount'] = flt(tax_amt)
+                                                        tax_included = 1
 
                 # Appending calculated components to salary slip                                                
                 [target.append('earnings',m) for m in calc_map['earnings']]
-                [target.append('deductions',m) for m in calc_map['deductions']]
+                if "deductions" in calc_map:
+                        [target.append('deductions',m) for m in calc_map['deductions']]
                 
 		target.run_method("pull_emp_details")
 		target.run_method("calculate_net_pay")

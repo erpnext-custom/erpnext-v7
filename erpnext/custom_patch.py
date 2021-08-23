@@ -8,6 +8,109 @@ from frappe.utils.data import date_diff, add_days, get_first_day, get_last_day, 
 from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settings, get_salary_tax
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
+
+def submit_sr():
+	sr = frappe.get_doc("Stock Reconciliation", 'SR/000241')
+	sr.submit()
+#Added by Kinley Dorji to update sle if item was not ticked maintain stock. Please don't remove
+# def update_sle():
+# 	pr_list = frappe.db.sql("""
+# 		 select pri.warehouse, pr.company, pr.name as parent_doc, pri.item_code, pri.stock_uom, pri.name, pri.qty, pr.posting_date, pr.posting_time, pri.rate from `tabPurchase Receipt Item` pri, `tabPurchase Receipt` pr where pr.name = pri.parent and pri.item_code = '500855' and pr.posting_date > '2021-01-01'
+# 	""", as_dict=1)
+
+# 	for a in pr_list:
+# 		fiscal_year = str(a.posting_date).split("-")[0]
+# 		sle = frappe.new_doc("Stock Ledger Entry")
+# 		sle.item_code = a.item_code
+# 		sle.warehouse = str(a.warehouse)
+# 		sle.posting_date = a.posting_date
+# 		sle.posting_time = a.posting_time
+# 		sle.voucher_type = 'Purchase Receipt'
+# 		sle.voucher_no = a.parent_doc
+# 		sle.voucher_detail_no = a.name
+# 		sle.actual_qty = a.qty
+# 		sle.incoming_rate = a.rate
+# 		sle.stock_uom = a.stock_uom
+# 		sle.qty_after_transaction = a.qty
+# 		sle.valuation_rate = a.rate
+# 		sle.stock_value = a.rate
+# 		sle.stock_value_difference = a.rate
+# 		sle.company = a.company
+# 		sle.fiscal_year = fiscal_year
+# 		sle.save(ignore_permissions=True)
+# 		print(a.item_code)
+
+
+
+
+
+# def update_creator():
+# 	mr_list = frappe.db.sql("select owner, name from `tabMaterial Request` where docstatus != 2 and owner != 'Administrator' and (creator is NULL or creator = '')",as_dict=True)
+# 	if mr_list:
+# 		for a in mr_list:
+# 			print(a.owner)
+# 			if a.owner != "Administrator":
+# 				owner_id = frappe.db.get_value("Employee",{"user_id":a.owner},"name")
+# 				owner_name = frappe.db.get_value("Employee",owner_id,"employee_name")
+# 				doc = frappe.get_doc("Material Request", a.name)
+# 				doc.creator = owner_id
+# 				doc.creator_name = owner_name
+# 				doc.save(ignore_permissions=True)
+# 			print(a.name)
+
+def update_creator():
+	ss_list = frappe.db.sql("select name from `tabSalary Structure` where docstatus != 2 and is_active = 'Yes'",as_dict=True)
+	if ss_list:
+		for a in ss_list:
+			ss = frappe.get_doc("Salary Structure", a.name)
+			ss.save(ignore_permissions=True)
+			print(a.name)
+
+
+def create_dp_ut():
+	for b in frappe.db.sql("""select name, branch, cost_center, posting_date, expense_account
+							FROM `tabUtility Bill`
+							Where (direct_payment ='' or direct_payment is NULL) 
+							and name= 'CN202107120003'""", as_dict=True):
+		doc = frappe.new_doc("Direct Payment")
+		doc.branch = b.branch
+		doc.cost_center = b.cost_center
+		doc.posting_date = b.posting_date
+		doc.payment_type = "Payment"
+		doc.credit_account = b.expense_account
+		doc.utility_bill = str(b.name)
+		doc.remarks = "Utility Bill Payment " + str(b.name)
+		doc.status = "Completed"
+		doc.business_activity = "Common"
+		count_child = 0
+		for a in frappe.db.sql("""select payment_status, create_direct_payment, party, debit_account, invoice_amount, invoice_date, tds_applicable, invoice_amount, tds_amount, net_amount
+							from `tabUtility Bill Item`
+							where parent = '{}'""".format(b.name), as_dict=True):
+			if a.create_direct_payment:
+				print(a.invoice_amount, a.payment_status)
+				if a.invoice_amount > 0 and a.payment_status == "Success":
+					doc.append("item", {
+							"party_type": "Supplier",
+							"party": a.party,
+							"account": a.debit_account,
+							"amount": a.invoice_amount,
+							"invoice_no": a.invoice_no,
+							"invoice_date": a.invoice_date,
+							"tds_applicable": a.tds_applicable,
+							"taxable_amount": a.invoice_amount,
+							"tds_amount": a.tds_amount,
+							"net_amount": a.net_amount,
+							"payment_status": "Payment Successful"
+						})
+					count_child +=1
+				print(count_child)
+		if count_child > 0:
+			doc.submit()
+		if doc.name:
+			#self.db_set("direct_payment", doc.name)
+			frappe.db.set_value("Utility Bill", b.name, "direct_payment", doc.name)
+			frappe.msgprint("Direct Payment created and submitted for this Utility Bill")
+
 def update_dp():
 	i = 0
 	for a in frappe.db.sql("select debit_account, credit_account, payment_type, name, invoice_no, invoice_date from `tabDirect Payment`", as_dict=True):
@@ -70,12 +173,11 @@ def create_delivery_confirmation():
 		i=i+1
 
 def update_ss():
-        count = 1
-        for a in frappe.db.sql(" select name from `tabSalary Structure` where is_active = 'Yes'", as_dict = 1):
-                doc = frappe.get_doc("Salary Structure", a.name)
-                count += 1
-                doc.save(ignore_permissions = True)
-                print a.name, count
+	for a in frappe.db.sql(" select name from `tabSalary Structure` where is_active = 'Yes'", as_dict = 1):
+		print (a.name)
+		doc = frappe.get_doc("Salary Structure", a.name)
+		doc.save(ignore_permissions = True)
+		
 
 
 def update_royalty():

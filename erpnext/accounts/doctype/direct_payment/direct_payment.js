@@ -147,10 +147,9 @@ frappe.ui.form.on('Direct Payment', {
 	},
 	"branch": function(frm) {
 		frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'cost_center',
-			function(d) {
-			cur_frm.set_value("cost_center",d.cost_center);
-		});
-
+                          function(d) {
+                            cur_frm.set_value("cost_center",d.cost_center);
+                        });
 		if(frm.doc.payment_type == "Receive"){
 			frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'revenue_bank_account',
 			  function(d) {
@@ -268,9 +267,9 @@ var create_custom_buttons = function(frm){
 	var status = ["Failed", "Upload Failed", "Cancelled"];
 	var process_payment = 0;
 
-	if(frm.doc.docstatus == 1 && frm.doc.payment_type == "Payment" /*&& !frm.doc.cheque_no*/){
+	if(frm.doc.docstatus == 1 && frm.doc.payment_type == "Payment" && !frm.doc.utility_bill/*&& !frm.doc.cheque_no*/){
 		items.forEach(function(r,i){
-			if(r.party_type == 'Supplier' && r.party && (!r.bank_payment || r.payment_status == 'Failed')){
+			if((r.party_type == 'Supplier' || r.party_type == 'Employee') && r.party && (!r.bank_payment || r.payment_status == 'Failed' || r.payment_status == 'Payment Failed')){
 				process_payment += 1;
 			}
 		});

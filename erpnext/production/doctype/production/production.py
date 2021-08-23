@@ -21,17 +21,8 @@ from erpnext.stock.utils import get_stock_balance
 
 class Production(StockController):
 	def validate(self):
-		if 'Production Master' not in frappe.get_roles(frappe.session.user):
-			today = datetime.datetime.now()
-			DD = datetime.timedelta(days=3)
-			earlier = today - DD
-			date = earlier.strftime("%Y-%m-%d")
-			if (self.posting_date < date ):
-				frappe.throw("You Can Not Create Submit For Posting Date Beyond Past 3 Days "+str(frappe.get_roles(frappe.session.user)))
-				frappe.validated = false
-		if self.business_activity == 'Timber':
-			if not self.range or self.range == "":
-				frappe.throw("Range is mandatory for Timber Products")
+		self.validate_date()
+		self.validate_if_sawn()
 		check_future_date(self.posting_date)
 		self.check_cop()
 		self.validate_data()
@@ -84,6 +75,33 @@ class Production(StockController):
 		self.make_gl_entries_on_cancel()
 		""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 		self.delete_production_entry()
+
+	def validate_date(self):
+		if 'Production Master' not in frappe.get_roles(frappe.session.user):
+			today = datetime.datetime.now()
+			DD = datetime.timedelta(days=3)
+			earlier = today - DD
+			date = earlier.strftime("%Y-%m-%d")
+			if (self.posting_date < date ):
+				frappe.throw("You Can Not Create Submit For Posting Date Beyond Past 3 Days "+str(frappe.get_roles(frappe.session.user)))
+				frappe.validated = false
+
+	def validate_if_sawn(self):
+		if self.business_activity == 'Timber':
+			sawn = 0
+			for a in self.items:
+				if a.item_sub_group in ('Sawn','Off-Cuts'):
+					sawn += 1
+			if sawn != len(self.items):
+				if sawn > 0:
+					frappe.throw("Product Items cannot be mixed for Sawn and Off Cuts items with other Item Sub Group items")
+			elif sawn > 0 and sawn == len(self.items):
+				# frappe.throw(self.range)
+				if self.range != None and self.range != '':
+					frappe.throw("Range should be empty for Sawn and Off Cuts Products")
+			if sawn == 0:	
+				if not self.range or self.range == "":
+					frappe.throw("Range is mandatory for Timber Products except Sawn and Off Cuts Products")
 
 	def validate_data(self):
 		#Please uncomment below if NRDCL decide to use adhoc_production again

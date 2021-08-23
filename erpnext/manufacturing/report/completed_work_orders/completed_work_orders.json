@@ -1,0 +1,33 @@
+{
+ "add_total_row": 0, 
+ "apply_user_permissions": 1, 
+ "creation": "2013-08-12 12:44:27", 
+ "disabled": 0, 
+ "docstatus": 0, 
+ "doctype": "Report", 
+ "idx": 3, 
+ "is_standard": "Yes", 
+ "modified": "2020-06-02 13:14:10.061290", 
+ "modified_by": "Administrator", 
+ "module": "Manufacturing", 
+ "name": "Completed Work Orders", 
+ "owner": "Administrator", 
+ "query": "SELECT\n  `tabWork Order`.name as \"Work Order:Link/Work Order:160\",\n  `tabWork Order`.creation as \"Date:Date:140\",\n  `tabWork Order`.production_item as \"Item:Link/Item:100\",\n  `tabWork Order`.item_name as \"Item Name:Link/Item:180\",\n  `tabWork Order`.qty as \"To Produce:Int:70\",\n  `tabWork Order`.produced_qty as \"Produced:Int:70\",\n(select total_cost from `tabBOM` where name = `tabWork Order`.bom_no) as \"COP:Float:100\"\nFROM\n  `tabWork Order`\nWHERE\n  `tabWork Order`.docstatus=1\n  AND ifnull(`tabWork Order`.produced_qty,0) = `tabWork Order`.qty", 
+ "ref_doctype": "Work Order", 
+ "report_name": "Completed Work Orders", 
+ "report_type": "Query Report", 
+ "roles": [
+  {
+   "role": "Manufacturing User"
+  }, 
+  {
+   "role": "Stock User"
+  }, 
+  {
+   "role": "Manufacturing Manager"
+  }, 
+  {
+   "role": "Administrator"
+  }
+ ]
+}

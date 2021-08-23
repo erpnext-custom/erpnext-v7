@@ -78,6 +78,7 @@ class JournalEntry(AccountsController):
 
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.check_inter_company()
 		if not self.is_opening:
 			self.is_opening='No'
 		self.clearance_date = None
@@ -133,6 +134,23 @@ class JournalEntry(AccountsController):
 		self.update_advance_paid()
 		self.update_expense_claim()
 
+#   add for consolidation purpose
+	def check_inter_company(self):
+		for i, item in enumerate(self.accounts) :
+			if item.within_inter_company == 'Yes' and not item.dhi_company :
+				frappe.throw('You need to select DO Company at row {}'.format(i + 1))
+			elif item.within_inter_company == 'No' or not item.within_inter_company:
+				self.accounts[i].dhi_company = ''
+			elif item.within_inter_company == 'Yes' and item.dhi_company :
+				consolidation_party_type = 'Supplier'
+				party = frappe.db.get_value('Supplier',{'company_code': item.dhi_company },['name'])
+				if not party :
+					party = frappe.db.get_value('Customer',{'company_code': item.dhi_company },['name'])
+					consolidation_party_type = 'Customer'
+				if party:
+					self.accounts[i].consolidation_party = party
+					self.accounts[i].consolidation_party_type = consolidation_party_type
+    # consolidation end here
 	def validate_party(self):
 		for d in self.get("accounts"):
                         if d.party_check == 1:
@@ -477,7 +495,9 @@ class JournalEntry(AccountsController):
                                                         "cost_center": d.cost_center,
                                                         "project": d.project,
                                                         "party_check": 1,
-							"business_activity": d.business_activity, 
+														"business_activity": d.business_activity,
+														"consolidation_party_type":d.consolidation_party_type,
+														"consolidation_party":d.consolidation_party 
                                                 })
                                         )
                                 else:
@@ -497,8 +517,10 @@ class JournalEntry(AccountsController):
                                                         "remarks": self.remark,
                                                         "cost_center": d.cost_center,
                                                         "project": d.project,
-							"business_activity": d.business_activity, 
-                                                        "party_check": d.party_check
+														"business_activity": d.business_activity, 
+                                                        "party_check": d.party_check,
+														"consolidation_party_type":d.consolidation_party_type,
+														"consolidation_party":d.consolidation_party
                                                 })
                                         )                                        
 

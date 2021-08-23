@@ -31,12 +31,27 @@ frappe.ui.form.on("Customer", {
 
 	customer_group: function(frm) {
 		apply_customer_group_validations(frm);
-	}
+	},
+	inter_company: (frm)=>{
+		frm.toggle_reqd('company_code',frm.doc.inter_company);
+		if (!frm.doc.inter_company){
+			frm.set_value('company_code','')
+			frm.set_value('company_name','')
+		}
+	},
+	// for consolidation purpose
+	inter_company: (frm)=>{
+		frm.toggle_reqd('company_code',frm.doc.inter_company);
+		if (!frm.doc.inter_company){
+			frm.set_value('company_code','')
+			frm.set_value('company_name','')
+		}
+	},
 });
 
 
 apply_customer_group_validations = function(frm){
-	cur_frm.toggle_display(["customer_id","license_no","reference_no"], 0);
+	//cur_frm.toggle_display(["customer_id","license_no","reference_no"], 0);
 	if(frm.doc.customer_group){
 		frappe.call({
 			method: 'frappe.client.get_value',

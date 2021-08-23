@@ -62,15 +62,15 @@ def get_data(filters):
                     AND e.name = si.employee
                 """.format(docstatus) 
         if filters.get("fiscal_year"):
-                query += " and fiscal_year = \'"+ str(filters.fiscal_year) + "\'"
+                query += " and si.fiscal_year = \'"+ str(filters.fiscal_year) + "\'"
         if filters.get("increment_and_promotion_cycle"):
                 month = {'January': '01', 'February': '02', 'March': '03', 'April': '04', 'May': '05', 'June': '06',
                          'July': '07', 'August': '08', 'September': '09', 'October': '10', 'November': '11', 'December': '12'}
-                query += " and month = \'"+ str(month[filters.increment_and_promotion_cycle]) + "\'"
+                query += " and si.month = \'"+ str(month[filters.increment_and_promotion_cycle]) + "\'"
         if filters.get("branch"):
-                query += " and branch = \'"+ str(filters.branch) + "\'"
+                query += " and si.branch = \'"+ str(filters.branch) + "\'"
         
         #frappe.msgprint(docstatus)
-        query += "order by branch"
+        query += "order by si.branch"
         return frappe.db.sql(query)
       

@@ -24,6 +24,30 @@ class GLEntry(Document):
 		self.validate_party()
 		self.validate_currency()
 		self.validate_and_set_fiscal_year()
+		self.set_consolidation_party()
+
+# consolidation begins here  
+	def set_consolidation_party(self):
+		if self.voucher_type in ['Purchase Invoice','POL','HSD Payment']:
+			self.consolidation_party_type = 'Supplier'
+			party = frappe.db.get_value(self.voucher_type,self.voucher_no,['supplier'])
+			self.consolidation_party = party
+			if self.voucher_type == 'POL':
+				item_code, is_direct_com = frappe.db.get_value('POL',self.voucher_no,['pol_type','direct_consumption'])
+				if not is_direct_com:
+					expense_acc = frappe.db.get_value('Item',item_code,['expense_account'])
+					self.exact_expense_acc = expense_acc
+	
+		if self.voucher_type in ['Sales Invoice','Job Card','Hire Charge Invoice','Mechanical Payment','Delivery Note']:
+			self.consolidation_party_type = 'Customer'
+			party = frappe.db.get_value(self.voucher_type, self.voucher_no,['customer'])
+			self.consolidation_party = party
+   
+		if self.voucher_type in ['Project Payment','Project Invoice','MB Entry','Payment Entry']:
+			party_type, party = frappe.db.get_value(self.voucher_type,self.voucher_no,['party_type','party'])
+			self.consolidation_party_type = party_type
+			self.consolidation_party = party
+	# consolidation end here
 
 	def on_update_with_args(self, adv_adj, update_outstanding = 'Yes'):
 		self.validate_account_details(adv_adj)

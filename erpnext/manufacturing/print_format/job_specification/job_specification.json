@@ -1,0 +1,18 @@
+{
+ "creation": "2019-11-14 15:44:51.735540", 
+ "custom_format": 1, 
+ "disabled": 0, 
+ "doc_type": "Job Specification", 
+ "docstatus": 0, 
+ "doctype": "Print Format", 
+ "font": "Default", 
+ "html": "<div class=\"page-break\">\n<div id=\"header-html\" class=\"hidden-pdf\">\n    {%- if letter_head and not no_letterhead -%}\n        <div class=\"letter-head\">\n            {{ letter_head }}\n        </div>\n    {%- endif -%}\n</div>\n\n\n<div id=\"footer-html\" class=\"visible-pdf\">\n    {% if not no_letterhead and footer %}\n        <div class=\"letter-head-footer\">\n        {{ footer }}\n        </div>\n    {% endif %}\n\n    <p class=\"text-center small page-number visible-pdf\">\n        {{ _(\"Page {0} of {1}\").format('<span class=\"page\"></span>', '<span class=\"topage\"></span>') }}\n    </p>\n</div>\n<div class=\"print-heading\">\n<div style=\"text-align: center;\">\n<h3>Job Specification</h3>\n</div>\n\n<div>\n<table class = \"table1\" style=\"margin-top: 1px; text-align:justify;font-size:small; width:100% \">\n\t<tr>\n\t\t<td><b>Product Code:</b> {{ doc.product }}</td>\n\t\t<td><b>Date:</b> {{ doc.posting_date }}</td>\n\t</tr>\n\t<tr>\n\t\t<td><b>Product Name:</b> {{ doc.product_name }}</td>\n\t\t<td><b>Material Code:</b> {{ doc.material }}</td>\n\t</tr>\n\t<tr>\n\t\t<td><b>Material Name:</b> {{ doc.material_name }}</td>\n\t\t<td><b>Quantity:</b> {{ doc.quantity }}</td>\n\t</tr>\n</table>\n&nbsp;\n<br/>\n\t\t\n<table class=\"table table-bordered\" style=\"margin-top: 15px; font-size : small\">\n  <tbody>\n\t\t<tr>\n\t\t\t<th>Sr</th>\n\t\t\t<th>Code</th>\n\t\t\t<th>Item Name</th>\n\t\t\t<th>Type</th>\n\t\t\t<th>Qty</th>\n\t\t\t<th>Rate</th>\n\t\t\t<th>Amount</th>\n\t\t\t<th>Delivery date</th>\n\t\t\t<th>Remarks</th>\n\t\t</tr>\n\t\t{%- for row in doc.items -%}\n\t\t<tr>\n\t\t\t<td style=\"width: 3%;\">{{ row.idx }}</td>\n\t\t\t<td style=\"width: 5%;\">{{ row.item_code }}</td>\n\t\t\t<td style=\"width: 15%;\">{{ row.item_name }}</td>\n\t\t\t<td style=\"width: 5%;\">{{ row.type }}</td>\n\t\t\t<td style=\"width: 5%;\">{{ row.quantity }}</td>\n\t\t\t<td style=\"width: 5%;\">{{ row.rate }}</td>\n\t\t\t<td style=\"width: 5%;\">{{ row.amount }}</td>\n\t\t\t<td style=\"width: 10%;\">{{ row.delivery_date }}</td>\n\t\t\t<td style=\"width: 15%;\">{{ row.remarks }}</td>\t\t\n\t\t</tr>\n\t\t{%- endfor -%}\t\t\n  </tbody>\t\n</table>\n</div>\n</div>\n<div style=\"padding-top: 100px; clear: both;\">\n<div class=\"printedby\">This print is system generated and should be considered VALID only with appropriate seal and/or signature. <br>  Printed by {{ frappe.user }} on {{ frappe.utils.nowdate()  }} at {{ frappe.utils.nowtime() }}</div>\n", 
+ "idx": 0, 
+ "modified": "2019-11-14 15:44:51.735540", 
+ "modified_by": "Administrator", 
+ "name": "Job Specification", 
+ "owner": "Administrator", 
+ "print_format_builder": 0, 
+ "print_format_type": "Server", 
+ "standard": "Yes"
+}

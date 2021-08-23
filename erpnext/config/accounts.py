@@ -695,5 +695,57 @@ def get_data():
 					"is_query_report": True
 				},
 			]
+		},{
+			"label": _("DHI Consolidation"),
+			# "icon": "icon-table",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "DHI Setting",
+					"label": _("DHI Setting"),
+				},
+				{
+					"type": "doctype",
+					"name": "DHI Company",
+					"label": _("DHI Company"),
+					"hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "DHI GCOA",
+					"label": _("Group Chart Of Account"),
+					"hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "DHI GCOA Mapper",
+					"label": "GCOA Mapper to COA",
+					"hide_count": True
+				}
+			]
+		},
+		{
+			"label": _("DHI Consolidation Report"),
+			# "icon": "icon-table",
+			"items": [
+				{
+					"type": "report",
+					"name": "Consolidation Report",
+					"doctype": "DHI GCOA Mapper",
+					"is_query_report": True
+				},
+    			{
+					"type": "report",
+					"name": "DHI GCOA Mapper Report",
+					"doctype": "DHI GCOA Mapper",
+					"is_query_report": True
+				},
+				{
+					"type": "report",
+					"name": "GCOA Wise Report",
+					"doctype": "DHI GCOA Mapper",
+					"is_query_report": True
+				}
+			]
 		},
 	]

@@ -28,8 +28,16 @@ frappe.ui.form.on("Supplier", {
 	bank_name_new: function(frm){
 		enable_disable(frm);
 		cur_frm.set_value('bank_branch', null);
-	}
+	},
 	/* ePayment Ends*/
+	// for consolidation purpose
+	inter_company: (frm)=>{
+		frm.toggle_reqd('company_code',frm.doc.inter_company);
+		if (!frm.doc.inter_company){
+			frm.set_value('company_code','')
+			frm.set_value('company_name','')
+		}
+	},
 });
 
 cur_frm.fields_dict['default_price_list'].get_query = function(doc, cdt, cdn) {

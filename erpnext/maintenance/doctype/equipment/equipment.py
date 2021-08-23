@@ -22,7 +22,17 @@ class Equipment(Document):
 			self.equipment_number = self.name
 		
 		if not self.equipment_history:
-                        self.create_equipment_history(branch = self.branch, on_date = "2017-01-01", ref_doc = self.name, purpose = 'Submit')
+                        self.create_equipment_history(branch = self.branch, on_date = self.registration_date, ref_doc = self.name, purpose = 'Submit')
+		if self.equipment_history:
+			count = 0
+			for a in self.equipment_history:
+				if count == 0:
+					a.from_date = self.registration_date
+					count += 1
+					# doc = frappe.get_doc("Equipment History", a.name)
+					# doc.from_date == self.registration_date
+					# doc.save()
+
 
 		if len(self.operators) > 1:
 			for a in range(len(self.operators)-1):

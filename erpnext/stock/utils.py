@@ -9,6 +9,26 @@ from frappe.utils import flt, cstr, nowdate, nowtime
 
 class InvalidWarehouseCompany(frappe.ValidationError): pass
 
+def get_latest_stock_qty(item_code, warehouse=None):
+        values, condition = [item_code], ""
+        if warehouse:
+                lft, rgt, is_group = frappe.db.get_value("Warehouse", warehouse, ["lft", "rgt", "is_group"])
+
+                if is_group:
+                        values.extend([lft, rgt])
+                        condition += "and exists (\
+                                select name from `tabWarehouse` wh where wh.name = tabBin.warehouse\
+                                and wh.lft >= %s and wh.rgt <= %s)"
+
+                else:
+                        values.append(warehouse)
+                        condition += " AND warehouse = %s"
+
+        actual_qty = frappe.db.sql("""select sum(actual_qty) from tabBin
+                where item_code=%s {0}""".format(condition), values)[0][0]
+
+        return actual_qty
+
 def get_stock_value_on(warehouse=None, posting_date=None, item_code=None):
 	if not posting_date: posting_date = nowdate()
 
@@ -183,7 +203,7 @@ def get_valid_serial_nos(sr_nos, qty=0, item_code=''):
 	return valid_serial_nos
 
 def validate_warehouse_company(warehouse, company):
-	warehouse_company = frappe.db.get_value("Warehouse", warehouse, "company")
+	warehouse_company = frappe.db.get_value("Warehouse", str(warehouse), "company")
 	if warehouse_company and warehouse_company != company:
 		frappe.throw(_("Warehouse {0} does not belong to company {1}").format(warehouse, company),
 			InvalidWarehouseCompany)

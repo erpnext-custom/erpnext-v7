@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 1, 
  "is_standard": "Yes", 
- "modified": "2019-09-19 17:01:47.302692", 
- "modified_by": "birkha.gaylal@nrdcl.bt", 
+ "modified": "2017-11-06 18:26:02.187318", 
+ "modified_by": "Administrator", 
  "module": "Manufacturing", 
  "name": "Issued Items Against Production Order", 
  "owner": "Administrator", 
@@ -16,12 +16,5 @@
  "ref_doctype": "Production Order", 
  "report_name": "Issued Items Against Production Order", 
  "report_type": "Query Report", 
- "roles": [
-  {
-   "role": "Administrator"
-  }, 
-  {
-   "role": "Auditor"
-  }
- ]
+ "roles": []
 }

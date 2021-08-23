@@ -217,7 +217,7 @@ class StatusUpdater(Document):
 
 			if args['detail_id']:
 				if not args.get("extra_cond"): args["extra_cond"] = ""
-
+				frappe.db.sql("select name from `tab%(target_dt)s` where name='%(detail_id)s' for update" % args)
 				frappe.db.sql("""update `tab%(target_dt)s`
 					set %(target_field)s = (
 						(select ifnull(sum(%(source_field)s), 0)

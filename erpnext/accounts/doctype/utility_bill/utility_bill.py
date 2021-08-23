@@ -4,25 +4,70 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 import requests, json
 from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate, get_datetime, get_url, nowdate, now_datetime, money_in_words
 from erpnext.custom_utils import check_future_date
+from erpnext.integrations.bank_api import fetch_balance
+from erpnext.accounts.doctype.bank_payment.bank_payment import get_transaction_id
 
 class UtilityBill(Document):
     def validate(self):
         check_future_date(self.posting_date)
         self.calculate_tds_net()
-        
-        if self.docstatus == 1:
+        self.get_bank_available_balance()
+        self.remove_bill_without_os()
+        self.update_pi_number()
+        if self.workflow_state == "Waiting For Verification":
+            self.payment_status="Pending"
+            
+    def before_submit(self):
+        try:
             self.utility_payment()
+            self.update_status()
+        except Exception as e:
+            pass
+        self.make_direct_payment()
+        
+    def update_pi_number(self):
+        for a in self.get("item"):
+            a.pi_number = get_transaction_id()
+
+    def get_bank_available_balance(self):
+        if self.bank_account and frappe.db.get_value('Bank Payment Settings', "BOBL", 'enable_one_to_one'):
+            try:
+                result = fetch_balance(self.bank_account)
+            except Exception as e:
+                frappe.msgprint(_("Unable to fetch Bank Balance.\n  {}").format(str(e)))
+            else:
+                if result['status'] == "0":
+                    self.bank_balance = result['balance_amount']
+                else:
+                    frappe.msgprint(_("Unable to fetch Bank Balance.\n  {}").format(result['error']))
 
     def on_submit(self):
-        self.make_direct_payment()
+        pass
     
     def on_cancel(self):
-        frappe.throw("Not allowed to cancel the Utility Bill Payments")
+        if self.workflow_state=="Partial Payment" or self.workflow_state=="Payment Successful":
+            frappe.throw("Not allowed to cancel the Utility Bill Payments")
     
+    def update_status(self):
+        success = failed = 0
+        for a in self.item:
+            if a.payment_status == "Failed":
+                failed += 1
+            elif a.payment_status == "Success":
+                success += 1
+        if success > 0 and failed > 0:
+            self.payment_status = "Partial Payment"
+        elif failed == 0 and success > 0:
+            self.payment_status = "Payment Successful"
+        elif failed > 0 and success == 0:
+            self.payment_status = "Payment Failed"
+        self.workflow_state = self.payment_status
+        
     def calculate_tds_net(self):
         total_amount = total_tds = net_amount = 0.00
         for a in self.item:
@@ -33,7 +78,7 @@ class UtilityBill(Document):
         self.total_tds_amount = total_tds
         self.net_payable_amount = net_amount
         
-        if not self.net_payable_amount:
+        if self.tds_percent and not self.net_payable_amount:
             frappe.throw("Net Payable amount should be greater than zero")
     
     def utility_payment(self):
@@ -55,9 +100,11 @@ class UtilityBill(Document):
                     elif a.param == "Amt":
                         api_param[a.param] = str(d.outstanding_amount)
                     elif a.param == "pi":
-                        api_param[a.param] = "RN" + str(service_id) + str(self.name)
+                        api_param[a.param] = d.pi_number
+                if consumer_field == "landlnenumber":
+                    consumer_field = "landlinenumber"
+    
                 api_param[consumer_field] = str(d.consumer_code)
-                
                 payload = json.dumps(api_param)
                 d.request = str(payload)
                 headers = {
@@ -89,7 +136,6 @@ class UtilityBill(Document):
                       WHERE i.disabled = 0
                         and u.name = '{}'
                        """.format(self.utility_services), as_dict=True)
-        # and r.docstatus = 1
         self.set('item', [])
         for d in data:
             row = self.append('item', {})
@@ -104,7 +150,10 @@ class UtilityBill(Document):
                     api_param[a.param] = service_id
                 elif a.param == "SERVICETYPE":
                     api_param[a.param] = service_type
-            api_param[consumer_field.upper()] = d.consumer_code
+            if str(consumer_field) != "RRCOTaxCode":
+                api_param[consumer_field.upper()] = d.consumer_code
+            else:
+                api_param[consumer_field] = d.consumer_code
             
             payload = json.dumps(api_param)
             headers = {
@@ -127,6 +176,49 @@ class UtilityBill(Document):
             row.fetch_status_code = res_status
             row.create_direct_payment = 1
             row.update(d)
+    
+    def get_utility_outstandings(self):
+        for d in self.item:
+            if not d.utility_service_type:
+                frappe.throw("Utility Service Type is mandatory")
+            api_name, service_id, service_type, consumer_field, expense_account = frappe.db.get_value("Utility Service Type", d.utility_service_type, ["fetch_outstanding_api", "service_id", "service_type", "unique_key_field","expense_account"])
+            api_details = frappe.get_doc("API Detail", api_name)
+            url = api_details.api_link
+            api_param = {}
+            for a in api_details.item:
+                if a.pre_defined_value:
+                    api_param[a.param] = a.defined_value
+                elif a.param == "SERVICEID":
+                    api_param[a.param] = service_id
+                elif a.param == "SERVICETYPE":
+                    api_param[a.param] = service_type
+            if str(consumer_field) != "RRCOTaxCode":
+                api_param[consumer_field.upper()] = d.consumer_code
+            else:
+                api_param[consumer_field] = d.consumer_code
+                
+            payload = json.dumps(api_param)
+            headers = {
+                'Content-Type': 'application/json'
+            }
+
+            response = requests.request("POST", url, headers=headers, data=payload)
+            details = response.json()
+            res_status = details['statusCode']
+            d.payment_status = "In Progress"
+            if res_status == "00":
+                d.invoice_amount = details['ResultMessage']
+                d.outstanding_amount = details['ResultMessage']
+                d.response_msg = "Success"
+                d.net_amount = details['ResultMessage']
+            elif res_status == "01":
+                d.response_msg = details['ErrorMessage']
+                d.invoice_amount = 0
+                d.outstanding_amount = 0
+                d.net_amount = 0
+            d.debit_account = expense_account
+            d.outstanding_datetime = now_datetime()
+            d.fetch_status_code = res_status
 
     def make_direct_payment(self):
         doc = frappe.new_doc("Direct Payment")
@@ -137,8 +229,10 @@ class UtilityBill(Document):
         doc.tds_percent = self.tds_percent
         doc.tds_account = self.tds_account
         doc.credit_account = self.expense_account
+        doc.utility_bill = str(self.name)
         doc.business_activity = self.business_activity
         doc.remarks = "Utility Bill Payment " + str(self.name)
+        doc.status = "Completed"
         if self.item:
             count_child = 0
             for a in self.item:
@@ -155,6 +249,7 @@ class UtilityBill(Document):
                                 "taxable_amount": a.invoice_amount,
                                 "tds_amount": a.tds_amount,
                                 "net_amount": a.net_amount,
+                                "payment_status": "Payment Successful"
                             })
                         count_child +=1
             if count_child > 0:
@@ -162,3 +257,11 @@ class UtilityBill(Document):
             if doc.name:
                 self.db_set("direct_payment", doc.name)
                 frappe.msgprint("Direct Payment created and submitted for this Utility Bill")
+                
+    def remove_bill_without_os(self):
+        to_remove = []
+        for d in self.get("item"):
+            if not d.outstanding_amount:
+                to_remove.append(d)
+                
+        [self.remove(d) for d in to_remove]

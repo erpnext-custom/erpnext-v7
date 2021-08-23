@@ -11,6 +11,8 @@ class BankAPI:
 def intra_payment(from_acc, trans_amount, promo_no, to_acc, unique_transaction_no):
     doc = frappe.get_doc("API Detail", "ONE TO ONE - INTRA BANK")
     url = doc.api_link
+    user_id = None
+    password = None
     for a in doc.item:
         if a.param == "user_id":
             user_id = a.defined_value
@@ -150,6 +152,8 @@ def intra_payment(from_acc, trans_amount, promo_no, to_acc, unique_transaction_n
 def inter_payment(Amt, PayeeAcctNum, BnfcryAcct, BnfcryName, BnfcryAcctTyp, BnfcryRmrk, RemitterName, BfscCode, RemitterAcctType, PEMSRefNum):
     doc = frappe.get_doc("API Detail", "ONE TO ONE - INTER BANK")
     url = doc.api_link
+    user_id = None
+    password = None
     for a in doc.item:
         if a.param == "user_id":
             user_id = a.defined_value
@@ -310,6 +314,8 @@ def inter_payment(Amt, PayeeAcctNum, BnfcryAcct, BnfcryName, BnfcryAcctTyp, Bnfc
 def inr_remittance(AcctNum, Amt, BnfcryAcct, BnfcryName, BnfcryAddr1, IFSC, BankCode, PurpCode, RemittersName, RemittersAddr1, ComsnOpt, PromoCode, PemsRefNum):
     doc = frappe.get_doc("API Detail", "ONE TO ONE - INR Remmittance")
     url = doc.api_link
+    user_id = None
+    password = None
     for a in doc.item:
         if a.param == "user_id":
             user_id = a.defined_value
@@ -478,6 +484,8 @@ def fetch_balance(account_no):
         return {"message":"Please provide account no"}
     doc = frappe.get_doc("API Detail", "BOB Customer Balance Enquiry")
     url = doc.api_link
+    user_id = None
+    password = None
     for a in doc.item:
         if a.param == "user_id":
             user_id = a.defined_value

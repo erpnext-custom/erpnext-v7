@@ -154,6 +154,19 @@ def invalidate_cache_for(doc, item_group=None):
 		if d.route:
 			clear_cache(d.route)
 
+def get_item_group_defaults(item, company):
+        item = frappe.get_doc("Item", item)
+        #item_group = frappe.get_doc("Item Group", item.item_group)
+        item_group = item.get("item_defaults")
+        #for d in item_group.item_group_defaults or []:
+        for d in item_group or []:
+                if d.company == company:
+                        row = copy.deepcopy(d.as_dict())
+                        row.pop("name")
+                        return row
+
+        return frappe._dict()
+
 #Show only child item groups
 def get_item_groups(doctype, txt, searchfield, start, page_len, filters):
 	fields = ["name"]

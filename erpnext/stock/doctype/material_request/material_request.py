@@ -83,12 +83,11 @@ class MaterialRequest(BuyingController):
 
 		# **** To record the details of Material Requester **** #
 		if self.workflow_state == "Draft":
-			creator_user_id, creator_employee_name, creator_name = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","name"]) or None
-			# creator_dtls = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","name"])
-			# self.creator = creator_dtls[2]
-			# self.creator_name = creator_dtls[1]
-	
-		# added by kinley phuntsho on May 13th 2021. Sometimes the docstatus is not updated when the workflow is. 
+			# creator_user_id, creator_employee_name, creator_name = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","name"]) or None
+			creator_user_id, creator_employee_name, creator_name = frappe.db.get_value("Employee", {"user_id": self.owner}, ["user_id","employee_name","name"])
+			self.creator = creator_name
+			self.creator_name = creator_employee_name
+		# added by phuntsho on May 13th 2021. Sometimes the docstatus is not updated when the workflow is. 
 		if self.workflow_state == "Cancelled" and self.docstatus != 2: 
 			frappe.throw("Please try cancelling again!")
 		if self.workflow_state == "Approved" and self.docstatus != 1: 

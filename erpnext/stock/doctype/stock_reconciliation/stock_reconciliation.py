@@ -29,24 +29,28 @@ class StockReconciliation(StockController):
 		self.validate_expense_account()
 
 	def on_submit(self):
+		count = 0
+		n = len(self.items)
+		frappe.publish_realtime("progress", dict(progress=[count+1, n],title=("Submitting.")),user=frappe.session.user)
 		posting_date = str(get_datetime(str(self.posting_date) + ' ' + str(self.posting_time)))
 		self.update_stock_ledger()
-		self.make_gl_entries()
+		self.make_gl_entries() # temporarily disabled to update the 2020 closing by SHIV on 2021/08/09, req.by Sangay Dorji
 		
 		for a in self.items:
 			self.repost_issue_pol(a, posting_date)
 			# commented by Kinley Dorji 2021-06-17
 			# self.repost_production_gl(a, posting_date)
+		frappe.msgprint(("{0} Subbmitted").format(n), title=_("Success"), indicator="green")
 
 	def on_cancel(self):
 		posting_date = str(get_datetime(str(self.posting_date) + ' ' + str(self.posting_time)))
 		self.delete_and_repost_sle()
-		self.make_gl_entries_on_cancel()
+		self.make_gl_entries_on_cancel() # temporarily disabled to update the 2020 closing by SHIV on 2021/08/09, req.by Sangay Dorji
 
 		for a in self.items:
 			self.repost_issue_pol(a, posting_date)
 			# commented by Kinley Dorji 2021-06-17
-			# self.repost_production_gl(a, posting_date)
+			self.repost_production_gl(a, posting_date)
 
 	def repost_issue_pol(self, a, posting_date):
 		ipols = frappe.db.sql("select name from `tabIssue POL` where docstatus = 1 and concat(posting_date,' ',posting_time) > %s and pol_type = %s and warehouse = %s", (posting_date, a.item_code, a.warehouse), as_dict=1)

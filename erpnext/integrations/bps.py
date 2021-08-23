@@ -228,16 +228,22 @@ def update_bank_payment_status(file_name, file_status, bank, ack_file=None):
 	doc_modified = 0	
 	# update status in Bank Payment Upload
 	for rec in doc.uploads:
+		status = rec.status
 		if rec.file_name and file_name and rec.file_name.lower() == file_name.lower():
 			doc_modified += 1
-			rec.last_updated = get_datetime()
+			bpu = frappe.get_doc('Bank Payment Upload', rec.name)
+			bpu.db_set('last_updated', get_datetime())
+			# rec.last_updated = get_datetime()
 			if file_status:
-				rec.status = file_status
-		if rec.status == 'Processing Acknowledgement':
+				# rec.status = file_status
+				bpu.db_set('status', file_status)
+				status = file_status
+
+		if status == 'Processing Acknowledgement':
 			processing += 1
-		elif rec.status == 'Failed':
+		elif status == 'Failed':
 			failed += 1
-		elif rec.status == 'Completed':
+		elif status == 'Completed':
 			completed += 1
 
 	# update status in Bank Payment Item
@@ -251,7 +257,10 @@ def update_bank_payment_status(file_name, file_status, bank, ack_file=None):
 		if rec.file_name and file_name and rec.file_name.lower() == file_name.lower():
 			if file_status:
 				doc_modified += 1
-				rec.status = file_status
+				bpi = frappe.get_doc('Bank Payment Item', rec.name)
+				bpi.db_set('status', file_status)
+				# rec.status = file_status
+    
 			# if rec.file_name.startswith('PEMSPAY') and rec.bank_name = bank:
 			# 	rec.error 
 
@@ -267,8 +276,13 @@ def update_bank_payment_status(file_name, file_status, bank, ack_file=None):
 		status = 'Failed'
 
 	if status or doc_modified:
-		doc.status = status if status else doc.status
-		doc.save(ignore_permissions=True)
+		# doc.status = status if status else doc.status
+		# doc.workflow_state = doc.status
+		# doc.save(ignore_permissions=True)
+		doc.reload()
+		doc.db_set('status', status if status else doc.status)
+		doc.db_set('workflow_state', status if status else doc.status)
+		doc.reload()
 		doc.update_transaction_status()
 		doc.reload()
 

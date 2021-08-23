@@ -111,7 +111,7 @@ class ProcessPayroll(Document):
                                         format_string = 'href="#Form/Salary Slip/{0}"'.format(ss.name)
                                         return '<tr><td><a {0}>{1}</a></td><td><a {0}>{2}</a></td><td>{3}</td><td>{4}</td></tr>'.format(format_string, ss.name, ss.employee_name, msg, ss.branch)
                         except Exception, e:
-                                return '<div style="color:red;">Error: {0}</div>'.format(str(e))
+                                return '<div style="color:red;">Error: {0} -- {1}</div>'.format(str(e), str(name))
                                 
 		return name
 

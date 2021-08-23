@@ -11,18 +11,20 @@ def execute(filters):
 	columns = get_columns()
 	sl_entries = get_stock_ledger_entries(filters)
 	item_details = get_item_details(filters)
-	opening_row = get_opening_balance(filters, columns)
+	# opening_row = get_opening_balance(filters, columns)
 	
 	data = []
 	
-	if opening_row:
-		data.append(opening_row)
+	# if opening_row:
+	# 	data.append(opening_row)
+	# frappe.throw(str(sl_entries))
 
 	for sle in sl_entries:
 		item_detail = item_details[sle.item_code]
 		if sle.voucher_type == "POL":
 			sle.voucher_type = "Receive POL"
 		if filters.timber_class:
+			frappe.throw("hesadfre")
 			if item_detail.timber_class == filters.timber_class: 
 				data.append([sle.item_code, sle.posting_date, sle.posting_time, item_detail.item_name, item_detail.timber_class, item_detail.item_group, item_detail.item_sub_group, sle.branch,
 				sle.warehouse,
@@ -31,13 +33,12 @@ def execute(filters):
 				sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
 				sle.vehicle_no, sle.transporter_name, sle.company])
 		else:
-				data.append([sle.item_code, sle.posting_date, sle.posting_time, item_detail.item_name, item_detail.timber_class, item_detail.item_group, item_detail.item_sub_group, sle.branch,
-				sle.warehouse,
-				item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
-				(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
-				sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
-				sle.vehicle_no, sle.transporter_name, sle.company])
-			
+			data.append([sle.item_code, sle.posting_date, sle.posting_time, item_detail.item_name, item_detail.timber_class, item_detail.item_group, item_detail.item_sub_group, sle.branch,
+			sle.warehouse,
+			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
+			(sle.incoming_rate if sle.actual_qty > 0 else 0.0),
+			sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
+			sle.vehicle_no, sle.transporter_name, sle.company])
 	return columns, data
 
 def get_columns():
@@ -49,6 +50,45 @@ def get_columns():
 	]
 
 def get_stock_ledger_entries(filters):
+	query = """select * from (
+                select sle.posting_date, convert(sle.posting_time,time) as posting_time, sle.item_code,
+			(CASE
+                                WHEN sle.voucher_type = 'Stock Entry' THEN se.branch
+                                WHEN sle.voucher_type = 'Delivery Note' THEN dn.branch
+                                WHEN sle.voucher_type = 'Production' THEN prod.branch
+                                WHEN sle.voucher_type = 'Purchase Receipt' THEN pr.branch
+                                ELSE 'None' END) as branch, 
+			sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
+			sle.stock_value,
+			(CASE
+                                WHEN sle.voucher_type = 'Production' AND pmi.name = sle.voucher_detail_no THEN 'Raw Materials'
+                                ELSE sle.voucher_type
+                                END) as voucher_type,
+			sle.voucher_no, sle.batch_no, sle.serial_no, 
+			(CASE 
+                                WHEN sle.voucher_type = 'Stock Entry' THEN se.vehicle_no
+                                WHEN sle.voucher_type = 'Delivery Note' THEN dn.vehicle
+                                END) as vehicle_no, 
+			(CASE 
+                                WHEN sle.voucher_type = 'Stock Entry' THEN se.transporter_name 
+                                WHEN sle.voucher_type = 'Delivery Note' THEN dn.transporter_name1
+                                ELSE 'None' END) as transporter_name,
+                        sle.company
+		from
+                        `tabStock Ledger Entry` sle
+                        left join `tabStock Entry` se on se.name = sle.voucher_no
+                        left join `tabDelivery Note` dn on dn.name = sle.voucher_no
+                        left join `tabProduction` prod on prod.name = sle.voucher_no
+                        left join `tabProduction Material Item` pmi on pmi.parent = prod.name
+                        left join `tabPurchase Receipt` pr on pr.name = sle.voucher_no 
+		where sle.company = '{company}'
+		and sle.posting_date between '{from_date}' and '{to_date}'
+		{sle_conditions}
+		order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
+		""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters), company=filters.get("company"), from_date=filters.get("from_date"), to_date=filters.get("to_date"))
+	# frappe.throw(query)
+	# data = frappe.db.sql(query, as_dict=True)
+	# frappe.throw(str(data))
 	return frappe.db.sql("""select * from (
                 select sle.posting_date, convert(sle.posting_time,time) as posting_time, sle.item_code,
 			(CASE
@@ -101,7 +141,7 @@ def get_item_details(filters):
 def get_item_conditions(filters):
 	conditions = []
 	if filters.get("item_code"):
-		conditions.append("name=%(item_code)s")
+		conditions.append("name='{item_code}'".format(item_code=filters.get("item_code")))
 	if filters.get("brand"):
 		conditions.append("brand=%(brand)s")
 	if filters.get("item_group"):
@@ -149,16 +189,16 @@ def get_sle_conditions(filters):
 		conditions.append("""sle.item_code in (select name from tabItem
 			{item_conditions})""".format(item_conditions=item_conditions))
 	if filters.get("warehouse"):
-		conditions.append("sle.warehouse=%(warehouse)s")
+		conditions.append("sle.warehouse='{warehouse}'".format(warehouse=filters.get("warehouse")))
 	if filters.get("voucher_no"):
-		conditions.append("sle.voucher_no=%(voucher_no)s")
+		conditions.append("sle.voucher_no='{voucher_no}'".format(voucher_no=filters.get("voucher_no")))
 	if filters.get("transaction_type"):
                 if filters.get("transaction_type") == "Raw Materials":
                         conditions.append("sle.voucher_type= 'Production' and pmi.name = sle.voucher_detail_no")
                 elif filters.get("transaction_type") == "Production":
                         conditions.append("sle.voucher_type= 'Production' and (pmi.name is null or pmi.name != sle.voucher_detail_no)")
                 else:
-                        conditions.append("sle.voucher_type=%(transaction_type)s")
+                        conditions.append("sle.voucher_type='{transaction_type}'".format(transaction_type=filters.get("transaction_type")))
 
 	return "and {}".format(" and ".join(conditions)) if conditions else ""
 
@@ -189,7 +229,7 @@ def get_opening_balance(filters, columns):
 	})
 	
 	row = [""]*len(columns)
-	row[1] = _("'Opening'")
+	row[15] = _("'Opening'")
 	for i, v in ((9, 'qty_after_transaction'), (11, 'valuation_rate'), (12, 'stock_value')):
 			row[i] = last_entry.get(v, 0)
 		

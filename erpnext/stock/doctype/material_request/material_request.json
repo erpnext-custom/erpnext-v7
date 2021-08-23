@@ -928,7 +928,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "creator", 
@@ -953,7 +953,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "creator_name", 
@@ -990,7 +990,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2020-01-13 12:46:46.858991", 
+ "modified": "2021-07-16 14:18:39.578343", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Material Request", 

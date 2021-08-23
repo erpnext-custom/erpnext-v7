@@ -152,13 +152,13 @@ class VehicleLogbook(Document):
 				total_i += flt(a.idle_time)
 			self.total_work_time = total_w
 			self.total_idle_time = total_i
-
-		if self.include_km:
-			if flt(self.ys_km) > 0:
-				self.consumption_km = flt(self.distance_km) / flt(self.ys_km)
-
-		if self.include_hour:
-			self.consumption_hours = flt(self.ys_hours) * flt(self.total_work_time)
+		if self.auto_calc:
+			if self.include_km:
+				if flt(self.ys_km) > 0:
+					self.consumption_km = flt(self.distance_km) / flt(self.ys_km)
+	
+			if self.include_hour:
+				self.consumption_hours = flt(self.ys_hours) * flt(self.total_work_time)
 		
 		self.consumption = flt(self.other_consumption) + flt(self.consumption_hours) + flt(self.consumption_km)
 		self.closing_balance = flt(self.hsd_received) + flt(self.opening_balance) - flt(self.consumption)

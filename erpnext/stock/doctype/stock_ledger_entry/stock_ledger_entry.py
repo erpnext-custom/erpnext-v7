@@ -120,7 +120,7 @@ class StockLedgerEntry(Document):
 
 	def block_transactions_against_group_warehouse(self):
 		from erpnext.stock.utils import is_group_warehouse
-		is_group_warehouse(self.warehouse)
+		is_group_warehouse(str(self.warehouse))
 
 def on_doctype_update():
 	if not frappe.db.sql("""show index from `tabStock Ledger Entry`

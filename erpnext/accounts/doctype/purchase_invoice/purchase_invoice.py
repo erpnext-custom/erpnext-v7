@@ -82,8 +82,6 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset_account()
 		self.create_remarks()
 	
-			
-
 	def validate_tds(self):
 		if not self.type:
 			self.tds_amount = 0
@@ -447,6 +445,8 @@ class PurchaseInvoice(BuyingController):
 		warehouse_account = get_warehouse_account()
 
 		for item in self.get("items"):
+			# this item_expense_account is just for consolidation purpose will not affect any transaction
+			item_expense_account = frappe.db.get_value('Item',item.item_code,['expense_account'])
 			if flt(item.base_net_amount):
 				account_currency = get_account_currency(item.expense_account)
 
@@ -465,7 +465,8 @@ class PurchaseInvoice(BuyingController):
 							"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
 							"cost_center": item.cost_center,
 							"business_activity": item.business_activity,
-							"project": item.project
+							"project": item.project,
+							"exact_expense_acc":item_expense_account,
 						}, account_currency)
 					)
 
@@ -503,7 +504,8 @@ class PurchaseInvoice(BuyingController):
 								else flt(item.net_amount, item.precision("net_amount"))),
 							"cost_center": item.cost_center,
 							"business_activity": item.business_activity,
-							"project": item.project
+							"project": item.project,
+							"exact_expense_acc":item_expense_account,
 						}, account_currency)
 					)
 

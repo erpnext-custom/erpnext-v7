@@ -9,6 +9,8 @@ from frappe import _, json
 from frappe.utils import flt, cint
 from frappe.utils.data import get_last_day
 from frappe.utils.data import flt, cint,add_days, cstr, flt, getdate, nowdate, rounded, date_diff
+from erpnext.accounts.utils import get_child_cost_centers
+
 
 def execute(filters=None):
 	columns = get_columns(filters)
@@ -16,12 +18,20 @@ def execute(filters=None):
 	return columns, data
 
 def get_conditions(filters):
-	branch_cond = consumption_date = rate_date = jc_date = insurance_date = rev_date = bench_date = tc_date = operator_date = le_date = ss_date= not_cdcll = dis = mr_date= ""
-
-	if filters.get("branch"):
-                branch_cond = " and eh.branch = \'"+str(filters.branch)+"\'"
-        else:
-                branch_cond = " and eh.branch like '%' "
+	branch_cond = consumption_date = rate_date = jc_date = insurance_date = rev_date = stock_date = bench_date = tc_date = operator_date = le_date = ss_date= not_cdcll = dis = mr_date= ""
+	if not filters.cost_center:
+		return ""
+	if not filters.branch:	
+		all_ccs = get_child_cost_centers(filters.cost_center)
+		branch_cond = " and eh.branch in (select b.name from `tabCost Center` cc, `tabBranch` b where b.cost_center = cc.name and cc.name in {0})".format(tuple(all_ccs))
+	else:
+		branch = str(filters.get("branch"))
+		branch = branch.replace(' - NRDCL','')
+		branch_cond = " and eh.branch = \'"+branch+"\'"
+	# if filters.get("branch"):
+    #             branch_cond = " and eh.branch = \'"+str(filters.branch)+"\'"
+    #     else:
+    #             branch_cond = " and eh.branch like '%' "
 
         if filters.get("not_cdcl"):
                 not_cdcll = " and e.not_cdcl = 0"
@@ -39,6 +49,7 @@ def get_conditions(filters):
 	rate_date 	  = get_dates(filters, "pol", "date")
 	jc_date	 	  = get_dates(filters, "jc", "posting_date", "finish_date")
 	insurance_date    = get_dates(filters, "ins", "id.insured_date")
+	stock_date    = get_dates(filters, "stock", "se.posting_date")
 	reg_date          = get_dates(filters, "reg", "rd.registration_date")
 	operator_date     = get_dates(filters, "op", "start_date", "end_date")
 	tc_date	      	  = get_dates(filters, "tc", "posting_date")
@@ -48,7 +59,7 @@ def get_conditions(filters):
 	rev_date          = get_dates(filters, "revn", "ci.posting_date")
 	bench_date        = get_dates(filters, "benchmark", "hi.from_date", "hi.to_date")
 	mr_date           = get_dates(filters, "mr_pay", "from_date", "to_date")
-	return branch_cond, consumption_date, consumption_date_vli, rate_date, jc_date, insurance_date, reg_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcll, dis, mr_date
+	return branch_cond, consumption_date, consumption_date_vli, rate_date, jc_date, insurance_date, reg_date, stock_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcll, dis, mr_date
 
 def get_dates(filters, module = "", from_date_column = "", to_date_column = ""):
 	cond1 = ""
@@ -121,13 +132,22 @@ def get_date_conditions(filters):
 
 
 def get_data(filters):
-	branch_cond, consumption_date, consumption_date_vli, rate_date, jc_date, insurance_date, reg_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcll, dis, mr_date  =  get_conditions(filters)
+	branch_cond, consumption_date, consumption_date_vli, rate_date, jc_date, insurance_date, reg_date, stock_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcll, dis, mr_date  =  get_conditions(filters)
 	from_date, to_date, no_of_months, from_date1, to_date1, ra  = get_date_conditions(filters)
 	data = []
-	if filters.get("branch"):
-                branch_cond = " and eh.branch = \'"+str(filters.branch)+"\'"
-        else:
-                branch_cond = " and eh.branch like '%' "
+	if not filters.cost_center:
+		return ""
+	if not filters.branch:	
+		all_ccs = get_child_cost_centers(filters.cost_center)
+		branch_cond = " and eh.branch in (select b.name from `tabCost Center` cc, `tabBranch` b where b.cost_center = cc.name and cc.name in {0})".format(tuple(all_ccs))
+	else:
+		branch = str(filters.get("branch"))
+		branch = branch.replace(' - NRDCL','')
+		branch_cond = " and eh.branch = \'"+branch+"\'"
+	# if filters.get("branch"):
+    #             branch_cond = " and eh.branch = \'"+str(filters.branch)+"\'"
+    #     else:
+    #             branch_cond = " and eh.branch like '%' "
 
         if filters.get("not_cdcl"):
                 not_cdcll = " and not_cdcl = 0"
@@ -217,6 +237,14 @@ def get_data(filters):
                                 and i.equipment = '{0}'
                                 and   {1}
                         """.format(eq.name, reg_date), as_dict=1)[0]
+		# Stock Entry Expenses
+		stock = frappe.db.sql("""
+                                select sum(ifnull(sed.amount,0)) as s_amount
+                                from `tabStock Entry Detail` sed, `tabStock Entry` se  
+                                where sed.parent = se.name  
+                                and sed.issued_equipment_no = '{0}'
+                                and   {1}
+                        """.format(eq.name, stock_date), as_dict=1)[0]
 
 		
 		#Revenue from Hire of Equipments
@@ -325,13 +353,13 @@ def get_data(filters):
 						else:
 							pass
 
-		travel_claim += flt(tc.travel_claim)
-		e_amount     += flt(lea.e_amount)
-		gross_pay    += flt(total_sal)
+				travel_claim += flt(tc.travel_claim)
+				e_amount     += flt(lea.e_amount)
+				gross_pay    += flt(total_sal)
 				#frappe.msgprint(str(pol.rate))
-		total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(reg.r_amount) + flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
+		total_exp    += (flt(vl.consumption)*flt(pol.rate))+flt(ins.insurance)+flt(stock.s_amount)+flt(reg.r_amount) + flt(jc.goods_amount)+flt(jc.services_amount)+ travel_claim+e_amount+gross_pay
 		total_pol_exp +=(flt(vl.consumption)*flt(pol.rate))
-		total_rm_exp = (flt(ins.insurance)+flt(reg.r_amount)+flt(jc.goods_amount)+flt(jc.services_amount))
+		total_rm_exp = (flt(ins.insurance)+flt(reg.r_amount)+flt(stock.s_amount)+flt(jc.goods_amount)+flt(jc.services_amount))
 			# frappe.msgprint("insurance = "+str(flt(ins.insurance))+" reg_amount = "+str(flt(reg.r_amount))+" goods amount = "+str(flt(jc.goods_amount))+" services amount = "+str(flt(jc.services_amount)))
 		total_op_exp += travel_claim + e_amount + gross_pay
 			# frappe.msgprint("expense maintenance and repair = "+str(total_rm_exp))
@@ -465,7 +493,8 @@ def get_data(filters):
 
 		#frappe.msgprint(_("{0}, {1}, {2}").format(total_rev, total_hc, util_percent))
 	
-		data.append((	eq.branch,
+		data.append((	
+			eq.branch,
 			eq.name,
 			eq.equipment_number,
 			eq.equipment_type,

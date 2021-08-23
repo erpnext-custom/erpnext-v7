@@ -22,10 +22,12 @@ class BankPayment(Document):
 		self.set_defaults()
 		self.validate_paid_from_account()
 		self.validate_items()
+		self.update_totals()
 		self.get_bank_available_balance()
 
 	def before_submit(self):
 		self.update_status()
+		self.update_pi_number()
 
 	def on_submit(self):
 		self.validate_mandatory()
@@ -35,7 +37,32 @@ class BankPayment(Document):
 		self.check_for_transactions_in_progress()
 		self.update_status()
 		self.update_transaction_status(cancel=True)
+  
+	def update_pi_number(self):
+		if self.payment_type == "One-One Payment":
+			for a in self.get("items"):
+				a.pi_number = get_transaction_id()
+		else:
+			if self.get("debit_notes"):
+				intra_bank_pi = inter_bank_pi = inr_pi = " "
+				for a in self.get("debit_notes"):
+					pi_no = get_transaction_id()
+					a.pi_number = pi_no
+					if a.note_type == "Intra-Bank Payment":
+						intra_bank_pi = pi_no
+					elif a.note_type == "Inter-Bank Payment":
+						inter_bank_pi = pi_no
+					else:
+						inr_pi = pi_no
 
+				for b in self.get("items"):
+					if b.bank_name == "BOBL":
+						b.pi_number = intra_bank_pi
+					elif b.bank_name == "INR":
+						b.pi_number = inr_pi
+					else:
+						b.pi_number = inter_bank_pi
+				
 	def update_item_status(self, status):
 		for rec in self.items:
 			rec.status = status
@@ -45,7 +72,6 @@ class BankPayment(Document):
 		if self.bank_account_no:
 			if not frappe.db.get_value('Bank Payment Settings', self.bank_name, 'enable_one_to_one'):
 				return
-
 			try:
 				result = fetch_balance(self.bank_account_no)
 			except Exception as e:
@@ -57,6 +83,8 @@ class BankPayment(Document):
 					frappe.msgprint(_("Unable to fetch Bank Balance.\n  {}").format(result['error']))
 
 	def check_for_transactions_in_progress(self):
+		if self.status in ("Failed", "Waiting Acknowledgement"):
+			frappe.throw(_("Cancellation is not permitted for status <b>{}</b>").format(self.status))
 		for i in frappe.get_all("Bank Payment Item", ["*"],{"parent": self.name, "status": "Completed"}):
 			frappe.throw(_("<b>Row#{}:</b> Cancellation is not permitted as payment for <b>{}</b> is already complete").format(i.idx, i.beneficiary_name), title="Failed")
 
@@ -64,11 +92,16 @@ class BankPayment(Document):
 		status = {0: 'Draft', 1: 'Pending', 2: 'Cancelled'}[self.docstatus]
 		if self.docstatus == 2:
 			self.db_set("status", "Cancelled")
+			self.db_set('workflow_state', 'Cancelled')
 
 		self.status = status
 		self.update_item_status(status)
 
 	def process_payment(self):
+		if self.status != "Pending":
+			frappe.msgprint(_("Only transactions in Pending status can be processed"))
+			return
+
 		if self.payment_type == "Bulk Payment":
 			process_bulk_payment(self)
 		else:
@@ -92,7 +125,8 @@ class BankPayment(Document):
 						from `tabBank Payment Item` bpi
 						where bpi.parent = bp.name
 						and bpi.transaction_type = bp.transaction_type
-						and bpi.transaction_id = "{transaction_id}")
+						and bpi.transaction_id = "{transaction_id}"
+						and bpi.status != 'Failed')
 				""".format(name=self.name, transaction_type=i.transaction_type, transaction_id=i.transaction_id),as_dict=True):
 				frappe.throw(_("Row#{}: {} is already processed via {}").format(
 						i.idx, frappe.get_desk_link(i.transaction_type,i.transaction_id),
@@ -102,7 +136,6 @@ class BankPayment(Document):
 	def update_transaction_status(self, cancel=False):
 		''' update respective transactions status '''
 		for i in self.get("items"):		
-
 			if cancel:
 				status = 'Payment Cancelled'
 			elif i.status == 'Completed':
@@ -117,12 +150,22 @@ class BankPayment(Document):
 				doc.payment_status = status
 				for rec in doc.item:
 					if rec.name == i.transaction_reference:
-						rec.payment_status = status 
+						rec.payment_status = status
+						rec.bank_payment = self.name
 				doc.save(ignore_permissions=True)
 			elif self.transaction_type == 'Payment Entry':
 				doc = frappe.get_doc('Payment Entry', i.transaction_id)
 				doc.payment_status = status
-				doc.save(ignore_permission=True)
+				doc.bank_payment = self.name
+				doc.save(ignore_permissions=True)
+			elif self.transaction_type == 'Journal Entry':
+				doc = frappe.get_doc('Journal Entry', i.transaction_id)
+				doc.payment_status = status
+				for rec in doc.item:
+					if rec.name == i.transaction_reference:
+						rec.payment_status = status
+						rec.bank_payment = self.name
+				doc.save(ignore_permissions=True)
 
 	def set_defaults(self):
 		self.posting_date = now()
@@ -146,7 +189,7 @@ class BankPayment(Document):
 				frappe.throw(_("Row#{} : <b>Beneficiary Bank</b> is missing for <b>{}</b>").format(rec.idx, rec.beneficiary_name))
 			elif not rec.bank_account_no:
 				frappe.throw(_("Row#{} : <b>Beneficiary Bank Account No.</b> is missing for <b>{}</b>").format(rec.idx, rec.beneficiary_name))
-			elif flt(rec.amount):
+			elif not flt(rec.amount):
 				frappe.throw(_("Row#{} : <b>Amount</b> should be greater than 0 <b>{}</b>").format(rec.idx, rec.beneficiary_name))
 
 			if rec.bank_name not in (self.bank_name, 'INR'):
@@ -161,6 +204,10 @@ class BankPayment(Document):
 			frappe.throw(_("Paid From is mandatory"))
 
 		doc = frappe.db.get("Account", self.paid_from)
+		self.bank_name = doc.bank_name
+		self.bank_branch = doc.bank_branch
+		self.bank_account_type = doc.bank_account_type
+		self.bank_account_no = doc.bank_account_no
 		if doc:
 			if not doc.bank_name:
 				frappe.throw(_("<b>Bank Name</b> is not set for {}").format(frappe.get_desk_link("Account",self.paid_from)))
@@ -185,11 +232,23 @@ class BankPayment(Document):
 		self.load_items()
 		self.load_banks()							
 		self.load_debit_notes()
+		return self.total_amount
+
+	def update_totals(self):
+		total_amount = 0
+		for i in self.items:
+			total_amount += flt(i.amount,2)
+		self.load_banks()
+		self.load_debit_notes()
+		self.total_amount = total_amount
+		return total_amount
 
 	def load_items(self):
 		total_amount = 0
 		self.set('items', [])
 		for i in self.get_transactions():
+			import re
+			beneficiary_name = re.sub('[^A-Za-z0-9 ]+', '', i.beneficiary_name)
 			row = self.append('items', {})
 			row.update(i)
 			total_amount += flt(i.amount,2)
@@ -198,7 +257,7 @@ class BankPayment(Document):
 		if not self.get("items"):
 			frappe.throw(_("No transactions found for payment processing for <b>{}</b>").format(self.transaction_type), title="No Data Found")
 			return total_amount
-		self.set_payment_type()
+		# self.set_payment_type()
   
 	def load_banks(self):
 		bank_totals  = {}
@@ -244,6 +303,75 @@ class BankPayment(Document):
 			data = self.get_payment_entry()
 		elif self.transaction_type == "Direct Payment":
 			data = self.get_direct_payment()
+		elif self.transaction_type == "Journal Entry":
+			data = self.get_journal_entry()
+		return data
+
+	def get_journal_entry(self):
+		cond = ""
+		if self.transaction_no:
+			cond = 'AND je.name = "{}"'.format(self.transaction_no)
+		elif not self.transaction_no and self.from_date and self.to_date:
+			cond = 'AND je.posting_date BETWEEN "{}" AND "{}"'.format(str(self.from_date), str(self.to_date))
+		data = []
+		row = {}
+		for a in frappe.db.sql("""SELECT je.name transaction_id, ja.name transaction_reference, ja.reference_type, ja.reference_name, 
+							je.posting_date transaction_date, ja.party_type, ja.party, 
+							round(ja.debit_in_account_currency,2) as amount 
+							FROM `tabJournal Entry` je, `tabJournal Entry Account` ja
+							where je.branch = '{branch}' 
+							{cond}
+							and je.name = ja.parent 
+							and je.voucher_type = 'Bank Entry' 
+							and je.naming_series = 'Bank Payment Voucher'
+							and ja.party is not null and ja.party !=''
+							and ja.debit_in_account_currency > 0
+							and je.docstatus = 1
+							AND NOT EXISTS(select 1
+								FROM `tabBank Payment Item` bpi
+								WHERE bpi.transaction_type = 'Journal Entry'
+								AND bpi.transaction_id = je.name
+								AND bpi.parent != '{bank_payment}'
+								AND bpi.docstatus != 2
+								AND bpi.status NOT IN ('Cancelled', 'Failed')
+							)
+						order by je.posting_date
+						""".format(branch = self.branch, bank_payment = self.name, cond = cond), as_dict=True):
+			employee = supplier = ""
+			if a.party_type == "Supplier":
+				query = """select s.bank_name_new as bank_name, s.bank_branch, s.bank_account_type, 
+								s.account_number as bank_account_no, s.suuplier_name as beneficiary_name,
+								(CASE WHEN s.bank_name_new = "INR" THEN s.inr_bank_code ELSE NULL END) inr_bank_code,
+								(CASE WHEN s.bank_name_new = "INR" THEN s.inr_purpose_code ELSE NULL END) inr_purpose_code
+								from `tabSupplier` s
+								WHERE s.name = '{party}'
+							""".format(party = a.party)
+				supplier = a.party
+			elif a.party_type == "Employee":
+				query = """select e.bank_name, e.bank_branch, e.bank_account_type, e.employee_name as beneficiary_name,
+								e.bank_ac_no as bank_account_no, NULL inr_bank_code, NULL inr_purpose_code
+								from `tabEmployee` e
+								WHERE e.name = '{party}'
+							""".format(party = a.party)
+				employee = a.party
+			for b in frappe.db.sql(query, as_dict=True):
+				row = {
+					'transaction_type': 'Journal Entry',
+					'transaction_id': a.transaction_id,
+					'transaction_reference': a.transaction_reference,
+					'transaction_date': a.transaction_date,
+					'employee': employee,
+					'supplier': supplier,
+					'beneficiary_name': b.beneficiary_name,
+					'bank_name': b.bank_name,
+					'bank_branch': b.bank_branch,
+					'bank_account_type': b.bank_account_type,
+					'bank_account_no': b.bank_account_no,
+					'amount': a.amount,
+					'inr_bank_code': b.inr_bank_code,
+					'inr_purpose_code': b.inr_purpose_code
+				}
+			data.append(frappe._dict(row))
 		return data
 
 	def get_direct_payment(self):
@@ -255,22 +383,37 @@ class BankPayment(Document):
 
 		return frappe.db.sql("""SELECT "Direct Payment" transaction_type, dp.name transaction_id, 
 						dpi.name transaction_reference, dp.posting_date transaction_date, 
-						dpi.party as supplier, dpi.party as beneficiary_name,
-						s.bank_name_new as bank_name, s.account_number as bank_account_no,
-						dpi.net_amount amount,
-						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_bank_code ELSE NULL END) inr_bank_code,
-						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_purpose_code ELSE NULL END) inr_purpose_code,
+						(CASE WHEN dpi.party_type = 'Supplier' THEN dpi.party ELSE NULL END) as supplier, 
+						(CASE WHEN dpi.party_type = 'Employee' THEN dpi.party ELSE NULL END) as employee, 
+						(CASE WHEN dpi.party_type = 'Supplier' THEN s.supplier_name ELSE e.employee_name END) as beneficiary_name,
+						(CASE WHEN dpi.party_type = 'Supplier' THEN s.bank_name_new ELSE e.bank_name END) as bank_name, 
+						(CASE WHEN dpi.party_type = 'Supplier' THEN s.bank_branch ELSE e.bank_branch END) as bank_branch, 
+						(CASE WHEN dpi.party_type = 'Supplier' THEN s.bank_account_type ELSE e.bank_account_type END) as bank_account_type, 
+						(CASE WHEN dpi.party_type = 'Supplier' THEN s.account_number ELSE e.bank_ac_no END) as bank_account_no,
+						round((dpi.net_amount-(select ifnull(sum(dpd.amount),0)
+											from `tabDirect Payment Deduction` dpd
+											where dpd.parent = dp.name 
+											and dpd.party_type = dpi.party_type
+											and dpd.party = dpi.party
+										)
+						),2) amount,
+						(CASE WHEN dpi.party_type = 'Supplier' AND s.bank_name_new = "INR" THEN s.inr_bank_code 
+							ELSE NULL END) inr_bank_code,
+						(CASE WHEN dpi.party_type = 'Supplier' AND s.bank_name_new = "INR" THEN s.inr_purpose_code 
+							ELSE NULL END) inr_purpose_code,
 						"Draft" status
-					FROM `tabDirect Payment` dp, `tabDirect Payment Item` dpi, `tabSupplier` s
+					FROM `tabDirect Payment` dp 
+					INNER JOIN `tabDirect Payment Item` dpi ON dpi.parent = dp.name
+					LEFT JOIN `tabSupplier` s ON dpi.party_type = 'Supplier' AND s.name = dpi.party
+					LEFT JOIN `tabEmployee` e ON dpi.party_type = 'Employee' AND e.name = dpi.party
 					WHERE dp.branch = "{branch}" 
 					{cond}
 					AND dp.docstatus = 1
-					AND dpi.parent = dp.name
-					AND dpi.party_type = 'Supplier'
+					AND ifnull(dp.utility_bill,'') = ''
+					AND dpi.party_type IS NOT NULL
 					AND dpi.party IS NOT NULL
 					AND IFNULL(dpi.net_amount,0) > 0
-					AND (dpi.status IS NULL OR dpi.status = 'Failed' OR dpi.status = '')
-					AND s.name = dpi.party
+					AND ifnull(dpi.payment_status,'') IN ('','Failed','Payment Failed')
 					AND NOT EXISTS(select 1
 						FROM `tabBank Payment Item` bpi
 						WHERE bpi.transaction_type = 'Direct Payment'
@@ -294,8 +437,12 @@ class BankPayment(Document):
 		return frappe.db.sql("""SELECT "Payment Entry" transaction_type, pe.name transaction_id, 
 						pe.name transaction_reference, pe.posting_date transaction_date, 
 						pe.party as supplier, pe.party as beneficiary_name,
-						s.bank_name_new as bank_name, s.account_number as bank_account_no,
-						pe.paid_amount amount,
+						s.bank_name_new as bank_name, s.bank_branch, s.bank_account_type, s.account_number as bank_account_no,
+						round((pe.paid_amount + (select ifnull(sum(ped.amount),0)
+											from `tabPayment Entry Deduction` ped
+											where ped.parent = pe.name
+											)
+						),2) amount,
 						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_bank_code ELSE NULL END) inr_bank_code,
 						(CASE WHEN s.bank_name_new = "INR" THEN s.inr_purpose_code ELSE NULL END) inr_purpose_code,
 						"Draft" status
@@ -356,7 +503,9 @@ class BankPayment(Document):
 						t1.employee, t1.employee_name beneficiary_name, 
 						IFNULL(t1.bank_name, e.bank_name) bank_name, 
 						IFNULL(t1.bank_branch, e.bank_branch) bank_branch, fib.financial_system_code,
-						IFNULL(t1.bank_account_no, e.bank_ac_no) bank_account_no, t1.rounded_total amount,
+						e.bank_account_type,
+						IFNULL(t1.bank_account_no, e.bank_ac_no) bank_account_no, 
+						round(t1.net_pay,2) amount,
 						'Salary for {month}-{salary_year}' remarks, "Draft" status						
 					FROM `tabSalary Slip` t1
 						JOIN `tabEmployee` e ON t1.employee = e.name
@@ -364,8 +513,9 @@ class BankPayment(Document):
 					WHERE t1.fiscal_year = '{salary_year}'
 					AND t1.month = '{salary_month}'
 					AND t1.docstatus = 1
+					AND e.salary_mode = 'Bank'
 					{cond}
-					AND IFNULL(t1.rounded_total,0) > 0
+					AND IFNULL(t1.net_pay,0) > 0
 					AND NOT EXISTS(select 1
 						FROM `tabBank Payment Item` bpi
 						WHERE bpi.transaction_type = 'Salary Slip'
@@ -412,9 +562,10 @@ class BankPayment(Document):
 
 def process_one_to_one_payment(doc, publish_progress=True):
 	stat = 0
+	processing = completed = failed = doc_modified = 0
 	PromoCode = frappe.db.get_value("Bank Payment Settings", "BOBL", "promo_code")
 	for i in doc.get("items"):
-		PEMSRefNum = get_transaction_id()
+		PEMSRefNum = i.pi_number
 		bpi = frappe.get_doc('Bank Payment Item', i.name)
 		if i.bank_name == "BOBL":
 			from_acc = doc.bank_account_no
@@ -459,18 +610,39 @@ def process_one_to_one_payment(doc, publish_progress=True):
 			RemitterAcctType = frappe.db.get_value("Account", doc.paid_from, "bank_account_type")
 			result = inter_payment(Amt, PayeeAcctNum, BnfcryAcct, BnfcryName, BnfcryAcctTyp, BnfcryRmrk, RemitterName, BfscCode, RemitterAcctType, PEMSRefNum)
 		if result['status'] == "Success":
+			completed += 1
 			bpi.db_set("status", "Completed")
+			# i.status = "Completed"
 		else:
 			stat = 1
+			failed += 1
 			bpi.db_set("status", "Failed")
+			# i.status = "Failed"
+
 		bpi.db_set("error_message", str(result['message']))
 		bpi.db_set("bank_journal_no", str(result['jrnl_no']))
+		# i.error_message = str(result['message'])
+		# i.bank_journal_no = str(result['jrnl_no'])
 
-	if stat == 1:
-		doc.db_set("status", "")
-	else:
-		doc.db_set("status", "Completed")
-	doc.reload()
+	# update bank payment and transaction status
+	status = None
+	if completed and failed:
+		status = "Partial Payment"
+	elif failed:
+		status = "Failed"
+	elif completed:
+		status = "Completed"
+
+	if status:
+		# doc.status = status if status else doc.status
+		# doc.workflow_state = status if status else doc.status
+		# doc.save(ignore_permissions=True)
+  
+		doc.db_set('status', status)
+		doc.db_set('workflow_state', status)
+		doc.reload()
+		doc.update_transaction_status()
+		doc.reload()
 
 def process_bulk_payment(doc, publish_progress=True):
 	''' generate and sftp the files to bank '''
@@ -492,7 +664,7 @@ def generate_files(doc, posting_date):
 
 	for i in doc.get("debit_notes"):
 		filepath = ""
-		filename = get_filename(i.note_type, posting_date)
+		filename = get_filename(i.note_type, posting_date, i.pi_number)
 		debit_note = str(get_site_path())+"/"+str(i.debit_note)
 		noof_transactions = 0
 
@@ -561,6 +733,7 @@ def upload_files(doc):
 					frappe.get_doc('Bank Payment Item', i.name).db_set('status','Waiting Acknowledgement' if not error else 'Upload Failed')
 
 	doc.db_set("status", "Waiting Acknowledgement" if not error else "Upload Failed")
+	doc.db_set("workflow_state", "Waiting Acknowledgement" if not error else "Upload Failed")
 	doc.reload()
 	sftp.close()
 		
@@ -568,18 +741,17 @@ def get_transaction_id(bank="BOBL"):
 	promo_code = frappe.db.get_value('Bank Payment Settings', bank, 'promo_code')
 	return make_autoname(str(promo_code) + '.YYYY.MM.DD.########')
 
-def get_filename(note_type, posting_date):
+def get_filename(note_type, posting_date, pi_number):
 	posting_date = posting_date.strftime('%Y%m%d%H%M%S')
-	transaction_id = get_transaction_id()
-
+	
 	if note_type == 'Intra-Bank Payment':
-		filename = ["PEMSPAY", posting_date[:8], transaction_id]
+		filename = ["PEMSPAY", posting_date[:8], pi_number]
 	elif note_type == 'Inter-Bank Payment':
-		filename = ["BULK", "00020", posting_date[:8], transaction_id]
+		filename = ["BULK", "00020", posting_date[:8], pi_number]
 	elif note_type == 'INR Payment':
-		filename = ["INR", transaction_id, "00010", posting_date[:8], "111111", transaction_id[-3:]]
+		filename = ["INR", pi_number, "00010", posting_date[:8], "111111", pi_number[-3:]]
 	else:
-		filename = transaction_id
+		filename = pi_number
 
 	return "_".join(filename)
 
@@ -595,7 +767,7 @@ def get_intra_bank_file(doc, filename, posting_date, account_type="01"):
 
 	# get credit records for transactions
 	for i in doc.get("items"):
-		narration 	= i.remarks[:30] if i.remarks else ""
+		narration = str(doc.name) + ' ' + str(doc.remarks if doc.remarks else i.remarks)
 		if str(doc.bank_name) == str(i.bank_name) and i.status in ('Pending', 'Failed'):
 			slno += 1
 			frappe.get_doc('Bank Payment Item', i.name).db_set('file_name', filename+'.csv')
@@ -636,12 +808,12 @@ def get_inter_bank_file(doc, filename, posting_date, account_type="01"):
 
 	# get credit records for transactions
 	for i in doc.get("items"):
-		narration 	= i.remarks
+		narration = str(doc.name) + ' ' + str(doc.remarks if doc.remarks else i.remarks)
 		if str(doc.bank_name) not in (str(i.bank_name),'INR') and i.status in ('Pending', 'Failed'):
 			slno += 1
 			frappe.get_doc('Bank Payment Item', i.name).db_set('file_name', filename+'.csv')
-			rec.append([slno, doc.bank_account_no, paying_customer, i.financial_system_code, account_type,
-   				i.bank_account_no, i.beneficiary_name, narration, "BTN", flt(i.amount,2),
+			rec.append([slno, doc.bank_account_no, paying_customer, i.financial_system_code, i.bank_account_type,
+   				i.bank_account_no, i.beneficiary_name[:50], narration[:100], "BTN", flt(i.amount,2),
 	   			posting_date.strftime("%Y%m%d"), 0, 0, filename.split("_")[-1]])
    
 			total_amount += flt(i.amount,2)
