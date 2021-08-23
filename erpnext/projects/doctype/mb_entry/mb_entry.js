@@ -22,52 +22,20 @@ frappe.ui.form.on('MB Entry', {
 	},
 	
 	refresh: function(frm, cdt, cdn) {
-		//if(!frm.doc.__islocal){
-				
-			
-		/*
-		if(frm.doc.project){
-			if(frappe.model.can_read("Project")) {
-				frm.add_custom_button(__("Project"), function() {
-					frappe.route_options = {"name": frm.doc.project}
-					frappe.set_route("Form", "Project", frm.doc.project);
-				}, __("View"), true);
-			}						
+		//added new by cety on 8/19/2021
+		if (frm.doc.docstatus == 1){
+			cur_frm.add_custom_button(__('Accounting Ledger'), function() {
+				frappe.route_options = {
+					voucher_no: frm.doc.name,
+					from_date: frm.doc.posting_date,
+					to_date: frm.doc.posting_date,
+					company: frm.doc.company,
+					group_by_voucher: false
+				};
+				frappe.set_route("query-report", "General Ledger");
+			}, __("View"));
 		}
-		
-		if(frm.doc.boq){
-			if(frappe.model.can_read("BOQ")) {
-				frm.add_custom_button(__("BOQ"), function() {
-					frappe.route_options = {"name": frm.doc.boq}
-					frappe.set_route("Form", "BOQ", frm.doc.boq);
-				}, __("View"), true);
-			}					
-		}
-		
-		if(frm.doc.docstatus===1){			
-			if(frappe.model.can_read("Project Invoice") && parseFloat(frm.doc.total_balance_amount) > 0){
-				frm.add_custom_button(__("Invoice"), function(){
-					frm.trigger("make_mb_invoice")},
-					__("Make"), "icon-file-alt");
-			}
-		}
-		*/
-		
-		/*
-		if(frm.doc.boq_type=="Item Based"){
-			frm.fields_dict.mb_entry_boq.grid.toggle_enable("entry_quantity", true);
-			frm.fields_dict.mb_entry_boq.grid.toggle_enable("entry_amount", false);
-			//frm.fields_dict.mb_entry_boq.grid.set_column_disp("entry_quantity", true);			
-		} 
-		else if(frm.doc.boq_type=="Milestone Based"){
-			frm.fields_dict.mb_entry_boq.grid.toggle_enable("entry_quantity", false);
-			frm.fields_dict.mb_entry_boq.grid.toggle_enable("entry_amount", true);
-		}
-		else if(frm.doc.boq_type=="Piece Rate Work Based(PRW)"){
-			frm.fields_dict.mb_entry_boq.grid.toggle_enable("entry_quantity", true);
-			frm.fields_dict.mb_entry_boq.grid.toggle_enable("entry_amount", false);
-		}		
-		*/
+		//end
 	},
 
 	make_mb_invoice: function(frm){

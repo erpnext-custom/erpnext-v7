@@ -16,8 +16,9 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, time_diff_in_hours, get_datetime, getdate, cint, get_datetime_str
 from frappe.model.mapper import get_mapped_doc
+from erpnext.controllers.accounts_controller import AccountsController
 
-class MBEntry(Document):
+class MBEntry(AccountsController):
 	def validate(self):
                 self.set_status()
                 self.default_validations()
@@ -26,12 +27,14 @@ class MBEntry(Document):
         def on_submit(self):
                 self.validate_boq_items()
                 self.update_boq()
+                self.make_gl_entries()
 
         def before_cancel(self):
                 self.set_status()
 
         def on_cancel(self):
                 self.update_boq()
+                self.make_gl_entries()
                 
         def set_status(self):
                 self.status = {
@@ -134,6 +137,60 @@ class MBEntry(Document):
                                         balance_amount   = ifnull(balance_amount,0) - ifnull({2},0)
                                 where name = '{0}'
                                 """.format(item.boq_item_name, flt(item.entry_quantity), flt(item.entry_amount), source_table))
+        #added by cety on 8/19/2021             
+        def make_gl_entries(self):
+                if self.total_entry_amount:
+                        from erpnext.accounts.general_ledger import make_gl_entries
+                        gl_entries = []
+                        self.posting_date = self.entry_date
+
+                        if self.party_type == "Customer":
+                                # inv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="project_invoice_account")
+                                # rec_gl = frappe.db.get_value(doctype="Company",filters=self.company,fieldname="default_receivable_account")
+                                inv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="project_accrued_income_account")
+                                rec_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="project_invoice_account")
+                        elif self.party_type == "Supplier":
+                                # inv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="invoice_account_supplier")
+                                # rec_gl = frappe.db.get_value(doctype="Company",filters=self.company,fieldname="default_payable_account")
+                                inv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="invoice_account_supplier")
+                                rec_gl = frappe.db.get_value(doctype="Company",filters=self.company,fieldname="default_payable_account")
+                        else:
+                                inv_gl = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="invoice_account_internal")
+                                rec_gl = frappe.db.get_value(doctype="Company",filters=self.company,fieldname="default_receivable_account")
+
+                        if not inv_gl:
+                                frappe.throw(_("Project Invoice Account is not defined in Projects Accounts Settings."))
+
+                        if not rec_gl:
+                                frappe.throw(_("Default Receivable Account is not defined in Company Settings."))
+                        
+                        gl_entries.append(
+                                self.get_gl_dict({
+                                       "account":  inv_gl,
+                                       "party_type": self.party_type,
+                                       "party": self.party,
+                                       "against": rec_gl,
+                                       "credit" if self.party_type == "Supplier" else "debit": self.total_entry_amount,
+                                       "credit_in_account_currency" if self.party_type == "Supplier" else "debit_in_account_currency": self.total_entry_amount,
+                                       "against_voucher": self.name,
+                                       "against_voucher_type": self.doctype,
+                                       "project": self.project,
+                                       "cost_center": self.cost_center
+                                }, self.currency)
+                        )
+
+                        gl_entries.append(
+                                self.get_gl_dict({
+                                       "account":  rec_gl,
+                                       "against": self.party,
+                                       "debit" if self.party_type == "Supplier" else "credit": self.total_entry_amount,
+                                       "debit_in_account_currency" if self.party_type == "Supplier" else "credit_in_account_currency": self.total_entry_amount,
+                                       "project": self.project,
+                                       "cost_center": self.cost_center
+                                }, self.currency)
+                        )
+                        make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
+        #end
         
 @frappe.whitelist()
 def make_mb_invoice(source_name, target_doc=None):
