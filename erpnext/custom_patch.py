@@ -2053,19 +2053,24 @@ def rename_payment_entry():
 			'PEBP210800087', 'PEBP210800088', 'PEBP210800089', 'PEBP210800090', 'PEBP210800091', 'PEBP210800092', 'PEBP210800093',
 			'PEBP210800094', 'PEBP210800095', 'PEBP210800096', 'PEBP210800098', 'PEBP210800099', 'PEBP210800100', 'PEBP210800101' ]
 
+	arr1 = ['PEBP210700024', 'PEBP210700025', 'PEBP210700026', 'PEBP210700027', 'PEBP210700028', 'PEBP210700029', 'PEBP210700030', 'PEBP210700031',
+			'PEBP210700032', 'PEBP210700033', 'PEBP210700034', 'PEBP210700035', 'PEBP210700036', 'PEBP210700037', 'PEBP210700038', 'PEBP210700039',
+			'PEBP210700040', 'PEBP210700041', 'PEBP210700042', 'PEBP210700043' ]
+	i  = 0
 	for a in arr:
-		new = make_autoname('PEBP2107.#####')
-		print(new)
-		frappe.db.sql("update `tabPayment Entry` set name = '{}' where name = '{}' ".format(new,a))
-def rename_journal_entry():
-	arr = ['JEBR210800002', 'JEBR210800006', 'JEBR210800007']
-	arr1 = [ 'JEBR210700004', 'JEBR210700005', 'JEBR210700006']
-	i = 0
-	for a in arr:
-		# new = make_autoname('JEBR2107.#####')
-		frappe.db.sql("update `tabJournal Entry` set name = '{}' where name = '{}' ".format(a,arr1[i]))
-		print(a)
-		print(arr1[i])
+		# new_name = make_autoname('PEBP2107.#####')
+		frappe.db.sql("update `tabPayment Entry` set name = '{}' where name = '{}' ".format(a,arr1[i]))
+		print("PE from: {} to: {}".format(arr1[i],a))
 		i += 1
+
+def rename_journal_entry():
+	from frappe.model.rename_doc import rename_doc
+	arr = ['JEBR210800002', 'JEBR210800006', 'JEBR210800007']
+
+	for a in arr:
+		new_name = make_autoname('JEBR2107.#####')
+		rename_doc("Journal Entry", a, new_name, force=False, merge=False, ignore_permissions=True)
+		frappe.db.sql("update `tabGL Entry` set voucher_no='{}' where voucher_type='Journal Entry' and voucher_no= '{}' ".format(new_name,a))
+		print('Renamed from: {} to: {}'.format(a, new_name))
 
 	
