@@ -2052,11 +2052,16 @@ def rename_payment_entry():
 	arr = [ 'PEBP210800078-1', 'PEBP210800079', 'PEBP210800080', 'PEBP210800081', 'PEBP210800085', 'PEBP210800086',
 			'PEBP210800087', 'PEBP210800088', 'PEBP210800089', 'PEBP210800090', 'PEBP210800091', 'PEBP210800092', 'PEBP210800093',
 			'PEBP210800094', 'PEBP210800095', 'PEBP210800096', 'PEBP210800098', 'PEBP210800099', 'PEBP210800100', 'PEBP210800101' ]
-	i = 0
+
 	for a in arr:
 		new = make_autoname('PEBP2107.#####')
 		print(new)
 		frappe.db.sql("update `tabPayment Entry` set name = '{}' where name = '{}' ".format(new,a))
-		i += 1
-
+def rename_journal_entry():
+	arr = [ 'JEBR210800002', 'JEBR210800006', 'JEBR210800007']
+	for a in arr:
+		new = make_autoname('JEBR2107.#####')
+		frappe.db.sql("update `tabJournal Entry` set name = '{}' where name = '{}' ".format(new,a))
+		print(a)
+		print(new)
 	
