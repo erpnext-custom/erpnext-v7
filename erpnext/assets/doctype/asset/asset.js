@@ -224,6 +224,27 @@ frappe.ui.form.on('Asset', {
 		else {
 			cur_frm.set_value("marked_on", "")
 		}
+	},
+
+	
+	// Added by Sonam Chophel on 2021-08-21
+	issued_to: function(frm){
+		if(cur_frm.doc.issued_to == 'Employee'){
+			cur_frm.set_value("issue_to_employee", "");
+			cur_frm.set_value("employee_name", "");
+			cur_frm.refresh_field("issue_to_employee")
+			cur_frm.refresh_field("employee_name")
+		}
+		else if(cur_frm.doc.issued_to == 'Desuup'){
+			cur_frm.set_value("issue_to_desuup", "");
+			cur_frm.set_value("desuup_name", "");
+			cur_frm.refresh_field("issue_to_desuup")
+			cur_frm.refresh_field("desuup_name")
+		}
+		else{
+			cur_frm.set_value("issue_to_other", "");
+			cur_frm.refresh_field("issue_to_other")
+		}
 	}
 });
 
@@ -483,3 +504,8 @@ frappe.ui.form.on("Asset", "asset_quantity_", function (frm) {
 		cur_frm.set_value("gross_purchase_amount", frm.doc.asset_quantity_ * frm.doc.asset_rate)
 	}
 })
+
+
+frappe.form.link_formatters['Employee'] = function(value, doc) {
+	return value
+}

@@ -47,21 +47,25 @@ frappe.ui.form.on('Asset Issue Details', {
 			}
 		});
 	},
+
+	// Added by Sonam Chophel on 2021-08-21
 	issued_to: function(frm){
-		frappe.call({
-			method: 'frappe.client.get',
-			args: {
-				doctype: "Desuup",
-				filters: {
-					"name": frm.doc.issued_to
-				},
-				'fields': ['desuup_name']
-			},
-			callback: function(r){
-				cur_frm.set_value("employee_name", r.message.desuup_name);
-				cur_frm.refresh_field("employee_name")
-			}
-		})
+		if(cur_frm.doc.issued_to == 'Employee'){
+			cur_frm.set_value("issue_to_employee", "");
+			cur_frm.set_value("employee_name", "");
+			cur_frm.refresh_field("issue_to_employee")
+			cur_frm.refresh_field("employee_name")
+		}
+		else if(cur_frm.doc.issued_to == 'Desuup'){
+			cur_frm.set_value("issue_to_desuup", "");
+			cur_frm.set_value("desuup_name", "");
+			cur_frm.refresh_field("issue_to_desuup")
+			cur_frm.refresh_field("desuup_name")
+		}
+		else{
+			cur_frm.set_value("issue_to_other", "");
+			cur_frm.refresh_field("issue_to_other")
+		}
 	}
 });
 

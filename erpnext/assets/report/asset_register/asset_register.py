@@ -59,9 +59,17 @@ def get_data(filters):
                         opening_accumulated_depreciation, asset_quantity_,
                         name, asset_name, asset_category, equipment_number,
                         serial_number, old_asset_code, presystem_issue_date,
-                        issued_to,
-                        (select employee_name from tabEmployee as emp where emp.name = ass.issued_to) as employee_name,
-                        (select designation from tabEmployee as emp where emp.name = ass.issued_to) as designation,
+						CASE 
+							WHEN ass.issued_to = 'Employee' THEN ass.issue_to_employee
+							WHEN ass.issued_to = 'Desuup' THEN ass.issue_to_desuup
+							WHEN ass.issued_to = 'Other' THEN ass.issue_to_other 
+						END as issued_to,
+						CASE 
+							WHEN ass.issued_to = 'Employee' THEN (select employee_name from tabEmployee as emp where emp.name = ass.issue_to_employee)
+							WHEN ass.issued_to = 'Desuup' THEN (select desuup_name from tabDesuup as ds where ds.name = ass.issue_to_desuup) 
+							WHEN ass.issued_to = 'Other' THEN ass.issue_to_other 
+						END as employee_name,
+						(select designation from tabEmployee as emp where emp.name = ass.issued_to) as designation,
                         cost_center, purchase_date, gross_purchase_amount, value_after_depreciation,
                         (select
                                 sum(gl.depreciation_amount)
@@ -108,6 +116,7 @@ def get_data(filters):
 	if filters.to_date:
 		query += " and ass.purchase_date <= '{0}'".format(filters.to_date)
 
+	# frappe.throw(_("TEST: " + "{}").format(query))
 	asset_data = frappe.db.sql(query, as_dict=True)
 
 	data = []
@@ -238,18 +247,18 @@ def get_columns():
 			"fieldtype": "Data",
 			"width": 150
 		},
-		 {
-                        "fieldname": "employee_name",
-                        "label": _("Employee Name"),
-                        "fieldtype": "Data",
-                        "width": 150
-                },
-		 {
-                        "fieldname": "designation",
-                        "label": _("Designation"),
-                        "fieldtype": "Data",
-                        "width": 150
-                },
+		{
+			"fieldname": "employee_name",
+			"label": _("Employee Name"),
+			"fieldtype": "Data",
+			"width": 150
+		},
+		{
+			"fieldname": "designation",
+			"label": _("Designation"),
+			"fieldtype": "Data",
+			"width": 150
+		},
 		{
 			"fieldname": "cost_center",
 			"label": _("Cost Center"),
@@ -331,23 +340,23 @@ def get_columns():
 			"width": 120
 		},
 		{
-                        "fieldname": "asset_status",
-                        "label": _("Asset Status"),
-                        "fieldtype": "data",
-                        "width": 120
-                },
+			"fieldname": "asset_status",
+			"label": _("Asset Status"),
+			"fieldtype": "data",
+			"width": 120
+		},
 		{
-                        "fieldname": "residual_value",
-                        "label": _("Residual Value"),
-                        "fieldtype": "data",
-                        "width": 120
-                },
+			"fieldname": "residual_value",
+			"label": _("Residual Value"),
+			"fieldtype": "data",
+			"width": 120
+		},
 		{
-                        "fieldname": "status",
-                        "label": _("Status"),
-                        "fieldtype": "data",
-                        "width": 120
-                },
+			"fieldname": "status",
+			"label": _("Status"),
+			"fieldtype": "data",
+			"width": 120
+		},
 
 	]
 

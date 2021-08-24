@@ -7,6 +7,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import getdate
 from frappe.utils import flt, getdate, cint, today, add_years, date_diff, nowdate
+from frappe import _
 
 class Equipment(Document):
 	def before_save(self):
@@ -29,7 +30,17 @@ class Equipment(Document):
 			last_row = self.equipment_history[len(self.equipment_history) - 1]
 			if not last_row.to_date:
 				last_row.to_date = getdate(nowdate())
-			
+
+		if self.asset_code:
+			# eq_name = frappe.db.sql("select name from tabEquipment where exists (select e.asset_code from tabEquipment e where e.asset_code = '{}')".format(self.asset_code))
+			# if eq_name:
+			eq_name = frappe.db.exists({
+				'doctype': 'Equipment',
+				'asset_code': self.asset_code
+			})
+			if eq_name:
+				frappe.throw(_("Asset Code '{}' is already being used by Equipment: '{}'".format(self.asset_code,eq_name)))
+
 	def create_equipment_history(self, branch, on_date, ref_doc, purpose):
 		from_date = on_date
 		if purpose == "Cancel":

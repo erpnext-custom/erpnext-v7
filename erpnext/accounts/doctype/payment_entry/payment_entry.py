@@ -161,6 +161,8 @@ class PaymentEntry(AccountsController):
 			
 	def validate_account_type(self, account, account_types):
 		account_type = frappe.db.get_value("Account", account, "account_type")
+		if not self.mode_of_payment:
+			return
 		if account_type not in account_types:
 			frappe.throw(_("Account Type for {0} must be {1}").format(account, comma_or(account_types)))
 				
@@ -823,11 +825,11 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 
 	# bank or cash
 	if dt =="Sales Invoice":
-                bank = get_default_bank_cash_sales_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
-                        account=bank_account)
+		bank = get_default_bank_cash_sales_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
+				account=bank_account)
 	else:
-                bank = get_default_bank_cash_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
-                        account=bank_account)
+		bank = get_default_bank_cash_account(doc.company, "Bank", mode_of_payment=doc.get("mode_of_payment"), 
+				account=bank_account)
 
 	
 	paid_amount = received_amount = 0
@@ -845,17 +847,21 @@ def get_payment_entry(dt, dn, party_amount=None, bank_account=None, bank_amount=
 	ba = get_default_ba()
 	cc = get_branch_cc(doc.branch)
 	if dt == "Sales Invoice":
-                bank_acc = frappe.db.get_value("Branch", doc.branch, "revenue_bank_account")
+		bank_acc = frappe.db.get_value("Branch", doc.branch, "revenue_bank_account")
 		ba = doc.business_activity
 	elif dt == "Sales Order":
                 bank_acc = frappe.db.get_value("Branch", doc.branch, "revenue_bank_account")
 		ba = get_default_ba()
-        elif dt == "Purchase Invoice":
-                bank_acc = frappe.db.get_value("Branch", doc.branch, "expense_bank_account")
+	elif dt == "Purchase Invoice":
+		bank_acc = frappe.db.get_value("Branch", doc.branch, "expense_bank_account")
 		ba = doc.business_activity
 		cc = doc.buying_cost_center
-        else:
-                bank_acc = bank.account
+	elif dt == "Purchase Order":
+		bank_acc = bank.account
+		ba = doc.business_activity
+	else:
+		bank_acc = bank.account
+	
 
 	pe = frappe.new_doc("Payment Entry")
 	pe.payment_type = payment_type

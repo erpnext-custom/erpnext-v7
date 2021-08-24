@@ -30,19 +30,21 @@ def validate_workflow_states(doc):
 	
 	if not approver_field.has_key(doc.doctype) or not frappe.db.exists("Workflow", {"document_type": doc.doctype, "is_active": 1}):
 		return
-	try:
-		document_approver = approver_field[doc.doctype]
-	except Exception as e:
-		frappe.throw("Approver or Supervisor might not be assigned. Details: "+e)
-	employee          = frappe.db.get_value("Employee", doc.employee, ["user_id","employee_name","designation","name"])
-	try:
-		reports_to    = frappe.db.get_value("Employee", frappe.db.get_value("Employee", doc.employee, "reports_to"), ["user_id","employee_name","designation","name"])
-	except Exception as e:
-		frappe.throw("Approver or Supervisor might not be assigned. Details: "+e)
-	try:
-		final_approver    = frappe.db.get_value("Employee", {"user_id": get_final_approver(doc.branch)}, ["user_id","employee_name","designation","name"])
-	except Exception as e:
-		frappe.throw(_("Final Approver might not be assigned. Details: " + "{}").format(e))
+
+	document_approver = approver_field[doc.doctype]
+	if not document_approver:
+		frappe.throw("Approver or Supervisor might not be assigned.")
+	
+	employee = frappe.db.get_value("Employee", doc.employee, ["user_id","employee_name","designation","name"])
+		
+	reports_to    = frappe.db.get_value("Employee", frappe.db.get_value("Employee", doc.employee, "reports_to"), ["user_id","employee_name","designation","name"])
+	if not reports_to:
+		frappe.throw(_("Approver or Supervisor might not be assigned."))
+	
+	final_approver    = frappe.db.get_value("Employee", {"user_id": get_final_approver(doc.branch)}, ["user_id","employee_name","designation","name"])
+	if not final_approver:
+		frappe.throw(_("Final Approver might not be assigned"))
+		
 	workflow_state    = doc.get("workflow_state").lower()
 	login_user        = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","designation","name"])
 	if not login_user:

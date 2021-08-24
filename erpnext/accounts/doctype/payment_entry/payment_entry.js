@@ -16,6 +16,10 @@ frappe.ui.form.on('Payment Entry', {
 			if (!frm.doc.paid_from) frm.set_value("paid_from_account_currency", null);
 			if (!frm.doc.paid_to) frm.set_value("paid_to_account_currency", null);
 		}
+		if(frm.doc.docstatus == 0){
+			cur_frm.set_value("mode_of_payment", "Bank");
+			refresh_field("mode_of_payemnt")
+		}
 	},
 
 	setup: function(frm) {
@@ -254,6 +258,17 @@ frappe.ui.form.on('Payment Entry', {
 
 			if(frm.doc.mode_of_payment)
 				frm.events.mode_of_payment(frm);
+		}
+	},
+
+	mode_of_payment: function(frm){
+		if(frm.doc.mode_of_payment == ""){
+			cur_frm.set_df_property("mode_of_payment", "reqd", 0)
+			cur_frm.set_value("paid_from", "")
+			refresh_field("paid_from")
+		}
+		else{
+			cur_frm.set_df_property("mode_of_payment", "reqd", 1)
 		}
 	},
 

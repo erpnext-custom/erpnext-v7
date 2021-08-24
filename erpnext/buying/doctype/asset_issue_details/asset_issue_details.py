@@ -53,7 +53,17 @@ class AssetIssueDetails(Document):
 		asset.next_depreciation_date = self.issued_date
 		asset.credit_account = credit_account
 		asset.asset_account = fixed_asset_account
-		asset.issued_to = self.issued_to
+		if self.issued_to == 'Employee':
+			asset.issued_to = self.issued_to
+			asset.issue_to_employee = self.issue_to_employee
+			asset.employee_name = self.employee_name
+		elif self.issued_to == 'Desuup':
+			asset.issued_to = self.issued_to
+			asset.issue_to_desuup = self.issue_to_desuup
+			asset.desuup_name = self.desuup_name
+		else:
+			asset.issued_to = self.issued_to
+			asset.issue_to_other = self.issue_to_other
 		asset.brand = self.brand
 		asset.serial_number = self.serial_number
 		asset.asset_quantity_ = self.qty

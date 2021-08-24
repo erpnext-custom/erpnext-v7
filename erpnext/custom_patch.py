@@ -2019,3 +2019,34 @@ def update_remarks_payment_entry():
 		frappe.db.sql("update `tabPayment Entry` set remarks='{}' where name ='{}'".format(remarks[0][0], item.name))
 		print("\n updated: {} with the remarks: {}".format(item.name, remarks[0][0]))
 
+def update_issued_to_in_asset():
+	# for desuup
+	for d in frappe.db.sql("select name, issued_to from `tabAsset` where issued_to LIKE 'DS(%'", as_dict = 1):
+		issue_to_desuup = frappe.db.get_value('Desuup',d.issued_to,'name')
+		desuup_name = frappe.db.get_value('Desuup', d.issued_to, 'desuup_name')
+		frappe.db.sql("update `tabAsset` a set a.issued_to= '{}', a.issue_to_desuup = '{}', a.desuup_name = '{}' where a.name = '{}'".format('Desuup',issue_to_desuup,desuup_name,d.name))
+		print("Asset: " + d.name)
+		print("Issue To Desuup: " + issue_to_desuup)
+		print("Desuup Name: " + desuup_name)
+	
+	# for employee
+	for d in frappe.db.sql("select name, issued_to from `tabAsset` where issued_to NOT LIKE 'DS(%' and issued_to NOT LIKE 'Em%' and issued_to NOT LIKE 'Des%' and issued_to NOT LIKE 'Oth%'", as_dict = 1):
+		issue_to_employee = frappe.db.get_value('Employee',d.issued_to,'name')
+		employee_name = frappe.db.get_value('Employee', d.issued_to, 'employee_name')
+		frappe.db.sql("update `tabAsset` a set a.issued_to= '{}', a.issue_to_employee = '{}', a.employee_name = '{}' where a.name = '{}'".format('Employee',issue_to_employee,employee_name,d.name))
+		print("Asset: " + d.name)
+		print("Issue To Employee: " + issue_to_employee)
+		print("Employee Name: " + employee_name)
+
+def update_issued_in_asset_issue_details():
+	for d in frappe.db.sql("select name, issued_to from `tabAsset Issue Details` where issued_to like 'DS(%'", as_dict=1):
+		issue_to_desuup = frappe.db.get_value('Desuup',d.issued_to,'name')
+		desuup_name = frappe.db.get_value('Desuup', d.issued_to, 'desuup_name')
+		frappe.db.sql("update `tabAsset Issue Details` a set a.issued_to= '{}', a.issue_to_desuup = '{}', a.desuup_name = '{}' where a.name = '{}'".format('Desuup',issue_to_desuup,desuup_name,d.name))
+		print("Asset: " + d.name)
+		print("Issue To Desuup: " + issue_to_desuup)
+		print("Desuup Name: " + desuup_name)
+	
+
+
+	

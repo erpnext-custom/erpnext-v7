@@ -1,7 +1,7 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 
-cur_frm.add_fetch("target_custodian", "user_id", "target_user_id")
+// cur_frm.add_fetch("target_custodian", "user_id", "target_user_id")
 
 frappe.ui.form.on('Asset Movement', {
 	refresh: function(frm) {
@@ -20,24 +20,50 @@ frappe.ui.form.on('Asset Movement', {
 	},
 	onload: function(frm) {
 		frm.add_fetch("asset", "warehouse", "source_warehouse");
-		frm.add_fetch("asset", "issued_to", "source_custodian");
+		frm.add_fetch("asset", "issued_to", "source_custodian_type");
+		frm.add_fetch("asset", "issue_to_employee", "employee_source_custodian");
+		frm.add_fetch("asset", "issue_to_desuup", "desuup_source_custodian");
+		frm.add_fetch("asset", "issue_to_other", "other_source_custodian");
+		
 		frm.add_fetch("asset", "cost_center", "current_cost_center");
+		if(!frm.doc.target_cost_center){
+			frm.set_value("target_cost_center","")
+		}
 		
 		frm.set_query("target_warehouse", function() {
 			return {
 				filters: [
-                                         ["Warehouse", "company", "in", ["", cstr(frm.doc.company)]],
-                                         ["Warehouse", "is_group", "=", 0]
-                                        ]				
+							["Warehouse", "company", "in", ["", cstr(frm.doc.company)]],
+							["Warehouse", "is_group", "=", 0]
+						]				
 			}
 		})
 		frm.set_query("target_cost_center", function() {
 			return {
 				filters: [
-                                         ["Cost Center", "is_disabled", "!=", 1],
-                                         ["Cost Center", "is_group", "=", 0]
-                                        ]				
+							["Cost Center", "is_disabled", "!=", 1],
+							["Cost Center", "is_group", "=", 0]
+						]				
 			}
 		})
+		
+		if(frm.doc.docstatus != 1){
+			cur_frm.set_value("target_cost_center", "");
+			cur_frm.refresh_field("target_cost_center")
+		}
+	},
+	target_custodian_type: function(frm){
+		if(cur_frm.doc.target_custodian_type == 'Employee'){
+			cur_frm.set_value("employee_target_custodian", "");
+			cur_frm.refresh_field("employee_target_custodian")
+		}
+		else if(cur_frm.doc.target_custodian_type == 'Desuup'){
+			cur_frm.set_value("desuup_target_custodian", "");
+			cur_frm.refresh_field("desuup_target_custodian")
+		}
+		else{
+			cur_frm.set_value("other_target_custodian", "");
+			cur_frm.refresh_field("other_target_custodian")
+		}
 	}
 });
