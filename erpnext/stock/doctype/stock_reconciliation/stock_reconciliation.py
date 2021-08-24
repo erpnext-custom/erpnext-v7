@@ -40,7 +40,7 @@ class StockReconciliation(StockController):
 			self.repost_issue_pol(a, posting_date)
 			# commented by Kinley Dorji 2021-06-17
 			# self.repost_production_gl(a, posting_date)
-		frappe.msgprint(("{0} Subbmitted").format(n), title=_("Success"), indicator="green")
+		# frappe.msgprint(("{0} Subbmitted").format(n), title=_("Success"), indicator="green")
 
 	def on_cancel(self):
 		posting_date = str(get_datetime(str(self.posting_date) + ' ' + str(self.posting_time)))
