@@ -2058,10 +2058,14 @@ def rename_payment_entry():
 		print(new)
 		frappe.db.sql("update `tabPayment Entry` set name = '{}' where name = '{}' ".format(new,a))
 def rename_journal_entry():
-	arr = [ 'JEBR210800002', 'JEBR210800006', 'JEBR210800007']
+	arr = ['JEBR210800002', 'JEBR210800006', 'JEBR210800007']
+	arr1 = [ 'JEBR210700004', 'JEBR210700005', 'JEBR210700006']
+	i = 0
 	for a in arr:
-		new = make_autoname('JEBR2107.#####')
-		frappe.db.sql("update `tabJournal Entry` set name = '{}' where name = '{}' ".format(new,a))
+		# new = make_autoname('JEBR2107.#####')
+		frappe.db.sql("update `tabJournal Entry` set name = '{}' where name = '{}' ".format(a,arr1[i]))
 		print(a)
-		print(new)
+		print(arr1[i])
+		i += 1
+
 	
