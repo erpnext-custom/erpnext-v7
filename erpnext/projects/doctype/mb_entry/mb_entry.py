@@ -47,10 +47,24 @@ class MBEntry(AccountsController):
                 for rec in self.mb_entry_boq:
                         #LEGACY CODE: for some reason it wasn't converting the entry rate to 2 decimal place after changing the quantity decimal value to 5. 
                         # entry_amount = flt(rec.entry_quantity)*flt(rec.entry_rate)
-                        # added by phuntsho on December 15. 
+                        entry_quantity = "{:.2f}".format(rec.entry_quantity)
+                        #frappe.throw("entry_quantity:{}".format(entry_quantity))
                         entry_rate = "{:.2f}".format(rec.entry_rate)
-                        entry_amount = rec.entry_quantity * float(entry_rate)
-                        # ----- end of code ------
+                        #frappe.throw("entry_rate:{}".format(entry_rate))
+                        entry_amount = "{:.2f}".format(float(entry_quantity) * float(entry_rate))
+                        #frappe.throw("entry_amount:{}".format(entry_amount))
+                        self.entry_amount = entry_amount
+                        #frappe.throw("new entry Amount:{}".format(self.entry_amount))
+                        
+                        # new = flt(rec.entry_amount,2)
+                        # frappe.throw("new:{}".format(new))
+                
+                        
+                        # added by phuntsho on December 15. 
+                        #added by cety entry_rate and entry_amount 
+                        #entry_rate = "{:.2f}".format(rec.entry_rate)
+                        #entry_quantity = float("{:.2f}".format(rec.entry_quantity))
+                        #entry_amount = entry_quantity * float(entry_rate)
                         if flt(rec.entry_quantity) > flt(rec.act_quantity):
                                 frappe.throw(_("Row{0}: Entry Quantity cannot be greater than Balance Quantity").format(rec.idx))
                         elif flt(rec.entry_amount) > flt(rec.act_amount):
@@ -60,7 +74,7 @@ class MBEntry(AccountsController):
                         else:
                                 if self.boq_type != "Milestone Based" and flt(rec.entry_amount,2) != flt(entry_amount,2):
                                         frappe.throw(_("Row{0}: Entry Amount should be {1}").format(rec.idx, flt(entry_amount)))
-
+                                
         def set_defaults(self):
                 if self.project:
                         base_project          = frappe.get_doc("Project", self.project)
@@ -215,3 +229,4 @@ def make_mb_invoice(source_name, target_doc=None):
                         },
         }, target_doc)
         return doclist        
+
