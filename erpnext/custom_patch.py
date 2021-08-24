@@ -9,6 +9,7 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 import frappe.model.rename_doc as rd
+from frappe.model.naming import make_autoname
 
 def update_dp_consumed_budget():
     for a in frappe.db.sql("""select dp.name, dp.business_activity, dpi.account, dp.cost_center, 
@@ -2046,7 +2047,16 @@ def update_issued_in_asset_issue_details():
 		print("Asset: " + d.name)
 		print("Issue To Desuup: " + issue_to_desuup)
 		print("Desuup Name: " + desuup_name)
-	
 
+def rename_payment_entry():
+	arr = [ 'PEBP210800078-1', 'PEBP210800079', 'PEBP210800080', 'PEBP210800081', 'PEBP210800085', 'PEBP210800086',
+			'PEBP210800087', 'PEBP210800088', 'PEBP210800089', 'PEBP210800090', 'PEBP210800091', 'PEBP210800092', 'PEBP210800093',
+			'PEBP210800094', 'PEBP210800095', 'PEBP210800096', 'PEBP210800098', 'PEBP210800099', 'PEBP210800100', 'PEBP210800101' ]
+	i = 0
+	for a in arr:
+		new = make_autoname('PEBP2107.#####')
+		print(new)
+		frappe.db.sql("update `tabPayment Entry` set name = '{}' where name = '{}' ".format(new,a))
+		i += 1
 
 	

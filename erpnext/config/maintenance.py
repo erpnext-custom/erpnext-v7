@@ -142,7 +142,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Pol Advance",
-					"label": "Pol Advance",
+					"label": "POL Expenses",
 				},
 				# {
 				# 	"type": "doctype",
