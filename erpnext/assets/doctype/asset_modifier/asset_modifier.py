@@ -88,6 +88,8 @@ class AssetModifier(Document):
                         #Make GL Entries for additional values and update gross_amount (rate)
                                 asset_obj.db_set("additional_value", flt(asset_obj.additional_value) + flt(value))
                                 asset_obj.db_set("gross_purchase_amount", flt(flt(asset_obj.gross_purchase_amount) + flt(value)))
+                                asset_obj.db_set("value_after_depreciation", flt(flt(asset_obj.gross_purchase_amount) - 1))
+                                
 				if self.docstatus == 1:
                                 	self.make_gl_entry(asset_account, credit_account, value, asset_obj, start_date)
                         #Get dep. schedules which had not yet happened
@@ -99,9 +101,9 @@ class AssetModifier(Document):
                                 for i in schedules:
                                 #Add additional values to the depreciation schedules
                                 #Calc num of days for each dep schedule
-                                        num_days = get_number_of_days(last_sch_date, i.schedule_date)
+                                        num_days = get_number_of_days(last_sch_date, i.schedule_date) 
                                 #Calc num of days till current schedule
-                                        num_till_days = get_number_of_days(start_date, i.schedule_date)
+                                        num_till_days = get_number_of_days(start_date, i.schedule_date) +1
                                 ##Updated dep amount
                                         dep_amount = flt(i.depreciation_amount) + (flt(value) * num_days / total_days)
                                 ##Updated accu dep amount
