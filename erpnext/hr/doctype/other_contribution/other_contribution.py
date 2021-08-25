@@ -8,7 +8,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import flt, nowdate
 from erpnext.accounts.utils import get_child_cost_centers
-
+from datetime import datetime
+import calendar
 
 class OtherContribution(Document):
 	def validate(self):
@@ -124,6 +125,12 @@ class OtherContribution(Document):
                 frappe.msgprint(_('Journal Entry <a href="#Form/Journal Entry/{0}" target="_blank">{0}</a> posted to accounts for payment').format(je.name))
                 
         def update_salary_structure(self, cancel=False):
+                from_date = self.application_date
+                year = str(self.application_date).split("-")[0]
+                month = str(self.application_date).split("-")[1]
+                date = calendar.monthrange(int(year),int(month))
+                to_date = str(year)+"-"+str(month)+"-"+str(date[1])
+
                 for i in self.get("items"):
                         if flt(i.contribution) > 0:
                                 if cancel:
@@ -152,10 +159,25 @@ class OtherContribution(Document):
                                                 row.working_days            = 0
                                                 row.leave_without_pay       = 0
                                                 row.payment_days            = 0
+                                                row.from_date = from_date
+                                                row.to_date = to_date 
                                                 doc.save(ignore_permissions=True)
                                                 i.db_set("salary_structure", doc.name, update_modified=False)
                                         else:
                                                 frappe.throw(_("No active salary structure found for employee {0} {1}").format(i.employee, i.employee_name), title="No Data Found")
+
+        def remove_paid_contribution(self):
+                current_date = datetime.strptime(str(nowdate()), "%Y-%m-%d")
+                component_list = frappe.db.sql("""
+                        select name from `tabSalary Detail` where salary_component = 'Other Contribution' and to_date < '{0}'
+                        or (from_date is NULL and to_date is NULL)
+                """.format(current_date))
+                if component_list:
+                        for a in component_list:
+                                frappe.db.sql("""
+                                        delete from `tabSalary Detail` where name = '{0}'
+                                """.format(a.name))
+
 
         def remove_employee(self):
                 if self.employee:

@@ -10,8 +10,11 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
 def submit_sr():
-	sr = frappe.get_doc("Stock Reconciliation", 'SR/000241')
-	sr.submit()
+	srl = ['SR/000202','SR/000216','SR/000199','SR/000197','SR/000191','SR/000184','SR/000184','SR/000186','SR/000177']
+	for a in srl:
+		sr = frappe.get_doc("Stock Reconciliation", a)
+		sr.submit()
+		print(a)
 #Added by Kinley Dorji to update sle if item was not ticked maintain stock. Please don't remove
 # def update_sle():
 # 	pr_list = frappe.db.sql("""
