@@ -1096,8 +1096,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-08-04 12:31:05.139784", 
- "modified_by": "sangay.dorji2695@bt.bt", 
+ "modified": "2021-08-25 12:43:17.694978", 
+ "modified_by": "Administrator", 
  "module": "Maintenance", 
  "name": "Break Down Report", 
  "name_case": "", 
@@ -1255,7 +1255,7 @@
  "search_fields": "customer, equipment, equipment_type, equipment_model", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "title_field": "customer", 
+ "title_field": "supplier", 
  "track_changes": 0, 
  "track_seen": 0
 }
