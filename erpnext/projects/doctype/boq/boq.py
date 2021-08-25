@@ -122,8 +122,8 @@ class BOQ(Document):
 
                 for item in self.boq_item:
                          #added by cety on 8/24/2021
-                        quantity = "{:.2f}".format(float(item.quantity))
-                        rate = "{:.2f}".format(float(item.rate))
+                        quantity = float(item.quantity)
+                        rate = float(item.rate)
                         amount = "{:.2f}".format(float(quantity) * float(rate))
                         #frappe.throw("amount:{}".format(amount))
                         if item.is_group:
