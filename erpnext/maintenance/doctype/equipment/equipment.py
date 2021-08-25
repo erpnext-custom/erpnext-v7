@@ -31,15 +31,15 @@ class Equipment(Document):
 			if not last_row.to_date:
 				last_row.to_date = getdate(nowdate())
 
-		if self.asset_code:
-			# eq_name = frappe.db.sql("select name from tabEquipment where exists (select e.asset_code from tabEquipment e where e.asset_code = '{}')".format(self.asset_code))
-			# if eq_name:
-			eq_name = frappe.db.exists({
-				'doctype': 'Equipment',
-				'asset_code': self.asset_code
-			})
-			if eq_name:
-				frappe.throw(_("Asset Code '{}' is already being used by Equipment: '{}'".format(self.asset_code,eq_name)))
+		# if self.asset_code:
+		# 	# eq_name = frappe.db.sql("select name from tabEquipment where exists (select e.asset_code from tabEquipment e where e.asset_code = '{}')".format(self.asset_code))
+		# 	# if eq_name:
+		# 	eq_name = frappe.db.exists({
+		# 		'doctype': 'Equipment',
+		# 		'asset_code': self.asset_code
+		# 	})
+		# 	if eq_name:
+		# 		frappe.throw(_("Asset Code '{}' is already being used by Equipment: '{}'".format(self.asset_code,eq_name)))
 
 	def create_equipment_history(self, branch, on_date, ref_doc, purpose):
 		from_date = on_date
