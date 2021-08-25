@@ -161,7 +161,7 @@ class BankPayment(Document):
 			elif self.transaction_type == 'Journal Entry':
 				doc = frappe.get_doc('Journal Entry', i.transaction_id)
 				doc.payment_status = status
-				for rec in doc.item:
+				for rec in doc.accounts:
 					if rec.name == i.transaction_reference:
 						rec.payment_status = status
 						rec.bank_payment = self.name
@@ -313,17 +313,28 @@ class BankPayment(Document):
 			cond = 'AND je.name = "{}"'.format(self.transaction_no)
 		elif not self.transaction_no and self.from_date and self.to_date:
 			cond = 'AND je.posting_date BETWEEN "{}" AND "{}"'.format(str(self.from_date), str(self.to_date))
-		data = []
-		row = {}
-		for a in frappe.db.sql("""SELECT je.name transaction_id, ja.name transaction_reference, ja.reference_type, ja.reference_name, 
+		return frappe.db.sql("""SELECT "Journal Entry" transaction_type, je.name transaction_id, ja.name transaction_reference, ja.reference_type, ja.reference_name, 
 								je.posting_date transaction_date, ja.party_type, ja.party, 
-								round(ja.debit_in_account_currency,2) as amount 
-							FROM `tabJournal Entry` je, `tabJournal Entry Account` ja
+        						(CASE WHEN ja.party_type = 'Supplier' THEN ja.party ELSE NULL END) as supplier, 
+								(CASE WHEN ja.party_type = 'Employee' THEN ja.party ELSE NULL END) as employee, 
+								(CASE WHEN ja.party_type = 'Supplier' THEN s.supplier_name ELSE e.employee_name END) as beneficiary_name,
+								(CASE WHEN ja.party_type = 'Supplier' THEN s.bank_name_new ELSE e.bank_name END) as bank_name, 
+								(CASE WHEN ja.party_type = 'Supplier' THEN s.bank_branch ELSE e.bank_branch END) as bank_branch, 
+								(CASE WHEN ja.party_type = 'Supplier' THEN s.bank_account_type ELSE e.bank_account_type END) as bank_account_type, 
+								(CASE WHEN ja.party_type = 'Supplier' THEN s.account_number ELSE e.bank_ac_no END) as bank_account_no,
+								round(ja.debit_in_account_currency,2) as amount,
+        						(CASE WHEN ja.party_type = 'Supplier' AND s.bank_name_new = "INR" THEN s.inr_bank_code 
+									ELSE NULL END) inr_bank_code,
+								(CASE WHEN ja.party_type = 'Supplier' AND s.bank_name_new = "INR" THEN s.inr_purpose_code 
+								ELSE NULL END) inr_purpose_code,
+								"Draft" status
+							FROM `tabJournal Entry` je 
+							INNER JOIN `tabJournal Entry Account` ja ON je.name = ja.parent
+							LEFT JOIN `tabSupplier` s ON ja.party_type = 'Supplier' AND s.name = ja.party
+							LEFT JOIN `tabEmployee` e ON ja.party_type = 'Employee' AND e.name = ja.party
 							where je.branch = "{branch}"
 							{cond}
-							and je.name = ja.parent 
 							and je.voucher_type = 'Bank Entry' 
-							and je.naming_series = 'Bank Payment Voucher'
 							and ja.party is not null and ja.party !=''
 							and ja.debit_in_account_currency > 0
 							and je.docstatus = 1
@@ -336,43 +347,9 @@ class BankPayment(Document):
 								AND bpi.status NOT IN ('Cancelled', 'Failed')
 							)
 						order by je.posting_date
-						""".format(branch = self.branch, bank_payment = self.name, cond = cond), as_dict=True):
-			employee = supplier = ""
-			if a.party_type == "Supplier":
-				query = """select s.bank_name_new as bank_name, s.bank_branch, s.bank_account_type, 
-								s.account_number as bank_account_no, s.suuplier_name as beneficiary_name,
-								(CASE WHEN s.bank_name_new = "INR" THEN s.inr_bank_code ELSE NULL END) inr_bank_code,
-								(CASE WHEN s.bank_name_new = "INR" THEN s.inr_purpose_code ELSE NULL END) inr_purpose_code
-								from `tabSupplier` s
-								WHERE s.name = '{party}'
-							""".format(party = a.party)
-				supplier = a.party
-			elif a.party_type == "Employee":
-				query = """select e.bank_name, e.bank_branch, e.bank_account_type, e.employee_name as beneficiary_name,
-								e.bank_ac_no as bank_account_no, NULL inr_bank_code, NULL inr_purpose_code
-								from `tabEmployee` e
-								WHERE e.name = '{party}'
-							""".format(party = a.party)
-				employee = a.party
-			for b in frappe.db.sql(query, as_dict=True):
-				row = {
-					'transaction_type': 'Journal Entry',
-					'transaction_id': a.transaction_id,
-					'transaction_reference': a.transaction_reference,
-					'transaction_date': a.transaction_date,
-					'employee': employee,
-					'supplier': supplier,
-					'beneficiary_name': b.beneficiary_name,
-					'bank_name': b.bank_name,
-					'bank_branch': b.bank_branch,
-					'bank_account_type': b.bank_account_type,
-					'bank_account_no': b.bank_account_no,
-					'amount': a.amount,
-					'inr_bank_code': b.inr_bank_code,
-					'inr_purpose_code': b.inr_purpose_code
-				}
-			data.append(frappe._dict(row))
-		return data
+						""".format(branch = self.branch, 
+                 			bank_payment = self.name, 
+                    		cond = cond), as_dict=True)
 
 	def get_direct_payment(self):
 		cond = ""
@@ -397,11 +374,7 @@ class BankPayment(Document):
 											and dpd.party = dpi.party
 										)
 						),2) amount,
-						(CASE WHEN dpi.party_type = 'Supplier' AND s.bank_name_new = "INR" THEN s.inr_bank_code 
-							ELSE NULL END) inr_bank_code,
-						(CASE WHEN dpi.party_type = 'Supplier' AND s.bank_name_new = "INR" THEN s.inr_purpose_code 
-							ELSE NULL END) inr_purpose_code,
-						"Draft" status
+						
 					FROM `tabDirect Payment` dp 
 					INNER JOIN `tabDirect Payment Item` dpi ON dpi.parent = dp.name
 					LEFT JOIN `tabSupplier` s ON dpi.party_type = 'Supplier' AND s.name = dpi.party

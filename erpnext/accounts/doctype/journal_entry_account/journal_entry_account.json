@@ -765,7 +765,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "payment_status", 
@@ -801,7 +801,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2021-08-09 12:39:21.826223", 
+ "modified": "2021-08-25 14:43:18.743153", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Journal Entry Account", 
