@@ -47,9 +47,9 @@ class MBEntry(AccountsController):
                 for rec in self.mb_entry_boq:
                         #LEGACY CODE: for some reason it wasn't converting the entry rate to 2 decimal place after changing the quantity decimal value to 5. 
                         # entry_amount = flt(rec.entry_quantity)*flt(rec.entry_rate)
-                        entry_quantity = "{:.2f}".format(rec.entry_quantity)
+                        entry_quantity = float(rec.entry_quantity)
                         #frappe.throw("entry_quantity:{}".format(entry_quantity))
-                        entry_rate = "{:.2f}".format(rec.entry_rate)
+                        entry_rate = float(rec.entry_rate)
                         #frappe.throw("entry_rate:{}".format(entry_rate))
                         entry_amount = "{:.2f}".format(float(entry_quantity) * float(entry_rate))
                         #frappe.throw("entry_amount:{}".format(entry_amount))
