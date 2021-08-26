@@ -414,3 +414,24 @@ def get_travel_detail(employee, start_date, end_date, place_type, travel_type):
 			
 		return data
 
+# Following code added by SHIV on 2020/09/21
+def get_permission_query_conditions(user):
+	if not user: user = frappe.session.user
+	user_roles = frappe.get_roles(user)
+
+	if user == "Administrator":
+		return
+	if "HR User" in user_roles or "HR Manager" in user_roles:
+		return
+
+	return """(
+		`tabTravel Claim`.owner = '{user}'
+		or
+		exists(select 1
+				from `tabEmployee`
+				where `tabEmployee`.name = `tabTravel Claim`.employee
+				and `tabEmployee`.user_id = '{user}')
+		or
+		(`tabTravel Claim`.supervisor = '{user}' and `tabTravel Claim`.workflow_state != 'Draft')
+	)""".format(user=user)
+

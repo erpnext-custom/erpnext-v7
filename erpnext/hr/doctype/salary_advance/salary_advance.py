@@ -249,3 +249,24 @@ class SalaryAdvance(Document):
 			
 		je.insert()
 		self.db_set("reference", je.name)
+
+# Following code added by SHIV on 2020/09/21
+def get_permission_query_conditions(user):
+	if not user: user = frappe.session.user
+	user_roles = frappe.get_roles(user)
+
+	if user == "Administrator":
+		return
+	if "HR User" in user_roles or "HR Manager" in user_roles:
+		return
+
+	return """(
+		`tabSalary Advance`.owner = '{user}'
+		or
+		exists(select 1
+				from `tabEmployee`
+				where `tabEmployee`.name = `tabSalary Advance`.employee
+				and `tabEmployee`.user_id = '{user}')
+		or
+		(`tabSalary Advance`.advance_approver = "{user}" and `tabSalary Advance`.workflow_state != "Draft")
+	)""".format(user=user)
