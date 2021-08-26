@@ -253,7 +253,7 @@ class SalaryStructure(Document):
                                                 calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))
                                                 comm_allowance += round(flt(calc_amt) if m['name'] == 'Communication Allowance' else 0)
                                                 total_earning += calc_amt
-                                        calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
+                                        	calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
                                 else:
                                         if self.get(m['field_name']) and m['name'] == 'SWSS':
                                                 sws_amt = round(flt(settings.get("sws_contribution")))
