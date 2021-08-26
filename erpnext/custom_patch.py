@@ -946,3 +946,14 @@ def update_item_sub_group():
 			frappe.db.sql("""update `tabItem` set item_sub_group = '{}' where name = '{}' """.format(i[5], i[2]))
 			print("SRNO: {} ".format(i[0]))
 			# 	print("DONE FOR ITEM: {}  --- mgroup: {} -----msubgroup: {} ".format(i[2], i[4], i[5]))
+
+def update_salary_structure():
+	ss = frappe.get_all("Salary Structure", {'is_active': 'Yes'})
+	print(ss)
+	count = 1
+	for a in ss:
+		d = frappe.get_doc("Salary Structure", a.name)
+		d.save()
+		print(d)
+		print(count)
+		count += 1
