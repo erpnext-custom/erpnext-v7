@@ -51,9 +51,8 @@ class MBEntry(AccountsController):
                         #frappe.throw("entry_quantity:{}".format(entry_quantity))
                         entry_rate = float(rec.entry_rate)
                         #frappe.throw("entry_rate:{}".format(entry_rate))
-                        entry_amount = "{:.2f}".format(float(entry_quantity) * float(entry_rate))
+                        entry_amount = flt(entry_quantity) * flt(entry_rate)
                         #frappe.throw("entry_amount:{}".format(entry_amount))
-                        self.entry_amount = entry_amount
                         #frappe.throw("new entry Amount:{}".format(self.entry_amount))
                         
                         # new = flt(rec.entry_amount,2)
@@ -71,9 +70,11 @@ class MBEntry(AccountsController):
                                 frappe.throw(_("Row{0}: Entry Amount cannot be greater than Balance Amount").format(rec.idx))
                         elif flt(rec.entry_quantity) < 0 or flt(rec.entry_amount) < 0:
                                 frappe.throw(_("Row{0}: Value cannot be in negative").format(rec.idx))
+                        '''
                         else:
                                 if self.boq_type != "Milestone Based" and flt(rec.entry_amount,2) != flt(entry_amount,2):
                                         frappe.throw(_("Row{0}: Entry Amount should be {1}").format(rec.idx, flt(entry_amount)))
+                        '''
                                 
         def set_defaults(self):
                 if self.project:
