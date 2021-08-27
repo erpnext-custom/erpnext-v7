@@ -79,9 +79,8 @@ class BankPayment(Document):
 						frappe.msgprint(_("Unable to fetch Bank Balance.\n  {}").format(result['error']))
 				except Exception as e:
 					frappe.msgprint(_("Unable to fetch Bank Balance.\n  {}").format(str(e)))
-		if self.bank_balance > 0 and self.bank_balance < self.total_amount:
+		if flt(self.bank_balance) > 0 and flt(self.bank_balance) < flt(self.total_amount):
 			frappe.throw("Current Bank Balance {} is less than the total payment amount {}".format(self.bank_balance, self.total_amount))
-			
 
 	def check_for_transactions_in_progress(self):
 		if self.status in ("Failed", "Waiting Acknowledgement"):
@@ -425,8 +424,7 @@ class BankPayment(Document):
 											and dpd.party_type = dpi.party_type
 											and dpd.party = dpi.party
 										)
-						),2) amount,
-						
+						),2) amount
 					FROM `tabDirect Payment` dp 
 					INNER JOIN `tabDirect Payment Item` dpi ON dpi.parent = dp.name
 					LEFT JOIN `tabSupplier` s ON dpi.party_type = 'Supplier' AND s.name = dpi.party
