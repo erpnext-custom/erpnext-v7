@@ -2051,12 +2051,20 @@ def update_issued_in_asset_issue_details():
 
 
 def rename_payment_entry():
-	arr = [ 'PEBP210800078-1', 'PEBP210800079', 'PEBP210800080', 'PEBP210800081', 'PEBP210800085', 'PEBP210800086',
-			'PEBP210800087', 'PEBP210800088', 'PEBP210800089', 'PEBP210800090', 'PEBP210800091', 'PEBP210800092', 'PEBP210800093',
-			'PEBP210800094', 'PEBP210800095', 'PEBP210800096', 'PEBP210800098', 'PEBP210800099', 'PEBP210800100', 'PEBP210800101' ]
+	# arr = [ 'PEBP210800078-1', 'PEBP210800079', 'PEBP210800080', 'PEBP210800081', 'PEBP210800085', 'PEBP210800086',
+	# 		'PEBP210800087', 'PEBP210800088', 'PEBP210800089', 'PEBP210800090', 'PEBP210800091', 'PEBP210800092', 'PEBP210800093',
+	# 		'PEBP210800094', 'PEBP210800095', 'PEBP210800096', 'PEBP210800098', 'PEBP210800099', 'PEBP210800100', 'PEBP210800101' ]
 	
+	arr = ['PEBP210800082']
 	for a in arr:
 		new_name = make_autoname('PEBP2107.#####')
+		rename_doc("Payment Entry", a, new_name, force=False, merge=False, ignore_permissions=True)
+		frappe.db.sql("update `tabGL Entry` set voucher_no='{}' where voucher_type='Payment Entry' and voucher_no= '{}' ".format(new_name,a))
+		print("PE renamed from: {} to: {}".format(a,new_name))
+
+	arr1 = ['-1']
+	for a in arr1:
+		new_name = 'PEBP210700024-1'
 		rename_doc("Payment Entry", a, new_name, force=False, merge=False, ignore_permissions=True)
 		frappe.db.sql("update `tabGL Entry` set voucher_no='{}' where voucher_type='Payment Entry' and voucher_no= '{}' ".format(new_name,a))
 		print("PE renamed from: {} to: {}".format(a,new_name))
