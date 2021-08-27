@@ -383,23 +383,24 @@ class BankPayment(Document):
 									WHERE e.name = '{party}'
 								""".format(party = party)
 					employee = party
-				for c in frappe.db.sql(query, as_dict=True):					
-					data.append(frappe._dict({
-						'transaction_type': 'Journal Entry',
-						'transaction_id': a.transaction_id,
-						'transaction_date': a.transaction_date,
-						'employee': employee,
-						'supplier': supplier,
-						'beneficiary_name': c.beneficiary_name,
-						'bank_name': c.bank_name,
-						'bank_branch': c.bank_branch,
-						'bank_account_type': c.bank_account_type,
-						'bank_account_no': c.bank_account_no,
-						'amount': flt(amount_to_deposit),
-						'inr_bank_code': c.inr_bank_code,
-						'inr_purpose_code': c.inr_purpose_code,
-						'status': "Draft"
-					}))
+				if amount_to_deposit > 0:
+					for c in frappe.db.sql(query, as_dict=True):					
+						data.append(frappe._dict({
+							'transaction_type': 'Journal Entry',
+							'transaction_id': a.transaction_id,
+							'transaction_date': a.transaction_date,
+							'employee': employee,
+							'supplier': supplier,
+							'beneficiary_name': c.beneficiary_name,
+							'bank_name': c.bank_name,
+							'bank_branch': c.bank_branch,
+							'bank_account_type': c.bank_account_type,
+							'bank_account_no': c.bank_account_no,
+							'amount': flt(amount_to_deposit),
+							'inr_bank_code': c.inr_bank_code,
+							'inr_purpose_code': c.inr_purpose_code,
+							'status': "Draft"
+						}))
 		return data
 
 	def get_direct_payment(self):
