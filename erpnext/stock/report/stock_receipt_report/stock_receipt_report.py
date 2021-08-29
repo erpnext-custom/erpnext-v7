@@ -56,5 +56,6 @@ def get_data(filters):
 		data += " and sed.lot_list = \'" + str(filters.lot_number) + "\'"
 	if filters.item_group:
 		data += " and exists(select i.item_group from tabItem i where i.item_code = sed.item_code and i.item_group = \'"+str(filters.item_group)+"\')"
-
+	if filters.uom:
+		data += " and sed.uom = \'" + str(filters.uom) + "\'"
 	return frappe.db.sql(data)

@@ -187,29 +187,40 @@ class StockReconciliation(StockController):
 			and create stock ledger entries based on the difference"""
 		from erpnext.stock.stock_ledger import get_previous_sle
 
+		error = []
+		count = 0
 		for row in self.items:
-			previous_sle = get_previous_sle({
-				"item_code": row.item_code,
-				"warehouse": row.warehouse,
-				"posting_date": self.posting_date,
-				"posting_time": self.posting_time
-			})
-			if previous_sle:
-				if row.qty in ("", None):
-					row.qty = previous_sle.get("qty_after_transaction", 0)
+			count += 1
+			frappe.publish_realtime("progress", dict(progress=[count, len(self.items)],title=("Submitting.")),user=frappe.session.user)
+			try:
+				previous_sle = get_previous_sle({
+					"item_code": row.item_code,
+					"warehouse": row.warehouse,
+					"posting_date": self.posting_date,
+					"posting_time": self.posting_time
+				})
+				if previous_sle:
+					if row.qty in ("", None):
+						row.qty = previous_sle.get("qty_after_transaction", 0)
 
-				if row.valuation_rate in ("", None):
-					row.valuation_rate = previous_sle.get("valuation_rate", 0)
+					if row.valuation_rate in ("", None):
+						row.valuation_rate = previous_sle.get("valuation_rate", 0)
 
-			if row.qty and not row.valuation_rate:
-				frappe.throw(_("Valuation Rate required for Item in row {0}").format(row.idx))
+				if row.qty and not row.valuation_rate:
+					frappe.throw(_("Valuation Rate required for Item in row {0}").format(row.idx))
 
-			if ((previous_sle and row.qty == previous_sle.get("qty_after_transaction")
-				and row.valuation_rate == previous_sle.get("valuation_rate"))
-				or (not previous_sle and not row.qty)):
-					continue
+				if ((previous_sle and row.qty == previous_sle.get("qty_after_transaction")
+					and row.valuation_rate == previous_sle.get("valuation_rate"))
+					or (not previous_sle and not row.qty)):
+						continue
 
-			self.insert_entries(row)
+				self.insert_entries(row)
+			except Exception as e:
+				error.append("Row# : {} {}".format(row.idx, str(e)))
+		if error:
+			for e in error:
+				frappe.msgprint(_("{}".format(e)))
+			frappe.throw(_("Unable to submit"))
 
 	def insert_entries(self, row):
 		"""Insert Stock Ledger Entries"""

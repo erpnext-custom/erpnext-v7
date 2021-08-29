@@ -17,6 +17,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 from __future__ import unicode_literals
 import frappe
 from frappe import _
+from erpnext.accounts.utils import get_child_cost_centers
 from frappe.utils import flt, cint
 from erpnext.accounts.report.trial_balance.trial_balance import validate_filters
 

@@ -53,4 +53,7 @@ def get_data(filters):
 		data += " and se.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 	if filters.lot_number:
 		data += " and sed.lot_list = \'" + str(filters.lot_number) + "\'"
+	if filters.uom:
+		data += " and sed.uom = \'" + str(filters.uom) + "\'"
+
 	return frappe.db.sql(data)

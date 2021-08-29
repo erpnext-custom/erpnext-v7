@@ -1676,7 +1676,7 @@ def filter_vehicle_customer_order(doctype, txt, searchfield, start, page_len, fi
 						where load_status = 'Queued'
 						and crm_branch = '{0}'
 						and vehicle_capacity = '{1}'
-						order by requesting_date_time, token limit 1
+						order by requesting_date_time, token limit 5
 					""".format(filters.get("branch"), filters.get("total_quantity"), key=frappe.db.escape(searchfield),
 					 match_condition=get_match_cond(doctype)), {
 					'txt': "%%%s%%" % frappe.db.escape(txt)

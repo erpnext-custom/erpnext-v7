@@ -41,6 +41,7 @@ def get_data(filters):
 
 	query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region from `tabProduction Target` pe, `tabCost Center` cc where cc.name = pe.cost_center and cc.parent_cost_center != 'Regional Office - NRDCL' and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
 	amt = 0
+	frappe.msgprint(query)
 	for a in frappe.db.sql(query, as_dict=1):
 		if not filters.display_monthly:
 			total_timber= 0

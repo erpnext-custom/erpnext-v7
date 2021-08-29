@@ -22,8 +22,8 @@ def get_data(filters):
 	frappe.errprint("total_qty = "+str(total_qty)+" || conditions = "+str(conditions)+" || group_by = "+str(group_by)+" || order by = "+str(order_by))
 	query = "select  pp.name as ref_doc, ppi.challan_no, pp.posting_date, ppi.item_code, ppi.item_name, ppi.item_group, ppi.item_sub_group, ppi.qty, ppi.uom, pp.branch, pp.location, pp.adhoc_production, pp.company, ppi.warehouse, (select ts.timber_class from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_class, (select ts.timber_type from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_type, ppi.timber_species, (select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = pp.branch)) as region, {0}, pp.cable_line_no as cable_line_no, pp.production_area as production_area from `tabProduction` pp, `tabProduction Product Item` ppi  where pp.name = ppi.parent and pp.docstatus = 1 {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
-	if frappe.session.user == "Administrator":
-		frappe.throw(query)
+	# if frappe.session.user == "Administrator":
+	# 	frappe.throw(query)
 
 	total_qty = 0
 	for a in frappe.db.sql(query, as_dict=1):

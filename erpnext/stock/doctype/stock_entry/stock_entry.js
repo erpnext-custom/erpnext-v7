@@ -199,13 +199,47 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 		this.calculate_basic_amount(d);
 	},
 
-	production_order: function() {
+	// production_order: function() {
+	// 	var me = this;
+	// 	this.toggle_enable_bom();
+
+	// 	return frappe.call({
+	// 		method: "erpnext.stock.doctype.stock_entry.stock_entry.get_production_order_details",
+	// 		args: {production_order: me.frm.doc.production_order},
+	// 		callback: function(r) {
+	// 			if (!r.exc) {
+	// 				$.each(["from_bom", "bom_no", "fg_completed_qty", "use_multi_level_bom"], function(i, field) {
+	// 					me.frm.set_value(field, r.message[field]);
+	// 				})
+
+	// 				if (me.frm.doc.purpose == "Material Transfer for Manufacture" && !me.frm.doc.to_warehouse)
+	// 					me.frm.set_value("to_warehouse", r.message["wip_warehouse"]);
+
+
+	// 				if (me.frm.doc.purpose == "Manufacture") {
+	// 					if(r.message["additional_costs"].length) {
+	// 						$.each(r.message["additional_costs"], function(i, row) {
+	// 							me.frm.add_child("additional_costs", row);
+	// 						})
+	// 						refresh_field("additional_costs");
+	// 					}
+
+	// 					if (!me.frm.doc.from_warehouse) me.frm.set_value("from_warehouse", r.message["wip_warehouse"]);
+	// 					if (!me.frm.doc.to_warehouse) me.frm.set_value("to_warehouse", r.message["fg_warehouse"]);
+	// 				}
+	// 				me.get_items()
+	// 			}
+	// 		}
+	// 	});
+	// },
+
+	work_order: function() {
 		var me = this;
 		this.toggle_enable_bom();
 
 		return frappe.call({
-			method: "erpnext.stock.doctype.stock_entry.stock_entry.get_production_order_details",
-			args: {production_order: me.frm.doc.production_order},
+			method: "erpnext.stock.doctype.stock_entry.stock_entry.get_work_order_details",
+			args: {work_order: me.frm.doc.production_order},
 			callback: function(r) {
 				if (!r.exc) {
 					$.each(["from_bom", "bom_no", "fg_completed_qty", "use_multi_level_bom"], function(i, field) {

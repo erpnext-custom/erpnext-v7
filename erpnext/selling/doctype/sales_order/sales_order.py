@@ -473,6 +473,11 @@ class SalesOrder(SellingController):
 			if item.rate <= 0.0 or item.amount <= 0.0:
 				frappe.throw("Rate and Amount must be greater than 0")
 
+	def get_payment_detail(self):
+		sales_reference = 0
+		sales_reference = frappe.db.sql("select 1 from `tabPayment Entry Reference` where reference_name = '{0}' limit 1".format(self.name))
+		return sales_reference
+
 		
 
 def get_list_context(context=None):

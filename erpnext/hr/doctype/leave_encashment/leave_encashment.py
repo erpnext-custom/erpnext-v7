@@ -274,22 +274,22 @@ def get_le_settings(*arg, **kwargs):
 '''
 
 # Following code added by SHIV on 2020/010/02
-def get_permission_query_conditions(user):
-	if not user: user = frappe.session.user
-	user_roles = frappe.get_roles(user)
+# def get_permission_query_conditions(user):
+# 	if not user: user = frappe.session.user
+# 	user_roles = frappe.get_roles(user)
 
-	if user == "Administrator":
-		return
-	if "HR User" in user_roles or "HR Manager" in user_roles:
-		return
+# 	if user == "Administrator":
+# 		return
+# 	if "HR User" in user_roles or "HR Manager" in user_roles:
+# 		return
 
-	return """(
-		`tabLeave Encashment`.owner = '{user}'
-		or
-		exists(select 1
-				from `tabEmployee`
-				where `tabEmployee`.name = `tabLeave Encashment`.employee
-				and `tabEmployee`.user_id = '{user}')
-		or
-		(`tabLeave Encashment`.approver = '{user}' and `tabLeave Encashment`.workflow_state != 'Draft')
-	)""".format(user=user)
+# 	return """(
+# 		`tabLeave Encashment`.owner = '{user}'
+# 		or
+# 		exists(select 1
+# 				from `tabEmployee`
+# 				where `tabEmployee`.name = `tabLeave Encashment`.employee
+# 				and `tabEmployee`.user_id = '{user}')
+# 		or
+# 		(`tabLeave Encashment`.approver = '{user}' and `tabLeave Encashment`.workflow_state != 'Draft')
+# 	)""".format(user=user)

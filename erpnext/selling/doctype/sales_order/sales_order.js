@@ -158,9 +158,31 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 
 				// delivery note and payment
 				if(flt(doc.per_delivered, 2) < 100 && ["Sales", "Shopping Cart"].indexOf(doc.order_type)!==-1 && allow_delivery) {
+					if(doc.is_credit == 1){
 					cur_frm.add_custom_button(__('Delivery'), this.make_delivery_note, __("Make"));
+				 }
 					cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_payment_entry, __("Make"));
 					cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
+				}
+				//getting payment detail
+				var payment_done = 0;
+				if(doc.is_credit == 0){
+				frappe.call({
+					method: "get_payment_detail",
+					doc : doc,
+					async: false,
+					callback: function(r) {
+						if(r.message) {
+							console.log(r.message);
+							if(r.message == "1"){
+								payment_done = 1					
+							
+						}}
+					}
+				});
+				if(payment_done == 1){
+					cur_frm.add_custom_button(__('Delivery'), this.make_delivery_note, __("Make"));
+				}
 				}
 
 				/*// sales invoice

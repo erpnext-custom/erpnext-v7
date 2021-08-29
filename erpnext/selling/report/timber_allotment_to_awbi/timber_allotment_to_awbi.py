@@ -10,17 +10,19 @@ def execute(filters=None):
 
 
 def get_data(filters):
-        query = """ select c.name, c.dzongkhag, c.location, c.customer_group, c.mobile_no, pr.allotment_date,
-                        pri.qty  from `tabCustomer` c, `tabProduct Requisition` pr, `tabProduct Requisition Item` pri
-                        where c.name = pr.customer and pr.is_allotment = 1 and pr.docstatus = 1 and pri.parent = pr.name and c.customer_group = 'AWBI'"""
+        query = """ select c.name, c.dzongkhag, c.location, c.customer_group, c.mobile_no, so.allotment_date,
+soi.qty  from `tabCustomer` c, `tabSales Order` so, `tabSales Order Item` soi
+where c.name = so.customer and soi.parent = so.name and c.customer_group  = 'AWBI' and so.docstatus = 1 """
         if filters.branch:
-                query += " and pr.branch = '{0}'".format(filters.get("branch"))
-        if filters.from_date and filters.to_date:
-                query += " and pr.allotment_date between '{0}' and '{1}'".format(filters.get("from_date"), filters.get("to_date"))
+                query += " and so.branch = '{0}'".format(filters.branch)
+        # if filters.from_date and filters.to_date:
+        #         query += " and so.allotment_date between '{0}' and '{1}'".format(filters.get("from_date"), filters.get("to_date"))
         if filters.customer: 
                 query += " and c.customer_name = '{0}'".format(filters.get("customer"))
-
-        return frappe.db.sql(query)
+        # frappe.msgprint(query)
+        return frappe.db.sql(query, as_dict=True)
+        # frappe.msgprint(str(data))
+        # return data
 
 def get_columns():
         return [

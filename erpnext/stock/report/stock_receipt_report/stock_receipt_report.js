@@ -16,7 +16,7 @@ frappe.query_reports["Stock Receipt Report"] = {
 			"label": __("Purpose"),
 			"fieldtype": "Select",
 			"width": "80",
-			"options": ["Material Issue", "Material Transfer"],
+			"options": ["Material Receipt", "Material Transfer"],
 			"reqd": 1
 		},
 		{
@@ -132,6 +132,12 @@ frappe.query_reports["Stock Receipt Report"] = {
 			"fieldtype": "Link",
 			"width": "80",
 			"options": "Item Group"
+		},
+		{
+			"fieldname": "uom",
+			"label": ("UOM"),
+			"fieldtype": "Link",
+			"options": "UOM"
 		},
 		{
 			"fieldname": "lot_number",

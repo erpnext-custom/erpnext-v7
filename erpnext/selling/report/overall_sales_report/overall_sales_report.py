@@ -31,7 +31,8 @@ def get_columns(filters=None):
 								_("Customer") + ":Link/Customer:150",
 								_("Customer Group") + ":Data:200", 
 								_("Sub Item Group") + ":Data:150", 
-								_("Delivered Qty") + ":Float:120", 
+								_("Delivered Qty") + ":Float:120",
+								_("UOM") + ":Link/UOM:120",
 								_("Amount") + ":Currency:120"
                         ]
 	elif filters.summary:
@@ -105,7 +106,8 @@ def get_columns(filters=None):
 				  _("Item Code") + ":Link/Item: 80", 
 				  _("Item Name") + ":Data:150", 
 				  _("Sub Group") + ":Data:100", 
-				  _("Qty Delivered") + ":Float:90", 
+				  _("Qty Delivered") + ":Float:90",
+				  _("UOM") + ":Data:90",
 				  _("Rate") + ":Float:90", 
 				  _("Amount") + ":Currency:100",
 				  _("Vehicle") + ":Link/Vehicle:120", 
@@ -145,7 +147,7 @@ def get_data(filters=None):
 			""".format(cols, cond, group_by, outer_cond)
 	else:
 		if filters.aggregate:
-			cols = "dn.branch, dni.location, dn.customer, dn.customer_group, i.item_sub_group, sum(dni.qty) as qty, sum(dni.amount)"
+			cols = "dn.branch, dni.location, dn.customer, dn.customer_group, i.item_sub_group, sum(dni.qty) as qty, coalesce(dni.stock_uom), sum(dni.amount)"
 			group_by = " group by dn.branch, dn.location, i.item_sub_group"
 
 		elif filters.summary:
@@ -153,7 +155,7 @@ def get_data(filters=None):
 			group_by = " group by dn.name"
 
 		else:
-			cols = "dn.name, dni.against_sales_order, dn.branch, dn.customer, dn.customer_group, dn.shipping_address_name, dn.posting_date, dni.item_code, dni.item_name, i.item_sub_group, dni.qty as qty, dni.rate, dni.amount, dn.vehicle, dn.drivers_name, dn.contact_no, dn.transportation_rate, dn.total_distance, dn.transportation_charges"
+			cols = "dn.name, dni.against_sales_order, dn.branch, dn.customer, dn.customer_group, dn.shipping_address_name, dn.posting_date, dni.item_code, dni.item_name, i.item_sub_group, dni.qty as qty, dni.stock_uom, dni.rate, dni.amount, dn.vehicle, dn.drivers_name, dn.contact_no, dn.transportation_rate, dn.total_distance, dn.transportation_charges"
 			group_by = " and 1 = 1"
 		
 		query = """
@@ -243,6 +245,12 @@ def get_conditions(filters=None):
 		else:
 			cond += " and dn.branch = '"+branch+"'"
 	if filters.location and filters.report_by == "Delivery Note":
-		cond += " and dni.location = '" + str(filters.location) + "'"	
+		cond += " and dni.location = '" + str(filters.location) + "'"
+
+	if filters.uom:
+		if filters.report_by == "Sales Order":
+			cond += " and soi.stock_uom = '"+str(filters.uom)+"'"
+		else:
+			cond += " and dni.stock_uom = '"+str(filters.uom)+"'"
 
         return cond

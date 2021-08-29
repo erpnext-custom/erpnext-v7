@@ -228,6 +228,12 @@ frappe.query_reports["Timber Sales Report"] = {
 				"fieldtype": "Float" 
 			},
 			{
+				"fieldname": "uom",
+				"label": ("UOM"),
+				"fieldtype": "Link",
+				"options": "UOM"
+			},
+			{
 					"fieldname": "aggregate",
 					"label": ("Show Aggregate"),
 					"fieldtype": "Check",

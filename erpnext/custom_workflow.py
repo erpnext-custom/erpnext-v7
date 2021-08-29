@@ -385,9 +385,12 @@ def validate_workflow_states(doc):
 		# if not login_user: 
 		# 	frappe.throw("You do not have permission to create MR!")
 		owner        = frappe.db.get_value("Employee", {"user_id": doc.owner}, ["user_id","employee_name","designation","name"])
+		if not owner:
+			frappe.throw("User is not an Employee")
+
 		employee          = frappe.db.get_value("Employee", owner[3], ["user_id","employee_name","designation","name"])
 		reports_to        = frappe.db.get_value("Employee", frappe.db.get_value("Employee", owner[3], "reports_to"), ["user_id","employee_name","designation","name"])
-		
+
 		if doc.approver and doc.approver != frappe.session.user:
 			frappe.throw(_("Only the approver <b>{0}</b> allowed to verify or approve this document").format(doc.approver), title="Invalid Operation")
 

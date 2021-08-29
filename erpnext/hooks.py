@@ -130,7 +130,7 @@ permission_query_conditions = {
 	"Travel Authorization": "erpnext.hr.doctype.travel_authorization.travel_authorization.get_permission_query_conditions",
 	"Travel Claim": "erpnext.hr.doctype.travel_claim.travel_claim.get_permission_query_conditions",
 	"Salary Advance": "erpnext.hr.doctype.salary_advance.salary_advance.get_permission_query_conditions",
-	"Leave Encashment": "erpnext.hr.doctype.leave_encashment.leave_encashment.get_permission_query_conditions",
+	# "Leave Encashment": "erpnext.hr.doctype.leave_encashment.leave_encashment.get_permission_query_conditions",
 }
 
 has_permission = {
