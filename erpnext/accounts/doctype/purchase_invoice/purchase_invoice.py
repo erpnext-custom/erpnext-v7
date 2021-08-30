@@ -88,7 +88,7 @@ class PurchaseInvoice(BuyingController):
   
     def adjust_add_ded(self):
         self.total_add_ded = flt(self.freight_and_insurance_charges) - flt(self.discount) + flt(self.tax) + flt(self.other_charges)
-        self.discount_amount = 1 * flt(self.total_add_ded)
+        self.discount_amount = -1 * flt(self.total_add_ded)
 
     def set_status(self):
         self.status = {
