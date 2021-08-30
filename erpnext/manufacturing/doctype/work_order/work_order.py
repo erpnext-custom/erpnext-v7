@@ -305,7 +305,6 @@ class WorkOrder(Document):
 
 	def update_completed_qty_in_material_request(self):
 		if self.material_request:
-			frappe.throw("HERE!!!!!")
 			frappe.get_doc("Material Request", self.material_request).update_completed_qty([self.material_request_item])
 
 	def set_work_order_operations(self):
@@ -612,7 +611,7 @@ def set_work_order_ops(name):
 
 @frappe.whitelist()
 def make_stock_entry(work_order_id, purpose, qty=None):
-	# frappe.throw("HEYEYEYYE")
+
 	work_order = frappe.get_doc("Work Order", work_order_id)
 	if not frappe.db.get_value("Warehouse", work_order.wip_warehouse, "is_group") \
 			and not work_order.skip_transfer:

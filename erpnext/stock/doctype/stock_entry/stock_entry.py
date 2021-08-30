@@ -1021,7 +1021,7 @@ class StockEntry(StockController):
 
 	def add_to_stock_entry_detail(self, item_dict, bom_no=None):
 		expense_account, cost_center = frappe.db.get_values("Company", self.company, \
-			["default_expense_account", "cost_center"])[0]
+			["default_expense_account", "company_cost_center"])[0]
 
 		for d in item_dict:
 			se_child = self.append('items')
