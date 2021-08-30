@@ -66,6 +66,7 @@ frappe.ui.form.on('Direct Payment', {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
 		}
+		
 		if (frm.doc.party_type == "Customer"){
 			cur_frm.set_query("party", function() {
 				return {
@@ -187,6 +188,7 @@ function calculate_tds(frm) {
 		}
 	})
 }
+
 
 frappe.ui.form.on("Direct Payment Item", {
     "party_type": function(frm, cdt, cdn){

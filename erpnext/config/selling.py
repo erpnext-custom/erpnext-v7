@@ -35,6 +35,11 @@ def get_data():
 					"name": "Sales Invoice",
 					"description": _("Bills raised to Customers.")
 				},
+					{
+					"type": "doctype",
+					"name": "Consolidated Invoice",
+					"description": _("Consolidated Invoice.")
+				},
 			]
 		},
 		{

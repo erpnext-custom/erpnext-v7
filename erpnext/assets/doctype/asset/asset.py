@@ -20,6 +20,7 @@ class Asset(Document):
 		self.name = make_autoname('ASSET.YY.MM.#####')
 
 	def validate(self):
+		self.validate_custodian_details()
 		self.check_asset_values()
 		self.status = self.get_status()
 		self.validate_item()
@@ -45,6 +46,13 @@ class Asset(Document):
 		self.delete_asset_gl_entries()
 		self.delete_depreciation_entries()
 		self.set_status()
+	
+	def validate_custodian_details(self):
+		if self.issued_to:
+			doc = frappe.doc_get("Employee", self.issued_to)
+			self.cost_center = doc.cost_center
+			self.branch = doc.branch
+
 
 	def on_update_after_submit(self):
                 self.set_status()
