@@ -314,10 +314,9 @@ class BankPayment(Document):
 		data = []
 		for a in frappe.db.sql("""SELECT je.name transaction_id, je.posting_date transaction_date
 								FROM `tabJournal Entry` je 
-								where je.branch = "{branch}"
+								where je.docstatus = 1
 								{cond}
 								AND je.voucher_type = 'Bank Entry'
-								AND je.docstatus = 1
 								AND NOT EXISTS(select 1
 									FROM `tabBank Payment Item` bpi
 									WHERE bpi.transaction_type = 'Journal Entry'
@@ -327,8 +326,7 @@ class BankPayment(Document):
 									AND bpi.status NOT IN ('Cancelled', 'Failed')
 								)
 								ORDER BY je.posting_date
-							""".format(branch = self.branch, 
-                 			bank_payment = self.name, 
+							""".format(bank_payment = self.name, 
                     		cond = cond), as_dict=True):
 			amount_to_deposit = 0.00
 			party_type = party = reference_type = reference_name = ""
