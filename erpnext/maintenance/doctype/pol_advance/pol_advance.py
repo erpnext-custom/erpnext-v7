@@ -166,3 +166,19 @@ class PolAdvance(AccountsController):
         #Set a reference to the claim journal entry
         self.db_set("journal_entry",je.name)
         frappe.msgprint(_('Journal Entry <a href="#Form/Journal Entry/{0}">{0}</a> posted to accounts').format(je.name))
+
+# Added by Sonam Chophel to update the payment status on august 31/08/2021
+# @frappe.whitelist()
+# def get_payment_entry(doc_name=None, journal_entry=None):
+#     """ see if there exist a journal entry submitted for the pol advance """
+#     status = frappe.db.get_value("Journal Entry", journal_entry, "docstatus")
+#     if status == 1:
+#         frappe.db.set_value("Pol Advance", doc_name, "payment_status", "Paid")
+#         return ("Paid")
+#     elif status == 0:
+#         frappe.db.set_value("Pol Advance", doc_name, 'payment_status', "Waiting for Payment")
+#         return ("Waiting for Payment")
+#     else:
+#         frappe.db.set_value("Pol Advance", doc_name, 'payment_status', "Cancelled")
+#         return ("Cancelled")
+# -------- End of new code ----------

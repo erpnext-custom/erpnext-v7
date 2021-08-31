@@ -50,6 +50,19 @@ frappe.ui.form.on('Pol Advance', {
 	},
 	refresh: (frm)=>{
 		open_ledger(frm);
+		// if (frm.doc.docstatus === 1) {
+		// // Added by sonam chophel to show payment status in pol advance
+		// 	frappe.call({
+		// 		method: "erpnext.maintenance.doctype.pol_advance.pol_advance.get_payment_entry",
+		// 		args: {
+		// 		doc_name: frm.doc.name,
+		// 		journal_entry: frm.doc.journal_entry
+		// 		},
+		// 		callback: function (r) {
+		// 		cur_frm.refresh_field("payment_status");
+		// 		},
+		// 	})
+		// }
 	},
 	amount:(frm)=>{
 		calculate_balance(frm);
