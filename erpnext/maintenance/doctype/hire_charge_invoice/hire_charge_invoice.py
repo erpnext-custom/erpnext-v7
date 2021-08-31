@@ -11,6 +11,7 @@ from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 from erpnext.maintenance.maintenance_utils import get_equipment_ba
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
+from frappe import _
 
 class HireChargeInvoice(AccountsController):
     def validate(self):
@@ -443,12 +444,16 @@ def get_vehicle_logs(form=None, branch=None):
                 ifnull(a.total_days,0) as total_days,
                 a.grand_total_km as total_km,
                 (select b.rate from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}') as rate, 
-                (case when ((select b.rate_based_on from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}') = "Daily") 
-                     THEN
+                (CASE 
+                    WHEN ((select b.rate_based_on from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}') = "Daily") 
+                    THEN
                         ifnull(a.total_days * (select b.rate from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}'),0)
+                    WHEN ((select b.rate_based_on from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}') = "Kilometer") 
+                    THEN
+                        ifnull(a.grand_total_km * (select b.rate from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}'),0)
                     ELSE
-                        a.grand_total_km * (select b.rate from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}') 
-                END) as total_amount
+                        ifnull((select b.rate from `tabEquipment Hiring Form` as b where b.equipment = a.equipment and b.name='{equip_hire_from}'),0)
+                    END) as total_amount
             from
                 `tabVehicle Logbook` a
             where 

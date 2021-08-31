@@ -75,6 +75,7 @@ var get_advance = function(frm){
 			method: 'populate_child_table',
 			doc: frm.doc,
 			callback:  () =>{
+				frm.refresh_field('items')
 				cur_frm.refresh_fields()
 			}
 		})

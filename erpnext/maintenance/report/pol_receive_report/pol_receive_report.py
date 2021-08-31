@@ -42,7 +42,7 @@ def get_columns():
             "label":_("Supplier"),
             "fieldtype":"Link",
             "options":"Supplier",
-            "width":100
+            "width":200
         },
         {
             "fieldname":"item_name",
@@ -85,13 +85,19 @@ def get_columns():
             "fieldname":"rate",
             "label":_("Rate"),
             "fieldtype":"Currency",
-            "width":60
+            "width":100
+        },
+        {
+            "fieldname":"od_amount",
+            "label":_("OD Amount"),
+            "fieldtype":"Currency",
+            "width":130
         },
         {
             "fieldname":"total_amount",
             "label":_("Payable Amount"),
             "fieldtype":"Currency",
-            "width":100
+            "width":130
         },
         {
             "fieldname":"book_balance",
@@ -110,7 +116,6 @@ def get_data(filters):
                 p.book_type,
                 p.fuelbook,
                 p.supplier,
-                p.pol_type,
                 p.item_name,
                 p.posting_date,
                 p.current_km_reading,
@@ -118,6 +123,7 @@ def get_data(filters):
                 p.mileage,
                 p.qty,
                 p.rate,
+                p.od_amount,
                 COALESCE(p.total_amount, 0) as total_amount,
                 (select sum(balance) from `tabPOL Advance Item` where parent = p.name) as book_balance
             FROM
@@ -138,7 +144,7 @@ def get_data(filters):
     if filters.equipment:
         query += " and p.equipment='{}'".format(filters.equipment)
 
-    return frappe.db.sql(query,as_dict=True)
+    return frappe.db.sql(query)
 
     
 @frappe.whitelist()

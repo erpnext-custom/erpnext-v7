@@ -25,7 +25,7 @@ class POL(StockController):
 		self.validate_uom_is_integer("stock_uom", "qty")
 		self.validate_item()
 		self.calculate_km_diff()
-	
+		self.populate_child_table()
 	def calculate_km_diff(self):
 		previous_km_reading = frappe.db.sql("""
 			SELECT 
@@ -44,7 +44,7 @@ class POL(StockController):
 		if previous_km_reading:
 			pv_km = flt(previous_km_reading[0].current_km_reading)
 		if flt(pv_km) >= flt(self.current_km_reading):
-			frappe.throw("Current KM Reading cannot be less than Previous KM Reading for Vehicle Number <b>{}</b>".format(self.vehicle_number))
+			frappe.throw("Current KM Reading cannot be less than Previous KM Reading<b>({})</b> for Vehicle Number <b>{}</b>".format(pv_km,self.equipment_number))
 		self.km_difference = flt(self.current_km_reading) - flt(pv_km)
 		self.mileage = flt(self.km_difference) / self.qty
 	def assign_fuelbook_branch(self):
@@ -55,7 +55,7 @@ class POL(StockController):
 		
 	def on_submit(self):
 		# self.validate_dc()
-		self.check_advance()
+		# self.check_advance()
 		self.validate_data()
 		self.check_on_dry_hire()
 		# self.check_budget() #commented by Sonam Chophel as it is no longer needed
@@ -88,7 +88,7 @@ class POL(StockController):
 
 		self.db_set("jv", "")
 
-		self.cancel_budget_entry()
+		# self.cancel_budget_entry()
 		self.delete_pol_entry()
 		self.update_advance()
 
@@ -550,12 +550,18 @@ class POL(StockController):
 				doc = frappe.get_doc("Pol Advance", {'name':item.reference,'equipment_number':self.equipment_number})
 				doc.balance_amount  = flt(doc.balance_amount) + flt(item.allocated_amount)
 				doc.adjusted_amount = flt(doc.adjusted_amount) - flt(item.allocated_amount)
+				if item.has_od:
+					doc.od_amount = flt(doc.od_amount) - flt(self.od_amount) 
+					doc.od_outstanding_amount = flt(doc.od_outstanding_amount) - flt(self.od_amount)
 				doc.save(ignore_permissions=True)
 			return
 		for item in self.items:
 			doc = frappe.get_doc("Pol Advance", {'name':item.reference,'equipment_number':self.equipment_number})
 			doc.balance_amount  = flt(item.advance_balance) - flt(item.allocated_amount)
 			doc.adjusted_amount = flt(doc.adjusted_amount) + flt(item.allocated_amount)
+			if item.has_od:
+				doc.od_amount = self.od_amount
+				doc.od_outstanding_amount = self.od_amount
 			doc.save(ignore_permissions=True)
 
 	def populate_child_table(self):
@@ -572,17 +578,24 @@ class POL(StockController):
 				ORDER BY entry_date""".format(self.fuelbook,self.equipment_number),as_dict=True)
 		self.set('items',[])
 		allocated_amount = self.total_amount
-		for  d in data:
+		total_amount_adjusted = 0
+		for d in data:
 			row = self.append('items',{})
 			row.reference         = d.name
-			row.advance_amount              = d.amount 
+			row.advance_amount    = d.amount 
 			# row.allocated_amount    = self.total_amount
 			row.advance_balance      = d.balance_amount
 			if row.advance_balance >= allocated_amount:
 				row.allocated_amount = allocated_amount
+				total_amount_adjusted += flt(row.allocated_amount)
 				allocated_amount = 0
 			elif row.advance_balance < allocated_amount:
 				row.allocated_amount = row.advance_balance
+				total_amount_adjusted += flt(row.allocated_amount)
 				allocated_amount = flt(allocated_amount) - flt(row.advance_balance)
 			row.balance = flt(row.advance_balance) - flt(row.allocated_amount)
 			# row.update
+		if total_amount_adjusted < flt(self.total_amount):
+			self.od_amount = flt(self.total_amount) - total_amount_adjusted 
+			self.items[len(self.items)-1].has_od = 1
+			

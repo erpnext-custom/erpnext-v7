@@ -35,7 +35,7 @@ frappe.ui.form.on('Hire Charge Invoice', {
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
 		}
-		if (frm.doc.owned_by != "Own Company" && frm.doc.outstanding_amount > 0 && frappe.model.can_write("Journal Entry")) {
+		if (frm.doc.owned_by != "Own Company" && frm.doc.outstanding_amount > 0 && frappe.model.can_write("Journal Entry") && frm.doc.docstatus == 1) {
 			/*//cur_frm.toggle_display("receive_payment", 1)
 			cur_frm.add_custom_button(__('Payment'), function() {
 				cur_frm.cscript.receive_payment()
@@ -239,6 +239,7 @@ function get_vehicle_logs(form, branch) {
 			"branch": branch,
 		},
 		callback: function (r) {
+			console.log(r.message)
 			if (r.message) {
 				var total_invoice_amount = 0;
 				cur_frm.clear_table("items");

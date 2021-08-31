@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "naming_series:", 
  "beta": 0, 
  "creation": "2016-06-01 14:38:51.012597", 
@@ -1936,7 +1936,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-08-23 15:46:19.894233", 
+ "modified": "2021-08-27 11:12:07.577478", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Payment Entry", 

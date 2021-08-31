@@ -268,34 +268,34 @@ def calculate_values(accounts, gl_entries_by_account, opening_balances, filters,
 
 
 			if cstr(entry.is_opening) != "Yes" and entry.account in ("Bank & Cash - DS","a - Cash - DS", "b - Bank - DS", "De-Suung fund AC 202944097 - DS", "Cash in Hand - DS"):
-				d["debit"] += flt(entry.credit, 3)
-				d["credit"] += flt(entry.debit, 3)
+				d["debit"] += flt(entry.debit, 3)
+				d["credit"] += flt(entry.credit, 3)
 			
 			elif cstr(entry.is_opening) != "Yes":
 				d["debit"] += flt(entry.debit, 3)
 				d["credit"] += flt(entry.credit, 3)
-			
-			if entry.account in ("De-Suung fund AC 202944097 - DS"):
-				bank_closing_credit += d["credit"]
-				bank_closing_debit += d["debit"]
-				# frappe.msgprint(str(bank_closing_debit)+" "+str(bank_closing_credbit))
 
-			if entry.account in ("Cash in Hand - DS"):
-				cash_closing_credit = d["credit"]
-				cash_closing_debit = d["debit"]
-				# frappe.msgprint(str(cash_closing_debit)+" "+str(cash_closing_credit))
-
-
-			if entry.posting_date >= month_start and entry.posting_date <= month_end and entry.account not in ("Bank & Cash - DS","12.a:Cash - GCC", "12.b:Bank - GCC", "De-Suung fund AC 202944097 - DS", "Cash in Hand - DS"):
+			# if entry.posting_date >= month_start and entry.posting_date <= month_end and entry.account not in ("Bank & Cash Balances - GCC","12.a:Cash - GCC", "12.b:Bank - GCC", "80.02-CD AC 101214282 - GCC", "80.01-Cash in Hand - GCC"):
+			if entry.posting_date >= month_start and entry.posting_date <= month_end:
 				d["mdebit"] += flt(entry.debit, 3)
 				d["mcredit"] += flt(entry.credit, 3)
+
+			if entry.account in ("De-Suung fund AC 202944097 - DS"):
+				bank_closing_credit += d["mcredit"]
+				bank_closing_debit += d["mdebit"]
+				# frappe.msgprint(str(bank_closing_debit)+" "+str(bank_closing_credit))
+
+			if entry.account in ("Cash in Hand - DS"):
+				cash_closing_credit = d["mcredit"]
+				cash_closing_debit = d["mdebit"]
+				# frappe.msgprint(str(cash_closing_debit)+" "+str(cash_closing_credit))
 			
-		if d.name == "1.01-Pay & Allowances - GCC":
-			# frappe.msgprint(str(d["mdebit"])+" "+str(d["mcredit"]))
-			d["mdebit"] = d["mdebit"] - d["mcredit"]
-			d["mcredit"] = 0
-			d["debit"] = d["debit"] - d["credit"]
-			d["credit"] = 0
+		# if d.name == "1.01-Pay & Allowances - GCC":
+		# 	# frappe.msgprint(str(d["mdebit"])+" "+str(d["mcredit"]))
+		# 	d["mdebit"] = d["mdebit"] - d["mcredit"]
+		# 	d["mcredit"] = 0
+		# 	d["debit"] = d["debit"] - d["credit"]
+		# 	d["credit"] = 0
 			
 		# frappe.msgprint(str(d))
 				# total_row["mdebit"] += d["opening_debit"]
@@ -313,7 +313,7 @@ def calculate_values(accounts, gl_entries_by_account, opening_balances, filters,
 				total_row["credit"] += d["credit"]
 				b = 1
 
-		# if d.name in ("De-Suung fund AC 202944097 - DS"):
+		# if d.name in ("80.02-CD AC 101214282 - GCC"):
 		# 	if c != 1:
 		# 		total_row["mdebit"] += d["closing_debit"]
 		# 		total_row["debit"] += d["opening_debit"] - d["debit"]
@@ -321,12 +321,12 @@ def calculate_values(accounts, gl_entries_by_account, opening_balances, filters,
 		# 		c = 1
 
 
-		# if d.name in ("Cash in Hand - DS"):
+		# if d.name in ("80.01-Cash in Hand - GCC"):
 		# 	if e != 1:
 		# 		total_row["mdebit"] += d["closing_debit"]
 		# 		total_row["debit"] += d["opening_debit"] - d["debit"]
 		# 		e = 1
-		# if d.name not in ('De-Suung fund AC 202944097 - DS','Bank & Cash - DS'):
+		# if d.name not in ('80.02-CD AC 101214282 - GCC','Bank & Cash Balances - GCC'):
 		total_row["debit"] += d["debit"]
 		total_row["mdebit"] += d["mdebit"]
 
@@ -338,9 +338,9 @@ def calculate_values(accounts, gl_entries_by_account, opening_balances, filters,
 	# total_row["debit"] += total_row["mdebit"]
 	cb_closing_debit = cb_closing_credit = 0
 	for d in accounts:
-		if d["account_name"] in ("80.02-CD AC 101214282"):
-			b_amount = bank_closing_credit - bank_closing_debit
-			# frappe.msgprint(str(b_amount))x	
+		if d["account_name"] in ('De-Suung fund AC 202944097'):
+			b_amount = bank_closing_debit - bank_closing_credit + d["opening_debit"]
+			# frappe.msgprint(str(bank_closing_credit)+" "+str(bank_closing_debit)+" "+str(d["opening_debit"]))	
 			if b_amount > 0:
 				d["closing_debit"] = b_amount
 				cb_closing_debit += b_amount
@@ -349,8 +349,8 @@ def calculate_values(accounts, gl_entries_by_account, opening_balances, filters,
 				cb_closing_credit += b_amount
 			# frappe.msgprint(str(b_amount))
 
-		elif d["account_name"] in ("80.01-Cash in Hand"):
-			c_amount = cash_closing_credit - cash_closing_debit + d["opening_debit"]
+		elif d["account_name"] in ("Cash in Hand"):
+			c_amount = cash_closing_debit - cash_closing_credit + d["opening_debit"]
 			# frappe.msgprint(str(cash_closing_credit)+" "+str(cash_closing_debit))
 			if c_amount > 0:
 				d["closing_debit"] = c_amount
