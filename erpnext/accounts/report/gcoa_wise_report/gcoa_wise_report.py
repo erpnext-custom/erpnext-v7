@@ -40,7 +40,7 @@ def get_doc_company_amount(coa,filters):
 			query = '''
 				select sum(credit) as opening_credit,sum(debit) as opening_debit from `tabGL Entry`
 				where posting_date < "{0}"
-				and gl.account = "{1}" or gl.exact_expense_acc = "{1}"
+				and account = "{1}" or exact_expense_acc = "{1}"
 					'''.format(filters.from_date, coa.account)
 			a['opening_dr'], a['opening_cr'] = get_opening_balance(query)
 
