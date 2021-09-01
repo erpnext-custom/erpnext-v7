@@ -42,7 +42,7 @@ def get_doc_company_amount(coa,filters):
 				where posting_date < "{0}"
 				and gl.account = "{1}" or gl.exact_expense_acc = "{1}"
 					'''.format(filters.from_date, coa.account)
-			a['opening_dr'], a['opening_cr'] = get_opening_balance(q)
+			a['opening_dr'], a['opening_cr'] = get_opening_balance(query)
 
 		opening_dr += flt(a.opening_dr)
 		opening_cr += flt(a.opening_cr)
