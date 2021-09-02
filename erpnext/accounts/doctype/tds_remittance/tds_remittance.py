@@ -56,28 +56,56 @@ class TDSRemittance(AccountsController):
 
 	
 	def get_details(self):
-		query = """ select d.posting_date, di.party, d.name as invoice_no, di.taxable_amount as bill_amount, di.tds_amount from 
-                                `tabDirect Payment` d, `tabDirect Payment Item` di where di.parent = d.name and di.tds_amount != 0 and tds_percent = '{0}' 
-                                and d.posting_date >= '{1}' and d.posting_date <= '{2}' 
-                                and d.docstatus = 1 
-                                and not exists (
-                                        select 1 from `tabTDS Remittance Item` i
-                                        inner join `tabTDS Remittance` t
-                                        on i.parent = t.name
-                                        where i.invoice_no = d.name
-                                        and t.docstatus = 1
-                                )
+		query = """ select 
+						d.posting_date, di.party, d.name as invoice_no, di.taxable_amount as bill_amount,
+						di.tds_amount
+					from 
+						`tabDirect Payment` d, `tabDirect Payment Item` di 
+					where 
+						di.parent = d.name and di.tds_amount != 0 and tds_percent = '{0}' 
+						and d.posting_date >= '{1}' and d.posting_date <= '{2}' 
+						and d.docstatus = 1 
+						and not exists (
+							select 1 from `tabTDS Remittance Item` i
+							inner join `tabTDS Remittance` t
+							on i.parent = t.name
+							where i.invoice_no = d.name
+							and t.docstatus = 1
+						)
 				union all 
-                                select p.posting_date, p.supplier, p.name,  p.tds_taxable_amount as bill_amount, p.tds_amount 
-                                from `tabPurchase Invoice` p where tds_rate = '{0}' and docstatus =1 
-                                and posting_date >= '{1}' and posting_date<= '{2}'
-				and not exists (
-                                        select 1 from `tabTDS Remittance Item` i
-                                        inner join `tabTDS Remittance` t
-                                        on i.parent = t.name
-                                        where i.invoice_no = p.name
-                                        and t.docstatus = 1
-                                ) """.format(self.tds_rate, self.from_date, self.to_date)	
+					select 
+						p.posting_date, p.supplier, p.name,  p.tds_taxable_amount as bill_amount,
+						p.tds_amount 
+					from `tabPurchase Invoice` p 
+					where 
+						tds_rate = '{0}' and docstatus =1 
+						and posting_date >= '{1}' and posting_date<= '{2}'
+						and not exists (
+							select 1 from `tabTDS Remittance Item` i
+							inner join `tabTDS Remittance` t
+							on i.parent = t.name
+							where i.invoice_no = p.name
+							and t.docstatus = 1
+						)
+				union all 
+						select 
+							hci.posting_date, 
+							hci.customer, 
+							hci.name,  
+							hci.tds_amount,
+							hci.total_invoice_amount as bill_amount
+						from `tabHire Charge Invoice` hci
+						where 
+							tds_percentage = '{0}' and docstatus =1 
+							and posting_date >= '{1}' and posting_date<= '{2}'
+							and not exists 
+							(
+								select 1 from `tabTDS Remittance Item` i 
+								inner join `tabTDS Remittance` t 
+								on i.parent = t.name
+								where i.invoice_no = hci.name
+								and t.docstatus = 1
+							)""".format(self.tds_rate, self.from_date, self.to_date)	
 		
 
 		entries = frappe.db.sql(query, as_dict=True)
