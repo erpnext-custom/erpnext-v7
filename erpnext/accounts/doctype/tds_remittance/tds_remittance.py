@@ -92,8 +92,8 @@ class TDSRemittance(AccountsController):
 							hci.posting_date, 
 							hci.customer, 
 							hci.name,  
-							hci.tds_amount,
-							hci.total_invoice_amount as bill_amount
+							hci.total_invoice_amount as bill_amount,
+							hci.tds_amount
 						from `tabHire Charge Invoice` hci
 						where 
 							tds_percentage = '{0}' and docstatus =1 
