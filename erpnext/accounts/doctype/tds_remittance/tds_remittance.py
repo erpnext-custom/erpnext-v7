@@ -54,7 +54,7 @@ class TDSRemittance(AccountsController):
 	def on_cancel(self):
 		self.post_gl_entry()
 
-	
+
 	def get_details(self):
 		query = """ select 
 						d.posting_date, di.party, d.name as invoice_no, di.taxable_amount as bill_amount,
@@ -145,5 +145,5 @@ class TDSRemittance(AccountsController):
                                                }))
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 		else:
-                        frappe.throw("Total TDS Amount is Zero")
+			frappe.throw("Total TDS Amount is Zero")
 		
