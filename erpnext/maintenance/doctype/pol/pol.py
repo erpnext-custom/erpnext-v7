@@ -569,32 +569,49 @@ class POL(StockController):
 		data = []
 		data = frappe.db.sql("""
 				SELECT 
-					a.name, a.amount,a.balance_amount
+					a.name, a.amount,a.balance_amount, a.journal_entry
 				FROM `tabPol Advance` a
 				WHERE docstatus = 1 
 				AND fuelbook = '{}'
 				AND balance_amount > 0
-				AND equipment_number = '{}'
+				AND equipment_number = '{}' 
 				ORDER BY entry_date""".format(self.fuelbook,self.equipment_number),as_dict=True)
 		self.set('items',[])
 		allocated_amount = self.total_amount
 		total_amount_adjusted = 0
+
+		if not data:
+			frappe.throw("No POL Advance")
+
 		for d in data:
-			row = self.append('items',{})
-			row.reference         = d.name
-			row.advance_amount    = d.amount 
-			# row.allocated_amount    = self.total_amount
-			row.advance_balance      = d.balance_amount
-			if row.advance_balance >= allocated_amount:
-				row.allocated_amount = allocated_amount
-				total_amount_adjusted += flt(row.allocated_amount)
-				allocated_amount = 0
-			elif row.advance_balance < allocated_amount:
-				row.allocated_amount = row.advance_balance
-				total_amount_adjusted += flt(row.allocated_amount)
-				allocated_amount = flt(allocated_amount) - flt(row.advance_balance)
-			row.balance = flt(row.advance_balance) - flt(row.allocated_amount)
+			is_submitted = False
+
+			if d.journal_entry:
+				doc = frappe.get_doc('Journal Entry', d.journal_entry)
+				if doc.docstatus == 1:
+					is_submitted = True
+			else:
+				is_submitted = True
+
+			if is_submitted:
+				row = self.append('items',{})
+				row.reference         = d.name
+				row.advance_amount    = d.amount 
+				# row.allocated_amount    = self.total_amount
+				row.advance_balance      = d.balance_amount
+				if row.advance_balance >= allocated_amount:
+					row.allocated_amount = allocated_amount
+					total_amount_adjusted += flt(row.allocated_amount)
+					allocated_amount = 0
+				elif row.advance_balance < allocated_amount:
+					row.allocated_amount = row.advance_balance
+					total_amount_adjusted += flt(row.allocated_amount)
+					allocated_amount = flt(allocated_amount) - flt(row.advance_balance)
+				row.balance = flt(row.advance_balance) - flt(row.allocated_amount)
 			# row.update
+		if not self.items:
+			frappe.throw("NO POL Advance")
+
 		if total_amount_adjusted < flt(self.total_amount):
 			self.od_amount = flt(self.total_amount) - total_amount_adjusted 
 			self.items[len(self.items)-1].has_od = 1
