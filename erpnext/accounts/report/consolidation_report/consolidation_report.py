@@ -22,7 +22,7 @@ def get_data(filters):
 		cond += ' WHERE is_inter_company = 0 '
 	for d in frappe.db.sql('''
 						SELECT account_name, account_code, is_inter_company
-						FROM `tabDHI GCOA Mapper` where account_name = 'Employee payables' 
+						FROM `tabDHI GCOA Mapper` {} 
 						'''.format(cond),as_dict=True):
 		if d.is_inter_company:
 			data += inter_company(d,filters)
@@ -55,7 +55,6 @@ def non_inter_company(gcoa,filters):
    
 		elif not d.doc_company:
 			val, c, de, a, o_dr, o_cr = other_expense_amount(gcoa,d,filters)
-		frappe.msgprint(str('{} : {} : {}'.format(d.account,o_dr,o_cr)))
 		credit += flt(c)
 		debit += flt(de)
 		amount += flt(a)
@@ -173,7 +172,6 @@ def other_expense_amount(gcoa,coa,filters):
 				debit += flt(a.debit)
 				credit += flt(a.credit)
 				amount += flt(flt(a.debit) + flt(dr)) - flt(flt(a.credit)+flt(cr)) if coa.root_type in ['Asset','Expense'] else flt(flt(a.credit)+flt(cr)) - flt(flt(a.debit) + flt(dr))
-				# amount += flt(a.debit) - flt(a.credit) if coa.root_type in ['Asset','Expense'] else flt(a.credit) - flt(a.debit)
 	
 	if gcoa.is_inter_company:
 		return value, 0, 0, 0, 0, 0
@@ -281,7 +279,7 @@ def payable_receivable_amount(gcoa,coa,filters):
 				debit += flt(a.debit)
 				credit += flt(a.credit)
 				amount += flt(flt(a.debit) + flt(dr)) - flt( flt(a.credit) + flt(cr)) if coa.root_type in ['Asset','Expense'] else flt(flt(a.credit) + flt(cr)) - flt( flt(a.debit) + flt(dr))
-				# amount += flt(a.debit) - flt(a.credit) if coa.root_type in ['Asset','Expense'] else flt(a.credit) - flt(a.debit)
+
 	if gcoa.is_inter_company:
 		return value, 0, 0, 0, 0, 0
 	else:
@@ -308,7 +306,6 @@ def create_non_inter_compay_row(opening_debit, opening_credit, account_code, acc
 
 
 def cerate_inter_compay_row(opening_debit,opening_credit, account_code,account_name,root_type,company_code,filters,data=None) :
-	# frappe.msgprint(str(data))
 	doc = frappe.get_doc('DHI Setting')
 	row = {}
 	row = {
