@@ -144,25 +144,21 @@ class BankPayment(Document):
 				status = 'Payment Failed'
 			else:
 				status = 'Payment Under Process'
-
-			if self.transaction_type == 'Direct Payment':
-				doc = frappe.get_doc('Direct Payment', i.transaction_id)
+    
+			if self.transaction_type in ['Direct Payment','Process MR Payment']:
+				doc = frappe.get_doc(self.transaction_type, i.transaction_id)
 				doc.payment_status = status
-				for rec in doc.item:
+				child_item = doc.item if self.transaction_type == "Direct Payment" else doc.items
+				for rec in child_item:
 					if rec.name == i.transaction_reference:
 						rec.payment_status = status
 						rec.bank_payment = self.name
 				doc.save(ignore_permissions=True)
-			elif self.transaction_type == 'Payment Entry':
-				doc = frappe.get_doc('Payment Entry', i.transaction_id)
+			elif self.transaction_type in ['Payment Entry', 'Journal Entry']:
+				doc = frappe.get_doc(self.transaction_type, i.transaction_id)
 				doc.payment_status = status
 				doc.bank_payment = self.name
 				doc.save(ignore_permissions=True)
-			elif self.transaction_type == 'Journal Entry':
-				doc = frappe.get_doc('Journal Entry', i.transaction_id)
-				doc.payment_status = status
-    			doc.bank_payment = self.name
-       			doc.save(ignore_permissions=True)
 
 	def set_defaults(self):
 		self.posting_date = now()
@@ -302,8 +298,52 @@ class BankPayment(Document):
 			data = self.get_direct_payment()
 		elif self.transaction_type == "Journal Entry":
 			data = self.get_journal_entry()
+		elif self.transaction_type == "Process MR Payment":
+			data = self.get_mr_payment()
 		return data
 
+	"""
+	# Fetch MR payment details with Bank Details from Process MR Payment and MR Employee
+	# Author: thukday@gmail.com
+	# Date : 2021-09-03
+	"""
+	def get_mr_payment(self):
+		cond = ""
+		if self.transaction_no:
+			cond = 'AND mr.name = "{}"'.format(self.transaction_no)
+		elif not self.transaction_no and self.from_date and self.to_date:
+			cond = 'AND mr.posting_date BETWEEN "{}" AND "{}"'.format(str(self.from_date), str(self.to_date))
+	  
+		return frappe.db.sql("""SELECT "Process MR Payment" transaction_type, mr.name transaction_id, mri.name transaction_reference, mr.posting_date transaction_date,
+						(CASE WHEN mri.employee_type = "Muster Roll Employee" THEN mre.person_name ELSE gep.person_name END) as beneficiary_name,
+						(CASE WHEN mri.employee_type = "Muster Roll Employee" THEN mre.bank_name ELSE gep.bank_name END) as bank_name, 
+						(CASE WHEN mri.employee_type = "Muster Roll Employee" THEN mre.bank_branch ELSE gep.bank_branch END) as bank_branch, 
+						(CASE WHEN mri.employee_type = "Muster Roll Employee" THEN mre.bank_account_type ELSE gep.bank_account_type END) as bank_account_type, 
+						(CASE WHEN mri.employee_type = "Muster Roll Employee" THEN mre.bank_ac_no ELSE gep.bank_ac_no END) as bank_account_no,
+						round(mri.total_amount, 2) amount
+					FROM `tabProcess MR Payment` mr 
+					INNER JOIN `tabMR Payment Item` mri ON mri.parent = mr.name
+					LEFT JOIN `tabMuster Roll Employee` mre ON mri.employee_type = "Muster Roll Employee" and mre.name = mri.employee
+					LEFT JOIN `tabGEP Employee` gep ON mri.employee_type = "GEP Employee" and gep.name = mri.employee
+					WHERE mr.docstatus = 1
+					{cond}
+					AND ifnull(mri.payment_status,'') IN ('','Failed','Payment Failed')
+					AND NOT EXISTS(select 1
+						FROM `tabBank Payment Item` bpi
+						WHERE bpi.transaction_type = 'Process MR Payment'
+						AND bpi.transaction_id = mr.name
+						AND bpi.parent != '{bank_payment}'
+						AND bpi.docstatus != 2
+						AND bpi.status NOT IN ('Cancelled', 'Failed')
+					)
+		ORDER BY mr.posting_date, mr.name """.format(bank_payment = self.name,
+			cond = cond), as_dict=True)
+
+	"""
+ 	#Fetch Transactions from Journal Entry
+	#Author : Thukten Dendup <thukday@gmail.com>
+ 	#Date: 2021-09-03
+	"""
 	def get_journal_entry(self):
 		cond = ""
 		if self.transaction_no:
@@ -362,7 +402,7 @@ class BankPayment(Document):
 								party      = frappe.db.get_value(reference_type, reference_name, "employee")
 							else:
 								party_type = "Supplier"
-								party      = frappe.db.get_value(reference_type, reference_name, "employee")
+								party      = frappe.db.get_value(reference_type, reference_name, "supplier")
 						if not party:
 							frappe.msgprint("Party missing for Journal Entry {}".format(a.transaction_id))
 				employee = supplier = ""

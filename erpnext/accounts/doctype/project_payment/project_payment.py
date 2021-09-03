@@ -268,7 +268,7 @@ class ProjectPayment(AccountsController):
                 if flt(tot_adv_amount) > flt(tot_inv_amount):
                         frappe.throw(_("Total advance allocated Nu. {0}/- cannot be more than total invoice amount allocated Nu. {1}/-.".format("{:,.2f}".format(flt(tot_adv_amount)), "{:,.2f}".format(flt(tot_inv_amount)))))
 
-                if flt(self.total_amount) > flt(tot_inv_amount):
+                if flt(self.total_amount) > flt(tot_inv_amount,2):
                         frappe.throw(_("Total Amount({0}) cannot be more than Total Invoice Amount Allocated({1})").format(flt(self.total_amount),flt(tot_inv_amount)))
                         
         def load_references(self):

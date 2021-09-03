@@ -18,7 +18,7 @@ class MusterRollEmployee(Document):
 		#self.calculate_rates()
 		self.check_status()
 		self.populate_work_history()
-		self.update_user_permissions()
+		# self.update_user_permissions()
 
         def update_user_permissions(self):
                 prev_branch  = self.get_db_value("branch")

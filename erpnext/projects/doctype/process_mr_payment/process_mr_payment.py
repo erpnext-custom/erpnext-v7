@@ -171,7 +171,7 @@ class ProcessMRPayment(Document):
 		je.title = "Payment for " + self.employee_type  + " (" + self.branch + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
-		je.remark = 'Payment against : ' + self.name;
+		je.remark = 'Payment against : ' + self.name
 		je.posting_date = self.posting_date
 		je.branch = self.branch
 		total_amount = self.total_overall_amount
@@ -232,7 +232,7 @@ class ProcessMRPayment(Document):
 			hjv.title = "Health Contribution for " + self.employee_type  + " (" + self.branch + ")"
 			hjv.voucher_type = 'Bank Entry'
 			hjv.naming_series = 'Bank Payment Voucher'
-			hjv.remark = 'HC Payment against : ' + self.name;
+			hjv.remark = 'HC Payment against : ' + self.name
 			hjv.posting_date = self.posting_date
 			hjv.branch = self.branch
 
@@ -328,8 +328,8 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         rate_per_hour,
 					status,
 					designation,
-					bank,
-					account_no,
+					bank_name as bank,
+					bank_ac_no as account_no,
                                         salary
                                 from `tab{employee_type}` as e
                                 where not exists(
@@ -391,7 +391,7 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                         "salary": e.salary
                 }))
 		if employee_type == "Muster Roll Employee":
-	        	update_mr_rates(employee_type, e.name, cost_center, from_date, to_date);
+	        	update_mr_rates(employee_type, e.name, cost_center, from_date, to_date)
 		if employee_type == "GEP Employee":
 		
 			frappe.db.sql("""
