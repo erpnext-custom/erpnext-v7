@@ -212,6 +212,11 @@ def get_data():
                                         "description": "Opening Invoice Creation Tool",
                                         "hide_count": True
                                 },
+							{
+					"type": "doctype",
+					"name": "TDS Remittance",
+					"description": _("TDS Remittance")
+				},
 			]
 		},
 		{

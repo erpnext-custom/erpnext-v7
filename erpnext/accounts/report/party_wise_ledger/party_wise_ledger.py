@@ -18,8 +18,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from erpnext.accounts.utils import get_child_cost_centers
-from frappe.utils import flt, cint
-from erpnext.accounts.report.trial_balance.trial_balance import validate_filters
+from frappe.utils import flt, cint, getdate
+# from erpnext.accounts.report.trial_balance.trial_balance import validate_filters
 
 
 def execute(filters=None):
@@ -32,6 +32,40 @@ def execute(filters=None):
 	data = get_data(filters, show_party_name)
 
 	return columns, data
+
+def validate_filters(filters):
+	if not filters.fiscal_year:
+		frappe.throw(_("Fiscal Year {0} is required").format(filters.fiscal_year))
+
+	fiscal_year = frappe.db.get_value("Fiscal Year", filters.fiscal_year, ["year_start_date", "year_end_date"], as_dict=True)
+	if not fiscal_year:
+		frappe.throw(_("Fiscal Year {0} does not exist").format(filters.fiscal_year))
+	else:
+		filters.year_start_date = getdate(fiscal_year.year_start_date)
+		filters.year_end_date = getdate(fiscal_year.year_end_date)
+
+	if not filters.from_date:
+		filters.from_date = filters.year_start_date
+
+	if not filters.to_date:
+		filters.to_date = filters.year_end_date
+
+	filters.from_date = getdate(filters.from_date)
+	filters.to_date = getdate(filters.to_date)
+
+	if filters.from_date > filters.to_date:
+		frappe.throw(_("From Date cannot be greater than To Date"))
+
+	if (filters.from_date < filters.year_start_date) or (filters.from_date > filters.year_end_date):
+		frappe.msgprint(_("From Date should be within the Fiscal Year. Assuming From Date = {0}")\
+			.format(formatdate(filters.year_start_date)))
+
+		filters.from_date = filters.year_start_date
+
+	if (filters.to_date < filters.year_start_date) or (filters.to_date > filters.year_end_date):
+		frappe.msgprint(_("To Date should be within the Fiscal Year. Assuming To Date = {0}")\
+			.format(formatdate(filters.year_end_date)))
+		filters.to_date = filters.year_end_date
 
 # Following code added by SHIV on 2018/12/11
 # For better performance
@@ -312,11 +346,23 @@ def get_data(filters, show_party_name):
 
 def get_balances(filters):
         filters.accounts    = None if filters.get("accounts") == '%' else filters.get("accounts")
-        filters.cost_center = None if filters.get("cost_center") == '%' else filters.get("cost_center")
-        
+        # filters.cost_center = None if filters.get("cost_center") == '%' else filters.get("cost_center")
         cond = ""
-        cond += " and account = '{0}'".format(filters.accounts) if filters.get("accounts") else ""
-        cond += " and cost_center = '{0}'".format(filters.cost_center) if filters.get("cost_center") else ""
+	if not filters.cost_center:
+		return ""
+	if not filters.branch:
+		a= ''
+		all_ccs = get_child_cost_centers(filters.cost_center)
+		a = " and cost_center in {0}".format(tuple(all_ccs))
+		cond = a
+		# frappe.msgprint("{}".format(cond))
+
+	else:
+		branch = str(filters.get("branch"))
+		branch = branch.replace(' - NRDCL','')
+		cond = " and cost_center = \'"+branch+"\'"
+        # cond += " and account = '{0}'".format(filters.accounts) if filters.get("accounts") else ""
+        # cond += " and cost_center in '{0}'".format(cond)
         sql = """
 		select
                         {group_by} as cost_center,
@@ -328,7 +374,9 @@ def get_balances(filters):
 		where company='{company}' 
 		and ifnull(party_type, '') = '{party_type}' and ifnull(party, '') != ''
 		and posting_date <= '{to_date}'
+		and account = '{account}'
 		{cond}
+
 		and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL', 'TDS - 2%% - CDCL', 'TDS - 3%% - CDCL', 'TDS - 5%% - CDCL', 'TDS - 10%% - CDCL')
 		and not exists(select 1 from `tabAccount` as ac
                                 where ac.name = ge.account
@@ -338,12 +386,15 @@ def get_balances(filters):
                 from_date = filters.from_date,
                 to_date = filters.to_date,
                 party_type = filters.party_type,
-                group_by = "party,''" if filters.get("group_by_party") else "party, cost_center",
+				account = filters.account,
+                group_by = "party,''" if filters.get("group_by_party") else "party",
                 cond = cond
         )
+	# frappe.msgprint("{}".format(sql))
 	gle = frappe.db.sql(sql, as_dict=True)
 	
 	balances = frappe._dict()
+	# frappe.msgprint("test. '{}'.".format(balances))
 	for d in gle:
 		opening_debit, opening_credit = toggle_debit_credit(d.opening_debit, d.opening_credit)
                 balances.setdefault(d.party, frappe._dict()).setdefault(d.cost_center, [opening_debit, opening_credit, flt(d.debit), flt(d.credit)])
@@ -357,7 +408,18 @@ def get_opening_balances(filters):
                         where ac.name = ge.account
                         and ac.parent_account = 'Sale of mines product - SMCL')
         '''
-        
+	cond = ""
+    	if not filters.cost_center:
+		return ""
+	if not filters.branch:
+		all_ccs = get_child_cost_centers(filters.cost_center)
+		cond = " and cost_center in (select b.name from `tabCost Center` cc, `tabBranch` b where b.cost_center = cc.name and cc.name in {0})".format(tuple(all_ccs))
+
+	else:
+		branch = str(filters.get("branch"))
+		branch = branch.replace(' - NRDCL','')
+		cond = " and cost_center = \'"+branch+"\'"   
+	
 	gle = frappe.db.sql("""
 		select party, cost_center, sum(debit) as opening_debit, sum(credit) as opening_credit 
 		from `tabGL Entry` as ge
@@ -365,7 +427,7 @@ def get_opening_balances(filters):
 		and ifnull(party_type, '') = %(party_type)s and ifnull(party, '') != ''
 		and (posting_date < %(from_date)s or ifnull(is_opening, 'No') = 'Yes')
 		and account LIKE %(account)s
-		and cost_center LIKE %(cost_center)s
+		and cost_center in %(cost_center)s
 		and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL', 'TDS - 2%% - CDCL', 'TDS - 3%% - CDCL', 'TDS - 5%% - CDCL', 'TDS - 10%% - CDCL')
 		and not exists(select 1 from `tabAccount` as ac
                                 where ac.name = ge.account
@@ -375,7 +437,7 @@ def get_opening_balances(filters):
 			"from_date": filters.from_date,
 			"party_type": filters.party_type,
 			"account": filters.accounts,
-			"cost_center": filters.cost_center
+			"cost_center": cond
 		}, as_dict=True)
 		
 	opening = frappe._dict()
@@ -394,7 +456,17 @@ def get_balances_within_period(filters):
                         where ac.name = ge.account
                         and ac.parent_account = 'Sale of mines product - SMCL')
         '''
-        
+    	cond = ""
+    	if not filters.cost_center:
+		return ""
+	if not filters.branch:
+		all_ccs = get_child_cost_centers(filters.cost_center)
+		cond = " and cost_center in (select b.name from `tabCost Center` cc, `tabBranch` b where b.cost_center = cc.name and cc.name in {0})".format(tuple(all_ccs))
+
+	else:
+		branch = str(filters.get("branch"))
+		branch = branch.replace(' - NRDCL','')
+		cond = " and cost_center = \'"+branch+"\'"   
 	gle = frappe.db.sql("""
 		select party, cost_center, sum(debit) as debit, sum(credit) as credit 
 		from `tabGL Entry` as ge
@@ -403,7 +475,7 @@ def get_balances_within_period(filters):
 		and posting_date >= %(from_date)s and posting_date <= %(to_date)s 
 		and ifnull(is_opening, 'No') = 'No'
 		and account LIKE %(account)s
-		and cost_center LIKE %(cost_center)s
+		and cost_center in  %(cost_center)s
 		and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL', 'TDS - 2%% - CDCL', 'TDS - 3%% - CDCL', 'TDS - 5%% - CDCL', 'TDS - 10%% - CDCL')
                 and not exists(select 1 from `tabAccount` as ac
                                 where ac.name = ge.account
@@ -413,7 +485,7 @@ def get_balances_within_period(filters):
 			"from_date": filters.from_date,
 			"to_date": filters.to_date,
 			"party_type": filters.party_type,
-			"cost_center": filters.cost_center,
+			"cost_center": cond,
 			"account": filters.accounts
 		}, as_dict=True)
 		

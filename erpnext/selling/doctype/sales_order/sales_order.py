@@ -475,7 +475,7 @@ class SalesOrder(SellingController):
 
 	def get_payment_detail(self):
 		sales_reference = 0
-		sales_reference = frappe.db.sql("select 1 from `tabPayment Entry Reference` where reference_name = '{0}' limit 1".format(self.name))
+		sales_reference = frappe.db.sql("select 1 from `tabPayment Entry Reference` per, `tabPayment Entry` pe where pe.docstatus = 1 and reference_name = '{0}' limit 1".format(self.name))
 		return sales_reference
 
 		

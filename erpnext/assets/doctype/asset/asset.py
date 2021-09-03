@@ -20,7 +20,7 @@ class Asset(Document):
 		self.name = make_autoname('ASSET.YY.MM.#####')
 
 	def validate(self):
-		self.validate_custodian_details()
+		# self.validate_custodian_details()
 		self.check_asset_values()
 		self.status = self.get_status()
 		self.validate_item()

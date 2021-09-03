@@ -53,11 +53,65 @@ frappe.query_reports["Party Wise Ledger"] = {
 		{
 			"fieldtype": "Break",
 		},
+		// {
+		// 	"fieldname":"cost_center",
+		// 	"label": __("Cost Center"),
+		// 	"fieldtype": "Link",
+		// 	"options": "Cost Center"
+		// },
 		{
-			"fieldname":"cost_center",
-			"label": __("Cost Center"),
+			"fieldname": "cost_center",
+			"label": ("Parent Branch"),
 			"fieldtype": "Link",
-			"options": "Cost Center"
+ 			"options": "Cost Center",
+			"get_query": function() {
+				var company = frappe.query_report.filters_by_name.company.get_value();
+				return {
+					'doctype': "Cost Center",
+					'filters': [
+						['is_disabled', '!=', '1'], 
+						['is_group', '=', '1'],
+						['company', '=', company]
+					]
+				}
+			},
+			// "on_change": function(query_report) {
+			// 	var cost_center = query_report.get_values().cost_center;
+			// 	query_report.filters_by_name.branch.set_input(null);
+			// 	query_report.trigger_refresh();
+			// 	if (!cost_center) {
+			// 		return;
+			// 	}
+			// 	frappe.call({
+			// 		method: "erpnext.custom_utils.get_branch_from_cost_center",
+			// 		args: {
+			// 			"cost_center": cost_center,
+			// 		},
+			// 		callback: function(r) {
+			// 			query_report.filters_by_name.branch.set_input(r.message)
+			// 			query_report.trigger_refresh();
+			// 		}
+			// 	})
+			// },
+			"reqd": 1,
+		},
+		{
+			"fieldname": "branch",
+			"label": ("Branch"),
+			"fieldtype": "Link",
+			"options": "Cost Center",
+			"get_query": function() {
+					var cost_center = frappe.query_report.filters_by_name.cost_center.get_value();
+					var company = frappe.query_report.filters_by_name.company.get_value();
+					if(cost_center!= 'Natural Resource Development Corporation Ltd - NRDCL')
+					{
+							return {"doctype": "Cost Center", "filters": {"company": company, "is_disabled": 0, "parent_cost_center": cost_center}}
+					}
+					else
+					{
+							return {"doctype": "Cost Center", "filters": {"company": company, "is_disabled": 0, "is_group": 0}}
+					}
+			}
 		},
 		{
 			"fieldname":"accounts",
