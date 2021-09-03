@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils.data import get_first_day, get_last_day, add_days
-from frappe.utils import flt, add_months, cint, nowdate, getdate, get_last_day
+from frappe.utils import flt, add_months, cint, nowdate, today, getdate, get_last_day
 from frappe.model.document import Document
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import get_fixed_asset_account
 from erpnext.assets.doctype.asset.depreciation \
@@ -62,6 +62,12 @@ class Asset(Document):
 			frappe.throw(_("Item {0} must be a non-stock item").format(self.item_code))
 
 	def set_missing_values(self):
+		# total_depreciated_amount = 0
+		# for d in self.get("schedules"):
+		# 	if d.journal_entry and getdate(d.schedule_date) <= getdate(today()):
+		# 		total_depreciated_amount += flt(d.depreciation_amount)
+		# 		self.accumulated_depreciated_amount = total_depreciated_amount
+
 		if self.item_code:
 			item_details = get_item_details(self.item_code)
 			for field, value in item_details.items():
@@ -69,7 +75,7 @@ class Asset(Document):
 					self.set(field, value)
 
 		self.value_after_depreciation = (flt(self.gross_purchase_amount) -
-			flt(self.opening_accumulated_depreciation)) - flt(self.residual_value)
+			flt(self.opening_accumulated_depreciation)) - flt(self.residual_value) - 1
 
 	def validate_asset_values(self):
 		if flt(self.expected_value_after_useful_life) >= flt(self.gross_purchase_amount):
@@ -174,8 +180,11 @@ class Asset(Document):
 
 	def get_depreciation_amount(self, depreciable_value, num_days=1):
 		if self.depreciation_method == "Straight Line":
-			depreciation_amount = ((flt(self.gross_purchase_amount) - flt(self.residual_value)) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25)
-		else:
+			if self.total_number_of_depreciations > 1:
+				depreciation_amount = ((flt(self.gross_purchase_amount) - flt(self.residual_value)) * 12 * flt(num_days))/(flt(self.total_number_of_depreciations) * 365.25)
+			elif self.total_number_of_depreciations == 1:
+				depreciation_amount = (flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life))
+  		else:
 			depreciation_amount = 0.0
 
 		return flt(depreciation_amount, 2)
