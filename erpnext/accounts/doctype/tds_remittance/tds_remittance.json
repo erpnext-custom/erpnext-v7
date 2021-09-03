@@ -414,7 +414,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "items", 
@@ -724,7 +724,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-09-02 12:50:05.071891", 
+ "modified": "2021-09-03 11:05:01.018959", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "TDS Remittance", 

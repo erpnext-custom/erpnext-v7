@@ -105,6 +105,25 @@ class TDSRemittance(AccountsController):
 								on i.parent = t.name
 								where i.invoice_no = hci.name
 								and t.docstatus = 1
+							)
+				union all 
+						select 
+							mp.posting_date, 
+							mp.supplier, 
+							mp.name,  
+							mp.payable_amount as bill_amount,
+							mp.tds_amount
+						from `tabMechanical Payment` mp
+						where 
+							tds_rate = '{0}%' and docstatus =1 
+							and posting_date >= '{1}' and posting_date<= '{2}'
+							and not exists 
+							(
+								select 1 from `tabTDS Remittance Item` i 
+								inner join `tabTDS Remittance` t 
+								on i.parent = t.name
+								where i.invoice_no = mp.name
+								and t.docstatus = 1
 							)""".format(self.tds_rate, self.from_date, self.to_date)	
 		
 
