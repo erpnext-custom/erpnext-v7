@@ -22,7 +22,7 @@ def get_data(filters):
 		cond += ' WHERE is_inter_company = 0 '
 	for d in frappe.db.sql('''
 						SELECT account_name, account_code, is_inter_company
-						FROM `tabDHI GCOA Mapper` {}
+						FROM `tabDHI GCOA Mapper` where account_name = 'Employee payables' 
 						'''.format(cond),as_dict=True):
 		if d.is_inter_company:
 			data += inter_company(d,filters)
@@ -55,7 +55,7 @@ def non_inter_company(gcoa,filters):
    
 		elif not d.doc_company:
 			val, c, de, a, o_dr, o_cr = other_expense_amount(gcoa,d,filters)
-   
+		frappe.msgprint(str('{} : {} : {}'.format(d.account,o_dr,o_cr)))
 		credit += flt(c)
 		debit += flt(de)
 		amount += flt(a)
@@ -75,6 +75,8 @@ def merge_duplicate(data):
 			no_duplicate = True
 			for i, item in enumerate(new_data):
 				if item["interco"] == d["interco"]:
+					new_data[i]["opening_debit"] += flt(d["opening_debit"])
+					new_data[i]["opening_credit"] += flt(d["opening_credit"])
 					new_data[i]["amount"] += flt(d["amount"])
 					new_data[i]["credit"] += flt(d["credit"])
 					new_data[i]["debit"] += flt(d["debit"])
@@ -125,7 +127,7 @@ def other_expense_amount(gcoa,coa,filters):
 			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
 			group by consolidation_party
 			""".format(filters['from_date'],filters['to_date'],coa.account),as_dict=True):
-		if (a.credit or a.debit) and a.party_type :
+		if (a.credit or a.debit) :
 			dhi_company_code, cond, dr, cr = '', '', 0, 0
 			if a.party:
 				cond += ' consolidation_party = "{}" '.format(a.party)
@@ -321,7 +323,7 @@ def cerate_inter_compay_row(opening_debit,opening_credit, account_code,account_n
 			'time':filters['from_date'] + ' to '+filters['to_date'],
 			'debit':data.debit,
 			'credit':data.credit,
-			'amount': flt(data.debit) - flt(data.credit) if root_type in ['Asset','Expense'] else flt(data.credit) - flt(data.debit)
+			'amount': flt(flt(data.debit) + flt(opening_debit)) - flt(flt(data.credit)+flt(opening_credit)) if root_type in ['Asset','Expense'] else flt(flt(data.credit)+flt(opening_credit)) - flt(flt(data.debit)+flt(opening_debit))
 	}
 	return row
 
