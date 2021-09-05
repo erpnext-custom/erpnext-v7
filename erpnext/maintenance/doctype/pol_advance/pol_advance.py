@@ -124,8 +124,7 @@ class PolAdvance(AccountsController):
         if self.user_remark:
             r.append(_("Note: {0}").format(self.user_remark))
 
-        if r:
-            remarks = ("\n").join(r) #User Remarks is not mandatory
+        remarks = ("").join(r) #User Remarks is not mandatory
 
         # Posting Journal Entry
         je = frappe.new_doc("Journal Entry")
@@ -135,7 +134,7 @@ class PolAdvance(AccountsController):
             "voucher_type": "Bank Entry",
             "naming_series": "Bank Receipt Voucher" if self.payment_type == "Receive" else "Bank Payment Voucher",
             "title": "POL Advance - " + self.equipment,
-            "user_remark": "POL Advance - " + self.equipment,
+            "user_remark": remarks if remarks else "Note: " + "POL Advance - " + self.equipment,
             "posting_date": self.posting_date,
             "company": self.company,
             "total_amount_in_words": money_in_words(self.amount),
