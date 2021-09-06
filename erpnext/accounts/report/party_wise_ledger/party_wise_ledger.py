@@ -359,9 +359,8 @@ def get_balances(filters):
 
 	else:
 		branch = str(filters.get("branch"))
-		branch = branch.replace(' - NRDCL','')
 		cond = " and cost_center = \'"+branch+"\'"
-        # cond += " and account = '{0}'".format(filters.accounts) if filters.get("accounts") else ""
+        cond += " and account = '{0}'".format(filters.accounts) if filters.get("accounts") else ""
         # cond += " and cost_center in '{0}'".format(cond)
         sql = """
 		select
@@ -374,9 +373,7 @@ def get_balances(filters):
 		where company='{company}' 
 		and ifnull(party_type, '') = '{party_type}' and ifnull(party, '') != ''
 		and posting_date <= '{to_date}'
-		and account = '{account}'
 		{cond}
-
 		and ge.account not in ('Normal Loss - SMCL','Abnormal Loss - SMCL', 'TDS - 2%% - CDCL', 'TDS - 3%% - CDCL', 'TDS - 5%% - CDCL', 'TDS - 10%% - CDCL')
 		and not exists(select 1 from `tabAccount` as ac
                                 where ac.name = ge.account
@@ -386,11 +383,11 @@ def get_balances(filters):
                 from_date = filters.from_date,
                 to_date = filters.to_date,
                 party_type = filters.party_type,
-				account = filters.account,
-                group_by = "party,''" if filters.get("group_by_party") else "party",
-                cond = cond
+			
+                group_by = "party,''" if filters.get("group_by_party") else "party, cost_center",
+				cond = cond
         )
-	# frappe.msgprint("{}".format(sql))
+	frappe.msgprint("{}".format(sql))
 	gle = frappe.db.sql(sql, as_dict=True)
 	
 	balances = frappe._dict()

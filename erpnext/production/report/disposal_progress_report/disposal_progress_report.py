@@ -39,9 +39,9 @@ def get_data(filters):
 
 	#query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region, sum(qty) as total_qty from `tabProduction Entry` pe RIGHT JOIN `tabCost Center` cc ON cc.name = pe.cost_center where 1 = 1 {0} {1} {2} {3}".format(cc_condition, conditions, group_by, order_by)
 
-	query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region from `tabProduction Target` pe, `tabCost Center` cc where cc.name = pe.cost_center and cc.parent_cost_center != 'Regional Office - NRDCL' and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
+	query = "select pti.uom, pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region from `tabProduction Target` pe, `tabProduction Target Item` pti, `tabCost Center` cc where pti.parent = pe.name and cc.name = pe.cost_center and cc.parent_cost_center != 'Regional Office - NRDCL' and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
 	amt = 0
-	frappe.msgprint(query)
+	# frappe.msgprint(query)
 	for a in frappe.db.sql(query, as_dict=1):
 		if not filters.display_monthly:
 			total_timber= 0
@@ -190,7 +190,7 @@ def get_filter_conditions(filters):
 
 def get_columns(filters):
 	if filters.branch:
-		columns = ["Location:Link/Location:150", "Target Qty:Float:120", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
+		columns = ["UOM:Data:120","Location:Link/Location:150", "Target Qty:Float:120", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
 	else:
 		if filters.is_company:
 			columns = ["Region:Data:150", "Target Qty:Float:120", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
