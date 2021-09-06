@@ -116,7 +116,15 @@ class TDSRemittance(AccountsController):
 							mp.name,  
 							mp.payable_amount as bill_amount,
 							mp.tds_amount,
-							(select s.vendor_tpn_no from `tabSupplier` s where mp.customer = s.name) as vendor_tpn_no
+							CASE
+								mp.payment_for
+								WHEN 
+									'Hire Charge Invoice'
+								THEN
+									(select s.vendor_tpn_no from `tabSupplier` s where mp.customer = s.name)
+								ELSE
+									(select s.vendor_tpn_no from `tabSupplier` s where mp.supplier = s.name) 
+							END as vendor_tpn_no
 						from `tabMechanical Payment` mp
 						where 
 							tds_rate = '{0}%' and docstatus =1 
