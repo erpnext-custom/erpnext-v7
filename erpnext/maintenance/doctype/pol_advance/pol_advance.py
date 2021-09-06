@@ -49,7 +49,7 @@ class PolAdvance(AccountsController):
             doc = frappe.get_doc('Pol Advance',d.reference)
             if self.docstatus == 2 :
                 self.adjusted_amount = flt(self.adjusted_amount) - flt(doc.od_amount)
-                self.balance = flt(self.balance) + flt(doc.od_amount)
+                self.balance_amount = flt(self.balance_amount) + flt(doc.od_amount)
                 doc.od_adjusted_amount = 0 
                 doc.od_outstanding_amount = doc.od_amount
                 doc.save(ignore_permissions=True)
