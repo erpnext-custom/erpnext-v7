@@ -560,8 +560,9 @@ class POL(StockController):
 			doc.balance_amount  = flt(item.advance_balance) - flt(item.allocated_amount)
 			doc.adjusted_amount = flt(doc.adjusted_amount) + flt(item.allocated_amount)
 			if item.has_od:
-				doc.od_amount = self.od_amount
-				doc.od_outstanding_amount = self.od_amount
+				# frappe.throw(str(doc.od_amount))
+				doc.od_amount = flt(doc.od_amount) + flt(self.od_amount)
+				doc.od_outstanding_amount = flt(doc.od_outstanding_amount) + flt(self.od_amount)
 			doc.save(ignore_permissions=True)
 
 	def populate_child_table(self):
@@ -577,6 +578,17 @@ class POL(StockController):
 				AND equipment_number = '{}' 
 				ORDER BY entry_date""".format(self.fuelbook,self.equipment_number),as_dict=True)
 		self.set('items',[])
+		# if there is no advance with balance than pick last lastet advance with 0 value
+		if not data:
+			data = frappe.db.sql("""
+						SELECT 
+							a.name, a.amount,a.balance_amount, a.journal_entry
+						FROM `tabPol Advance` a
+						WHERE docstatus = 1 
+						AND fuelbook = '{}'
+						AND balance_amount = 0
+						AND equipment_number = '{}' 
+						ORDER BY entry_date desc limit 1""".format(self.fuelbook,self.equipment_number),as_dict=True)
 		allocated_amount = self.total_amount
 		total_amount_adjusted = 0
 
