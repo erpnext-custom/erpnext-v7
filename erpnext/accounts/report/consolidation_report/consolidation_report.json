@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2021-08-10 03:24:35.074499", 
+ "modified": "2021-04-29 17:03:59.145996", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Consolidation Report", 
@@ -20,7 +20,7 @@
    "role": "Administrator"
   }, 
   {
-   "role": "Consolidation User"
+   "role": "DHI Consolidation User"
   }
  ]
 }

@@ -7,7 +7,6 @@ from frappe.utils import flt
 
 def execute(filters=None):
 	filter = {}
-	# frappe.msgprint(str(filters))
 	filter['from_date'] = filters.from_date
 	filter['to_date'] = filters.to_date
 	filter['is_inter_company'] = filters.is_inter_company
@@ -23,7 +22,7 @@ def get_data(filters):
 		cond += ' WHERE is_inter_company = 0 '
 	for d in frappe.db.sql('''
 						SELECT account_name, account_code, is_inter_company
-						FROM `tabDHI GCOA Mapper` {}
+						FROM `tabDHI GCOA Mapper` {} 
 						'''.format(cond),as_dict=True):
 		if d.is_inter_company:
 			data += inter_company(d,filters)
@@ -38,32 +37,32 @@ def inter_company(gcoa,filters):
 		if d.doc_company and gcoa.is_inter_company :
 			data += get_doc_company_amount(gcoa,d,filters)
 		elif d.account_type in ['Payable','Receivable'] and not d.doc_company:
-			val, c, de, amt = payable_receivable_amount(gcoa,d,filters)
+			val, c, de, amt, o_dr, o_cr = payable_receivable_amount(gcoa,d,filters)
 			data += val
 		elif not d.doc_company:
-			val, cr, de, amt = other_expense_amount(gcoa,d,filters)
+			val, cr, de, amt, o_dr, o_cr = other_expense_amount(gcoa,d,filters)
 			data += val
 		
 	data1 = merge_duplicate(data)
 	return data1
 
 def non_inter_company(gcoa,filters):
-	data, credit, debit, amount = [], 0, 0, 0
+	data, credit, debit, amount, opening_dr, opening_cr = [], 0, 0, 0, 0, 0
 	for d in get_coa(gcoa.account_name):
+		c, de, a, o_cr, o_dr = 0, 0, 0, 0, 0
 		if d.account_type in ['Payable','Receivable'] and not d.doc_company:
-			c, de, a = 0, 0, 0
-			val, c, de, a = payable_receivable_amount(gcoa,d,filters)
-			credit += flt(c)
-			debit += flt(de)
-			amount += flt(a)
+			val, c, de, a, o_dr, o_cr = payable_receivable_amount(gcoa,d,filters)
+   
 		elif not d.doc_company:
-			c, de, a = 0, 0, 0
-			val, c, de, a = other_expense_amount(gcoa,d,filters)
-			credit += flt(c)
-			debit += flt(de)
-			amount += flt(a)
+			val, c, de, a, o_dr, o_cr = other_expense_amount(gcoa,d,filters)
+		credit += flt(c)
+		debit += flt(de)
+		amount += flt(a)
+		opening_cr += flt(o_cr)
+		opening_dr += flt(o_dr)
+
 	if credit or debit or amount:
-		data.append(create_non_inter_compay_row(gcoa.account_code,gcoa.account_name,filters,credit,debit,amount))
+		data.append(create_non_inter_compay_row(opening_dr, opening_cr, gcoa.account_code, gcoa.account_name, filters, credit, debit, amount))
 	return data
 
 def merge_duplicate(data):
@@ -75,6 +74,8 @@ def merge_duplicate(data):
 			no_duplicate = True
 			for i, item in enumerate(new_data):
 				if item["interco"] == d["interco"]:
+					new_data[i]["opening_debit"] += flt(d["opening_debit"])
+					new_data[i]["opening_credit"] += flt(d["opening_credit"])
 					new_data[i]["amount"] += flt(d["amount"])
 					new_data[i]["credit"] += flt(d["credit"])
 					new_data[i]["debit"] += flt(d["debit"])
@@ -93,9 +94,27 @@ def get_coa(gcoa_account_name):
 						WHERE parent = '{}'
 						 '''.format(gcoa_account_name),as_dict = True)
  
+# fetch opening bal
+def get_opening_balance(query):
+	opening_bal = frappe.db.sql(query,as_dict= True)
+	if not opening_bal:
+		return 0, 0
+	
+	credit, debit = opening_bal[0].opening_credit, opening_bal[0].opening_debit
+	
+	if flt(debit) > flt(credit):
+		debit = flt(debit) - flt(credit)
+		credit = 0
+	elif flt(credit) > flt(debit):
+		credit = flt(credit) - flt(debit)
+		debit = 0
+	elif flt(debit) == flt(credit):
+		credit = debit = 0
+	return debit, credit
+
 # for Purchase invoice where tempoary gl is booked
 def other_expense_amount(gcoa,coa,filters):
-	value, debit, credit, amount = [], 0, 0, 0
+	value, debit, credit, amount, opening_dr, opening_cr = [], 0, 0, 0, 0, 0
 
 	for a in frappe.db.sql("""
 			select sum(credit) as credit, sum(debit) as debit, 
@@ -107,20 +126,37 @@ def other_expense_amount(gcoa,coa,filters):
 			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
 			group by consolidation_party
 			""".format(filters['from_date'],filters['to_date'],coa.account),as_dict=True):
-		if (a.credit or a.debit) and a.party_type :
-			dhi_company_code =''
-			if a.party_type == 'Supplier':
-				dhi_company_code = frappe.db.get_value('Supplier',{'name':a.party,'inter_company':1},['company_code'])
+		if (a.credit or a.debit) :
+			dhi_company_code, cond, dr, cr = '', '', 0, 0
+			if a.party:
+				cond += ' consolidation_party = "{}" '.format(a.party)
 			else:
-				dhi_company_code = frappe.db.get_value('Customer',{'name':a.party,'inter_company':1},['company_code'])
+				cond += ' consolidation_party is null '
+
+			q = '''
+				select sum(debit) as opening_debit, sum(credit) as opening_credit
+				from `tabGL Entry` where {0}
+				and (account = "{1}" or exact_expense_acc = "{1}") 
+				and posting_date < "{2}"
+				'''.format(cond,coa.account,filters['from_date'])
+	
+			if coa.root_type in ['Asset','Liability','Equity']:
+				dr, cr = get_opening_balance(q)
+	
+			if a.party_type == 'Supplier':
+				dhi_company_code = frappe.db.get_value('Supplier',{'name':a.party,'inter_company':1,'disabled':0},['company_code'])
+			else:
+				dhi_company_code = frappe.db.get_value('Customer',{'name':a.party,'inter_company':1,'disabled':0},['company_code'])
 	
 			if dhi_company_code and gcoa.is_inter_company :
 				row = {}
-				row = cerate_inter_compay_row(gcoa.account_code,gcoa.account_name,coa.root_type,dhi_company_code,filters,a)
+				row = cerate_inter_compay_row(dr, cr, gcoa.account_code, gcoa.account_name, coa.root_type, dhi_company_code, filters, a)
 				if len(value) > 0:
 					is_new_row = True
 					for i, val in enumerate(value):
 						if val["interco"] == row["interco"]:
+							value["opening_debit"] += flt(row["opening_debit"])
+							value["opening_credit"] += flt(row["opening_credit"])
 							value[i]["amount"] += flt(row["amount"])
 							value[i]["credit"] += flt(row["credit"])
 							value[i]["debit"] += flt(row["debit"])
@@ -131,19 +167,21 @@ def other_expense_amount(gcoa,coa,filters):
 				else:
 					value.append(row)
 			elif not dhi_company_code and not gcoa.is_inter_company :
+				opening_dr += flt(dr)
+				opening_cr += flt(cr)
 				debit += flt(a.debit)
 				credit += flt(a.credit)
-				amount += flt(a.debit) - flt(a.credit) if coa.root_type in ['Asset','Expense'] else flt(a.credit) - flt(a.debit)
+				amount += flt(flt(a.debit) + flt(dr)) - flt(flt(a.credit)+flt(cr)) if coa.root_type in ['Asset','Expense'] else flt(flt(a.credit)+flt(cr)) - flt(flt(a.debit) + flt(dr))
 	
 	if gcoa.is_inter_company:
-		return value, 0, 0, 0
+		return value, 0, 0, 0, 0, 0
 	else:
-		return [], credit, debit, amount
+		return [], credit, debit, amount, opening_dr, opening_cr
 
 # for gl selected for particular doc company
 def get_doc_company_amount(gcoa,coa,filters):
-	# frappe.msgprint(str(d))
-	value, debit, credit, amount = [], 0, 0, 0
+	value, debit, credit, amount, opening_dr, opening_cr = [], 0, 0, 0, 0, 0
+
 	for a in frappe.db.sql("""
 			select sum(credit) as credit, sum(debit) as debit
 			from `tabGL Entry` where posting_date between '{0}' and '{1}' 
@@ -151,15 +189,28 @@ def get_doc_company_amount(gcoa,coa,filters):
 			and (credit is not null or debit is not null)
 			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
 			""".format(filters['from_date'],filters['to_date'],coa.account),as_dict=True):
+		a['opening_dr'] = a['opening_cr'] = 0
+
+		if coa.root_type in ['Asset','Liability','Equity']:
+			query = '''
+				select sum(credit) as opening_credit,sum(debit) as opening_debit from `tabGL Entry`
+				where posting_date < "{0}"
+				and account = "{1}" or exact_expense_acc = "{1}"
+					'''.format(filters['from_date'], coa.account)
+			a['opening_dr'], a['opening_cr'] = get_opening_balance(query)
+   
+		opening_dr += flt(a.opening_dr)
+		opening_cr += flt(a.opening_cr)
 		debit += flt(a.debit)
 		credit += flt(a.credit)
-		amount += flt(a.debit) - flt(a.credit) if coa.root_type in ['Asset','Expense'] else flt(a.credit) - flt(a.debit)
+		amount += flt(flt(a.debit) + flt(a.opening_dr)) - flt(flt(a.credit) + flt(a.opening_cr)) if coa.root_type in ['Asset','Expense'] else flt(flt(a.credit) + flt(a.opening_cr)) - flt(flt(a.debit) + flt(a.opening_dr))
 
 	if debit or credit:
 		doc = frappe.get_doc('DHI Setting')
 		row = {}
 		value.append({
-			'account_code':gcoa.account_code,
+			'opening_debit':opening_dr,
+			'opening_credit':opening_cr,
 			'account':gcoa.account_name,
 			'entity':doc.entity,
 			'segment':doc.segment,
@@ -175,7 +226,9 @@ def get_doc_company_amount(gcoa,coa,filters):
 # applicable for payable and Receivable
 def payable_receivable_amount(gcoa,coa,filters):
 	value = []
-	debit, credit,amount, query = 0,0,0,''
+	query = ''
+	debit = credit = amount = opening_dr = opening_cr = 0
+
 	query = """
 			select sum(gl.credit) as credit,sum(gl.debit) as debit, gl.party,gl.party_type
 			from `tabGL Entry` as gl where gl.posting_date between '{0}' and '{1}' 
@@ -187,22 +240,30 @@ def payable_receivable_amount(gcoa,coa,filters):
 			""".format(filters['from_date'],filters['to_date'],coa.account)
    
 	for a in frappe.db.sql(query,as_dict=True) :
-		# frappe.msgprint(str(a))
+		dr = cr = 0
+		if coa.root_type in ['Asset','Liability','Equity']:		
+			q = '''
+				select sum(debit) as opening_debit, sum(credit) as opening_credit
+				from `tabGL Entry` where party = "{}" and account = "{}" and posting_date < "{}"
+				'''.format(a.party,coa.account,filters['from_date'])
+			dr, cr = get_opening_balance(q)
+   
 		if (a.credit or a.debit) and a.party_type :
 			dhi_company_code =''
 			if gcoa.is_inter_company:
 				if a.party_type == 'Supplier':
-					dhi_company_code = frappe.db.get_value('Supplier',{'name':a.party,'inter_company':1},['company_code'])
+					dhi_company_code = frappe.db.get_value('Supplier',{'name':a.party,'inter_company':1,'disabled':0},['company_code'])
 				else:
-					dhi_company_code = frappe.db.get_value('Customer',{'name':a.party,'inter_company':1},['company_code'])
+					dhi_company_code = frappe.db.get_value('Customer',{'name':a.party,'inter_company':1,'disabled':0},['company_code'])
 			if dhi_company_code and gcoa.is_inter_company:
-				# frappe.msgprint(str(dhi_company_code))
 				row = {}
-				row = cerate_inter_compay_row(gcoa.account_code,gcoa.account_name,coa.root_type,dhi_company_code,filters,a)
+				row = cerate_inter_compay_row(dr, cr, gcoa.account_code, gcoa.account_name, coa.root_type, dhi_company_code, filters, a)
 				if len(value) > 0:
 					is_new_row = True
 					for i, val in enumerate(value):
 						if val["interco"] == row["interco"]:
+							value["opening_debit"] += flt(row["opening_debit"])
+							value["opening_credit"] += flt(row["opening_credit"])
 							value[i]["amount"] += flt(row["amount"])
 							value[i]["credit"] += flt(row["credit"])
 							value[i]["debit"] += flt(row["debit"])
@@ -213,19 +274,23 @@ def payable_receivable_amount(gcoa,coa,filters):
 				else:
 					value.append(row)
 			elif not dhi_company_code and not gcoa.is_inter_company:
+				opening_dr += flt(dr)
+				opening_cr += flt(cr)
 				debit += flt(a.debit)
 				credit += flt(a.credit)
-				amount += flt(a.debit) - flt(a.credit) if coa.root_type in ['Asset','Expense'] else flt(a.credit) - flt(a.debit)
-	if gcoa.is_inter_company:
-		return value, 0, 0, 0
-	else:
-		return [], credit, debit, amount
+				amount += flt(flt(a.debit) + flt(dr)) - flt( flt(a.credit) + flt(cr)) if coa.root_type in ['Asset','Expense'] else flt(flt(a.credit) + flt(cr)) - flt( flt(a.debit) + flt(dr))
 
-def create_non_inter_compay_row(account_code,account_name,filters,credit,debit,amount) :
+	if gcoa.is_inter_company:
+		return value, 0, 0, 0, 0, 0
+	else:
+		return [], credit, debit, amount, opening_dr, opening_cr
+
+def create_non_inter_compay_row(opening_debit, opening_credit, account_code, account_name, filters, credit, debit,amount) :
 	doc = frappe.get_doc('DHI Setting')
 	row = {}
-	# frappe.msgprint(str(doc.interco))
 	row = {
+			'opening_debit':opening_debit,
+			'opening_credit':opening_credit,
 			'account_code':account_code,
 			'account':account_name,
 			'entity':doc.entity,
@@ -240,11 +305,12 @@ def create_non_inter_compay_row(account_code,account_name,filters,credit,debit,a
 	return row
 
 
-def cerate_inter_compay_row(account_code,account_name,root_type,company_code,filters,data=None) :
-	# frappe.msgprint(str(data))
+def cerate_inter_compay_row(opening_debit,opening_credit, account_code,account_name,root_type,company_code,filters,data=None) :
 	doc = frappe.get_doc('DHI Setting')
 	row = {}
 	row = {
+			'opening_debit':opening_debit,
+			'opening_credit':opening_credit,
 			'account_code':account_code,
 			'account':account_name,
 			'entity':doc.entity,
@@ -254,25 +320,18 @@ def cerate_inter_compay_row(account_code,account_name,root_type,company_code,fil
 			'time':filters['from_date'] + ' to '+filters['to_date'],
 			'debit':data.debit,
 			'credit':data.credit,
-			'amount': flt(data.debit) - flt(data.credit) if root_type in ['Asset','Expense'] else flt(data.credit) - flt(data.debit)
+			'amount': flt(flt(data.debit) + flt(opening_debit)) - flt(flt(data.credit)+flt(opening_credit)) if root_type in ['Asset','Expense'] else flt(flt(data.credit)+flt(opening_credit)) - flt(flt(data.debit)+flt(opening_debit))
 	}
 	return row
 
 def get_columns():
 	return [
 		{
-			"fieldname":"account_code",
+			"fieldname":"account",
 			"label":"Account",
 			"fieldtype":"Link",
 			"options":"DHI GCOA Mapper",
-			"width":100
-		},
-		{
-			"fieldname":"account",
-			"label":"Description",
-			"fieldtype":"Link",
-			"options":"DHI GCOA Mapper",
-			"width":300
+			"width":150
 		},
 		{
 			"fieldname":"entity",
@@ -305,6 +364,18 @@ def get_columns():
 			"width":160
 		},
 		{
+			"fieldname":"opening_debit",
+			"label":"Opening(Dr)",
+			"fieldtype":"Float",
+			"width":100
+		},
+		{
+			"fieldname":"opening_credit",
+			"label":"Opening(Cr)",
+			"fieldtype":"Float",
+			"width":100
+		},
+		{
 			"fieldname":"debit",
 			"label":"Debit",
 			"fieldtype":"Float",
@@ -324,3 +395,6 @@ def get_columns():
 		},
 	]
  
+# @frappe.whitelist()
+def try_data(filters):
+	return filters
