@@ -2071,12 +2071,14 @@ def rename_payment_entry():
 
 def rename_journal_entry():
 
-	arr = ['JEBR210800002', 'JEBR210800006', 'JEBR210800007']	
+	# arr = ['JEBR210800002', 'JEBR210800006', 'JEBR210800007']	
+	# 2021-09-07
+	arr = ['JEBP210900020','JEBP210900021','JEBP210900022','JEBP210900023','JEBP210900024']
 
 	for a in arr:
-		new_name = make_autoname('JEBR2107.#####')
+		new_name = make_autoname('JEBP2107.#####')
 		rename_doc("Journal Entry", a, new_name, force=False, merge=False, ignore_permissions=True)
 		frappe.db.sql("update `tabGL Entry` set voucher_no='{}' where voucher_type='Journal Entry' and voucher_no= '{}' ".format(new_name,a))
+		frappe.db.sql("update `tabPol Advance` set journal_entry='{}' where journal_entry = '{}'".format(new_name,a))
 		print('Renamed from: {} to: {}'.format(a, new_name))
 
-	
