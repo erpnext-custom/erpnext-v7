@@ -3,6 +3,8 @@
 
 from __future__ import unicode_literals
 import frappe
+from erpnext.accounts.utils import get_child_cost_centers
+
 
 def execute(filters=None):
 	columns =get_columns()
@@ -50,10 +52,27 @@ def get_data(filters):
         case when customer_group ='Lhakhangs & Goendey' then sum(grand_total) end as 'Lhakhangs'  
 	from `tabSales Invoice` where docstatus = 1 """
 	
-	if filters.get("branch"):
-		query += " and branch = \'"+ str(filters.branch) + "\'"
+	# if filters.get("branch"):
+	# 	query += " and branch = \'"+ str(filters.branch) + "\'"
+
+	if not filters.cost_center:
+		return ""
+
+	# all_ccs = get_child_cost_centers(filters.cost_center)
+	# if not all_ccs:
+	# 	return " and pe.docstatus = 10"
+
+	if not filters.branch:	
+		all_ccs = get_child_cost_centers(filters.cost_center)
+		query += " and branch in {0}".format(tuple(all_ccs))
+	else:
+		branch = str(filters.get("branch"))
+		branch = branch.replace(' - NRDCL','')
+		query += " and branch = \'"+branch+"\'"
+
 
         if filters.get("from_date") and filters.get("to_date"):
 		query += " and posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 	query += " group by branch"
+	# frappe.msgprint(query)
 	return frappe.db.sql(query)		

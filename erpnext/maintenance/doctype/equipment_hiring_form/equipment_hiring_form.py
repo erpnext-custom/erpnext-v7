@@ -20,15 +20,16 @@ class EquipmentHiringForm(Document):
 		self.validate_advance_balance()
 
 	def validate_advance_balance(self):
-		if len(self.balance_advance_details) < 1:
-			query = "select count(*) as count from `tabJournal Entry` as e inner join \
+		if self.private != "Own Company":
+			if len(self.balance_advance_details) < 1:
+				query = "select count(*) as count from `tabJournal Entry` as e inner join \
 				`tabJournal Entry Account` as ea on e.name = ea.parent inner join \
 				`tabEquipment Hiring Form` as eq on ea.reference_name = eq.name where \
 				e.branch = \'" + str(self.branch) + "\' and ea.party = \'" + str(self.customer) + "\' \
 				and eq.payment_completed = 1 and eq.docstatus= 1"
-			dtl = frappe.db.sql(query, as_dict=True)
-			if dtl[0]['count'] > 0:
-				frappe.throw("There are previous advance balance. Please fetch those advances");
+				dtl = frappe.db.sql(query, as_dict=True)
+				if dtl[0]['count'] > 0:
+					frappe.throw("There are previous advance balance. Please fetch those advances");
 
 	def validate_date(self, a):
 		from_date = get_datetime(str(a.from_date) + ' ' + str(a.from_time))

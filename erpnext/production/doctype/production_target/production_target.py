@@ -63,7 +63,7 @@ class ProductionTarget(Document):
 			if flt(a.quantity) > 0 and flt(a.quantity,2) != flt(a.qty,2):
 				frappe.throw("Target Quantity (Sales) should be equal to {0} for {1}".format(frappe.bold(str(a.qty)), frappe.bold(a.production_group)))
 
-def get_target_value(which, cost_center, production_group, fiscal_year, from_date, to_date, is_location=None, location_null=None):
+def get_target_value(which, cost_center, uom, production_group, fiscal_year, from_date, to_date, is_location=None, location_null=None):
 	if not which or which not in ("Production", "Disposal"):
 		frappe.throw("You should specify whether the target is for Production or Disposal")
 	# if not cost_center or not production_group or not fiscal_year:
@@ -80,6 +80,8 @@ def get_target_value(which, cost_center, production_group, fiscal_year, from_dat
 			cond = " a.cost_center in {0}".format(tuple(all_ccs))
 		else:
 			cond = " a.cost_center = '{0}'".format(cost_center)
+	if uom:
+		cond = "b.uom = '{0}'".format(uom)
 	# else:
 	# 	all_ccs = get_child_cost_centers(cost_center)
 	# 	if len(all_ccs) > 1:
@@ -87,7 +89,7 @@ def get_target_value(which, cost_center, production_group, fiscal_year, from_dat
 	# 	else:
 	# 		cond = " a.cost_center in ('DUMMY')"
 	query = "select sum(quantity) as total, sum(quarter1) as q1, sum(quarter2) as q2, sum(quarter3) as q3, sum(quarter4) as q4 from `tabProduction Target` a, `tab{0} Target Item` b where a.name = b.parent and {1} and a.fiscal_year = '{2}' and b.production_group = '{3}'".format(which, cond, fiscal_year, production_group)
-
+	# frappe.msgprint(query)
 	qty = frappe.db.sql(query, as_dict=True)
 	q1 = qty and qty[0].q1 or 0
 	q2 = qty and qty[0].q2 or 0
