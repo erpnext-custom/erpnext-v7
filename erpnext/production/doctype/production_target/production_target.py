@@ -81,7 +81,7 @@ def get_target_value(which, cost_center, uom, production_group, fiscal_year, fro
 		else:
 			cond = " a.cost_center = '{0}'".format(cost_center)
 	if uom:
-		cond = "b.uom = '{0}'".format(uom)
+		cond += " and b.uom = '{0}'".format(uom)
 	# else:
 	# 	all_ccs = get_child_cost_centers(cost_center)
 	# 	if len(all_ccs) > 1:
