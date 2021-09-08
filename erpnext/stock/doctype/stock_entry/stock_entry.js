@@ -305,7 +305,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
     },
 
     source_mandatory: ["Material Issue", "Material Transfer", "Subcontract", "Material Transfer for Manufacture"],
-    target_mandatory: ["Material Receipt", "Material Transfer", "Subcontract", "Material Transfer for Manufacture"],
+    target_mandatory: ["Material Receipt", "Subcontract", "Material Transfer for Manufacture"],
 
     from_warehouse: function(doc) {
         var me = this;
@@ -432,7 +432,14 @@ cur_frm.script_manager.make(erpnext.stock.StockEntry);
 
 cur_frm.cscript.toggle_related_fields = function(doc) {
     cur_frm.toggle_enable("from_warehouse", doc.purpose!='Material Receipt');
-    cur_frm.toggle_enable("to_warehouse", doc.purpose!='Material Issue');
+    // cur_frm.toggle_enable("to_warehouse", doc.purpose!='Material Issue');
+
+    if(doc.purpose == 'Material Issue' || doc.purpose == 'Material Transfer'){
+    	cur_frm.set_df_property("to_warehouse", "hidden", 1)
+    }
+    else if(doc.purpose == 'Material Receipt'){
+    	cur_frm.set_df_property("to_warehouse", "hidden", 0)
+    }
 
     cur_frm.fields_dict["items"].grid.set_column_disp("s_warehouse", doc.purpose!='Material Receipt');
     cur_frm.fields_dict["items"].grid.set_column_disp("t_warehouse", doc.purpose!='Material Issue');

@@ -82,8 +82,8 @@ class StockEntry(StockController):
                 if not self.from_warehouse and self.purpose != "Material Receipt":
                         frappe.throw("Source Warehouse is mandatory")
 
-                if self.purpose == "Material Transfer" and not self.to_warehouse:
-                        frappe.throw("Receiving Warehouse is mandatory for transfer")
+                # if self.purpose == "Material Transfer" and not self.to_warehouse:
+                #         frappe.throw("Receiving Warehouse is mandatory for transfer")
 
 	def on_submit(self):
 		self.update_stock_ledger()
