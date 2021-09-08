@@ -69,7 +69,7 @@ def get_data(filters):
 					row = [a.branch, a.location,  target, a.uom]
 					cond = " and location = '{0}'".format(a.location)
 				else:
-					target = get_target_value("Production", a.cost_center, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date, True, True)
+					target = get_target_value("Production", a.cost_center, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date)
 					row = [a.branch, a.location,target, a.uom]
 					branch_n = str(filters.branch)
 					branch_n = branch_n.replace(' - NRDCL','')

@@ -20,6 +20,7 @@ def get_columns(filters):
 				("Branch") + ":Link/Branch:140",
 				("Production Group") + ":Data:140",
 				("Material Group") + ":Link/Item Group:140",
+				("UOM") + ":Link/UOM:70",
 				("1st Quarter") + ":Float:90",
 				("2nd Quarter") + ":Float:90",
 				("3rd Quarter") + ":Float:90",
@@ -32,6 +33,7 @@ def get_columns(filters):
 				("Branch") + ":Link/Branch:140",
 				("Disposal Group") + ":Data:140",
 				("Material Group") + ":Link/Item Group:140",
+				("UOM") + ":Link/UOM:70",
 				("1st Quarter") + ":Float:90",
 				("2nd Quarter") + ":Float:90",
 				("3rd Quarter") + ":Float:90",
@@ -45,7 +47,7 @@ def get_data(filters):
 
 	if not filters.uinput:
 		return []
-	query = "select (select cc.parent_cost_center from `tabCost Center` cc where cc.name = pt.cost_center) as region, pt.branch, pdi.production_group, pt.item_group, sum(pdi.quarter1), sum(pdi.quarter2), sum(pdi.quarter3), sum(pdi.quarter4), sum(pdi.quantity) from `tab{0} Target Item` pdi, `tabProduction Target` pt where pt.name = pdi.parent".format(filters.uinput) 
+	query = "select (select cc.parent_cost_center from `tabCost Center` cc where cc.name = pt.cost_center) as region, pt.branch, pdi.production_group, pt.item_group, pdi.uom, sum(pdi.quarter1), sum(pdi.quarter2), sum(pdi.quarter3), sum(pdi.quarter4), sum(pdi.quantity) from `tab{0} Target Item` pdi, `tabProduction Target` pt where pt.name = pdi.parent".format(filters.uinput) 
 
 	#--------CONDITIONS------------------------------------------------------#
 	if filters.branch:
@@ -64,6 +66,8 @@ def get_data(filters):
 
 	if filters.get("item_group"):
 		query += " and pt.item_group = '{0}'".format(filters.get("item_group"))
+	if filters.get("uom"):
+		query += " and pdi.uom = '{0}'".format(filters.get("uom"))
 
 	query += " group by pdi.production_group " 
 	# if frappe.session.user == "Administrator":

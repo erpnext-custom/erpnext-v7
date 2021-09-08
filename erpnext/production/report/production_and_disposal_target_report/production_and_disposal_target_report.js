@@ -114,12 +114,12 @@ frappe.query_reports["Production and Disposal Target Report"] = {
                 //                 return {"doctype": "Item Sub Group", "filters": {"item_group": item_group}}
                 //         }
                 // },
-                // {
-		// 	"fieldname": "uom",
-		// 	"label": __("UOM"),
-		// 	"fieldtype": "Link",
-		// 	"options": "UOM",
-		// 	// "reqd": 1,
-		// },
+                {
+			"fieldname": "uom",
+			"label": __("UOM"),
+			"fieldtype": "Link",
+			"options": "UOM",
+			// "reqd": 1,
+		},
 	]
 }
