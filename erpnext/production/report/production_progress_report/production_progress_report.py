@@ -55,7 +55,7 @@ def get_data(filters):
 	#query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region, sum(qty) as total_qty from `tabProduction Entry` pe RIGHT JOIN `tabCost Center` cc ON cc.name = pe.cost_center where 1 = 1 {0} {1} {2} {3}".format(cc_condition, conditions, group_by, order_by)
 	# query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region from `tabProduction Target` pe, `tabCost Center` cc where cc.name = pe.cost_center and cc.parent_cost_center != 'Regional Office - NRDCL' and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
 	# if filters.branch:
-	query = "select pe.cost_center, pe.branch, pei.location, cc.parent_cost_center as region from `tabProduction Target` pe, `tabProduction Target Item` pei, `tabCost Center` cc where cc.name = pe.cost_center and pe.name = pei.parent and cc.parent_cost_center != 'Regional Office - NRDCL' and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
+	query = "select pei.uom, pe.cost_center, pe.branch, pei.location, cc.parent_cost_center as region from `tabProduction Target` pe, `tabProduction Target Item` pei, `tabCost Center` cc where cc.name = pe.cost_center and pe.name = pei.parent and cc.parent_cost_center != 'Regional Office - NRDCL' and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
 	# else:
 	# 	query = "select cc.parent_cost_center as region from `tabProduction Target` pe, `tabCost Center` cc where cc.name = pe.cost_center and cc.parent_cost_center != 'Regional Office - NRDCL' and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
 	# frappe.msgprint(query)
@@ -65,12 +65,12 @@ def get_data(filters):
 			total_timber = 0
 			if filters.branch:
 				if a.location:
-					target = get_target_value("Production", a.location, filters.production_group, filters.fiscal_year, start_date, end_date, True)
-					row = [a.branch, a.location, target]
+					target = get_target_value("Production", a.location, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date, True)
+					row = [a.branch, a.location,  target, a.uom]
 					cond = " and location = '{0}'".format(a.location)
 				else:
-					target = get_target_value("Production", a.cost_center, filters.production_group, filters.fiscal_year, start_date, end_date, True, True)
-					row = [a.branch, a.location, target]
+					target = get_target_value("Production", a.cost_center, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date, True, True)
+					row = [a.branch, a.location,target, a.uom]
 					branch_n = str(filters.branch)
 					branch_n = branch_n.replace(' - NRDCL','')
 					cond = " and branch = '{0}'".format(branch_n)
@@ -79,7 +79,7 @@ def get_data(filters):
 				# frappe.msgprint(a.cost_center)
 				# if filters.is_company:
 				# target = get_target_value("Production", a.region, filters.production_group, filters.fiscal_year, start_date, end_date)
-				target = get_target_value("Production", a.cost_center, filters.production_group, filters.fiscal_year, start_date, end_date)
+				target = get_target_value("Production", a.cost_center, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date)
 				# all_ccs = get_child_cost_centers(a.region)
 				ccs = []
 				all_ccs = frappe.db.sql("""
@@ -93,7 +93,7 @@ def get_data(filters):
 				else:
 					cond = " and cost_center in ('DUMMY')"	
 				# a.region = str(a.region).replace(abbr, "")
-				row = [a.branch, a.region, target]
+				row = [a.branch, a.region, target, a.uom]
 				# else:
 				# 	target = get_target_value("Production", a.cost_center, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
 				# 	# frappe.msgprint(str(target))
@@ -111,9 +111,9 @@ def get_data(filters):
 				total_timber += flt(qty)
 
 			if filters.branch:
-				row.insert(3, rounded(total, 2))
+				row.insert(4, rounded(total, 2))
 			else:
-				row.insert(3, rounded(total, 2))
+				row.insert(4, rounded(total, 2))
 
 			# if target == 0:
 			# 	target = 1
@@ -122,16 +122,17 @@ def get_data(filters):
 			row.append(total)
 			
 			percentage = rounded(100 * (total/target),2) if target != 0 else 0
+			# frappe.throw(str(percentage))
 			if filters.branch:
 				if percentage <= rounded(100,2):
-					row.insert(4, percentage)
+					row.insert(5, percentage)
 				else:
-					row.insert(4,rounded(100,2))
+					row.insert(5, rounded(100,2))
 			else:
 				if percentage <= rounded(100,2):
-					row.insert(4, percentage)
+					row.insert(5, percentage)
 				else:
-					row.insert(4,rounded(100,2))
+					row.insert(5,rounded(100,2))
 
 			if target > 1:
 				overall_target +=  target
@@ -159,18 +160,18 @@ def get_data(filters):
 					if a.location:
 						# branch = str(filters.branch)
 						# branch = branch.replace(' - NRDCL','')
-						target = get_target_value("Production", a.location, filters.production_group, filters.fiscal_year, start_date, end_date, True)
-						row = [a.branch, a.location, target]
+						target = get_target_value("Production", a.location, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date, True)
+						row = [a.branch, a.location, target, a.uom]
 						cond = " and location = '{0}'".format(a.location)
 						# cond += " and branch = '{0}'".format(branch)
 					else:
-						target = get_target_value("Production", a.cost_center, filters.production_group, filters.fiscal_year, start_date, end_date, True)
-						row = [a.branch, a.location, target]
+						target = get_target_value("Production", a.cost_center, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date, True)
+						row = [a.branch, a.location, target, a.uom]
 						branch_n = str(filters.branch)
 						branch_n = branch_n.replace(' - NRDCL','')
 						cond = " and branch = '{0}'".format(branch_n)
 				else:
-					target = get_target_value("Production", a.region, filters.production_group, filters.fiscal_year, start_date, end_date)
+					target = get_target_value("Production", a.region,a.uom, filters.production_group, filters.fiscal_year, start_date, end_date)
 					ccs = []
 					all_ccs = frappe.db.sql("""
 						select name from `tabCost Center` where parent_cost_center = '{0}'
@@ -183,7 +184,7 @@ def get_data(filters):
 					else:
 						cond = " and cost_center in ('DUMMY')"
 					# a.region = str(a.region).replace(abbr, "")
-					row = [a.branch, a.region, rounded(target,2)]
+					row = [a.branch, a.region,  rounded(target,2), a.uom]
 					# else:
 					# 	target = get_target_value("Production", a.cost_center, filters.production_group, filters.fiscal_year, start_date, end_date)
 					# 	row = [a.branch, target]
@@ -206,23 +207,23 @@ def get_data(filters):
 				# if target == 0:
 				# 	target = 1
 				if filters.branch:
-					row.insert(3, rounded(total, 2))
+					row.insert(4, rounded(total, 2))
 					# if target == 0:
 					# 	target = 1
 					achieved_percent = rounded(100 * total/target, 2) if target != 0 else 0
 					if achieved_percent > rounded(100,2):
-						row.insert(4, rounded(100,2))
+						row.insert(5, rounded(100,2))
 					else:
-						row.insert(4, achieved_percent)
+						row.insert(5, achieved_percent)
 				else:
-					row.insert(3, rounded(total, 2))
+					row.insert(4, rounded(total, 2))
 					# if target == 0:
 					# 	target = 1
 					achieved_percent = rounded(100 * total/target, 2) if target != 0 else 0
 					if achieved_percent > rounded(100,2):
-						row.insert(4, rounded(100,2))
+						row.insert(5, rounded(100,2))
 					else:
-						row.insert(4, achieved_percent)		
+						row.insert(5, achieved_percent)		
 				rp_from_date = "-" + fdate_split[1] + "-" + fdate_split[2]
 				rp_to_date = "-" + tdate_split[1] + "-" + tdate_split[2]
 				month = frappe.db.get_value("Report Period", {'from_date':rp_from_date, 'to_date':rp_to_date}, 'name')
@@ -249,19 +250,27 @@ def get_data(filters):
 	# overall_target = math.ceil(overall_target)
 	# if frappe.session.user == "Administrator":
 		# frappe.throw(str(overall_target))
-	if filters.branch:
-		row = ["Total", "", overall_target, overall_achieved, overall_achieved_percent]
-	else:
-		row = ["Total", "", overall_target, overall_achieved, overall_achieved_percent]
+	if filters.uom:
+		if filters.branch:
+			row = ["Total", "",  overall_target, "",overall_achieved, overall_achieved_percent]
+		else:
+			row = ["Total", "",   overall_target,"", overall_achieved, overall_achieved_percent]
+	else:	
+		if filters.branch:
+			row = ["Total", "", overall_target,"", overall_achieved, overall_achieved_percent]
+		else:
+			row = ["Total", "", overall_target, "", overall_achieved, overall_achieved_percent]
 	data.append(row)
+	# frappe.throw(str(data))
+
 	return data
 
 def get_group_by(filters):
 	if filters.branch:
-		group_by = " group by region, branch, location"
+		group_by = " group by region, branch, location, pei.uom"
 	else:
 		# if filters.is_company:
-		group_by = " group by region, branch"
+		group_by = " group by region, branch, pei.uom"
 		# else:
 		# 	group_by = " group by region, branch"
 
@@ -272,6 +281,7 @@ def get_order_by(filters):
 
 def get_cc_conditions(filters):
 	condition = ""
+	
 	if not filters.cost_center:
 		return " and pe.docstatus = 10"
 	else:
@@ -288,10 +298,13 @@ def get_cc_conditions(filters):
 			for i in all_ccs:
 				ccs.append(str(i.name))
 			condition += " and cc.name in {0} ".format(tuple(ccs))
+	if filters.uom:
+		condition += " and pei.uom = '{0}'".format(filters.uom)
 	return condition
 
 def get_filter_conditions(filters, start_date, end_date):
 	condition = ""
+	
 	if filters.location:
 		condition += " and pe.location = '{0}'".format(filters.location)
 
@@ -302,10 +315,10 @@ def get_filter_conditions(filters, start_date, end_date):
 
 def get_columns(filters):
 	if filters.branch:
-			columns = ["Branch:Link/Branch:150", "Location:Link/Location:150", "Target Qty:Float:120", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
+			columns = ["Branch:Link/Branch:150", "Location:Link/Location:150", "Target Qty:Float:120", "UOM:Link/UOM:50", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
 	else:
 		# if filters.is_company:
-		columns = ["Branch:Link/Branch:150", "Region:Link/Cost Center:150", "Target Qty:Float:120", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
+		columns = ["Branch:Link/Branch:150", "Region:Link/Cost Center:150", "Target Qty:Float:120", "UOM:Link/UOM:50", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
 
 	for a in get_production_groups(filters.production_group):
 		columns.append(str(str(a) + ":Float:90"))

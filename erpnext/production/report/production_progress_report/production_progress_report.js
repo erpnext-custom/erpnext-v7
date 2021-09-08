@@ -66,6 +66,12 @@ frappe.query_reports["Production Progress Report"] = {
 			}
 		},
 		{
+			"fieldname": "uom",
+			"label": ("UOM"),
+			"fieldtype": "Link",
+ 			"options": "UOM"
+		},
+		{
 			"fieldtype": "Break"
 		},
 		{
