@@ -66,6 +66,13 @@ frappe.query_reports["Disposal Progress Report"] = {
 			}
 		},
 		{
+			"fieldname": "production_group",
+			"label": ("Production Group"),
+			"fieldtype": "Link",
+ 			"options": "Production Group",
+			"reqd": 1
+		},
+		{
 			"fieldtype": "Break"
 		},
 		{
@@ -82,12 +89,12 @@ frappe.query_reports["Disposal Progress Report"] = {
  			"options": "Report Period",
 			"reqd": 1
 		},
+		
 		{
-			"fieldname": "production_group",
-			"label": ("Production Group"),
+			"fieldname": "uom",
+			"label": ("UOM"),
 			"fieldtype": "Link",
- 			"options": "Production Group",
-			"reqd": 1
+ 			"options": "UOM"
 		},
 		{
 			"fieldname": "cumulative",
