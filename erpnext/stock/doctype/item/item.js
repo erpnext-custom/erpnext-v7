@@ -13,7 +13,7 @@ frappe.ui.form.on("Item", {
 		if (frm.doc.variant_of) {
 			frm.fields_dict["attributes"].grid.set_column_disp("attribute_value", true);
 		}
-#
+
 		// should never check Private
 		frm.fields_dict["website_image"].df.is_private = 0;
 	},
@@ -99,14 +99,14 @@ frappe.ui.form.on("Item", {
 	},
 
 	is_fixed_asset: function (frm) {
-		if (frm.doc.is_fixed_asset || frm.doc.item_group == "Fixed Asset") {
+		if (frm.doc.is_fixed_asset) {
 			frm.set_value("is_stock_item", 0);
-			frm.set_df_property("is_stock_item", "read_only", 1);
-			frm.refresh_field('is_stock_item');
-		}
-		else{
-			frm.set_df_property("is_stock_item", "read_only", 0);
-			frm.refresh_field('is_stock_item');
+		// 	frm.set_df_property("is_stock_item", "read_only", 1);
+		// 	frm.refresh_field('is_stock_item');
+		// }
+		// else{
+		// 	frm.set_df_property("is_stock_item", "read_only", 0);
+		// 	frm.refresh_field('is_stock_item');
 		}
 	},
 
@@ -406,14 +406,14 @@ cur_frm.cscript.item_group = function (doc) {
 	}*/
 
 	if (doc.item_group) {
-		if(doc.item_group == "Fixed Asset"){
-			cur_frm.set_value("is_stock_item", 0)
-			cur_frm.set_value("is_fixed_asset", 1)
-			cur_frm.set_df_property("is_stock_item", "read_only", 1);
-			cur_frm.toggle_display("is_stock_item", !doc.item_group.match(/Service*/))
-			cur_frm.toggle_display("is_fixed_asset", !doc.item_group.match(/Service*/))
-		}
-		else if (doc.item_group.match(/Service*/)) {
+		// if(doc.item_group == "Fixed Asset"){
+		// 	cur_frm.set_value("is_stock_item", 0)
+		// 	cur_frm.set_value("is_fixed_asset", 1)
+		// 	cur_frm.set_df_property("is_stock_item", "read_only", 1);
+		// 	cur_frm.toggle_display("is_stock_item", !doc.item_group.match(/Service*/))
+		// 	cur_frm.toggle_display("is_fixed_asset", !doc.item_group.match(/Service*/))
+		// }
+		if (doc.item_group.match(/Service*/)) {
 			cur_frm.set_value("is_stock_item", 0)
 			cur_frm.set_value("is_fixed_asset", 0)
 			cur_frm.toggle_display("is_stock_item", !doc.item_group.match(/Service*/))
