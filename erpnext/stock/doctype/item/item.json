@@ -409,7 +409,7 @@
    "print_hide_if_no_value": 0, 
    "read_only": 0, 
    "report_hide": 0, 
-   "reqd": 1, 
+   "reqd": 0, 
    "search_index": 0, 
    "set_only_once": 0, 
    "unique": 0
@@ -2879,7 +2879,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 1, 
- "modified": "2021-07-26 15:21:37.689010", 
+ "modified": "2021-09-08 17:12:43.420482", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Item", 

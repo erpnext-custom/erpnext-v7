@@ -2073,7 +2073,7 @@ def rename_journal_entry():
 
 	# arr = ['JEBR210800002', 'JEBR210800006', 'JEBR210800007']	
 	# 2021-09-07
-	arr = ['JEBP210900020','JEBP210900021','JEBP210900022','JEBP210900023','JEBP210900024']
+	arr = ['JEBP210900020','JEBP210900023','JEBP210900024']
 
 	for a in arr:
 		new_name = make_autoname('JEBP2107.#####')
@@ -2081,4 +2081,20 @@ def rename_journal_entry():
 		frappe.db.sql("update `tabGL Entry` set voucher_no='{}' where voucher_type='Journal Entry' and voucher_no= '{}' ".format(new_name,a))
 		frappe.db.sql("update `tabPol Advance` set journal_entry='{}' where journal_entry = '{}'".format(new_name,a))
 		print('Renamed from: {} to: {}'.format(a, new_name))
+	
 
+	new_name2 = make_autoname('JEBP2108.#####')
+	rename_doc("Journal Entry", 'JEBP210900021' , new_name2, force=False, merge=False, ignore_permissions=True)
+	frappe.db.sql("update `tabGL Entry` set voucher_no='{}' where voucher_type='Journal Entry' and voucher_no= 'JEBP210900021'".format(new_name2))
+	frappe.db.sql("update `tabPol Advance` set journal_entry='{}' where journal_entry = 'JEBP210900021'".format(new_name2))
+	print('Renamed from: {} to: {}'.format('JEBP210900021', new_name2))
+
+def change_item_to_fixed_asset():
+	item = frappe.db.sql("select name, item_group from `tabItem` where item_code like '2000%' and is_stock_item=1", as_dict=1)
+	for i in item:
+		frappe.db.sql("update `tabItem` set is_fixed_asset = 1, is_stock_item = 0 where name='{}' and item_group='{}'".format(i.name,i.item_group))
+		sle = frappe.db.sql("select name, item_code from `tabStock Ledger Entry` where item_code = '{}'".format(i.name), as_dict=1)
+		for s in sle:
+			print("SLE NAME: " + s.name + " item code: " + s.item_code)
+			frappe.db.sql("delete from  `tabStock Ledger Entry` where name = '{}' and item_code = '{}'".format(s.name,s.item_code))
+    	print("done")
