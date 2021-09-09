@@ -4,10 +4,6 @@
 cur_frm.add_fetch('branch','cost_center','cost_center');
 frappe.ui.form.on('Coal Raising Payment', {
 	setup: function(frm) {
-		if( frm.doc.docstatus != 1 ){
-			frm.set_value('from_date',frappe.datetime.month_start())
-			frm.set_value('to_date',frappe.datetime.month_end())
-		}
 	},
 	get_coal_raising_details:function(frm){
 		if(frm.doc.branch){
