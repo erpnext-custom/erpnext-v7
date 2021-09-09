@@ -26,10 +26,10 @@ def get_data(query, filters=None):
 
 def construct_query(filters=None):
 	query = ""
-	query = "select ae.item_code, (select i.item_name from `tabItem` as i where i.item_code = ae.item_code) as item_name, sum(ae.qty) as total_qty, (select sum(id.qty) from `tabAsset Issue Details` id where id.item_code = ae.item_code and id.docstatus = 1) as issued_qty from `tabAsset Received Entries` as ae where ae.docstatus = 1 "
+	query = "select ae.item_code, (select i.item_name from `tabItem` as i where i.item_code = ae.item_code) as item_name, sum(ae.qty) as total_qty, (select sum(id.qty) from `tabAsset Issue Details` id where id.item_code = ae.item_code and id.docstatus = 1) as issued_qty from `tabAsset Received Entries` as ae where ae.docstatus = 1 and exists(select 1 from `tabItem` where item_code = ae.item_code)"
 
 	if filters.to_date and filters.from_date:
-		query = "select ae.item_code, (select i.item_name from `tabItem` as i where i.item_code = ae.item_code) as item_name, ae.qty as total_qty, (select sum(id.qty) from `tabAsset Issue Details` id where id.item_code = ae.item_code and id.docstatus = 1 and id.issued_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\') as issued_qty from `tabAsset Received Entries` as ae where ae.docstatus = 1 and ae.received_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"; 
+		query = "select ae.item_code, (select i.item_name from `tabItem` as i where i.item_code = ae.item_code) as item_name, ae.qty as total_qty, (select sum(id.qty) from `tabAsset Issue Details` id where id.item_code = ae.item_code and id.docstatus = 1 and id.issued_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\') as issued_qty from `tabAsset Received Entries` as ae where ae.docstatus = 1 and exists(select 1 from `tabItem` where item_code = ae.item_code) and ae.received_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"; 
 	
 	query += " group by ae.item_code order by ae.item_code asc"
 	return query;
