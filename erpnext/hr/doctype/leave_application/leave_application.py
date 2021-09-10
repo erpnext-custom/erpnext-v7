@@ -532,43 +532,43 @@ def get_leave_balance_on(employee, leave_type, ason_date, allocation_records=Non
         '''
 	#leaves carry forwarded from CL to EL
 
-        carry_forward = frappe.db.sql(""" select c.employee, c.leave_balance,  p.fiscal_year from `tabCarry Forward Entry` p, 
-                        `tabCarry Forward Item` c where c.parent = p.name and p.docstatus = 1 and p.leave_type = 'Casual Leave' 
-                        and {0}-fiscal_year = 1 and c.employee = '{1}' and p.docstatus = 1 
-                        order by fiscal_year desc limit 1""".format(getdate(ason_date).year, employee), frappe._dict())
-        leaves = 0.0
-        if carry_forward:
-                if leave_type == 'Casual Leave':
-                        leaves = carry_forward and -1* carry_forward[0][1] or 0.0
-                elif leave_type == 'Earned Leave':
-                        leaves = carry_forward and carry_forward[0][1] or 0.0
-                else:
-                        leaves = 0.0
+	carry_forward = frappe.db.sql(""" select c.employee, c.leave_balance,  p.fiscal_year from `tabCarry Forward Entry` p, 
+					`tabCarry Forward Item` c where c.parent = p.name and p.docstatus = 1 and p.leave_type = 'Casual Leave' 
+					and {0}-fiscal_year = 1 and c.employee = '{1}' and p.docstatus = 1 
+					order by fiscal_year desc limit 1""".format(getdate(ason_date).year, employee), frappe._dict())
+	leaves = 0.0
+	if carry_forward:
+		if leave_type == 'Casual Leave':
+			leaves = carry_forward and -1* carry_forward[0][1] or 0.0
+		elif leave_type == 'Earned Leave':
+			leaves = carry_forward and carry_forward[0][1] or 0.0
+		else:
+			leaves = 0.0
 
-        allocation   = get_leave_allocation_records(ason_date, employee).get(employee, frappe._dict()).get(leave_type, frappe._dict())
-        balance      = 0
+	allocation   = get_leave_allocation_records(ason_date, employee).get(employee, frappe._dict()).get(leave_type, frappe._dict())
+	balance      = 0
 	
 	if allocation:
-                leaves_taken = get_approved_leaves_for_period(employee, leave_type, allocation.from_date, ason_date)
-                if leave_type == "Medical Leave":
-                        frappe.msgprint(str(leaves_taken))
-                balance      = flt(allocation.total_leaves_allocated) - flt(leaves_taken) + flt(leaves)
-                if balance <= 0:
-                        balance = flt(allocation.total_leaves_allocated) - flt(leaves_taken)
+		leaves_taken = get_approved_leaves_for_period(employee, leave_type, allocation.from_date, ason_date)
+		# if leave_type == "Medical Leave":
+		# 	frappe.msgprint(str(leaves_taken))
+		balance      = flt(allocation.total_leaves_allocated) - flt(leaves_taken) + flt(leaves)
+		if balance <= 0:
+			balance = flt(allocation.total_leaves_allocated) - flt(leaves_taken)
 
-                if leave_type == 'Earned Leave':
-                        #le = get_le_settings()         # Line commented by SHIV on 2018/10/12
-                        le = frappe.get_doc("Employee Group",frappe.db.get_value("Employee",employee,"employee_group")) # Line added by SHIV on 2018/10/12
-                        if flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken)) + flt(leaves) > flt(le.encashment_lapse):
-                                balance = flt(le.encashment_lapse)
-        else:
-                balance = 0
+		if leave_type == 'Earned Leave':
+			#le = get_le_settings()         # Line commented by SHIV on 2018/10/12
+			le = frappe.get_doc("Employee Group",frappe.db.get_value("Employee",employee,"employee_group")) # Line added by SHIV on 2018/10/12
+			if flt(flt(allocation.total_leaves_allocated) - flt(leaves_taken)) + flt(leaves) > flt(le.encashment_lapse):
+				balance = flt(le.encashment_lapse)
+	else:
+		balance = 0
 
-        return flt(balance)
+	return flt(balance)
 
-        ##
-        #  Ver 2.0 Ends
-        ##
+	##
+	#  Ver 2.0 Ends
+	##
 
 # Ver 1.0 Begins added by SSK on 20/08/2016, following function is added
 def get_leaves_encashed(employee=None, leave_type=None, from_date=None):

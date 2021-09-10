@@ -57,7 +57,7 @@ frappe.ui.form.on("Leave Application", {
 			frm.set_df_property("leave_approver_name", "hidden", 1);
                 }
 
-		console.log("testing");
+
 
 	
 		/* if (frm.is_new()) {
@@ -144,7 +144,7 @@ frappe.ui.form.on("Leave Application", {
 				'fields': ["branch", "cost_center"]				
 			},
 			callback: function(r){
-				console.log(r.message)
+
 				if((frm.doc.docstatus==0 || frm.doc.__islocal) && frm.doc.employee){
 					cur_frm.set_value("branch", r.message.branch);
 					cur_frm.set_value("cost_center", r.message.cost_center);
