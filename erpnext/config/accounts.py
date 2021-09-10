@@ -500,6 +500,44 @@ def get_data():
 			]
 		},
 		{
+			"label": _("ePayment"),
+			# "icon": "icon-table",
+			"items": [
+       			{
+					"type": "doctype",
+					"name": "Bank Payment Settings",
+					"label": _("Bank Payment Settings"),
+					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "Bank Payment",
+					"label": _("Bank Payment"),
+					# "hide_count": True
+				},
+    {
+					"type": "doctype",
+					"name": "Utility Bill",
+					"label": _("Utility Bill Payment"),
+				},
+				{
+					"type": "doctype",
+					"name": "Utility Services",
+					"label": _("Utility Services"),
+				},
+				{
+					"type": "doctype",
+					"name": "Utility Service Type",
+					"label": _("Utility Service Type"),
+				},
+				{
+					"type": "doctype",
+					"name": "API Detail",
+					"label": _("API Detail"),
+				},
+			]
+		},
+		{
 			"label": _("Other Reports"),
 			"icon": "icon-table",
 			"items": [
@@ -562,4 +600,58 @@ def get_data():
 
 			]
 		},
+		{
+			"label": _("DHI Consolidation"),
+			# "icon": "icon-table",
+			"items": [
+       			{
+					"type": "doctype",
+					"name": "DHI Setting",
+					"label": _("DHI Setting"),
+					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "DHI GCOA",
+					"label": _("Group Chart Of Account"),
+					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "DHI Company",
+					"label": "DHI Owned Company",
+					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "DHI GCOA Mapper",
+					"label": "GCOA Mapper To COA",
+					# "hide_count": True
+				},
+				
+			]
+		},
+		{
+			"label":_("Consolidation Report"),
+			"items":[
+				{
+					"type": "report",
+					"name": "Consolidation Report",
+					"doctype": "DHI GCOA Mapper",
+					"is_query_report": True
+				},
+    			{
+					"type": "report",
+					"name": "DHI GCOA Mapper Report",
+					"doctype": "DHI GCOA Mapper",
+					"is_query_report": True
+				},
+       			{
+					"type": "report",
+					"name": "GCOA Wise Report",
+					"doctype": "DHI GCOA Mapper",
+					"is_query_report": True
+				}
+			]
+		}
 	]
