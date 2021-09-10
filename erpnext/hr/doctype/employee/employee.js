@@ -107,18 +107,33 @@ erpnext.hr.EmployeeController = frappe.ui.form.Controller.extend({
         passport_number: function(){
                 if(this.frm.doc.passport_number)
                 {
-                        frappe.call({
-                                        method: "erpnext.hr.doctype.employee.employee.get_employee_passport_number",
-                                        args: {
-                                                'passport_no': this.frm.doc.passport_number
-                                        },
-                                        callback: function(r){
-                                                if(r.message) {
-                                                        frappe.msgprint("An employee with Passport/CID is already assigned to " + r.message);
-                                                        cur_frm.set_value("passport_number", "");
-                                                }
-                                        }
-                                });
+					frappe.call({
+						method: "erpnext.hr.doctype.employee.employee.get_employee_passport_number",
+						args: {
+							'passport_no': this.frm.doc.passport_number
+						},
+						callback: function(r){
+							if(r.message) {
+								frappe.msgprint("An employee with Passport/CID is already assigned to " + r.message);
+								cur_frm.set_value("passport_number", "");
+							}
+						}
+					});
+					frappe.call({
+						method: "erpnext.hr.doctype.employee.employee.check_for_desuup_id",
+						args: {
+							'cid': this.frm.doc.passport_number
+						},
+						callback: function(r){
+							if(r.message) {
+								cur_frm.set_value("desuup_id", r.message);
+							}
+							else{
+  					 			frappe.meta.get_docfield(this.frm.doc.doctype, "desuup_id", this.frm.doc.name).reqd=0;
+								cur_frm.set_value("desuup_id", "");		
+							}
+						}
+					});
                 }
         },
 

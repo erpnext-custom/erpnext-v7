@@ -498,6 +498,13 @@ def get_employee_passport_number(passport_no):
         if data:
                 return data[0].employee_name
 
+@frappe.whitelist()
+def check_for_desuup_id(cid):
+	data = frappe.db.sql("select name from `tabDesuup` where cid_number = '{}'".format(cid), as_dict=True)
+	if data:
+		return data[0].name
+	else:
+		return ""
 
 @frappe.whitelist()
 def get_overtime_rate(employee):
