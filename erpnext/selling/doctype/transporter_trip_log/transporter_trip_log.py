@@ -29,6 +29,8 @@ class TransporterTripLog(Document):
 				
 			qty = flt(qty) + flt(b.qty)
 			if b.transporter_payment_eligible:
+				if not b.equipment:
+					frappe.throw("Please insert vehicle")
 				if rate > 0:
 					b.rate = rate
 					b.expense_account = expense_account
