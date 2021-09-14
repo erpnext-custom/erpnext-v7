@@ -409,6 +409,7 @@ def make_purchase_receipt(source_name, target_doc=None):
 			"field_map": {
 				"name": "purchase_order_item",
 				"parent": "purchase_order",
+				"budget_account": "budget_account"
 			},
 			"postprocess": update_item,
 			"condition": lambda doc: abs(doc.received_qty) < abs(doc.qty) and doc.delivered_by_supplier!=1
@@ -449,6 +450,7 @@ def make_purchase_invoice(source_name, target_doc=None):
 			"field_map": {
 				"name": "po_detail",
 				"parent": "purchase_order",
+				"budget_account": "budget_account"
 			},
 			"postprocess": update_item,
 			"condition": lambda doc: (doc.base_amount==0 or abs(doc.billed_amt) < abs(doc.amount))

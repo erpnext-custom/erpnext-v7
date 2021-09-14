@@ -604,6 +604,7 @@ def make_purchase_invoice(source_name, target_doc=None):
 				"parent": "purchase_receipt",
 				"purchase_order_item": "po_detail",
 				"purchase_order": "purchase_order",
+				"budget_account": "budget_account",
 			},
 			"postprocess": update_item,
 			"filter": lambda d: abs(d.qty) - abs(invoiced_qty_map.get(d.name, 0))<=0

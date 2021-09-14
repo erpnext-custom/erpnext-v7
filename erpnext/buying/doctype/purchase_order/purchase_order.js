@@ -333,10 +333,10 @@ frappe.ui.form.on("Purchase Order Item", "item_code", function(frm, cdt, cdn) {
             "item_code": item.item_code
         },
         callback: function(r)  {
-             if(r.message) {
-                   frappe.model.set_value(cdt, cdn, "budget_account", r.message)
-		   frappe.model.set_value(cdt, cdn, "uom", null)
-             }
+			if(r.message) {
+				frappe.model.set_value(cdt, cdn, "budget_account", r.message)
+				frappe.model.set_value(cdt, cdn, "uom", null)
+			}
         }
    })
 })
