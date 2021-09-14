@@ -32,7 +32,8 @@ class UtilityBill(Document):
         
     def update_pi_number(self):
         for a in self.get("item"):
-            a.pi_number = get_transaction_id()
+            if not a.pi_number:
+                a.pi_number = get_transaction_id()
 
     def get_bank_available_balance(self):
         if self.bank_account and frappe.db.get_value('Bank Payment Settings', "BOBL", 'enable_one_to_one'):
