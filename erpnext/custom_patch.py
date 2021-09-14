@@ -2098,3 +2098,12 @@ def change_item_to_fixed_asset():
 			print("SLE NAME: " + s.name + " item code: " + s.item_code)
 			frappe.db.sql("delete from  `tabStock Ledger Entry` where name = '{}' and item_code = '{}'".format(s.name,s.item_code))
     	print("done")
+
+def delete_pol_ad_and_gl_entry():
+	gl_entry = frappe.db.sql("select name from `tabGL Entry` where voucher_no = 'POLAD21080400002'", as_dict=True)
+	for i in gl_entry:
+		print(i.name)
+		frappe.db.sql("delete from `tabGL Entry` where name = '{}'".format(i.name))
+
+	frappe.db.sql("update `tabPol Advance` set docstatus=2, workflow_state = 'Cancelled' where name='POLAD21080400002'")
+	print("done")

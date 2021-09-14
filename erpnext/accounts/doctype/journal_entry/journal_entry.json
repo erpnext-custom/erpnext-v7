@@ -1366,8 +1366,8 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2021-03-31 15:58:58.337127", 
- "modified_by": "Administrator", 
+ "modified": "2021-09-14 09:44:47.751849", 
+ "modified_by": "dechen.lhaden@thimphutechpark.bt", 
  "module": "Accounts", 
  "name": "Journal Entry", 
  "name_case": "Title Case", 
@@ -1587,6 +1587,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "title", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }
