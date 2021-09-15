@@ -29,17 +29,23 @@ def get_columns():
 def get_data(filters=None):
 	query = """ select j.posting_date as posting_date, j.branch as branch, j.equipment as equipment, j.equipment_number as equipment_number, 
 		i.which as service_type, i.job as job, i.job_name as job_name, i.amount as amount, i.quantity as qty, j.name as name 
-		from `tabJob Card` j inner join `tabJob Card Item` i on j.name = i.parent where j.docstatus = 1 """
+		from `tabJob Card` j inner join `tabJob Card Item` i on j.name = i.parent where j.docstatus = 1 
+		and posting_date between '{0}' AND '{1}' and branch = '{2}' 
+		union
+		select se.posting_date as posting_date, se.branch, sed.issued_equipment_no as equipment, (select equipment_number from `tabEquipment` where name = sed.issued_equipment_no)
+as equipment_number, 'Stock entry', se.name, 'Stock entry',  sed.amount, sed.qty, se.name 
+from `tabStock Entry` se, `tabStock Entry Detail` sed where se.name= sed.parent and issue_to_equipment =1 
+and posting_date between '{0}' AND '{1}' and se.branch = '{2}'  """.format(filters.from_date, filters.to_date, filters.branch, filters.equipment)
 
 
-	if filters.from_date and filters.to_date:
-		query += " and j.posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"
+	# if filters.from_date and filters.to_date:
+	# 	query += " and posting_date between \'" + str(filters.from_date) + "\' and \'" + str(filters.to_date) + "\'"
 
-	if filters.branch:
-		query += " and j.branch = \'" + str(filters.branch) + "\'"
+	# if filters.branch:
+	# 	query += " and branch = \'" + str(filters.branch) + "\'"
 	
-	if filters.equipment:
-		query += " and j.equipment = \'" + str(filters.equipment) + "\'"
+	# if filters.equipment:
+	# 	query += " and equipment = \'" + str(filters.equipment) + "\'"
 		
 	query += " order by `posting_date` desc"
 	data = frappe.db.sql(query)

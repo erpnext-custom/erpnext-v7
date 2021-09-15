@@ -23,12 +23,7 @@ frappe.query_reports["Equipment Maintenance History"] = {
 		  "fieldtype":"Date",
 		  "width":"80",
 		  "default": frappe.datetime.year_end()
-		},
-		{
-		 "fieldname":"equipment",
-		 "label":("Equipment"),
-		 "fieldtype":"Link",
-		 "options":"Equipment"
 		}
+	
 	]
 }
