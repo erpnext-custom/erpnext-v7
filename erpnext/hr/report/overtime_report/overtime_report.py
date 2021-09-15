@@ -13,24 +13,23 @@ def execute(filters=None):
 
 def get_columns(filters):
         cols = [
-                _("OT Name") + ":Link/Overtime Application:120",
-		_("Branch") + ":Link/Branch:120",
-		_("Posting Date") + ":Date:90",
-		_("Employee ID") + ":Link/Employee:120",
-                _("Employee Name") + ":Data:120",
-                _("Designation") + ":Data:120",
-                _("Department") + ":Data:160",
-                _("Bank") + ":Link/Financial Institution:120",
-		_("Account No") + ":Data:120",
-		_("Hourly Rate") + ":Data:90",
-                _("Total Hour") + ":Int:80",
-                _("Total Amount") + ":Currency:100",
-                _("Purpose(Regular)") + ":Data:160",
-		_("Payment Voucher") + ":Link/Journal Entry:120",
-		_("Payment Status") + ":Data:120",
+			_("OT Name") + ":Link/Overtime Application:100",
+			_("Branch") + ":Link/Branch:120",
+			_("Posting Date") + ":Date:90",
+			_("Employee") + ":Link/Employee:80",
+			_("Employee Name") + ":Data:120",
+			_("Designation") + ":Data:120",
+			_("Department") + ":Data:160",
+			_("Bank") + ":Link/Financial Institution:120",
+			_("Account No") + ":Data:120",
+			_("Hourly Rate") + ":Data:90",
+			_("Total Hour") + ":Int:80",
+			_("Total Amount") + ":Currency:100",
+			_("Purpose(Regular)") + ":Data:160",
+			_("Payment Voucher") + ":Link/Journal Entry:120",
+			_("Payment Status") + ":Data:120",
         ]
         return cols
-
 
 def get_data(filters):
 	data = []
@@ -42,6 +41,11 @@ def get_data(filters):
 			from `tabOvertime Application` ot where ot.docstatus =1"""
 	if filters.employee:
 		query += " and ot.employee = '{0}'".format(filters.employee)
+	if filters.status == "Not Paid":
+		query += " and (ot.payment_jv is NULL or ot.payment_jv = '') and (ot.overtime_payment is NULL or ot.overtime_payment = '')"
+	elif filters.status == "Paid":
+		query += " and (ot.payment_jv != '' or ot.overtime_payment != '')"
+
 	# if filters.cost_center:
 	# 	query += " and ot.branch = '{0}'".format(filters.branch)
 	if filters.from_date and filters.to_date:
@@ -53,14 +57,18 @@ def get_data(filters):
 		jv_no = ""
 		status="Not Paid"
 		if d.payment_jv:
-			status = payment_status(d.payment_jv)
+			#status = payment_status(d.payment_jv)
 			jv_no = d.payment_jv
+			status = "Paid"
 		elif d.overtime_payment:
+			'''
 			status = "Not Paid"
 			doc_status = frappe.db.get_value("Overtime Payment", d.overtime_payment, "docstatus")
 			if doc_status == 1:
 				status = "Paid"
+			'''
 			jv_no = d.overtime_payment
+			status = "Paid"
 
 		row1 = [d.name, d.branch, d.posting_date, d.employee, d.employee_name, d.designation, d.department,d.bank_name, d.bank_no, d.rate, d.total_hours, \
 		d.total_amount, d.purpose, jv_no, status]
