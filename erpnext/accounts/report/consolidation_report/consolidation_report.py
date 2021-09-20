@@ -6,15 +6,38 @@ import frappe
 from frappe.utils import flt
 
 def execute(filters=None):
-	filter = {}
-	filter['from_date'] = filters.from_date
-	filter['to_date'] = filters.to_date
-	filter['is_inter_company'] = filters.is_inter_company
+	# filter = {}
+	# filter['from_date'] = filters.from_date
+	# filter['to_date'] = filters.to_date
+	# filter['is_inter_company'] = filters.is_inter_company
 	
-	columns, data = get_columns(), get_data(filter)
+	columns, data = get_columns(), get_value(filters)
 	return columns, data
 
+def get_value(filters):
+    cond = ''
+    if filters.is_inter_company == 'Yes':
+        cond += ' and interco != "I_NONE"'
+    d = frappe.db.sql('''
+                      select name 
+						from `tabConsolidation Transaction` 
+						order by to_date desc, creation desc limit 1;
+                      ''',as_dict=True)
+    if not d:
+        return
+    parent_name = d[0].name    
+    return frappe.db.sql('''
+                         SELECT
+							account_code, account,
+							entity, segment, flow,
+       						interco, time, opening_dr, 
+             				opening_cr,debit, credit,
+							amount
+                         FROM `tabConsolidation Transaction Item` where parent = '{}'
+                         {}
+                         '''.format(parent_name,cond))
 def get_data(filters):
+	# return filters
 	data, cond = [], ''
 	if filters['is_inter_company'] == 'Yes':
 		cond += ' WHERE is_inter_company = 1 '
@@ -123,7 +146,7 @@ def other_expense_amount(gcoa,coa,filters):
 			from `tabGL Entry` where posting_date between '{0}' and '{1}' 
 			and (exact_expense_acc = '{2}' or account = '{2}') 
 			and (credit is not null or debit is not null) 
-			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
+			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer')
 			group by consolidation_party
 			""".format(filters['from_date'],filters['to_date'],coa.account),as_dict=True):
 		if (a.credit or a.debit) :
@@ -151,21 +174,7 @@ def other_expense_amount(gcoa,coa,filters):
 			if dhi_company_code and gcoa.is_inter_company :
 				row = {}
 				row = cerate_inter_compay_row(dr, cr, gcoa.account_code, gcoa.account_name, coa.root_type, dhi_company_code, filters, a)
-				if len(value) > 0:
-					is_new_row = True
-					for i, val in enumerate(value):
-						if val["interco"] == row["interco"]:
-							value["opening_debit"] += flt(row["opening_debit"])
-							value["opening_credit"] += flt(row["opening_credit"])
-							value[i]["amount"] += flt(row["amount"])
-							value[i]["credit"] += flt(row["credit"])
-							value[i]["debit"] += flt(row["debit"])
-							is_new_row = False
-							break
-					if is_new_row:
-						value.append(row)
-				else:
-					value.append(row)
+				value.append(row)
 			elif not dhi_company_code and not gcoa.is_inter_company :
 				opening_dr += flt(dr)
 				opening_cr += flt(cr)
@@ -187,7 +196,7 @@ def get_doc_company_amount(gcoa,coa,filters):
 			from `tabGL Entry` where posting_date between '{0}' and '{1}' 
 			and (account = '{2}' or exact_expense_acc = '{2}') 
 			and (credit is not null or debit is not null)
-			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
+			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer')
 			""".format(filters['from_date'],filters['to_date'],coa.account),as_dict=True):
 		a['opening_dr'] = a['opening_cr'] = 0
 
@@ -212,11 +221,12 @@ def get_doc_company_amount(gcoa,coa,filters):
 			'opening_debit':opening_dr,
 			'opening_credit':opening_cr,
 			'account':gcoa.account_name,
+			'account_code':gcoa.account_code,
 			'entity':doc.entity,
 			'segment':doc.segment,
 			'flow':doc.flow,
 			'interco':'I_'+coa.doc_company,
-			'time':filters['from_date'] + ' to '+filters['to_date'],
+			'time':str(filters['from_date']) + ' to '+ str(filters['to_date']),
 			'debit':debit,
 			'credit':credit,
 			'amount': amount
@@ -235,7 +245,7 @@ def payable_receivable_amount(gcoa,coa,filters):
 			and gl.account = '{2}' 
 			and (gl.party is not null and gl.party != '')
 			and (gl.credit is not null or gl.debit is not null) 
-			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer','Period Closing Voucher','TDS Remittance')
+			and voucher_type not in ('Stock Entry','Purchase Receipt','Stock Reconciliation','Issue POL','Asset Movement','Bulk Asset Transfer','Equipment POL Transfer')
 			group by party
 			""".format(filters['from_date'],filters['to_date'],coa.account)
    
@@ -258,21 +268,7 @@ def payable_receivable_amount(gcoa,coa,filters):
 			if dhi_company_code and gcoa.is_inter_company:
 				row = {}
 				row = cerate_inter_compay_row(dr, cr, gcoa.account_code, gcoa.account_name, coa.root_type, dhi_company_code, filters, a)
-				if len(value) > 0:
-					is_new_row = True
-					for i, val in enumerate(value):
-						if val["interco"] == row["interco"]:
-							value["opening_debit"] += flt(row["opening_debit"])
-							value["opening_credit"] += flt(row["opening_credit"])
-							value[i]["amount"] += flt(row["amount"])
-							value[i]["credit"] += flt(row["credit"])
-							value[i]["debit"] += flt(row["debit"])
-							is_new_row = False
-							break
-					if is_new_row:
-						value.append(row)
-				else:
-					value.append(row)
+				value.append(row)
 			elif not dhi_company_code and not gcoa.is_inter_company:
 				opening_dr += flt(dr)
 				opening_cr += flt(cr)
@@ -297,7 +293,7 @@ def create_non_inter_compay_row(opening_debit, opening_credit, account_code, acc
 			'segment':doc.segment,
 			'flow':doc.flow,
 			'interco':doc.interco,
-			'time':filters['from_date']+' to '+filters['to_date'],
+			'time':str(filters['from_date']) + ' to '+ str(filters['to_date']),
 			'debit':debit,
 			'credit':credit,
 			'amount':amount
@@ -306,6 +302,7 @@ def create_non_inter_compay_row(opening_debit, opening_credit, account_code, acc
 
 
 def cerate_inter_compay_row(opening_debit,opening_credit, account_code,account_name,root_type,company_code,filters,data=None) :
+	# frappe.msgprint(str(data))
 	doc = frappe.get_doc('DHI Setting')
 	row = {}
 	row = {
@@ -317,21 +314,44 @@ def cerate_inter_compay_row(opening_debit,opening_credit, account_code,account_n
 			'segment':doc.segment,
 			'flow':doc.flow,
 			'interco':'I_'+str(company_code),
-			'time':filters['from_date'] + ' to '+filters['to_date'],
+			'time':str(filters['from_date']) + ' to '+ str(filters['to_date']),
 			'debit':data.debit,
 			'credit':data.credit,
 			'amount': flt(flt(data.debit) + flt(opening_debit)) - flt(flt(data.credit)+flt(opening_credit)) if root_type in ['Asset','Expense'] else flt(flt(data.credit)+flt(opening_credit)) - flt(flt(data.debit)+flt(opening_debit))
 	}
 	return row
+def create_transaction(filters=None,data = None):
+	total = 0
+	if not data:
+		data = get_data(filters)
+		
+	doc = frappe.new_doc('Consolidation Transaction')
+	doc.from_date = filters['from_date']
+	doc.to_date = filters['to_date']
+	doc.set('items',[])
+	for d in data:
+		total += flt(d['amount'])
+		row = doc.append('items',{})
+		row.update(d)
+	doc.save(ignore_permissions=True)
+	doc.submit()
+
+		
 
 def get_columns():
 	return [
+		{
+			"fieldname":"account_code",
+			"label":"Account Code",
+			"fieldtype":"Data",
+			"width":100
+		},
 		{
 			"fieldname":"account",
 			"label":"Account",
 			"fieldtype":"Link",
 			"options":"DHI GCOA Mapper",
-			"width":150
+			"width":200
 		},
 		{
 			"fieldname":"entity",
@@ -366,35 +386,32 @@ def get_columns():
 		{
 			"fieldname":"opening_debit",
 			"label":"Opening(Dr)",
-			"fieldtype":"Float",
-			"width":100
+			"fieldtype":"Currency",
+			"width":150
 		},
 		{
 			"fieldname":"opening_credit",
 			"label":"Opening(Cr)",
-			"fieldtype":"Float",
-			"width":100
+			"fieldtype":"Currency",
+			"width":150
 		},
 		{
 			"fieldname":"debit",
 			"label":"Debit",
-			"fieldtype":"Float",
-			"width":100
+			"fieldtype":"Currency",
+			"width":150
 		},
 		{
 			"fieldname":"credit",
 			"label":"Credit",
-			"fieldtype":"Float",
-			"width":100
+			"fieldtype":"Currency",
+			"width":150
 		},
 		{
 			"fieldname":"amount",
 			"label":"Amount",
-			"fieldtype":"Float",
-			"width":120
+			"fieldtype":"Currency",
+			"width":150
 		},
 	]
- 
-# @frappe.whitelist()
-def try_data(filters):
-	return filters
+

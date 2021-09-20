@@ -118,7 +118,8 @@ has_website_permission = {
 
 permission_query_conditions = {
 	"Contact": "erpnext.utilities.address_and_contact.get_permission_query_conditions_for_contact",
-	"Address": "erpnext.utilities.address_and_contact.get_permission_query_conditions_for_address"
+	"Address": "erpnext.utilities.address_and_contact.get_permission_query_conditions_for_address",
+ 
 }
 
 has_permission = {
@@ -188,7 +189,8 @@ scheduler_events = {
 		#"erpnext.hr.hr_custom_functions.post_earned_leaves",
 		#"erpnext.hr.hr_custom_functions.post_casual_leaves",
 		"erpnext.hr.hr_custom_functions.post_leave_credits",
-		"erpnext.custom_functions.check_pending_approvers"
+		"erpnext.custom_functions.check_pending_approvers",
+		"erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction"
 	],
 }
 
