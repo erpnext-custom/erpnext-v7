@@ -296,10 +296,12 @@ def prepare_data_es(periodicity, fiscal_year, cost_center, business_activity, ac
 		#for yearly, monthly, half yearly, and quarterly 
 		if periodicity in ("Yearly", "Monthly", "Half-Yearly","Quarterly"):
 			if d.is_group == 1 and d.name not in ("Assets - DS", "Payments - DS"):
-				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = "{0}") and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
+				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = "{0}") and gle.posting_date between '{1}' and '{2}' {3}
+				and case when gle.voucher_type = 'Stock Entry' then exists (select 1 from `tabStock Entry` a where gle.voucher_no = a.name and a.purpose not in ('Material Receipt')) else 1=1 end
+                """.format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
 				progressive = frappe.db.sql("""
 					select sum(gle.debit-gle.credit) as progressive from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = "{0}") and gle.posting_date between '{1}' and '{2}' {3}
-				""".format(d.name, year_start_date, year_end_date), as_dict = True)
+				""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
 			else:
 				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = "{0}" and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
 				progressive = frappe.db.sql("""
@@ -308,12 +310,17 @@ def prepare_data_es(periodicity, fiscal_year, cost_center, business_activity, ac
 		#for individual month
 		else:
 			if d.is_group == 1 and d.name not in ("Assets - DS", "Payments - DS"):
-				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}') and gle.posting_date between '{1}' and '{2}' {3} """.format(d.name, period_list[0].from_date, period_list[0].to_date, conditions), as_dict = True)
+				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}') and gle.posting_date between '{1}' and '{2}' {3}
+                and case when gle.voucher_type = 'Stock Entry' then exists (select 1 from `tabStock Entry` a where gle.voucher_no = a.name and a.purpose not in ('Material Receipt')) else 1=1 end                  
+                """.format(d.name, period_list[0].from_date, period_list[0].to_date, conditions), as_dict = True)
+
 				progressive = frappe.db.sql("""
 					select sum(gle.debit-gle.credit) as progressive from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}') and gle.posting_date between '{1}' and '{2}' {3}
 				""".format(d.name, year_start_date, period_list[0].to_date, conditions), as_dict = True)
 			else:
-				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = "{0}" and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, period_list[0].from_date, period_list[0].to_date, conditions), as_dict = True)
+				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = "{0}" and gle.posting_date between '{1}' and '{2}' {3}
+                and case when gle.voucher_type = 'Stock Entry' then exists (select 1 from `tabStock Entry` a where gle.voucher_no = a.name and a.purpose not in ('Material Receipt')) else 1=1 end
+                """.format(d.name, period_list[0].from_date, period_list[0].to_date, conditions), as_dict = True)
 				progressive = frappe.db.sql("""
 					select sum(debit - credit) as progressive from `tabGL Entry` gle where account = "{0}" and posting_date between '{1}' and '{2}' {3}
 				""".format(d.name, year_start_date, period_list[0].to_date, conditions), as_dict = True)
