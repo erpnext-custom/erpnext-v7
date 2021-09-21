@@ -957,3 +957,19 @@ def update_salary_structure():
 		print(d)
 		print(count)
 		count += 1
+
+def update_nppf_agency_code():
+	emp = frappe.db.sql("SELECT employment_type from `tabEmployee` where status = 'Active'", as_dict=True)
+
+	c1 = c2 = 0
+	for e in emp:
+		if e.employment_type == 'ESP':
+			frappe.db.sql("update `tabEmployee` set nppf_agency_code = 'CES0000020' where employment_type='ESP'")
+			c2 += 1
+		elif e.employment_type == 'Contract' or e.employment_type == 'Regular employees':
+			frappe.db.sql("update `tabEmployee` set nppf_agency_code = 'CGC0000067' where (employment_type='Contract' or employment_type='Regular employees')")
+			c1 += 1
+		
+ 	print(c1)
+	print(c2)
+

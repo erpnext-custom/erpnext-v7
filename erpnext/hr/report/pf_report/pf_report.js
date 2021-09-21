@@ -24,12 +24,12 @@ frappe.query_reports["PF Report"] = {
 			"fieldtype": "Link",
 			"options": "Employee"
 		},
-		{
-			"fieldname":"nppf_tier",
-			"label": __("NPPF Tier"),
-			"fieldtype": "Link",
-			"options": "NPPF Tier",
-		},
+		// {
+		// 	"fieldname":"nppf_tier",
+		// 	"label": __("NPPF Tier"),
+		// 	"fieldtype": "Link",
+		// 	"options": "NPPF Tier",
+		// },
 		{
 			"fieldname":"company",
 			"label": __("Company"),
