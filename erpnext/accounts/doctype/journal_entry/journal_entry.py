@@ -66,8 +66,14 @@ class JournalEntry(AccountsController):
                         series_seq = 'JEHI'
 		else:
 			series_seq = 'JEJE'
-
-                self.name = make_autoname(str(series_seq) + '.YY.MM.#####')
+		import datetime
+		datem = datetime.datetime.strptime(self.posting_date, "%Y-%m-%d")
+		post_month = str(datem.month)
+		post_year = str(datem.year)
+		posting_year = post_year[-2:]
+		posting_month = post_month if len(post_month) > 1 else "0" + post_month
+		
+        	self.name = make_autoname(str(series_seq) + str(posting_year) + str(posting_month) + '.#####')
 
 	def get_feed(self):
 		return self.voucher_type
