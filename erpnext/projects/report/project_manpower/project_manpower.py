@@ -27,6 +27,8 @@ def get_data(filters):
                                 p.cost_center   as cost_center,
                                 wh.parenttype   as employee_type,
                                 wh.parent       as employee,
+                                wh.from_date    as from_date,
+                                ifnull(wh.to_date, "Current Cost Center")     as to_date,
                                 e.employee_name as employee_name,
                                 e.designation   as designation,
                                 e.status        as status,
@@ -38,6 +40,7 @@ def get_data(filters):
                         on e.employee = wh.parent
                         where p.name    = "{0}"
                         and   wh.branch = p.branch
+                        and wh.to_date is Null
                         order by project_id, employee_type, employee 
                         """.format(filters.get("project")), as_dict=1)
 
@@ -104,6 +107,16 @@ def get_columns():
                         "label": _("Cost Center"),
                         "fieldtype": "Link",
                         "options": "Cost Center",
+                        "width": 100
+                },
+                 {
+                        "fieldname": "from_date",
+                        "label": _("From Date"),
+                        "width": 100
+                },
+                  {
+                        "fieldname": "to_date",
+                        "label": _("To Date"),
                         "width": 100
                 },
         ]
