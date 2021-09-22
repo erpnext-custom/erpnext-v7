@@ -297,32 +297,59 @@ def prepare_data_es(periodicity, fiscal_year, cost_center, business_activity, ac
 		if periodicity in ("Yearly", "Monthly", "Half-Yearly","Quarterly"):
 			if d.is_group == 1 and d.name not in ("Assets - DS", "Payments - DS"):
 				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = "{0}") and gle.posting_date between '{1}' and '{2}' {3}
-				and case when gle.voucher_type = 'Stock Entry' then exists (select 1 from `tabStock Entry` a where gle.voucher_no = a.name and a.purpose not in ('Material Receipt')) else 1=1 end
+				and case when gle.voucher_type = 'Stock Entry' then gle.voucher_no not in (select name from `tabStock Entry` b where gle.voucher_no = b.name and b.purpose in ('Material Transfer','Material Receipt') and b.docstatus = 1) else 1 = 1 end
                 """.format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
 				progressive = frappe.db.sql("""
-					select sum(gle.debit-gle.credit) as progressive from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = "{0}") and gle.posting_date between '{1}' and '{2}' {3}
+					select sum(gle.debit-gle.credit) as progressive from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = "{0}")
+					and case when gle.voucher_type = 'Stock Entry' then gle.voucher_no not in (select name from `tabStock Entry` b where gle.voucher_no = b.name and b.purpose in ('Material Transfer','Material Receipt') and b.docstatus = 1) else 1 = 1 end
+					and gle.posting_date between '{1}' and '{2}' {3}
 				""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
 			else:
-				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = "{0}" and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
+				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = "{0}"
+                and case when gle.voucher_type = 'Stock Entry' then gle.voucher_no not in (select name from `tabStock Entry` b where gle.voucher_no = b.name and b.purpose in ('Material Transfer','Material Receipt') and b.docstatus = 1) else 1 = 1 end
+                and gle.posting_date between '{1}' and '{2}' {3}""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
 				progressive = frappe.db.sql("""
-					select sum(debit - credit) as progressive from `tabGL Entry` where account = "{0}" and posting_date between '{1}' and '{2}' {3}
+					select sum(debit - credit) as progressive from `tabGL Entry` where account = "{0}"
+					and case when gle.voucher_type = 'Stock Entry' then gle.voucher_no not in (select name from `tabStock Entry` b where gle.voucher_no = b.name and b.purpose in ('Material Transfer','Material Receipt') and b.docstatus = 1) else 1 = 1 end
+					and posting_date between '{1}' and '{2}' {3}
 				""".format(d.name, year_start_date, year_end_date, conditions), as_dict = True)
 		#for individual month
 		else:
 			if d.is_group == 1 and d.name not in ("Assets - DS", "Payments - DS"):
-				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}') and gle.posting_date between '{1}' and '{2}' {3}
-                and case when gle.voucher_type = 'Stock Entry' then exists (select 1 from `tabStock Entry` a where gle.voucher_no = a.name and a.purpose not in ('Material Receipt')) else 1=1 end                  
+				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}')
+                and case when gle.voucher_type = 'Stock Entry' then gle.voucher_no not in (select name from `tabStock Entry` b where gle.voucher_no = b.name and b.purpose in ('Material Transfer','Material Receipt') and b.docstatus = 1) else 1 = 1 end
+            	and gle.posting_date between '{1}' and '{2}' {3}
                 """.format(d.name, period_list[0].from_date, period_list[0].to_date, conditions), as_dict = True)
-
+				# query = """select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}')
+                # and case when gle.voucher_type = 'Stock Entry' then exists(select 1 from `tabStock Entry` a where gle.voucher_no = a.name and a.purpose not in ('Material Transfer','Material Receipt')) else 1 = 1 end
+            	# and gle.posting_date between '{1}' and '{2}' {3}
+                # """.format(d.name, period_list[0].from_date, period_list[0].to_date, conditions)
+				# if d.name == 'Maint. of property- vehicle - DS':
+				# 	frappe.msgprint(query)
 				progressive = frappe.db.sql("""
-					select sum(gle.debit-gle.credit) as progressive from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}') and gle.posting_date between '{1}' and '{2}' {3}
+					select sum(gle.debit-gle.credit) as progressive from `tabGL Entry` gle where gle.account in (select name from `tabAccount` a where a.parent_account = '{0}')
+					and case when gle.voucher_type = 'Stock Entry' then gle.voucher_no not in (select name from `tabStock Entry` b where gle.voucher_no = b.name and b.purpose in ('Material Transfer','Material Receipt') and b.docstatus = 1) else 1 = 1 end
+					and gle.posting_date between '{1}' and '{2}' {3}
 				""".format(d.name, year_start_date, period_list[0].to_date, conditions), as_dict = True)
 			else:
-				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = "{0}" and gle.posting_date between '{1}' and '{2}' {3}
-                and case when gle.voucher_type = 'Stock Entry' then exists (select 1 from `tabStock Entry` a where gle.voucher_no = a.name and a.purpose not in ('Material Receipt')) else 1=1 end
+				period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = "{0}"
+               	and case when gle.voucher_type = 'Stock Entry' then gle.voucher_no not in (select name from `tabStock Entry` b where gle.voucher_no = b.name and b.purpose in ('Material Transfer','Material Receipt') and b.docstatus = 1) else 1 = 1 end
+                and gle.posting_date between '{1}' and '{2}' {3}
                 """.format(d.name, period_list[0].from_date, period_list[0].to_date, conditions), as_dict = True)
+				# period_amount = frappe.db.sql("""select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = "{0}"
+                # and case when gle.voucher_type = 'Stock Entry' then gle.voucher_no not like '%SEMT%' or gle.voucher_no not like '%SEMR%' else 1 = 1 end
+                # and gle.posting_date between '{1}' and '{2}' {3}
+                # """.format(d.name, period_list[0].from_date, period_list[0].to_date, conditions), as_dict = True)
+				# query = """select sum(gle.debit-gle.credit) as amount from `tabGL Entry` gle where gle.account = '{0}'
+                # and case when gle.voucher_type = 'Stock Entry' then exists(select 1 from `tabStock Entry` a where gle.voucher_no = a.name and a.purpose not in ('Material Transfer','Material Receipt')) else 1 = 1 end
+            	# and gle.posting_date between '{1}' and '{2}' {3}
+                # """.format(d.name, period_list[0].from_date, period_list[0].to_date, conditions)
+				# if d.name == 'Maint. of property- vehicle - DS':
+				# 	frappe.msgprint(str(period_amount))
 				progressive = frappe.db.sql("""
-					select sum(debit - credit) as progressive from `tabGL Entry` gle where account = "{0}" and posting_date between '{1}' and '{2}' {3}
+					select sum(debit - credit) as progressive from `tabGL Entry` gle where account = "{0}"
+					and case when gle.voucher_type = 'Stock Entry' then gle.voucher_no not in (select name from `tabStock Entry` b where gle.voucher_no = b.name and b.purpose in ('Material Transfer','Material Receipt') and b.docstatus = 1) else 1 = 1 end
+					and posting_date between '{1}' and '{2}' {3}
 				""".format(d.name, year_start_date, period_list[0].to_date, conditions), as_dict = True)
 
 		if progressive:
@@ -351,7 +378,9 @@ def prepare_data_es(periodicity, fiscal_year, cost_center, business_activity, ac
 					# change sign based on Debit or Credit, since calculation is done using (debit - credit)
 					d[period.key] *= -1
 				if d.is_group == 0:
-					row[period.key] = flt(d.get(period.key, 0.0), 3)
+					# row[period.key] = flt(d.get(period.key, 0.0), 3)
+					row[period.key] = flt(period_amount[0].amount)
+
 				elif d.is_group == 1 and d.name not in ("Asset - DS","Payments - DS"):
 					row[period.key] = flt(period_amount[0].amount)
 				if abs(row[period.key]) >= 0.005:
