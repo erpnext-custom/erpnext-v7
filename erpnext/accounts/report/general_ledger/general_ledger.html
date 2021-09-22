@@ -1,52 +1,131 @@
 <div style="margin-bottom: 7px;" class="text-center">
-	{%= frappe.boot.letter_heads[filters.letter_head || frappe.defaults.get_default("letter_head")] %}
+    {%= frappe.boot.letter_heads[filters.letter_head || frappe.defaults.get_default("letter_head")] %}
 </div>
-<h2 class="text-center">{%= __("Statement of Account") %}</h2>
-<h4 class="text-center">{%= (filters.party || filters.account) && ((filters.party || filters.account) + ", ")  || "" %} {%= filters.company %}</h4>
-<h5 class="text-center">
-	{%= dateutil.str_to_user(filters.from_date) %}
-	{%= __("to") %}
-	{%= dateutil.str_to_user(filters.to_date) %}
-</h5>
-<hr>
-<table class="table table-bordered">
-	<thead>
-		<tr>
-			<th style="width: 15%">{%= __("Date") %}</th>
-			<th style="width: 15%">{%= __("Ref") %}</th>
-			<th style="width: 40%">{%= __("Party") %}</th>
-			<th style="width: 15%">{%= __("Debit") %}</th>
-			<th style="width: 15%">{%= __("Credit") %}</th>
-		</tr>
-	</thead>
-	<tbody>
-		{% for(var i=0, l=data.length; i<l; i++) { %}
-			<tr>
-			{% if(data[i][__("Posting Date")]) { %}
-				<td>{%= dateutil.str_to_user(data[i][__("Posting Date")]) %}</td>
-				<td>{%= data[i][__("Voucher Type")] %}
-					<br>{%= data[i][__("Voucher No")] %}</td>
-				<td>
-					{% if(!(filters.party || filters.account)) { %}
-						{%= data[i][__("Party")] || data[i][__("Account")] %}
-						<br>
-					{% } %}
 
-					{{ __("Against") }}: {%= data[i][__("Against Account")] %}
-					<br>{%= __("Remarks") %}: {%= data[i][__("Remarks")] %}</td>
-				<td style="text-align: right">{%= format_currency(data[i][__("Debit")]) %}</td>
-				<td style="text-align: right">{%= format_currency(data[i][__("Credit")]) %}</td>
-			{% } else { %}
-				<td></td>
-				<td></td>
-				<td><b>{%= frappe.format(data[i][__("Account")], {fieldtype: "Link"}) || "&nbsp;" %}</b></td>
-				<td style="text-align: right">
-					{%= data[i][__("Account")] && format_currency(data[i][__("Debit")]) %}</td>
-				<td style="text-align: right">
-					{%= data[i][__("Account")] && format_currency(data[i][__("Credit")]) %}</td>
-			{% } %}
-			</tr>
-		{% } %}
-	</tbody>
+<h2 class="text-center"><b>{%= __("Statement of Account") %}</b></h2>
+
+<h5 class="text-center"> 
+    <u> {%= data[1][__("Cost Center")] %} </u>
+</h5>
+
+<h5 class="text-left" style="margin-top:20px; float: left;">
+    <b>{%= __("Title: ") %}</b> {%= data[1][__("Voucher Type")] %}-{%= data[1][__("Voucher No")] %}
+</h5>
+
+<h5 class="text-right" style="margin-top:30px;">
+    <b>{%= __("Posting Date: ") %} </b> {%= data[1][__("Posting Date")] %}
+</h5>
+
+<h5 class="text-right">
+    <b>{%= __("Reference: ") %} </b> {%= filters.voucher_no %}
+</h5>
+
+<hr>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th style="width: 5%">{%= __("Sr") %}</th>
+            <th style="width: 35%">{%= __("Account") %}</th>
+            <th style="width: 10%">{%= __("Party Type") %}</th>
+            <th style="width: 20%">{%= __("Party") %}</th>
+            <th style="width: 15%">{%= __("Debit") %}</th>
+            <th style="width: 15%">{%= __("Credit") %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for(var i=0, l=data.length; i<l-1; i++) { %}
+            <tr>
+                <td> {%= i+1 %} </td>
+                <td>
+                    {%= data[i][__("Account")] %}
+                </td>
+                <td>
+                    {% if(data[i][__("Party Type")]) { %}
+                        {%= data[i][__("Party Type")] %}
+                    {% } %}
+                </td>
+                <td>
+                    {% if(data[i][__("Party")]) { %}
+                        {%= data[i][__("Party")] %}
+                    {% } %}
+                </td>
+                <td>{%= format_currency(data[i][__("Debit")]) %}</td>
+                <td>{%= format_currency(data[i][__("Credit")]) %}</td>
+            </tr>
+        {% } %}
+    </tbody>
 </table>
-<p class="text-right text-muted">Printed On {%= dateutil.str_to_user(dateutil.get_datetime_as_string()) %}</p>
+
+
+<div class="row section-break">
+    <div class="col-xs-6 column-break" style="float: left;">
+        <div class="row">
+            <div class="col-xs-12 text-left">
+                <b>Cheque No.: </b>
+            </div>
+        </div> 
+        <div class="row">
+            <div class="col-xs-12 text-left">
+                <b>Cheque Date: </b>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 4px;">
+            <div class="col-xs-12 text-left">
+                <b>Clearance Date: </b>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-6 column-break" style="float: right;">
+        <div class="row">
+            <div class="col-xs-12 text-right">
+                {% for(var i=0, l=data.length; i<1; i++) { %}
+                    <b>Passed for: </b> {%= data[l-1][__("Debit")] %}
+                {% } %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 text-right">
+                {% for(var i=0, l=data.length; i<1; i++) { %}
+                    <b>Net Passed for: </b> {%= data[l-1][__("Credit")] %}
+                {% } %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row section-break">
+    <div style="margin-top: 15px; ">
+        <div class="text-left" style="margin-left: 16px;">
+            <b>Narration: </b> {%= data[0][__("Remarks")] %}
+        </div>
+    </div>
+</div>
+
+
+<div class="row section-break" style="margin-top: 20px;">
+    <div class="row" style="margin-top: 45px;">
+        <div class="col-xs-12" style="margin-left: 17px;">
+            <p>Prepared By:</p>
+            <p>(Date, Name & Designation)</p>
+        </div>
+    </div> 
+    <div class="row" style="margin-top: 5px;">
+        <div class="col-xs-12" style="margin-left: 450px;">
+            <p>Approved By:</p>
+            <p>(Approving Officer)</p>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 8px;">
+        <div class="col-xs-12" style="margin-left: 17px;">
+            <p>Verified By:</p>
+            <p>(Head Of Finance)</p>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 70px;">
+        <div class="col-xs-12" style="margin-left: 17px;">
+            <p>Received By:</p>
+            <p>(Date, Name & Signature)</p>
+        </div>
+    </div>
+</div>
