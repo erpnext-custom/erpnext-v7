@@ -13,7 +13,7 @@
 </h5>
 
 <h5 class="text-right" style="margin-top:30px;">
-    <b>{%= __("Posting Date: ") %} </b> {%= data[1][__("Posting Date")] %}
+    <b>{%= __("Posting Date: ") %} </b> {%= frappe.datetime.str_to_user(data[1][__("Posting Date")]) %}
 </h5>
 
 <h5 class="text-right">
