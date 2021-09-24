@@ -42,13 +42,13 @@ class Employee(Document):
 			if naming_method == 'Naming Series':
 				if not self.date_of_joining:
 					frappe.throw("Date of Joining not Set!")
-				abbr = frappe.db.get_value("Company", self.company, "abbr")
+				# abbr = frappe.db.get_value("Company", self.company, "abbr")
 				# naming_series = str(abbr) + "." + str(getdate(self.date_of_joining).year)[2:4]	
-				naming_series = 'DSE' + "." + str(getdate(self.date_of_joining).year)[2:4]	
-				#frappe.msgprint("{0}".format(naming_series))
+				naming_series = 'DSE' + "." + str(getdate(self.date_of_joining).year)[2:4]
 				x = make_autoname(str(naming_series) + '.###')
 				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
-				start_id = cint(len(str(abbr))) + 2
+				# start_id = cint(len(str(abbr))) + 2
+				start_id = cint(len('DSE')) + 2
 				eid = x[:start_id] + y[:2] + x[start_id:start_id + 3]
 				self.name = eid
 				self.yearid = x
