@@ -21,6 +21,7 @@ frappe.ui.form.on('Direct Payment', {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
 		}
+		
 		if (frm.doc.party_type == "Customer"){
 			cur_frm.set_query("party", function() {
 				return {
@@ -246,3 +247,29 @@ function calculate_total(frm, cdt, cdn){
 	frm.set_value("tds_amount", total_tds_amount);
 	
 }
+
+/* ePayment Begins */
+var create_custom_buttons = function(frm){
+	var items = frm.doc.item || [];
+	var status = ["Failed", "Upload Failed", "Cancelled"];
+	var process_payment = 0;
+
+	if(frm.doc.docstatus == 1 && frm.doc.payment_type == "Payment" && !frm.doc.utility_bill/*&& !frm.doc.cheque_no*/){
+		items.forEach(function(r,i){
+			if(r.party_type == 'Supplier' && r.party && (!r.bank_payment || r.payment_status == 'Failed'|| r.payment_status == 'Payment Failed')){
+				process_payment += 1;
+			}
+		});
+
+		// if(!frm.doc.bank_payment || status.includes(frm.doc.status) ){
+		if(process_payment){
+			frm.page.set_primary_action(__('Process Payment'), () => {
+				frappe.model.open_mapped_doc({
+					method: "erpnext.accounts.doctype.direct_payment.direct_payment.make_bank_payment",
+					frm: cur_frm
+				})
+			});
+		}
+	}
+}
+/* ePayment Ends */

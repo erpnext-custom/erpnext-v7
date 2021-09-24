@@ -134,6 +134,7 @@ class DirectPayment(AccountsController):
 		frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 
 	def post_gl_entry(self):
+        # consolidation_party_type and consolidation_party this two field added for consolidation purpose
 		gl_entries      = []
 		total_amount    = 0.0
 		total_amt = flt(self.net_amount + self.tds_amount)
@@ -156,7 +157,9 @@ class DirectPayment(AccountsController):
 							'party': party,
 							'party_type': party_type,						
 							"company": self.company,
-							"remarks": self.remarks
+							"remarks": self.remarks,
+							"consolidation_party_type":a.party_type,
+                        	"consolidation_party":a.party
 							})
 						)
 					
@@ -176,7 +179,9 @@ class DirectPayment(AccountsController):
 							'party': party,
 							'party_type': party_type,	
 							"company": self.company,
-							"remarks": self.remarks
+							"remarks": self.remarks,
+							"consolidation_party_type":a.party_type,
+                        	"consolidation_party":a.party
 							})
 						)
 				if flt(self.tds_amount) > 0:
@@ -213,7 +218,9 @@ class DirectPayment(AccountsController):
 								'party': party,
 								'party_type': party_type,						
 								"company": self.company,
-								"remarks": self.remarks
+								"remarks": self.remarks,
+								"consolidation_party_type":a.party_type,
+                        		"consolidation_party":a.party
 								})
 							)
 
@@ -232,7 +239,9 @@ class DirectPayment(AccountsController):
 								'party': party,
 								'party_type': party_type,
 								"company": self.company,
-								"remarks": self.remarks
+								"remarks": self.remarks,
+								"consolidation_party_type":a.party_type,
+                        		"consolidation_party":a.party
 								})
 							)
 				else:
@@ -256,6 +265,8 @@ class DirectPayment(AccountsController):
 								'party_type': party_type,		
 								"company": self.company,
 								"remarks": self.remarks,
+								"consolidation_party_type":a.party_type,
+                        		"consolidation_party":a.party
 								})
 							)
 					party = party_type = None	
@@ -317,3 +328,30 @@ def get_tds_account(percent, payment_type):
 			return frappe.db.get_single_value("Accounts Settings", field)
 
 	
+
+# ePayment Begins
+@frappe.whitelist()
+def make_bank_payment(source_name, target_doc=None):
+	def set_missing_values(obj, target, source_parent):
+		target.payment_type = None
+		target.transaction_type = "Direct Payment"
+		target.posting_date = get_datetime()
+		target.from_date = None
+		target.to_date = None
+		bank_name, bank_branch, bank_account_no = frappe.db.get_value("Account", obj.credit_account, ['bank_name', 'bank_branch', 'bank_account_no'])
+		target.bank_name = bank_name
+		target.bank_branch = bank_branch
+		target.bank_account_no = bank_account_no
+		
+	doc = get_mapped_doc("Direct Payment", source_name, {
+			"Direct Payment": {
+				"doctype": "Bank Payment",
+				"field_map": {
+					"name": "transaction_no",
+					"credit_account": "paid_from",
+			},
+				"postprocess": set_missing_values,
+			},
+	}, target_doc, ignore_permissions=True)
+	return doc
+# ePayment Ends
