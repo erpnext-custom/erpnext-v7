@@ -835,3 +835,20 @@ frappe.ui.form.on("Payment Entry", "onload", function(frm){
         }
     });
 });
+
+/* ePayment Begins */
+var create_custom_buttons = function(frm){
+	var status = ["Failed", "Upload Failed", "Cancelled"];
+
+	if(frm.doc.docstatus == 1 && frm.doc.payment_type == "Pay" && frm.doc.party_type == 'Supplier' /*&& !frm.doc.cheque_no*/){
+		if(!frm.doc.bank_payment || status.includes(frm.doc.payment_status) ){
+			frm.page.set_primary_action(__('Process Payment'), () => {
+				frappe.model.open_mapped_doc({
+					method: "erpnext.accounts.doctype.payment_entry.payment_entry.make_bank_payment",
+					frm: cur_frm
+				})
+			});
+		}
+	}
+}
+/* ePayment Ends */
