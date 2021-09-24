@@ -2,6 +2,8 @@
 # For license information, please see license.txt
 from __future__ import unicode_literals
 import frappe
+from erpnext.accounts.utils import get_child_cost_centers
+
 
 def execute(filters=None):
         columns = get_columns()
@@ -10,17 +12,25 @@ def execute(filters=None):
 
 
 def get_data(filters):
-        query = """ select c.name, c.dzongkhag, c.location, c.customer_group, c.mobile_no, so.allotment_date,
-soi.qty  from `tabCustomer` c, `tabSales Order` so, `tabSales Order Item` soi
-where c.name = so.customer and soi.parent = so.name and c.customer_group  = 'AWBI' and so.docstatus = 1 """
-        if filters.branch:
-                query += " and so.branch = '{0}'".format(filters.branch)
+        query = """ select c.name, c.dzongkhag, c.location, c.customer_group, c.mobile_no, so.allotment_date, soi.qty from `tabCustomer` c inner join `tabSales Order` so  on c.name= so.customer inner join  `tabSales Order Item` soi  on so.name = soi.parent where  c.customer_group = 'AWBI' and so.docstatus = 1 """
+        # if filters.branch:
+        #         query += " and so.branch = '{0}'".format(filters.branch)
+        if not filters.cost_center:
+		return ""
+
+	if not filters.branch:	
+		all_ccs = get_child_cost_centers(filters.cost_center)
+		query += " and so.branch in {0}".format(tuple(all_ccs))
+	else:
+		branch = str(filters.get("branch"))
+		branch = branch.replace(' - NRDCL','')
+		query += " and so.branch = \'"+branch+"\'"
         # if filters.from_date and filters.to_date:
         #         query += " and so.allotment_date between '{0}' and '{1}'".format(filters.get("from_date"), filters.get("to_date"))
         if filters.customer: 
                 query += " and c.customer_name = '{0}'".format(filters.get("customer"))
         # frappe.msgprint(query)
-        return frappe.db.sql(query, as_dict=True)
+        return frappe.db.sql(query)
         # frappe.msgprint(str(data))
         # return data
 
