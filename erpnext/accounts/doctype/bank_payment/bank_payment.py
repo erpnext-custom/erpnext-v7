@@ -15,6 +15,7 @@ from frappe.model.naming import make_autoname
 import csv
 from frappe.model.mapper import get_mapped_doc
 import traceback
+from datetime import datetime
 
 class BankPayment(Document):
 	def validate(self):
@@ -24,6 +25,7 @@ class BankPayment(Document):
 		self.validate_items()
 		self.update_totals()
 		self.get_bank_available_balance()
+		self.validate_timing()
 		self.check_one_one_or_bulk_payment()
 
 	def before_submit(self):
@@ -70,11 +72,27 @@ class BankPayment(Document):
 
 	#added by cety on 9/08/2021 to not allow transaction for more than 10 records
 	def check_one_one_or_bulk_payment(self):
+		get_limit_transaction = frappe.db.sql("select transaction_limit from `tabBank Payment Settings`")
 		get_transaction = frappe.db.sql("""select count(bpi.employee) from `tabBank Payment` bp, `tabBank Payment Item` bpi where bp.name=bpi.parent and bp.name='{}'""".format(self.name))
-		if self.transaction_type == "Salary" and self.payment_type == "One-One Payment" and get_transaction[0][0] > 10:
-			frappe.throw("For transaction more than 10 records, Please select Payment Type to Bulk Payment!")
+		
+		if self.transaction_type == "Salary" and self.payment_type == "One-One Payment" and get_transaction[0][0] > get_limit_transaction[0][0]:
+			frappe.throw("For transaction more than <b>10 records</b>, Please select Payment Type to <b>Bulk Payment</b>!")
 		else:
 			pass
+
+	#added by cety on 15/09/2021 to not allow transaction after office hour.
+	def validate_timing(self):
+		hms = '%H:%M:%S'
+		now = datetime.now()
+		#frappe.throw("now:{}".format(now))
+		now_time = now.strftime(hms)
+		now_time = datetime.strptime(now_time, hms)	
+		from_time = datetime.strptime(str(frappe.db.get_value("Bank Payment Settings", "BOBL", "from_time")), hms)
+		to_time = datetime.strptime(str(frappe.db.get_value("Bank Payment Settings", "BOBL", "to_time")), hms)
+		if now_time >= from_time and now_time <= to_time:
+			pass
+		else:
+			frappe.throw("We are <b>disallowing transaction</b> after office hours, please try again during office hours(9am-5pm)!", title="Transaction Restricted!")
 
 	def get_bank_available_balance(self):
 		''' get paying bank balance '''
