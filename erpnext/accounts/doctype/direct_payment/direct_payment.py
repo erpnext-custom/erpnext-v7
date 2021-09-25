@@ -10,6 +10,7 @@ from erpnext.accounts.general_ledger import make_gl_entries
 from frappe import _
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import check_future_date
+from frappe.model.mapper import get_mapped_doc
 
 class DirectPayment(AccountsController):
 	def validate(self):

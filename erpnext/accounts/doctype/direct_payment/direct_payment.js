@@ -1,6 +1,29 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
 frappe.ui.form.on('Direct Payment', {
+	setup: function(frm){
+		/* ePayment Begins */
+		var status = {"Draft": "tomato",
+			"Pending": "orange",
+			"In progress": "blue",
+			"Waiting Acknowledgement": "blue",
+			"Upload Failed": "red",
+			"Failed": "red",
+			"Completed": "green",
+			"Cancelled": "black"
+			};
+
+			frm.set_indicator_formatter('party',
+				function(doc) {
+					return status[doc.status];
+			});
+		/* ePayment Ends */
+	},
+	onload: function(frm){
+		/* ePyment Begins */
+		create_custom_buttons(frm);
+		/* ePayment Ends */
+	},
 	reload: function(frm) {
 		cur_frm.set_query("debit_account", function(){
 			return {
@@ -18,6 +41,10 @@ frappe.ui.form.on('Direct Payment', {
 		});
 	},
 	refresh: function(frm) {
+		/* ePyment Begins */
+		create_custom_buttons(frm);
+		/* ePayment Ends */
+		
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
 		}
