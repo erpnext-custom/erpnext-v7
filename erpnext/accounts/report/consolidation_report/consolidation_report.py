@@ -6,17 +6,16 @@ import frappe
 from frappe.utils import flt
 
 def execute(filters=None):
-	# filter = {}
+	filter = {}
 	# filter['from_date'] = filters.from_date
 	# filter['to_date'] = filters.to_date
-	# filter['is_inter_company'] = filters.is_inter_company
-	
-	columns, data = get_columns(), get_value(filters)
+	filter['is_inter_company'] = filters.is_inter_company
+	columns, data = get_columns(), get_value(filter,'No')
 	return columns, data
 
-def get_value(filters):
+def get_value(filters,from_rest_api=None):
     cond = ''
-    if filters.is_inter_company == 'Yes':
+    if filters['is_inter_company'] == 'Yes':
         cond += ' and interco != "I_NONE"'
     d = frappe.db.sql('''
                       select name 
@@ -25,17 +24,21 @@ def get_value(filters):
                       ''',as_dict=True)
     if not d:
         return
-    parent_name = d[0].name    
-    return frappe.db.sql('''
-                         SELECT
-							account_code, account,
-							entity, segment, flow,
-       						interco, time, opening_dr, 
-             				opening_cr,debit, credit,
-							amount
-                         FROM `tabConsolidation Transaction Item` where parent = '{}'
-                         {}
-                         '''.format(parent_name,cond))
+    parent_name = d[0].name
+    query = '''
+				SELECT
+				account_code, account,
+				entity, segment, flow,
+				interco, time, opening_dr, 
+				opening_cr,debit, credit,
+				amount
+				FROM `tabConsolidation Transaction Item` where parent = '{}'
+				{}
+				'''.format(parent_name,cond)
+    if from_rest_api == 'Yes': 
+    	return frappe.db.sql(query,as_dict=1) 
+    elif from_rest_api == 'No':
+    	return frappe.db.sql(query)
 def get_data(filters):
 	# return filters
 	data, cond = [], ''
