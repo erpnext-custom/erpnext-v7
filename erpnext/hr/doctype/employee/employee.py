@@ -34,7 +34,7 @@ class EmployeeUserDisabledError(frappe.ValidationError):
 
 
 class Employee(Document):
-        def autoname(self):
+	def autoname(self):
 		naming_method = frappe.db.get_value("HR Settings", None, "emp_created_by")
 		if not naming_method:
 			throw(_("Please setup Employee Naming System in Human Resource > HR Settings"))
@@ -44,11 +44,11 @@ class Employee(Document):
 					frappe.throw("Date of Joining not Set!")
 				# abbr = frappe.db.get_value("Company", self.company, "abbr")
 				# naming_series = str(abbr) + "." + str(getdate(self.date_of_joining).year)[2:4]	
-				naming_series = 'DSE' + "." + str(getdate(self.date_of_joining).year)[2:4]
+				naming_series = 'EID' + "." + str(getdate(self.date_of_joining).year)[2:4]
 				x = make_autoname(str(naming_series) + '.###')
 				y = make_autoname(str(getdate(self.date_of_joining).strftime('%m')) + ".#")
 				# start_id = cint(len(str(abbr))) + 2
-				start_id = cint(len('DSE')) + 2
+				start_id = cint(len('EID')) + 2
 				eid = x[:start_id] + y[:2] + x[start_id:start_id + 3]
 				self.name = eid
 				self.yearid = x
