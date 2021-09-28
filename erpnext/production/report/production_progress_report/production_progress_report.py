@@ -103,7 +103,8 @@ def get_data(filters):
 			for b in get_production_groups(filters.production_group):
 				# query = "select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond)
 				query = "select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond)
-				qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))
+				# qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(conditions, str(b), cond))
+				qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' and pe.branch = '{2}' and pe.uom = '{3}' {4} ".format(conditions, str(b), a.branch, a.uom, cond))
 				# frappe.msgprint(str(qty))
 				qty = qty and qty[0][0] or 0
 				row.append(rounded(qty, 2))
