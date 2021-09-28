@@ -535,6 +535,12 @@ def get_data():
 					"name": "API Detail",
 					"label": _("API Detail"),
 				},
+				{
+					"type": "report",
+					"name": "e-Payment Report",
+					"is_query_report": True,
+					"doctype": "Bank Payment"
+				},
 			]
 		},
 		{
