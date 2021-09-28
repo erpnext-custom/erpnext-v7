@@ -26,7 +26,14 @@ frappe.ui.form.on("Customer", {
 	},
 	validate: function(frm) {
 		if(frm.doc.lead_name) frappe.model.clear_doc("Lead", frm.doc.lead_name);
-	}
+	},
+	inter_company: (frm)=>{
+		frm.toggle_reqd('company_code',frm.doc.inter_company);
+		if (!frm.doc.inter_company){
+			frm.set_value('company_code','')
+			frm.set_value('company_name','')
+		}
+	},
 });
 
 cur_frm.cscript.onload = function(doc, dt, dn) {
