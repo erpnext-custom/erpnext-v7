@@ -171,9 +171,9 @@ scheduler_events = {
 		"erpnext.controllers.recurring_document.create_recurring_documents",
 		"erpnext.stock.doctype.item.item.sync_item_code"
 	],
-	"hourly_long":[
-		"erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction",
-     ],
+	# "hourly_long":[
+	# 	"erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction",
+    #  ],
 	"daily": [
 		"erpnext.stock.reorder_item.reorder_item",
 		"erpnext.setup.doctype.email_digest.email_digest.send",
@@ -188,6 +188,9 @@ scheduler_events = {
 	"monthly": [
 	#	"erpnext.hr.hr_custom_functions.post_earned_leaves"
 	],
+	"daily_long":[
+		"erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction",
+     ],
 	"yearly": [
 	#	"erpnext.hr.hr_custom_functions.post_casual_leaves"
 	],
