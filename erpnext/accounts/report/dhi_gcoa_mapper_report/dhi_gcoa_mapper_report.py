@@ -9,68 +9,94 @@ def execute(filters=None):
 	return columns, data
 
 def get_data(filters):
-    cond = ''
-    
-    if filters.is_inter_company:
-        cond += " AND dm.is_inter_company = 1 "
-    if filters.dhi_gcoa_acc:
-        cond += " AND dm.account_code = '{}' ".format(filters.dhi_gcoa_acc)
-        
-    if not filters.map or filters.map == "Mapped":
-		return frappe.db.sql('''
-							SELECT dm.account_code as dhi_gcoa_acc_code,
-								dm.account_name as dhi_gcoa_acc,
+	cond = ''
+	data = []
+	if filters.is_inter_company:
+		cond += " where is_inter_company = 1 "
+	if filters.dhi_gcoa_acc:
+		cond += " where account_code = '{}' ".format(filters.dhi_gcoa_acc)
+	if filters.is_inter_company and filters.dhi_gcoa_acc:
+		cond = " where where is_inter_company = 1 and account_code = '{}' ".format(filters.dhi_gcoa_acc)
+	
+	if not filters.map or filters.map.strip() == "GCOA Mapped":
+		for d in frappe.db.sql('''
+						 SELECT
+							account_code as dhi_gcoa_acc_code,
+								account_name as dhi_gcoa_acc,
 								CASE
-									WHEN dm.is_inter_company = 1 THEN 'Inter Company'
-									ELSE 'None Inter Company'
-								END as is_inter_company,
-								dmi.account as coa_acc
-							FROM `tabDHI GCOA Mapper` dm
-							INNER JOIN `tabDHI Mapper Item` dmi ON dm.name = dmi.parent
-							{}
-							'''.format(cond),as_dict=True)
-    else:
-		return frappe.db.sql('''
-							SELECT dm.account_code as dhi_gcoa_acc_code,
-								dm.account_name as dhi_gcoa_acc,
-								CASE
-									WHEN dm.is_inter_company = 1 THEN 'Inter Company'
+									WHEN is_inter_company = 1 THEN 'Inter Company'
 									ELSE 'None Inter Company'
 								END as is_inter_company
-							FROM `tabDHI GCOA` dm
-							WHERE dm.account_code NOT IN
-       							(select account_code from `tabDHI GCOA Mapper` where account_code = dm.account_code)
-							{}
-							'''.format(cond),as_dict=True)
+						 FROM `tabDHI GCOA Mapper` {}
+						 '''.format(cond),as_dict=True):
+
+			val = frappe.db.sql('''
+					   SELECT account as coa_acc,
+							'<b>-</b>' as dhi_gcoa_acc,
+							'<b>-</b>' as dhi_gcoa_acc_code,
+							'<b>-</b>' as is_inter_company
+					   FROM `tabDHI Mapper Item` WHERE parent = '{}'
+					   '''.format(d.dhi_gcoa_acc),as_dict=1)
+			if val:
+				row = {}
+				row['dhi_gcoa_acc_code'] = '<b>'+d.dhi_gcoa_acc_code+'</b>'
+				row['dhi_gcoa_acc'] = '<b>' + d.dhi_gcoa_acc+'</b>'
+				row['is_inter_company'] = '<b>' + d.is_inter_company + '</b>'
+				row['coa_acc'] = val[0]['coa_acc']
+				data.append(row)
+				val.pop(0)
+				if val:
+					data += val
+
+	elif filters.map.strip() == "COA Unmapped":
+	   data = frappe.db.sql('''
+						SELECT name as coa_acc
+						FROM `tabAccount` a
+						WHERE NOT EXISTS (	select 1 from `tabDHI Mapper Item` where account = a.name)
+						AND a.is_group != 1
+                         ''',as_dict=1)
+	return data
+	
 def get_cols(filters):
-    cols = [
+
+	if not filters.map or filters.map.strip() == "GCOA Mapped":
+			cols = [
 		{
 			"fieldname":"dhi_gcoa_acc_code",
 			"label":"DHI GCOA Code",
 			"fieldtype":"Link",
 			"options":"DHI GCOA",
-			"width":150
+			"width":120
 		},
 		{
 			"fieldname":"dhi_gcoa_acc",
-			"label":"DHI GCOA",
+			"label":"DHI Group Chart Of Account",
 			"fieldtype":"Link",
 			"options":"DHI GCOA Mapper",
-			"width":350
+			"width":250
 		},
 		{
 			"fieldname":"is_inter_company",
 			"label":"Is Inter Company",
 			"fieldtype":"Data",
 			"width":150
-		}
-	]
-    if not filters.map or filters.map == "Mapped":
-        cols.append({
+		},
+		{
 			"fieldname":"coa_acc",
-			"label":"Company Account",
+			"label":"Company Chart Of Account",
 			"fieldtype":"Link",
 			"options":"Account",
 			"width":400
-		})
-    return cols
+		}
+	]
+	elif filters.map.strip() == "COA Unmapped":
+		cols = [
+			{
+			"fieldname":"coa_acc",
+			"label":"Company Chart Of Account",
+			"fieldtype":"Link",
+			"options":"Account",
+			"width":400
+			}
+		]
+	return cols
