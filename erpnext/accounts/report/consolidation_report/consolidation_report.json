@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2021-05-03 18:19:17.240666", 
+ "modified": "2021-04-29 17:03:59.145996", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Consolidation Report", 
@@ -15,5 +15,12 @@
  "ref_doctype": "DHI GCOA Mapper", 
  "report_name": "Consolidation Report", 
  "report_type": "Script Report", 
- "roles": []
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "DHI Consolidation User"
+  }
+ ]
 }
