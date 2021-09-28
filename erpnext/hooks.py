@@ -205,6 +205,9 @@ scheduler_events = {
 		"erpnext.hr.doctype.other_contribution.other_contribution.remove_paid_contribution",
 		"erpnext.custom_functions.check_pending_approvers"
 	],
+	"daily_long":[
+		"erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction",
+     ],
 }
 
 default_mail_footer = """<div style="text-align: center;">

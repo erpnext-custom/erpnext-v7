@@ -5,17 +5,20 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt
 from frappe.utils import getdate, datetime, nowdate, flt
+from datetime import datetime, timedelta, date
+
 
 def execute(filters=None):
 	filter = {}
 	filter['from_date'] = filters.from_date
 	filter['to_date'] = filters.to_date
 	filter['gcoa_name'] = filters.gcoa_name
+	filter['time'] = str(frappe.defaults.get_user_default("fiscal_year")) + '.'+ getdate(filters.to_date).strftime("%b").upper()
 	columns = get_columns()
-	data = get_data(filter)
+	data = get_data(filter,True)
 	return columns, data
 
-def get_data(filters):
+def get_data(filters,is_for_report=None):
 	data, amount, o_cr, o_dr, cr, dr = [], 0, 0, 0, 0, 0
  
 	is_inter_company = frappe.db.get_value('DHI GCOA Mapper',filters['gcoa_name'],['is_inter_company'])
@@ -36,7 +39,17 @@ def get_data(filters):
 		cr += cr1
 		dr += dr1
 	if not is_inter_company:
-		row = create_non_inter_compay_row(o_dr, o_dr,'Total',filters,cr,dr,amount)
+		row = create_non_inter_compay_row(o_dr, o_cr,'Total',filters,cr,dr,amount)
+		data.append(row)
+	if is_for_report and is_inter_company:
+		t = dr = cr = de = c = 0
+		for d in data:
+			t += flt(d['amount'])
+			dr += flt(d['opening_debit'])
+			cr += flt(d['opening_credit'])
+			de += flt(d['debit'])
+			c += flt(d['credit'])
+		row = create_non_inter_compay_row(dr, cr,'Total',filters,c,de,t)
 		data.append(row)
 	return data
 
@@ -79,7 +92,7 @@ def get_doc_company_amount(coa,filters):
 			'segment':doc.segment,
 			'flow':doc.flow,
 			'interco':'I_'+coa.doc_company,
-			'time':str(filters['from_date']) + ' to '+str(filters['to_date']),
+			'time':filters['time'],
 			'debit':debit,
 			'credit':credit,
 			'amount': amount
@@ -255,7 +268,7 @@ def create_non_inter_compay_row(opening_debit, opening_credit,account_name,filte
 			'segment':doc.segment,
 			'flow':doc.flow,
 			'interco':doc.interco,
-			'time':str(filters['from_date']) + ' to ' + str(filters['to_date']),
+			'time':filters['time'],
 			'debit':debit,
 			'credit':credit,
 			'amount':amount
@@ -274,7 +287,7 @@ def cerate_inter_compay_row(opening_debit, opening_credit, account_name, root_ty
 			'segment':doc.segment,
 			'flow':doc.flow,
 			'interco':'I_'+str(company_code),
-			'time':str(filters['from_date']) + ' to '+str(filters['to_date']),
+			'time':filters['time'],
 			'debit': data.debit,
 			'credit': data.credit,
 			'amount': flt(flt(data.debit) + flt(opening_debit)) - flt(flt(data.credit) + flt(opening_credit)) if root_type in ['Asset','Expense'] else flt(flt(data.credit) + flt(opening_credit)) - flt(flt(data.debit) + flt(opening_debit))
@@ -284,51 +297,55 @@ def cerate_inter_compay_row(opening_debit, opening_credit, account_name, root_ty
 def create_transaction():
 	filters = {}
 	filters['from_date'] = getdate(frappe.defaults.get_user_default("year_start_date"))
-	filters['to_date'] = nowdate()
+	filters['to_date'] = date.today() - timedelta(1)
 	filters['is_inter_company'] = ''
+	filters['time'] = str(frappe.defaults.get_user_default("fiscal_year")) + '.'+ getdate(filters['to_date']).strftime("%b").upper()
+ 
 	doc = frappe.new_doc('Consolidation Transaction')
 	doc.from_date = filters['from_date']
 	doc.to_date = filters['to_date']
 	doc.set('items',[])
- 
 	for d in frappe.db.sql('''
 				SELECT account_name, account_code, is_inter_company
 				FROM `tabDHI GCOA Mapper`
 				''',as_dict=True):
 		filters['gcoa_name'] = d.account_name
-		data = get_data(filters)
+		data = get_data(filters,False)
 		if not d.is_inter_company and data:
-			row = doc.append('items',{})
 			row1 = data[len(data)-1]
-			row.account = d.account_name
-			row.account_code= d.account_code
-			row.amount = row1['amount']
-			row.opening_dr = row1['opening_debit']
-			row.opening_cr = row1['opening_credit']
-			row.debit = row1['debit']
-			row.credit = row1['credit']
-			row.entity = row1['entity']
-			row.segment = row1['segment']
-			row.flow = row1['flow']
-			row.interco = row1['interco']
-			row.time = row1['time']
-		else:
-			for a in data:
+			if row1['amount']:
 				row = doc.append('items',{})
 				row.account = d.account_name
-				row.account_code = d.account_code
-				row.amount = a['amount']
-				row.opening_dr = a['opening_debit']
-				row.opening_cr = a['opening_credit']
-				row.debit = a['debit']
-				row.credit = a['credit']
-				row.entity = a['entity']
-				row.segment = a['segment']
-				row.flow = a['flow']
-				row.interco = a['interco']
-				row.time = a['time']
+				row.account_code= d.account_code
+				row.amount = row1['amount']
+				row.opening_dr = row1['opening_debit']
+				row.opening_cr = row1['opening_credit']
+				row.debit = row1['debit']
+				row.credit = row1['credit']
+				row.entity = row1['entity']
+				row.segment = row1['segment']
+				row.flow = row1['flow']
+				row.interco = row1['interco']
+				row.time = row1['time']
+		else:
+			for a in data:
+				if a['amount']:
+					row = doc.append('items',{})
+					row.account = d.account_name
+					row.account_code = d.account_code
+					row.amount = a['amount']
+					row.opening_dr = a['opening_debit']
+					row.opening_cr = a['opening_credit']
+					row.debit = a['debit']
+					row.credit = a['credit']
+					row.entity = a['entity']
+					row.segment = a['segment']
+					row.flow = a['flow']
+					row.interco = a['interco']
+					row.time = a['time']
 	doc.save(ignore_permissions=True)
 	doc.submit()
+	frappe.db.commit()
 def get_columns():
 	return [
 		{
