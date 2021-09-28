@@ -973,3 +973,10 @@ def update_nppf_agency_code():
  	print(c1)
 	print(c2)
 
+def update_bank_branch_and_account_type():
+	emp = frappe.db.sql(" SELECT name from `tabEmployee` where status = 'active'", as_dict=True)
+
+	for e in emp:
+		frappe.db.sql("update `tabEmployee` set bank_branch = 'Samtse Branch - BOBL', bank_account_type='Savings' where name = %s", e.name)
+		print(e.name)
+
