@@ -13,6 +13,7 @@ def execute(filters=None):
 	filter['from_date'] = filters.from_date
 	filter['to_date'] = filters.to_date
 	filter['gcoa_name'] = filters.gcoa_name
+	filter['time'] = str(frappe.defaults.get_user_default("fiscal_year")) + '.'+ getdate(filters.to_date).strftime("%b").upper()
 	columns = get_columns()
 	data = get_data(filter,True)
 	return columns, data
@@ -91,7 +92,7 @@ def get_doc_company_amount(coa,filters):
 			'segment':doc.segment,
 			'flow':doc.flow,
 			'interco':'I_'+coa.doc_company,
-			'time':str(filters['from_date']) + ' to '+str(filters['to_date']),
+			'time':filters['time'],
 			'debit':debit,
 			'credit':credit,
 			'amount': amount
@@ -267,7 +268,7 @@ def create_non_inter_compay_row(opening_debit, opening_credit,account_name,filte
 			'segment':doc.segment,
 			'flow':doc.flow,
 			'interco':doc.interco,
-			'time':str(filters['from_date']) + ' to ' + str(filters['to_date']),
+			'time':filters['time'],
 			'debit':debit,
 			'credit':credit,
 			'amount':amount
@@ -286,7 +287,7 @@ def cerate_inter_compay_row(opening_debit, opening_credit, account_name, root_ty
 			'segment':doc.segment,
 			'flow':doc.flow,
 			'interco':'I_'+str(company_code),
-			'time':str(filters['from_date']) + ' to '+str(filters['to_date']),
+			'time':filters['time'],
 			'debit': data.debit,
 			'credit': data.credit,
 			'amount': flt(flt(data.debit) + flt(opening_debit)) - flt(flt(data.credit) + flt(opening_credit)) if root_type in ['Asset','Expense'] else flt(flt(data.credit) + flt(opening_credit)) - flt(flt(data.debit) + flt(opening_debit))
@@ -298,11 +299,12 @@ def create_transaction():
 	filters['from_date'] = getdate(frappe.defaults.get_user_default("year_start_date"))
 	filters['to_date'] = date.today() - timedelta(1)
 	filters['is_inter_company'] = ''
+	filters['time'] = str(frappe.defaults.get_user_default("fiscal_year")) + '.'+ getdate(filters['to_date']).strftime("%b").upper()
+ 
 	doc = frappe.new_doc('Consolidation Transaction')
 	doc.from_date = filters['from_date']
 	doc.to_date = filters['to_date']
 	doc.set('items',[])
- 
 	for d in frappe.db.sql('''
 				SELECT account_name, account_code, is_inter_company
 				FROM `tabDHI GCOA Mapper`
@@ -343,6 +345,7 @@ def create_transaction():
 					row.time = a['time']
 	doc.save(ignore_permissions=True)
 	doc.submit()
+	frappe.db.commit()
 def get_columns():
 	return [
 		{
