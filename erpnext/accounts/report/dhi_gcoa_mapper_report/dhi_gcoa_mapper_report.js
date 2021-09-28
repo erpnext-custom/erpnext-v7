@@ -6,8 +6,20 @@ frappe.query_reports["DHI GCOA Mapper Report"] = {
 		{
 			"fieldname":"map",
 			"fieldtype":"Select",
-			"options":['Mapped\n','Unmapped'],
-			"default":"Mapped"
+			"options":['GCOA Mapped\n','COA Unmapped\n'],
+			"defaults":"GCOA Mapped",
+			"on_change":(query_report)=>{
+				var gcoa = query_report.filters_by_name["dhi_gcoa_acc"];
+				var inter_company = query_report.filters_by_name["is_inter_company"];
+				if  (query_report.get_values().map.trim() == 'COA Unmapped'){
+					gcoa.toggle(false)
+					inter_company.toggle(false)
+				}else{
+					gcoa.toggle(true)
+					inter_company.toggle(true)
+				}
+				query_report.refresh()
+			}
 		},
 		{
 			"fieldname":"dhi_gcoa_acc",

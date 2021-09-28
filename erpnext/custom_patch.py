@@ -9,6 +9,26 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def copy_party_to_consolidation():
+    for d in frappe.db.sql('''
+                           select voucher_no, account, name,consolidation_party
+                           from `tabGL Entry` where voucher_type = 'Purchase Invoice' and (consolidation_party is null or consolidation_party ='')
+                           ''',as_dict=True):
+        exp_acc = ''
+        if not d.consolidation_party:
+			if d.account == 'Stock received but Not billed - CDCL':
+				item_code = frappe.db.get_value('Purchase Invoice Item',{'parent':d.voucher_no},['item_code'])
+				exp_acc = frappe.db.get_value('Item',item_code,['expense_account'])
+				# print('item code : '+ item_code + ' acc : '+exp_acc)
+			party = frappe.db.get_value('Purchase Invoice',d.voucher_no,['supplier'])
+			print('name : '+ d.name +'party : '+party)
+			frappe.db.sql('''
+						update `tabGL Entry` set consolidation_party_type = 'Supplier', 
+						consolidation_party = "{}",
+						exact_expense_acc = "{}"
+						where name = "{}"
+						'''.format(party,exp_acc,d.name))
+						
 def submit_sr():
 	srl = ['SR/000164']
 	for a in srl:
