@@ -5,6 +5,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt
 from frappe.utils import getdate, datetime, nowdate, flt
+from datetime import datetime, timedelta, date
+
 
 def execute(filters=None):
 	filter = {}
@@ -294,7 +296,7 @@ def cerate_inter_compay_row(opening_debit, opening_credit, account_name, root_ty
 def create_transaction():
 	filters = {}
 	filters['from_date'] = getdate(frappe.defaults.get_user_default("year_start_date"))
-	filters['to_date'] = nowdate()
+	filters['to_date'] = date.today() - timedelta(1)
 	filters['is_inter_company'] = ''
 	doc = frappe.new_doc('Consolidation Transaction')
 	doc.from_date = filters['from_date']
