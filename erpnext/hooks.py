@@ -174,6 +174,7 @@ scheduler_events = {
 		"erpnext.assets.doctype.asset.asset.sync_cc_branch",
 		#"erpnext.maintenance.doctype.equipment.equipment.sync_branch_asset",
 		"erpnext.selling.doctype.customer.customer.check_cc_branch",
+		# "erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction",
 		#"erpnext.hr.doctype.leave_application.leave_application.check_cancelled_leaves"    # Ver 2.0.190225 Commented by SHIV on 25/02/2019
 	],
 	"daily": [
@@ -190,8 +191,12 @@ scheduler_events = {
 		#"erpnext.hr.hr_custom_functions.post_casual_leaves",
 		"erpnext.hr.hr_custom_functions.post_leave_credits",
 		"erpnext.custom_functions.check_pending_approvers",
-		"erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction"
+		# this line is for consolidation purpose
+		# "erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction"
 	],
+	"daily_long":[
+		"erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction",
+     ],
 }
 
 default_mail_footer = """<div style="text-align: center;">
