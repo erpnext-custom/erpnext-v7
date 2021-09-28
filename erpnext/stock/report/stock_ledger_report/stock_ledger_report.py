@@ -123,7 +123,7 @@ def get_stock_ledger_entries(filters):
 		where sle.company = %(company)s
 		and sle.posting_date between %(from_date)s and %(to_date)s
 		{sle_conditions}
-		order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
+		order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond} 
 		""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters)),  filters, as_dict=1)
 
 def get_item_details(filters):
@@ -196,7 +196,7 @@ def get_sle_conditions(filters):
                 if filters.get("transaction_type") == "Raw Materials":
                         conditions.append("sle.voucher_type= 'Production' and pmi.name = sle.voucher_detail_no")
                 elif filters.get("transaction_type") == "Production":
-                        conditions.append("sle.voucher_type= 'Production' and (pmi.name is null or pmi.name != sle.voucher_detail_no)")
+                        conditions.append("sle.voucher_type= 'Production' and sle.actual_qty > 0 and (pmi.name is null or pmi.name != sle.voucher_detail_no) group by sle.voucher_detail_no")
                 else:
                         conditions.append("sle.voucher_type='{transaction_type}'".format(transaction_type=filters.get("transaction_type")))
 
