@@ -38,9 +38,14 @@ def get_data(filters,is_for_report=None):
 		o_dr += op_dr
 		cr += cr1
 		dr += dr1
+  
+	if not is_for_report:
+		return data
+
 	if not is_inter_company:
 		row = create_non_inter_compay_row(o_dr, o_cr,'Total',filters,cr,dr,amount)
 		data.append(row)
+  
 	if is_for_report and is_inter_company:
 		t = dr = cr = de = c = 0
 		for d in data:
@@ -311,25 +316,27 @@ def create_transaction():
 				''',as_dict=True):
 		filters['gcoa_name'] = d.account_name
 		data = get_data(filters,False)
-		if not d.is_inter_company and data:
-			row1 = data[len(data)-1]
-			if row1['amount']:
-				row = doc.append('items',{})
-				row.account = d.account_name
-				row.account_code= d.account_code
-				row.amount = row1['amount']
-				row.opening_dr = row1['opening_debit']
-				row.opening_cr = row1['opening_credit']
-				row.debit = row1['debit']
-				row.credit = row1['credit']
-				row.entity = row1['entity']
-				row.segment = row1['segment']
-				row.flow = row1['flow']
-				row.interco = row1['interco']
-				row.time = row1['time']
-		else:
+		if data:
+			row1 = {}
+			row1['amount'] = 0
+			row1['debit'] = 0
+			row1['credit'] = 0
+			row1['opening_dr'] = 0
+			row1['opening_cr'] = 0
 			for a in data:
-				if a['amount']:
+				if a['interco'] == 'I_NONE' and a['amount']:
+					row1['amount'] += flt(a['amount']) 
+					row1['debit'] += flt(a['debit'])
+					row1['credit'] += flt(a['credit'])
+					row1['opening_dr']  += flt(a['opening_debit'])
+					row1['opening_cr']  += flt(a['opening_credit'])
+					row1['flow'] = a['flow']
+					row1['interco'] = a['interco']
+					row1['segment'] =  a['segment']
+					row1['entity'] = a['entity']
+					row1['time'] = a['time']
+	 
+				elif a['interco'] != 'I_NONE' and a['amount']:
 					row = doc.append('items',{})
 					row.account = d.account_name
 					row.account_code = d.account_code
@@ -343,9 +350,12 @@ def create_transaction():
 					row.flow = a['flow']
 					row.interco = a['interco']
 					row.time = a['time']
+			if row1['amount']:
+				row1['account'] = d.account_name
+				row1['account_code'] = d.account_code
+				doc.append('items',row1)
 	doc.save(ignore_permissions=True)
 	doc.submit()
-	frappe.db.commit()
 def get_columns():
 	return [
 		{

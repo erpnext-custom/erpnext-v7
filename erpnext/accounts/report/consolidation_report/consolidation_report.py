@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, getdate
 
 def execute(filters=None):
 	filter = {}
@@ -14,31 +14,41 @@ def execute(filters=None):
 	return columns, data
 
 def get_value(filters,from_rest_api=None):
-    cond = ''
-    if filters['is_inter_company'] == 'Yes':
-        cond += ' and interco != "I_NONE"'
-    d = frappe.db.sql('''
-                      select name 
+	cond = ''
+	if filters['is_inter_company'] == 'Yes':
+		cond += ' and interco != "I_NONE"'
+	d = frappe.db.sql('''
+					  select name, from_date, to_date
 						from `tabConsolidation Transaction` 
 						order by creation desc limit 1;
-                      ''',as_dict=True)
-    if not d:
-        return
-    parent_name = d[0].name
-    query = '''
+					  ''',as_dict=True)
+	if not d:
+		return
+	parent_name = d[0].name
+	from_date = d[0].from_date
+	to_date = d[0].to_date
+	# frappe.msgprint(str(from_date))
+	if from_rest_api == 'Yes': 
+		return frappe.db.sql('''
 				SELECT
 				account_code, account,
 				entity, segment, flow,
-				interco, time, opening_dr, 
-				opening_cr,debit, credit,
-				amount
+				interco, time,
+				SUM(amount)
 				FROM `tabConsolidation Transaction Item` where parent = '{}'
-				{}
-				'''.format(parent_name,cond)
-    if from_rest_api == 'Yes': 
-    	return frappe.db.sql(query,as_dict=1) 
-    elif from_rest_api == 'No':
-    	return frappe.db.sql(query)
+				{} GROUP BY interco, account
+				'''.format(parent_name,cond),as_dict=1) 
+	elif from_rest_api == 'No':
+		return frappe.db.sql('''
+				SELECT
+				account_code, account,
+				entity, segment, flow,
+				interco, time,'{0}' as from_date, 
+    			'{1}' as to_date, SUM(opening_dr), SUM(opening_cr),
+       			SUM(debit), SUM(credit), SUM(amount)
+				FROM `tabConsolidation Transaction Item` where parent = '{2}' 
+				{3} GROUP BY interco, account
+				'''.format(getdate(from_date), getdate(to_date), parent_name, cond))
 def get_data(filters):
 	# return filters
 	data, cond = [], ''
@@ -347,14 +357,14 @@ def get_columns():
 			"fieldname":"account_code",
 			"label":"Account Code",
 			"fieldtype":"Data",
-			"width":100
+			"width":80
 		},
 		{
 			"fieldname":"account",
 			"label":"Account",
 			"fieldtype":"Link",
 			"options":"DHI GCOA Mapper",
-			"width":200
+			"width":250
 		},
 		{
 			"fieldname":"entity",
@@ -384,19 +394,31 @@ def get_columns():
 			"fieldname":"time",
 			"label":"Time",
 			"fieldtype":"Data",
-			"width":160
+			"width":60
+		},
+		{
+			"fieldname":"from_date",
+			"label":"From Date",
+			"fieldtype":"Date",
+			"width":80
+		},
+		{
+			"fieldname":"to_date",
+			"label":"To Date",
+			"fieldtype":"Date",
+			"width":80
 		},
 		{
 			"fieldname":"opening_debit",
 			"label":"Opening(Dr)",
 			"fieldtype":"Currency",
-			"width":150
+			"width":130
 		},
 		{
 			"fieldname":"opening_credit",
 			"label":"Opening(Cr)",
 			"fieldtype":"Currency",
-			"width":150
+			"width":130
 		},
 		{
 			"fieldname":"debit",
