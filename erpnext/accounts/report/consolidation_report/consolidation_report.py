@@ -34,9 +34,9 @@ def get_value(filters,from_rest_api=None):
 				account_code, account,
 				entity, segment, flow,
 				interco, time,
-				amount
+				SUM(amount)
 				FROM `tabConsolidation Transaction Item` where parent = '{}'
-				{}
+				{} GROUP BY interco, account
 				'''.format(parent_name,cond),as_dict=1) 
 	elif from_rest_api == 'No':
 		return frappe.db.sql('''
@@ -44,10 +44,10 @@ def get_value(filters,from_rest_api=None):
 				account_code, account,
 				entity, segment, flow,
 				interco, time,'{0}' as from_date, 
-    			'{1}' as to_date, opening_dr, opening_cr,
-       			debit, credit,amount
+    			'{1}' as to_date, SUM(opening_dr), SUM(opening_cr),
+       			SUM(debit), SUM(credit), SUM(amount)
 				FROM `tabConsolidation Transaction Item` where parent = '{2}' 
-				{3}
+				{3} GROUP BY interco, account
 				'''.format(getdate(from_date), getdate(to_date), parent_name, cond))
 def get_data(filters):
 	# return filters
