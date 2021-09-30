@@ -454,7 +454,6 @@ class BankPayment(Document):
                 )
         ORDER BY dp.posting_date, dp.name """.format(direct_payment = self.transaction_no, 
             bank_payment = self.name,
-            branch = self.branch,
             cond = cond), as_dict=True)
 
     def get_payment_entry(self):
@@ -494,7 +493,6 @@ class BankPayment(Document):
                     )
         ORDER BY pe.posting_date, pe.name """.format( 
             bank_payment = self.name,
-            branch = self.branch,
             cond = cond), as_dict=True)
 
     def get_month_id(self, month_abbr):
