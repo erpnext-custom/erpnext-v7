@@ -323,10 +323,9 @@ class BankPayment(Document):
         data = []
         for a in frappe.db.sql("""SELECT je.name transaction_id, je.posting_date transaction_date
                                 FROM `tabJournal Entry` je 
-                                where je.branch = "{branch}"
+                                where je.docstatus = 1
                                 {cond}
                                 AND je.voucher_type = 'Bank Entry'
-                                AND je.docstatus = 1
                                 AND NOT EXISTS(select 1
                                     FROM `tabBank Payment Item` bpi
                                     WHERE bpi.transaction_type = 'Journal Entry'
@@ -336,8 +335,7 @@ class BankPayment(Document):
                                     AND bpi.status NOT IN ('Cancelled', 'Failed')
                                 )
                                 ORDER BY je.posting_date
-                            """.format(branch = self.branch, 
-                             bank_payment = self.name, 
+                            """.format(bank_payment = self.name, 
                             cond = cond), as_dict=True):
             amount_to_deposit = 0.00
             party_type = party = reference_type = reference_name = ""
@@ -439,9 +437,8 @@ class BankPayment(Document):
                 INNER JOIN `tabDirect Payment Item` dpi ON dpi.parent = dp.name
                 LEFT JOIN `tabSupplier` s ON dpi.party_type = 'Supplier' AND s.name = dpi.party
                 LEFT JOIN `tabEmployee` e ON dpi.party_type = 'Employee' AND e.name = dpi.party
-                WHERE dp.branch = "{branch}" 
+                WHERE dp.docstatus = 1 
                 {cond}
-                AND dp.docstatus = 1
                 AND ifnull(dp.utility_bill,'') = ''
                 AND dpi.party_type IS NOT NULL
                 AND dpi.party IS NOT NULL
@@ -482,9 +479,8 @@ class BankPayment(Document):
                     FROM `tabPayment Entry` pe
                     JOIN `tabSupplier` s ON s.name = pe.party
                     LEFT JOIN `tabFinancial Institution Branch` fib ON fib.name = s.bank_branch
-                    WHERE pe.branch = "{branch}" 
+                    WHERE pe.docstatus = 1
                     {cond}
-                    AND pe.docstatus = 1
                     AND pe.party_type = 'Supplier'
                     AND pe.party IS NOT NULL
                     AND IFNULL(pe.paid_amount,0) > 0
