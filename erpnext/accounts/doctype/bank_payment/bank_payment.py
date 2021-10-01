@@ -25,13 +25,13 @@ class BankPayment(Document):
 		self.validate_items()
 		self.update_totals()
 		self.get_bank_available_balance()
-		self.validate_timing()
 		self.check_one_one_or_bulk_payment()
 		
 
 	def before_submit(self):
 		self.update_status()
 		self.update_pi_number()
+		self.validate_timing()
 
 	def on_submit(self):
 		self.validate_mandatory()
@@ -141,6 +141,8 @@ class BankPayment(Document):
 
 		# duplicate transaction checks
 		for i in self.get("items"):
+			if i.bank_branch and not i.financial_system_code:
+				i.financial_system_code = frappe.db.get_value("Financial Institution Branch", i.bank_branch, "financial_system_code")
 			for j in frappe.db.sql("""
 					select name, docstatus from `tabBank Payment` bp
 					where bp.name != "{name}"
@@ -515,7 +517,7 @@ class BankPayment(Document):
 			branch = self.branch,
 			cond = cond), as_dict=True)
 
-    def get_payment_entry(self):
+	def get_payment_entry(self):
 		cond = ""
 		if self.transaction_no:
 			cond = 'AND pe.name = "{}"'.format(self.transaction_no)
