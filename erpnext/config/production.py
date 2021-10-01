@@ -86,6 +86,12 @@ def get_data():
 							"name": "Production Progress Report",
 							"doctype": "Production"
 					},
+					{
+							"type": "report",
+							"is_query_report": True,
+							"name": "Production Summary",
+							"doctype": "Production"
+					}
 			]
 		},
 		{
