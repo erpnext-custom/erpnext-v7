@@ -126,6 +126,8 @@ class BankPayment(Document):
 
 		# duplicate transaction checks
 		for i in self.get("items"):
+			if i.bank_branch and not i.financial_system_code:
+				i.financial_system_code = frappe.db.get_value("Financial Institution Branch", i.bank_branch, "financial_system_code")
 			for j in frappe.db.sql("""
 					select name, docstatus from `tabBank Payment` bp
 					where bp.name != "{name}"
@@ -461,13 +463,13 @@ class BankPayment(Document):
 			branch = self.branch,
 			cond = cond), as_dict=True)
 
-    def get_payment_entry(self):
+	def get_payment_entry(self):
 		cond = ""
 		if self.transaction_no:
 			cond = 'AND pe.name = "{}"'.format(self.transaction_no)
 		elif not self.transaction_no and self.from_date and self.to_date:
 			cond = 'AND pe.posting_date BETWEEN "{}" AND "{}"'.format(str(self.from_date), str(self.to_date))
-	  
+		
 		return frappe.db.sql("""SELECT "Payment Entry" transaction_type, pe.name transaction_id, 
 						pe.name transaction_reference, pe.posting_date transaction_date, 
 						pe.party as supplier, pe.party as beneficiary_name, 
@@ -630,21 +632,21 @@ def process_one_to_one_payment(doc, publish_progress=True):
 			RemitterAcctType = frappe.db.get_value("Account", doc.paid_from, "bank_account_type")
 			result = inr_remittance(AcctNum, Amt, BnfcryAcct, BnfcryName, BnfcryAddr1, IFSC, BankCode, PurpCode, RemittersName, RemittersAddr1, ComsnOpt, PromoCode, PEMSRefNum)
 		else:
-            Amt = i.amount
-            PayeeAcctNum = doc.bank_account_no
-            BnfcryAcct = i.bank_account_no
-            BnfcryName = i.beneficiary_name
-            if i.employee:
-                bnf_acc_type = frappe.db.get_value("Employee", i.employee, "bank_account_type")
-                BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Employee", i.employee, "bank_branch"), "financial_system_code"))
-            else:
-                bnf_acc_type = frappe.db.get_value("Supplier", i.supplier, "bank_account_type")
-                BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Supplier", i.supplier, "bank_branch"), "financial_system_code"))
-            BnfcryAcctTyp = bnf_acc_type
-            BnfcryRmrk = str(doc.remarks)
-            RemitterName = doc.company
-            RemitterAcctType = frappe.db.get_value("Account", doc.paid_from, "bank_account_type")
-            result = inter_payment(Amt, PayeeAcctNum, BnfcryAcct, BnfcryName, BnfcryAcctTyp, BnfcryRmrk, RemitterName, BfscCode, RemitterAcctType, PEMSRefNum)
+			Amt = i.amount
+			PayeeAcctNum = doc.bank_account_no
+			BnfcryAcct = i.bank_account_no
+			BnfcryName = i.beneficiary_name
+			if i.employee:
+				bnf_acc_type = frappe.db.get_value("Employee", i.employee, "bank_account_type")
+				BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Employee", i.employee, "bank_branch"), "financial_system_code"))
+			else:
+				bnf_acc_type = frappe.db.get_value("Supplier", i.supplier, "bank_account_type")
+				BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Supplier", i.supplier, "bank_branch"), "financial_system_code"))
+			BnfcryAcctTyp = bnf_acc_type
+			BnfcryRmrk = str(doc.remarks)
+			RemitterName = doc.company
+			RemitterAcctType = frappe.db.get_value("Account", doc.paid_from, "bank_account_type")
+			result = inter_payment(Amt, PayeeAcctNum, BnfcryAcct, BnfcryName, BnfcryAcctTyp, BnfcryRmrk, RemitterName, BfscCode, RemitterAcctType, PEMSRefNum)
 		if result['status'] == "Success":
 			completed += 1
 			bpi.db_set("status", "Completed")
