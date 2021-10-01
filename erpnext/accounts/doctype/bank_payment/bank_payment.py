@@ -126,6 +126,8 @@ class BankPayment(Document):
 
         # duplicate transaction checks
         for i in self.get("items"):
+            if i.bank_branch and not i.financial_system_code:
+                i.financial_system_code = frappe.db.get_value("Financial Institution Branch", i.bank_branch, "financial_system_code")
             for j in frappe.db.sql("""
                     select name, docstatus from `tabBank Payment` bp
                     where bp.name != "{name}"
@@ -312,6 +314,8 @@ class BankPayment(Document):
             data = self.get_direct_payment()
         elif self.transaction_type == "Journal Entry":
             data = self.get_journal_entry()
+        elif self.transaction_type == "Transporter Payment":
+            data = self.get_transporter_payment()
         return data
 
     def get_journal_entry(self):
@@ -494,6 +498,44 @@ class BankPayment(Document):
         ORDER BY pe.posting_date, pe.name """.format( 
             bank_payment = self.name,
             cond = cond), as_dict=True)
+
+    #added by cety on 30/09/2021 for the transporter payment
+    def get_transporter_payment(self):
+        cond = ""
+        if self.transaction_no:
+            cond = "AND tp.name ='{}'".format(self.transaction_no)
+        elif not self.transaction_no and self.from_date and self.to_date:
+            cond = "AND tp.posting_date BETWEEN '{}' AND '{}'".format(str(self.from_date), str(self.to_date))
+        
+        return frappe.db.sql("""SELECT "Transporter Payment" transaction_type, tp.name transaction_id, tp.name transaction_reference, 
+                                tp.posting_date transaction_date, e.supplier as supplier, e.owner_name as beneficiary_name,
+                                e.bank_name as bank_name, e.bank_branch, fib.financial_system_code, e.bank_account_type, e.account_number
+                                as bank_account_no,
+                                round((tpi.total_amount + (select ifnull(sum(tpd.amount),0)
+                                        from `tabTransporter Payment Deduction` tpd
+                                        where tpd.parent = tp.name
+                                    )
+                                ),2) amount
+                                FROM `tabTransporter Payment` tp
+                                JOIN `tabTransporter Payment Item` tpi ON tpi.parent = tp.name
+                                JOIN `tabEquipment` e ON e.name=tp.equipment
+                                LEFT JOIN `tabFinancial Institution Branch` fib ON fib.name = e.bank_branch
+                                WHERE tp.docstatus = 1
+                                {cond}
+                                AND e.owner_name IS NOT NULL
+                                AND IFNULL(tpi.total_amount,0) > 0
+                                AND NOT EXISTS(select 1 
+                                        FROM `tabBank Payment Item` bpi
+                                        WHERE bpi.transaction_type = 'Transporter Payment'
+                                        AND bpi.transaction_id = tp.name
+                                        AND bpi.parent != '{bank_payment}'
+                                        AND bpi.docstatus != 2
+                                        AND bpi.status NOT IN ('Cancelled', 'Failed')
+                            )
+            ORDER BY tp.posting_date, tp.name""".format(
+                bank_payment = self.name,
+                cond = cond), as_dict=True)
+
 
     def get_month_id(self, month_abbr):
         return {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06",
