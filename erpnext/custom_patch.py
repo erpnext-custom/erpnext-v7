@@ -10,18 +10,18 @@ import csv
 def copy_party_to_consolidation():
     for d in frappe.db.sql('''
                            select voucher_no, account, name,consolidation_party
-                           from `tabGL Entry` where voucher_type = 'Purchase Invoice' and (consolidation_party is null or consolidation_party ='')
+                           from `tabGL Entry` where voucher_type = 'Sales Invoice' and (consolidation_party is null or consolidation_party ='')
                            ''',as_dict=True):
         exp_acc = ''
         if not d.consolidation_party:
-			if d.account == 'Stock received but Not billed - CDCL':
-				item_code = frappe.db.get_value('Purchase Invoice Item',{'parent':d.voucher_no},['item_code'])
-				exp_acc = frappe.db.get_value('Item',item_code,['expense_account'])
+			# if d.account == 'Stock received but Not billed - CDCL':
+			# 	item_code = frappe.db.get_value('Purchase Invoice Item',{'parent':d.voucher_no},['item_code'])
+			# 	exp_acc = frappe.db.get_value('Item',item_code,['expense_account'])
 				# print('item code : '+ item_code + ' acc : '+exp_acc)
-			party = frappe.db.get_value('Purchase Invoice',d.voucher_no,['supplier'])
+			party = frappe.db.get_value('Sales Invoice',d.voucher_no,['customer'])
 			print('name : '+ d.name +'party : '+party)
 			frappe.db.sql('''
-						update `tabGL Entry` set consolidation_party_type = 'Supplier', 
+						update `tabGL Entry` set consolidation_party_type = 'Customer', 
 						consolidation_party = "{}",
 						exact_expense_acc = "{}"
 						where name = "{}"
