@@ -6,6 +6,9 @@ cur_frm.add_fetch("utility_services","bank_account","bank_account");
 cur_frm.add_fetch("utility_service_type","party","party");
 cur_frm.add_fetch("utility_service_type","expense_account","debit_account");
 frappe.ui.form.on('Utility Bill', {
+	setup: function(frm) {
+		frm.get_docfield("item").allow_bulk_edit = 1;
+	},
 	onload: function(frm){
 		if(frm.doc.workflow_state != "Draft" && !cur_frm.doc.__islocal){
 			cur_frm.set_df_property("item", "disabled", 1);
