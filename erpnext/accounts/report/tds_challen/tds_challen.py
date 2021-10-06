@@ -27,7 +27,7 @@ def get_data(query, filters):
 			row = [d.name, d.vendor_tpn_no, d.bill_no, d.bill_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, d.cost_center, status]
 			data.append(row);
 		else:
-			row = [d.name, d.vendor_tpn_no, d.bill_no, d.bill_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, d.cost_center, status]
+			row = [d.name, d.vendor_tpn_no, d.bill_no, d.vendor_no, d.bill_date, d.tds_taxable_amount, d.tds_rate, d.tds_amount, d.cost_center, status]
 			data1.append(row);
 	if filters.get("cost_center"):
 		return data
@@ -49,6 +49,7 @@ def construct_query(filters=None):
 			s.vendor_tpn_no,
 			s.name,
 			p.name as bill_no,
+			p.bill_no as vendor_no,
 			p.bill_date,
 			p.tds_taxable_amount,
 			p.tds_rate,
@@ -88,6 +89,7 @@ def construct_query(filters=None):
 			as vendor_tpn_no,
 			if(d.single_party_multiple_payments = 1, d.party, di.party) as vendor,
 			d.name as bill_no,
+			d.invoice_no as vendor_no,
 			d.posting_date as bill_date,
 			if(d.single_party_multiple_payments = 1, d.taxable_amount, di.taxable_amount) as tds_taxable_amount,
 			d.tds_percent as tds_rate,
@@ -108,6 +110,7 @@ def construct_query(filters=None):
 			ss.vendor_tpn_no,
 			ss.name,
 			d.name as bill_no,
+			'' as vendor_no,
 			d.posting_date as bill_date,
 			d.total_amount as tds_taxable_amount,
 			d.tds_percent as tds_rate,
@@ -127,6 +130,7 @@ def construct_query(filters=None):
 			ss.vendor_tpn_no,
 			ss.name,
 			d.name as bill_no,
+			'' as vendor_no,
 			d.posting_date as bill_date,
 			d.gross_amount as tds_taxable_amount,
 			d.tds_percent as tds_rate,
@@ -201,6 +205,13 @@ def get_columns():
 		  "label": "Invoice No",
 		  "fieldtype": "Link",
 		  "options":"Purchase Invoice",
+		  "width": 200
+		},
+		{
+		  "fieldname": "vendor_inv_no",
+		  "label": "Vendor Inv No",
+		  "fieldtype": "Data",
+		#   "options":"Purchase Invoice",
 		  "width": 200
 		},
 		{
