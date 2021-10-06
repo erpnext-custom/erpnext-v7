@@ -33,7 +33,7 @@ def get_data(filters):
     cond = get_condition(filters)
     data = frappe.db.sql("""
         SELECT 
-            bp.name, bpi.transaction_type, bpi.transaction_id, bpi.transaction_date, bpi.transaction_reference, bpi.supplier, bpi.beneficiary_name, bpi.bank_account_no, bp.total_amount, bpi.status, bpi.bank_journal_no, bpi.pi_number
+            bp.name, bpi.transaction_type, bpi.transaction_id, bpi.transaction_date, bpi.transaction_reference, bpi.supplier, bpi.beneficiary_name, bpi.bank_account_no, bpi.amount, bpi.status, bpi.bank_journal_no, bpi.pi_number
         FROM `tabBank Payment` bp, `tabBank Payment Item` bpi
         WHERE bp.name=bpi.parent
         {condition}
