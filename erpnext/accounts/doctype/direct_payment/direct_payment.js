@@ -74,33 +74,33 @@ frappe.ui.form.on('Direct Payment', {
 	"party_type": function(frm){
 		//frm.set_value("party","");	
 	},
-        "payment_type": function(frm){
-		/*
-                if (frm.doc.party_type == "Customer"){
-                        cur_frm.set_query("party", function() {
-                                return {
-                                        "filters": {
-                                                "inter_company": 1
-                                        }
-                                }
-                         });
-                } */
+	"payment_type": function(frm){
+	/*
+			if (frm.doc.party_type == "Customer"){
+					cur_frm.set_query("party", function() {
+							return {
+									"filters": {
+											"inter_company": 1
+									}
+							}
+						});
+			} */
 
-                if(frm.doc.payment_type == "Receive"){
-                        frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'revenue_bank_account',
-                        function(d) {
-                            cur_frm.set_value("debit_account",d.revenue_bank_account);
-                            cur_frm.set_value("credit_account","");
-                        });
-                }
-                if(frm.doc.payment_type == "Payment"){
-                        frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'expense_bank_account',
-                          function(d) {
-                            cur_frm.set_value("credit_account",d.expense_bank_account);
-                            cur_frm.set_value("debit_account","");
-                        });
-                }
-                calculate_tds(frm);
+			if(frm.doc.payment_type == "Receive"){
+					frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'revenue_bank_account',
+					function(d) {
+						cur_frm.set_value("debit_account",d.revenue_bank_account);
+						cur_frm.set_value("credit_account","");
+					});
+			}
+			if(frm.doc.payment_type == "Payment"){
+					frappe.model.get_value('Branch', {'name': frm.doc.branch}, 'expense_bank_account',
+						function(d) {
+						cur_frm.set_value("credit_account",d.expense_bank_account);
+						cur_frm.set_value("debit_account","");
+					});
+			}
+			calculate_tds(frm);
         },
 	"amount": function(frm) {
 		frm.set_value("taxable_amount", parseFloat(frm.doc.amount))
