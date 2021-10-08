@@ -99,9 +99,10 @@ class JobCard(AccountsController):
 			frappe.throw("Cannot submit job card with empty job details")
 		else:
 			for a in self.items:
-				if flt(a.amount) == 0: 
-					frappe.throw("Cannot submit job card without cost details")
-
+				if self.out_source == 1:
+					if flt(a.amount) == 0: 
+						frappe.throw("Cannot submit job card without cost details")
+				
 	def get_job_items(self):
 		items = frappe.db.sql("select se.name as stock_entry, sed.item_code as job, sed.item_name as job_name, sed.qty as quantity, sed.amount from `tabStock Entry Detail` sed, `tabStock Entry` se where se.docstatus = 1 and sed.parent = se.name and se.purpose = \'Material Issue\' and se.job_card = \'"+ str(self.name) +"\'", as_dict=True)
 
