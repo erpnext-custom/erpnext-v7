@@ -30,6 +30,9 @@ frappe.treeview_settings["Account"] = {
 			options: ['', 'Bank', 'Cash', 'Stock', 'Tax', 'Chargeable', 'Fixed Asset'].join('\n'),
 			description: __("Optional. This setting will be used to filter in various transactions.")
 		},
+		{fieldtype:'Data', fieldname:'account_code_base', label:__('Account Code Base'),
+                        description: __('Account Code Base Is Mandiatory For Parent Account'), 
+			depends_on: 'eval:doc.is_group'},
 		{fieldtype:'Float', fieldname:'tax_rate', label:__('Tax Rate'),
 			depends_on: 'eval:doc.is_group==1&&doc.account_type=="Tax"'},
 		{fieldtype:'Link', fieldname:'warehouse', label:__('Warehouse'), options:"Warehouse",

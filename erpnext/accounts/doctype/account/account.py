@@ -23,8 +23,29 @@ class Account(Document):
 		company = frappe.db.get_value("Company", self.company, ["abbr", "name"], as_dict=True)
 		if not company:
 			frappe.throw(_('Company {0} does not exist').format(self.company))
+		
+		#Account Codification if is not group -- Tashi Dorji
+		account_code = self.account_code_base
+		if cint(self.is_group) == 0:
+			account_code = self.account_code_gen()
+		if account_code:
+			self.account_code = account_code
+			self.name = str(account_code) + ' - ' + self.account_name.strip() + ' - ' + company.abbr
 
-		self.name = self.account_name.strip() + ' - ' + company.abbr
+		else:
+			self.account_code = None
+                        self.name = self.account_name.strip() + ' - ' + company.abbr
+
+	def account_code_gen(self):
+                account_code = frappe.db.sql("""select account_code from tabAccount where parent_account =%s order by account_code desc limit 1;""", self.parent_account);
+
+                if account_code[0][0]:
+                        return int(account_code[0][0]) + 1;
+                else:
+                        base = frappe.db.get_value("Account", self.parent_account, "account_code_base")
+                        if not base:
+                                frappe.throw("Setup Account Code Base for Account '{0}'".format(self.parent_account))
+                        return int(base) + 1
 
 	def validate(self):
 		if frappe.local.flags.allow_unverified_charts:
@@ -38,7 +59,7 @@ class Account(Document):
 		self.validate_frozen_accounts_modifier()
 		self.validate_balance_must_be_debit_or_credit()
 		self.validate_account_currency()
-
+	
 	def validate_parent(self):
 		"""Fetch Parent Details and validate parent account"""
 		if self.parent_account:
