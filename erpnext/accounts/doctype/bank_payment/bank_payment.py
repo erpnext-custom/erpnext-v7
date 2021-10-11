@@ -316,6 +316,8 @@ class BankPayment(Document):
             data = self.get_journal_entry()
         elif self.transaction_type == "Transporter Payment":
             data = self.get_transporter_payment()
+        elif self.transaction_type == "Overtime Payment":
+            data = self.get_overtime_payment()
         return data
 
     def get_journal_entry(self):
@@ -505,26 +507,20 @@ class BankPayment(Document):
         if self.transaction_no:
             cond = "AND tp.name ='{}'".format(self.transaction_no)
         elif not self.transaction_no and self.from_date and self.to_date:
-            cond = "AND tp.posting_date BETWEEN '{}' AND '{}'".format(str(self.from_date), str(self.to_date))
+            cond = "AND tp.posting_date BETWEEN '{}' AND '{}' AND tp.branch='{}'".format(str(self.from_date), str(self.to_date), str(self.branch))
         
-        return frappe.db.sql("""SELECT "Transporter Payment" transaction_type, tp.name transaction_id, tp.name transaction_reference, 
-                                tp.posting_date transaction_date, e.supplier as supplier, e.owner_name as beneficiary_name,
-                                e.bank_name as bank_name, e.bank_branch, fib.financial_system_code, e.bank_account_type, e.account_number
-                                as bank_account_no,
-                                round((tpi.total_amount + (select ifnull(sum(tpd.amount),0)
-                                        from `tabTransporter Payment Deduction` tpd
-                                        where tpd.parent = tp.name
-                                    )
-                                ),2) amount
-                                FROM `tabTransporter Payment` tp
-                                JOIN `tabTransporter Payment Item` tpi ON tpi.parent = tp.name
-                                JOIN `tabEquipment` e ON e.name=tp.equipment
-                                LEFT JOIN `tabFinancial Institution Branch` fib ON fib.name = e.bank_branch
-                                WHERE tp.docstatus = 1
-                                {cond}
-                                AND e.owner_name IS NOT NULL
-                                AND IFNULL(tpi.total_amount,0) > 0
-                                AND NOT EXISTS(select 1 
+        return frappe.db.sql("""SELECT 
+                            "Transporter Payment" as transaction_type, tp.name as transaction_id, tp.name transaction_reference,
+                            tp.posting_date as transaction_date, e.supplier, e.owner_name as beneficiary_name,
+                            e.bank_name, e.bank_branch, e.bank_account_type, e.account_number, 
+                            e.bank_account_type, e.account_number as bank_account_no, tp.amount_payable as amount,
+                            tp.branch, (select financial_system_code from `tabFinancial Institution Branch` where name = e.bank_branch ) as financial_system_code
+                            FROM `tabTransporter Payment` tp, `tabEquipment` e
+                            WHERE tp.docstatus = 1 
+                            {cond} 
+                            AND e.owner_name IS NOT NULL
+                            AND tp.equipment = e.name
+                            AND NOT EXISTS(select 1 
                                         FROM `tabBank Payment Item` bpi
                                         WHERE bpi.transaction_type = 'Transporter Payment'
                                         AND bpi.transaction_id = tp.name
@@ -532,10 +528,33 @@ class BankPayment(Document):
                                         AND bpi.docstatus != 2
                                         AND bpi.status NOT IN ('Cancelled', 'Failed')
                             )
-            ORDER BY tp.posting_date, tp.name""".format(
-                bank_payment = self.name,
-                cond = cond), as_dict=True)
+                            """.format( cond = cond, bank_payment = self.name), as_dict=1)
 
+    #added by cety on 11/10/2021 for overtime payment
+    def get_overtime_payment(self):
+        cond = ""
+        if self.transaction_no:
+            cond ="AND ot.name = '{}'".format(self.transaction_no)
+        elif not self.transaction_no and self.from_date and self.to_date:
+            cond = "AND ot.posting_date BETWEEN '{}' AND '{}' AND ot.branch = '{}'".format(str(self.from_date), str(self.to_date), str(self.branch))
+        return frappe.db.sql("""SELECT
+                                    "Overtime Payment" as transaction_type, ot.name as transaction_id, ot.name as transaction_reference, ot.posting_date as transaction_date, e.employee_name as beneficiary_name, e.bank_name, e.bank_branch, e.bank_account_type, e.bank_ac_no as bank_account_no, oti.total_amount as amount, ot.branch 
+                                FROM `tabOvertime Payment` as ot, `tabOvertime Payment Item` as oti
+                                JOIN `tabEmployee` as e ON e.name = oti.employee
+                                WHERE ot.name = oti.parent 
+                                AND ot.docstatus = 1
+                                {cond}
+                                AND e.employee_name IS NOT NULL
+                                AND e.bank_ac_no IS NOT NULL
+                                AND NOT EXISTS(select 1 
+                                        FROM `tabBank Payment Item` bpi
+                                        WHERE bpi.transaction_type = 'Overtime Payment'
+                                        AND bpi.transaction_id = ot.name
+                                        AND bpi.parent != '{bank_payment}'
+                                        AND bpi.docstatus != 2
+                                        AND bpi.status NOT IN ('Cancelled', 'Failed'))
+
+                            """.format(cond = cond, bank_payment=self.name), as_dict=True)
 
     def get_month_id(self, month_abbr):
         return {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06",
