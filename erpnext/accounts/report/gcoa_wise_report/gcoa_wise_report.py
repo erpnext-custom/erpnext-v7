@@ -86,7 +86,7 @@ def get_doc_company_amount(coa,filters):
 		credit += flt(a.credit)
 		amount += flt(flt(a.debit) + flt(a.opening_dr)) - flt(flt(a.credit) + flt(a.opening_cr)) if coa.root_type in ['Asset','Expense'] else flt(flt(a.credit) + flt(a.opening_cr)) - flt(flt(a.debit) + flt(a.opening_dr))
 
-	if debit or credit:
+	if debit or credit or amount or opening_cr or opening_dr:
 		doc = frappe.get_doc('DHI Setting')
 		row = {}
 		value.append({
@@ -169,7 +169,7 @@ def other_expense_amount(is_inter_company,coa,filters):
 				credit += flt(a.credit)
 				amount += flt(flt(a.debit) + flt(dr)) - flt(flt(a.credit)+flt(cr)) if coa.root_type in ['Asset','Expense'] else flt(flt(a.credit)+flt(cr)) - flt(flt(a.debit) + flt(dr))
 	
-	if debit or credit or amount:
+	if debit or credit or amount or opening_dr or opening_cr:
 		amt += flt(amount)
 		value.append(create_non_inter_compay_row(opening_dr, opening_cr,coa.account,filters,credit,debit,amount))
 	return value, amt, opening_dr, opening_cr, debit, credit
@@ -230,7 +230,7 @@ def payable_receivable_amount(is_inter_company,coa,filters):
 				debit += flt(a.debit)
 				credit += flt(a.credit)
 				amount += flt(flt(a.debit) + flt(dr)) - flt( flt(a.credit) + flt(cr)) if coa.root_type in ['Asset','Expense'] else flt(flt(a.credit) + flt(cr)) - flt( flt(a.debit) + flt(dr))
-	if debit or credit or amount:
+	if debit or credit or amount or opening_cr or opening_dr:
 		amt += flt(amount)
 		value.append(create_non_inter_compay_row(opening_dr, opening_cr, coa.account,filters,credit,debit,amount))
 	return value, amt, opening_dr, opening_cr, debit, credit
