@@ -137,6 +137,9 @@ frappe.ui.form.on('Salary Structure', {
 	psa: function(frm){
 		calculate_others(frm.doc);
 	},
+	hra: function(frm){
+		calculate_others(frm.doc);
+	},
 	mpi: function(frm){
 		calculate_others(frm.doc);
 	},
@@ -193,6 +196,9 @@ frappe.ui.form.on('Salary Structure', {
 		calculate_others(frm.doc);
 	},
 	psa_method: function(frm){
+		calculate_others(frm.doc);
+	},
+	hra_method: function(frm){
 		calculate_others(frm.doc);
 	},
 	mpi_method: function(frm){

@@ -135,7 +135,7 @@ def get_columns():
 		{
 			"fieldname": "qty",
 			"label": _("SO Qty"),
-			"fieldtype": "Data",
+			"fieldtype": "Float",
 			"width": 80
 		},
 		{

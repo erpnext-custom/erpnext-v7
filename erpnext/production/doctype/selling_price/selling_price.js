@@ -9,9 +9,12 @@ frappe.ui.form.on('Selling Price', {
 			{fieldname: 'selling_price', columns: 3},
 			{fieldname: 'item_sub_group', columns:3},
 		]
-	},
-
-	refresh: function(frm) {
-
+		frm.clear_table("item_branch");
+	}
+});
+frappe.ui.form.on('Selling Price Branch', {
+	item_branch_add: function(frm, cdt,cdn){
+		frappe.model.set_value(cdt, cdn, "branch", null);
+		cur_frm.refresh_field()
 	}
 });

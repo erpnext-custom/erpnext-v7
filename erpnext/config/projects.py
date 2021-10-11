@@ -35,7 +35,7 @@ def get_data():
                                 {
 					"type": "doctype",
 					"name": "MB Entry",
-                                        "label": "Measurement Book Entries",
+                    "label": "Measurement Book Entries",
 					"description": _("Measurement Book Entries."),
 				},
 				{

@@ -258,3 +258,34 @@ def validate_duplicate_supplier_quotation(args):
 
 	if data and data[0] and data[0].name:
 		frappe.throw(_("Already supplier quotation has created"))
+
+
+# This method is used to make supplier quotation from request for quotation (rfq). addby by Jai
+@frappe.whitelist()
+def make_supplier_quotation_rfq(source_name, target_doc=None):
+	def postprocess(source, target_doc):
+		set_missing_values(source, target_doc)
+
+	doclist = get_mapped_doc("Request for Quotation", source_name, {
+		"Request for Quotation": {
+			"doctype": "Supplier Quotation",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
+			"validation": {
+				"docstatus": ["=", 1]
+			}
+		},
+		"Request for Quotation Item": {
+			"doctype": "Supplier Quotation Item",
+			"field_map": {
+				"name": "request_for_quotation_item",
+				"budget_account": "budget_account",
+				"cost_center": "cost_center",
+				"parent": "request_for_quotation",
+				"rate": "rate"
+			}
+		}
+	}, target_doc, postprocess)
+
+	return doclist

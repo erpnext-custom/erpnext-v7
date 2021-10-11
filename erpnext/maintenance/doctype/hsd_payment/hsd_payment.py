@@ -14,6 +14,8 @@ class HSDPayment(Document):
 		check_future_date(self.posting_date)
 		self.validate_allocated_amount()
 		self.clearance_date = None
+		if (self.docstatus == 0 and self.workflow_state == "Payment Completed"):
+			self.workflow_state = "Waiting Approval"
 
 	def validate_allocated_amount(self):
 		if not self.amount > 0:

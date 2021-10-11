@@ -23,7 +23,7 @@ frappe.query_reports["Rental Register"] = {
       label: "To Month",
       fieldtype: "Select",
       options: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
-      default: "01",
+      default: "12",
     },
     {
       fieldname: "dzongkhag",
@@ -31,6 +31,13 @@ frappe.query_reports["Rental Register"] = {
       fieldtype: "Link",
       width: "80",
       options: "Dzongkhags",
+    },
+    {
+      fieldname: "dungkhag",
+      label: "Dungkhag",
+      fieldtype: "Link",
+      width: "80",
+      options: "Dungkhag",
     },
     {
       fieldname: "location",
@@ -83,13 +90,20 @@ frappe.query_reports["Rental Register"] = {
       options: ["", "Bumpa Dema", "Dik Maya Ghalley", "Rinzin Dema", "Seema Uroan", "Dorji Wangmo", "Sangay Pelden", "Sangay Dorji", "Sangay Dubjur", "Kunzang Choden"],
     },
     {
+      fieldname: "building_classification",
+      label: __("Building Classification"),
+      fieldtype: "Link",
+      width: "90",
+      options: "Building Classification"
+    },
+    {
       fieldname: "status",
       label: "Status",
       fieldtype: "Select",
       width: "80",
       options: ["Draft", "Submitted"],
-      default: "Submitted",
       reqd: 1,
+      default: "Submitted",
     },
-  ]
+  ],
 };

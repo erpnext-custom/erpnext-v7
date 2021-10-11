@@ -11,6 +11,131 @@ from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 import frappe.model.rename_doc as rd
 import csv
 
+def update_item_code(old_code, new_code):
+    if old_code and new_code:
+        for a in frappe.db.sql("select name, parent from `tabMaterial Request Item` where item_code='{}'".format(old_code), as_dict=True):
+            frappe.db.sql("Update `tabMaterial Request Item` set item_code = '{}' where name ='{}'".format(new_code, a.name))
+            print("MR: " + str(a.parent))
+            
+        for a in frappe.db.sql("select name, parent from `tabPurchase Order Item` where item_code='{}'".format(old_code), as_dict=True):
+            frappe.db.sql("Update `tabPurchase Order Item` set item_code = '{}' where name ='{}'".format(new_code, a.name))
+            print("PO: " + str(a.parent))
+
+        for a in frappe.db.sql("select name, parent from `tabPurchase Receipt Item` where item_code='{}'".format(old_code), as_dict=True):
+            frappe.db.sql("Update `tabPurchase Receipt Item` set item_code = '{}' where name ='{}'".format(new_code, a.name))
+            frappe.db.sql("delete from `tabAsset Received Entries` where ref_doc = '{}' and item_code = '{}'".format(a.parent, old_code))
+            print("PR: " + str(a.parent))
+
+        for a in frappe.db.sql("select name, parent from `tabPurchase Invoice Item` where item_code='{}'".format(old_code), as_dict=True):
+            frappe.db.sql("Update `tabPurchase Invoice Item` set item_code = '{}' where name ='{}'".format(new_code, a.name))
+            print("PI: " + str(a.parent))
+        frappe.db.commit()
+
+def cancel_rb():
+    i = 0
+    for a in frappe.db.sql("Select name from `tabRental Bill` where building_category = 'Special Housing' and dzongkhag = 'Chukha' and docstatus = 1 and name !='NHDCL/300610/202101/00003'", as_dict=True):
+		doc = frappe.get_doc("Rental Bill", a.name)
+		doc.cancel()
+		print("Count :" + str(i))
+		i += 1
+'''
+def update_purchase_item():
+    for a in frappe.db.sql("select distinct parent from `tabMaterial Request Item` where item_code in ('200115','200065','200066','200069')", as_dict=True)
+'''
+def re_submit_tenant():
+    for a in frappe.db.sql("select tenant as parent, cid from `tenant`", as_dict=True):
+		frappe.db.sql("update `tabTenant Information` set docstatus = 0 where name = '{}'".format(a.parent))
+		frappe.db.sql("delete from `tabTenant Rental Charges` where parent = '{}'".format(a.parent))
+		frappe.db.commit()
+		doc = frappe.get_doc("Tenant Information", a.parent)
+		if not doc.initial_allotment_date:
+			doc.initial_allotment_date = doc.allocated_date
+		doc.submit()
+		print("Submitted for Tenant : " + str(a.parent))
+
+def update_tenant():
+    for a in frappe.db.sql("select cid from `tenant`", as_dict=True):
+        tenant_code = frappe.db.get_value("Tenant Information", {"cid":a.cid}, "name")
+        frappe.db.sql("update `tenant` set tenant = '{tenant_code}' where cid='{cid}'".format(tenant_code=tenant_code, cid=a.cid))
+    frappe.db.commit()
+       
+def update_rental_to_date():
+    for b in frappe.db.sql("select name as tenant, cid from `tabTenant Information` where name in ('THI201128','THI201131','THI201124','THI201120','THI201117','THI201125')", as_dict=True):
+		for a in frappe.db.sql("select name, parent, docstatus from `tabTenant Rental Charges` where to_date = '2020-12-31' and parent = '{}'".format(b.tenant), as_dict=True):
+			max_date = frappe.db.sql("select max(to_date) as max_date from `tabTenant Rental Charges` where parent = '{}'".format(a.parent))[0][0]
+			for b in frappe.db.sql("select name, from_date, to_date from `tabTenant Rental Charges` where parent = '{}' and to_date != '2020-12-31'".format(a.parent), as_dict=True):
+				if b.to_date != max_date:
+					new_to_date = add_years(b.to_date, 1)
+					new_from_date = add_years(b.from_date, 1)
+				else:
+					new_to_date = max_date
+					new_from_date = add_years(b.from_date, 1)
+				print("Tenant:" + str(a.parent) + "Old from_date :" + str(b.from_date) + " New from date :" + str(new_from_date) + "Old to_date :" + str(b.to_date) + " New to date :" + str(new_to_date))
+
+				frappe.db.sql("update `tabTenant Rental Charges` set from_date = '{}', to_date = '{}' where name = '{}'".format(new_from_date, new_to_date, b.name))
+			frappe.db.sql("update `tabTenant Rental Charges` set to_date = '2021-12-31' where name = '{}'".format(a.name))
+		frappe.db.commit()
+  
+def update_rental_to_date1():
+    j = 0
+    for a in frappe.db.sql("""
+                           select t.tenant_name, t.name as tenant, t.cid, c.name as cname, c.to_date 
+                           from `tabTenant Information` t inner join `tabTenant Rental Charges` c on t.name=c.parent 
+							where t.location in ('Toribari') and c.from_date= '2019-09-01' and t.docstatus = 1
+                           and building_category = "Special Housing"
+                           """, as_dict=True):
+		max_date = frappe.db.sql("select max(to_date) as max_date from `tabTenant Rental Charges` where parent = '{}'".format(a.tenant))[0][0]
+		initial_from_date = '2021-10-01'
+  		initial_to_date = '2023-09-30'
+		i = 0	
+		for b in frappe.db.sql("select name, from_date, to_date from `tabTenant Rental Charges` where parent = '{}' and from_date != '2019-09-01' order by increment".format(a.tenant), as_dict=True):
+			new_from_date=new_to_date=""
+   			if b.to_date != max_date:
+				if i > 0:
+					new_from_date = add_years(initial_from_date, i*2)
+					new_to_date = add_years(initial_to_date, i*2)
+					print(str(i) + " if - " + str(new_from_date) + "   - " + str(new_to_date))
+				else:
+					new_from_date = initial_from_date
+					new_to_date = initial_to_date
+					print(str(i) + " else - " + str(new_from_date) + "   - " + str(new_to_date))
+			else:
+				new_to_date = max_date
+				new_from_date = add_years(initial_from_date, i*2)
+			i+=1
+			print(str(i)+ " : Tenant:" + str(a.parent) + "Old from_date :" + str(b.from_date) + " New from date :" + str(new_from_date) + "Old to_date :" + str(b.to_date) + " New to date :" + str(new_to_date))
+			frappe.db.sql("update `tabTenant Rental Charges` set from_date = '{}', to_date = '{}' where name = '{}'".format(new_from_date, new_to_date, b.name))
+			
+		frappe.db.sql("update `tabTenant Rental Charges` set to_date = '2021-09-30' where name = '{}'".format(a.cname))
+		frappe.db.commit()
+		j+=1
+		print("COUNT " + str(j) + " TENANT " + str(a.tenant))
+			
+def update_rental_advance():
+	for b in frappe.db.sql("""select a.name as a_name, a.rental_bill, a.balance_amount, receipt_date, tenant_name, 
+                        r.tenant, r.name as r_name, r.advance_received, r.advance_adjusted, r.advance_balance
+                        from `tabRental Advance Received` a, `tabRental Advance Adjustment` r  
+                        where a.parent = r.name
+                        and r.tenant in ('THI200411')
+                        and a.rental_bill like '%20210%'
+                        and a.name in ('5013f006cc', '47e9e84b64')
+                        """, as_dict=True):
+		advance_received = flt(b.advance_received) - flt(b.balance_amount)
+		advance_balance = flt(advance_received) - flt(b.advance_adjusted)
+		frappe.db.sql("update `tabRental Advance Adjustment` set `advance_received` = '{}', `advance_balance` = '{}' where name ='{}'".format(advance_received, advance_balance, b.r_name))
+		frappe.db.sql("delete from `tabRental Advance Received` where name ='{}'".format(b.a_name))
+		frappe.db.commit()
+		print("Done for " + str(b.tenant))
+
+def update_rental_bill():
+	for a in frappe.db.sql("select p.name, i.discount_amount, i.rental_bill from `tabRental Payment` p inner join `tabRental Payment Item` i where p.apply_before_increment = 1 and i.discount_amount > 0 and p.docstatus=1", as_dict=True):
+		dis_amt = frappe.db.get_value("Rental Bill", str(a.rental_bill), "discount_amount")
+		if cint(dis_amt) > 0:
+			print("Rental Bill Not Update for " + str(a.name) + " and " + str(a.rental_bill) + " and discount : " + str(dis_amt))
+		else:
+			frappe.db.sql("update `tabRental Bill` set discount_amount = '{}' where name = '{}'".format(cint(dis_amt), str(a.rental_bill)))
+			print("Rental Bill Update for " + str(a.rental_bill) + " and discount : " + str(discount_amount))
+
 def remove_gl_entry():
 	for a in frappe.db.sql("select posting_date, name, voucher_type, voucher_no from `tabGL Entry` where posting_date < '2021-01-01' and voucher_type = 'Journal Entry'  and exists(select 1 from `tabJournal Entry` where name = voucher_no)", as_dict=True):
 		if a.voucher_type == "Journal Entry":
@@ -2006,19 +2131,228 @@ def update_item_details():
 				frappe.db.sql("""update `tabItem` set item_name ='{}' where name= '{}'""".format(i[2], i[0]))
 			if i[4] == "unit change": 
 				frappe.db.sql("""update `tabItem` set stock_uom ='{}' where name= '{}'""".format(i[6], i[0]))
-def update_stock_ledger():
-	with open("/home/frappe/erp/apps/erpnext/erpnext/MR_changes.csv") as f:
+
+def update_gl_heads():
+	with open("/home/frappe/erp/apps/erpnext/erpnext/item_code.csv") as f:
 		reader = csv.reader(f)
 		mylist = list(reader)
 		for i in mylist:
-			data = frappe.db.sql("select name from tabItem where name ={}".format(i[0]))
-			if not data: 
-				print(i[0])
-				
-# written by phuntsho to update the branch, sitename and cost center for Material Request. 
-# def update_branch_site(): 
-# 	array = ["MR20040004","MR20080017","MR20080021","MR20090001","MR20090001","MR20090012","MR20090036","MR20090037","MR20090039","MR20090038","MR20090047","MR20090063","MR20100026","MR20100040","MR20100058","MR20100063","MR20100103","MR20100141","MR20100138","MR20100160","MR20100154","MR20100173","MR21000171","MR20110051","MR20110100","MR20110044","MR20110163","MR20120011","MR20120040-1","MR20120047","MR20120061","MR20120066","MR20120124","MR21030047","MR21030050","MR21030049","MR21030010","MR21030045","MR21030064","MR21030065","MR21030066","MR21030079","MR21030109-1"]
-# 	for i in array: 
-# 		# frappe.db.sql("update `tabMaterial Request` set branch='Chanjiji Site Office', site_name='Chanjiji Site Office' where name='{}'".format(i))
-# 		frappe.db.sql("update `tabMaterial Request Item` set cost_center_w = 'Chanjiji Site Office - NHDCL' where parent='{}'".format(i))
-# 	print("Done")
+			# data = frappe.db.sql("select sd.item_code, sd.parent from `tabStock Entry Detail` as sd, `tabStock Entry` as se where item_code ={} and se.name = sd.parent".format(i[0]))
+			data = frappe.db.sql("select name from `tabGL Entry` where voucher_type = 'Stock Entry' and voucher_number")
+			if data:
+				print(data)
+				print("\n\n") 
+
+
+
+
+def post_je_house_rent():
+	salary_slips = frappe.db.sql("select a.name from `tabSalary Slip` as a, `tabSalary Detail` as sd where sd.salary_component = 'House Rent' and sd.parent = a.name and a.fiscal_year = 2021 and a.month = 03")
+	default_bank_account    = frappe.db.get_value("Branch", 'Corporate Service',"expense_bank_account")
+	default_payable_account = frappe.db.get_single_value("HR Accounts Settings", "salary_payable_account")
+	company_cc              = frappe.db.get_value("Company",'National Housing Development Corporation Ltd.',"company_cost_center")
+	default_gpf_account     = frappe.db.get_single_value("HR Accounts Settings", "employee_contribution_pf")
+	default_business_activity = "Common"
+	salary_component_pf     = "PF"
+
+	# print("{}\n\n{}\n\n{}\n\n{}\n\n".format(default_bank_account, default_payable_account,company_cc,default_gpf_account ))	
+	# # Salary Details
+	cc = frappe.db.sql("""
+			select
+					(case
+							when sc.type = 'Deduction' and ifnull(sc.make_party_entry,0) = 0 then c.company_cost_center
+							else t1.cost_center
+					end)                       as cost_center,
+					(case
+							when sc.type = 'Deduction' and ifnull(sc.make_party_entry,0) = 0 then 'Common'
+							else t1.business_activity
+					end)                      as business_activity,
+					(case
+							when sc.type = 'Earning' then sc.type
+							else ifnull(sc.clubbed_component,sc.name)
+					end)                       as salary_component,
+					sc.type                    as component_type,
+					(case
+							when sc.type = 'Earning' then 0
+							else ifnull(sc.is_remittable,0)
+					end)                       as is_remittable,
+					sc.gl_head                 as gl_head,
+					sum(ifnull(sd.amount,0))   as amount,
+					(case
+							when ifnull(sc.make_party_entry,0) = 1 then 'Payable'
+							else 'Other'
+					end) as account_type,
+					(case
+							when ifnull(sc.make_party_entry,0) = 1 then 'Employee'
+							else 'Other'
+					end) as party_type,
+					(case
+							when ifnull(sc.make_party_entry,0) = 1 then t1.employee
+							else 'Other'
+					end) as party
+				from
+					`tabSalary Detail` sd,
+					`tabSalary Slip` t1,
+					`tabSalary Component` sc,
+					`tabCompany` c
+			where t1.fiscal_year = '2021'
+				and t1.month       = '03'
+				and t1.docstatus   = 1
+				and sd.parent      = t1.name
+				and sc.name        = sd.salary_component
+				and c.name         = t1.company
+				and sd.salary_component = "House Rent" 
+			group by 
+					(case
+							when sc.type = 'Deduction' and ifnull(sc.make_party_entry,0) = 0 then c.company_cost_center
+							else t1.cost_center
+					end),
+					(case
+							when sc.type = 'Deduction' and ifnull(sc.make_party_entry,0) = 0 then 'Common'
+							else t1.business_activity
+					end),
+					(case when sc.type = 'Earning' then sc.type else ifnull(sc.clubbed_component,sc.name) end),
+					sc.type,
+					(case when sc.type = 'Earning' then 0 else ifnull(sc.is_remittable,0) end),
+					sc.gl_head,
+					(case when ifnull(sc.make_party_entry,0) = 1 then 'Payable' else 'Other' end),
+					(case when ifnull(sc.make_party_entry,0) = 1 then 'Employee' else 'Other' end),
+					(case when ifnull(sc.make_party_entry,0) = 1 then t1.employee else 'Other' end)
+			order by t1.cost_center, t1.business_activity, sc.type, sc.name
+	""",as_dict=1)
+
+	posting = frappe._dict()
+	cc_wise_totals = frappe._dict()
+	tot_payable_amt= 0
+	for rec in cc: 
+		remit_amount    = 0
+		remit_gl_list   = [rec.gl_head,default_gpf_account] if rec.salary_component == salary_component_pf else [rec.gl_head]
+		for r in remit_gl_list:
+			remit_amount += flt(rec.amount) #temp added
+			posting.setdefault(rec.salary_component,[]).append({
+					"account"       : r,
+					"debit_in_account_currency" : flt(rec.amount),
+					"cost_center"   : rec.cost_center,
+					"business_activity" : rec.business_activity,
+					"party_check"   : 0,
+					"account_type"   : rec.account_type if rec.party_type == "Employee" else "",
+					"party_type"     : rec.party_type if rec.party_type == "Employee" else "",
+					"party"          : rec.party if rec.party_type == "Employee" else "" 
+			})
+
+			
+		
+		posting.setdefault(rec.salary_component,[]).append({
+			"account"       : default_bank_account,
+			"credit_in_account_currency" : flt(remit_amount),
+			"cost_center"   : rec.cost_center,
+			"business_activity" : rec.business_activity,
+			"party_check"   : 0
+		})
+
+		
+	for i in posting:
+		if i == "to_payables":
+				v_title         = "To Payables"
+				v_voucher_type  = "Journal Entry"
+				v_naming_series = "Journal Voucher"
+		else:
+				v_title         = "To Bank" if i == "to_bank" else i
+				v_voucher_type  = "Bank Entry"
+				v_naming_series = "Bank Payment Voucher"
+		# print("---this is the voucher type: ", v_voucher_type, " and this is the naming series: ", v_naming_series)
+
+		doc = frappe.get_doc({
+			"doctype": "Journal Entry",
+			"voucher_type": v_voucher_type,
+			"naming_series": v_naming_series,
+			"title": "Salary [202103] - "+str(v_title),
+			"fiscal_year": "2021",
+			"user_remark": "Salary [202103] - "+str(v_title),
+			"posting_date": nowdate(),                     
+			"company": "National Housing Development Corporation Ltd.",
+			"accounts": sorted(posting[i], key=lambda item: item['cost_center']),
+			"branch": "Corporate Service"
+		})
+
+		doc.flags.ignore_permissions = 1 
+		doc.insert()
+		doc.save()
+
+		print("Finished")
+
+# added by phuntsho on june 1st 2021
+# employer pf not added for slips of 2020
+def get_employer_pf(): 
+	percent = 15
+	emp_info = frappe.db.sql("""
+		SELECT 
+			d.amount as amount, 
+			ss.employee_name as emp, 
+			ss.fiscal_year as year, 
+			ss.month as month, 
+			ss.name as name
+		FROM 
+			`tabSalary Detail` as d, 
+			`tabSalary Slip` as ss 
+		WHERE
+			d.salary_component = 'Basic Pay' and 
+			d.parent = ss.name and 
+			ss.docstatus = 1 and 
+			ss.month = '12' and
+			ss.fiscal_year=2020 
+		ORDER BY 
+			ss.employee_name 
+	""", as_dict=1)
+	i = 0
+	for data in emp_info:
+		# print("{}----{}----{}----{} \n".format(data.emp, data.name, data.month, data.amount*0.15))
+		frappe.db.sql("update `tabSalary Slip` set employer_pf = '{}' where employee_name = '{}' and name = '{}' and month = '{}' and fiscal_year = '2020'".format(data.amount*0.15, data.emp, data.name, data.month))
+		print("done with {}".format(data.name)) 
+	
+
+def update_asset(): 
+	with open("/home/frappe/erp/apps/erpnext/erpnext/asset_list.csv") as f:
+		reader = csv.reader(f)
+		mylist = list(reader)
+		for i in mylist:
+			asset = i[0]
+			depre_amount = frappe.db.sql("select a.gross_purchase_amount-(a.opening_accumulated_depreciation+sum(b.depreciation_amount)) as depre from `tabAsset` as a, `tabDepreciation Schedule` as b where b.parent = '{ass}' and a.name='{ass}' and b.journal_entry != '' ".format(ass=asset), as_dict=1)
+			frappe.db.sql("""update `tabAsset` set value_after_depreciation = {amount} where name = '{name}'""".format(name= i[0], amount= depre_amount[0].depre))
+			
+			print("DONE FOR asset: {} -------- amount: {}".format(i[0], depre_amount[0].depre))
+			
+
+# PHUNTSHO ON AUG 3,2021: TO GET ALL THE 'TO BE BILLED' PURCHASE RECEIPT THAT HAS A PO WITH A SPECIFIC BUDGET ACCOUNT
+# def get_pr():
+# 	po_names = frappe.db.sql("""
+# 		SELECT 
+# 			a.name, 
+# 			a.status 
+# 		FROM 
+# 			`tabPurchase Order` as a, 
+# 			`tabPurchase Order Item` as b
+# 		WHERE 
+# 			a.name = b.parent and 
+# 			b.budget_account = 'Consumption of Raw Materials - NHDCL' and 
+# 			a.docstatus = 1
+# 		ORDER BY
+# 			status DESC
+# 	""", as_dict=1)
+
+# 	for index, item in enumerate(po_names): 
+# 		pr_names = frappe.db.sql("""
+# 			SELECT 
+# 				a.name , 
+# 				a.status
+# 			FROM 
+# 				`tabPurchase Receipt` as a, 
+# 				`tabPurchase Receipt Item` as b 
+# 			WHERE 
+# 				a.name = b.parent and 
+# 				b.purchase_order = '{po_name}' and 
+# 				a.status ="To Bill"
+# 		""".format(po_name = item.name), as_dict=1)
+# 		for index, item in enumerate(pr_names):
+# 			print("{} ---- {}".format(item.name, item.status))
+

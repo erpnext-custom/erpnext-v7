@@ -65,6 +65,7 @@ class PurchaseInvoice(BuyingController):
 		if (self.is_paid == 1):
 			self.validate_cash()
 
+		self.calculate_all_deductions()
 		self.check_conversion_rate()
 		self.validate_credit_to_acc()
 		self.clear_unallocated_advances("Purchase Invoice Advance", "advances")
@@ -78,6 +79,26 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset()
 		self.validate_fixed_asset_account()
 		self.create_remarks()
+
+
+	
+	# ADDED BY PHUNTSHO ON 23-07-2021.
+	def calculate_all_deductions(self):
+		""" calculate the net total amount after all the deductions. """
+		net_amount = self.total
+		if self.deductions:
+			for d in self.deductions:
+				net_amount -= flt(d.amount)
+		if self.type and self.tds_amount:
+			net_amount -= flt(self.tds_amount)
+		if self.advances: 
+			for item in self.advances:
+				net_amount -= flt(item.allocated_amount)
+		if self.write_off_amount: 
+			net_amount -= flt(self.write_off_amount)
+		
+		self.net_total = flt(net_amount)
+		self.outstanding_amount = flt(net_amount)
 
 	def validate_tds(self):
 		if not self.type:
@@ -346,14 +367,14 @@ class PurchaseInvoice(BuyingController):
 		self.make_tax_gl_entries(gl_entries)
 		self.make_tds_gl_entry(gl_entries)
 		self.make_advance_gl_entry(gl_entries)
-
+		self.make_deduction_gl_entry(gl_entries)
 		gl_entries = merge_similar_entries(gl_entries)
-
+		
 		self.make_payment_gl_entries(gl_entries)
 
 		self.make_write_off_gl_entry(gl_entries)
-		
 
+		
 		if gl_entries:
 			update_outstanding = "No" if (cint(self.is_paid) or self.write_off_account) else "Yes"
 
@@ -371,30 +392,72 @@ class PurchaseInvoice(BuyingController):
 
 		elif self.docstatus == 2 and cint(self.update_stock) and self.auto_accounting_for_stock:
 			delete_gl_entries(voucher_type=self.doctype, voucher_no=self.name)
-
+	
+	def make_deduction_gl_entry(self, gl_entries):
+		if self.deductions:
+			for c in self.deductions:
+				if c.account:
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": c.account,
+							"against": self.supplier,
+							"party_type": "Supplier",
+							"party": self.supplier,
+							"credit": flt(c.amount),
+							"credit_in_account_currency": flt(c.amount),
+							"cost_center": self.buying_cost_center, 
+							"business_activity": self.business_activity
+						})
+					)
+					
+				else:
+					frappe.throw("Please select an account under Others Deduction")
 
 	def make_supplier_gl_entry(self, gl_entries):
-		if self.grand_total:
-			# Didnot use base_grand_total to book rounding loss gle
-			grand_total_in_company_currency = flt(self.grand_total * self.conversion_rate,
-				self.precision("grand_total"))
+		if self.total_void_amount:
+			total_void_in_company_currency = flt(self.total_void_amount * self.conversion_rate,
+				self.precision("total_void_amount"))
+			void_account = frappe.db.get_single_value("Sales Accounts Settings", "void_account")
 
 			gl_entries.append(
 				self.get_gl_dict({
-					"account": self.credit_to,
+					"account": void_account,
 					"cost_center": self.buying_cost_center,
 					"business_activity": self.business_activity,
 					"party_type": "Supplier",
 					"party": self.supplier,
 					"against": self.against_expense_account,
-					"credit": grand_total_in_company_currency,
-					"credit_in_account_currency": grand_total_in_company_currency \
-						if self.party_account_currency==self.company_currency else self.grand_total,
+					"credit": total_void_in_company_currency,
+					"credit_in_account_currency": total_void_in_company_currency \
+						if self.party_account_currency==self.company_currency else self.total_void_amount,
 					"against_voucher": self.return_against if cint(self.is_return) else self.name,
 					"against_voucher_type": self.doctype,
 				}, self.party_account_currency)
 			)
+		
+		# commented by JRR, below IF condition changed from IF self.grand_total
+		if self.tds_account and flt(self.tds_amount):
+			# Didnot use base_grand_total to book rounding loss gle
+			grand_total_in_company_currency = flt((self.net_total+self.other_charges) * self.conversion_rate, self.precision("grand_total"))
+		else:
+			# Didnot use base_grand_total to book rounding loss gle
+			grand_total_in_company_currency = flt((self.total+self.other_charges) * self.conversion_rate, self.precision("grand_total"))
 
+		gl_entries.append(
+			self.get_gl_dict({
+				"account": self.credit_to,
+				"cost_center": self.buying_cost_center,
+				"business_activity": self.business_activity,
+				"party_type": "Supplier",
+				"party": self.supplier,
+				"against": self.against_expense_account,
+				"credit": grand_total_in_company_currency,
+				"credit_in_account_currency": grand_total_in_company_currency if self.party_account_currency==self.company_currency else self.outstanding_amount,
+				"against_voucher": self.return_against if cint(self.is_return) else self.name,
+				"against_voucher_type": self.doctype,
+			}, self.party_account_currency)
+		)
+			
 	def make_item_gl_entries(self, gl_entries):
 		# item gl entries
 		stock_items = self.get_stock_items()
@@ -461,6 +524,7 @@ class PurchaseInvoice(BuyingController):
 							"project": item.project
 						}, account_currency)
 					)
+			
 
 			if self.auto_accounting_for_stock and self.is_opening == "No" and \
 				item.item_code in stock_items and item.item_tax_amount:
@@ -482,6 +546,7 @@ class PurchaseInvoice(BuyingController):
 
 							self.negative_expense_to_be_booked += flt(item.item_tax_amount, \
 								item.precision("item_tax_amount"))
+			
 
 	def make_tax_gl_entries(self, gl_entries):
 		# tax table gl entries
@@ -554,6 +619,7 @@ class PurchaseInvoice(BuyingController):
 
 	def make_payment_gl_entries(self, gl_entries):
 		# Make Cash GL Entries
+		
 		if cint(self.is_paid) and self.cash_bank_account and self.paid_amount:
 			bank_account_currency = get_account_currency(self.cash_bank_account)
 			# CASH, make payment entries
@@ -652,21 +718,22 @@ class PurchaseInvoice(BuyingController):
 					"cost_center": self.buying_cost_center
 				})
 			)
-			gl_entries.append(
-				self.get_gl_dict({
-					"account": self.credit_to,
-					"party_type": "Supplier",
-					"party": self.supplier,
-					"against": self.tds_account,
-					"debit": self.base_tds_amount,
-					"debit_in_account_currency": self.base_tds_amount \
-						if tds_account_currency==self.company_currency else self.tds_amount,
-					"against_voucher": self.return_against if cint(self.is_return) else self.name,
-					"against_voucher_type": self.doctype,
-					"cost_center": self.buying_cost_center,
-					"business_activity": self.business_activity,
-				}, tds_account_currency)
-			)
+			# COMMENTED OUT BY PHUNTSHO SINCE DEBIT IS NOT REQUIRED IN TDS
+			# gl_entries.append(
+			# 	self.get_gl_dict({
+			# 		"account": self.credit_to,
+			# 		"party_type": "Supplier",
+			# 		"party": self.supplier,
+			# 		"against": self.tds_account,
+			# 		"debit": self.base_tds_amount,
+			# 		"debit_in_account_currency": self.base_tds_amount \
+			# 			if tds_account_currency==self.company_currency else self.tds_amount,
+			# 		"against_voucher": self.return_against if cint(self.is_return) else self.name,
+			# 		"against_voucher_type": self.doctype,
+			# 		"cost_center": self.buying_cost_center,
+			# 		"business_activity": self.business_activity,
+			# 	}, tds_account_currency)
+			# )
 		
 	# make advance gl entry customisation for advance incorporation by paying advance in different accounts
 	def make_advance_gl_entry(self, gl_entries):
@@ -801,7 +868,7 @@ class PurchaseInvoice(BuyingController):
 				frappe.throw("Purchase Order and Invoice should have same Cost Center and Budget Account!")
 			if expense:
 				account_type = frappe.db.get_value("Account", expense, "account_type")
-				if account_type in ("Fixed Asset", "Expense Account"):
+				if account_type in ("Fixed Asset", "Expense Account", "Capital Work in Progress"):
 					if item.base_net_amount:
 						amount = item.base_net_amount
 					else:

@@ -89,7 +89,14 @@ class MaterialRequest(BuyingController):
 				self.creator = creator_name
 				self.creator_name = creator_employee_name
 		
+		# added by phuntsho on May 13th 2021. Sometimes the docstatus is not updated when the workflow is. 
+		if self.workflow_state == "Cancelled" and self.docstatus != 2: 
+			frappe.throw("Please try cancelling again!")
+		if self.workflow_state == "Approved" and self.docstatus != 1: 
+			frappe.throw("Please submit again!")
+		# ---- end of code by phuntsho. 
 
+		
 		if not self.status:
 			self.status = "Draft"
 
@@ -341,7 +348,7 @@ def make_purchase_order(source_name, target_doc=None):
 				["parent", "material_request"],
 				["uom", "stock_uom"],
 				["budget_account", "budget_account"],
-                                ["cost_center_w", "cost_center"],
+                ["cost_center_w", "cost_center"],
 				["uom", "uom"]
 			],
 			"postprocess": update_item,

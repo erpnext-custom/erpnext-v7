@@ -13,16 +13,13 @@ erpnext.buying.SupplierQuotationController = erpnext.buying.BuyingController.ext
 			cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 		}
 		else if (this.frm.doc.docstatus===0) {
-			cur_frm.add_custom_button(__('Material Request'),
+			cur_frm.add_custom_button(__('Request for Quotation'),
 				function() {
 					erpnext.utils.map_current_doc({
-						method: "erpnext.stock.doctype.material_request.material_request.make_supplier_quotation",
-						source_doctype: "Material Request",
+						method: "erpnext.buying.doctype.request_for_quotation.request_for_quotation.make_supplier_quotation_rfq",
+						source_doctype: "Request for Quotation",
 						get_query_filters: {
-							material_request_type: "Purchase",
 							docstatus: 1,
-							status: ["!=", "Stopped"],
-							per_ordered: ["<", 99.99],
 							company: cur_frm.doc.company
 						}
 					})

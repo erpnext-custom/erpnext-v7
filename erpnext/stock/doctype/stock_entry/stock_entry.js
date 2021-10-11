@@ -183,6 +183,17 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 									});
 							});
 		}*/
+		cur_frm.add_custom_button(__('Purchase Receipt'),
+			function () {
+				erpnext.utils.map_current_doc({
+					method: "erpnext.stock.doctype.stock_entry.stock_entry.make_receipt_order",
+					source_doctype: "Purchase Receipt",
+					get_query_filters: {
+						docstatus: 1,
+						company: cur_frm.doc.company
+					}
+				})
+			}, __("Add items from"));
 
 	},
 
@@ -249,6 +260,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 			d.conversion_factor = 1;
 		}
 		d.transfer_qty = flt(d.qty) * flt(d.conversion_factor);
+		console.log(`this is the qty: ${d.qty}`)
 		this.calculate_basic_amount(d);
 	},
 
@@ -392,7 +404,11 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 	},
 
 	calculate_basic_amount: function (item) {
-		item.basic_amount = flt(flt(item.transfer_qty) * flt(item.basic_rate),
+		// commented by phuntsho
+		// item.basic_amount = flt(flt(item.transfer_qty) * flt(item.basic_rate),
+		// 	precision("basic_amount", item));
+		// added by phuntsho
+		item.basic_amount = flt(flt(item.qty) * flt(item.basic_rate),
 			precision("basic_amount", item));
 		this.calculate_amount();
 	},

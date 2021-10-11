@@ -821,7 +821,3 @@ class ProcessPayroll(Document):
                         },
                 ])
                 return journal_entry.as_dict()
-        
-                
-
-

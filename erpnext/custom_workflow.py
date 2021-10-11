@@ -151,7 +151,7 @@ def validate_workflow_states(doc):
 
 		elif workflow_state == "Approved".lower():
 			if frappe.session.user != doc.approver:
-				frappe.throw("Only '{0}' is allowed to Approved the Leave Encashment".format(doc.supervisor))
+				frappe.throw("Only '{0}' is allowed to Approved the Leave Encashment".format(doc.approver))
 			if doc.docstatus == 0 and workflow_state == "Approved":
 				doc.workflow_state = "Waiting Approval"
 		

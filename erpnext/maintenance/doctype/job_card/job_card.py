@@ -55,17 +55,18 @@ class JobCard(AccountsController):
 				frappe.throw("Job Out Date should be greater than or equal to Job In Date")
 			self.update_reservation()
 		#self.check_items()
-		if self.owned_by == "Own Branch":
+		# commented by JRR
+		""" if self.owned_by == "Own Branch":
 			self.db_set("outstanding_amount", 0)
 		if self.owned_by == "Own Company" and self.out_source == 0:
 			self.post_journal_entry()
 			self.db_set("outstanding_amount", 0)
 		if self.owned_by == "Others" and self.out_source == 0:
-			self.make_gl_entries()
-
-		if self.supplier and self.out_source == 1:
+			self.make_gl_entries() """
+		
+		if self.supplier and (self.out_source == '1' or self.out_source == 1):
 			self.make_gl_entry()
-
+    
 		self.update_breakdownreport()
 
 	def before_cancel(self):
@@ -459,6 +460,7 @@ def make_payment(source_name, target_doc=None):
                 target.actual_amount = obj.total_amount
                 target.outgoing_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
 		target.supplier = obj.supplier
+		target.pay_to_recd_from = obj.supplier
                 target.append("items", {
                         "reference_type": "Job Card",
                         "reference_name": obj.name,
@@ -501,4 +503,35 @@ def update_child_table_rate (item_code, supplier,posting_date):
 	else: 
 		return
 	
-# -------- End of new code ----------
+
+
+# ADDED BY PHUNTSHO TO UPDATE THE PAYMENT STATUS on july 6th
+@frappe.whitelist()
+def get_payment_entry(doc_name, total_amount):
+    """ see if there exist a payment entry submitted for the job card """
+    payment_entry = """
+        SELECT 
+            sum(a.total_amount) as total_amount
+        FROM 
+            `tabMechanical Payment` as a, 
+            `tabMechanical Payment Item` as b
+        WHERE 
+            a.payment_for = "Job Card" and
+            b.reference_type = "Job Card" and 
+            b.reference_name= '{name}' and 
+            b.parent = a.name and 
+            a.docstatus = 1""".format(name=doc_name)
+    payment_entry = frappe.db.sql(payment_entry, as_dict=1)
+	
+    if len(payment_entry) >= 1 and payment_entry[0].total_amount > 0:
+		if flt(payment_entry[0].total_amount) == flt(total_amount):
+			frappe.db.set_value("Job Card", doc_name, "payment_status", "Paid")
+			return ("Paid")
+		else:
+			frappe.db.set_value("Job Card", doc_name, 'payment_status', "Partially Paid")
+			return ("Partially Paid")
+
+    else:
+		frappe.db.set_value("Job Card", doc_name, 'payment_status', "Not Paid")
+		return ("Not Paid")
+

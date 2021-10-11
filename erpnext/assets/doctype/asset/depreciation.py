@@ -15,21 +15,24 @@ from frappe import _
 from frappe.utils import flt, today, getdate
 from erpnext.accounts.accounts_custom_functions import update_jv
 
-def post_depreciation_entries(date=None):
+def post_depreciation_entries(asset=None, date=None):
 	if not date:
 		date = today()
-	for asset in get_depreciable_assets(date):
-		print(str(asset))
+	for asset in get_depreciable_assets(asset, date):
 		make_depreciation_entry(asset, date)
 		frappe.db.commit()
 
-def get_depreciable_assets(date):
-	return frappe.db.sql_list("""select a.name
+def get_depreciable_assets(asset, date):
+	cond = " and a.name = '{}'".format(asset) if asset else ""
+	return frappe.db.sql_list("""select distinct a.name
 		from tabAsset a, `tabDepreciation Schedule` ds
-		where a.name = ds.parent and a.docstatus=1 and ds.schedule_date<=%s
-			and a.disable_depreciation = 0
-			and ds.depreciation_amount > 0 
-			and ifnull(ds.journal_entry, '')=''""", date)
+		where a.name = ds.parent
+		and a.docstatus=1
+		and ds.schedule_date<=%s
+		and a.disable_depreciation = 0
+		and ifnull(ds.journal_entry, '')=''
+		{}
+	""".format(cond), date)
 
 @frappe.whitelist()
 def make_depreciation_entry(asset_name, date=None):
@@ -84,7 +87,7 @@ def make_depreciation_entry(asset_name, date=None):
 			d.db_set("journal_entry", je.name)
 			value_after_dep = flt(asset.gross_purchase_amount) - flt(d.accumulated_depreciation_amount) - flt(asset.residual_value)
 
-	asset.db_set("value_after_depreciation", value_after_dep)
+	asset.db_set("value_after_depreciation", flt(value_after_dep,2))
 	asset.set_status()
 
 	return asset
@@ -132,7 +135,7 @@ def scrap_asset(asset_name, scrap_date):
 	for i in schedules:
 		total_amount += flt(i.depreciation_amount)
 		update_jv(i.journal_entry, 0.00)
-		frappe.db.set_value("Depreciation Schedule", i.name, "journal_entry", "")
+		frappe.db.set_value("Depreciation Schedule", i.name, "journal_entry", None)
 
 	asset.value_after_depreciation = flt(asset.value_after_depreciation) + flt(total_amount)
 	frappe.db.set_value("Asset", asset_name, "value_after_depreciation", asset.value_after_depreciation)

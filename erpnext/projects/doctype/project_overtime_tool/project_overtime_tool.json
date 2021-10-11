@@ -452,8 +452,8 @@
  "issingle": 1, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-10-30 09:43:42.359946", 
- "modified_by": "Administrator", 
+ "modified": "2021-07-29 11:33:40.941548", 
+ "modified_by": "dechen.lhaden@thimphutechpark.bt", 
  "module": "Projects", 
  "name": "Project Overtime Tool", 
  "name_case": "", 
@@ -585,6 +585,6 @@
  "read_only_onload": 0, 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

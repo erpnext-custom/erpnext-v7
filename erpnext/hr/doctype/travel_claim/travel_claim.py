@@ -67,6 +67,11 @@ class TravelClaim(Document):
 
 	def on_cancel(self):
 		self.sendmail(self.employee, "Travel Claim Cancelled by HR" + str(self.name), "Your travel claim " + str(self.name) + " has been cancelled by the user")
+		
+		# added by phuntsho on july 13th. 
+		if self.docstatus != 1:
+			frappe.throw("Cannot cancel the document if it is not submitted!")
+		# --- end of code by phuntsho ---
 
         def get_monthly_count(self, items):
                 counts = {}
@@ -276,7 +281,7 @@ class TravelClaim(Document):
 		je.title = "Travel Claim (" + self.employee_name + "  " + self.name + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
-		je.remark = 'Claim payment against : ' + self.name;
+		je.remark = 'Claim payment against : ' + self.name
 		je.posting_date = self.posting_date
 		je.branch = self.branch
 

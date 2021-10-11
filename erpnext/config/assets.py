@@ -45,18 +45,18 @@ def get_data():
                 {
 			"label": _("Reports"),
 			"items": [
-				{
-					"type": "report",
-					"name": "Asset Depreciation Ledger",
-					"doctype": "Asset",
-					"is_query_report": True,
-				},
-				{
-					"type": "report",
-					"name": "Asset Depreciations and Balances",
-					"doctype": "Asset",
-					"is_query_report": True,
-				},
+				# {
+				# 	"type": "report",
+				# 	"name": "Asset Depreciation Ledger",
+				# 	"doctype": "Asset",
+				# 	"is_query_report": True,
+				# },
+				# {
+				# 	"type": "report",
+				# 	"name": "Asset Depreciations and Balances",
+				# 	"doctype": "Asset",
+				# 	"is_query_report": True,
+				# },
 				{
 					"type": "report",
 					"name": "Asset Register",

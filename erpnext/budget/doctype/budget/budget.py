@@ -73,6 +73,7 @@ class Budget(Document):
 				acc.db_set("budget_amount", acc.budget_amount)
 
 def validate_expense_against_budget(args):
+
 	args = frappe._dict(args)
 	if args.against_voucher_type == 'Asset':
 		pass

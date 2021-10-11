@@ -164,7 +164,15 @@ frappe.query_reports["Monthly Rental Collection and Dues"] = {
 			fieldtype:"Link",
 			width:"100",
 			options:"Building Classification"
-		}
+		},
+		{
+			fieldname: "rental_official",
+			label: __("Rental Official"),
+			fieldtype: "Select",
+			width: "80",
+			options: ["", "Bumpa Dema", "Dik Maya Ghalley", "Rinzin Dema", "Seema Uroan", "Dorji Wangmo", "Sangay Pelden", "Sangay Dorji", "Sangay Dubjur", "Kunzang Choden"],
+		},
+		
 
 	]
 }

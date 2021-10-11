@@ -34,7 +34,7 @@ class Supplier(TransactionBase):
 
 		if supplier_code:
 			frappe.msgprint(str(int(supplier_code[0][0]) + 1))
-			return str(int(supplier_code[0][0]) + 1);
+			return str(int(supplier_code[0][0]) + 1)
 		else:
 			base = frappe.db.get_value("Supplier Type", self.supplier_type, "supplier_code_base")
 			if not base:

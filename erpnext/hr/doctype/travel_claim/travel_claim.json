@@ -1607,7 +1607,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-04-24 10:13:27.631954", 
+ "modified": "2021-07-08 14:16:38.636512", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Travel Claim", 
@@ -1898,7 +1898,7 @@
    "write": 1
   }, 
   {
-   "amend": 0, 
+   "amend": 1, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 

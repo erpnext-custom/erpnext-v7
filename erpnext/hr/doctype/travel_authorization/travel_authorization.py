@@ -31,11 +31,6 @@ class TravelAuthorization(Document):
                 self.advance_amount     = 0 if not self.need_advance else self.advance_amount
                 self.advance_amount_nu  = 0 if not self.need_advance else self.advance_amount_nu
                 self.advance_journal    = None if self.docstatus == 0 else self.advance_journal
-        
-	def create_copy(self):
-		self.details = []
-		for a in self.items:
-			self.append("details", {"date": a.date, "halt": a.halt, "till_date": a.till_date, "no_days": a.no_days, "from_place": a.from_place, "halt_at": a.halt_at})
 
 	def on_update(self):
 		self.set_dsa_rate()
@@ -53,7 +48,7 @@ class TravelAuthorization(Document):
 	def create_copy(self):
 		self.details = []
 		for a in self.items:
-			self.append("details", {"date": a.date, "halt": a.halt, "till_date": a.till_date, "no_days": a.no_days, "from_place": a.from_place, "halt_at": a.halt_at})
+			self.append("details", {"date": a.date, "halt": a.halt, "till_date": a.till_date, "no_days": a.no_days, "from_place": a.from_place, "to_place": a.to_place, "halt_at": a.halt_at})
 
 	def on_submit(self):
 		#self.get_status()

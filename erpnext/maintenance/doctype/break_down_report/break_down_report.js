@@ -10,9 +10,9 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 */
 
 frappe.ui.form.on('Break Down Report', {
-	refresh: function(frm) {
+	refresh: function (frm) {
 		if (frm.doc.docstatus == 1 && !frm.doc.job_card) {
-			frm.add_custom_button("Create Job Card", function() {
+			frm.add_custom_button("Create Job Card", function () {
 				frappe.model.open_mapped_doc({
 					method: "erpnext.maintenance.doctype.break_down_report.break_down_report.make_job_card",
 					frm: cur_frm
@@ -21,16 +21,16 @@ frappe.ui.form.on('Break Down Report', {
 		}
 
 	},
-	onload: function(frm) {
+	onload: function (frm) {
 		if (!frm.doc.date) {
 			frm.set_value("date", get_today());
 		}
-			
+
 		// Ver 2.0 Begins, following code added by SHIV on 28/11/2017
-		if(frm.doc.__islocal) {
+		if (frm.doc.__islocal) {
 			frappe.call({
 				method: "erpnext.custom_utils.get_user_info",
-				args: {"user": frappe.session.user},
+				args: { "user": frappe.session.user },
 				callback(r) {
 					cur_frm.set_value("cost_center", r.message.cost_center);
 					cur_frm.set_value("branch", r.message.branch);
@@ -39,16 +39,21 @@ frappe.ui.form.on('Break Down Report', {
 			});
 		}
 	},
-		
-	owned_by: function(frm) {
+
+	owned_by: function (frm) {
 		cur_frm.set_value("customer", "")
 		cur_frm.set_value("equipment", "")
 		//cur_frm.toggle_reqd("customer_cost_center", frm.doc.owned_by == 'Own Company')
 		//cur_frm.toggle_reqd("customer_branch", frm.doc.owned_by == 'Own Company')
 		//cur_frm.toggle_reqd("equipment_model", frm.doc.owned_by != 'Others')
 		//cur_frm.toggle_reqd("equipment_number", frm.doc.owned_by != 'Others')
+	},
+	out_source: function (frm) {
+		// added by phuntsho on april 26 2021.
+		cur_frm.set_value("customer", "")
+		cur_frm.set_value("equipment", "")
 	}
-		
+
 });
 
 cur_frm.add_fetch("branch", "cost_center", "cost_center");
@@ -61,63 +66,75 @@ cur_frm.add_fetch("equipment", "equipment_number", "equipment_number");
 
 //cur_frm.add_fetch("customer_cost_center", "branch", "customer_branch");
 
-frappe.ui.form.on("Break Down Report", "refresh", function(frm) {
-    cur_frm.set_query("equipment", function() {
-	if (frm.doc.owned_by == "Own Branch") {
-		return {
-		    "filters": {
-			"is_disabled": 0,
-			"branch": frm.doc.branch
-		    }
-		};
-	}
-	else if (frm.doc.owned_by == "Own Company"){
-		return {
-		    "filters": {
-			"is_disabled": 0,
-			"branch": frm.doc.customer_branch
-		    }
-		};
-	}
-	else {}
-    });
+frappe.ui.form.on("Break Down Report", "refresh", function (frm) {
+	cur_frm.set_query("equipment", function () {
+		if (frm.doc.owned_by == "Own Branch") {
+			return {
+				"filters": {
+					"is_disabled": 0,
+					"branch": frm.doc.branch
+				}
+			};
+		}
+		else if (frm.doc.owned_by == "Own Company") {
+			return {
+				"filters": {
+					"is_disabled": 0,
+					"branch": frm.doc.customer_branch
+				}
+			};
+		}
+		else { }
+	});
 
-    cur_frm.set_query("cost_center", function() {
-        return {
-            "filters": {
-		"is_group": 0,
-		"is_disabled": 0
-            }
-        };
-    });
+	cur_frm.set_query("cost_center", function () {
+		return {
+			"filters": {
+				"is_group": 0,
+				"is_disabled": 0
+			}
+		};
+	});
 
-    cur_frm.set_query("customer", function() {
-	if(frm.doc.owned_by == "Own Branch") {
-		return {
-		    "filters": {
-			"disabled": 0,
-			"cost_center": frm.doc.cost_center,
-			"branch": frm.doc.branch
-		    }
-		};
-	}
-	if(frm.doc.owned_by == "Own Company") {
-		return {
-		    "filters": {
-			"disabled": 0,
-			"customer_group": "Internal",
-			"branch": ["!=", frm.doc.branch]
-		    }
-		};
-	}
-	else {
-		return {
-		    "filters": {
-			"disabled": 0,
-			"customer_group": ["!=","Internal"]
-		    }
-		};
-	}
-    });
+	cur_frm.set_query("customer", function () {
+		if (frm.doc.owned_by == "Own Branch") {
+			return {
+				"filters": {
+					"disabled": 0,
+					"cost_center": frm.doc.cost_center,
+					"branch": frm.doc.branch
+				}
+			};
+		}
+		if (frm.doc.owned_by == "Own Company") {
+			return {
+				"filters": {
+					"disabled": 0,
+					"customer_group": "Internal",
+					"branch": ["!=", frm.doc.branch]
+				}
+			};
+		}
+		else {
+			return {
+				"filters": {
+					"disabled": 0,
+					"customer_group": ["!=", "Internal"]
+				}
+			};
+		}
+	});
 });
 
+frappe.ui.form.on("Job Card Item",{
+	amount: function(frm, cdt, cdn){
+		var i = locals[cdt][cdn];
+		if(i.quantity)
+			frappe.model.det_value(cdt, cdn, "charge_amount", flt(i.amount) * flt(i.quantity));
+	},
+	quantity: function(frm, cdt, cdn){
+		var i = locals[cdt][cdn];
+		if(i.amount)
+			frappe.model.set_value(cdt, cdn, "charge_amount", flt(i.amount) * flt(i.quantity));
+	}
+});

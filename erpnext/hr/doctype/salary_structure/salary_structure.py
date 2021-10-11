@@ -260,29 +260,22 @@ class SalaryStructure(Document):
                                 if self.get(m['field_method']) == 'Percent' and flt(self.get(m['field_value'])) > 100:
                                         frappe.throw(_("Percentage cannot exceed 100 for component <b>{0}</b>").format(m['name']), title="Invalid Data")
                                        
-				if m['name'] == 'HRA' and basic_pay and self.get(m['field_name']):
-					hra_allowance = frappe.db.get_single_value("HR Settings", "hra")
-					if not hra_allowance:
-						frappe.throw("Setup HRA in HR Settings")
+                                if ed == 'earnings':
+					if self.get(m['field_name']) and m['name'] == 'HRA':
+                                                calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))
+						if self.get(m['field_method']) == 'Percent':
+							hra_allowance = frappe.db.get_single_value("HR Settings", "hra")
+							if not flt(hra_allowance):
+								frappe.throw("Setup HRA in HR Settings")
+							elif flt(self.get(m['field_value'])) > flt(hra_allowance):
+								frappe.throw("House Rent Allowance cannot exceed {}%".format(hra_allowance))
 
-					housing = round(flt(basic_pay)*flt(hra_allowance)*0.01)
-					if flt(housing) <= 3500.00:
-						calc_amt  = 3500.00
-					else:
-						calc_amt  = housing
-					total_earning += calc_amt
-                                        calc_map.append({'salary_component': m['name'], 'amount': flt(calc_amt)})  
-                                if ed == 'earnings' and m['name'] != 'HRA':
-                                        if self.get(m['field_name']):
-						'''if m['name'] == 'HRA':
-							housing = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01)
-							if flt(housing) <= 3500.00:
-								calc_amt = 3500.00
-								self.hra_method = 'Lumpsum'
-							else:
-								calc_amt = flt(housing)
-								self.hra_methof = 'Percent'''
-						total_earning += calc_amt
+							calc_amt = round(flt(basic_pay)*flt(hra_allowance)*0.01)
+							if flt(calc_amt) <= 3500.00:
+								calc_amt  = 3500.00
+                                                total_earning += calc_amt
+                                                calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
+                                        elif self.get(m['field_name']):
                                                 calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))
                                                 comm_allowance += round(flt(calc_amt) if m['name'] == 'Communication Allowance' else 0)
                                                 total_earning += calc_amt
@@ -421,7 +414,9 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                         else:
                                                 calc_amount = round(flt(amount)*(flt(working_days)/flt(days_in_month)))
 
-					
+                                # following condition added by SHIV on 2021/05/28
+                                if not flt(calc_amount):
+                                        continue
                                 
                                 calc_map.setdefault(key,[]).append({
                                         'salary_component'         : d.salary_component,

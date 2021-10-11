@@ -31,7 +31,7 @@ frappe.query_reports["PF Report"] = {
 			"options": "Company",
 			"default": frappe.defaults.get_user_default("Company")
 		},
-		{
+		/* {
                         "fieldname":"tier",
                         "label": __("Tier"),
                         "fieldtype": "Select",
@@ -42,9 +42,9 @@ frappe.query_reports["PF Report"] = {
                         "label": __("Test"),
                         "fieldtype": "Select",
                         "options": [] 
-                },
+                }, */
 	
-	],
+	]/* ,
 	onload: function(report) {
 		select = $('div[data-fieldname="test"]').children()
 		frappe.call({
@@ -55,5 +55,5 @@ frappe.query_reports["PF Report"] = {
 				})
 			}
 		})
-	}
+	} */
 }

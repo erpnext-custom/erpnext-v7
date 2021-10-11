@@ -46,6 +46,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Tenant Section",
 				},
+				{
+					"type": "doctype",
+					"name": "Dungkhag",
+				},
 				
 			]
 		},
@@ -87,10 +91,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Rental Payment",
 				},
-				{
-					"type": "doctype",
-					"name": "Rental Advance Adjustment"
-				}
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Rental Advance Adjustment"
+				# }
 				
 			]
 		},
@@ -106,6 +110,15 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Technical Sanction",
                                 },
+								 {
+                                        "type": "doctype",
+                                        "name": "Revised Technical Sanction",
+                                },
+								{
+                                        "type": "doctype",
+                                        "name": "Technical Sanction Bill",
+										"label": "Prepare Bill"
+                                },
                                 {
                                         "type": "doctype",
                                         "name": "Rate Analysis",
@@ -113,6 +126,10 @@ def get_data():
                                 {
                                         "type": "doctype",
                                         "name": "Service",
+                                },
+                                {
+                                        "type": "doctype",
+                                        "name": "Technical Sanction Advance",
                                 },
 				{
 					"type": "doctype",
@@ -133,12 +150,26 @@ def get_data():
                                         "doctype": "Rental Information",
                                         "Label": _("Rental Register")
                                 },
+								# {
+                                #         "type": "report",
+                                #         "is_query_report": True,
+                                #         "name": "Rental Revenue",
+                                #         "doctype": "Rental Revenue Information",
+                                #         "Label": _("Rental Revenue")
+                                # },
 				{
                                         "type": "report",
                                         "is_query_report": True,
                                         "name": "Tenant Information",
                                         "doctype": "Tenant Information",
                                         "Label": _("Tenant Information")
+                                },
+								{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Tenant Summary",
+                                        "doctype": "Tenant Information",
+                                        "Label": _("Tenant Summary")
                                 },
 								{
                                         "type": "report",

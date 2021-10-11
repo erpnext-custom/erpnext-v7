@@ -4,6 +4,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 from frappe.model.document import Document
 
 class AssetIssueDetails(Document):
@@ -18,7 +19,7 @@ class AssetIssueDetails(Document):
 				for a in frappe.db.sql("select total_number_of_depreciations, depreciation_percent from `tabAsset Sub Category` where parent = '{0}' and `sub_category_name`='{1}'".format(asset_category, item_doc.asset_sub_category), as_dict=1):
 					total_number_of_depreciations = a.total_number_of_depreciations
 					depreciation_percent = a.depreciation_percent
-
+		
 		asset = frappe.new_doc("Asset")
 		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 		asset.item_code = self.item_code
@@ -55,3 +56,12 @@ class AssetIssueDetails(Document):
 				frappe.throw("You cannot cancel the document before cancelling asset with code {0}".format(self.reference_code))
 			else:
 				frappe.db.sql("update `tabAsset Issue Details` set reference_code = '' where name='{0}'".format(self.name))
+
+@frappe.whitelist()
+def check_item_code(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
+    cond = ""
+    if filters.get('item_code'):
+        cond += " item_code = '{}'".format(filters.get('item_code'))
+    query = "select ref_doc from `tabAsset Received Entries` where {cond}".format(cond=cond)
+ 
+    return frappe.db.sql(query)

@@ -88,17 +88,40 @@ class StockEntry(StockController):
 	def on_submit(self):
 		self.update_stock_ledger()
 		self.update_consumable_register()
-
 		from erpnext.stock.doctype.serial_no.serial_no import update_serial_nos_after_submit
 		update_serial_nos_after_submit(self, "items")
 		self.update_work_order()
 		self.validate_purchase_order()
 		self.make_gl_entries()
+		
 
 	def on_cancel(self):
 		self.update_stock_ledger()
 		self.update_work_order()
 		self.make_gl_entries_on_cancel()
+		self.update_mr_ordered_quantity() #added by Phuntsho on August 27th, 2021
+
+	def update_mr_ordered_quantity(self):
+		""" 
+			Reset the ordered quantity back to zero in respective material request upon cancelling the stock entry. 
+			If the ordered qty is not set to zero, a condition in MR when making PO doesn't allow to pick items in 
+			this stock entry even though its cancelled.  
+			Added by phuntsho on August 27th, 2021
+		"""
+		if self.purpose == "Material Issue": 
+			for item in self.items:
+				if item.material_request: 
+					frappe.db.sql("""
+						UPDATE 
+							`tabMaterial Request Item` 
+						SET 
+							ordered_qty = 0 
+						WHERE
+							item_code = '{code}' and 
+							item_name = '{name}' and 
+							parent = '{mr}'
+						""".format(code = item.item_code, name = item.item_name, mr = item.material_request))
+
 
 	def check_item_value(self):
 		if self.items:
@@ -975,3 +998,33 @@ def make_material_requisition(source_name, target_doc=None):
         }, target_doc, update_so)
 
         return doclist
+
+@frappe.whitelist()
+def make_receipt_order(source_name, target_doc=None):
+	doclist = get_mapped_doc("Purchase Receipt", source_name, 	{
+		"Purchase Receipt": {
+			"doctype": "Stock Entry",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
+			"validation": {
+				"docstatus": ["=", 1],
+			}
+		},
+		"Purchase Receipt Item": {
+			"doctype": "Stock Entry Detail",
+			"field_map": [
+				["name", "purchase_receipt_item"],
+				["parent", "purchase_receipt"],
+				["uom", "stock_uom"],
+				["budget_account", "budget_account"],
+                ["cost_center_w", "cost_center"],
+				["rate", "valuation_rate"],
+				["rate", "basic_rate"],
+				["amount", "basic_amount"]
+				
+			]
+		}
+	}, target_doc)
+
+	return doclist

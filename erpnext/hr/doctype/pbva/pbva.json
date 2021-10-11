@@ -1,6 +1,6 @@
 {
  "allow_copy": 0, 
- "allow_import": 0, 
+ "allow_import": 1, 
  "allow_rename": 0, 
  "autoname": "PBVA.YY.###", 
  "beta": 0, 
@@ -625,8 +625,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-09-26 10:35:04.944110", 
- "modified_by": "siva@bt.bt", 
+ "modified": "2021-05-07 11:24:19.766385", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "PBVA", 
  "name_case": "", 

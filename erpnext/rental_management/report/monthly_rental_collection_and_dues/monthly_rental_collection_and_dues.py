@@ -77,11 +77,16 @@ def get_columns(filters):
 		("Tenant Name") + ":Data:150",
 		("Posting Date") + ":Date:150",
 		("Actual Rent Amount") + ":Currency:100",
-		("Allocated Amount") + ":Currency:100",
-		("Amount Received") + ":Currency:100",
+		("Rent Received") + ":Currency:100",
+		("Pre-rent Received") + ":Currency:100",
+		("Excess Amount Received") + ":Currency:100",
+		("Balance Rent Amount (Due)") + ":Currency:120",
+		("Discount Amount") + ":Currency:100",
 		("Penalty Amount") + ":Currency:100",
-		("Bill Amount") + ":Currency:100",
+		
 		("TDS Amount") + ":Currency:100",
+		("Total Amount Received") + ":Currency:120",
+		("Rental Official")+ ":Data:100",
 		("Ministry/Agency") + ":Link/Ministry and Agency:150",
 		("Department") + ":Link/Tenant Department:150",
 		("Branch") + "::150",
@@ -101,12 +106,17 @@ def get_data(filters):
 				rpi.cid,
 				rpi.tenant_name,
 				rp.posting_date,
-				rpi.actual_rent_amount,
-				rpi.allocated_amount,
-				rpi.amount_received,
-				rp.penalty_amount,
-				rpi.amount,
-				rp.tds_amount,
+				rpi.bill_amount,
+				rpi.rent_received,
+				rpi.pre_rent_amount,
+				rpi.excess_amount,
+				rpi.balance_rent,
+				rpi.discount_amount,
+				rpi.penalty,
+				
+				rpi.tds_amount,
+				rpi.total_amount_received,
+				rp.rental_official_name,
 				rp.ministry_agency,
 				rpi.department,
 				rp.branch,
@@ -144,7 +154,9 @@ def conditions(filters):
 					and rb.tenant = rpi.tenant
 					{})""".format(rb_conds)
 				
-	
+	if filters.rental_official: 
+		conds += " and rp.rental_official_name = '{}'".format(filters.rental_official)
+
 	if filters.ministry_agency:
 		conds += """ and rpi.ministry_agency='{}' """.format(filters.ministry_agency)
 	if filters.department:

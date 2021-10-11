@@ -272,3 +272,29 @@ class ImprestRecoup(AccountsController):
                         "imprest_recoup": self.name
                 })
                 je.save(ignore_permissions = True)
+
+
+# added by phuntsho on May 4th 2021. 
+# show all the particular root accounts of expense and capital work in progress
+# not needed with the new changes
+# @frappe.whitelist()
+# def get_accounts(doctype, txt, searchfield, start, page_len, filters):
+#         accounts = frappe.db.sql("""
+#                 SELECT 
+#                         name 
+#                 FROM 
+#                         `tabAccount` 
+#                 WHERE   
+#                         name LIKE '%{name}%' and
+#                         is_group = 0 and 
+#                         (parent_account in ('Capital Work in Progress - NHDCL') OR 
+#                         parent_account in (
+#                                 SELECT 
+#                                         name 
+#                                 FROM
+#                                         `tabAccount` 
+#                                 WHERE   
+                                        
+#                                         parent_account in (select name from `tabAccount` where parent_account = 'Expenses - NHDCL')))
+#                         """.format(name=txt))
+#         return accounts

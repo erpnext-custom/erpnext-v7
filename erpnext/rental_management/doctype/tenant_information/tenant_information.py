@@ -86,20 +86,24 @@ class TenantInformation(Document):
 	
 	def validate_allocation(self):
 		if self.status != "Surrendered":
-			cid = frappe.db.get_value("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus":1, "status":"Allocated"}, "cid")
+			cid = frappe.db.get_value("Tenant Information", {"location":self.location, "building_category":self.building_category, "building_classification":self.building_classification, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus":1, "status":"Allocated"}, "cid")
 			if cid:
-				frappe.throw("The Flat is already rented to a Tenant with CID No: {0}".format(cid))
+				frappe.throw("The {2}{1}'s Flat is already rented to a Tenant with CID No: {0}".format(cid, self.name, self.cid))
 			else:
 				if frappe.db.exists("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus": 1, "status":"Surrendered"}):
 					
 					surrendered_date, tenant_code = frappe.db.get_value("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus": 1, "status":"Surrendered"}, ["surrendered_date","name"])
 					if surrendered_date and getdate(self.allocated_date) < getdate(surrendered_date):
 						frappe.throw("Allocation Date {0} cannot be before surrendered date {1} for tenant {2}".format(self.allocated_date, surrendered_date, tenant_code))
+  		if self.cid:
+			if frappe.db.exists("Tenant Information", {"cid":self.cid, "status":"Allocated", "docstatus":1}):
+				tenant_code = frappe.db.get_value("Tenant Information", {"cid":self.cid, "status":"Allocated"}, "name")
+				frappe.throw("You cannot create a tenant with CID ({}) as rental status Allocated. The CID is already assigned with Tenant Code {}".format(self.cid, tenant_code))
 
 	def on_submit(self):
 		if self.status == "Surrendered":
 			frappe.throw("Not allowed to submit a document with status Surrendered")
-
+		
 		if not self.rental_charges and self.building_category != "Pilot Housing":
 			self.calculate_rent_charges()
 		
@@ -120,6 +124,7 @@ class TenantInformation(Document):
 				})
 	
 	def calculate_rent_charges(self):
+		self.set('rental_charges', [])
 		if self.building_category == "Pilot Housing":
 			rent_obj = self.append("rental_charges", {
 							"from_date": self.from_date,
@@ -128,7 +133,6 @@ class TenantInformation(Document):
 							"rental_amount": round(self.original_monthly_instalment)
 						})
 			rent_obj.save()
-
 		else:
 			percentage = frappe.db.get_single_value("Rental Setting", "percent_of_increment")
 			increment_year = cint(frappe.db.get_single_value("Rental Setting", "no_of_year_for_increment"))

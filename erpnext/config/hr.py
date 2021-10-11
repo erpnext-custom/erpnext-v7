@@ -245,6 +245,12 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "PBVA",
+                    "label": _("Process PBVA"),
+					"description": _("PBVA process"),
+				},
+				{
+					"type": "doctype",
 					"name": "Bonus",
                                         "label": _("Process Bonus"),
 					"description": _("Bonus Process"),

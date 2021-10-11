@@ -13,19 +13,27 @@ from erpnext.controllers.stock_controller import StockController
 class MaterialReturn(StockController):
 	def validate(self):
 		check_future_date(self.posting_date)
-		self.validate_details()
+		#self.validate_details()
+		self.populate_cost_center()
+	
+	def populate_cost_center(self):
+		""" Added by phuntsho. Each cost center and business activity necessary in child table because of stock controller checking every item when doing stock entry. """
+		for item in self.items:
+			item.cost_center = self.cost_center
+			item.business_activity = self.business_activity
 
 	def validate_details(self):
-		for a in self.items:
-			qty, rate = get_stock_balance(a.item_code, a.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
-			item_name, uom, item_group, expense_account = frappe.db.get_value("Item", a.item_code, ["item_name", "stock_uom", "item_group", "expense_account"])
-			a.item_group = item_group
-			a.stock_uom = uom
-			a.valuation_rate = rate
-			a.basic_rate = rate
-			a.item_name = item_name
-			a.amount = flt(a.qty) * flt(a.basic_rate)
-			a.expense_account = expense_account
+		pass
+		# for a in self.items:
+		# 	qty, rate = get_stock_balance(a.item_code, a.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
+		# 	item_name, uom, item_group, expense_account = frappe.db.get_value("Item", a.item_code, ["item_name", "stock_uom", "item_group", "expense_account"])
+		# 	a.item_group = item_group
+		# 	a.stock_uom = uom
+		# 	a.valuation_rate = rate
+		# 	a.basic_rate = rate
+		# 	a.item_name = item_name
+		# 	a.amount = flt(a.qty) * flt(a.basic_rate)
+		# 	a.expense_account = expense_account
 
 	def on_submit(self):
 		self.make_sl_entry()

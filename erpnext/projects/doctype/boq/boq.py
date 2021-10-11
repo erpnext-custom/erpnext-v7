@@ -26,6 +26,12 @@ class BOQ(Document):
                 self.update_defaults()
                 self.validate_defaults()
                 self.update_boq_history()
+                # self.calculate_quantity()
+
+                # -----------------------------------------------------------
+                # NEED TO WORK ON CHECKING IF THE CHECK BOX IS CHECKED
+                # if self.rate_analysis: 
+                #         self.calculate_ar_rate()
 
         def on_submit(self):
                 self.update_project_value()
@@ -37,6 +43,25 @@ class BOQ(Document):
 
         def on_update_after_submit(self):
                 self.project_boq_item_entry()
+
+        # Added by Phuntsho on November 9 
+        def calculate_quantity(self): 
+                # Calculate the total quantity. 
+                for d in self.boq_item:
+                        d.quantity = d.no * d.coefficient * d.breath * d.height * d.length
+
+        # -------------------------------------------------------------------------------------
+        # NEED TO WORK ON DISPLAYING THE FIELDS BASED ON THE CHECKBOX
+        # NEED TO WORK ON CALCULATING THE RATE BASED ON THE FORMULA FOR THE MARKET VALUE. 
+        # Added by phuntsho on November 9 
+        def calculate_ar_rate (self): 
+                for d in boq_item: 
+                        ten_percent = d.market_rate * 0.1
+                        five_percent = d.market_rate * 0.05
+                        one_percent = d.marketrate * 0.01
+                        final_rate = d.market_rate + ten_percent + five_percent + one_percent
+                        d.rate = final_rate
+                        frappe.msgprint("final_rate: {}".format(final_rate))
 
         def project_boq_item_entry(self):
                 if self.docstatus == 2:
