@@ -231,7 +231,6 @@ class UtilityBill(Document):
         doc.tds_account = self.tds_account
         doc.credit_account = self.expense_account
         doc.utility_bill = str(self.name)
-        doc.business_activity = self.business_activity
         doc.remarks = "Utility Bill Payment " + str(self.name)
         doc.status = "Completed"
         if self.item:
