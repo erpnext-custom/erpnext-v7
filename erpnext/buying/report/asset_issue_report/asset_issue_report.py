@@ -18,12 +18,12 @@ def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, (filters.from_date, filters.to_date), as_dict=True);
 	for d in datas:
-		row = [d.item_code, d.item_name, d.qty, d.e_name, d.custodian, d.cost_center, d.issued_date, d.amount]
+		row = [d.item_code, d.item_name, d.reg_number, d.qty, d.e_name, d.custodian, d.cost_center, d.issued_date, d.amount]
 		data.append(row);
 	return data
 
 def construct_query(filters=None):
-	query = """select id.item_code, id.item_name, id.qty, (select c.cost_center from tabEmployee as c where c.name = id.issued_to) as cost_center, (select a.name from tabEmployee a where a.name = id.issued_to) as e_name, (select e.employee_name from tabEmployee as e where e.name = id.issued_to) as custodian, id.issued_date, id.amount 
+	query = """select id.item_code, id.item_name, id.reg_number, id.qty, (select c.cost_center from tabEmployee as c where c.name = id.issued_to) as cost_center, (select a.name from tabEmployee a where a.name = id.issued_to) as e_name, (select e.employee_name from tabEmployee as e where e.name = id.issued_to) as custodian, id.issued_date, id.amount 
 	from `tabAsset Issue Details` as id where id.docstatus = 1 and id.issued_date between %s and %s
 	order by id.issued_date asc
 	"""
@@ -81,18 +81,24 @@ def get_columns():
 		  "width": 150
 		},
 		{
+		  "fieldname": "reg_number",
+		  "label": "Registration No",
+		  "fieldtype": "Data",
+		  "width": 150
+		},
+		{
 		  "fieldname": "qty",
 		  "label": "Quantity",
 		  "fieldtype": "Data",
 		  "width": 100
 		},
 		{
-                  "fieldname": "e_name",
-                  "label": "Employee ID",
-                  "fieldtype": "Link",
-                  "options": "Employee",
-                  "width": 130
-                },
+			"fieldname": "e_name",
+			"label": "Employee ID",
+			"fieldtype": "Link",
+			"options": "Employee",
+			"width": 130
+		},
 		{
 		  "fieldname": "issued_to",
 		  "label": "Custodian",

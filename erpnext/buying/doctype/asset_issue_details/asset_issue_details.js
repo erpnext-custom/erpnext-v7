@@ -28,3 +28,7 @@ cur_frm.fields_dict['item_code'].get_query = function(doc) {
 }
 
 cur_frm.add_fetch("item_code", "item_name", "item_name");
+
+frappe.form.link_formatters['Item'] = function(value, doc) {
+	return value
+}
