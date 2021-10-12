@@ -301,13 +301,15 @@ class JobCard(AccountsController):
 
 	def make_gl_entry(self):
 		if self.total_amount:
-                	from erpnext.accounts.general_ledger import make_gl_entries
-                        gl_entries = []
-                        self.posting_date = self.finish_date
-                        ba = get_default_ba()
+			from erpnext.accounts.general_ledger import make_gl_entries
+			gl_entries = []
+			self.posting_date = self.finish_date
+			ba = get_default_ba()
 
-                        maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
-                        #payable_account = frappe.db.get_value("Company", "Natural Resources Development Corporation Ltd","default_payable_account")
+			maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
+			if self.expense_account:
+				maintenance_account = self.expense_account
+			#payable_account = frappe.db.get_value("Company", "Natural Resources Development Corporation Ltd","default_payable_account")
                         
 			payable_account = frappe.db.get_value("Company", self.company,"default_payable_account")
 			if not maintenance_account:
