@@ -218,10 +218,10 @@ def get_entries(filters):
                         select
                                 "Rental Payment" as payment_document, name as payment_entry,
                                 cheque_no as reference_no, cheque_date as ref_date,
-                                net_amount as debit, 0 as credit,
+                                total_amount_received as debit, 0 as credit,
                                 posting_date, branch as against_account, clearance_date
                         from `tabRental Payment`
-                        where credit_account = %(account)s
+                        where bank_account = %(account)s
                         and docstatus = 1
                         and posting_date <= %(report_date)s
                         and ifnull(clearance_date, '4000-01-01') > %(report_date)s
