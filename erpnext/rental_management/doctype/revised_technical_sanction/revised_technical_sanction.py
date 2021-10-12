@@ -39,7 +39,9 @@ def prepare_bill(source_name, target_doc=None):
 		target.revised_technical_sanction = obj.name
         doc = get_mapped_doc("Revised Technical Sanction", source_name, {
                         "Revised Technical Sanction": {
-                                "doctype": "Technical Sanction Bill","field_map":{},	
+                                "doctype": "Technical Sanction Bill","field_map":{
+									"total_amount" : "total_gross_amount"
+								},	
                                 "postprocess": update_docs,
                                 "validation": {"docstatus": ["=", 1]}
                         },
