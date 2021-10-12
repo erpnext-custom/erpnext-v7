@@ -121,21 +121,23 @@ class PurchaseReceipt(BuyingController):
 	def on_submit(self):
 		self.check_po_closed()
 		purchase_controller = frappe.get_doc("Purchase Common")
-
+		
 		# Check for Approving Authority
 		frappe.get_doc('Authorization Control').validate_approving_authority(self.doctype,
 			self.company, self.base_grand_total)
-
+		
 		# Set status as Submitted
 		frappe.db.set(self, 'status', 'Submitted')
-
+  
 		self.update_po_detail()
+		
 		if self.is_return:
 			self.update_bill_status_pr()
 		else:
 			purchase_controller.update_last_purchase_rate(self, 1)
+			
 		self.update_billing_status()
-
+		
 		# Updating stock ledger should always be called after updating prevdoc status,
 		# because updating ordered qty in bin depends upon updated ordered qty in PO
 		self.update_stock_ledger()
@@ -144,6 +146,7 @@ class PurchaseReceipt(BuyingController):
 		update_serial_nos_after_submit(self, "items")
 
 		self.make_gl_entries()
+
 		#self.consume_budget()
 		self.update_asset()
 
@@ -157,6 +160,7 @@ class PurchaseReceipt(BuyingController):
 		updated_po = []
 
 		for d in self.get("items"):
+			new_returned = 0
 			if not d.purchase_order_item:
 				frappe.throw("Purchase Return not created correctly")
 			received_qty = returned_qty = qty = 0
@@ -164,8 +168,8 @@ class PurchaseReceipt(BuyingController):
 			if qtys:
 				received_qty = qtys[0].received_qty
 				returned_qty = qtys[0].returned_qty
-				qty = qtys[0].qty
-
+				qty = round(qtys[0].qty,3)
+    
 			if self.is_return:
 				new_received = flt(received_qty) + flt(d.qty)
 				new_returned = flt(returned_qty) - flt(d.qty)
@@ -180,14 +184,14 @@ class PurchaseReceipt(BuyingController):
 					new_returned = flt(returned_qty) + flt(d.qty)
 				if flt(returned_qty) == 0:
 					new_returned = 0 
-
-			if new_received + new_returned > qty:
+			
+			if flt(round(flt(new_received + new_returned),3)) > flt(qty) :
 				frappe.throw("Cannot Return more than Received Items")
 			if new_received < 0:
 				frappe.throw("Cannot Return more than Received Items")
 			if new_returned > flt(qty):
 				frappe.throw("Cannot Return more than Received Items") 
-
+			
 			frappe.db.sql("update `tabPurchase Order Item` set received_qty = %s, returned_qty = %s where name = %s", (new_received, new_returned, d.purchase_order_item))			
 
 			if d.purchase_order:
@@ -264,6 +268,7 @@ class PurchaseReceipt(BuyingController):
 		frappe.db.set(self,'status','Cancelled')
 
 		self.update_po_detail()
+		
 		if self.is_return:
 			self.update_bill_status_pr()
 		else:
@@ -604,6 +609,7 @@ def make_purchase_invoice(source_name, target_doc=None):
 				"parent": "purchase_receipt",
 				"purchase_order_item": "po_detail",
 				"purchase_order": "purchase_order",
+				"budget_account": "budget_account"
 			},
 			"postprocess": update_item,
 			"filter": lambda d: abs(d.qty) - abs(invoiced_qty_map.get(d.name, 0))<=0

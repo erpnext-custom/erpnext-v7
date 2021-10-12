@@ -21,7 +21,27 @@ def get_data(filters):
 	if filters.show_aggregate:
 		total_qty = "sum(qty) as total_qty"
 
-	query = "select pe.posting_date, pe.item_code, pe.item_name, pe.item_group, pe.item_sub_group, pe.qty, pe.uom, pe.branch, pe.location, pe.adhoc_production, pe.company, pe.warehouse, pe.timber_class, pe.timber_type, pe.timber_species, cc.parent_cost_center as region, {0}, pe.cable_line_no as cable_line_no from `tabProduction Entry` pe, `tabCost Center` cc where cc.name = pe.cost_center {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
+	query = """select 
+			pe.posting_date, 
+			pe.item_code, 
+			pe.item_name, 
+			pe.item_group, 
+			pe.item_sub_group, 
+			pe.qty, 
+			pe.uom, 
+			pe.branch, 
+			pe.business_activity, 
+			pe.company, 
+			pe.warehouse, 
+			cc.parent_cost_center as region, 
+			{0}, 
+			pe.cable_line_no as cable_line_no 
+		from 
+			`tabProduction Entry` pe, 
+			`tabCost Center` cc 
+		where 
+			cc.name = pe.cost_center {1} {2} {3}""".format(total_qty, conditions, group_by, order_by)
+
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
 
 	total_qty = 0
@@ -47,32 +67,30 @@ def get_order_by(filters):
 	return " order by region, pe.location, pe.item_group, pe.item_sub_group"
 
 def get_conditions(filters):
-	if not filters.cost_center:
-		return " and pe.docstatus = 10"
+	condition = " and 1 = 1"
+	# if not filters.cost_center:
+	# 	return " and pe.docstatus = 10"
 
-	all_ccs = get_child_cost_centers(filters.cost_center)
-	if not all_ccs:
-		return " and pe.docstatus = 10"
+	# all_ccs = get_child_cost_centers(filters.cost_center)
+	# if not all_ccs:
+	# 	return " and pe.docstatus = 10"
 
-	all_branch = [str("DUMMY")]
-	for a in all_ccs:
-		branch = frappe.db.sql("select name from tabBranch where cost_center = %s", a, as_dict=1)
-		if branch:
-			all_branch.append(str(branch[0].name))
-
-	condition = " and pe.branch in {0} ".format(tuple(all_branch))
+	# # all_branch = [str("DUMMY")]
+	# for a in all_ccs:
+	# 	branch = frappe.db.sql("select name from tabBranch where cost_center = %s", a, as_dict=1)
+	# 	if branch:
+	# 		all_branch.append(str(branch[0].name))
+	if filters.branch:
+		condition += " and pe.branch = '{0}' ".format(filters.branch)
 
 	if filters.production_type != "All":
 		condition += " and pe.production_type = '{0}'".format(filters.production_type)
 
-	if filters.timber_type != "All":
-		condition += " and pe.timber_type = '{0}'".format(filters.timber_type)
+	# if filters.timber_type != "All":
+	# 	condition += " and pe.timber_type = '{0}'".format(filters.timber_type)
 
-	if filters.location:
-		condition += " and pe.location = '{0}'".format(filters.location)
-
-	if filters.adhoc_production:
-		condition += " and pe.adhoc_production = '{0}'".format(filters.adhoc_production)
+	# if filters.adhoc_production:
+	# 	condition += " and pe.adhoc_production = '{0}'".format(filters.adhoc_production)
 
 	if filters.item_group:
 		condition += " and pe.item_group = '{0}'".format(filters.item_group)
@@ -86,11 +104,11 @@ def get_conditions(filters):
 	if filters.from_date and filters.to_date:
 		condition += " and DATE(pe.posting_date) between '{0}' and '{1}'".format(filters.from_date, filters.to_date)
 
-	if filters.timber_species:
-		condition += " and pe.timber_species = '{0}'".format(filters.timber_species)
+	# if filters.timber_species:
+	# 	condition += " and pe.timber_species = '{0}'".format(filters.timber_species)
 
-	if filters.timber_class:
-		condition += " and pe.timber_class = '{0}'".format(filters.timber_class)
+	# if filters.timber_class:
+	# 	condition += " and pe.timber_class = '{0}'".format(filters.timber_class)
 
 	if filters.warehouse:
 		condition += " and pe.warehouse = '{0}'".format(filters.warehouse)
@@ -113,10 +131,10 @@ def get_columns(filters):
 			"width": 120
 		},
 		{
-			"fieldname": "location",
-			"label": "Location",
+			"fieldname": "business_activity",
+			"label": "Business Activity",
 			"fieldtype": "Link",
-			"options": "Location",
+			"options": "Business Activity",
 			"width": 120
 		},
 		{

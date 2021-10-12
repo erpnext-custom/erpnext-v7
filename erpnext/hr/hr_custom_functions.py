@@ -18,6 +18,9 @@ from frappe.utils.data import get_first_day, get_last_day, add_days
 from erpnext.custom_utils import get_year_start_date, get_year_end_date
 import json
 import logging
+from datetime import datetime, timedelta
+import datetime
+import calendar
 
 def post_leave_credits(today=None):
         """
@@ -50,35 +53,40 @@ def post_leave_credits(today=None):
 
         first_day_of_month = 1 if today.day == 1 else 0
         first_day_of_year  = 1 if today.day == 1 and today.month == 1 else 0
-        #if first_day_of_month or first_day_of_year:        
+        
+	
+
+        # if first_day_of_month or first_day_of_year:
+	f_date = get_first_day(add_days(today, -today.day))
+	t_date   = get_last_day(f_date)
 	elist = frappe.db.sql("""
 		select
-                        t1.name, t1.employee_name, t1.date_of_joining, t1.employment_type,
-                        (
-                        case
-                                when day(t1.date_of_joining) > 1 and day(t1.date_of_joining) <= 15
-                                then timestampdiff(MONTH,t1.date_of_joining,'{0}')+1 
-                                else timestampdiff(MONTH,t1.date_of_joining,'{0}')       
-                        end
-                        ) as no_of_months,
-                        t2.leave_type, t2.credits_per_month, t2.credits_per_year,
-                        t3.is_carry_forward
-                from `tabEmployee` as t1, `tabEmployee Group Item` as t2, `tabLeave Type` as t3
-                where t1.status = 'Active'
-                and t1.date_of_joining <= '{0}'
-                and t1.employee_group = t2.parent
-                and (t2.credits_per_month > 0 or t2.credits_per_year > 0)
-                and t3.name = t2.leave_type
-                and not exists(select 1
-                                      from `tabLeave Allocation` as t4
-                                      where t4.employee = t1.name
-                                      and t4.docstatus != 2 
-                                      and t4.from_date = '{1}'
-                                      and t4.to_date = '{2}'
-                                      and t4.leave_type = t3.name
-                                      )
-                order by t1.name, t2.leave_type
-	""".format(str(today)), as_dict=1)
+			t1.name, t1.employee_name, t1.date_of_joining, t1.employment_type,
+			(
+			case
+				when day(t1.date_of_joining) > 1 and day(t1.date_of_joining) <= 15
+				then timestampdiff(MONTH,t1.date_of_joining,'{0}')+1 
+				else timestampdiff(MONTH,t1.date_of_joining,'{0}')       
+			end
+			) as no_of_months,
+			t2.leave_type, t2.credits_per_month, t2.credits_per_year,
+			t3.is_carry_forward
+		from `tabEmployee` as t1, `tabEmployee Group Item` as t2, `tabLeave Type` as t3
+		where t1.status = 'Active'
+		and t1.date_of_joining <= '{0}'
+		and t1.employee_group = t2.parent
+		and (t2.credits_per_month > 0 or t2.credits_per_year > 0)
+		and t3.name = t2.leave_type
+		and not exists(select 1
+				      from `tabLeave Allocation` as t4
+				      where t4.employee = t1.name
+				      and t4.docstatus != 2 
+				      and t4.from_date = '{1}'
+				      and t4.to_date = '{2}'
+				      and t4.leave_type = t3.name
+				      )
+		order by t1.name, t2.leave_type
+	""".format(str(today), f_date, t_date), as_dict=1)
 
 	counter = 0
 	for e in elist:
@@ -92,22 +100,63 @@ def post_leave_credits(today=None):
 			continue
 
 		# Monthly credits
-		# if first_day_of_month and flt(e.credits_per_month) > 0:
+		#if first_day_of_month and flt(e.credits_per_month) > 0:
 		# Don't allocate EL during Probation Period
 		if e.employment_type != "Probation":
-			if flt(e.credits_per_month) > 0:
-				# For Earned Leaved monthly credits are given for previous month
+			# For Earned Leaved monthly credits are given for previous month
+			if e.leave_type == "Earned Leave":
+				total_working_days = 0
+				total_leaves = 0
 				start_date = get_first_day(add_days(today, -20))
 				end_date   = get_last_day(start_date)
+				emplist = frappe.db.sql("""
+				select a.employee, a.employee_name, a.from_date, a.to_date 
+				from `tabLeave Application` a inner join `tabLeave Type` b on a.leave_type = b.name 
+				inner join `tabLeave Type Item` c on b.name = c.parent 
+				where (a.from_date between '{0}' and '{1}' or a.to_date 
+				between '{0}' and '{1}' or '{2}' between a.from_date and a.to_date)
+				and a.employee = '{3}'
+				and c.leave_type = 'Earned Leave' 
+				and a.docstatus = 1 
+				union select employee, employee_name, from_date, to_date 
+				from  `tabEmployee Disciplinary Record` 
+				where (from_date between '{0}' and '{1}' or to_date between '{0}' and '{1}' 
+				or '{2}' between from_date and to_date) and employee = '{3}' 
+				and not_guilty_or_acquitted = 0 and docstatus = 1
+				""".format(str(start_date), str(end_date), str(today), e.name), as_dict=1)					
+				if emplist:
+					total_days_in_month = date_diff(end_date, start_date)
+					leave_allocation_per_day = flt(e.credits_per_month/total_days_in_month)
+					for l in emplist:	
+						#Incase of leave within the month
+						if l.from_date >= start_date and l.to_date <= end_date:
+							total_leaves = total_leaves + date_diff(l.to_date, l.from_date)
+						#Incase of leave starting before the month and ending within the month(Not the last day of the month)
+						elif l.from_date < start_date and l.to_date < end_date:
+							total_leaves = total_leaves + date_diff(l.to_date, start_date)
+						#Incase of leave starting within the month(Not first day of the month) and but ends in other months
+						elif l.from_date > start_date and l.to_date > end_date:
+							total_leaves = total_leaves + date_diff(end_date, l.from_date)
+					total_working_days = total_days_in_month - total_leaves
 
-				leave_allocation.append({
-					'from_date': str(start_date),
-					'to_date': str(end_date),
-					'new_leaves_allocated': flt(e.credits_per_month)
-				})
+					credits_per_month = flt(total_working_days) * flt(leave_allocation_per_day)
+					logger.info("{0}|{1}|{2}|{3}|{4}|{5}".format(e.name,e.employee_name,e.leave_type,flt(total_working_days),flt(credits_per_month),flt(leave_allocation_per_day)))
+					
+				else:
+					# For Earned Leaved monthly credits are given for previous month
+					credits_per_month = flt(e.credits_per_month)
+
+			else:
+				start_date = get_first_day(today)
+				end_date   = get_last_day(start_date)
+
+			leave_allocation.append({
+				'from_date': str(start_date),
+				'to_date': str(end_date),
+				'new_leaves_allocated': flt(credits_per_month)
+			})
 
 		# Yearly credits
-		#if first_day_of_year and flt(e.credits_per_year) > 0:
 		if flt(e.credits_per_year) > 0:
 			start_date = get_year_start_date(today)
 			end_date   = get_year_end_date(start_date)
@@ -135,10 +184,82 @@ def post_leave_credits(today=None):
 					logger.exception("{0}|{1}|{2}|{3}|{4}|{5}".format("FAILED",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
 			else:
 				logger.warning("{0}|{1}|{2}|{3}|{4}|{5}".format("ALREADY ALLOCATED",counter,e.name,e.employee_name,e.leave_type,flt(la['new_leaves_allocated'])))
-        #else:
+
+	#else:
         #        logger.info("Date {0} is neither beginning of the month nor year".format(str(today)))
         #        return 0
-        
+		
+def adjust_el():
+
+	# Logging
+        logging.basicConfig(format='%(asctime)s|%(name)s|%(levelname)s|%(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
+        logger = logging.getLogger(__name__)
+	
+	####### To overwrite or adjust auto Earned Leave allocation when employee's leave falls within the month ######## 	
+	emplist = frappe.db.sql("""
+		       select employee, employee_name, from_date, to_date, total_leave_days
+		       from `tabLeave Application` where 
+		       (from_date between DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH,'%Y-%m-01') and LAST_DAY(CURDATE() - INTERVAL 1 Month)
+		       or to_date between DATE_FORMAT(CURDATE() - INTERVAL 1 MONTH,'%Y-%m-01') and LAST_DAY(CURDATE() - INTERVAL 1 Month))
+		       and docstatus = 1
+		       and exists (select 1
+				   from `tabLeave Type` 
+				   where dont_allocate_el = 1) 
+		       order by employee 	
+		       """, as_dict=1)
+	
+	cur_date = getdate(nowdate())
+	first = datetime.date(day=1, month=cur_date.month, year=cur_date.year)
+
+	#Previous Month End Date
+	end_date = first - datetime.timedelta(days=1)
+	print(end_date)
+	#Previous Month Start Date
+	start_date = datetime.date(day=1, month=end_date.month, year=end_date.year)
+	print(start_date)
+
+	#Get Total no of days in amonth
+	total_days = calendar.monthrange(start_date.year, start_date.month)[1]
+
+	for l in emplist:
+		print(l.to_date)
+		#Incase of leave within the month
+		if l.from_date >= start_date and l.to_date <= end_date:
+			no_of_leave_days = l.total_leave_days
+			allocated_el = flt(0.08 * (total_days - no_of_leave_days))
+		#Incase of leave starting before the month and ending within the month(Not the last day of the month)
+		elif l.from_date < start_date and l.to_date < end_date:
+			first_date = datetime.strptime(l.to_date, "%Y-%m-%d")
+			second_date = datetime.strptime(start_date, "%Y-%m-%d")
+			no_of_leave_days = (first_date - second_date).days
+			allocated_el = flt(0.08 * (total_days - no_of_leave_days))				
+		#Incase of leave starting within the month(Not first day of the month) and but ends in other months
+		elif l.from_date > start_date and l.to_date > end_date:
+			first_date = datetime.strptime(end_date, "%Y-%m-%d")
+			second_date = datetime.strptime(l.from_date, "%Y-%m-%d")
+			no_of_leave_days = (first_date - second_date).days
+			allocated_el = flt(0.08 * (total_days - no_of_leave_days))
+		is_carry_forward = frappe.get_value("Leave Type", "Earned Leave", "is_carry_forward")
+		print("+++ ")
+		#Checks whether EL has been allocated or not	
+		if frappe.db.exists("Leave Allocation", {"employee": l.employee, "leave_type": "Earned Leave", "from_date": start_date, "to_date": end_date, "docstatus": ("<",2)}):
+			doc = frappe.get_doc("Leave Allocation", {"employee": l.employee, "leave_type":"Earned Leave", "from_date": start_date, "to_date": end_date, "docstatus": ("<",2)})
+			total_leaves = flt(doc.total_leaves_allocated) - flt(doc.new_leaves_allocated) + flt(allocated_el)
+			doc.db_set("new_leaves_allocated", allocated_el)
+			doc.db_set("total_leaves_allocated", total_leaves)
+			logger.info("{0}|{1}|{2}|{3}|{4}".format("SUCCESS",l.name,l.employee_name,"Modified Existing allocation",flt(allocated_el)))
+		else:
+			doc = frappe.new_doc("Leave Allocation")
+			doc.employee             = l.employee
+			doc.employee_name        = l.employee_name
+			doc.leave_type           = "Earned Leave"
+			doc.from_date            = start_date
+			doc.to_date              = end_date
+			doc.carry_forward        = cint(is_carry_forward)
+			doc.new_leaves_allocated = flt(allocated_el)
+			doc.submit()
+			logger.info("{0}|{1}|{2}|{3}|{4}".format("SUCCESS",l.name,l.employee_name,"Created new allocation", flt(allocated_el)))
+
 # +++++++++++++++++++++ VER#2.0#CDCL#886 ENDS +++++++++++++++++++++
 
 ##
@@ -210,7 +331,8 @@ def get_salary_tax(gross_amt):
                 """)
 
         if flt(flt(gross_amt) if flt(gross_amt) else 0.00) > flt(flt(max_limit[0][0]) if flt(max_limit[0][0]) else 0.00):
-                tax_amount = flt((((flt(gross_amt) if flt(gross_amt) else 0.00)-83333.00)*0.25)+11875.00)
+               # tax_amount = flt((((flt(gross_amt) if flt(gross_amt) else 0.00)-83333.00)*0.25)+11875.00)
+		tax_amount = flt((((flt(gross_amt) if flt(gross_amt) else 0.00)-125000.00)*0.30)+20208.00)
         else:
                 result = frappe.db.sql("""select b.tax from
                         `tabSalary Tax` a, `tabSalary Tax Item` b
@@ -327,3 +449,15 @@ def get_officiating_employee(employee):
                         else:
                                 flag = False
         return officiate
+
+def update_suspension_record():
+	query = "select employee, increment_month, promotion_month from `tabEmployee Disciplinary Record` where docstatus=1 and not_quilty_or_acquitted=0 and DATE_ADD(to_date, INTERVAL 1 DAY) = %(today)s"
+	data = frappe.db.sql(query, {"today":nowdate()})
+	for d in data:
+		emp = frppe.get_doc("Employee", self.employee)
+		emp.employment_status = "In Service"
+		emp.increment_and_promotion_cycle = d.increment_month
+		emp.promotion_cycle = d.promotion_month
+		emp.save()
+		
+	

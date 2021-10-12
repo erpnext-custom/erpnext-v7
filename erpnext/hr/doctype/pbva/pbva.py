@@ -7,6 +7,8 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import flt, getdate, date_diff, cint
 from erpnext.hr.doctype.salary_structure.salary_structure import get_salary_tax
+from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
+
 
 class PBVA(Document):
 	def validate(self):
@@ -28,6 +30,10 @@ class PBVA(Document):
 				cc_amount[cc] = row;
 
 		self.post_journal_entry(cc_amount)
+		self.post_journal_entry1()
+		self.post_journal_entry2()
+
+
 
 	def validate_duplicate(self):
 		doc = frappe.db.sql("select name from tabPBVA where docstatus != 2 and fiscal_year = \'"+str(self.fiscal_year)+"\' and name != \'"+str(self.name)+"\'")		
@@ -55,22 +61,25 @@ class PBVA(Document):
 	def post_journal_entry(self, cc_amount):
 		je = frappe.new_doc("Journal Entry")
 		je.flags.ignore_permissions = 1 
-		je.title = "PBVA for " + self.branch + "(" + self.name + ")"
-		je.voucher_type = 'Bank Entry'
-		je.naming_series = 'Bank Payment Voucher'
+		je.title = "PBVA Payable " + self.branch + "(" + self.name + ")"
+		je.voucher_type = 'Journal Entry'
+		je.naming_series = 'Journal Voucher'
 		je.remark = 'PBVA payment against : ' + self.name;
 		je.posting_date = self.posting_date
 		je.branch = self.branch
 
 		pbva_account = frappe.db.get_single_value("HR Accounts Settings", "pbva_account")
 		tax_account = frappe.db.get_single_value("HR Accounts Settings", "salary_tax_account")
-		expense_bank_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+		pbva_payable = frappe.db.get_single_value("HR Accounts Settings", "pbva_payable_account")
+
+		
 		if not pbva_account:
 			frappe.throw("Setup PBVA Account in HR Accounts Settings")
 		if not tax_account:
 			frappe.throw("Setup Salary Tax Account in HR Accounts Settings")
-		if not expense_bank_account:
-			frappe.throw("Setup Expense Bank Account for your branch")
+		if not pbva_payable:
+			frappe.throw("Setup Salary Tax Account in HR Accounts Settings")
+		
 		
 		for key in cc_amount.keys():
 			values = key.split(":")
@@ -85,7 +94,7 @@ class PBVA(Document):
 				})
 		
 			je.append("accounts", {
-					"account": expense_bank_account,
+					"account": pbva_payable,
 					"cost_center": values[0],
 					"business_activity": values[1],
 					"credit_in_account_currency": flt(cc_amount[key]['balance_amount']),
@@ -100,6 +109,90 @@ class PBVA(Document):
 					"credit": flt(cc_amount[key]['tax']),
 				})
 
+		je.insert()
+
+		self.db_set("journal_entry", je.name)
+
+	def post_journal_entry1(self):
+		je = frappe.new_doc("Journal Entry")
+		je.flags.ignore_permissions = 1 
+		je.title = "PBVA Bank for "  + "(" + self.name + ")"
+		je.voucher_type = 'Bank Entry'
+		je.naming_series = 'Bank Payment Voucher'
+		je.remark = 'PBVA payment against : ' + self.name
+		je.posting_date = self.posting_date
+		je.branch = self.branch
+		cc = frappe.db.get_single_value("Company", "company_cost_center")
+		pbva_payable_account = frappe.db.get_single_value("HR Accounts Settings", "pbva_payable_account")
+		default_bank_account = frappe.db.get_value("Company", self.company,
+                        "default_bank_account")
+		default_business_activity = get_default_ba()
+		
+		if not pbva_payable_account:
+			frappe.throw("Setup PBVA Payable Account in HR Accounts Settings")
+		
+		if not default_bank_account:
+			frappe.throw("Setup Default Bank Account for your Company")
+		
+		# for key in cc_amount.keys():
+		# 	values = key.split(":")
+		je.append("accounts", {
+					"account": pbva_payable_account,
+					"reference_type": "PBVA",
+					"reference_name": self.name,
+					"cost_center": cc,
+					"business_activity": default_business_activity,
+					"debit_in_account_currency": flt(self.net_amount),
+					"debit": flt(self.net_amount),
+				})
+			
+		
+		je.append("accounts", {
+					"account": default_bank_account,
+					"cost_center": cc,
+					"business_activity": default_business_activity,
+					"credit_in_account_currency": flt(self.net_amount),
+					"credit": flt(self.net_amount),
+				})
+		je.insert()
+		self.db_set("journal_entry", je.name)
+
+	def post_journal_entry2(self):
+		je = frappe.new_doc("Journal Entry")
+		je.flags.ignore_permissions = 1 
+		je.title = "PBVA tax for " + "(" + self.name + ")"
+		je.voucher_type = 'Bank Entry'
+		je.naming_series = 'Bank Payment Voucher'
+		je.remark = 'PBVA payment against : ' + self.name
+		je.posting_date = self.posting_date
+		je.branch = self.branch
+
+		tax_account = frappe.db.get_single_value("HR Accounts Settings", "salary_tax_account")
+		default_bank_account = frappe.db.get_value("Company", self.company, "default_bank_account")
+		cc = frappe.db.get_single_value("Company", "company_cost_center")
+		default_business_activity = get_default_ba()
+
+		if not default_bank_account:
+			frappe.throw("Setup Default Bank Account for your Company")
+		
+		# for key in cc_amount.keys():
+		# 	values = key.split(":")
+			
+		je.append("accounts", {
+					"account": tax_account,
+					"cost_center": cc,
+					"business_activity": default_business_activity,
+					"debit_in_account_currency": flt(self.tax_amount),
+					"dedit": flt(self.tax_amount),
+				})
+		
+		je.append("accounts", {
+					"account": default_bank_account,
+					"cost_center": cc,
+					"business_activity": default_business_activity,
+					"credit_in_account_currency": flt(self.tax_amount),
+					"credit": flt(self.tax_amount),
+				})
 		je.insert()
 
 		self.db_set("journal_entry", je.name)

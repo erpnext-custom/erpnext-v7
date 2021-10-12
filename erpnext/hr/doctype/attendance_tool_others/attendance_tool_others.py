@@ -47,4 +47,5 @@ def mark_employee_attendance(employee_list, status, date, employee_type, cost_ce
 		attendance.branch = branch
 		attendance.unit = unit
 		attendance.status = status
+		attendance.unit = unit
 		attendance.submit()

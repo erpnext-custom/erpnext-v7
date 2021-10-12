@@ -31,7 +31,7 @@ def get_data(filters):
 
 	if not filters.uinput:
 		return []
-	query = "select pdi.production_group, sum(pdi.quantity) from `tab{0} Target Item` pdi, `tabProduction Target` pt where pt.name = pdi.parent".format(filters.uinput) 
+	query = "select pdi.item, sum(pdi.quantity) from `tab{0} Target Item` pdi, `tabProduction Target` pt where pt.name = pdi.parent".format(filters.uinput) 
 
 	if filters.get("branch"):
 		query += " and pt.cost_center = \'" + str(filters.cost_center) + "\'"	
@@ -42,6 +42,6 @@ def get_data(filters):
 		query += " and pt.location = \'" + str(filters.location) + "\'"
 	if filters.get("fiscal_year"):
 		query += " and pt.fiscal_year = \'" + str(filters.fiscal_year) + "\'"	
-	query += " group by pdi.production_group " 
+	query += " group by pdi.item " 
 
 	return frappe.db.sql(query)

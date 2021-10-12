@@ -12,11 +12,18 @@ frappe.query_reports["Rental Register"] = {
       reqd: 1,
     },
     {
-      fieldname: "month",
-      label: __("Month"),
+      fieldname: "from_month",
+      label: "From Month",
       fieldtype: "Select",
-      options: ["", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+      options: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
       default: "01",
+    },
+    {
+      fieldname: "to_month",
+      label: "To Month",
+      fieldtype: "Select",
+      options: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+      default: "12",
     },
     {
       fieldname: "dzongkhag",
@@ -24,6 +31,13 @@ frappe.query_reports["Rental Register"] = {
       fieldtype: "Link",
       width: "80",
       options: "Dzongkhags",
+    },
+    {
+      fieldname: "dungkhag",
+      label: "Dungkhag",
+      fieldtype: "Link",
+      width: "80",
+      options: "Dungkhag",
     },
     {
       fieldname: "location",
@@ -45,9 +59,6 @@ frappe.query_reports["Rental Register"] = {
       fieldtype: "Link",
       width: "80",
       options: "Ministry and Agency",
-    },
-    {
-      fieldtype: "Break",
     },
     {
       fieldname: "department",
@@ -74,9 +85,16 @@ frappe.query_reports["Rental Register"] = {
     {
       fieldname: "rental_official",
       label: __("Rental Official"),
-      fieldtype: "Link",
+      fieldtype: "Select",
       width: "80",
-      options: "Employee",
+      options: ["", "Bumpa Dema", "Dik Maya Ghalley", "Rinzin Dema", "Seema Uroan", "Dorji Wangmo", "Sangay Pelden", "Sangay Dorji", "Sangay Dubjur", "Kunzang Choden"],
+    },
+    {
+      fieldname: "building_classification",
+      label: __("Building Classification"),
+      fieldtype: "Link",
+      width: "90",
+      options: "Building Classification"
     },
     {
       fieldname: "status",
@@ -85,6 +103,7 @@ frappe.query_reports["Rental Register"] = {
       width: "80",
       options: ["Draft", "Submitted"],
       reqd: 1,
+      default: "Submitted",
     },
   ],
 };

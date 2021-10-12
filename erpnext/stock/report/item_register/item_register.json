@@ -7,12 +7,12 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-07-20 10:49:51.677861", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2020-10-12 15:57:08.886974", 
+ "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Item Register", 
  "owner": "Administrator", 
- "query": "SELECT \n`tabItem`.item_code AS \"Item Code:Data:100\",\n`tabItem`.item_name AS \"Item Name:Data:180\", \n`tabItem`.item_group AS \"Group:Data:100\",\n`tabItem`.item_sub_group AS \"Sub Group:Data:120\",\n`tabItem`.stock_uom AS UOM,\n`tabItem`.expense_account AS \"Default Expense Account:Data:200\"\nFROM `tabItem`", 
+ "query": "SELECT \n`tabItem`.item_code AS \"Item Code:Link/Item:100\",\n`tabItem`.item_name AS \"Item Name:Data:180\", \n`tabItem`.item_group AS \"Group:Data:100\",\n`tabItem`.item_sub_group AS \"Sub Group:Data:120\",\n`tabItem`.stock_uom AS UOM,\n`tabItem`.expense_account AS \"Default Expense Account:Data:200\"\nFROM `tabItem`", 
  "ref_doctype": "Item", 
  "report_name": "Item Register", 
  "report_type": "Query Report", 
@@ -43,6 +43,9 @@
   }, 
   {
    "role": "Auditor"
+  }, 
+  {
+   "role": "MR User"
   }
  ]
 }

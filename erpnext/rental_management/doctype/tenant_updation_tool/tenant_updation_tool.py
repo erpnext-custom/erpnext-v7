@@ -20,7 +20,6 @@ class TenantUpdationTool(Document):
 		tenant_section = self.new_tenant_section if self.new_tenant_section else doc.tenant
 
 		frappe.db.sql("update `tabTenant Information` set ministry_agency = \'"+ str(ministry_agency) +"\', department = \'"+ str(department) +"\', floor_area = \'" + str(floor_area) + "\', tenant_section = \'" + str(tenant_section) + "\' where name= \'" + str(self.tenant) + "\'")
-	
 
 	def update_history(self):
 		ti = frappe.get_doc("Tenant Information", self.tenant)

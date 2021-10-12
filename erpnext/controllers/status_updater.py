@@ -125,13 +125,14 @@ class StatusUpdater(Document):
 			for d in self.get_all_children():
 				if d.doctype == args['source_dt'] and d.get(args["join_field"]):
 					args['name'] = d.get(args['join_field'])
-
+					
 					# get all qty where qty > target_field
 					item = frappe.db.sql("""select item_code, `{target_ref_field}`,
 						`{target_field}`, parenttype, parent from `tab{target_dt}`
 						where `{target_ref_field}` < `{target_field}`
 						and name=%s and docstatus=1""".format(**args),
 						args['name'], as_dict=1)
+					
 					if item:
 						item = item[0]
 						item['idx'] = d.idx

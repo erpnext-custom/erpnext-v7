@@ -1,0 +1,62 @@
+<h2 class="text-center">{%= __("Monthly Rental Information") %}</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th >{%= __("Month") %}</th>
+            {% for(var i=0, l=data.length; i<l; i++){ %}
+                <th style="text-align: right"> {%= data[i][__("Month")] %} </th>
+            {% } %}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td >{%= __("Actual Rent Amount") %}</td>
+            {% for(var i=0, l=data.length; i<l; i++){ %}
+                <td style="text-align: right"> {%= format_currency(data[i][__("Actual Rent Amount")]) %} </td>
+            {% } %}
+        </tr>
+        <tr>
+            <td >{%= __("Bill Amount") %}</td>
+            {% for(var i=0, l=data.length; i<l; i++){ %}
+                <td style="text-align: right"> {%= format_currency(data[i][__("Bill Amount")]) %} </td>
+            {% } %}
+        </tr>
+        <tr>
+            <td >{%= __("Rent Received") %}</td>
+            {% for(var i=0, l=data.length; i<l; i++){ %}
+                <td style="text-align: right"> {%= format_currency(data[i][__("Rent Received")]) %} </td>
+            {% } %}
+        </tr>
+        <tr>
+            <td >{%= __("Pre Rent Received") %}</td>
+            {% for(var i=0, l=data.length; i<l; i++){ %}
+                <td style="text-align: right"> {%= format_currency(data[i][__("Pre Rent Received")]) %} </td>
+            {% } %}
+        </tr>
+        <tr>
+            <td >{%= __("Excess Amount Received") %}</td>
+            {% for(var i=0, l=data.length; i<l; i++){ %}
+                <td style="text-align: right"> {%= format_currency(data[i][__("Excess Amount Received")]) %} </td>
+            {% } %}
+        </tr>
+        <tr>
+            <td >{%= __("Discount Amount") %}</td>
+            {% for(var i=0, l=data.length; i<l; i++){ %}
+                <td style="text-align: right"> {%= format_currency(data[i][__("Discount Amount")]) %} </td>
+            {% } %}
+        </tr>
+        <tr>
+            <td >{%= __("Balance Rent") %}</td>
+            {% for(var i=0, l=data.length; i<l; i++){ %}
+                <td style="text-align: right"> {%= format_currency(data[i][__("Balance Rent")]) %} </td>
+            {% } %}
+        </tr>
+        <tr>
+            <td >{%= __("Total Amount Received") %}</td>
+            {% for(var i=0, l=data.length; i<l; i++){ %}
+                <td style="text-align: right"> {%= format_currency(data[i][__("Total Amount Received")]) %} </td>
+            {% } %}
+        </tr>
+    </tbody>
+</table>

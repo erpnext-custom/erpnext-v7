@@ -5,10 +5,10 @@ cur_frm.add_fetch("project", "branch", "branch")
 frappe.ui.form.on("Attendance Tool Others", {
 	refresh: function(frm) {
 		frm.disable_save();
-		frm.set_query("unit", function(){
-			return{
-				"filters": {
-					"branch":frm.doc.branch
+		frm.set_query("unit", function() {
+			return {
+				"filters":{
+					"branch": frm.doc.branch
 				}
 			}
 		});
@@ -31,15 +31,12 @@ frappe.ui.form.on("Attendance Tool Others", {
 	cost_center: function(frm) {
 		erpnext.attendance_tool_others.load_employees(frm);
 	},
-
 	branch: function(frm) {
-		//erpnext.attendance_tool_others.load_employees(frm);
+//		 erpnext.attendance_tool_others.load_employees(frm);
 	},
-
-	unit: function(frm) {
-		erpnext.attendance_tool_others.load_employees(frm);
+	unit : function(frm) {
+		 erpnext.attendance_tool_others.load_employees(frm);
 	},
-
 	employee_type: function(frm) {
 		erpnext.attendance_tool_others.load_employees(frm);
 	},
@@ -56,7 +53,7 @@ erpnext.attendance_tool_others = {
 					cost_center: frm.doc.cost_center,
 					branch: frm.doc.branch,
 					employee_type: frm.doc.employee_type,
-					unit: frm.doc.unit
+					unit: frm.doc.unit,
 				},
 				callback: function(r) {
 					if(r.message['unmarked'].length > 0) {

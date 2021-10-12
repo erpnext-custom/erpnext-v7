@@ -84,6 +84,7 @@ def save_entries(gl_map, adv_adj, update_outstanding):
 
 	for entry in gl_map:
 		make_entry(entry, adv_adj, update_outstanding)
+
 		# check against budget only if not se
 		if entry.voucher_type not in ['Stock Entry', 'Period Closing Voucher', 'Purchase Invoice', 'POL', 'Issue POL']:
 			validate_expense_against_budget(entry)
@@ -143,9 +144,9 @@ def validate_account_for_auto_accounting_for_stock(gl_map):
 						.format(entry.account), StockAccountInvalidTransaction)
 
 def round_off_debit_credit(gl_map):
+	
 	precision = get_field_precision(frappe.get_meta("GL Entry").get_field("debit"),
 		currency=frappe.db.get_value("Company", gl_map[0].company, "default_currency", cache=True))
-
 	debit_credit_diff = 0.0
 	for entry in gl_map:
 		entry.debit = flt(entry.debit, precision)
@@ -153,7 +154,6 @@ def round_off_debit_credit(gl_map):
 		debit_credit_diff += entry.debit - entry.credit
                 #msgprint(_("Debit Amount: {0} Credit Amount: {1}").format(flt(entry.debit, precision),flt(entry.credit, precision)))
 	debit_credit_diff = flt(debit_credit_diff, precision)
-	
 	if gl_map[0]["voucher_type"] == "Journal Entry":
 		allowance = 5.0 / (10**precision)
 	else:
@@ -164,6 +164,7 @@ def round_off_debit_credit(gl_map):
 			.format(gl_map[0].voucher_type, gl_map[0].voucher_no, debit_credit_diff))
 
 	elif abs(debit_credit_diff) >= (1.0 / (10**precision)):
+		# frappe.msgprint("this is the diff: {}".format(abs(debit_credit_diff)))
 		make_round_off_gle(gl_map, debit_credit_diff)
 
 def make_round_off_gle(gl_map, debit_credit_diff):
@@ -192,6 +193,7 @@ def make_round_off_gle(gl_map, debit_credit_diff):
 		"party": None,
 		"against_voucher_type": None,
 		"against_voucher": None,
+		"business_activity": "Common",
 		"fiscal_year": str(gl_map[0].posting_date)[0:4]
 	})
 

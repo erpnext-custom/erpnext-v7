@@ -31,14 +31,16 @@ def get_data(filters):
         return frappe.db.sql(query)
 
 def get_conditions(filters):
-        condition = ""
-        if filters.dzongkhag:
-                condition += " and ti.dzongkhag = '{0}'".format(filters.dzongkhag)
-        if filters.location:
-                condition += " and ti.location = '{0}'".format(filters.location)
-        if filters.building_category:
-                condition += " and ti.building_category = '{0}'".format(filters.building_category)
-        return condition
+	condition = ""
+	if filters.dzongkhag:
+		condition += " and ti.dzongkhag = '{0}'".format(filters.dzongkhag)
+	if filters.location:
+		condition += " and ti.location = '{0}'".format(filters.location)
+	if filters.building_category:
+		condition += " and ti.building_category = '{0}'".format(filters.building_category)
+	if filters.building_classification:
+		condition += " and ti.building_classification = '{0}'".format(filters.building_classification)
+	return condition
 
 
 def get_columns():

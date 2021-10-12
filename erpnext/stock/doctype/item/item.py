@@ -16,9 +16,11 @@ from frappe.website.doctype.website_slideshow.website_slideshow import get_slide
 from erpnext.controllers.item_variant import (get_variant, copy_attributes_to_variant,
 	make_variant_item_code, validate_item_variant_attributes, ItemVariantExistsError)
 
+
 class DuplicateReorderRows(frappe.ValidationError): pass
 
 class Item(WebsiteGenerator):
+	
 	website = frappe._dict(
 		page_title_field = "item_name",
 		condition_field = "show_in_website",
@@ -39,8 +41,8 @@ class Item(WebsiteGenerator):
 		if not self.item_code:
 			self.item_code = self.get_current_item_code()
 		'''
-                self.item_code = self.get_current_item_code()
-                ##### Ver 2.0.190226
+		self.item_code = self.get_current_item_code()
+		##### Ver 2.0.190226
                 
 		if not self.item_code:
 			msgprint(_("Item Code is mandatory because Item is not automatically numbered"), raise_exception=1)
@@ -49,10 +51,10 @@ class Item(WebsiteGenerator):
 		self.name = self.item_code
 
 	def get_current_item_code(self):
-		item_code = frappe.db.sql("""select item_code from tabItem where item_group=%s order by item_code desc limit 1;""", self.item_group);
+		item_code = frappe.db.sql("""select item_code from tabItem where item_group=%s order by item_code desc limit 1;""", self.item_group)
 
 		if item_code:
-			return str(int(item_code[0][0]) + 1);
+			return str(int(item_code[0][0]) + 1)
 		else:
 			base = frappe.db.get_value("Item Group", self.item_group, "item_code_base")
 			if not base:

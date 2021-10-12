@@ -37,6 +37,10 @@ def get_columns(data):
 	
 def get_data(filters):
 	conditions, filters = get_conditions(filters)
+	if filters.get("status") == 'Draft':
+		conditions += "and t1.docstatus = 0"
+	else:
+		conditions += "and t1.docstatus = 1"
 
         data = frappe.db.sql("""
                 select t1.employee, t3.employee_name, t1.designation, t3.passport_number,
@@ -44,15 +48,15 @@ def get_data(filters):
                         t1.company, t1.branch, t1.department, t1.division, t1.section,
                         t1.fiscal_year, t1.month
                 from `tabSalary Slip` t1, `tabSalary Detail` t2, `tabEmployee` t3
-                where t1.docstatus = 1 %s
-                and t3.employee = t1.employee
+                where
+                t3.employee = t1.employee %s
                 and t2.parent = t1.name
                 and t2.parentfield = 'deductions'
                 and exists(select 1
                                 from `tabSalary Component` sc
                                 where sc.name = t2.salary_component
                                 and sc.name = 'Financial Institution Loan')
-                """ % conditions, filters)
+                """% conditions, filters)
 
 	'''	
 	if not data:

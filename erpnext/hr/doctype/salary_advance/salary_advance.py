@@ -55,14 +55,9 @@ class SalaryAdvance(Document):
 
         def check_duplicates(self):
                 ##### Ver 3.0.190204 Beings, follow code commented by SHIV on 2019/02/04
-                # as per NRDCL, employee can avail advance more than once as long as they do not have any due from earlier advance 
-               
-		# Checking for duplicate requests within the fiscal_year
-		#for d in frappe.db.sql("select * from `tabSalary Advance` where employee = '{0}' and year(posting_date) = {1} and docstatus=1".format(self.employee, getdate(self.posting_date).year), as_dict=True):
-		#	frappe.throw(_('You have already taken advance for the fiscal year {0} via <a href="#Form/Salary Advance/{1}" target="_blank">{1}</a> on {2}').format(getdate(self.posting_date).year, d.name, getdate(self.posting_date).strftime("%B %d, %Y")), title="Duplicate Entry")
-
-
-                ##### Ver 3.0.190204 Ends
+                # Checking for duplicate requests withing the fiscal_year
+                #for d in frappe.db.sql("select * from `tabSalary Advance` where employee = '{0}' and year(posting_date) = {1} and docstatus=1".format(self.employee, getdate(self.posting_date).year), as_dict=True):
+                #        frappe.throw(_('You have already taken advance for the fiscal year {0} via <a href="#Form/Salary Advance/{1}" target="_blank">{1}</a> on {2}').format(getdate(self.posting_date).year, d.name, getdate(self.posting_date).strftime("%B %d, %Y")), title="Duplicate Entry")
                 
                 # Checking for unsettled advances
                 sst_doc = frappe.get_doc("Salary Structure",frappe.db.get_value('Salary Structure', {'employee': self.employee, 'is_active' : 'Yes'}, "name"))

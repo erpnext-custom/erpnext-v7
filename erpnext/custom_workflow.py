@@ -26,19 +26,30 @@ def validate_workflow_states(doc):
 			"Overtime Authorization": ["approver", "approver_name"],
 			"Overtime Claim": ["approver", "approver_name"],
 			"Leave Encashment": ["approver", "approver_name"],
+			"Material Request": ["approver","approver_name"],
 	}
 	
 	if not approver_field.has_key(doc.doctype) or not frappe.db.exists("Workflow", {"document_type": doc.doctype, "is_active": 1}):
 		return
 	document_approver = approver_field[doc.doctype]
-	employee          = frappe.db.get_value("Employee", doc.employee, ["user_id","employee_name","designation","name"])
-	reports_to        = frappe.db.get_value("Employee", frappe.db.get_value("Employee", doc.employee, "reports_to"), ["user_id","employee_name","designation","name"])
+	login_user        = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","designation","name"])
+	if doc.doctype in ["Material Request"]:
+		# needed so that non-employees like admin cannot create MR 
+		# added by phuntsho on Feb 3 2021
+		if not login_user: 
+			frappe.throw("You do not have permission to create MR!")
+		owner        = frappe.db.get_value("Employee", {"user_id": doc.owner}, ["user_id","employee_name","designation","name"])
+		employee          = frappe.db.get_value("Employee", owner[3], ["user_id","employee_name","designation","name"])
+		reports_to        = frappe.db.get_value("Employee", frappe.db.get_value("Employee", owner[3], "reports_to"), ["user_id","employee_name","designation","name"])
+	else:
+		employee          = frappe.db.get_value("Employee", doc.employee, ["user_id","employee_name","designation","name"])
+		reports_to        = frappe.db.get_value("Employee", frappe.db.get_value("Employee", doc.employee, "reports_to"), ["user_id","employee_name","designation","name"])
+
 	final_approver    = frappe.db.get_value("Employee", {"user_id": get_final_approver(doc.branch)}, ["user_id","employee_name","designation","name"])
 	workflow_state    = doc.get("workflow_state").lower()
-	login_user        = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","designation","name"])
+	
 	if not login_user:
 		frappe.throw("{0} is not added as the employee".format(frappe.session.user))
-
 
         if doc.doctype == "Salary Advance":
 		#CEO is set as the approver for Salary Advance.
@@ -62,6 +73,32 @@ def validate_workflow_states(doc):
                                         frappe.throw(_("Only <b>{0}, {1}</b> can reject this application").format(doc.get(document_approver[1]),doc.get(document_approver[1])), title="Invalid Operation")
                 else:
                         pass
+						
+	elif doc.doctype == "Material Request":
+		if doc.approver and doc.approver != frappe.session.user:
+			frappe.throw(_("Only the approver <b>{0}</b> allowed to verify or approve this document").format(doc.approver), title="Invalid Operation")
+
+		if workflow_state == "Waiting Supervisor Approval".lower():
+			if "MR GM" in frappe.get_roles(frappe.session.user): 
+				# MR GM should be able to edit only if MR is submitted by Manager
+				if (doc.owner != frappe.session.user) and "MR Manager" not in frappe.get_roles(doc.owner):
+					frappe.throw("MR GM is not allowed to save the document during this workflow state.")
+					
+			officiating = get_officiating_employee(reports_to[3])
+			if officiating:
+				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+			
+			vars(doc)[document_approver[0]] = officiating[0] if officiating else reports_to[0]
+			vars(doc)[document_approver[1]] = officiating[1] if officiating else reports_to[1]
+			
+		elif workflow_state == "Verified By Supervisor".lower():
+			officiating = get_officiating_employee(final_approver[3])
+			if officiating:
+				officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
+			vars(doc)[document_approver[0]] = officiating[0] if officiating else final_approver[0]
+			vars(doc)[document_approver[1]] = officiating[1] if officiating else final_approver[1]
+		elif workflow_state == "Approved":
+			doc.docstatus = 1
 
 	elif doc.doctype == "Request EL Allocation":
 		hr_user = frappe.db.get_single_value("HR Settings", "hr_approver")
@@ -114,7 +151,7 @@ def validate_workflow_states(doc):
 
 		elif workflow_state == "Approved".lower():
 			if frappe.session.user != doc.approver:
-				frappe.throw("Only '{0}' is allowed to Approved the Leave Encashment".format(doc.supervisor))
+				frappe.throw("Only '{0}' is allowed to Approved the Leave Encashment".format(doc.approver))
 			if doc.docstatus == 0 and workflow_state == "Approved":
 				doc.workflow_state = "Waiting Approval"
 		
@@ -139,7 +176,6 @@ def validate_workflow_states(doc):
 					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
 				vars(doc)[document_approver[0]] = officiating[0] if officiating else hr_approver[0]
 				vars(doc)[document_approver[1]] = officiating[1] if officiating else hr_approver[1]
-				
 
 		elif workflow_state == "Claimed".lower():
 			if  hr_approver[0] != frappe.session.user:
@@ -192,7 +228,6 @@ def validate_workflow_states(doc):
 			if doc.purpose == "Separation":
 				if not "HR User" in frappe.get_roles(frappe.session.user):
 					frappe.throw("Only HR user with role HR User can create the employee benefit with purpose Separation")
-
 				officiating = get_officiating_employee(hr_approver[3])
 				if officiating:
 					officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])

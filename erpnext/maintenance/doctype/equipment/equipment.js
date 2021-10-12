@@ -75,7 +75,7 @@ cur_frm.fields_dict['operators'].grid.get_field('operator').get_query = function
 	if (d.employee_type == "Employee") {
 		return {
 			filters: [
-	//		['Employee', 'designation', 'in', ['Operator', 'Driver']],
+//			['Employee', 'designation', 'in', ['Operator', 'Driver']],
 			['Employee', 'branch', '=', frm.branch],
 			['Employee', 'status', '=', 'Active']
 			]
@@ -91,15 +91,16 @@ cur_frm.fields_dict['operators'].grid.get_field('operator').get_query = function
 	}
 }
 
-frappe.ui.form.on('Equipment Operator', {
-	employee_type: function(frm, cdt, cdn) {
-		frappe.model.set_value(cdt, cdn, "operator", "");
-		cur_frm.refresh_field("operator");
-	},
 
-	operator: function(frm, cdt, cdn) {
+frappe.ui.form.on('Equipment Operator', {
+        employee_type: function(frm, cdt, cdn) {
+                frappe.model.set_value(cdt, cdn, "operator", "");
+                cur_frm.refresh_field("operator");
+        },
+
+        operator: function(frm, cdt, cdn) {
                 doc = locals[cdt][cdn]
-		if(doc.operator) {
+                if(doc.operator) {
 
                 if(doc.employee_type == "Employee") {
                         frappe.call({
@@ -117,23 +118,23 @@ frappe.ui.form.on('Equipment Operator', {
                                 }
                         })
                 }
-                else 
-		{
-		var doc_type = "Muster Roll Employee"
-		if(doc.employee_type == "DES Employee") {
-			doc_type = "DES Employee"
-		}
-		frappe.call({
-			method: "frappe.client.get_value",
-			args: {
-				doctype: doc_type,
-				fieldname: "person_name",
-				filters: {name: doc.operator}
-			},
-			callback: function(r) {
-				if(r.message.person_name) {
-					frappe.model.set_value(cdt, cdn, "operator_name", r.message.person_name)
-					cur_frm.refresh_fields()
+                else
+{
+                var doc_type = "Muster Roll Employee"
+                if(doc.employee_type == "DES Employee") {
+                        doc_type = "DES Employee"
+                }
+                frappe.call({
+                        method: "frappe.client.get_value",
+                        args: {
+                                doctype: doc_type,
+                                fieldname: "person_name",
+                                filters: {name: doc.operator}
+                        },
+                        callback: function(r) {
+                                if(r.message.person_name) {
+                                        frappe.model.set_value(cdt, cdn, "operator_name", r.message.person_name)
+                                        cur_frm.refresh_fields()
                                         }
                                 }
                         })

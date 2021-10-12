@@ -296,8 +296,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-01-11 15:22:19.192633", 
- "modified_by": "Administrator", 
+ "modified": "2021-03-31 15:42:53.726796", 
+ "modified_by": "sangay.dorji2695@bt.bt", 
  "module": "Production", 
  "name": "Cost of Production", 
  "name_case": "", 
@@ -347,7 +347,7 @@
    "amend": 0, 
    "apply_user_permissions": 0, 
    "cancel": 0, 
-   "create": 0, 
+   "create": 1, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -361,7 +361,7 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "write": 0
+   "write": 1
   }, 
   {
    "amend": 0, 

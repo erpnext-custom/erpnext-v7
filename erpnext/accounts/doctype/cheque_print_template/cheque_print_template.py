@@ -87,6 +87,8 @@ def create_or_update_cheque_print_format(template_name, doctype_name=''):
                                         {{{{frappe.utils.money_in_words(doc.purchase_amount)[3:]}}}}
                                 {{%- elif doc.doctype == 'HSD Payment' -%}}
                                         {{{{frappe.utils.money_in_words(doc.amount)[3:]}}}}
+								{{%- elif doc.doctype == 'Project Payment' -%}}
+                                        {{{{frappe.utils.money_in_words(doc.total_amount)[3:]}}}}
 				{{%- else -%}}
                                         {{% set total_amount = [0] %}}
                                         {{%- for row in doc.accounts -%}}
@@ -107,6 +109,8 @@ def create_or_update_cheque_print_format(template_name, doctype_name=''):
                                 {{{{ '{{0:,.2f}}'.format(doc.purchase_amount) }}}}
                         {{%- elif doc.doctype == 'HSD Payment' -%}}
                                 {{{{ '{{0:,.2f}}'.format(doc.amount) }}}}
+								{{%- elif doc.doctype == 'Project Payment' -%}}
+                                {{{{ '{{0:,.2f}}'.format(doc.total_amount) }}}}
                         {{%- else -%}}
                                 {{{{ '{{0:,.2f}}'.format(total_amount[0]) }}}}
                         {{%- endif -%}}

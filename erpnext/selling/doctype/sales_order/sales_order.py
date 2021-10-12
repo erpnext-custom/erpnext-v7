@@ -356,6 +356,8 @@ class SalesOrder(SellingController):
 			if self.location:
 				rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and location = '{2}'""".format(item.price_template, item.item_code, self.location), as_dict =1)
 			if not rate:
+				rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and location is NULL""".format(item.price_template, item.item_code), as_dict =1)
+			if not rate:
 				rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}'""".format(item.price_template, item.item_code), as_dict =1)
 			if not rate:
 				species,item_sub_group = frappe.db.get_value("Item", item.item_code, ["species","item_sub_group"])
@@ -468,6 +470,7 @@ def make_delivery_note(source_name, target_doc=None):
 			if not expense_account:
 				frappe.throw("Setup Default Production Account in Production Account Settings")
 		target.expense_account = expense_account
+		target.cost_center = frappe.db.get_value("Branch", source_parent.branch, "cost_center")
 
 	target_doc = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {
@@ -484,7 +487,7 @@ def make_delivery_note(source_name, target_doc=None):
 			"field_map": {
 				"rate": "rate",
 				"name": "so_detail",
-				"parent": "against_sales_order",
+				"parent": "against_sales_order"
 			},
 			"postprocess": update_item,
 			"condition": lambda doc: abs(doc.delivered_qty) < abs(doc.qty) and doc.delivered_by_supplier!=1

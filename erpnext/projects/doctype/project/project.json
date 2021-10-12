@@ -28,6 +28,7 @@
    "length": 0, 
    "no_copy": 0, 
    "oldfieldtype": "Data", 
+   "options": "", 
    "permlevel": 0, 
    "print_hide": 0, 
    "print_hide_if_no_value": 0, 
@@ -2059,8 +2060,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 4, 
- "modified": "2019-07-10 16:54:20.481321", 
- "modified_by": "Administrator", 
+ "modified": "2021-09-27 16:40:00.136920", 
+ "modified_by": "deki.wangmo@thimphutechpark.bt", 
  "module": "Projects", 
  "name": "Project", 
  "name_case": "Title Case", 
@@ -2108,7 +2109,7 @@
   }, 
   {
    "amend": 0, 
-   "apply_user_permissions": 1, 
+   "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
    "delete": 0, 
@@ -2124,7 +2125,6 @@
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
-   "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
   }, 
   {
@@ -2187,6 +2187,26 @@
    "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
    "write": 1
+  }, 
+  {
+   "amend": 0, 
+   "apply_user_permissions": 0, 
+   "cancel": 0, 
+   "create": 0, 
+   "delete": 0, 
+   "email": 1, 
+   "export": 1, 
+   "if_owner": 0, 
+   "import": 0, 
+   "permlevel": 0, 
+   "print": 1, 
+   "read": 1, 
+   "report": 1, 
+   "role": "Accounts User", 
+   "set_user_permissions": 0, 
+   "share": 1, 
+   "submit": 0, 
+   "write": 0
   }
  ], 
  "quick_entry": 0, 

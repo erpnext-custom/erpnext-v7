@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------------------------------------------------
 Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
-1.0		  SHIV		                   03/08/2016         Remove Button is added.
+1.0               SHIV                             03/08/2016         Remove Button is added.
 2.0               SHIV                             03/04/2018         Code refined to accomodate following requirements.
                                                                         1) Post remittance entries dynamically via is_remittable
                                                                                 setting under salary component.
@@ -23,24 +23,24 @@ from erpnext.accounts.doctype.business_activity.business_activity import get_def
 
 class ProcessPayroll(Document):
 
-	def get_emp_list(self, process_type=None):
-		cond = self.get_filter_condition()
+        def get_emp_list(self, process_type=None):
+                cond = self.get_filter_condition()
 
-		if process_type == "create":
+                if process_type == "create":
                         cond += self.get_joining_releiving_condition()
 
-			if self.employment_type == "GEP":
-				emp_type_cond = "t1.employment_type in ('GEP')"
-			else:
-				emp_type_cond = "t1.employment_type not in ('GEP')"  	
+                        if self.employment_type == "GEP":
+                                emp_type_cond = "t1.employment_type in ('GEP')"
+                        else:
+                                emp_type_cond = "t1.employment_type not in ('GEP')"     
 
-			frappe.msgprint("{0}".format(emp_type_cond))
+                        frappe.msgprint("{0}".format(emp_type_cond))
 
                         emp_list = frappe.db.sql("""
                                 select t1.name
                                 from `tabEmployee` t1
                                 where {3}
-				and not exists(select 1
+                                and not exists(select 1
                                                 from `tabSalary Slip` as t3
                                                 where t3.employee = t1.name
                                                 and t3.docstatus != 2
@@ -60,38 +60,38 @@ class ProcessPayroll(Document):
                                 order by t1.branch, t1.name
                         """.format(self.fiscal_year, self.month, cond), as_dict=True)
 
-		return emp_list
+                return emp_list
 
-	def get_filter_condition(self):
-		self.check_mandatory()
+        def get_filter_condition(self):
+                self.check_mandatory()
 
-		cond = ''
-		for f in ['company', 'employee']:
-			if self.get(f):
-				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
+                cond = ''
+                for f in ['company', 'employee']:
+                        if self.get(f):
+                                cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
 
-		return cond
+                return cond
 
-	def get_joining_releiving_condition(self):
-		m = get_month_details(self.fiscal_year, self.month)
-		cond = """
-			and ifnull(t1.date_of_joining, '0000-00-00') <= '%(month_end_date)s'
-			and ifnull(t1.relieving_date, '%(month_end_date)s') >= '%(month_start_date)s'
-		""" % m
-		frappe.msgprint("{0}".format(cond))	
-		return cond
+        def get_joining_releiving_condition(self):
+                m = get_month_details(self.fiscal_year, self.month)
+                cond = """
+                        and ifnull(t1.date_of_joining, '0000-00-00') <= '%(month_end_date)s'
+                        and ifnull(t1.relieving_date, '%(month_end_date)s') >= '%(month_start_date)s'
+                """ % m
+                frappe.msgprint("{0}".format(cond))     
+                return cond
 
-	def check_mandatory(self):
-		for f in ['company', 'month', 'fiscal_year']:
-			if not self.get(f):
-				frappe.throw(_("Please set {0}").format(f))
+        def check_mandatory(self):
+                for f in ['company', 'month', 'fiscal_year']:
+                        if not self.get(f):
+                                frappe.throw(_("Please set {0}").format(f))
 
         # Created by SHIV on 2018/10/15
         def process_salary(self, process_type=None, name=None):
-		self.check_permission('write')
-		msg = ""
-		
-		if name:
+                self.check_permission('write')
+                msg = ""
+                
+                if name:
                         try:
                                 if process_type == "create":
                                         ss = frappe.get_doc({
@@ -122,43 +122,43 @@ class ProcessPayroll(Document):
                         except Exception, e:
                                 return '<div style="color:red;">Error: {0}</div>'.format(str(e))
                                 
-		return name
+                return name
 
-	def create_sal_slip(self):
-		"""
-			Creates salary slip for selected employees if already not created
-		"""
+        def create_sal_slip(self):
+                """
+                        Creates salary slip for selected employees if already not created
+                """
 
-		self.check_permission('write')
+                self.check_permission('write')
 
-		emp_list = self.get_emp_list()
-		ss_list = []
-		for emp in emp_list:
-			if not frappe.db.sql("""select name from `tabSalary Slip`
-					where docstatus!= 2 and employee = %s and month = %s and fiscal_year = %s and company = %s
-					""", (emp.name, self.month, self.fiscal_year, self.company)):
-				ss = frappe.get_doc({
-					"doctype": "Salary Slip",
-					"salary_slip_based_on_timesheet": 0,
-					"fiscal_year": self.fiscal_year,
-					"cost_center": emp.cost_center,
-					"employee": emp.name,
-					"month": self.month,
-					"company": self.company,
-				})
-				ss.insert()
-				ss_list.append(ss.name)
+                emp_list = self.get_emp_list()
+                ss_list = []
+                for emp in emp_list:
+                        if not frappe.db.sql("""select name from `tabSalary Slip`
+                                        where docstatus!= 2 and employee = %s and month = %s and fiscal_year = %s and company = %s
+                                        """, (emp.name, self.month, self.fiscal_year, self.company)):
+                                ss = frappe.get_doc({
+                                        "doctype": "Salary Slip",
+                                        "salary_slip_based_on_timesheet": 0,
+                                        "fiscal_year": self.fiscal_year,
+                                        "cost_center": emp.cost_center,
+                                        "employee": emp.name,
+                                        "month": self.month,
+                                        "company": self.company,
+                                })
+                                ss.insert()
+                                ss_list.append(ss.name)
 
-		frappe.msgprint(_("Creating salary slips completed successfully."))
-		return self.create_log(ss_list)
-	
+                frappe.msgprint(_("Creating salary slips completed successfully."))
+                return self.create_log(ss_list)
+        
         def remove_sal_slip(self):
-		cond = ''
-		log = ''
-		#for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
-		for f in ['company', 'employee']:
-			if self.get(f):
-				cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
+                cond = ''
+                log = ''
+                #for f in ['company', 'branch', 'department', 'division', 'designation', 'employee']:
+                for f in ['company', 'employee']:
+                        if self.get(f):
+                                cond += " and t1." + f + " = '" + self.get(f).replace("'", "\'") + "'"
                 
                 ss_list = frappe.db.sql_list("""
                                 select t1.name from `tabSalary Slip` as t1
@@ -183,86 +183,86 @@ class ProcessPayroll(Document):
                 frappe.msgprint(_(log))
                 return log                
         
-	def create_log(self, ss_list):
-		log = "<p>" + _("No employee for the above selected criteria OR salary slip already created") + "</p>"
-		if ss_list:
-			log = "<b>" + _("Salary Slip Created") + "</b>\
-			<br><br>%s" % '<br>'.join(self.format_as_links(ss_list))
-		return log
+        def create_log(self, ss_list):
+                log = "<p>" + _("No employee for the above selected criteria OR salary slip already created") + "</p>"
+                if ss_list:
+                        log = "<b>" + _("Salary Slip Created") + "</b>\
+                        <br><br>%s" % '<br>'.join(self.format_as_links(ss_list))
+                return log
 
-	def get_sal_slip_list(self):
-		"""
-			Returns list of salary slips based on selected criteria
-			which are not submitted
-		"""
-		cond = self.get_filter_condition()
-		ss_list = frappe.db.sql("""
-			select t1.name from `tabSalary Slip` t1
-			where t1.docstatus = 0 and month = %s and fiscal_year = %s %s
-		""" % ('%s', '%s', cond), (self.month, self.fiscal_year))
-		return ss_list
+        def get_sal_slip_list(self):
+                """
+                        Returns list of salary slips based on selected criteria
+                        which are not submitted
+                """
+                cond = self.get_filter_condition()
+                ss_list = frappe.db.sql("""
+                        select t1.name from `tabSalary Slip` t1
+                        where t1.docstatus = 0 and month = %s and fiscal_year = %s %s
+                """ % ('%s', '%s', cond), (self.month, self.fiscal_year))
+                return ss_list
 
-	def submit_salary_slip(self):
-		"""
-			Submit all salary slips based on selected criteria
-		"""
-		self.check_permission('write')
+        def submit_salary_slip(self):
+                """
+                        Submit all salary slips based on selected criteria
+                """
+                self.check_permission('write')
                 self.progress=""
-		ss_list = self.get_sal_slip_list()
+                ss_list = self.get_sal_slip_list()
 
-		not_submitted_ss = []
-		for ss in ss_list:
-			ss_obj = frappe.get_doc("Salary Slip",ss[0])
-			try:
-				ss_obj.submit()
-			except Exception,e:
-				not_submitted_ss.append(ss[0])
-				frappe.msgprint(str(e))
-				continue
+                not_submitted_ss = []
+                for ss in ss_list:
+                        ss_obj = frappe.get_doc("Salary Slip",ss[0])
+                        try:
+                                ss_obj.submit()
+                        except Exception,e:
+                                not_submitted_ss.append(ss[0])
+                                frappe.msgprint(str(e))
+                                continue
 
                 frappe.msgprint(_("Salary slips submitted successfully."))
-		return self.create_submit_log(ss_list, not_submitted_ss)
+                return self.create_submit_log(ss_list, not_submitted_ss)
         
-	def create_submit_log(self, all_ss, not_submitted_ss):
-		log = ''
-		if not all_ss:
-			log = "No salary slip found to submit for the above selected criteria"
-		else:
-			all_ss = [d[0] for d in all_ss]
+        def create_submit_log(self, all_ss, not_submitted_ss):
+                log = ''
+                if not all_ss:
+                        log = "No salary slip found to submit for the above selected criteria"
+                else:
+                        all_ss = [d[0] for d in all_ss]
 
-		submitted_ss = self.format_as_links(list(set(all_ss) - set(not_submitted_ss)))
-		if submitted_ss:
-			log = """
-				<b>Salary Slips Submitted:</b> <br><br>%s
-				""" % ('<br>'.join(submitted_ss))
+                submitted_ss = self.format_as_links(list(set(all_ss) - set(not_submitted_ss)))
+                if submitted_ss:
+                        log = """
+                                <b>Salary Slips Submitted:</b> <br><br>%s
+                                """ % ('<br>'.join(submitted_ss))
 
-		if not_submitted_ss:
-			log += """
-				<b>Not Submitted Salary Slips: </b>\
-				<br><br> %s <br><br> \
-				Reason: <br>\
-				May be company email id specified in employee master is not valid. <br> \
-				Please mention correct email id in employee master or if you don't want to \
-				send mail, uncheck 'Send Email' checkbox. <br>\
-				Then try to submit Salary Slip again.
-			"""% ('<br>'.join(not_submitted_ss))
-		return log
+                if not_submitted_ss:
+                        log += """
+                                <b>Not Submitted Salary Slips: </b>\
+                                <br><br> %s <br><br> \
+                                Reason: <br>\
+                                May be company email id specified in employee master is not valid. <br> \
+                                Please mention correct email id in employee master or if you don't want to \
+                                send mail, uncheck 'Send Email' checkbox. <br>\
+                                Then try to submit Salary Slip again.
+                        """% ('<br>'.join(not_submitted_ss))
+                return log
 
-	def format_as_links(self, ss_list):
-		return ['<a href="#Form/Salary Slip/{0}">{1}</a>'.format(s, frappe.db.get_value("Salary Slip", s, "employee_name")) for s in ss_list]
+        def format_as_links(self, ss_list):
+                return ['<a href="#Form/Salary Slip/{0}">{1}</a>'.format(s, frappe.db.get_value("Salary Slip", s, "employee_name")) for s in ss_list]
 
 
-	def get_total_salary(self):
-		"""
-			Get total salary amount from submitted salary slip based on selected criteria
-		"""
-		cond = self.get_filter_condition()
-		tot = frappe.db.sql("""
-			select sum(rounded_total) from `tabSalary Slip` t1
-			where t1.docstatus = 1 and month = %s and fiscal_year = %s %s
-		""" % ('%s', '%s', cond), (self.month, self.fiscal_year))
+        def get_total_salary(self):
+                """
+                        Get total salary amount from submitted salary slip based on selected criteria
+                """
+                cond = self.get_filter_condition()
+                tot = frappe.db.sql("""
+                        select sum(rounded_total) from `tabSalary Slip` t1
+                        where t1.docstatus = 1 and month = %s and fiscal_year = %s %s
+                """ % ('%s', '%s', cond), (self.month, self.fiscal_year))
 
-		return flt(tot[0][0])
+                return flt(tot[0][0])
 
         ##### Ver3.0.190304 Begins, Following code replaced by subsequent by SHIV
         '''
@@ -473,11 +473,10 @@ class ProcessPayroll(Document):
                         frappe.throw(_("No data found"),title="Posting failed")
         '''
 
-        def get_cc_wise_entries(self, salary_component_pf):
+        def get_employer_pf(self):
                 # Filters
                 cond = self.get_filter_condition()
-                
-                return frappe.db.sql("""
+                home = frappe.db.sql("""
                         select
                                 t1.cost_center             as cost_center,
                                 t1.business_activity       as business_activity,
@@ -491,7 +490,7 @@ class ProcessPayroll(Document):
                                         else ifnull(sc.is_remittable,0)
                                 end)                       as is_remittable,
                                 sc.gl_head                 as gl_head,
-                                sum(ifnull(sd.amount,0))   as amount,
+                                sum(ifnull(t1.employer_pf,0))   as amount,
                                 (case
                                         when ifnull(sc.make_party_entry,0) = 1 then 'Payable'
                                         else 'Other'
@@ -505,7 +504,7 @@ class ProcessPayroll(Document):
                                         else 'Other'
                                 end) as party
                          from
-                                `tabSalary Detail` sd,
+                               
                                 `tabSalary Slip` t1,
                                 `tabSalary Component` sc,
                                 `tabCompany` c
@@ -513,9 +512,7 @@ class ProcessPayroll(Document):
                           and t1.month       = '{1}'
                           and t1.docstatus   = 1
                           {2}
-                          and sd.parent      = t1.name
-                          and sd.salary_component = '{3}'
-                          and sc.name        = sd.salary_component
+                          and sc.name        = 'PF'
                           and c.name         = t1.company
                         group by 
                                 t1.cost_center,
@@ -527,7 +524,8 @@ class ProcessPayroll(Document):
                                 (case when ifnull(sc.make_party_entry,0) = 1 then 'Employee' else 'Other' end),
                                 (case when ifnull(sc.make_party_entry,0) = 1 then t1.employee else 'Other' end)
                         order by t1.cost_center, t1.business_activity, sc.type, sc.name
-                """.format(self.fiscal_year, self.month, cond, salary_component_pf),as_dict=1)
+                """.format(self.fiscal_year, self.month, cond),as_dict=1)
+                return home
         
         def get_account_rules(self):
                 """
@@ -615,7 +613,6 @@ class ProcessPayroll(Document):
                                 (case when ifnull(sc.make_party_entry,0) = 1 then t1.employee else 'Other' end)
                         order by t1.cost_center, t1.business_activity, sc.type, sc.name
                 """.format(self.fiscal_year, self.month, cond, default_business_activity),as_dict=1)
-
                 posting        = frappe._dict()
                 cc_wise_totals = frappe._dict()
                 tot_payable_amt= 0
@@ -638,12 +635,12 @@ class ProcessPayroll(Document):
                         if rec.is_remittable and rec.component_type == 'Deduction':
                                 remit_amount    = 0
                                 remit_gl_list   = [rec.gl_head,default_gpf_account] if rec.salary_component == salary_component_pf else [rec.gl_head]
-
                                 for r in remit_gl_list:
-                                        remit_amount += flt(rec.amount)
+                                        #remit_amount += flt(rec.amount) #temp 
                                         if r == default_gpf_account:
-                                                for i in self.get_cc_wise_entries(salary_component_pf):
-                                                      posting.setdefault(rec.salary_component,[]).append({
+                                                for i in self.get_employer_pf():
+                                                        remit_amount += flt(i.amount) #temp added
+                                                        posting.setdefault(rec.salary_component,[]).append({
                                                                 "account"       : r,
                                                                 "debit_in_account_currency" : flt(i.amount),
                                                                 "cost_center"   : i.cost_center,
@@ -653,7 +650,9 @@ class ProcessPayroll(Document):
                                                                 "party_type"     : i.party_type if i.party_type == "Employee" else "",
                                                                 "party"          : i.party if i.party_type == "Employee" else "" 
                                                         })
+                                                #employer_pf_amount += rec.amount #temp commented
                                         else:
+                                                remit_amount += flt(rec.amount) #temp added
                                                 posting.setdefault(rec.salary_component,[]).append({
                                                         "account"       : r,
                                                         "debit_in_account_currency" : flt(rec.amount),
@@ -664,7 +663,8 @@ class ProcessPayroll(Document):
                                                         "party_type"     : rec.party_type if rec.party_type == "Employee" else "",
                                                         "party"          : rec.party if rec.party_type == "Employee" else "" 
                                                 })
-                                        
+
+                              
                                 posting.setdefault(rec.salary_component,[]).append({
                                         "account"       : default_bank_account,
                                         "credit_in_account_currency" : flt(remit_amount),
@@ -745,31 +745,31 @@ class ProcessPayroll(Document):
                                 "company": self.company,
                                 "total_amount_in_words": money_in_words((tot_earnings-tot_deductions)),
                                 "accounts": accounts,
-				"branch": self.branch
+                                "branch": self.branch
                         })
-			ss.flags.ignore_permissions = 1 
+                        ss.flags.ignore_permissions = 1 
 
                         if (tot_deductions or tot_earnings):
                                 ss.insert()
                                 #ss.submit()
                         ss_list.append('Direct posting Journal Entry...')
                 else:
-			default_bank_account = frappe.db.get_value("Branch", self.branch,"expense_bank_account")
-			if not default_bank_account:
-				frappe.throw("Setup Expense bank Account in Branch " + str(self.branch)) 
-			new_accounts = []
-			for a in accounts:
-				if 'credit_in_account_currency' in a:
-					amount = a['credit_in_account_currency']
-				else:
-					amount = a['debit_in_account_currency']
-				new_accounts.append({"account": default_bank_account,
-						"credit_in_account_currency": flt(amount),
-						"cost_center": str(a['cost_center']),
-						"party_check": 0})                        
+                        default_bank_account = frappe.db.get_value("Branch", self.branch,"expense_bank_account")
+                        if not default_bank_account:
+                                frappe.throw("Setup Expense bank Account in Branch " + str(self.branch)) 
+                        new_accounts = []
+                        for a in accounts:
+                                if 'credit_in_account_currency' in a:
+                                        amount = a['credit_in_account_currency']
+                                else:
+                                        amount = a['debit_in_account_currency']
+                                new_accounts.append({"account": default_bank_account,
+                                                "credit_in_account_currency": flt(amount),
+                                                "cost_center": str(a['cost_center']),
+                                                "party_check": 0})                        
                        
-			for a in new_accounts:
-				accounts.append(a)
+                        for a in new_accounts:
+                                accounts.append(a)
  
                         ss = frappe.get_doc({
                                 "doctype": "Journal Entry",
@@ -782,45 +782,42 @@ class ProcessPayroll(Document):
                                 "company": self.company,
                                 "total_amount_in_words": money_in_words((tot_earnings-tot_deductions)),
                                 "accounts": accounts,
-				"branch": self.branch
+                                "branch": self.branch
                         })
-			ss.flags.ignore_permissions = 1 
+                        ss.flags.ignore_permissions = 1 
 
                         if (tot_deductions or tot_earnings):
                                 ss.insert()
                                 #ss.submit()
                         ss_list.append('Direct posting Journal Entry...')
-                       
+        
         def make_journal_entry1(self, salary_account = None):
-		if not self.branch:
-			return "<a style='color: red; font-weight: bold; '>Processing Branch is Mandatory!</a>"
+                if not self.branch:
+                        return "<a style='color: red; font-weight: bold; '>Processing Branch is Mandatory!</a>"
                 self.get_account_rules()
-		return "<a style='color: green; font-weight: bold; '>Salary Journal Entry has been posted to Accounts.</a>"
+                return "<a style='color: green; font-weight: bold; '> .</a>"
 
-	def make_journal_entry(self, salary_account = None):
-		amount = self.get_total_salary()
-		default_bank_account = frappe.db.get_value("Company", self.company,
-			"default_bank_account")
+        def make_journal_entry(self, salary_account = None):
+                amount = self.get_total_salary()
+                default_bank_account = frappe.db.get_value("Company", self.company,
+                        "default_bank_account")
 
-		journal_entry = frappe.new_doc('Journal Entry')
-		journal_entry.flags.ignore_permissions = 1 
-		journal_entry.voucher_type = 'Bank Entry'
-		journal_entry.user_remark = _('Payment of salary for the month {0} and year {1}').format(self.month,
-			self.fiscal_year)
-		journal_entry.fiscal_year = self.fiscal_year
-		journal_entry.company = self.company
-		journal_entry.posting_date = nowdate()
-		journal_entry.set("accounts", [
-			{
-				"account": salary_account,
-				"debit_in_account_currency": amount
-			},
-			{
-				"account": default_bank_account,
-				"credit_in_account_currency": amount
-			},
-		])
-		return journal_entry.as_dict()
-	
-		
-
+                journal_entry = frappe.new_doc('Journal Entry')
+                journal_entry.flags.ignore_permissions = 1 
+                journal_entry.voucher_type = 'Bank Entry'
+                journal_entry.user_remark = _('Payment of salary for the month {0} and year {1}').format(self.month,
+                        self.fiscal_year)
+                journal_entry.fiscal_year = self.fiscal_year
+                journal_entry.company = self.company
+                journal_entry.posting_date = nowdate()
+                journal_entry.set("accounts", [
+                        {
+                                "account": salary_account,
+                                "debit_in_account_currency": amount
+                        },
+                        {
+                                "account": default_bank_account,
+                                "credit_in_account_currency": amount
+                        },
+                ])
+                return journal_entry.as_dict()

@@ -5,15 +5,7 @@ def get_data():
 		{
 			"label": _("Transaction"),
 			"items": [
-				{
-					"type": "doctype",
-					"name": "Marking List",
-				},
-				{
-					"type": "doctype",
-					"name": "Royalty Payment",
-				},
-                                {
+                {
 					"type": "doctype",
 					"name": "Production",
 				},
@@ -29,18 +21,6 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Adhoc Production",
-				},
-				{
-					"type": "doctype",
-					"name": "Timber Class",
-				},
-				{
-					"type": "doctype",
-					"name": "Timber Species",
-				},
-				{
-					"type": "doctype",
 					"name": "Item",
 					"label": "Material"
 				},
@@ -52,19 +32,7 @@ def get_data():
 			"items": [
 				{
 					"type": "doctype",
-					"name": "Production Group",
-				},
-				{
-					"type": "doctype",
-					"name": "Production Settings",
-				},
-				{
-					"type": "doctype",
 					"name": "Cost of Production",
-				},
-				{
-					"type": "doctype",
-					"name": "Adhoc Royalty Setting",
 				},
 				{
 					"type": "doctype",

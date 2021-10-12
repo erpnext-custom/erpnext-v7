@@ -24,15 +24,24 @@ def execute(filters=None):
 	
 def get_columns(data):
 	columns = [
-		_("Employee") + ":Link/Employee:100", _("Employee Name") + "::140",
-                _("Transaction No") + ":Link/Leave Encashment:140", _("Date") + "::80", 
+		_("Employee") + ":Link/Employee:100",
+                _("Employee Name") + "::140",
+                _("Transaction No") + ":Link/Leave Encashment:140", 
+                _("Date") + "::80", 
                 _("TPN No") + ":Link/Leave Encashment:80",
                 _("Accounts Entry") + ":Link/Journal Entry:120",
-                _("Gross Amount") + ":Currency:140", _("Tax Amount") + ":Currency:140", _("Net Amount") + ":Currency:140",
+                _("Gross Amount") + ":Currency:140", 
+                _("Tax Amount") + ":Currency:140", 
+                _("Net Amount") + ":Currency:140",
                 _("Remarks") + "::140",
-                _("Balance Before") + "::80", _("Days Encashed") + "::80", _("Balance After") + "::80",
-                _("Company") + ":Link/Company:120", _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120",
-                _("Division") + ":Link/Division:120", _("Section") + ":Link/Section:120",
+                _("Balance Before") + "::80", 
+                _("Days Encashed") + "::80", 
+                _("Balance After") + "::80",
+                _("Company") + ":Link/Company:120", 
+                _("Branch") + ":Link/Branch:120", 
+                _("Department") + ":Link/Department:120",
+                _("Division") + ":Link/Division:120", 
+                _("Section") + ":Link/Section:120",
 	]
 	
 	return columns
@@ -44,13 +53,34 @@ def get_data(filters):
 	enc_gl = frappe.db.get_value(doctype="HR Accounts Settings",fieldname="leave_encashment_account")
 	tax_gl = frappe.db.get_value(doctype="HR Accounts Settings",fieldname="salary_tax_account")
 
+        # data = frappe.db.sql("""
+        #         select t1.employee, t1.employee_name, t1.name, min(t1.application_date) as transactiondt,
+        #         min(t3.tpn_number) as tpn_number, t2.parent voucherno,
+        #         sum(case when t2.account = '%(enc_gl)s' then ifnull(debit_in_account_currency,0) else 0 end) grossamount,
+        #         sum(case when t2.account = '%(tax_gl)s' then ifnull(credit_in_account_currency,0) else 0 end) taxamount,
+        #         sum(case
+        #                 when t2.account = '%(enc_gl)s' then ifnull(debit_in_account_currency,0)
+        #                 when t2.account = '%(tax_gl)s' then -1*ifnull(credit_in_account_currency,0)
+        #                 else 0 end) as netamount,
+        #         t1.remarks,
+        #         min(t1.balance_before) as balance_before, min(t1.encashed_days) as encashed_days, min(t1.balance_after) as balance_after,
+        #         t3.company, t1.branch, t1.department, t1.division, t1.section
+        #         from `tabLeave Encashment` t1
+        #         left join `tabJournal Entry Account` t2
+        #         on t2.reference_name = t1.name
+        #         and t2.reference_type = 'Leave Encashment'
+        #         left join `tabEmployee` t3
+        #         on t3.employee = t1.employee                
+        #         where t1.docstatus = 1 %(cond)s
+        #         group by t1.employee, t1.employee_name, t1.name, t2.parent, t1.remarks
+        #         """ % ({"enc_gl": enc_gl, "tax_gl": tax_gl, "cond": conditions}), filters)
         data = frappe.db.sql("""
                 select t1.employee, t1.employee_name, t1.name, min(t1.application_date) as transactiondt,
                 min(t3.tpn_number) as tpn_number, t2.parent voucherno,
-                sum(case when t2.account = '%(enc_gl)s' then ifnull(debit_in_account_currency,0) else 0 end) grossamount,
+                sum(case when t2.reference_type = 'Leave Encashment' then ifnull(debit_in_account_currency,0) else 0 end) grossamount,
                 sum(case when t2.account = '%(tax_gl)s' then ifnull(credit_in_account_currency,0) else 0 end) taxamount,
                 sum(case
-                        when t2.account = '%(enc_gl)s' then ifnull(debit_in_account_currency,0)
+                        when t2.reference_type = 'Leave Encashment' AND t2.debit_in_account_currency != 0 then ifnull(debit_in_account_currency,0)
                         when t2.account = '%(tax_gl)s' then -1*ifnull(credit_in_account_currency,0)
                         else 0 end) as netamount,
                 t1.remarks,
@@ -67,7 +97,7 @@ def get_data(filters):
                 """ % ({"enc_gl": enc_gl, "tax_gl": tax_gl, "cond": conditions}), filters)
 		
 	if not data:
-		msgprint(_("No Data Found for month: "), raise_exception=1)
+	        msgprint(_("No Data Found for month: "), raise_exception=1)
 	
 	return data
 	

@@ -79,26 +79,17 @@ class EmployeeBenefits(Document):
 		emp = frappe.get_doc("Employee", self.employee)
 		emp.flags.ignore_permissions = 1
 		for a in self.items:
-			emp.append("separation_benefits", { 
-					"s_b_type": a.benefit_type,
-					"s_b_currency": a.amount,
-					"s_remarks": self.description,
-					"ref_doc": self.name
-				})
+				emp.append("separation_benefits", {
+								"s_b_type": a.benefit_type,
+								"s_b_currency": a.amount,
+								"s_remarks": self.description,
+								"ref_doc": self.name
+						})
 		if self.purpose == "Separation":
-			emp.relieving_date = self.separation_date
-                	emp.reason_for_resignation = self.reason_for_resignation
-                        emp.status = "Left"
-
-		'''for a in self.items:
-			doc = frappe.new_doc("Separation Benefits")
-			doc.parent = self.employee
-			doc.parentfield = "separation_benefits"
-			doc.parenttype = "Employee"
-			doc.s_b_type = a.benefit_type
-			doc.s_b_currency = a.amount
-			doc.save()'''
-		emp.save()	
+				emp.relieving_date = self.separation_date
+				emp.reason_for_resignation = self.reason_for_resignation
+				emp.status = "Left"
+		emp.save()
 
 	def on_cancel(self):
 		self.check_journal()

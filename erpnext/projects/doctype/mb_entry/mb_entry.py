@@ -42,16 +42,17 @@ class MBEntry(Document):
                 
         def default_validations(self):
                 for rec in self.mb_entry_boq:
-                        entry_amount = flt(rec.entry_quantity)*flt(rec.entry_rate)
+                        # entry_amount = round(rec.entry_quantity, 2)*round(rec.entry_rate, 2)
                         if flt(rec.entry_quantity) > flt(rec.act_quantity):
                                 frappe.throw(_("Row{0}: Entry Quantity cannot be greater than Balance Quantity").format(rec.idx))
                         elif flt(rec.entry_amount) > flt(rec.act_amount):
                                 frappe.throw(_("Row{0}: Entry Amount cannot be greater than Balance Amount").format(rec.idx))
                         elif flt(rec.entry_quantity) < 0 or flt(rec.entry_amount) < 0:
                                 frappe.throw(_("Row{0}: Value cannot be in negative").format(rec.idx))
-                        else:
-                                if self.boq_type != "Milestone Based" and flt(rec.entry_amount) != flt(entry_amount):
-                                        frappe.throw(_("Row{0}: Entry Amount should be {1}").format(rec.idx, flt(entry_amount)))
+                        # else:
+                                # if self.boq_type != "Milestone Based" and rec.entry_amount != round(entry_amount,2):
+                                #         frappe.throw(_("Row{0}: Entry Amount should be {1}").format(rec.idx, flt(entry_amount)))
+
 
         def set_defaults(self):
                 if self.project:

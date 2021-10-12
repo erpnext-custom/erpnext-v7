@@ -1,6 +1,9 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
-
+# ------------------------------------------------------------
+# Date				Description							Author
+# Oct-31-2020			Added a unit filter and field					Phuntsho
+# ------------------------------------------------------------
 from __future__ import unicode_literals
 import frappe
 from frappe.utils import cstr, cint, getdate
@@ -13,7 +16,7 @@ def execute(filters=None):
 	conditions, filters = get_conditions(filters)
 	columns = get_columns(filters)
 	att_map = get_attendance_list(conditions, filters)
-	emp_map = get_employee_details(filters.employee_type)
+	emp_map = get_employee_details(filters.employee_type, filters)
 
 	data = []
 	for emp in sorted(att_map):
@@ -21,7 +24,7 @@ def execute(filters=None):
 		if not emp_det:
 			continue
 
-		row = [emp_det.person_name, emp_det.id_card]
+		row = [emp_det.person_name, emp_det.id_card, emp_det.unit]
 
 		total_p = total_a = 0.0
 		for day in range(filters["total_days_in_month"]):
@@ -41,7 +44,7 @@ def execute(filters=None):
 
 def get_columns(filters):
 	columns = [
-		_("Name") + "::140", _("CID")+ "::120"
+		_("Name") + "::140", _("CID")+ "::120", _("Unit")+"::100"
 	]
 
 	for day in range(filters["total_days_in_month"]):
@@ -75,11 +78,13 @@ def get_conditions(filters):
 
 	return conditions, filters
 
-def get_employee_details(employee_type):
+
+def get_employee_details(employee_type,filters):
 	emp_map = frappe._dict()
 	if employee_type == "Muster Roll Employee":
-		for d in frappe.db.sql("""select name, person_name, id_card
-			from `tabMuster Roll Employee`""", as_dict=1):
+		# added unit by phuntsho on oct 30
+		for d in frappe.db.sql("""select name, person_name, id_card, unit
+			from `tabMuster Roll Employee` where unit = '{}'""".format(filters.get("unit")), as_dict=1):
 			emp_map.setdefault(d.name, d)
 	elif employee_type == "DES Employee":
 		for d in frappe.db.sql("""select name, person_name, id_card

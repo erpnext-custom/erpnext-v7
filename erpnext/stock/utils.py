@@ -141,6 +141,7 @@ def get_incoming_rate(args):
 			in_rate = get_fifo_rate(previous_stock_queue, args.get("qty") or 0) if previous_stock_queue else 0
 		elif valuation_method == 'Moving Average':
 			in_rate = previous_sle.get('valuation_rate') or 0
+	# frappe.throw(str(in_rate))
 
 	return in_rate
 

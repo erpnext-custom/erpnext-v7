@@ -46,6 +46,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Tenant Section",
 				},
+				{
+					"type": "doctype",
+					"name": "Dungkhag",
+				},
 				
 			]
 		},
@@ -87,15 +91,15 @@ def get_data():
 					"type": "doctype",
 					"name": "Rental Payment",
 				},
-				{
-					"type": "doctype",
-					"name": "Rental Advance Adjustment"
-				}
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Rental Advance Adjustment"
+				# }
 				
 			]
 		},
 		 {
-                        "label": _("Real Estate Management"),
+                        "label": _("Real Estate Management Services"),
                         "icon": "icon-star",
                         "items": [
                                 {
@@ -106,6 +110,15 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Technical Sanction",
                                 },
+								 {
+                                        "type": "doctype",
+                                        "name": "Revised Technical Sanction",
+                                },
+								{
+                                        "type": "doctype",
+                                        "name": "Technical Sanction Bill",
+										"label": "Prepare Bill"
+                                },
                                 {
                                         "type": "doctype",
                                         "name": "Rate Analysis",
@@ -114,10 +127,14 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Service",
                                 },
+                                {
+                                        "type": "doctype",
+                                        "name": "Technical Sanction Advance",
+                                },
 				{
 					"type": "doctype",
 					"name": "Upload Service List",
-					"Description" : "Upload Bulk Service List"
+					"description": "Upload Bulk Service List"
 				},
 
                         ]
@@ -133,6 +150,13 @@ def get_data():
                                         "doctype": "Rental Information",
                                         "Label": _("Rental Register")
                                 },
+								# {
+                                #         "type": "report",
+                                #         "is_query_report": True,
+                                #         "name": "Rental Revenue",
+                                #         "doctype": "Rental Revenue Information",
+                                #         "Label": _("Rental Revenue")
+                                # },
 				{
                                         "type": "report",
                                         "is_query_report": True,
@@ -143,12 +167,24 @@ def get_data():
 								{
                                         "type": "report",
                                         "is_query_report": True,
-                                        "name": "Monthly Rental Collection",
+                                        "name": "Tenant Summary",
+                                        "doctype": "Tenant Information",
+                                        "Label": _("Tenant Summary")
+                                },
+								{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Monthly Rental Collection and Dues",
                                         "doctype": "Rental Payment",
                                         "Label": _("Rental Payment")
-                                }
+                                },
 
-
+				{
+                                        "type": "report",
+                                        "name": "Accounts Receivable",
+                                        "doctype": "Sales Invoice",
+                                        "is_query_report": True
+                                },
 			]
 		},
 		   {
@@ -159,7 +195,10 @@ def get_data():
                                         "type": "doctype",
                                         "name": "Tenant Updation Tool",
                                 },
-
+								{
+									"type": "doctype",
+									"name": "Draft ID"
+								},
                                  {
                                         "type": "doctype",
                                         "name": "Rental Bill Cancelation Tool",

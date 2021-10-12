@@ -7,8 +7,8 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2018-08-21 17:41:00.599464", 
- "modified_by": "Administrator", 
+ "modified": "2019-04-08 16:45:29.354239", 
+ "modified_by": "kinzang.namgyal@cdcl.bt", 
  "module": "Assets", 
  "name": "Property Plant and Equipment", 
  "owner": "Administrator", 
@@ -24,6 +24,15 @@
   }, 
   {
    "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Auditor"
+  }, 
+  {
+   "role": "Asset User"
+  }, 
+  {
+   "role": "CPBD"
   }
  ]
 }

@@ -115,8 +115,10 @@ frappe.ui.form.on('Material Request', {
 			frm.set_df_property("material_request_type", "read_only", 0)
 		}
 	},
-	branch: function(frm){
-		
+	creation_date: function (frm) {
+		console.log("creation date: ", frm.doc.creation_date)
+		frm.doc.transaction_date = frm.doc.creation_date
+		refresh_field("transaction_date")
 	},
 });
 
@@ -364,22 +366,23 @@ cur_frm.cscript['Unstop Material Request'] = function(){
 	});
 };
 
-
+// commented out by phuntsho on march 23 2021. 
+// Clients have requested for this to not be autofilled. They want to empty but mandatory. 
 //custom Scripts
-frappe.ui.form.on("Material Request Item", "item_code", function(frm, cdt, cdn) {
-   var item = frappe.get_doc(cdt, cdn);
-   frappe.call({
-        method: "erpnext.buying.doctype.purchase_order.purchase_order.get_budget_account",
-        args: {
-            "item_code": item.item_code
-        },
-        callback: function(r)  {
-             if(r.message) {
-                   frappe.model.set_value(cdt, cdn, "budget_account", r.message)
-             }
-        }
-   })
-})
+// frappe.ui.form.on("Material Request Item", "item_code", function(frm, cdt, cdn) {
+//    var item = frappe.get_doc(cdt, cdn);
+//    frappe.call({
+//         method: "erpnext.buying.doctype.purchase_order.purchase_order.get_budget_account",
+//         args: {
+//             "item_code": item.item_code
+//         },
+//         callback: function(r)  {
+//              if(r.message) {
+//                    frappe.model.set_value(cdt, cdn, "budget_account", r.message)
+//              }
+//         }
+//    })
+// })
 
 //cost Center
 /*cur_frm.fields_dict.items.grid.get_field("cost_center").get_query = function(doc) {

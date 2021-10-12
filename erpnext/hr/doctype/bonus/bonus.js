@@ -94,7 +94,17 @@ frappe.ui.form.on("Bonus Details", {
 	"amount": function(frm, cdt, cdn) {
 		calculate_total(frm,cdt,cdn)
 	},
+	"no_of_months": function(frm) {
+                month_frequency(frm);
+                }
 })
+
+var month_frequency = function(frm) {
+        var child =frm.doc.items || [];
+        for(var id in child) {
+                frappe.model.set_value("Bonus Details", child[id].name, "noof_months_granted", frm.doc.no_of_months);
+        }
+        }
 
 function calculate_total(frm, cdt, cdn) {
 	var item = locals[cdt][cdn]

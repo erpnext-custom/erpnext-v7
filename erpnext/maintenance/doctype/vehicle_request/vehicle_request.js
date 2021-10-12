@@ -35,10 +35,10 @@ cur_frm.fields_dict.equipment.get_query = function(doc) {
 }
 
 //Returns list of Active Employee
-cur_frm.fields_dict['items'].grid.get_field('employee').get_query = function(frm, cdt, cdn) {
+/*cur_frm.fields_dict['items'].grid.get_field('employee').get_query = function(frm, cdt, cdn) {
         var d = locals[cdt][cdn];
         return {
                 query: "erpnext.controllers.queries.employee_query",
 		filters: {'status': 'Active'}
         }
-}
+}*/

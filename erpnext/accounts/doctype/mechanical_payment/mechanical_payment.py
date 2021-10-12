@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import getdate, cstr, flt, fmt_money, formatdate, nowdate
+from frappe.utils import getdate, cint, cstr, flt, fmt_money, formatdate, nowdate
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import generate_receipt_no, check_future_date, get_branch_cc
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
@@ -39,7 +39,10 @@ class MechanicalPayment(AccountsController):
 		if not self.receivable_amount > 0 and self.payment_for not in ["Transporter Payment","Maintenance Payment"] and not self.payable_amount:
 			frappe.throw("Amount should be greater than 0")	
 		to_remove = []
-		total = flt(self.receivable_amount)
+		if self.payment_for != "Job Card": 
+			total = flt(self.receivable_amount)
+		if self.payment_for == "Job Card": 
+			total = flt(self.payable_amount)
 		total_actual = 0
 		for d in self.items:
 			allocated = 0
@@ -84,7 +87,8 @@ class MechanicalPayment(AccountsController):
 
 			# Retrieve Default Account for GL
 			self.maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "repair_and_maintenance_expense_account")
-			self.expense_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
+			if not self.expense_account:
+				self.expense_account = frappe.db.get_value("Branch", self.branch, "expense_bank_account")
 
 	def on_submit(self):
 		self.make_gl_entry()
@@ -128,7 +132,7 @@ class MechanicalPayment(AccountsController):
 		
 		if self.payment_for == "Maintenance Payment":
 			for a in self.maintenance_payment_item:
-				doc= frappe.get_doc("Technical Sanction", a.technical_sanction)
+				doc= frappe.get_doc("Technical Sanction Bill", a.technical_sanction)
 			if cancel:
 				doc.db_set("maintenance_payment","")
 			else:
@@ -337,6 +341,21 @@ class MechanicalPayment(AccountsController):
 		self.receivable_amount = total
 		self.actual_amount = total
 
+@frappe.whitelist()
+def get_tds_account(percent):
+	if percent:
+		if cint(percent) == 2:
+			field = "tds_2_account"
+		elif cint(percent) == 3:
+			field = "tds_3_account"
+		elif cint(percent) == 5:
+			field = "tds_5_account"
+		elif cint(percent) == 10:
+			field = "tds_10_account"
+		else:
+			frappe.throw(
+				"Set TDS Accounts in Accounts Settings and try again")
+		return frappe.db.get_single_value("Accounts Settings", field)
 
 
 

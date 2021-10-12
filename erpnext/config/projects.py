@@ -35,7 +35,7 @@ def get_data():
                                 {
 					"type": "doctype",
 					"name": "MB Entry",
-                                        "label": "Measurement Book Entries",
+                    "label": "Measurement Book Entries",
 					"description": _("Measurement Book Entries."),
 				},
 				{
@@ -106,6 +106,12 @@ def get_data():
 					"name": "Process MR Payment",
 					"label": "Process Payment for MR",
 					"description": _("Process Payments for Project Muster Roll"),
+				},
+				{
+					"type": "doctype",
+					"name": "Project Overtime Tool",
+					"label": "Daily Overtime Entry for GEP and MR",
+					"description": _("Daily Overtime Entry for GEP and MR"),
 				},
 			]
 		},

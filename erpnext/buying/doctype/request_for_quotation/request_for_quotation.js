@@ -5,6 +5,7 @@
 {% include 'erpnext/buying/doctype/purchase_common/purchase_common.js' %};
 
 cur_frm.add_fetch('contact', 'email_id', 'email_id')
+cur_frm.add_fetch('item_code', 'stock_uom', 'uom')
 
 frappe.ui.form.on("Request for Quotation",{
 	setup: function(frm) {
@@ -16,10 +17,12 @@ frappe.ui.form.on("Request for Quotation",{
 		}
 
 		frm.get_field('items').grid.editable_fields = [
-			{fieldname: 'item_code', columns: 3},
+			{fieldname: 'item_code', columns: 2},
 			{fieldname: 'qty', columns: 2},
+			{fieldname: 'rate', columns: 2}, //added by Jai, 10/09/21
+			{fieldname: 'uom', columns: 2}, //added by Jai, 10/09/21
 			{fieldname: 'schedule_date', columns: 2},
-			{fieldname: 'warehouse', columns: 3},
+			// {fieldname: 'warehouse', columns: 3},
 		];
 
 		frm.get_field('suppliers').grid.editable_fields = [
@@ -156,7 +159,14 @@ erpnext.buying.RequestforQuotationController = erpnext.buying.BuyingController.e
 
 	tc_name: function() {
 		this.get_terms();
-	}
+	},
+
+	make_supplier_quotation_rfq: function () {
+		frappe.model.open_mapped_doc({
+			method: "erpnext.buying.doctype.request_for_quotation.request_for_quotation.make_supplier_quotation_rfq",
+			frm: cur_frm
+		});
+	},
 });
 
 

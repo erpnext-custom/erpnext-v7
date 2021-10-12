@@ -75,10 +75,10 @@ frappe.query_reports["Production Progress Report"] = {
 			"reqd": 1
 		},
 		{
-			"fieldname": "production_group",
-			"label": ("Production Group"),
+			"fieldname": "item",
+			"label": ("Material"),
 			"fieldtype": "Link",
- 			"options": "Production Group",
+ 			"options": "Item",
 			"reqd": 1
 		},
 		{

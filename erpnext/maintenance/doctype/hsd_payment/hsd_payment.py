@@ -14,6 +14,8 @@ class HSDPayment(Document):
 		check_future_date(self.posting_date)
 		self.validate_allocated_amount()
 		self.clearance_date = None
+		if (self.docstatus == 0 and self.workflow_state == "Payment Completed"):
+			self.workflow_state = "Waiting Approval"
 
 	def validate_allocated_amount(self):
 		if not self.amount > 0:
@@ -38,6 +40,8 @@ class HSDPayment(Document):
 		[self.remove(d) for d in to_remove]
 
 	def on_submit(self):
+		#if not self.fuel_book_attachment:
+		#	frappe.throw("Please attach Fuel Book")
 		self.adjust_outstanding()
 		self.update_general_ledger()
 

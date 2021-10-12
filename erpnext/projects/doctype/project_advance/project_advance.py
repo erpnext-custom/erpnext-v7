@@ -125,7 +125,12 @@ class ProjectAdvance(Document):
                 default_ba =  get_default_ba()
                 # Fetching Advance GL
                 adv_gl_field = "project_advance_account" if self.party_type == "Customer" else "advance_account_supplier" if self.party_type == "Supplier" else "advance_account_internal"
-                adv_gl = frappe.db.get_value("Projects Accounts Settings",fieldname=adv_gl_field)                       
+                adv_gl = frappe.db.get_value("Projects Accounts Settings",fieldname=adv_gl_field)  
+
+                # added by phuntsho on june 24th, 2021
+                if self.advance_account:
+                        adv_gl = self.advance_account
+
                 if not adv_gl:
                         frappe.throw(_("Advance GL is not defined in Projects Accounts Settings."))
                 adv_gl_det = frappe.db.get_value(doctype="Account", filters=adv_gl, fieldname=["account_type","is_an_advance_account"], as_dict=True)

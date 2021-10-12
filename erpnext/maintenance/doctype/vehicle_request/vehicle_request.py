@@ -28,7 +28,7 @@ class VehicleRequest(Document):
 	def on_submit(self):
 		self.check_if_free()
 		if not self.r_status:
-			frappe.throw(" Approval Status is Mandiatory ")
+                        frappe.throw(" Approval Status is Mandiatory ")
 		if self.r_status == "Approved":
 			self.update_reservation_entry()
 		if self.r_status == "Rejected" and self.rejection_reason == None:
@@ -92,11 +92,11 @@ class VehicleRequest(Document):
 		subject = "Vehicle Request"
 		message = "Your Vehicle Request <b> '{0}' </b> has been '{1}'".format(self.name, self.r_status)
 		if self.r_status == 'Milage Claim':
-			message = "Your Vehicle Request <b> '{0}' </b> has been Approved for Milage Claim".format(self.name
-)
+			message = "Your Vehicle Request <b> '{0}' </b> has been Approved for Milage Claim".format(self.name)
+
 		frappe.msgprint("{0}".format(message))
-		'''try:
+		try:
 			frappe.sendmail(recipients=email, sender=None, subject=subject, message=message)
 		except:
-			pass'''
+			pass
 

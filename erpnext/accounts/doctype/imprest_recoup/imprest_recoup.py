@@ -34,9 +34,10 @@ class ImprestRecoup(AccountsController):
 		if self.clearance_date:
 			frappe.throw("Already done bank reconciliation.")
 		
-                for t in frappe.get_all("Imprest Receipt", ["name"], {"name": self.imprest_receipt, "docstatus":1}):
-                        msg = '<b>Reference# : <a href="#Form/Imprest Receipt/{0}">{0}</a></b>'.format(t.name)
-                        frappe.throw(_("You need to cancel dependent Imprest Receipt entry first.<br>{0}").format(msg),title="Invalid Operation")
+		if self.imprest_receipt:
+			for t in frappe.get_all("Imprest Receipt", ["name"], {"name": self.imprest_receipt, "docstatus":1}):
+				msg = '<b>Reference# : <a href="#Form/Imprest Receipt/{0}">{0}</a></b>'.format(t.name)
+				frappe.throw(_("You need to cancel dependent Imprest Receipt entry first.<br>{0}").format(msg),title="Invalid Operation")
                         
                 self.post_gl_entry()
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
@@ -271,3 +272,29 @@ class ImprestRecoup(AccountsController):
                         "imprest_recoup": self.name
                 })
                 je.save(ignore_permissions = True)
+
+
+# added by phuntsho on May 4th 2021. 
+# show all the particular root accounts of expense and capital work in progress
+# not needed with the new changes
+# @frappe.whitelist()
+# def get_accounts(doctype, txt, searchfield, start, page_len, filters):
+#         accounts = frappe.db.sql("""
+#                 SELECT 
+#                         name 
+#                 FROM 
+#                         `tabAccount` 
+#                 WHERE   
+#                         name LIKE '%{name}%' and
+#                         is_group = 0 and 
+#                         (parent_account in ('Capital Work in Progress - NHDCL') OR 
+#                         parent_account in (
+#                                 SELECT 
+#                                         name 
+#                                 FROM
+#                                         `tabAccount` 
+#                                 WHERE   
+                                        
+#                                         parent_account in (select name from `tabAccount` where parent_account = 'Expenses - NHDCL')))
+#                         """.format(name=txt))
+#         return accounts

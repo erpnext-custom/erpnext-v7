@@ -5,7 +5,8 @@ from __future__ import unicode_literals
 
 def get_notification_config():
 	return { "for_doctype":
-		{
+		{	
+			"Employee Benefits": {"docstatus": 0},
 			"Issue": {"status": "Open"},
 			"Warranty Claim": {"status": "Open"},
 			"Task": {"status": "Overdue", "is_group": 0},
@@ -25,7 +26,7 @@ def get_notification_config():
 			"Journal Entry": {"docstatus": 0},
 			"Sales Invoice": { "outstanding_amount": (">", 0), "docstatus": ("<", 2) },
 			"Purchase Invoice": {"docstatus": 0},
-			"Leave Application": {"status": "Open"},
+			"Leave Application": {"docstatus": 0},
 			"Expense Claim": {"approval_status": "Draft"},
 			"Job Applicant": {"status": "Open"},
 			"Delivery Note": {"docstatus": 0},
@@ -53,6 +54,11 @@ def get_notification_config():
 				"docstatus": 0,
 				"claim_status": ("not in", ("Rejected by HR", "Rejected by Supervisor"))
 			},
+			"Maintenance Application Form": {"docstatus" : 0},
+			"Technical Sanction": {"docstatus": 0},
+			"Technical Sanction Advance": {"docstatus": 0},
+			"Revised Technical Sanction": {"docstatus": 0},
+			"Technical Sanction Bill": {"docstatus": 0},
 			"Leave Encashment": {"docstatus": 0},
 			"Break Down Report": {"docstatus": 0},
 			"Job Card": {"docstatus": 0},

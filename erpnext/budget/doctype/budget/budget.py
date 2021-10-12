@@ -18,6 +18,7 @@ class Budget(Document):
 		self.name = make_autoname(self.cost_center + "/" + self.fiscal_year + "/.###")
 
 	def validate(self):
+		# frappe.msgprint("fiscal year: {}".format(self.fiscal_year))
 		self.validate_duplicate()
 		self.validate_accounts()
 		self.calculate_budget()
@@ -72,6 +73,7 @@ class Budget(Document):
 				acc.db_set("budget_amount", acc.budget_amount)
 
 def validate_expense_against_budget(args):
+
 	args = frappe._dict(args)
 	if args.against_voucher_type == 'Asset':
 		pass

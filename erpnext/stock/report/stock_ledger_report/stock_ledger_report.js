@@ -38,11 +38,11 @@ frappe.query_reports["Stock Ledger Report"] = {
 			"options": "Item"
 		},
 		{
-			"fieldname":"item_sub_group",
-			"label": __("Material Sub Group"),
-			"fieldtype": "Link",
-			"options": "Item Sub Group"
-		},
+                        "fieldname":"item_sub_group",
+                        "label": __("Material Sub Group"),
+                        "fieldtype": "Link",
+                        "options": "Item Sub Group"
+                },
 		{
 			"fieldname":"voucher_no",
 			"label": __("Voucher #"),

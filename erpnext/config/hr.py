@@ -53,11 +53,12 @@ def get_data():
                                         "description":_("SWS Application"),
                                         "label": _("SWS Application")
 				},
-				{
-                                        "type": "doctype",
+				{	
+					"type": "doctype",
                                         "name": "Vehicle Request",
-                                        "label": "Vehicle Request"
-                                },
+                                        "description":_("Vehicle Request"),
+                                        "label": _("Vehicle Request")
+				},
 			]
 		},
 		{
@@ -162,6 +163,11 @@ def get_data():
 					"name": "Leave Adjustment",
 					"label": _("Leave Adjustment Tool"),
 				},
+				{
+					"type": "doctype",
+					"name": "Merge CL To EL",
+					"label": _("Merge CL To EL"),
+				},
 			]
 		},
 		{
@@ -236,6 +242,12 @@ def get_data():
 					"name": "Leave Travel Concession",
                                         "label": _("Process LTC"),
 					"description": _("LTC process"),
+				},
+				{
+					"type": "doctype",
+					"name": "PBVA",
+                    "label": _("Process PBVA"),
+					"description": _("PBVA process"),
 				},
 				{
 					"type": "doctype",
@@ -487,13 +499,14 @@ def get_data():
                                         "name": "Salary Advance Report",
                                         "doctype": "Salary Advance"
                                 },
-								{
+                                {
 					"type": "report",
 					"is_query_report": True,
 					"name": "MR Payment",
 					"label": "MR Payment",
 					"doctype": "Process MR Payment"
 				},
+				
 			]
 		},
 	]

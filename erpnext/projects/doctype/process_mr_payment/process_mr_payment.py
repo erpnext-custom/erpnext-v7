@@ -27,9 +27,12 @@ class ProcessMRPayment(Document):
                                 self.duplicate_entry_check(a.employee, a.employee_type, a.idx)
                                 a.fiscal_year   = self.fiscal_year
                                 a.month         = self.month
-                                
-				a.total_ot_amount = flt(a.hourly_rate) * flt(a.number_of_hours)
-				a.total_wage = flt(a.daily_rate) * flt(a.number_of_days)
+                                if not a.lumpsum:
+				        a.total_ot_amount = flt(a.hourly_rate) * flt(a.number_of_hours)
+				        a.total_wage = flt(a.daily_rate) * flt(a.number_of_days)
+                                else:
+                                        a.total_wage = a.lumpsum
+                                        a.total_ot_amount = 0
 				
 				if a.employee_type == "DES Employee":
                                         salary = frappe.db.get_value("DES Employee", a.employee, "salary")
@@ -53,6 +56,7 @@ class ProcessMRPayment(Document):
 			self.total_overall_amount = total
 			if a.employee_type == "DES Employee":
 				self.total_health_amount = total_health
+                #frappe.msgprint("Reached here")
 
 	def validate_workflow(self):
 		# Verified By Supervisor
@@ -142,17 +146,19 @@ class ProcessMRPayment(Document):
 			query = "select 'DES Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabDES Employee` where status = 'Active'"
 		elif self.employee_type == "Muster Roll Employee":
                         #Added by cheten on 06-10-2020
-                        if not is_lumpsum:
-			        query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabMuster Roll Employee` where status = 'Active'"
-                        else:
-                                query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, lumpsum from `tabMuster Roll Employee` where status = 'Active'"
+                        #if not is_lumpsum:
+			query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, rate_per_day as daily_rate, rate_per_hour as hourly_rate from `tabMuster Roll Employee` where status = 'Active'"
+                        #else:
+                                #query = "select 'Muster Roll Employee' as employee_type, name as employee, person_name, id_card, lumpsum from `tabMuster Roll Employee` where status = 'Active'"
 		else:
 			frappe.throw("Select employee record first!")
 	
 		if not self.branch:
 			frappe.throw("Select branch first!")
 
-		query += " and branch = \'" + str(self.branch) + "\'"	
+		query += " and branch = \'" + str(self.branch) + "\'"
+                if self.unit:
+                        query += " and unit = \'" + str(self.unit) + "\'"        	
 			
 		entries = frappe.db.sql(query, as_dict=True)
 		if not entries:
@@ -419,7 +425,7 @@ class ProcessMRPayment(Document):
                         hjv.insert()
 
 @frappe.whitelist()
-def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, cost_center, branch, dn):
+def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, cost_center, branch, dn, unit):
         month = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].index(fiscal_month) + 1
         month = str(month) if cint(month) > 9 else str("0" + str(month))
 
@@ -472,35 +478,12 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         business_activity,
                                         rate_per_day,
                                         rate_per_hour,
-                                        salary
-                                from `tab{0}` as e
-                                where name = '{1}'
-                                and not exists(
-                                        select 1
-                                        from `tabMR Payment Item` i, `tabProcess MR Payment` m
-                                        where i.employee = e.name
-                                        and i.employee_type = '{0}'
-                                        and i.fiscal_year = '{2}'
-                                        and i.month = '{3}'
-                                        and m.docstatus in (0,1)
-                                        and i.parent != '{4}'
-                                        and m.name = i.parent
-                                        and m.cost_center = '{5}'
-                                )
-                        """.format(employee_type, i.employee, fiscal_year, fiscal_month, dn, cost_center), as_dict=True)
-                
-                else:
-                        rest = frappe.db.sql("""
-                                select
-                                        '{0}' as type,
-                                        name,
-                                        person_name,
-                                        id_card,
-                                        business_activity,
+                                        is_lumpsum,
                                         lumpsum,
                                         salary
                                 from `tab{0}` as e
                                 where name = '{1}'
+                                and unit = '{6}'
                                 and not exists(
                                         select 1
                                         from `tabMR Payment Item` i, `tabProcess MR Payment` m
@@ -513,11 +496,12 @@ def get_records(employee_type, fiscal_year, fiscal_month, from_date, to_date, co
                                         and m.name = i.parent
                                         and m.cost_center = '{5}'
                                 )
-                        """.format(employee_type, i.employee, fiscal_year, fiscal_month, dn, cost_center), as_dict=True)
+                        """.format(employee_type, i.employee, fiscal_year, fiscal_month, dn, cost_center, unit), as_dict=True)
 
                 if rest:
                         rest[0].update(i)
                         data.append(rest[0])
+                        # frappe.msgprint(str(data))
 
 
         '''

@@ -76,10 +76,8 @@ class SellingPrice(Document):
 def get_cop_amount(cop, branch, posting_date, item_code):
 	if not cop or not branch or not posting_date or not item_code:
 		frappe.throw("COP, Branch, Item Code and Posting Date are mandatory")
-	item_sub_group = frappe.db.get_value("Item", item_code, "item_sub_group")
-	if not item_sub_group:
-		frappe.db.sql("No Item Sub Group Assigned")
-	cop_amount = frappe.db.sql("select cop_amount from `tabCOP Rate Item` where parent = %s and item_sub_group = %s", (cop, item_sub_group), as_dict=1)
+
+	cop_amount = frappe.db.sql("select cop_amount from `tabCOP Rate Item` where parent = %s and item = %s", (cop, item_code), as_dict=1)
 	return cop_amount and flt(cop_amount[0].cop_amount) or 0.0
 
 
@@ -91,7 +89,7 @@ def get_selling_rate(price_list, branch, item_code, transaction_date, location):
 	if location != "NA":
 		rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and location = '{2}' """.format(price_list, item_code, location), as_dict =1)
 	if not rate:
-		rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}'""".format(price_list, item_code), as_dict =1)
+		rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and location is NULL""".format(price_list, item_code), as_dict =1)
 		
 	if not rate:
                 species = frappe.db.get_value("Item", item_code, "species")

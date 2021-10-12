@@ -60,6 +60,15 @@ frappe.query_reports["Accounts Receivable"] = {
 			"reqd": 1
 		},
 		{
+<<<<<<< HEAD
+=======
+			"fieldname": "customer_group",
+			"label": __("Customer Group"),
+			"fieldtype": "Link",
+			"options": "Customer Group"
+		},
+		{
+>>>>>>> 97f6844854861dd57d6c2c035de8074716298c09
 			"fieldname": "inter_company_customer",
 			"label": __("DHI Inter Company?"),
 			"fieldtype": "Check",

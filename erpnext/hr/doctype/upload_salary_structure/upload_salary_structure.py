@@ -142,13 +142,25 @@ def upload():
 					#amount = flt(d.basic) * 0.01 * flt(d.contract)
 					#doc.append("earnings",{"salary_component": "Contract Allowance", "amount": amount})	
 					#ear += flt(amount)	
+				
+				if d.officiating:
+					doc.eligible_for_officiating_allowance = 1
+                                        doc.officiating_allowance = d.officiating
+                                        doc.officiating_allowance_method = 'Lumpsum'
+
+				if d.cash_handling:
+					doc.eligible_for_cash_handling = 1
+                                        doc.cash_handling = d.cash_handling
+                                        doc.cash_hangling_method = 'Percent'
+
 				if d.communication:
 					doc.eligible_for_communication_allowance = 1
 					doc.communication_allowance = d.communication
 					doc.communication_allowance_method = 'Lumpsum'
 					amount = flt(d.communication)
 					doc.append("earnings",{"salary_component": "Communication Allowance", "amount": amount})
-					ear += amount	
+					ear += amount
+	
 				if d.fuel:
 					doc.eligible_for_fuel_allowances = 1
 					doc.fuel_allowances = d.fuel

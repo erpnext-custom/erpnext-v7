@@ -31,7 +31,8 @@ class TravelClaim(Document):
 		
 		if frappe.session.user == self.owner or frappe.session.user == employee:
 			self.db_set("claim_status", "")
-			self.sendmail(frappe.db.get_value("Employee", {"user_id": self.supervisor}, "name"), "Travel Claim Submitted", str(self.employee_name) + " has requested you to verify and sign a " + str(frappe.get_desk_link("Travel Claim", self.name)))
+			if self.supervisor:
+				self.sendmail(frappe.db.get_value("Employee", {"user_id": self.supervisor}, "name"), "Travel Claim Submitted", str(self.employee_name) + " has requested you to verify and sign a " + str(frappe.get_desk_link("Travel Claim", self.name)))
 		elif self.claim_status == "Rejected by Supervisor":
 			self.sendmail(self.employee, "Travel Claim Rejected by Supervisor" + str(self.name), "Following remarks has been added by the supervisor: \n" + str(self.reason))
 		elif self.claim_status == "Rejected by HR":
@@ -66,6 +67,11 @@ class TravelClaim(Document):
 
 	def on_cancel(self):
 		self.sendmail(self.employee, "Travel Claim Cancelled by HR" + str(self.name), "Your travel claim " + str(self.name) + " has been cancelled by the user")
+		
+		# added by phuntsho on july 13th. 
+		if self.docstatus != 1:
+			frappe.throw("Cannot cancel the document if it is not submitted!")
+		# --- end of code by phuntsho ---
 
         def get_monthly_count(self, items):
                 counts = {}
@@ -275,7 +281,7 @@ class TravelClaim(Document):
 		je.title = "Travel Claim (" + self.employee_name + "  " + self.name + ")"
 		je.voucher_type = 'Bank Entry'
 		je.naming_series = 'Bank Payment Voucher'
-		je.remark = 'Claim payment against : ' + self.name;
+		je.remark = 'Claim payment against : ' + self.name
 		je.posting_date = self.posting_date
 		je.branch = self.branch
 

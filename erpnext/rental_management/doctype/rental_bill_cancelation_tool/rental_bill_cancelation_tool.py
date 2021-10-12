@@ -26,12 +26,13 @@ class RentalBillCancelationTool(Document):
 					frappe.throw("Not able to cancel as Rental Bill {0} is linked with rental Payment no {1}".format(a.name, a.rental_payment))
 
 			#cancelling of GL Entries
-			frappe.db.sql("update `tabGL Entry` set docstatus = 2 where voucher_no = %s",(str(i.voucher_no)))
-			frappe.db.sql("Update `tabRental Bill` set docstatus = 2 where gl_reference = %s",(str(i.voucher_no)))
+			frappe.db.sql("delete from `tabGL Entry` where voucher_no = %s and voucher_type = 'Rental Bill'",(str(i.voucher_no)))
+			frappe.db.sql("update `tabRental Bill` set docstatus = 2 where gl_reference = %s",(str(i.voucher_no)))
 
 
 	def get_rental_vouchers(self):
 		data = []
+		'''
 		voucher_like = "RB" + str(self.fiscal_year)[2:4] + str(self.month) + "%"	
 		'''
 		vouchers = frappe.db.sql("""
@@ -42,9 +43,9 @@ class RentalBillCancelationTool(Document):
 				and docstatus = 1
 				""", (str(self.fiscal_year), str(voucher_like)), as_dict = True)
 		'''
-
+		
 		vouchers = frappe.db.sql("""
-				select distinct(gl_reference) as d_voucher_no 
+				select distinct(gl_reference) as d_voucher_no
 				from `tabRental Bill`
 				where fiscal_year = %s
 				and month = %s
@@ -57,4 +58,4 @@ class RentalBillCancelationTool(Document):
 				if d.t_credit == d.t_debit:
 					data.append({"voucher_no": v.d_voucher_no, "posting_date": d.posting_date, "credit": d.t_credit, "debit":d.t_debit})
 
-		return data
+		return data'''
