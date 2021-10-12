@@ -23,7 +23,6 @@ class RentalPayment(AccountsController):
 		self.update_tenant_dept()
 		self.update_rental_bill()
 		self.post_gl_entry()
-		self.update_advance_adjustment()
 	
 	def on_cancel(self):
 		self.flags.ignore_links = True
@@ -31,51 +30,6 @@ class RentalPayment(AccountsController):
 			frappe.throw("Already done bank reconciliation.")
 		self.post_gl_entry()
 		self.update_rental_bill()
-		self.update_advance_adjustment()
-	
-	def update_advance_adjustment(self):
-		for a in self.item:
-			if a.amount_received > a.amount:
-				if self.docstatus == 2:
-					frappe.db.sql("delete from `tabRental Advance Received` where rental_bill = '{}'".format(a.rental_bill))	
-				else:
-					if frappe.db.exists("Rental Advance Adjustment", {"tenant": a.tenant}):
-						raa_no = frappe.db.get_value("Rental Advance Adjustment", {"tenant": a.tenant}, "name")
-						doc = frappe.get_doc("Rental Advance Adjustment", raa_no)
-					else:
-						doc = frappe.get_doc({
-								"doctype": "Rental Advance Adjustment",
-								"posting_date": nowdate,
-								"tenant": a.tenant,
-								"tenant_name": a.tenant_name,
-							})
-						
-					doc.append('advance_received_item',{
-							    'rental_bill': a.rental_bill,
-							    'rent_amount': a.amount,
-							    'received_amount': a.amount_received,
-							    'balance_amount': flt(a.amount_received) - flt(a.amount),
-							    'receipt_date': nowdate()
-							})
-					doc.save()
-
-				raa_no1 = frappe.db.get_value("Rental Advance Adjustment", {"tenant": a.tenant}, "name")
-				doc1 = frappe.get_doc("Rental Advance Adjustment", raa_no1)
-				
-				total_adjusted = 0.00
-				total_receive = 0.00
-				
-				if doc1.advance_received_item:
-					for b in doc1.advance_received_item:
-						total_receive += flt(b.balance_amount)
-
-				if doc1.advance_adjusted_item:
-					for c in doc1.advance_adjusted_item:
-						total_adjusted += flt(c.adjusted_amount)
-				doc1.advance_received = total_receive
-				doc1.advance_adjusted = total_adjusted
-				doc1.advance_balance = flt(total_receive) - flt(total_adjusted)
-				doc1.save()
 
 	def calculate_discount(self):
 		if self.discount_percent > 0:
