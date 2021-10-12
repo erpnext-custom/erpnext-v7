@@ -23,12 +23,9 @@ class UtilityBill(Document):
             self.payment_status="Pending"
             
     def before_submit(self):
-        try:
-            self.utility_payment()
-            self.update_status()
-        except Exception as e:
-            pass
-        self.make_direct_payment()
+        self.utility_payment()
+        self.update_status()
+        #self.make_direct_payment()
         
     def update_pi_number(self):
         for a in self.get("item"):

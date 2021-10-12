@@ -519,6 +519,7 @@ class BankPayment(Document):
                             WHERE tp.docstatus = 1 
                             {cond} 
                             AND e.owner_name IS NOT NULL
+                            AND e.account_number IS NOT NULL
                             AND tp.equipment = e.name
                             AND NOT EXISTS(select 1 
                                         FROM `tabBank Payment Item` bpi
@@ -534,26 +535,26 @@ class BankPayment(Document):
     def get_overtime_payment(self):
         cond = ""
         if self.transaction_no:
-            cond ="AND ot.name = '{}'".format(self.transaction_no)
+            cond ="AND ota.name = '{}'".format(self.transaction_no)
         elif not self.transaction_no and self.from_date and self.to_date:
-            cond = "AND ot.posting_date BETWEEN '{}' AND '{}' AND ot.branch = '{}'".format(str(self.from_date), str(self.to_date), str(self.branch))
-        return frappe.db.sql("""SELECT
-                                    "Overtime Payment" as transaction_type, ot.name as transaction_id, ot.name as transaction_reference, ot.posting_date as transaction_date, e.employee_name as beneficiary_name, e.bank_name, e.bank_branch, e.bank_account_type, e.bank_ac_no as bank_account_no, oti.total_amount as amount, ot.branch 
-                                FROM `tabOvertime Payment` as ot, `tabOvertime Payment Item` as oti
-                                JOIN `tabEmployee` as e ON e.name = oti.employee
-                                WHERE ot.name = oti.parent 
-                                AND ot.docstatus = 1
-                                {cond}
-                                AND e.employee_name IS NOT NULL
-                                AND e.bank_ac_no IS NOT NULL
-                                AND NOT EXISTS(select 1 
-                                        FROM `tabBank Payment Item` bpi
-                                        WHERE bpi.transaction_type = 'Overtime Payment'
-                                        AND bpi.transaction_id = ot.name
-                                        AND bpi.parent != '{bank_payment}'
-                                        AND bpi.docstatus != 2
-                                        AND bpi.status NOT IN ('Cancelled', 'Failed'))
-
+            cond = "AND ota.posting_date BETWEEN '{}' AND '{}' AND ota.branch = '{}'".format(str(self.from_date), str(self.to_date), str(self.branch))
+        return frappe.db.sql("""
+                    SELECT
+                        "Overtime Payment" as transaction_type, ota.name as transaction_id, ota.name as transaction_reference, ota.posting_date as transaction_date, e.employee_name as beneficiary_name, e.bank_name, e.bank_branch, e.bank_account_type, e.bank_ac_no as bank_account_no, ota.total_amount as amount, ota.branch
+                    FROM `tabOvertime Application` ota
+                    JOIN `tabEmployee` e ON e.name = ota.employee
+                    WHERE ota.docstatus = 1
+                    AND (ota.payment_jv IS NULL OR ota.payment_jv = '') 
+                    AND (ota.overtime_payment IS NULL OR ota.overtime_payment = '')
+                    {cond}
+                    AND NOT EXISTS(select 1
+                            FROM `tabBank Payment Item` bpi
+                            WHERE bpi.transaction_type = 'Overtime Application'
+                            AND bpi.transaction_id = ota.name
+                            AND bpi.parent != '{bank_payment}'
+                            AND bpi.docstatus != 2
+                            AND bpi.status NOT IN ('Cancelled', 'Failed'))
+        
                             """.format(cond = cond, bank_payment=self.name), as_dict=True)
 
     def get_month_id(self, month_abbr):
