@@ -123,10 +123,10 @@ class BankReconciliation(Document):
                         select
                                 "Rental Payment" as payment_document, name as payment_entry,
                                 cheque_no as cheque_number, cheque_date,
-                                net_amount as amount,
+                                total_amount_received as amount,
                                 posting_date, branch as against_account, clearance_date
                         from `tabRental Payment`
-                        where credit_account = '{0}'
+                        where bank_account = '{0}'
                         and docstatus = 1
                         and posting_date between '{1}' and '{2}'
                         {3}
