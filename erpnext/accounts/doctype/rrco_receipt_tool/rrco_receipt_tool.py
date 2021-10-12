@@ -123,6 +123,24 @@ class RRCOReceiptTool(Document):
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
 										WHERE b.purchase_invoice = a.name)
+						UNION 
+						select "Hire Charge Invoice" as transaction, name, posting_date, total_invoice_amount as invoice_amount, tds_amount as tax_amount
+						FROM `tabHire Charge Invoice` AS a 
+						WHERE docstatus = 1 
+						AND posting_date BETWEEN '{0}' AND '{1}'
+						AND tds_percentage = '{2}' 
+						AND NOT EXISTS (SELECT 1 
+										FROM `tabRRCO Receipt Entries` AS b 
+										WHERE b.purchase_invoice = a.name)
+						UNION 
+						select "Mechanical Payment" as transaction, name, posting_date, payable_amount as invoice_amount, tds_amount as tax_amount
+						FROM `tabMechanical Payment` AS a 
+						WHERE docstatus = 1 
+						AND posting_date BETWEEN '{0}' AND '{1}'
+						AND tds_rate = '{2}%' 
+						AND NOT EXISTS (SELECT 1 
+										FROM `tabRRCO Receipt Entries` AS b 
+										WHERE b.purchase_invoice = a.name)				
 						""".format(self.from_date, self.to_date, self.tds_rate)
 
 			self.set('item', [])
