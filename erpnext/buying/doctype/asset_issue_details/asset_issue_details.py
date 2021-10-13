@@ -37,9 +37,13 @@ class AssetIssueDetails(Document):
 			asset_category = frappe.db.get_value("Asset Category", item_doc.asset_category, "name")
 			fixed_asset_account, credit_account=frappe.db.get_value("Asset Category Account", {'parent':asset_category}, ['fixed_asset_account','credit_account'])
 			if item_doc.asset_sub_category:
-				for a in frappe.db.sql("select total_number_of_depreciations, depreciation_percent from `tabAsset Sub Category` where parent = '{0}' and `sub_category_name`='{1}'".format(asset_category, item_doc.asset_sub_category), as_dict=1):
-					total_number_of_depreciations = a.total_number_of_depreciations
-					depreciation_percent = a.depreciation_percent
+				check = frappe.db.sql("select 1 from `tabAsset Category` ac where '{0}' in (select sub_category_name from `tabAsset Sub Category` asbc where asbc.parent = ac.name)".format( item_doc.asset_sub_category), as_dict=1)
+				if check:
+					for a in frappe.db.sql("select total_number_of_depreciations, depreciation_percent from `tabAsset Sub Category` where parent = '{0}' and `sub_category_name`='{1}'".format(asset_category, item_doc.asset_sub_category), as_dict=1):
+						total_number_of_depreciations = a.total_number_of_depreciations
+						depreciation_percent = a.depreciation_percent
+				else:
+					frappe.throw(_("{} sub category do not exist in particular Asset Category").format(item_doc.asset_sub_category))
 			else:
 				frappe.throw(_("No Asset Sub-Category for Item: " +"{}").format(self.item_name))
     
