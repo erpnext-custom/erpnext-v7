@@ -107,6 +107,8 @@ erpnext.stock.PurchaseReceiptController = erpnext.buying.BuyingController.extend
 				if(flt(this.frm.doc.per_billed) < 100) {
 					cur_frm.add_custom_button(__('Invoice'), this.make_purchase_invoice, __("Make"));
 				}
+				cur_frm.add_custom_button(__('Asset Issue Entry'), this.make_asset_issue_entry, __('Make'));
+
 				cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 			}
 		}
@@ -131,6 +133,73 @@ erpnext.stock.PurchaseReceiptController = erpnext.buying.BuyingController.extend
 			method: "erpnext.stock.doctype.purchase_receipt.purchase_receipt.make_purchase_return",
 			frm: cur_frm
 		})
+	},
+
+	make_asset_issue_entry: function() {
+		var doc = cur_frm.doc;
+		var dialog = new frappe.ui.Dialog({
+			title: __("For Issuing Asset"),
+			fields: [
+				{	"fieldtype": "Select",
+					"label": __("Material Name"),
+					"fieldname": "item_name",
+					"options": doc.items.map(d => d.item_name),
+					"reqd": 1 
+				},
+				{	"fieldtype": "Button", "label": __('Issue Asset'),
+					"fieldname": "make_asset_issue_entry", "cssClass": "btn-primary"
+				},
+			]
+		});
+
+		dialog.fields_dict.make_asset_issue_entry.$input.click(function() {
+			
+			var args = dialog.get_values();
+			frappe.call({
+				method:'frappe.client.get_value',
+				args:{
+					'doctype':'Item',
+					fieldname:"is_fixed_asset",
+					filters: {
+						"item_name": args.item_name
+					}
+				},
+				callback:(r)=>{
+					if ( !r.message.is_fixed_asset){
+						frappe.msgprint('Item selected is not a fixed asset')
+						dialog.hide();
+						return;
+					}
+
+					if(!args) return;
+					dialog.hide();
+
+					let business_activity = ''
+					let item_code = ''
+					let asset_rate = ''
+					cur_frm.doc.items.map(d => {
+						if (d.item_name == args.item_name){
+							business_activity = d.business_activity;
+							item_code = d.item_code;
+							asset_rate = d.rate;
+						}
+					})
+
+					var new_doc = frappe.model.get_new_doc('Asset Issue Details');
+					new_doc.branch = cur_frm.doc.branch;
+					new_doc.business_activity = business_activity;
+					new_doc.entry_date = new Date().toJSON().slice(0,10).replace(/-/g,'-');
+					new_doc.item_code = item_code;
+					new_doc.purchase_receipt = cur_frm.docname;
+					new_doc.asset_rate = asset_rate
+					new_doc.qty = 1;
+					new_doc.amount = asset_rate * new_doc.qty
+					frappe.set_route('Form', 'Asset Issue Details', new_doc.name);
+					
+				}
+			})
+		});
+		dialog.show()
 	},
 
 	close_purchase_receipt: function() {

@@ -46,6 +46,14 @@ class Asset(Document):
 		self.delete_asset_gl_entries()
 		self.delete_depreciation_entries()
 		self.set_status()
+		self.check_cancel_asset_issue_detail()
+
+	def check_cancel_asset_issue_detail(self):
+		aid_name = frappe.db.get_value("Asset Issue Details", {"reference_code":self.name , "docstatus":1}, "name")
+		if aid_name:
+			frappe.db.sql("Update `tabAsset Issue Details` set reference_code = '', docstatus=2 where name = %s", aid_name)
+			frappe.msgprint("Asset No. {0} cancelled along with Asset Issue Details No {1} ".format(self.name, aid_name))
+
 	
 	def validate_custodian_details(self):
 		if self.issued_to:
