@@ -316,8 +316,10 @@ class BankPayment(Document):
             data = self.get_journal_entry()
         elif self.transaction_type == "Transporter Payment":
             data = self.get_transporter_payment()
-        elif self.transaction_type == "Overtime Payment":
+        elif self.transaction_type == "Overtime Application":
             data = self.get_overtime_payment()
+        # elif self.transaction_type == "EME Payment":
+        #     data = self.get_eme_payment()
         return data
 
     def get_journal_entry(self):
@@ -540,9 +542,9 @@ class BankPayment(Document):
             cond = "AND ota.posting_date BETWEEN '{}' AND '{}' AND ota.branch = '{}'".format(str(self.from_date), str(self.to_date), str(self.branch))
         return frappe.db.sql("""
                     SELECT
-                        "Overtime Payment" as transaction_type, ota.name as transaction_id, ota.name as transaction_reference, ota.posting_date as transaction_date, e.employee_name as beneficiary_name, e.bank_name, e.bank_branch, e.bank_account_type, e.bank_ac_no as bank_account_no, ota.total_amount as amount, ota.branch
+                        "Overtime Application" as transaction_type, ota.name as transaction_id, ota.name as transaction_reference, ota.posting_date as transaction_date, e.employee_name as beneficiary_name, e.bank_name, e.bank_branch, e.bank_account_type, e.bank_ac_no as bank_account_no, ota.total_amount as amount, ota.branch
                     FROM `tabOvertime Application` ota
-                    JOIN `tabEmployee` e ON e.name = ota.employee
+                    JOIN `tabEmployee` e ON e.name = ota.employee 
                     WHERE ota.docstatus = 1
                     AND (ota.payment_jv IS NULL OR ota.payment_jv = '') 
                     AND (ota.overtime_payment IS NULL OR ota.overtime_payment = '')
@@ -556,7 +558,13 @@ class BankPayment(Document):
                             AND bpi.status NOT IN ('Cancelled', 'Failed'))
         
                             """.format(cond = cond, bank_payment=self.name), as_dict=True)
-
+    #added by cety on 13-10-2021 for eme payment
+    # def get_eme_payment(self):
+    #     cond = ""
+    #     if self.transaction_no:
+    #         cond = "AND eme.name = '{}'".format(self.transaction_no)
+    #     elif not self.transaction_no and self.from_date and self.to_date:
+    #         cond = "AND eme.posting_date bewteen '{}' and '{}' and eme.branch = '{}'".format(str(self.from_date, str(self.to_date)))
     def get_month_id(self, month_abbr):
         return {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06",
             "July": "07", "August": "08", "September": "09", "October": "10", "November": "11", "December": "12"}[month_abbr]
