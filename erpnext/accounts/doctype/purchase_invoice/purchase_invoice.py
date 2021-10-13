@@ -80,7 +80,7 @@ class PurchaseInvoice(BuyingController):
 		self.validate_fixed_asset()
 		self.validate_fixed_asset_account()
 		self.create_remarks()
-		self.calculate_void_deduction()
+		# self.calculate_void_deduction()
 	
 	def calculate_void_deduction(self):
 		# Void Deduction for NHDCL
@@ -91,8 +91,6 @@ class PurchaseInvoice(BuyingController):
 
 		self.total_void_amount = t_void_amount
 
-
-	
 	# ADDED BY PHUNTSHO ON 23-07-2021.
 	def calculate_all_deductions(self):
 		""" calculate the net total amount after all the deductions. """
