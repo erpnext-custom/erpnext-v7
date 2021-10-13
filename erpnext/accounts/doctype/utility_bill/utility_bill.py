@@ -86,6 +86,15 @@ class UtilityBill(Document):
                 api_details = frappe.get_doc("API Detail", api_name)
                 url = api_details.api_link
                 api_param = {}
+                os = str(d.outstanding_amount)
+                if os.count("."):
+                    os_nu = os.split(".",1)[0]
+                    os_ch = os.split(".",1)[1]
+                    os_ch = os_ch if len(os_ch) > 1 else str(os_ch)+"0"
+                    actual_os = str(os_nu)+"."+str(os_ch)
+                else:
+                    actual_os = str(os)
+
                 for a in api_details.item:
                     if a.pre_defined_value:
                         api_param[a.param] = str(a.defined_value)
@@ -96,7 +105,7 @@ class UtilityBill(Document):
                     elif a.param == "FrmAcctNum":
                         api_param[a.param] = str(self.bank_account)
                     elif a.param == "Amt":
-                        api_param[a.param] = str(d.outstanding_amount)
+                        api_param[a.param] = str(actual_os)
                     elif a.param == "pi":
                         api_param[a.param] = d.pi_number
                 if consumer_field == "landlnenumber":
