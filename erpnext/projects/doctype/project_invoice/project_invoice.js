@@ -38,9 +38,7 @@ frappe.ui.form.on('Project Invoice', {
 						party_type: frm.doc.party_type
 					},
 					callback: function (r) {
-						console.log(r.message)
 						cur_frm.refresh_field("payment_status");
-
 					},
 				})
 			}
@@ -108,8 +106,7 @@ frappe.ui.form.on('Project Invoice', {
 		*/
 
 		if (frm.doc.docstatus === 1) {
-			if (frm.doc.payment_status != "Paid") {
-				
+			// if (frm.doc.payment_status != "Paid") {
 				frappe.call({
 					method: "erpnext.projects.doctype.project_invoice.project_invoice.get_payment_entry",
 					args: {
@@ -125,7 +122,7 @@ frappe.ui.form.on('Project Invoice', {
 
 					},
 				})
-			}
+			// }
 			frm.add_custom_button(__('Accounting Ledger'), function () {
 				frappe.route_options = {
 					voucher_no: frm.doc.name,
@@ -143,11 +140,13 @@ frappe.ui.form.on('Project Invoice', {
 			// 	},
 			// 		__("Make"), "icon-file-alt");
 			// }
-			if (frappe.model.can_read("Project Payment")) {
-				frm.add_custom_button(__("Payment"), function () {
-					frm.trigger("make_project_payment")
-				},
-					__("Make"), "icon-file-alt");
+			if (frm.doc.payment_status != "Paid") {
+				if (frappe.model.can_read("Project Payment")) {
+					frm.add_custom_button(__("Payment"), function () {
+						frm.trigger("make_project_payment")
+					},
+						__("Make"), "icon-file-alt");
+				}
 			}
 		}
 	},
@@ -186,6 +185,10 @@ frappe.ui.form.on('Project Invoice', {
 			get_mb_list(frm);
 		}
 		calculate_totals(frm);
+
+	},
+	rebate_remove: function (frm) {
+		calculate_totals(frm)
 	},
 
 	make_project_payment: function (frm) {
@@ -200,10 +203,6 @@ frappe.ui.form.on('Project Invoice', {
 	},
 
 	advance_recovery: function (frm) {
-		calculate_totals(frm);
-	},
-
-	tds_amount: function (frm) {
 		calculate_totals(frm);
 	},
 
@@ -225,6 +224,9 @@ frappe.ui.form.on('Project Invoice', {
 
 	get_mb_entries: function (frm, cdt, cdn) {
 		get_mb_list(frm);
+	},
+	type: function (frm) {
+		tds_calculation(frm)
 	}
 });
 
@@ -421,8 +423,19 @@ var calculate_totals = function (frm) {
 			}
 
 		}
-
-		net_invoice_amount = (flt(gross_invoice_amount) + flt(frm.doc.price_adjustment_amount || 0.0) - flt(frm.doc.advance_recovery || 0.0) - flt(frm.doc.total_deduction_amount || 0.0));
+		var total_deduct_amount = 0
+		if (frm.doc.rebate) {
+			frm.doc.rebate.map(item => {
+				if (item.addition == 1) {
+					total_deduct_amount -= item.amount
+				}
+				else {
+					total_deduct_amount += item.amount
+				}
+			})
+		}
+		cur_frm.set_value("net_amount", (gross_invoice_amount - total_deduct_amount))
+		net_invoice_amount = (flt(frm.doc.net_amount) + flt(frm.doc.price_adjustment_amount || 0.0) - flt(frm.doc.advance_recovery || 0.0) - flt(frm.doc.total_deduction_amount || 0.0));
 		cur_frm.set_value("gross_invoice_amount", (gross_invoice_amount));
 		cur_frm.set_value("net_invoice_amount", (net_invoice_amount));
 		cur_frm.set_value("total_balance_amount", (flt(frm.doc.net_invoice_amount || 0) - flt(frm.doc.total_received_amount || 0) - flt(frm.doc.total_paid_amount || 0)));
@@ -446,8 +459,20 @@ var check_uncheck_all = function (frm) {
 	}
 }
 
-// FOLLOWING CODE ADDED BY PHUNTSHO. PARTIALLY TAKEN FROM PROJECT PAYMENT. 
+// ADDED BY PHUNTSHO ON AUG 12, 2021 TO ACCOUNT FOR REBATE AMOUNT
+frappe.ui.form.on("Project Invoice Rebate Item", {
+	amount: function (frm, cdt, cdn) {
+		calculate_totals(frm)
+		tds_calculation(frm)
+	},
+	addition: function (frm, cdt, cdn) {
+		calculate_totals(frm)
+		tds_calculation(frm)
+	}
+})
 
+
+// FOLLOWING CODE ADDED BY PHUNTSHO. PARTIALLY TAKEN FROM PROJECT PAYMENT. 
 frappe.ui.form.on("Project Invoice Deduction", {
 	amount: function (frm, cdt, cdn) {
 		calculate_deductions(frm, cdt, cdn);
@@ -506,7 +531,7 @@ function get_advance_list(frm) {
 }
 
 
-cur_frm.cscript.type = function (frm) {
+function tds_calculation(frm) {
 	//Set the initial value for tds rate
 	var percent = 0;
 	switch (cur_frm.doc.type) {
@@ -527,25 +552,17 @@ cur_frm.cscript.type = function (frm) {
 			percent = 10
 			break;
 		default:
+			cur_frm.set_value("tds_rate", 0);
 			percent = 0
 	}
 
-	if (!cur_frm.doc.tds_taxable_amount) {
-		//Set the initial value for tds calculation
-		let total_invoice_amount = 0
-		cur_frm.doc.project_invoice_mb.map(item => {
-			total_invoice_amount += item.entry_amount
-		})
-		// console.log(`this is the total amount ${total_invoice_amount}`)
-		cur_frm.set_value("tds_taxable_amount", total_invoice_amount);
-		cur_frm.refresh_field("tds_taxable_amount")
-	}
 
-	if (!cur_frm.doc.tds_amount) {
-		//Set the initial value for tds amount
-		cur_frm.set_value("tds_amount", (cur_frm.doc.tds_rate / 100) * cur_frm.doc.tds_taxable_amount);
-	}
-	doUpdates(frm);
+	cur_frm.set_value("tds_taxable_amount", cur_frm.doc.net_amount);
+	cur_frm.refresh_field("tds_taxable_amount")
+	cur_frm.set_value("tds_amount", (cur_frm.doc.tds_rate / 100) * cur_frm.doc.tds_taxable_amount);
+	cur_frm.refresh_field("tds_amount")
+
+	// doUpdates(frm);
 
 	if (percent > 0) {
 		frappe.call({
@@ -558,15 +575,18 @@ cur_frm.cscript.type = function (frm) {
 			}
 		})
 	}
+	else {
+		cur_frm.set_value("tds_account", "");
+	}
 	calculate_deductions(cur_frm)
 };
 
-//Do necessary updates
-function doUpdates(frm) {
-	//Set the value for tds amount
-	cur_frm.set_value("tds_amount", (cur_frm.doc.tds_rate / 100) * cur_frm.doc.tds_taxable_amount);
-	cur_frm.refresh_field("tds_amount")
-}
+// //Do necessary updates
+// function doUpdates(frm) {
+// 	//Set the value for tds amount
+// 	cur_frm.set_value("tds_amount", (cur_frm.doc.tds_rate / 100) * cur_frm.doc.tds_taxable_amount);
+// 	cur_frm.refresh_field("tds_amount")
+// }
 
 function calculate_deductions(frm) {
 	// Other deductions

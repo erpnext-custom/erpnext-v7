@@ -178,7 +178,11 @@ class ProjectPayment(AccountsController):
 				if flt(inv.total_amount) < flt(inv.allocated_amount) and self.docstatus != 2:
 					frappe.throw(_("Invoice#{0} : Allocated amount Nu. {1}/- cannot be more than Invoice Balance Nu. {2}/-").format(inv.reference_name, "{:,.2f}".format(flt(inv.allocated_amount)),"{:,.2f}".format(flt(total_balance_amount))))
 				else:
-					allocated_amount = -1*flt(inv.allocated_amount) if self.docstatus == 2 else flt(inv.allocated_amount)
+					# allocated_amount = -1*flt(inv.allocated_amount) if self.docstatus == 2 else flt(inv.allocated_amount) #commented by Jai, 6 Oct 2021
+					if total_balance_amount < 0:
+							allocated_amount = flt(inv.allocated_amount) if self.docstatus == 2 else -1*flt(inv.allocated_amount)
+					else:
+							allocated_amount = -1*flt(inv.allocated_amount) if self.docstatus == 2 else flt(inv.allocated_amount)
 
 					inv_doc = frappe.get_doc("Project Invoice", inv.reference_name)
 					if self.party_type == "Supplier":
