@@ -70,7 +70,7 @@ def get_data(filters):
 							WHEN ass.issued_to = 'Other' THEN ass.issue_to_other 
 						END as employee_name,
 						(select designation from tabEmployee as emp where emp.name = ass.issued_to) as designation,
-                        cost_center, purchase_date, gross_purchase_amount, value_after_depreciation,
+                        cost_center, location, purchase_date, gross_purchase_amount, value_after_depreciation,
                         (select
                                 sum(gl.depreciation_amount)
                         from `tabDepreciation Schedule` as gl
@@ -184,6 +184,7 @@ def get_data(filters):
 				"employee_name": a.employee_name,
 				"designation": a.designation,
 				"cost_center": a.cost_center,
+				"location": a.location,
 				"date_of_issue": a.purchase_date,
 				"qty": a.asset_quantity_,
 				"amount": a.gross_purchase_amount,
@@ -264,6 +265,13 @@ def get_columns():
 			"label": _("Cost Center"),
 			"fieldtype": "Link",
 			"options": "Cost Center",
+			"width": 130
+		},
+		{
+			"fieldname": "location",
+			"label": _("Location"),
+			"fieldtype": "Link",
+			"options": "Location",
 			"width": 130
 		},
 		{

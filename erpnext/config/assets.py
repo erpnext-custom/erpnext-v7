@@ -10,9 +10,13 @@ def get_data():
 					"type": "doctype",
 					"name": "Asset",
 				},
-                                {
+				{
 					"type": "doctype",
 					"name": "Asset Category",
+				},
+				{
+					"type": "doctype",
+					"name": "Location",
 				},
 			]
 		},
