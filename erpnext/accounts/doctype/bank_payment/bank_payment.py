@@ -318,8 +318,8 @@ class BankPayment(Document):
             data = self.get_transporter_payment()
         elif self.transaction_type == "Overtime Application":
             data = self.get_overtime_payment()
-        # elif self.transaction_type == "EME Payment":
-        #     data = self.get_eme_payment()
+        elif self.transaction_type == "EME Payment":
+            data = self.get_eme_payment()
         return data
 
     def get_journal_entry(self):
@@ -559,12 +559,30 @@ class BankPayment(Document):
         
                             """.format(cond = cond, bank_payment=self.name), as_dict=True)
     #added by cety on 13-10-2021 for eme payment
-    # def get_eme_payment(self):
-    #     cond = ""
-    #     if self.transaction_no:
-    #         cond = "AND eme.name = '{}'".format(self.transaction_no)
-    #     elif not self.transaction_no and self.from_date and self.to_date:
-    #         cond = "AND eme.posting_date bewteen '{}' and '{}' and eme.branch = '{}'".format(str(self.from_date, str(self.to_date)))
+    def get_eme_payment(self):
+        cond = ""
+        if self.transaction_no:
+            cond = "AND eme.name = '{}'".format(self.transaction_no)
+        elif not self.transaction_no and self.from_date and self.to_date:
+            cond = "AND eme.posting_date between '{}' and '{}' and eme.branch = '{}'".format(str(self.from_date), str(self.to_date), str(self.branch))
+        return frappe.db.sql("""
+                        SELECT
+                            "EME Payment" as transaction_type, eme.name as transaction_id, eme.name as transaction_reference, eme.posting_date as transaction_date, s.supplier_name as beneficiary_name, s.bank_name, s.bank_branch, s.bank_account_type, s.account_number as bank_account_no, eme.payable_amount as amount, eme.branch
+                        FROM `tabEME Payment` as eme
+                        JOIN `tabSupplier` as s ON s.name = eme.supplier
+                        WHERE eme.docstatus = 1 
+                        AND eme.workflow_state = 'Approved'
+                        {cond}
+                        AND NOT EXISTS(select 1
+                                FROM `tabBank Payment Item` bpi
+                                WHERE bpi.transaction_type = 'EME Payment'
+                                AND bpi.transaction_id = eme.name
+                                AND bpi.parent != '{bank_payment}'
+                                AND bpi.docstatus != 2
+                                AND bpi.status NOT IN ('Cancelled', 'Failed'))
+                            """.format(cond = cond, bank_payment = self.name), as_dict=True)
+
+
     def get_month_id(self, month_abbr):
         return {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06",
             "July": "07", "August": "08", "September": "09", "October": "10", "November": "11", "December": "12"}[month_abbr]

@@ -42,7 +42,7 @@ frappe.query_reports["e-Payment Report"] = {
             fieldname: "transaction_type",
             label: "Transaction Type",
             fieldtype: "Select",
-            options: ["","Direct Payment", "Journal Entry", "Payment Entry", "Transporter Payment", "Overtime Application", "Salary Slip", "Employee Loan Payment", "LTC", "Bonus", "PBVA"]
+            options: ["","Direct Payment", "Journal Entry", "Payment Entry", "Transporter Payment", "Overtime Application", "EME Payment", "Salary Slip", "Employee Loan Payment", "LTC", "Bonus", "PBVA"]
         },
         {
             fieldname: "supplier",
