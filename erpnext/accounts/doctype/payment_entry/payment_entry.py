@@ -62,13 +62,14 @@ class PaymentEntry(AccountsController):
 		self.setup_party_account_field()
 		self.set_missing_values()
 		self.validate_payment_type()
-		self.validate_party_details()
-		self.validate_bank_accounts()
+		if self.mode_of_payment in ('Cash','Bank Payment'): #added Jai, coz of new mode of payment - Adjustment
+			self.validate_party_details()
+			self.validate_bank_accounts()
 		self.set_exchange_rate()
 		self.validate_mandatory()
 		self.validate_reference_documents()
 		self.set_amounts()
-		self.clear_unallocated_reference_document_rows()
+		# self.clear_unallocated_reference_document_rows()  # by Jai hidden
 		self.validate_payment_against_negative_invoice()
 		self.validate_transaction_reference()
 		self.set_title()
@@ -179,9 +180,18 @@ class PaymentEntry(AccountsController):
 				self.company_currency)
 				
 	def validate_mandatory(self):
+		# for field in ("paid_amount", "received_amount", "source_exchange_rate", "target_exchange_rate"):
+		# 	if not self.get(field):
+		# 		frappe.throw(_("{0} is mandatory").format(self.meta.get_label(field)))
+		# above codes, modified below by Jai, 27th sept 2021
+		total_other_deductions = sum([flt(c.amount) for c in self.get("other_deductions")])
+
 		for field in ("paid_amount", "received_amount", "source_exchange_rate", "target_exchange_rate"):
 			if not self.get(field):
-				frappe.throw(_("{0} is mandatory").format(self.meta.get_label(field)))
+				if field != 'paid_amount':
+					frappe.throw(_("{0} is mandatory").format(self.meta.get_label(field)))
+				elif field == 'paid_amount' and total_other_deductions != self.received_amount:
+					frappe.throw(_("{0} is mandatory").format(self.meta.get_label(field)))
 				
 	def validate_reference_documents(self):
 		if self.party_type == "Customer":
@@ -245,6 +255,7 @@ class PaymentEntry(AccountsController):
 		self.set_amounts_in_company_currency()
 		self.set_total_allocated_amount()
 		self.set_unallocated_amount()
+		self.set_paid_amount() # added by Jai 10 Oct 2021
 		self.set_difference_amount()
 
 	def set_amounts_in_company_currency(self):
@@ -291,7 +302,20 @@ class PaymentEntry(AccountsController):
 			# Following line is added
 			self.unallocated_amount = 0
 			# Ver 1.0 Ends
-				
+
+	def set_paid_amount(self):
+		party_amount = self.paid_amount if self.payment_type=="Receive" else self.received_amount
+
+		total_other_deductions = 0
+		for d in self.get("other_deductions"):
+			if d.amount:
+				# total_other_deductions = sum([flt(c.amount) for c in self.get("other_deductions")])
+				total_other_deductions += flt(d.amount)
+
+		if total_other_deductions:
+			self.paid_amount = party_amount - total_other_deductions
+			self.base_paid_amount = flt(flt(self.paid_amount) * flt(self.source_exchange_rate), self.precision("base_paid_amount"))
+						
 	def set_difference_amount(self):
 		base_unallocated_amount = flt(self.unallocated_amount) * (flt(self.source_exchange_rate) 
 			if self.payment_type=="Receive" else flt(self.target_exchange_rate))
@@ -308,11 +332,20 @@ class PaymentEntry(AccountsController):
 		else:
 			self.difference_amount = self.base_paid_amount - flt(self.base_received_amount)
                 '''
+		# backup from old Dev, before sync 12/10/2021
+		total_difference_amount = 0;
+		for d in self.get("deductions"):
+			if d.amount:
+				total_difference_amount += flt(d.amount)
+		# below code added by Jai, 22/09/2021, Sept 22
+		for c in self.get("other_deductions"):
+			if c.amount:
+				total_difference_amount += flt(c.amount)
 		# Following line is added
 		if self.payment_type == "Receive":
                         self.difference_amount = self.total_allocated_amount - self.paid_amount
                 else:
-                        self.difference_amount = self.paid_amount - self.total_allocated_amount
+                        self.difference_amount = self.paid_amount + total_difference_amount - self.total_allocated_amount
 		# Ver 1.0 Ends
 		
 		#for d in self.get("deductions"):
@@ -399,6 +432,7 @@ class PaymentEntry(AccountsController):
 		self.add_bank_gl_entries(gl_entries)
 		self.add_tds_gl_entries(gl_entries)
 		self.add_deductions_gl_entries(gl_entries)
+		self.make_other_deduction_gl_entry(gl_entries)
 		make_gl_entries(gl_entries, cancel=cancel, adv_adj=adv_adj)
 
 	def add_party_gl_entries(self, gl_entries):
@@ -478,8 +512,10 @@ class PaymentEntry(AccountsController):
 							"account": self.paid_from,
 							"account_currency": self.paid_from_account_currency,
 							"against": self.party if self.payment_type=="Pay" else self.paid_to,
-							"credit_in_account_currency": self.paid_amount + total_deductions,
-							"credit": self.base_paid_amount + total_deductions,
+							"credit_in_account_currency": self.paid_amount,
+							"credit": self.base_paid_amount,
+							# "credit_in_account_currency": self.paid_amount + total_deductions,
+							# "credit": self.base_paid_amount + total_deductions,
 							"business_activity": self.business_activity,
 							"cost_center": self.pl_cost_center
 						})
@@ -492,8 +528,10 @@ class PaymentEntry(AccountsController):
 						"account": self.paid_from,
 						"account_currency": self.paid_from_account_currency,
 						"against": self.party if self.payment_type=="Pay" else self.paid_to,
-						"credit_in_account_currency": self.paid_amount + total_deductions,
-						"credit": self.base_paid_amount + total_deductions,
+						"credit_in_account_currency": self.paid_amount,
+						"credit": self.base_paid_amount,
+						# "credit_in_account_currency": self.paid_amount + total_deductions,
+						# "credit": self.base_paid_amount + total_deductions,
 						"business_activity": self.business_activity,
 						"cost_center": self.pl_cost_center
 					})
@@ -603,6 +641,26 @@ class PaymentEntry(AccountsController):
 			else:
 				frappe.throw("Please select a Cost Center under 'Cost Center (If Applicable)' field")
 	
+	def make_other_deduction_gl_entry(self, gl_entries):
+		if self.other_deductions:
+			for c in self.other_deductions:
+				if c.account:
+					gl_entries.append(
+						self.get_gl_dict({
+							"account": c.account,
+							"against": self.party,
+							"party_type": "Supplier",
+							"party": self.party,
+							"credit": flt(c.amount),
+							"credit_in_account_currency": flt(c.amount),
+							"cost_center": self.pl_cost_center, 
+							"business_activity": self.business_activity
+						})
+					)
+					
+				else:
+					frappe.throw("Please select an account under Others Deduction")
+
 	def update_advance_paid(self):
 		if self.payment_type in ("Receive", "Pay") and self.party:
 			for d in self.get("references"):

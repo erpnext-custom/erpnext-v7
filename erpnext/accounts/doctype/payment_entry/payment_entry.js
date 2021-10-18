@@ -256,6 +256,21 @@ frappe.ui.form.on('Payment Entry', {
 				frm.events.mode_of_payment(frm);
 		}
 	},
+	// below added by Jai 4 Oct 2021
+	mode_of_payment: function (frm) {
+		if (frm.doc.mode_of_payment == 'Adjustment') {
+			frm.set_df_property("paid_from", "reqd", 0);
+			frm.set_df_property("paid_from_account_currency", "reqd", 0);
+			// frm.toggle_display("paid_from", 0);
+			frm.refresh_field('paid_from');
+		} else {
+			frm.set_df_property("paid_from", "reqd", 1);
+			frm.set_df_property("paid_from_account_currency", "reqd", 1);
+			frm.toggle_display("paid_from", 1);
+			frm.toggle_display("paid_from_account_currency", 1);
+			frm.refresh_field('paid_from');
+		}
+	},
 
 	party_type: function(frm) {
 		if(frm.doc.party) {

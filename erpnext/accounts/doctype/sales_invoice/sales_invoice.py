@@ -969,7 +969,7 @@ def get_list_context(context=None):
 def get_bank_cash_account(mode_of_payment, company):
 	account = frappe.db.get_value("Mode of Payment Account",
 		{"parent": mode_of_payment, "company": company}, "default_account")
-	if not account:
+	if not account and (mode_of_payment == 'Cash' or mode_of_payment == 'Bank Payment'):
 		frappe.throw(_("Please set default Cash or Bank account in Mode of Payment {0}")
 			.format(mode_of_payment))
 	return {
