@@ -7,11 +7,13 @@ from frappe.utils import flt, getdate, nowdate
 from frappe import _
 
 def execute(filters=None):
-	if not filters: filters = {}
+	if not filters: 
+		filters = {}
 
 	columns = get_columns()
 
-	if not filters.get("account"): return columns, []
+	if not filters.get("account"): 
+		return columns, []
 	
 	account_currency = frappe.db.get_value("Account", filters.account, "account_currency")
 
@@ -118,7 +120,8 @@ def get_columns():
 
 def get_entries(filters):
 	journal_entries = frappe.db.sql("""
-		select "Journal Entry" as payment_document, jv.posting_date, 
+		select 
+			"Journal Entry" as payment_document, jv.posting_date, 
 			jv.name as payment_entry,
 			sum(jvd.debit_in_account_currency) as debit, 
 			sum(jvd.credit_in_account_currency) as credit,
@@ -132,7 +135,7 @@ def get_entries(filters):
 			and ifnull(jv.is_opening, 'No') = 'No'
 		group by jv.posting_date, jv.name, jvd.against_account, jv.cheque_no, jv.cheque_date, jv.clearance_date, jvd.account_currency
 	""", filters, as_dict=1)
-			
+
 	payment_entries = frappe.db.sql("""
 		select 
 			"Payment Entry" as payment_document, name as payment_entry, 
@@ -201,18 +204,18 @@ def get_entries(filters):
 		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
 	""", filters, as_dict=1)
 
-        direct_payment_entries = frappe.db.sql("""
-                        select
-                                "Direct Payment" as payment_document, name as payment_entry,
-                                cheque_no as reference_no, cheque_date as ref_date,
-                                net_amount as credit, 0 as debit,
-                                posting_date, branch as against_account, clearance_date
-                        from `tabDirect Payment`
-                        where %(account)s IN (credit_account, debit_account)
-                        and docstatus = 1
-                        and posting_date <= %(report_date)s
-                        and ifnull(clearance_date, '4000-01-01') > %(report_date)s
-                """, filters, as_dict=1)
+	direct_payment_entries = frappe.db.sql("""
+					select
+							"Direct Payment" as payment_document, name as payment_entry,
+							cheque_no as reference_no, cheque_date as ref_date,
+							net_amount as credit, 0 as debit,
+							posting_date, branch as against_account, clearance_date
+					from `tabDirect Payment`
+					where %(account)s IN (credit_account, debit_account)
+					and docstatus = 1
+					and posting_date <= %(report_date)s
+					and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+			""", filters, as_dict=1)
 
         rental_payment_entries = frappe.db.sql("""
                         select
@@ -240,10 +243,26 @@ def get_entries(filters):
 			and ifnull(clearance_date, '4000-01-01') > %(report_date)s
 		""",filters, as_dict=1)
 
-        return sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(rental_payment_entries) +list(tds_remittance_entries),
+	opening_brs_entries = frappe.db.sql("""
+		select 
+			'Opening BRS Entry Detail' as payment_document, posting_date,
+			name as payment_entry, 
+			sum(debit_amount) as debit,
+			sum(credit_amount) as credit, 
+			party as against_account,
+			cheque_number as reference_no, cheque_date as ref_date, clearance_date, 'BTN' as account_currency 
+		from `tabOpening BRS Entry Detail`
+		where 
+			docstatus=1 and bank_account = %(account)s
+			and posting_date <= %(report_date)s
+			and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+		group by posting_date, name, party, cheque_number, cheque_date, clearance_date
+	""", filters, as_dict=1)
+
+	return sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(rental_payment_entries) +list(tds_remittance_entries) + list(opening_brs_entries),
 		key=lambda k: k['posting_date'] or getdate(nowdate()))
 
-		
+
 def get_amounts_not_reflected_in_system(filters):
 	je_amount = frappe.db.sql("""
 		select sum(jvd.debit_in_account_currency - jvd.credit_in_account_currency)

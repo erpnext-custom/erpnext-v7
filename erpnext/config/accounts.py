@@ -320,16 +320,16 @@ def get_data():
 		{
 			"label": _("Bank Accounting"),
 			"items": [
-                		{
+				{
 					"type": "doctype",
 					"name": "Upload BRS Entries",
-                    			"label": _("Upload BRS Data"),
+					"label": _("Upload BRS Data"),
 					"description": _("Upload bank payment dates.")
 				},
-                		{
+				{
 					"type": "doctype",
 					"name": "Bank Reconciliation",
-                    			"label": _("Update Bank Transaction Dates"),
+					"label": _("Update Bank Transaction Dates"),
 					"description": _("Update bank payment dates with journals.")
 				},
                 # {
@@ -352,6 +352,11 @@ def get_data():
                     "is_query_report": True,
 					"doctype": "Journal Entry"
 				},
+				{
+					"type": "doctype",
+					"name": "Opening BRS Entry",
+					"label": _("Opening BRS Entry"),
+				}
                 # {
 				# 	"type": "report",
 				# 	"name": "Bank Guarantee Report",

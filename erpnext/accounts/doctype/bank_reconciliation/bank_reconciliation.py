@@ -77,9 +77,9 @@ class BankReconciliation(Document):
                                 pe.amount -= total_deductions
                                 pe.amount -= tds_amount
 
-                #
-                # Ver 2.0 Begins, Following entries added by SHIV on 28/05/2018
-                #
+		#
+		# Ver 2.0 Begins, Following entries added by SHIV on 28/05/2018
+		#
 		hsd_entries = frappe.db.sql("""
                         select
                                 "HSD Payment" as payment_document, name as payment_entry,
@@ -169,22 +169,37 @@ class BankReconciliation(Document):
                         and posting_date >= '{1}' and posting_date <= '{2}'
                         {3}
                 """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+		
+		opening_brs_entries = frappe.db.sql("""
+			select 
+				'Opening BRS Entry' as payment_document, name as payment_entry,
+				cheque_number, cheque_date, 
+				sum(abs(debit_amount-credit_amount)) as amount, 
+				posting_date, party as against_account, clearance_date 
+			from `tabOpening BRS Entry Detail`
+			where 
+				bank_account = %s and docstatus=1
+				and posting_date >= %s and posting_date <= %s {0}
+			group by name, cheque_number, cheque_date, posting_date, party, clearance_date
+			order by posting_date ASC, name DESC
+		""".format(condition), (self.bank_account, self.from_date, self.to_date), as_dict=1)
+
 		# Ver 2.0 Ends
 		
-#		direct_payment_entries = frappe.db.sql("""
-#                        select
-#                                "Direct Payment" as payment_document, name as payment_entry,
-#                                cheque_no as cheque_number, cheque_date,
-#                                net_amount as amount,
-#                                posting_date, party as against_account, clearance_date
-#                        from `tabDirect Payment`
-#                        where (debit_account = '{0}' or credit_account = '{1}')
-#                        and docstatus = 1
-#                        and posting_date >= '{2}' and posting_date <= '{3}'
-#                        {4}
-#                """.format(self.bank_account, self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+		# direct_payment_entries = frappe.db.sql("""
+        #                select
+        #                        "Direct Payment" as payment_document, name as payment_entry,
+        #                        cheque_no as cheque_number, cheque_date,
+        #                        net_amount as amount,
+        #                        posting_date, party as against_account, clearance_date
+        #                from `tabDirect Payment`
+        #                where (debit_account = '{0}' or credit_account = '{1}')
+        #                and docstatus = 1
+        #                and posting_date >= '{2}' and posting_date <= '{3}'
+        #                {4}
+        #        """.format(self.bank_account, self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 
-		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(rental_payment_entries)+list(tds_remittance_entries), 
+		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(rental_payment_entries)+list(tds_remittance_entries) + list(opening_brs_entries), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))
 				
 		self.set('payment_entries', [])
@@ -212,9 +227,15 @@ class BankReconciliation(Document):
 					d.clearance_date = None
 
 				frappe.db.set_value(d.payment_document, d.payment_entry, "clearance_date", d.clearance_date)
-				frappe.db.sql("""update `tab{0}` set clearance_date = %s, modified = %s 
-					where name=%s""".format(d.payment_document), 
-				(d.clearance_date, nowdate(), d.payment_entry))
+				
+				if d.payment_document == 'Opening BRS Entry':
+					frappe.db.sql("""update `tab{0} Detail` set clearance_date = %s, modified = %s 
+						where name=%s""".format(d.payment_document), 
+					(d.clearance_date, nowdate(), d.payment_entry))
+				else:
+					frappe.db.sql("""update `tab{0}` set clearance_date = %s, modified = %s 
+						where name=%s""".format(d.payment_document), 
+					(d.clearance_date, nowdate(), d.payment_entry))
 				
 				clearance_date_updated = True
 
@@ -223,3 +244,6 @@ class BankReconciliation(Document):
 			msgprint(_("Clearance Date updated"))
 		else:
 			msgprint(_("Clearance Date not mentioned"))
+
+
+
