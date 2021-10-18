@@ -26,7 +26,7 @@ def execute(filters=None):
 	period_list = get_period_list(filters.fiscal_year, filters.periodicity)
 
 	total_income = total_expense = total = 0
-	exclude = [str("Bank & Cash - DS"), str("Inventories - DS"), str("Stock Assets - DS"), str("Tax - DS"), str("Temporary Accounts - DS"), str("Trade Receivables - DS"), str("Other Expenses - DS"), str("Stock Expenses - DS"), str("Accumulated Depreciation - DS"), str("Receipts - DS"), str("Property Plant and Equipment - DS")]
+	exclude = [str("Bank & Cash - DS"), str("Inventories - DS"), str("Stock Assets - DS"), str("Tax - DS"), str("Temporary Accounts - DS"), str("Trade Receivables - DS"), str("Other Expenses - DS"), str("Stock Expenses - DS"), str("Accumulated Depreciation - DS"), str("Receipts - DS"), str("Property Plant and Equipment - DS"), str("Tools and Equipments - DS")]
 	income, total_income, income_budget, income_progressive = get_data_es(filters.fiscal_year, filters.cost_center, filters.business_activity, filters.company, "Asset", "Debit", exclude, period_list,
 		accumulated_values=filters.accumulated_values, ignore_closing_entries=True, show_zero_values=show_zero, periodicity = filters.periodicity)
 	expense, total_expense, expense_budget, expense_progressive  = get_data_es(filters.fiscal_year, filters.cost_center, filters.business_activity, filters.company, "Expense", "Debit", exclude, period_list,
