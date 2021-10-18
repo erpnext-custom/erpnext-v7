@@ -6,6 +6,13 @@ cur_frm.add_fetch("hsd_type", "item_name", "item_name")
 frappe.ui.form.on('Equipment', {
 	onload: function(frm) {
 		//cur_frm.set_df_property("asset_code", "reqd", 1) 
+		frm.set_query("asset_code", function() {
+			return {
+				"filters": {
+					"asset_category":[ 'in', ['Motor Vehicle']]
+				}
+			};
+		});
 	},
 	setup: function(frm){
 		frm.get_field('model_items').grid.editable_fields = [
