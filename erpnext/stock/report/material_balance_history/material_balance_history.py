@@ -21,7 +21,8 @@ def execute(filters=None):
 			for batch in sorted(iwb_map[item][wh]):
 				qty_dict = iwb_map[item][wh][batch]
 				if qty_dict.opening_qty or qty_dict.in_qty or qty_dict.out_qty or qty_dict.bal_qty:
-					data.append([item, item_map[item]["item_name"], item_map[item]["description"], wh,
+					data.append([item, item_map[item]["item_name"], item_map[item]['item_group'], \
+					item_map[item]['item_sub_group'],item_map[item]["description"], wh,
 						flt(qty_dict.opening_qty, float_precision), flt(qty_dict.in_qty, float_precision),
 						flt(qty_dict.out_qty, float_precision), flt(qty_dict.bal_qty, float_precision)
 					])
@@ -31,7 +32,7 @@ def execute(filters=None):
 def get_columns(filters):
 	"""return columns based on filters"""
 
-	columns = [_("Material Code") + ":Link/Item:100"] + [_("Material Name") + "::150"] + [_("Material Description") + "::200"] + \
+	columns = [_("Material Code") + ":Link/Item:100"] + [_("Material Name") + "::150"] + [_("Material Group") + ":Link/Item Group:150"] + [_("Material Sub Group") + ":Link/Item Sub Group:150"] + [_("Material Description") + "::200"] + \
 	[_("Warehouse") + ":Link/Warehouse:100"] + [_("Opening Qty") + ":Float:90"] + \
 	[_("Receipt Qty") + ":Float:80"] + [_("Issued Qty") + ":Float:80"] + [_("Balance Qty") + ":Float:90"]
 
@@ -87,7 +88,17 @@ def get_item_warehouse_batch_map(filters, float_precision):
 
 def get_item_details(filters):
 	item_map = {}
-	for d in frappe.db.sql("select name, item_name, description from tabItem", as_dict=1):
+	query = "select name, item_name, item_group, item_sub_group, description from tabItem where 1 = 1"
+	if filters.item_code:
+		query += " and name = '{0}'".format(filters.get('item_code'))
+
+	if filters.item_group:
+		query += " and item_group = '{0}'".format(filters.get('item_group'))
+
+	if filters.item_sub_group:
+		query += " and item_sub_group = '{0}'".format(filters.get('item_sub_group'))
+
+	for d in frappe.db.sql(query, as_dict=1):
 		item_map.setdefault(d.name, d)
 
 	return item_map

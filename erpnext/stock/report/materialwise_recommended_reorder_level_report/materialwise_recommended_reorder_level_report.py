@@ -18,7 +18,7 @@ def execute(filters=None):
 		frappe.throw(_("'From Date' must be after 'To Date'"))
 
 	columns = get_columns()
-	items = get_item_info()
+	items = get_item_info(filters)
 	consumed_item_map = get_consumed_items(condition)
 	delivered_item_map = get_delivered_items(condition)
 
@@ -29,27 +29,38 @@ def execute(filters=None):
 		avg_daily_outgoing = flt(total_outgoing/diff, float_preceision)
 		reorder_level = (avg_daily_outgoing * flt(item.lead_time_days)) + flt(item.min_order_qty)
 
-		data.append([item.name, item.item_name, item.description, item.min_order_qty, item.lead_time_days,
-			consumed_item_map.get(item.name, 0), delivered_item_map.get(item.name,0), total_outgoing,
+		data.append([item.name, item.item_name, item.item_group, item.item_sub_group, item.description, item.min_order_qty, 
+			item.lead_time_days, consumed_item_map.get(item.name, 0), delivered_item_map.get(item.name,0), total_outgoing,
 			avg_daily_outgoing])
 
 	return columns , data
 
 def get_columns():
 	return[
-			_("Material Code") + ":Link/Item:120", _("Material Name") + ":Data:120", _("Material Description") + "::160",
+			_("Material Code") + ":Link/Item:120", _("Material Name") + ":Data:120", _("Material Group") + ":Link/Item Group:120",
+			_("Material Sub Group") + ":Link/Item Sub Group:120", _("Material Description") + "::160",
 			_("Minimum Inventory Level") + ":Float:160", _("Lead Time Days") + ":Float:120", _("Consumed") + ":Float:120",
 			_("Delivered") + ":Float:120", _("Total Outgoing") + ":Float:120", _("Avg Daily Outgoing") + ":Float:160"
 	]
 
-def get_item_info():
-	return frappe.db.sql("""select name, item_name, description, min_order_qty,
-		lead_time_days	from tabItem""", as_dict=1)
+def get_item_info(filters):
+	query = """select name, item_name, item_group, item_sub_group, description, min_order_qty,
+                lead_time_days  from tabItem where 1 = 1"""
+	if filters.item_code:
+		query += " and name = '{0}'".format(filters.get('item_code'))
+
+	if filters.item_group:
+		query += " and item_group = '{0}'".format(filters.get('item_group'))
+
+	if filters.item_sub_group:
+		query ++ " and item_sub_group = '{0}'".format(filters.get('item_sub_group'))
+
+	return frappe.db.sql(query, as_dict = 1)
 
 def get_consumed_items(condition):
 
 	cn_items = frappe.db.sql("""select se_item.item_code,
-				sum(se_item.actual_qty) as 'consume_qty'
+				sum(se_item.actual_qty) as 'consume_qty', se_item.s_warehouse
 		from `tabStock Entry` se, `tabStock Entry Detail` se_item
 		where se.name = se_item.parent and se.docstatus = 1
 		and ifnull(se_item.t_warehouse, '') = '' %s
@@ -87,6 +98,7 @@ def get_condition(filters):
 	conditions = ""
 	if filters.get("from_date") and filters.get("to_date"):
 		conditions += " and posting_date between '%s' and '%s'" % (filters["from_date"],filters["to_date"])
+		
 	else:
 		frappe.throw(_("From and To dates required"))
 	return conditions

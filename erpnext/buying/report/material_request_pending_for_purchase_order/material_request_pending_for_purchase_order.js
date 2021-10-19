@@ -1,9 +1,9 @@
-// Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
-// License: GNU General Public License v3. See license.txt
+// Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
+// For license information, please see license.txt
 
-frappe.query_reports["Materialwise Recommended Reorder Level Report"] = {
+frappe.query_reports["Material Request Pending for Purchase Order"] = {
 	"filters": [
-	 {
+		 {
                         "fieldname":"from_date",
                         "label": __("From Date"),
                         "fieldtype": "Date",
@@ -17,7 +17,7 @@ frappe.query_reports["Materialwise Recommended Reorder Level Report"] = {
                         "default": frappe.datetime.get_today(),
                         "reqd": 1
                 },
-                /*{
+                {
                         "fieldname":"cost_center",
                         "label": __("Cost Center"),
                         "fieldtype": "Link",
@@ -28,7 +28,7 @@ frappe.query_reports["Materialwise Recommended Reorder Level Report"] = {
                         "label": __("Warehouse"),
                         "fieldtype": "Link",
                         "options": "Warehouse"
-                },*/
+                },
                 {
                         "fieldname":"item_code",
                         "label": __("Material Code"),
@@ -47,5 +47,6 @@ frappe.query_reports["Materialwise Recommended Reorder Level Report"] = {
                         "fieldtype": "Link",
                         "options": "Item Sub Group"
                 }
+
 	]
 }

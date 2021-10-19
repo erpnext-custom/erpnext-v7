@@ -10,7 +10,7 @@ def execute(filters=None):
 	if not filters: filters = {}
 
 	columns = get_columns(filters)
-	item_map = get_item_details()
+	item_map = get_item_details(filters)
 	pl = get_price_list()
 	last_purchase_rate = get_last_purchase_rate()
 	bom_rate = get_item_bom_rate()
@@ -20,7 +20,7 @@ def execute(filters=None):
 	precision = get_currency_precision() or 2
 	data = []
 	for item in sorted(item_map):
-		data.append([item, item_map[item]["item_name"],item_map[item]["item_group"],
+		data.append([item, item_map[item]["item_name"],item_map[item]["item_group"], item_map[item]["item_group"],
 			item_map[item]["description"], item_map[item]["stock_uom"],
 			flt(last_purchase_rate.get(item, 0), precision),
 			flt(val_rate_map.get(item, 0), precision),
@@ -33,20 +33,27 @@ def execute(filters=None):
 def get_columns(filters):
 	"""return columns based on filters"""
 
-	columns = [_("Material Code") + ":Link/Item:100", _("Material Name") + "::150",_("Material Group") + ":Link/Item Group:125", _("Material Description") + "::150", _("UOM") + ":Link/UOM:80",
+	columns = [_("Material Code") + ":Link/Item:100", _("Material Name") + "::150",_("Material Group") + ":Link/Item Group:125", _("Material Sub Group") + ":Link/Item Sub Group:125", _("Material Description") + "::150", _("UOM") + ":Link/UOM:80",
 		_("Last Purchase Rate") + ":Currency:90", _("MAP") + ":Currency:80",	_("Sales Price List") + "::180",
 		_("Purchase Price List") + "::180"]
 
 	return columns
 
-def get_item_details():
+def get_item_details(filters):
 	"""returns all items details"""
+	conditions = "where 1 = 1"
+	if filters.get("item_code"):
+		conditions += " and name = '{0}'".format(filters.get("item_code"))
+	if filters.get("item_group"):
+		conditions += " and item_group = '{0}'".format(filters.get("item_group"))
+	if filters.get("item_sub_group"):
+		conditions += " and item_sub_group = '{0}'".format(filters.get("item_sub_group"))
 
 	item_map = {}
 
-	for i in frappe.db.sql("select name, item_group, item_name, description, \
-		stock_uom from tabItem \
-		order by item_code, item_group", as_dict=1):
+	for i in frappe.db.sql("select name, item_group, item_sub_group, item_name, description, \
+		stock_uom from tabItem %s \
+		order by item_code, item_group" %(conditions), as_dict=1):
 			item_map.setdefault(i.name, i)
 
 	return item_map

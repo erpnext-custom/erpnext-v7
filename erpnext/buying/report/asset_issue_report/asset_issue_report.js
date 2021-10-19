@@ -35,5 +35,29 @@ frappe.query_reports["Asset Issue Report"] = {
 			"fieldtype": "Date",
 			"default": frappe.defaults.get_user_default("year_end_date"),
 		},
+		{
+                        "fieldname":"item_code",
+                        "label": __("Material Code"),
+                        "fieldtype": "Link",
+                        "options": "Item"
+                },
+                {
+                        "fieldname":"item_group",
+                        "label": __("Material Group"),
+                        "fieldtype": "Link",
+                        "options": "Item Group"
+                },
+                {
+                        "fieldname":"item_sub_group",
+                        "label": __("Material Sub Group"),
+                        "fieldtype": "Link",
+                        "options": "Item Sub Group"
+                },
+		{
+                        "fieldname":"cost_center",
+                        "label": __("Cost Center"),
+                        "fieldtype": "Link",
+                        "options": "Cost Center"
+                }
 	],
 }

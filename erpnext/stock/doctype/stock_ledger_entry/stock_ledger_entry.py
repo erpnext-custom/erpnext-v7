@@ -29,6 +29,11 @@ class StockLedgerEntry(Document):
 
 		from erpnext.accounts.utils import validate_fiscal_year
 		validate_fiscal_year(self.posting_date, self.fiscal_year, self.meta.get_label("posting_date"), self)
+		#added item group and item sub group - Tashi Dorji
+		#doc = frappe.get_doc("Item", self.item_code)
+		#self.item_group = doc.item_group
+		#self.item_sub_group = doc.item_sub_group
+
 
 	def on_submit(self):
 		self.check_stock_frozen_date()
@@ -37,6 +42,11 @@ class StockLedgerEntry(Document):
 		if not self.get("via_landed_cost_voucher"):
 			from erpnext.stock.doctype.serial_no.serial_no import process_serial_no
 			process_serial_no(self)
+
+		#added item group and item sub group - Tashi Dorji
+                doc = frappe.get_doc("Item", self.item_code)
+                self.db_set('item_group',  doc.item_group)
+                self.db_set('item_sub_group',  doc.item_sub_group)
 
 	#check for item quantity available in stock
 	def actual_amt_check(self):

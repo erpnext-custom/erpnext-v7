@@ -95,6 +95,12 @@ def get_data():
 					"doctype": "Material Request"
 				},
 				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Purchase Order Materials To Be Received",
+                                        "doctype": "Purchase Receipt"
+                                },
+				{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Material Purchase History",
@@ -117,12 +123,6 @@ def get_data():
 					"is_query_report": True,
 					"name": "Purchase Order Trends",
 					"doctype": "Purchase Order"
-				},
-				{
-					"type": "report",
-					"is_query_report": True,
-					"name": "Purchase Order Materials To Be Received",
-					"doctype": "Purchase Receipt"
 				},
 				{
 					"type": "report",
