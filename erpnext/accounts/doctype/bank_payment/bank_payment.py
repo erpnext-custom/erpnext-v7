@@ -370,8 +370,14 @@ class BankPayment(Document):
 				if flt(debit_amt) != flt(credit_amt) or debit_bank_account > 1:
 					frappe.throw("Bank Payment not feasible as either Debit or Credit is not equal or there are more than one debit bank account")				
 			else:
-				credit_amt = debit_amt = 0.00
+				credit_amt = debit_amt = other_credit = 0.00
 				party_type = party = reference_type = reference_name = ""
+				party_count = frappe.db.sql("""select count(distinct party) as party_count 
+                                from `tabJournal Entry Account` 
+                                where parent = '{journal_entry}'
+                                AND party IS NOT NULL
+                                AND party != ""
+                                """.format(journal_entry = a.transaction_id))[0][0]
 				for b in frappe.db.sql("""SELECT ja.name transaction_reference, ja.reference_type, 
 											ja.reference_name, ja.party_type, ja.party, ja.account,
 										round(ja.debit_in_account_currency,2) as debit_amount, 
@@ -381,7 +387,12 @@ class BankPayment(Document):
 									""".format(parent = a.transaction_id), as_dict=True):
 					if frappe.db.get_value("Account", b.account, "account_type") == "Bank" and b.credit_amount > 0:
 						credit_amt +=  flt(b.credit_amount)
+					if frappe.db.get_value("Account", b.account, "account_type") != "Bank" and b.credit_amount > 0:
+						other_credit += flt(b.credit_amount)
+					if other_credit > 0 and party_count > 1:
+						frappe.throw("Payment for Journal Entry {} is not feasible through bank payment".format(a.transaction_id)) 
 					if b.debit_amount > 0:
+						actual_debit_amount = flt(b.debit_amount) - flt(other_credit)
 						party_type = b.party_type
 						party = b.party
 						if not party_type and not party:
@@ -427,12 +438,12 @@ class BankPayment(Document):
 									'bank_branch': c.bank_branch,
 									'bank_account_type': c.bank_account_type,
 									'bank_account_no': c.bank_account_no,
-									'amount': flt(b.debit_amount),
+									'amount': flt(actual_debit_amount),
 									'inr_bank_code': c.inr_bank_code,
 									'inr_purpose_code': c.inr_purpose_code,
 									'status': "Draft"
 								}))
-				if flt(credit_amt) != flt(debit_amt):
+				if flt(credit_amt) != flt(actual_debit_amount):
 					frappe.throw("Debit {} is not equal to credit {}".format(debit_amt, credit_amt))
 		return data
 
