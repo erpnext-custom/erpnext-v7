@@ -306,7 +306,7 @@ class Asset(Document):
 				"remark": self.name + " (" + self.asset_name + ") Asset Issued",
 				"user_remark": self.name + " (" + self.asset_name + ") Asset Issued",
 				#"posting_date": self.purchase_date,
-				"posting_date": self.posting_date if self.posting_date else self.purchase_date,
+				"posting_date": str(self.posting_date) if self.posting_date else str(self.purchase_date),
 				"branch": self.branch
 				})
 
