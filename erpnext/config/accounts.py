@@ -306,50 +306,56 @@ def get_data():
 		{
 			"label": _("Bank Accounting"),
 			"items": [
-                		{
+				{
 					"type": "doctype",
 					"name": "Upload BRS Entries",
-                    			"label": _("Upload BRS Data"),
+					"label": _("Upload BRS Data"),
 					"description": _("Upload bank payment dates.")
 				},
-                		{
+				{
 					"type": "doctype",
 					"name": "Bank Reconciliation",
-                    			"label": _("Update Bank Transaction Dates"),
+					"label": _("Update Bank Transaction Dates"),
 					"description": _("Update bank payment dates with journals.")
 				},
-                                {
+				{
 					"type": "doctype",
 					"name": "Bank Guarantee",
 				},
-                                {
-                                        "type": "doctype",
-                                        "name": "Fixed Deposit",
-                                },
-                		{
+				{
+					"type": "doctype",
+					"name": "Fixed Deposit",
+				},
+				{
 					"type": "report",
 					"name": "Bank Reconciliation Statement",
-                			"is_query_report": True,
+					"is_query_report": True,
 					"doctype": "Journal Entry"
 				},
                 		{
 					"type": "report",
 					"name": "Bank Clearance Summary",
-                    			"is_query_report": True,
+					"is_query_report": True,
 					"doctype": "Journal Entry"
 				},
-                		{
+				
+				{
+					"type": "doctype",
+					"name": "Opening BRS Entry",
+					"label": _("Opening BRS Entry"),
+				},
+				{
 					"type": "report",
 					"name": "Bank Guarantee Report",
-                    			"is_query_report": True,
+					"is_query_report": True,
 					"doctype": "Bank Guarantee"
 				},
-                                {
-                                        "type": "report",
-                                        "name": "Fixed Deposit Report",
-                                        "is_query_report": True,
-                                        "doctype": "Fixed Deposit"
-                                },
+				{
+					"type": "report",
+					"name": "Fixed Deposit Report",
+					"is_query_report": True,
+					"doctype": "Fixed Deposit"
+				},
 			]
 		},
 		{
