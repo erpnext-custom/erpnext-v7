@@ -49,6 +49,15 @@ frappe.ui.form.on('Equipment', {
                         cur_frm.set_df_property("branch", "read_only", 0)
                 }  
 	},
+	supplier:function(frm){
+		cur_frm.set_df_property("owner_name", "read_only", frm.doc.supplier ? 1 : 0)
+		cur_frm.set_df_property("bank_name", "read_only", frm.doc.supplier ? 1 : 0)
+		cur_frm.set_df_property("bank_branch", "read_only", frm.doc.supplier ? 1 : 0)
+		cur_frm.set_df_property("bank_account_type", "read_only", frm.doc.supplier ? 1 : 0)
+		cur_frm.set_df_property("account_number", "read_only", frm.doc.supplier ? 1 : 0)
+		cur_frm.set_df_property("ifs_code", "read_only", frm.doc.supplier ? 1 : 0)
+		cur_frm.set_df_property("vendor_tpn_number", "read_only", frm.doc.supplier ? 1 : 0)
+	},
 	validate: function(frm) {
 		if (frm.doc.operators) {
 			frm.doc.operators.forEach(function(d) { 
