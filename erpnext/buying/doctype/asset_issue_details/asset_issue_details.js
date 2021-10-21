@@ -16,6 +16,26 @@ frappe.ui.form.on('Asset Issue Details', {
 		if(frm.doc.qty){
 	 		frm.set_value("amount", frm.doc.qty * frm.doc.asset_rate);
 		}
+	},
+	item_code: function(frm) {
+		frappe.call({
+            "method": "frappe.client.get_value",
+            args: {
+                doctype: "Item",
+                fieldname: 'asset_category',
+                filters: { name: frm.doc.item_code },
+            },
+            callback: function (r) {
+				if(r.message.asset_category == 'Motor Vehicle' || r.message.asset_category == 'Plant & Machinary'){
+					frm.toggle_reqd(['equipment_model'], 1);
+					frm.toggle_reqd(['equipment_type'], 1);
+				}
+				else{
+					frm.toggle_reqd(['equipment_model'], 0);
+					frm.toggle_reqd(['equipment_type'], 0);
+				}
+            }
+		});
 	}
 });
 

@@ -33,6 +33,21 @@ class Asset(Document):
 		self.make_asset_gl_entry();
 		self.set_status()
 
+		if not self.is_existing_asset:
+			if self.asset_category == 'Motor Vehicle' or self.asset_category == 'Plant & Machinary':
+				equip = frappe.new_doc("Equipment")
+				equip_type = frappe.db.get_value("Asset Issue Details", self.asset_issue_detail_code, 'equipment_type')
+				equip.branch = frappe.db.get_value("Asset Issue Details", self.asset_issue_detail_code, 'branch')
+				equip.asset_code = self.name
+				equip.equipment_category = frappe.db.get_value("Equipment Type", {'name': equip_type}, 'equipment_category') 
+				equip.equipment_type = equip_type
+				equip.equipment_model = frappe.db.get_value("Asset Issue Details", self.asset_issue_detail_code, 'equipment_model') 
+				equip.equipment_number = frappe.db.get_value("Asset Issue Details", self.asset_issue_detail_code, 'reg_number') 
+				equip.engine_number = frappe.db.get_value("Asset Issue Details", self.asset_issue_detail_code, 'engine_no') 
+				equip.chassis_number = frappe.db.get_value("Asset Issue Details", self.asset_issue_detail_code, 'chesis_no') 
+				equip.insert()
+				frappe.db.commit()
+
 	def on_cancel(self):
 		self.validate_cancellation()
 		self.delete_asset_gl_entries()
