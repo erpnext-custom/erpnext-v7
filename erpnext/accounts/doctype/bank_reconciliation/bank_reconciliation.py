@@ -179,10 +179,10 @@ class BankReconciliation(Document):
 			from `tabOpening BRS Entry Detail`
 			where 
 				bank_account = %s and docstatus=1
-				and posting_date >= %s and posting_date <= %s {0}
+				and posting_date < %s {0}
 			group by name, cheque_number, cheque_date, posting_date, party, clearance_date
 			order by posting_date ASC, name DESC
-		""".format(condition), (self.bank_account, self.from_date, self.to_date), as_dict=1)
+		""".format(condition), (self.bank_account, self.from_date), as_dict=1)
 
 		# Ver 2.0 Ends
 		
