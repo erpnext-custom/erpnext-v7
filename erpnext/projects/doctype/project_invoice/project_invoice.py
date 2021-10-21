@@ -32,7 +32,8 @@ class ProjectInvoice(AccountsController):
                 self.update_mb_entries()
                 self.make_gl_entries()
                 self.project_invoice_item_entry()
-                self.update_advance_balance()  
+                self.update_advance_balance()
+		self.consume_budget()  
 
         def before_cancel(self):
                 self.set_status()
@@ -44,6 +45,7 @@ class ProjectInvoice(AccountsController):
                 self.update_mb_entries()
                 self.project_invoice_item_entry()
                 self.update_advance_balance()  
+                self.cancel_consumed()  
 
         def on_update_after_submit(self):
                 self.project_invoice_item_entry()
@@ -686,7 +688,38 @@ class ProjectInvoice(AccountsController):
                                         adv_doc.balance_amount    = flt(adv_doc.balance_amount) - flt(allocated_amount)
                                         adv_doc.save(ignore_permissions = True)
 
+        #Cancel the consumed budget
+	def cancel_consumed(self):
+		frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name)
 
+        def consume_budget(self): #added by Jai
+                # pass
+                if self.party_type == "Supplier":
+                        if not self.supplier_invoice:
+                                inv_account = frappe.db.get_value(doctype="Projects Accounts Settings",fieldname="invoice_account_supplier")
+                                if inv_account:
+                                        account_type = frappe.db.get_value("Account", inv_account, "account_type")
+                                        if account_type in ("Capital Work in Progress"):
+                                                # po_date = frappe.db.get_value("Purchase Order", item.purchase_order, "transaction_date")
+                                                project = frappe.get_doc('Project', self.project)
+                                                po_date = self.invoice_date
+                                                company = 'National Housing Development Corporation Ltd.'
+                                                consume = frappe.get_doc({
+                                                        "doctype": "Consumed Budget",
+                                                        "account": inv_account,
+                                                        "cost_center": self.cost_center,
+                                                        "po_no": self.name,
+                                                        "company": company,
+                                                        "po_date": po_date,
+                                                        "amount": self.net_invoice_amount,
+                                                        "poi_name": '',
+                                                        "pii_name": '',
+                                                        "item_code": '',
+                                                        "com_ref": project.name,
+                                                        "date": frappe.utils.nowdate()})
+                                                consume.flags.ignore_permissions=1
+                                                consume.submit()
+                
 @frappe.whitelist()
 def get_project_party_type(doctype, txt, searchfield, start, page_len, filters):
         result = []
@@ -788,7 +821,7 @@ def get_payment_entry(doc_name, total_amount, project, party, party_type):
         if (len(payment_entry) >= 1 and payment_entry[0].total_amount > 0):
                 if flt(total_amount) < 0: total_amount = -1 * (flt(total_amount))
                 
-		if flt(payment_entry[0].total_amount) == round(flt(total_amount), 2):
+		if round(flt(payment_entry[0].total_amount), 2) == round(flt(total_amount), 2):
 			frappe.db.set_value("Project Invoice", doc_name, "payment_status", "Paid")
 			return ("Paid")
 		else:
