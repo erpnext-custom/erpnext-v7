@@ -9,7 +9,7 @@ from frappe.utils import flt, getdate
 def execute(filters=None):
 	if not filters: filters = {}
 	
-	validate_filters(filters)
+	#validate_filters(filters)
 
 	columns = get_columns()
 	item_map = get_item_details(filters)
@@ -39,7 +39,7 @@ def get_columns():
 		_("Material Code")+":Link/Item:100",
 		_("Material Name")+"::150",
 		_("Material Group")+"::100",
-		_("Material Sub Group")+"::100",
+		_("Material Sub Group")+"::150",
 		_("Warehouse")+":Link/Warehouse:100",
 		_("Stock UOM")+":Link/UOM:90",
 		_("Opening Qty")+":Float:100",
@@ -72,6 +72,12 @@ def get_conditions(filters):
 	if filters.get("item_code"):
 		conditions += " and item_code = '%s'" % frappe.db.escape(filters.get("item_code"), percent=False)
 
+	if filters.get("item_group"):
+		conditions += " and item_group = '%s'" % frappe.db.escape(filters.get("item_group"), percent=False)
+
+	if filters.get("item_sub_group"):
+		conditions += " and item_sub_group = '%s'" % frappe.db.escape(filters.get("item_sub_group"), percent = False)
+
 	if filters.get("warehouse"):
 		conditions += " and warehouse = '%s'" % frappe.db.escape(filters.get("warehouse"), percent=False)
 
@@ -79,7 +85,7 @@ def get_conditions(filters):
 
 def get_stock_ledger_entries(filters):
 	conditions = get_conditions(filters)
-	return frappe.db.sql("""select item_code, warehouse, posting_date, actual_qty, valuation_rate,
+	return frappe.db.sql("""select item_code, warehouse, posting_date, actual_qty, valuation_rate, item_group, item_sub_group,
 			company, voucher_type, qty_after_transaction, stock_value_difference
 		from `tabStock Ledger Entry` force index (posting_sort_index)
 		where docstatus < 2 %s order by posting_date, posting_time, name""" %
@@ -156,13 +162,22 @@ def get_item_warehouse_map(filters):
 
 def get_item_details(filters):
 	condition = ''
-	value = ()
+	#value = ()
 	if filters.get("item_code"):
-		condition = "where item_code=%s"
-		value = (filters["item_code"],)
+		condition += " and item_code= '{0}'".format(filters.get('item_code'))
+	if filters.get("item_group"):
+		condition += " and item_group = '{0}'".format(filters.get('item_group'))
 
+	if filters.get('item_sub_group'):
+		condition += " and item_sub_group = '{0}'".format(filters.get('item_sub_group'))
+
+	#value = (filters["item_code"],)
+
+	'''items = frappe.db.sql("""select name, item_name, stock_uom, item_group, item_sub_group, brand, description
+		from tabItem where 1 = 1 {condition}""".format(condition=condition), value, as_dict=1)
+	'''
 	items = frappe.db.sql("""select name, item_name, stock_uom, item_group, item_sub_group, brand, description
-		from tabItem {condition}""".format(condition=condition), value, as_dict=1)
+                from tabItem where 1 = 1 {condition}""".format(condition=condition), as_dict=1)
 
 	return dict((d.name, d) for d in items)
 
