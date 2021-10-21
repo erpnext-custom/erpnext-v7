@@ -25,16 +25,17 @@ class Account(Document):
 			frappe.throw(_('Company {0} does not exist').format(self.company))
 		
 		#Account Codification if is not group -- Tashi Dorji
-		account_code = self.account_code_base
-		if cint(self.is_group) == 0:
-			account_code = self.account_code_gen()
-		if account_code:
-			self.account_code = account_code
-			self.name = str(account_code) + ' - ' + self.account_name.strip() + ' - ' + company.abbr
+		#account_code = self.account_code_base
+		#if cint(self.is_group) == 0:
+		account_code = self.account_code_gen()
+		#if account_code:
+		self.account_code = account_code
+		#self.name = str(account_code) + ' - ' + self.account_name.strip() + ' - ' + company.abbr
+		self.name = self.account_name.strip() + ' - ' + company.abbr
 
-		else:
-			self.account_code = None
-                        self.name = self.account_name.strip() + ' - ' + company.abbr
+		#else:
+		#	self.account_code = None
+                #        self.name = self.account_name.strip() + ' - ' + company.abbr
 
 	def account_code_gen(self):
                 account_code = frappe.db.sql("""select account_code from tabAccount where parent_account =%s order by account_code desc limit 1;""", self.parent_account);
