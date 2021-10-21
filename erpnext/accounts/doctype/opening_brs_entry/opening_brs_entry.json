@@ -64,7 +64,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "fieldname": "details", 
@@ -125,7 +125,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-10-20 12:44:59.961293", 
+ "modified": "2021-10-21 14:35:29.046322", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Opening BRS Entry", 
