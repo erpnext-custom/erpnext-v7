@@ -55,6 +55,12 @@ frappe.query_reports["Asset Register"] = {
 			"label": __("Asset Category"),
 			"fieldtype": "Link",
 			"options": "Asset Category",
+		},
+		{
+			"fieldname": "location",
+			"label": __("Location"),
+			"fieldtype": "Link",
+			"options": "Location",
 		}
 
 	]

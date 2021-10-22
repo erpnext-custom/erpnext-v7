@@ -113,6 +113,9 @@ def get_data(filters):
 	if filters.asset_category:
 		query+=" and ass.asset_category = \'" + filters.asset_category + "\'"
 
+	if filters.location:
+		query+=" and ass.location = \'" + filters.location + "\'"
+		
 	if filters.to_date:
 		query += " and ass.purchase_date <= '{0}'".format(filters.to_date)
 
