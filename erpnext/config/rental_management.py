@@ -65,10 +65,10 @@ def get_data():
 					"type": "doctype",
 					"name": "Rental Account Setting",
 				},
-				{
-					"type": "doctype",
-					"name": "Rate",
-				},
+				# {
+				# 	"type": "doctype",
+				# 	"name": "Rate",
+				# },
 			]
 		},
 		{
@@ -199,11 +199,11 @@ def get_data():
 									"type": "doctype",
 									"name": "Draft ID"
 								},
-                                 {
-                                        "type": "doctype",
-                                        "name": "Rental Bill Cancelation Tool",
-					"label": "Bill Cancellation Tool"
-                                }
+                    #              {
+                    #                     "type": "doctype",
+                    #                     "name": "Rental Bill Cancelation Tool",
+					# "label": "Bill Cancellation Tool"
+                    #             }
 
                         ]
                 },
