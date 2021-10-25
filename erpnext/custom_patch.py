@@ -2127,16 +2127,21 @@ def delete_pol_ad_and_gl_entry():
 
 def update_rrco_receipt_entries():
 	re1 = frappe.db.sql("SELECT rti.invoice_no FROM `tabRRCO Receipt Tool` rt, `tabRRCO Receipt Tool Item` rti WHERE rti.parent = rt.name AND rt.name = 'RRCO-RECEIPT210008' AND rt.docstatus = 1", as_dict=True)
+	c=0
 	for r in re1:
 		frappe.db.sql("update `tabRRCO Receipt Entries` set rrco_receipt_tool = 'RRCO-RECEIPT210008' where purchase_invoice = '{}'".format(r.invoice_no))
+		c += 1
 		print(r.invoice_no)
+	print(c)
 	print('DONE')
 
 	re2 = frappe.db.sql("SELECT rti.invoice_no FROM `tabRRCO Receipt Tool` rt, `tabRRCO Receipt Tool Item` rti WHERE rti.parent = rt.name AND rt.name = 'RRCO-RECEIPT210007' AND rt.docstatus = 1", as_dict=True)
+	c=0
 	for r in re2:
 		frappe.db.sql("update `tabRRCO Receipt Entries` set rrco_receipt_tool = 'RRCO-RECEIPT210007' where purchase_invoice = '{}'".format(r.invoice_no))
 		c+=1
 		print(r.invoice_no)
+	print(c)
 	print('DONE')
 
 def update_rrco_receipt_tool_item():
