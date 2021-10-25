@@ -246,7 +246,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2017-09-01 14:46:53.906462", 
+ "modified": "2021-10-25 17:01:47.636293", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Bank Reconciliation", 
@@ -263,7 +263,7 @@
    "if_owner": 0, 
    "import": 0, 
    "permlevel": 0, 
-   "print": 0, 
+   "print": 1, 
    "read": 1, 
    "report": 0, 
    "role": "Accounts User", 
@@ -297,5 +297,6 @@
  "read_only": 1, 
  "read_only_onload": 0, 
  "sort_order": "ASC", 
+ "track_changes": 0, 
  "track_seen": 0
 }
