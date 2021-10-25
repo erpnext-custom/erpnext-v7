@@ -2068,6 +2068,23 @@ def rename_payment_entry():
 		rename_doc("Payment Entry", a, new_name, force=False, merge=False, ignore_permissions=True)
 		frappe.db.sql("update `tabGL Entry` set voucher_no='{}' where voucher_type='Payment Entry' and voucher_no= '{}' ".format(new_name,a))
 		print("PE renamed from: {} to: {}".format(a,new_name))
+		
+def rename_je():
+	import datetime
+	arr = ['JEJV210800099','JEJV210800099','JEJV210800099']
+	for a in arr:
+		doc = frappe.get_doc("Journal Entry", 'JEJV210800099')
+		datem = datetime.datetime.strptime(str(doc.posting_date), "%Y-%m-%d")
+		post_month = str(datem.month)
+		post_year = str(datem.year)
+		posting_year = post_year[-2:]
+		posting_month = post_month if len(post_month) > 1 else "0" + post_month
+		series = doc.name
+		series_seq = series[0:4]
+		new_name = make_autoname(str(series_seq) + str(posting_year) + str(posting_month) + '.#####')
+		rename_doc("Journal Entry", doc.name, new_name, force=False, merge=False, ignore_permissions=True)
+		frappe.db.sql("update `tabGL Entry` set voucher_no='{}' where voucher_type='Journal Entry' and voucher_no= '{}' ".format(new_name,a))
+		print("JE renamed from: {} to: {}".format(a, new_name))
 
 def rename_journal_entry():
 
@@ -2107,3 +2124,27 @@ def delete_pol_ad_and_gl_entry():
 
 	frappe.db.sql("update `tabPol Advance` set docstatus=2, workflow_state = 'Cancelled' where name='POLAD21080400002'")
 	print("done")
+
+def update_rrco_receipt_entries():
+	re1 = frappe.db.sql("SELECT rti.invoice_no FROM `tabRRCO Receipt Tool` rt, `tabRRCO Receipt Tool Item` rti WHERE rti.parent = rt.name AND rt.name = 'RRCO-RECEIPT210008' AND rt.docstatus = 1", as_dict=True)
+	for r in re1:
+		frappe.db.sql("update `tabRRCO Receipt Entries` set rrco_receipt_tool = 'RRCO-RECEIPT210008' where purchase_invoice = '{}'".format(r.invoice_no))
+		print(r.invoice_no)
+	print('DONE')
+
+	re2 = frappe.db.sql("SELECT rti.invoice_no FROM `tabRRCO Receipt Tool` rt, `tabRRCO Receipt Tool Item` rti WHERE rti.parent = rt.name AND rt.name = 'RRCO-RECEIPT210007' AND rt.docstatus = 1", as_dict=True)
+	for r in re2:
+		frappe.db.sql("update `tabRRCO Receipt Entries` set rrco_receipt_tool = 'RRCO-RECEIPT210007' where purchase_invoice = '{}'".format(r.invoice_no))
+		c+=1
+		print(r.invoice_no)
+	print('DONE')
+
+def update_rrco_receipt_tool_item():
+	receipt_entries = frappe.db.sql("SELECT re.supplier, re.purchase_invoice FROM `tabRRCO Receipt Entries` re WHERE re.docstatus=1", as_dict=True)
+	c = 1
+	for r in receipt_entries:
+		frappe.db.sql("update `tabRRCO Receipt Tool Item` rti set rti.party = '{}' where rti.invoice_no = '{}'".format(r.supplier, r.purchase_invoice))
+		c += 1
+	print(c)
+	print("DONE")
+	
