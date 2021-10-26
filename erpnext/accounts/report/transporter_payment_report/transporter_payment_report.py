@@ -32,22 +32,23 @@ def get_data(filters):
 	for d in frappe.db.sql(query, as_dict =1):
 		cc = frappe.get_doc("Branch", d.branch).cost_center
 		eq = frappe.db.get_values("Equipment", {"name": d.equipment, "is_disabled": 0}, ["equipment_type", "owner_name", "bank_name", \
-					"account_number","bank_branch", "ifs_code"], as_dict=True)
+					"account_number","bank_full_name","bank_branch", "ifs_code"], as_dict=True)
 		if eq:
 			equipment_type = eq[0].equipment_type 
 			owner_name = eq[0].owner_name
 			bank_name = eq[0].bank_name
+			bank_full_name = eq[0].bank_full_name
 			account_number = eq[0].account_number
 			ifs_code = eq[0].ifs_code
 			bank_branch = eq[0].bank_branch
 			if filters.get("equipment_type") and equipment_type == filters.get("equipment_type"):
 				row = [d.name,d.branch, cc, d.posting_date, d.equipment, d.registration_no, equipment_type, d.total_trip, d.gross_amount, \
-				d.pol_amount, d.other_deductions, d.amount_payable, d.cheque_no, d.cheque_date, owner_name, bank_name, bank_branch, account_number, \
+				d.pol_amount, d.other_deductions, d.amount_payable, d.cheque_no, d.cheque_date, owner_name, bank_name, bank_full_name, bank_branch, account_number, \
 				ifs_code]
 				data.append(row)
 			else:
 				row = [d.name,d.branch, cc, d.posting_date, d.equipment, d.registration_no, equipment_type, d.total_trip, d.gross_amount, \
-				d.pol_amount, d.other_deductions, d.amount_payable, d.cheque_no, d.cheque_date, owner_name, bank_name, bank_branch, account_number, \
+				d.pol_amount, d.other_deductions, d.amount_payable, d.cheque_no, d.cheque_date, owner_name, bank_name,bank_full_name, bank_branch, account_number, \
 				ifs_code]
 				data1.append(row)
 	if filters.get("equipment_type"):
@@ -73,6 +74,7 @@ def get_columns():
 		_("Cheque Date") + ":Date:100",
 		_("Equipment Owner") + "::100",
 		_("Bank Name") + ":Link/Financial Institution:80",
+		_("Bank Full Name") + "::150",
 		_("Bank Branch") + ":Data:80",
 		_("Account Number") + "::100",
 		_("IFS Code") + "::100",
