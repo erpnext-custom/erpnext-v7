@@ -100,7 +100,7 @@ class BankReconciliation(Document):
 					purchase_amount as amount,
 					posting_date, branch as against_account, clearance_date
 			from `tabImprest Recoup`
-			where revenue_bank_account = '{0}'
+			where revenue_bank_account = '{0}' and final_settlement= 0
 			and docstatus = 1
 			and posting_date >= '{1}' and posting_date <= '{2}'
 			{3}
