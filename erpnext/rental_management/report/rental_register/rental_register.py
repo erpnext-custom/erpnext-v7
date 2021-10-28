@@ -8,7 +8,8 @@ import frappe
 from frappe import msgprint, _
 def execute(filters=None):
 	columns = get_columns()
-	data = get_data(filters)
+	queries = construct_query(filters);
+	data = get_data(queries)
 	return columns, data
 
 def get_columns():
@@ -32,7 +33,7 @@ def get_columns():
 	("Late Payment Penalty") + ":Currency:120",
 	("TDS  Deducted") + ":Currency:120",
 	("Total Amount Received") + ":Currency:120",
-	# ("Rental Income") + ":Currency:120",
+	("Rental Income") + ":Currency:120",
 	("Rental Bill ID") + ":Link/Rental Bill:130",
 	("Payment ID") + ":Data:120",
 	("Status") + ":Data:90",
@@ -51,7 +52,35 @@ def get_columns():
 	("Town Category") +":Data:100",
 	]
 
-def get_data(filters):
+def get_data(query):
+	data = []
+	datas = frappe.db.sql(query, as_dict=True);
+	rental_name = []
+	for d in datas:
+		credit = 0
+		if d.building_category in ('Residential','Commercial','Changjiji Vegetable Market','Special Housing') and d.rental_bill not in rental_name:
+			rental_name.append(d.rental_bill)
+
+			for a in frappe.db.sql(""" Select credit From `tabGL Entry` where account =
+							(
+								select i.account from `tabRental Account Setting Item` i
+									Where i.building_category = '{}'
+							) 
+							and voucher_no = '{}' """.format(d.building_category, d.rental_bill), as_dict=True):
+				
+				credit = a.credit
+		if not credit:
+			credit = 0
+
+		row = [d.tenant, d.tenant_name, d.cid, d.dzongkhag, d.dungkhag, d.month, d.posting_date, d.fiscal_year, d.rent_amount, d.adjusted_amount, d.bill_amount,
+				d.rent_received, d.pre_rent_amount, d.excess_amount, d.balance_rent, d.discount_amount, d.penalty, d.tds_amount, d.total_amount_received, 
+				credit, d.rental_bill, d.rental_payment, d.docstatus, d.location, d.building_category, d.department, d.block_no, d.flat_no, d.ministry_agency, d.payment_mode,
+				d.rental_official_name, d.town_category]
+		data.append(row)
+
+	return data
+			
+def construct_query(filters):
 
 	status = ""
 	if filters.get("status") == "Draft":
@@ -62,30 +91,43 @@ def get_data(filters):
 	# payment_due_on = frappe.db.get_single_value("Rental Setting","payment_due_on")
 	# penalty_rate = float(frappe.db.get_single_value("Rental Setting","penalty_rate"))/100.0
 
+	
+			# CASE 
+			# 	WHEN rb.building_category IN ('Residential','Commercial','Changjiji Vegetable Market','Special Housing')
+			# 		THEN
+			# 			(Select credit From `tabGL Entry` where account =
+			# 				(
+			# 					select i.account from `tabRental Account Setting Item` i
+			# 						Where i.building_category = rb.building_category
+			# 				) 
+			# 				and voucher_no = rb.name )
+			# 	ELSE 0
+			# END AS rent_income,
+			
 	query = """
 		SELECT
-			rb.tenant,
-			rb.tenant_name,
-			rb.cid,
-			rb.dzongkhag,
-			rb.dungkhag,
-			rb.month,
-			rpi_parent.posting_date,
-			rb.fiscal_year,
-			rb.rent_amount,
-			rb.adjusted_amount,
+			rb.tenant tenant,
+			rb.tenant_name tenant_name,
+			rb.cid cid,
+			rb.dzongkhag dzongkhag,
+			rb.dungkhag dungkhag,
+			rb.month month,
+			rpi_parent.posting_date posting_date,
+			rb.fiscal_year fiscal_year,
+			rb.rent_amount rent_amount,
+			rb.adjusted_amount adjusted_amount,
 			(rb.receivable_amount - rb.adjusted_amount - rb.discount_amount - rb.tds_amount - rb.penalty) as bill_amount,
-			rpi.rent_received,
-			rpi.pre_rent_amount,
-			rpi.excess_amount,
-			rpi.balance_rent,
-			rpi.discount_amount,
-			rpi.penalty,
-			rpi.tds_amount,
-			rpi.total_amount_received,
+			rpi.rent_received rent_received,
+			rpi.pre_rent_amount pre_rent_amount,
+			rpi.excess_amount excess_amount,
+			rpi.balance_rent balance_rent,
+			rpi.discount_amount discount_amount,
+			rpi.penalty penalty,
+			rpi.tds_amount tds_amount,
+			rpi.total_amount_received total_amount_received,
 			
-			rb.name,
-			rpi_parent.name,
+			rb.name as rental_bill,
+			rpi_parent.name rental_payment,
 
 			CASE rpi_parent.docstatus
 				WHEN '1'
@@ -97,15 +139,15 @@ def get_data(filters):
 				ELSE ''
 			END as docstatus,
 
-			rb.location,
-			rb.building_category,
-			rb.department,
-			rb.block_no,
-			rb.flat_no,
-			rb.ministry_agency,
-			rpi_parent.payment_mode,
-			rpi_parent.rental_official_name,
-			rb.town_category
+			rb.location location,
+			rb.building_category building_category,
+			rb.department department,
+			rb.block_no block_no,
+			rb.flat_no flat_no,
+			rb.ministry_agency ministry_agency,
+			rpi_parent.payment_mode payment_mode,
+			rpi_parent.rental_official_name rental_official_name,
+			rb.town_category town_category
 		FROM
 			`tabRental Bill` as rb
 		LEFT JOIN
@@ -164,4 +206,5 @@ def get_data(filters):
 	if filters.get("from_month") and filters.get("to_month"):
 		query += " and rb.month between {0} and {1}".format(filters.get("from_month"),filters.get("to_month"))
 	query += " ORDER BY rb.tenant, rb.month"
-	return frappe.db.sql(query)
+	# return frappe.db.sql(query)
+	return query
