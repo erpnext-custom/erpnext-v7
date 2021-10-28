@@ -171,7 +171,7 @@ def get_entries(filters):
 			purchase_amount as credit, 0 as debit,
 			posting_date, branch as against_account, clearance_date, 'BTN' as account_currency
 		from `tabImprest Recoup`
-		where revenue_bank_account = %(account)s and 
+		where revenue_bank_account = %(account)s
 		and docstatus = 1
 		and posting_date <= %(report_date)s 
 		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
@@ -199,7 +199,7 @@ def get_entries(filters):
 			paid_amount as debit, 0 as credit,
 			posting_date, party as against_account, clearance_date, 'BTN' as account_currency
 		from `tabProject Payment`
-		where and docstatus = 1
+		where docstatus = 1
   		and if(payment_type = 'Pay', expense_bank_account, revenue_bank_account) =  %(account)s
     	and posting_date <= %(report_date)s 
 		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
