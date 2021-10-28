@@ -150,6 +150,10 @@ def get_columns():
 
 def get_conditions(filters):
 	conditions = ""
+
+	if filters.get("uom"):
+		conditions += " and stock_uom = '%s'" % frappe.db.escape(filters["uom"])
+
 	if not filters.get("from_date"):
 		frappe.throw(_("'From Date' is required"))
 
@@ -314,6 +318,7 @@ def get_item_warehouse_map(filters):
 
 def get_item_details(filters):
 	condition = 'where 1 = 1'
+
 	value = ()
 	if filters.get("item_code"):
 		condition += " and item_code = '{}'".format(filters["item_code"])
