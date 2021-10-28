@@ -164,7 +164,7 @@ class BankReconciliation(Document):
 					paid_amount as amount,
 					posting_date, party as against_account, clearance_date
 			from `tabProject Payment`
-			where revenue_bank_account = '{0}'
+			where '{0}' in (revenue_bank_account, expense_bank_account)
 			and docstatus = 1
 			and posting_date >= '{1}' and posting_date <= '{2}'
 			{3}
