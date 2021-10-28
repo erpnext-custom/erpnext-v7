@@ -972,7 +972,7 @@ def get_inter_bank_file(doc, filename, posting_date, account_type="01"):
 
     if len(rec):
         # header row
-        rec = [["3", "1", "1", "FT01", "1", "BHUB", "RMAB", "1", "1",  posting_date.strftime("%Y%m%d%H%M%S"),
+        rec = [["03", "001", "01", "FT01", "001", "BHUB", "RMAB", "1", "1",  posting_date.strftime("%Y%m%d%H%M%S"),
                     posting_date.strftime("%Y%m%d") , len(rec), flt(total_amount,2), filename.split("_")[-1]]] + rec
 
     # generate file if both debit and credit records exist
