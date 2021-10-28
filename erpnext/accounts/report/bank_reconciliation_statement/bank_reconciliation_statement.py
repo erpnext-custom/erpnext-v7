@@ -171,10 +171,11 @@ def get_entries(filters):
 			purchase_amount as credit, 0 as debit,
 			posting_date, branch as against_account, clearance_date, 'BTN' as account_currency
 		from `tabImprest Recoup`
-		where revenue_bank_account = %(account)s
+		where revenue_bank_account = %(account)s and 
 		and docstatus = 1
 		and posting_date <= %(report_date)s 
 		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+  		and final_settlement = 0
 	""", filters, as_dict=1)
 
 	mechanical_entries = frappe.db.sql("""
@@ -198,9 +199,9 @@ def get_entries(filters):
 			paid_amount as debit, 0 as credit,
 			posting_date, party as against_account, clearance_date, 'BTN' as account_currency
 		from `tabProject Payment`
-		where revenue_bank_account = %(account)s
-		and docstatus = 1
-		and posting_date <= %(report_date)s 
+		where and docstatus = 1
+  		and if(payment_type = 'Pay', expense_bank_account, revenue_bank_account) =  %(account)s
+    	and posting_date <= %(report_date)s 
 		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
 	""", filters, as_dict=1)
 

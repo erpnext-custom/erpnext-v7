@@ -164,8 +164,8 @@ class BankReconciliation(Document):
 					paid_amount as amount,
 					posting_date, party as against_account, clearance_date
 			from `tabProject Payment`
-			where '{0}' in (revenue_bank_account, expense_bank_account)
-			and docstatus = 1
+			where docstatus = 1
+   			and if(payment_type = 'Pay', expense_bank_account, revenue_bank_account) = '{0}'
 			and posting_date >= '{1}' and posting_date <= '{2}'
 			{3}
 		""".format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
@@ -244,4 +244,3 @@ class BankReconciliation(Document):
 			msgprint(_("Clearance Date updated"))
 		else:
 			msgprint(_("Clearance Date not mentioned"))
-			
