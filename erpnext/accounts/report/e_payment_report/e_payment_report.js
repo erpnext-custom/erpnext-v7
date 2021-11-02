@@ -61,6 +61,12 @@ frappe.query_reports["e-Payment Report"] = {
             label: "Party",
             fieldtype: "Link",
             options: "Supplier"
+        },
+        {
+            fieldname: "branch",
+            label: "Branch",
+            fieldtype: "Link",
+            options: "Branch"
         }
 
 	]

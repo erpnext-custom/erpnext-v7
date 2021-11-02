@@ -78,4 +78,9 @@ def get_condition(filters):
         conds += "and bpi.status='{}'".format(filters.status)
     if filters.party:
         conds = "and uti.party='{}'".format(filters.party)
+    if filters.branch:
+        if filters.payment_type == "Bank Payment":
+            conds = "and bp.branch = '{}'".format(filters.branch)
+        else:
+            conds = "and ut.branch = '{}'".format(filters.branch)
     return conds
