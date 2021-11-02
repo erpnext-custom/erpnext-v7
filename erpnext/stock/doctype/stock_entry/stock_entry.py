@@ -99,7 +99,7 @@ class StockEntry(StockController):
 		self.update_stock_ledger()
 		self.update_work_order()
 		self.make_gl_entries_on_cancel()
-		# self.update_mr_ordered_quantity() #added by Phuntsho on August 27th, 2021
+		self.update_mr_ordered_quantity() #added by Phuntsho on August 27th, 2021
 
 	def update_mr_ordered_quantity(self):
 		""" 
