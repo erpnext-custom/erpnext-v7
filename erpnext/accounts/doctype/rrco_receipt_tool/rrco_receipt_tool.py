@@ -5,6 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.utils import flt
 
 class RRCOReceiptTool(Document):
 	def validate(self):		
@@ -170,10 +171,15 @@ class RRCOReceiptTool(Document):
 						""".format(self.from_date, self.to_date, self.tds_rate, self.cost_center)
 
 			self.set('item', [])
+			tot_invoice = tot_tax = 0.0
 			for a in frappe.db.sql(query, as_dict=True):
+				tot_invoice  += flt(a.invoice_amount)
+				tot_tax += flt(a.tax_amount)
 				row = self.append('item', {})
 				d = {'transaction': a.transaction, 'invoice_no': a.name, 'invoice_date': a.posting_date, 'invoice_amount': a.invoice_amount, 'tax_amount': a.tax_amount}
 				row.update(d)
+			self.total_invoice_amount = tot_invoice
+			self.total_tax_amount = tot_tax
 		else:
 			if self.item:
 				to_remove= []
