@@ -3,6 +3,10 @@
 
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
 frappe.ui.form.on('TDS Remittance', {
+	setup: function(frm){
+        frm.get_docfield("items").allow_bulk_edit = 1;
+    },
+	
 	get_details: function(frm) {
 		return frappe.call({
 			method: "get_details",
