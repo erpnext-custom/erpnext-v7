@@ -449,8 +449,10 @@ class BankPayment(Document):
                                     'inr_purpose_code': c.inr_purpose_code,
                                     'status': "Draft"
                                 }))
+                '''
                 if flt(credit_amt) != flt(actual_debit_amount):
                     frappe.throw("Debit {} is not equal to credit {}".format(debit_amt, credit_amt))
+                '''
         return data
 
     def get_direct_payment(self):
