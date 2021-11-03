@@ -94,7 +94,7 @@ class PurchaseInvoice(BuyingController):
 	# ADDED BY PHUNTSHO ON 23-07-2021.
 	def calculate_all_deductions(self):
 		""" calculate the net total amount after all the deductions. """
-		net_amount = self.total
+		net_amount = self.grand_total
 		if self.deductions:
 			for d in self.deductions:
 				net_amount -= flt(d.amount)
