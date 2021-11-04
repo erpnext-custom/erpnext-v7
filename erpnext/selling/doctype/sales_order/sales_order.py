@@ -55,8 +55,9 @@ class SalesOrder(SellingController):
 
 	def validate_po(self):
 		# validate p.o date v/s delivery date
-		if self.po_date and self.delivery_date and getdate(self.po_date) > getdate(self.delivery_date):
-			frappe.throw(_("Expected Delivery Date cannot be before Purchase Order Date"))
+		# Commented Below Line as they have requested to change field type of po_date to free text
+		#if self.po_date and self.delivery_date and getdate(self.po_date) > getdate(self.delivery_date):
+		#	frappe.throw(_("Expected Delivery Date cannot be before Purchase Order Date"))
 
 		if self.po_no and self.customer:
 			so = frappe.db.sql("select name from `tabSales Order` \
