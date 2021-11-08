@@ -648,7 +648,7 @@ class TransporterPayment(AccountsController):
 				}, self.currency)
 			)
 
-                # security_deposit_amount - CR
+        # security_deposit_amount - CR
 		if flt(self.security_deposit_amount):
 			party = party_type = None
 			account_type = frappe.db.get_value("Account", self.security_deposit_account, "account_type")
@@ -689,26 +689,26 @@ class TransporterPayment(AccountsController):
 				       "cost_center": cost_center,
 				}, self.currency)
 			)
-			#clearing amount -CR implemented by Birendra(02/02/2021)
-			if flt(self.clearing_amount):
-				party = party_type = None
-				account_type = frappe.db.get_value("Account", self.clearing_account, "account_type")
-				if account_type == "Receivable" or account_type == "Payable":
-					party = self.equipment
-					party_type = "Equipment"
+		#clearing amount -CR implemented by Birendra(02/02/2021)
+		if flt(self.clearing_amount):
+			party = party_type = None
+			account_type = frappe.db.get_value("Account", self.clearing_account, "account_type")
+			if account_type == "Receivable" or account_type == "Payable":
+				party = self.equipment
+				party_type = "Equipment"
 
-				gl_entries.append(
-					self.get_gl_dict({
-						"account":  self.clearing_account,
-						"credit": self.clearing_amount,
-						"credit_in_account_currency": self.clearing_amount,
-						"against_voucher": self.name,
-						"against_voucher_type": self.doctype,
-						"party_type": party_type,
-						"party": party,
-						"cost_center": cost_center,
-					}, self.currency)
-				)
+			gl_entries.append(
+				self.get_gl_dict({
+					"account":  self.clearing_account,
+					"credit": self.clearing_amount,
+					"credit_in_account_currency": self.clearing_amount,
+					"against_voucher": self.name,
+					"against_voucher_type": self.doctype,
+					"party_type": party_type,
+					"party": party,
+					"cost_center": cost_center,
+				}, self.currency)
+			)
                 # deductions - CR
 		for d in self.get("deductions"):
 			party = party_type = None
