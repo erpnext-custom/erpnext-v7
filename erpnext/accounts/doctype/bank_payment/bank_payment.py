@@ -965,17 +965,19 @@ def get_inter_bank_file(doc, filename, posting_date, account_type="01"):
         narration = str(doc.name) + ' ' + str(doc.remarks if doc.remarks else i.remarks)
         if str(doc.bank_name) not in (str(i.bank_name),'INR') and i.status in ('Pending', 'Failed'):
             slno += 1
+            amount_str = format_amount(i.amount)
             frappe.get_doc('Bank Payment Item', i.name).db_set('file_name', filename+'.csv')
             rec.append([slno, doc.bank_account_no, paying_customer, i.financial_system_code, i.bank_account_type,
-                   i.bank_account_no, i.beneficiary_name[:50], narration[:100], "BTN", flt(i.amount,2),
+                   i.bank_account_no, i.beneficiary_name[:50], remove_special_characters(narration[:100]), "BTN", amount_str,
                    posting_date.strftime("%Y%m%d"), 0, 0, filename.split("_")[-1]])
    
             total_amount += flt(i.amount,2)
 
     if len(rec):
         # header row
+        total_amount_str = format_amount(total_amount)
         rec = [["03", "001", "01", "FT01", "001", "BHUB", "RMAB", "1", "1",  posting_date.strftime("%Y%m%d%H%M%S"),
-                    posting_date.strftime("%Y%m%d") , len(rec), flt(total_amount,2), filename.split("_")[-1]]] + rec
+                    posting_date.strftime("%Y%m%d") , len(rec), total_amount_str, filename.split("_")[-1]]] + rec
 
     # generate file if both debit and credit records exist
     if rec:
@@ -990,6 +992,18 @@ def get_inter_bank_file(doc, filename, posting_date, account_type="01"):
 
     noof_transactions = slno
     return filepath, noof_transactions
+
+def format_amount(amount):
+    amount_str = str(flt(amount,2))
+    amount_str_nu = amount_str.split(".")[0] 
+    amount_str_ch = amount_str.split(".")[1].ljust(2,"0")
+    amount_str =  str(amount_str_nu) + "." + str(amount_str_ch)
+    return amount_str
+
+def remove_special_characters(narration):
+    import re
+    formatted_narration = re.sub('[^A-Za-z0-9]+', ' ', str(narration))
+    return formatted_narration
 
 def get_inr_bank_file(doc, filename, posting_date):
     posting_date = posting_date.strftime("%Y%m%d%H%M%S") 
