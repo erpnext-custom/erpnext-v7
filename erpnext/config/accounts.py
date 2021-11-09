@@ -92,8 +92,21 @@ def get_data():
 				},
 				{
 					"type": "doctype",	
-					"name": "Financial Institution",										                               "label": _("Financial Institution"),			
+					"name": "Financial Institution",
+					"label": _("Financial Institution"),			
 				},
+				{
+                                        "type": "doctype",
+                                        "name": "COP",
+					"label": "Cost Distribution", 
+                                        "description": _("Cop Cost Percent")
+                                },
+				{	
+                                        "type": "doctype",
+                                        "name": "Activity",
+					"label": "Activity",
+                                        "description": _("List of Activities")
+                                }
 			]
 		},
 		{
@@ -497,6 +510,20 @@ def get_data():
 					"is_query_report": True,
 					"doctype": "Sales Invoice"
 				},
+				{
+                                        "type": "report",
+                                        "name": "COP Computation Report",
+					"label": _("COP Details"),
+                                        "is_query_report": True,
+                                        "doctype": "Account"
+                                },
+				{
+                                        "type": "report",
+                                        "name": "COP",
+					"label": _("Final COP"),
+                                        "is_query_report": True,
+                                        "doctype": "Account"
+                                }
 			]
 		},
 		{
