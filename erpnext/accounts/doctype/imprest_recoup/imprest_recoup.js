@@ -80,7 +80,7 @@ frappe.ui.form.on('Imprest Recoup', {
 			return {
 				// query: "erpnext.accounts.doctype.imprest_recoup.imprest_recoup.get_accounts",
 				filters: {
-					'account_type': ["in", ['Expense Account', 'Capital Work in Progress']],
+					'account_type': ["in", ['Expense Account', 'Capital Work in Progress', 'Bank']],
 					'is_group': 0,
 				}
 			}
