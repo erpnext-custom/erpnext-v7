@@ -160,9 +160,13 @@ class RentalPayment(AccountsController):
 		for a in self.item:
 			doc = frappe.get_doc("Tenant Information", a.tenant)
 			flag = 0
-			if a.ministry_agency != doc.ministry_agency:
+			ministry_agency = doc.ministry_agency
+			department = doc.department
+			if a.ministry_agency != doc.ministry_agency and a.ministry_agency:
+				ministry_agency = a.ministry_agency
 				flag = 1
-			if a.department != doc.department:
+			if a.department != doc.department and a.department:
+				ministry_agency = a.department
 				flag = 1
 			if flag:
 				ti = frappe.get_doc("Tenant Information", a.tenant)
@@ -178,8 +182,8 @@ class RentalPayment(AccountsController):
 							"modified": nowdate(),
 							})
 					ti.append("tenant_history",{
-							"department": a.department,
-							"ministry_agency": a.ministry_agency,
+							"department": department,
+							"ministry_agency": ministry_agency,
 							"floor_area": ti.floor_area,
 							"from_date": nowdate(),
 							"creation": nowdate(),
@@ -188,8 +192,8 @@ class RentalPayment(AccountsController):
 						      })
 				else:
 					ti.append("tenant_history",{
-							"department": a.department,
-							"ministry_agency": a.ministry_agency,
+							"department": department,
+							"ministry_agency": ministry_agency,
 							"floor_area": ti.floor_area,
 							"from_date": nowdate(),
 							"creation": nowdate(),
@@ -198,9 +202,9 @@ class RentalPayment(AccountsController):
 				})
 				ti.save()
 				# Update Tenant Information
-				frappe.db.sql("update `tabTenant Information` set ministry_agency = '{0}', department = '{1}' where name ='{2}'".format(a.ministry_agency, a.department, a.tenant))
+				frappe.db.sql("update `tabTenant Information` set ministry_agency = '{0}', department = '{1}' where name ='{2}'".format(ministry_agency, department, a.tenant))
 				# Update Rental Bill
-				frappe.db.sql("update `tabRental Bill` set ministry_agency = '{0}', department = '{1}' where name ='{2}'".format(a.ministry_agency, a.department, a.rental_bill))
+				frappe.db.sql("update `tabRental Bill` set ministry_agency = '{0}', department = '{1}' where name ='{2}'".format(ministry_agency, department, a.rental_bill))
 					
 	def post_gl_entry(self):
 		gl_entries = []
