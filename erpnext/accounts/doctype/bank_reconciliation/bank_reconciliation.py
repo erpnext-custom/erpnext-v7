@@ -184,6 +184,24 @@ class BankReconciliation(Document):
             order by posting_date ASC, name DESC
         """.format(condition), (self.bank_account, self.from_date), as_dict=1)
 
+        pol_advance_entries = frappe.db.sql("""
+             SELECT 
+                'Pol Advance' as payment_document, pd.name as payment_entry,
+                pd.cheque_no as cheque_number, pd.cheque_date, pd.amount, 
+                pd.entry_date as posting_date, pd.supplier as against_account, clearance_date
+            FROM `tabPol Advance` pd  
+            WHERE pd.expense_account = '{0}' 
+            AND pd.name IN (
+                        SELECT gl.voucher_no 
+                        FROM `tabGL Entry` gl 
+                        WHERE voucher_no LIKE 'POLAD21%' AND gl.account IN (
+                            SELECT name 
+                            FROM `tabAccount` 
+                            WHERE account_type = 'Bank')) 
+            AND pd.docstatus=1 AND pd.entry_date >= '{1}' and pd.entry_date <= '{2}'
+            {3}
+        """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict =1)		
+
         # Ver 2.0 Ends
         
         # direct_payment_entries = frappe.db.sql("""
@@ -199,7 +217,7 @@ class BankReconciliation(Document):
         #     {4}
         # """.format(self.bank_account, self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 
-        entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(rental_payment_entries)+list(tds_remittance_entries) + list(opening_brs_entries), 
+        entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(rental_payment_entries)+list(tds_remittance_entries) + list(opening_brs_entries) + list(pol_advance_entries), 
             key=lambda k: k['posting_date'] or getdate(nowdate()))
                 
         self.set('payment_entries', [])
