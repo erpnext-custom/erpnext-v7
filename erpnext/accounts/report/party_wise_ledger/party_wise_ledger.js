@@ -47,42 +47,17 @@ frappe.query_reports["Party Wise Ledger"] = {
 			"fieldname":"party_type",
 			"label": __("Party Type"),
 			"fieldtype": "Select",
-			"options": ["Customer", "Supplier", "Employee", "Equipment"],
-			"default": "Customer",
-			"on_change": function (query_report) {
-					var party_type = query_report.get_values().party_type;
-					var customer_type_filter = query_report.filters_by_name["customer_type"];
-					var supplier_type_filter = query_report.filters_by_name["supplier_type"];
-
-					if (party_type == 'Customer') {
-						customer_type_filter.toggle(true);
-						supplier_type_filter.toggle(false);
-					} else if(party_type == 'Supplier') {
-						customer_type_filter.toggle(false);
-						supplier_type_filter.toggle(true);
-					} else {
-						customer_type_filter.toggle(false);
-						supplier_type_filter.toggle(false);
-					}
-
-					query_report.refresh();
-					customer_type_filter.refresh();
-					supplier_type_filter.refresh();
-			}
+			"options": ["Customer", "Supplier", "Employee", "Equipment", "Vehicle"],
+			"default": "Customer"
 		},
 		{
-			"fieldname":"customer_type",
-			"label": __("Customer Type"),
-			"fieldtype": "Select",
-			"options": ["All","Domestic Customer", "International Customer"],
-			"default": "All"
+			"fieldtype": "Break",
 		},
 		{
-			"fieldname":"supplier_type",
-			"label": __("Supplier Type"),
+			"fieldname":"cost_center",
+			"label": __("Cost Center"),
 			"fieldtype": "Link",
-			"options": "Supplier Type",
-			"default": "All"
+			"options": "Cost Center"
 		},
 		{
 			"fieldname":"accounts",
@@ -98,6 +73,11 @@ frappe.query_reports["Party Wise Ledger"] = {
 		{
 			"fieldname":"inter_company",
 			"label": __("DHI Inter Company?"),
+			"fieldtype": "Check",
+		},
+		{
+			"fieldname":"group_by_party",
+			"label": __("Group by party?"),
 			"fieldtype": "Check",
 		}
 	]
