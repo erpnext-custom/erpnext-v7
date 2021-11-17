@@ -101,21 +101,22 @@ def get_data(filters):
     conditions = get_conditions(filters)
     data = frappe.db.sql("""
         SELECT 
-            employee_name,
-            gender,
-            company,
-            status,
-            date_of_joining,
-            employment_type,
-            employee_group,
-            employee_subgroup,
-            branch,
-            department,
-            division,
-            bank_name,
-            bank_ac_no,
-            increment_and_promotion_cycle,
-            cost_center,
+            e.name,
+            e.employee_name,
+            e.gender,
+            e.company,
+            e.status,
+            e.date_of_joining,
+            e.employment_type,
+            e.employee_group,
+            e.employee_subgroup,
+            e.branch,
+            e.department,
+            e.division,
+            e.bank_name,
+            e.bank_ac_no,
+            e.increment_and_promotion_cycle,
+            e.cost_center,
             ee.qualification,
             ee.trade,
             ee.level
@@ -127,21 +128,28 @@ def get_data(filters):
     return data
 
 def get_conditions(filters):
-
     conditions = ""
-
-    if filters.get("company"): conditions += "WHERE company = '{}'".format(filters.get("company"))
+    if filters.company:
+         conditions += "and e.company='{}'".format(filters.company)
+    # if filters.employment_type:
+    #     conditions += "and e.employment_type='{}'".format(filters.employment_type)
+    # if filters.status:
+    #     conditions += "and e.status='{}'".format(filters.status)
+    # if filters.get("company"): 
+    #     conditions += "WHERE e.company = '{}'".format(filters.get("company"))
 
     if filters.get("employment_type"):
-        if conditions: conditions += "AND "
+        if conditions: 
+            conditions += "AND "
         else: conditions += "WHERE "
-        conditions += "employment_type = '{}'".format(filters.get("employment_type"))
+        conditions += "e.employment_type = '{}'".format(filters.get("employment_type"))
         
-
     if filters.get("status") and filters.get("status") != "All":
-        if conditions :	conditions += "AND "
-        else: conditions += "WHERE "
-        conditions += "status = '{}'".format(filters.get("status"))
+        if conditions :	
+            conditions += "AND "
+        else: 
+            conditions += "WHERE "
+        conditions += "e.status = '{}'".format(filters.get("status"))
 
     return conditions
 
@@ -149,113 +157,138 @@ def get_conditions(filters):
 def get_columns(filters):
 
     columns = [
-        {
-            "fieldname":"empolyee_name",
-            "label":"Full Name",
-            "fieldtype":"Data",
-            "width":200
-        },
-        {
-            "fieldname":"gender",
-            "label":"Gender",
-            "fieldtype":"Data",
-            "width":50
-        },
-        {
-            "fieldname":"company",
-            "label":"Company",
-            "fieldtype":"Data",
-            "width":250
-        },
-        {
-            "fieldname":"status",
-            "label":"Status",
-            "fieldtype":"Data",
-            "width":50
-        },
-        {
-            "fieldname":"date_of_joining",
-            "label":"Date Of Joining",
-            "fieldtype":"Data",
-            "width":150
-        },
-        {
-            "fieldname":"employment_type",
-            "label":"Employment Type",
-            "fieldtype":"Data",
-            "width":150
-        },
-        {
-            "fieldname":"employee_group",
-            "label":"Employee Group",
-            "fieldtype":"Data",
-            "width":150
-        },
-        {
-            "fieldname":"employee_subgroup",
-            "label":"Grade",
-            "fieldtype":"Data",
-            "width":50
-        },
-        {
-            "fieldname":"branch",
-            "label":"Branch",
-            "fieldtype":"Data",
-            "width":150
-        },
-        {
-            "fieldname":"department",
-            "label":"Department",
-            "fieldtype":"Data",
-            "width":200
-        },
-        {
-            "fieldname":"division",
-            "label":"Division",
-            "fieldtype":"Data",
-            "width":150
-        },
-        {
-            "fieldname":"bank_name",
-            "label":"Bank Name",
-            "fieldtype":"Data",
-            "width":100
-        },
-        {
-            "fieldname":"bank_ac_no",
-            "label":"Bank Account Number",
-            "fieldtype":"Data",
-            "width":150
-        },
-        {
-            "fieldname": "increment_and_promotion_cycle",
-            "label": "Increment Cycle",
-            "fieldtype": "Data",
-            "width": 150
-        },
-        {
-            "fieldname": "cost_center",
-            "label": "Cost Center",
-            "fieldtype": "Data",
-            "width": 200
-        },
-        {
-            "fieldname": "qualification",
-            "label": "Qualification",
-            "fieldtype": "Data",
-            "width": 200
-        },
-        {
-            "fieldname": "trade",
-            "label": "Trade",
-            "fieldtype": "Data",
-            "width": 200
-        },
-        {
-            "fieldname": "level",
-            "label": "Level",
-            "fieldtype": "Data",
-            "width": 200
-        }
+            ("Employee ID") + ":Link/Employee:120",
+            ("Employee Name") + ":Data:200",
+            ("Gender") + ":Data:50",
+            ("Comapany") + ":Data:250",
+            ("Status") + ":Data:50",
+            ("Date of Joining") + ":Data:150",
+            ("Employment Type") + ":Data:150",
+            ("Employee Group") + ":Data:200",
+            ("Employee Sub Group") + ":Data:200",
+            ("Branch") + ":Data:250",
+            ("Department") + ":Data:250",
+            ("Division") + ":Data:250",
+            ("Bank Name") + ":Data:150",
+            ("bank Acc No") + ":Data:120",
+            ("Increment Cycle") + ":Data:110",
+            ("Cost Center") + ":Data:200",
+            ("Qualification") + ":Data:120",
+            ("Trade") + ":Data:120",
+            ("Level") + ":Data:120"
+        #  {
+        #     "fieldname":"name",
+        #     "label":"Employee ID",
+        #     "fieldtype":"Data",
+        #     "width":200
+        # },
+        # {
+        #     "fieldname":"empolyee_name",
+        #     "label":"Full Name",
+        #     "fieldtype":"Data",
+        #     "width":200
+        # },
+        # {
+        #     "fieldname":"gender",
+        #     "label":"Gender",
+        #     "fieldtype":"Data",
+        #     "width":50
+        # },
+        # {
+        #     "fieldname":"company",
+        #     "label":"Company",
+        #     "fieldtype":"Data",
+        #     "width":250
+        # },
+        # {
+        #     "fieldname":"status",
+        #     "label":"Status",
+        #     "fieldtype":"Data",
+        #     "width":50
+        # },
+        # {
+        #     "fieldname":"date_of_joining",
+        #     "label":"Date Of Joining",
+        #     "fieldtype":"Data",
+        #     "width":150
+        # },
+        # {
+        #     "fieldname":"employment_type",
+        #     "label":"Employment Type",
+        #     "fieldtype":"Data",
+        #     "width":150
+        # },
+        # {
+        #     "fieldname":"employee_group",
+        #     "label":"Employee Group",
+        #     "fieldtype":"Data",
+        #     "width":150
+        # },
+        # {
+        #     "fieldname":"employee_subgroup",
+        #     "label":"Grade",
+        #     "fieldtype":"Data",
+        #     "width":50
+        # },
+        # {
+        #     "fieldname":"branch",
+        #     "label":"Branch",
+        #     "fieldtype":"Data",
+        #     "width":150
+        # },
+        # {
+        #     "fieldname":"department",
+        #     "label":"Department",
+        #     "fieldtype":"Data",
+        #     "width":200
+        # },
+        # {
+        #     "fieldname":"division",
+        #     "label":"Division",
+        #     "fieldtype":"Data",
+        #     "width":150
+        # },
+        # {
+        #     "fieldname":"bank_name",
+        #     "label":"Bank Name",
+        #     "fieldtype":"Data",
+        #     "width":100
+        # },
+        # {
+        #     "fieldname":"bank_ac_no",
+        #     "label":"Bank Account Number",
+        #     "fieldtype":"Data",
+        #     "width":150
+        # },
+        # {
+        #     "fieldname": "increment_and_promotion_cycle",
+        #     "label": "Increment Cycle",
+        #     "fieldtype": "Data",
+        #     "width": 150
+        # },
+        # {
+        #     "fieldname": "cost_center",
+        #     "label": "Cost Center",
+        #     "fieldtype": "Data",
+        #     "width": 200
+        # },
+        # {
+        #     "fieldname": "qualification",
+        #     "label": "Qualification",
+        #     "fieldtype": "Data",
+        #     "width": 200
+        # },
+        # {
+        #     "fieldname": "trade",
+        #     "label": "Trade",
+        #     "fieldtype": "Data",
+        #     "width": 200
+        # },
+        # {
+        #     "fieldname": "level",
+        #     "label": "Level",
+        #     "fieldtype": "Data",
+        #     "width": 200
+        # }
     ]
     return columns

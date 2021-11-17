@@ -8,8 +8,8 @@ frappe.query_reports["Employee Information"] = {
 			label: "Company",
 			fieldtype: "Link",
 			options: "Company",
-			width: 200
-			// default:"Select Material Type"
+			width: 200,
+			default: frappe.defaults.get_user_default("Company")
 		},
 		{
 			fieldname: "employment_type",
