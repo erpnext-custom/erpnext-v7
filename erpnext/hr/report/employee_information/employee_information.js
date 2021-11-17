@@ -24,6 +24,12 @@ frappe.query_reports["Employee Information"] = {
 			fieldtype: "Select",
 			options: ["All", "Active", "Left"],
 			default: "All"
+		},
+		{
+			fieldname: "accumulate_data",
+			label: "Accumulated Data",
+			fieldtype: "Select",
+			options: ["", "Accumulated Data"]
 		}
 	]
 }
