@@ -29,8 +29,10 @@ class BankReconciliation(Document):
 			return
 
 		condition = ""
+		condition_two = ""
 		if not self.include_reconciled_entries:
 			condition = "and (clearance_date is null or clearance_date='0000-00-00')"
+			condition_two = "and (i.clearance_date is null or i.clearance_date='0000-00-00')"
 
 
 		journal_entries = frappe.db.sql("""
@@ -105,6 +107,19 @@ class BankReconciliation(Document):
 			and posting_date >= '{1}' and posting_date <= '{2}'
 			{3}
 		""".format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+
+		imprest_item_entries = frappe.db.sql("""
+			select
+					"Imprest Recoup Item" as payment_document, i.parent as payment_entry,
+					a.cheque_no as cheque_number, a.cheque_date,
+					i.amount as amount,
+					a.posting_date, a.branch as against_account, i.clearance_date
+			from `tabImprest Recoup` a inner join `tabImprest Recoup Item` i ON i.parent = a.name
+			where i.budget_account = '{0}' 
+			and a.docstatus = 1
+			and a.posting_date >= '{1}' and a.posting_date <= '{2}'
+			{3}
+		""".format(self.bank_account, self.from_date, self.to_date, condition_two), as_dict=1)
 
 		direct_payment_entries = frappe.db.sql("""
 			select
@@ -197,9 +212,9 @@ class BankReconciliation(Document):
 		# 	and docstatus = 1
 		# 	and posting_date >= '{2}' and posting_date <= '{3}'
 		# 	{4}
-		# """.format(self.bank_account, self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+		# """.format(self.bank_account, self.bank_account, self.from_date, self.to_date, condition), as_dict=1) 
 
-		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(rental_payment_entries)+list(tds_remittance_entries) + list(opening_brs_entries), 
+		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(imprest_item_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(rental_payment_entries)+list(tds_remittance_entries) + list(opening_brs_entries), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))
 				
 		self.set('payment_entries', [])
@@ -234,8 +249,8 @@ class BankReconciliation(Document):
 				else:
 					frappe.db.set_value(d.payment_document, d.payment_entry, "clearance_date", d.clearance_date)
 					frappe.db.sql("""update `tab{0}` set clearance_date = %s, modified = %s 
-						where name=%s""".format(d.payment_document), 
-					(d.clearance_date, nowdate(), d.payment_entry))
+						where name=%s or parent=%s""".format(d.payment_document), 
+					(d.clearance_date, nowdate(), d.payment_entry, d.payment_entry))
 				
 				clearance_date_updated = True
 

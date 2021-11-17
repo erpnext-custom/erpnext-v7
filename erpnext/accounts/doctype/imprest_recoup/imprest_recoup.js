@@ -102,6 +102,12 @@ frappe.ui.form.on('Imprest Recoup', {
 				filters: { "name": ["in", ["Customer", "Supplier", "Employee"]] }
 			}
 		});
+
+		cur_frm.set_query("settlement_account", function () {
+			return {
+				filters: { "account_type": ["in", ["Payable", "Receivable"]] }
+			}
+		});
 	},
 	branch: function (frm) {
 		// Update totals

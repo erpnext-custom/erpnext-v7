@@ -171,7 +171,7 @@
    "fieldname": "company", 
    "fieldtype": "Link", 
    "hidden": 0, 
-   "ignore_user_permissions": 1, 
+   "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
    "in_list_view": 0, 
@@ -622,7 +622,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "depends_on": "eval:(doc.settlement_account && (doc.settlement_account_type==='Payable' || doc.settlement_account_type==='Receivable'))", 
@@ -649,7 +649,7 @@
    "unique": 0
   }, 
   {
-   "allow_on_submit": 0, 
+   "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
    "depends_on": "eval:(doc.settlement_account && (doc.settlement_account_type==='Payable' || doc.settlement_account_type==='Receivable'))", 
@@ -683,7 +683,7 @@
    "fieldname": "revenue_bank_account", 
    "fieldtype": "Link", 
    "hidden": 0, 
-   "ignore_user_permissions": 1, 
+   "ignore_user_permissions": 0, 
    "ignore_xss_filter": 0, 
    "in_filter": 0, 
    "in_list_view": 0, 
@@ -1069,8 +1069,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-02-09 12:42:01.914590", 
- "modified_by": "ugyen.thinley@bt.bt", 
+ "modified": "2021-11-08 17:06:53.988237", 
+ "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Imprest Recoup", 
  "name_case": "", 

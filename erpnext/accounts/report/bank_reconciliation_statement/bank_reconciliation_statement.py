@@ -178,6 +178,20 @@ def get_entries(filters):
   		and final_settlement = 0
 	""", filters, as_dict=1)
 
+	imprest_item_entries = frappe.db.sql("""
+		select
+			"Imprest Recoup Item" as payment_document, i.parent as payment_entry,
+			a.cheque_no as reference_no, a.cheque_date as ref_date,
+			i.amount as credit, 0 as debit,
+			a.posting_date, a.branch as against_account, i.clearance_date, 'BTN' as account_currency
+		from `tabImprest Recoup` a inner join `tabImprest Recoup Item` i ON i.parent = a.name
+		where i.budget_account = %(account)s
+		and a.docstatus = 1
+		and a.posting_date <= %(report_date)s 
+		and ifnull(i.clearance_date, '4000-01-01') > %(report_date)s
+  		and a.final_settlement = 0
+	""", filters, as_dict=1)
+
 	mechanical_entries = frappe.db.sql("""
 		select
 			"Mechanical Payment" as payment_document, name as payment_entry,
@@ -260,7 +274,7 @@ def get_entries(filters):
 		group by posting_date, name, party, cheque_number, cheque_date, clearance_date
 	""", filters, as_dict=1)
 
-	return sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(rental_payment_entries) +list(tds_remittance_entries) + list(opening_brs_entries),
+	return sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(imprest_item_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(rental_payment_entries) +list(tds_remittance_entries) + list(opening_brs_entries),
 		key=lambda k: k['posting_date'] or getdate(nowdate()))
 
 		
