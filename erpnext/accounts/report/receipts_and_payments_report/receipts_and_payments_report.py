@@ -83,7 +83,7 @@ def validate_filters(filters):
 
 def get_data(filters):
 	accounts = frappe.db.sql("""select name,  parent_account, account_name, root_type, report_type, lft, rgt
-		from `tabAccount` where company=%s and name not in ("Temporary Accounts - DS", 'Stock Assets - DS', 'Accumulated Depreciation - DS', 'Other Expenses - DS', 'Stock Expenses - DS', 'Stock Liabilities - DS', 'Other Liabilities - DS', 'Other Incomes - DS', 'Inventories - DS') order by name ASC""", filters.company, as_dict=True)
+		from `tabAccount` where company=%s and name not in ("Temporary Accounts - DS", 'Stock Assets - DS', 'Accumulated Depreciation - DS', 'Other Expenses - DS', 'Stock Expenses - DS', 'Stock Liabilities - DS', 'Other Liabilities - DS', 'Other Incomes - DS', 'Inventories - DS', 'BOB-A/C: 202921909 - DS') order by name ASC""", filters.company, as_dict=True)
 
 	if not accounts:
 		return None
@@ -246,7 +246,7 @@ def calculate_values(accounts, gl_entries_by_account, opening_balances, filters,
 		# if d["name"] == '93.06-PWA: Suppliers-Mobilization Advances - GCC':
 		# 	frappe.msgprint(str(d["opening_debit"]))
 		opening = 0
-		if d["account_name"] in ("a - Cash", "b - Bank", "80.02-CD AC 101214282", "80.01-Cash in Hand"):
+		if d["account_name"] in ("a - Cash", "b - Bank", "De-Suung fund AC 202944097", "Cash in Hand"):
 			# frappe.msgprint(str(d))
 			opening += d["opening_debit"] - d["opening_credit"]
 			# frappe.msgprint(str(d["opening_credit"]))
@@ -539,7 +539,7 @@ def prepare_opening_and_closing(d, total_row):
 	# 	else:
 	# 		d["closing_credit"] /= 2
 			
-	if d["account_name"] in ('Bank & Cash Balances'):
+	if d["account_name"] in ('Bank & Cash'):
 		#divided by 3 because the closing debit or credit for parent account is triple
 		# frappe.throw(str(d["closing_debit"]))
 		if d["closing_debit"]:
@@ -549,7 +549,7 @@ def prepare_opening_and_closing(d, total_row):
 	# if d["name"] == "93.06-PWA: Suppliers-Mobilization Advances - GCC":
 	# 	frappe.msgprint(str(d["opening_credit"]))
 
-	if d["account_name"] not in ("80.02-CD AC 101214282","a - Cash","80.01-Cash in Hand","b - Bank", "Bank & Cash Balances"):
+	if d["account_name"] not in ("De-Suung fund AC 202944097","a - Cash","Cash in Hand","b - Bank", "Bank & Cash"):
 		if d["opening_debit"] > d["opening_credit"]:
 			# if d["name"] == "93.06-PWA: Suppliers-Mobilization Advances - GCC":
 			# 	frappe.msgprint(str(d["opening_debit"]-d["opening_credit"]))
@@ -588,9 +588,9 @@ def prepare_opening_and_closing(d, total_row):
 		d["debit"] = 0
 		d["mdebit"] = 0
 
-	if d["name"] == "1.01-Pay & Allowances - GCC":
-		d["credit"] = 0
-		d["mcredit"] = 0
+	# if d["name"] == "1.01-Pay & Allowances - GCC":
+	# 	d["credit"] = 0
+	# 	d["mcredit"] = 0
 								
 	if str(d.account_name.encode('utf-8')) in ["Assets", "Liabilities", "Equity", "Revenue", "Expenses"]:
                 total_row['opening_credit'] = total_row['opening_credit'] + d['opening_credit']
