@@ -156,6 +156,7 @@ class TechnicalSanctionBill(AccountsController):
 	def on_cancel(self):
 		if self.docstatus == 2:
 			self.cancel_linked_docs()
+			self.make_gl_entries()
 	
 	def cancel_linked_docs(self): 
 		if self.technical_sanction: 
