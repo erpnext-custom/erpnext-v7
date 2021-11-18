@@ -286,6 +286,7 @@ class LeaveApplication(Document):
 		for d in frappe.db.sql("""select name, leave_type, posting_date, from_date, to_date, total_leave_days
 			from `tabLeave Application`
 			where employee = %(employee)s and docstatus < 2 and status in ("Open", "Approved")
+			and workflow_state not in ("Rejected by Supervisor")
 			and to_date >= %(from_date)s and from_date <= %(to_date)s
 			and name != %(name)s""", {
 				"employee": self.employee,
