@@ -149,9 +149,13 @@ class BankReconciliation(Document):
                     "Mechanical Payment" as payment_document, name as payment_entry,
                     cheque_no as cheque_number, cheque_date,
                     net_amount as amount,
-                    posting_date, customer as against_account, clearance_date
+                    posting_date, 
+		            case 
+                        when payment_for = 'Job Card' then supplier
+                        when payment_for = 'Hire Charge Invoice' then customer
+                    end as against_account, clearance_date
             from `tabMechanical Payment`
-            where '{0}' IN (income_account, expense_account)
+            where outgoing_account = '{0}'
             and docstatus = 1
             and posting_date >= '{1}' and posting_date <= '{2}'
             {3}
