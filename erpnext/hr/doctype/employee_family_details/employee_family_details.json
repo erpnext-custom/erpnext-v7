@@ -25,7 +25,7 @@
    "label": "Relationship", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "\nSelf\nSpouse\nFather\nMother\nChildren\nFather-in-law\u00a0\nMother-in-law\u00a0\nBrother\nSister", 
+   "options": "\nSelf\nSpouse\nFather\nMother\nChildren\nFather In-Law\u00a0\nMother In-Law\u00a0\nBrother\nSister", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -377,7 +377,7 @@
  "issingle": 0, 
  "istable": 1, 
  "max_attachments": 0, 
- "modified": "2019-02-18 17:28:18.861317", 
+ "modified": "2021-11-19 14:51:46.270405", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Employee Family Details", 
@@ -390,6 +390,6 @@
  "search_fields": "cid_no, full_name", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }
