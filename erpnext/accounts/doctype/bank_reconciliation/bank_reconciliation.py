@@ -146,14 +146,14 @@ class BankReconciliation(Document):
 
         mechanical_entries  = frappe.db.sql("""
             select
-                    "Mechanical Payment" as payment_document, name as payment_entry,
-                    cheque_no as cheque_number, cheque_date,
-                    net_amount as amount,
-                    posting_date, 
-		            case 
-                        when payment_for = 'Job Card' then supplier
-                        when payment_for = 'Hire Charge Invoice' then customer
-                    end as against_account, clearance_date
+                "Mechanical Payment" as payment_document, name as payment_entry,
+                cheque_no as cheque_number, cheque_date,
+                net_amount as amount,
+                posting_date, 
+                case 
+                    when payment_for = 'Job Card' then supplier
+                    when payment_for = 'Hire Charge Invoice' then customer
+                end as against_account, clearance_date
             from `tabMechanical Payment`
             where outgoing_account = '{0}'
             and docstatus = 1
@@ -189,7 +189,7 @@ class BankReconciliation(Document):
         """.format(condition), (self.bank_account, self.from_date), as_dict=1)
 
         pol_advance_entries = frappe.db.sql("""
-             SELECT 
+            SELECT 
                 'Pol Advance' as payment_document, pd.name as payment_entry,
                 pd.cheque_no as cheque_number, pd.cheque_date, pd.amount, 
                 pd.entry_date as posting_date, pd.supplier as against_account, clearance_date
