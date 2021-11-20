@@ -26,7 +26,7 @@ def get_data(query):
 		if committed != 0:
 			committed-=consumed
 		
-		available = flt(d.initial_budget) + flt(adjustment) + flt(d.supplement) - consumed - committed
+		available = flt(d.initial_budget) + flt(adjustment) + flt(d.supplement) - committed
 		row = {
 			"account": d.account, 
 			"cost_center": d.cost_center,

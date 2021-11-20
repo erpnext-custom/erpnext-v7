@@ -23,8 +23,8 @@ def get_data(filters):
 		""".format(filters.company) ,  as_dict=True)
 	if not accounts:
 		return None
-	accounts, accounts_by_name, parent_children_map = filter_accounts(accounts)
 
+	accounts, accounts_by_name, parent_children_map = filter_accounts(accounts)
 	gl_entries_by_account = {}
 	for root in frappe.db.sql("""select lft, rgt from tabAccount
 			where root_type= 'Expense' and ifnull(parent_account, '') = ''""", as_dict=1):
@@ -169,7 +169,7 @@ def set_gl_entries_by_account(filters, cost_center, company, from_date, to_date,
 
         for entry in gl_entries:
                 gl_entries_by_account.setdefault(entry.account, []).append(entry)
-        return gl_entries_by_account
+	return gl_entries_by_account
 
 def get_columns():
 	return [
