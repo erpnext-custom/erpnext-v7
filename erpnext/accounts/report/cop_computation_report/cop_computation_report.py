@@ -38,10 +38,10 @@ def get_data(filters):
 	return out
 
 def calculate_values(filters, accounts_by_name, gl_entries_by_account):	
-	mining_qty = production_qty(filters, 'Mining Expenses')[0].qty
-	crush_qty1 = production_qty(filters, 'Crushing Plant 1 Expenses')[0].qty
-	crush_qty2 = production_qty(filters, 'Crushing Plant 2 Expenses')[0].qty
-	washed_qty = production_qty(filters, 'Washed Expenses')[0].qty
+	mining_qty = production_qty(filters, 'Mining Expense')[0].qty
+	crush_qty1 = production_qty(filters, 'Crushing Plant 1')[0].qty
+	crush_qty2 = production_qty(filters, 'Crushing Plant 2')[0].qty
+	washed_qty = production_qty(filters, 'Washed')[0].qty
 	trans_qty = stock_transfer(filters, 'Transportation')[0].qty
 	sales_qty = qty_sold(filters, 'Sales & Distribution')[0].qty
 	

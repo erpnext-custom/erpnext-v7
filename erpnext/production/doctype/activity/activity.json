@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 0, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:activity_name", 
  "beta": 0, 
  "creation": "2021-10-20 14:29:29.357000", 
@@ -98,7 +98,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-11-03 17:03:15.998536", 
+ "modified": "2021-11-22 11:44:46.028375", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Activity", 
