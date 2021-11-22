@@ -2152,4 +2152,13 @@ def update_rrco_receipt_tool_item():
 		c += 1
 	print(c)
 	print("DONE")
+
+def delete_pol():
+	pol_list = frappe.db.sql("select name, voucher_no from `tabGL Entry` where voucher_no like 'POL%' and voucher_no not like 'POLAD%'", as_dict=True)
+	c = 1
+	for p in pol_list:
+		frappe.db.sql("delete from `tabGL Entry` where name='{}' and voucher_no = '{}'".format(p.name, p.voucher_no))
+		print(c)
+		c += 1
+	print('done')
 	

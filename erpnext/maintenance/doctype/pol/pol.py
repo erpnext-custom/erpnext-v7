@@ -67,7 +67,7 @@ class POL(StockController):
 		#self.update_general_ledger(1)
 
 		# Ver 2.0.190509, Following method added by SHIV on 2019/05/24
-		self.make_gl_entries(repost_future_gle= False)
+		# self.make_gl_entries(repost_future_gle= False)
 		""" ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
 		
 		self.make_pol_entry()
@@ -79,7 +79,7 @@ class POL(StockController):
 		#self.update_general_ledger(1)
 
 		# Ver 2.0.190509, Following method added by SHIV on 2019/05/24
-		self.make_gl_entries_on_cancel(repost_future_gle= False)
+		# self.make_gl_entries_on_cancel(repost_future_gle= False)
 		""" ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
 		
 		docstatus = frappe.db.get_value("Journal Entry", self.jv, "docstatus")
