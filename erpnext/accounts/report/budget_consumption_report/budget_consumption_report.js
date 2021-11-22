@@ -42,6 +42,25 @@ frappe.query_reports["Budget Consumption Report"] = {
 			"label": __("To Date"),
 			"fieldtype": "Date",
 			"default": frappe.defaults.get_user_default("year_end_date"),
-		}
+		},
+		{
+			"fieldname": "cost_center",
+			"label": __("Cost Center"),
+			"fieldtype": "Link",
+			"options": "Cost Center",
+			"get_query": function() {return {'filters': [['Cost Center', 'is_disabled', '!=', '1'], ['Cost Center', 'is_group', '=', '0']]}}
+		},
+		{
+			"fieldname": "group_by_account",
+			"label": __("Group By Account"),
+			"fieldtype": "Check",
+			"default": 0,
+			"on_change": function(query_report) {
+				if(query_report.get_values().group_by_account) {
+					query_report.filters_by_name.cost_center.set_input("");
+                                        query_report.trigger_refresh();	
+				}
+			}
+		},
 	]
    }
