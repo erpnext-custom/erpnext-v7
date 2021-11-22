@@ -7,4 +7,6 @@ import frappe
 from frappe.model.document import Document
 
 class Activity(Document):
-	pass
+	def validate(self):
+		if not self.get('items'):
+			frappe.throw("Item Cannot Be Empty")
