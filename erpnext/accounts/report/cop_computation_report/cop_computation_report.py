@@ -81,14 +81,15 @@ def production_qty(filters, activity_name):
 		""".format(filters.from_date, filters.to_date, filters.cost_center, activity_name)
 	return frappe.db.sql(query, as_dict = 1)
 
+	i
 def stock_transfer(filters, activity_name):
 	query = """select ifnull(sum(c.qty), 1) as qty from `tabStock Entry` p, `tabStock Entry Detail` c 
 			where c.parent = p.name and p.purpose = 'Material Transfer' and  c.cost_center = "{0}"  
 			and p.posting_date between '{1}' and '{2}' and p.docstatus = 1 
 			and c.item_code in (select ai.item from  `tabActivity Item` ai
-                	where ai.parent  = "{3}")
+                	where ai.parent  = "{3}") and exists ( select name from `tabWarehouse` w where w.name = p.to_warehouse and w.is_stockyard = 1)
 		""".format(filters.cost_center, filters.from_date, filters.to_date, activity_name)
-	
+		
 	return frappe.db.sql(query, as_dict =1)
 
 def qty_sold(filters, activity_name):
