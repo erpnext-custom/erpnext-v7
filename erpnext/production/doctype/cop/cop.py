@@ -23,7 +23,7 @@ class COP(Document):
 		to_remove = []
 		tot = 0.0
 		for a in self.get('items'):
-			tot = flt(a.mining_expenses) + flt(a.crushing_plant_expenses1) + flt(a.crushing_plant_expenses2) + flt(a.washed_expenses) + flt(a.transportation)
+			tot = flt(a.mining_expenses) + flt(a.crushing_plant_expenses1) + flt(a.crushing_plant_expenses2) + flt(a.washed_expenses) + flt(a.transportation) + flt(a.s_and_d)
 			if flt(tot) > 100:
 				frappe.throw("Sum Of Percent Cannot Exceed 100%")
 
@@ -31,7 +31,8 @@ class COP(Document):
                                 or flt(a.crushing_plant_expenses1) > 100 \
                                 or flt(a.crushing_plant_expenses2) > 100 \
                                 or flt(a.washed_expenses) > 100 \
-                                or flt(a.transportation)> 100:
+                                or flt(a.transportation)> 100 \
+				or flt(a.s_and_d) > 100:
                                 frappe.throw("Percent Cannot Exceed 100% at Row '{0}'".format(a.idx))
 
 			if a.account in found:
