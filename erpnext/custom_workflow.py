@@ -35,7 +35,7 @@ def validate_workflow_states(doc):
 		document_approver = approver_field[doc.doctype]
 		employee          = frappe.db.get_value("Employee", doc.employee, ["user_id","employee_name","designation","name"])
 		reports_to        = frappe.db.get_value("Employee", frappe.db.get_value("Employee", doc.employee, "reports_to"), ["user_id","employee_name","designation","name"])
-		supervisors_manager = frappe.db.get_value("Employee", frappe.db.get_value("Employee", frappe, "reports_to"), ["user_id","employee_name","designation","name"])
+		# supervisors_manager = frappe.db.get_value("Employee", frappe.db.get_value("Employee", frappe, "reports_to"), ["user_id","employee_name","designation","name"])
 	final_approver    = frappe.db.get_value("Employee", {"user_id": get_final_approver(doc.branch)}, ["user_id","employee_name","designation","name"])
 	workflow_state    = doc.get("workflow_state").lower()
 	login_user        = frappe.db.get_value("Employee", {"user_id": frappe.session.user}, ["user_id","employee_name","designation","name"])
