@@ -29,25 +29,24 @@ def get_data(filters):
 								END as is_inter_company
 						 FROM `tabDHI GCOA Mapper` {}
 						 '''.format(cond),as_dict=True):
-
 			val = frappe.db.sql('''
 					   SELECT account as coa_acc,
-							'<b>-</b>' as dhi_gcoa_acc,
-							'<b>-</b>' as dhi_gcoa_acc_code,
-							'<b>-</b>' as is_inter_company
+							'{}' as dhi_gcoa_acc,
+							'{}' as dhi_gcoa_acc_code,
+							'{}' as is_inter_company
 					   FROM `tabDHI Mapper Item` WHERE parent = '{}'
-					   '''.format(d.dhi_gcoa_acc),as_dict=1)
-			if val:
-				row = {}
-				row['dhi_gcoa_acc_code'] = '<b>'+d.dhi_gcoa_acc_code+'</b>'
-				row['dhi_gcoa_acc'] = '<b>' + d.dhi_gcoa_acc+'</b>'
-				row['is_inter_company'] = '<b>' + d.is_inter_company + '</b>'
-				row['coa_acc'] = val[0]['coa_acc']
-				data.append(row)
-				val.pop(0)
-				if val:
-					data += val
-
+					   '''.format(d.dhi_gcoa_acc,d.dhi_gcoa_acc_code,d.is_inter_company,d.dhi_gcoa_acc),as_dict=1)
+			# if val:
+			# 	row = {}
+			# 	row['dhi_gcoa_acc_code'] = '<b>'+d.dhi_gcoa_acc_code+'</b>'
+			# 	row['dhi_gcoa_acc'] = '<b>' + d.dhi_gcoa_acc+'</b>'
+			# 	row['is_inter_company'] = '<b>' + d.is_inter_company + '</b>'
+			# 	row['coa_acc'] = val[0]['coa_acc']
+			# 	data.append(row)
+			# 	val.pop(0)
+			# 	if val:
+			data += val
+			frappe.msgprint(val)
 	elif filters.map.strip() == "COA Unmapped":
 	   data = frappe.db.sql('''
 						SELECT name as coa_acc
@@ -66,14 +65,14 @@ def get_cols(filters):
 			"label":"DHI GCOA Code",
 			"fieldtype":"Link",
 			"options":"DHI GCOA",
-			"width":120
+			"width":120,
 		},
 		{
 			"fieldname":"dhi_gcoa_acc",
 			"label":"DHI Group Chart Of Account",
 			"fieldtype":"Link",
 			"options":"DHI GCOA Mapper",
-			"width":250
+			"width":250,
 		},
 		{
 			"fieldname":"is_inter_company",
