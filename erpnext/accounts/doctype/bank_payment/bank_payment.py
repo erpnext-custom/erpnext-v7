@@ -257,7 +257,7 @@ class BankPayment(Document):
         self.set('items', [])
         for i in self.get_transactions():
             import re
-            beneficiary_name = re.sub('[^A-Za-z0-9 ]+', '', i.beneficiary_name)
+            #beneficiary_name = re.sub('[^A-Za-z0-9 ]+', '', i.beneficiary_name)
             row = self.append('items', {})
             row.update(i)
             total_amount += flt(i.amount,2)
@@ -432,6 +432,17 @@ class BankPayment(Document):
                                                 WHERE e.name = '{party}'
                                             """.format(party = party)
                                 employee = party
+                            #added by cety for party type Equipment on 24-11-2021
+                            elif party_type == "Equipment":
+                                query = """
+                                SELECT
+                                     e.bank_name, e.bank_branch, e.bank_account_type, e.account_number as bank_account_no, e.owner_name as beneficiary_name, je.total_credit as amount
+                                    
+                                FROM `tabJournal Entry` as je
+                                JOIN `tabJournal Entry Account` as pa ON je.name=pa.parent
+                                JOIN `tabEquipment` as e ON pa.party=e.name
+                                WHERE je.name = '{}'""".format(self.transaction_no)
+                         
                             for c in frappe.db.sql(query, as_dict=True):					
                                 data.append(frappe._dict({
                                     'transaction_type': 'Journal Entry',
