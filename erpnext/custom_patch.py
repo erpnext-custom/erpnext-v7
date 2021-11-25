@@ -2161,4 +2161,24 @@ def delete_pol():
 		print(c)
 		c += 1
 	print('done')
+
+def delete_gl_entries_for_stock_entry():
+	gl_list = frappe.db.sql("select name from `tabGL Entry` where voucher_no not in ('SEMT21100008','SEMT21110007-1') and voucher_type = 'Stock Entry' order by modified", as_dict=True)
+	c = 1
+	for gl in gl_list:
+		frappe.db.sql("delete from `tabGL Entry` where name = '{}'".format(gl.name))
+		print(c)
+		c += 1
+	print('done')
+
+def make_gl_entries_for_stock_entry():
+	se_list = frappe.db.sql("select name from `tabStock Entry` where name not in ('SEMT21100008','SEMT21110007-1') and docstatus = 1 order by modified", as_dict=True)
+	c = 1
+	for se in se_list:
+		doc = frappe.get_doc("Stock Entry", se.name)
+		doc.make_gl_entries(repost_future_gle=False)
+		print(c)
+		c += 1
+	print('done')
+
 	

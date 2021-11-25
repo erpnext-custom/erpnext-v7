@@ -25,6 +25,7 @@ def make_gl_entries(gl_map, cancel=False, adv_adj=False, merge_entries=True, upd
 def process_gl_map(gl_map, merge_entries=True):
 	if merge_entries:
 		gl_map = merge_similar_entries(gl_map)
+
 	for entry in gl_map:
 		# toggle debit, credit if negative entry
 		if flt(entry.debit) < 0:
@@ -75,6 +76,7 @@ def check_if_in_list(gle, gl_map):
 			and cstr(e.get('against_voucher'))==cstr(gle.get('against_voucher')) \
 			and cstr(e.get('against_voucher_type')) == cstr(gle.get('against_voucher_type')) \
 			and cstr(e.get('cost_center')) == cstr(gle.get('cost_center')) \
+			and cstr(e.get('business_activity')) == cstr(gle.get('business_activity')) \
 			and cstr(e.get('project')) == cstr(gle.get('project')):
 				return e
 
@@ -153,18 +155,18 @@ def round_off_debit_credit(gl_map):
 		entry.debit = flt(entry.debit, precision)
 		entry.credit = flt(entry.credit, precision)
 		debit_credit_diff += entry.debit - entry.credit
-                #msgprint(_("Debit Amount: {0} Credit Amount: {1}").format(flt(entry.debit, precision),flt(entry.credit, precision)))
+		# msgprint(_("Debit Amount: {0} Credit Amount: {1}").format(flt(entry.debit, precision),flt(entry.credit, precision)))
 	debit_credit_diff = flt(debit_credit_diff, precision)
-	
+
 	if gl_map[0]["voucher_type"] == "Journal Entry":
 		allowance = 5.0 / (10**precision)
 	else:
 		allowance = 1
-	
+
 	if abs(debit_credit_diff) >= allowance:
 		frappe.throw(_("Debit and Credit not equal for {0} #{1}. Difference is {2}.")
 			.format(gl_map[0].voucher_type, gl_map[0].voucher_no, debit_credit_diff))
-
+	
 	elif abs(debit_credit_diff) >= (1.0 / (10**precision)):
 		make_round_off_gle(gl_map, debit_credit_diff)
 
@@ -190,11 +192,12 @@ def make_round_off_gle(gl_map, debit_credit_diff):
 		"debit": abs(debit_credit_diff) if debit_credit_diff < 0 else 0,
 		"credit": debit_credit_diff if debit_credit_diff > 0 else 0,
 		"cost_center": round_off_cost_center,
+		"business_activity": 'Common',
 		"party_type": None,
 		"party": None,
 		"against_voucher_type": None,
 		"against_voucher": None,
-		"fiscal_year": str(gl_map[0].posting_date)[0:4]
+		"fiscal_year": frappe.db.get_value('Fiscal Year', {'year_start_date': ('<=', str(gl_map[0].posting_date)), 'year_end_date': ('>=', str(gl_map[0].posting_date))})
 	})
 
 	gl_map.append(round_off_gle)

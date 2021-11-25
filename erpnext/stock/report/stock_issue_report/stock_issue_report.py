@@ -35,6 +35,8 @@ def get_columns(filters):
 		cols.append(("Stock Entry")+":Link/Stock Entry:170")
 		cols.append(("Issued To") + "::100")
 		cols.append(("Desuup Name") + "::150")
+		cols.append(("Is Damaged")+"::100")
+
 	return cols
 
 def get_data(filters):
@@ -45,9 +47,11 @@ def get_data(filters):
 			(select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, 
 			(select i.item_sub_group from tabItem i where i.item_code = sed.item_code) as item_sub_group, 
 			sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.t_warehouse, se.name,
-			case when sed.issue_to_employee = 1 then sed.issued_to else sed.issued_to_other end, sed.employee_name
+			case when sed.issue_to_employee = 1 then sed.issued_to else sed.issued_to_other end, sed.employee_name,
+			CASE WHEN sed.is_damaged = 1 THEN 'Yes' ELSE 'No' END AS is_damaged
 		FROM `tabStock Entry` se, `tabStock Entry Detail` sed 
 		WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Transfer'"""
+	
 	elif filters.purpose == 'Material Issue':
 		data = """
 		SELECT 
@@ -58,6 +62,7 @@ def get_data(filters):
    			case when sed.issue_to_employee = 1 then sed.issued_to else sed.issued_to_other end, sed.employee_name, se.name 
 		FROM `tabStock Entry` se, `tabStock Entry Detail` sed 
 		WHERE se.name = sed.parent and  se.docstatus = 1 and se.purpose = 'Material Issue'"""
+
 	if filters.get("warehouse"):
 		data += " and sed.s_warehouse = \'" + str(filters.warehouse) + "\'"
 	if filters.get("item_code"):

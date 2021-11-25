@@ -675,6 +675,19 @@ frappe.ui.form.on("Stock Entry", "refresh", function(frm) {
     });
 })
 
+frappe.ui.form.on("Stock Entry", {
+    purpose: function(frm, cdt, cdn){
+        var item = locals[cdt][cdn];
+        if(frm.doc.purpose != "Material Transfer"){
+            frappe.meta.get_docfield("Stock Entry Detail", "is_damaged", cur_frm.doc.name).hidden = 1;
+        }
+        else{
+            frappe.meta.get_docfield("Stock Entry Detail", "is_damaged", cur_frm.doc.name).hidden = 0;
+        }
+        cur_frm.refresh_fields()
+    }
+})
+
 frappe.ui.form.on("Stock Entry Detail",  {
     uom: function(cdt,cdn){
         row = locals[cdt][cdn]
@@ -693,8 +706,8 @@ frappe.ui.form.on("Stock Entry Detail",{
                     frappe.meta.get_docfield("Stock Entry Detail","issued_to_other", cur_frm.doc.name).hidden = 1
                 }
                 else{
-                        frappe.meta.get_docfield("Stock Entry Detail", "issue_to_employee", cur_frm.doc.name).hidden = 0;
-                        frappe.meta.get_docfield("Stock Entry Detail", "issued_to_other", cur_frm.doc.name).hidden = 0;
+                    frappe.meta.get_docfield("Stock Entry Detail", "issue_to_employee", cur_frm.doc.name).hidden = 0;
+                    frappe.meta.get_docfield("Stock Entry Detail", "issued_to_other", cur_frm.doc.name).hidden = 0;
                 }
                 cur_frm.refresh_fields();
     },
@@ -727,6 +740,31 @@ frappe.ui.form.on("Stock Entry Detail",{
             cur_frm.refresh_fields()
         }
         cur_frm.refresh_fields()
+    },
+    is_damaged: function(frm, cdt, cdn){
+        var item = locals[cdt][cdn];
+        if(item.is_damaged == 1){
+            frappe.call({
+                method: 'frappe.client.get_value',
+                args: {
+                    doctype: 'Warehouse',
+                    filters: {
+                        'warehouse_name': 'Damage Warehouse'
+                    },
+                    fieldname: ['name']
+                },
+                callback: function(r){
+                    if(r.message){
+                        frappe.model.set_value(cdt, cdn, "t_warehouse",r.message.name);
+                        refresh_field('t_warehouse');
+                    }
+                }
+            });
+        }
+        else{
+            frappe.model.set_value(cdt, cdn, "t_warehouse",null);
+            refresh_field('t_warehouse');
+        }
     }
 })
 
