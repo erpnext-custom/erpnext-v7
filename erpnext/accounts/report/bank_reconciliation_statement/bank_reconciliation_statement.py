@@ -210,7 +210,7 @@ def get_entries(filters):
 		select
 			"Project Payment" as payment_document, name as payment_entry,
 			cheque_no as reference_no, cheque_date as ref_date,
-			paid_amount as debit, 0 as credit,
+			0 as debit, paid_amount as credit,
 			posting_date, party as against_account, clearance_date, 'BTN' as account_currency
 		from `tabProject Payment`
 		where docstatus = 1
