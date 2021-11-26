@@ -31,10 +31,10 @@ class AssetIssueDetails(Document):
 	
 	def on_submit(self):
 		self.check_qty_balance()
-     
+	 
 		item_doc = frappe.get_doc("Item",self.item_code)
 		if not cint(item_doc.is_fixed_asset):
-            frappe.throw(_("Item selected is not a fixed asset"))
+			frappe.throw(_("Item selected is not a fixed asset"))
 
 		if item_doc.asset_category:
 			asset_category = frappe.db.get_value("Asset Category", item_doc.asset_category, "name")
@@ -49,8 +49,8 @@ class AssetIssueDetails(Document):
 					frappe.throw(_("{} sub category do not exist in particular Asset Category").format(item_doc.asset_sub_category))
 			else:
 				frappe.throw(_("No Asset Sub-Category for Item: " +"{}").format(self.item_name))
-    	else:
-            frappe.throw(_("<b>Asset Category</b> is missing for material {}").format(frappe.get_desk_link("Item", self.item_code)))
+		else:
+			frappe.throw(_("<b>Asset Category</b> is missing for material {}").format(frappe.get_desk_link("Item", self.item_code)))
 
 		asset = frappe.new_doc("Asset")
 		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
