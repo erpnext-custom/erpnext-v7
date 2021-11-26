@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import flt
+from frappe.utils import flt, cint
 from frappe import _
 
 class AssetIssueDetails(Document):
@@ -33,6 +33,9 @@ class AssetIssueDetails(Document):
 		self.check_qty_balance()
      
 		item_doc = frappe.get_doc("Item",self.item_code)
+		if not cint(item_doc.is_fixed_asset):
+            frappe.throw(_("Item selected is not a fixed asset"))
+
 		if item_doc.asset_category:
 			asset_category = frappe.db.get_value("Asset Category", item_doc.asset_category, "name")
 			fixed_asset_account, credit_account=frappe.db.get_value("Asset Category Account", {'parent':asset_category}, ['fixed_asset_account','credit_account'])
@@ -46,7 +49,9 @@ class AssetIssueDetails(Document):
 					frappe.throw(_("{} sub category do not exist in particular Asset Category").format(item_doc.asset_sub_category))
 			else:
 				frappe.throw(_("No Asset Sub-Category for Item: " +"{}").format(self.item_name))
-    
+    	else:
+            frappe.throw(_("<b>Asset Category</b> is missing for material {}").format(frappe.get_desk_link("Item", self.item_code)))
+
 		asset = frappe.new_doc("Asset")
 		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
 		asset.item_code = self.item_code
