@@ -60,10 +60,10 @@ class JobCard(AccountsController):
 		if self.owned_by == "Own Company" and self.out_source == 0:
 			self.post_journal_entry()
 			self.db_set("outstanding_amount", 0)
-		if self.owned_by == "Others" and self.out_source == 0:
-			self.make_gl_entries()
+		# if self.owned_by == "Others" and self.out_source == 0:
+		# 	self.make_gl_entries()
 
-		if self.supplier and self.out_source == 1:
+		if self.supplier and self.out_source:
 			self.make_gl_entry()
 
 		self.update_breakdownreport()
@@ -80,7 +80,8 @@ class JobCard(AccountsController):
 		bdr = frappe.get_doc("Break Down Report", self.break_down_report)
 		if bdr.job_card == self.name:
 			bdr.db_set("job_card", None)
-		if self.owned_by == "Others":
+		# if self.owned_by == "Others":
+		if self.supplier and self.out_source:
 			self.make_gl_entries()	
 
 	def get_default_settings(self):
@@ -317,7 +318,6 @@ class JobCard(AccountsController):
                 	from erpnext.accounts.general_ledger import make_gl_entries
                         gl_entries = []
                         self.posting_date = self.finish_date
-                        ba = get_default_ba()
 
                         maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
                         #payable_account = frappe.db.get_value("Company", "Natural Resources Development Corporation Ltd","default_payable_account")
@@ -337,7 +337,7 @@ class JobCard(AccountsController):
                                        "against_voucher": self.name,
                                        "against_voucher_type": self.doctype,
                                        "cost_center": self.cost_center,
-                                       "business_activity": ba
+                                       "business_activity": self.business_activity
                                 }, self.currency)
                         	)
 			gl_entries.append(
@@ -348,7 +348,7 @@ class JobCard(AccountsController):
                                                "against": self.supplier,
                                                "credit": self.total_amount,
                                                "credit_in_account_currency": self.total_amount,
-                                               "business_activity": ba,
+                                               "business_activity": self.business_activity,
                                                "cost_center": self.cost_center
                                         }, self.currency)
                                 )

@@ -44,12 +44,10 @@ frappe.ui.form.on('Mechanical Payment', {
 	},
 
 	"receivable_amount": function (frm) {
-		console.log("receivable_amount")
 		calculate_totals(frm)
 	},
 
 	"tds_amount": function (frm) {
-		console.log("tds_amount")
 		calculate_totals(frm)
 		frm.toggle_reqd("tds_account", frm.doc.tds_amount)
 	},
@@ -121,13 +119,11 @@ frappe.ui.form.on('Mechanical Payment', {
 		calculate_totals(frm);
 	},
 	"other_deduction": function (frm) {
-		console.log("other_deduction")
 		calculate_totals(frm);
 	}
 });
 // added by phuntsho to auto calculate tds amount
 cur_frm.cscript.tds_rate = function (frm) {
-	console.log("here")
 	var percent = 0;
 	switch (cur_frm.doc.tds_rate) {
 		case "2%":
@@ -175,7 +171,6 @@ function calculate_totals(frm) {
 			cur_frm.refresh_field("net_amount")
 		}
 	}
-	console.log("net_amount:" + net_amount);
 }
 
 cur_frm.fields_dict['items'].grid.get_field('reference_name').get_query = function (frm, cdt, cdn) {
@@ -192,7 +187,6 @@ cur_frm.fields_dict['items'].grid.get_field('reference_name').get_query = functi
 
 frappe.ui.form.on("Transporter Payment Item", {
 	"delivery_note": function (frm, cdt, cdn) {
-		console.log("delivery_note")
 		var items = frm.doc.transporter_payment_item;
 		var total = 0;
 		for (var i = 0; i < items.length; i++) {

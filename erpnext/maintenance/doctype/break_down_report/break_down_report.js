@@ -70,6 +70,7 @@ cur_frm.add_fetch("customer", "branch", "customer_branch");
 cur_frm.add_fetch("equipment", "equipment_model", "equipment_model");
 cur_frm.add_fetch("equipment", "equipment_type", "equipment_type");
 cur_frm.add_fetch("equipment", "equipment_number", "equipment_number");
+cur_frm.add_fetch("equipment", "business_activity", "business_activity");
 
 //cur_frm.add_fetch("customer_cost_center", "branch", "customer_branch");
 
