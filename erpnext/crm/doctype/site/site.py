@@ -57,7 +57,7 @@ class Site(Document):
 		else:
 			doc.customer_id	  = ua.user
 
-		doc.dzongkhag	  = ua.billing_dzongkhag if ua.billing_dzongkhag else doc.dzongkhag
+		doc.dzongkhag	  = ua.billing_dzongkhag if ua.billing_dzongkhag else self.dzongkhag
 		doc.mobile_no	  = ua.mobile_no if ua.mobile_no else doc.mobile_no
 		doc.customer_details = customer_address
 		doc.save(ignore_permissions=True)
