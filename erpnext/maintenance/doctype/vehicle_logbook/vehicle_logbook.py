@@ -258,10 +258,10 @@ class VehicleLogbook(Document):
 				pass
 			elif self.include_hour and self.initial_hour == self.final_hour:
 				pass
-			else:
-				frappe.throw("Consumption is Mandatory")
-		else:
-			frappe.throw("Consumption is Mandatory")
+		# 	else:
+		# 		frappe.throw("Consumption is Mandatory")
+		# else:
+		# 	frappe.throw("Consumption is Mandatory")
 
 @frappe.whitelist()
 def get_opening(equipment, from_date, to_date, pol_type):
