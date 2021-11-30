@@ -20,6 +20,7 @@ def get_data(query, filters):
 	datas = frappe.db.sql(query, as_dict=True);
 	ini = su = cm = co = ad = av = 0
 	for d in datas:
+		actual_committed = 0
 		if filters.group_by_account:
 			d.cost_center = ""
 			committed = frappe.db.sql("select SUM(amount) from `tabCommitted Budget` where account = %s and po_date BETWEEN %s and %s", (d.account, filters.from_date, filters.to_date))[0][0]
@@ -38,8 +39,11 @@ def get_data(query, filters):
 			committed-=consumed
 			if committed < 0:
 				committed = 0
-		
-		available = flt(d.initial_budget) + flt(adjustment) + flt(d.supplement) - consumed - committed
+				actual_committed = consumed
+			else:
+				actual_committed = committed
+	
+		available = flt(d.initial_budget) + flt(adjustment) + flt(d.supplement) - flt(actual_committed)
 		row = {
 			"account": d.account, 
 			"cost_center": d.cost_center,
