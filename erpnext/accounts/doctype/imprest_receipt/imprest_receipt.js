@@ -24,6 +24,11 @@ frappe.ui.form.on('Imprest Receipt', {
 			}
         }
 		
+		frm.set_query("party", function() {
+			return {
+				"filters": {"user_id": frappe.session.user}
+			}
+		})
 		/*
 		if(!frm.doc.entry_date){
 			cur_frm.set_value("entry_date", frappe.datetime.now_datetime());

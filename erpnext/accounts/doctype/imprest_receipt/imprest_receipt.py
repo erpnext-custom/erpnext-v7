@@ -16,7 +16,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, getdate, get_datetime, get_url, nowdate, now_datetime
 
 class ImprestReceipt(Document):
-	def validate(self):
+        def validate(self):
                 self.validate_defaults()
                 self.update_defaults()
                 self.update_amounts()
@@ -26,7 +26,9 @@ class ImprestReceipt(Document):
                 for t in frappe.get_all("Imprest Receipt", ["name"], {"branch": self.branch, "imprest_type": self.imprest_type, "entry_date":("<",self.entry_date),"docstatus":0}):
                         msg = '<b>Reference# : <a href="#Form/Imprest Receipt/{0}">{0}</a></b>'.format(t.name)
                         frappe.throw(_("Found unclosed entries. Previous entries needs to be either closed or cancelled in order to determine opening balance for the current transaction.<br>{0}").format(msg),title="Invalid Operation")
-                update_dependencies(self.branch, self.imprest_type, self.entry_date)                
+                update_dependencies(self.branch, self.imprest_type, self.entry_date)
+
+                self.post_journal_entry()           
         
         def on_cancel(self):
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
@@ -68,6 +70,45 @@ class ImprestReceipt(Document):
                 else:
                         if flt(self.closing_balance) > flt(imprest_limit):
                                 frappe.throw(_("Closing balance cannot exceed imprest limit Nu.{0}/-.").format(flt(imprest_limit)),title="Invalid Data")
+
+        def post_journal_entry(self):
+                debit_account = frappe.db.get_single_value("Imprest Receipt Account Setting", "imprest_debit_account")
+                credit_account = frappe.db.get_single_value("Imprest Receipt Account Setting", "imprest_credit_account")
+
+                je = frappe.new_doc("Journal Entry")
+                je.flags.ignore_permissions = 1 
+                je.title = "Imprest Receipt (" + self.name + ")"
+                je.voucher_type = 'Journal Entry'
+                je.naming_series = 'Journal Entry'
+                je.remark = 'Payment against : ' + self.name;
+                je.posting_date = self.entry_date
+                je.branch = self.branch
+
+                je.append("accounts", {
+                                "account":debit_account,
+                                "business_activity": self.business_activity,
+                                "reference_name": self.name,
+                                "reference_type": "Imprest Receipt",
+                                "cost_center": self.cost_center,
+                                "debit_in_account_currency": flt(self.amount),
+                                "debit": flt(self.amount),
+                                "party_type": "Employee",
+                                "party": self.party
+                })
+                
+                je.append("accounts", {
+                                "account": credit_account,
+                                "business_activity": self.business_activity,
+                                "reference_type": "Imprest Receipt",
+                                "reference_name": self.name,
+                                "cost_center": self.cost_center,
+                                "credit_in_account_currency": flt(self.amount),
+                                "credit": flt(self.amount),
+                })
+                        
+                je.insert()
+                self.db_set("journal_entry", je.name) 
+                # i.journal_entry = je.name
 
 
 def update_dependencies(branch = None, imprest_type = None, entry_date = None):
