@@ -35,13 +35,12 @@ def get_data(query, filters):
 			
 		adjustment = flt(d.added) - flt(d.deducted)
 		supplement = flt(d.supplement)
+		actual_committed = committed	
 		if committed != 0:
 			committed-=consumed
 			if committed < 0:
 				committed = 0
 				actual_committed = consumed
-			else:
-				actual_committed = committed
 	
 		available = flt(d.initial_budget) + flt(adjustment) + flt(d.supplement) - flt(actual_committed)
 		row = {
