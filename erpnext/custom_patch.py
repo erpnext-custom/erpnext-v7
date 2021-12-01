@@ -2181,4 +2181,23 @@ def make_gl_entries_for_stock_entry():
 		c += 1
 	print('done')
 
+def delete_consumed_budget_for_pol_advance():
+	polad_list = frappe.db.sql("""
+		SELECT 
+			pa.name
+		FROM `tabPol Advance` pa 
+		WHERE exists(select cb.po_no from `tabConsumed Budget` cb where cb.po_no = pa.name) 
+		and pa.docstatus=1 and pa.journal_entry != '' order by pa.name
+	""",as_dict=True)
+	c=1
+	for p in polad_list:
+		frappe.db.sql("delete from `tabConsumed Budget` where po_no = '{}'".format(p.name))
+		print(c)
+		c += 1
+
+	frappe.db.sql("delete from `tabConsumed Budget` where po_no = 'POLAD21080400002'")
+	frappe.db.sql("delete from `tabConsumed Budget` where po_no = 'POLAD21090201'")
+	
+	print("DONE")
+
 	
