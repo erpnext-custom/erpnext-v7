@@ -9,7 +9,7 @@ from frappe.utils.data import time_diff_in_hours
 from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
 from frappe.model.mapper import get_mapped_doc
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date, check_budget_available
 from erpnext.maintenance.maintenance_utils import get_equipment_ba
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 from frappe import msgprint
@@ -64,6 +64,10 @@ class JobCard(AccountsController):
 		# 	self.make_gl_entries()
 
 		if self.supplier and self.out_source:
+			maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
+			check_budget_available(self.cost_center,maintenance_account,self.finish_date,self.total_amount,self.business_activity)
+			self.commit_budget(maintenance_account)
+			self.consume_budget(maintenance_account)
 			self.make_gl_entry()
 
 		self.update_breakdownreport()
@@ -82,7 +86,7 @@ class JobCard(AccountsController):
 			bdr.db_set("job_card", None)
 		# if self.owned_by == "Others":
 		if self.supplier and self.out_source:
-			self.make_gl_entries()	
+			self.make_gl_entry()	
 
 	def get_default_settings(self):
 		goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
@@ -255,11 +259,11 @@ class JobCard(AccountsController):
 		else:
 			frappe.throw("Setup Default Goods, Services and Receivable Accounts in Maintenance Accounts Settings")
 
-        def make_gl_entries(self):
-                if self.total_amount:
-                        from erpnext.accounts.general_ledger import make_gl_entries
-                        gl_entries = []
-                        self.posting_date = self.finish_date
+	def make_gl_entries(self):
+		if self.total_amount:
+			from erpnext.accounts.general_ledger import make_gl_entries
+			gl_entries = []
+			self.posting_date = self.finish_date
 			ba = get_default_ba()
 
 			goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
@@ -271,90 +275,111 @@ class JobCard(AccountsController):
 				frappe.throw("Setup Default Services Account in Maintenance Setting")
 			if not receivable_account:
 				frappe.throw("Setup Default Receivable Account in Maintenance Setting")
-                        
-                        gl_entries.append(
-                                self.get_gl_dict({
-                                       "account":  receivable_account,
-                                       "party_type": "Customer",
-                                       "party": self.customer,
-                                       "against": receivable_account,
-                                       "debit": self.total_amount,
-                                       "debit_in_account_currency": self.total_amount,
-                                       "against_voucher": self.name,
-                                       "against_voucher_type": self.doctype,
-                                       "cost_center": self.cost_center,
-				       "business_activity": ba
-                                }, self.currency)
-                        )
+						
+			gl_entries.append(
+				self.get_gl_dict({
+					"account":  receivable_account,
+					"party_type": "Customer",
+					"party": self.customer,
+					"against": receivable_account,
+					"debit": self.total_amount,
+					"debit_in_account_currency": self.total_amount,
+					"against_voucher": self.name,
+					"against_voucher_type": self.doctype,
+					"cost_center": self.cost_center,
+					"business_activity": ba
+					}, self.currency)
+			)
 
 			if self.goods_amount:
 				gl_entries.append(
 					self.get_gl_dict({
-					       "account": goods_account,
-					       "against": self.customer,
-					       "credit": self.goods_amount,
-					       "credit_in_account_currency": self.goods_amount,
-					       "business_activity": ba,
-					       "cost_center": self.cost_center
+						"account": goods_account,
+						"against": self.customer,
+						"credit": self.goods_amount,
+						"credit_in_account_currency": self.goods_amount,
+						"business_activity": ba,
+						"cost_center": self.cost_center
 					}, self.currency)
 				)
 			if self.services_amount:
 				gl_entries.append(
 					self.get_gl_dict({
-					       "account": services_account,
-					       "against": self.customer,
-					       "credit": self.services_amount,
-					       "credit_in_account_currency": self.services_amount,
-					       "business_activity": ba,
-					       "cost_center": self.cost_center
+						"account": services_account,
+						"against": self.customer,
+						"credit": self.services_amount,
+						"credit_in_account_currency": self.services_amount,
+						"business_activity": ba,
+						"cost_center": self.cost_center
 					}, self.currency)
 				)
-
-
-                        make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
+			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 
 	def make_gl_entry(self):
 		if self.total_amount:
-                	from erpnext.accounts.general_ledger import make_gl_entries
-                        gl_entries = []
-                        self.posting_date = self.finish_date
+			from erpnext.accounts.general_ledger import make_gl_entries
+			gl_entries = []
+			self.posting_date = self.finish_date
 
-                        maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
-                        #payable_account = frappe.db.get_value("Company", "Natural Resources Development Corporation Ltd","default_payable_account")
-                        
+			maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
 			payable_account = frappe.db.get_value("Company", self.company,"default_payable_account")
 			if not maintenance_account:
-                                frappe.throw("Setup Default Goods Account in Maintenance Setting")
-                        if not payable_account:
-                                frappe.throw("Setup Default Payable Account in Company Setting")
+				frappe.throw("Setup Default Goods Account in Maintenance Setting")
+			if not payable_account:
+				frappe.throw("Setup Default Payable Account in Company Setting")
 
-                        gl_entries.append(
-                                self.get_gl_dict({
-                                       "account":  maintenance_account,
-                                       "against": self.supplier,
-                                       "debit": self.total_amount,
-                                       "debit_in_account_currency": self.total_amount,
-                                       "against_voucher": self.name,
-                                       "against_voucher_type": self.doctype,
-                                       "cost_center": self.cost_center,
-                                       "business_activity": self.business_activity
-                                }, self.currency)
-                        	)
 			gl_entries.append(
-                                        self.get_gl_dict({
-                                               "account": payable_account,
-					       "party_type": "Supplier",
-				               "party": self.supplier,
-                                               "against": self.supplier,
-                                               "credit": self.total_amount,
-                                               "credit_in_account_currency": self.total_amount,
-                                               "business_activity": self.business_activity,
-                                               "cost_center": self.cost_center
-                                        }, self.currency)
-                                )
+				self.get_gl_dict({
+					"account":  maintenance_account,
+					"against": self.supplier,
+					"debit": self.total_amount,
+					"debit_in_account_currency": self.total_amount,
+					"against_voucher": self.name,
+					"against_voucher_type": self.doctype,
+					"cost_center": self.cost_center,
+					"business_activity": self.business_activity
+				}, self.currency)
+			)
+			gl_entries.append(
+				self.get_gl_dict({
+					"account": payable_account,
+					"party_type": "Supplier",
+					"party": self.supplier,
+					"against": self.supplier,
+					"credit": self.total_amount,
+					"credit_in_account_currency": self.total_amount,
+					"business_activity": self.business_activity,
+					"cost_center": self.cost_center
+					}, self.currency)
+				)
+			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="Yes", merge_entries=False)
 
+	def commit_budget(self, maintenance_account):
+		commit_bud = frappe.get_doc({
+			"doctype": "Committed Budget",
+			"account": maintenance_account,
+			"cost_center": self.cost_center,
+			"business_activity": self.business_activity,
+			"po_no": self.name,
+			"po_date": self.finish_date,
+			"amount": self.total_amount,
+			"date": frappe.utils.nowdate()
+		})
+		commit_bud.flags.ignore_permissions=1
+		commit_bud.submit()
 
-                        make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="Yes", merge_entries=False)
+	def consume_budget(self,maintenance_account):
+		consume = frappe.get_doc({
+			"doctype": "Consumed Budget",
+			"account": maintenance_account,
+			"cost_center": self.cost_center,
+			"po_no": self.name,
+			"po_date": self.finish_date,
+			"amount": self.total_amount,
+			"business_activity": self.business_activity,
+			"date": frappe.utils.nowdate()})
+		consume.flags.ignore_permissions = 1
+		consume.submit()
 
 	def update_reservation(self):
 		frappe.db.sql("update `tabEquipment Reservation Entry` set to_date = %s, to_time = %s where docstatus = 1 and ehf_name = %s", (self.finish_date, self.job_out_time, self.break_down_report))
@@ -441,16 +466,16 @@ def make_payment_entry(source_name, target_doc=None):
 	def update_docs(obj, target, source_parent):
 		target.posting_date = nowdate()
 		target.payment_for = "Job Card"
-                target.net_amount = obj.outstanding_amount
-                target.actual_amount = obj.outstanding_amount
-                target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
-		
-                target.append("items", {
-                        "reference_type": "Job Card",
-                        "reference_name": obj.name,
-                        "outstanding_amount": obj.outstanding_amount,
-                        "allocated_amount": obj.outstanding_amount
-                })
+		target.net_amount = obj.outstanding_amount
+		target.actual_amount = obj.outstanding_amount
+		target.income_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
+
+		target.append("items", {
+			"reference_type": "Job Card",
+			"reference_name": obj.name,
+			"outstanding_amount": obj.outstanding_amount,
+			"allocated_amount": obj.outstanding_amount
+		})
 	
 	doc = get_mapped_doc("Job Card", source_name, {
 			"Job Card": {
@@ -466,31 +491,31 @@ def make_payment_entry(source_name, target_doc=None):
 
 @frappe.whitelist()
 def make_payment(source_name, target_doc=None):
-        def update_docs(obj, target, source_parent):
-                target.posting_date = nowdate()
-                target.payment_for = "Job Card"
-                target.net_amount = obj.total_amount
-                target.actual_amount = obj.total_amount
-                target.outgoing_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
+	def update_docs(obj, target, source_parent):
+		target.posting_date = nowdate()
+		target.payment_for = "Job Card"
+		target.net_amount = obj.total_amount
+		target.actual_amount = obj.total_amount
+		target.outgoing_account = frappe.db.get_value("Branch", obj.branch, "revenue_bank_account")
 		target.supplier = obj.supplier
-                target.append("items", {
-                        "reference_type": "Job Card",
-                        "reference_name": obj.name,
-                        "outstanding_amount": obj.total_amount,
-                        "allocated_amount": obj.total_amount
-                })
+		target.append("items", {
+			"reference_type": "Job Card",
+			"reference_name": obj.name,
+			"outstanding_amount": obj.total_amount,
+			"allocated_amount": obj.total_amount
+		})
 
-        doc = get_mapped_doc("Job Card", source_name, {
-                        "Job Card": {
-                                "doctype": "Mechanical Payment",
-                                "field_map": {
-                                        "total_amount": "payable_amount",
-                                },
-                                "postprocess": update_docs,
-                                "validation": {"docstatus": ["=", 1]}
-                        },
-                }, target_doc)
-        return doc
+	doc = get_mapped_doc("Job Card", source_name, {
+		"Job Card": {
+			"doctype": "Mechanical Payment",
+			"field_map": {
+				"total_amount": "payable_amount",
+			},
+			"postprocess": update_docs,
+			"validation": {"docstatus": ["=", 1]}
+			},
+		}, target_doc)
+	return doc
 
 
 # ADDED by Phuntsho Norbu on Oct 6, 2020
@@ -519,22 +544,22 @@ def update_child_table_rate (item_code, supplier,posting_date):
 # Added by Sonam Chophel to update the payment status on august 03/08/2021
 @frappe.whitelist()
 def get_payment_entry(doc_name, total_amount):
-    """ see if there exist a payment entry submitted for the job card """
-    payment_entry = """
-        SELECT 
-            sum(a.total_amount) as total_amount
-        FROM 
-            `tabMechanical Payment` as a, 
-            `tabMechanical Payment Item` as b
-        WHERE 
-            a.payment_for = "Job Card" and
-            b.reference_type = "Job Card" and 
-            b.reference_name= '{name}' and 
-            b.parent = a.name and 
-            a.docstatus = 1""".format(name=doc_name)
-    payment_entry = frappe.db.sql(payment_entry, as_dict=1)
+	""" see if there exist a payment entry submitted for the job card """
+	payment_entry = """
+		SELECT 
+			sum(a.total_amount) as total_amount
+		FROM 
+			`tabMechanical Payment` as a, 
+			`tabMechanical Payment Item` as b
+		WHERE 
+			a.payment_for = "Job Card" and
+			b.reference_type = "Job Card" and 
+			b.reference_name= '{name}' and 
+			b.parent = a.name and 
+			a.docstatus = 1""".format(name=doc_name)
+	payment_entry = frappe.db.sql(payment_entry, as_dict=1)
 	
-    if len(payment_entry) >= 1 and payment_entry[0].total_amount > 0:
+	if len(payment_entry) >= 1 and payment_entry[0].total_amount > 0:
 		if flt(payment_entry[0].total_amount) == flt(total_amount):
 			frappe.db.set_value("Job Card", doc_name, "payment_status", "Paid")
 			return ("Paid")
@@ -542,10 +567,7 @@ def get_payment_entry(doc_name, total_amount):
 			frappe.db.set_value("Job Card", doc_name, 'payment_status', "Partially Paid")
 			return ("Partially Paid")
 
-    else:
+	else:
 		frappe.db.set_value("Job Card", doc_name, 'payment_status', "Not Paid")
 		return ("Not Paid")
-
-
-
 # -------- End of new code ----------

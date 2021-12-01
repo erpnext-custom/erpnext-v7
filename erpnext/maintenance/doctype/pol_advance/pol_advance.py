@@ -39,7 +39,7 @@ class PolAdvance(AccountsController):
         check_budget_available(self.cost_center,advance_account,self.entry_date,self.amount,self.business_activity)
         self.update_od_balance()
         self.post_journal_entry()
-        self.consume_budget(advance_account)
+
     def on_cancel(self):
         self.cancel_budget_entry()
         self.update_od_balance()
@@ -80,21 +80,6 @@ class PolAdvance(AccountsController):
     def validate_cheque_info(self):
         if self.cheque_date and not self.cheque_no:
             msgprint(_("Cheque No is mandatory if you entered Cheque Date"), raise_exception=1)
-
-    def consume_budget(self,advance_account):
-        consume = frappe.get_doc({
-            "doctype": "Consumed Budget",
-            "account": advance_account,
-            "cost_center": self.cost_center,
-            "po_no": self.name,
-            "po_date": self.entry_date,
-            "amount": self.amount,
-            "pii_name": self.name,
-            # "com_ref": bud_obj.name,
-            "business_activity": self.business_activity,
-            "date": frappe.utils.nowdate()})
-        consume.flags.ignore_permissions = 1
-        consume.submit()
   
     def cancel_budget_entry(self):
         frappe.db.sql("delete from `tabConsumed Budget` where po_no = %s", self.name) 

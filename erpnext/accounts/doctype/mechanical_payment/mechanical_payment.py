@@ -28,7 +28,7 @@ class MechanicalPayment(AccountsController):
 			else:
 				self.net_amount = self.total_amount - self.other_deduction
 		if self.payment_for == "Job Card" and self.tds_amount:
-				self.net_amount = self.payable_amount - self.tds_amount
+				self.net_amount = flt(self.payable_amount,2) - flt(self.tds_amount,2)
 	
 		if not self.net_amount:
 			frappe.throw("Net Amount cannot be less than Zero")
@@ -254,7 +254,7 @@ class MechanicalPayment(AccountsController):
 						 "party_type": "Supplier",
 						 "party": self.supplier,
                                                  "reference_name": self.name,
-                                                 "business_activity": default_ba,
+                                                 "business_activity": self.business_activity,
                                                  "remarks": self.remarks
                                                 })
                                         )
@@ -266,7 +266,7 @@ class MechanicalPayment(AccountsController):
 								 "cost_center": self.cost_center,
 								 "reference_type": self.doctype,
 								 "reference_name": self.name,
-								 "business_activity": default_ba,
+								 "business_activity": self.business_activity,
 								 "remarks": self.remarks
 								})
 						)
@@ -277,7 +277,7 @@ class MechanicalPayment(AccountsController):
 							 "cost_center": self.cost_center,
 							 "reference_type": self.doctype,
 							 "reference_name": self.name,
-							 "business_activity": default_ba,
+							 "business_activity": self.business_activity,
 							 "remarks": self.remarks
 							})
                                 	)
