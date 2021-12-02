@@ -22,7 +22,7 @@ class TravelAuthorization(Document):
                 #        frappe.throw(_("Invalid supervisor"), title="Invalid Data")
 
 		validate_workflow_states(self)
-		self.validate_travel_dates()
+		# self.validate_travel_dates()
                 self.check_double_dates()
 		self.assign_end_date()
 		self.validate_advance()
@@ -59,7 +59,7 @@ class TravelAuthorization(Document):
 		#self.get_status()
 		#self.check_double_dates()
 		#self.validate_submitter()
-		self.validate_travel_dates()
+		# self.validate_travel_dates()
 		self.check_status()
 		self.check_advance()
 		self.create_attendance()
@@ -81,7 +81,7 @@ class TravelAuthorization(Document):
 	def on_update_after_submit(self):
 		if self.travel_claim:
 			frappe.throw("Cannot change once claim is created")
-		self.validate_travel_dates()
+		# self.validate_travel_dates()
                 self.check_double_dates()
                 #self.assign_end_date()
                 self.db_set("end_date_auth", self.items[len(self.items) - 1].date)
