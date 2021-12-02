@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr, rounded
-from erpnext.accounts.report.financial_statements_emines \
+from erpnext.accounts.report.financial_statement_gcc \
 	import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
 from erpnext.accounts.accounts_custom_functions import get_child_cost_centers
 
@@ -17,8 +17,179 @@ def execute(filters=None):
 	columns = get_columns()
 	return columns, data
 
-def validate_filters(filters):
+def get_data(filters):
+	validate_filters(filters)
+        data   		= []
+	debit, credit, total_debit, total_credit = 0, 0, 0, 0
 
+	base_gl = frappe.db.sql_list("select name from `tabAccount` where account_type in ('Bank', 'Cash')")
+	accounts, accounts_by_name = get_accounts()
+
+	for report_head in ["Opening Cash or Bank", "Receipt", "Payment", "Closing Cash or Bank"]:
+		# level-1 heading
+		data += [frappe._dict({
+			'account': report_head, 'account_name': report_head, 'account_code': None, 'parent_account': None, 
+			'indent': 0, 'debit': 0, 'credit': 0, 
+		})]
+
+		# get the values
+		formatted, debit, credit = get_gl_totals(filters, base_gl, report_head, accounts_by_name)
+		data += formatted
+		total_debit  += flt(debit)
+		total_credit += flt(credit)
+
+	# total row
+#	data += [frappe._dict({
+#		'account': 'Total', 'account_name': 'Total', 'account_code': None, 'parent_account': None, 
+#		'indent': 0, 'debit': total_debit, 'credit': total_credit, 
+#	})]
+
+        return data
+
+def get_accounts():
+	accounts = frappe.db.sql("""select name as account, account_code, account_name, lft, rgt 
+			from `tabAccount` order by lft, rgt""", as_dict=True)
+	accounts_by_name = frappe._dict()
+	for i in accounts:
+		accounts_by_name[i.account] = i
+
+	return accounts, accounts_by_name
+
+def get_gl_totals(filters, base_gl, report_head, accounts_by_name):
+	base_gl = tuple(str(i) for i in base_gl)
+	formatted = []
+	total_debit, total_credit = 0, 0
+
+	columns, cond = get_columns_and_conditions(filters, base_gl, report_head)
+	report_head_id= str(report_head).lower().replace(' ','_')
+	data 	= frappe.db.sql("""
+		select 
+			(case when parent_account is null then 1 else -1 end) order_by,
+			'{report_head}' report_head,
+			gl1.account,
+			concat(gl1.account,'{report_head_id}') account_id,
+			a.account_name,
+			a.account_code,
+			a.parent_account,
+			concat(a.parent_account,'{report_head_id}') parent_account_id,
+			1 as indent,
+			{columns}
+		from `tabGL Entry` gl1, `tabAccount` a
+		{cond}
+		and a.name = gl1.account
+		group by order_by, report_head, gl1.account, concat(gl1.account,'{report_head_id}'), 
+			a.account_name, a.account_code, a.parent_account, concat(a.parent_account,'{report_head_id}')
+		order by order_by, a.parent_account, gl1.account
+	""".format(report_head=report_head, report_head_id=report_head_id, columns=columns, cond=cond), as_dict=True)
+
+	formatted, total_debit, total_credit = get_formatted(data, accounts_by_name)
+	return formatted, total_debit, total_credit 
+
+def get_formatted(data, accounts_by_name):
+	formatted = []
+	total_debit, total_credit = 0, 0
+	prev_parent = ""
+	for i in data:
+		indent = 1
+		if i.parent_account:
+			if prev_parent != i.parent_account:
+				# level-2 heading
+				formatted += [frappe._dict({
+					'account': i.parent_account, 'account_name': accounts_by_name[i.parent_account].account_name, 
+					'account_code': None, 'parent_account': i.report_head, 
+					'indent': indent, 'debit': 0, 'credit': 0, 
+				})]
+			indent += 1
+			prev_parent = i.parent_account
+		else:
+			prev_parent = i.report_head
+
+		# level-3
+		formatted += [frappe._dict({
+			'account': i.account, 'account_name': i.account_name, 
+			'account_code': i.account_code, 'parent_account': prev_parent, 
+			'indent': indent, 'debit': i.debit, 'credit': i.credit, 
+		})]
+		total_debit  += flt(i.debit)
+		total_credit += flt(i.credit)
+	return formatted, total_debit, total_credit 
+
+def get_columns_and_conditions(filters, base_gl, report_head):
+	cond = ""	
+	if report_head == "Receipt":
+		columns = "sum(gl1.credit) as debit, 0 as credit"
+		cond 	= """where gl1.posting_date between '{}' and '{}' 
+				and exists(select 1
+					from `tabGL Entry` gl2
+					where gl2.voucher_type = gl1.voucher_type
+					and gl2.voucher_no = gl1.voucher_no
+					and gl2.account in {}
+					and ifnull(gl2.debit,0) > 0
+				)
+				and gl1.account not in {}
+		""".format(filters.from_date, filters.to_date, base_gl, base_gl)
+	elif report_head == "Payment":
+		columns = "0 as debit, sum(gl1.debit) as credit"
+		cond 	= """where gl1.posting_date between '{}' and '{}' 
+				and exists(select 1
+					from `tabGL Entry` gl2
+					where gl2.voucher_type = gl1.voucher_type
+					and gl2.voucher_no = gl1.voucher_no
+					and gl2.account in {}
+					and ifnull(gl2.credit,0) > 0
+				)
+				and gl1.account not in {}
+		""".format(filters.from_date, filters.to_date, base_gl, base_gl)
+	elif report_head == "Opening Cash or Bank":
+		columns = "sum(gl1.debit) as debit, sum(gl1.credit) as credit"
+		cond 	= """where gl1.posting_date < '{}'
+				and gl1.account in {}
+		""".format(filters.from_date, base_gl)
+	else:
+		#columns ="(sum(gl1.debit)+ sum(gl1.credit) - sum(gl1.debit)) as debit, 0 as credit"
+		columns = "sum(gl1.debit) as debit, sum(gl1.credit) as credit"
+		cond = """where gl1.posting_date <= '{}'
+				and gl1.account in {}
+		""".format(filters.to_date, base_gl)
+	return columns, cond
+
+def get_rootwise_opening_balances(filters, report_type):
+	additional_conditions = " and posting_date >= %(year_start_date)s" \
+		if report_type == "Profit and Loss" else ""
+
+	if not flt(filters.with_period_closing_entry):
+		additional_conditions += " and ifnull(voucher_type, '')!='Period Closing Voucher'"
+
+        if filters.cost_center:
+		cost_centers = get_child_cost_centers(filters.cost_center)
+                additional_conditions += " and cost_center IN %(cost_center)s"
+        else:
+		cost_centers = filters.cost_center 
+	gle = frappe.db.sql("""
+		select
+			account, sum(debit) as opening_debit, sum(credit) as opening_credit	
+			from `tabGL Entry` 
+			where voucher_no in ( select voucher_no from `tabGL Entry` where account
+ 			in (select name from `tabAccount` where account_type in ('Bank', 'Cash'))) and 
+			company=%(company)s 
+			{additional_conditions}
+			and (posting_date < %(from_date)s or ifnull(is_opening, 'No') = 'Yes')
+		group by account""".format(additional_conditions=additional_conditions),
+		{
+			"company": filters.company,
+			"from_date": filters.from_date,
+			"year_start_date": filters.year_start_date,
+                        "cost_center": cost_centers
+		},
+		as_dict=True)
+
+	opening = frappe._dict()
+	for d in gle:
+		opening.setdefault(d.account, d)
+
+	return opening
+
+def validate_filters(filters):
 	if not filters.fiscal_year:
 		frappe.throw(_("Fiscal Year {0} is required").format(filters.fiscal_year))
 
@@ -52,196 +223,6 @@ def validate_filters(filters):
 			.format(formatdate(filters.year_end_date)))
 		filters.to_date = filters.year_end_date
 
-def get_data(filters):
-	accounts = frappe.db.sql("""select name, account_code, parent_account, account_name, root_type, report_type, lft, rgt
-		from `tabAccount` where company=%s order by lft""", filters.company, as_dict=True)
-
-	if not accounts:
-		return None
-
-	accounts, accounts_by_name, parent_children_map = filter_accounts(accounts)
-	min_lft, max_rgt = frappe.db.sql("""select min(lft), max(rgt) from `tabAccount`
-		where company=%s""", (filters.company,))[0]
-
-	gl_entries_by_account = {}
-
-	#added the parameter filters.business_activity, returns gl_entries_by_account
-	set_gl_entries_by_account(filters.cost_center, filters.business_activity, filters.company, filters.from_date,
-		filters.to_date, min_lft, max_rgt, gl_entries_by_account, ignore_closing_entries=not flt(filters.with_period_closing_entry))
-	opening_balances = get_opening_balances(filters)
-
-	total_row = calculate_values(accounts, gl_entries_by_account, opening_balances, filters)
-	accumulate_values_into_parents(accounts, accounts_by_name)
-	
-	data = prepare_data(accounts, filters, total_row, parent_children_map)
-	data = filter_out_zero_value_rows(data, parent_children_map,
-		show_zero_values=filters.get("show_zero_values"))
-
-	return data
-
-def get_opening_balances(filters):
-	balance_sheet_opening = get_rootwise_opening_balances(filters, "Balance Sheet")
-	pl_opening = get_rootwise_opening_balances(filters, "Profit and Loss")
-
-	balance_sheet_opening.update(pl_opening)
-	return balance_sheet_opening
-
-
-def get_rootwise_opening_balances(filters, report_type):
-	additional_conditions = " and posting_date >= %(year_start_date)s" \
-		if report_type == "Profit and Loss" else " "
-
-	if not flt(filters.with_period_closing_entry):
-		additional_conditions += " and ifnull(voucher_type, '')!='Period Closing Voucher'"
-
-	 #added business_activity filter
-	if filters.business_activity:
-                additional_conditions += " and business_activity = '{0}'".format(filters.business_activity)
-        else:
-                additional_conditions += " and 1 = 1 "
-	
-    	if filters.cost_center:
-		cost_centers = get_child_cost_centers(filters.cost_center)
-       		additional_conditions += " and cost_center IN %(cost_center)s"
-    
-	else:
-		cost_centers = filters.cost_center 
-	
-	gle = frappe.db.sql("""
-		select
-			account, sum(debit) as opening_debit, sum(credit) as opening_credit
-		from `tabGL Entry`
-		where
-			company=%(company)s
-			{additional_conditions}
-			and (posting_date < %(from_date)s or ifnull(is_opening, 'No') = 'Yes')
-			and account in (select name from `tabAccount` where report_type=%(report_type)s)
-		group by account""".format(additional_conditions=additional_conditions),
-		{
-			"company": filters.company,
-			"from_date": filters.from_date,
-			"report_type": report_type,
-			"year_start_date": filters.year_start_date,
-                        "cost_center": cost_centers
-		},
-		as_dict=True, debug = 0)
-
-	opening = frappe._dict()
-	for d in gle:
-		opening.setdefault(d.account, d)
-	return opening
-
-
-#ndef bank_cash(accounts, gl_entries_by_account, opening_balances, filters):
-       	list = frappe.db.sql("""select a.name as name, sum(b.debit) as debit, sum(b.credit) as credit from tabAccount a, `tabGL Entry` b where b.account in (select account from `tabGL Entry` where docstatus =1)  and a.account_type = 'Bank' and a.is_group != 1""")
-	init = {
-                "opening_debit": 0.0,
-                "opening_credit": 0.0,
-                "debit": 0.0,
-                "credit": 0.0,
-                "closing_debit": 0.0,
-                "closing_credit": 0.0
-        }
-
-        bank = {
-                "account": None,
-                "account_name": _("bank"),
-                "warn_if_negative": True,
-                "opening_debit": 0.0,
-                "opening_credit": 0.0,
-                "debit": 0.0,
-                "credit": 0.0,
-                "closing_debit": 0.0,
-                "closing_credit": 0.0
-        }
-	for a in list:
-        	accounts = a.name
-                debits = a.debit
-                credits = a.credit
-
-                # add opening
-		bank["opening_debit"] = debits
-		bank["opening_credit"] = credit
-
-	bank["debit"] += bank["debit"]
-        bank["credit"] += bank["credit"]
-
-        return bank
-
-
-def calculate_values(accounts, gl_entries_by_account, opening_balances, filters):
-	init = {
-		"opening_debit": 0.0,
-		"opening_credit": 0.0,
-		"debit": 0.0,
-		"credit": 0.0,
-		"closing_debit": 0.0,
-		"closing_credit": 0.0
-	}
-
-	total_row = {
-		"account": None,
-		"account_name": _("Total"),
-		"warn_if_negative": True,
-		"opening_debit": 0.0,
-		"opening_credit": 0.0,
-		"debit": 0.0,
-		"credit": 0.0,
-		"closing_debit": 0.0,
-		"closing_credit": 0.0
-	}
-
-	for d in accounts:
-		d.update(init.copy())
-
-		# add opening
-		d["opening_debit"] = opening_balances.get(d.name, {}).get("opening_debit", 0)
-		d["opening_credit"] = opening_balances.get(d.name, {}).get("opening_credit", 0)
-
-		for entry in gl_entries_by_account.get(d.name, []):
-			if cstr(entry.is_opening) != "Yes":
-				d["debit"] += flt(entry.debit, 3)
-				d["credit"] += flt(entry.credit, 3)
-
-		total_row["debit"] += d["debit"]
-		total_row["credit"] += d["credit"]
-
-	return total_row
-
-def accumulate_values_into_parents(accounts, accounts_by_name):
-	for d in reversed(accounts):
-		if d.parent_account:
-			for key in value_fields:
-				accounts_by_name[d.parent_account][key] += d[key]
-
-def prepare_data( accounts, filters, total_row, parent_children_map):
-	data = []
-	for d in accounts:
-		has_value = False
-		row = {
-			"account_code": d.account_code,
-			"account_name": d.account_name,
-			"account": d.name,
-			"parent_account": d.parent_account,
-			"indent": d.indent,
-			"from_date": filters.from_date,
-			"to_date": filters.to_date
-		}
-		prepare_opening_and_closing(d, total_row)
-
-		for key in value_fields:
-			row[key] = flt(d.get(key, 0.0), 3)
-
-			if abs(row[key]) >= 0.005:
-				# ignore zero values
-				has_value = True
-
-		row["has_value"] = has_value
-		data.append(row)
-
-	data.extend([{},total_row])
-	return data
-
 def get_columns():
 	return [
 		{
@@ -249,7 +230,7 @@ def get_columns():
 			"label": _("Account"),
 			"fieldtype": "Link",
 			"options": "Account",
-			"width": 300
+			"width": 350
 		},
 		{
 			"fieldname": "account_code",
@@ -257,93 +238,19 @@ def get_columns():
 			"fieldtype": "Data",
 			"width": 100
 		},
-				{
-			"fieldname": "opening_credit",
-			"label": _("Opening (Cr)"),
+		{
+			"fieldname": "debit",
+			"label": _("Debit"),
 			"fieldtype": "Currency",
-			"width": 120
+			"width": 180
 		},
 		{
 			"fieldname": "credit",
 			"label": _("Credit"),
 			"fieldtype": "Currency",
-			"width": 120
+			"width": 180
 		},
-		{
-			"fieldname": "closing_credit",
-			"label": _("Closing (Cr)"),
-			"fieldtype": "Currency",
-			"width": 120
-		},
-		{
-			"fieldname": "opening_debit",
-			"label": _("Opening (Dr)"),
-			"fieldtype": "Currency",
-			"width": 120
-		},
-		{
-			"fieldname": "debit",
-			"label": _("Debit"),
-			"fieldtype": "Currency",
-			"width": 120
-		},
-		{
-			"fieldname": "closing_debit",
-			"label": _("Closing (Dr)"),
-			"fieldtype": "Currency",
-			"width": 120
-		}
 	]
 
-def prepare_opening_and_closing(d, total_row):
-	d["closing_debit"] = d["opening_debit"] + d["debit"]
-	d["closing_credit"] = d["opening_credit"] + d["credit"]
 
-	if d["closing_debit"] > d["closing_credit"]:
-		d["closing_debit"] -= d["closing_credit"]
-		d["closing_credit"] = 0.0
-
-	else:
-		d["closing_credit"] -= d["closing_debit"]
-		d["closing_debit"] = 0.0
-
-	if d["opening_debit"] > d["opening_credit"]:
-		d["opening_debit"] -= d["opening_credit"]
-		d["opening_credit"] = 0.0
-
-	else:
-		d["opening_credit"] -= d["opening_debit"]
-		d["opening_debit"] = 0.0
-
-	if str(d.account_name.encode('utf-8')) in ["Assets", "Liabilities", "Equity", "Revenue", "Expenses"]:
-                total_row['opening_credit'] = total_row['opening_credit'] + d['opening_credit']
-                total_row['opening_debit'] = total_row['opening_debit'] + d['opening_debit']
-                total_row['closing_credit'] = total_row['closing_credit'] + d['closing_credit']
-                total_row['closing_debit'] = total_row['closing_debit'] + d['closing_debit']
-
-#def prepare_opening_and_closing(d, bank):
-        d["closing_debit"] = d["opening_debit"] + d["debit"]
-        d["closing_credit"] = d["opening_credit"] + d["credit"]
-
-        if d["closing_debit"] > d["closing_credit"]:
-                d["closing_debit"] -= d["closing_credit"]
-                d["closing_credit"] = 0.0
-
-        else:
-                d["closing_credit"] -= d["closing_debit"]
-                d["closing_debit"] = 0.0
-
-        if d["opening_debit"] > d["opening_credit"]:
-                d["opening_debit"] -= d["opening_credit"]
-                d["opening_credit"] = 0.0
-
-        else:
-                d["opening_credit"] -= d["opening_debit"]
-                d["opening_debit"] = 0.0
-
-        if str(d.account_name.encode('utf-8')) in ["Assets", "Liabilities", "Equity", "Revenue", "Expenses"]:
-                bank['opening_credit'] = bank['opening_credit'] + d['opening_credit']
-                bank['opening_debit'] = bank['opening_debit'] + d['opening_debit']
-                bank['closing_credit'] = bank['closing_credit'] + d['closing_credit']
-                bank['closing_debit'] = bank['closing_debit'] + d['closing_debit']
 
