@@ -1,14 +1,14 @@
 // Copyright (c) 2016, Frappe Technologies Pvt. Ltd. and contributors
 // For license information, please see license.txt
-cur_frm.add_fetch("asset_code", "branch", "branch")
-cur_frm.add_fetch("hsd_type", "item_name", "item_name")
-cur_frm.add_fetch("supplier", "supplier_name", "owner_name")
-cur_frm.add_fetch("supplier", "bank_name_new", "bank_name")
-cur_frm.add_fetch("supplier", "bank_branch", "bank_branch")
-cur_frm.add_fetch("supplier", "bank_account_type", "bank_account_type")
-cur_frm.add_fetch("supplier", "account_number", "account_number")
-cur_frm.add_fetch("supplier", "ifs_code", "ifs_code")
-cur_frm.add_fetch("supplier", "vendor_tpn_no", "vendor_tpn_number")
+// cur_frm.add_fetch("asset_code", "branch", "branch")
+// cur_frm.add_fetch("hsd_type", "item_name", "item_name")
+// cur_frm.add_fetch("supplier", "supplier_name", "owner_name")
+// cur_frm.add_fetch("supplier", "bank_name_new", "bank_name")
+// cur_frm.add_fetch("supplier", "bank_branch", "bank_branch")
+// cur_frm.add_fetch("supplier", "bank_account_type", "bank_account_type")
+// cur_frm.add_fetch("supplier", "account_number", "account_number")
+// cur_frm.add_fetch("supplier", "ifs_code", "ifs_code")
+// cur_frm.add_fetch("supplier", "vendor_tpn_no", "vendor_tpn_number")
 
 frappe.ui.form.on('Equipment', {
 	onload: function(frm) {
