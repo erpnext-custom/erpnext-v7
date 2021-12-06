@@ -8,7 +8,7 @@ from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
 from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
+from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date, check_budget_available
 from erpnext.maintenance.maintenance_utils import get_equipment_ba
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 from frappe import _
@@ -61,7 +61,12 @@ class HireChargeInvoice(AccountsController):
             self.post_journal_entry()
             self.db_set("outstanding_amount", 0)
         else:
+            hire_expense_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_expense_account")
+            check_budget_available(self.cost_center,hire_expense_account,self.posting_date,self.total_invoice_amount,self.business_activity)
+            self.commit_budget(hire_expense_account)
+            self.consume_budget(hire_expense_account)
             self.make_gl_entries()
+
         if self.close:
             self.refund_of_excess_advance()
         self.check_close()
@@ -360,6 +365,32 @@ class HireChargeInvoice(AccountsController):
         # 		}, self.currency)
         # 	)
        
+    def commit_budget(self, hire_expense_account):
+        commit_bud = frappe.get_doc({
+            "doctype": "Committed Budget",
+            "account": hire_expense_account,
+            "cost_center": self.cost_center,
+            "business_activity": self.business_activity,
+            "po_no": self.name,
+            "po_date": self.posting_date,
+            "amount": self.total_invoice_amount,
+            "date": frappe.utils.nowdate()
+        })
+        commit_bud.flags.ignore_permissions=1
+        commit_bud.submit()
+
+    def consume_budget(self,hire_expense_account):
+        consume = frappe.get_doc({
+            "doctype": "Consumed Budget",
+            "account": hire_expense_account,
+            "cost_center": self.cost_center,
+            "po_no": self.name,
+            "po_date": self.posting_date,
+            "amount": self.total_invoice_amount,
+            "business_activity": self.business_activity,
+            "date": frappe.utils.nowdate()})
+        consume.flags.ignore_permissions = 1
+        consume.submit()
 
     def refund_of_excess_advance(self):
         revenue_bank_account = frappe.db.get_value("Branch", self.branch, "revenue_bank_account")
@@ -584,13 +615,13 @@ def get_payment_entry(doc_name, total_amount):
     # frappe.msgprint(payment_entry)
     payment_entry = frappe.db.sql(payment_entry, as_dict=1)
     if len(payment_entry) >= 1 and payment_entry[0].total_amount > 0:
-		if flt(payment_entry[0].total_amount) == flt(total_amount):
-			frappe.db.set_value("Hire Charge Invoice", doc_name, "payment_status", "Paid")
-			return ("Paid")
-		else:
-			frappe.db.set_value("Hire Charge Invoice", doc_name, 'payment_status', "Partially Paid")
-			return ("Partially Paid")
+        if flt(payment_entry[0].total_amount) == flt(total_amount):
+            frappe.db.set_value("Hire Charge Invoice", doc_name, "payment_status", "Paid")
+            return ("Paid")
+        else:
+            frappe.db.set_value("Hire Charge Invoice", doc_name, 'payment_status', "Partially Paid")
+            return ("Partially Paid")
 
     else:
-		frappe.db.set_value("Hire Charge Invoice", doc_name, 'payment_status', "Not Paid")
-		return ("Not Paid")
+        frappe.db.set_value("Hire Charge Invoice", doc_name, 'payment_status', "Not Paid")
+        return ("Not Paid")
