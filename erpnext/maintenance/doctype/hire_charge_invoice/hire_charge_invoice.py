@@ -74,6 +74,8 @@ class HireChargeInvoice(AccountsController):
     def on_cancel(self):
         if self.owned_by != "Own Company":
             self.make_gl_entries()
+            self.cancel_budget_entry()
+
             #self.make_gl_entries_on_cancel()
         check_uncancelled_linked_doc(self.doctype, self.name)
         cl_status = frappe.db.get_value("Journal Entry", self.invoice_jv, "docstatus")
@@ -391,6 +393,12 @@ class HireChargeInvoice(AccountsController):
             "date": frappe.utils.nowdate()})
         consume.flags.ignore_permissions = 1
         consume.submit()
+    
+    def cancel_budget_entry(self):
+        frappe.db.sql(
+            "delete from `tabCommitted Budget` where po_no = %s", self.name)
+        frappe.db.sql(
+            "delete from `tabConsumed Budget` where po_no = %s", self.name)
 
     def refund_of_excess_advance(self):
         revenue_bank_account = frappe.db.get_value("Branch", self.branch, "revenue_bank_account")
