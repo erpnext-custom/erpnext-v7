@@ -137,7 +137,7 @@ class RRCOReceiptTool(Document):
 							where r.name = ri.parent
 							and r.docstatus = 1 
        						and ri.invoice_no = d.name
-							and ri.party = di.party
+							and ri.party = (select supplier_name from `tabSupplier` where name = di.party)
 						)
                     UNION 
                     SELECT

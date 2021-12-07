@@ -36,21 +36,28 @@ frappe.query_reports["TDS Certificate"] = {
             "default": frappe.defaults.get_user_default("year_end_date"),
         },
         {
-            "fieldname": "vendor_name",
-            "label": __("Vendor Name"),
+            "fieldname": "vendor_id",
+            "label": __("Vendor ID"),
             "fieldtype": "Link",
             "options": "Supplier",
             "on_change": function(query_report) {
-                var vendor = query_report.get_values().vendor_name;
+                var vendor = query_report.get_values().vendor_id;
                 if (!vendor) {
                     return;
                 }
                 frappe.model.with_doc("Supplier", vendor, function(r) {
                     var fy = frappe.model.get_doc("Supplier", vendor);
+                    query_report.filters_by_name.vendor_name.set_input(fy.supplier_name);
                     query_report.filters_by_name.vendor_tpn_no.set_input(fy.vendor_tpn_no);
                     query_report.trigger_refresh();
                 });
             }
+        },
+        {
+            "fieldname": "vendor_name",
+            "label": __("Vendor Name"),
+            "fieldtype": "Data",
+            "read_only": 1
         },
         {
             "fieldname": "vendor_tpn_no",

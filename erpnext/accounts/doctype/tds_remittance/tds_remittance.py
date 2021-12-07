@@ -57,7 +57,9 @@ class TDSRemittance(AccountsController):
 
 	def get_details(self):
 		query = """ select 
-						d.posting_date, di.party, d.name as invoice_no, di.taxable_amount as bill_amount,
+						d.posting_date, 
+						(select supplier_name from `tabSupplier` where name= di.party) as party, 
+						d.name as invoice_no, di.taxable_amount as bill_amount,
 						di.tds_amount,
 						(select s.vendor_tpn_no from `tabSupplier` s where di.party = s.name) as vendor_tpn_no
 					from 
@@ -75,7 +77,9 @@ class TDSRemittance(AccountsController):
 						)
 				union all 
 					select 
-						p.posting_date, p.supplier, p.name,  p.tds_taxable_amount as bill_amount,
+						p.posting_date,
+						(select supplier_name from `tabSupplier` where name= p.supplier) as party, 
+						p.name,  p.tds_taxable_amount as bill_amount,
 						p.tds_amount,
 						(select s.vendor_tpn_no from `tabSupplier` s where p.supplier = s.name) as vendor_tpn_no
 					from `tabPurchase Invoice` p 
@@ -92,7 +96,7 @@ class TDSRemittance(AccountsController):
 				union all 
 						select 
 							hci.posting_date, 
-							hci.customer, 
+							(select supplier_name from `tabSupplier` where name = hci.customer) as party, 
 							hci.name,  
 							hci.total_invoice_amount as bill_amount,
 							hci.tds_amount,
@@ -112,7 +116,15 @@ class TDSRemittance(AccountsController):
 				union all 
 						select 
 							mp.posting_date, 
-							mp.supplier, 
+							CASE
+								mp.payment_for
+								WHEN 
+									'Hire Charge Invoice'
+								THEN
+									(select supplier_name from `tabSupplier` where name = mp.customer) 
+								ELSE
+									(select supplier_name from `tabSupplier` where name = mp.supplier) 
+							END as party,
 							mp.name,  
 							mp.payable_amount as bill_amount,
 							mp.tds_amount,

@@ -27,7 +27,7 @@ class Supplier(TransactionBase):
 			msgprint(_("supplier Code is mandatory because supplier is not automatically numbered"), raise_exception=1)
 
 		self.supplier_code = strip(self.supplier_code)
-		self.name = self.supplier_name
+		self.name = self.supplier_name +  " - " + self.vendor_tpn_no
 
 	def get_current_supplier_code(self):
 		supplier_code = frappe.db.sql("""select supplier_code from tabSupplier where supplier_type=%s order by supplier_code desc limit 1;""", self.supplier_type);

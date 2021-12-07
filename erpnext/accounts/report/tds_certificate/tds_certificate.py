@@ -24,8 +24,8 @@ def get_data(query):
 	return data
 
 def construct_query(filters=None):
-	if not filters.vendor_name:
-		filters.vendor_name = ""
+	if not filters.vendor_id:
+		filters.vendor_id = ""
 		
 	query = """
 		SELECT a.posting_date, a.tds_taxable_amount, a.tds_rate, a.tds_amount, b.cheque_number, b.cheque_date, 
@@ -41,7 +41,7 @@ def construct_query(filters=None):
 		WHERE d.name = di.parent and d.name = rr.purchase_invoice 
 		AND d.posting_date BETWEEN '{0}' AND '{1}'
 		AND di.party = '{2}'
-		""".format(str(filters.from_date), str(filters.to_date),str(filters.vendor_name))
+		""".format(str(filters.from_date), str(filters.to_date),str(filters.vendor_id))
 	
 	return query;
 
