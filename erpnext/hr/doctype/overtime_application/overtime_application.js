@@ -53,11 +53,31 @@ function set_approver(frm) {
 					};
 		});
 	}
+
+	//adding new here
+// function set_approver(frm){
+// 	if (frm.doc.docstatus == 0){
+// 		frm.set_df_property("approver", "read_only", 1);
+// 		frappe.call({
+// 				method: "erpnext.custom_utils.approver_query",
+// 				args: {
+// 					doctype: frm.doctype,
+// 					user_id: frappe.session.user
+// 				},
+// 				callback: function(r){
+// 					if(r.message){
+// 						frm.set_value("approver", r.message[0])
+// 						frm.set_value("approver_name", r.message[1])
+// 					}
+// 				}
+// 			})
+// 		}
+// 	}
 	
 	if(!frm.doc.__islocal){
 		//if(in_list(user_roles, "OT Supervisor")){
-		if(in_list(user_roles, "OT Supervisor")){
-			frm.set_df_property("approver", "read_only", 0);
+		if(in_list(user_roles, "OT Supervisor")){ //true
+			frm.set_df_property("approver", "read_only", 1);
 			frm.toggle_reqd("approver", 1);
 			
 			frappe.call({
@@ -66,10 +86,15 @@ function set_approver(frm) {
 					user_id: frappe.session.user,
 				},
 				callback: function(r) {
-					if(r.message.length == 1 && !frm.doc.approver) {
-						frm.set_value("approver", r.message[0][0]);
-						//frm.save();
+					if (r.message.length == 1){ // edited by cety on 12/8/2021
+						console.log(r.message)
+						cur_frm.set_value("approver", r.message[0][0])
 					}
+					// console.log(r.message)
+					// if(r.message.length == 1 && !frm.doc.approver) {
+					// 	frm.set_value("approver", r.message[0][0]);
+					// 	//frm.save();
+					// }
 				}
 			});
 		}
