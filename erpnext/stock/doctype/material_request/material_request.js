@@ -118,6 +118,16 @@ frappe.ui.form.on('Material Request', {
 	branch: function(frm){
 		
 	},
+	naming_series: function(frm){
+		frm.set_query('item_code', 'items', function(doc, cdt, cdn) {
+			var d = locals[cdt][cdn];
+			return {
+				"filters": {
+					"item_group": frm.doc.naming_series
+				}
+			};
+		});
+	}
 });
 
 frappe.ui.form.on("Material Request Item", {

@@ -9,7 +9,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 ------------ --------------- ------------------ -------------------  -----------------------------------------------------
 2.0		  SHIV		                   03/08/2018         New fields submitted, submitted_by introduced
 2.0		  SHIV		                   03/08/2018         Removed code for submitted, submitted_by as it is
-                                                                        taken care in frappe template itself.
+																		taken care in frappe template itself.
 --------------------------------------------------------------------------------------------------------------------------                                                                          
 '''
 
@@ -97,20 +97,20 @@ class MaterialRequest(BuyingController):
 		if not self.status:
 			self.status = "Draft"
 
-                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-                # Following code commented by SHIV on 2018/08/06
-                '''
-                # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-                # Following code added by SHIV on 2018/08/03
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+		# Following code commented by SHIV on 2018/08/06
+		'''
+		# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+		# Following code added by SHIV on 2018/08/03
 		if self.docstatus == 0:
-                        self.submitted_by = "" if self.submitted_by else self.submitted_by
-                        self.submitted    = "" if self.submitted else self.submitted
-                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-                '''
-                # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-                
-                #self.docstatus = 2 if self.workflow_state == "Rejected" else self.docstatus    #temporary SHIV 2018/11/16
-                
+						self.submitted_by = "" if self.submitted_by else self.submitted_by
+						self.submitted    = "" if self.submitted else self.submitted
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+		'''
+		# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+		
+		#self.docstatus = 2 if self.workflow_state == "Rejected" else self.docstatus    #temporary SHIV 2018/11/16
+				
 		from erpnext.controllers.status_updater import validate_status
 		validate_status(self.status, ["Draft", "Submitted", "Stopped", "Cancelled"])
 
@@ -121,22 +121,22 @@ class MaterialRequest(BuyingController):
 		if not self.items:
 			frappe.throw("Cannot save without items in material request")
 
-                ### Ver 3.0 Begins
-                # Following commented by SHIV on 2018/11/16
-                '''
+		### Ver 3.0 Begins
+		# Following commented by SHIV on 2018/11/16
+		'''
 		if not self.approver:	
 			app = frappe.db.get_value("Approver Item", {"cost_center": self.temp_cc}, "approver")	
 			if not app:
 				frappe.throw("Setup MR Approver for <b>" + str(self.temp_cc) + "</b> in Document Approver")
 			else:
 				self.approver = app
-                '''
-                # Following two methods introduced by SHIV on 2018/11/16
-                self.creation_date = nowdate() if not self.creation_date else self.creation_date
-                self.validate_multiple_approvers()
-                self.update_approver()
-                ### Ver 3.0 Ends
-                
+		'''
+		# Following two methods introduced by SHIV on 2018/11/16
+		self.creation_date = nowdate() if not self.creation_date else self.creation_date
+		self.validate_multiple_approvers()
+		self.update_approver()
+		### Ver 3.0 Ends
+				
 		# self.validate_qty_against_so()
 		# NOTE: Since Item BOM and FG quantities are combined, using current data, it cannot be validated
 		# Though the creation of Material Request from a Production Plan can be rethought to fix this
@@ -145,55 +145,56 @@ class MaterialRequest(BuyingController):
 		self.validate_supporting_doc()
 
 	def validate_supporting_doc(self):
-		if self.workflow_state not in ["Draft","Waiting Approval","Approved","Rejected by CEO","Rejected by GM","Rejected","Cancelled"]:
-			if not self.supporting_doc:
-				frappe.throw("Attach the relevant documents to support your Material Request")
+		if self.naming_series != 'Consumables':
+			if self.workflow_state not in ["Draft","Waiting Approval","Approved","Rejected by CEO","Rejected by GM","Rejected","Cancelled"]:
+				if not self.supporting_doc:
+					frappe.throw("Attach the relevant documents to support your Material Request")
 
-        def validate_multiple_approvers(self):
-                self.prev_workflow_state = self.get_db_value("workflow_state")
-                self.cur_workflow_state = self.workflow_state
-                
-                multiple_approvers = {}
-                for i in self.get("items"):
-                        app_list = frappe.db.sql("""
-                                select approver
-                                from `tabDocument Approver Item`
-                                where item_group='{0}'
-                                and workflow_state != 'Waiting CEO Approval'
-                        """.format(i.item_group))
-                        for a in app_list:
-                                if multiple_approvers.has_key(str(a)):
-                                        multiple_approvers[str(a)] += 1
-                                else:
-                                        multiple_approvers[str(a)] = 0
+	def validate_multiple_approvers(self):
+		self.prev_workflow_state = self.get_db_value("workflow_state")
+		self.cur_workflow_state = self.workflow_state
+		
+		multiple_approvers = {}
+		for i in self.get("items"):
+			app_list = frappe.db.sql("""
+					select approver
+					from `tabDocument Approver Item`
+					where item_group='{0}'
+					and workflow_state != 'Waiting CEO Approval'
+			""".format(i.item_group))
+			for a in app_list:
+				if multiple_approvers.has_key(str(a)):
+					multiple_approvers[str(a)] += 1
+				else:
+					multiple_approvers[str(a)] = 0
 
-                        if len(multiple_approvers) > 1:
-                                frappe.throw(_("Row# {0}: Multiple approvers found").format(i.idx), title="Operation not permitted")
+			if len(multiple_approvers) > 1:
+				frappe.throw(_("Row# {0}: Multiple approvers found").format(i.idx), title="Operation not permitted")
 
-                
-        def update_approver(self):
-                if self.workflow_state == "Approved":
-                        return
-                
-                # Populating approver
-                app_li = frappe.db.sql("""
-                        select distinct approver
-                        from `tabDocument Approver Item`
-                        where workflow_state = '{0}'
-                        and item_group in ({1})
-                """.format(self.workflow_state, "'"+str("','".join([i.item_group for i in self.get("items")]))+"'"))
-                self.approver = app_li[0][0] if app_li else None
-                
+				
+	def update_approver(self):
+		if self.workflow_state == "Approved":
+			return
+		
+		# Populating approver
+		app_li = frappe.db.sql("""
+				select distinct approver
+				from `tabDocument Approver Item`
+				where workflow_state = '{0}'
+				and item_group in ({1})
+		""".format(self.workflow_state, "'"+str("','".join([i.item_group for i in self.get("items")]))+"'"))
+		self.approver = app_li[0][0] if app_li else None
+				
 	def set_title(self):
-	#	'''Set title as comma separated list of items'''
+		# '''Set title as comma separated list of items'''
 		items = []
-	#	for d in self.items:
-	#		if d.item_code not in items:
-	#			items.append(d.item_code)
-	#		if(len(items)==4):
-	#			break
-	#
-	#	self.title = ', '.join(items)
+		# for d in self.items:
+		# 	if d.item_code not in items:
+		# 		items.append(d.item_code)
+		# 	if(len(items)==4):
+		# 		break
+	
+		# self.title = ', '.join(items)
 
 	def set_urgent_status(self):
 		for a in self.items:
@@ -201,22 +202,22 @@ class MaterialRequest(BuyingController):
 				self.urgent_requirement = "Yes"
 				break
 
-        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-        # Following code commented by SHIV on 2018/08/06
-        '''
-        # ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
-        # Following code added by SHIV on 2018/08/03
-        def before_submit(self):
-                self.submitted_by     = frappe.session.user
-                self.submitted        = now_datetime()
-        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
-        '''
-        # +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+	# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+	# Following code commented by SHIV on 2018/08/06
+	'''
+	# ++++++++++++++++++++ Ver 2.0 BEGINS ++++++++++++++++++++
+	# Following code added by SHIV on 2018/08/03
+	def before_submit(self):
+			self.submitted_by     = frappe.session.user
+			self.submitted        = now_datetime()
+	# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
+	'''
+	# +++++++++++++++++++++ Ver 2.0 ENDS +++++++++++++++++++++
 
 	def on_submit(self):
-                if self.approver and self.approver != frappe.session.user:
-                        frappe.throw(_("Only the approver <b>{0}</b> allowed to approve this document").format(self.approver), title="Invalid Operation")
-                        
+		if self.approver and self.approver != frappe.session.user:
+			frappe.throw(_("Only the approver <b>{0}</b> allowed to approve this document").format(self.approver), title="Invalid Operation")
+						
 		frappe.db.set(self, 'status', 'Submitted')
 		self.update_requested_qty()
 		self.set_urgent_status()
@@ -347,7 +348,7 @@ def make_purchase_order(source_name, target_doc=None):
 				["parent", "material_request"],
 				["uom", "stock_uom"],
 				["budget_account", "budget_account"],
-                                ["cost_center_w", "cost_center"],
+								["cost_center_w", "cost_center"],
 				["uom", "uom"]
 			],
 			"postprocess": update_item,
@@ -376,7 +377,7 @@ def make_request_for_quotation(source_name, target_doc=None):
 				["name", "material_request_item"],
 				["parent", "material_request"],
 				["budget_account", "budget_account"],
-                                ["cost_center_w", "cost_center"],
+								["cost_center_w", "cost_center"],
 				["uom", "uom"]
 			]
 		}
@@ -414,7 +415,7 @@ def make_purchase_order_based_on_supplier(source_name, target_doc=None):
 					["parent", "material_request"],
 					["uom", "stock_uom"],
 					["budget_account", "budget_account"],
-                                	["cost_center_w", "cost_center"],
+									["cost_center_w", "cost_center"],
 					["uom", "uom"]
 				],
 				"postprocess": update_item,
@@ -436,7 +437,7 @@ def get_material_requests_based_on_supplier(supplier):
 			and mr.per_ordered < 99.99
 			and mr.docstatus = 1
 			and mr.status != 'Stopped'
-                        order by mr_item.item_code ASC""" % ', '.join(['%s']*len(supplier_items)),
+						order by mr_item.item_code ASC""" % ', '.join(['%s']*len(supplier_items)),
 			tuple(supplier_items))
 	else:
 		material_requests = []
@@ -463,7 +464,7 @@ def make_supplier_quotation(source_name, target_doc=None):
 			"field_map": {
 				"name": "material_request_item",
 				"budget_account": "budget_account",
-                                "cost_center_w": "cost_center",
+								"cost_center_w": "cost_center",
 				"parent": "material_request"
 			}
 		}
@@ -561,24 +562,24 @@ def get_cc_warehouse(user):
 
 # Following code added by SHIV on 2021/05/13
 def get_permission_query_conditions(user):
-    if not user: user = frappe.session.user
-    user_roles = frappe.get_roles(user)
+	if not user: user = frappe.session.user
+	user_roles = frappe.get_roles(user)
 
-    if user == "Administrator" or "System Manager" in user_roles: 
-        return
+	if user == "Administrator" or "System Manager" in user_roles: 
+		return
 
-    return """(
-        exists(select 1
-            from `tabEmployee` as e
-            where e.branch = `tabMaterial Request`.branch
-            and e.user_id = '{user}')
-        or
-        exists(select 1
-            from `tabEmployee` e, `tabAssign Branch` ab, `tabBranch Item` bi
-            where e.user_id = '{user}'
-            and ab.employee = e.name
-            and bi.parent = ab.name
-            and bi.branch = `tabMaterial Request`.branch)
+	return """(
+		exists(select 1
+			from `tabEmployee` as e
+			where e.branch = `tabMaterial Request`.branch
+			and e.user_id = '{user}')
+		or
+		exists(select 1
+			from `tabEmployee` e, `tabAssign Branch` ab, `tabBranch Item` bi
+			where e.user_id = '{user}'
+			and ab.employee = e.name
+			and bi.parent = ab.name
+			and bi.branch = `tabMaterial Request`.branch)
 		or
 		(`tabMaterial Request`.approver = '{user}')
-    )""".format(user=user)
+	)""".format(user=user)

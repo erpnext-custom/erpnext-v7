@@ -413,6 +413,11 @@ def validate_workflow_states(doc):
                                 if officiating:
                                         officiating = frappe.db.get_value("Employee", officiating[0].officiate, ["user_id","employee_name","designation","name"])
                                 vars(doc)[document_approver[0]] = officiating[0] if officiating else mr_approver[0]
+
+		if workflow_state == "Waiting CEO Approval".lower():
+			if "GM HRAD" not in frappe.get_roles(doc.owner):
+				frappe.throw("User who created this document has no GM HRAD role and it can not be forwarded to CEO")
+
 		if workflow_state == "Waiting Supervisor Approval".lower():
 				if "MR GM" in frappe.get_roles(frappe.session.user): 
 				# MR GM should be able to edit only if MR is submitted by Manager
