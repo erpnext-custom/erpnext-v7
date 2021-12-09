@@ -565,10 +565,7 @@ class BankPayment(Document):
 			cond = 'AND ir.name = "{}"'.format(self.transaction_no)
 		elif not self.transaction_no and self.from_date and self.to_date:
 			cond = 'AND ir.posting_date BETWEEN "{}" and "{}"'.format(str(self.from_date), str(self.to_date))
-		if self.transaction_no:
-			get_party = frappe.db.sql("select party from `tabImprest Recoup` where name='{}'".format(self.transaction_no))
-			if not get_party:
-				frappe.throw("Party cannot be empty, please set the party for the employee")
+
 		return frappe.db.sql("""SELECT
 						 "Imprest Recoup" as transaction_type, ir.name as transaction_id, ir.name as transaction_reference, ir.posting_date as transaction_date, 
 						 (CASE WHEN ir.final_settlement=1 THEN e.employee_name ELSE ee.employee_name END) as beneficiary_name,
