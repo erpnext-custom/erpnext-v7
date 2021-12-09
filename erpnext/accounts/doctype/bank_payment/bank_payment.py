@@ -327,6 +327,8 @@ class BankPayment(Document):
 			data = self.get_journal_entry()
 		elif self.transaction_type == "Process MR Payment":
 			data = self.get_mr_payment()
+		elif self.transaction_type == "Imprest Recoup":
+			data = self.get_imprest_recoup_payment()
 		return data
 
 	"""
@@ -523,7 +525,6 @@ class BankPayment(Document):
 			cond = 'AND pe.name = "{}"'.format(self.transaction_no)
 		elif not self.transaction_no and self.from_date and self.to_date:
 			cond = 'AND pe.posting_date BETWEEN "{}" AND "{}"'.format(str(self.from_date), str(self.to_date))
-	  
 		return frappe.db.sql("""SELECT "Payment Entry" transaction_type, pe.name transaction_id, 
 						pe.name transaction_reference, pe.posting_date transaction_date, 
 						pe.party as supplier, pe.party as beneficiary_name, 
@@ -557,6 +558,45 @@ class BankPayment(Document):
 			bank_payment = self.name,
 			branch = self.branch,
 			cond = cond), as_dict=True)
+	#added by cety on 12/8/2021 to make payment for imprest recoup
+	def get_imprest_recoup_payment(self):
+		cond = ""
+		if self.transaction_no:
+			cond = 'AND ir.name = "{}"'.format(self.transaction_no)
+		elif not self.transaction_no and self.from_date and self.to_date:
+			cond = 'AND ir.posting_date BETWEEN "{}" and "{}"'.format(str(self.from_date), str(self.to_date))
+		if self.transaction_no:
+			get_party = frappe.db.sql("select party from `tabImprest Recoup` where name='{}'".format(self.transaction_no))
+			if not get_party:
+				frappe.throw("Party cannot be empty, please set the party for the employee")
+		return frappe.db.sql("""SELECT
+						 "Imprest Recoup" as transaction_type, ir.name as transaction_id, ir.name as transaction_reference, ir.posting_date as transaction_date, 
+						 (CASE WHEN ir.final_settlement=1 THEN e.employee_name ELSE ee.employee_name END) as beneficiary_name,
+						 (CASE WHEN ir.final_settlement=1 THEN e.bank_name ELSE ee.bank_name END) as bank_name,
+						 (CASE WHEN ir.final_settlement=1 THEN e.bank_branch ELSE ee.bank_branch END) as bank_branch,
+						 (CASE WHEN ir.final_settlement=1 THEN e.bank_account_type ELSE ee.bank_account_type END) as bank_account_type,
+						 (CASE WHEN ir.final_settlement=1 THEN e.bank_ac_no ELSE ee.bank_ac_no END) as bank_account_no,
+                         ir.purchase_amount as amount
+					FROM `tabImprest Recoup` ir
+					JOIN `tabEmployee` e
+					ON ir.party = e.name
+					JOIN `tabEmployee` ee
+					ON ir.pay_to_recd_from = ee.name
+					WHERE ir.branch = '{branch}'
+					{cond}
+					AND ir.docstatus = 1
+					AND NOT EXISTS(select 1
+						FROM `tabBank Payment Item` bpi
+						WHERE bpi.transaction_type = 'Imprest Recoup'
+						AND bpi.transaction_id = ir.name
+						AND bpi.parent != '{bank_payment}'
+						AND bpi.docstatus != 2
+						AND bpi.status NOT IN ('Cancelled', 'Failed'))
+					""".format(
+						bank_payment = self.name,
+							branch = self.branch,
+							cond = cond
+					), as_dict=True)
 
 	def get_month_id(self, month_abbr):
 		return {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06",
