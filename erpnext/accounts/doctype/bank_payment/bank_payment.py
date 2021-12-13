@@ -314,6 +314,8 @@ class BankPayment(Document):
 			data = self.get_direct_payment()
 		elif self.transaction_type == "Journal Entry":
 			data = self.get_journal_entry()
+		elif self.transaction_type == "Imprest Recoup":
+			data = self.get_imprest_recoup_payment()
 		return data
 
 	def get_journal_entry(self):
@@ -633,6 +635,38 @@ class BankPayment(Document):
 				transaction_type=self.transaction_type, cond=cond), as_dict=True)
 		return data
 
+	#added by cety on 13/12/2021 to make payment for imprest recoup
+	def get_imprest_recoup_payment(self):
+		cond = ""
+		if self.transaction_no:
+			cond = 'AND ir.name = "{}"'.format(self.transaction_no)
+		elif not self.transaction_no and self.from_date and self.to_date:
+			cond = 'AND ir.posting_date BETWEEN "{}" and "{}"'.format(str(self.from_date), str(self.to_date))
+   
+		return frappe.db.sql("""SELECT
+						 "Imprest Recoup" as transaction_type, ir.name as transaction_id, ir.name as transaction_reference, ir.posting_date as transaction_date, 
+						 (case when ir.final_settlement=1 then (select employee_name from `tabEmployee` where name=ir.party) else (select employee_name from `tabEmployee` where name=ir.pay_to_recd_from) end) as beneficiary_name,
+						 (case when ir.final_settlement=1 then (select bank_name from `tabEmployee` where name=ir.party) else (select bank_name from `tabEmployee` where name=ir.pay_to_recd_from) end) as bank_name,
+						 (case when ir.final_settlement=1 then (select bank_branch from `tabEmployee` where name=ir.party) else (select bank_branch from `tabEmployee` where name=ir.pay_to_recd_from) end) as bank_branch,
+						 (case when ir.final_settlement=1 then (select bank_account_type from `tabEmployee` where name=ir.party) else (select bank_account_type from `tabEmployee` where name=ir.pay_to_recd_from) end) as bank_account_type,
+						 (case when ir.final_settlement=1 then (select bank_ac_no from `tabEmployee` where name=ir.party) else (select bank_ac_no from `tabEmployee` where name=ir.pay_to_recd_from) end) as bank_account_no,
+                         ir.purchase_amount as amount
+					FROM `tabImprest Recoup` ir
+					WHERE ir.branch = '{branch}'
+					{cond}
+					AND ir.docstatus = 1
+					AND NOT EXISTS(select 1
+						FROM `tabBank Payment Item` bpi
+						WHERE bpi.transaction_type = 'Imprest Recoup'
+						AND bpi.transaction_id = ir.name
+						AND bpi.parent != '{bank_payment}'
+						AND bpi.docstatus != 2
+						AND bpi.status NOT IN ('Cancelled', 'Failed'))
+					""".format(
+						bank_payment = self.name,
+							branch = self.branch,
+							cond = cond
+					), as_dict=True)
 def process_one_to_one_payment(doc, publish_progress=True):
 	stat = 0
 	processing = completed = failed = doc_modified = 0
