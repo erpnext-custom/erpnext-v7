@@ -85,8 +85,8 @@ def get_cop_amount(cop, branch, posting_date, item_code):
 
 @frappe.whitelist()
 def get_selling_rate(price_list, branch, item_code, transaction_date, location):
-        if not branch or not item_code or not transaction_date:
-                frappe.throw("Select Item Code or Branch or Posting Date")
+	if not branch or not item_code or not transaction_date:
+		frappe.throw("Select Item Code or Branch or Posting Date")
 	rate=""
 	if location != "NA":
 		rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and location = '{2}' """.format(price_list, item_code, location), as_dict =1)

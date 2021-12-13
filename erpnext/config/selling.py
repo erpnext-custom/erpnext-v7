@@ -213,6 +213,11 @@ def get_data():
 					"name": "Selling Price",
 					"label": _("Selling Price Settings"),
 				},
+				{
+					"type" : "doctype",
+					"name": "Customer Selling Price",
+					"label": _("Customer Based Selling Price"),
+				},
 			]
 		},
 

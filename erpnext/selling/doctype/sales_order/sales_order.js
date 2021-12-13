@@ -492,6 +492,14 @@ cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = functi
         }
 }
 
+//auto list the price_templates based on branch, transaction_date, item_code, customer written by Thukten on 12 Dec, 2021
+cur_frm.fields_dict['items'].grid.get_field('customer_price_list').get_query = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+			query: "erpnext.controllers.queries.customer_price_template_list",
+			filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch, 'location': frm.location, 'customer': frm.customer}
+	}
+}
 
 cur_frm.fields_dict['items'].grid.get_field('warehouse').get_query = function(frm, cdt, cdn) {
 	item = locals[cdt][cdn]
@@ -512,41 +520,72 @@ cur_frm.fields_dict['items'].grid.get_field('lot_number').get_query = function(f
 
 // on_selection of price_template, auto load the seling rate for items
 frappe.ui.form.on("Sales Order Item", {
-        "price_template": function(frm, cdt, cdn) {
-                d = locals[cdt][cdn]
+	"price_template": function(frm, cdt, cdn) {
+		d = locals[cdt][cdn]
 		if(cur_frm.doc.location){
 			loc = cur_frm.doc.location;
 		}else{
 			loc = "NA";
 		}
 		frappe.call({
-                        method: "erpnext.production.doctype.selling_price.selling_price.get_selling_rate",
-                        args: {
-                                "price_list": d.price_template,
-                                "branch": cur_frm.doc.branch,
-                                "item_code": d.item_code,
-                                "transaction_date": cur_frm.doc.transaction_date,
-				"location": loc
-                        },
-                        callback: function(r) {
-                                frappe.model.set_value(cdt, cdn, "price_list_rate", r.message)
-                                frappe.model.set_value(cdt, cdn, "rate", r.message)
-                                cur_frm.refresh_field("price_list_rate")
-                                cur_frm.refresh_field("rate")
-                        }
-                })
-        },
-
+				method: "erpnext.production.doctype.selling_price.selling_price.get_selling_rate",
+				args: {
+						"price_list": d.price_template,
+						"branch": cur_frm.doc.branch,
+						"item_code": d.item_code,
+						"transaction_date": cur_frm.doc.transaction_date,
+						"location": loc				
+					},
+				callback: function(r) {
+						frappe.model.set_value(cdt, cdn, "price_list_rate", r.message)
+						frappe.model.set_value(cdt, cdn, "rate", r.message)
+						cur_frm.refresh_field("price_list_rate")
+						cur_frm.refresh_field("rate")
+				}
+            })
+    },
+	"customer_price_list": function(frm, cdt, cdn) {
+		d = locals[cdt][cdn]
+		if(cur_frm.doc.location){
+			loc = cur_frm.doc.location;
+		}else{
+			loc = "NA";
+		}
+		frappe.call({
+			method: "erpnext.production.doctype.customer_selling_price.customer_selling_price.get_customer_selling_rate",
+			args: {
+				"price_list": d.customer_price_list,
+				"branch": cur_frm.doc.branch,
+				"item_code": d.item_code,
+				"transaction_date": cur_frm.doc.transaction_date,
+				"location": loc,
+				"customer": cur_frm.doc.customer
+			},
+			callback: function(r) {
+				frappe.model.set_value(cdt, cdn, "price_list_rate", r.message);
+				frappe.model.set_value(cdt, cdn, "rate", r.message);
+				cur_frm.refresh_field("price_list_rate");
+				cur_frm.refresh_field("rate");
+			}
+		})
+	},
 	"item_code": function(frm, cdt, cdn) {
 		frappe.model.set_value(cdt, cdn, "price_template", "") 
 	},
-
-        "lot_number": function(frm, cdt, cdn) {
-		var d = locals[cdt][cdn];
-		if(d.item_code && d.lot_number) { get_balance(frm, cdt, cdn); }
+	"lot_number": function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	if(d.item_code && d.lot_number) { get_balance(frm, cdt, cdn); }
 	},
 	"qty": function(frm, cdt, cdn) {
 		 if(frm.doc.naming_series == "Timber Products") { get_balance(frm, cdt, cdn); }
+	},
+	"sp_type": function(frm, cdt, cdn) {
+		var d = locals[cdt][cdn];
+		if(d.sp_type == "General Rate"){
+
+		}else{
+
+		}
 	}
 
 });

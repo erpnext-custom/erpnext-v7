@@ -450,6 +450,8 @@ class SalesOrder(SellingController):
 		''' Ver.3.0.191222 Ends'''
 
 		for item in self.items:
+			if item.sp_type == "Customer Based Rate":
+				return
 			item_sub_group = None
 			if not self.branch or not item.item_code or not self.transaction_date:
 				frappe.throw("Select Item Code or Branch or Posting Date")
@@ -593,6 +595,8 @@ def make_delivery_note(source_name, target_doc=None):
 			"field_map": {
 				"naming_series": "naming_series",
 				"customer_order": "customer_order",
+				"export" : "export",
+				"country": "country",
 			},
 			"validation": {
 				"docstatus": ["=", 1]
