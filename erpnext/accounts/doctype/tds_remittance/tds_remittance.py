@@ -61,6 +61,7 @@ class TDSRemittance(AccountsController):
                                 and d.tds_percent = '{0}'
                                 and d.posting_date between '{1}' and '{2}'
                                 and d.docstatus = 1
+                                and d.branch = '{3}'
                                 and not exists (
                                         select 1 from `tabTDS Remittance Item` i
                                         inner join `tabTDS Remittance` t
@@ -72,13 +73,14 @@ class TDSRemittance(AccountsController):
                                 select p.posting_date, p.supplier, p.name,  p.tds_taxable_amount as bill_amount, p.tds_amount 
                                 from `tabPurchase Invoice` p where tds_rate = '{0}' and docstatus =1 
                                 and posting_date >= '{1}' and posting_date<= '{2}'
+                                and p.branch = '{3}'
                                 and not exists (
                                         select 1 from `tabTDS Remittance Item` i
                                         inner join `tabTDS Remittance` t
                                         on i.parent = t.name
                                         where i.invoice_no = p.name
                                         and t.docstatus = 1
-                                ) """.format(self.tds_rate, self.from_date, self.to_date)
+                                ) """.format(self.tds_rate, self.from_date, self.to_date, self.branch)
 
 
                 entries = frappe.db.sql(query, as_dict=True)
