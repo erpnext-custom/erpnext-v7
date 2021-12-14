@@ -92,6 +92,7 @@ def get_columns(filters):
 		_("Voucher Type") + "::120", _("Voucher No") + ":Dynamic Link/"+_("Voucher Type")+":160",
 		_("Against Account") + "::120", _("Party Type") + "::80", _("Party") + "::150",
 		_("Project") + ":Link/Project:100", _("Cost Center") + ":Link/Cost Center:100",
+		_("Branch") + ":Link/Branch:100",
 		_("Remarks") + "::400", _("Cheque No") + "::80", _("Cheque Date") + ":Date:90"
 	]
 
@@ -150,8 +151,8 @@ def get_gl_entries(filters):
 				ELSE ''
 			END as cheque_date,
 			sum(debit) as debit, sum(credit) as credit,
-			voucher_type, voucher_no, cost_center, project,
-			remarks, against, is_opening {select_fields}
+			voucher_type, voucher_no, cost_center, (select c.branch from `tabCost Center` c where c.name = cost_center) as branch, 
+			project,remarks, against, is_opening {select_fields}
 		from `tabGL Entry` gl
 		where docstatus = 1 and company=%(company)s {conditions}
 		{group_by_condition}
@@ -180,9 +181,12 @@ def get_conditions(filters):
 	if not (filters.get("account") or filters.get("party") or filters.get("group_by_account")):
 		conditions.append("posting_date >=%(from_date)s")
 	# cost center filter added by Birendra-13/03/2021
-	if filters.cost_center :
+	if filters.cost_center:
 		conditions.append("cost_center = '{}' ".format(filters.cost_center))
-		
+	
+	#if filters.branch:
+	#	conditions.append("cost_center in (select cost_center from `tabCost Center` where branch = '{0}'".format(filters.branch))
+ 	
 	from frappe.desk.reportview import build_match_conditions
 	match_conditions = build_match_conditions("GL Entry")
 	if match_conditions: conditions.append(match_conditions)
@@ -326,7 +330,7 @@ def get_result_as_list(data, filters):
 			row += [d.get("debit_in_account_currency"), d.get("credit_in_account_currency")]
 
 		row += [d.get("voucher_type"), d.get("voucher_no"), d.get("against"),
-			d.get("party_type"), d.get("party"), d.get("project"), d.get("cost_center"), d.get("remarks"), d.get("cheque_no"), d.get("cheque_date")
+			d.get("party_type"), d.get("party"), d.get("project"), d.get("cost_center"), d.get("branch"), d.get("remarks"), d.get("cheque_no"), d.get("cheque_date")
 		]
 
 		result.append(row)

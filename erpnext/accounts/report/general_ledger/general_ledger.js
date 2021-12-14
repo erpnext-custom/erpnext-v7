@@ -54,8 +54,14 @@ frappe.query_reports["General Ledger"] = {
 			"options":"Cost Center"
 		},
 		{
-			"fieldtype": "Break",
-		},
+                        "fieldtype": "Break",
+                },
+		{
+                        "fieldname":"branch",
+                        "label": __("Branch"),
+                        "fieldtype": "Link",
+                        "options": "Branch"
+                },
 		{
 			"fieldname":"party_type",
 			"label": __("Party Type"),
