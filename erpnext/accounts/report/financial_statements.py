@@ -174,13 +174,14 @@ def calculate_values(accounts_by_name, gl_entries_by_account, period_list, accum
 	for entries in gl_entries_by_account.values():
 		for entry in entries:
 			d = accounts_by_name.get(entry.account)
-			for period in period_list:
-				# check if posting date is within the period
-				if entry.posting_date <= period.to_date:
-					if accumulated_values or entry.posting_date >= period.from_date:
-						d[period.key] = d.get(period.key, 0.0) + flt(entry.debit) - flt(entry.credit)
-			if entry.posting_date < period_list[0].year_start_date:
-				d["opening_balance"] = d.get("opening_balance", 0.0) + flt(entry.debit) - flt(entry.credit)
+			if d != None:
+				for period in period_list:
+					# check if posting date is within the period
+					if entry.posting_date <= period.to_date:
+						if accumulated_values or entry.posting_date >= period.from_date:
+							d[period.key] = d.get(period.key, 0.0) + flt(entry.debit) - flt(entry.credit)
+				if entry.posting_date < period_list[0].year_start_date:
+					d["opening_balance"] = d.get("opening_balance", 0.0) + flt(entry.debit) - flt(entry.credit)
 
 def accumulate_values_into_parents(accounts, accounts_by_name, period_list, accumulated_values):
 	"""accumulate children's values in parent accounts"""
