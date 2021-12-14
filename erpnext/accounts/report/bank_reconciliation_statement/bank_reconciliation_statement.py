@@ -178,15 +178,29 @@ def get_entries(filters):
 		select
 			"Mechanical Payment" as payment_document, name as payment_entry,
 			cheque_no as reference_no, cheque_date as ref_date,
-			IF(payment_for = "Transporter Payment", net_amount, 0) as credit, 
-			IF(payment_for != "Transporter Payment", net_amount, 0) as debit,
+			net_amount as credit, 
+			0 as debit,
 			posting_date, customer as against_account, clearance_date, 'BTN' as account_currency
 		from `tabMechanical Payment`
-		where  %(account)s IN (income_account, expense_account)
+		where  %(account)s IN (income_account, expense_account, outgoing_account)
 		and docstatus = 1
 		and posting_date <= %(report_date)s 
 		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
 	""", filters, as_dict=1)
+	
+	# mechanical_entries = frappe.db.sql("""
+	# 	select
+	# 		"Mechanical Payment" as payment_document, name as payment_entry,
+	# 		cheque_no as reference_no, cheque_date as ref_date,
+	# 		IF(payment_for = "Transporter Payment", net_amount, 0) as credit, 
+	# 		IF(payment_for != "Transporter Payment", net_amount, 0) as debit,
+	# 		posting_date, customer as against_account, clearance_date, 'BTN' as account_currency
+	# 	from `tabMechanical Payment`
+	# 	where  expense_account = %(account)s 
+	# 	and docstatus = 1
+	# 	and posting_date <= %(report_date)s 
+	# 	and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+	# """, filters, as_dict=1)
 
 	project_entries = frappe.db.sql("""
 		select
