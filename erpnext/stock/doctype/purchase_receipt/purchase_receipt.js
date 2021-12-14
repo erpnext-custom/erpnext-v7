@@ -161,7 +161,8 @@ erpnext.stock.PurchaseReceiptController = erpnext.buying.BuyingController.extend
 					'doctype':'Item',
 					fieldname:"is_fixed_asset",
 					filters: {
-						"item_name": args.item_name
+						"item_name": args.item_name,
+						"disabled": 0
 					}
 				},
 				callback:(r)=>{
