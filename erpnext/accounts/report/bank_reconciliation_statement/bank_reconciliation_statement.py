@@ -148,6 +148,19 @@ def get_entries(filters):
 			and ifnull(clearance_date, '4000-01-01') > %(report_date)s
 	""", filters, as_dict=1)
 
+	for pe in payment_entries:
+		total_deductions = 0
+		for d in frappe.get_all("Payment Entry Deduction", ["amount"], {"parent":pe.payment_entry}):
+			total_deductions += flt(d.amount)
+
+		tds_amount = frappe.db.get_value("Payment Entry", pe.payment_entry, "tds_amount")
+
+		if frappe.db.get_value(pe.payment_document, pe.payment_entry, "payment_type") == "Pay":
+			pe.credit += total_deductions
+		else:
+			pe.debit -= total_deductions
+			pe.debit -= tds_amount
+
 	hsd_entries = frappe.db.sql("""
 		select
 			"HSD Payment" as payment_document, name as payment_entry,
