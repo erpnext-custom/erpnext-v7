@@ -530,7 +530,7 @@
    "bold": 0, 
    "collapsible": 0, 
    "collapsible_depends_on": "", 
-   "depends_on": "eval:!in_list([\"Sand\",\"Dredged Sand\",\"Firewood\",\"Stone Boulder\"], doc.business_activity)", 
+   "depends_on": "eval:!in_list([\"Sand\",\"Dredged Sand\",\"Stone Boulder\"], doc.business_activity)", 
    "fieldname": "section_break_10", 
    "fieldtype": "Section Break", 
    "hidden": 0, 
@@ -891,7 +891,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-12-18 16:26:40.183921", 
+ "modified": "2021-12-15 14:19:04.292567", 
  "modified_by": "Administrator", 
  "module": "Production", 
  "name": "Production", 
@@ -1008,6 +1008,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "branch", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }
