@@ -346,11 +346,11 @@ cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(
         }
 }
 
-frappe.ui.form.on("Purchase Receipt Item", "void_deduction_percent", function(frm,cdt,cdn) {
-	var item = locals[cdt][cdn];
-	var deductionQty = item.qty * (item.void_deduction_percent / 100);
-	var newQty = item.qty - deductionQty;
+// frappe.ui.form.on("Purchase Receipt Item", "void_deduction_percent", function(frm,cdt,cdn) {
+// 	var item = locals[cdt][cdn];
+// 	var deductionQty = item.received_qty * (item.void_deduction_percent / 100);
+// 	var newQty = item.qty - deductionQty;
 
-	frappe.model.set_value(cdt, cdn, 'void_deduction_qty', deductionQty);
-	frappe.model.set_value(cdt, cdn, 'qty', newQty);
-})
+// 	frappe.model.set_value(cdt, cdn, 'void_deduction_qty', deductionQty);
+// 	frappe.model.set_value(cdt, cdn, 'qty', newQty);
+// })

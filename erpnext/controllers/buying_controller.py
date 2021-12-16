@@ -308,12 +308,17 @@ class BuyingController(StockController):
 			elif not flt(d.qty) and flt(d.rejected_qty):
 				d.qty = flt(d.received_qty) - flt(d.rejected_qty)
 
-			elif not flt(d.rejected_qty):
+			elif not flt(d.rejected_qty) and not flt(d.void_deduction_qty):
 				d.rejected_qty = flt(d.received_qty) -  flt(d.qty)
 
-			# Check Received Qty = Accepted Qty + Rejected Qty
-			if ((flt(d.qty) + flt(d.rejected_qty)) != flt(d.received_qty)):
-				frappe.throw(_("Accepted + Rejected Qty must be equal to Received quantity for Item {0}").format(d.item_code))
+			# added by Jai
+			if self.doctype=="Purchase Receipt" and (d.void_deduction and d.void_deduction_percent):
+				if ((flt(d.qty) + flt(d.rejected_qty) + flt(d.void_deduction_qty)) != flt(d.received_qty)):
+					frappe.throw(_("Accepted + Rejected + Deduction Qty must be equal to Received quantity for Item {0}").format(d.item_code))
+			else:
+				# Check Received Qty = Accepted Qty + Rejected Qty
+				if ((flt(d.qty) + flt(d.rejected_qty)) != flt(d.received_qty)):
+					frappe.throw(_("Accepted + Rejected Qty must be equal to Received quantity for Item {0}").format(d.item_code))
 
 	def update_stock_ledger(self, allow_negative_stock=False, via_landed_cost_voucher=False):
 		self.update_ordered_qty()

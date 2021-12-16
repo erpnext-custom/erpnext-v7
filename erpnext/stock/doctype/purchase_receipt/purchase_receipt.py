@@ -57,6 +57,7 @@ class PurchaseReceipt(BuyingController):
 
 	def validate(self):
 		check_future_date(self.posting_date)
+		# self.update_void_deduction()
 		super(PurchaseReceipt, self).validate()
 		self.set_status()
 		self.po_required()
@@ -67,6 +68,26 @@ class PurchaseReceipt(BuyingController):
 
 		pc_obj = frappe.get_doc('Purchase Common')
 		self.check_for_closed_status(pc_obj)
+
+	# added by Jai 22 Nov 2021
+	def update_void_deduction(self):
+		for i in self.get("items"):
+			po_qty = actual_void_deduction_qty = actual_rejected_qty = actual_qty = 0
+			if i.void_deduction:
+				if not i.void_deduction_percent:
+					frappe.throw(_("Missing void percent value."))
+
+				po_stock_qty, po_received_qty = frappe.db.get_value("Purchase Order Item", {"name": i.purchase_order_item, "parent": i.purchase_order, "item_code": i.item_code}, ["stock_qty","received_qty"])
+				po_qty = flt(po_stock_qty) - flt(po_received_qty)
+				actual_void_deduction_qty = flt(po_qty) * (flt(i.void_deduction_percent) / 100)
+				actual_rejected_qty = flt(actual_void_deduction_qty)
+				# actual_received_qty = po_qty - actual_void_deduction_qty
+				actual_qty = flt(po_qty) - flt(actual_rejected_qty)
+				# frappe.throw("PO-Qty {},\n Deduction-Qty {},\n Rejected-Qty {},\n Qty {},\n Ded.% {}".format(po_qty, flt(actual_void_deduction_qty), flt(actual_rejected_qty), actual_qty, i.void_deduction_percent))
+				i.received_qty = flt(po_qty)
+				i.void_deduction_qty = flt(actual_void_deduction_qty)
+				i.rejected_qty = flt(actual_rejected_qty)
+				i.qty = flt(actual_qty)
 
 	def validate_with_previous_doc(self):
 		super(PurchaseReceipt, self).validate_with_previous_doc({
