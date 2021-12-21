@@ -31,7 +31,6 @@ class StockController(AccountsController):
 			if self.docstatus==1:
 				gl_entries = self.get_gl_entries(warehouse_account)
 				make_gl_entries(gl_entries)
-
 			if repost_future_gle:
 				items, warehouses = self.get_items_and_warehouses()
 				update_gl_entries_after(self.posting_date, self.posting_time, warehouses, items,
@@ -49,6 +48,7 @@ class StockController(AccountsController):
 		for detail in voucher_details:
 			sle_list = sle_map.get(detail.name)
 			if sle_list:
+				
 				for sle in sle_list:
 					if warehouse_account.get(sle.warehouse):
 						self.check_expense_account(detail)
@@ -98,7 +98,7 @@ class StockController(AccountsController):
 									"debit": flt(sle.stock_value_difference, 2),
 								}))
 						else:
-														# from warehouse account
+							# from warehouse account
 							gl_list.append(self.get_gl_dict({
 								"account": warehouse_account[sle.warehouse]["name"],
 								"against": detail.expense_account,
@@ -249,7 +249,6 @@ class StockController(AccountsController):
 							d.cost_center = default_cost_center
 			else:
 				details.append(self)
-		
 			return details
 
 		# Ver 2.0.190509, Following method commented by SHIV on 2019/05/14
@@ -334,7 +333,6 @@ class StockController(AccountsController):
 			from `tabStock Ledger Entry` where voucher_type=%s and voucher_no=%s""",
 			(self.doctype, self.name), as_dict=True):
 				stock_ledger.setdefault(sle.voucher_detail_no, []).append(sle)
-	
 		return stock_ledger
 
 	def make_adjustment_entry(self, expected_gle, voucher_obj):
