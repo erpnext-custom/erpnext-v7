@@ -254,7 +254,7 @@ class StockController(AccountsController):
 							d.cost_center = default_cost_center
 			else:
 				details.append(self)
-			
+			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(details)))
 			return details
 
 		# Ver 2.0.190509, Following method commented by SHIV on 2019/05/14
@@ -390,7 +390,7 @@ class StockController(AccountsController):
 			is_expense_account = frappe.db.get_value("Account",item.get("expense_account"), "report_type")=="Profit and Loss"
 			if self.doctype not in ("Purchase Receipt", "Purchase Invoice", "Stock Reconciliation", "Stock Entry") and not is_expense_account:
 				frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item)))
-				
+
 				frappe.throw(_("Expense / Difference account ({0}) must be a 'Profit or Loss' account")
 					.format(item.get("expense_account")))
 			if is_expense_account and not item.get("cost_center"):
