@@ -107,6 +107,7 @@ class StockEntry(StockController):
 			If the ordered qty is not set to zero, a condition in MR when making PO doesn't allow to pick items in 
 			this stock entry even though its cancelled.  
 			Added by phuntsho on August 27th, 2021
+			item_name = "{name}" and
 		"""
 		if self.purpose == "Material Issue": 
 			for item in self.items:
@@ -117,9 +118,8 @@ class StockEntry(StockController):
 						SET 
 							ordered_qty = 0 
 						WHERE
-							item_code = '{code}' and 
-							item_name = '{name}' and 
-							parent = '{mr}'
+							item_code = "{code}" and 
+							parent = "{mr}"
 						""".format(code = item.item_code, name = item.item_name, mr = item.material_request))
 
 
