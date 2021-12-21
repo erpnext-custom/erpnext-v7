@@ -417,6 +417,7 @@ class StockController(AccountsController):
 		make_sl_entries(sl_entries, is_amended, allow_negative_stock, via_landed_cost_voucher)
 
 	def make_gl_entries_on_cancel(self, repost_future_gle=True):
+		frappe.throw("{} and {}".format(self.doctype, self.name))
 		if frappe.db.sql("""select name from `tabGL Entry` where voucher_type=%s
 			and voucher_no=%s""", (self.doctype, self.name)):
 				self.make_gl_entries(repost_future_gle)
