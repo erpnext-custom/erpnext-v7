@@ -16,14 +16,14 @@ class RRCOReceiptTool(Document):
 			if not self.fiscal_year and not self.month:
 				frappe.throw("Fiscal Year and Month values are missing")
 			else:
-				if frappe.db.exists("RRCO Receipt Entries", {"fiscal_year":self.fiscal_year, "month": self.month}):
+				if frappe.db.exists("RRCO Receipt Entries", {"fiscal_year":self.fiscal_year, "month": self.month, "docstatus": 1}):
 					frappe.throw("RRCO Receipt and date has been already assigned for the given month {} and fiscal year {}".format(self.month, self.fiscal_year))
 
 		elif self.purpose in ["PBVA","Annual Bonus"]:
 			if not self.fiscal_year:
 				frappe.throw("Fiscal Year value is missing")
 
-			if frappe.db.exists("RRCO Receipt Entries", {"fiscal_year":self.fiscal_year, "purpose": self.purpose}):
+			if frappe.db.exists("RRCO Receipt Entries", {"fiscal_year":self.fiscal_year, "purpose": self.purpose, "docstatus": 1}):
 				frappe.throw("RRCO Receipt and date has been already assigned for {} and fiscal year {}".format(self.purpose, self.fiscal_year))
 	
 	def on_submit(self):
