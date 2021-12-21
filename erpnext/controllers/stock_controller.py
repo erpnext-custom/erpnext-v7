@@ -43,6 +43,10 @@ class StockController(AccountsController):
 			warehouse_account = get_warehouse_account()
 		sle_map = self.get_stock_ledger_details()
 		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map, default_business_activity)
+		
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(voucher_details)))
+		frappe.throw("")
+		
 		gl_list = []
 		warehouse_with_no_account = []
 		for detail in voucher_details:
@@ -236,7 +240,8 @@ class StockController(AccountsController):
 			# Following line commented by SHIV on 2019/04/01
 			#details = self.get("items")
 			# Following code added by SHIV on 2019/04/01
-			details = list(self.get("items"))
+			
+			details = self.get("items")
 			if self.doctype == "Production":
 				details.extend(self.get("raw_materials"))
 			""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
@@ -249,6 +254,7 @@ class StockController(AccountsController):
 							d.cost_center = default_cost_center
 			else:
 				details.append(self)
+			
 			return details
 
 		# Ver 2.0.190509, Following method commented by SHIV on 2019/05/14
