@@ -302,9 +302,9 @@ class BankPayment(Document):
 
 	def get_transactions(self):
 		data = []
-		if self.transaction_type == "Mechanical Payment":
-			data = self.get_mechanical_payments()
-		elif self.transaction_type == "Salary":
+		# if self.transaction_type == "Mechanical Payment":
+		# 	data = self.get_mechanical_payments()
+		if self.transaction_type == "Salary":
 			data = self.get_salary()
 		elif self.transaction_type in ("LTC", "Bonus", "PBVA"):
 			frappe.msgprint(_("Under development"))
@@ -316,6 +316,8 @@ class BankPayment(Document):
 			data = self.get_journal_entry()
 		elif self.transaction_type == "Imprest Recoup":
 			data = self.get_imprest_recoup_payment()
+		elif self.transaction_type == "Mechanical Payment":
+			data = self.get_mechanical_payment()
 		return data
 
 	def get_journal_entry(self):
@@ -605,35 +607,35 @@ class BankPayment(Document):
 			bank_payment = self.name,
 			cond = cond), as_dict=True)
 
-	def get_mechanical_payments(self):
-		if self.transaction_no:
-			cond = 'and t1.name = "{}"'.format(self.transaction_no)
+	# def get_mechanical_payments(self):
+	# 	if self.transaction_no:
+	# 		cond = 'and t1.name = "{}"'.format(self.transaction_no)
 
-		data = frappe.db.sql("""
-			select 
-				'Mechanical Payment' as transaction_type,
-				name 		 as transaction_id, 
-				posting_date 	 as transaction_date,
-				beneficiary_name,
-				beneficiary_bank as bank_name,
-				beneficiary_branch as bank_branch,
-				beneficiary_bank_account_no as bank_account_no,
-				round(net_amount,2) 	 as amount
-			from `tabMechanical Payment` t1
-			where t1.expense_account = "{paid_from}"
-			and t1.docstatus = 1
-			and t1.online_payment = 1
-			and t1.bank_payment is null
-			{cond}
-			and not exists(select 1
-				from `tabBank Payment Item` t2
-				where t2.transaction_type = "{transaction_type}"
-				and t2.transaction_id = t1.name
-				and t2.docstatus < 2
-				and t2.parent != "{name}")
-		""".format(paid_from=self.paid_from, name=self.name, 
-				transaction_type=self.transaction_type, cond=cond), as_dict=True)
-		return data
+	# 	data = frappe.db.sql("""
+	# 		select 
+	# 			'Mechanical Payment' as transaction_type,
+	# 			name 		 as transaction_id, 
+	# 			posting_date 	 as transaction_date,
+	# 			beneficiary_name,
+	# 			beneficiary_bank as bank_name,
+	# 			beneficiary_branch as bank_branch,
+	# 			beneficiary_bank_account_no as bank_account_no,
+	# 			round(net_amount,2) 	 as amount
+	# 		from `tabMechanical Payment` t1
+	# 		where t1.expense_account = "{paid_from}"
+	# 		and t1.docstatus = 1
+	# 		and t1.online_payment = 1
+	# 		and t1.bank_payment is null
+	# 		{cond}
+	# 		and not exists(select 1
+	# 			from `tabBank Payment Item` t2
+	# 			where t2.transaction_type = "{transaction_type}"
+	# 			and t2.transaction_id = t1.name
+	# 			and t2.docstatus < 2
+	# 			and t2.parent != "{name}")
+	# 	""".format(paid_from=self.paid_from, name=self.name, 
+	# 			transaction_type=self.transaction_type, cond=cond), as_dict=True)
+	# 	return data
 
 	#added by cety on 13/12/2021 to make payment for imprest recoup
 	def get_imprest_recoup_payment(self):
@@ -667,6 +669,37 @@ class BankPayment(Document):
 							branch = self.branch,
 							cond = cond
 					), as_dict=True)
+	#added by cety on 21/12/2021 to make mechanical payment
+	def get_mechanical_payment(self):
+		cond = ""
+		if self.transaction_no:
+			cond = 'and mp.name = "{}"'.format(self.transaction_no)
+		elif not self.transaction_no and self.from_date and self.to_date:
+			cond = 'and mp.posting_date between "{}" and "{}"'.format(str(self.from_date), str(self.to_date))
+		return frappe.db.sql("""
+				SELECT
+					'Mechanical Payment' as transaction_type, mp.name as transaction_id, mp.name as transaction_reference, mp.posting_date as transaction_date, 
+					mp.transporter as beneficiary_name, 
+					(case when mp.payment_for = 'Transporter Payment' then (select bank_name from `tabTransporter` where name=mp.transporter) else (select bank_name_new from `tabSupplier` where name=mp.supplier) end) as bank_name,
+					(case when mp.payment_for = 'Transporter Payment' then (select bank_branch from `tabTransporter` where name=mp.transporter) else (select bank_branch from `tabSupplier` where name=mp.supplier) end) as bank_branch,
+					(case when mp.payment_for = 'Transporter Payment' then (select bank_account_type from `tabTransporter` where name=mp.transporter) else (select bank_account_type from `tabSupplier` where name=mp.supplier) end) as bank_account_type,
+					(case when mp.payment_for = 'Transporter Payment' then (select account_number from `tabTransporter` where name=mp.transporter) else (select account_number from `tabSupplier` where name=mp.supplier) end) as bank_account_no,
+					mp.net_amount as amount
+				FROM `tabMechanical Payment` mp
+				WHERE mp.branch = '{branch}'
+				{cond}
+				AND mp.docstatus = 1
+					AND NOT EXISTS(select 1
+						FROM `tabBank Payment Item` bpi
+						WHERE bpi.transaction_type = 'Mechanical Payment'
+						AND bpi.transaction_id = mp.name
+						AND bpi.parent != '{bank_payment}'
+						AND bpi.docstatus != 2
+						AND bpi.status NOT IN ('Cancelled', 'Failed'))
+		""".format(bank_payment = self.name,
+					branch = self.branch,
+					cond = cond), as_dict=True)
+
 def process_one_to_one_payment(doc, publish_progress=True):
 	stat = 0
 	processing = completed = failed = doc_modified = 0
