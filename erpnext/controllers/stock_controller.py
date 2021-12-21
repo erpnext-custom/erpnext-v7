@@ -44,7 +44,7 @@ class StockController(AccountsController):
 		sle_map = self.get_stock_ledger_details()
 		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map, default_business_activity)
 		
-		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(voucher_details)))
+		# frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(voucher_details)))
 		# frappe.throw("")
 
 		gl_list = []
@@ -389,7 +389,7 @@ class StockController(AccountsController):
 		else:
 			is_expense_account = frappe.db.get_value("Account",item.get("expense_account"), "report_type")=="Profit and Loss"
 			if self.doctype not in ("Purchase Receipt", "Purchase Invoice", "Stock Reconciliation", "Stock Entry") and not is_expense_account:
-				frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item)))
+				# frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(item)))
 
 				frappe.throw(_("Expense / Difference account ({0}) must be a 'Profit or Loss' account")
 					.format(item.get("expense_account")))
