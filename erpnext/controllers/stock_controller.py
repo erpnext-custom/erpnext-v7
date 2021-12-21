@@ -44,7 +44,7 @@ class StockController(AccountsController):
 		sle_map = self.get_stock_ledger_details()
 		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map, default_business_activity)
 		
-		# frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(voucher_details)))
+		frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(voucher_details)))
 		# frappe.throw("")
 
 		gl_list = []
@@ -254,7 +254,7 @@ class StockController(AccountsController):
 							d.cost_center = default_cost_center
 			else:
 				details.append(self)
-			frappe.msgprint("<pre>{}</pre>".format(frappe.as_json(details)))
+			
 			return details
 
 		# Ver 2.0.190509, Following method commented by SHIV on 2019/05/14
