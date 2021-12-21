@@ -105,7 +105,7 @@ class Logbook(Document):
 						ot_hours += a.hours
 				else:
 					frappe.throw("Initial and Final Readings are mandatory")
-		act_sch = self.scheduled_working_hour + 5
+		act_sch = self.scheduled_working_hour + 8
 		if total_hours > act_sch:
 			frappe.throw("Total hours cannot be more than {0} hours".format(act_sch))
 
