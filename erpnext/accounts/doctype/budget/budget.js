@@ -2,6 +2,9 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Budget', {
+    setup: function(frm){
+        frm.get_docfield("accounts").allow_bulk_edit = 1;
+    },
 	onload: function(frm) {
 		frm.set_query("cost_center", function() {
 			return {
