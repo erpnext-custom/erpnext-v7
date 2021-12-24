@@ -118,7 +118,6 @@ class Production(StockController):
 		#self.make_products_gl_entry()
 		#self.make_raw_material_stock_ledger()
 		#self.make_raw_material_gl_entry()
-
 		self.make_production_entry()
 		# Following lines added by SHIV on 2019/04/01
 		self.update_stock_ledger()
