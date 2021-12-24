@@ -292,7 +292,7 @@ class Production(StockController):
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
 
 	def make_production_entry(self):
-		for a in self.items:
+		for a in self.get("items"):
 			if a.is_rejected_item:
 				continue
 			doc = frappe.new_doc("Production Entry")
