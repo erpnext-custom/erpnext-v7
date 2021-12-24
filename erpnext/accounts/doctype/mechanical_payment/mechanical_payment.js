@@ -34,7 +34,7 @@ frappe.ui.form.on('Mechanical Payment', {
 				frappe.set_route("query-report", "General Ledger");
 			}, __("View"));
 		} 
-
+		cur_frm.refresh_fields();
 	},
 
 	"receivable_amount": function(frm) {
@@ -101,6 +101,12 @@ frappe.ui.form.on('Mechanical Payment', {
 		row.grid_form.fields_dict.reference_type.refresh()
 	},
 	"payment_for": function(frm) {
+		if(cur_frm.doc.payment_for == "Transporter Payment"){
+			cur_frm.toggle_reqd("transporter",1);
+		}
+		else{
+			cur_frm.toggle_reqd("transporter",0);
+		}
 		if(frm.doc.payment_for == "Transporter Payment"){
 			frappe.model.get_value('Production Account Settings',{'company':frm.doc.company},'transportation_account', function(d){
 				frm.set_value("transportation_account", d.transportation_account);
@@ -110,7 +116,8 @@ frappe.ui.form.on('Mechanical Payment', {
 			});
 			
 		}
-		calculate_totals(frm);	
+		calculate_totals(frm);
+		frm.refresh_fields();
 	},
 	"other_deduction": function(frm) {
 	   	calculate_totals(frm);
