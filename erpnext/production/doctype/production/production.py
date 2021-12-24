@@ -37,8 +37,8 @@ class Production(StockController):
 		self.validate_warehouse_branch(self.warehouse, self.branch)
 
 	def validate_supplier(self):
-                if self.work_type == "Private" and not self.supplier:
-                        frappe.throw("Supplier Is Mandiatory For Production Carried Out By Others")
+		if self.work_type == "Private" and not self.supplier:
+			frappe.throw("Supplier Is Mandiatory For Production Carried Out By Others")
 
 	def validate_items(self):
 		prod_items = self.get_production_items()
@@ -48,13 +48,13 @@ class Production(StockController):
 			if flt(item.qty) <= 0:
 				frappe.throw(_("Quantity for <b>{0}</b> cannot be zero or less").format(item.item_code))
 
-                        """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-                        # Following code added by SHIV on 2019/04/01
-                        item.business_activity = self.business_activity
-                        item.cost_center = self.cost_center
-                        item.warehouse = self.warehouse
-                        item.expense_account = get_expense_account(self.company, item.item_code)
-                        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+			""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+			# Following code added by SHIV on 2019/04/01
+			item.business_activity = self.business_activity
+			item.cost_center = self.cost_center
+			item.warehouse = self.warehouse
+			item.expense_account = get_expense_account(self.company, item.item_code)
+			""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
 		for item in self.get("items"):
 			item.item_name, item.item_group, item.item_sub_group, item.timber_species = frappe.db.get_value("Item", item.item_code, ["item_name", "item_group", "item_sub_group", "species"])
@@ -112,18 +112,18 @@ class Production(StockController):
 		self.check_cop()
 
 	def on_submit(self):
-                """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-                # Following lines commented by SHIV on 2019/04/01
+		""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+		# Following lines commented by SHIV on 2019/04/01
 		#self.make_products_sl_entry()
 		#self.make_products_gl_entry()
 		#self.make_raw_material_stock_ledger()
 		#self.make_raw_material_gl_entry()
 
-                # Following lines added by SHIV on 2019/04/01
-                self.update_stock_ledger()
-                self.make_gl_entries()
-                """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 		self.make_production_entry()
+		# Following lines added by SHIV on 2019/04/01
+		self.update_stock_ledger()
+		self.make_gl_entries()
+		""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
 	def on_cancel(self):
 		self.assign_default_dummy()
@@ -141,38 +141,38 @@ class Production(StockController):
 		
 		self.delete_production_entry()
 
-        """ ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
-        # update_stock_ledger() method added by SHIV on 2019/04/01
-        def update_stock_ledger(self):
-                sl_entries = []
+	""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
+	# update_stock_ledger() method added by SHIV on 2019/04/01
+	def update_stock_ledger(self):
+			sl_entries = []
 
-                # make sl entries for source warehouse first, then do the target warehouse
-                for d in self.get('raw_materials'):
-                        if cstr(d.warehouse):
-                                sl_entries.append(self.get_sl_entries(d, {
-                                        "warehouse": cstr(d.warehouse),
-                                        "actual_qty": -1 * flt(d.qty),
-                                        "incoming_rate": 0
-                                }))
-                                
-                for d in self.get('items'):
-                        if cstr(d.warehouse):
-                                sl_entries.append(self.get_sl_entries(d, {
-                                        "warehouse": cstr(d.warehouse),
-                                        "actual_qty": flt(d.qty),
-                                        "incoming_rate": flt(d.cop, 2)
-                                }))
+			# make sl entries for source warehouse first, then do the target warehouse
+			for d in self.get('raw_materials'):
+					if cstr(d.warehouse):
+							sl_entries.append(self.get_sl_entries(d, {
+									"warehouse": cstr(d.warehouse),
+									"actual_qty": -1 * flt(d.qty),
+									"incoming_rate": 0
+							}))
+							
+			for d in self.get('items'):
+					if cstr(d.warehouse):
+							sl_entries.append(self.get_sl_entries(d, {
+									"warehouse": cstr(d.warehouse),
+									"actual_qty": flt(d.qty),
+									"incoming_rate": flt(d.cop, 2)
+							}))
 
-                if self.docstatus == 2:
-                        sl_entries.reverse()
+			if self.docstatus == 2:
+					sl_entries.reverse()
 
-                self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
+			self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 
-        # get_gl_entries() method added by SHIV on 2019/04/01
-        def get_gl_entries(self, warehouse_account):
-                gl_entries = super(Production, self).get_gl_entries(warehouse_account)
-                return gl_entries
-        """ ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
+	# get_gl_entries() method added by SHIV on 2019/04/01
+	def get_gl_entries(self, warehouse_account):
+			gl_entries = super(Production, self).get_gl_entries(warehouse_account)
+			return gl_entries
+	""" ++++++++++ Ver 1.0.190401 Ends ++++++++++++ """
 
 	def assign_default_dummy(self):
 		self.pol_type = None
@@ -207,7 +207,7 @@ class Production(StockController):
 
 		expense_account = get_settings_value("Production Account Settings", self.company, "default_production_account")
 		if not expense_account:
-                        frappe.throw("Setup Default Production Account in Production Account Settings")
+			frappe.throw("Setup Default Production Account in Production Account Settings")
 
 		for a in self.items:
 			amount = flt(a.qty) * flt(a.cop)
@@ -263,7 +263,7 @@ class Production(StockController):
 
 		for a in self.raw_materials:
 			stock_qty, map_rate = get_stock_balance(a.item_code, self.warehouse, self.posting_date, self.posting_time, with_valuation_rate=True)
-                        amount = flt(a.qty) * flt(map_rate)
+			amount = flt(a.qty) * flt(map_rate)
 
 			expense_account = frappe.db.get_value("Item", a.item_code, "expense_account")
 			if not expense_account:
@@ -292,7 +292,7 @@ class Production(StockController):
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=True)
 
 	def make_production_entry(self):
-		for a in self.get("items"):
+		for a in self.items:
 			if a.is_rejected_item:
 				continue
 			doc = frappe.new_doc("Production Entry")
