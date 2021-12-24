@@ -13,6 +13,11 @@ def get_data():
 					"description": _("Project master."),
 				},
 				{
+					"type": "doctype",
+					"name": "Design",
+					"description": _("Design master."),
+				},
+				{
                                         "type": "doctype",
                                         "name": "Project Category",
                                         "description": _("Project Category."),

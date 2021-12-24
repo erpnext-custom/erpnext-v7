@@ -235,8 +235,20 @@ def get_entries(filters):
                         and docstatus = 1
                         and posting_date <= %(report_date)s and ifnull(clearance_date, '4000-01-01') > %(report_date)s
                 """, filters, as_dict=1)
+
+	sales_payment = frappe.db.sql("""
+                        select
+                                "Sales Payment" as payment_document, name as payment_entry,
+                                cheque_no as reference_no, cheque_date as ref_date,
+                                total_amount as debit, 0 as credit,
+                                posting_date, branch as against_account, clearance_date, 'BTN' as account_currency
+                        from `tabSales Payment`
+                        where revenue_bank_account = %(account)s
+                        and docstatus = 1
+                        and posting_date <= %(report_date)s and ifnull(clearance_date, '4000-01-01') > %(report_date)s
+                """, filters, as_dict=1)
 	
-	return sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(tds_remittance_entries)+list(ot_payment), 
+	return sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(mechanical_entries)+list(project_entries)+list(direct_payment_entries)+list(tds_remittance_entries)+list(ot_payment) +list(sales_payment), 
 		key=lambda k: k['posting_date'] or getdate(nowdate()))
 
 		

@@ -51,6 +51,13 @@ class ProcessOvertimePayment(Document):
 	def on_submit(self):
 		self.post_general_ledger()
 		#self.update_ot()
+		# if self.get("items"):
+		# 	processed = []
+		# 	for a in self.get("items"):
+		# 		doc = frappe.get_doc("Overtime Application", a.reference_doc).payment_jv
+		# 		if doc.payment_jv:
+		# 			processed.append(a.reference_doc)
+		# 	frappe.throw("Payment Already Processed for Following OT {0}".format(processed))
 
 	def on_cancel(self):
 		if self.clearance_date:
@@ -69,7 +76,7 @@ class ProcessOvertimePayment(Document):
 			bank_name = '{3}' and 
 			cost_center in (select name from `tabCost Center` where parent_cost_center = '{2}') order by employee desc
 		""".format(from_date, to_date, self.cost_center, self.bank_name)
-		
+	
 		entries = frappe.db.sql(query, as_dict=True)
                 if not entries:
                         frappe.msgprint("OT Payment is already processed or there is no Approved OT to process")

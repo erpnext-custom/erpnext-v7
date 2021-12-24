@@ -38,7 +38,7 @@ class IssueList(Document):
                 subject = "ERP Issue Management"
                 message = "Issue({1}) Related to <b> {0} </b>  Module is raised in the System,  Check ERP system for details".format(self.module, self.name)
 		user = []
-		user.append('tashidorji@gyalsunginfra.bt')
+		user.append('jigme@gyalsunginfra.bt')
 		module_user = frappe.get_doc("Support Module", self.module).module_ctm
 		user.append(module_user)
                 if user:

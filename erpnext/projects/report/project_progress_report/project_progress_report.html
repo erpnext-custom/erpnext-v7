@@ -1,0 +1,45 @@
+
+<div style="margin-bottom: 7px;" class="text-center">
+    {%= frappe.boot.letter_heads[filters.letter_head || frappe.defaults.get_default("letter_head")] %}
+</div>
+<h2 class="text-center">{%= __("Project Progress Report") %}</h2>
+<!-- <h4 class="text-center">{%= (filters.party || filters.account) && ((filters.party || filters.account) + ", ")  || "" %} {%= filters.company %}</h4> -->
+
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th >{%= __("Sr No") %}</th>
+            <th >{%= __("Activity Name") %}</th>
+            <th >{%= __("Start Date") %}</th>
+            <th >{%= __("End Date") %}</th>
+            <th >{%= __("Duration") %}</th>
+            <th >{%= __("Extimated Budget") %}</th>
+            <th >{%= __("Actual Expense") %}</th>
+            <th >{%= __("Project Progress") %}</th>
+            <th >{%= __("Site Progress") %}</th>
+            <th >{%= __("Weightage") %}</th>
+            <th >{%= __("PE/PM Name") %}</th>
+            <th >{%= __("Contact #") %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for(var i=0, l=data.length; i<l; i++) { %}
+            <tr>
+                <td style="text-align: center;">{%= i+1 %}</td>
+                <td>{%= data[i][__("name")] %}</td>
+                <td>{%= dateutil.str_to_user(data[i][__("expected_start_date")]) %}</td>
+                <td>{%= dateutil.str_to_user(data[i][__("expected_end_date")]) %}</td>
+                <td>{%= data[i][__("total_duration")] %}</td>
+                <td>{%= data[i][__("estimated_budget")] %}</td>
+                <td>{%= data[i][__("expense_incured")] %}</td>
+                <td>{%= data[i][__("physical_progress")] %}</td>
+                <td>{%= data[i][__("percent_completed")] %}</td>
+                <td>{%= data[i][__("physical_progress_weightage")] %}</td>
+                <td>{%= data[i][__("engineer_name")] %}</td>
+                <td style="text-align: right;">{%= data[i][__("contact")] %}</td>
+            </tr>
+        {% } %}
+    </tbody>
+</table>
+<p class="text-right text-muted">Printed On {%= dateutil.str_to_user(dateutil.get_datetime_as_string()) %}</p>

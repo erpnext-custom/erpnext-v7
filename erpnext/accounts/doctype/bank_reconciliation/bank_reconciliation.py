@@ -173,8 +173,21 @@ class BankReconciliation(Document):
                         {3}
                 """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
 
+		sales_payment = frappe.db.sql("""
+                        select
+                                "Sales Payment" as payment_document, name as payment_entry,
+                                cheque_no as cheque_number, cheque_date,
+                                total_amount as amount,
+                                posting_date, branch as against_account, clearance_date
+                        from `tabSales Payment`
+                        where revenue_bank_account = '{0}'
+                        and docstatus = 1
+                        and posting_date >= '{1}' and posting_date <= '{2}'
+                        {3}
+                """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
+
 		
-		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(direct_payment_entries)+list(mechanical_entries)+list(project_entries) + list(tds_remittance_entries) +list(ot_payment), 
+		entries = sorted(list(payment_entries)+list(journal_entries)+list(hsd_entries)+list(imprest_entries)+list(direct_payment_entries)+list(mechanical_entries)+list(project_entries) + list(tds_remittance_entries) +list(ot_payment) + list(sales_payment), 
 			key=lambda k: k['posting_date'] or getdate(nowdate()))
 				
 		self.set('payment_entries', [])

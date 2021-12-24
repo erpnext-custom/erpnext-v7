@@ -15,6 +15,46 @@ import os
 import subprocess
 from erpnext.accounts.doctype.imprest_receipt.imprest_receipt import get_opening_balance, update_dependencies
 
+def update_mr_cc():
+        li = []
+        count = 0
+        neg = 0
+        for a in frappe.db.sql(""" select name, branch from `tabMaterial Request` """, as_dict = 1):
+                cc  = frappe.db.sql(""" select name from `tabCost Center` where branch = "{0}" """.format(a.branch), as_dict = 1)
+                if cc:
+                        frappe.db.sql(""" update `tabMaterial Request` set cost_center = "{0}" where name = "{1}" 
+                                """.format(cc[0].name, a.name))
+                        count += 1
+                        print count, "updating {0}".format(a.name)
+                else:
+                        li.append(a.branch)
+                        neg += 1
+        print neg, "cost center not found {0}".format(li)
+
+def update_po_cc():
+        li = []
+        count = 0
+        neg = 0
+        for a in frappe.db.sql(""" select name, branch from `tabPurchase Order` """, as_dict = 1):
+                cc  = frappe.db.sql(""" select name from `tabCost Center` where branch = "{0}" """.format(a.branch), as_dict = 1)
+                if cc:
+                        frappe.db.sql(""" update `tabPurchase Order` set cost_center = "{0}" where name = "{1}" """.format(cc[0].name, a.name))
+                        count += 1
+                        print count, "updating {0}".format(a.name)
+                else:
+                        li.append(a.branch)
+                        neg += 1
+        print neg, "cost center not found {0}".format(li)
+
+def update_cus():
+	count = 0
+        for a in frappe.db.sql(""" select name, issued_to from `tabAsset` """, as_dict = 1):
+		if a.issued_to not in ('GYAL20441'):
+			issued_to = frappe.get_doc("Employee", a.issued_to).employee_name
+			frappe.db.sql(""" update `tabAsset` set employee_name  = "{0}" where name = '{1}'""".format(issued_to, a.name))
+			count += 1
+			print count, a.name, issued_to
+
 def update_parent_cc():
 	li = frappe.db.sql(""" select branch, name from `tabPurchase Order`""", as_dict =1)
 	for a in li:
@@ -299,8 +339,16 @@ def ipol1():
 			print doc.name
 
 def rpol():
-	doc = frappe.get_doc("POL", 'POL210100029')
+	pol = ["POL211200165"]
+	for a in pol:
+		doc = frappe.get_doc("POL", a)
+		doc.submit()
+		print (a)
+
+def submit_se():
+	doc = frappe.get_doc("Stock Entry", "SEMI21110005")
 	doc.submit()
+	print doc.name
 
 def email_test():
 	recipients = 'tashidorji@gyalsunginfra.bt'
@@ -431,6 +479,15 @@ def save_ss():
 		count += 1
 
 		print ss.name, count
+	
+def update_oap():
+	count = 0
+	for a in frappe.db.sql(" select name from `tabOpen Air Prisoner` where status = 'Active'", as_dict = True):
+		doc = frappe.get_doc("Open Air Prisoner", a.name)
+		doc.save()
+		count += 1
+
+		print a.name, count
 
 
 def update_mr():
@@ -438,7 +495,10 @@ def update_mr():
 	print doc.name
 	doc.save(ignore_permissions = True)
 
-
+def submit_pr():
+	doc = frappe.get_doc("Purchase Receipt", 'PRCO21110116')
+	print doc.name
+	doc.submit()
 
 def check_stock_gl():
 	for a in frappe.db.sql("select name, branch from `tabStock Entry` where docstatus = 1 and name = 'SEMI19030600'", as_dict=1):

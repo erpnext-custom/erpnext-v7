@@ -34,6 +34,12 @@ def get_data():
 					"name": "Training And Development",
 					"label": _("Training & Development Records"),
 					"description": _("Traning & Development Master."),
+				}, 
+				{
+					"type": "doctype",
+					"name": "Meeting",
+					"label": _("Meeting Management"),
+					"description": _("Meeting Management."),
 				},                  
 			]
 		},
@@ -58,6 +64,12 @@ def get_data():
                                         "name": "Open Air Prisoner",
                                         "label": "OAP List",
                                         "description": _("Open Air Prisoner"),
+                                },
+											{
+                                        "type": "doctype",
+                                        "name": "Foreign Labourer",
+                                        "label": "Foreign Labourer",
+                                        "description": _("Foreign Labourer"),
                                 },
 
 				{

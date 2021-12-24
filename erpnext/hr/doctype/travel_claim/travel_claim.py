@@ -146,32 +146,32 @@ class TravelClaim(Document):
                         #if counted >= 30:
                         #       counted = 30 
                         #frappe.msgprint("Testing count {0}, amount {1}, counted {2}".format(total_count, i.amount, counted))
-			if flt(total_count) <= 15:
+			if flt(total_count) <= 30:
                                 i.days_allocated = i.no_days
                                 i.half_dsa_days = 0
 
-                        if 15 < flt(total_count) <= 30:
-                                i.half_dsa_days = flt(total_count) - 15
-                                if flt(counted) > 15:
+                        if flt(total_count) > 30:
+                                i.half_dsa_days = flt(total_count) - 30
+                                if flt(counted) > 30:
                                         i.half_dsa_days = flt(total_count) - flt(counted)
                                 i.days_allocated = i.no_days - i.half_dsa_days
 
-                        if flt(total_count) > 30:
-                                #lapse = flt(total_count) - flt(counted) - 30
-                                lapse = flt(total_count) - 30
-                                if flt(counted) > 30:
-                                        lapse = flt(total_count) - flt(counted)
-                                eligible = flt(i.no_days) - flt(lapse)
-                                if flt(eligible) > 15:
-                                        i.days_allocated = 15 - flt(counted)
-                                        i.half_dsa_days = flt(eligible) - i.days_allocated
-                                elif 0 < flt(eligible) <= 15:
-                                        i.days_allocated = 0.0
-                                        i.half_dsa_days =  flt(eligible)
+                        # if flt(total_count) > 30:
+                        #         #lapse = flt(total_count) - flt(counted) - 30
+                        #         lapse = flt(total_count) - 30
+                        #         if flt(counted) > 30:
+                        #                 lapse = flt(total_count) - flt(counted)
+                        #         eligible = flt(i.no_days) - flt(lapse)
+                        #         if flt(eligible) > 15:
+                        #                 i.days_allocated = 15 - flt(counted)
+                        #                 i.half_dsa_days = flt(eligible) - i.days_allocated
+                        #         elif 0 < flt(eligible) <= 15:
+                        #                 i.days_allocated = 0.0
+                        #                 i.half_dsa_days =  flt(eligible)
 
-                                else:
-                                        i.days_allocated = 0.0
-                                        i.half_dsa_days = 0.0
+                        #         else:
+                        #                 i.days_allocated = 0.0
+                        #                 i.half_dsa_days = 0.0
 
 			if i.last_day and lastday_dsa_percent:
                                 i.days_allocated = i.no_days

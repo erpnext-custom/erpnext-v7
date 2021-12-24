@@ -80,6 +80,9 @@ class MaterialRequest(BuyingController):
 	def validate(self):
 		check_future_date(self.transaction_date)
 		super(MaterialRequest, self).validate()
+		cc  = frappe.db.sql(""" select name from `tabCost Center` where branch = "{0}" """.format(self.branch), as_dict = 1)
+                if cc:
+                        self.cost_center = cc[0].name
 
 		self.validate_schedule_date()
 		self.validate_uom_is_integer("uom", "qty")

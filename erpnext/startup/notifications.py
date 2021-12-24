@@ -84,13 +84,15 @@ def get_notification_config():
 			"SWS Application" : {"docstatus": 0},
 			"HSD Payment" : {"docstatus": 0},
 			"Equipment POL Transfer" : {"docstatus": 0},
-                        "Equipment Request" : {"percent_completed": ("<", "100"), "docstatus": 1},
-                        "Revenue Target Adjustment": {"docstatus": 0},
+            "Equipment Request" : {"percent_completed": ("<", "100"), "docstatus": 1},
+            "Revenue Target Adjustment": {"docstatus": 0},
 			"Employee Benefits" : {"docstatus": 0},
 			"Asset Modifier": {"docstatus": 0},
 			"Asset Movement": {"docstatus": 0},
 			"Bulk Asset Transfer": {"docstatus": 0},
 			"Supplementary Budget": {"docstatus": 0},
 			"Budget Reappropiation": {"docstatus": 0},
+			"TDS Remittance" : {"docstatus" : 0},
+			"Process Overtime Payment" : {"docstatus" : 0},
 		}
 	}

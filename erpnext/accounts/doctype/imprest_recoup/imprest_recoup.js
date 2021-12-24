@@ -3,7 +3,7 @@
 
 cur_frm.add_fetch("branch","expense_bank_account","revenue_bank_account");
 cur_frm.add_fetch("settlement_account","account_type","settlement_account_type");
-
+cur_frm.add_fetch("cost_center", "warehouse", "warehouse"); 
 frappe.ui.form.on('Imprest Recoup', {
 	setup: function(frm) {
 		frm.get_docfield("items").allow_bulk_edit = 1;		
@@ -21,6 +21,16 @@ frappe.ui.form.on('Imprest Recoup', {
 		enable_disable(frm);
 		
 		if(frm.doc.docstatus===1){
+			cur_frm.add_custom_button(__("Stock Ledger"), function() {
+                                frappe.route_options = {
+                                        voucher_no: frm.doc.name,
+                                        from_date: frm.doc.posting_date,
+                                        to_date: frm.doc.posting_date,
+                                        company: frm.doc.company
+                                };
+                                frappe.set_route("query-report", "Stock Ledger Report");
+                        }, __("View"));
+
 			frm.add_custom_button(__('Accounting Ledger'), function(){
 				frappe.route_options = {
 					voucher_no: frm.doc.name,
@@ -58,20 +68,28 @@ frappe.ui.form.on('Imprest Recoup', {
 		*/
 		
 		/*
-		if(!frm.doc.entry_date){
-			cur_frm.set_value("entry_date", frappe.datetime.now_datetime());
+		if(!frm.doc.posting_date){
+			cur_frm.set_value("posting_date", frappe.datetime.now_datetime());
 		}
 		*/
 		
 		frm.fields_dict['items'].grid.get_field('budget_account').get_query = function(){
 			return{
 				filters: {
-					'root_type': 'Expense',
 					'is_group': 0
 				}
 			}
 		};
-		
+	
+		frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(){
+                        return{
+                                filters: {
+                                        // 'parent_cost_center': frm.doc.cost_center,
+										'is_group' : 0
+                                }
+                        }
+                };
+	
 		cur_frm.set_query("select_cheque_lot", function(){
 			return {
 				"filters": [
@@ -177,10 +195,33 @@ frappe.ui.form.on('Imprest Recoup Item',{
 	amount: function(frm){
 		update_totals(frm);
 	},
-	
+
+	item: function(frm, cdt, cdn){
+                var child = locals[cdt][cdn]
+                //frm.doc.items.forEach(function(d) {
+                        frm.add_fetch("item", "expense_account", "budget_account");
+                        frm.add_fetch("item", "item_name", "particulars");
+                //})
+        },
+
 	items_remove: function(frm){
 		update_totals(frm);
-	},	
+	},
+	maintain_stock_asset: function(frm, cdt, cdn){
+		var df1 = frappe.meta.get_docfield("Imprest Recoup Item","budget_account", cur_frm.doc.name);
+		var df2 = frappe.meta.get_docfield("Imprest Recoup Item", "cost_center", cur_frm.doc.name); 
+		var child = locals[cdt][cdn]
+		frm.doc.items.forEach(function(d) {
+			if(d.maintain_stock_asset){
+				df1.read_only = 0;
+				df2.reqd = 0;
+			}
+			else {
+				df1.read_only = 0;
+				df2.reqd = 0;
+			}
+		})
+	},
 });
 
 var calculate_amount = function(frm, cdt, cdn){
@@ -301,7 +342,7 @@ frappe.ui.form.on("Imprest Recoup","items_on_form_rendered", function(frm, grid_
 			//Following works only when row is opened
 			grid_row.grid_form.fields_dict.quantity.df.read_only = true;
 			grid_row.grid_form.fields_dict.rate.df.read_only = true;
-			grid_row.grid_form.fields_dict.budget_account.df.read_only = true;
+			//grid_row.grid_form.fields_dict.budget_account.df.read_only = true;
 			grid_row.grid_form.fields_dict.quantity.refresh();
 			grid_row.grid_form.fields_dict.rate.refresh();
 			grid_row.grid_form.fields_dict.budget_account.refresh();
@@ -309,3 +350,14 @@ frappe.ui.form.on("Imprest Recoup","items_on_form_rendered", function(frm, grid_
 	}
 	
 })
+cur_frm.fields_dict['items'].grid.get_field('item').get_query = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	
+		return {
+			filters: [
+			['Item', 'is_stock_item', '=', 1],
+			['Item', 'disabled', '=', 0],
+			
+			]
+		}
+	}

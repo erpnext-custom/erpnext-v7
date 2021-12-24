@@ -248,6 +248,26 @@ frappe.ui.form.on('Salary Structure', {
 	vha: function(frm){
 		calculate_others(frm.doc);
 	},
+	eligible_for_medical_allowance: function(frm){
+                calculate_others(frm.doc);
+        },
+	medical_allowance_method: function(frm){
+                calculate_others(frm.doc);
+        },
+	medical_allowance: function(frm){
+                calculate_others(frm.doc);
+        },
+	eligible_for_royal_audit_allowance: function(frm){
+                calculate_others(frm.doc);
+        },
+	royal_audit_allowance_method: function(frm){
+                calculate_others(frm.doc);
+        },
+	royal_audit_allowance: function(frm){
+                calculate_others(frm.doc);
+        },
+
+
 })
 
 frappe.ui.form.on('Salary Detail', {

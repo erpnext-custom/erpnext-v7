@@ -48,6 +48,9 @@ class PurchaseOrder(BuyingController):
 	def validate(self):
 		check_future_date(self.transaction_date)
 		super(PurchaseOrder, self).validate()
+		cc  = frappe.db.sql(""" select name from `tabCost Center` where branch = "{0}" """.format(self.branch), as_dict = 1)
+                if cc:
+                        self.cost_center = cc[0].name
 
 		self.set_status()
 		pc_obj = frappe.get_doc('Purchase Common')
@@ -398,6 +401,7 @@ def make_purchase_receipt(source_name, target_doc=None):
 			"doctype": "Purchase Receipt",
 			"field_map": {
 				"naming_series": "naming_series",
+				"transaction_date": "transaction_date",
 			},
 			"validation": {
 				"docstatus": ["=", 1],

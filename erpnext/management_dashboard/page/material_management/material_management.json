@@ -4,7 +4,7 @@
  "docstatus": 0, 
  "doctype": "Page", 
  "idx": 0, 
- "modified": "2021-08-04 12:25:23.023033", 
+ "modified": "2021-09-27 12:44:59.971461", 
  "modified_by": "Administrator", 
  "module": "Management Dashboard", 
  "name": "material-management", 
@@ -13,6 +13,12 @@
  "roles": [
   {
    "role": "Administrator"
+  }, 
+  {
+   "role": "Management"
+  }, 
+  {
+   "role": "Purchase Manager"
   }
  ], 
  "script": null, 

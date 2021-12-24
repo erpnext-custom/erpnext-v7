@@ -8,11 +8,11 @@ app_publisher = "Frappe Technologies Pvt. Ltd."
 app_description = """ERP made simple"""
 app_icon = "icon-th"
 app_color = "#e74c3c"
-app_email = "tashidorji@gyalsunginfra.bt"
+app_email = "jigme@gyalsunginfra.bt"
 app_license = "GNU General Public License (v3)"
 source_link = "https://github.com/frappe/erpnext"
 
-error_report_email = "tashidorji@gyalsunginfra.bt"
+error_report_email = "jigme@gyalsunginfra.bt"
 
 app_include_js = "assets/js/erpnext.min.js"
 app_include_css = "assets/css/erpnext.css"
@@ -118,12 +118,14 @@ has_website_permission = {
 
 permission_query_conditions = {
 	"Contact": "erpnext.utilities.address_and_contact.get_permission_query_conditions_for_contact",
-	"Address": "erpnext.utilities.address_and_contact.get_permission_query_conditions_for_address"
+	"Address": "erpnext.utilities.address_and_contact.get_permission_query_conditions_for_address",
+	"Meeting": "erpnext.hr.doctype.meeting.meeting.get_permission_query_conditions"
 }
 
 has_permission = {
 	"Contact": "erpnext.utilities.address_and_contact.has_permission",
-	"Address": "erpnext.utilities.address_and_contact.has_permission"
+	"Address": "erpnext.utilities.address_and_contact.has_permission",
+	"Meeting": "erpnext.hr.doctype.meeting.meeting.has_record_permission"
 }
 
 dump_report_map = "erpnext.startup.report_data_map.data_map"

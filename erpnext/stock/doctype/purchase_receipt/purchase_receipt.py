@@ -209,6 +209,7 @@ class PurchaseReceipt(BuyingController):
 	# Update asset entries if asset
 	##
 	def update_asset(self):
+		a_list = []
 		for a in self.items:
 			item_group = frappe.db.get_value("Item", a.item_code, "item_group")
 			if item_group and item_group == "Fixed Asset":
@@ -221,7 +222,13 @@ class PurchaseReceipt(BuyingController):
 				ae.ref_doc = self.name
 				ae.branch = frappe.db.get_value("Cost Center", a.cost_center, "branch")
 				ae.submit()
-
+				a_list.append(a.item_name)
+		if a_list:
+			subject = "Asset Procurement Notice"
+			message = " Dear Sir, Assets '{0}' are/is received. Kindly proceed further actions"
+			email = 'dorjitshering@gyalsunginfra.bt'
+			frappe.sendmail(recipients=email, sender=None, subject=subject, message=message)
+		
 	##
 	#  Delete asset entries
 	##

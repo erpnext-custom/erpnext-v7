@@ -17,48 +17,47 @@ def get_data(filters):
 	parent = "Gyalsung Infra"
 	duration = mandays = manpower = exp =  weightage = physical_progress = percent_completed = estimated_budget = expense = 0.0
 	query = construct_query(filters)
-	for a in frappe.db.sql(query, as_dict = True, debug = 1):
+	for a in frappe.db.sql(query, as_dict = True):
+		expense = a.expense
+                if not filters.project:
+                        expense = get_expense(filters, a.name)
 		parent = a.parent
 		progress_weightage = round(flt(a.physical_progress_weightage), 6)
 		physical_achievement =   round(flt(a.physical_progress), 4)
 		completion = round(flt(physical_achievement)/flt(progress_weightage) * 100, 4)
 		row = {"name": a.name, "expected_start_date": a.expected_start_date, "expected_end_date": a.expected_end_date, 
 		"total_duration": flt(a.total_duration), "estimated_budget": flt(a.estimated_budget), 
-		"expense_incured": flt(a.expense),	
+		"expense_incured": flt(expense),	
 		"physical_progress_weightage": progress_weightage, 
 		"physical_progress":  physical_achievement, 
 		"percent_completed": flt(completion),
-		"status": a.status, "project_engineer": a.project_engineer, 
+		"project_engineer": a.project_engineer, 
 		"engineer_name": a.pe_name, "contact": a.contact}
 		data.append(row)	
 		duration += flt(a.total_duration)
                 estimated_budget += flt(a.estimated_budget)
-                exp += flt(a.expense)
+                exp += flt(expense)
 		weightage += round(flt(progress_weightage), 3)
 		#weightage += flt(a.physical_progress_weightage)/100 * flt(a.parent_weightage)
 		#physical_progress += flt(a.physical_progress)/100 * flt(a.parent_weightage)
 		physical_progress += round(flt(physical_achievement), 3)
 		percent_completed  = flt(physical_progress)/flt(weightage) * 100
-	row1 = {"name": '<b> {0} </b> '.format(parent), "total_duration": duration, "estimated_budget": estimated_budget, 
+	row1 = {"name": '<b> {0} </b> '.format(parent), "total_duration": duration, "estimated_budget": round(estimated_budget, 2), 
                 "expense_incured": exp, "physical_progress_weightage": round(weightage, 2),
                 "physical_progress":  round(physical_progress,2),  "percent_completed": "",  "project_engineer": ""}
 	data.append(row1)
 	return data
 
+
 def get_expense(filters, cost_center):
-	if filters.get("show_all"):
-		cond = "cost_center = '{0}'".format(cost_center)
-		
-	else:
-		parent = frappe.get_doc("Cost Center", {'name': cost_center}).parent_cost_center
-		if parent:
-                	cc = frappe.db.get_list("Cost Center", filters = {'parent_cost_center':parent}, fields = ['name'])
-			cond = " cost_center in '{0}'".format(cc)
-	query = frappe.db.sql(""" select sum(debit) - sum(credit) as expense from `tabGL Entry` where 
-                        1 = 1  and  {0} and 
-                        account in (select name from `tabAccount`  where root_type = 'Expense') and 
-                docstatus = 1""".format(cond), as_dict = 1, debug  = 1)
-	return query[0].expense if query else 0.0
+        exp = 0.0
+        from erpnext.accounts.accounts_custom_functions import get_child_cost_centers
+        parent_cc = frappe.get_doc("Cost Center", cost_center).parent_cost_center
+        cost_centers = get_child_cost_centers(parent_cc)
+        exp = frappe.db.sql(""" select sum(debit) - sum(credit) as expense from `tabGL Entry` 
+        where cost_center IN %(cost_center)s  and account in (select name from `tabAccount` 
+        where root_type = 'Expense') and docstatus = 1""", {"cost_center": cost_centers}, as_dict = 1)
+        return exp[0].expense
 
 def construct_query(filters):
 	cond = " and is_group = 1"
@@ -95,7 +94,6 @@ def get_columns(filters):
 		{ "fieldname": "estimated_budget", "label": _("Estimated Budget"),  "fieldtype": "Currency", "width": 150 },
                 { "fieldname": "expense_incured", "label": _("Actual Expense"),  "fieldtype": "Currency", "width": 130 },
                 { "fieldname": "physical_progress_weightage", "label": _("Weightage(%)"),  "fieldtype": "Data",  "width": 100 },
-                { "fieldname": "status", "label": _("Status(%)"),  "fieldtype": "Data", "width": 100 },
 		{ "fieldname": "project_engineer", "label": _("PM/PE ID"),  "fieldtype": "Link",  "options": "Employee", "width": 90 },
 		{ "fieldname": "engineer_name", "label": _("PM/PE Name"),  "fieldtype": "Data", "width": 140 },
 		{ "fieldname": "contact", "label": _("Contact No."),  "fieldtype": "Data", "width": 90 }

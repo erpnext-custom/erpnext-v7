@@ -1,0 +1,27 @@
+{
+ "content": null, 
+ "creation": "2021-08-05 14:29:56.859401", 
+ "docstatus": 0, 
+ "doctype": "Page", 
+ "idx": 0, 
+ "modified": "2021-09-27 12:45:24.178064", 
+ "modified_by": "Administrator", 
+ "module": "Management Dashboard", 
+ "name": "asset-management", 
+ "owner": "Administrator", 
+ "page_name": "Asset Management", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }, 
+  {
+   "role": "Management"
+  }, 
+  {
+   "role": "Asset Manager"
+  }
+ ], 
+ "script": null, 
+ "standard": "Yes", 
+ "style": null
+}
