@@ -89,11 +89,11 @@ class MergeCLToEL(Document):
 					total_leaves_allocated = total_leaves_allocated + {0} 
 					where name  = '{2}'
 					""".format(em.leave_balance, em.parent, leave_allocation_id))
-<<<<<<< HEAD
-=======
+		
 
->>>>>>> 9961f6dcea9e5613e8e8a3f471116eb0ff69f515
-		# for em in self.get('items'):
+
+
+	# for em in self.get('items'):
         #                 frappe.db.sql("""
         #                         update `tabLeave Allocation` set cl_balance = {0} , cf_reference = '{1}',
         #                         total_leaves_allocated = total_leaves_allocated + {0} 
