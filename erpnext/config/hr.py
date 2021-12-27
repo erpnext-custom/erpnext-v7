@@ -31,26 +31,26 @@ def get_data():
 				},
 			]
 		},
-		{
-			"label": _("Recruitment"),
-			"items": [
-				{
-					"type": "doctype",
-					"name": "Job Opening",
-					"description": _("Opening for a Job."),
-				},                                
-				{
-					"type": "doctype",
-					"name": "Job Applicant",
-					"description": _("Applicant for a Job."),
-				},
-				{
-					"type": "doctype",
-					"name": "Offer Letter",
-					"description": _("Offer candidate a Job."),
-				},
-			]
-		},
+		#{
+		#	"label": _("Recruitment"),
+		#	"items": [
+		#		{
+		#			"type": "doctype",
+		#			"name": "Job Opening",
+		#			"description": _("Opening for a Job."),
+		#		},                                
+		#		{
+		#			"type": "doctype",
+		#			"name": "Job Applicant",
+		#			"description": _("Applicant for a Job."),
+		#		},
+		#		{
+		#			"type": "doctype",
+		#			"name": "Offer Letter",
+		#			"description": _("Offer candidate a Job."),
+		#		},
+		#	]
+		#},
 		{
 			"label": _("Leaves and Holiday"),
 			"items": [
