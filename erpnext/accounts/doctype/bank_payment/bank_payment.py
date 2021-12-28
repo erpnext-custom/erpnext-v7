@@ -306,7 +306,9 @@ class BankPayment(Document):
 		# 	data = self.get_mechanical_payments()
 		if self.transaction_type == "Salary":
 			data = self.get_salary()
-		elif self.transaction_type in ("LTC", "Bonus", "PBVA"):
+		elif self.transaction_type == "LTC":
+			data = self.get_ltc()
+		elif self.transaction_type in ("Bonus", "PBVA"):
 			frappe.msgprint(_("Under development"))
 		elif self.transaction_type == "Payment Entry":
 			data = self.get_payment_entry()
@@ -319,6 +321,36 @@ class BankPayment(Document):
 		elif self.transaction_type == "Mechanical Payment":
 			data = self.get_mechanical_payment()
 		return data
+	
+	def get_ltc(self):
+		cond = ""
+		if not self.fiscal_year:
+			frappe.throw(_("Please select Fiscal Year"))
+		
+		return frappe.db.sql("""SELECT "Leave Travel Concession" transaction_type, t1.name transaction_id,
+					t2.name transaction_reference, t1.posting_date transaction_date,
+					t2.employee, t2.employee_name beneficiary_name, 
+					e.bank_name bank_name, e.bank_branch bank_branch, fib.financial_system_code,
+						e.bank_account_type, e.bank_ac_no bank_account_no, 
+						round(t2.amount,2) amount,
+						'LTC for {fiscal_year}' remarks, "Draft" status
+					FROM `tabLeave Travel Concession` t1
+						INNER JOIN `tabLTC Details` t2 ON t1.name = t2.parent
+						LEFT JOIN `tabEmployee` e on e.name = t2.employee
+						LEFT JOIN `tabFinancial Institution Branch` fib ON fib.name = e.bank_branch
+					WHERE t1.fiscal_year = '{fiscal_year}'
+					AND t1.docstatus = 1
+					AND IFNULL(t2.amount,0) > 0
+					AND NOT EXISTS(select 1
+						FROM `tabBank Payment Item` bpi
+						WHERE bpi.transaction_type = 'Leave Travel Concession'
+						AND bpi.transaction_id = t1.name
+						AND bpi.parent != '{bank_payment}'
+						AND bpi.docstatus != 2
+						AND bpi.status NOT IN ('Cancelled', 'Failed')
+					)
+				""".format(fiscal_year=self.fiscal_year,
+						bank_payment = self.name), as_dict=True)
 
 	def get_journal_entry(self):
 		cond = ""
