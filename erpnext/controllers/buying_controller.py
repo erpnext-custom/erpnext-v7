@@ -309,12 +309,12 @@ class BuyingController(StockController):
 				d.qty = flt(d.received_qty) - flt(d.rejected_qty)
 
 			elif not flt(d.rejected_qty) and not flt(d.void_deduction_qty):
-				d.rejected_qty = flt(d.received_qty) -  flt(d.qty)
+				d.rejected_qty = flt(d.received_qty) - flt(d.qty)
 
 			# added by Jai
 			if self.doctype=="Purchase Receipt" and (d.void_deduction and d.void_deduction_percent):
 				if ((flt(d.qty) + flt(d.rejected_qty) + flt(d.void_deduction_qty)) != flt(d.received_qty)):
-					frappe.throw(_("Accepted + Rejected + Deduction Qty must be equal to Received quantity for Item {0}").format(d.item_code))
+					frappe.throw(_("Accepted {1} + Rejected {2} + Deduction Qty {3} must be equal to Received quantity {4} for Item {0}").format(d.item_code,flt(d.qty),flt(d.rejected_qty),flt(d.void_deduction_qty),flt(d.received_qty)))
 			else:
 				# Check Received Qty = Accepted Qty + Rejected Qty
 				if ((flt(d.qty) + flt(d.rejected_qty)) != flt(d.received_qty)):
