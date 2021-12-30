@@ -538,6 +538,10 @@ class BankPayment(Document):
                     {cond}
                     AND pe.party_type = 'Supplier'
                     AND pe.party IS NOT NULL
+                    AND s.bank_name_new IS NOT NULL
+                    AND s.bank_branch IS NOT NULL
+                    AND s.bank_account_type IS NOT NULL
+                    AND s.account_number IS NOT NULL
                     AND IFNULL(pe.paid_amount,0) > 0
                     AND NOT EXISTS(select 1
                         FROM `tabBank Payment Item` bpi
@@ -570,6 +574,8 @@ class BankPayment(Document):
                             {cond} 
                             AND e.owner_name IS NOT NULL
                             AND e.account_number IS NOT NULL
+                            AND e.bank_name IS NOT NULL
+                            AND e.bank_branch IS NOT NULL
                             AND tp.equipment = e.name
                             AND NOT EXISTS(select 1 
                                         FROM `tabBank Payment Item` bpi
@@ -596,6 +602,10 @@ class BankPayment(Document):
                     WHERE ota.docstatus = 1
                     AND (ota.payment_jv IS NULL OR ota.payment_jv = '') 
                     AND (ota.overtime_payment IS NULL OR ota.overtime_payment = '')
+                    AND e.bank_name IS NOT NULL
+                    AND e.bank_branch IS NOT NULL
+                    AND e.bank_account_type IS NOT NULL
+                    AND e.bank_ac_no IS NOT NULL
                     {cond}
                     AND NOT EXISTS(select 1
                             FROM `tabBank Payment Item` bpi
@@ -620,6 +630,10 @@ class BankPayment(Document):
                         JOIN `tabSupplier` as s ON s.name = eme.supplier
                         WHERE eme.docstatus = 1 
                         AND eme.workflow_state = 'Approved'
+                        AND s.bank_name IS NOT NULL
+                        AND s.bank_branch IS NOT NULL
+                        AND s.bank_account_type IS NOT NULL
+                        AND s.account_number IS NOT NULL
                         {cond}
                         AND NOT EXISTS(select 1
                                 FROM `tabBank Payment Item` bpi
