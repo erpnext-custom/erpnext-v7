@@ -28,7 +28,7 @@ class ImprestReceipt(Document):
                         frappe.throw(_("Found unclosed entries. Previous entries needs to be either closed or cancelled in order to determine opening balance for the current transaction.<br>{0}").format(msg),title="Invalid Operation")
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
 
-                self.post_journal_entry()           
+                # self.post_journal_entry() # no need as imprest receipt is auto passed from Imprest Recoup           
         
         def on_cancel(self):
                 update_dependencies(self.branch, self.imprest_type, self.entry_date)
