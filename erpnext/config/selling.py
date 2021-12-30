@@ -143,7 +143,12 @@ def get_data():
 					"type": "report",
 					"is_query_report": True,
 					"name": "Delivered Items To Be Billed",
-					"doctype": "Sales Invoice"	 										                                }
+					"doctype": "Sales Invoice"	 										                                },
+				{
+                                        "type": "report",
+                                        "is_query_report": True,
+                                        "name": "Customer Summary Report",
+                                        "doctype": "Sales Invoice"                                                                                                                      }	
 			]
 		},
 		{
