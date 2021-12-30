@@ -203,8 +203,8 @@ def delete_gl_entries(gl_entries=None, voucher_type=None, voucher_no=None,
 		adv_adj=False, update_outstanding="Yes"):
 	from erpnext.accounts.doctype.gl_entry.gl_entry import validate_balance_type, \
 		check_freezing_date, update_outstanding_amt, validate_frozen_account
-	if frappe.session.user == "Administrator":
-		frappe.msgprint(str(gl_entries))
+	# if frappe.session.user == "Administrator":
+		# frappe.msgprint(str(gl_entries))
 	if not gl_entries:
 		gl_entries = frappe.db.sql("""
 			select account, posting_date, party_type, party, cost_center, fiscal_year,

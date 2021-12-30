@@ -1,6 +1,6 @@
 frappe.listview_settings['Sales Order'] = {
 	add_fields: ["base_grand_total", "customer_name", "currency", "delivery_date", "per_delivered", "per_billed",
-		"status", "order_type"],
+		"status", "order_type", "is_kidu_sale"],
 	get_indicator: function(doc) {
         if(doc.status==="Closed"){
         	return [__("Closed"), "green", "status,=,Closed"];
@@ -26,7 +26,10 @@ frappe.listview_settings['Sales Order'] = {
 					"per_delivered,<,100|per_billed,=,100|status,!=,Closed"];
 			}
 
-		} else if ((doc.order_type === "Maintenance" || flt(doc.per_delivered, 2) == 100)
+		} else if( doc.order_type !== "Maintenance" && doc.status=="Completed" && doc.is_kidu_sale == 1){
+			return [__("Completed"), "green", "per_delivered,=,100"];
+		} 		
+		else if ((doc.order_type === "Maintenance" || flt(doc.per_delivered, 2) == 100)
 			&& flt(doc.per_billed, 2) < 100 && doc.status!=="Closed") {
 
 			// to bill

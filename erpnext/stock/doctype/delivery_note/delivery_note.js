@@ -84,35 +84,37 @@ erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend(
 		/*	if(flt(doc.per_installed, 2) < 100 && doc.docstatus==1)
 				cur_frm.add_custom_button(__('Installation Note'), this.make_installation_note, __("Make"));
 		*/
-			if (doc.docstatus==1) {
-				cur_frm.add_custom_button(__('Sales Return'), this.make_sales_return, __("Make"));
-			}
-
-			if(doc.docstatus==0 && !doc.__islocal) {
-				cur_frm.add_custom_button(__('Packing Slip'),
-					cur_frm.cscript['Make Packing Slip'], __("Make"));
-			}
-
-			if (!doc.__islocal && doc.docstatus==1) {
-				cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
-			}
-
-			if (this.frm.doc.docstatus===0) {
-				cur_frm.add_custom_button(__('Sales Order'),
-					function() {
-						erpnext.utils.map_current_doc({
-							method: "erpnext.selling.doctype.sales_order.sales_order.make_delivery_note",
-							source_doctype: "Sales Order",
-							get_query_filters: {
-								docstatus: 1,
-								status: ["!=", "Closed"],
-								per_delivered: ["<", 99.99],
-								project: cur_frm.doc.project || undefined,
-								customer: cur_frm.doc.customer || undefined,
-								company: cur_frm.doc.company
-							}
-						})
-					}, __("Get items from"));
+			if( !doc.is_kidu_sale ){
+				if (doc.docstatus==1) {
+					cur_frm.add_custom_button(__('Sales Return'), this.make_sales_return, __("Make"));
+				}
+	
+				if(doc.docstatus==0 && !doc.__islocal) {
+					cur_frm.add_custom_button(__('Packing Slip'),
+						cur_frm.cscript['Make Packing Slip'], __("Make"));
+				}
+	
+				if (!doc.__islocal && doc.docstatus==1) {
+					cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
+				}
+	
+				if (this.frm.doc.docstatus===0) {
+					cur_frm.add_custom_button(__('Sales Order'),
+						function() {
+							erpnext.utils.map_current_doc({
+								method: "erpnext.selling.doctype.sales_order.sales_order.make_delivery_note",
+								source_doctype: "Sales Order",
+								get_query_filters: {
+									docstatus: 1,
+									status: ["!=", "Closed"],
+									per_delivered: ["<", 99.99],
+									project: cur_frm.doc.project || undefined,
+									customer: cur_frm.doc.customer || undefined,
+									company: cur_frm.doc.company
+								}
+							})
+						}, __("Get items from"));
+				}
 			}
 		}
 
@@ -133,7 +135,7 @@ erpnext.stock.DeliveryNoteController = erpnext.selling.SellingController.extend(
 				return item.against_sales_invoice ? true : false;
 			});
 
-			if(!from_sales_invoice)
+			if(!from_sales_invoice && !doc.is_kidu_sale)
 				cur_frm.add_custom_button(__('Invoice'), this.make_sales_invoice, __("Make"));
 		}
 

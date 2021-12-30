@@ -27,7 +27,12 @@ class SalesOrder(SellingController):
 		super(SalesOrder, self).__init__(arg1, arg2)
 
 	def before_save(self):
-		self.get_selling_rate()
+		if not self.is_kidu_sale:
+			self.get_selling_rate()
+		else:
+			for item in self.items:
+				if not item.rate:
+					item.rate = 0.0
 	
 	def validate(self):
 		if 'Sales Master' not in frappe.get_roles(frappe.session.user):
@@ -343,7 +348,12 @@ class SalesOrder(SellingController):
 
 	def before_submit(self):
 		self.check_transporter_amount()
-		self.get_selling_rate()
+		if not self.is_kidu_sale:
+			self.get_selling_rate()
+		else:
+			for item in self.items:
+				if not item.rate:
+					item.rate = 0.0
 
 	def before_update_after_submit(self):
 		self.validate_drop_ship()
@@ -477,9 +487,8 @@ class SalesOrder(SellingController):
 
 	def get_payment_detail(self):
 		sales_reference = 0
-		sales_reference = frappe.db.sql("select 1 from `tabPayment Entry Reference` per, `tabPayment Entry` pe where pe.docstatus = 1 and reference_name = '{0}' limit 1".format(self.name))
+		sales_reference = frappe.db.sql("select 1 from `tabPayment Entry Reference` per, `tabPayment Entry` pe where pe.name=per.parent and pe.docstatus = 1 and per.reference_name = '{0}' order by pe.creation desc limit 1".format(self.name))
 		return sales_reference
-
 		
 
 def get_list_context(context=None):
@@ -644,6 +653,7 @@ def make_sales_invoice(source_name, target_doc=None, ignore_permissions=False):
 		target.amount = flt(source.amount) - flt(source.billed_amt)
 		target.base_amount = target.amount * flt(source_parent.conversion_rate)
 		target.qty = target.amount / flt(source.rate) if (source.rate and source.billed_amt) else source.qty
+		target.name_tolerance = "Default"
 
 	doclist = get_mapped_doc("Sales Order", source_name, {
 		"Sales Order": {

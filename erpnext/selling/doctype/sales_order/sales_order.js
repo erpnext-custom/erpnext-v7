@@ -158,10 +158,12 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 
 				// delivery note and payment
 				if(flt(doc.per_delivered, 2) < 100 && ["Sales", "Shopping Cart"].indexOf(doc.order_type)!==-1 && allow_delivery) {
-					if(doc.is_credit == 1){
+					if(doc.is_credit == 1 || doc.is_kidu_sale){
 					cur_frm.add_custom_button(__('Delivery'), this.make_delivery_note, __("Make"));
-				 }
-					cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_payment_entry, __("Make"));
+				 	}
+					if(!doc.is_kidu_sale){
+						cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_payment_entry, __("Make"));
+					}
 					cur_frm.page.set_inner_btn_group_as_primary(__("Make"));
 				}
 				//getting payment detail
@@ -173,7 +175,7 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 					async: false,
 					callback: function(r) {
 						if(r.message) {
-							console.log(r.message);
+
 							if(r.message == "1"){
 								payment_done = 1					
 							
@@ -573,11 +575,11 @@ frappe.ui.form.on("Sales Order Item", {
 		frappe.model.set_value(cdt, cdn, "price_template", "") 
 	},
 	"lot_number": function(frm, cdt, cdn) {
-	var d = locals[cdt][cdn];
-	if(d.item_code && d.lot_number) { get_balance(frm, cdt, cdn); }
+		var d = locals[cdt][cdn];
+		if(d.item_code && d.lot_number) { get_balance(frm, cdt, cdn); }
 	},
 	"qty": function(frm, cdt, cdn) {
-		 if(frm.doc.naming_series == "Timber Products") { get_balance(frm, cdt, cdn); }
+		 if(frm.doc.naming_series == "Timber Products" && !frm.doc.is_kidu_sale) { get_balance(frm, cdt, cdn); }
 	},
 	"sp_type": function(frm, cdt, cdn) {
 		var d = locals[cdt][cdn];
@@ -602,37 +604,37 @@ frappe.ui.form.on("Sales Order","naming_series", function(frm){
 });
 
 function get_balance(frm, cdt, cdn){
-         var d = locals[cdt][cdn];
-                 frappe.call({
-                        method: "erpnext.selling.doctype.sales_order.sales_order.get_lot_detail",
-                        args: {
-                                "branch": cur_frm.doc.branch,
-                                "item_code": d.item_code,
-								"lot_number": d.lot_number,
-								"total_pieces": d.total_pieces
-                        },
-                        callback: function(r) {
-                                console.log(r.message);
-                                if(r.message){
-                                        var balance = r.message[0]['total_volume'];
-                                        var lot_check = r.message[0]['lot_check'];
-                                        if(lot_check)
-                                        {
-                                                console.log(balance);
-                                                if(balance < 0){
-                                                        frappe.msgprint("No available volume under the selected Lot");
-                                                }
-                                                else{
-                                                        frappe.model.set_value(cdt, cdn, "qty", balance);
-                                                }
-                                        }
-                                }
-                                else{
-                                        frappe.msgprint("Invalid Lot Number. Please verify the lot number with Material and Branch");
-                                }
-                        }
-                });
-}
+		var d = locals[cdt][cdn];
+		frappe.call({
+			method: "erpnext.selling.doctype.sales_order.sales_order.get_lot_detail",
+			args: {
+				"branch": cur_frm.doc.branch,
+				"item_code": d.item_code,
+				"lot_number": d.lot_number,
+				"total_pieces": d.total_pieces
+			},
+			callback: function(r) {
+				console.log(r.message);
+				if(r.message){
+				var balance = r.message[0]['total_volume'];
+				var lot_check = r.message[0]['lot_check'];
+					if(lot_check)
+					{
+						console.log(balance);
+						if(balance < 0){
+							frappe.msgprint("No available volume under the selected Lot");
+						}
+						else{
+							frappe.model.set_value(cdt, cdn, "qty", balance);
+						}
+					}
+				}
+				else{
+					frappe.msgprint("Invalid Lot Number. Please verify the lot number with Material and Branch");
+				}
+			}
+		});
+	}
 
 
 var custom_map_current_doc = function(opts) {
