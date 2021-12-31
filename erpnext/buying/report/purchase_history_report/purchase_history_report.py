@@ -5,27 +5,34 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr
+from frappe.utils.background_jobs import enqueue
 
 def execute(filters=None):
 	validate_filters(filters);
 	columns = get_columns();
 	queries = construct_query(filters);
-	data = get_data(queries, filters);
+	# data = get_data(queries, filters);
+	data = enqueue_long_report(queries, filters);
+	# data = [];
 
 	return columns, data
+
+def enqueue_long_report(queries, filters):
+	enqueue("erpnext.buying.doctype.purchase_history_report.purchase_history_report.get_data", queries=queries, filters=filters, timeout=4000)
+	frappe.msgprint(_("Queuing ..It may take a few minutes."))
 
 def get_data(query, filters=None):
 	data = []
 	datas = frappe.db.sql(query, (filters.from_date, filters.to_date), as_dict=True);
 	for d in datas:
-		row = [d.mr_name, d.mr_title, d.mr_date, d.mr_status, d.mr_qty, d.mr_warehouse, d.mr_cost_center, d.sq_name, d.sq_title, d.sq_date, d.sq_discount, d.sq_rate, d.sq_amount, d.sq_discount_percentage, d.po_name, d.po_title, d.po_date, d.po_status, d.vendor, d.item_name, d.item_code, d.po_qty, d.po_rate, d.po_amount, d.po_discount_percentage, d.po_received_qty, d.po_returned_qty, d.po_billed_amt, d.pr_qi, d.pr_qi_date, d.pr_name, d.pr_date, d.actual_receipt_date,(getdate(d.actual_receipt_date) -getdate(d.pr_date)).days or 0, d.transporter_name, d.lr_no, d.pr_bill_no, d.pr_bill_date, d.pr_rejected_warehouse, d.pr_status, d.pr_received_qty, d.pr_rejected_qty, d.pr_qty, d.pr_rate, d.pr_amount, d.pi_name, d.pi_date, d.pi_bill_no, d.pi_bill_date, d.pi_tds_type, d.tds_taxable_amount, d.pi_tds_type, d.tds_amount, d.write_off_amount, d.write_off_description, d.pi_qty, d.pi_amount, d.outstanding_amount]
+		row = [d.mr_name, d.mr_title, d.mr_date, d.mr_status, d.mr_qty, d.mr_warehouse, d.mr_cost_center, d.mr_site_name, d.sq_name, d.sq_title, d.sq_date, d.sq_discount, d.sq_rate, d.sq_amount, d.sq_discount_percentage, d.po_name, d.po_title, d.po_date, d.po_status, d.vendor, d.item_name, d.item_code, d.po_qty, d.po_rate, d.po_amount, d.po_discount_percentage, d.po_received_qty, d.po_returned_qty, d.po_billed_amt, d.pr_qi, d.pr_qi_date, d.pr_name, d.pr_date, d.actual_receipt_date,(getdate(d.actual_receipt_date) -getdate(d.pr_date)).days or 0, d.transporter_name, d.lr_no, d.pr_bill_no, d.pr_bill_date, d.pr_rejected_warehouse, d.pr_status, d.pr_received_qty, d.pr_rejected_qty, d.pr_qty, d.pr_rate, d.pr_amount, d.pi_name, d.pi_date, d.pi_bill_no, d.pi_bill_date, d.pi_tds_type, d.tds_taxable_amount, d.pi_tds_type, d.tds_amount, d.write_off_amount, d.write_off_description, d.pi_qty, d.pi_amount, d.outstanding_amount]
 		data.append(row);
 	return data
 
 def construct_query(filters=None):
 	query = """select * from
 	(select * from
-	(select * from (select mr.name as mr_name, mr.title as mr_title, mr.transaction_date as mr_date, mr.status as mr_status, mri.qty as mr_qty, mri.warehouse as mr_warehouse, mri.cost_center as mr_cost_center
+	(select * from (select mr.name as mr_name, mr.title as mr_title, mr.transaction_date as mr_date, mr.status as mr_status, mri.qty as mr_qty, mri.warehouse as mr_warehouse, mri.cost_center as mr_cost_center, mr.site_name as mr_site_name
 		from `tabMaterial Request` mr, `tabMaterial Request Item` mri
 		where mr.name = mri.parent and mr.docstatus = 1) as tab_mr
 		left join
@@ -138,6 +145,13 @@ def get_columns():
 		  "label": "MR Cost Center",
 		  "fieldtype": "Link",
 		  "options": "Cost Center",
+		  "width": 200
+		},
+		{
+		  "fieldname": "mr_site_name",
+		  "label": "MR Site Name",
+		  "fieldtype": "Link",
+		  "options": "Site Name",
 		  "width": 200
 		},
 		{
