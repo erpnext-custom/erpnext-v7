@@ -22,7 +22,7 @@ def get_all_column(filters):
 
 def get_all_data(filters):
     data = []
-    data0 = frappe.db.sql("select '<b>GENGER</b>' FROM `tabEmployee`")
+    data0 = frappe.db.sql("select '<b>GENDER</b>' FROM `tabEmployee`")
     data1 = frappe.db.sql("select 'Male', count(gender) from `tabEmployee` where status='Active' and gender='Male' group by gender")
     data2 = frappe.db.sql("select 'Female', count(gender) from `tabEmployee` where status='Active' and gender='Female' group by gender")
     data32 = frappe.db.sql("select '<b>STATUS</b>' FROM `tabEmployee`")
