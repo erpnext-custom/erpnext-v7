@@ -17,5 +17,5 @@ class AppraisalTemplate(Document):
 		for d in self.get("goals"):
 			total_points += int(d.per_weightage or 0)
 
-		if cint(total_points) != 100:
-			frappe.throw(_("Sum of points for all goals should be 100. It is {0}").format(total_points))
+		if cint(total_points) not in (50, 70, 30):
+			frappe.throw(_("Sum of points for all goals should be 50(if it's Evalution of competencies  for Group B) and (if it's Group A than it's 30 and 70 ) . It is {0}").format(total_points))
