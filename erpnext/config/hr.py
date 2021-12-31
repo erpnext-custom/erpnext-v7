@@ -251,6 +251,36 @@ def get_data():
 			]
 		},
 		{
+			"label": _("Employee Appraisal"),
+			"icon": "icon-cog",
+			"items": [
+				{
+					"type": "doctype",
+					"name": "Employee Appraisal",
+					"label": "Employee Appraisal",
+					"description": _("Employee Appraisal")
+				},
+				{
+					"type": "doctype",
+					"name": "Appraisal Work Plans",
+					"label": "Work Planning Form",
+					"description": _("Employee Appraisal")
+				},
+				{
+					"type": "doctype",
+					"name": "Work Plan Review",
+					"label": "Half Yearly Review",
+					"description": _("Employee Appraisal")
+				},
+				{
+					"type": "doctype",
+					"name": "Official Document",
+					"label": "Official Document",
+					"description": _("Employee Appraisal")
+				}
+			]
+		},
+		{
 			"label": _("Settings"),
 			"icon": "icon-cog",
 			"items": [
