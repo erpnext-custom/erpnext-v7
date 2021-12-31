@@ -11,8 +11,8 @@ def execute(filters=None):
 	validate_filters(filters);
 	columns = get_columns();
 	queries = construct_query(filters);
-	# data = get_data(queries, filters);
-	data = enqueue_long_report(queries, filters);
+	data = get_data(queries, filters);
+	# data = enqueue_long_report(queries, filters); #added by Jai. not working
 	# data = [];
 
 	return columns, data
