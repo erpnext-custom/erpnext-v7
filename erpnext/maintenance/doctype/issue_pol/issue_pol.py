@@ -43,11 +43,11 @@ class IssuePOL(StockController):
 		if not self.is_hsd_item:
 			self.tanker = ""
 
-		if self.tanker and self.branch != frappe.db.get_value("Equipment", self.tanker, "branch"):
-			frappe.throw("Selected Branch and Equipment Branch does not match")
+		# if self.tanker and self.branch != frappe.db.get_value("Equipment", self.tanker, "branch"):
+		# 	frappe.throw("Selected Branch and Equipment Branch does not match")
 	
 	def validate_warehouse(self):
-                self.validate_warehouse_branch(self.warehouse, self.branch)
+		self.validate_warehouse_branch(self.warehouse, self.branch)
 
 	def populate_data(self):
 		cc = get_branch_cc(self.branch)

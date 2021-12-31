@@ -250,3 +250,5 @@ def get_inter_parties():
         for d in frappe.db.sql("SELECT name FROM `tabSupplier` where inter_company ='1' UNION SELECT name FROM `tabCustomer` where inter_company = '1'", as_dict=True):
                 options.append(d['name'])
         return options
+    
+####

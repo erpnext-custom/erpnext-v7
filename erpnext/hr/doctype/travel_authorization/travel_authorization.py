@@ -282,7 +282,7 @@ def make_travel_claim(source_name, target_doc=None):
 		else:
 			target.no_days = 1
 			target.halt_at = None
-		target.currency = source_parent.currency
+		target.currency = source_parent.currency if source_parent.currency else target.currency
 		target.dsa = source_parent.dsa_per_day
 		if target.currency == "BTN":
                         target.exchange_rate = 1
