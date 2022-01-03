@@ -65,11 +65,11 @@ class MergeCLToEL(Document):
 			employee_name = employee.employee_name
 			leave_balance = flt(leaves_allocated) - flt(leaves_taken)
 			
-			row = self.append('items', {})
 			if leave_balance > 0:
+				row = self.append('items', {})
 				d = {'employee': employee_id, 'employee_name': employee_name,\
 					'leaves_allocated': leaves_allocated, 'leaves_taken': leaves_taken, 'leave_balance': leave_balance}
-			row.update(d)
+				row.update(d)
 
 
 	def on_submit(self):
