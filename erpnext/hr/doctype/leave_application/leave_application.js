@@ -113,21 +113,23 @@ frappe.ui.form.on("Leave Application", {
 	},
 
 	get_employee_branch_costcenter: function(frm){
-		/*
 		if((frm.doc.docstatus==0 || frm.doc.__islocal) && frm.doc.employee){
+			// cur_frm.add_fetch("employee", "branch", "branch");
+			// cur_frm.add_fetch("employee", "cost_center", "cost_center");
 			frappe.call({
-						method: "erpnext.custom_utils.get_user_info",
-						args: {"employee": frm.doc.employee},
-						callback(r) {
-								cur_frm.set_value("cost_center", r.message.cost_center);
-								cur_frm.set_value("branch", r.message.branch);
-						}
-			});
-		}
-		*/
-		if((frm.doc.docstatus==0 || frm.doc.__islocal) && frm.doc.employee){
-			cur_frm.add_fetch("employee", "branch", "branch");
-			cur_frm.add_fetch("employee", "cost_center", "cost_center");
+				method: "get_branch_cost_center",
+				doc: frm.doc,
+				args: {"employee": frm.doc.employee},
+				callback: function(r){
+					if(r.message){
+						frm.set_value("branch",r.message[0])
+						frm.set_value("cost_center",r.message[1])
+					}
+				}
+			})
+			cur_frm.refresh_field("branch");
+			cur_frm.refresh_field("cost_center");
+			cur_frm.refresh_fields();
 		}
 	},
 	

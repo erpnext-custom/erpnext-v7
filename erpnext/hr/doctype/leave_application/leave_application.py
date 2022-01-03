@@ -408,6 +408,13 @@ class LeaveApplication(Document):
                         	if str(self.from_date)[0:4] != str(self.to_date)[0:4]:
                                 	frappe.throw("Leave Application cannot overlap fiscal years")
 
+	def get_branch_cost_center(self, employee):
+		bcc = frappe.db.sql("""
+			select branch, cost_center from `tabEmployee` where name = '{}'
+		""".format(self.employee),as_dict=1)
+		if bcc:
+			return bcc[0].branch, bcc[0].cost_center
+
 def daterange(start_date, end_date):
     for n in range(int ((date(end_date) - date(start_date)).days)):
 	yield date(start_date) + timedelta(n)
