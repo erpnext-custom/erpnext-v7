@@ -14,6 +14,8 @@ cur_frm.add_fetch("item_code", "item_group", "item_group")
 cur_frm.add_fetch("item_code", "species", "timber_species")
 cur_frm.add_fetch("item_code", "item_sub_group", "item_sub_group")
 cur_frm.add_fetch("item_code", "material_measurement", "reading_select")
+cur_frm.add_fetch("machine_name", "equipment_number", "equipment_number")
+cur_frm.add_fetch("machine_name", "equipment_type", "equipment_type")
 
 frappe.ui.form.on('Production', {
 	onload: function(frm) {
@@ -282,6 +284,16 @@ cur_frm.fields_dict['items'].grid.get_field('reading_select').get_query = functi
 	};
 }
 // ########## Ver.2020.11.03 ENDS ##########
+
+// Added by Sonam Chophel on 02/01/2022 to filter machine name
+cur_frm.fields_dict['machine_details'].grid.get_field('machine_name').get_query = function(frm, cdt, cdn){
+	var d = locals[cdt][cdn];
+	return{
+		filters: [
+			['Equipment', 'equipment_type', 'in', 'Briquette, Chain Saw, Sand Dredging Machine, Backhoe, Pay Loader, Swing Yarder, Excavator, Bandsaw, Sawmill, Wheel Loader, Cable Crane'],
+		]
+	}
+}
 
 
 cur_frm.fields_dict['items'].grid.get_field('expense_account').get_query = function(frm, cdt, cdn){
