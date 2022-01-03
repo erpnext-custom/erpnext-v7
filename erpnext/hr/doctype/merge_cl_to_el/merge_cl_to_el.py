@@ -66,8 +66,9 @@ class MergeCLToEL(Document):
 			leave_balance = flt(leaves_allocated) - flt(leaves_taken)
 			
 			row = self.append('items', {})
-			d = {'employee': employee_id, 'employee_name': employee_name,\
-				'leaves_allocated': leaves_allocated, 'leaves_taken': leaves_taken, 'leave_balance': leave_balance}
+			if leave_balance > 0:
+				d = {'employee': employee_id, 'employee_name': employee_name,\
+					'leaves_allocated': leaves_allocated, 'leaves_taken': leaves_taken, 'leave_balance': leave_balance}
 			row.update(d)
 
 
@@ -115,7 +116,6 @@ class MergeCLToEL(Document):
 						employee = '{1}' and
 						cf_reference = '{2}'
 					""".format(em.leave_balance, em.employee, em.parent))
-        frappe.msgprint(" Updated Leave Allocation Record ")
 		# for em in self.get('items'):
         #                 frappe.db.sql("""
         #                         update `tabLeave Allocation` set cl_balance = 0, cf_reference = '',
