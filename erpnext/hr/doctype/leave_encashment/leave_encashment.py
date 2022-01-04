@@ -215,11 +215,19 @@ class LeaveEncashment(Document):
 		self.db_set("encashment_amount", flt(basic_pay))
 		self.db_set("tax_amount", flt(salary_tax))
                 
+
 @frappe.whitelist()
+def get_employee_cost_center(emp):
+        cost_center = frappe.db.get_value("Employee", emp, "cost_center")
+        if not cost_center:
+                frappe.throw("No Cost Center has been assigned to the Employee")
+        return cost_center
+
+'''@frappe.whitelist()
 def get_employee_cost_center(division):
         #cost_center = frappe.db.get_value("Division", division, "cost_center")
         division = frappe.get_doc("Division", division)
-        return division.cost_center
+        return division.cost_center'''
 
 @frappe.whitelist()                        
 def get_le_settings(*arg, **kwargs):
