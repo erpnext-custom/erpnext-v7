@@ -205,7 +205,6 @@ frappe.query_reports["Timber Sales Report"] = {
 				"fieldtype": "Select",
 				"width": "80",
 				"options": ["","Is Allotment", "Is Credit Sale", "Is Rural Sale", "Export", "Is Kidu Sale", "None"],
-				"default": 'None'
 			},
 			{
 				"fieldname": "customer",

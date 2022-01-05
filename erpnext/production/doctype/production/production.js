@@ -291,6 +291,7 @@ cur_frm.fields_dict['machine_details'].grid.get_field('machine_name').get_query 
 	return{
 		filters: [
 			['Equipment', 'equipment_type', 'in', 'Briquette, Chain Saw, Sand Dredging Machine, Backhoe, Pay Loader, Swing Yarder, Excavator, Bandsaw, Sawmill, Wheel Loader, Cable Crane'],
+			['Equipment', 'branch', "=", frm.branch]
 		]
 	}
 }
