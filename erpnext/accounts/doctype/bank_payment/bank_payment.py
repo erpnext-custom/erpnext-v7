@@ -34,6 +34,7 @@ class BankPayment(Document):
     def on_submit(self):
         self.validate_mandatory()
         self.update_transaction_status()
+        self.update_bank_payment()
     
     def on_cancel(self):
         self.check_for_transactions_in_progress()
@@ -64,7 +65,11 @@ class BankPayment(Document):
                         b.pi_number = inr_pi
                     else:
                         b.pi_number = inter_bank_pi
-                
+    def update_bank_payment(self):
+        if self.workflow_state == 'Approved':
+            frappe.throw("here")
+            frappe.db.sql('update `tabOvertime Payment` set bank_payment="{}" where name="{}"'.format(self.name, self.transaction_no))
+            
     def update_item_status(self, status):
         for rec in self.items:
             rec.status = status
@@ -316,7 +321,7 @@ class BankPayment(Document):
             data = self.get_journal_entry()
         elif self.transaction_type == "Transporter Payment":
             data = self.get_transporter_payment()
-        elif self.transaction_type == "Overtime Application":
+        elif self.transaction_type == "Overtime Payment":
             data = self.get_overtime_payment()
         elif self.transaction_type == "EME Payment":
             data = self.get_eme_payment()
@@ -596,12 +601,16 @@ class BankPayment(Document):
             cond = "AND ota.posting_date BETWEEN '{}' AND '{}' AND ota.branch = '{}'".format(str(self.from_date), str(self.to_date), str(self.branch))
         return frappe.db.sql("""
                     SELECT
-                        "Overtime Application" as transaction_type, ota.name as transaction_id, ota.name as transaction_reference, ota.posting_date as transaction_date, e.employee_name as beneficiary_name, e.bank_name, e.bank_branch, e.bank_account_type, e.bank_ac_no as bank_account_no, ota.total_amount as amount, ota.branch
-                    FROM `tabOvertime Application` ota
-                    JOIN `tabEmployee` e ON e.name = ota.employee 
-                    WHERE ota.docstatus = 1
-                    AND (ota.payment_jv IS NULL OR ota.payment_jv = '') 
-                    AND (ota.overtime_payment IS NULL OR ota.overtime_payment = '')
+                        "Overtime Payment" as transaction_type, ota.name as transaction_id, ota.name as transaction_reference, ota.posting_date as transaction_date, 
+                        oti.employee_name as beneficiary_name,
+                        e.bank_name,
+                        e.bank_branch,
+                        e.bank_account_type,
+                        e.bank_ac_no as bank_account_no,
+                        oti.total_amount as amount
+                    FROM `tabOvertime Payment` ota, `tabOvertime Payment Item` oti
+                    JOIN `tabEmployee` e on oti.employee=e.name
+                    WHERE ota.name=oti.parent and ota.docstatus = 1
                     AND e.bank_name IS NOT NULL
                     AND e.bank_branch IS NOT NULL
                     AND e.bank_account_type IS NOT NULL
@@ -616,6 +625,35 @@ class BankPayment(Document):
                             AND bpi.status NOT IN ('Cancelled', 'Failed'))
         
                             """.format(cond = cond, bank_payment=self.name), as_dict=True)
+        
+    # def get_overtime_payment(self):
+    #     cond = ""
+    #     if self.transaction_no:
+    #         cond ="AND ota.name = '{}'".format(self.transaction_no)
+    #     elif not self.transaction_no and self.from_date and self.to_date:
+    #         cond = "AND ota.posting_date BETWEEN '{}' AND '{}' AND ota.branch = '{}'".format(str(self.from_date), str(self.to_date), str(self.branch))
+    #     return frappe.db.sql("""
+    #                 SELECT
+    #                     "Overtime Application" as transaction_type, ota.name as transaction_id, ota.name as transaction_reference, ota.posting_date as transaction_date, e.employee_name as beneficiary_name, e.bank_name, e.bank_branch, e.bank_account_type, e.bank_ac_no as bank_account_no, ota.total_amount as amount, ota.branch
+    #                 FROM `tabOvertime Application` ota
+    #                 JOIN `tabEmployee` e ON e.name = ota.employee 
+    #                 WHERE ota.docstatus = 1
+    #                 AND (ota.payment_jv IS NULL OR ota.payment_jv = '') 
+    #                 AND (ota.overtime_payment IS NULL OR ota.overtime_payment = '')
+    #                 AND e.bank_name IS NOT NULL
+    #                 AND e.bank_branch IS NOT NULL
+    #                 AND e.bank_account_type IS NOT NULL
+    #                 AND e.bank_ac_no IS NOT NULL
+    #                 {cond}
+    #                 AND NOT EXISTS(select 1
+    #                         FROM `tabBank Payment Item` bpi
+    #                         WHERE bpi.transaction_type = 'Overtime Application'
+    #                         AND bpi.transaction_id = ota.name
+    #                         AND bpi.parent != '{bank_payment}'
+    #                         AND bpi.docstatus != 2
+    #                         AND bpi.status NOT IN ('Cancelled', 'Failed'))
+        
+    #                         """.format(cond = cond, bank_payment=self.name), as_dict=True)
     #added by cety on 13-10-2021 for eme payment
     def get_eme_payment(self):
         cond = ""

@@ -4,7 +4,33 @@
 cur_frm.add_fetch("branch","cost_center","cost_center");
 cur_frm.add_fetch("branch","expense_bank_account","bank_account");
 frappe.ui.form.on('Overtime Payment', {
+	// setup: function(frm){
+	// 	/* ePayment Begins */
+	// 	var status = {"Draft": "tomato",
+	// 		"Pending": "orange",
+	// 		"In progress": "blue",
+	// 		"Waiting Acknowledgement": "blue",
+	// 		"Upload Failed": "red",
+	// 		"Failed": "red",
+	// 		"Completed": "green",
+	// 		"Cancelled": "black"
+	// 		};
+
+	// 		frm.set_indicator_formatter('party',
+	// 			function(doc) {
+	// 				return status[doc.status];
+	// 		});
+	// 	/* ePayment Ends */
+	// },
+	onload: function(frm){
+		/*e-payment begins*/
+		create_custom_buttons(frm);
+		/*e-payment end*/
+	},
 	refresh: function(frm) {
+		/* ePyment Begins */
+		create_custom_buttons(frm);
+		/* ePayment Ends */
 		if(frm.doc.docstatus===1){
 			frm.add_custom_button(__('Accounting Ledger'), function(){
 					frappe.route_options = {
@@ -59,3 +85,16 @@ function get_application(frm){
 		frappe.msgprint("To get the Overtime Application, please provide the branch and dates");
 	}
 }
+
+/* ePayment Begins */
+var create_custom_buttons = function(frm){
+	if(frm.doc.docstatus == 1){
+		frm.page.set_primary_action(__('Process Bank Payment'), () => {
+			frappe.model.open_mapped_doc({
+				method: "erpnext.accounts.doctype.overtime_payment.overtime_payment.make_bank_payment",
+				frm: cur_frm
+			})
+		});
+	}
+}
+/* ePayment Ends */

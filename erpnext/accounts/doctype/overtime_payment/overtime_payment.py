@@ -8,6 +8,7 @@ from frappe.model.document import Document
 from frappe.utils import flt, cint, getdate, get_datetime, get_url, nowdate, now_datetime, money_in_words
 from erpnext.accounts.general_ledger import make_gl_entries
 from erpnext.controllers.accounts_controller import AccountsController
+from frappe.model.mapper import get_mapped_doc
 
 
 class OvertimePayment(AccountsController):
@@ -130,3 +131,31 @@ class OvertimePayment(AccountsController):
 						and p.docstatus = 1
 					)
 				""".format(self.from_date, self.to_date, self.branch), as_dict=True)
+
+
+# ePayment Begins
+@frappe.whitelist()
+def make_bank_payment(source_name, target_doc=None):
+    def set_missing_values(obj, target, source_parent):
+        target.payment_type = None
+        target.transaction_type = "Overtime Payment"
+        target.posting_date = get_datetime()
+        target.from_date = None
+        target.to_date = None
+        # bank_name, bank_branch, bank_account_no = frappe.db.get_value("Account", obj.credit_account, ['bank_name', 'bank_branch', 'bank_account_no'])
+        # target.bank_name = bank_name
+        # target.bank_branch = bank_branch
+        # target.bank_account_no = bank_account_no
+
+    doc = get_mapped_doc("Overtime Payment", source_name, {
+            "Overtime Payment": {
+                "doctype": "Bank Payment",
+                "field_map": {
+                    "name": "transaction_no",
+                    #"credit_account": "paid_from",
+                },
+                "postprocess": set_missing_values,
+            },
+    }, target_doc, ignore_permissions=True)
+    return doc
+# ePayment Ends
