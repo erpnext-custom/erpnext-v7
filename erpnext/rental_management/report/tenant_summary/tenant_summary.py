@@ -38,14 +38,14 @@ def get_data(filters):
 			rb.fiscal_year,
 			rb.rent_amount,
 			(rb.receivable_amount - rb.adjusted_amount - rb.discount_amount - rb.tds_amount - rb.penalty) as bill_amount,
-			IfNull((Select rpi.rent_received From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
-			IfNull((Select rpi.penalty From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
-			IfNull((Select rpi.pre_rent_amount From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
-			IfNull((Select rpi.excess_amount From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
-			IfNull((Select rpi.discount_amount From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
-			IfNull((Select rpi.sa_amount From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
-			IfNull((Select rpi.balance_rent From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
-			IfNull((Select rpi.total_amount_received From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
+			IfNull((Select sum(rpi.rent_received) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
+			IfNull((Select sum(rpi.penalty) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
+			IfNull((Select sum(rpi.pre_rent_amount) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
+			IfNull((Select sum(rpi.excess_amount) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
+			IfNull((Select sum(rpi.discount_amount) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
+			IfNull((Select sum(rpi.sa_amount) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
+			IfNull((Select sum(rpi.balance_rent) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
+			IfNull((Select sum(rpi.total_amount_received) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
 			rb.name
 		FROM
 			`tabRental Bill` as rb
@@ -55,6 +55,6 @@ def get_data(filters):
 				condition = cond
 			)
 
-	query += " ORDER BY rb.month, rb.fiscal_year"
+	query += "  Group by rb.month ORDER BY rb.month, rb.fiscal_year"
 
 	return frappe.db.sql(query)
