@@ -430,7 +430,7 @@ class BankPayment(Document):
 					if other_credit > 0 and party_count > 1:
 						frappe.throw("Payment for Journal Entry {} is not feasible through bank payment".format(a.transaction_id)) 
 					if b.debit_amount > 0:
-						actual_debit_amount = flt(b.debit_amount) - flt(other_credit)
+						#actual_debit_amount = flt(b.debit_amount) - flt(other_credit)
 						party_type = b.party_type
 						party = b.party
 						if not party_type and not party:
@@ -476,7 +476,7 @@ class BankPayment(Document):
 									'bank_branch': c.bank_branch,
 									'bank_account_type': c.bank_account_type,
 									'bank_account_no': c.bank_account_no,
-									'amount': flt(actual_debit_amount),
+									'amount': flt(credit_amt),
 									'inr_bank_code': c.inr_bank_code,
 									'inr_purpose_code': c.inr_purpose_code,
 									'status': "Draft"
