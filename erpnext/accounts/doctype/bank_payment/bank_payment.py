@@ -306,7 +306,7 @@ class BankPayment(Document):
 		# 	data = self.get_mechanical_payments()
 		if self.transaction_type == "Salary":
 			data = self.get_salary()
-		elif self.transaction_type == "LTC":
+		elif self.transaction_type == "Leave Travel Concession":
 			data = self.get_ltc()
 		elif self.transaction_type in ("Bonus", "PBVA"):
 			frappe.msgprint(_("Under development"))
