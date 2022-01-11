@@ -80,7 +80,7 @@ class RRCOReceiptTool(Document):
 			rrco.submit()
 	
 	def get_invoices(self):
-		if self.purpose in ["Leave Encashment", "Purchase Invoices"]:
+		if self.purpose in ["Leave Encashment", "Purchase Invoices","PBVA"]:
 			# if not self.branch and not self.tds_rate and not self.from_date and not self.to_date:
 			if not self.tds_rate and not self.from_date and not self.to_date:
 				frappe.throw("Select the details to retrieve the invoices")
@@ -101,6 +101,18 @@ class RRCOReceiptTool(Document):
 									WHERE b.purchase_invoice = a.name)
 						AND tax_amount > 0
 						""".format(self.from_date, self.to_date, cond)
+			elif self.purpose == 'PBVA':
+				query = """select  "PBVA" as transaction, a.name, a.posting_date as posting_date, 
+    					b.amount as invoice_amount, b.tax_amount, b.employee as party
+						FROM `tabPBVA` AS a, `tabPBVA Details` AS b WHERE a.docstatus = 1
+						AND a.name = b.parent
+						AND a.fiscal_year = '{0}'
+						{1} 
+						AND NOT EXISTS (SELECT 1 
+									FROM `tabRRCO Receipt Entries` AS b 
+									WHERE b.purchase_invoice = a.name)
+						AND b.tax_amount > 0
+						""".format(self.fiscal_year, cond)
 			else:
 				query = """
           				select "Purchase Invoice" as transaction, name, posting_date, 
