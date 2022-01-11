@@ -99,15 +99,13 @@ class RRCOReceiptTool(Document):
 						AND NOT EXISTS (SELECT 1 
 									FROM `tabRRCO Receipt Entries` AS b 
 									WHERE b.purchase_invoice = a.name)
-						AND tax_amount > 0
 						""".format(self.from_date, self.to_date, cond)
 			else:
 				query = """
           				select "Purchase Invoice" as transaction, name, posting_date, 
               			tds_taxable_amount as invoice_amount, tds_amount  as tax_amount, p.supplier as party
 						FROM `tabPurchase Invoice` AS p
-						WHERE docstatus = 1 AND posting_date BETWEEN '{0}' AND '{1}'
-						AND tds_amount > 0
+						WHERE docstatus = 1 AND posting_date BETWEEN '{0}' AND '{1}' 
 						AND tds_rate = '{2}' {3} 
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
@@ -124,8 +122,7 @@ class RRCOReceiptTool(Document):
               			tds_taxable_amount as invoice_amount, tds_amount  as tax_amount,  party
 						FROM `tabProject Invoice` AS p
 						WHERE docstatus = 1 AND invoice_date BETWEEN '{0}' AND '{1}' 
-						AND tds_rate = '{2}' {3}
-						AND tds_amount > 0
+						AND tds_rate = '{2}' {3} 
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
 										WHERE b.purchase_invoice = p.name) 
@@ -146,7 +143,6 @@ class RRCOReceiptTool(Document):
 						AND d.posting_date BETWEEN '{0}' AND '{1}'
 						AND d.tds_percent = '{2}'
 						AND d.payment_type = "Payment"
-						AND di.tds_amount > 0
 						{4} 
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
@@ -164,8 +160,7 @@ class RRCOReceiptTool(Document):
               			p.payable_amount as invoice_amount, p.tds_amount as tax_amount,  p.supplier as party
 						FROM `tabMechanical Payment` AS p
 						WHERE p.docstatus = 1 AND p.posting_date BETWEEN '{0}' AND '{1}' 
-						AND p.tds_rate = '{2}' {3}
-						AND p.tds_amount > 0
+						AND p.tds_rate = '{2}' {3} 
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
 										WHERE b.purchase_invoice = p.name) 
