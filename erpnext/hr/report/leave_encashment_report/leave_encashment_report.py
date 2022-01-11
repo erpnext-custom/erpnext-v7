@@ -93,6 +93,7 @@ def get_data(filters):
                 left join `tabEmployee` t3
                 on t3.employee = t1.employee                
                 where t1.docstatus = 1 %(cond)s
+                and (select je.docstatus from `tabJournal Entry` je where je.name = t2.parent) != 2
                 group by t1.employee, t1.employee_name, t1.name, t2.parent, t1.remarks
                 """ % ({"enc_gl": enc_gl, "tax_gl": tax_gl, "cond": conditions}), filters)
 		
