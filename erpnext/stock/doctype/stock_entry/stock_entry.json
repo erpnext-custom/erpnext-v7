@@ -1512,7 +1512,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-12-15 19:57:21.163774", 
+ "modified": "2022-01-12 14:24:53.882679", 
  "modified_by": "Administrator", 
  "module": "Stock", 
  "name": "Stock Entry", 
@@ -1708,9 +1708,9 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 1, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 0, 
    "email": 1, 
@@ -1729,9 +1729,9 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 1, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 1, 
    "email": 1, 
@@ -1750,9 +1750,9 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 1, 
-   "cancel": 1, 
+   "cancel": 0, 
    "create": 1, 
    "delete": 1, 
    "email": 1, 
@@ -1841,5 +1841,5 @@
  "sort_order": "DESC", 
  "title_field": "title", 
  "track_changes": 1, 
- "track_seen": 1
+ "track_seen": 0
 }

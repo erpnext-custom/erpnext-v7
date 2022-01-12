@@ -91,13 +91,14 @@ def update_aa():
 		print a.name
 
 def update_impp():
-	for a in frappe.db.sql(""" select name from `tabImprest Recoup` where name = 'IMPP2021000126'""", as_dict =1):
+	for a in frappe.db.sql(""" select name from `tabImprest Recoup` where name = 'IMPP2021000300'""", as_dict =1):
 		doc = frappe.get_doc("Imprest Recoup", a.name)
 		#doc.post_receipt_entry()
 		#update_dependencies(doc.branch, doc.imprest_type, doc.entry_date)
                 #doc.post_gl_entry()
                 #doc.consume_budget()
-		doc.on_submit()
+		doc.make_gl_entry()
+		frappe.db.commit()
 		print "Document is submitted"
 
 def update_iip():
@@ -339,19 +340,29 @@ def ipol1():
 			print doc.name
 
 def rpol():
-	pol = ["POL211200165"]
+	pol = ["POL220100025"]
 	for a in pol:
 		doc = frappe.get_doc("POL", a)
 		doc.submit()
 		print (a)
 
 def submit_se():
-	doc = frappe.get_doc("Stock Entry", "SEMI21110005")
+	doc = frappe.get_doc("Stock Entry", "SEMI21121642")
+	doc.submit()
+	print doc.name
+
+def submit_je():
+	doc = frappe.get_doc("Journal Entry", "JEJV220100005")
+	doc.submit()
+	print doc.name
+
+def submit_pr():
+	doc = frappe.get_doc("Purchase Receipt", "PRCO22010083")
 	doc.submit()
 	print doc.name
 
 def email_test():
-	recipients = 'tashidorji@gyalsunginfra.bt'
+	recipients = 'tashidorji@gyalsunginfra.bt' "PRCO22010034""PRCO22010003"
 	subject = "testing"
 	doc = frappe.get_doc("Material Request", 'MRMR20120018')
 	message = """Dear Sir/Madam, <br>  {0} has requested you to verify the Material Request <b> {1}. Check ERP System for More Info. </b> <br> Thank You""".format(frappe.get_doc("User", doc.owner).full_name, str(frappe.get_desk_link("Material Request", doc.name)))
@@ -495,10 +506,7 @@ def update_mr():
 	print doc.name
 	doc.save(ignore_permissions = True)
 
-def submit_pr():
-	doc = frappe.get_doc("Purchase Receipt", 'PRCO21110116')
-	print doc.name
-	doc.submit()
+
 
 def check_stock_gl():
 	for a in frappe.db.sql("select name, branch from `tabStock Entry` where docstatus = 1 and name = 'SEMI19030600'", as_dict=1):

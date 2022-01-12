@@ -47,7 +47,12 @@ class Asset(Document):
 		self.set_status()
 
 	def on_update_after_submit(self):
-		self.set_status()	
+		self.set_status()
+		self.update_parent_cc()	
+
+	def update_parent_cc(self):
+		if not frappe.get_value("Cost Center", self.cost_center, "is_group"):
+			self.parent_cost_center = frappe.get_value("Cost Center", self.cost_center, "parent_cost_center")
 
 	def validate_item(self):
 		item = frappe.db.get_value("Item", self.item_code,

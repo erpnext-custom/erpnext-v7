@@ -35,6 +35,8 @@ frappe.ui.form.on('Imprest Recoup', {
 				frappe.route_options = {
 					voucher_no: frm.doc.name,
 					company: frm.doc.company,
+					from_date: frm.doc.posting_date,
+					to_date: frm.doc.posting_date,
 					group_by_voucher: false
 				};
 				frappe.set_route("query-report", "General Ledger");

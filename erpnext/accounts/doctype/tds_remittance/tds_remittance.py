@@ -62,7 +62,7 @@ class TDSRemittance(AccountsController):
 			select d.posting_date, d.party, d.name as invoice_no, d.taxable_amount as bill_amount, d.tds_amount from 
                                 `tabDirect Payment` d  where tds_percent = '{0}' 
                                 and d.posting_date >= '{1}' and d.posting_date <= '{2}' 
-                                and docstatus = 1 and branch = '{3}' 
+                                and docstatus = 1 and branch = "{3}" 
                                 and not exists (
                                         select 1 from `tabTDS Remittance Item` i
                                         inner join `tabTDS Remittance` t
@@ -73,7 +73,7 @@ class TDSRemittance(AccountsController):
                                 union all 
                                 select p.posting_date, p.supplier, p.name,  p.tds_taxable_amount as bill_amount, p.tds_amount 
                                 from `tabPurchase Invoice` p where tds_rate = '{0}' and docstatus =1 
-                                and branch in ('{3}', 'Kote - 7 (GA-J)')
+                                and branch in ("{3}", 'Kote - 7 (GA-J)')
                                 and not exists (
                                         select 1 from `tabTDS Remittance Item` i
                                         inner join `tabTDS Remittance` t
@@ -91,7 +91,7 @@ class TDSRemittance(AccountsController):
                                 select pe.posting_date, pe.party as supplier, pe.name, pe.paid_amount as bill_amount, 
                                 -1* ped.amount as tds_amount  from
                                 `tabPayment Entry` pe, `tabPayment Entry Deduction` ped where ped.parent = pe.name 
-                                and ped.account = '{4}' and pe.docstatus = 1 and pe.branch = '{3}' and pe.posting_date between '{1}' and '{2}' 
+                                and ped.account = '{4}' and pe.docstatus = 1 and pe.branch = "{3}" and pe.posting_date between '{1}' and '{2}' 
                                 and not exists( select 1 from `tabTDS Remittance Item` i inner join `tabTDS Remittance` t
                                 on i.parent = t.name
                                 where i.invoice_no = pe.name
