@@ -20,6 +20,8 @@ class ProcessRentalBilling(AccountsController):
 		condition = " and t1.building_category != 'Pilot Housing'"
 		if self.dzongkhag:
 			condition += " and t1.dzongkhag = '{dzongkhag}'".format(dzongkhag=self.dzongkhag)
+		if self.ministry_agency:
+			condition += " and t1.ministry_agency = '{ministry_agency}'".format(ministry_agency=self.ministry_agency)
 		
 		if process_type == "create":
 			if self.tenant:
@@ -101,33 +103,34 @@ class ProcessRentalBilling(AccountsController):
 					#customer_code = frappe.db.get_value("Customer", {"customer_id":name}, "customer_code")
 					#bill_code = "NHDCL/" + customer_code + "/" + self.fiscal_year + self.month
 					yearmonth = str(self.fiscal_year) + str(self.month)
-
+					
 					query = """
-								select cid, tenant_name, customer_code, block_no, business_activity, flat_no, 
-								ministry_agency, location, branch, department, dzongkhag, dungkhag, designation, 
-								mobile_no, town_category, building_category, allocated_date, 
-							    (Case 
-								WHEN building_category = 'Pilot Housing' Then original_monthly_instalment  
-								Else rental_amount 
-							    End) as rental_amount
-								from `tabTenant Information` t 
-									inner join `tabTenant Rental Charges` r 
-									on t.name = r.parent 
-									where '{0}' between r.from_date and r.to_date
-								and t.building_category != 'Pilot Housing'
-								and (exists(select 1
-									from `tabRental Bill` as t2
-										where t2.tenant = t.name
-										and t2.docstatus != 2 
-										and t2.fiscal_year = '{2}'
-										and t2.month = '{3}'
-								) 
-								or not exists(select 1
-	                                    from `tabRental Bill` as t3
-						                	where t3.tenant = '{1}'
-									   		and t3.docstatus != 2	
-							      		))
-						            and t.name = '{1}';
+                                                                select cid, tenant_name, customer_code, block_no, business_activity, flat_no, 
+                                                                ministry_agency, location, branch, department, dzongkhag, dungkhag, designation, 
+                                                                mobile_no, town_category, building_category, allocated_date, is_nhdcl_employee,
+                                                            (Case 
+                                                                WHEN building_category = 'Pilot Housing' Then original_monthly_instalment  
+                                                                Else rental_amount 
+                                                            End) as rental_amount
+                                                                from `tabTenant Information` t 
+                                                                        inner join `tabTenant Rental Charges` r 
+                                                                        on t.name = r.parent 
+                                                                        where '{0}' between r.from_date and r.to_date
+                                                                and t.building_category != 'Pilot Housing'
+                                                                and (exists(select 1
+                                                                        from `tabRental Bill` as t2
+                                                                                where t2.tenant = t.name
+                                                                                and t2.docstatus != 2 
+                                                                                and t2.fiscal_year = '{2}'
+                                                                                and t2.month = '{3}'
+                                                                ) 
+                                                                or not exists(select 1
+                                            from `tabRental Bill` as t3
+                                                                        where t3.tenant = '{1}'
+                                                                                        and t3.docstatus != 2   
+                                                                        ))
+                                                            and t.name = '{1}';
+				
                             """.format(bill_date, name, prev_fiscal_year, prev_month)
 					dtls = frappe.db.sql(query, as_dict=True)
 
@@ -162,7 +165,8 @@ class ProcessRentalBilling(AccountsController):
 								"rent_amount": d.rental_amount,
 								"receivable_amount": d.rental_amount,
 								"cost_center": cost_center,
-								"company": company
+								"company": company,
+								"is_nhdcl_employee": d.is_nhdcl_employee
 							})
 							rb.insert()
 							rb_no = frappe.db.get_value("Rental Bill", {"tenant":name, "month":self.month, "fiscal_year": self.fiscal_year, "docstatus":0}, "name")

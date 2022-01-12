@@ -34,6 +34,15 @@ def get_condition(filters):
 			condition += " and ti.is_nhdcl_employee = 1 "
 		if filters.get("tenant_type") == "Others":
 			condition += " and ti.is_nhdcl_employee = 0 "
+	if filters.get("rental_official"):
+		if filters.get("rental_official") == 'Dorji Wangmo': 
+			# two dorji wangmo in the system. use the below
+			official = "NHDCL1905030"
+		else: 
+			emp = frappe.db.sql("select name from tabEmployee where employee_name = '{}'".format(filters.get("rental_official")), as_dict=True)
+			official = emp[0].name
+		condition += " and rpi_parent.rental_official = '{0}'".format(official)
+	
 	return condition
 
 def get_data(filters):
@@ -45,29 +54,27 @@ def get_data(filters):
 			sum(rb.received_amount),
 			sum(rb.pre_rent_amount),
 			sum(rb.adjusted_amount),
-			(
-				select sum(rpi.excess_amount) from `tabRental Payment Item` rpi
-				inner join `tabRental Payment` rp ON rp.name=rpi.parent
-				where rp.docstatus=1 and rpi.tenant=ti.name and rp.posting_date between '{from_date}' and '{to_date}'
-			) excess_rent,
+			sum(rb.excess_amount),
 			sum(rb.tds_amount),
 			sum(rb.penalty),
 			sum(rb.discount_amount),
 
-			(sum(rb.received_amount) + sum(rb.pre_rent_amount) + sum(rb.penalty)
-			+ (
-				select sum(rpi.excess_amount) from `tabRental Payment Item` rpi
-				inner join `tabRental Payment` rp ON rp.name=rpi.parent
-				where rp.docstatus=1 and rpi.tenant=ti.name and rp.posting_date between '{from_date}' and '{to_date}'
-			)
-			- sum(rb.tds_amount) - sum(rb.discount_amount)) total_rent_received,
+			(sum(rb.received_amount) + sum(rb.pre_rent_amount) + sum(rb.penalty) + sum(rb.excess_amount) - sum(rb.tds_amount) - sum(rb.discount_amount)) total_rent_received,
 			
 			(sum(rb.rent_amount) - sum(rb.received_amount)) outstanding_bill,
 			(sum(rb.pre_rent_amount) - sum(rb.adjusted_amount)) pre_rent_balance
 		from `tabTenant Information` ti
 		inner join `tabRental Bill` rb ON rb.tenant = ti.name
 		inner join `tabRental Bill Received` rbr ON rbr.parent = rb.name
-		
+		LEFT JOIN
+			`tabRental Payment Item` as rpi
+		ON
+			rb.name = rpi.rental_bill AND rpi.docstatus = 1
+		LEFT JOIN
+			`tabRental Payment` as rpi_parent
+		ON
+			rpi.parent = rpi_parent.name AND rpi_parent.docstatus = 1
+			
 		where rb.posting_date between '{from_date}' and '{to_date}' {cond}
 		group by ti.name
 		order by ti.name

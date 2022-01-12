@@ -70,6 +70,10 @@ var process_rental = function(frm, process_type){
         frm.set_value("progress", "");
         frm.refresh_field("progress");
 
+        if(frm.doc.ministry_agency && !frm.doc.dzongkhag){
+                frappe.throw("Please select Dzongkhag first");
+        }
+
         if(process_type == "create"){
                 msg = "Creating Rental Bill(s).... Please Wait!!!";
                 msg_other = "created";

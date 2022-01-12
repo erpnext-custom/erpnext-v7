@@ -65,7 +65,9 @@ class TenantInformation(Document):
 		if not self.no_of_year_for_increment:	                
 			increment_year = cint(frappe.db.get_single_value("Rental Setting", "no_of_year_for_increment"))
                 	self.no_of_year_for_increment = increment_year
-
+		if not self.is_nhdcl_employee:
+			self.nhdcl_employee = ''
+		
 	def before_rename(self, old, new, merge=False):
 		pass
 

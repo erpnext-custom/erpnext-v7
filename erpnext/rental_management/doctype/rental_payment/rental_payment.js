@@ -12,8 +12,18 @@ frappe.ui.form.on('Rental Payment', {
 				filters: {
 					account_type:  ["in", account_types],
 				}
-			}																	})
-		},
+			}
+		})
+		
+		frm.set_query("debit_account", function() {
+		var root_types = ["Liability"]
+			return {
+				filters: {
+					root_type:  ["in", root_types],
+				}
+			}
+		})
+	},
 	refresh: function(frm) {
 		if(frm.doc.docstatus===1){
 			frm.add_custom_button(__('Accounting Ledger'), function(){
@@ -84,10 +94,14 @@ frappe.ui.form.on("Rental Payment Item", {
 	},
 	"sa_amount": function(frm, cdt, cdn){
 		var row = locals[cdt][cdn];
-		console.log("test" + row.sa_amount);
-
 		if(!row.total_amount_received){
 			frappe.model.set_value(row.doctype, row.name, "total_amount_received", row.sa_amount);
+		}
+	},
+	"penalty": function(frm, cdt, cdn){
+		var row = locals[cdt][cdn];
+		if(!row.total_amount_received){
+			frappe.model.set_value(row.doctype, row.name, "total_amount_received", row.penalty);
 		}
 	}
 });
