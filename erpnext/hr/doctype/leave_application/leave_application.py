@@ -59,6 +59,11 @@ class LeaveApplication(Document):
 		self.validate_salary_processed_days()
 #		self.validate_leave_approver()
 		self.validate_backdated_applications()
+		self.casual_leave_days_limit()
+
+	def casual_leave_days_limit(self):
+		if self.leave_type == "Casual Leave" and self.total_leave_days > 5:
+			frappe.throw("You cannot take more 5 days casual leave at a time")
 		
 	def on_update(self):
 		self.validate_fiscal_year()

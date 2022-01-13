@@ -35,7 +35,7 @@ frappe.ui.form.on("Leave Application", {
 
 	refresh: function(frm) {
 		
-		if(!frm.doc.__islocal && frm.doc.workflow_state != "Draft" && frm.doc.workflow_state != "Rejected")
+		if(!frm.doc.__islocal && frm.doc.workflow_state != "Draft" && frm.doc.workflow_state != "Rejected" && frm.doc.workflow_state != "Rejected by Supervisor")
 		{
 			frm.set_df_property("leave_type", "read_only", 1);
 			frm.set_df_property("from_date", "read_only", 1);
@@ -43,7 +43,7 @@ frappe.ui.form.on("Leave Application", {
 			frm.set_df_property("employee", "read_only", 1);
 		}
 
-		if(frm.doc.workflow_state == "Draft" || frm.doc.workflow_state == "Rejected"){
+		if(frm.doc.workflow_state == "Draft" || frm.doc.workflow_state == "Rejected" && frm.doc.workflow_state != "Rejected by Supervisor"){
                         frm.set_df_property("leave_approver", "hidden", 1);
 			frm.set_df_property("leave_approver_name", "hidden", 1);
                 }
