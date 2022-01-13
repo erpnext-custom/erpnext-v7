@@ -22,11 +22,11 @@ frappe.query_reports["General Tenant Summary"] = {
 			width: "80",
 			options: ["", "Bumpa Dema", "Dik Maya Ghalley", "Rinzin Dema", "Seema Uroan", "Dorji Wangmo", "Sangay Pelden", "Sangay Dorji", "Sangay Dubjur", "Kunzang Choden"],
 		},
-		{
-			"fieldname": "tenant_type",
-			"label": __("Tenant"),
-			"fieldtype": "Select",
-			"options": "\nNHDCL Employee\nOthers",
-		},
+		// {
+		// 	"fieldname": "tenant_type",
+		// 	"label": __("Tenant"),
+		// 	"fieldtype": "Select",
+		// 	"options": "\nNHDCL Employee\nOthers",
+		// },
 	]
 }
