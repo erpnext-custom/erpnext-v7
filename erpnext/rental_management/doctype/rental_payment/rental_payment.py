@@ -150,7 +150,6 @@ class RentalPayment(AccountsController):
 					doc.tds_amount = flt(doc.tds_amount) + flt(a.tds_amount)
 					doc.discount_amount = flt(doc.discount_amount) + flt(a.discount_amount)
 					doc.penalty = flt(doc.penalty) + flt(a.penalty)
-					doc.excess_amount = flt(doc.excess_amount) + flt(a.excess_amount)
 					doc.save()
 		else:
 			for a in self.get('item'):
@@ -161,7 +160,6 @@ class RentalPayment(AccountsController):
 					doc.tds_amount = flt(doc.tds_amount) - flt(a.tds_amount)
 					doc.discount_amount = flt(doc.discount_amount) - flt(a.discount_amount)
 					doc.penalty = flt(doc.penalty) - flt(a.penalty)
-					doc.excess_amount = flt(doc.excess_amount) - flt(a.excess_amount)
 					doc.save()
 			frappe.db.sql("delete from `tabRental Bill Received` where reference='{0}'".format(self.name))
 			frappe.db.commit()
