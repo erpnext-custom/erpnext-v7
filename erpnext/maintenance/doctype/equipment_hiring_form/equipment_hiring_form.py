@@ -137,18 +137,9 @@ class EquipmentHiringForm(Document):
 			if ec:
 				pass
 			else:
-                                '''
-				result = frappe.db.sql("select ehf_name from `tabEquipment Reservation Entry` where equipment = \'" + str(a.equipment) + "\' and docstatus = 1 and (\'" + str(a.from_date) + "\' between from_date and to_date OR \'" + str(a.to_date) + "\' between from_date and to_date)", as_dict=True)
-				if result:
-					if a.from_time and a.to_time:
-						res = frappe.db.sql("select name from `tabEquipment Reservation Entry` where docstatus = 1 and equipment = %s and ( %s between to_time and from_time or %s between to_time and from_time )", (str(a.equipment), str(a.from_time), str(a.to_time)))
-						if res:
-							frappe.throw("The equipment " + str(a.equipment) + " is already in use from by " + str(result[0].ehf_name))
-				'''
-				from_datetime = str(get_datetime(str(a.from_date) + ' ' + str(a.from_time)))
-                                to_datetime = str(get_datetime(str(a.to_date) + ' ' + str(a.to_time)))
-
-                                result = frappe.db.sql("""
+				from_datetime = str(get_datetime(str(a.from_date) + ' ' + str(a.from_time))) 
+				to_datetime = str(get_datetime(str(a.to_date) + ' ' + str(a.to_time)))
+				result = frappe.db.sql("""
                                         select ehf_name
                                         from `tabEquipment Reservation Entry`
                                         where equipment = '{0}'
@@ -160,9 +151,8 @@ class EquipmentHiringForm(Document):
                                                 ('{3}' <= concat(from_date,' ',from_time) and '{4}' >= concat(to_date,' ',to_time))
                                         )
                                 """.format(a.equipment, from_datetime, to_datetime, from_datetime, to_datetime), as_dict=True)
-
 				for r in result:
-                                        frappe.throw(_("The equipment {0} is already in use from by {1}").format(a.equipment, r.ehf_name))
+					frappe.throw(_("The equipment {0} is already in use from by {1}").format(a.equipment, r.ehf_name))
 		
 	##
 	# make necessary journal entry
