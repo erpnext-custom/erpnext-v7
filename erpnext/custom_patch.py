@@ -16,6 +16,48 @@ from frappe.utils import today
 import os
 import subprocess
 
+def create_dp_from_utility():
+	udoc = frappe.get_doc("Utility Bill", "CN202112130042")
+	if udoc.direct_payment:
+		print("Direct Payment Already created for Utility Bill No.".format(udoc.name))
+		return
+	doc = frappe.new_doc("Direct Payment")
+	doc.branch = udoc.branch
+	doc.cost_center = udoc.cost_center
+	doc.posting_date = udoc.posting_date
+	doc.payment_type = "Payment"
+	doc.tds_percent = udoc.tds_percent
+	doc.tds_account = udoc.tds_account
+	doc.credit_account = udoc.expense_account
+	doc.utility_bill = str(udoc.name)
+	doc.remarks = "Utility Bill Payment " + str(udoc.name)
+	doc.status = "Completed"
+	if udoc.item:
+		count_child = 0
+		for a in udoc.item:
+			if a.create_direct_payment:
+				if a.invoice_amount > 0 and a.payment_status == "Success":
+					doc.append("item", {
+							"party_type": "Supplier",
+							"party": a.party,
+							"account": a.debit_account,
+							"amount": a.invoice_amount,
+							"invoice_no": a.invoice_no,
+							"invoice_date": a.invoice_date,
+							"tds_applicable": a.tds_applicable,
+							"taxable_amount": a.invoice_amount,
+							"tds_amount": a.tds_amount,
+							"net_amount": a.net_amount,
+							"payment_status": "Payment Successful"
+						})
+					count_child +=1
+		if count_child > 0:
+			doc.submit()
+	if doc.name:
+		frappe.db.sql("Update `tabUtility Bill` set direct_payment = '{}' where name = '{}'".format(doc.name, udoc.name))
+		frappe.db.commit()
+		print("Direct Payment created and submitted for this Utility Bill {}".format(udoc.name))
+
 def copy_party_to_consolidation():
     for d in frappe.db.sql('''
                            select voucher_no, account, name,consolidation_party
