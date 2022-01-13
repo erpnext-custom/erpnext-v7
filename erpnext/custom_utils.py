@@ -150,6 +150,8 @@ def get_user_info(user=None, employee=None, cost_center=None, branch=None):
 @frappe.whitelist()
 def cancel_draft_doc(doctype, docname):
 	doc = frappe.get_doc(doctype, docname)
+	if doc.docstatus == 1:
+		frappe.throw(_("Document Cancellation is not allowed for submitted document"), title="Operation not permitted")
 	if doctype == "Leave Application":    ##### Ver 2.0.190225 added by SHIV
 		if doc.get("workflow_state") not in ("Draft","Rejected") and frappe.session.user not in (doc.get("leave_approver"),"Administrator"):
 			frappe.throw(_("Only leave approver <b>{0}</b> ( {1} ) can cancel this document.").format(doc.leave_approver_name, doc.leave_approver), title="Operation not permitted")
@@ -384,11 +386,10 @@ def get_approver(doctype=None, employee=None, user_id=None):
 	if employee:
 		user_id  = frappe.get_value("Employee", employee, "user_id")
 	elif user_id:
-		employee = frappe.get_value("Employee", {"user_id": user_id}, "name")
-		
-	approver    = frappe.get_value("Employee", employee, "reports_to")
-	approver_id = frappe.get_value("Employee", approver, "user_id")
-
+		employee = frappe.get_value("Employee", {"user_id": user_id}, "name") #CDCL9808002
+	approver    = frappe.get_value("Employee", employee, "reports_to") #CDCL1203002
+	approver_id = frappe.get_value("Employee", approver, "user_id") #kencho.tshering@cdcl.bt
+ 
 	#Check for Officiating Employeee, if so, replace
 	off = frappe.db.sql("""
 			select officiate
@@ -428,11 +429,13 @@ def approver_query(doctype, txt, searchfield, start, page_len, filters):
 		employee = filters.get("employee")
 		user_id  = frappe.get_value("Employee", filters.get("employee"), "user_id")
 	elif filters.get("user_id"):
-		employee = frappe.get_value("Employee", {"user_id": filters.get("user_id")}, "name")
-		user_id  = filters.get("user_id")
+		id = filters.get("user_id") #sonam.tshering@cdcl.bt
+		employee = frappe.get_value("Employee", {"user_id": id}, "name") #CDCL9808002
+		user_id  = filters.get("user_id") #sonam.tshering@cdcl.bt
 		
-	approver    = frappe.get_value("Employee", employee, "reports_to")
-	approver_id = frappe.get_value("Employee", approver, "user_id")
+	approver    = frappe.get_value("Employee", employee, "reports_to") #CDCL1203002
+
+	approver_id = frappe.get_value("Employee", approver, "user_id") #kencho.tshering@cdcl.bt
 
 	#Check for Officiating Employeee, if so, replace
 	off = frappe.db.sql("""

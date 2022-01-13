@@ -3059,7 +3059,7 @@
  "istable": 0, 
  "max_attachments": 0, 
  "menu_index": 0, 
- "modified": "2021-08-20 15:39:36.486896", 
+ "modified": "2022-01-11 12:03:37.504642", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Purchase Invoice", 
@@ -3230,7 +3230,7 @@
    "write": 1
   }, 
   {
-   "amend": 1, 
+   "amend": 0, 
    "apply_user_permissions": 1, 
    "cancel": 0, 
    "create": 1, 
@@ -3341,6 +3341,6 @@
  "sort_order": "DESC", 
  "timeline_field": "supplier", 
  "title_field": "title", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }
