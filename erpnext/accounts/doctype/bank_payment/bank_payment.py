@@ -35,6 +35,7 @@ class BankPayment(Document):
         self.validate_mandatory()
         self.update_transaction_status()
         self.update_bank_payment()
+        self.update_ltc_reference()
     
     def on_cancel(self):
         self.check_for_transactions_in_progress()
@@ -81,7 +82,8 @@ class BankPayment(Document):
             no_of_transaction = len(self.items)
             if self.payment_type == "One-One payment" and no_of_transaction > max_transaction:
                 frappe.throw("For transaction more than {} records, Please select Payment Type to Bulk Payment!".format(max_transaction))
-        
+    def update_ltc_reference(self):
+        frappe.db.sql("update `tabLeave Travel Concession` set bank_payment='{}' where name='{}'".format(self.name, self.transaction_no))
     def get_bank_available_balance(self):
         ''' get paying bank balance '''
         if self.bank_account_no:
@@ -311,7 +313,7 @@ class BankPayment(Document):
             data = self.get_mechanical_payments()
         elif self.transaction_type == "Salary":
             data = self.get_salary()
-        elif self.transaction_type in ("LTC", "Bonus", "PBVA"):
+        elif self.transaction_type in ("Bonus", "PBVA"):
             frappe.msgprint(_("Under development"))
         elif self.transaction_type == "Payment Entry":
             data = self.get_payment_entry()
@@ -325,6 +327,8 @@ class BankPayment(Document):
             data = self.get_overtime_payment()
         elif self.transaction_type == "EME Payment":
             data = self.get_eme_payment()
+        elif self.transaction_type == "Leave Travel Concession":
+            data = self.get_ltc()
         return data
         
     def get_journal_entry(self):
@@ -681,7 +685,33 @@ class BankPayment(Document):
                                 AND bpi.docstatus != 2
                                 AND bpi.status NOT IN ('Cancelled', 'Failed'))
                             """.format(cond = cond, bank_payment = self.name), as_dict=True)
-
+    #added by cety to pull LTC on 15/01/2022
+    def get_ltc(self):
+        cond = ""
+        if self.transaction_no:
+            cond = "and ltc.name = '{}'".format(self.transaction_no)
+        elif not self.transaction_no and self.from_date and self.to_date:
+            cond = "and ltc.posting_date between '{}' and '{}' and ltc.branch = '{}'".format(str(self.from_date), str(self.to_date), str(self.branch))
+        return frappe.db.sql("""
+            select 
+                "Leave Travel Concession" as transaction_type, ltc.name as transaction_id, ltc.name as transaction_reference, ltc.posting_date as transaction_date, ltci.employee_name as beneficiary_name, 
+                (select bank_name from `tabEmployee` e where ltci.employee=e.name) as bank_name,
+                (select bank_branch from `tabEmployee` e where ltci.employee=e.name) as bank_branch,
+                (select bank_account_type from `tabEmployee` e where ltci.employee=e.name) as bank_account_type,
+                (select bank_ac_no from `tabEmployee` e where ltci.employee=e.name) as bank_account_no,
+                ltci.amount as amount
+            from `tabLeave Travel Concession` ltc, `tabLTC Details` ltci
+            where ltc.name = ltci.parent and ltc.branch='{}'
+            and ltc.docstatus = 1 
+            {cond}
+            AND NOT EXISTS(select 1
+                                FROM `tabBank Payment Item` bpi
+                                WHERE bpi.transaction_type = 'Leave Travel Concession'
+                                AND bpi.transaction_id = ltc.name
+                                AND bpi.parent != '{bank_payment}'
+                                AND bpi.docstatus != 2
+                                AND bpi.status NOT IN ('Cancelled', 'Failed'))
+                            """.format(self.branch, cond = cond, bank_payment = self.name), as_dict=True)
 
     def get_month_id(self, month_abbr):
         return {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06",
