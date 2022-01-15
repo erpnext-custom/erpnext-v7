@@ -14,8 +14,9 @@ class LeaveTravelConcession(Document):
 	def on_submit(self):
 		cc_amount = {}
 		for a in self.items:
-			cc = frappe.db.get_value("Division", frappe.db.get_value("Employee", a.employee, "division"), "cost_center")
-			frappe.msgprint("{0} {1}".format(cc, a.employee))
+			#cc = frappe.db.get_value("Division", frappe.db.get_value("Employee", a.employee, "division"), "cost_center")
+			#frappe.msgprint("{0} {1}".format(cc, a.employee))
+			cc = frappe.get_doc("Employee", a.employee).cost_center
 			if cc_amount.has_key(cc):
 				cc_amount[cc] = cc_amount[cc] + a.amount
 			else:

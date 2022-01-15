@@ -85,7 +85,8 @@ def get_conditions(filters):
 
 def get_stock_ledger_entries(filters):
 	conditions = get_conditions(filters)
-	return frappe.db.sql("""select item_code, warehouse, posting_date, actual_qty, valuation_rate, item_group, item_sub_group,
+	return frappe.db.sql("""select item_code, warehouse, item_group, 
+		posting_date, actual_qty, valuation_rate, item_group, item_sub_group,
 			company, voucher_type, qty_after_transaction, stock_value_difference
 		from `tabStock Ledger Entry` force index (posting_sort_index)
 		where docstatus < 2 %s order by posting_date, posting_time, name""" %
