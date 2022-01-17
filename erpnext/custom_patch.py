@@ -2086,8 +2086,11 @@ def cancel_delivery_note(debug=1):
 		doc = frappe.get_doc("Delivery Note", a)
 		print(counter, a, doc.docstatus)
 		if not debug and doc.docstatus == 1:
-			doc.cancel()
-			print('Cancelled...')
+			try:
+				doc.cancel()
+				print('Cancelled...')
+			except Exception as e:
+				print(str(e))
 			frappe.db.commit()
 
 def cancel_sales_order(debug=1):
@@ -2103,8 +2106,11 @@ def cancel_sales_order(debug=1):
 		doc = frappe.get_doc("Sales Order", a)
 		print(counter, a, doc.docstatus)
 		if not debug and doc.docstatus == 1:
-			doc.cancel()
-			print('Cancelled...')
+			try:
+				doc.cancel()
+				print('Cancelled...')
+			except Exception as e:
+				print(str(e))
 			frappe.db.commit()
 
 def cancel_production(debug=1):
@@ -2121,8 +2127,11 @@ def cancel_production(debug=1):
 		doc = frappe.get_doc("Production", a)
 		print(counter, a, doc.docstatus)
 		if not debug and doc.docstatus == 1:
-			doc.cancel()
-			print('Cancelled...')
+			try:
+				doc.cancel()
+				print('Cancelled...')
+			except Exception as e:
+				print(str(e))
 			frappe.db.commit()
 
 # def so_change_status():
