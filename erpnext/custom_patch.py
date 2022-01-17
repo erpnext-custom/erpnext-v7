@@ -2074,7 +2074,8 @@ def assign_role_approver():
 def cancel_delivery_note(debug=1):
 	dn_arr = frappe.db.sql_list("""select name
 					from `tabDelivery Note`
-					where name in ('DN21081026', 'DN21051921', 'DN21051924', 'DN21051926', 'DN21051292','DN21051854')
+					where name in ('DN21081026', 'DN21051921', 'DN21051924', 'DN21051926', 'DN21051292','DN21051854',
+									'DN21081025')
 					order by posting_date desc
 				""")
 	# dn_arr = ['DN21081026', 'DN21051921', 'DN21051924', 'DN21051926', 'DN21051292','DN21051854']
