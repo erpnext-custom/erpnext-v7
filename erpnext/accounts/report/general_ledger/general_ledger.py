@@ -108,13 +108,14 @@ def get_result(filters, account_details):
 	return result
 
 def get_gl_entries(filters):
-	select_fields = """, sum(debit_in_account_currency) as debit_in_account_currency,
-		sum(credit_in_account_currency) as credit_in_account_currency""" \
+	select_fields = """, sum(gl.debit_in_account_currency) as debit_in_account_currency,
+		sum(gl.credit_in_account_currency) as credit_in_account_currency""" \
 		if filters.get("show_in_account_currency") else ""
 
-	group_by_condition = "group by voucher_type, voucher_no, account, cost_center" \
-		if filters.get("group_by_voucher") else "group by name"
+	group_by_condition = "group by gl.voucher_type, gl.voucher_no, gl.account, gl.cost_center" \
+		if filters.get("group_by_voucher") else "group by gl.name"
 
+	'''
 	gl_entries = frappe.db.sql("""
 		select
 			posting_date,account, party_type,
@@ -159,30 +160,71 @@ def get_gl_entries(filters):
 		order by posting_date, account"""\
 		.format(select_fields=select_fields, conditions=get_conditions(filters),
 			group_by_condition=group_by_condition), filters, as_dict=1)
-
+	'''
+	gl_entries = frappe.db.sql("""
+		select
+			gl.posting_date, gl.account, gl.party_type,
+			(CASE gl.party_type
+				WHEN 'Equipment' THEN e.equipment_number
+				ELSE gl.party
+			END) AS party,
+			(CASE
+				WHEN gl.voucher_type = 'Payment Entry' THEN pe.reference_no
+				WHEN gl.voucher_type = 'Journal Entry' THEN je.cheque_no
+				WHEN gl.voucher_type = 'Direct Payment' THEN dp.cheque_no
+				WHEN gl.voucher_type = 'Overtime Payment' THEN op.cheque_no
+				WHEN gl.voucher_type = 'EME Payment' THEN op.cheque_no
+				ELSE ''
+			END) as cheque_no,
+			(CASE
+				WHEN gl.voucher_type = 'Payment Entry' THEN reference_date
+				WHEN gl.voucher_type = 'Journal Entry' THEN je.cheque_date
+				WHEN gl.voucher_type = 'Direct Payment' THEN dp.cheque_date
+				WHEN gl.voucher_type = 'Overtime Payment' THEN op.cheque_date
+				WHEN gl.voucher_type = 'EME Payment' THEN op.cheque_date
+				ELSE ''
+			END) as cheque_date,
+			sum(gl.debit) as debit, sum(gl.credit) as credit,
+			gl.voucher_type, gl.voucher_no, 
+			gl.cost_center, cc.branch, 
+			gl.project, gl.remarks, gl.against, gl.is_opening {select_fields}
+		from `tabGL Entry` gl
+		left join `tabPayment Entry` pe on gl.voucher_type = 'Payment Entry' and pe.name = gl.voucher_no
+		left join `tabJournal Entry` je on gl.voucher_type = 'Journal Entry' and je.name = gl.voucher_no
+		left join `tabDirect Payment` dp on gl.voucher_type = 'Direct Payment' and dp.name = gl.voucher_no
+		left join `tabOvertime Payment` op on gl.voucher_type = 'Overtime Payment' and op.name = gl.voucher_no
+		left join `tabEME Payment` ep on gl.voucher_type = 'EME Payment' and ep.name = gl.voucher_no
+		left join `tabCost Center` cc on cc.name = gl.cost_center
+		left join `tabEquipment` e on e.name = gl.party
+		{conditions}
+		{group_by_condition}
+		order by gl.posting_date, account"""\
+		.format(select_fields=select_fields, conditions=get_conditions(filters),
+			group_by_condition=group_by_condition), filters, as_dict=1)
+			
 	return gl_entries
 
 def get_conditions(filters):
 	conditions = []
 	if filters.get("account"):
 		lft, rgt = frappe.db.get_value("Account", filters["account"], ["lft", "rgt"])
-		conditions.append("""account in (select name from tabAccount
+		conditions.append("""gl.account in (select name from tabAccount
 			where lft>=%s and rgt<=%s and docstatus<2)""" % (lft, rgt))
 
 	if filters.get("voucher_no"):
-		conditions.append("voucher_no=%(voucher_no)s")
+		conditions.append("gl.voucher_no=%(voucher_no)s")
 
 	if filters.get("party_type"):
-		conditions.append("party_type=%(party_type)s")
+		conditions.append("gl.party_type=%(party_type)s")
 
 	if filters.get("party"):
-		conditions.append("party=%(party)s")
+		conditions.append("gl.party=%(party)s")
 
 	if not (filters.get("account") or filters.get("party") or filters.get("group_by_account")):
-		conditions.append("posting_date >=%(from_date)s")
+		conditions.append("gl.posting_date >=%(from_date)s")
 	# cost center filter added by Birendra-13/03/2021
 	if filters.cost_center:
-		conditions.append("cost_center = '{}' ".format(filters.cost_center))
+		conditions.append("gl.cost_center = '{}' ".format(filters.cost_center))
 	
 	#if filters.branch:
 	#	conditions.append("cost_center in (select cost_center from `tabCost Center` where branch = '{0}'".format(filters.branch))
@@ -191,7 +233,7 @@ def get_conditions(filters):
 	match_conditions = build_match_conditions("GL Entry")
 	if match_conditions: conditions.append(match_conditions)
 
-	return "and {}".format(" and ".join(conditions)) if conditions else ""
+	return "where {}".format(" and ".join(conditions)) if conditions else ""
 
 def get_data_with_opening_closing(filters, account_details, gl_entries):
 	data = []
