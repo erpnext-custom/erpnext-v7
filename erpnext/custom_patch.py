@@ -2074,8 +2074,9 @@ def assign_role_approver():
 def cancel_delivery_note(debug=1):
 	dn_arr = frappe.db.sql_list("""select name
 					from `tabDelivery Note`
-					where name in ('DN21081026', 'DN21051921', 'DN21051924', 'DN21051926', 'DN21051292','DN21051854',
-									'DN21081025')
+					where name in ( 'DN21081026', 'DN21051921', 'DN21051924', 'DN21051926', 'DN21051292','DN21051854',
+									'DN21081025',
+									'DN21080985', 'DN21110051', 'DN21116222', 'DN21113237', 'DN21090288', 'DN21051930')
 					order by posting_date desc
 				""")
 	# dn_arr = ['DN21081026', 'DN21051921', 'DN21051924', 'DN21051926', 'DN21051292','DN21051854']
@@ -2109,7 +2110,8 @@ def cancel_sales_order(debug=1):
 def cancel_production(debug=1):
 	pd_arr = frappe.db.sql_list("""select name
 					from `tabProduction`
-					where name in ('PRO210301578', 'PRO211001191', 'PRO210301211')
+					where name in ('PRO210301578', 'PRO211001191', 'PRO210301211',
+						'PRO210301578', 'PRO211001191', 'PRO210301211')
 					order by posting_date desc
 				""")
 	# pd_arr = ['PRO210301578', 'PRO211001191', 'PRO210301211']
