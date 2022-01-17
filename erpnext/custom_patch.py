@@ -2086,6 +2086,7 @@ def cancel_delivery_note(debug=1):
 		if not debug and doc.docstatus == 1:
 			doc.cancel()
 			print('Cancelled...')
+			frappe.db.commit()
 
 def cancel_sales_order(debug=1):
 	so_arr = frappe.db.sql_list("""select name
@@ -2102,7 +2103,7 @@ def cancel_sales_order(debug=1):
 		if not debug and doc.docstatus == 1:
 			doc.cancel()
 			print('Cancelled...')
-	
+			frappe.db.commit()
 
 def cancel_production(debug=1):
 	pd_arr = frappe.db.sql_list("""select name
@@ -2119,6 +2120,7 @@ def cancel_production(debug=1):
 		if not debug and doc.docstatus == 1:
 			doc.cancel()
 			print('Cancelled...')
+			frappe.db.commit()
 
 # def so_change_status():
 # 	so = frappe.db.sql(" select name from `tabSales Order` where status='Draft' and docstatus=2", as_dict=True)
