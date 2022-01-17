@@ -9,6 +9,51 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+# created by SHIV on 2022/01/17
+# list for submission mailed by Jamyang, NRDCL
+def submit_dn_20220117(debug=1):
+	li = frappe.db.sql("""select 'Delivery Note' as doctype, name as docname
+					from `tabDelivery Note`
+					where name in (
+						'DN21129230', 'DN21129290', 'DN21129295', 'DN21129304', 'DN21129313', 'DN21129321', 'DN21129349',
+						'DN21129351', 'DN21129354', 'DN21129360', 'DN21129374', 'DN21129387', 'DN21129392', 'DN21129398',
+						'DN21129406', 'DN21129418', 'DN21129421', 'DN21129426', 'DN21129429', 'DN21129434', 'DN21129435'
+					)
+					order by posting_date
+				""", as_dict=True)
+	counter = 0
+	for i in li:
+		counter += 1
+		doc = frappe.get_doc("Delivery Note", i.docname)
+		print(counter, i.docname, doc.docstatus)
+		if not debug and doc.docstatus == 0:
+			try:
+				doc.submit()
+				print('Submitted...')
+			except Exception as e:
+				print(str(e))
+			frappe.db.commit()
+
+def submit_prd_20220117(debug=1):
+	li = frappe.db.sql("""select name
+					from `tabProduction`
+					where name in ('PRO220100482', 'PRO220100473', 'PRO220100465', 'PRO220100463', 'PRO220100411')
+					order by posting_date desc
+				""", as_dict=True)
+	counter = 0
+	for i in li:
+		counter += 1
+		doc = frappe.get_doc("Production", a)
+		print(counter, a, doc.docstatus)
+		if not debug and doc.docstatus == 0:
+			try:
+				doc.submit()
+				print('Submitted...')
+			except Exception as e:
+				print(str(e))
+			frappe.db.commit()
+
+
 def copy_party_to_consolidation():
     for d in frappe.db.sql('''
                            select voucher_no, account, name,consolidation_party
