@@ -79,9 +79,12 @@ class RentalPayment(AccountsController):
 
 	def validate_rental_bill(self):
 		for d in self.get('item'):
-			chk_gl_post = frappe.db.get_value("Rental Bill", d.rental_bill, "gl_entry")
-			if not chk_gl_post:
-				frappe.throw(_("#Row {}, Rental Bill {} of Tenant {} is not posted to accounts").format(d.idx, d.rental_bill, d.tenant))
+			if d.sa_amount > 0 and not d.rental_bill:
+				return
+			else:
+				chk_gl_post = frappe.db.get_value("Rental Bill", d.rental_bill, "gl_entry")
+				if not chk_gl_post:
+					frappe.throw(_("#Row {}, Rental Bill {} of Tenant {} is not posted to accounts").format(d.idx, d.rental_bill, d.tenant))
 
 	def update_rental_official(self):
 		if frappe.db.exists("Employee", {"user_id":frappe.session.user}):
