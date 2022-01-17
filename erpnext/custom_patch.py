@@ -2071,7 +2071,7 @@ def assign_role_approver():
 		else:
 			print "Failed", emp.employee
 
-def cancel_delivery_notes(debug=1):
+def cancel_delivery_note(debug=1):
 	dn_arr = frappe.db.sql_list("""select name
 					from `tabDelivery Note`
 					where name in ('DN21081026', 'DN21051921', 'DN21051924', 'DN21051926', 'DN21051292','DN21051854')
@@ -2082,8 +2082,8 @@ def cancel_delivery_notes(debug=1):
 	for a in dn_arr:
 		counter += 1
 		doc = frappe.get_doc("Delivery Note", a)
-		print(counter, a)
-		if not debug:
+		print(counter, a, doc.docstatus)
+		if not debug and doc.docstatus == 1:
 			doc.cancel()
 			print('Cancelled...')
 
@@ -2091,14 +2091,15 @@ def cancel_sales_order(debug=1):
 	so_arr = frappe.db.sql_list("""select name
 					from `tabSales Order`
 					where name in ('SO21080441', 'SO21050781', 'SO21050672','SO21050796')
-					order by posting_date desc
+					order by transaction_date desc
 				""")
 	# so_arr = [ 'SO21080441', 'SO21050781', 'SO21050672','SO21050796']
 	counter = 0
 	for a in so_arr:
 		counter += 1
 		doc = frappe.get_doc("Sales Order", a)
-		if not debug:
+		print(counter, a, doc.docstatus)
+		if not debug and doc.docstatus == 1:
 			doc.cancel()
 			print('Cancelled...')
 	
@@ -2114,28 +2115,29 @@ def cancel_production(debug=1):
 	for a in pd_arr:
 		counter += 1
 		doc = frappe.get_doc("Production", a)
-		if not debug:
+		print(counter, a, doc.docstatus)
+		if not debug and doc.docstatus == 1:
 			doc.cancel()
 			print('Cancelled...')
 
-def so_change_status():
-	so = frappe.db.sql(" select name from `tabSales Order` where status='Draft' and docstatus=2", as_dict=True)
-	c = 1
-	for s in so:
-		if s.name != 'SO19031525' and :
-			doc = frappe.get_doc("Sales Order", s.name)
-			doc.on_cancel()
-			print(c)
-			c += 1
-	print("DONE")
+# def so_change_status():
+# 	so = frappe.db.sql(" select name from `tabSales Order` where status='Draft' and docstatus=2", as_dict=True)
+# 	c = 1
+# 	for s in so:
+# 		if s.name != 'SO19031525' and :
+# 			doc = frappe.get_doc("Sales Order", s.name)
+# 			doc.on_cancel()
+# 			print(c)
+# 			c += 1
+# 	print("DONE")
 
-def submit_production_entry():
-	pd_arr = ['PRO220100694', 'PRO220100702', 'PRO220100685', 'PRO220100628']
-	c = 1
-	for s in pd_arr:
-		doc = frappe.get_doc("Production", s)
-		doc.on_submit()
-		print(c)
-		c += 1
-	print("DONE")
+# def submit_production_entry():
+# 	pd_arr = ['PRO220100694', 'PRO220100702', 'PRO220100685', 'PRO220100628']
+# 	c = 1
+# 	for s in pd_arr:
+# 		doc = frappe.get_doc("Production", s)
+# 		doc.on_submit()
+# 		print(c)
+# 		c += 1
+# 	print("DONE")
 
