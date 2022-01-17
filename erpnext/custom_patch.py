@@ -38,7 +38,7 @@ def submit_prd_20220117(debug=1):
 	li = frappe.db.sql("""select name
 					from `tabProduction`
 					where name in ('PRO220100482', 'PRO220100473', 'PRO220100465', 'PRO220100463', 'PRO220100411')
-					order by posting_date desc
+					order by posting_date
 				""", as_dict=True)
 	counter = 0
 	for i in li:
