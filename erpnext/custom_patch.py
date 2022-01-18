@@ -43,7 +43,7 @@ def submit_dn_20220117(debug=1):
 			frappe.db.commit()
 
 def submit_prd_20220117(debug=1):
-	li = frappe.db.sql("""select name
+	li = frappe.db.sql("""select 'Production' as doctype, name as docname
 					from `tabProduction`
 					where name in (	'PRO220100482', 'PRO220100473', 'PRO220100465', 'PRO220100463', 'PRO220100411',
 									'PRO210500105', 'PRO210600501', 'PRO220100526')
@@ -52,8 +52,8 @@ def submit_prd_20220117(debug=1):
 	counter = 0
 	for i in li:
 		counter += 1
-		doc = frappe.get_doc("Production", a)
-		print(counter, a, doc.docstatus)
+		doc = frappe.get_doc("Production", i.name)
+		print(counter, i.name, doc.docstatus)
 		if not debug and doc.docstatus == 0:
 			try:
 				doc.submit()
