@@ -52,8 +52,8 @@ def submit_prd_20220117(debug=1):
 	counter = 0
 	for i in li:
 		counter += 1
-		doc = frappe.get_doc("Production", i.name)
-		print(counter, i.name, doc.docstatus)
+		doc = frappe.get_doc("Production", i.docname)
+		print(counter, i.docname, doc.docstatus)
 		if not debug and doc.docstatus == 0:
 			try:
 				doc.submit()
