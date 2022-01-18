@@ -6,10 +6,31 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-
+from frappe.utils import flt
 class AssetIssueDetails(Document):
 	def validate(self):
-		pass
+		self.validate_balance()
+
+	def validate_balance(self):
+		received = frappe.db.sql(""" 
+				select sum(ifnull(re.qty, 0)) qty from `tabAsset Received Entries` re 
+				where re.docstatus = 1 and re.item_code = '{0}'
+			""".format(self.item_code), as_dict =1)
+
+
+		issue = frappe.db.sql(""" 
+				select sum(ifnull(ie.qty, 0)) qty from `tabAsset Issue Details` ie 
+				where ie.docstatus = 1 and ie.item_code = '{0}'
+			""".format(self.item_code), as_dict =1)
+
+		if flt(received[0].qty) < flt(issue[0].qty) + flt(self.qty):
+			diff = flt(received[0].qty) - flt(issue[0].qty)
+			uom = frappe.get_doc("Item", self.item_code).stock_uom
+			frappe.throw("Asset Issue Cannot Exceed the Received qty, </br> \
+						Can Issue Only <b> {0} {2} </b> of Item <b> {1} </b> \
+				".format(diff, self.item_code, uom), title="Insufficient Balance")
+
+
 	def on_submit(self):
 		item_doc = frappe.get_doc("Item",self.item_code)
 		if item_doc.asset_category:
