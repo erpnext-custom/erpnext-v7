@@ -9,6 +9,62 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+
+def submit_dn_20220119(debug=1):
+	li = frappe.db.sql("""select 'Delivery Note' as doctype, name as docname
+					from `tabDelivery Note`
+					where name in (
+						'DN21024792','DN21060026','DN21060027','DN21094615','DN21083280','DN21083281',
+						'DN21013043','DN21013044','DN21023401','DN21023402','DN21023837',
+						'DN21030203','DN21030204','DN21030528','DN21030491','DN21030492','DN21030754','DN21030755','DN21030756',
+						'DN21030758','DN21030707','DN21032846','DN21032845','DN21032844','DN21032843','DN21032842','DN21032841',
+						'DN21032837','DN21032840','DN21032836','DN21032835','DN21033840','DN21037736','DN21037735','DN21037734',
+						'DN21037733','DN21037732','DN21037730','DN21037729','DN21037727','DN21037725','DN21037723','DN21038118',
+						'DN21042634','DN21042602','DN21042595','DN21042627','DN21042628','DN21042629','DN21042630','DN21042632',
+						'DN21042639','DN21042598','DN21042599','DN21054729','DN21054730'
+					)
+					order by posting_date
+				""", as_dict=True)
+	counter = 0
+	for i in li:
+		counter += 1
+		doc = frappe.get_doc("Delivery Note", i.docname)
+		print(counter, i.docname, doc.docstatus)
+		if not debug and doc.docstatus == 0:
+			try:
+				doc.submit()
+				print('Submitted...')
+			except Exception as e:
+				print(str(e))
+			frappe.db.commit()
+
+def submit_prd_20220119(debug=1):
+	li = frappe.db.sql("""select 'Production' as doctype, name as docname
+					from `tabProduction`
+					where name in (	
+						'PRO210300566','PRO210500532','PRO210500534','PRO210500535','PRO210500536','PRO210500537','PRO210500531','PRO210900312',
+						'PRO210800719','PRO210800720','PRO210800721','PRO210800722','PRO211000260','PRO210901158','PRO211201883','PRO211201875',
+						'PRO211100437','PRO211100511','PRO211202456','PRO211202458','PRO220100537','PRO211202459','PRO211201380','PRO211201367',
+						'PRO211201353','PRO211201352','PRO211201350','PRO211201349','PRO211201336','PRO211201335','PRO211201330','PRO211201328',
+						'PRO211201325','PRO211201322','PRO211201321','PRO211201320','PRO211201316','PRO211201309','PRO211201308','PRO211201306',
+						'PRO211201304','PRO211201302','PRO211201300','PRO211201296','PRO211201295','PRO211201288','PRO211201285','PRO211201284',
+						'PRO211201283','PRO211201280','PRO211201279','PRO211201278','PRO211201276','PRO211201275','PRO220100536','PRO220100538',
+						'PRO211202186-1')
+					order by posting_date
+				""", as_dict=True)
+	counter = 0
+	for i in li:
+		counter += 1
+		doc = frappe.get_doc("Production", i.docname)
+		print(counter, i.docname, doc.docstatus)
+		if not debug and doc.docstatus == 0:
+			try:
+				doc.submit()
+				print('Submitted...')
+			except Exception as e:
+				print(str(e))
+			frappe.db.commit()
+
 # created by SHIV on 2022/01/17
 # list for submission mailed by Jamyang, NRDCL
 def submit_dn_20220117(debug=1):
