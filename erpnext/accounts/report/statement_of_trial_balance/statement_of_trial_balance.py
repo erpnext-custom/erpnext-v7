@@ -7,6 +7,7 @@ from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr, rounded
 from erpnext.accounts.report.financial_statements_emines \
 	import filter_accounts, filter_out_zero_value_rows
+from erpnext.accounts.accounts_custom_functions import get_child_cost_centers
 
 value_fields = ("opening_debit", "opening_credit", "debit", "credit", "closing_debit", "closing_credit")
 
