@@ -5,7 +5,9 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.utils import flt
-from erpnext.accounts.report.financial_statements_emines import (get_period_list, get_columns, get_data)
+
+#from erpnext.accounts.report.financial_statements_emines import (get_period_list, get_columns, get_data)
+from erpnext.accounts.report.financial_statements_emines_opt import (get_period_list, get_columns, get_data)
 
 def execute(filters=None):
 	period_list = get_period_list(filters.fiscal_year, filters.periodicity)

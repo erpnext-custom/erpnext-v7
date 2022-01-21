@@ -4,7 +4,8 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from erpnext.accounts.report.financial_statements import (get_period_list, get_columns, get_data)
+#from erpnext.accounts.report.financial_statements import (get_period_list, get_columns, get_data)
+from erpnext.accounts.report.financial_statements_opt import (get_period_list, get_columns, get_data)
 from erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement import get_net_profit_loss
 
 
@@ -89,7 +90,6 @@ def execute(filters=None):
 			})
 			data.append(account_data)
 			section_data.append(account_data)
-
 		add_total_row_account(data, section_data, cash_flow_account['section_footer'], 
 			period_list, company_currency)
 

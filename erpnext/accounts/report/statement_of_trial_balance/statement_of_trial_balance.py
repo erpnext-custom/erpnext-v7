@@ -6,7 +6,7 @@ import frappe
 from frappe import _
 from frappe.utils import flt, getdate, formatdate, cstr, rounded
 from erpnext.accounts.report.financial_statements_emines \
-	import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
+	import filter_accounts, filter_out_zero_value_rows
 
 value_fields = ("opening_debit", "opening_credit", "debit", "credit", "closing_debit", "closing_credit")
 
@@ -188,6 +188,62 @@ def prepare_data(accounts, filters, total_row, parent_children_map):
 	data.extend([{},total_row])
 
 	return data
+def set_gl_entries_by_account(cost_center, company, from_date, to_date, root_lft, root_rgt, gl_entries_by_account,
+                ignore_closing_entries=False, open_date=None):
+        """Returns a dict like { "account": [gl entries], ... }"""
+        additional_conditions = []
+
+        if ignore_closing_entries:
+                additional_conditions.append(" and ifnull(voucher_type, '')!='Period Closing Voucher' ")
+
+        #if from_date:
+        #       additional_conditions.append("and posting_date >= %(from_date)s")
+
+        if from_date and to_date:
+                if open_date:
+                        #Getting openning balance
+                        additional_conditions.append(" and posting_date < \'" + str(open_date) + "\' and docstatus = 1 ")
+                else:
+                        additional_conditions.append(" and posting_date BETWEEN %(from_date)s AND %(to_date)s and docstatus = 1 ")
+                        
+	if not cost_center:
+                gl_entries = frappe.db.sql("""select posting_date, account, sum(debit) as debit, sum(credit) as credit, is_opening from `tabGL Entry`
+                        where company=%(company)s 
+                        {additional_conditions}
+                        and account in (select name from `tabAccount`
+                                where lft >= %(lft)s and rgt <= %(rgt)s) group by account, posting_date, is_opening
+                        order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
+                        {
+                                "company": company,
+                                "from_date": from_date,
+                                "to_date": to_date,
+                                "lft": root_lft,
+                                "rgt": root_rgt
+                        },
+                        as_dict=True)
+        else:
+                cost_centers = get_child_cost_centers(cost_center);
+                additional_conditions.append("and cost_center IN %(cost_center)s")
+                gl_entries = frappe.db.sql("""select posting_date, account, sum(debit) as debit, sum(credit) as credit, is_opening from `tabGL Entry`
+                        where company=%(company)s
+                        {additional_conditions}
+                        and account in (select name from `tabAccount`
+                                where lft >= %(lft)s and rgt <= %(rgt)s) group by account, posting_date, is_opening
+                        order by account, posting_date""".format(additional_conditions="\n".join(additional_conditions)),
+                        {
+                                "cost_center": cost_centers,
+                                "company": company,
+                                "from_date": from_date,
+                                "to_date": to_date,
+                                "lft": root_lft,
+                                "rgt": root_rgt
+                        },
+                        as_dict=True)
+                        
+	for entry in gl_entries:
+                gl_entries_by_account.setdefault(entry.account, []).append(entry)
+
+        return gl_entries_by_account
 
 def get_columns():
 	return [

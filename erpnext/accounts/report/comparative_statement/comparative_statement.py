@@ -6,9 +6,11 @@ import frappe
 from frappe import _
 from frappe.utils import flt, cint, getdate, formatdate, cstr, rounded
 from calendar import monthrange, isleap
-from erpnext.accounts.report.financial_statements_emines \
-	import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
+#from erpnext.accounts.report.financial_statements_emines \
+#	import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
 
+from erpnext.accounts.report.financial_statements_emines_opt \
+        import filter_accounts, set_gl_entries_by_account, filter_out_zero_value_rows
 value_fields = ("reporting", "comparing", "variance")
 
 def execute(filters=None):
