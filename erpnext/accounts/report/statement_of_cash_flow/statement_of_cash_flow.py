@@ -4,7 +4,9 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from erpnext.accounts.report.financial_statements_emines import (get_period_list, get_columns, get_data)
+#from erpnext.accounts.report.financial_statements_emines import (get_period_list, get_columns, get_data)
+from erpnext.accounts.report.financial_statements_emines_opt import (get_period_list, get_columns, get_data)
+
 from erpnext.accounts.report.profit_and_loss_statement.profit_and_loss_statement import get_net_profit_loss
 from erpnext.accounts.accounts_custom_functions import get_child_cost_centers
 
