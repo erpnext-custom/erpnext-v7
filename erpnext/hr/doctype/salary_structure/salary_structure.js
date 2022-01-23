@@ -104,6 +104,9 @@ frappe.ui.form.on('Salary Structure', {
 	eligible_for_honorarium: function(frm){
 		calculate_others(frm.doc);
 	},
+	eligible_for_factory_allowance: function(frm){
+		calculate_others(frm.doc);
+	},
 	eligible_for_mpi: function(frm){
 		calculate_others(frm.doc);
 	},
@@ -120,11 +123,11 @@ frappe.ui.form.on('Salary Structure', {
 		calculate_others(frm.doc);
 	},
 	eligible_for_pbvi: function(frm){
-                calculate_others(frm.doc);
-        },
-        eligible_for_hra: function(frm){
-                calculate_others(frm.doc);
-        },
+         calculate_others(frm.doc);
+    },
+    eligible_for_hra: function(frm){
+        calculate_others(frm.doc);
+    },
 	ca: function(frm){
 		calculate_others(frm.doc);
 	},
@@ -185,6 +188,9 @@ frappe.ui.form.on('Salary Structure', {
 	honorarium: function(frm){
 		calculate_others(frm.doc);
 	},
+	factory_allowance: function(frm){
+		calculate_others(frm.doc);
+	},
 	// Payment Methods
 	ca_method: function(frm){
 		calculate_others(frm.doc);
@@ -238,6 +244,9 @@ frappe.ui.form.on('Salary Structure', {
 		calculate_others(frm.doc);
 	},
 	honorarium_method: function(frm){
+		calculate_others(frm.doc);
+	},
+	factory_allowance_method: function(frm){
 		calculate_others(frm.doc);
 	}
 })
