@@ -433,54 +433,54 @@ class BankPayment(Document):
 						#actual_debit_amount = flt(b.debit_amount) - flt(other_credit)
 						party_type = b.party_type
 						party = b.party
-						if not party_type and not party:
-							reference_type = b.reference_type if b.reference_type and not reference_type else ""
-							reference_name = b.reference_name if b.reference_name and not reference_name else ""
-							if reference_type and reference_name:
-								if reference_type in ['Travel Authorization','Travel Claim','Overtime Application','Leave Encashment','Employee Benefits']:
-									party_type = "Employee"
-									party      = frappe.db.get_value(reference_type, reference_name, "employee")
-								else:
-									party_type = "Supplier"
-									party      = frappe.db.get_value(reference_type, reference_name, "supplier")
-							if not party:
-								frappe.msgprint("Party missing for Journal Entry {}".format(a.transaction_id))
-						if party and party_type:
-							employee = supplier = ""
-							debit_amt += flt(b.debit_amount)
-							if party_type == "Supplier":
-								query = """select s.bank_name_new as bank_name, s.bank_branch, s.bank_account_type, 
-												s.account_number as bank_account_no, s.supplier_name as beneficiary_name,
-												(CASE WHEN s.bank_name_new = "INR" THEN s.inr_bank_code ELSE NULL END) inr_bank_code,
-												(CASE WHEN s.bank_name_new = "INR" THEN s.inr_purpose_code ELSE NULL END) inr_purpose_code
-												from `tabSupplier` s
-												WHERE s.name = '{party}'
-											""".format(party = party)
-								supplier = party
-							elif party_type == "Employee":
-								query = """select e.bank_name, e.bank_branch, e.bank_account_type, e.employee_name as beneficiary_name,
-												e.bank_ac_no as bank_account_no, NULL inr_bank_code, NULL inr_purpose_code
-												from `tabEmployee` e
-												WHERE e.name = '{party}'
-											""".format(party = party)
-								employee = party
-							for c in frappe.db.sql(query, as_dict=True):					
-								data.append(frappe._dict({
-									'transaction_type': 'Journal Entry',
-									'transaction_id': a.transaction_id,
-									'transaction_date': a.transaction_date,
-									'employee': employee,
-									'supplier': supplier,
-									'beneficiary_name': c.beneficiary_name,
-									'bank_name': c.bank_name,
-									'bank_branch': c.bank_branch,
-									'bank_account_type': c.bank_account_type,
-									'bank_account_no': c.bank_account_no,
-									'amount': flt(credit_amt),
-									'inr_bank_code': c.inr_bank_code,
-									'inr_purpose_code': c.inr_purpose_code,
-									'status': "Draft"
-								}))
+					if not party_type and not party:
+						reference_type = b.reference_type if b.reference_type and not reference_type else ""
+						reference_name = b.reference_name if b.reference_name and not reference_name else ""
+						if reference_type and reference_name:
+							if reference_type in ['Travel Authorization','Travel Claim','Overtime Application','Leave Encashment','Employee Benefits']:
+								party_type = "Employee"
+								party      = frappe.db.get_value(reference_type, reference_name, "employee")
+							else:
+								party_type = "Supplier"
+								party      = frappe.db.get_value(reference_type, reference_name, "supplier")
+						if not party:
+							frappe.msgprint("Party missing for Journal Entry {}".format(a.transaction_id))
+				if party and party_type:
+					employee = supplier = ""
+					debit_amt += flt(b.debit_amount)
+					if party_type == "Supplier":
+						query = """select s.bank_name_new as bank_name, s.bank_branch, s.bank_account_type, 
+										s.account_number as bank_account_no, s.supplier_name as beneficiary_name,
+										(CASE WHEN s.bank_name_new = "INR" THEN s.inr_bank_code ELSE NULL END) inr_bank_code,
+										(CASE WHEN s.bank_name_new = "INR" THEN s.inr_purpose_code ELSE NULL END) inr_purpose_code
+										from `tabSupplier` s
+										WHERE s.name = '{party}'
+									""".format(party = party)
+						supplier = party
+					elif party_type == "Employee":
+						query = """select e.bank_name, e.bank_branch, e.bank_account_type, e.employee_name as beneficiary_name,
+										e.bank_ac_no as bank_account_no, NULL inr_bank_code, NULL inr_purpose_code
+										from `tabEmployee` e
+										WHERE e.name = '{party}'
+									""".format(party = party)
+						employee = party
+					for c in frappe.db.sql(query, as_dict=True):					
+						data.append(frappe._dict({
+							'transaction_type': 'Journal Entry',
+							'transaction_id': a.transaction_id,
+							'transaction_date': a.transaction_date,
+							'employee': employee,
+							'supplier': supplier,
+							'beneficiary_name': c.beneficiary_name,
+							'bank_name': c.bank_name,
+							'bank_branch': c.bank_branch,
+							'bank_account_type': c.bank_account_type,
+							'bank_account_no': c.bank_account_no,
+							'amount': flt(credit_amt),
+							'inr_bank_code': c.inr_bank_code,
+							'inr_purpose_code': c.inr_purpose_code,
+							'status': "Draft"
+						}))
 				'''
 				if flt(credit_amt) != flt(actual_debit_amount):
 					frappe.throw("Debit {} is not equal to credit {}".format(debit_amt, credit_amt))
