@@ -61,12 +61,12 @@ def get_data(filters):
 
 			(sum(rpi.rent_received) + sum(rpi.pre_rent_amount) + sum(rpi.penalty) + sum(rpi.excess_amount) - sum(rpi.tds_amount) - sum(rpi.discount_amount)) total_rent_received,
 			
-			(sum(rb.rent_amount) - sum(rpi.rent_received)) outstanding_bill,
+			(sum(rpi.bill_amount) - sum(rpi.rent_received) - sum(rb.adjusted_amount)) outstanding_bill,
 			(sum(rpi.pre_rent_amount) - sum(rb.adjusted_amount)) pre_rent_balance
 		from `tabTenant Information` ti
 		INNER JOIN `tabRental Payment Item` as rpi ON ti.name = rpi.tenant AND rpi.docstatus = 1
 		INNER JOIN `tabRental Payment` rp ON rp.name = rpi.parent
-		INNER JOIN `tabRental Bill` as rb ON rpi.rental_bill = rb.name
+		INNER JOIN `tabRental Bill` as rb ON rb.tenant = ti.name
 			
 		where rb.posting_date between '{from_date}' and '{to_date}' {cond}
 		group by ti.name
