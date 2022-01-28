@@ -447,12 +447,13 @@ class BankPayment(Document):
 					if frappe.db.get_value("Account", b.account, "account_type") != "Bank" and b.credit_amount > 0:
 						other_credit += flt(b.credit_amount)
 					if other_credit > 0 and party_count > 1:
-						frappe.throw("Payment for Journal Entry {} is not feasible through bank payment".format(a.transaction_id)) 
+						frappe.throw("Payment for Journal Entry {} is not feasible through bank payment".format(a.transaction_id))
 					if b.debit_amount > 0:
 						actual_debit_amount = flt(b.debit_amount) - flt(other_credit)
-						party_type = b.party_type
-						party = b.party
-						if not party_type and not party:
+						if b.party_type and b.party:
+							party_type = b.party_type
+							party = b.party
+						if not party_type and not party and b.reference_type and b.reference_name:
 							reference_type = b.reference_type if b.reference_type and not reference_type else ""
 							reference_name = b.reference_name if b.reference_name and not reference_name else ""
 							if reference_type and reference_name:
