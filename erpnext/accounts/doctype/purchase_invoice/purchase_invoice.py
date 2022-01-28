@@ -430,16 +430,6 @@ class PurchaseInvoice(BuyingController):
                     warehouse_debit_amount = flt(flt(item.valuation_rate, val_rate_db_precision)
                         * flt(item.qty)	* flt(item.conversion_factor), item.precision("base_net_amount"))
 
-                    # gl_entries.append(
-                    # 	self.get_gl_dict({
-                    # 		"account": item.expense_account,
-                    # 		"against": self.supplier,
-                    # 		"debit": warehouse_debit_amount,
-                    # 		"remarks": self.get("remarks") or _("Accounting Entry for Stock"),
-                    # 		"cost_center": item.cost_center,
-                    # 		"project": item.project
-                    # 	}, account_currency)
-                    # )
                 # extra field add for dhi consoliadtion purpose it will not affect wth current flow of transaction
                     gl_entries.append(
                         self.get_gl_dict({
