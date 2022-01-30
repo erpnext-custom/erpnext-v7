@@ -39,7 +39,8 @@ class AssetModifier(Document):
                         "remark": "Value (" + str(value) +" ) added to " + asset.name + " (" + asset.asset_name + ") ",
                         "user_remark": "Value (" + str(value) +" ) added to " + asset.name + " (" + asset.asset_name + ") ",
                         "posting_date": start_date,
-                        "branch": asset.branch
+                        "branch": asset.branch,
+                        "business_activity": asset.business_activity
                         })
 	#credit account update
                 je.append("accounts", {
@@ -47,7 +48,8 @@ class AssetModifier(Document):
                         "credit_in_account_currency": flt(value),
                         "reference_type": "Asset",
                         "reference_name": asset.name,
-                        "cost_center": asset.cost_center
+                        "cost_center": asset.cost_center,
+                        "business_activity": asset.business_activity
                         })
 
         #debit account update
@@ -56,7 +58,8 @@ class AssetModifier(Document):
                         "debit_in_account_currency": flt(value),
                         "reference_type": "Asset",
                         "reference_name": asset.name,
-                        "cost_center": asset.cost_center
+                        "cost_center": asset.cost_center,
+                        "business_activity": asset.business_activity
                         })
                 je.flags.ignore_permissions=1
                 je.submit();

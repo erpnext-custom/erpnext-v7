@@ -26,7 +26,8 @@ def get_data():
 				},
 				{
 					"type": "doctype",
-					"name": "Asset Modifier Tool",
+					"name": "Asset Modifier",
+					# "name": "Asset Modifier Tool", # by Jai, 30 Jan, 22
 					"description": "Asset Addition Tool",
 					"label": "Asset Addition Tool",
 					"hide_count": True
