@@ -6,10 +6,17 @@ frappe.ui.form.on('Asset Modifier', {
 
 	},
 	onload: function(frm){
-		frm.toggle_display("party_type", 0);
-		frm.refresh_field('party_type');
-		frm.toggle_display("party", 0);
-		frm.refresh_field('party');
+		if(frm.doc.party_type && frm.doc.party){
+			frm.toggle_display("party_type", 1);
+			frm.refresh_field('party_type');
+			frm.toggle_display("party", 1);
+			frm.refresh_field('party');
+		}else{
+			frm.toggle_display("party_type", 0);
+			frm.refresh_field('party_type');
+			frm.toggle_display("party", 0);
+			frm.refresh_field('party');
+		}
 	},
 	"credit_account": function(frm){
 		frappe.model.get_value('Account', { 'name': frm.doc.credit_account }, 'account_type',
