@@ -129,6 +129,8 @@ class AssetModifier(Document):
 					self.make_gl_entry(asset_account, credit_account, value, asset_obj, start_date)
 				#Get dep. schedules which had not yet happened
 				schedules = frappe.db.get_all("Depreciation Schedule", order_by="schedule_date", filters = {"parent": asset_obj.name, "schedule_date": [">=", start_date]},fields={"name", "schedule_date", "journal_entry", "depreciation_amount", "accumulated_depreciation_amount", "depreciation_income_tax","accumulated_depreciation_income_tax"})
+				if not schedules:
+					frappe.throw(_("Asset <b>{}</b> Depreciation Schedule Date is out of Effective Date {}".format(asset, str(start_date))))
 				##Get total number of dep days for the asset
 				total_days = get_number_of_days(start_date, schedules[-1]['schedule_date'])
 				##Assign the last dep schedule date for num of days calc
