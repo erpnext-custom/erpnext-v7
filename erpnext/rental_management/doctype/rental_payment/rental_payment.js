@@ -82,7 +82,19 @@ frappe.ui.form.on('Rental Payment', {
         });
 	},
 	"discount_percent": function(frm){
+		
 	},
+	"rent_write_off": function(frm){
+		if (frm.doc.rent_write_off == 1){
+			frappe.model.get_value('Rental Account Setting', { 'name': 'Rental Account Setting' }, 'rent_write_off_account',
+			function (r) {
+				cur_frm.set_value("rent_write_off_account", r.rent_write_off_account);
+			});
+		}else{
+			frm.set_value("rent_write_off_account", "");
+			cur_frm.refresh_field("rent_write_off_account");
+		}
+	}
 });
 
 frappe.ui.form.on("Rental Payment Item", {
