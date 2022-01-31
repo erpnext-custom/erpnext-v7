@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt,getdate,nowdate
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 
 def execute(filters=None):
 	filter 					= {}
@@ -244,11 +244,9 @@ def create_transaction():
 		if flt(i_none['amount'])  > 0:
 			row 	= doc.append('items',{})
 			row.update(i_none)
-		print('=====>')
 	doc.save(ignore_permissions=True)
 	doc.submit()
 	dhi_setting.save()
-	print('Done')
 	
 def get_columns():
 	return [{"fieldname":"account","label":"Account","fieldtype":"Link","options":"Account","width":180},
