@@ -56,19 +56,19 @@ def get_receivable_data(filters):
 	return data
 	
 def rbb_conditions(filters):
- 	conds = ""
- 	if filters.dzongkhag:
- 		conds += "and rb.dzongkhag='{}'".format(filters.get("dzongkhag"))
- 	if filters.location:
- 		conds += "and rb.location='{}'".format(filters.location)
-	
- 	report_date = filters.get("fiscal_year") + "-" + filters.get("month") + "-" + "01"
- 	from_date = get_first_day(report_date)
- 	to_date   = get_last_day(report_date)
-	
- 	if from_date and to_date:
- 		conds += " and rb.posting_date between '{0}' and '{1}'".format(from_date, to_date)
- 	return conds
+	conds = ""
+	if filters.dzongkhag:
+		conds += "and rb.dzongkhag='{}'".format(filters.get("dzongkhag"))
+	if filters.location:
+		conds += "and rb.location='{}'".format(filters.location)
+
+	report_date = filters.get("fiscal_year") + "-" + filters.get("month") + "-" + "01"
+	from_date = get_first_day(report_date)
+	to_date   = get_last_day(report_date)
+
+	if from_date and to_date:
+		conds += " and rb.posting_date between '{0}' and '{1}'".format(from_date, to_date)
+	return conds
 
 
 def get_columns(filters):
@@ -85,6 +85,7 @@ def get_columns(filters):
 		("Penalty Amount") + ":Currency:100",
 		
 		("TDS Amount") + ":Currency:100",
+		("Rent Write-off") + ":Currency:100",
 		("Total Amount Received") + ":Currency:120",
 		("Rental Official")+ ":Data:100",
 		("Ministry/Agency") + ":Link/Ministry and Agency:150",
@@ -115,6 +116,7 @@ def get_data(filters):
 				rpi.penalty,
 				
 				rpi.tds_amount,
+				rpi.rent_write_off_amount,
 				rpi.total_amount_received,
 				rp.rental_official_name,
 				rp.ministry_agency,
