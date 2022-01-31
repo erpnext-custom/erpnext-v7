@@ -688,7 +688,7 @@
    "label": "Consolidation Party Type", 
    "length": 0, 
    "no_copy": 0, 
-   "options": "\nSupplier\nCustomer", 
+   "options": "\nSupplier\nCustomer\nEmployee", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -764,7 +764,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-07-15 16:52:47.716673", 
+ "modified": "2022-01-19 12:59:04.159502", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "GL Entry", 
@@ -1009,26 +1009,6 @@
    "share": 0, 
    "submit": 0, 
    "write": 0
-  }, 
-  {
-   "amend": 0, 
-   "apply_user_permissions": 0, 
-   "cancel": 0, 
-   "create": 1, 
-   "delete": 1, 
-   "email": 1, 
-   "export": 1, 
-   "if_owner": 0, 
-   "import": 0, 
-   "permlevel": 0, 
-   "print": 1, 
-   "read": 1, 
-   "report": 1, 
-   "role": "Administrator", 
-   "set_user_permissions": 0, 
-   "share": 1, 
-   "submit": 0, 
-   "write": 1
   }
  ], 
  "quick_entry": 1, 
@@ -1037,6 +1017,6 @@
  "search_fields": "voucher_no,account,posting_date,against_voucher", 
  "sort_field": "modified", 
  "sort_order": "DESC", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

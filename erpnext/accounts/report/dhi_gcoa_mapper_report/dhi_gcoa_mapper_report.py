@@ -36,66 +36,24 @@ def get_data(filters):
 							'{}' as is_inter_company
 					   FROM `tabDHI Mapper Item` WHERE parent = '{}'
 					   '''.format(d.dhi_gcoa_acc,d.dhi_gcoa_acc_code,d.is_inter_company,d.dhi_gcoa_acc),as_dict=1)
-			# if val:
-			# 	row = {}
-			# 	row['dhi_gcoa_acc_code'] = '<b>'+d.dhi_gcoa_acc_code+'</b>'
-			# 	row['dhi_gcoa_acc'] = '<b>' + d.dhi_gcoa_acc+'</b>'
-			# 	row['is_inter_company'] = '<b>' + d.is_inter_company + '</b>'
-			# 	row['coa_acc'] = val[0]['coa_acc']
-			# 	data.append(row)
-			# 	val.pop(0)
-			# 	if val:
 			data += val
-			frappe.msgprint(val)
 	elif filters.map.strip() == "COA Unmapped":
-	   data = frappe.db.sql('''
+		data = frappe.db.sql('''
 						SELECT name as coa_acc
 						FROM `tabAccount` a
 						WHERE NOT EXISTS (	select 1 from `tabDHI Mapper Item` where account = a.name)
 						AND a.is_group != 1
-                         ''',as_dict=1)
+						 ''',as_dict=1)
 	return data
 	
 def get_cols(filters):
 
 	if not filters.map or filters.map.strip() == "GCOA Mapped":
-			cols = [
-		{
-			"fieldname":"dhi_gcoa_acc_code",
-			"label":"DHI GCOA Code",
-			"fieldtype":"Link",
-			"options":"DHI GCOA",
-			"width":120,
-		},
-		{
-			"fieldname":"dhi_gcoa_acc",
-			"label":"DHI Group Chart Of Account",
-			"fieldtype":"Link",
-			"options":"DHI GCOA Mapper",
-			"width":250,
-		},
-		{
-			"fieldname":"is_inter_company",
-			"label":"Is Inter Company",
-			"fieldtype":"Data",
-			"width":150
-		},
-		{
-			"fieldname":"coa_acc",
-			"label":"Company Chart Of Account",
-			"fieldtype":"Link",
-			"options":"Account",
-			"width":400
-		}
+			cols = [{"fieldname":"dhi_gcoa_acc_code","label":"DHI GCOA Code","fieldtype":"Link","options":"DHI GCOA","width":120,},
+		{"fieldname":"dhi_gcoa_acc","label":"DHI Group Chart Of Account","fieldtype":"Link","options":"DHI GCOA Mapper","width":250,},
+		{"fieldname":"is_inter_company","label":"Is Inter Company","fieldtype":"Data","width":150},
+		{"fieldname":"coa_acc","label":"Company Chart Of Account","fieldtype":"Link","options":"Account","width":400}
 	]
 	elif filters.map.strip() == "COA Unmapped":
-		cols = [
-			{
-			"fieldname":"coa_acc",
-			"label":"Company Chart Of Account",
-			"fieldtype":"Link",
-			"options":"Account",
-			"width":400
-			}
-		]
+		cols = [{"fieldname":"coa_acc","label":"Company Chart Of Account","fieldtype":"Link","options":"Account","width":400}]
 	return cols
