@@ -20,6 +20,7 @@ def get_columns():
 		("Adjusted Amount") + ":Currency:120",
 		("Excess Rent") + ":Currency:120",
 		("TDS") + ":Currency:90",
+		("Rent Write-off") + ":Currency:100",
 		("Penalty") + ":Currency:90",
 		("Discount") + ":Currency:90",
 		("Total Rent Received") + ":Currency:120",
@@ -56,15 +57,17 @@ def get_data(filters):
 			sum(rb.adjusted_amount),
 			sum(rpi.excess_amount),
 			sum(rb.tds_amount),
+			sum(rb.rent_write_off_amount),
 			sum(rb.penalty),
 			sum(rb.discount_amount),
 
 			(sum(rb.received_amount) + sum(rb.pre_rent_amount) + sum(rb.penalty) + sum(rpi.excess_amount) - sum(rb.tds_amount) - sum(rb.discount_amount)) total_rent_received,
 			
-			(sum(rb.receivable_amount) - sum(rb.received_amount) - sum(rb.adjusted_amount)) outstanding_bill,
+			(sum(rb.receivable_amount) - sum(rb.received_amount) - sum(rb.adjusted_amount) - sum(rb.rent_write_off_amount)) outstanding_bill,
 			(sum(rb.pre_rent_amount) - sum(rb.adjusted_amount)) pre_rent_balance
 		from `tabRental Bill` rb
-		LEFT JOIN `tabRental Payment Item` as rpi ON rb.name = rpi.rental_bill AND rpi.docstatus = 1
+		LEFT JOIN `tabRental Payment Item` as rpi ON rb.name = rpi.rental_bill 
+		INNER JOIN `tabRental Payment` rp ON rp.name = rpi.parent
 		
 		where rb.docstatus=1 and rb.posting_date between '{from_date}' and '{to_date}' {cond}
 		group by rb.tenant
