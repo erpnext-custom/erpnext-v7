@@ -6,21 +6,18 @@ import frappe
 from frappe.utils import flt, getdate
 
 def execute(filters=None):
-	filter = {}
-	# filter['from_date'] = filters.from_date
-	# filter['to_date'] = filters.to_date
-	filter['is_inter_company'] 	= filters.is_inter_company
-	columns, data 				= get_columns(), get_date(filter,'No')
+	columns, data 				= get_columns(), get_date(filters,'No')
 	return columns, data
 
 def get_date(filters,from_rest_api=None):
 	cond = ''
-	if filters['is_inter_company'] == 'Yes':
+	if filters.is_inter_company == 'Yes':
 		cond += ' and interco != "I_NONE"'
 	d = frappe.db.sql('''
 					  SELECT name, from_date, to_date
 						FROM `tabConsolidation Transaction` 
-						WHERE to_date <= '{}' limit 1;
+						WHERE to_date <= '{}'
+						ORDER BY to_date desc limit 1;
 					  '''.format(filters.to_date),as_dict=True)
 	if not d:
 		return

@@ -4,8 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt,getdate,nowdate
-from datetime import timedelta, date
-import datetime
+from datetime import timedelta, datetime
 
 def execute(filters=None):
 	filter 					= {}
@@ -20,7 +19,6 @@ def execute(filters=None):
 def get_data(filters,is_for_report=None):
 	value = frappe._dict({'opening_debit':0,'opening_credit':0,'debit':0,'credit':0,'amount':0,'data':[]})
 	is_inter_company = frappe.db.get_value('DHI GCOA Mapper',filters['gcoa_name'],['is_inter_company'])
- 
 	for d in get_coa(filters['gcoa_name']):
 		if d.doc_company :
 			val 					= from_gl_applicable_for_doc(d,filters)
@@ -83,7 +81,7 @@ def from_gl_applicable_for_doc(coa,filters):
 							'opening_debit': value['opening_debit'],'opening_credit':value['opening_credit'],
 							'account':coa.account,'entity':doc.entity,'segment':doc.segment,'flow':doc.flow,
 							'interco':'I_'+coa.doc_company,'time':filters['time'],'debit':value['debit'],
-							'credit':value['amount'],'amount':value['amount'],})
+							'credit':value['credit'],'amount':value['amount'],})
 	return value
 
 # when gl is used for both inter and none inter companies
