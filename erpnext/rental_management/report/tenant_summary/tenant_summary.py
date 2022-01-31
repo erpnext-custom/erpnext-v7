@@ -22,6 +22,7 @@ def get_columns():
 	("Discount Amount") + " :Currency:120",
 	("Security Deposit Amount") + " :Currency:120",
 	("Balance Rent") + " :Currency:120",
+	("Rent Write-off") + " :Currency:120",
 	("Total Amount Received") + " :Currency:120",
 	("Rental Bill No") + " :Link/Rental Bill:150",
 	]
@@ -45,6 +46,7 @@ def get_data(filters):
 			IfNull((Select sum(rpi.discount_amount) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
 			IfNull((Select sum(rpi.sa_amount) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
 			IfNull((Select sum(rpi.balance_rent) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
+			rb.rent_write_off_amount,
 			IfNull((Select sum(rpi.total_amount_received) From `tabRental Payment Item` rpi Where rpi.rental_bill = rb.name),''),
 			rb.name
 		FROM
