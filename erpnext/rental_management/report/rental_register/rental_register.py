@@ -32,6 +32,7 @@ def get_columns():
 	("Discount Amount") + ":Currency:120",
 	("Late Payment Penalty") + ":Currency:120",
 	("TDS  Deducted") + ":Currency:120",
+	("Rent Write-off") + ":Currency:120",
 	("Total Amount Received") + ":Currency:120",
 	("Rental Income") + ":Currency:120",
 	("Rental Bill ID") + ":Link/Rental Bill:130",
@@ -73,7 +74,7 @@ def get_data(query):
 			credit = 0
 
 		row = [d.tenant, d.tenant_name, d.cid, d.dzongkhag, d.dungkhag, d.month, d.posting_date, d.fiscal_year, d.rent_amount, d.adjusted_amount, d.bill_amount,
-				d.rent_received, d.pre_rent_amount, d.excess_amount, d.balance_rent, d.discount_amount, d.penalty, d.tds_amount, d.total_amount_received, 
+				d.rent_received, d.pre_rent_amount, d.excess_amount, d.balance_rent, d.discount_amount, d.penalty, d.tds_amount, d.rent_write_off, d.total_amount_received, 
 				credit, d.rental_bill, d.rental_payment, d.docstatus, d.location, d.building_category, d.department, d.block_no, d.flat_no, d.ministry_agency, d.payment_mode,
 				d.rental_official_name, d.town_category]
 		data.append(row)
@@ -124,6 +125,7 @@ def construct_query(filters):
 			rpi.discount_amount discount_amount,
 			rpi.penalty penalty,
 			rpi.tds_amount tds_amount,
+			rpi.rent_write_off_amount rent_write_off,
 			rpi.total_amount_received total_amount_received,
 			
 			rb.name as rental_bill,
