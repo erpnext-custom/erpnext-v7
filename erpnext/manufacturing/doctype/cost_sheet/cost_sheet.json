@@ -2,7 +2,7 @@
  "allow_copy": 0, 
  "allow_import": 0, 
  "allow_rename": 0, 
- "autoname": "CS.YYYY.####", 
+ "autoname": "CST.YYYY.####", 
  "beta": 0, 
  "creation": "2019-10-24 10:30:01.291661", 
  "custom": 0, 
@@ -580,7 +580,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-07-27 04:18:42.931543", 
+ "modified": "2022-02-01 13:26:49.075332", 
  "modified_by": "Administrator", 
  "module": "Manufacturing", 
  "name": "Cost Sheet", 
@@ -590,7 +590,7 @@
   {
    "amend": 0, 
    "apply_user_permissions": 0, 
-   "cancel": 0, 
+   "cancel": 1, 
    "create": 1, 
    "delete": 1, 
    "email": 1, 
@@ -635,6 +635,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "item_name", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

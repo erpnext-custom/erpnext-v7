@@ -28,20 +28,25 @@ def get_data(filters):
 	order_by = get_order_by(filters)
 
 	f_date = filters.from_date.split("-")
-        t_date = filters.to_date.split("-")
+	t_date = filters.to_date.split("-")
 
-	#frappe.msgprint("{0} and {1}".format(filters.from_date, filters.to_date))
-
-        start_month = int(f_date[1])
-        end_month = int(t_date[1])
+	start_month = int(f_date[1])
+	end_month = int(t_date[1])
 
 	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
 
 	#query = "select pe.cost_center, pe.branch, pe.location, cc.parent_cost_center as region, sum(qty) as total_qty from `tabProduction Entry` pe RIGHT JOIN `tabCost Center` cc ON cc.name = pe.cost_center where 1 = 1 {0} {1} {2} {3}".format(cc_condition, conditions, group_by, order_by)
 
-	query = "select pti.uom, pe.cost_center, pe.branch, pti.location, cc.parent_cost_center as region from `tabProduction Target` pe, `tabDisposal Target Item` pti, `tabCost Center` cc where pti.parent = pe.name and cc.name = pe.cost_center and cc.parent_cost_center != 'Regional Office - NRDCL' and pe.fiscal_year = {0} {1} {2} {3}".format(filters.fiscal_year, cc_condition, group_by, order_by)
+	query = """
+		select 
+			pti.uom, pe.cost_center, pe.branch, pti.location, cc.parent_cost_center as region 
+		from `tabProduction Target` pe, `tabDisposal Target Item` pti, `tabCost Center` cc 
+		where pti.parent = pe.name and cc.name = pe.cost_center and cc.parent_cost_center != 'Regional Office - NRDCL' and
+		pe.fiscal_year = {0} {1} {2} {3}
+	""".format(filters.fiscal_year, cc_condition, group_by, order_by)
+	
 	amt = 0
-	# frappe.msgprint(query)
+
 	for a in frappe.db.sql(query, as_dict=1):
 		if not filters.display_monthly:
 			total_timber= 0
@@ -58,7 +63,6 @@ def get_data(filters):
 					row = [a.region, target, a.uom]
 				else:
 					target = get_target_value("Disposal", a.cost_center, a.uom, filters.production_group, filters.fiscal_year, filters.from_date, filters.to_date)
-					# frappe.msgprint(str(target))
 					row = [a.branch, target, a.uom]
 					cond = " and dni.cost_center = '{0}'".format(a.cost_center)
 		
@@ -70,8 +74,15 @@ def get_data(filters):
 	
 			for b in pro_group:
 				# query1 = "Select sum(dni.qty), sum(dni.amount)  from `tabDelivery Note` dn INNER JOIN `tabDelivery Note Item` dni on dn.name = dni.parent where 1=1 {0} and dn.docstatus = 1 and dni.item_sub_group = '{1}' {2}".format(conditions, str(b), cond)
-				#frappe.msgprint("{0}".format(query1))	
-				qty = frappe.db.sql("Select sum(dni.qty), sum(dni.amount)  from `tabDelivery Note` dn INNER JOIN `tabDelivery Note Item` dni on dn.name = dni.parent where 1=1 {0} and dn.docstatus = 1 and dni.item_sub_group = '{1}' and dni.stock_uom = '{2}' {3}".format(conditions, str(b), a.uom, cond))	
+				query = """
+						select 
+							sum(dni.qty), sum(dni.amount)  
+						from `tabDelivery Note` dn INNER JOIN `tabDelivery Note Item` dni 
+						on dn.name = dni.parent 
+						where 1=1 {0} and dn.docstatus = 1 and dni.item_sub_group = '{1}' and dni.stock_uom = '{2}' {3}
+				""".format(conditions, str(b), a.uom, cond)	
+	
+				qty = frappe.db.sql(query)
 				amt = qty and qty[0][1] or 0
 				qty = qty and qty[0][0] or 0
 				row.append(rounded(qty, 2))
@@ -79,8 +90,9 @@ def get_data(filters):
 				total += flt(qty)
 				total_amt += flt(amt)
 				total_timber += flt(qty)
+
 			row.append(total_amt)
-			row.insert(4, rounded(total, 2))
+			row.insert(3, rounded(total, 2))
 
 			#if filters.production_group == "Timber":
 				#row.append(total_timber)
@@ -195,12 +207,30 @@ def get_filter_conditions(filters):
 
 def get_columns(filters):
 	if filters.branch:
-		columns = ["Location:Link/Location:150", "Target Qty:Float:120", "UOM:Link/UOM:50", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
+		columns = [
+			"Location:Link/Location:150", 
+			"Target Qty:Float:120", 
+			"UOM:Link/UOM:50", 
+			"Achieved Qty:Float:120", 
+			"Ach. Percent:Percent:100"
+		]
 	else:
 		if filters.is_company:
-			columns = ["Region:Data:150", "Target Qty:Float:120", "UOM:Link/UOM:50", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
+			columns = [
+				"Region:Data:150", 
+				"Target Qty:Float:120", 
+				"UOM:Link/UOM:50", 
+				"Achieved Qty:Float:120", 
+				"Ach. Percent:Percent:100"
+			]
 		else:
-			columns = ["Branch:Link/Branch:150", "Target Qty:Float:120", "UOM:Link/UOM:50", "Achieved Qty:Float:120", "Ach. Percent:Percent:100"]
+			columns = [
+				"Branch:Link/Branch:150", 
+				"Target Qty:Float:120", 
+				"UOM:Link/UOM:50", 
+				"Achieved Qty:Float:120", 
+				"Ach. Percent:Percent:100"
+			]
 
 	for a in get_production_groups(filters.production_group):
 		columns.append(str(str(a) + ":Float:100"))
@@ -211,7 +241,7 @@ def get_columns(filters):
 		
 	columns.append("Sales Amount:Currency:120")
 	if filters.display_monthly:
-                columns.append("Month:Data:120")
+		columns.append("Month:Data:120")
 	
 	return columns
 
