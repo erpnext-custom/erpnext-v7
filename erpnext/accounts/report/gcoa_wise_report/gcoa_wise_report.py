@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import flt,getdate,nowdate
+from frappe.utils import flt,getdate,nowdate,cint
 from datetime import timedelta, datetime, date
 
 def execute(filters=None):
@@ -189,24 +189,20 @@ def get_coa(gcoa_account_name):
 						 '''.format(gcoa_account_name),as_dict = True)
 
 def create_transaction():
-	filters 						= {}
-	filters['from_date'] 			= getdate(frappe.defaults.get_user_default("year_start_date"))
-	filters['to_date'] 				= date.today() - timedelta(1)
-	filters['is_inter_company'] 	= ''
-	year 							= filters['to_date'].year	
-	month 							= filters['to_date'].strftime("%b").upper()		
-	filters['time'] 				= str(year)+'.'+month
  
 	dhi_setting = frappe.get_doc('DHI Setting')
-	if dhi_setting.manual_pull:
-		filters['from_date']  		= dhi_setting.from_date
-		filters['to_date'] 	  		= dhi_setting.to_date
-		year						= getdate(dhi_setting.to_date).year 
-		month 						= getdate(dhi_setting.to_date).strftime("%b").upper()
-		filters['time'] 				= str(year)+'.'+month
-		dhi_setting.manual_pull		= 0
-		dhi_setting.from_date		= None
-		dhi_setting.to_date			= None
+	if not cint(dhi_setting.manual_pull) :
+		return
+	filters 						= {}
+	filters['is_inter_company'] 	= ''
+	filters['from_date']  		= dhi_setting.from_date
+	filters['to_date'] 	  		= dhi_setting.to_date
+	year						= getdate(dhi_setting.to_date).year 
+	month 						= getdate(dhi_setting.to_date).strftime("%b").upper()
+	filters['time'] 			= str(year)+'.'+ month
+	dhi_setting.manual_pull		= 0
+	dhi_setting.from_date		= None
+	dhi_setting.to_date			= None
   
 	doc 			= frappe.new_doc('Consolidation Transaction')
 	doc.from_date 	= filters['from_date']
