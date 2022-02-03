@@ -10,9 +10,6 @@ class DHIGCOAMapper(Document):
 	pass
 @frappe.whitelist()
 def filter_account(doctype, txt, searchfield, start, page_len, filters):
-	cond = ''
-	if txt :
-		cond = " AND dg.account_name LIKE '%{}%'".format(txt)
 	query = """
 		SELECT 
 			dg.account_code,
@@ -24,6 +21,6 @@ def filter_account(doctype, txt, searchfield, start, page_len, filters):
 			`tabDHI GCOA Mapper` dgm
 			WHERE dg.account_code = dgm.account_code
 		)
-		{}		
-	""".format(cond)
+		
+	"""
 	return frappe.db.sql(query)
