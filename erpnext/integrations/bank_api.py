@@ -156,10 +156,11 @@ def inter_payment(Amt, PayeeAcctNum, BnfcryAcct, BnfcryName, BnfcryAcctTyp, Bnfc
         elif a.param == "password":
             password = a.defined_value
 
-    if Amt > 100000:
-        ModeOfPmt = str("01")
+    if Amt > 1000000:
+        ModeOfPmt = str("01") #RTGS
     else:
-        ModeOfPmt = str("02")   
+        ModeOfPmt = str("02") #BITS
+        
     #url = "http://10.30.30.195:8888/OutwardDebit/OutwardDebitInterfaceHttpService"
     payload="""
         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:v1="http://BaNCS.TCS.com/webservice/OutwardDebitInterface/v1" xmlns:ban="http://TCS.BANCS.Adapter/BANCSSchema">
