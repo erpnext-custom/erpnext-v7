@@ -11,6 +11,7 @@ class RRCOReceiptTool(Document):
 	def validate(self):		
 		#self.get_invoices()
 		self.validate_data()
+		self.calcualte_totals()
 
 	def validate_data(self):
 		if self.purpose == "Employee Salary":
@@ -146,7 +147,7 @@ class RRCOReceiptTool(Document):
 										WHERE b.purchase_invoice = a.name)
 						AND a.tds_amount > 0
 						UNION
-						select "EME Payment" as transaction, name, posting_date, total_amount as invoice_amount, tds_amount as tax_amount
+			calcualte_totals			select "EME Payment" as transaction, name, posting_date, total_amount as invoice_amount, tds_amount as tax_amount
 						FROM `tabEME Payment` AS a 
 						WHERE docstatus = 1 
 						AND posting_date BETWEEN '{0}' AND '{1}'
@@ -186,3 +187,13 @@ class RRCOReceiptTool(Document):
 				for d in self.item:
 					to_remove.append(d)
 				[self.remove(d) for d in to_remove]
+
+
+
+	def calcualte_totals(self):
+		tot_tax = tot_invoice = 0.0
+		for a in self.get('item'):
+			tot_invoice  += flt(a.invoice_amount)
+			tot_tax += flt(a.tax_amount)
+		self.total_invoice_amount = tot_invoice
+		self.total_tax_amount = tot_tax
