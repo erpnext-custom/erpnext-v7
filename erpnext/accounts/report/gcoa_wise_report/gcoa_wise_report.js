@@ -15,7 +15,7 @@ frappe.query_reports["GCOA Wise Report"] = {
 			"label":__("To Date"),
 			"fieldtype":"Date",
 			"reqd":1,
-			"default":frappe.datetime.month_end()
+			"default":frappe.datetime.nowdate()
 		},
 		{
 			"fieldname":"gcoa_name",
@@ -49,12 +49,5 @@ frappe.query_reports["GCOA Wise Report"] = {
 			"options":'DHI GCOA',
 			"read_only":1
 		},
-		
-		// {		
-		// 	"fieldname": "is_inter_company",
-		// 	"label": __("Is Inter Company"),
-		// 	"fieldtype": "Check",
-		// 	// "read_only":1
-		// }
 	]
 }

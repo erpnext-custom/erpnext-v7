@@ -2,17 +2,8 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('DHI GCOA Mapper', {
-	refresh:(frm)=>{
-		apply_filter(frm)
-	},
 	setup:(frm)=>{
 		frm.get_docfield("items").allow_bulk_edit = 1;
-		// frm.set_query("account_code",()=>{
-		// 	return {
-		// 		query:"erpnext.accounts.doctype.dhi_gcoa_mapper.dhi_gcoa_mapper.filter_account",
-		// 		filters:{}
-		// 	}
-		// })
 	},
     account_code:(frm)=>{
 		apply_filter(frm)
