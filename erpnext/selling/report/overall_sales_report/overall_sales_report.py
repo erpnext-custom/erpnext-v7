@@ -29,9 +29,9 @@ def get_columns(filters=None):
 			columns = [
 				_("Branch") + ":Link/Sales Order:150", 
 				_("Transaction Type") + ":Data:150", 
-				_("Location") + ":Data/120", 
-				_("Customer") + ":Link/Customer:150",
-				_("Customer Group") + ":Data:200", 
+				# _("Location") + ":Data/120", 
+				# _("Customer") + ":Link/Customer:150",
+				# _("Customer Group") + ":Data:200", 
 				_("Sub Item Group") + ":Data:150", 
 				_("Delivered Qty") + ":Float:120",
 				_("UOM") + ":Link/UOM:120",
@@ -62,7 +62,7 @@ def get_columns(filters=None):
 				_("Delivery Note") + ":Link/Delivery Note:100", 
 				_("Sales Order") + ":Link/Sales Order:100", 
 				_("Branch") + ":Link/Branch:120",
-				_("Transaction Type") + ":Data:150", 
+				# _("Transaction Type") + ":Data:150", 
 				_("Customer") + ":Link/Customer:150", 
 				_("Customer Group") + ":Data:200",
 				_("Destination") + ":Data:200",
@@ -73,9 +73,9 @@ def get_columns(filters=None):
 				_("Discount") + ":Currency:120",
 				_("Additional Cost") + ":Currency:120",
 				_("Net Total")+":Currency:120",
-				_("Vehicle") + ":Link/Vehicle:120", 
-				_("Driver") + ":Data:120", 
-				_("Contact No") + ":Data:120",
+				# _("Vehicle") + ":Link/Vehicle:120", 
+				# _("Driver") + ":Data:120", 
+				# _("Contact No") + ":Data:120",
 				_("Transporation Rate") + ":Float:100", 
 				_("Distance") + ":Float:100", 
 				_("Transportation Charges") + ":Currency:100"
@@ -200,25 +200,19 @@ def get_data(filters=None):
 					WHEN export=1 THEN "Export"
 					WHEN is_kidu_sale=1 THEN "Is Kidu Sale"
 					ELSE "None"
-				END as transaction_type,
-				dni.location, dn.customer, dn.customer_group, i.item_sub_group, sum(dni.qty) as qty, 
+				END as transaction_type, i.item_sub_group, sum(dni.qty) as qty, 
 				coalesce(dni.stock_uom), sum(dni.amount)
 			"""
 			group_by = " group by dn.branch, dn.location, i.item_sub_group"
 
 		elif filters.summary:
 			cols = """
-				dn.name, dni.against_sales_order, dn.branch, 
-				CASE
-					WHEN export=1 THEN "Export"
-					WHEN is_kidu_sale=1 THEN "Is Kidu Sale"
-					ELSE "None"
-				END as transaction_type,
+				dn.name, dni.against_sales_order, dn.branch,
 				dn.customer, dn.customer_group, dn.shipping_address_name, dn.posting_date, 
 				i.item_sub_group, dn.total_quantity as qty, dn.total - dn.challan_cost, 
 				dn.discount_or_cost_amount, dn.additional_cost, 
-				dn.total - dn.discount_or_cost_amount + dn.additional_cost - dn.challan_cost, dn.vehicle, 
-				dn.drivers_name, dn.contact_no, dn.transportation_rate, dn.total_distance, 
+				dn.total - dn.discount_or_cost_amount + dn.additional_cost - dn.challan_cost, 
+				dn.transportation_rate, dn.total_distance, 
 				dn.transportation_charges
 			"""
 			group_by = " group by dn.name"
