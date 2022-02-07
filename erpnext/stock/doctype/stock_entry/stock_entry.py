@@ -55,9 +55,10 @@ class StockEntry(StockController):
 		# 	self.pro_doc = frappe.get_doc('Production Order', self.production_order)
 		if self.work_order:
 			self.pro_doc = frappe.get_doc('Work Order', self.work_order)
-			if self.purpose == "Material Transfer for Manufacture":
-				if self.get("__islocal"):
-					self.create_mr()
+			#Following code commented by Tashi as They decided to skip the creation of Material Request
+			#if self.purpose == "Material Transfer for Manufacture":
+			#	if self.get("__islocal"):
+			#		self.create_mr()
 
 		self.validate_posting_time()
 		self.validate_purpose()
@@ -970,7 +971,6 @@ class StockEntry(StockController):
 		"""
 		item_dict = self.get_bom_raw_materials(1)
 		issued_item_qty = self.get_issued_qty()
-
 		max_qty = flt(self.pro_doc.qty)
 		for item in item_dict:
 			pending_to_issue = (max_qty * item_dict[item]["qty"]) - issued_item_qty.get(item, 0)
@@ -1098,28 +1098,34 @@ class StockEntry(StockController):
 		else:
 			wip_warehouse = None
 
-		mr = frappe.new_doc("Material Request")
-		mr.material_request_type = 'Material Issue'
-		mr.work_order = self.work_order
-		mr.company = self.company
-		mr.branch = self.branch
-		mr.title = "MR for {0}".format(self.work_order)
-		mr.status = "Submitted"
-		mr.workflow_state = "Approved"
-		mr.stock_entry = self.name
 		item_dict = self.get_pending_raw_materials()
-		for d in item_dict:
-			mr_child = mr.append('items')
-			mr_child.warehouse = self.to_warehouse
-			mr_child.item_code = cstr(d)
-			mr_child.item_name = item_dict[d]["item_name"]
-			mr_child.uom = item_dict[d]["stock_uom"]
-			mr_child.stock_uom = item_dict[d]["stock_uom"]
-			mr_child.qty = flt(item_dict[d]["qty"])
-			mr_child.cost_center_w = item_dict[d]["cost_center"]
-			mr_child.business_activity = frappe.get_doc("Business Activity", {"is_default": 1}).name
-			mr_child.budget_account = frappe.get_doc("Item", d).expense_account
-		mr.submit()	
+                item_group = {}
+                for d in item_dict:
+                	item_group.setdefault(item_dict[d]['item_group'], []).append(item_dict[d])
+		for g in item_group:
+			mr = frappe.new_doc("Material Request")
+			mr.material_request_type = 'Material Issue'
+			mr.work_order = self.work_order
+			mr.company = self.company
+			mr.branch = self.branch
+			mr.title = "MR for {0}".format(self.work_order)
+			mr.status = "Draft"
+			mr.workflow_state = "Waiting Approval"
+			mr.stock_entry = self.name
+			mr.naming_series = cstr(g)
+			for d in item_group[g]:
+				mr_child = mr.append('items')
+				mr_child.warehouse = self.to_warehouse
+				mr_child.item_code = d['item_code']
+				mr_child.item_name = d["item_name"]
+				mr_child.uom =  d["stock_uom"]
+				mr_child.stock_uom = d["stock_uom"]
+				mr_child.qty = flt(d["qty"])
+				mr_child.cost_center_w = d["cost_center"]
+				mr_child.schedule_date = nowdate()
+				mr_child.business_activity = frappe.get_doc("Business Activity", {"is_default": 1}).name
+				mr_child.budget_account = frappe.get_doc("Item", d['item_code']).expense_account
+			mr.save()
 
 @frappe.whitelist()
 # def get_production_order_details(production_order):
