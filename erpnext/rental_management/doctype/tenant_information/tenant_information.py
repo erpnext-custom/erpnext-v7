@@ -61,10 +61,10 @@ class TenantInformation(Document):
 				frappe.msgprint("Structure No. not able to assign as Locaton Id and Block No are missing")
 		if not self.percent_of_increment:
 			percentage = frappe.db.get_single_value("Rental Setting", "percent_of_increment")
-                	self.percent_of_increment = percentage
+			self.percent_of_increment = percentage
 		if not self.no_of_year_for_increment:	                
 			increment_year = cint(frappe.db.get_single_value("Rental Setting", "no_of_year_for_increment"))
-                	self.no_of_year_for_increment = increment_year
+			self.no_of_year_for_increment = increment_year
 		if not self.is_nhdcl_employee:
 			self.nhdcl_employee = ''
 		
@@ -97,7 +97,7 @@ class TenantInformation(Document):
 					surrendered_date, tenant_code = frappe.db.get_value("Tenant Information", {"location":self.location, "building_category":self.building_category, "block_no":self.block_no, "flat_no":self.flat_no, "docstatus": 1, "status":"Surrendered"}, ["surrendered_date","name"])
 					if surrendered_date and getdate(self.allocated_date) < getdate(surrendered_date):
 						frappe.throw("Allocation Date {0} cannot be before surrendered date {1} for tenant {2}".format(self.allocated_date, surrendered_date, tenant_code))
-  		if self.cid:
+		if self.cid:
 			if frappe.db.exists("Tenant Information", {"cid":self.cid, "status":"Allocated", "docstatus":1}):
 				tenant_code = frappe.db.get_value("Tenant Information", {"cid":self.cid, "status":"Allocated"}, "name")
 				frappe.throw("You cannot create a tenant with CID ({}) as rental status Allocated. The CID is already assigned with Tenant Code {}".format(self.cid, tenant_code))

@@ -42,7 +42,7 @@ def get_condition(filters):
 		else: 
 			emp = frappe.db.sql("select name from tabEmployee where employee_name = '{}'".format(filters.get("rental_official")), as_dict=True)
 			official = emp[0].name
-		condition += " and rp.rental_official = '{0}'".format(official)
+		condition += " and ti.rental_official = '{0}'".format(official)
 	
 	return condition
 
@@ -67,7 +67,7 @@ def get_data(filters):
 			(sum(rb.pre_rent_amount) - sum(rb.adjusted_amount)) pre_rent_balance
 		from `tabRental Bill` rb
 		LEFT JOIN `tabRental Payment Item` as rpi ON rb.name = rpi.rental_bill 
-		INNER JOIN `tabRental Payment` rp ON rp.name = rpi.parent
+		INNER JOIN `tabTenant Information` ti ON ti.name = rb.tenant
 		
 		where rb.docstatus=1 and rb.posting_date between '{from_date}' and '{to_date}' {cond}
 		group by rb.tenant
