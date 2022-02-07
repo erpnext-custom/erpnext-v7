@@ -9,6 +9,26 @@ from erpnext.hr.hr_custom_functions import get_month_details, get_payroll_settin
 from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 
+def submit_prd_20220207(debug=1):
+	li = frappe.db.sql("""select 'Production' as doctype, name as docname
+					from `tabProduction`
+					where name in (	
+						'PRO220101151')
+					order by posting_date
+				""", as_dict=True)
+	counter = 0
+	for i in li:
+		counter += 1
+		doc = frappe.get_doc("Production", i.docname)
+		print(counter, i.docname, doc.docstatus)
+		if not debug and doc.docstatus == 0:
+			try:
+				doc.submit()
+				print('Submitted...')
+			except Exception as e:
+				print(str(e))
+			frappe.db.commit()
+
 def submit_dn_20220129(debug=1):
 	li = frappe.db.sql("""select 'Delivery Note' as doctype, name as docname
 					from `tabDelivery Note`
