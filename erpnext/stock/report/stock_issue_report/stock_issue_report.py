@@ -26,22 +26,33 @@ def get_columns(filters):
         ("Material Code") + ":data:80",
         ("Material Name")+":data:120",
         ("Material Group")+":data:120",
-		("Material Sub Group")+":data:150",
+	("Material Sub Group")+":data:150",
         ("UoM") + ":data:50",
-        ("Qty")+":data:50",
         ("Valuation Rate")+":data:100",
         ("Amount")+":Currency:110",
     ]
 
     if filters.purpose in ("Material Issue", "Inventory Write Off"):
-        cols.append(("Cost Center")+":data:170")
+        cols.insert(6, {"fieldname": "qty", 
+			"label": "Qty", "fieldtype": "Data", "width": 100}),
+	cols.append(("Cost Center")+":data:170")
         cols.append(("Issued To Employee")+":Link/Employee:100")
         cols.append(("Issued To Equipment")+":Link/Equipment:100")
 
     if filters.purpose == "Material Transfer":
-        cols.insert(6, {"fieldname": "received_qty",
+        cols.insert(6, {"fieldname": "pol_slip_no",
+                        "label": "POL Slip No", "fieldtype": "Int", "width": 100}),
+	cols.insert(7, {"fieldname": "weight_slip_no",
+                        "label": "Weight Slip No", "fieldtype": "Data", "width": 100}),
+	cols.insert(8, {"fieldname": "gross_vehicle_weight",
+                        "label": "Gross Vehicle Weight", "fieldtype": "Data", "width": 100}),
+	cols.insert(9, {"fieldname": "tyre_weight",
+                        "label": "Tare Weight", "fieldtype": "Data", "width": 100}),
+	cols.insert(10, {"fieldname": "qty",
+                        "label": "Dispatch Qty", "fieldtype": "Data", "width": 100}),
+	cols.insert(11, {"fieldname": "received_qty",
                         "label": "Received Qty", "fieldtype": "Data", "width": 100}),
-        cols.insert(7, {"fieldname": "difference_qty",
+        cols.insert(12, {"fieldname": "difference_qty",
                         "label": "Difference Qty", "fieldtype": "Data", "width": 100}),
         cols.append(("Source Warehouse")+":data:170")
         cols.append(("Destination Warehouse")+":data:170")
@@ -63,7 +74,11 @@ def get_data(filters):
 				i.item_group,
 				i.item_sub_group,
 				sed.uom, 
-				sed.qty, 
+				sed.pol_slip_no,
+				COALESCE(sed.weight_slip_no, 0),
+				sed.gross_vehicle_weight,
+				sed.tyre_weight, 
+				sed.qty,
 				sed.received_qty, 
 				sed.difference_qty, 
 				sed.valuation_rate, 
