@@ -207,7 +207,7 @@ var enable_disable = function(frm){
 	frm.toggle_display(['from_date', 'to_date'], !permitted_doctypes.includes(frm.doc.transaction_type) && frm.doc.transaction_type && !frm.doc.transaction_no);
 
 	frm.toggle_reqd(['fiscal_year'], permitted_doctypes.includes(frm.doc.transaction_type));
-	frm.toggle_reqd(['month'], ['Salary'].includes(frm.doc.transaction_type));
+	frm.toggle_reqd(['month'], ['Employee Loan Payment', 'Salary'].includes(frm.doc.transaction_type));
 	frm.toggle_reqd(['from_date', 'to_date'], !permitted_doctypes.includes(frm.doc.transaction_type) && frm.doc.transaction_type && !frm.doc.transaction_no);
 }
 
