@@ -123,6 +123,7 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 			GROUP BY consolidation_party
 			""".format(filters['from_date'],filters['to_date'],coa.account)
 	total_debit = total_credit = 0
+	# frappe.msgprint('{}'.format(query))
 	for a in frappe.db.sql(query,as_dict=True) :
 		if a.debit or a.credit or a.opening_debit or a.opening_credit:
 			if flt(a.opening_debit) > flt(a.opening_credit):
