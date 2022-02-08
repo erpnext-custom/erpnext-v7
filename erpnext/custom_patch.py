@@ -16,6 +16,34 @@ from frappe.utils import today
 import os
 import subprocess
 
+def update_bank_details():
+    # for a in frappe.db.sql(""" select t2.name, t2.institution_name, t2.reference_number, t2.bank_account_type, bank_account_no
+	# 							from `tabSalary Slip` t1 join `tabSalary Detail` t2
+	# 							on t1.name = t2.parent
+	# 							where t2.salary_component = "Financial Institution Loan"
+	# 							and t1.fiscal_year = '2022' and t1.month='01'
+    #                        """, as_dict=True):
+	for a in frappe.db.sql(""" select t2.name, t2.institution_name, t2.reference_number, t2.bank_account_type, t2.bank_ac_no
+							from `tabSalary Structure` t1 join `tabSalary Detail` t2
+							on t1.name = t2.parent
+							where t2.salary_component = "Financial Institution Loan"
+							and is_active = "Yes"
+							""", as_dict=True):
+		if a.institution_name == "BOBL":
+			acc_type="03"
+			bank_name="BOBL"
+			bank_ac_no = a.reference_number
+		elif a.institution_name == "NPPF":
+			acc_type="03"
+			bank_name="BOBL"
+			bank_ac_no = "101004193"
+		else:
+			acc_type="04"
+			bank_name = a.institution_name
+			bank_ac_no = a.reference_number
+		frappe.db.sql("update `tabSalary Detail` set bank_name='{}', bank_ac_no='{}', bank_account_type='{}' where name='{}'".format(bank_name, bank_ac_no, acc_type, a.name))
+	frappe.db.commit()
+
 def create_dp_from_utility():
 	udoc = frappe.get_doc("Utility Bill", "CN202112130042")
 	if udoc.direct_payment:
