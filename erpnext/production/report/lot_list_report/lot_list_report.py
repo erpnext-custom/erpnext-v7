@@ -21,10 +21,22 @@ def validate_filters(filters):
 		frappe.throw(_("From Date cannot be greater than To Date"))
 
 def get_data(filters):
-	query = "select * from (select case when ll.sales_order != 'NULL' then 'Sold' when ll.production != 'NULL' then 'Taken For Sawing' when ll.stock_entry != 'NULL' then 'Stock Transfered' else 'Unsold' end as status , lld.timber_class as timber_class , ll.posting_date as posting_date, lld.item as item_code, lld.item_name, lld.item_sub_group as type, lld.total_volume as volume, lld.total_pieces as pieces, ll.lot_no, monthname(ll.posting_date) as month,ll.branch,ll.warehouse from `tabLot List` ll , `tabLot List Details` lld where ll.name = lld.parent) as data where posting_date >= \'"+str(filters.from_date)+"\' and posting_date <= \'"+str(filters.to_date)+"\'"
+	query = """
+		select * from 
+		(
+			select 
+				case when ll.sales_order != 'NULL' then 'Sold' when ll.production != 'NULL' then 'Taken For Sawing' when ll.stock_entry != 'NULL' then 'Stock Transfered' else 'Unsold' end as status, 
+				lld.timber_class as timber_class , ll.posting_date as posting_date, lld.item as item_code, lld.item_name, lld.item_sub_group as type, 
+				lld.total_volume as volume, lld.total_pieces as pieces, ll.lot_no, monthname(ll.posting_date) as month,ll.branch,ll.warehouse 
+			from `tabLot List` ll , `tabLot List Details` lld 
+			where ll.name = lld.parent and ll.docstatus=1
+		) as data 
+		where 
+			posting_date >= '{0}' and posting_date <= '{1}'
+		""".format(filters.from_date, filters.to_date)
 
 	if filters.cost_center:
-        	all_ccs = get_child_cost_centers(filters.cost_center)
+		all_ccs = get_child_cost_centers(filters.cost_center)
 		query += " and branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
 
 	if filters.branch:
