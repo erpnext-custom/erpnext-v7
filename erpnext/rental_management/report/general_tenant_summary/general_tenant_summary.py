@@ -43,7 +43,7 @@ def get_tenant_list(filters):
 	tenant_list = frappe.db.sql("""
 		Select ti.name, tro.from_date,
 				Case
-					When (select idx from `tabTenant Rental Officials` where parent=ti.name and from_date > tro.from_date)
+					When (select idx from `tabTenant Rental Officials` where parent=ti.name and from_date > tro.from_date limit 1)
 						Then (select from_date as to_date from `tabTenant Rental Officials` where parent=ti.name and idx=tro.idx + 1)
 					Else '{end_date}' 
 				End as to_date
