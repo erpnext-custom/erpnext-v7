@@ -94,7 +94,7 @@ def get_data(filters):
 				t1.designation, 
 				sum(case when t2.salary_component = 'Basic Pay' then ifnull(t2.amount,0) else 0 end) as basicpay,
 				sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end) as employeepf,
-				(0.015*t2.amount) as employerpf,
+				sum(case when t2.salary_component = 'PF' then ifnull(t2.amount,0) else 0 end) as employerpf,
 				t1.cost_center
 				from `tabSalary Slip` t1, `tabSalary Detail` t2, `tabEmployee` t3
 				where t1.docstatus = 1 %s
