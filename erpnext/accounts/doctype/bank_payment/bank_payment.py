@@ -354,6 +354,7 @@ class BankPayment(Document):
 							JOIN `tabSalary Detail` t2 ON t1.name = t2.parent
 							LEFT JOIN `tabFinancial Institution Branch` fib ON fib.name = t2.bank_branch
 						WHERE t1.fiscal_year = '{salary_year}'
+						AND t2.amount > 0
 						AND t2.salary_component = 'Financial Institution Loan'
 						AND t1.month = '{salary_month}'
 						AND t1.docstatus = 1
