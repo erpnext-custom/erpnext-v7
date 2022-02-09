@@ -347,8 +347,8 @@ class BankPayment(Document):
 			return frappe.db.sql("""SELECT "Salary Slip" transaction_type, t1.name transaction_id, 
 							t2.name transaction_reference, t1.modified transaction_date,
 							t1.employee, t1.employee_name beneficiary_name, 
-							t2.bank_name, t2.bank_branch, fib.financial_system_code,
-							t2.bank_account_type, t2.bank_ac_no as bank_account_no, t2.amount,
+							t2.institution_name bank_name, t2.bank_branch, fib.financial_system_code,
+							t2.bank_account_type, t2.reference_number as bank_account_no, t2.amount,
 							'Loan remittance for {month}-{salary_year}' remarks, "Draft" status						
 						FROM `tabSalary Slip` t1
 							JOIN `tabSalary Detail` t2 ON t1.name = t2.parent
