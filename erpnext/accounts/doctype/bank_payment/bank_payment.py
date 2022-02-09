@@ -1070,7 +1070,6 @@ def get_inter_bank_file(doc, filename, posting_date, account_type="01"):
     # get credit records for transactions
     for i in doc.get("items"):
         narration = str(doc.name) + ' ' + str(doc.remarks if doc.remarks else i.remarks)
-        account_type = "04" if i.bank_account_type == "04" else "01"
         if str(doc.bank_name) not in (str(i.bank_name),'INR') and i.status in ('Pending', 'Failed'):
             slno += 1
             amount_str = format_amount(i.amount)
