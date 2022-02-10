@@ -201,7 +201,7 @@ scheduler_events = {
 		"erpnext.maintenance.maintenance_utils.check_hire_end",
 		#"erpnext.hr.hr_custom_functions.post_earned_leaves",
 		#"erpnext.hr.hr_custom_functions.post_casual_leaves",
-                "erpnext.hr.hr_custom_functions.post_leave_credits",
+        "erpnext.hr.hr_custom_functions.post_leave_credits",
 		"erpnext.hr.doctype.other_contribution.other_contribution.remove_paid_contribution",
 		"erpnext.custom_functions.check_pending_approvers"
 	],
