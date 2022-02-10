@@ -139,7 +139,7 @@ def get_data(filters=None):
 					WHEN is_allotment=1 THEN "Is Allotment"
 					WHEN is_credit=1 THEN "Is Credit Sale"
 					WHEN is_rural_sale=1 THEN "Is Rural Sale"
-					WHEN export=1 THEN "Export"
+					WHEN export=1 THEN "Is Export"
 					WHEN is_kidu_sale=1 THEN "Is Kidu Sale"
 					ELSE "None"
 				END as transaction_type, 
@@ -154,7 +154,7 @@ def get_data(filters=None):
 						WHEN is_allotment=1 THEN "Is Allotment"
 						WHEN is_credit=1 THEN "Is Credit Sale"
 						WHEN is_rural_sale=1 THEN "Is Rural Sale"
-						WHEN export=1 THEN "Export"
+						WHEN export=1 THEN "Is Export"
 						WHEN is_kidu_sale=1 THEN "Is Kidu Sale"
 						ELSE "None"
 					END as transaction_type, 
@@ -172,7 +172,7 @@ def get_data(filters=None):
 					WHEN is_allotment=1 THEN "Is Allotment"
 					WHEN is_credit=1 THEN "Is Credit Sale"
 					WHEN is_rural_sale=1 THEN "Is Rural Sale"
-					WHEN export=1 THEN "Export"
+					WHEN export=1 THEN "Is Export"
 					WHEN is_kidu_sale=1 THEN "Is Kidu Sale"
 					ELSE "None"
 				END as transaction_type, 
@@ -197,10 +197,14 @@ def get_data(filters=None):
 			cols = """
 				dn.branch, 
 				CASE
-					WHEN export=1 THEN "Export"
+					WHEN is_allotment=1 THEN "Is Allotment"
+					WHEN is_credit=1 THEN "Is Credit Sale"
+					WHEN is_rural_sale=1 THEN "Is Rural Sale"
+					WHEN export=1 THEN "Is Export"
 					WHEN is_kidu_sale=1 THEN "Is Kidu Sale"
 					ELSE "None"
-				END as transaction_type, i.item_sub_group, sum(dni.qty) as qty, 
+				END as transaction_type,
+				i.item_sub_group, sum(dni.qty) as qty, 
 				coalesce(dni.stock_uom), sum(dni.amount)
 			"""
 			group_by = " group by dn.branch, dn.location, i.item_sub_group"
@@ -219,9 +223,12 @@ def get_data(filters=None):
 
 		else:
 			cols = """
-				dn.name, dni.against_sales_order, dn.branch, 
+				dn.name, dni.against_sales_order, dn.branch,
 				CASE
-					WHEN export=1 THEN "Export"
+					WHEN is_allotment=1 THEN "Is Allotment"
+					WHEN is_credit=1 THEN "Is Credit Sale"
+					WHEN is_rural_sale=1 THEN "Is Rural Sale"
+					WHEN export=1 THEN "Is Export"
 					WHEN is_kidu_sale=1 THEN "Is Kidu Sale"
 					ELSE "None"
 				END as transaction_type,
@@ -261,17 +268,24 @@ def get_conditions(filters=None):
 			cond += " and dn.posting_date between'" + str(filters.from_date) + "' and '" + str(filters.to_date) + "'"
 
 	if filters.cost_center:
-		ccs = frappe.db.sql("""
-			select name from `tabCost Center` where parent_cost_center = '{0}' and is_disabled = 0
-		""".format(filters.cost_center), as_dict = True)
-		if ccs:
-			for cc in ccs:
-				all_ccs.append(str(cc.name))
-
+		all_ccs = get_child_cost_centers(filters.cost_center)
 		if filters.report_by == "Sales Order":
 			cond += " and so.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
 		else:
 			cond += " and dn.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
+
+	# if filters.cost_center:
+	# 	ccs = frappe.db.sql("""
+	# 		select name from `tabCost Center` where parent_cost_center = '{0}' and is_disabled = 0
+	# 	""".format(filters.cost_center), as_dict = True)
+	# 	if ccs:
+	# 		for cc in ccs:
+	# 			all_ccs.append(str(cc.name))
+
+	# 	if filters.report_by == "Sales Order":
+	# 		cond += " and so.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
+	# 	else:
+	# 		cond += " and dn.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
 
 	if filters.item_group:
 		cond += " and i.item_group = '" + str(filters.item_group) + "'"
@@ -327,19 +341,24 @@ def get_conditions(filters=None):
 				cond += " and so.is_credit = 1"
 			elif filters.transaction_type == "Is Rural Sale":
 				cond += " and so.is_rural_sale = 1"
-			elif filters.transaction_type == "Export":
+			elif filters.transaction_type == "Is Export":
 				cond += " and so.export = 1"
 			elif filters.transaction_type == "Is Kidu Sale":
 				cond += " and so.is_kidu_sale = 1"
 			else:
 				cond += " and so.is_allotment != 1 and so.is_credit != 1 and so.is_rural_sale != 1 and so.export != 1 and so.is_kidu_sale != 1"
 		else:
-			if filters.transaction_type in ["Is Allotment",  "Is Credit Sale", "Is Rural Sale"]:
-				frappe.throw("Selected Transaction Type is not included in Delivery Note")
-			elif filters.transaction_type == "Export":
+			if filters.transaction_type == "Is Allotment":
+				cond += " and dn.is_allotment = 1"
+			elif filters.transaction_type == "Is Credit Sale":
+				cond += " and dn.is_credit = 1"
+			elif filters.transaction_type == "Is Rural Sale":
+				cond += " and dn.is_rural_sale = 1"
+			elif filters.transaction_type == "Is Export":
 				cond += " and dn.export = 1"
 			elif filters.transaction_type == "Is Kidu Sale":
 				cond += " and dn.is_kidu_sale = 1"
 			else:
-				cond += " and dn.export != 1 and dn.is_kidu_sale != 1"
+				cond += " and dn.is_allotment != 1 and dn.is_credit != 1 and dn.is_rural_sale != 1 and dn.export != 1 and dn.is_kidu_sale != 1"
+
 	return cond
