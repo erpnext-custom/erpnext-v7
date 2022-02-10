@@ -49,11 +49,11 @@ def get_data(filters):
 def get_cols(filters):
 
 	if not filters.map or filters.map.strip() == "GCOA Mapped":
-			cols = [{"fieldname":"dhi_gcoa_acc_code","label":"DHI GCOA Code","fieldtype":"Link","options":"DHI GCOA","width":120,},
-		{"fieldname":"dhi_gcoa_acc","label":"DHI Group Chart Of Account","fieldtype":"Link","options":"DHI GCOA Mapper","width":250,},
-		{"fieldname":"is_inter_company","label":"Is Inter Company","fieldtype":"Data","width":150},
-		{"fieldname":"coa_acc","label":"Company Chart Of Account","fieldtype":"Link","options":"Account","width":400}
-	]
+			cols = [{"fieldname":"dhi_gcoa_acc_code","label":"DHI GCOA Code","fieldtype":"Link","options":"DHI GCOA","width":120,"bold":1},
+					{"fieldname":"dhi_gcoa_acc","label":"DHI Group Chart Of Account","fieldtype":"Link","options":"DHI GCOA Mapper","width":250,"bold":1},
+					{"fieldname":"is_inter_company","label":"Is Inter Company","fieldtype":"Data","width":150},
+					{"fieldname":"coa_acc","label":"Company Chart Of Account","fieldtype":"Link","options":"Account","width":400}
+				]
 	elif filters.map.strip() == "COA Unmapped":
 		cols = [{"fieldname":"coa_acc","label":"Company Chart Of Account","fieldtype":"Link","options":"Account","width":400}]
 	return cols

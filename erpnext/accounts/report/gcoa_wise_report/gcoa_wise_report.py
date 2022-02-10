@@ -3,8 +3,9 @@
 
 from __future__ import unicode_literals
 import frappe
-from frappe.utils import flt,getdate,nowdate,cint
+from frappe.utils import flt,getdate,nowdate,cint,add_days
 from datetime import timedelta, datetime, date
+from frappe.utils.data import get_first_day
 
 def execute(filters=None):
 	filter 					= {}
@@ -123,7 +124,6 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 			GROUP BY consolidation_party
 			""".format(filters['from_date'],filters['to_date'],coa.account)
 	total_debit = total_credit = 0
-	# frappe.msgprint('{}'.format(query))
 	for a in frappe.db.sql(query,as_dict=True) :
 		if a.debit or a.credit or a.opening_debit or a.opening_credit:
 			if flt(a.opening_debit) > flt(a.opening_credit):
@@ -189,21 +189,28 @@ def get_coa(gcoa_account_name):
 						WHERE parent = '{}'
 						 '''.format(gcoa_account_name),as_dict = True)
 
-def create_transaction():
+def create_transaction(is_monthly_report=None):
 	dhi_setting = frappe.get_doc('DHI Setting')
-	if not cint(dhi_setting.manual_pull) :
-		return
 	filters 						= {}
 	filters['is_inter_company'] 	= ''
-	filters['from_date']  		= dhi_setting.from_date
-	filters['to_date'] 	  		= dhi_setting.to_date
-	year						= getdate(dhi_setting.to_date).year 
-	month 						= getdate(dhi_setting.to_date).strftime("%b").upper()
-	filters['time'] 			= str(year)+'.'+ month
-	dhi_setting.manual_pull		= 0
-	dhi_setting.from_date		= None
-	dhi_setting.to_date			= None
-  
+
+	if cint(dhi_setting.manual_pull) :
+		filters['from_date']  		= dhi_setting.from_date
+		filters['to_date'] 	  		= dhi_setting.to_date
+		year						= getdate(dhi_setting.to_date).year 
+		month 						= getdate(dhi_setting.to_date).strftime("%b").upper()
+		filters['time'] 			= str(year)+'.'+ month
+		dhi_setting.manual_pull		= 0
+		dhi_setting.from_date		= None
+		dhi_setting.to_date			= None
+	elif getdate(nowdate()) == getdate(get_first_day(nowdate())):
+		filters['from_date']  		= getdate(frappe.defaults.get_user_default("year_start_date"))
+		filters['to_date'] 	  		= getdate(add_days(get_first_day(nowdate()),-1))
+		year						= getdate(filters['to_date']).year 
+		month 						= getdate(filters['to_date']).strftime("%b").upper()
+		filters['time'] 			= str(year)+'.'+ month
+	else:
+		return
 	doc 			= frappe.new_doc('Consolidation Transaction')
 	doc.from_date 	= filters['from_date']
 	doc.to_date 	= filters['to_date']
