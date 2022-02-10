@@ -11,6 +11,7 @@ class UtilityServices(Document):
 		self.validate_duplicate()
 	
 	def validate_duplicate(self):
+		'''
 		result = frappe.db.sql("""select name
 								from `tabUtility Services`
 								where branch = '{}'
@@ -18,6 +19,7 @@ class UtilityServices(Document):
 							""".format(self.branch, self.name))
 		if result:
 			frappe.throw("Utility services for {} branch already exists.".format(self.branch))
+		'''
 		
 		for a in self.item:
 			result1 = frappe.db.sql("""select name
