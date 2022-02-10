@@ -49,7 +49,7 @@ def get_columns():
 		{"fieldname":"segment","label":"Segment","fieldtype":"Data","width":60},
 		{"fieldname":"flow","label":"Flow","fieldtype":"Data","width":60},
 		{"fieldname":"interco","label":"Interco","fieldtype":"Data","width":60},
-		{"fieldname":"time","label":"Time","fieldtype":"Data","width":60},
+		{"fieldname":"time","label":"Time","fieldtype":"Data","width":80},
 		{"fieldname":"from_date","label":"From Date","fieldtype":"Date","width":80},
 		{"fieldname":"to_date","label":"To Date","fieldtype":"Date","width":80},
 		{"fieldname":"opening_debit","label":"Opening(Dr)","fieldtype":"Currency","width":130},

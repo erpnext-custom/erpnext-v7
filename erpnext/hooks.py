@@ -191,8 +191,6 @@ scheduler_events = {
 		#"erpnext.hr.hr_custom_functions.post_casual_leaves",
 		"erpnext.hr.hr_custom_functions.post_leave_credits",
 		"erpnext.custom_functions.check_pending_approvers",
-		# this line is for consolidation purpose
-		# "erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction"
 	],
 	"daily_long":[
 		"erpnext.accounts.report.gcoa_wise_report.gcoa_wise_report.create_transaction",
