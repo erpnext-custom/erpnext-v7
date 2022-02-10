@@ -63,7 +63,7 @@ def from_gl_applicable_for_doc(coa,filters):
 		total_debit 	= flt(flt(d.debit) + flt(d.opening_debit))
 		total_credit 	= flt(flt(d.credit) + flt(d.opening_credit))
 		d['amount'] 	= total_debit - total_credit if coa.root_type in ['Asset','Expense'] else total_credit - total_debit
-		if flt(d.amount) > 0:
+		if d.amount or total_credit or total_debit or d.debit or d.credit:
 			if flt(d.opening_debit) > flt(d.opening_credit):
 				d.opening_debit 	= flt(d.opening_debit) - flt(d.opening_credit)
 				d.opening_credit 	= 0
@@ -138,7 +138,7 @@ def from_gl_applicable_for_both(is_inter_company,coa,filters):
 			total_debit 	= flt(flt(a.debit) + flt(a.opening_debit))
 			total_credit 	= flt(flt(a.credit) + flt(a.opening_credit))
 			a['amount'] 	= total_debit - total_credit if coa.root_type in ['Asset','Expense'] else total_credit - total_debit
-			if flt(a.amount) > 0:
+			if a.debit or a.credit or a.opening_debit or a.opening_credit or a.amount:
 				dhi_company_code =''
 				# fetch company code base on party for dhi companies
 				if a.party_type == 'Supplier':
