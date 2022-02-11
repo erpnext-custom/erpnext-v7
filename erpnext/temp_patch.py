@@ -8,6 +8,39 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, date_diff,
 from erpnext.hr.hr_custom_functions import get_month_details, get_salary_tax
 import collections
 
+def assets_income_tax_mismatches():
+	def get_income_tax_depreciation_amount(self, depreciable_value, percent, num_days=1):
+		cel = flt(self.gross_purchase_amount) - flt(self.expected_value_after_useful_life)
+		if flt(depreciable_value) < flt(cel):
+			value = ((flt(self.gross_purchase_amount) - flt(self.residual_value))/(100.00 * 365.25)) * flt(percent) * flt(num_days)
+			if flt(depreciable_value) + flt(value) > flt(cel):
+				value = flt(cel) - flt(depreciable_value)
+			return flt(value)
+		else:
+			return 0
+
+	counter, income_tax_amount, income_accumulated_depreciation = 0, 0, 0
+	for a in frappe.db.sql("select * from `tabAsset` where docstatus = 1", as_dict=True):
+		counter += 1
+		schedules, schedules_mismatched = 0, 0
+		for ds in frappe.db.sql("""SELECT ds.name, ds.idx,
+						ds.depreciation_amount, ds.accumulated_depreciation_amount,
+						ds.depreciation_income_tax, ds.accumulated_depreciation_income_tax,
+						DATE_FORMAT(ds.schedule_date, '%Y-%m-01') from_date, ds.schedule_date to_date,
+						DATEDIFF(ds.schedule_date, DATE_FORMAT(ds.schedule_date, '%Y-%m-01'))+1 noof_days
+					FROM `tabDepreciation Schedule` ds
+					WHERE ds.parent = "{}"
+					ORDER BY ds.idx""".format(a.name), as_dict=True):
+			schedules += 1
+			income_tax_amount = get_income_tax_depreciation_amount(a, income_accumulated_depreciation, a.asset_depreciation_percent, ds.noof_days)
+			income_accumulated_depreciation += income_tax_amount
+			if flt(income_tax_amount) != flt(ds.depreciation_income_tax):
+				# print(counter, a.name, a.asset_name, str(ds.from_date), str(ds.to_date), ds.depreciation_income_tax, income_tax_amount)
+				schedules_mismatched += 1
+	print('No.of Assets: ', counter)
+	print('No.of Schedules: ', schedules)
+	print('No.of Schedules(Mismatched): ', schedules_mismatched)
+
 def create_project_items(project=None):
         def create_project_boq_item():
                 cond = "and t1.project = '{0}'".format(project) if project else ""
