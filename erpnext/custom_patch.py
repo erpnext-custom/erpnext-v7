@@ -10,6 +10,54 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 import csv
 
+def submit_prd_20220211(debug=1):
+	li = frappe.db.sql("""select 'Production' as doctype, name as docname
+					from `tabProduction`
+					where name in (	
+						'PRO211202472')
+					order by posting_date
+				""", as_dict=True)
+	counter = 0
+	for i in li:
+		counter += 1
+		doc = frappe.get_doc("Production", i.docname)
+		print(counter, i.docname, doc.docstatus)
+		if not debug and doc.docstatus == 0:
+			try:
+				doc.submit()
+				print('Submitted...')
+			except Exception as e:
+				print(str(e))
+			frappe.db.commit()
+
+def submit_dn_20220211(debug=1):
+	li = frappe.db.sql("""select 'Delivery Note' as doctype, name as docname
+					from `tabDelivery Note`
+					where name in (
+			'DN22015419','DN21072365-1','DN22015253','DN22015252','DN22015250',
+			'DN22015249','DN22015247','DN22015246','DN22015243',
+			'DN22015242','DN22015241','DN22015239','DN22015238',
+			'DN22015236','DN22015234','DN22015233','DN22015231',
+			'DN22015230','DN22015227','DN22015223','DN22014672',
+			'DN22015187','DN22015186','DN22015183','DN22015182',
+			'DN22015181','DN22015178','DN22014381','DN22014374',
+			'DN22014373','DN22014380','DN22014379','DN22014378',
+			'DN22014377','DN22014376','DN22014375','DN22014372')
+			order by posting_date
+			""", as_dict=True)
+	counter = 0
+	for i in li:
+		counter += 1
+		doc = frappe.get_doc("Delivery Note", i.docname)
+		print(counter, i.docname, doc.docstatus)
+		if not debug and doc.docstatus == 0:
+			try:
+				doc.submit()
+				print('Submitted...')
+			except Exception as e:
+				print(str(e))
+			frappe.db.commit()
+
 def submit_prd_20220207(debug=1):
 	li = frappe.db.sql("""select 'Production' as doctype, name as docname
 					from `tabProduction`
@@ -2423,4 +2471,61 @@ def delete_lot_list2():
 			print("count: " + str(c))
 			c += 1
 		print("DONE")
-		
+
+
+def delete_transactions_in_company():
+	dt_list = [
+		"Sales Order", "Delivery Note", "Sales Invoice", "Stock Entry", "Production", "Purchase Order", 
+		"Purchase Receipt", "Purchase Invoice", "Material Request", "Stock Ledger Entry", "GL Entry", 
+		"Payment Entry", "Journal Entry", "Direct Payment","Hire Charge Invoice","Job Card","Mechanical Payment",
+		"HSD Payment","POL","Royalty Payment", "Asset", "Asset Issue Details", "BOM", "Work Order", "Production Plan",
+		"Production Entry", "Lot List","Salary Slip","Travel Claim","Travel Authorization","Leave Encashment","Salary Increment",
+		"Salary Advance", "Overtime Application","Other Contribution","Hall Booking","Request for Quotation","Supplier Quotation",
+		"Lot Allotment", "Vehicle","Transporter","Transport Request","Vehicle Update","Change Status","Change Vehicle Status",
+		"Load Request", "Delivery Confirmation","Customer Order","Customer Payment","Break Down Report","Job Card","Equipment Request",
+		"Equipment Hiring Form","Vehicle Logbook","Equipment Hiring Extension","Issue POL","Equipment POL Transfer",
+		"Imprest Receipt", "Imprest Recoup"
+	]
+
+	for doctype in dt_list:
+		print("Doc:" + str(doctype))
+		meta = frappe.get_meta(doctype)
+		if not meta.issingle:
+			if not meta.istable:
+				# delete children
+				for df in meta.get_table_fields():
+					print("CT :" + str(df.options))
+					frappe.db.sql("""delete from `tab{0}`""".format(df.options))
+
+			# delete parent
+			frappe.db.sql("""delete from `tab{0}` """.format(doctype))
+
+			# reset series
+			naming_series = meta.get_field("naming_series")
+			if naming_series and naming_series.options:
+				prefixes = sorted(naming_series.options.split("\n"), lambda a, b: len(b) - len(a))
+
+				for prefix in prefixes:
+					if prefix:
+						last = frappe.db.sql("""select max(name) from `tab{0}`
+							where name like %s""".format(doctype), prefix + "%")
+						if last and last[0][0]:
+							last = cint(last[0][0].replace(prefix, ""))
+						else:
+							last = 0
+
+						frappe.db.sql("""update tabSeries set current = %s
+							where name=%s""", (last, prefix))
+
+			# reset autoname
+			frappe.db.sql("""
+				delete
+				from `tabSeries`
+				where exists(select 1
+								from `tabDocType` as dt
+							where dt.name = '{0}'
+								and dt.autoname like '%#%'
+								and `tabSeries`.name like concat(substring_index(dt.autoname,'.',1),'%')
+							)
+				""".format(doctype))
+
