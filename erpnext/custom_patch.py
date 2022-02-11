@@ -2407,4 +2407,19 @@ def delete_lot_list():
 				print("count: " + str(c))
 			c += 1
 		print("DONE")
-
+	
+def delete_lot_list2():
+	with open("/home/frappe/erp/apps/erpnext/erpnext/Lot_List (2).csv") as f:
+		reader = csv.reader(f)
+		mylist = list(reader)
+		c = 0
+		for i in mylist:
+			docst = frappe.db.sql(""" select lld.name as cname from `tabLot List` ll, `tabLot List Details` lld where ll.name=lld.parent and ll.docstatus=2 and ll.name = "{}" """.format(i[1]),as_dict=1)
+			if docst:
+				print("ID: " + str(i[1]))
+				print("CNAME: " + str(docst[0].cname))
+				frappe.db.sql(""" delete from `tabLot List Details` where name = '{}' """.format(docst[0].cname))	
+				frappe.db.sql(""" delete from `tabLot List` where docstatus=2 and name = "{}" """.format(i[1]))
+				print("count: " + str(c))
+			c += 1
+		print("DONE")
