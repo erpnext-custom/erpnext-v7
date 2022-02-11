@@ -2403,8 +2403,8 @@ def delete_lot_list():
 				print("ID: " + str(i[1]))
 				print("CNAME: " + str(docst[0].cname))
 				frappe.db.sql(""" delete from `tabLot List Details` where name = '{}' """.format(docst[0].cname))	
-				frappe.db.sql(""" delete from `tabLot List` where docstatus=2 and name = "{}" """.format(i[1]))
-				print("count: " + str(c))
+			frappe.db.sql(""" delete from `tabLot List` where docstatus=2 and name = "{}" """.format(i[1]))
+			print("count: " + str(c))
 			c += 1
 		print("DONE")
 	
@@ -2419,7 +2419,8 @@ def delete_lot_list2():
 				print("ID: " + str(i[1]))
 				print("CNAME: " + str(docst[0].cname))
 				frappe.db.sql(""" delete from `tabLot List Details` where name = '{}' """.format(docst[0].cname))	
-				frappe.db.sql(""" delete from `tabLot List` where docstatus=2 and name = "{}" """.format(i[1]))
-				print("count: " + str(c))
+			frappe.db.sql(""" delete from `tabLot List` where docstatus=2 and name = "{}" """.format(i[1]))
+			print("count: " + str(c))
 			c += 1
 		print("DONE")
+		
