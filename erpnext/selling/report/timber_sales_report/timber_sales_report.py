@@ -37,7 +37,8 @@ def get_columns(filters=None):
 				_("Sub Item Group") + ":Data:150",
 				_("Delivered Qty") + ":Float:120",
 				_("UOM") + ":Data:90", 
-				_("Amount") + ":Currency:120"
+				_("Amount") + ":Currency:120",
+				_("Net Total")+":Currency:120",
 			]
 	elif filters.summary:
 		if filters.report_by == "Sales Order":
@@ -208,7 +209,8 @@ def get_data(filters=None):
 				END as transaction_type,
 
 				i.item_sub_group, sum(dni.qty) as qty, 
-				coalesce(dni.stock_uom), sum(dni.amount)
+				coalesce(dni.stock_uom), sum(dni.amount),
+				sum(dni.amount) - sum(dn.discount_or_cost_amount) + sum(dn.additional_cost) - sum(dn.challan_cost)
 			"""
 			group_by = "group by dn.branch, i.item_sub_group"
 		elif filters.summary:

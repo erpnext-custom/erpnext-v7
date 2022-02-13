@@ -13,19 +13,19 @@ def execute(filters=None):
 def get_columns():
 	return  [
 		("Branch") + ":Data:100",
-		("Domestic")+ ":Float:100",
-		("Internal") + ":Float:100",
-		("Government Organization") +":Float:100",
-		("All Customer Group") + ":Float:100",
-		("AWBI")+ ":Float:100",
-		("Corporate Agency") + ":Float:100",
-		("International") +":Float:100",
-		("Dzongs") +":Float:100",
-		("Arm Force") + ":Float:100",
-		("Furniture Units")+ ":Float:100",
-		("Royal & VVIP") + ":Float:100",
-		("Rural") +":Float:100",
-		("Lhakhangs & Goendey") +":Float:100",
+		("Domestic")+ ":Currency:100",
+		("Internal") + ":Currency:100",
+		("Government Organization") +":Currency:100",
+		("All Customer Group") + ":Currency:100",
+		("AWBI")+ ":Currency:100",
+		("Corporate Agency") + ":Currency:100",
+		("International") +":Currency:100",
+		("Dzongs") +":Currency:100",
+		("Arm Force") + ":Currency:100",
+		("Furniture Units")+ ":Currency:100",
+		("Royal & VVIP") + ":Currency:100",
+		("Rural") +":Currency:100",
+		("Lhakhangs & Goendey") +":Currency:100",
 	]
 
 
