@@ -182,9 +182,9 @@ def get_data(filters=None):
 					END as transaction_type, 
 					so.customer, so.customer_group, so.transaction_date, soi.item_code, ts.timber_class,
 					ts.species,ts.timber_type, soi.lot_number, soi.item_name, i.item_sub_group,
-					soi.qty as qty, soi.delivered_qty, soi.stock_uom, soi.rate, soi.amount
+					sum(soi.qty) as qty, sum(soi.delivered_qty), soi.stock_uom, sum(soi.rate), sum(soi.amount)
 				"""
-			group_by = "and 1 = 1"
+			group_by = "group by so.customer"
 		
 		query = """
 			select * from (
@@ -231,10 +231,10 @@ def get_data(filters=None):
 					END as transaction_type,
 					dn.customer, dn.customer_group, dn.posting_date, dni.item_code, ts.timber_class,
 					ts.species,ts.timber_type, dni.lot_number, dni.item_name, i.item_sub_group, 
-					dni.qty as qty, dni.stock_uom, dni.rate, dni.amount, dn.vehicle, dn.drivers_name, 
+					sum(dni.qty) as qty, dni.stock_uom, sum(dni.rate), sum(dni.amount), dn.vehicle, dn.drivers_name, 
 					dn.contact_no, dn.transportation_rate, dn.total_distance, dn.transportation_charges
 				"""
-			group_by = ""
+			group_by = "group by dn.customer"
 		
 		query = """
 			select * from(
