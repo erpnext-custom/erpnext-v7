@@ -164,9 +164,9 @@ def get_data(filters=None):
 						ELSE "None"
 					END as transaction_type,
 					so.customer, so.customer_group, so.transaction_date, i.item_sub_group, 
-					so.total_quantity as qty, sum(soi.delivered_qty), 
-					soi.stock_uom, so.total - so.challan_cost, so.discount_or_cost_amount, so.additional_cost,
-					so.total - so.discount_or_cost_amount + so.additional_cost-so.challan_cost
+					sum(soi.qty) as qty, sum(soi.delivered_qty), soi.stock_uom, 
+					sum(soi.amount), so.discount_or_cost_amount, so.additional_cost,
+					sum(soi.amount) - sum(so.discount_or_cost_amount) + sum(so.additional_cost) - sum(so.challan_cost)
 				"""
 			group_by = " group by so.name"
 		else:
@@ -216,7 +216,7 @@ def get_data(filters=None):
 					dn.name, dni.against_sales_order, dn.branch,
 					dn.customer, dn.customer_group, dn.posting_date, i.item_sub_group, 
 					sum(dni.qty) as qty, sum(dni.amount), dn.discount_or_cost_amount, dn.additional_cost, 
-					sum(dni.amount) - dn.discount_or_cost_amount + dn.additional_cost - dn.challan_cost, 
+					sum(dni.amount) - sum(dn.discount_or_cost_amount) + sum(dn.additional_cost) - sum(dn.challan_cost), 
 					dn.transportation_rate, dn.total_distance, 
 					dn.transportation_charges
 				"""

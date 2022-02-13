@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import frappe
 from erpnext.accounts.utils import get_child_cost_centers
 
-
 def execute(filters=None):
 	columns =get_columns()
 	data = get_data(filters)
@@ -14,21 +13,20 @@ def execute(filters=None):
 def get_columns():
 	return  [
 		("Branch") + ":Data:100",
-		("Domestic")+ ":Data:100",
-		("Internal") + ":Data:100",
-		("Government Organization") +":Data:100",
-		("All Customer Group") + ":Data:100",
-                ("AWBI")+ ":Data:100",
-                ("Corporate Agency") + ":Data:100",
-                ("International") +":Data:100",
-		("Dzongs") +":Data:100",
-                ("Arm Force") + ":Data:100",
-                ("Furniture Units")+ ":Data:100",
-                ("Royal & VVIP") + ":Data:100",
-                ("Rural") +":Data:100",
-		("Lhakhangs & Goendey") +":Data:100",
-				
-		]
+		("Domestic")+ ":Float:100",
+		("Internal") + ":Float:100",
+		("Government Organization") +":Float:100",
+		("All Customer Group") + ":Float:100",
+		("AWBI")+ ":Float:100",
+		("Corporate Agency") + ":Float:100",
+		("International") +":Float:100",
+		("Dzongs") +":Float:100",
+		("Arm Force") + ":Float:100",
+		("Furniture Units")+ ":Float:100",
+		("Royal & VVIP") + ":Float:100",
+		("Rural") +":Float:100",
+		("Lhakhangs & Goendey") +":Float:100",
+	]
 
 
 def get_data(filters):
@@ -52,27 +50,20 @@ def get_data(filters):
         case when customer_group ='Lhakhangs & Goendey' then sum(grand_total) end as 'Lhakhangs'  
 	from `tabSales Invoice` where docstatus = 1 """
 	
-	# if filters.get("branch"):
-	# 	query += " and branch = \'"+ str(filters.branch) + "\'"
-
 	if not filters.cost_center:
 		return ""
 
-	# all_ccs = get_child_cost_centers(filters.cost_center)
-	# if not all_ccs:
-	# 	return " and pe.docstatus = 10"
-
 	if not filters.branch:	
 		all_ccs = get_child_cost_centers(filters.cost_center)
-		query += " and branch in {0}".format(tuple(all_ccs))
+		query += " and branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
 	else:
 		branch = str(filters.get("branch"))
 		branch = branch.replace(' - NRDCL','')
 		query += " and branch = \'"+branch+"\'"
 
-
-        if filters.get("from_date") and filters.get("to_date"):
+	if filters.get("from_date") and filters.get("to_date"):
 		query += " and posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
+
 	query += " group by branch"
-	# frappe.msgprint(query)
+
 	return frappe.db.sql(query)		

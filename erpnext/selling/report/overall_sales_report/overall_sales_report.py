@@ -35,7 +35,8 @@ def get_columns(filters=None):
 				_("Sub Item Group") + ":Data:150", 
 				_("Delivered Qty") + ":Float:120",
 				_("UOM") + ":Link/UOM:120",
-				_("Amount") + ":Currency:120"
+				_("Amount") + ":Currency:120",
+				_("Net Total")+":Currency:120",
 			]
 	elif filters.summary:
 		if filters.report_by == "Sales Order":
@@ -93,7 +94,7 @@ def get_columns(filters=None):
 				_("Item Code") + ":Link/Item: 80", 
 				_("Item Name") + ":Data:150", 
 				_("Sub Group") + ":Data:100",
-				_("Actual Qty")+ ":Data:100",
+				_("Actual Qty")+ ":Float:100",
 				_("Qty Delivered") + ":Float:90",
 				_("UOM") + ":Data:90",
 				_("Rate") + ":Float:90", 
@@ -159,10 +160,9 @@ def get_data(filters=None):
 						ELSE "None"
 					END as transaction_type, 
 					so.customer, so.customer_group, so.shipping_address_name, so.transaction_date,
-					i.item_sub_group, so.total_quantity as qty, sum(soi.delivered_qty), 
-					soi.stock_uom, so.total - so.challan_cost, so.discount_or_cost_amount, 
-					so.additional_cost, 
-					so.total - so.discount_or_cost_amount + so.additional_cost-so.challan_cost
+					i.item_sub_group, sum(soi.qty) as qty, sum(soi.delivered_qty), 
+					soi.stock_uom, sum(soi.amount), so.discount_or_cost_amount, so.additional_cost, 
+					sum(soi.amount) - sum(so.discount_or_cost_amount) + sum(so.additional_cost) - sum(so.challan_cost)
 				"""
 			group_by = " group by so.name"
 		else:
@@ -177,10 +177,10 @@ def get_data(filters=None):
 					ELSE "None"
 				END as transaction_type, 
 				so.customer, so.customer_group, so.shipping_address_name, so.transaction_date, 
-				soi.item_code, soi.item_name, i.item_sub_group, soi.qty as qty, 
-				soi.delivered_qty, soi.stock_uom, soi.rate, soi.amount
+				soi.item_code, soi.item_name, i.item_sub_group, sum(soi.qty) as qty, 
+				sum(soi.delivered_qty), soi.stock_uom, sum(soi.rate), sum(soi.amount)
 			"""
-			group_by = "and 1 = 1"
+			group_by = "group by so.customer"
 		
 		
 		query = """
@@ -202,19 +202,18 @@ def get_data(filters=None):
 					ELSE "None"
 				END as transaction_type,
 				i.item_sub_group, sum(dni.qty) as qty, 
-				coalesce(dni.stock_uom), sum(dni.amount)
+				coalesce(dni.stock_uom), sum(dni.amount),
+				sum(dni.amount) - sum(dn.discount_or_cost_amount) + sum(dn.additional_cost) - sum(dn.challan_cost)
 			"""
 			group_by = " group by dn.branch, dn.location, i.item_sub_group"
 
 		elif filters.summary:
 			cols = """
-				dn.name, dni.against_sales_order, dn.branch,
-				dn.customer, dn.customer_group, dn.shipping_address_name, dn.posting_date, 
-				i.item_sub_group, dn.total_quantity as qty, dn.total - dn.challan_cost, 
-				dn.discount_or_cost_amount, dn.additional_cost, 
-				dn.total - dn.discount_or_cost_amount + dn.additional_cost - dn.challan_cost, 
-				dn.transportation_rate, dn.total_distance, 
-				dn.transportation_charges
+				dn.name, dni.against_sales_order, dn.branch, dn.customer, dn.customer_group, 
+				dn.shipping_address_name, dn.posting_date, i.item_sub_group, 
+				sum(dni.qty) as qty, sum(dni.amount), dn.discount_or_cost_amount,dn.additional_cost,	
+				sum(dni.amount) - sum(dn.discount_or_cost_amount) + sum(dn.additional_cost) - sum(dn.challan_cost), 
+				dn.transportation_rate, dn.total_distance, dn.transportation_charges
 			"""
 			group_by = " group by dn.name"
 
@@ -227,11 +226,11 @@ def get_data(filters=None):
 					ELSE "None"
 				END as transaction_type,
 				dn.customer, dn.customer_group, dn.shipping_address_name, 
-				dn.posting_date, dni.item_code, dni.item_name, i.item_sub_group, dni.qty as qty,
-				dni.stock_uom, dni.rate, dni.amount, dn.vehicle, dn.drivers_name, dn.contact_no, 
+				dn.posting_date, dni.item_code, dni.item_name, i.item_sub_group, sum(dni.qty) as qty,
+				dni.stock_uom, sum(dni.rate), sum(dni.amount), dn.vehicle, dn.drivers_name, dn.contact_no, 
 				dn.transportation_rate, dn.total_distance, dn.transportation_charges
 			"""
-			group_by = " and 1 = 1"
+			group_by = "group by dn.customer"
 		
 		query = """
 			select * from (
@@ -267,19 +266,6 @@ def get_conditions(filters=None):
 			cond += " and so.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
 		else:
 			cond += " and dn.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
-
-	# if filters.cost_center:
-	# 	ccs = frappe.db.sql("""
-	# 		select name from `tabCost Center` where parent_cost_center = '{0}' and is_disabled = 0
-	# 	""".format(filters.cost_center), as_dict = True)
-	# 	if ccs:
-	# 		for cc in ccs:
-	# 			all_ccs.append(str(cc.name))
-
-	# 	if filters.report_by == "Sales Order":
-	# 		cond += " and so.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
-	# 	else:
-	# 		cond += " and dn.branch in (select name from `tabBranch` b where b.cost_center in {0} )".format(tuple(all_ccs))
 
 	if filters.item_group:
 		cond += " and i.item_group = '" + str(filters.item_group) + "'"
