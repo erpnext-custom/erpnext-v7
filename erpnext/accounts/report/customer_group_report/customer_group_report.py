@@ -12,42 +12,52 @@ def execute(filters=None):
 
 def get_columns():
 	return  [
-		("Branch") + ":Data:100",
-		("Domestic")+ ":Currency:100",
-		("Internal") + ":Currency:100",
-		("Government Organization") +":Currency:100",
-		("All Customer Group") + ":Currency:100",
-		("AWBI")+ ":Currency:100",
-		("Corporate Agency") + ":Currency:100",
-		("International") +":Currency:100",
-		("Dzongs") +":Currency:100",
-		("Arm Force") + ":Currency:100",
-		("Furniture Units")+ ":Currency:100",
-		("Royal & VVIP") + ":Currency:100",
-		("Rural") +":Currency:100",
-		("Lhakhangs & Goendey") +":Currency:100",
+		("Branch") + ":Data:150",
+		("Domestic")+ ":Currency:150",
+		("Internal") + ":Currency:150",
+		("Government Institutions") +":Currency:150",
+		("Government Organizations/Institutions") +":Currency:150",
+		("All Customer Groups") + ":Currency:150",
+		("Exporters") + ":Currency:150",
+		("AWBI")+ ":Currency:150",
+		("Corporate Agency") + ":Currency:150",
+		("International Agency") +":Currency:150",
+		("Dzongs") +":Currency:150",
+		("Dzongs & Lhakhang Constructions")+ ":Currency:150",
+		("Lhakhangs & Goendey") + ":Currency:150",
+		("Arm Force") + ":Currency:150",
+		("Furniture Units")+ ":Currency:150",
+		("Rural") +":Currency:150",
+		("Royal & VVIP") + ":Currency:150",
+		("Crushing Plants") +":Currency:150",
+		("Special project: VVIP")+ ":Currency:150",
+		("Contractor for Hydropower project")+ ":Currency:150",
+		("Contractors for Govt. Projects")+ ":Currency:150",
 	]
 
 
 def get_data(filters):
-	query ="""select branch, 
-		case when customer_group = 'Domestic' then sum(grand_total) end as 'Domestic', 
-		case when customer_group ='Internal-NRDCL' then sum(grand_total) end as 'Internal', 
-		case when customer_group ='Government Organization' then sum(grand_total) end as 'Government Organization', 
-		case when customer_group ='Exporters' then sum(grand_total) end as 'Exporters', 
-		case when customer_group ='AWBI' then sum(grand_total) end as 'AWBI', 
-		case when customer_group ='Corporate Agency' then sum(grand_total) end as 'Corporate Agency', 
-		case when customer_group ='International Agency' then sum(grand_total) end as 'International',
-		case when customer_group ='Dzongs' then sum(grand_total) end as 'Dzongs', 
-        case when customer_group ='Armed Force' then sum(grand_total) end as 'Arm Force', 
-        case when customer_group ='Furniture Units' then sum(grand_total) end as 'Furniture Units', 
-        case when customer_group ='Dzongs & Lhakhang Constructions' then sum(grand_total) end as 'Dzongs & Lhakhang Constructions', 
-        case when customer_group ='Government Institutions' then sum(grand_total) end as 'Rural', 
-		case when customer_group ='Government Organizations/Institutions' then sum(grand_total) end as 'Government Organizations/Institutions', 
-        case when customer_group ='International Agency' then sum(grand_total) end as 'Furniture Units', 
-        case when customer_group ="People's Project" then sum(grand_total) end as 'Royal & VVIP', 
-        case when customer_group ='Rural' then sum(grand_total) end as 'Rural', 
-        case when customer_group ='Lhakhangs & Goendey' then sum(grand_total) end as 'Lhakhangs'  
+	query ="""select branch as Branch, 
+		sum(case when customer_group = 'Domestic' then grand_total else 0 end) as 'Domestic', 
+		sum(case when customer_group ='Internal-NRDCL' then grand_total else 0 end) as 'Internal', 
+		sum(case when customer_group ='Government Institutions' then grand_total else 0 end) as 'Government Institutions', 
+		sum(case when customer_group ='Government Organizations/Institutions' then grand_total else 0 end) as 'Government Organizations/Institutions', 
+		sum(case when customer_group ='All Customer Groups' then grand_total else 0 end) as 'All Customer Groups', 
+		sum(case when customer_group ='Exporters' then grand_total else 0 end) as 'Exporters', 
+		sum(case when customer_group ='AWBI' then grand_total else 0 end) as 'AWBI', 
+		sum(case when customer_group ='Corporate Agency' then grand_total else 0 end) as 'Corporate Agency', 
+		sum(case when customer_group ='International Agency' then grand_total else 0 end) as 'International Agency',
+		sum(case when customer_group ='Dzongs' then grand_total else 0 end) as 'Dzongs', 
+		sum(case when customer_group ='Dzongs & Lhakhang Constructions' then grand_total else 0 end) as 'Dzongs & Lhakhang Constructions', 
+		sum(case when customer_group ='Lhakhangs & Goendey' then grand_total else 0 end) as 'Lhakhangs & Goendey',  
+		sum(case when customer_group ='Armed Force' then grand_total else 0 end) as 'Arm Force', 
+		sum(case when customer_group ='Furniture Units' then grand_total else 0 end) as 'Furniture Units', 
+		sum(case when customer_group ='Rural' then grand_total else 0 end) as 'Rural', 
+		sum(case when customer_group ="People's Project" then grand_total else 0 end) as 'Royal & VVIP', 
+		sum(case when customer_group ='Crushing Plants' then grand_total else 0 end) as 'Crushing Plants', 
+		sum(case when customer_group ='Special project: VVIP' then grand_total else 0 end) as 'Special project: VVIP', 
+		sum(case when customer_group ='Contractor for Hydropower projects' then grand_total else 0 end) as 'Contractor for Hydropower projects', 
+		sum(case when customer_group ='Contractors for Govt. Projects' then grand_total else 0 end) as 'Contractors for Govt. Projects'
 	from `tabSales Invoice` where docstatus = 1 """
 	
 	if not filters.cost_center:
@@ -66,4 +76,4 @@ def get_data(filters):
 
 	query += " group by branch"
 
-	return frappe.db.sql(query)		
+	return frappe.db.sql(query)
