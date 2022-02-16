@@ -24,6 +24,9 @@ class HireChargeInvoice(AccountsController):
             frappe.throw("Total Invoice Amount should be greater than 0")
         if self.balance_amount < 0:
             frappe.throw("Balance amount cannot be negative")
+        if self.owned_by != "Own Company":
+            hire_expense_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_expense_account")
+            check_budget_available(self.cost_center,hire_expense_account,self.posting_date,self.total_invoice_amount,self.business_activity)
 
     def set_advance_data(self):
         advance_amount = 0
