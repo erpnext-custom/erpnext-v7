@@ -23,10 +23,10 @@ frappe.ui.form.on('Bank Payment', {
 				return status[doc.status];
 		});
 
-		frm.set_indicator_formatter('transaction_id',
+		/*frm.set_indicator_formatter('transaction_id',
 			function(doc) {
 				return status[doc.status];
-		});
+		});*/
 
 		frm.set_indicator_formatter('file_name',
 			function(doc) {
