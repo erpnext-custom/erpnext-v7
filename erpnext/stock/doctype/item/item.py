@@ -51,7 +51,11 @@ class Item(WebsiteGenerator):
 		self.name = self.item_code
 
 	def get_current_item_code(self):
-		item_code = frappe.db.sql("""select item_code from tabItem where item_group=%s order by item_code desc limit 1;""", self.item_group)
+		item_code_base = frappe.db.get_value("Item Group", self.item_group, "item_code_base")
+		first_code_value = item_code_base[0:1]
+		# code changed by Jai, 17 Fab, 22
+		# item_code = frappe.db.sql("""select item_code from tabItem where item_group=%s order by item_code desc limit 1;""", self.item_group)
+		item_code = frappe.db.sql("""select item_code from tabItem where item_group='{}' and item_code like '{}%' order by item_code desc limit 1;""".format(self.item_group,first_code_value))
 
 		if item_code:
 			return str(int(item_code[0][0]) + 1)
