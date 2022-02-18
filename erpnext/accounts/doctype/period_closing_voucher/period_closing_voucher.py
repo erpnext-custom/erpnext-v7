@@ -67,7 +67,7 @@ class PeriodClosingVoucher(AccountsController):
 						if flt(acc.balance_in_company_currency) > 0 else 0
 				}))
 
-				net_pl_balance += flt(acc.balance_in_company_currency)
+				#net_pl_balance += flt(acc.balance_in_company_currency)
 				net_pl_balance = flt(acc.balance_in_company_currency)
 
 				if net_pl_balance:
@@ -99,8 +99,8 @@ class PeriodClosingVoucher(AccountsController):
 		return frappe.db.sql("""
 			select
 				t1.account, t1.cost_center, t2.account_currency,
-				sum(t1.debit_in_account_currency) - sum(t1.credit_in_account_currency) as balance_in_account_currency,
-				sum(t1.debit) - sum(t1.credit) as balance_in_company_currency
+				sum(round(t1.debit_in_account_currency,2)) - sum(round(t1.credit_in_account_currency,2)) as balance_in_account_currency,
+				sum(round(t1.debit,2)) - sum(round(t1.credit,2)) as balance_in_company_currency
 			from `tabGL Entry` t1, `tabAccount` t2
 			where t1.account = t2.name and t2.report_type = 'Profit and Loss'
 			and t2.docstatus < 2 and t2.company = %s
