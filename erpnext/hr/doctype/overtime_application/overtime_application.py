@@ -15,21 +15,23 @@ class OvertimeApplication(Document):
 		self.validate_dates()
 		#self.calculate_totals()
 		self.calculate_amount()
+		self.processed = 0
 
 	def on_submit(self):
 		enable_ot_bulk_payment = frappe.db.get_single_value("HR Settings", "enable_bulk_ot_payment")
 		if not enable_ot_bulk_payment:
 			self.check_status()
 			#self.validate_submitter()
-			self.post_journal_entry()
+			#Commented by Tashi on 18-02-2022 as ot is processed with salary
+			#self.post_journal_entry()
 
 	def on_cancel(self):
 		self.check_workflow_state()
 		self.db_set("status", "Rejected")
-		enable_ot_bulk_payment = frappe.db.get_single_value("HR Settings", "enable_bulk_ot_payment")
-		if not enable_ot_bulk_payment:		
-			self.check_journal()
-			
+		#enable_ot_bulk_payment = frappe.db.get_single_value("HR Settings", "enable_bulk_ot_payment")
+		#if not enable_ot_bulk_payment:		
+		self.check_journal()
+		#self.update_salary_structure(cancel = True)	
 	'''def calculate_totals(self):
                 total_hours  = 0
                 for i in self.items:
@@ -44,6 +46,7 @@ class OvertimeApplication(Document):
 	def check_status(self):
 		if self.status != "Approved":
 			frappe.throw("Only Approved documents can be submitted")
+
 	def check_workflow_state(self):
 		if self.workflow_state == 'Approved' and self.docstatus != 1:
 			self.workflow_state = 'Waiting Approval'
@@ -84,6 +87,7 @@ class OvertimeApplication(Document):
 		holiday_list = get_holiday_list_for_employee(self.employee)
                 amount = 0.0
                 hour = 0.0
+		night_shift_bonus = 0.0
                 for d in self.items:
 			ot_base = 1
 			holiday_bonus = 0
@@ -92,13 +96,40 @@ class OvertimeApplication(Document):
 				d.is_holiday = 1
 				holiday_bonus = 0.5
 				
-			amount += (self.rate*(ot_base+holiday_bonus))*flt(d.number_of_hours)
+			if d.is_night_shift:
+				night_shift_bonus = 0.5
+			amount += (self.rate*(ot_base+holiday_bonus+night_shift_bonus))*flt(d.number_of_hours)
 			hour += flt(d.number_of_hours)
 
 		self.total_hours = hour
 		self.total_amount = amount
 		if flt(self.total_amount) <= 0:
                         frappe.throw(_("Total amount cannot be nil."),title="Incomlete information")
+
+	
+
+	#Update Salary Structure
+	def update_salary_structure(self, cancel=False):
+		if frappe.db.exists("Salary Structure", {"employee": self.employee, "is_active": "Yes"}):
+                	doc = frappe.get_doc("Salary Structure", {"employee": self.employee, "is_active": "Yes"})
+			frappe.db.sql(""" delete from `tabOvertime Item` where parent = '{0}' and (processed = 1 or reference = '{1}')			""".format(doc.name, self.name))
+			if cancel:
+				frappe.db.sql(""" delete 
+						from `tabOvertime Item` 
+						where reference = '{0}' and parent = '{1}'
+				""".format(self.name, doc.name))
+			else:
+				row = doc.append("ot_items",{})
+                                row.reference    = self.name
+                                row.ot_date      = self.posting_date
+                                row.hourly_rate  = self.rate
+                                row.total_hours  = self.total_hours
+                                row.total_amount = self.total_amount
+			doc.save(ignore_permissions=True)
+
+		else:
+			frappe.throw(_("No active salary structure found for employee {0} {1}").format(self.employee, self.employee_name), title="No Data Found")
+
 
 	##
 	# Post journal entry

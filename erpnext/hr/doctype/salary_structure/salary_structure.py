@@ -135,7 +135,8 @@ class SalaryStructure(Document):
                                         vars(self)[sc.field_name] = sc.default
                                 vars(self)[sc.field_method] = sc.payment_method
                                 vars(self)[sc.field_value]  = flt(sc.default_amount)
-                                
+                
+ 
 	def check_overlap(self):
 		existing = frappe.db.sql("""select name from `tabSalary Structure`
 			where employee = %(employee)s and
@@ -217,7 +218,6 @@ class SalaryStructure(Document):
                         for sc in frappe.db.sql("select * from `tabSalary Component` where `type`='{0}' and field_name is not null".format(tbl_list[ed]), as_dict=True):
                                 sst_map.setdefault(ed,[]).append(sc)
                         ed_map = [i.name for i in sst_map[ed]]
-
                         # Update Basic Pay if new_basic_pay has value(from salary increments), and remove
                         #  components if not eligible from earnings and deductions tables. 
                         for ed_item in self.get(ed):
@@ -252,8 +252,17 @@ class SalaryStructure(Document):
                                         if self.get(m['field_name']):
                                                 calc_amt = round(flt(basic_pay)*flt(self.get(m['field_value']))*0.01 if self.get(m['field_method']) == 'Percent' else flt(self.get(m['field_value'])))
                                                 comm_allowance += round(flt(calc_amt) if m['name'] == 'Communication Allowance' else 0)
-                                                total_earning += calc_amt
+                                                #if m['name'] == "Overtime Allowance":
+						#	calc_amt = round(flt(self.ot_total))
+						total_earning += calc_amt
                                         	calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
+
+
+					if m['name'] == "Overtime Allowance":
+                                                ot_amt = round(flt(self.ot_total))
+                                                total_earning += ot_amt
+                                                calc_map.append({'salary_component': m['name'], 'amount': ot_amt})
+
                                 else:
                                         if self.get(m['field_name']) and m['name'] == 'SWSS':
                                                 sws_amt = round(flt(settings.get("sws_contribution")))
@@ -334,8 +343,6 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                 else:
                         return
 
-
-
 		# Copy earnings and deductions table from source salary structure
 		calc_map = {}
 		for key in ('earnings', 'deductions'):
@@ -414,7 +421,32 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                         'leave_without_pay'        : flt(lwp),
                                         'payment_days'             : flt(payment_days)
                                 })
-
+		#Getting Approved OTs
+		ot_details = frappe.db.sql(""" select  * from `tabOvertime Application` where docstatus = 1 and employee = '{0}' 
+			and processed = 0 and status = 'Approved' and posting_date <= '{1}'""".format(source.employee, start_date), as_dict =1)
+		total_overtime_amount = 0
+		for d in ot_details:
+			row = target.append("ot_items",{})
+			row.reference    = d.name
+			row.ot_date      = d.posting_date
+			row.hourly_rate  = d.rate
+			row.total_hours  = d.total_hours
+			row.total_amount = d.total_amount
+			total_overtime_amount += flt(d.total_amount)
+		target.ot_total = flt(total_overtime_amount)
+		if total_overtime_amount:
+			calc_map['earnings'].append({
+				'salary_component': 'Overtime Allowance',
+				'from_date' : start_date,
+				'to_date': end_date,
+				'amount': flt(total_overtime_amount),
+				'default_amount': flt(total_overtime_amount),
+				'total_days_in_month' : flt(days_in_month),
+				'working_days': flt(working_days),
+				'leave_without_pay': flt(lwp),
+				'payment_days': flt(payment_days)
+				})
+		#ends ot logic
                 for e in calc_map['earnings']:
                         if e['salary_component'] == 'Basic Pay':
                         	basic_amt = (flt(e['amount']))
@@ -428,7 +460,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                 gross_amt += (flt(target.arrear_amount) + flt(target.leave_encashment_amount))
 
                 # Calculating PF, Group Insurance Scheme, Health Contribution
-		sws = pf = gis = health = 0.00
+		sws = pf = gis = health = 0.0
 		for d in calc_map['deductions']:
                         if not flt(gross_amt):
                                 d['amount'] = 0
@@ -451,20 +483,36 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 
                 # Calculating Salary Tax
 		tax_included = 0
+		tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
 		for d in calc_map['deductions']:
                         if not flt(gross_amt):
                                 d['amount'] = 0
                         else:
-                                if d['salary_component'] == 'Salary Tax':
-                                        if not tax_included:
-                                                tax_amt = get_salary_tax(flt(gross_amt) - flt(gis) - flt(pf) - (flt(comm_amt) * 0.5))
-                                                d['amount'] = flt(tax_amt)
-                                                tax_included = 1
+				if tax_amt:
+					if d['salary_component'] != 'Salary Tax':
+						tax_included = 0
+					if d['salary_component'] == 'Salary Tax':
+						d['amount'] = flt(tax_amt)
+						tax_included = 1
 
-                # Appending calculated components to salary slip                                                
+		#Calculate and append the Tax component if not present
+		if tax_amt and not tax_included:
+			calc_map['deductions'].append({
+				'salary_component': 'Salary Tax',
+				'from_date' : start_date,
+				'to_date': end_date,
+				'amount': flt(tax_amt),
+				'default_amount': flt(tax_amt),
+				'total_days_in_month' : flt(days_in_month),
+				'working_days': flt(working_days),
+				'leave_without_pay': flt(lwp),
+				'payment_days': flt(payment_days)
+				})
+			tax_included = 1
+
+		# Appending calculated components to salary slip                                                
                 [target.append('earnings',m) for m in calc_map['earnings']]
                 [target.append('deductions',m) for m in calc_map['deductions']]
-                
 		target.run_method("pull_emp_details")
 		target.run_method("calculate_net_pay")
 		

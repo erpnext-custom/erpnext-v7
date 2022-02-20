@@ -30,7 +30,14 @@ frappe.ui.form.on("Salary Slip", {
 					employee: frm.doc.employee
 				}
 			}
-		}
+		},
+                frm.get_field('ot_items').grid.editable_fields = [
+                        {fieldname: 'reference', columns: 2},
+                        {fieldname: 'ot_date', columns: 2},
+                        {fieldname: 'hourly_rate', columns: 1},
+                        {fieldname: 'total_hours', columns: 2},
+                        {fieldname: 'total_amount', columns: 2},
+                ];
 	},
 
 	onload: function(frm){

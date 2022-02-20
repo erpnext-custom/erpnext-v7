@@ -119,7 +119,7 @@ class OvertimePayment(AccountsController):
 		return frappe.db.sql("""
 					select a.employee, a.employee_name, a.rate, a.total_hours, a.total_amount, a.name as reference
 					from `tabOvertime Application` a
-					where a.docstatus = 1 
+					where a.docstatus = 1 and a.processed = 0 
 					and a.posting_date between '{0}' and '{1}'
 					and a.branch = '{2}'
 					and (a.payment_jv is NULL or a.payment_jv = "")
