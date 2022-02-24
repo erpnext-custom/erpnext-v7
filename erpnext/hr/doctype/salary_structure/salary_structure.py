@@ -258,10 +258,10 @@ class SalaryStructure(Document):
                                         	calc_map.append({'salary_component': m['name'], 'amount': calc_amt})
 
 
-					if m['name'] == "Overtime Allowance":
+					'''if m['name'] == "Overtime Allowance":
                                                 ot_amt = round(flt(self.ot_total))
                                                 total_earning += ot_amt
-                                                calc_map.append({'salary_component': m['name'], 'amount': ot_amt})
+                                                calc_map.append({'salary_component': m['name'], 'amount': ot_amt})'''
 
                                 else:
                                         if self.get(m['field_name']) and m['name'] == 'SWSS':
