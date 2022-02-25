@@ -429,7 +429,9 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                         'total_days_in_month'      : flt(days_in_month),
                                         'working_days'             : flt(working_days),
                                         'leave_without_pay'        : flt(lwp),
-                                        'payment_days'             : flt(payment_days)
+                                        'payment_days'             : flt(payment_days),
+                                        'bank_account_type'        : d.bank_account_type,
+                                        'bank_branch'              : d.bank_branch
                                 })
 
                 for e in calc_map['earnings']:
