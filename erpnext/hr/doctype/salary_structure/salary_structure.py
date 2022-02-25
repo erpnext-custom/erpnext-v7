@@ -424,7 +424,7 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 		#Getting Approved OTs
 		ot_details = frappe.db.sql(""" select  * from `tabOvertime Application` where docstatus = 1 and employee = '{0}' 
 			and processed = 0 and status = 'Approved' and posting_date <= '{1}'""".format(source.employee, start_date), as_dict =1)
-		total_overtime_amount = 0
+		total_overtime_amount = 0.0
 		for d in ot_details:
 			row = target.append("ot_items",{})
 			row.reference    = d.name
@@ -433,14 +433,14 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
 			row.total_hours  = d.total_hours
 			row.total_amount = d.total_amount
 			total_overtime_amount += flt(d.total_amount)
-		target.ot_total = flt(total_overtime_amount)
+		target.ot_total = round(flt(total_overtime_amount))
 		if total_overtime_amount:
 			calc_map['earnings'].append({
 				'salary_component': 'Overtime Allowance',
 				'from_date' : start_date,
 				'to_date': end_date,
-				'amount': flt(total_overtime_amount),
-				'default_amount': flt(total_overtime_amount),
+				'amount': round(flt(total_overtime_amount)),
+				'default_amount': round(flt(total_overtime_amount)),
 				'total_days_in_month' : flt(days_in_month),
 				'working_days': flt(working_days),
 				'leave_without_pay': flt(lwp),
