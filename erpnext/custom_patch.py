@@ -2484,9 +2484,8 @@ def delete_transactions_in_company():
 		"Lot Allotment", "Vehicle","Transporter","Transport Request","Vehicle Update","Change Status","Change Vehicle Status",
 		"Load Request", "Delivery Confirmation","Customer Order","Customer Payment","Break Down Report","Job Card","Equipment Request",
 		"Equipment Hiring Form","Vehicle Logbook","Equipment Hiring Extension","Issue POL","Equipment POL Transfer",
-		"Imprest Receipt", "Imprest Recoup"
+		"Imprest Receipt", "Imprest Recoup","Production Target"
 	]
-
 	for doctype in dt_list:
 		print("Doc:" + str(doctype))
 		meta = frappe.get_meta(doctype)
@@ -2529,3 +2528,13 @@ def delete_transactions_in_company():
 							)
 				""".format(doctype))
 
+def update_item_ba():
+	with open("/home/frappe/erp/apps/erpnext/erpnext/Item_BA_relation.csv") as f:
+		reader = csv.reader(f)
+		mylist = list(reader)
+		c = 0
+		for i in mylist:
+			frappe.db.sql("update `tabItem` set business_activity='{}' where name = '{}'".format(i[2],i[1]),as_dict=1)
+			print("count: " + str(c))
+			c += 1
+		print("DONE")

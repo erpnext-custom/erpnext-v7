@@ -373,7 +373,7 @@ class CustomerOrder(Document):
 					"qty": flt(self.total_quantity),
 					"rate": flt(self.item_rate),
 					"warehouse": wh,
-					"business_activity": business_activity
+					"business_activity": frappe.db.get_value("Item", self.item, "business_activity")
 				}]
 			})
 			doc.save(ignore_permissions=True)
@@ -436,7 +436,7 @@ class CustomerOrder(Document):
 					"amount": flt(d["amount"], 2),
 					"total_pieces": d["total_pieces"],
 					"warehouse": d["warehouse"],
-					"business_activity": d["business_activity"]
+					"business_activity": frappe.db.get_value("Item", d["item"], "business_activity")
 				})
 			doc.save(ignore_permissions=True)
 			doc.submit()
@@ -480,7 +480,7 @@ class CustomerOrder(Document):
 					"amount": flt(d.amount, 2),
 					"total_pieces": d.qty,
 					"warehouse": wh,
-					"business_activity": business_activity_s
+					"business_activity": frappe.db.get_value("Item", d.item, "business_activity")
 				})
 			doc.save(ignore_permissions=True)
 			doc.submit()
