@@ -198,8 +198,8 @@ def create_transaction(is_monthly_report=None):
 		filters['from_date']  		= dhi_setting.from_date
 		filters['to_date'] 	  		= dhi_setting.to_date
 		year						= getdate(dhi_setting.to_date).year 
-		month 						= getdate(dhi_setting.to_date).strftime("%b").upper()
-		filters['time'] 			= str(year)+'.'+ month
+		month 						= getdate(dhi_setting.to_date).month
+		filters['time'] 			= str(year) + '0'+ str(month) if len(str(month)) == 2 else str(year) + '00'+ str(month)
 		dhi_setting.manual_pull		= 0
 		dhi_setting.from_date		= None
 		dhi_setting.to_date			= None
@@ -207,8 +207,8 @@ def create_transaction(is_monthly_report=None):
 		filters['from_date']  		= getdate(frappe.defaults.get_user_default("year_start_date"))
 		filters['to_date'] 	  		= getdate(add_days(get_first_day(nowdate()),-1))
 		year						= getdate(filters['to_date']).year 
-		month 						= getdate(filters['to_date']).strftime("%b").upper()
-		filters['time'] 			= str(year)+'.'+ month
+		month 						= getdate(filters['to_date']).month
+		filters['time'] 			= str(year)+'.'+ '0'+ str(month) if len(str(month)) == 2 else str(year) + '00' + str(month)
 	else:
 		return
 	doc 			= frappe.new_doc('Consolidation Transaction')

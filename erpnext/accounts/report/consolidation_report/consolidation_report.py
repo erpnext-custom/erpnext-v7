@@ -6,19 +6,24 @@ import frappe
 from frappe.utils import flt, getdate
 
 def execute(filters=None):
-	columns, data 				= get_columns(), get_date(filters,'No')
+	filter = frappe._dict({
+		'from_date':filters.from_date,
+		'to_date':filters.to_date,
+		'is_inter_company':filters.is_inter_company
+	})
+	columns, data 				= get_columns(), get_data(filter,'No')
 	return columns, data
 
-def get_date(filters,from_rest_api=None):
+def get_data(filters,from_rest_api=None):
 	cond = ''
-	if filters.is_inter_company == 'Yes':
+	if filters['is_inter_company'] == 'Yes':
 		cond += ' and interco != "I_NONE"'
 	d = frappe.db.sql('''
 					  SELECT name, from_date, to_date
 						FROM `tabConsolidation Transaction` 
 						WHERE to_date <= '{}'
 						ORDER BY to_date desc limit 1;
-					  '''.format(filters.to_date),as_dict=True)
+					  '''.format(filters['to_date']),as_dict=True)
 	if not d:
 		return
 	parent_name = d[0].name
@@ -27,7 +32,7 @@ def get_date(filters,from_rest_api=None):
 	if from_rest_api == 'Yes': 
 		return frappe.db.sql('''
 				SELECT account_code, account,entity, segment, flow,
-    			interco, time,SUM(amount)
+    			interco, time,SUM(amount) as amount
 				FROM `tabConsolidation Transaction Item` where parent = '{}'
 				{} GROUP BY interco, account
 				'''.format(parent_name,cond),as_dict=1) 
@@ -36,7 +41,7 @@ def get_date(filters,from_rest_api=None):
 				SELECT account_code, account,entity, segment, flow,
 				interco, time,'{0}' as from_date, 
     			'{1}' as to_date, SUM(opening_debit), SUM(opening_credit),
-       			SUM(debit), SUM(credit), SUM(amount)
+       			SUM(debit), SUM(credit), SUM(amount) as amount
 				FROM `tabConsolidation Transaction Item` where parent = '{2}' 
 				{3} GROUP BY interco, account
 				'''.format(getdate(from_date), getdate(to_date), parent_name, cond))
