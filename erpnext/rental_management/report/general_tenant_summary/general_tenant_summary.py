@@ -117,7 +117,7 @@ def get_data(filters):
 
 			(sum(rb.received_amount) + sum(rb.pre_rent_amount) + sum(rb.penalty) + (select sum(ifnull(rpi.excess_amount,0)) from `tabRental Payment Item` as rpi where rpi.rental_bill = rb.name and rpi.docstatus = 1) - sum(rb.tds_amount) - sum(rb.discount_amount)) total_rent_received,
 			
-			(sum(rb.receivable_amount) - sum(rb.received_amount) - sum(rb.adjusted_amount) - sum(rb.rent_write_off_amount)) outstanding_bill,
+			(sum(rb.receivable_amount) - sum(rb.received_amount) - sum(rb.adjusted_amount) - sum(rb.rent_write_off_amount) - sum(rb.tds_amount)) outstanding_bill,
 			(sum(rb.pre_rent_amount) - sum(rb.adjusted_amount)) pre_rent_balance
 		from `tabRental Bill` rb
 		
