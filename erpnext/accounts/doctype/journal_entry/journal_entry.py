@@ -1,4 +1,5 @@
 # Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
+# Copyright (c) 2015, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 '''
 --------------------------------------------------------------------------------------------------------------------------
@@ -118,7 +119,9 @@ class JournalEntry(AccountsController):
 		# Following method is created by SHIV on 04/09/2017
 		self.update_project_advance()
 		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
-
+		# update outstanding amount if reference type is Job Card and update journal entry reference
+		self.check_transaction()
+		
 	def get_title(self):
 		return self.pay_to_recd_from or self.accounts[0].account
 
@@ -144,6 +147,8 @@ class JournalEntry(AccountsController):
 		# Following method is created by SHIV on 04/09/2017
 		self.update_project_advance(cancel=True)
 		# +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+		# update outstanding amount if reference type is Job Card and update journal entry reference
+		self.check_transaction(cancel=True)
 
 	def validate_party(self):
 		for d in self.get("accounts"):
@@ -155,6 +160,20 @@ class JournalEntry(AccountsController):
                                 elif d.party_type and d.party:
                                         frappe.throw(_("Row {0}: Party Type and Party is only applicable against Receivable / Payable account").format(d.idx))
 
+	def check_transaction(self, cancel=False):
+		if cancel == False:
+			for d in self.get("accounts"):
+				# if d.reference_type == 'Job Card':
+				# 	frappe.db.sql("update `tabJob Card` set outstanding_amount=0, journal_entry = '{}' where name='{}'".format(self.name, d.reference_name))
+				if d.reference_type == "Pol Advance":
+					frappe.db.sql("update `tabPol Advance` set journal_entry = '{}' where name='{}'".format(self.name, d.reference_name))
+		else:
+			for d in self.get("accounts"):
+				# if d.reference_type == 'Job Card':
+				# 	frappe.db.sql("update `tabJob Card` set outstanding_amount='{}', journal_entry = '' where name='{}'".format(self.total_debit, d.reference_name))
+				if d.reference_type == "Pol Advance":
+					frappe.db.sql("update `tabPol Advance` set journal_entry = '' where name='{}'".format(d.reference_name))
+					
 	def check_credit_limit(self):
 		customers = list(set([d.party for d in self.get("accounts")
 			if d.party_type=="Customer" and d.party and flt(d.debit) > 0]))
