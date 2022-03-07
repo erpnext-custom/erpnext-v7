@@ -52,12 +52,13 @@ class HSDPayment(Document):
 		for a in self.items:
 			doc = frappe.get_doc("POL", a.pol)
 			if doc:
-				if doc.docstatus != 1:
-					frappe.throw("<b>"+ str(doc.name) +"</b> is not a submitted Issue POL Transaction")
 				if cancel:
 					doc.db_set("paid_amount", flt(doc.paid_amount) - flt(a.allocated_amount))
 					doc.db_set("outstanding_amount", flt(doc.outstanding_amount) + flt(a.allocated_amount))	
 				else:
+					if doc.docstatus != 1:
+						frappe.throw("<b>"+ str(doc.name) +"</b> is not a submitted Issue POL Transaction")
+
 					paid_amount = flt(doc.paid_amount) + flt(a.allocated_amount)
 					if round(paid_amount,2) > round(doc.total_amount,2):
 						frappe.throw("Paid Amount cannot be greater than the Total Amount for Receive POL <b>"+str(a.pol)+"</b>"+" paid amount is"+str(paid_amount))
