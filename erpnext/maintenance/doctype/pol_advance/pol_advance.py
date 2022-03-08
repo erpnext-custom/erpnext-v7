@@ -100,6 +100,13 @@ class PolAdvance(AccountsController):
         if not advance_account:
             frappe.throw("Setup POL Advance Account in Maintenance Accounts Settings")
 
+        account_type = frappe.db.get_value("Account", advance_account, "account_type")
+        party_type = ''
+        party = ''
+        if account_type == "Payable":
+            party_type = self.party_type
+            party = self.supplier
+
         r = []
         if self.cheque_no:
             if self.cheque_date:
@@ -141,8 +148,8 @@ class PolAdvance(AccountsController):
             "debit_in_account_currency": self.amount,
             "cost_center": self.cost_center,
             "party_check": 0,
-            "party_type": self.party_type,
-            "party": self.supplier,
+            "party_type": party_type,
+            "party": party,
             "business_activity": ba
         })
 
