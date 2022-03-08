@@ -2,6 +2,7 @@
 // For license information, please see license.txt
 
 cur_frm.add_fetch("branch", "cost_center", "cost_center")
+cur_frm.add_fetch("equipment", "equipment_number", "equipment_number")
 frappe.ui.form.on('Reimbursement', {
 	refresh: function(frm) {
 
