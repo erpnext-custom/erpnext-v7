@@ -144,6 +144,11 @@ def get_data():
 					"name": "Pol Advance",
 					"label": "POL Expenses",
 				},
+				{
+					"type": "doctype",
+					"name": "Reimbursement",
+					"label": "Reimbursement",
+				},
 				# {
 				# 	"type": "doctype",
 				# 	"name": "Equipment POL Transfer",
