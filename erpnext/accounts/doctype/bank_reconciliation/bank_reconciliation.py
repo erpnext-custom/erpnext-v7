@@ -173,7 +173,7 @@ class BankReconciliation(Document):
             and posting_date >= '{1}' and posting_date <= '{2}'
             {3}
         """.format(self.bank_account, self.from_date, self.to_date, condition), as_dict=1)
-        
+
         opening_brs_entries = frappe.db.sql("""
             select 
                 'Opening BRS Entry' as payment_document, name as payment_entry,
@@ -183,10 +183,10 @@ class BankReconciliation(Document):
             from `tabOpening BRS Entry Detail`
             where 
                 bank_account = %s and docstatus=1
-                and posting_date < %s {0}
+                and posting_date >= '{1}' and posting_date <= '{2}' {0}
             group by name, cheque_number, cheque_date, posting_date, party, clearance_date
             order by posting_date ASC, name DESC
-        """.format(condition), (self.bank_account, self.from_date), as_dict=1)
+        """.format(condition, self.from_date, self.to_date), (self.bank_account), as_dict=1)
 
         pol_advance_entries = frappe.db.sql("""
             SELECT 
