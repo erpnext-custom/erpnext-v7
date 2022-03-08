@@ -574,9 +574,10 @@ class POL(StockController):
 				FROM `tabPol Advance` a
 				WHERE docstatus = 1 
 				AND fuelbook = '{}'
+				AND fuelbook_branch = '{}'
 				AND balance_amount > 0
 				AND equipment_number = '{}' 
-				ORDER BY entry_date""".format(self.fuelbook,self.equipment_number),as_dict=True)
+				ORDER BY entry_date""".format(self.fuelbook,self.equipment_branch,self.equipment_number),as_dict=True)
 		self.set('items',[])
 		# if there is no advance with balance than pick last lastet advance with 0 value
 		if not data:
