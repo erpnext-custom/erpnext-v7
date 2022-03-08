@@ -858,10 +858,13 @@ def process_one_to_one_payment(doc, publish_progress=True):
 			PayeeAcctNum = doc.bank_account_no
 			BnfcryAcct = i.bank_account_no
 			BnfcryName = i.beneficiary_name
-			if i.employee:
+   			BfscCode = ""
+			if i.bank_branch:
+				BfscCode = str(frappe.db.get_value("Financial Institution Branch", i.bank_branch, "financial_system_code"))
+			elif i.employee:
 				bnf_acc_type = frappe.db.get_value("Employee", i.employee, "bank_account_type")
 				BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Employee", i.employee, "bank_branch"), "financial_system_code"))
-			else:
+			elif i.supplier:
 				bnf_acc_type = frappe.db.get_value("Supplier", i.supplier, "bank_account_type")
 				BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Supplier", i.supplier, "bank_branch"), "financial_system_code"))
 			BnfcryAcctTyp = bnf_acc_type
