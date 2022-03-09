@@ -52,9 +52,8 @@ class ImprestRecoup(AccountsController):
                 recoup_date = frappe.db.sql("""
                         select DATE(entry_date) as entry_date from `tabImprest Receipt` where branch = '{0}' and imprest_type = '{1}' and docstatus = 1 order by entry_date desc limit 1
                 """.format(self.branch, self.imprest_type), as_dict = 1)
-                frappe.msgprint(str(self.docstatus))
-                if datetime.strptime(str(recoup_date[0].entry_date),'%Y-%m-%d') > datetime.strptime(str(self.posting_date),'%Y-%m-%d') and self.docstatus != 2:
-                        frappe.throw(_("Imprest Recoup Date should be later than Imrest Receipt Date for imprest type '{0}'").format(self.imprest_type), title="Invalid Recoup Date")
+                # if datetime.strptime(str(recoup_date[0].entry_date),'%Y-%m-%d') > datetime.strptime(str(self.posting_date),'%Y-%m-%d'):
+                #         frappe.throw(_("Imprest Recoup Date should be later than Imrest Receipt Date for imprest type '{0}'").format(self.imprest_type), title="Invalid Recoup Date")
 
         
         def update_defaults(self):
