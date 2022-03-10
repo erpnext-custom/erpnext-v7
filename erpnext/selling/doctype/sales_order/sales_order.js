@@ -546,7 +546,7 @@ frappe.ui.form.on("Sales Order Item", {
 		}
 
 		if(item.item_code && item.stock_uom){
-			if(item.stock_uom != item.sales_uom && item.sales_uom != ''){
+			if(item.stock_uom != item.sales_uom && (typeof item.sales_uom != "undefined" && item.sales_uom != '')){
 				frappe.model.set_value(cdt, cdn, "stock_qty", item.conversion_factor * item.qty)
 				cur_frm.refresh_field("stock_qty")
 			}
