@@ -89,11 +89,14 @@ def make_sales_order(source_name, target_doc=None):
 		lot_check = frappe.db.get_value("Item Sub Group", sub_group, "lot_check")
 		target.item_name = frappe.db.get_value("Item", source.item, "item_name")
 		target.stock_uom = frappe.db.get_value("Item", source.item, "stock_uom")
+		target.business_activity = frappe.db.get_value("Item", source.item, "business_activity")
+		
 		if lot_check:
 			if source.total_volume < 0:
 				frappe.msgprint("Not available volume under the selected Lot")
 			else:
 				target.qty = source.total_volume
+				target.stock_qty = source.total_volume
 
 
 	target_doc = get_mapped_doc("Lot List", source_name, {
@@ -177,13 +180,6 @@ def get_lot_list(doctype=None, txt=None, searchfield=None, start=None, page_len=
 	else:
 		frappe.throw("Please select Branch first")
 
-	# if frappe.session.user == "Administrator":
-	# 	return frappe.db.sql("""
-	# 		select name from `tabLot List` l
-	# 		where name = 'D/87/2020'
-	# 		{0}
-	# 		""".format(cond))
-	# else:
 	return frappe.db.sql("""
 		select name from `tabLot List` l
 		where (l.sales_order is NULL or l.sales_order = "")
@@ -194,8 +190,12 @@ def get_lot_list(doctype=None, txt=None, searchfield=None, start=None, page_len=
 				from `tabLot Allotment Lots` la
 				where la.lot_number = l.name
 				and la.docstatus != 2)
-		{0}
-		""".format(cond))
+		and `{key}` LIKE %(txt)s {cond}
+		order by name limit %(start)s, %(page_len)s
+		""".format(key=searchfield, cond=cond), {
+			'txt': '%' + txt + '%',
+			'start': start, 'page_len': page_len
+		})
 
 @frappe.whitelist()
 def get_la_lot_list(doctype=None, txt=None, searchfield=None, start=None, page_len=None, filters=None):
