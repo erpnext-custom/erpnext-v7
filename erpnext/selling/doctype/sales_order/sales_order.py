@@ -132,6 +132,9 @@ class SalesOrder(SellingController):
 		if self.delivery_date:
 			if getdate(self.transaction_date) > getdate(self.delivery_date):
 				frappe.throw(_("Expected Delivery Date cannot be before Sales Order Date"))
+		for a in self.items:
+			if( a.stock_qty <= 0 ):
+				frappe.throw("Stock Quantity cannot be less than or equal to 0 at Row: {}".format(a.idx))
 
 	def validate_po(self):
 		# validate p.o date v/s delivery date
@@ -458,7 +461,7 @@ class SalesOrder(SellingController):
 		if self.customer_order:
 			return
 		''' Ver.3.0.191222 Ends'''
-
+	
 		for item in self.items:
 			if item.sp_type == "Customer Based Rate":
 				return
@@ -466,20 +469,40 @@ class SalesOrder(SellingController):
 			if not self.branch or not item.item_code or not self.transaction_date:
 				frappe.throw("Select Item Code or Branch or Posting Date")
 			rate=""
+
+			# if self.location:
+			# 	rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and location = '{2}'""".format(item.price_template, item.item_code, self.location), as_dict =1)
+			# if not rate:
+			# 	rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}'""".format(item.price_template, item.item_code), as_dict =1)
+			# if not rate:
+			# 	species,item_sub_group = frappe.db.get_value("Item", item.item_code, ["species","item_sub_group"])
+			# 	if species:
+			# 		timber_class, timber_type = frappe.db.get_value("Timber Species", species, ["timber_class", "timber_type"])
+			# 		if self.location:
+			# 			rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}' and location = '{4}'""".format(item.price_template, timber_class, timber_type,item_sub_group, self.location), as_dict =1)
+			# 		if not rate:
+			# 			rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}' and (location is NULL or location = '')""".format(item.price_template, timber_class, timber_type,item_sub_group), as_dict =1)
+					
+			if item.sales_uom:
+				selling_uom = item.sales_uom
+			else:
+				selling_uom = ''
+			
 			if self.location:
-				rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and location = '{2}'""".format(item.price_template, item.item_code, self.location), as_dict =1)
-			if not rate:
-				rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}'""".format(item.price_template, item.item_code), as_dict =1)
+				location = self.location
+			else:
+				location = ''
+			
+			rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and IF(location IS NULL,'',location) = '{2}' and IF(selling_uom IS NULL,'',selling_uom) = '{3}'""".format(item.price_template, item.item_code, location, selling_uom), as_dict =1)
+			
 			if not rate:
 				species,item_sub_group = frappe.db.get_value("Item", item.item_code, ["species","item_sub_group"])
 				if species:
 					timber_class, timber_type = frappe.db.get_value("Timber Species", species, ["timber_class", "timber_type"])
-					if self.location:
-						rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}' and location = '{4}'""".format(item.price_template, timber_class, timber_type,item_sub_group, self.location), as_dict =1)
-					if not rate:
-						rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}' and (location is NULL or location = '')""".format(item.price_template, timber_class, timber_type,item_sub_group), as_dict =1)
+					rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}' and IF(location IS NULL,'',location) = '{4}' and IF(selling_uom IS NULL,'',selling_uom) = '{5}'""".format(item.price_template, timber_class, timber_type,item_sub_group, location, selling_uom), as_dict =1)
 
 			rate = rate and rate[0].rate or 0.0
+
 			if item.rate != rate:
 				frappe.throw("Selling Rate had changed since you last pulled. Please pull again")
 			if item.rate <= 0.0 or item.amount <= 0.0:
@@ -617,6 +640,7 @@ def make_delivery_note(source_name, target_doc=None):
 				"rate": "rate",
 				"name": "so_detail",
 				"parent": "against_sales_order",
+				"stock_qty": "stock_qty",
 				# "discount_amount":"discount_amount",
 				# "additional_cost":"additional_cost"
 			},

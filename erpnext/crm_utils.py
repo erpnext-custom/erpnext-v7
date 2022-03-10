@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+# from tabnanny import check
 import frappe
 from frappe import _
 from frappe.model.document import Document
@@ -1209,6 +1210,14 @@ def get_branch_location(site, item, branch=None, location=None):
 			cond.append('(spr.location is null or ifnull(spr.location,"") = "" or spr.location = "{0}")'.format(location))
 		else:
 			cond.append('spr.location = "{0}"'.format(location))
+	
+	item_uom = frappe.db.get_value('Item', item, 'stock_uom')
+	if item_uom:
+		check_uom = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular='{0}' and spr.selling_uom='{1}'".format(item, item_uom))
+		if check_uom:
+			cond.append('IF(spr.selling_uom IS NULL,"",spr.selling_uom) = "{0}"'.format(item_uom))
+		else:
+			cond.append('IF(spr.selling_uom IS NULL,"",spr.selling_uom) = ""')
 
 	cond = " and ".join(cond)
 	cond = " and "+cond if cond else cond
@@ -1231,7 +1240,7 @@ def get_branch_location(site, item, branch=None, location=None):
 			)
 		""".format(site)
 
-	bl = frappe.db.sql("""
+	query = """
 		select distinct 
 			spb.branch,
 			(case
@@ -1288,8 +1297,9 @@ def get_branch_location(site, item, branch=None, location=None):
 		and cbsi.has_stock = 1
 		{site_cond}
 		order by spb.branch, cbs.lead_time
-	""".format(cond=cond, item=item, site_cond=site_cond), as_dict=True)
+	""".format(cond=cond, item=item, site_cond=site_cond)
 
+	bl = frappe.db.sql(query, as_dict=True)
 	return bl
 
 # following method is replaced with the above one to accommodate Phase-II by SHIV on 2020/11/19
@@ -2334,14 +2344,35 @@ def get_sawn_timber(branch, item=None, size=None, length=None):
 				else:
 					
 					transaction_date = getdate(nowdate())
-					item_price = frappe.db.sql("""select a.parent, b.selling_price from `tabSelling Price Branch` a, `tabSelling Price Rate` b where a.parent = b.parent and a.branch = '{0}' and b.particular = '{1}' and exists (select 1 from `tabSelling Price` where name = a.parent and '{2}' between from_date and to_date) group by a.parent""".format(branch, item, transaction_date), as_dict=True)
+					item_price = frappe.db.sql("""select a.parent, b.selling_price 
+												from `tabSelling Price Branch` a, `tabSelling Price Rate` b 
+												where a.parent = b.parent and a.branch = '{0}' 
+												and b.particular = '{1}' 
+												and exists (select 1 
+														from `tabSelling Price` 
+														where name = a.parent and '{2}' 
+														between from_date and to_date
+													) 
+												group by a.parent""".format(branch, item, transaction_date), as_dict=True)
 					if not item_price:
 						item_species = frappe.db.get_value("Item", item, "species")
 						if item_species:
 							timber_class, timber_type = frappe.db.get_value("Timber Species", item_species, ["timber_class", "timber_type"])
 						item_sub_group = frappe.db.get_value("Item", item, "item_sub_group")
 						if item_sub_group:
-							item_price = frappe.db.sql(""" select a.parent, b.particular, b.timber_type, b.selling_price  from `tabSelling Price Branch` a, `tabSelling Price Rate` b where a.parent = b.parent and a.branch = '{0}' and b.particular = '{1}' and b.timber_type = '{2}' and b.item_sub_group = '{4}' and exists (select 1 from `tabSelling Price` where name = a.parent and '{3}' between from_date and to_date) and (b.location is NULL or b.location = '') group by a.parent""".format(branch, timber_class, timber_type, transaction_date, item_sub_group), as_dict=True)	
+							item_price = frappe.db.sql(""" select a.parent, b.particular, b.timber_type, b.selling_price  
+														from `tabSelling Price Branch` a, `tabSelling Price Rate` b 
+														where a.parent = b.parent and a.branch = '{0}' 
+														and b.particular = '{1}' 
+														and b.timber_type = '{2}' 
+														and b.item_sub_group = '{4}' 
+														and exists (select 1 
+																	from `tabSelling Price` 
+																	where name = a.parent 
+																	and '{3}' between from_date and to_date) 
+																	and (b.location is NULL or b.location = ''
+																) 
+														group by a.parent""".format(branch, timber_class, timber_type, transaction_date, item_sub_group), as_dict=True)	
 					if item_price:
 						for a in item_price:
 							sp = a.selling_price

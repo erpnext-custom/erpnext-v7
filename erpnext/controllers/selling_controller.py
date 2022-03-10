@@ -187,6 +187,8 @@ class SellingController(StockController):
 					'qty': d.qty,
 					'uom': d.stock_uom,
 					'stock_uom': d.stock_uom,
+					'sales_uom': d.sales_uom,
+					'stock_qty': d.stock_qty,
 					'batch_no': cstr(d.get("batch_no")).strip(),
 					'serial_no': cstr(d.get("serial_no")).strip(),
 					'name': d.name,
@@ -253,8 +255,9 @@ class SellingController(StockController):
 		self.update_reserved_qty()
 
 		sl_entries = []
+
 		for d in self.get_item_list():
-			if frappe.db.get_value("Item", d.item_code, "is_stock_item") == 1 and flt(d.qty):
+			if frappe.db.get_value("Item", d.item_code, "is_stock_item") == 1 and (flt(d.qty) or flt(d.stock_qty)):
 				return_rate = 0
 				if cint(self.is_return) and self.return_against and self.docstatus==1:
 					return_rate = self.get_incoming_rate_for_sales_return(d.item_code, self.return_against)
@@ -265,13 +268,15 @@ class SellingController(StockController):
 				if d.warehouse and ((not cint(self.is_return) and self.docstatus==1)
 					or (cint(self.is_return) and self.docstatus==2)):
 						sl_entries.append(self.get_sl_entries(d, {
-							"actual_qty": -1*flt(d.qty),
+							# "actual_qty": -1*flt(d.qty),
+							"actual_qty": -1*flt(d.stock_qty),
 							"incoming_rate": return_rate
 						}))
 
 				if d.target_warehouse:
 					target_warehouse_sle = self.get_sl_entries(d, {
-						"actual_qty": flt(d.qty),
+						# "actual_qty": flt(d.qty),
+						"actual_qty": flt(d.stock_qty),
 						"warehouse": d.target_warehouse
 					})
 
@@ -282,7 +287,8 @@ class SellingController(StockController):
 								"warehouse": d.warehouse,
 								"posting_date": self.posting_date,
 								"posting_time": self.posting_time,
-								"qty": -1*flt(d.qty),
+								# "qty": -1*flt(d.qty),
+								"qty": -1*flt(d.stock_qty),
 								"serial_no": d.serial_no
 							})
 							target_warehouse_sle.update({
@@ -297,7 +303,8 @@ class SellingController(StockController):
 				if d.warehouse and ((not cint(self.is_return) and self.docstatus==2)
 					or (cint(self.is_return) and self.docstatus==1)):
 						sl_entries.append(self.get_sl_entries(d, {
-							"actual_qty": -1*flt(d.qty),
+							# "actual_qty": -1*flt(d.qty),
+							"actual_qty": -1*flt(d.stock_qty),
 							"incoming_rate": return_rate
 						}))
 

@@ -4,6 +4,7 @@
 {% include 'erpnext/selling/sales_common.js' %}
 
 cur_frm.add_fetch("rate_template", "rate", "transportation_rate")
+cur_frm.add_fetch("item_code", "business_activity", "business_activity");
 
 frappe.ui.form.on("Sales Order", {
 	onload: function(frm) {
@@ -60,14 +61,11 @@ frappe.ui.form.on("Sales Order", {
 			var item = cur_frm.doc.items[i];
 		        total_qty += item.qty;		
 			}
-		console.log("Loading Cost:" + total_qty);
 		cur_frm.set_value("loading_cost", flt(total_qty) * flt(frm.doc.loading_rate));
-
 	},
+	
 	"imo_quantity": function(frm) {
-		console.log("IMO rate:" + frm.doc.imo_rate);
 		cur_frm.set_value("total_imo_cost", flt(frm.doc.imo_rate) * flt(frm.doc.imo_quantity));
-
 	},
 
 	"loading_cost": function(frm) {
@@ -159,7 +157,7 @@ erpnext.selling.SalesOrderController = erpnext.selling.SellingController.extend(
 				// delivery note and payment
 				if(flt(doc.per_delivered, 2) < 100 && ["Sales", "Shopping Cart"].indexOf(doc.order_type)!==-1 && allow_delivery) {
 					if(doc.is_credit == 1 || doc.is_kidu_sale){
-					cur_frm.add_custom_button(__('Delivery'), this.make_delivery_note, __("Make"));
+						cur_frm.add_custom_button(__('Delivery'), this.make_delivery_note, __("Make"));
 				 	}
 					if(!doc.is_kidu_sale){
 						cur_frm.add_custom_button(__('Payment'), cur_frm.cscript.make_payment_entry, __("Make"));
@@ -488,9 +486,14 @@ cur_frm.cscript.selling_price_template = function(doc) {
 //auto list the price_templates based on branch, transaction_date, item_code
 cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = function(frm, cdt, cdn) {
         var d = locals[cdt][cdn];
+		if(d.sales_uom){
+			uom = d.sales_uom
+		}else{
+			uom = ''
+		}
         return {
                 query: "erpnext.controllers.queries.price_template_list",
-                filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch, 'location': frm.location}
+                filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch, 'location': frm.location, 'selling_uom': uom}
         }
 }
 
@@ -512,23 +515,122 @@ cur_frm.fields_dict['items'].grid.get_field('warehouse').get_query = function(fr
 }
 
 cur_frm.fields_dict['items'].grid.get_field('lot_number').get_query = function(frm, cdt, cdn) {
-        var item = locals[cdt][cdn];
-        return {
-                query: "erpnext.controllers.queries.filter_lots",
-                filters: {'branch': cur_frm.doc.branch, 'item':item.item_code},
-                searchfield : "lot_no"
-        }
+	var item = locals[cdt][cdn];
+	return {
+		query: "erpnext.controllers.queries.filter_lots",
+		filters: {'branch': cur_frm.doc.branch, 'item':item.item_code},
+		searchfield : "lot_no"
+	}
 } 
+
+cur_frm.fields_dict['items'].grid.get_field('sales_uom').get_query = function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn];
+	return {
+		query: "erpnext.controllers.queries.get_item_uom",
+		filters: {'item_code': d.item_code}
+	}
+}
 
 // on_selection of price_template, auto load the seling rate for items
 frappe.ui.form.on("Sales Order Item", {
+	"qty": function(frm, cdt, cdn) {
+		var item = locals[cdt][cdn]
+		if(frm.doc.naming_series == "Timber Products" && !frm.doc.is_kidu_sale) { 
+			if(item.lot_number){
+				get_balance(frm, cdt, cdn);
+			} 
+			if(item.conversion_req){
+				frappe.model.set_value(cdt, cdn, "stock_qty", '')
+				cur_frm.refresh_field("stock_qty")
+			}
+		}
+
+		if(item.item_code && item.stock_uom){
+			if(item.stock_uom != item.sales_uom && item.sales_uom != ''){
+				frappe.model.set_value(cdt, cdn, "stock_qty", item.conversion_factor * item.qty)
+				cur_frm.refresh_field("stock_qty")
+			}
+			else{
+				frappe.model.set_value(cdt, cdn, "stock_qty", item.qty)
+				cur_frm.refresh_field("stock_qty")
+			}
+		}
+	},	
+
+	"sales_uom": function(frm, cdt, cdn) {
+		frappe.model.set_value(cdt, cdn, "price_template", "") 
+
+		var item = locals[cdt][cdn];
+		
+		if(item.item_code && item.sales_uom) {
+			frappe.call({
+				method: "erpnext.stock.get_item_details.get_conversion_factor",
+				args: {
+					item_code: item.item_code,
+					uom: item.sales_uom
+				},
+				callback: function(r) {
+					if(r.message.conversion_factor){
+						frappe.model.set_value(cdt, cdn, "conversion_factor", r.message.conversion_factor)
+						frappe.model.set_value(cdt, cdn, "stock_qty", r.message.conversion_factor * item.qty)
+						cur_frm.refresh_field("conversion_factor")
+						cur_frm.refresh_field("stock_qty")
+					}
+				}
+			});
+		}
+	},
+
+	"conversion_req": function(frm, cdt, cdn) {
+		frappe.model.set_value(cdt, cdn, "sales_uom", "") 
+		frappe.model.set_value(cdt, cdn, "price_template", "")
+		
+		var row = locals[cdt][cdn]
+		frm.fields_dict.items.grid.toggle_reqd("sales_uom", row.conversion_req?1:0)
+		frm.refresh_field('sales_uom')
+
+		if(frm.doc.naming_series == "Timber Products"){
+			frm.fields_dict.items.grid.toggle_reqd("stock_qty", 1)
+			frm.fields_dict.items.grid.toggle_enable("stock_qty", 1)
+			frm.refresh_field('stock_qty')
+		}
+
+	},
+	
+	form_render: (frm,cdt,cdn)=>{
+		var row = locals[cdt][cdn]
+		frm.fields_dict.items.grid.toggle_reqd("sales_uom", row.conversion_req?1:0)
+		frm.refresh_field('sales_uom')
+		if(frm.doc.naming_series == "Timber Products"){
+			frm.fields_dict.items.grid.toggle_reqd("stock_qty", 1)
+			frm.refresh_field('stock_qty')
+		}
+	},
+	
+	"stock_qty": function(frm, cdt, cdn) {
+		if(frm.doc.naming_series == "Timber Products"){
+			var row = locals[cdt][cdn]
+			if(row.qty != 0){
+				frappe.model.set_value(cdt, cdn, "conversion_factor", row.stock_qty / row.qty)
+				cur_frm.refresh_field("conversion_factor")
+			}
+		}
+	},
+
 	"price_template": function(frm, cdt, cdn) {
 		d = locals[cdt][cdn]
 		if(cur_frm.doc.location){
 			loc = cur_frm.doc.location;
 		}else{
-			loc = "NA";
+			loc = ''
 		}
+
+		if(d.sales_uom){
+			uom = d.sales_uom
+		}else{
+			uom = ''
+		}
+
 		frappe.call({
 				method: "erpnext.production.doctype.selling_price.selling_price.get_selling_rate",
 				args: {
@@ -536,6 +638,7 @@ frappe.ui.form.on("Sales Order Item", {
 						"branch": cur_frm.doc.branch,
 						"item_code": d.item_code,
 						"transaction_date": cur_frm.doc.transaction_date,
+						"selling_uom": uom,
 						"location": loc				
 					},
 				callback: function(r) {
@@ -546,6 +649,7 @@ frappe.ui.form.on("Sales Order Item", {
 				}
             })
     },
+
 	"customer_price_list": function(frm, cdt, cdn) {
 		d = locals[cdt][cdn]
 		if(cur_frm.doc.location){
@@ -571,16 +675,16 @@ frappe.ui.form.on("Sales Order Item", {
 			}
 		})
 	},
+
 	"item_code": function(frm, cdt, cdn) {
 		frappe.model.set_value(cdt, cdn, "price_template", "") 
 	},
+
 	"lot_number": function(frm, cdt, cdn) {
 		var d = locals[cdt][cdn];
 		if(d.item_code && d.lot_number) { get_balance(frm, cdt, cdn); }
 	},
-	"qty": function(frm, cdt, cdn) {
-		 if(frm.doc.naming_series == "Timber Products" && !frm.doc.is_kidu_sale) { get_balance(frm, cdt, cdn); }
-	},
+
 	"sp_type": function(frm, cdt, cdn) {
 		var d = locals[cdt][cdn];
 		if(d.sp_type == "General Rate"){
@@ -589,7 +693,7 @@ frappe.ui.form.on("Sales Order Item", {
 
 		}
 	}
-
+	
 });
 
 frappe.ui.form.on("Sales Order","naming_series", function(frm){
@@ -614,13 +718,11 @@ function get_balance(frm, cdt, cdn){
 				"total_pieces": d.total_pieces
 			},
 			callback: function(r) {
-				console.log(r.message);
 				if(r.message){
 				var balance = r.message[0]['total_volume'];
 				var lot_check = r.message[0]['lot_check'];
 					if(lot_check)
 					{
-						console.log(balance);
 						if(balance < 0){
 							frappe.msgprint("No available volume under the selected Lot");
 						}
