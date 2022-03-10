@@ -343,7 +343,7 @@ class BankPayment(Document):
 			frappe.throw("Please select Financial Institution")
 
 		doc = frappe.get_doc("Financial Institution", self.institution_name)
-		if not doc.employee_loan_payment_in_bob:
+		if not doc.employee_loan_payment_in_single_account:
 			return frappe.db.sql("""SELECT "Salary Slip" transaction_type, t1.name transaction_id, 
 							t2.name transaction_reference, t1.modified transaction_date,
 							t1.employee, t1.employee_name beneficiary_name, 
@@ -376,7 +376,7 @@ class BankPayment(Document):
 			return frappe.db.sql("""SELECT "Salary Slip" transaction_type, t1.name transaction_id, 
 							t2.name transaction_reference, t1.modified transaction_date,
 							fi.account_holder_name beneficiary_name, 
-							'BOBL' as bank_name, fi.bank_branch, fib.financial_system_code,
+							fi.account_bank_name as bank_name, fi.bank_branch, fib.financial_system_code,
 							fi.bank_account_type, fi.account_no bank_account_no, sum(t2.amount) as amount,
 							'Loan remittance for {month}-{salary_year}' remarks, "Draft" status						
 						FROM `tabSalary Slip` t1
