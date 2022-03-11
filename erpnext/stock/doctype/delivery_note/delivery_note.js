@@ -70,10 +70,22 @@ frappe.ui.form.on('Delivery Note', {
 /*TTPL Code Added By Thukten*/
 
 frappe.ui.form.on("Delivery Note Item", {
-        "qty": function(frm, cdt, cdn){
+	"qty": function(frm, cdt, cdn){
 		frm.set_value("vehicle","");
 		frm.set_value("drivers_name","");
 		frm.set_value("contact_no","");
+
+		var item = locals[cdt][cdn]
+		if(item.item_code && item.stock_uom){
+			if(item.stock_uom != item.sales_uom && (typeof item.sales_uom != "undefined" && item.sales_uom != '')){
+				frappe.model.set_value(cdt, cdn, "stock_qty", item.conversion_factor * item.qty)
+				cur_frm.refresh_field("stock_qty")
+			}
+			else{
+				frappe.model.set_value(cdt, cdn, "stock_qty", item.qty)
+				cur_frm.refresh_field("stock_qty")
+			}
+		}
 	}
 });
 
