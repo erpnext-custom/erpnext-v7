@@ -133,6 +133,9 @@ class SalesOrder(SellingController):
 			if getdate(self.transaction_date) > getdate(self.delivery_date):
 				frappe.throw(_("Expected Delivery Date cannot be before Sales Order Date"))
 		for a in self.items:
+			if(a.conversion_req == 0):
+				a.stock_qty = a.qty
+
 			if( a.stock_qty <= 0 ):
 				frappe.throw("Stock Quantity cannot be less than or equal to 0 at Row: {}".format(a.idx))
 
