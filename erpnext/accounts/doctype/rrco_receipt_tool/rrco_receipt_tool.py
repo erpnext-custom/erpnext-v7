@@ -90,7 +90,7 @@ class RRCOReceiptTool(Document):
 
 			if self.purpose == 'Leave Encashment':
 				query = """select  "Leave Encashment" as transaction, name, application_date as posting_date, 
-    					encashment_amount as invoice_amount, encashment_tax, employee as party
+    					encashment_amount as invoice_amount, tax_amount, employee as party
 						FROM `tabLeave Encashment` AS a WHERE a.docstatus = 1 
 						AND a.encashment_date BETWEEN '{0}' AND '{1}' 
 						{2} 
