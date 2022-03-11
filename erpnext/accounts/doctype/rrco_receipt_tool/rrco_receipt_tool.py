@@ -99,7 +99,7 @@ class RRCOReceiptTool(Document):
 						AND NOT EXISTS (SELECT 1 
 									FROM `tabRRCO Receipt Entries` AS b 
 									WHERE b.purchase_invoice = a.name)
-						""".format(self.from_date, self.to_date, cond2s)
+						""".format(self.from_date, self.to_date, cond2)
 			else:
 				query = """
           				select "Purchase Invoice" as transaction, name, posting_date, 
