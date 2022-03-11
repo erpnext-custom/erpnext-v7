@@ -257,7 +257,13 @@ class SellingController(StockController):
 		sl_entries = []
 
 		for d in self.get_item_list():
-			if frappe.db.get_value("Item", d.item_code, "is_stock_item") == 1 and (flt(d.qty) or flt(d.stock_qty)):
+			qty = 0
+			if(d.conversion_req == 0):
+				qty = d.qty
+			else:
+				qty = d.stock_qty
+
+			if frappe.db.get_value("Item", d.item_code, "is_stock_item") == 1 and flt(qty):
 				return_rate = 0
 				if cint(self.is_return) and self.return_against and self.docstatus==1:
 					return_rate = self.get_incoming_rate_for_sales_return(d.item_code, self.return_against)
@@ -269,14 +275,14 @@ class SellingController(StockController):
 					or (cint(self.is_return) and self.docstatus==2)):
 						sl_entries.append(self.get_sl_entries(d, {
 							# "actual_qty": -1*flt(d.qty),
-							"actual_qty": -1*flt(d.stock_qty),
+							"actual_qty": -1*flt(qty),
 							"incoming_rate": return_rate
 						}))
 
 				if d.target_warehouse:
 					target_warehouse_sle = self.get_sl_entries(d, {
 						# "actual_qty": flt(d.qty),
-						"actual_qty": flt(d.stock_qty),
+						"actual_qty": flt(qty),
 						"warehouse": d.target_warehouse
 					})
 
@@ -288,7 +294,7 @@ class SellingController(StockController):
 								"posting_date": self.posting_date,
 								"posting_time": self.posting_time,
 								# "qty": -1*flt(d.qty),
-								"qty": -1*flt(d.stock_qty),
+								"qty": -1*flt(qty),
 								"serial_no": d.serial_no
 							})
 							target_warehouse_sle.update({
@@ -304,7 +310,7 @@ class SellingController(StockController):
 					or (cint(self.is_return) and self.docstatus==1)):
 						sl_entries.append(self.get_sl_entries(d, {
 							# "actual_qty": -1*flt(d.qty),
-							"actual_qty": -1*flt(d.stock_qty),
+							"actual_qty": -1*flt(qty),
 							"incoming_rate": return_rate
 						}))
 
