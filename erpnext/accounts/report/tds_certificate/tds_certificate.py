@@ -32,7 +32,7 @@ def construct_query(filters=None):
 	# query = "SELECT a.posting_date, a.tds_taxable_amount, a.tds_rate, a.tds_amount, b.cheque_number, b.cheque_date, b.receipt_number, b.receipt_date FROM `tabPurchase Invoice` AS a, `tabRRCO Receipt Entries` AS b WHERE a.name = b.purchase_invoice AND a.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND a.supplier = \'" + filters.vendor_name + "\' UNION SELECT d.posting_date, d.amount as tds_taxable_amount, d.tds_percent as tds_rate, d.tds_amount, rr.cheque_number, rr.cheque_date, rr.receipt_number, rr.receipt_date FROM `tabDirect Payment` AS d, `tabRRCO Receipt Entries` AS rr WHERE d.name = rr.purchase_invoice AND d.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND d.party = \'" + filters.vendor_name + "\'"
 	query = """SELECT a.posting_date, a.tds_taxable_amount, a.tds_rate, a.tds_amount, b.cheque_number, b.cheque_date, 
 		b.receipt_number, b.receipt_date, b.branch 
-		FROM `tabPurchase Invoice` AS a, `tabRRCO R	eceipt Entries` AS b 
+		FROM `tabPurchase Invoice` AS a, `tabRRCO Receipt Entries` AS b 
 		WHERE a.name = b.purchase_invoice 
 		AND a.posting_date BETWEEN '{0}' AND '{1}'
 		AND a.supplier = '{2}' 
