@@ -127,7 +127,7 @@ class RRCOReceiptTool(Document):
 			self.set('item', [])
 			for a in frappe.db.sql(query, as_dict=True):
 				row = self.append('item', {})
-				if d.tax_amount != 0:
+				if a.tax_amount != 0:
 					d = {'transaction': a.transaction, 'invoice_no': a.name, 'invoice_date': a.posting_date, 'invoice_amount': a.invoice_amount, 'tax_amount': a.tax_amount, 'party': a.party}
 					row.update(d)
 		else:
