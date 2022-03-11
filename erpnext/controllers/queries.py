@@ -621,7 +621,41 @@ def price_template_list(doctype,txt, searchfield, start, page_len, filters):
 	# 		if not item_price:
 	# 			item_price = frappe.db.sql(""" select a.parent, b.particular, b.timber_type, b.selling_price  from `tabSelling Price Branch` a, `tabSelling Price Rate` b where a.parent = b.parent and a.branch = '{0}' and b.particular = '{1}' and b.timber_type = '{2}' and b.item_sub_group = '{4}' and exists (select 1 from `tabSelling Price` where name = a.parent and '{3}' between from_date and to_date) and (b.location is NULL or b.location = '') group by a.parent""".format(filters.get("branch"), timber_class, timber_type, filters.get("transaction_date"), item_sub_group))
 
-	query = """ select a.parent, b.particular, b.selling_price, b.selling_uom, b.location from `tabSelling Price Branch` a, `tabSelling Price Rate` b where a.parent = b.parent and a.branch = '{0}' and b.particular = '{1}' and IF(b.location IS NULL,'',b.location) = '{2}' and IF(b.selling_uom IS NULL,'',b.selling_uom) = '{3}' and exists (select 1 from `tabSelling Price` where name = a.parent and '{4}' between from_date and to_date) group by a.parent""".format(filters.get("branch"), filters.get("item_code"), location, selling_uom, filters.get("transaction_date"))
+	if filters.get("naming_series") == 'Mineral Products':
+		cond = ''
+		if location == '':
+			cond = "IF(b.location IS NULL,'',b.location) = '' and"
+		else:
+			check_loc = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular='{0}' and spr.location='{1}' and sp.to_date >= '{2}'".format(filters.get("item_code"), location, nowdate()))
+			if not check_loc:
+				cond = "IF(b.location IS NULL,'',b.location) = '' and"
+			else:
+				cond = "IF(b.location IS NULL,'',b.location) = '{}' and ".format(location)
+
+		query ="""
+			select 
+					a.parent, b.particular, b.selling_price, b.selling_uom, b.location 
+				from 	
+					`tabSelling Price Branch` a, `tabSelling Price Rate` b 
+				where 
+					a.parent = b.parent and a.branch = '{0}' and b.particular = '{1}' and {2}
+					IF(b.selling_uom IS NULL,'',b.selling_uom) = '{3}' and 
+					exists (select 1 from `tabSelling Price` where name = a.parent and '{4}' between from_date and to_date) 
+				group by a.parent, b.location
+			""".format(filters.get("branch"), filters.get("item_code"), cond, selling_uom, filters.get("transaction_date"))
+	else:
+		query = """ 
+			select 
+				a.parent, b.particular, b.selling_price, b.selling_uom, b.location 
+			from 	
+				`tabSelling Price Branch` a, `tabSelling Price Rate` b 
+			where 
+				a.parent = b.parent and a.branch = '{0}' and b.particular = '{1}' and IF(b.location IS NULL,'',b.location) = '{2}' and 
+				IF(b.selling_uom IS NULL,'',b.selling_uom) = '{3}' and 
+				exists (select 1 from `tabSelling Price` where name = a.parent and '{4}' between from_date and to_date) 
+			group by a.parent
+		""".format(filters.get("branch"), filters.get("item_code"), location, selling_uom, filters.get("transaction_date"))
+	
 	item_price = frappe.db.sql(query)
         
 	if not item_price:

@@ -12,6 +12,7 @@ from frappe.model.mapper import get_mapped_doc
 from erpnext.stock.stock_balance import update_bin_qty, get_reserved_qty
 from frappe.desk.notifications import clear_doctype_notifications
 from erpnext.controllers.recurring_document import month_map, get_next_date
+from frappe.utils import nowdate
 
 from erpnext.controllers.selling_controller import SellingController
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date, get_settings_value
@@ -496,8 +497,30 @@ class SalesOrder(SellingController):
 			else:
 				location = ''
 			
-			rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and IF(location IS NULL,'',location) = '{2}' and IF(selling_uom IS NULL,'',selling_uom) = '{3}'""".format(item.price_template, item.item_code, location, selling_uom), as_dict =1)
-			
+			if(self.naming_series == 'Mineral Products'):
+				cond = ''
+				if location == '':
+					cond = "IF(location IS NULL,'',location) = '' and "
+				else:
+					check_loc = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular='{0}' and spr.location='{1}' and sp.to_date >= '{2}'".format(item.item_code, location, nowdate()))
+					if not check_loc:
+						cond = "IF(location IS NULL,'',location) = '' and "
+					else:
+						cond = "IF(location IS NULL,'',location) = '{}' and ".format(location)
+
+				rate = frappe.db.sql(""" 
+					select 
+						selling_price as rate 
+					from 
+						`tabSelling Price Rate` 
+					where 
+						parent = '{0}' and particular = '{1}' and {2}
+						IF(selling_uom IS NULL,'',selling_uom) = '{3}'
+					""".format(item.price_template, item.item_code, cond, selling_uom), as_dict =1)
+						
+			else:
+				rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and IF(location IS NULL,'',location) = '{2}' and IF(selling_uom IS NULL,'',selling_uom) = '{3}'""".format(item.price_template, item.item_code, location, selling_uom), as_dict =1)
+	
 			if not rate:
 				species,item_sub_group = frappe.db.get_value("Item", item.item_code, ["species","item_sub_group"])
 				if species:

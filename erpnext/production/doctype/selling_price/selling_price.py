@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils import flt, cint
+from frappe.utils import nowdate
 
 class SellingPrice(Document):
 	def validate(self):
@@ -97,7 +98,7 @@ def get_cop_amount(cop, branch, posting_date, item_code):
 
 
 @frappe.whitelist()
-def get_selling_rate(price_list, branch, item_code, transaction_date, selling_uom, location):
+def get_selling_rate(price_list, branch, item_code, transaction_date, selling_uom, location, naming_series):
 	if not branch or not item_code or not transaction_date:
 		frappe.throw("Select Item Code or Branch or Posting Date")
 
@@ -108,8 +109,28 @@ def get_selling_rate(price_list, branch, item_code, transaction_date, selling_uo
 	# 		rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and (location is NULL or location = '')  """.format(price_list, item_code), as_dict =1)
 	# else:
 	# 	rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and (location is Null or location ='') """.format(price_list, item_code), as_dict =1)
-	
-	query = """ select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and IF(location IS NULL,'',location) = '{2}' and IF(selling_uom IS NULL,'',selling_uom) = '{3}'""".format(price_list, item_code, location, selling_uom)
+	if(naming_series == 'Mineral Products'):
+		cond = ''
+		if location == '':
+			cond = "IF(location IS NULL,'',location) = '' and"
+		else:
+			check_loc = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular='{0}' and spr.location='{1}' and sp.to_date >= '{2}'".format(item_code, location, nowdate()))
+			if not check_loc:
+				cond = "IF(location IS NULL,'',location) = '' and"
+			else:
+				cond = "IF(location IS NULL,'',location) = '{}' and ".format(location)
+				
+		query = """ 
+			select 
+				selling_price as rate 
+			from
+				`tabSelling Price Rate` 
+			where 
+				parent = '{0}' and particular = '{1}' and {2}
+				IF(selling_uom IS NULL,'',selling_uom) = '{3}'
+		""".format(price_list, item_code, cond, selling_uom)
+	else:
+		query = """ select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and IF(location IS NULL,'',location) = '{2}' and IF(selling_uom IS NULL,'',selling_uom) = '{3}'""".format(price_list, item_code, location, selling_uom)
 	rate = frappe.db.sql(query, as_dict =1)
 
 	if not rate:
