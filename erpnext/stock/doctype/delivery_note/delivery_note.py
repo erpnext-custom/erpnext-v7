@@ -141,6 +141,7 @@ class DeliveryNote(SellingController):
 		make_packing_list(self)
 
 		self.update_current_stock()
+		self.update_stock_qty()
 
 		if not self.installation_status: self.installation_status = 'Not Installed'
 
@@ -259,6 +260,11 @@ class DeliveryNote(SellingController):
 					d.actual_qty = flt(bin_qty.actual_qty)
 					d.projected_qty = flt(bin_qty.projected_qty)
 
+	def update_stock_qty(self):
+		for a in self.items:
+			if(a.conversion_req == 0):
+				a.stock_qty = a.qty
+				
 	def on_submit(self):
 		self.validate_packed_qty()
 		# Check for Approving Authority
