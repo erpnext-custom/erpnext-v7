@@ -4,32 +4,33 @@
 frappe.query_reports["Employee Information"] = {
 	"filters": [
 		{
-			fieldname: "company",
-			label: "Company",
-			fieldtype: "Link",
-			options: "Company",
-			width: 200,
-			default: frappe.defaults.get_user_default("Company")
+			"fieldname": "company",
+			"label": "Company",
+			"fieldtype": "Link",
+			"options": "Company",
+			"default": frappe.defaults.get_user_default("Company"),
+		},
+		{
+            fieldname: "status",
+            label: "Status",
+            fieldtype: "Select",
+            options:["", "Active", "Left"]
 		},
 		{
 			fieldname: "employment_type",
 			label: "Employment Type",
 			fieldtype: "Link",
 			options: "Employment Type",
-			width: 200
 		},
 		{
-			fieldname: "status",
-			label: "Status",
-			fieldtype: "Select",
-			options: ["All", "Active", "Left"],
-			default: "All"
+			"fieldname": "accumulate_data",
+			"label": "Accumulated Data",
+			"fieldtype": "Check",
 		},
 		{
-			fieldname: "accumulate_data",
-			label: "Accumulated Data",
-			fieldtype: "Select",
-			options: ["", "Accumulated Data"]
-		}
+			"fieldname": "qualification",
+			"label": "Include Qualification",
+			"fieldtype": "Check",
+		},
 	]
 }
