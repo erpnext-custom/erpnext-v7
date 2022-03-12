@@ -251,17 +251,20 @@ class SellingController(StockController):
 
 				sales_order.update_reserved_qty(so_item_rows)
 
-	def update_stock_ledger(self):
+	def update_stock_ledger(self, cancel):
 		self.update_reserved_qty()
 
 		sl_entries = []
 
 		for d in self.get_item_list():
 			qty = 0
-			if(d.conversion_req == 0):
-				qty = d.qty
-			else:
+			if(cancel == 1 ):
 				qty = d.stock_qty
+			else:	
+				if(d.conversion_req == 0 or not d.conversion):
+					qty = d.qty
+				else:
+					qty = d.stock_qty
 
 			if frappe.db.get_value("Item", d.item_code, "is_stock_item") == 1 and flt(qty):
 				return_rate = 0
