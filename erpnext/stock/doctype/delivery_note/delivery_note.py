@@ -262,7 +262,7 @@ class DeliveryNote(SellingController):
 
 	def update_stock_qty(self):
 		for a in self.items:
-			if(a.conversion_req == 0):
+			if(a.conversion_req == 0 or not a.conversion_req):
 				a.stock_qty = a.qty
 				
 	def on_submit(self):
