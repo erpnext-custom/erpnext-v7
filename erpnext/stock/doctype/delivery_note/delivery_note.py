@@ -285,7 +285,7 @@ class DeliveryNote(SellingController):
 
 		# Updating stock ledger should always be called after updating prevdoc status,
 		# because updating reserved qty in bin depends upon updated delivered qty in SO
-		self.update_stock_ledger(cancel=0)
+		self.update_stock_ledger()
 		self.make_gl_entries()
 
 	def on_cancel(self):
@@ -298,7 +298,7 @@ class DeliveryNote(SellingController):
 
 		# Updating stock ledger should always be called after updating prevdoc status,
 		# because updating reserved qty in bin depends upon updated delivered qty in SO
-		self.update_stock_ledger(cancel=1)
+		self.update_stock_ledger()
 
 		self.cancel_packing_slips()
 
