@@ -16,7 +16,7 @@ def get_columns(filters=None):
 			columns = [
 				_("Branch") + ":Link/Sales Order:150",
 				_("Transaction Type") + ":Data:150", 
-				_("Location") + ":Data/120",
+				_("Location") + ":Link/Location:120",
 				_("Customer") + ":Link/Customer:150",
 				_("Customer Name") + ":Data:200",
 				_("Sub Item Group") + ":Data:150",
@@ -93,6 +93,7 @@ def get_columns(filters=None):
 				_("Sales Order") + ":Link/Sales Order:100", 
 				_("Region") + ":Data:150",
 				_("Branch") + ":Link/Branch:120", 
+				_("Location") + ":Link/Location:120",
 				_("Transaction Type") + ":Data:150", 
 				_("Customer") + ":Link/Customer:150", 
 				_("Customer Group") + ":Data:200", 
@@ -120,6 +121,7 @@ def get_columns(filters=None):
 				_("Sales Order") + ":Link/Sales Order:100", 
 				_("Region") + ":Data:150",
 				_("Branch") + ":Link/Branch:120", 
+				_("Location") + ":Link/Location:120",
 				_("Transaction Type") + ":Data:150", 
 				_("Customer") + ":Link/Customer:150", 
 				_("Customer Group") + ":Data:200",
@@ -201,7 +203,7 @@ def get_data(filters=None):
 		else:
 			cols = """
 				so.transaction_date, so.name, (select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = so.branch)) as region,
-				so.branch, 
+				so.branch, so.location,
 				CASE
 					WHEN is_allotment=1 THEN "Is Allotment"
 					WHEN is_credit=1 THEN "Is Credit Sale"
@@ -285,7 +287,7 @@ def get_data(filters=None):
 			cols = """
 					dn.posting_date, dn.name, dni.against_sales_order, 
 					(select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = dn.branch)) as region,
-					dn.branch,
+					dn.branch, dn.location,
 					CASE
 						WHEN is_allotment=1 THEN "Is Allotment"
 						WHEN is_credit=1 THEN "Is Credit Sale"
