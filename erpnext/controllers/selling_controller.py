@@ -189,6 +189,7 @@ class SellingController(StockController):
 					'stock_uom': d.stock_uom,
 					'sales_uom': d.sales_uom,
 					'stock_qty': d.stock_qty,
+					'conversion_req': d.conversion_req,
 					'batch_no': cstr(d.get("batch_no")).strip(),
 					'serial_no': cstr(d.get("serial_no")).strip(),
 					'name': d.name,
@@ -258,7 +259,7 @@ class SellingController(StockController):
 
 		for d in self.get_item_list():
 			qty = 0
-			if(d.conversion_req == 0 or not d.conversion):
+			if(d.conversion_req == 0 or not d.conversion_req):
 				qty = d.qty
 			else:
 				qty = d.stock_qty
