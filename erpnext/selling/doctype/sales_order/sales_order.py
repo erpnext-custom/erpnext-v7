@@ -497,35 +497,65 @@ class SalesOrder(SellingController):
 			else:
 				location = ''
 			
-			if(self.naming_series == 'Mineral Products'):
-				cond = ''
-				if location == '':
-					cond = "IF(location IS NULL,'',location) = '' and "
+			cond = ''
+			if location == '' and selling_uom == '':
+				cond += "IF(location IS NULL,'',location) = '' and IF(selling_uom IS NULL,'',selling_uom) = ''"
+			elif location != '' and selling_uom == '':
+				check_loc = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular='{0}' and spr.location='{1}' and sp.to_date >= '{2}'".format(item.item_code, location, nowdate()))
+				if not check_loc:
+					cond += " IF(location IS NULL,'',location) = '' and IF(selling_uom IS NULL,'',selling_uom) = ''"
 				else:
-					check_loc = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular='{0}' and spr.location='{1}' and sp.to_date >= '{2}'".format(item.item_code, location, nowdate()))
-					if not check_loc:
-						cond = "IF(location IS NULL,'',location) = '' and "
-					else:
-						cond = "IF(location IS NULL,'',location) = '{}' and ".format(location)
+					cond += " IF(location IS NULL,'',location) = '{}' and IF(selling_uom IS NULL,'',selling_uom) = ''".format(location)
+			elif location == '' and selling_uom != '':
+				check_loc = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular='{0}' and spr.selling_uom='{1}' and sp.to_date >= '{2}'".format(item.item_code, selling_uom, nowdate()))
+				if not check_loc:
+					cond += " IF(location IS NULL,'',location) = '' and IF(selling_uom IS NULL,'',selling_uom) = ''"
+				else:
+					cond += " IF(location IS NULL,'',location) = '' and IF(selling_uom IS NULL,'',selling_uom) = '{}'".format(selling_uom)
+			elif location != '' and selling_uom != '':
+				check_loc = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular='{0}' and spr.location='{1}' and spr.selling_uom='{2}' and sp.to_date >= '{3}'".format(item.item_code, location, selling_uom, nowdate()))
+				if not check_loc:
+					cond += " IF(location IS NULL,'',location) = '' and IF(selling_uom IS NULL,'',selling_uom) = '{}'".format(selling_uom)
+				else:
+					cond += " IF(location IS NULL,'',location) = '{}' and IF(selling_uom IS NULL,'',selling_uom) = '{}'".format(location, selling_uom)
 
-				rate = frappe.db.sql(""" 
-					select 
-						selling_price as rate 
-					from 
-						`tabSelling Price Rate` 
-					where 
-						parent = '{0}' and particular = '{1}' and {2}
-						IF(selling_uom IS NULL,'',selling_uom) = '{3}'
-					""".format(item.price_template, item.item_code, cond, selling_uom), as_dict =1)
+			rate = frappe.db.sql(""" 
+				select 
+					selling_price as rate 
+				from 
+					`tabSelling Price Rate` 
+				where 
+					parent = '{0}' and particular = '{1}' and {2}
+				""".format(item.price_template, item.item_code, cond), as_dict =1)
 						
-			else:
-				rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and IF(location IS NULL,'',location) = '{2}' and IF(selling_uom IS NULL,'',selling_uom) = '{3}'""".format(item.price_template, item.item_code, location, selling_uom), as_dict =1)
-	
 			if not rate:
 				species,item_sub_group = frappe.db.get_value("Item", item.item_code, ["species","item_sub_group"])
 				if species:
 					timber_class, timber_type = frappe.db.get_value("Timber Species", species, ["timber_class", "timber_type"])
-					rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}' and IF(location IS NULL,'',location) = '{4}' and IF(selling_uom IS NULL,'',selling_uom) = '{5}'""".format(item.price_template, timber_class, timber_type,item_sub_group, location, selling_uom), as_dict =1)
+					
+					cond = ''
+					if location == '' and selling_uom == '':
+						cond += "IF(location IS NULL,'',location) = '' and IF(selling_uom IS NULL,'',selling_uom) = ''"
+					elif location != '' and selling_uom == '':
+						check_loc = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular = '{0}' and spr.timber_type = '{1}' and spr.item_sub_group = '{2}' and spr.location='{3}' and sp.to_date >= '{4}'".format(timber_class, timber_type, item_sub_group, location, nowdate()))
+						if not check_loc:
+							cond += " IF(location IS NULL,'',location) = '' and IF(selling_uom IS NULL,'',selling_uom) = ''"
+						else:
+							cond += " IF(location IS NULL,'',location) = '{}' and IF(selling_uom IS NULL,'',selling_uom) = ''".format(location)
+					elif location == '' and selling_uom != '':
+						check_loc = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular = '{0}' and spr.timber_type = '{1}' and spr.item_sub_group = '{2}' and spr.selling_uom='{3}' and sp.to_date >= '{4}'".format(timber_class, timber_type, item_sub_group, selling_uom, nowdate()))
+						if not check_loc:
+							cond += " IF(location IS NULL,'',location) = '' and IF(selling_uom IS NULL,'',selling_uom) = ''"
+						else:
+							cond += " IF(location IS NULL,'',location) = '' and IF(selling_uom IS NULL,'',selling_uom) = '{}'".format(selling_uom)
+					elif location != '' and selling_uom != '':
+						check_loc = frappe.db.sql("select 1 from `tabSelling Price` sp, `tabSelling Price Rate` spr where spr.parent = sp.name and spr.particular = '{0}' and spr.timber_type = '{1}' and spr.item_sub_group = '{2}' and spr.location='{3}' and spr.selling_uom='{4}' and sp.to_date >= '{5}'".format(timber_class, timber_type, item_sub_group, location, selling_uom, nowdate()))
+						if not check_loc:
+							cond += " IF(location IS NULL,'',location) = '' and IF(selling_uom IS NULL,'',selling_uom) = '{}'".format(selling_uom)
+						else:
+							cond += " IF(location IS NULL,'',location) = '{}' and IF(selling_uom IS NULL,'',selling_uom) = '{}'".format(location, selling_uom)
+
+					rate = frappe.db.sql(""" select selling_price as rate from `tabSelling Price Rate` where parent = '{0}' and particular = '{1}' and timber_type = '{2}' and item_sub_group='{3}' and {4}""".format(item.price_template, timber_class, timber_type,item_sub_group, cond), as_dict =1)
 
 			rate = rate and rate[0].rate or 0.0
 

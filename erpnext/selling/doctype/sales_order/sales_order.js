@@ -493,7 +493,7 @@ cur_frm.fields_dict['items'].grid.get_field('price_template').get_query = functi
 		}
         return {
                 query: "erpnext.controllers.queries.price_template_list",
-                filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch, 'location': frm.location, 'selling_uom': uom, 'naming_series': frm.naming_series}
+                filters: {'item_code': d.item_code, 'transaction_date': frm.transaction_date, 'branch': frm.branch, 'location': frm.location, 'selling_uom': uom}
         }
 }
 
@@ -639,8 +639,7 @@ frappe.ui.form.on("Sales Order Item", {
 						"item_code": d.item_code,
 						"transaction_date": cur_frm.doc.transaction_date,
 						"selling_uom": uom,
-						"location": loc,
-						"naming_series": cur_frm.doc.naming_series			
+						"location": loc
 					},
 				callback: function(r) {
 						frappe.model.set_value(cdt, cdn, "price_list_rate", r.message)
