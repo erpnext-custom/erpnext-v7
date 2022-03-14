@@ -254,7 +254,7 @@ class LeaveApplication(Document):
 					consider_all_leaves_in_the_allocation_period=True)
 
 				if self.status != "Rejected" and self.leave_balance < self.total_leave_days:
-					frappe.throw("Leave Balance="+str(self.leave_balance)+" Total Leave Days="+str(self.total_leave_days))
+					# frappe.throw("Leave Balance="+str(self.leave_balance)+" Total Leave Days="+str(self.total_leave_days))
 					if frappe.db.get_value("Leave Type", self.leave_type, "allow_negative"):
 						frappe.msgprint(_("Note: Leave not allocated or Leave balance is not enough for Leave Type {0}. Please contact HR Manager")
 							.format(self.leave_type))
