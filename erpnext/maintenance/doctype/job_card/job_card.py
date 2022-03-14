@@ -241,63 +241,63 @@ class JobCard(AccountsController):
 		else:
 			frappe.throw("Setup Default Goods, Services and Receivable Accounts in Maintenance Accounts Settings")
 
-        def make_gl_entries(self):
-                if self.total_amount:
-                        from erpnext.accounts.general_ledger import make_gl_entries
-                        gl_entries = []
-                        self.posting_date = self.finish_date
-			ba = get_default_ba()
+        # def make_gl_entries(self):
+        #         if self.total_amount:
+        #                 from erpnext.accounts.general_ledger import make_gl_entries
+        #                 gl_entries = []
+        #                 self.posting_date = self.finish_date
+		# 	ba = get_default_ba()
 
-			goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
-			services_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_services_account")
-			receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
-			if not goods_account:
-				frappe.throw("Setup Default Goods Account in Maintenance Setting")
-			if not services_account:
-				frappe.throw("Setup Default Services Account in Maintenance Setting")
-			if not receivable_account:
-				frappe.throw("Setup Default Receivable Account in Maintenance Setting")
+		# 	goods_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_goods_account")
+		# 	services_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_services_account")
+		# 	receivable_account = frappe.db.get_single_value("Maintenance Accounts Settings", "default_receivable_account")
+		# 	if not goods_account:
+		# 		frappe.throw("Setup Default Goods Account in Maintenance Setting")
+		# 	if not services_account:
+		# 		frappe.throw("Setup Default Services Account in Maintenance Setting")
+		# 	if not receivable_account:
+		# 		frappe.throw("Setup Default Receivable Account in Maintenance Setting")
                         
-                        gl_entries.append(
-                                self.get_gl_dict({
-                                       "account":  receivable_account,
-                                       "party_type": "Customer",
-                                       "party": self.customer,
-                                       "against": receivable_account,
-                                       "debit": self.total_amount,
-                                       "debit_in_account_currency": self.total_amount,
-                                       "against_voucher": self.name,
-                                       "against_voucher_type": self.doctype,
-                                       "cost_center": self.cost_center,
-				       "business_activity": ba
-                                }, self.currency)
-                        )
+        #                 gl_entries.append(
+        #                         self.get_gl_dict({
+        #                                "account":  receivable_account,
+        #                                "party_type": "Customer",
+        #                                "party": self.customer,
+        #                                "against": receivable_account,
+        #                                "debit": self.total_amount,
+        #                                "debit_in_account_currency": self.total_amount,
+        #                                "against_voucher": self.name,
+        #                                "against_voucher_type": self.doctype,
+        #                                "cost_center": self.cost_center,
+		# 		       "business_activity": ba
+        #                         }, self.currency)
+        #                 )
 
-			if self.goods_amount:
-				gl_entries.append(
-					self.get_gl_dict({
-					       "account": goods_account,
-					       "against": self.customer,
-					       "credit": self.goods_amount,
-					       "credit_in_account_currency": self.goods_amount,
-					       "business_activity": ba,
-					       "cost_center": self.cost_center
-					}, self.currency)
-				)
-			if self.services_amount:
-				gl_entries.append(
-					self.get_gl_dict({
-					       "account": services_account,
-					       "against": self.customer,
-					       "credit": self.services_amount,
-					       "credit_in_account_currency": self.services_amount,
-					       "business_activity": ba,
-					       "cost_center": self.cost_center
-					}, self.currency)
-				)
+		# 	if self.goods_amount:
+		# 		gl_entries.append(
+		# 			self.get_gl_dict({
+		# 			       "account": goods_account,
+		# 			       "against": self.customer,
+		# 			       "credit": self.goods_amount,
+		# 			       "credit_in_account_currency": self.goods_amount,
+		# 			       "business_activity": ba,
+		# 			       "cost_center": self.cost_center
+		# 			}, self.currency)
+		# 		)
+		# 	if self.services_amount:
+		# 		gl_entries.append(
+		# 			self.get_gl_dict({
+		# 			       "account": services_account,
+		# 			       "against": self.customer,
+		# 			       "credit": self.services_amount,
+		# 			       "credit_in_account_currency": self.services_amount,
+		# 			       "business_activity": ba,
+		# 			       "cost_center": self.cost_center
+		# 			}, self.currency)
+		# 		)
 
 
-                        make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
+        #                 make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 
 	def make_gl_entry(self):
 		if self.total_amount:
