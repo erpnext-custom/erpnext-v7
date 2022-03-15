@@ -15,24 +15,63 @@ def get_data(filters):
 	conditions = get_conditions(filters)
 	group_by = get_group_by(filters)
 	order_by = get_order_by(filters)
-	total_qty = '1'
-	if filters.show_aggregate:
-		total_qty = "sum(ppi.qty) as total_qty"
-	# Uncomment below line of code for debug purposes only //Kinley Oorji 2021-08-21
-	frappe.errprint("total_qty = "+str(total_qty)+" || conditions = "+str(conditions)+" || group_by = "+str(group_by)+" || order by = "+str(order_by))
-	query = "select  pp.name as ref_doc, ppi.challan_no, pp.posting_date, ppi.item_code, ppi.item_name, ppi.item_group, ppi.item_sub_group, ppi.qty, ppi.uom, pp.branch, pp.location, pp.adhoc_production, pp.company, ppi.warehouse, (select ts.timber_class from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_class, (select ts.timber_type from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_type, ppi.timber_species, (select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = pp.branch)) as region, {0}, pp.cable_line_no as cable_line_no, pp.production_area as production_area from `tabProduction` pp, `tabProduction Product Item` ppi  where pp.name = ppi.parent and pp.docstatus = 1 {1} {2} {3}".format(total_qty, conditions, group_by, order_by)
-	abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
-	# if frappe.session.user == "Administrator":
-	# 	frappe.throw(query)
+	if filters.get("show_aggregate"):
+		query = """
+			select 
+				(select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = pp.branch)) as region, 
+				pp.branch, ppi.item_group, ppi.item_sub_group, sum(ppi.qty) as total_qty, ppi.uom 
+			from
+				`tabProduction` pp
+				inner join `tabProduction Product Item` ppi on pp.name = ppi.parent
+			where 
+				pp.docstatus = 1 {0} {1} {2}
+			""".format(conditions, group_by, order_by)
 
-	total_qty = 0
-	for a in frappe.db.sql(query, as_dict=1):
-		a.region = str(a.region).replace(abbr, "")
-		if filters.show_aggregate:
-			a.qty = a.total_qty
-		total_qty += flt(a.qty)
-		data.append(a)
-	data.append({"qty": total_qty, "region": frappe.bold("TOTAL")})
+		abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
+		total_qty = 0
+		for a in frappe.db.sql(query, as_dict=1):
+			a.region = str(a.region).replace(abbr, "")
+			if filters.show_aggregate:
+				total_qty += flt(a.total_qty)
+			data.append(a)
+
+		data.append({
+			"region": frappe.bold("TOTAL"),
+			"total_qty": total_qty
+			})
+
+	else:
+		query = """
+			select 
+				pp.name as ref_doc, ppi.challan_no, pp.posting_date, 
+				(select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = pp.branch)) as region, 
+				pp.branch, pp.location,
+				GROUP_CONCAT('<a href="desk#Form/Equipment/',pmd.machine_name,'">',pmd.machine_name,'</a>') as machine_name,
+				ppi.item_code, ppi.item_name, ppi.item_group, ppi.item_sub_group, 
+				(select ts.timber_class from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_class, 
+				(select ts.timber_type from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_type, ppi.timber_species, 
+				pp.cable_line_no as cable_line_no, pp.production_area as production_area,
+				ppi.qty, ppi.uom, pmi.qty as rm_qty, pmi.cull_qty, pmi.actual_qty, round((ppi.qty*100)/pmi.actual_qty,2) as recovery_rate
+			from
+				`tabProduction` pp
+				left join `tabProduction Product Item` ppi on pp.name = ppi.parent
+				left join `tabProduction Material Item` pmi on pp.name = pmi.parent
+				left join `tabProduction Machine Details` pmd on pp.name = pmd.parent  
+			where 
+				pp.docstatus = 1 {0} {1} {2}
+			""".format(conditions, group_by, order_by)
+				
+		abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
+		total_qty = 0
+		for a in frappe.db.sql(query, as_dict=1):
+			a.region = str(a.region).replace(abbr, "")
+			total_qty += flt(a.qty)
+			data.append(a)
+
+		data.append({
+			"region": frappe.bold("TOTAL"),
+			"qty": total_qty
+			})
 
 	return data
 
@@ -41,12 +80,14 @@ def get_group_by(filters):
 		group_by = " group by region, pp.branch, ppi.item_sub_group"
 		# group_by = " group by pe.branch, pe.location, pe.item_sub_group"
 	else:
-		group_by = " "
+		# group_by = " "
+		group_by = " group by pp.name, ppi.item_code, ppi.qty "
 
 	return group_by
 
 def get_order_by(filters):
-	return " order by region, pp.location, ppi.item_group, ppi.item_sub_group"
+	# return " order by region, pp.location, ppi.item_group, ppi.item_sub_group"
+	return " order by pp.posting_date"
 
 def get_conditions(filters):
 	if not filters.cost_center:
@@ -71,7 +112,6 @@ def get_conditions(filters):
 		branch = str(filters.get("branch"))
 		branch = branch.replace(' - NRDCL','')
 		condition = " and pp.branch = \'"+branch+"\'"
-		# frappe.throw("branch ="+branch+" condtion ="+condition)
 
 	if filters.production_type != "All":
 		condition += " and pp.production_type = '{0}'".format(filters.production_type)
@@ -135,122 +175,193 @@ def get_conditions(filters):
 	
 	if filters.challan_no:
 		condition += " and ppi.challan_no = '{}'".format(filters.challan_no)
+	
+	if filters.machine_name:
+		condition += " and pmd.machine_name = '{}'".format(filters.machine_name)
 
 	return condition
 
 def get_columns(filters):
-	columns = [
-		{
-			"fieldname": "region",
-			"label": "Region",
-			"fieldtype": "Data",
-			"width": 120
-		},
-		{
-			"fieldname": "branch",
-			"label": "Branch",
-			"fieldtype": "Link",
-			"options": "Branch",
-			"width": 120
-		},
-		{
-			"fieldname": "location",
-			"label": "Location",
-			"fieldtype": "Link",
-			"options": "Location",
-			"width": 120
-		},
-		{
-			"fieldname": "item_group",
-			"label": "Group",
-			"fieldtype": "Data",
-			"width": 120
-		},
-		{
-			"fieldname": "item_sub_group",
-			"label": "Sub Group",
-			"fieldtype": "Link",
-			"options": "Item Sub Group",
-			"width": 120
-		},
-		{
-			"fieldname": "qty",
-			"label": "Quantity",
-			"fieldtype": "Float",
-			"width": 100
-		},
-		{
-			"fieldname": "uom",
-			"label": "UOM",
-			"fieldtype": "Link",
-			"options": "UoM",
-			"width": 100
-		},
-	]
-
-	if not filters.show_aggregate:
-		columns.insert(0,{
-			"fieldname": "ref_doc",
-			"label": "PR Reference",
-			"fieldtype": "Link",
-			"options": "Production",
-			"width": 120
-		})
-		columns.insert(1,{
-			"fieldname": "challan_no",
-			"label": "Challan No",
-			"fieldtype": "Data",
-			"width": 120
-		})
-
-		columns.insert(2, {
-			"fieldname": "posting_date",
-			"label": "Posting Date",
-			"fieldtype": "Date",
-			"width": 100
-		})
-	
-		columns.insert(5, {
-			"fieldname": "item_code",
-			"label": "Material Code",
-			"fieldtype": "Link",
-			"options": "Item",
-			"width": 150
-		})
-	
-		columns.insert(8, {
-			"fieldname": "timber_class",
-			"label": "Class",
-			"fieldtype": "Link",
-			"options": "Timber Class",
-			"width": 100
-		})
-		columns.insert(9, {
-			"fieldname": "timber_species",
-			"label": "Species",
-			"fieldtype": "Link",
-			"options": "Timber Species",
-			"width": 100
-		})
-		columns.insert(10, {
-			"fieldname": "timber_type",
-			"label": "Type",
-			"fieldtype": "Data",
-			"width": 100
-		})
-		columns.insert(11, {
-			"fieldname": "cable_line_no",
-			"label": "Cable Line No",
-			"fieldtype": "Data",
-			"width": 100
-		})
-		columns.insert(12, {
-                        "fieldname": "production_area",
-                        "label": "Production Area",
-                        "fieldtype": "Data",
-                        "width": 100
-                })
-	
+	if filters.get("show_aggregate"):
+		columns = [
+			{
+				"fieldname": "region",
+				"label": "Region",
+				"fieldtype": "Data",
+				"width": 120
+			},
+			{
+				"fieldname": "branch",
+				"label": "Branch",
+				"fieldtype": "Link",
+				"options": "Branch",
+				"width": 120
+			},
+			{
+				"fieldname": "item_group",
+				"label": "Group",
+				"fieldtype": "Data",
+				"width": 120
+			},
+			{
+				"fieldname": "item_sub_group",
+				"label": "Sub Group",
+				"fieldtype": "Link",
+				"options": "Item Sub Group",
+				"width": 120
+			},
+			{
+				"fieldname": "total_qty",
+				"label": "Product Qty",
+				"fieldtype": "Float",
+				"width": 100
+			},
+			{
+				"fieldname": "uom",
+				"label": "UOM",
+				"fieldtype": "Link",
+				"options": "UoM",
+				"width": 100
+			}
+		]
+	else:
+		columns = [
+			{
+				"fieldname": "ref_doc",
+				"label": "PR Reference",
+				"fieldtype": "Link",
+				"options": "Production",
+				"width": 120
+			},
+			{
+				"fieldname": "challan_no",
+				"label": "Challan No",
+				"fieldtype": "Data",
+				"width": 120
+			},
+			{
+				"fieldname": "posting_date",
+				"label": "Posting Date",
+				"fieldtype": "Date",
+				"width": 100
+			},
+			{
+				"fieldname": "region",
+				"label": "Region",
+				"fieldtype": "Data",
+				"width": 120
+			},
+			{
+				"fieldname": "branch",
+				"label": "Branch",
+				"fieldtype": "Link",
+				"options": "Branch",
+				"width": 120
+			},
+			{
+				"fieldname": "location",
+				"label": "Location",
+				"fieldtype": "Link",
+				"options": "Location",
+				"width": 120
+			},
+			{
+				"fieldname": "machine_name",
+				"label": "Machine Name",
+				"fieldtype": "Link",
+				"options": "Equipment",
+				"width": 250
+			},
+			{
+				"fieldname": "item_code",
+				"label": "Material Code",
+				"fieldtype": "Link",
+				"options": "Item",
+				"width": 150
+			},
+			{
+				"fieldname": "item_group",
+				"label": "Group",
+				"fieldtype": "Data",
+				"width": 120
+			},
+			{
+				"fieldname": "item_sub_group",
+				"label": "Sub Group",
+				"fieldtype": "Link",
+				"options": "Item Sub Group",
+				"width": 120
+			},
+			{
+				"fieldname": "timber_class",
+				"label": "Class",
+				"fieldtype": "Link",
+				"options": "Timber Class",
+				"width": 100
+			},
+			{
+				"fieldname": "timber_species",
+				"label": "Species",
+				"fieldtype": "Link",
+				"options": "Timber Species",
+				"width": 100
+			},
+			{
+				"fieldname": "timber_type",
+				"label": "Type",
+				"fieldtype": "Data",
+				"width": 100
+			},
+			{
+				"fieldname": "cable_line_no",
+				"label": "Cable Line No",
+				"fieldtype": "Data",
+				"width": 100
+			}, 
+			{
+				"fieldname": "production_area",
+				"label": "Production Area",
+				"fieldtype": "Data",
+				"width": 100
+			},
+			{
+				"fieldname": "qty",
+				"label": "Product Qty",
+				"fieldtype": "Float",
+				"width": 100
+			},
+			{
+				"fieldname": "uom",
+				"label": "UOM",
+				"fieldtype": "Link",
+				"options": "UoM",
+				"width": 100
+			},
+			{
+				"fieldname": "rm_qty",
+				"label": "Raw Material Qty",
+				"fieldtype": "Float",
+				"width": 100
+			}, 
+			{
+				"fieldname": "cull_qty",
+				"label": "Cull Quantity",
+				"fieldtype": "Float",
+				"width": 100
+			}, 
+			{
+				"fieldname": "actual_qty",
+				"label": "Actual Qty",
+				"fieldtype": "Float",
+				"width": 100
+			}, 
+			{
+				"fieldname": "recovery_rate",
+				"label": "Recovery %",
+				"fieldtype": "Data",
+				"width": 100
+			}
+		]
 	return columns
 
 @frappe.whitelist()

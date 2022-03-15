@@ -37,6 +37,7 @@ class Production(StockController):
 		self.check_cop()
 		if not self.items:
 			frappe.throw("Product Item is mandatory to submit the production")
+		self.check_cull_qty_file()
 
 	def on_submit(self):
 		if self.raw_materials:
@@ -387,6 +388,12 @@ class Production(StockController):
 			if flt(a.cop) <= 0:
 				frappe.throw("COP Cannot be zero or less")
 
+	# Added by Sonam Chophel on 10/03/2022
+	# If cull qty is greater than 0 then document is necessary
+	def check_cull_qty_file(self):
+		for a in self.raw_materials:
+			if a.cull_qty > 0 and not a.cull_qty_file:
+				frappe.throw("Please Attach the relevant documents to support why there is Cull Quantity")
 
 	""" ++++++++++ Ver 1.0.190401 Begins ++++++++++ """
 	# update_stock_ledger() method added by SHIV on 2019/04/01

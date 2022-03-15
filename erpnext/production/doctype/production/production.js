@@ -82,7 +82,7 @@ frappe.ui.form.on('Production', {
 	
 	business_activity: function(frm){
 		update_items(frm);
-	},
+	}
 	/* ++++++++++ Ver 1.0.190401 Ends ++++++++++++*/
 });
 
@@ -222,18 +222,49 @@ frappe.ui.form.on("Production Product Item", {
 /* ++++++++++ Ver 1.0.190401 Begins ++++++++++*/
 // Following code added by SHIV on 2019/04/01
 frappe.ui.form.on("Production Material Item", {
+	// form_render: (frm,cdt,cdn)=>{
+	// 	var row = locals[cdt][cdn]
+	// 	if(frm.doc.business_activity == "Timber"){
+	// 		frm.fields_dict.raw_materials.grid.toggle_reqd("cull_qty", 1)
+	// 		frm.refresh_field('cull_qty')
+	// 	}else{
+	// 		frm.fields_dict.raw_materials.grid.toggle_reqd("cull_qty", 0)
+	// 		frm.refresh_field('cull_qty')
+	// 	}
+	// },
+
 	item_code: function(frm, cdt, cdn){
 		update_expense_account(frm, cdt, cdn);
 	},
+
 	raw_materials_add: function(frm, cdt, cdn){
 		frappe.model.set_value(cdt, cdn, "business_activity", frm.doc.business_activity);
 		frappe.model.set_value(cdt, cdn, "warehouse", frm.doc.warehouse);
 		frappe.model.set_value(cdt, cdn, "cost_center", frm.doc.cost_center);
 	},
+
 	"lot_list": function(frm, cdt, cdn){
-                var d = locals[cdt][cdn];
-                if(d.item_code && d.lot_list){ get_balance(frm, cdt, cdn); }
-        }
+		var d = locals[cdt][cdn];
+		if(d.item_code && d.lot_list){ get_balance(frm, cdt, cdn); }
+	},
+
+	qty: function(frm, cdt, cdn){
+		var item = locals[cdt][cdn]
+		if(item.cull_qty > 0){
+			frappe.model.set_value(cdt, cdn, "actual_qty", item.qty - item.cull_qty)
+			cur_frm.refresh_field("actual_qty")
+		} else {
+			frappe.model.set_value(cdt, cdn, "actual_qty", item.qty)
+			cur_frm.refresh_field("actual_qty")
+		}
+		
+	},
+
+	cull_qty: function(frm, cdt, cdn){
+		var item = locals[cdt][cdn]
+		frappe.model.set_value(cdt, cdn, "actual_qty", item.qty - item.cull_qty)
+		cur_frm.refresh_field("actual_qty")
+	}
 });
 
 var update_expense_account = function(frm, cdt, cdn){

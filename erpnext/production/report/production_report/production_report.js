@@ -192,14 +192,14 @@ frappe.query_reports["Production Report"] = {
 			"fieldname": "from_date",
 			"label": __("From Date"),
 			"fieldtype": "Date",
-			"default": frappe.defaults.get_user_default("year_start_date"),
+			"default":frappe.datetime.year_start(),
 			"reqd": 1,
 		},
 		{
 			"fieldname": "to_date",
 			"label": __("To Date"),
 			"fieldtype": "Date",
-			"default": frappe.defaults.get_user_default("year_end_date"),
+			"default":frappe.datetime.year_end(),
 			"reqd": 1,
 		},
 		{
@@ -344,6 +344,7 @@ frappe.query_reports["Production Report"] = {
  			"options": "Warehouse",
 			"get_query": function() {
 				var branch = frappe.query_report.filters_by_name.branch.get_value();
+				branch = branch.replace(' - NRDCL','')
 				if (!branch) {
 					return
 				}
@@ -395,6 +396,12 @@ frappe.query_reports["Production Report"] = {
 			"label": ("Contractor"),
 			"fieldtype": "Link",
  			"options": "Supplier"
+		},
+		{
+			"fieldname": "machine_name",
+			"label": ("Machine Name"),
+			"fieldtype": "Link",
+ 			"options": "Equipment"			
 		}
 	]
 }
