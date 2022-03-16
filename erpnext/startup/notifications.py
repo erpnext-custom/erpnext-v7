@@ -80,6 +80,8 @@ def get_notification_config():
                         "Budget": {"docstatus": 0},
                         "Revenue Target": {"docstatus": 0},
                         "Payment Entry": {"docstatus": 0},
+						"Bank Payment": {"docstatus": 0},
+						"Utility Bill": {"docstatus": 0},
 			"Imprest Receipt": {"docstatus": 0},
                         "Imprest Recoup" : {"docstatus": 0},
 			"SWS Application" : {"docstatus": 0},
