@@ -30,6 +30,21 @@ frappe.ui.form.on('Utility Bill', {
 				}
 			}
 		 });
+
+		 if(!frm.doc.direct_payment && frm.doc.docstatus === 1 && (frm.doc.payment_status === "Payment Successful" || frm.doc.payment_status === "Partial Payment")){
+			frm.add_custom_button("Create Direct Payment", function() {
+				frappe.call({
+					"method": "make_direct_payment",
+					"doc": cur_frm.doc,
+					callback: function(r, rt) {
+						if(r.message){
+							frm.refresh_fields();
+							frappe.set_route("Form", "Direct Payment", r.message);
+						}
+					}
+				});
+			}).addClass("btn-primary");
+		 }
 	},
 	"tds_percent": function(frm) {
 		calculate_tds(frm);

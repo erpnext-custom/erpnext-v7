@@ -25,7 +25,6 @@ class UtilityBill(Document):
     def before_submit(self):
         self.utility_payment()
         self.update_status()
-        #self.make_direct_payment()
         
     def update_pi_number(self):
         for a in self.get("item"):
@@ -228,6 +227,9 @@ class UtilityBill(Document):
             d.fetch_status_code = res_status
 
     def make_direct_payment(self):
+        if self.direct_payment:
+            frappe.throw("Direct Payment No. <b> {} </b>already created for this Utility Bill".format(self.direct_payment))
+
         doc = frappe.new_doc("Direct Payment")
         doc.branch = self.branch
         doc.cost_center = self.cost_center
@@ -259,10 +261,10 @@ class UtilityBill(Document):
                             })
                         count_child +=1
             if count_child > 0:
-                doc.submit()
+                doc.save()
             if doc.name:
                 self.db_set("direct_payment", doc.name)
-                frappe.msgprint("Direct Payment created and submitted for this Utility Bill")
+            return doc.name
                 
     def remove_bill_without_os(self):
         to_remove = []
