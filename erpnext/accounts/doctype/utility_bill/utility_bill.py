@@ -263,7 +263,7 @@ class UtilityBill(Document):
                             })
                         count_child +=1
             if count_child > 0:
-                doc.submit()
+                doc.save()
             if doc.name:
                 self.db_set("direct_payment", doc.name)
             return doc.name
