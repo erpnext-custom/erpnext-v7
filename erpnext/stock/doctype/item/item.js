@@ -28,6 +28,7 @@ frappe.ui.form.on("Item", {
                                           }
                                 }
                          });
+		cur_frm.set_df_property("item_code", "reqd", 0);
 	},
 
 	refresh: function(frm) {
