@@ -39,7 +39,6 @@ frappe.ui.form.on('Utility Bill', {
 					callback: function(r, rt) {
 						if(r.message){
 							frm.refresh_fields();
-							console.log(r.message);
 							frappe.set_route("Form", "Direct Payment", r.message);
 						}
 					}
