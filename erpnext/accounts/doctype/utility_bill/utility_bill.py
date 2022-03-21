@@ -28,7 +28,6 @@ class UtilityBill(Document):
             self.update_status()
         except Exception as e:
             pass
-        self.make_direct_payment()
 
     def update_pi_number(self):
         for a in self.get("item"):
