@@ -433,11 +433,11 @@ class BankPayment(Document):
 						#actual_debit_amount = flt(b.debit_amount) - flt(other_credit)
 						party_type = b.party_type
 						party = b.party
-					if not party_type and not party:
+					if not party_type and not party and d.debit_amount !=0:
 						reference_type = b.reference_type if b.reference_type and not reference_type else ""
 						reference_name = b.reference_name if b.reference_name and not reference_name else ""
 						if reference_type and reference_name:
-							if reference_type in ['Travel Authorization','Travel Claim','Overtime Application','Leave Encashment','Employee Benefits']:
+							if reference_type in ['Travel Authorization','Travel Claim','Overtime Application','Leave Encashment','Employee Benefits', 'Salary Advance']:
 								party_type = "Employee"
 								party      = frappe.db.get_value(reference_type, reference_name, "employee")
 							else:
@@ -771,12 +771,19 @@ def process_one_to_one_payment(doc, publish_progress=True):
 			PayeeAcctNum = doc.bank_account_no
 			BnfcryAcct = i.bank_account_no
 			BnfcryName = i.beneficiary_name
-			if i.employee:
-				bnf_acc_type = frappe.db.get_value("Employee", i.employee, "bank_account_type")
-				BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Employee", i.employee, "bank_branch"), "financial_system_code"))
+			if i.financial_system_code and i.bank_account_type:
+				bnf_acc_type = i.bank_account_type
+				BfscCode = i.financial_system_code
 			else:
-				bnf_acc_type = frappe.db.get_value("Supplier", i.supplier, "bank_account_type")
-				BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Supplier", i.supplier, "bank_branch"), "financial_system_code"))
+				if i.bank_branch:
+					bnf_acc_type = i.bank_account_type
+					BfscCode = str(frappe.db.get_value("Financial Institution Branch", i.bank_branch, "financial_system_code"))
+				elif i.employee:
+					bnf_acc_type = frappe.db.get_value("Employee", i.employee, "bank_account_type")
+					BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Employee", i.employee, "bank_branch"), "financial_system_code"))
+				elif i.supplier:
+					bnf_acc_type = frappe.db.get_value("Supplier", i.supplier, "bank_account_type")
+					BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Supplier", i.supplier, "bank_branch"), "financial_system_code"))
 			BnfcryAcctTyp = bnf_acc_type
 			BnfcryRmrk = str(doc.remarks)
 			RemitterName = doc.company
@@ -941,11 +948,12 @@ def get_intra_bank_file(doc, filename, posting_date, account_type="01"):
 	# get credit records for transactions
 	for i in doc.get("items"):
 		narration = str(doc.name) + ' ' + str(doc.remarks if doc.remarks else i.remarks)
+		account_type = "03" if i.bank_account_type == "03" else "01"
 		if str(doc.bank_name) == str(i.bank_name) and i.status in ('Pending', 'Failed'):
 			slno += 1
 			frappe.get_doc('Bank Payment Item', i.name).db_set('file_name', filename+'.csv')
 			credit_rec.append([account_type, i.bank_account_no, flt(i.amount,2), "BTN", 
-					  filename.split("_")[-1], narration[:30], posting_date.strftime("%d%m%Y"), "1"])
+						filename.split("_")[-1], narration[:30], posting_date.strftime("%d%m%Y"), "1"])
 			total_amount += flt(i.amount,2)
 
 	# get debit record for paid_from 
