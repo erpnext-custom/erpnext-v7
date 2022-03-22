@@ -20,6 +20,8 @@ class ImprestRecoup(AccountsController):
                 self.update_amounts()
                 self.validate_amounts()
 		self.clearance_date = None
+                if self.final_settlement == 1 and self.revenue_bank_account:
+                        frappe.throw("Bank Account selected along with Final Settlement. Please uncheck Final Settlement and clear value for Bank Account if this is a final settlement document.")
 
         def on_submit(self):
                 for t in frappe.get_all("Imprest Recoup", ["name"], {"branch": self.branch, "imprest_type": self.imprest_type, "entry_date":("<",self.entry_date),"docstatus":0}):
