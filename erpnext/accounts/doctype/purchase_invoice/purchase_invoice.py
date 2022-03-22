@@ -356,16 +356,12 @@ class PurchaseInvoice(BuyingController):
         self.expenses_included_in_valuation = self.get_company_default("expenses_included_in_valuation")
         self.negative_expense_to_be_booked = 0.0
         gl_entries = []
-
-
         self.make_supplier_gl_entry(gl_entries)
         self.make_item_gl_entries(gl_entries)
         self.make_tax_gl_entries(gl_entries)
         self.make_tds_gl_entry(gl_entries)
         self.make_advance_gl_entry(gl_entries)
-
         gl_entries = merge_similar_entries(gl_entries)
-
         self.make_payment_gl_entries(gl_entries)
 
         self.make_write_off_gl_entry(gl_entries)

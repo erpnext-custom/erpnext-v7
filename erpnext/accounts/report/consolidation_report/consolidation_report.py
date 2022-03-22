@@ -19,11 +19,10 @@ def get_data(filters,from_rest_api=None):
 	if filters['is_inter_company'] == 'Yes':
 		cond += ' and interco != "I_NONE"'
 	d = frappe.db.sql('''
-					  SELECT name, from_date, to_date
-						FROM `tabConsolidation Transaction` 
-						WHERE to_date <= '{}'
-						ORDER BY to_date desc limit 1;
-					  '''.format(filters['to_date']),as_dict=True)
+					 SELECT name, from_date, to_date
+      					FROM `tabConsolidation Transaction`  
+           				WHERE from_date >= '{}' AND to_date <= '{}' ORDER BY name desc limit 1
+					  '''.format(filters['from_date'],filters['to_date']),as_dict=True)
 	if not d:
 		return
 	parent_name = d[0].name
