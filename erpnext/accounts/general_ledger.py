@@ -51,7 +51,13 @@ def merge_similar_entries(gl_map):
 	for entry in gl_map:
 		# if there is already an entry in this account then just add it
 		# to that entry
-		same_head = check_if_in_list(entry, merged_gl_map)
+		'''mering for gl booking via purchase invoice for temporary account is avoided since
+            we are booking expense account of each item for consolidation purpose. Not required for none dhi companies'''
+		stock_received_but_not_billed, asset_received_but_not_billed = frappe.db.get_value('Company',entry.company,['stock_received_but_not_billed','stock_asset_received_but_not_billed'])
+		if entry.voucher_type == 'Purchase Invoice' and (entry.account in [asset_received_but_not_billed,stock_received_but_not_billed]):
+			same_head = ''
+		else:  
+			same_head = check_if_in_list(entry, merged_gl_map)
 		if same_head:
 			same_head.debit	= flt(same_head.debit) + flt(entry.debit)
 			same_head.debit_in_account_currency	= \
