@@ -275,6 +275,8 @@ class MechanicalPayment(AccountsController):
 							 "credit": flt(self.net_amount),
 							 "credit_in_account_currency": flt(self.net_amount),
 							 "cost_center": self.cost_center,
+							 "party_type": self.party_type,
+							 "party": self.party,
 							 "reference_type": self.doctype,
 							 "reference_name": self.name,
 							 "business_activity": self.business_activity,

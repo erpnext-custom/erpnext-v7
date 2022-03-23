@@ -21,6 +21,22 @@ frappe.ui.form.on('Mechanical Payment', {
 				]
 			}
 		});
+		cur_frm.set_query("outgoing_account", function () {
+			return {
+				"filters":[
+					["account_type", "in", ["Payable", "Receivable"]]
+				]
+			}
+		});
+		cur_frm.set_query("party_type", function(frm) {
+
+			return {
+				query: "erpnext.setup.doctype.party_type.party_type.get_party_type",
+				filters: {
+					'account': frm.outgoing_account
+				}
+			}
+		});
 		if (frm.doc.payment_for == "Hire Charge Invoice" && frm.doc.docstatus != 1) {
 			cur_frm.set_value("tds_amount", "");
 			cur_frm.set_value("tds_account", "");
@@ -120,6 +136,19 @@ frappe.ui.form.on('Mechanical Payment', {
 	},
 	"other_deduction": function (frm) {
 		calculate_totals(frm);
+	},
+	"outgoing_account": function (frm) {
+		frappe.model.get_value("Account", frm.doc.outgoing_account, "account_type", function (d){
+			if (d.account_type == 'Payable'){
+				frm.set_value("party_type", "Supplier")
+			}else{
+				frm.set_value("party_type", "Customer")
+			}
+			frm.set_value("party", "")
+		});
+	},
+	"party_type": function (frm) {
+		frm.set_value("party", "")
 	}
 });
 // added by phuntsho to auto calculate tds amount
