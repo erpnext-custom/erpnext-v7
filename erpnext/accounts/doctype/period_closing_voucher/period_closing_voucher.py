@@ -64,21 +64,23 @@ class PeriodClosingVoucher(AccountsController):
 					"credit_in_account_currency": abs(flt(acc.balance_in_account_currency)) \
 						if flt(acc.balance_in_account_currency) > 0 else 0,
 					"credit": abs(flt(acc.balance_in_company_currency)) \
-						if flt(acc.balance_in_company_currency) > 0 else 0
+						if flt(acc.balance_in_company_currency) > 0 else 0,
+					"business_activity": self.business_activity
 				}))
 
 				net_pl_balance += flt(acc.balance_in_company_currency)
 				net_pl_balance = flt(acc.balance_in_company_currency)
 
 				if net_pl_balance:
-                                        gl_entries.append(self.get_gl_dict({
-                                                "account": self.closing_account_head,
-                                                "cost_center": acc.cost_center,
-                                                "debit_in_account_currency": abs(net_pl_balance) if net_pl_balance > 0 else 0,
-                                                "debit": abs(net_pl_balance) if net_pl_balance > 0 else 0,
-                                                "credit_in_account_currency": abs(net_pl_balance) if net_pl_balance < 0 else 0,
-                                                "credit": abs(net_pl_balance) if net_pl_balance < 0 else 0
-                                        }))
+					gl_entries.append(self.get_gl_dict({
+							"account": self.closing_account_head,
+							"cost_center": acc.cost_center,
+							"debit_in_account_currency": abs(net_pl_balance) if net_pl_balance > 0 else 0,
+							"debit": abs(net_pl_balance) if net_pl_balance > 0 else 0,
+							"credit_in_account_currency": abs(net_pl_balance) if net_pl_balance < 0 else 0,
+							"credit": abs(net_pl_balance) if net_pl_balance < 0 else 0,
+							"business_activity": self.business_activity
+					}))
 
 		"""if net_pl_balance:
 			gl_entries.append(self.get_gl_dict({
