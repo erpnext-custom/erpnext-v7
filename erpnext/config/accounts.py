@@ -3,7 +3,7 @@ from frappe import _
 
 def get_data():
 	return [
-                {
+        {
 			"label": _("Company"),
 			"items": [
 				{
@@ -34,7 +34,7 @@ def get_data():
 				},                                
 			]
 		},
-                {
+        {
 			"label": _("Account Settings"),
 			"icon": "icon-cog",
 			"items": [
@@ -183,7 +183,7 @@ def get_data():
 				},
 			]
 		},
-                {
+        {
 			"label": _("Imprest Management"),
 			"icon": "icon-cog",
 			"items": [
@@ -213,7 +213,7 @@ def get_data():
 				},
 			]
 		},
-                {
+        {
 			"label": _("Tools"),
 			"items": [
 				{
@@ -236,11 +236,11 @@ def get_data():
 					"hide_count": True
 				},
 				 {
-                                        "type": "doctype",
-                                        "name": "Fund Requisition",
-                                        "description": "Fund Requisition from Regions",
-                                        "hide_count": True
-                                },
+					"type": "doctype",
+					"name": "Fund Requisition",
+					"description": "Fund Requisition from Regions",
+					"hide_count": True
+				},
 
 			]
 		},
@@ -367,50 +367,50 @@ def get_data():
 		{
 			"label": _("Bank Accounting"),
 			"items": [
-                		{
+                	{
 					"type": "doctype",
 					"name": "Upload BRS Entries",
                     			"label": _("Upload BRS Data"),
 					"description": _("Upload bank payment dates.")
 				},
-                		{
+                {
 					"type": "doctype",
 					"name": "Bank Reconciliation",
-                    			"label": _("Update Bank Transaction Dates"),
+                    "label": _("Update Bank Transaction Dates"),
 					"description": _("Update bank payment dates with journals.")
 				},
-                                {
+                {
 					"type": "doctype",
 					"name": "Bank Guarantee",
 				},
-                                {
-                                        "type": "doctype",
-                                        "name": "Fixed Deposit",
-                                },
-                		{
+                {
+					"type": "doctype",
+					"name": "Fixed Deposit",
+                },
+                {
 					"type": "report",
 					"name": "Bank Reconciliation Statement",
-                			"is_query_report": True,
+                	"is_query_report": True,
 					"doctype": "Journal Entry"
 				},
-                		{
+                {
 					"type": "report",
 					"name": "Bank Clearance Summary",
-                    			"is_query_report": True,
+                    "is_query_report": True,
 					"doctype": "Journal Entry"
 				},
-                		{
+                {
 					"type": "report",
 					"name": "Bank Guarantee Report",
-                    			"is_query_report": True,
+                    "is_query_report": True,
 					"doctype": "Bank Guarantee"
 				},
-                                {
-                                        "type": "report",
-                                        "name": "Fixed Deposit Report",
-                                        "is_query_report": True,
-                                        "doctype": "Fixed Deposit"
-                                },
+                {
+					"type": "report",
+					"name": "Fixed Deposit Report",
+					"is_query_report": True,
+					"doctype": "Fixed Deposit"
+                },
 			]
 		},
 		{
@@ -488,12 +488,12 @@ def get_data():
 					"doctype": "Purchase Invoice",
 					"is_query_report": True
 				},
-				 {
-                                        "type": "report",
-                                        "name": "Money Receipt Issued",
-                                        "doctype": "Payment Entry",
-                                        "is_query_report": True
-                                },
+				{
+					"type": "report",
+					"name": "Money Receipt Issued",
+					"doctype": "Payment Entry",
+					"is_query_report": True
+                },
 			]
 		},{
 			"label": _("ePayment"),
@@ -565,97 +565,94 @@ def get_data():
 					"doctype": "Salary Slip"
 				},
 				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Alimony Report",
-                                        "label": _("AlimonyReport"),
-                                        "doctype": "Salary Slip"
-                                },
+					"type": "report",
+					"is_query_report": True,
+					"name": "Alimony Report",
+					"label": _("AlimonyReport"),
+					"doctype": "Salary Slip"
+				},
 
                                 {
 					"type": "report",
 					"is_query_report": True,
 					"name": "PF Report",
-                                        "label": _("PF Report"),
+                    "label": _("PF Report"),
 					"doctype": "Salary Slip"
 				},
-                                {
+                {
 					"type": "report",
 					"is_query_report": True,
 					"name": "GIS Report",
-                                        "label": _("GIS Report"),
+                    "label": _("GIS Report"),
 					"doctype": "Salary Slip"
 				},
-                                {
+                {
 					"type": "report",
 					"is_query_report": True,
 					"name": "Tax and Health Report",
-                                        "label": _("Salary Tax & Health Contribution Report"),
+                    "label": _("Salary Tax & Health Contribution Report"),
 					"doctype": "Salary Slip"
 				},
 				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Summarized Salary Report",
-                                        "doctype": "Salary Slip"
-                                },
-
-                                {
+					"type": "report",
+					"is_query_report": True,
+					"name": "Summarized Salary Report",
+					"doctype": "Salary Slip"
+                },
+    			{
 					"type": "report",
 					"is_query_report": True,
 					"name": "Earning Report",
 					"doctype": "Salary Slip"
 				},
 				{
-                                        "type" : "report",
-                                        "is_query_report": True,
-                                        "name": "Salary Payable Report",
-                                        "label": _("Salary Payable Report"),
-                                        "doctype": "Salary Slip"
-                                },
+					"type" : "report",
+					"is_query_report": True,
+					"name": "Salary Payable Report",
+					"label": _("Salary Payable Report"),
+					"doctype": "Salary Slip"
+                },
 				{
-                                        "type" : "report",
-                                        "is_query_report": True,
-                                        "name": "Other Recoveries",
-                                        "label": _("Other Recoveries"),
-                                        "doctype": "Salary Slip"
-                                },
-				 {
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "LTC Process Report",
-                                        "label": _("LTC, PBVA and Bonus Report"),
-                                        "doctype": "Leave Travel Concession"
-                                },
-                                {
-                                        "type" : "report",
-                                        "is_query_report": True,
-                                        "name": "House Rent Report",
-                                        "label": _("House Rent Report"),
-                                        "doctype": "Salary Slip",
-                                },
-                                 {
-                                         "type" : "report",
-                                        "is_query_report": True,
-                                        "name": "Staff Welfare Scheme",
-                                        "label": _("Staff Welfare Scheme"),
-                                        "doctype": "Salary Slip"
-                                },
-				 {
-                                        "type" : "report",
-                                        "is_query_report": True,
-                                        "name": "Adhoc Recoveries",
-                                        "label": _("Adhoc Recoveries"),
-                                        "doctype": "Salary Slip"
-                                },
+					"type" : "report",
+					"is_query_report": True,
+					"name": "Other Recoveries",
+					"label": _("Other Recoveries"),
+					"doctype": "Salary Slip"
+                },
 				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "Travel Report",
-                                        "doctype": "Travel Claim"
-                                }
-
-
+					"type": "report",
+					"is_query_report": True,
+					"name": "LTC Process Report",
+					"label": _("LTC, PBVA and Bonus Report"),
+					"doctype": "Leave Travel Concession"
+				},
+				{
+					"type" : "report",
+					"is_query_report": True,
+					"name": "House Rent Report",
+					"label": _("House Rent Report"),
+					"doctype": "Salary Slip",
+				},
+				{
+					"type" : "report",
+					"is_query_report": True,
+					"name": "Staff Welfare Scheme",
+					"label": _("Staff Welfare Scheme"),
+					"doctype": "Salary Slip"
+				},
+				{
+					"type" : "report",
+					"is_query_report": True,
+					"name": "Adhoc Recoveries",
+					"label": _("Adhoc Recoveries"),
+					"doctype": "Salary Slip"
+                },
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Travel Report",
+					"doctype": "Travel Claim"
+                }
 			]
 		},
         {
@@ -678,13 +675,16 @@ def get_data():
 					"type": "doctype",
 					"name": "DHI Company",
 					"label": "DHI Owned Company",
-					# "hide_count": True
 				},
 				{
 					"type": "doctype",
 					"name": "DHI GCOA Mapper",
 					"label": "GCOA Mapper To COA",
-					# "hide_count": True
+				},
+				{
+					"type": "doctype",
+					"name": "Consolidation Transaction",
+					"label": "Consolidation Transaction",
 				},
 				{
 					"type": "report",
