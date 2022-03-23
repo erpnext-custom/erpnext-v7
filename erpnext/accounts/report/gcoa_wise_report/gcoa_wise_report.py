@@ -4,7 +4,6 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt,getdate,nowdate,cint,add_days
-from datetime import timedelta, datetime, date
 from frappe.utils.data import get_first_day
 
 def execute(filters=None):
@@ -12,7 +11,9 @@ def execute(filters=None):
 	filter['from_date'] 	= filters.from_date
 	filter['to_date'] 		= filters.to_date
 	filter['gcoa_name'] 	= filters.gcoa_name
-	filter['time'] 			= str(getdate(filters.to_date).year) + '.'+ getdate(filters.to_date).strftime("%b").upper()
+	year					= getdate(filters['to_date']).year 
+	month 					= getdate(filters['to_date']).month
+	filter['time'] 			= str(year)+'.'+ '0'+ str(month) if len(str(month)) == 2 else str(year) + '00' + str(month)
 	columns 				= get_columns()
 	data 					= get_data(filter,True)
 	return columns, data

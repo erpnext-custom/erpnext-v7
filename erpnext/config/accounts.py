@@ -657,6 +657,12 @@ def get_data():
 				},
 				{
 					"type": "doctype",
+					"name": "Consolidation Transaction",
+					"label": _("Consolidation Transaction"),
+					"hide_count": True
+				},
+				{
+					"type": "doctype",
 					"name": "DHI GCOA Mapper",
 					"label": "GCOA Mapper To COA",
 					# "hide_count": True
