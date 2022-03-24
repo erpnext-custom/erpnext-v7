@@ -6,7 +6,7 @@ data = {
 	'transactions': [
 		{
 			'label': _('Related'),
-			'items': ['Mechanical Payment']
+			'items': ['Mechanical Payment','Journal Entry']
 		},
 	]
 }

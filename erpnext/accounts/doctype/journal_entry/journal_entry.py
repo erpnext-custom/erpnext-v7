@@ -163,16 +163,16 @@ class JournalEntry(AccountsController):
 	def check_transaction(self, cancel=False):
 		if cancel == False:
 			for d in self.get("accounts"):
-				# if d.reference_type == 'Job Card':
-				# 	frappe.db.sql("update `tabJob Card` set outstanding_amount=0, journal_entry = '{}' where name='{}'".format(self.name, d.reference_name))
+				if d.reference_type == 'Job Card':
+					frappe.db.sql("update `tabJob Card` set outstanding_amount=0, journal_entry = '{}' where name='{}'".format(self.name, d.reference_name))
 				if d.reference_type == "Pol Advance":
 					frappe.db.sql("update `tabPol Advance` set journal_entry = '{}' where name='{}'".format(self.name, d.reference_name))
 				if d.reference_type == "Reimbursement":
 					frappe.db.sql("update `tabReimbursement` set journal_entry = '{}' where name='{}'".format(self.name, d.reference_name))
 		else:
 			for d in self.get("accounts"):
-				# if d.reference_type == 'Job Card':
-				# 	frappe.db.sql("update `tabJob Card` set outstanding_amount='{}', journal_entry = '' where name='{}'".format(self.total_debit, d.reference_name))
+				if d.reference_type == 'Job Card':
+					frappe.db.sql("update `tabJob Card` set outstanding_amount='{}', journal_entry = '' where name='{}'".format(self.total_debit, d.reference_name))
 				if d.reference_type == "Pol Advance":
 					frappe.db.sql("update `tabPol Advance` set journal_entry = '' where name='{}'".format(d.reference_name))
 				if d.reference_type == "Reimbursement":

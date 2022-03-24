@@ -6,13 +6,13 @@ from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
 from frappe.utils.data import time_diff_in_hours
-from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
+from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate, money_in_words
 from frappe.model.mapper import get_mapped_doc
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date, check_budget_available
 from erpnext.maintenance.maintenance_utils import get_equipment_ba
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
-from frappe import msgprint
+from frappe import msgprint, _
 import datetime #added by phuntsho norbu on oct 15
 
 class JobCard(AccountsController):
@@ -57,18 +57,21 @@ class JobCard(AccountsController):
         #self.check_items()
         if self.owned_by == "Own Branch" and self.out_source == 0:
             self.db_set("outstanding_amount", 0)
-        if self.owned_by == "Own Company" and self.out_source == 0:
-            self.post_journal_entry()
-            self.db_set("outstanding_amount", 0)
+        # if self.owned_by == "Own Company" and self.out_source == 0:
+        #     self.post_journal_entry()
+        #     self.db_set("outstanding_amount", 0)
         # if self.owned_by == "Others" and self.out_source == 0:
         # 	self.make_gl_entries()
 
-        if self.supplier and self.out_source:
+        if self.supplier and self.out_source and not self.settled_using_imprest:
             maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
             check_budget_available(self.cost_center,maintenance_account,self.finish_date,self.total_amount,self.business_activity)
             self.commit_budget(maintenance_account)
             self.consume_budget(maintenance_account)
             self.make_gl_entry()
+        else:
+            self.post_journal_entry()
+
 
         self.update_breakdownreport()
 
@@ -140,125 +143,191 @@ class JobCard(AccountsController):
     ##
     # make necessary journal entry
     ##
-    def post_journal_entry(self):
-        goods_account, services_account, receivable_account, maintenance_account = self.get_default_settings()
+    # def post_journal_entry(self):
+        # goods_account, services_account, receivable_account, maintenance_account = self.get_default_settings()
 
-        if goods_account and services_account and receivable_account:
-            je = frappe.new_doc("Journal Entry")
-            je.flags.ignore_permissions = 1 
-            je.title = "Job Card (" + self.name + ")"
-            je.voucher_type = 'Maintenance Invoice'
-            je.naming_series = 'Maintenance Invoice'
-            je.remark = 'Payment against : ' + self.name;
-            je.posting_date = self.posting_date
-            je.branch = self.branch
+        # if goods_account and services_account and receivable_account:
+        #     je = frappe.new_doc("Journal Entry")
+        #     je.flags.ignore_permissions = 1 
+        #     je.title = "Job Card (" + self.name + ")"
+        #     je.voucher_type = 'Maintenance Invoice'
+        #     je.naming_series = 'Maintenance Invoice'
+        #     je.remark = 'Payment against : ' + self.name;
+        #     je.posting_date = self.posting_date
+        #     je.branch = self.branch
 
-            if self.owned_by == "Own Company":
-                ir_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_internal_account")
-                if not ir_account:
-                    frappe.throw("Setup Internal Revenue Account in Maintenance Accounts Settings")	
+        #     if self.owned_by == "Own Company":
+        #         ir_account = frappe.db.get_single_value("Maintenance Accounts Settings", "hire_revenue_internal_account")
+        #         if not ir_account:
+        #             frappe.throw("Setup Internal Revenue Account in Maintenance Accounts Settings")	
 
-                if not self.equipment:
-                    frappe.throw("Equipment is Mandatory")
-                ba = get_equipment_ba(self.equipment)
-                default_ba = get_default_ba()
+        #         if not self.equipment:
+        #             frappe.throw("Equipment is Mandatory")
+        #         ba = get_equipment_ba(self.equipment)
+        #         default_ba = get_default_ba()
 
-                je.append("accounts", {
-                        "account": maintenance_account,
-                        "reference_type": "Job Card",
-                        "reference_name": self.name,
-                        "cost_center": self.customer_cost_center,
-                        "debit_in_account_currency": flt(self.total_amount),
-                        "debit": flt(self.total_amount),
-                        "business_activity": ba
-                    })
+        #         je.append("accounts", {
+        #                 "account": maintenance_account,
+        #                 "reference_type": "Job Card",
+        #                 "reference_name": self.name,
+        #                 "cost_center": self.customer_cost_center,
+        #                 "debit_in_account_currency": flt(self.total_amount),
+        #                 "debit": flt(self.total_amount),
+        #                 "business_activity": ba
+        #             })
 
-                for a in ["Service", "Item"]:
-                    account_name = goods_account
-                    amount = self.goods_amount
-                    if a == "Service":
-                        amount = self.services_amount
-                        account_name = services_account;
-                    if amount != 0:
-                        je.append("accounts", {
-                                "account": account_name,
-                                "reference_type": "Job Card",
-                                "reference_name": self.name,
-                                "cost_center": self.cost_center,
-                                "credit_in_account_currency": flt(amount),
-                                "credit": flt(amount),
-                                "business_activity": ba
-                            })
+        #         for a in ["Service", "Item"]:
+        #             account_name = goods_account
+        #             amount = self.goods_amount
+        #             if a == "Service":
+        #                 amount = self.services_amount
+        #                 account_name = services_account;
+        #             if amount != 0:
+        #                 je.append("accounts", {
+        #                         "account": account_name,
+        #                         "reference_type": "Job Card",
+        #                         "reference_name": self.name,
+        #                         "cost_center": self.cost_center,
+        #                         "credit_in_account_currency": flt(amount),
+        #                         "credit": flt(amount),
+        #                         "business_activity": ba
+        #                     })
 
-                allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
-                if allow_inter_company_transaction:
-                    ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
-                    if not ic_account:
-                        frappe.throw("Setup Intra-Company Account in Accounts Settings")	
+        #         allow_inter_company_transaction = frappe.db.get_single_value("Accounts Settings", "auto_accounting_for_inter_company")
+        #         if allow_inter_company_transaction:
+        #             ic_account = frappe.db.get_single_value("Accounts Settings", "intra_company_account")
+        #             if not ic_account:
+        #                 frappe.throw("Setup Intra-Company Account in Accounts Settings")	
 
-                    je.append("accounts", {
-                            "account": ic_account,
-                            "reference_type": "Job Card",
-                            "reference_name": self.name,
-                            "cost_center": self.customer_cost_center,
-                            "credit_in_account_currency": flt(self.total_amount),
-                            "credit": flt(self.total_amount),
-                            "business_activity": default_ba
-                        })
-                    je.append("accounts", {
-                            "account": ic_account,
-                            "reference_type": "Job Card",
-                            "reference_name": self.name,
-                            "cost_center": self.cost_center,
-                            "debit_in_account_currency": flt(self.total_amount),
-                            "debit": flt(self.total_amount),
-                            "business_activity": default_ba
-                        })
-                je.insert()
+        #             je.append("accounts", {
+        #                     "account": ic_account,
+        #                     "reference_type": "Job Card",
+        #                     "reference_name": self.name,
+        #                     "cost_center": self.customer_cost_center,
+        #                     "credit_in_account_currency": flt(self.total_amount),
+        #                     "credit": flt(self.total_amount),
+        #                     "business_activity": default_ba
+        #                 })
+        #             je.append("accounts", {
+        #                     "account": ic_account,
+        #                     "reference_type": "Job Card",
+        #                     "reference_name": self.name,
+        #                     "cost_center": self.cost_center,
+        #                     "debit_in_account_currency": flt(self.total_amount),
+        #                     "debit": flt(self.total_amount),
+        #                     "business_activity": default_ba
+        #                 })
+        #         je.insert()
 
-            else:
-                for a in ["Service", "Item"]:
-                    account_name = goods_account
-                    amount = self.goods_amount
-                    if a == "Service":
-                        amount = self.services_amount
-                        account_name = services_account;
-                    if amount != 0:
-                        je.append("accounts", {
-                                "account": account_name,
-                                "reference_type": "Job Card",
-                                "reference_name": self.name,
-                                "cost_center": self.cost_center,
-                                "credit_in_account_currency": flt(amount),
-                                "credit": flt(amount),
-                            })
+        #     else:
+        #         for a in ["Service", "Item"]:
+        #             account_name = goods_account
+        #             amount = self.goods_amount
+        #             if a == "Service":
+        #                 amount = self.services_amount
+        #                 account_name = services_account;
+        #             if amount != 0:
+        #                 je.append("accounts", {
+        #                         "account": account_name,
+        #                         "reference_type": "Job Card",
+        #                         "reference_name": self.name,
+        #                         "cost_center": self.cost_center,
+        #                         "credit_in_account_currency": flt(amount),
+        #                         "credit": flt(amount),
+        #                     })
 
-                if self.owned_by == "Own Branch":
-                    je.append("accounts", {
-                            "account": maintenance_account,
-                            "reference_type": "Job Card",
-                            "reference_name": self.name,
-                            "cost_center": self.cost_center,
-                            "debit_in_account_currency": flt(self.total_amount),
-                            "debit": flt(self.total_amount),
-                        })
-                    je.insert()
-                else:
-                    je.append("accounts", {
-                            "account": receivable_account,
-                            "party_type": "Customer",
-                            "party": self.customer,
-                            "reference_type": "Job Card",
-                            "reference_name": self.name,
-                            "cost_center": self.cost_center,
-                            "debit_in_account_currency": flt(self.total_amount),
-                            "debit": flt(self.total_amount),
-                        })
-                    je.submit()
+        #         if self.owned_by == "Own Branch":
+        #             je.append("accounts", {
+        #                     "account": maintenance_account,
+        #                     "reference_type": "Job Card",
+        #                     "reference_name": self.name,
+        #                     "cost_center": self.cost_center,
+        #                     "debit_in_account_currency": flt(self.total_amount),
+        #                     "debit": flt(self.total_amount),
+        #                 })
+        #             je.insert()
+        #         else:
+        #             je.append("accounts", {
+        #                     "account": receivable_account,
+        #                     "party_type": "Customer",
+        #                     "party": self.customer,
+        #                     "reference_type": "Job Card",
+        #                     "reference_name": self.name,
+        #                     "cost_center": self.cost_center,
+        #                     "debit_in_account_currency": flt(self.total_amount),
+        #                     "debit": flt(self.total_amount),
+        #                 })
+        #             je.submit()
             
-            self.db_set("jv", je.name)
-        else:
-            frappe.throw("Setup Default Goods, Services and Receivable Accounts in Maintenance Accounts Settings")
+        #     self.db_set("jv", je.name)
+        # else:
+        #     frappe.throw("Setup Default Goods, Services and Receivable Accounts in Maintenance Accounts Settings")
+
+    # Added by Sonam Chophel on 18/02/22
+    def post_journal_entry(self):
+
+        if not self.total_amount:
+            frappe.throw(_("Amount should be greater than zero"))
+        self.posting_date = self.finish_date
+        ba = self.business_activity
+
+        payable_account = self.expense_account
+        maintenance_account = frappe.db.get_single_value("Maintenance Accounts Settings", "maintenance_expense_account")
+            
+        if not maintenance_account:
+            frappe.throw("Setup Default Goods Account in Maintenance Setting")
+        if not payable_account:
+            frappe.throw("Payable Account in mandatory")
+
+        r = []
+        # if self.cheque_no:
+        #     if self.cheque_date:
+        #         r.append(_('Reference #{0} dated {1}').format(self.cheque_no, formatdate(self.cheque_date)))
+        #     else:
+        #         msgprint(_("Please enter Cheque Date date"), raise_exception=frappe.MandatoryError)
+        if self.remarks:
+            r.append(_("Note: {0}").format(self.remarks))
+
+        remarks = ("").join(r) #User Remarks is not mandatory
+
+        # Posting Journal Entry
+        je = frappe.new_doc("Journal Entry")
+
+        je.update({
+            "doctype": "Journal Entry",
+            "voucher_type": "Bank Entry",
+            "naming_series": "Bank Receipt Voucher",
+            "title": "Job Card - " + self.name,
+            "user_remark": remarks if remarks else "Note: " + "Job Card - " + self.name,
+            "posting_date": self.posting_date,
+            "company": self.company,
+            "total_amount_in_words": money_in_words(self.total_amount),
+            "branch": self.branch
+        })
+
+        je.append("accounts",{
+            "account": maintenance_account,
+            "debit_in_account_currency": self.total_amount,
+            "cost_center": self.cost_center,
+            "reference_type": "Job Card",
+            "reference_name": self.name,
+            "business_activity": ba
+        })
+
+        je.append("accounts",{
+            "account": payable_account,
+            "credit_in_account_currency": self.total_amount,
+            "cost_center": self.cost_center,
+            "party_check": 0,
+            "party_type": "Supplier",
+            "party": self.supplier,
+            "business_activity": ba
+        })
+
+        je.insert()
+        #Set a reference to the claim journal entry
+        self.db_set("journal_entry",je.name)
+        frappe.msgprint(_('Journal Entry <a href="#Form/Journal Entry/{0}">{0}</a> posted to accounts').format(je.name))
 
     def make_gl_entries(self):
         if self.total_amount:
@@ -548,31 +617,45 @@ def update_child_table_rate (item_code, supplier,posting_date):
 
 # Added by Sonam Chophel to update the payment status on august 03/08/2021
 @frappe.whitelist()
-def get_payment_entry(doc_name, total_amount):
-    """ see if there exist a payment entry submitted for the job card """
-    payment_entry = """
-        SELECT 
-            sum(a.total_amount) as total_amount
-        FROM 
-            `tabMechanical Payment` as a, 
-            `tabMechanical Payment Item` as b
-        WHERE 
-            a.payment_for = "Job Card" and
-            b.reference_type = "Job Card" and 
-            b.reference_name= '{name}' and 
-            b.parent = a.name and 
-            a.docstatus = 1""".format(name=doc_name)
-    payment_entry = frappe.db.sql(payment_entry, as_dict=1)
-    
-    if len(payment_entry) >= 1 and payment_entry[0].total_amount > 0:
-        if flt(payment_entry[0].total_amount) == flt(total_amount):
-            frappe.db.set_value("Job Card", doc_name, "payment_status", "Paid")
-            return ("Paid")
-        else:
-            frappe.db.set_value("Job Card", doc_name, 'payment_status', "Partially Paid")
-            return ("Partially Paid")
-
+def get_payment_entry(doc_name, total_amount, settled_using_imprest):
+    if int(settled_using_imprest) == 1:
+        query = """
+            select je.docstatus from `tabJournal Entry` je, `tabJob Card` jc 
+            where jc.journal_entry = je.name and jc.name='{}'
+        """.format(doc_name)
+        journal_entry = frappe.db.sql(query, as_dict=1)
+        if journal_entry:
+            if journal_entry[0].docstatus == 1:
+                frappe.db.set_value("Job Card", doc_name, "payment_status", "Paid")
+                return ("Paid")
+            else:
+                frappe.db.set_value("Job Card", doc_name, 'payment_status', "Not Paid")
+                return ("Not Paid")
     else:
-        frappe.db.set_value("Job Card", doc_name, 'payment_status', "Not Paid")
-        return ("Not Paid")
+        """ see if there exist a payment entry submitted for the job card """
+        payment_entry = """
+            SELECT 
+                sum(a.total_amount) as total_amount
+            FROM 
+                `tabMechanical Payment` as a, 
+                `tabMechanical Payment Item` as b
+            WHERE 
+                a.payment_for = "Job Card" and
+                b.reference_type = "Job Card" and 
+                b.reference_name= '{name}' and 
+                b.parent = a.name and 
+                a.docstatus = 1""".format(name=doc_name)
+        payment_entry = frappe.db.sql(payment_entry, as_dict=1)
+        
+        if len(payment_entry) >= 1 and payment_entry[0].total_amount > 0:
+            if flt(payment_entry[0].total_amount) == flt(total_amount):
+                frappe.db.set_value("Job Card", doc_name, "payment_status", "Paid")
+                return ("Paid")
+            else:
+                frappe.db.set_value("Job Card", doc_name, 'payment_status', "Partially Paid")
+                return ("Partially Paid")
+
+        else:
+            frappe.db.set_value("Job Card", doc_name, 'payment_status', "Not Paid")
+            return ("Not Paid")
 # -------- End of new code ----------

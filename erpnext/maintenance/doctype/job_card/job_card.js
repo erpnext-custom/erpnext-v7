@@ -16,29 +16,44 @@ frappe.ui.form.on("Job Card", {
         method: "erpnext.maintenance.doctype.job_card.job_card.get_payment_entry",
         args: {
           doc_name: frm.doc.name,
-          total_amount: frm.doc.total_amount
+          total_amount: frm.doc.total_amount,
+          settled_using_imprest: frm.doc.settled_using_imprest
         },
         callback: function (r) {
           cur_frm.refresh_field("payment_status");
-
         },
       })
 
-      frm.add_custom_button(
-        __("Accounting Ledger"),
-        function () {
-          frappe.route_options = {
-            voucher_no: frm.doc.name,
-            from_date: frm.doc.finish_date,
-            to_date: frm.doc.finish_date,
-            company: frm.doc.company,
-            group_by_voucher: false,
-          };
-          frappe.set_route("query-report", "General Ledger");
-        },
-        __("View")
-      );
-      if (frm.doc.out_source == 1 && frm.doc.docstatus == 1) {
+      if(!frm.doc.settled_using_imprest){
+        frm.add_custom_button(
+          __("Accounting Ledger"),
+          function () {
+            frappe.route_options = {
+              voucher_no: frm.doc.name,
+              from_date: frm.doc.finish_date,
+              to_date: frm.doc.finish_date,
+              company: frm.doc.company,
+              group_by_voucher: false,
+            };
+            frappe.set_route("query-report", "General Ledger");
+          },
+          __("View")
+        );
+      } else {
+        frm.add_custom_button(
+          __("Journal Entry"),
+          function () {
+            frappe.route_options = {
+            name: frm.doc.journal_entry
+            };
+            frappe.set_route("List", "Journal Entry");
+          },
+          __("View")
+          );
+      }
+
+      
+      if (frm.doc.out_source == 1 && frm.doc.docstatus == 1 && !frm.doc.settled_using_imprest) {
         frm.add_custom_button(
           __("Payment"),
           function () {
@@ -123,6 +138,9 @@ frappe.ui.form.on("Job Card", {
       row.grid_form.fields_dict.quantity.refresh();
     }
   },
+  settled_using_imprest: function(frm) {
+    frm.toggle_reqd(["expense_account"], (frm.doc.settled_using_imprest ? 1 : 0));
+  }
 });
 
 //Job Card Item  Details
