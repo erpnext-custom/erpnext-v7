@@ -492,6 +492,8 @@ def get_data(filters):
 			#frappe.msgprint("4 {0}".format(util_percent))
 
 		#frappe.msgprint(_("{0}, {1}, {2}").format(total_rev, total_hc, util_percent))
+		if frappe.session.user == "Administrator":
+			frappe.msgprint(str(bench))
 	
 		data.append((	
 			eq.branch,
