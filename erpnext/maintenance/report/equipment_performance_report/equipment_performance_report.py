@@ -382,7 +382,7 @@ def get_data(filters):
                                where hi.parent = hp.name 
                                and hp.equipment_type = '{0}'
 			       and hp.equipment_model = '{1}'
-			""".format(eq.equipment_type, eq.equipment_model), as_dict=1, debug =1)
+			""".format(eq.equipment_type, eq.equipment_model), as_dict=1)
 		if frappe.session.user == "Administrator":
 			frappe.msgprint(str(benchmark))
 		rate = []
