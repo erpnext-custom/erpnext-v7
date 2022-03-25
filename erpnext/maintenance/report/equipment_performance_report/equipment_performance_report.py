@@ -393,16 +393,16 @@ def get_data(filters):
 			if not a.t:
 				a.t = getdate(filters.to_date)
 				#from_date,to_date,no_of_months, from_date1, to_date1, no_of_months1, ra = get_date_conditions(filters)
-			if a.fr >= from_date and a.t <= to_date:
+			if a.fr >= from_date and a.t <= to_date and filters.get("period") not in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 				rate.append(a.rat) 
 				bench.append(flt(a.bn))
 				total_hc   += flt(a.rat)*flt(a.bn/12)*no_of_months
 
 		
-			if a.fr <= from_date and a.t >= to_date:
-                                rate.append(a.rat)
-                                bench.append(a.bn/12)
-                                total_hc += flt(a.rat)*flt(a.bn/12)*no_of_months
+			# if a.fr <= from_date and a.t >= to_date:
+            #                     rate.append(a.rat)
+            #                     bench.append(a.bn/12)
+            #                     total_hc += flt(a.rat)*flt(a.bn/12)*no_of_months
 			if frappe.session.user == "Administrator":
 				frappe.msgprint(str(bench)+" "+str(a.bn))
 
