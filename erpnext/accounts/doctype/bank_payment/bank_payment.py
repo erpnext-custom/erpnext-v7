@@ -302,8 +302,6 @@ class BankPayment(Document):
 
 	def get_transactions(self):
 		data = []
-		# if self.transaction_type == "Mechanical Payment":
-		# 	data = self.get_mechanical_payments()
 		if self.transaction_type == "Salary":
 			data = self.get_salary()
 		elif self.transaction_type == "Leave Travel Concession":
@@ -320,7 +318,69 @@ class BankPayment(Document):
 			data = self.get_imprest_recoup_payment()
 		elif self.transaction_type == "Mechanical Payment":
 			data = self.get_mechanical_payment()
+		elif self.transaction_type == "Employee Loan Payment":
+			data = self.get_loan_detail()
 		return data
+
+	"""
+	# Fetch Employee Loan Details
+	# Author: thukday@gmail.com
+	# Date : 2022-02-07
+	"""
+	def get_loan_detail(self):
+		if not self.institution_name:
+			frappe.throw("Please select Financial Institution")
+
+		doc = frappe.get_doc("Financial Institution", self.institution_name)
+		if not doc.employee_loan_payment_in_single_account:
+			return frappe.db.sql("""SELECT "Salary Slip" transaction_type, t1.name transaction_id, 
+							t2.name transaction_reference, t1.modified transaction_date,
+							t1.employee, t1.employee_name beneficiary_name, 
+							t2.institution_name bank_name, t2.bank_branch, fib.financial_system_code,
+							t2.bank_account_type, t2.reference_number as bank_account_no, t2.amount,
+							'Loan remittance for {month}-{salary_year}' remarks, "Draft" status						
+						FROM `tabSalary Slip` t1
+							JOIN `tabSalary Detail` t2 ON t1.name = t2.parent
+							LEFT JOIN `tabFinancial Institution Branch` fib ON fib.name = t2.bank_branch
+						WHERE t1.fiscal_year = '{salary_year}'
+						AND t2.amount > 0
+						AND t2.salary_component = 'Financial Institution Loan'
+						AND t1.month = '{salary_month}'
+						AND t1.docstatus = 1
+						AND t2.institution_name = '{institution}'
+						AND NOT EXISTS(select 1
+							FROM `tabBank Payment Item` bpi
+							WHERE bpi.transaction_type = 'Salary Slip'
+							AND bpi.transaction_id = t1.name
+							AND bpi.transaction_reference = t2.name
+							AND bpi.parent != '{bank_payment}'
+							AND bpi.docstatus != 2
+							AND bpi.status NOT IN ('Cancelled', 'Failed')
+						)
+					""".format(salary_year=self.fiscal_year, 
+						salary_month=self.get_month_id(self.month),
+						month=self.month, institution=self.institution_name,
+						bank_payment = self.name), as_dict=True)
+		else:
+			return frappe.db.sql("""SELECT "Salary Slip" transaction_type, t1.name transaction_id, 
+							t2.name transaction_reference, t1.modified transaction_date,
+							fi.account_holder_name beneficiary_name, 
+							fi.account_bank_name as bank_name, fi.bank_branch, fib.financial_system_code,
+							fi.bank_account_type, fi.account_no bank_account_no, sum(t2.amount) as amount,
+							'Loan remittance for {month}-{salary_year}' remarks, "Draft" status						
+						FROM `tabSalary Slip` t1
+							JOIN `tabSalary Detail` t2 ON t1.name = t2.parent
+							JOIN `tabFinancial Institution` fi ON fi.name = t2.institution_name
+							LEFT JOIN `tabFinancial Institution Branch` fib ON fib.name = fi.bank_branch
+						WHERE t1.fiscal_year = '{salary_year}'
+						AND t2.salary_component = 'Financial Institution Loan'
+						AND t1.month = '{salary_month}'
+						AND t1.docstatus = 1
+						AND t2.institution_name = '{institution}'
+					""".format(salary_year=self.fiscal_year, 
+						salary_month=self.get_month_id(self.month),
+						month=self.month, institution=self.institution_name,
+						bank_payment = self.name), as_dict=True)
 	
 	def get_ltc(self):
 		cond = ""

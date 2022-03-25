@@ -6,6 +6,12 @@ frappe.ui.form.on('Financial Institution', {
 		frm.get_docfield("items").allow_bulk_edit = 1;		
 	},
 	refresh: function(frm) {
-
+		cur_frm.set_query("bank_branch", function(){
+			return {
+				"filters": [
+					["financial_institution", "=", frm.doc.account_bank_name],					
+				]
+			}
+		});
 	}
 });
