@@ -328,9 +328,10 @@ class BankPayment(Document):
 	# Date : 2022-02-07
 	"""
 	def get_loan_detail(self):
+		cond = ""
 		if not self.institution_name:
 			frappe.throw("Please select Financial Institution")
-
+		cond = self.get_conditions()
 		doc = frappe.get_doc("Financial Institution", self.institution_name)
 		if not doc.employee_loan_payment_in_single_account:
 			return frappe.db.sql("""SELECT "Salary Slip" transaction_type, t1.name transaction_id, 
@@ -348,6 +349,7 @@ class BankPayment(Document):
 						AND t1.month = '{salary_month}'
 						AND t1.docstatus = 1
 						AND t2.institution_name = '{institution}'
+						{cond}
 						AND NOT EXISTS(select 1
 							FROM `tabBank Payment Item` bpi
 							WHERE bpi.transaction_type = 'Salary Slip'
@@ -360,7 +362,8 @@ class BankPayment(Document):
 					""".format(salary_year=self.fiscal_year, 
 						salary_month=self.get_month_id(self.month),
 						month=self.month, institution=self.institution_name,
-						bank_payment = self.name), as_dict=True)
+						bank_payment = self.name,
+						cond = cond), as_dict=True)
 		else:
 			return frappe.db.sql("""SELECT "Salary Slip" transaction_type, t1.name transaction_id, 
 							t2.name transaction_reference, t1.modified transaction_date,
@@ -377,10 +380,12 @@ class BankPayment(Document):
 						AND t1.month = '{salary_month}'
 						AND t1.docstatus = 1
 						AND t2.institution_name = '{institution}'
+						{cond}
 					""".format(salary_year=self.fiscal_year, 
 						salary_month=self.get_month_id(self.month),
 						month=self.month, institution=self.institution_name,
-						bank_payment = self.name), as_dict=True)
+						bank_payment = self.name,
+						cond = cond), as_dict=True)
 	
 	def get_ltc(self):
 		cond = ""
@@ -463,10 +468,6 @@ class BankPayment(Document):
 						}))
 					if flt(p.debit) > 0:
 						debit_bank_account += 1
-				'''
-				if flt(debit_amt) != flt(credit_amt) or debit_bank_account > 1:
-					frappe.throw("Bank Payment not feasible as either Debit or Credit is not equal or there are more than one debit bank account")				
-				'''
 			else:
 				credit_amt = debit_amt = other_credit = 0.00
 				party_type = party = reference_type = reference_name = ""
