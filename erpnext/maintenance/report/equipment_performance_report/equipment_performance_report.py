@@ -384,8 +384,6 @@ def get_data(filters):
 			       and hp.equipment_model = '{1}'
 				   and hi.from_date >= '{2}' and hi.to_date <= '{3}'
 			""".format(eq.equipment_type, eq.equipment_model, from_date, to_date), as_dict=1)
-		if frappe.session.user == "Administrator":
-			frappe.msgprint(str(benchmark))
 		rate = []
 		bench = []
 		total_hc = 0
@@ -405,6 +403,8 @@ def get_data(filters):
                                 rate.append(a.rat)
                                 bench.append(a.bn/12)
                                 total_hc += flt(a.rat)*flt(a.bn/12)*no_of_months
+			if frappe.session.user == "Administrator":
+				frappe.msgprint(str(bench)+" "+str(a.bn))
 
 			#if filters.get("period") not in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 			if from_date  < a.fr < to_date  and (a.t > to_date) and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
