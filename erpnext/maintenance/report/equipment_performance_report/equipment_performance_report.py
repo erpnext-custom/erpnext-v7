@@ -396,7 +396,7 @@ def get_data(filters):
 			if a.fr >= from_date and a.t <= to_date and filters.get("period") not in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 				rate.append(a.rat) 
 				bench.append(flt(a.bn))
-				total_hc   += flt(a.rat)*flt(a.bn/12)*no_of_months
+				total_hc   += flt(a.rat)*flt(a.bn)*no_of_months
 
 		
 			# if a.fr <= from_date and a.t >= to_date:
