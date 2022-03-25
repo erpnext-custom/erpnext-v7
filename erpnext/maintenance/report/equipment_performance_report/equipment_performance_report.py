@@ -397,6 +397,8 @@ def get_data(filters):
 				rate.append(a.rat) 
 				bench.append(a.bn)
 				total_hc   += flt(a.rat)*flt(a.bn/12)*no_of_months
+			if frappe.session.user == "Administrator":
+				frappe.msgprint(str(bench))
 		
 			if a.fr <= from_date and a.t >= to_date:
                                 rate.append(a.rat)
@@ -492,8 +494,7 @@ def get_data(filters):
 			#frappe.msgprint("4 {0}".format(util_percent))
 
 		#frappe.msgprint(_("{0}, {1}, {2}").format(total_rev, total_hc, util_percent))
-		if frappe.session.user == "Administrator":
-			frappe.msgprint(str(bench))
+
 	
 		data.append((	
 			eq.branch,
