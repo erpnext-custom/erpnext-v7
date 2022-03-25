@@ -535,7 +535,7 @@ def get_columns(filters):
 			("Total Cft")+":Data:140",
 			("Total M3")+":Data:140",
 			("HC Rate/Hour") + ":Currency:120",
-			("Utility(Hours/Quarter)") + ":Data:140",
+			("Utility(Hours/Quarter)") + ":Float:140",
 			("Benchmark Amount") + ":Currency:120",
 			("Utility %") + ":Data:120"
 		]
@@ -557,7 +557,7 @@ def get_columns(filters):
 			("Total Cft")+":Data:140",
 			("Total M3")+":Data:140",
 			("HC Rate/Hour") + ":Currency:120",
-			("Utility(Hours/Half Year)") + ":Data:140",
+			("Utility(Hours/Half Year)") + ":Float:140",
 			("Benchmark Amount") + ":Currency:120",
 			("Utility %") + ":Data:120"
 		]
@@ -579,7 +579,7 @@ def get_columns(filters):
 			("Total Cft")+":Data:140",
 			("Total M3")+":Data:140",
 			("HC Rate/Hour") + ":Currency:120",
-			("Utility(Hours/Month)") + ":Data:140",
+			("Utility(Hours/Month)") + ":Float:140",
 			("Benchmark Amount") + ":Currency:120",
 			("Utility %") + ":Data:120"
 		]
@@ -601,7 +601,7 @@ def get_columns(filters):
 			("Total Cft")+":Data:140",
 			("Total M3")+":Data:140",
 			("HC Rate/Hour") + ":Currency:120",
-			("Utility(Hours/Year)") + ":Data:140",
+			("Utility(Hours/Year)") + ":Float:140",
 			("Benchmark Amount") + ":Currency:120",
 			("Utility %") + ":Data:120"
 		]
