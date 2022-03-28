@@ -404,7 +404,7 @@ def get_data(filters):
 				bench.append(a.bn/12)
 				benchm = a.bn/12
 				# if frappe.session.user == "Administrator":
-				frappe.throw("here "+str(benchm))
+				# frappe.throw("here "+str(benchm))
 				cal_date = date_diff(to_date, a.fr) + 1
 				ta2 += flt(a.rat)*flt(a.bn/12)*8
 				bench_date = date_diff(to_date, from_date) + 1
@@ -415,8 +415,8 @@ def get_data(filters):
             #                     rate.append(a.rat)
             #                     bench.append(a.bn/12)
             #                     total_hc += flt(a.rat)*flt(a.bn/12)*no_of_months
-			if frappe.session.user == "Administrator":
-				frappe.msgprint(str(bench)+" "+str(a.bn))
+			# if frappe.session.user == "Administrator":
+			# 	frappe.msgprint(str(bench)+" "+str(a.bn))
 
 			#if filters.get("period") not in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 
@@ -515,7 +515,8 @@ def get_data(filters):
 
 		#frappe.msgprint(_("{0}, {1}, {2}").format(total_rev, total_hc, util_percent))
 
-	
+		if frappe.session.user == "Administrator":
+			frappe.msgprint(str(benchm))
 		data.append((	
 			eq.branch,
 			eq.name,
