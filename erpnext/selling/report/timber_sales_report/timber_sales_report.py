@@ -195,7 +195,7 @@ def get_data(filters=None):
 					WHEN soi.conversion_req=1 THEN soi.sales_uom
 					ELSE soi.stock_uom
 				END as uom, sum(soi.amount),
-				sum(soi.amount) - sum(so.discount_or_cost_amount) + sum(so.additional_cost) - sum(so.challan_cost)
+				sum(soi.amount) - so.discount_or_cost_amount + so.additional_cost - so.challan_cost
 			"""
 			group_by = " group by so.customer"
 			order_by = "order by so.transaction_date"
@@ -220,7 +220,7 @@ def get_data(filters=None):
 					ELSE soi.stock_uom
 				END as uom, sum(soi.rate), sum(soi.amount),
 				so.discount_or_cost_amount, so.additional_cost,
-				sum(soi.amount) - sum(so.discount_or_cost_amount) + sum(so.additional_cost) - sum(so.challan_cost), sum(so.challan_cost) 
+				sum(soi.amount) - so.discount_or_cost_amount + so.additional_cost - so.challan_cost, so.challan_cost
 			"""
 			group_by = "group by so.name"
 			order_by = "order by so.transaction_date"
@@ -254,7 +254,7 @@ def get_data(filters=None):
 					WHEN dni.conversion_req=1 THEN dni.sales_uom
 					ELSE dni.stock_uom
 				END as uom, sum(dni.amount),
-				sum(dni.amount) - sum(dn.discount_or_cost_amount) + sum(dn.additional_cost) - sum(dn.challan_cost)
+				sum(dni.amount) - dn.discount_or_cost_amount + dn.additional_cost - dn.challan_cost
 			"""
 			group_by = "group by dn.branch, i.item_sub_group"
 			order_by = ""
@@ -278,7 +278,7 @@ def get_data(filters=None):
 						WHEN dni.conversion_req=1 THEN dni.sales_uom
 						ELSE dni.stock_uom
 					END as uom, sum(dni.amount), 
-					sum(dni.amount) - sum(dn.discount_or_cost_amount) + sum(dn.additional_cost) - sum(dn.challan_cost)
+					sum(dni.amount) - dn.discount_or_cost_amount + dn.additional_cost - dn.challan_cost
 				"""
 			group_by = " group by dn.customer"
 			order_by = "order by dn.posting_date"
@@ -303,7 +303,7 @@ def get_data(filters=None):
 						WHEN dni.conversion_req=1 THEN dni.sales_uom
 						ELSE dni.stock_uom
 					END as uom, sum(dni.rate), sum(dni.amount), dn.discount_or_cost_amount, dn.additional_cost, 
-					sum(dni.amount) - sum(dn.discount_or_cost_amount) + sum(dn.additional_cost) - sum(dn.challan_cost), sum(dn.challan_cost),
+					sum(dni.amount) - dn.discount_or_cost_amount + dn.additional_cost - dn.challan_cost, dn.challan_cost,
 					dn.transportation_rate, dn.total_distance, dn.transportation_charges,
 					dn.vehicle, dn.drivers_name, dn.contact_no
 				"""
