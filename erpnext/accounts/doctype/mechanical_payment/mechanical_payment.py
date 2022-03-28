@@ -28,8 +28,8 @@ class MechanicalPayment(AccountsController):
 				self.net_amount = self.total_amount - self.other_deduction
 		if self.payment_for == "Job Card" and self.tds_amount:
 				self.net_amount = self.payable_amount - self.tds_amount
-		if self.payment_for != "Hire Charge Invoice" and self.income_account != "" and self.income_account != None:
-			frappe.throw("Incoming Account set for purpose {}. Incoming Account only applicable for Hire Charge Invoice. Please clear Incoming Account.".format(self.payment_for))
+		# if self.payment_for != "Hire Charge Invoice" and self.income_account != "" and self.income_account != None:
+		# 	frappe.throw("Incoming Account set for purpose {}. Incoming Account only applicable for Hire Charge Invoice. Please clear Incoming Account.".format(self.payment_for))
 	
 		if not self.net_amount:
 			frappe.throw("Net Amount cannot be less than Zero")
