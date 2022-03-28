@@ -399,6 +399,16 @@ def get_data(filters):
 				bench.append(flt(a.bn))
 				benchm = a.bn
 				total_hc   += flt(a.rat)*flt(a.bn)*no_of_months
+			elif filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
+				rate.append(a.rat)
+				bench.append(a.bn/12)
+				benchm = a.bn/12
+				if frappe.session.user == "Administrator":
+					frappe.throw("here "+str(benchm))
+				cal_date = date_diff(to_date, a.fr) + 1
+				ta2 += flt(a.rat)*flt(a.bn/12)*8
+				bench_date = date_diff(to_date, from_date) + 1
+				total_hc += cal_date*ta2/bench_date
 
 		
 			# if a.fr <= from_date and a.t >= to_date:
@@ -409,16 +419,7 @@ def get_data(filters):
 				frappe.msgprint(str(bench)+" "+str(a.bn))
 
 			#if filters.get("period") not in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
-			if filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
-				rate.append(a.rat)
-				bench.append(a.bn/12)
-				benchm = a.bn/12
-				if frappe.session.user == "Administrator":
-					frappe.throw("here "+str(benchm))
-				cal_date = date_diff(to_date, a.fr) + 1
-				ta2 += flt(a.rat)*flt(a.bn/12)*8
-				bench_date = date_diff(to_date, from_date) + 1
-				total_hc += cal_date*ta2/bench_date
+
 
 			# if to_date > a.t > from_date and  a.fr < from_date and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
 			# 	rate.append(a.rat)
