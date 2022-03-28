@@ -389,6 +389,8 @@ def get_data(filters):
 		total_hc = 0
 		benchm = 0
 		for a in benchmark:
+			if frappe.session.user == "Administrator":
+				frappe.msgprint("here")
 			from_date,to_date,no_of_months, from_date1, to_date1, ra  = get_date_conditions(filters)
 			ta = ta1= ta2 =  ta3 = ta4 = 0.0
 			if not a.t:
