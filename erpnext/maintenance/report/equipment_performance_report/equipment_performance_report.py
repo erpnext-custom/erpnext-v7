@@ -152,7 +152,7 @@ def get_data(filters):
         if filters.get("not_cdcl"):
                 not_cdcll = " and not_cdcl = 0"
         else:
-                not_cdcll = " and not_cdcl like '%' "
+                not_cdcll = " and not_cdcl = 1"
 
         if filters.get("include_disabled"):
                dis = " and is_disabled like '%' "
@@ -413,6 +413,8 @@ def get_data(filters):
 				rate.append(a.rat)
 				bench.append(a.bn/12)
 				benchm = a.bn/12
+				if frappe.session.user == "Administrator":
+					frappe.msgprint(str(benchm))
 				cal_date = date_diff(to_date, a.fr) + 1
 				ta2 += flt(a.rat)*flt(a.bn/12)*8
 				bench_date = date_diff(to_date, from_date) + 1
