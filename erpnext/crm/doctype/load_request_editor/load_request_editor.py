@@ -15,11 +15,15 @@ class LoadRequestEditor(Document):
 		frappe.msgprint("Queue Updated.")
 
 	def get_queue(self):
+		if not self.branch:
+			frappe.throw("Please select Branch")
+		if not self.vehicle_capacity:
+			frappe.throw("Please select Vehicle Capacity")
 		if not self.no_of_vehicles or self.no_of_vehicles == 0:
 			limit = ""
 		else:
 			limit = " limit {}".format(self.no_of_vehicles)
-		query = "select vehicle, name, requesting_date_time from `tabLoad Request` where load_status = 'Queued' and vehicle_capacity = {} and crm_branch = '{}' order by requesting_date_time asc {}".format(self.vehicle_capacity, self.branch, limit)
+		query = "select vehicle, name as load_request_id, requesting_date_time from `tabLoad Request` where load_status = 'Queued' and vehicle_capacity = {} and crm_branch = '{}' order by requesting_date_time asc {}".format(self.vehicle_capacity, self.branch, limit)
 		entries = frappe.db.sql(query, as_dict=True)
 		if not entries:
 			frappe.msgprint("No Vehicles in Queue.")
