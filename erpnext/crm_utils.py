@@ -881,6 +881,7 @@ def get_branch_rate(branch=None, item_sub_group=None, item=None, site=None, prod
 			on tr.branch = cbs.branch
 			and tr.item_sub_group = i.item_sub_group
 			and ifnull(sd.distance,0) between tr.from_distance and tr.to_distance
+			and DATE(now()) between from_date and to_date
 		where {cond}
 		{tbp_cond}
 		and exists(select 1
