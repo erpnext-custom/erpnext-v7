@@ -387,6 +387,7 @@ def get_data(filters):
 		rate = []
 		bench = []
 		total_hc = 0
+		benchm = 0
 		for a in benchmark:
 			from_date,to_date,no_of_months, from_date1, to_date1, ra  = get_date_conditions(filters)
 			ta = ta1= ta2 =  ta3 = ta4 = 0.0
@@ -396,6 +397,7 @@ def get_data(filters):
 			if filters.get("period") not in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 				rate.append(a.rat) 
 				bench.append(flt(a.bn))
+				benchm = a.bn
 				total_hc   += flt(a.rat)*flt(a.bn)*no_of_months
 
 		
@@ -410,6 +412,7 @@ def get_data(filters):
 			if filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
 				rate.append(a.rat)
 				bench.append(a.bn/12)
+				benchm = a.bn/12
 				cal_date = date_diff(to_date, a.fr) + 1
 				ta2 += flt(a.rat)*flt(a.bn/12)*8
 				bench_date = date_diff(to_date, from_date) + 1
@@ -418,6 +421,7 @@ def get_data(filters):
 			if to_date > a.t > from_date and  a.fr < from_date and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
 				rate.append(a.rat)
 				bench.append(a.bn/12)
+				benchm = a.bn/12
 				ta3  += flt(a.rat)*flt(a.bn/12)
 				bench_date = date_diff(to_date, from_date) + 1
 				cal_date = date_diff(a.t, from_date)+1
@@ -430,9 +434,11 @@ def get_data(filters):
 				if from_date1 < a.fr <= to_date1 and (a.t > to_date1):
 					if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
 						bench.append(a.bn/3)
+						benchm = a.bn/3
 						ta4   += flt(a.rat)*flt(a.bn/3)
 					else:
 						bench.append(a.bn/2)
+						benchm = a.bn/2
 						ta4   += flt(a.rat)*flt(a.bn/2)
 					rate.append(a.rat)
 					cal_date = date_diff(to_date1, a.fr) + 1
@@ -440,10 +446,12 @@ def get_data(filters):
 					total_hc += cal_date*ta4/bench_date
 				else:
 					if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
-						bench.append(a.bn/3)						
+						bench.append(a.bn/3)
+						benchm = a.bn/3
 						total_hc   += flt(a.rat)*flt(a.bn/3)
 					else:
 						bench.append(a.bn/2)
+						benchm = a.bn/2
 						total_hc   += flt(a.rat)*flt(a.bn/2)
 					rate.append(a.rat)
 
@@ -454,9 +462,11 @@ def get_data(filters):
 				if from_date1 < a.t <= to_date1 and (a.fr <  from_date1):
 					if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
 						bench.append(a.bn/3)
+						benchm = a.bn/3
 						ta4   += flt(a.rat)*flt(a.bn/3)
 					else:
 						bench.append(a.bn/2)
+						benchm = a.bn/2
 						ta4   += flt(a.rat)*flt(a.bn/2)
 					rate.append(a.rat)
 					cal_date = date_diff(a.t, from_date1) + 1
@@ -464,10 +474,12 @@ def get_data(filters):
 					total_hc += cal_date*ta4/bench_date
 				elif (from_date1 < a.fr and a.t < to_date1) or (a.fr < from_date1 and a.t > to_date1):
 					if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
-						bench.append(a.bn/3)						
+						bench.append(a.bn/3)
+						benchm = a.bn/3
 						total_hc   += flt(a.rat)*flt(a.bn/3)
 					else:
 						bench.append(a.bn/2)
+						benchm = a.bn/2
 						total_hc   += flt(a.rat)*flt(a.bn/2)
 					rate.append(a.rat)
 
@@ -477,21 +489,25 @@ def get_data(filters):
                 # utility % based on existance of revenue and benchmark target'''
 
 		util_percent = 0
+		if total_work_time == None:
+			total_work_time = 0
                 # if total_hc != 0.0:
-				if 
-                        util_percent = 100*total_rev/total_hc
+				if total_work_time != 0:
+                	util_percent = 100*(total_work_time/benchm)
+				else:
+					util_percent = 0
 			#frappe.msgprint("1 rev : {0}, HC: {1} per: {2}".format(total_rev, total_hc, util_percent))
 
-                elif flt(total_hc) == 0  and flt(total_rev) > 0:
-                        util_percent = 100
-			#frappe.msgprint("2 {0} ".format(util_percent))
+            #     elif flt(total_hc) == 0  and flt(total_rev) > 0:
+            #             util_percent = 100
+			# #frappe.msgprint("2 {0} ".format(util_percent))
 
-                elif flt(total_hc) == 0.0 and flt(total_rev) <= 0.0:
-                        util_percent = 0.0
-			#frappe.msgprint("3 {0}".format(util_percent))
+            #     elif flt(total_hc) == 0.0 and flt(total_rev) <= 0.0:
+            #             util_percent = 0.0
+			# #frappe.msgprint("3 {0}".format(util_percent))
 
-                else:
-                        util_percent = 0.0
+            #     else:
+            #             util_percent = 0.0
 			#frappe.msgprint("4 {0}".format(util_percent))
 
 		#frappe.msgprint(_("{0}, {1}, {2}").format(total_rev, total_hc, util_percent))
@@ -514,7 +530,8 @@ def get_data(filters):
 			total_cft,
 			total_m3,
 			list(set(rate)),
-			list(set(bench)),
+			# list(set(bench)),
+			benchm,
 			# flt(total_hc),
 			round(flt(util_percent),2)
 		))
