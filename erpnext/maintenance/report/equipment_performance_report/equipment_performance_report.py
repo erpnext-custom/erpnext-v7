@@ -492,10 +492,10 @@ def get_data(filters):
 		if total_work_time == None:
 			total_work_time = 0
                 # if total_hc != 0.0:
-				if total_work_time != 0:
-                	util_percent = 100*(total_work_time/benchm)
-				else:
-					util_percent = 0
+		if total_work_time != 0:
+            util_percent = 100*(total_work_time/benchm)
+		else:
+			util_percent = 0
 			#frappe.msgprint("1 rev : {0}, HC: {1} per: {2}".format(total_rev, total_hc, util_percent))
 
             #     elif flt(total_hc) == 0  and flt(total_rev) > 0:
