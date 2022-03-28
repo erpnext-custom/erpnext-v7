@@ -414,7 +414,7 @@ def get_data(filters):
 				bench.append(a.bn/12)
 				benchm = a.bn/12
 				if frappe.session.user == "Administrator":
-					frappe.msgprint(str(benchm))
+					frappe.msgprint("here "+str(benchm))
 				cal_date = date_diff(to_date, a.fr) + 1
 				ta2 += flt(a.rat)*flt(a.bn/12)*8
 				bench_date = date_diff(to_date, from_date) + 1
