@@ -414,76 +414,76 @@ def get_data(filters):
 				bench.append(a.bn/12)
 				benchm = a.bn/12
 				if frappe.session.user == "Administrator":
-					frappe.msgprint("here "+str(benchm))
+					frappe.throw("here "+str(benchm))
 				cal_date = date_diff(to_date, a.fr) + 1
 				ta2 += flt(a.rat)*flt(a.bn/12)*8
 				bench_date = date_diff(to_date, from_date) + 1
 				total_hc += cal_date*ta2/bench_date
 
-			if to_date > a.t > from_date and  a.fr < from_date and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
-				rate.append(a.rat)
-				bench.append(a.bn/12)
-				benchm = a.bn/12
-				ta3  += flt(a.rat)*flt(a.bn/12)
-				bench_date = date_diff(to_date, from_date) + 1
-				cal_date = date_diff(a.t, from_date)+1
-				total_hc += cal_date*ta3/bench_date 
+			# if to_date > a.t > from_date and  a.fr < from_date and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
+			# 	rate.append(a.rat)
+			# 	bench.append(a.bn/12)
+			# 	benchm = a.bn/12
+			# 	ta3  += flt(a.rat)*flt(a.bn/12)
+			# 	bench_date = date_diff(to_date, from_date) + 1
+			# 	cal_date = date_diff(a.t, from_date)+1
+			# 	total_hc += cal_date*ta3/bench_date 
 
-			if from_date  < a.fr <= to_date  and (a.t > to_date) and filters.get("period")  in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
-				for i in ra:
-					from_date1 = getdate(filters.get("fy") + "-" + str(i) + "-" + "01")
-					to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(i) + "-" + "01"))
-				if from_date1 < a.fr <= to_date1 and (a.t > to_date1):
-					if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
-						bench.append(a.bn/3)
-						benchm = a.bn/3
-						ta4   += flt(a.rat)*flt(a.bn/3)
-					else:
-						bench.append(a.bn/2)
-						benchm = a.bn/2
-						ta4   += flt(a.rat)*flt(a.bn/2)
-					rate.append(a.rat)
-					cal_date = date_diff(to_date1, a.fr) + 1
-					bench_date = date_diff(to_date1, from_date1) + 1
-					total_hc += cal_date*ta4/bench_date
-				else:
-					if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
-						bench.append(a.bn/3)
-						benchm = a.bn/3
-						total_hc   += flt(a.rat)*flt(a.bn/3)
-					else:
-						bench.append(a.bn/2)
-						benchm = a.bn/2
-						total_hc   += flt(a.rat)*flt(a.bn/2)
-					rate.append(a.rat)
+			# if from_date  < a.fr <= to_date  and (a.t > to_date) and filters.get("period")  in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
+			# 	for i in ra:
+			# 		from_date1 = getdate(filters.get("fy") + "-" + str(i) + "-" + "01")
+			# 		to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(i) + "-" + "01"))
+			# 	if from_date1 < a.fr <= to_date1 and (a.t > to_date1):
+			# 		if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
+			# 			bench.append(a.bn/3)
+			# 			benchm = a.bn/3
+			# 			ta4   += flt(a.rat)*flt(a.bn/3)
+			# 		else:
+			# 			bench.append(a.bn/2)
+			# 			benchm = a.bn/2
+			# 			ta4   += flt(a.rat)*flt(a.bn/2)
+			# 		rate.append(a.rat)
+			# 		cal_date = date_diff(to_date1, a.fr) + 1
+			# 		bench_date = date_diff(to_date1, from_date1) + 1
+			# 		total_hc += cal_date*ta4/bench_date
+			# 	else:
+			# 		if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
+			# 			bench.append(a.bn/3)
+			# 			benchm = a.bn/3
+			# 			total_hc   += flt(a.rat)*flt(a.bn/3)
+			# 		else:
+			# 			bench.append(a.bn/2)
+			# 			benchm = a.bn/2
+			# 			total_hc   += flt(a.rat)*flt(a.bn/2)
+			# 		rate.append(a.rat)
 
-			if to_date > a.t >= from_date and  (a.fr < from_date) and filters.get("period")	in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
-				for i in  ra:
-					from_date1 = getdate(filters.get("fy") + "-" + str(i) + "-" + "01")
-					to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(i) + "-" + "01"))
-				if from_date1 < a.t <= to_date1 and (a.fr <  from_date1):
-					if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
-						bench.append(a.bn/3)
-						benchm = a.bn/3
-						ta4   += flt(a.rat)*flt(a.bn/3)
-					else:
-						bench.append(a.bn/2)
-						benchm = a.bn/2
-						ta4   += flt(a.rat)*flt(a.bn/2)
-					rate.append(a.rat)
-					cal_date = date_diff(a.t, from_date1) + 1
-					bench_date = date_diff(to_date1, from_date1) + 1
-					total_hc += cal_date*ta4/bench_date
-				elif (from_date1 < a.fr and a.t < to_date1) or (a.fr < from_date1 and a.t > to_date1):
-					if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
-						bench.append(a.bn/3)
-						benchm = a.bn/3
-						total_hc   += flt(a.rat)*flt(a.bn/3)
-					else:
-						bench.append(a.bn/2)
-						benchm = a.bn/2
-						total_hc   += flt(a.rat)*flt(a.bn/2)
-					rate.append(a.rat)
+			# if to_date > a.t >= from_date and  (a.fr < from_date) and filters.get("period")	in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
+			# 	for i in  ra:
+			# 		from_date1 = getdate(filters.get("fy") + "-" + str(i) + "-" + "01")
+			# 		to_date1   = get_last_day(getdate(filters.get("fy") + "-" + str(i) + "-" + "01"))
+			# 	if from_date1 < a.t <= to_date1 and (a.fr <  from_date1):
+			# 		if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
+			# 			bench.append(a.bn/3)
+			# 			benchm = a.bn/3
+			# 			ta4   += flt(a.rat)*flt(a.bn/3)
+			# 		else:
+			# 			bench.append(a.bn/2)
+			# 			benchm = a.bn/2
+			# 			ta4   += flt(a.rat)*flt(a.bn/2)
+			# 		rate.append(a.rat)
+			# 		cal_date = date_diff(a.t, from_date1) + 1
+			# 		bench_date = date_diff(to_date1, from_date1) + 1
+			# 		total_hc += cal_date*ta4/bench_date
+			# 	elif (from_date1 < a.fr and a.t < to_date1) or (a.fr < from_date1 and a.t > to_date1):
+			# 		if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
+			# 			bench.append(a.bn/3)
+			# 			benchm = a.bn/3
+			# 			total_hc   += flt(a.rat)*flt(a.bn/3)
+			# 		else:
+			# 			bench.append(a.bn/2)
+			# 			benchm = a.bn/2
+			# 			total_hc   += flt(a.rat)*flt(a.bn/2)
+			# 		rate.append(a.rat)
 
 		if not benchmark:
 			benchmark = {"rat": 0, "bn": 0, "fr": '', "t": ''}
