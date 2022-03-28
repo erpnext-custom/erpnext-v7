@@ -409,6 +409,7 @@ def get_data(filters):
 				ta2 += flt(a.rat)*flt(a.bn/12)*8
 				bench_date = date_diff(to_date, from_date) + 1
 				total_hc += cal_date*ta2/bench_date
+			#
 
 		
 			# if a.fr <= from_date and a.t >= to_date:
