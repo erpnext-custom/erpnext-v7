@@ -36,7 +36,7 @@ def get_conditions(filters):
         if filters.get("not_cdcl"):
                 not_cdcll = " and e.not_cdcl = 0"
         else:
-                not_cdcll = " and e.not_cdcl like '%' "
+                not_cdcll = " and e.not_cdcl = 1"
 
         if filters.get("include_disabled"):
                dis = " and is_disabled like '%' "
@@ -393,7 +393,7 @@ def get_data(filters):
 			if not a.t:
 				a.t = getdate(filters.to_date)
 				#from_date,to_date,no_of_months, from_date1, to_date1, no_of_months1, ra = get_date_conditions(filters)
-			if a.fr >= from_date and a.t <= to_date and filters.get("period") not in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
+			if filters.get("period") not in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 				rate.append(a.rat) 
 				bench.append(flt(a.bn))
 				total_hc   += flt(a.rat)*flt(a.bn)*no_of_months
@@ -407,7 +407,7 @@ def get_data(filters):
 				frappe.msgprint(str(bench)+" "+str(a.bn))
 
 			#if filters.get("period") not in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
-			if from_date  < a.fr < to_date  and (a.t > to_date) and filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
+			if filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
 				rate.append(a.rat)
 				bench.append(a.bn/12)
 				cal_date = date_diff(to_date, a.fr) + 1
@@ -477,8 +477,8 @@ def get_data(filters):
                 # utility % based on existance of revenue and benchmark target'''
 
 		util_percent = 0
-
-                if total_hc != 0.0:
+                # if total_hc != 0.0:
+				if 
                         util_percent = 100*total_rev/total_hc
 			#frappe.msgprint("1 rev : {0}, HC: {1} per: {2}".format(total_rev, total_hc, util_percent))
 
@@ -515,7 +515,7 @@ def get_data(filters):
 			total_m3,
 			list(set(rate)),
 			list(set(bench)),
-			flt(total_hc),
+			# flt(total_hc),
 			round(flt(util_percent),2)
 		))
 	return tuple(data)
@@ -540,7 +540,7 @@ def get_columns(filters):
 			("Total M3")+":Data:140",
 			("HC Rate/Hour") + ":Currency:120",
 			("Utility(Hours/Quarter)") + ":Float:140",
-			("Benchmark Amount") + ":Currency:120",
+			# ("Benchmark Amount") + ":Currency:120",
 			("Utility %") + ":Data:120"
 		]
 	elif filters.get("period") in ("1st Half Year", "2nd Half Year"):
@@ -562,7 +562,7 @@ def get_columns(filters):
 			("Total M3")+":Data:140",
 			("HC Rate/Hour") + ":Currency:120",
 			("Utility(Hours/Half Year)") + ":Float:140",
-			("Benchmark Amount") + ":Currency:120",
+			# ("Benchmark Amount") + ":Currency:120",
 			("Utility %") + ":Data:120"
 		]
 	elif filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
@@ -584,7 +584,7 @@ def get_columns(filters):
 			("Total M3")+":Data:140",
 			("HC Rate/Hour") + ":Currency:120",
 			("Utility(Hours/Month)") + ":Float:140",
-			("Benchmark Amount") + ":Currency:120",
+			# ("Benchmark Amount") + ":Currency:120",
 			("Utility %") + ":Data:120"
 		]
 	else:
@@ -606,7 +606,7 @@ def get_columns(filters):
 			("Total M3")+":Data:140",
 			("HC Rate/Hour") + ":Currency:120",
 			("Utility(Hours/Year)") + ":Float:140",
-			("Benchmark Amount") + ":Currency:120",
+			# ("Benchmark Amount") + ":Currency:120",
 			("Utility %") + ":Data:120"
 		]
 
