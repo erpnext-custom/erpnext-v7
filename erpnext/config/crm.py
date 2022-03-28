@@ -215,6 +215,12 @@ def get_data():
 					"label": "CRM Sign up",
 					"description": _("Customer creation for Back Office"),
 				},
+				{
+					"type": "doctype",
+					"name": "Load Request Editor",
+					"label": "Load Request Editor",
+					"description": _("Tool to edit load request"),
+				},
 			]
 		},
 		{
