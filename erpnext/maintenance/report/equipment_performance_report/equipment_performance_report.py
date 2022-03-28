@@ -383,13 +383,15 @@ def get_data(filters):
 				   and hp.equipment_model = '{1}'
 				   and hi.from_date >= '{2}' and hi.to_date <= '{3}'
 			""".format(eq.equipment_type, eq.equipment_model, from_date, to_date), as_dict=1)
+		if frappe.session.user == "Administrator":
+			frappe.msgprint(str(benchmark))
 		rate = []
 		bench = []
 		total_hc = 0
 		benchm = 0
 		for a in benchmark:
-			if frappe.session.user == "Administrator":
-				frappe.msgprint("here")
+			# if frappe.session.user == "Administrator":
+			# 	frappe.msgprint("here")
 			from_date,to_date,no_of_months, from_date1, to_date1, ra  = get_date_conditions(filters)
 			ta = ta1= ta2 =  ta3 = ta4 = 0.0
 			if not a.t:
@@ -516,8 +518,8 @@ def get_data(filters):
 
 		#frappe.msgprint(_("{0}, {1}, {2}").format(total_rev, total_hc, util_percent))
 
-		if frappe.session.user == "Administrator":
-			frappe.msgprint(str(benchm))
+		# if frappe.session.user == "Administrator":
+		# 	frappe.msgprint(str(benchm))
 		data.append((	
 			eq.branch,
 			eq.name,
