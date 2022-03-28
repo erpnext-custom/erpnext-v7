@@ -134,8 +134,6 @@ def get_date_conditions(filters):
 def get_data(filters):
 	branch_cond, consumption_date, consumption_date_vli, rate_date, jc_date, insurance_date, reg_date, stock_date, rev_date, bench_date, operator_date, tc_date, le_date, ss_date, not_cdcll, dis, mr_date  =  get_conditions(filters)
 	from_date, to_date, no_of_months, from_date1, to_date1, ra  = get_date_conditions(filters)
-	if frappe.session.user == "Administrator":
-		frappe.msgprint(str(from_date)+" "+str(to_date))
 	data = []
 	if not filters.cost_center:
 		return ""
@@ -383,7 +381,7 @@ def get_data(filters):
 							   where hi.parent = hp.name 
 							   and hp.equipment_type = '{0}'
 				   and hp.equipment_model = '{1}'
-				   and hi.from_date >= '{2}' and hi.to_date <= '{3}'
+				   and ('{2}' between hi.from_date and hi.to_date) and ('{3}' between hi.from_date and hi.to_date)
 			""".format(eq.equipment_type, eq.equipment_model, from_date, to_date), as_dict=1)
 		if frappe.session.user == "Administrator":
 			frappe.msgprint(str(benchmark))
