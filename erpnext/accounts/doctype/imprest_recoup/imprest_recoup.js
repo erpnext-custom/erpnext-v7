@@ -285,7 +285,7 @@ function enable_disable(frm){
 				frm.set_df_property(field_name,"read_only",0);
 			});
 			
-			if(frm.doc.final_settlement){
+			if(frm.doc.final_settlement == 1){
 				frm.toggle_reqd(["settlement_account"], 1);
 				frm.toggle_display(["settlement_account","party_type", "party"], 1);
 				frm.toggle_reqd(["revenue_bank_account","pay_to_recd_from", "cheque_no", "cheque_date"], 0);
