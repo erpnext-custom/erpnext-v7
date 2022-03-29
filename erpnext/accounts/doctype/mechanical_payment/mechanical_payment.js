@@ -134,9 +134,14 @@ frappe.ui.form.on('Mechanical Payment', {
 	"outgoing_account": function (frm) {
 		frappe.model.get_value("Account", frm.doc.outgoing_account, "account_type", function (d){
 			if (d.account_type == 'Payable'){
+				cur_frm.toggle_display('party_type', 1);
 				frm.set_value("party_type", "Supplier")
-			}else{
+			} else if (d.account_type == 'Receivable'){
+				cur_frm.toggle_display('party_type', 1);
 				frm.set_value("party_type", "Customer")
+			} else {
+				frm.set_value("party_type", "")
+				cur_frm.toggle_display('party_type', 0);
 			}
 			frm.set_value("party", "")
 		});
