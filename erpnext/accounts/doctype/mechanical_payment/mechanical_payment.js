@@ -21,13 +21,7 @@ frappe.ui.form.on('Mechanical Payment', {
 				]
 			}
 		});
-		cur_frm.set_query("outgoing_account", function () {
-			return {
-				"filters":[
-					["account_type", "in", ["Payable", "Receivable"]]
-				]
-			}
-		});
+		
 		cur_frm.set_query("party_type", function(frm) {
 
 			return {
