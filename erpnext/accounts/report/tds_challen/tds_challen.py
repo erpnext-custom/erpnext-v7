@@ -81,6 +81,13 @@ def construct_query(filters=None):
 			p.tds_amount, p.cost_center from `tabMechanical Payment` as p where p.docstatus = 1 and p.tds_amount > 0
 			and p.posting_date between '{0}' and '{1}' and p.tds_rate = '{2}'
 			{3}
+			UNION
+			Select (select vendor_tpn_no from `tabSupplier` where name = p.party) as vendor_tpn_no,
+			p.party as vendor, p.name as bill_no, p.posting_date as bill_date, p.total_amount, p.tds_percent,
+			p.tds_amount, (select cost_center from `tabBranch` where name = p.branch) as cost_center 
+			from `tabTechnical Sanction Bill` as p where p.docstatus = 1 and p.tds_amount > 0
+			and p.posting_date between '{0}' and '{1}' and p.tds_percent = '{2}'
+			{3}
 			""".format(str(filters.from_date), str(filters.to_date), filters.tds_rate, cond1, cond)
 	return query
 
