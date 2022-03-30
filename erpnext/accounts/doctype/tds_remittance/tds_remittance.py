@@ -42,10 +42,9 @@ class TDSRemittance(AccountsController):
 		if self.tds_rate ==3 :
 			self.tds_account = frappe.db.get_single_value ("Accounts Settings", "tds_3_account")
 		if self.tds_rate == 5:
-                        self.tds_account = frappe.db.get_single_value ("Accounts Settings", "tds_5_account")
-                if self.tds_rate ==10:
-                        self.tds_account = frappe.db.get_single_value ("Accounts Settings", "tds_10_account")
-
+			self.tds_account = frappe.db.get_single_value ("Accounts Settings", "tds_5_account")
+		if self.tds_rate ==10:
+			self.tds_account = frappe.db.get_single_value ("Accounts Settings", "tds_10_account")
 
 	def on_submit(self):
 		self.post_gl_entry()
@@ -99,6 +98,17 @@ class TDSRemittance(AccountsController):
                                         on i.parent = t.name
                                         where i.invoice_no = p.name
                                         and t.docstatus = 1
+                                )
+				union all
+								select tsb.posting_date, tsb.party, tsb.name, tsb.total_amount as bill_amount, tsb.tds_amount 
+                                from `tabTechnical Sanction Bill` tsb where tds_percent = '{0}' and docstatus =1 
+                                and posting_date >= '{1}' and posting_date<= '{2}'
+				and not exists (
+                                        select 1 from `tabTDS Remittance Item` i
+                                        inner join `tabTDS Remittance` t
+                                        on i.parent = t.name
+                                        where i.invoice_no = tsb.name
+                                        and t.docstatus = 1
                                 ) """.format(self.tds_rate, self.from_date, self.to_date)
 		
 
@@ -112,10 +122,10 @@ class TDSRemittance(AccountsController):
 			row = self.append('items', {})
 			row.update(d)	
 
-        def post_gl_entry(self):
+	def post_gl_entry(self):
 		cost_center = frappe.db.get_value("Branch", self.branch, "cost_center")
-                gl_entries   = []
-               	if self.total_tds > 0:
+		gl_entries   = []
+		if self.total_tds > 0:
 			gl_entries.append(
 				self.get_gl_dict({
 					"account": self.tds_account,
