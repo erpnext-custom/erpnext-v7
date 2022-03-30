@@ -99,8 +99,9 @@ class ProcessPayroll(Document):
                                         if process_type == "remove":
                                                 ss = frappe.get_doc("Salary Slip", name)
                                                 ss_list = frappe.db.sql("delete from `tabSalary Slip Item` where parent='{0}'".format(name))
-                                                ss_list = frappe.db.sql("delete from `tabSalary Detail` where parent='{0}'".format(name))
-                                                ss_list = frappe.db.sql("delete from `tabSalary Slip` where name='{0}'".format(name))
+                                                ss_list = frappe.db.sql("delete from `tabSalary Detail` where parent='{0}'".format(name)) 
+						ss_list = frappe.db.sql("delete from `tabOvertime Item` where parent = '{0}'".format(name))
+						ss_list = frappe.db.sql("delete from `tabSalary Slip` where name='{0}'".format(name))
                                                 frappe.db.commit()
                                                 msg = "Removed Successfully"
                                         else:
@@ -602,6 +603,7 @@ class ProcessPayroll(Document):
                 cc_wise_totals = frappe._dict()
                 tot_payable_amt= 0
                 for rec in cc:
+			
                         # To Payables
                         tot_payable_amt += (-1*flt(rec.amount) if rec.component_type == 'Deduction' else flt(rec.amount))
                         posting.setdefault("to_payables",[]).append({

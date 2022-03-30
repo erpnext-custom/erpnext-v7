@@ -488,13 +488,15 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                         if not flt(gross_amt):
                                 d['amount'] = 0
                         else:
-				if tax_amt:
-					if d['salary_component'] != 'Salary Tax':
-						tax_included = 0
-					if d['salary_component'] == 'Salary Tax':
-						d['amount'] = flt(tax_amt)
-						tax_included = 1
-
+				#if tax_amt:
+				#	if d['salary_component'] != 'Salary Tax':
+				#		tax_included = 0
+				#	if d['salary_component'] == 'Salary Tax':
+				#		d['amount'] = flt(tax_amt)
+				#		tax_included = 1
+				if d['salary_component'] == 'Salary Tax':
+					d['amount'] = flt(tax_amt)
+					tax_included = 1
 		#Calculate and append the Tax component if not present
 		if tax_amt and not tax_included:
 			calc_map['deductions'].append({
