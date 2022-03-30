@@ -87,8 +87,8 @@ class RRCOReceiptTool(Document):
 			cond = ''
 			cond1 = ''
 			if self.branch:
-			    cond += " AND d.branch = '{}'".format(self.branch)
-			    cond1 += " AND p.branch = '{}'".format(self.branch)
+				cond += " AND d.branch = '{}'".format(self.branch)
+				cond1 += " AND p.branch = '{}'".format(self.branch)
 
 			if self.purpose == 'Leave Encashment':
 				query = """select  "Leave Encashment" as transaction, name, application_date as posting_date, 
@@ -177,6 +177,23 @@ class RRCOReceiptTool(Document):
 						FROM `tabMechanical Payment` AS p
 						WHERE p.docstatus = 1 AND p.posting_date BETWEEN '{0}' AND '{1}' 
 						AND p.tds_rate = '{2}' {3}
+						AND p.tds_amount > 0
+						AND NOT EXISTS (SELECT 1 
+										FROM `tabRRCO Receipt Entries` AS b 
+										WHERE b.purchase_invoice = p.name) 
+						AND EXISTS (
+							select 1
+							from `tabTDS Remittance`  as r, `tabTDS Remittance Item` ri
+							where r.name = ri.parent
+							and r.docstatus = 1
+							and ri.invoice_no = p.name
+						)
+						UNION
+						select "Technical Sanction Bill" as transaction, p.name, p.posting_date as invoice_date, 
+              			p.total_amount as invoice_amount, p.tds_amount as tax_amount,  p.party as party
+						FROM `tabTechnical Sanction Bill` AS p
+						WHERE p.docstatus = 1 AND p.posting_date BETWEEN '{0}' AND '{1}' 
+						AND p.tds_percent = '{2}' {3}
 						AND p.tds_amount > 0
 						AND NOT EXISTS (SELECT 1 
 										FROM `tabRRCO Receipt Entries` AS b 
