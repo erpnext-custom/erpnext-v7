@@ -63,7 +63,7 @@ class UtilityBill(Document):
             for a in self.item:
                 frappe.msgprint("Utility Payment failed with following response from Bank")
                 frappe.msgprint(" Customer Code: <b>{}</b> , Response: <b>{}</b>".format(a.consumer_code, a.payment_response_msg))
-        frappe.throw("Please try to process the bill after sometime")
+            frappe.throw("Please try to process the bill after sometime")
         
     def calculate_tds_net(self):
         total_amount = total_tds = net_amount = 0.00
