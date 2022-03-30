@@ -18,18 +18,13 @@ class UtilityBill(Document):
         self.calculate_tds_net()
         self.get_bank_available_balance()
         self.remove_bill_without_os()
-        self.update_pi_number()
         if self.workflow_state == "Waiting For Verification":
             self.payment_status="Pending"
-            
+
+
     def before_submit(self):
         self.utility_payment()
         self.update_status()
-        
-    def update_pi_number(self):
-        for a in self.get("item"):
-            if not a.pi_number:
-                a.pi_number = get_transaction_id()
 
     def get_bank_available_balance(self):
         if self.bank_account and frappe.db.get_value('Bank Payment Settings', "BOBL", 'enable_one_to_one'):
@@ -44,7 +39,7 @@ class UtilityBill(Document):
                     frappe.msgprint(_("Unable to fetch Bank Balance.\n  {}").format(result['error']))
 
     def on_submit(self):
-        pass
+        self.db_set("workflow_state", self.payment_status)
     
     def on_cancel(self):
         if self.workflow_state=="Partial Payment" or self.workflow_state=="Payment Successful":
@@ -63,7 +58,12 @@ class UtilityBill(Document):
             self.payment_status = "Payment Successful"
         elif failed > 0 and success == 0:
             self.payment_status = "Payment Failed"
-        self.workflow_state = self.payment_status
+
+        if self.payment_status =="Payment Failed":
+            for a in self.item:
+                frappe.msgprint("Utility Payment failed with following response from Bank")
+                frappe.msgprint(" Customer Code: <b>{}</b> , Response: <b>{}</b>".format(a.consumer_code, a.payment_response_msg))
+            frappe.throw("Please try to process the bill after sometime")
         
     def calculate_tds_net(self):
         total_amount = total_tds = net_amount = 0.00
@@ -86,6 +86,7 @@ class UtilityBill(Document):
                 url = api_details.api_link
                 api_param = {}
                 os = str(d.outstanding_amount)
+                pi_number = get_transaction_id()
                 if os.count("."):
                     os_nu = os.split(".",1)[0]
                     os_ch = os.split(".",1)[1]
@@ -93,7 +94,6 @@ class UtilityBill(Document):
                     actual_os = str(os_nu)+"."+str(os_ch)
                 else:
                     actual_os = str(os)
-
                 for a in api_details.item:
                     if a.pre_defined_value:
                         api_param[a.param] = str(a.defined_value)
@@ -106,7 +106,7 @@ class UtilityBill(Document):
                     elif a.param == "Amt":
                         api_param[a.param] = str(actual_os)
                     elif a.param == "pi":
-                        api_param[a.param] = d.pi_number
+                        api_param[a.param] = pi_number
                 if consumer_field == "landlnenumber":
                     consumer_field = "landlinenumber"
     
@@ -116,12 +116,13 @@ class UtilityBill(Document):
                 headers = {
                 'Content-Type': 'application/json'
                 }               
-                response = requests.request("POST", url, headers=headers, data=payload)
+                response = requests.request("POST", url, headers=headers, data=payload, verify=False)
                 details = response.json()
                 d.response = str(details)
                 res_status = details['statusCode']
                 d.payment_status_code = res_status
                 if res_status == "00":
+                    d.pi_number = pi_number
                     d.payment_response_msg = details['ResultMessage']
                     d.payment_journal_no = details['jrnlno']
                     d.payment_status = "Success"
@@ -166,7 +167,7 @@ class UtilityBill(Document):
             'Content-Type': 'application/json'
             }
 
-            response = requests.request("POST", url, headers=headers, data=payload)
+            response = requests.request("POST", url, headers=headers, data=payload, verify=False)
             details = response.json()
             res_status = details['statusCode']
             row.payment_status = "Pending"
@@ -208,7 +209,7 @@ class UtilityBill(Document):
                 'Content-Type': 'application/json'
             }
 
-            response = requests.request("POST", url, headers=headers, data=payload)
+            response = requests.request("POST", url, headers=headers, data=payload, verify=False)
             details = response.json()
             res_status = details['statusCode']
             d.payment_status = "In Progress"
@@ -239,6 +240,7 @@ class UtilityBill(Document):
         doc.tds_account = self.tds_account
         doc.credit_account = self.expense_account
         doc.utility_bill = str(self.name)
+        doc.business_activity = self.business_activity
         doc.remarks = "Utility Bill Payment " + str(self.name)
         doc.status = "Completed"
         if self.item:
