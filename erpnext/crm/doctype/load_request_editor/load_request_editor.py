@@ -10,7 +10,7 @@ class LoadRequestEditor(Document):
 	def on_submit(self):
 		for a in self.items:
 			if a.new_requesting_date_time and a.new_requesting_date_time != "" and a.new_requesting_date_time != None:
-				lr = frappe.get_doc("Load Request", a.load_request_item)
+				lr = frappe.get_doc("Load Request", a.load_request_id)
 				lr.db_set("requesting_date_time",a.new_requesting_date_time)
 		frappe.msgprint("Queue Updated.")
 
