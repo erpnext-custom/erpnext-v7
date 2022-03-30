@@ -1085,3 +1085,45 @@ def make_boq(source_name, target_doc=None):
                         }
         }, target_doc)
         return doclist
+
+@frappe.whitelist()
+def make_project_rts(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_parent):
+                target_doc.total_amount = 0.0
+                target_doc.initial_amount = 0.0
+                target_doc.addition_amount = 0.0
+                target_doc.substite_amount = 0.0
+
+        doclist = get_mapped_doc("Project", source_name, {
+                "Project": {
+                        "doctype": "RTS Projects",
+                        "field_map": {
+                                "project": "project"
+                        },
+                        "postprocess": update_master
+                }
+
+        }, target_doc, ignore_child_tables=False)
+
+        return doclist
+
+@frappe.whitelist()
+def make_deviation_statement(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_parent):
+                target_doc.total_amount = 0.0
+                target_doc.initial_amount = 0.0
+                target_doc.addition_amount = 0.0
+                target_doc.substite_amount = 0.0
+
+        doclist = get_mapped_doc("Project", source_name, {
+                "Project": {
+                        "doctype": "Deviation Statement",
+                        "field_map": {
+                                "project": "project"
+                        },
+                        "postprocess": update_master
+                }
+
+        }, target_doc, ignore_child_tables=False)
+
+        return doclist

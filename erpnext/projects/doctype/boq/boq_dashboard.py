@@ -4,8 +4,8 @@ data = {
 	'fieldname': 'boq',
 	'transactions': [
 		{
-			'label': _('Adjustments'),
-                        'items': ['BOQ Adjustment']
+			'label': _('BOQ'),
+                        'items': ['BOQ Adjustment', 'BOQ Addition', 'BOQ Substitution']
 		},
                 {
 			'label': _('Transactions'),

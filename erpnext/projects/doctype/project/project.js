@@ -130,6 +130,16 @@ frappe.ui.form.on("Project", {
 		if(!frm.doc.__islocal){
 			frm.add_custom_button(__("Advance"), function(){frm.trigger("make_project_advance")},__("Make"), "icon-file-alt");
 			frm.add_custom_button(__("BOQ"), function(){frm.trigger("make_boq")},__("Make"), "icon-file-alt");
+
+
+			frm.add_custom_button(__("RTS"), function () { frm.trigger("make_project_rts") },
+                                __("Make"), "icon-file-alt"
+                        );
+
+			frm.add_custom_button(__("Deviation Statement"), function () { frm.trigger("make_deviation_statement") },
+                                __("Make"), "icon-file-alt"
+                        );
+
 			frm.add_custom_button(__("Project Register"), function(){
 					frappe.route_options = {
 						project: frm.doc.name,
@@ -185,6 +195,20 @@ frappe.ui.form.on("Project", {
 		});
 	},
 	// +++++++++++++++++++++ Ver 1.0 ENDS +++++++++++++++++++++
+
+	make_project_rts: function (frm) {
+                frappe.model.open_mapped_doc({
+                        method: "erpnext.projects.doctype.project.project.make_project_rts",
+                        frm: frm
+                });
+        },
+	
+	 make_deviation_statement: function (frm) {
+                frappe.model.open_mapped_doc({
+                        method: "erpnext.projects.doctype.project.project.make_deviation_statement",
+                        frm: frm
+                });
+        },
 	
 	tasks_refresh: function(frm) {
 		var grid = frm.get_field('tasks').grid;

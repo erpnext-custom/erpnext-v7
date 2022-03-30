@@ -54,7 +54,7 @@ class BOQ(Document):
         # NEED TO WORK ON DISPLAYING THE FIELDS BASED ON THE CHECKBOX
         # NEED TO WORK ON CALCULATING THE RATE BASED ON THE FORMULA FOR THE MARKET VALUE. 
         # Added by phuntsho on November 9 
-        def calculate_ar_rate (self): 
+        def calculate_ar_rate(self): 
                 for d in boq_item: 
                         ten_percent = d.market_rate * 0.1
                         five_percent = d.market_rate * 0.05
@@ -253,7 +253,45 @@ def make_boq_adjustment(source_name, target_doc=None):
         }, target_doc)
 
         return doclist
-        
+    
+@frappe.whitelist()
+def make_boq_substitution(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_parent):
+                target_doc.total_amount = 0.0
+
+        doclist = get_mapped_doc("BOQ", source_name, {
+                "BOQ": {
+                        "doctype": "BOQ Substitution",
+                        "field_map": {
+                                "name": "boq"
+                        },
+                        "postprocess": update_master
+                }
+
+        }, target_doc, ignore_child_tables=True)
+
+        return doclist
+
+@frappe.whitelist()
+def make_additional_boq(source_name, target_doc=None):
+        def update_master(source_doc, target_doc, source_parent):
+                target_doc.total_amount = 0.0
+
+
+	doclist = get_mapped_doc("BOQ", source_name, {
+                "BOQ": {
+                        "doctype": "BOQ Addition",
+                        "field_map": {
+                                "name": "boq"
+                        },
+                        "postprocess": update_master
+                }
+
+        }, target_doc, ignore_child_tables=True)
+
+        return doclist
+   
+
 @frappe.whitelist()
 def make_direct_invoice(source_name, target_doc=None):
         def update_master(source_doc, target_doc, source_parent):

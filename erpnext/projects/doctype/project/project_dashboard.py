@@ -40,7 +40,7 @@ data = {
 		},
                 {
 			'label': _('BOQ & SUBCONTRACT'),
-                        'items': ['BOQ', 'BOQ Adjustment', 'Subcontract', 'MB Entry']
+                        'items': ['BOQ', 'BOQ Adjustment', 'BOQ Addition', 'BOQ Substitution', 'Subcontract', 'MB Entry']
 		},
                 {
 			'label': _('Transactions'),

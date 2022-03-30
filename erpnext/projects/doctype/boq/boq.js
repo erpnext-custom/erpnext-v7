@@ -27,9 +27,38 @@ frappe.ui.form.on('BOQ', {
 			{ fieldname: 'adjustment_amount', columns: 2 },
 			{ fieldname: 'final_amount', columns: 2 },
 		];
+		
+		frm.get_field('boq_substitution_item').grid.editable_fields = [
+                        { fieldname: 'transaction_type', columns: 2 },
+                        { fieldname: 'transaction_date', columns: 2 },
+                        { fieldname: 'initial_amount', columns: 2 },
+                        { fieldname: 'substitution_amount', columns: 2 },
+                        { fieldname: 'final_amount', columns: 2 },
+                ];
+
+		frm.get_field('boq_addition_item').grid.editable_fields = [
+                        { fieldname: 'transaction_type', columns: 2 },
+                        { fieldname: 'transaction_date', columns: 2 },
+                        { fieldname: 'initial_amount', columns: 2 },
+                        { fieldname: 'additional_amount', columns: 2 },
+                        { fieldname: 'final_amount', columns: 2 },
+                ];
+		
+		frm.get_field('initial_boq_item').grid.editable_fields = [
+                        { fieldname: 'boq_code', columns: 1 },
+                        { fieldname: 'item', columns: 3 },
+                        { fieldname: 'is_group', columns: 1 },
+                        { fieldname: 'uom', columns: 1 },
+                        { fieldname: 'quantity', columns: 1 },
+                        { fieldname: 'rate', columns: 1 },
+                        { fieldname: 'amount', columns: 2 }
+                ];
+
 	},
 
 	refresh: function (frm) {
+		cur_frm.set_df_property("boq_item", "read_only",  frm.doc.docstatus == 1);
+
 		boq_item_html(frm);
 		if (!frm.doc.__islocal && frm.doc.docstatus == 1) {
 			if (frappe.model.can_read("BOQ Adjustment")) {
@@ -38,6 +67,19 @@ frappe.ui.form.on('BOQ', {
 					frappe.set_route("List", "BOQ Adjustment");
 				}, __("View"), true);
 			}
+			if (frappe.model.can_read("BOQ Substitution")) {
+                                frm.add_custom_button(__("Substitutions"), function () {
+                                        frappe.route_options = { "boq": frm.doc.name }
+                                        frappe.set_route("List", "BOQ Substitution");
+                                }, __("View"), true);
+                        }
+
+			if (frappe.model.can_read("BOQ Addition")) {
+                                frm.add_custom_button(__("Additions"), function () {
+                                        frappe.route_options = { "boq": frm.doc.name }
+                                        frappe.set_route("List", "BOQ Addition");
+                                }, __("View"), true);
+                        }
 
 			/*
 			if(frappe.model.can_read("Project")) {
@@ -61,15 +103,27 @@ frappe.ui.form.on('BOQ', {
 					frappe.set_route("List", "Project Invoice");
 				}, __("View"), true);
 			}
+
 		}
 
 		frm.trigger("get_defaults");
 
 		if (frm.doc.docstatus == 1) {
 			//frm.add_custom_button(__("Advance"), function(){frm.trigger("make_boq_advance")},__("Make"), "icon-file-alt");
-			frm.add_custom_button(__("Adjustment"), function () { frm.trigger("make_boq_adjustment") },
+			frm.add_custom_button(__("BOQ Adjustment"), function () { frm.trigger("make_boq_adjustment") },
 				__("Make"), "icon-file-alt"
 			);
+			//Logic for Substition and Extra Items Begins ---TASHI DORJI----
+			
+			frm.add_custom_button(__("BOQ Substitution"), function () { frm.trigger("make_boq_substitution") },
+                                __("Make"), "icon-file-alt"
+                        );
+			frm.add_custom_button(__("BOQ Addition"), function () { frm.trigger("make_additional_boq") },
+                                __("Make"), "icon-file-alt"
+                        );
+			//end the logic
+
+
 			if (frm.doc.party_type !== "Supplier") {
 				frm.add_custom_button(__("Subcontract"), function () { frm.trigger("make_boq_subcontract") }, __("Make"), "icon-file-alt");
 			}
@@ -124,6 +178,22 @@ frappe.ui.form.on('BOQ', {
 		});
 	},
 
+
+	//Substition and Extra Item logig Begins ----TASHI DORJI---
+	make_boq_substitution: function (frm) {
+                frappe.model.open_mapped_doc({
+                        method: "erpnext.projects.doctype.boq.boq.make_boq_substitution",
+                        frm: frm
+                });
+        },
+
+	make_additional_boq: function (frm) {
+                frappe.model.open_mapped_doc({
+                        method: "erpnext.projects.doctype.boq.boq.make_additional_boq",
+                        frm: frm
+                });
+        },
+	//Logic Ends
 	make_direct_invoice: function (frm) {
 		frappe.model.open_mapped_doc({
 			method: "erpnext.projects.doctype.boq.boq.make_direct_invoice",
