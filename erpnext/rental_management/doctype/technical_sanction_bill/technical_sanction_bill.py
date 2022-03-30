@@ -7,7 +7,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.model.mapper import get_mapped_doc
-from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate
+from frappe.utils import cstr, flt, fmt_money, formatdate, nowdate, cint
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 
@@ -17,7 +17,7 @@ class TechnicalSanctionBill(AccountsController):
 	
 	def calculate_total_amount(self):
 		self.total_deduction_amount = 0
-		total = 0
+		total = tdsAmount = 0
 		for item in self.deduction: 
 			self.total_deduction_amount += item.deduction_amount
 
@@ -26,7 +26,10 @@ class TechnicalSanctionBill(AccountsController):
 
 		for item in self.items: 
 			total += item.total
-		self.total_amount = total - self.total_deduction_amount
+		
+		if self.tds_amount > 0:
+			tdsAmount = self.tds_amount
+		self.total_amount = total - self.total_deduction_amount - tdsAmount
 
 	def on_submit(self):
 		self.make_gl_entries()
@@ -142,6 +145,19 @@ class TechnicalSanctionBill(AccountsController):
 							"business_activity": default_ba
 						}, currency.default_currency)
                 	)
+
+			if flt(self.tds_amount) > 0:
+				gl_entries.append(
+                    self.get_gl_dict({
+                        "account": self.tds_account,
+                        "credit": self.tds_amount,
+                        "credit_in_account_currency": self.tds_amount,
+                        "cost_center": cost_center,
+                        "company": self.company,
+						"technical_sanction_bill": self.name,
+                        "business_activity": default_ba,
+					})
+				)
 			# frappe.throw("stopped!")
 			make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 
@@ -209,3 +225,19 @@ def get_advance_list(technical_sanction, party, party_type):
 			and balance_amount > 0
 			""".format(ts=technical_sanction, party_type=party_type, party=party), as_dict=True)
 	return result
+
+@frappe.whitelist()
+def get_tds_account(percent):
+	if percent:
+		if cint(percent) == 2:
+			field = "tds_2_account"
+		elif cint(percent) == 3:
+			field = "tds_3_account"
+		elif cint(percent) == 5:
+			field = "tds_5_account"
+		elif cint(percent) == 10:
+			field = "tds_10_account"
+		else:
+			frappe.throw(
+				"Set TDS Accounts in Accounts Settings and try again")
+		return frappe.db.get_single_value("Accounts Settings", field)

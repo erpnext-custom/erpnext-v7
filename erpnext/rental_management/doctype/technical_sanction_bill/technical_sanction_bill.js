@@ -61,6 +61,18 @@ frappe.ui.form.on('Technical Sanction Bill', {
 			frappe.throw("Either party type or party are missing in the technical sanction!")
 		}
 	},
+	"tds_percent": function (frm) {
+		if(frm.doc.tds_percent < 1 || frm.doc.tds_percent == ""){
+			cur_frm.set_value("tds_account", "");
+			cur_frm.set_value("tds_amount", 0.00);
+		} else {
+			calculate_tds(frm);
+		}
+		cur_frm.set_df_property("tds_account", "reqd", (frm.doc.tds_percent > 0)? 1:0);
+	},
+	"tds_amount": function (frm) {
+		calculate_total_amount(frm)
+	}
 });
 
 frappe.ui.form.on('Technical Sanction Deduction', {
@@ -85,4 +97,20 @@ function calculate_total_amount(frm) {
 		callback: function (r, rt) { frm.refresh_fields() },
 		doc: frm.doc,
 	});
+}
+
+function calculate_tds(frm) {
+	frappe.call({
+		method: "erpnext.rental_management.doctype.technical_sanction_bill.technical_sanction_bill.get_tds_account",
+		args: {
+			percent: frm.doc.tds_percent
+		},
+		callback: function(r) {
+			if(r.message) {
+				frm.set_value("tds_account", r.message);
+				cur_frm.refresh_field("tds_account");
+				frm.set_value("tds_amount", parseFloat(frm.doc.tds_percent) * parseFloat(frm.doc.total_gross_amount) / 100)
+			}
+		}
+	})
 }
