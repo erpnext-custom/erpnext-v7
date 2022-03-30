@@ -37,14 +37,18 @@ def get_data(filters):
 	query =  """ select ot.name, ot.branch, ot.posting_date, ot.employee, ot.employee_name, ot.bank_name, ot.bank_no,
 			(select e1.designation from `tabEmployee` e1 where e1.name = ot.employee) as designation,
 			(select e2.department from `tabEmployee` e2 where e2.name = ot.employee) as department, ot.rate, ot.total_hours, 
-			ot.total_amount, ot.purpose, ot.payment_jv, ot.overtime_payment
+			ot.total_amount, ot.purpose, ot.payment_jv, ot.overtime_payment, ot.salary_slip
 			from `tabOvertime Application` ot where ot.docstatus =1"""
 	if filters.employee:
 		query += " and ot.employee = '{0}'".format(filters.employee)
+
 	if filters.status == "Not Paid":
-		query += " and (ot.payment_jv is NULL or ot.payment_jv = '') and (ot.overtime_payment is NULL or ot.overtime_payment = '')"
+		#query += " and (ot.payment_jv is NULL or ot.payment_jv = '') and (ot.overtime_payment is NULL or ot.overtime_payment = '')"
+		query += " and ot.processed = 0"
+
 	elif filters.status == "Paid":
-		query += " and (ot.payment_jv != '' or ot.overtime_payment != '')"
+		#query += " and (ot.payment_jv != '' or ot.overtime_payment != '')"
+		query += " and ot.processed = 1"
 
 	# if filters.cost_center:
 	# 	query += " and ot.branch = '{0}'".format(filters.branch)
@@ -69,6 +73,9 @@ def get_data(filters):
 			'''
 			jv_no = d.overtime_payment
 			status = "Paid"
+		elif d.salary_slip:
+			jv_no = d.salary_slip
+			status = 'Paid'
 
 		row1 = [d.name, d.branch, d.posting_date, d.employee, d.employee_name, d.designation, d.department,d.bank_name, d.bank_no, d.rate, d.total_hours, \
 		d.total_amount, d.purpose, jv_no, status]
