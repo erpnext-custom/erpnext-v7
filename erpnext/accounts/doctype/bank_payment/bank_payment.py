@@ -841,24 +841,24 @@ def process_one_to_one_payment(doc, publish_progress=True):
             RemitterAcctType = frappe.db.get_value("Account", doc.paid_from, "bank_account_type")
             result = inr_remittance(AcctNum, Amt, BnfcryAcct, BnfcryName, BnfcryAddr1, IFSC, BankCode, PurpCode, RemittersName, RemittersAddr1, ComsnOpt, PromoCode, PEMSRefNum)
         else:
-			Amt = i.amount
-			PayeeAcctNum = doc.bank_account_no
-			BnfcryAcct = i.bank_account_no
-			BnfcryName = i.beneficiary_name
-			if i.financial_system_code and i.bank_account_type:
-				bnf_acc_type = i.bank_account_type
-				BfscCode = i.financial_system_code
-			else:
-				if i.bank_branch:
-					bnf_acc_type = i.bank_account_type
-					BfscCode = str(frappe.db.get_value("Financial Institution Branch", i.bank_branch, "financial_system_code"))
-				elif i.employee:
-					bnf_acc_type = frappe.db.get_value("Employee", i.employee, "bank_account_type")
-					BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Employee", i.employee, "bank_branch"), "financial_system_code"))
-				elif i.supplier:
-					bnf_acc_type = frappe.db.get_value("Supplier", i.supplier, "bank_account_type")
-					BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Supplier", i.supplier, "bank_branch"), "financial_system_code"))
-			BnfcryAcctTyp = bnf_acc_type
+            Amt = i.amount
+            PayeeAcctNum = doc.bank_account_no
+            BnfcryAcct = i.bank_account_no
+            BnfcryName = i.beneficiary_name
+            if i.financial_system_code and i.bank_account_type:
+                bnf_acc_type = i.bank_account_type
+                BfscCode = i.financial_system_code
+            else:
+                if i.bank_branch:
+                    bnf_acc_type = i.bank_account_type
+                    BfscCode = str(frappe.db.get_value("Financial Institution Branch", i.bank_branch, "financial_system_code"))
+                elif i.employee:
+                    bnf_acc_type = frappe.db.get_value("Employee", i.employee, "bank_account_type")
+                    BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Employee", i.employee, "bank_branch"), "financial_system_code"))
+                elif i.supplier:
+                    bnf_acc_type = frappe.db.get_value("Supplier", i.supplier, "bank_account_type")
+                    BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Supplier", i.supplier, "bank_branch"), "financial_system_code"))
+            BnfcryAcctTyp = bnf_acc_type
             BnfcryRmrk = str(doc.remarks)
             RemitterName = doc.company
             RemitterAcctType = frappe.db.get_value("Account", doc.paid_from, "bank_account_type")
