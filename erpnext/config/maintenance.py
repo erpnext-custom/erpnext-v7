@@ -263,11 +263,17 @@ def get_data():
 				# 	"doctype": "POL"
 				# },
 				{
-                                        "type": "report",
-                                        "is_query_report": True,
-                                        "name": "POL Receive Report",
-                                        "doctype": "POL"
-                                },
+					"type": "report",
+					"is_query_report": True,
+					"name": "POL Receive Report",
+					"doctype": "POL"
+				},
+				{
+					"type": "report",
+					"is_query_report": True,
+					"name": "Reimbursement Report",
+					"doctype": "Reimbursement"
+				},
 
 			]
 		},
