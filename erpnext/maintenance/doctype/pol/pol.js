@@ -25,7 +25,7 @@ frappe.ui.form.on('POL', {
 			}, __("View"));
 		}
 		// commented out by sonam chophel
-		if (frm.doc.docstatus == 1) {
+		if (frm.doc.docstatus == 1 && frm.doc.settled_using_imprest == 1) {
 		// 	cur_frm.add_custom_button(__("Stock Ledger"), function () {
 		// 		frappe.route_options = {
 		// 			voucher_no: frm.doc.name,
