@@ -22,6 +22,17 @@ class HSDPayment(Document):
 		to_remove = []
 
 		for d in self.items:
+			hsd = frappe.db.sql("""
+				select sum(b.allocated_amount) as paid_amount from `tabHSD Payment Item` b, `tabHSD Payment` a where b.parent=a.name
+				and a.docstatus = 1 and b.pol = '{}' and a.name != '{}'
+			""".format(d.pol, self.name))
+			pol = frappe.get_doc("POL",d.pol)
+			total_amount = pol.total_amount
+			if hsd:
+				if flt(hsd[0].paid_amount) == flt(total_amount):
+					to_remove.append(d)
+					pol.db_set("outstanding_amount",0)
+
 			allocated = 0
 			if total > 0 and total >= d.payable_amount:
 				allocated = d.payable_amount
