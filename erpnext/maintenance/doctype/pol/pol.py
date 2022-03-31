@@ -71,6 +71,8 @@ class POL(StockController):
 		""" ++++++++++ Ver 2.0.190509 Ends ++++++++++++ """
 		
 		self.make_pol_entry()
+		if self.settled_using_imprest:
+			self.make_gl_entry()
 		# self.save()
 	def on_cancel(self):
 		self.update_stock_ledger()
@@ -92,6 +94,9 @@ class POL(StockController):
 		self.delete_pol_entry()
 		self.update_advance()
 
+		
+		if self.settled_using_imprest:
+			self.make_gl_entry()
 	# Commented out by phuntsho on 2021-02-26: Not needed for De-suung.  
 	# def validate_dc(self):
 		# is_container, no_own_tank = frappe.db.get_value("Equipment Type", frappe.db.get_value("Equipment", self.equipment, "equipment_type") , ["is_container", "no_own_tank"])
@@ -630,3 +635,63 @@ class POL(StockController):
 			self.od_amount = flt(self.total_amount) - total_amount_adjusted 
 			self.items[len(self.items)-1].has_od = 1
 			
+	def make_gl_entry(self):
+		from erpnext.accounts.general_ledger import make_gl_entries
+		debit_account= frappe.db.get_value("Item", self.pol_type, "expense_account")
+		creditor_account= frappe.get_doc("Company", self.company).default_payable_account
+		if not creditor_account:
+			frappe.throw("Setup Default Payable Account in Company")
+		
+		gl_entries = []
+		gl_entries.append(
+			self.get_gl_dict({"account": debit_account,
+						"debit": flt(self.total_amount),
+						"debit_in_account_currency": flt(self.total_amount),
+						"cost_center": self.cost_center,
+						"reference_type": self.doctype,
+						"reference_name": self.name,
+						"business_activity": self.business_activity,
+						"remarks": self.remarks
+					})
+			)
+		gl_entries.append(
+			self.get_gl_dict({"account": creditor_account,
+						"debit": flt(self.total_amount),
+						"debit_in_account_currency": flt(self.total_amount),
+						"cost_center": self.cost_center,
+						"reference_type": self.doctype,
+						"party_type": "Supplier",
+						"party": self.supplier,
+						"reference_name": self.name,
+						"business_activity": self.business_activity,
+						"remarks": self.remarks
+					})
+			)
+		gl_entries.append(
+			self.get_gl_dict({"account": creditor_account,
+						"credit": flt(self.total_amount),
+						"credit_in_account_currency": flt(self.total_amount),
+						"cost_center": self.cost_center,
+						"reference_type": self.doctype,
+						"party_type": "Supplier",
+						"party": self.supplier,
+						"reference_name": self.name,
+						"business_activity": self.business_activity,
+						"remarks": self.remarks
+					})
+			)
+		gl_entries.append(
+			self.get_gl_dict({"account": self.credit_account,
+						"credit": flt(self.total_amount),
+						"credit_in_account_currency": flt(self.total_amount),
+						"cost_center": self.cost_center,
+						"party_type": self.party_type,
+						"party": self.party,
+						"reference_type": self.doctype,
+						"reference_name": self.name,
+						"business_activity": self.business_activity,
+						"remarks": self.remarks
+					})
+			)
+		
+		make_gl_entries(gl_entries, cancel=(self.docstatus == 2), update_outstanding="No", merge_entries=False)

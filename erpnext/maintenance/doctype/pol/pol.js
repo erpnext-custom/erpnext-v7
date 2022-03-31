@@ -25,7 +25,7 @@ frappe.ui.form.on('POL', {
 			}, __("View"));
 		}
 		// commented out by sonam chophel
-		// if (frm.doc.docstatus == 1) {
+		if (frm.doc.docstatus == 1) {
 		// 	cur_frm.add_custom_button(__("Stock Ledger"), function () {
 		// 		frappe.route_options = {
 		// 			voucher_no: frm.doc.name,
@@ -36,17 +36,17 @@ frappe.ui.form.on('POL', {
 		// 		frappe.set_route("query-report", "Stock Ledger Report");
 		// 	}, __("View"));
 
-		// 	cur_frm.add_custom_button(__('Accounting Ledger'), function () {
-		// 		frappe.route_options = {
-		// 			voucher_no: frm.doc.name,
-		// 			from_date: frm.doc.posting_date,
-		// 			to_date: frm.doc.posting_date,
-		// 			company: frm.doc.company,
-		// 			group_by_voucher: false
-		// 		};
-		// 		frappe.set_route("query-report", "General Ledger");
-		// 	}, __("View"));
-		// }
+			cur_frm.add_custom_button(__('Accounting Ledger'), function () {
+				frappe.route_options = {
+					voucher_no: frm.doc.name,
+					from_date: frm.doc.posting_date,
+					to_date: frm.doc.posting_date,
+					company: frm.doc.company,
+					group_by_voucher: false
+				};
+				frappe.set_route("query-report", "General Ledger");
+			}, __("View"));
+		}
 	},
 
 	"qty": function (frm) {
@@ -66,6 +66,17 @@ frappe.ui.form.on('POL', {
 	},
 	"get_advance":function(frm){
 		get_advance(frm)
+	},
+	"credit_account": function (frm) {
+		frappe.model.get_value("Account", frm.doc.credit_account, "account_type", function (d){
+			if (d.account_type == 'Payable' || d.account_type == 'Receivable'){
+				cur_frm.toggle_display('party_type', 1);
+			} else {
+				frm.set_value("party_type", "")
+				cur_frm.toggle_display('party_type', 0);
+			}
+			frm.set_value("party", "")
+		});
 	}
 });
 
