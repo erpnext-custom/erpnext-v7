@@ -25,7 +25,7 @@ class HSDPayment(Document):
 			hsd = frappe.db.sql("""
 				select sum(b.allocated_amount) as paid_amount from `tabHSD Payment Item` b, `tabHSD Payment` a where b.parent=a.name
 				and a.docstatus = 1 and b.pol = '{}' and a.name != '{}'
-			""".format(d.pol, self.name))
+			""".format(d.pol, self.name), as_dict=1)
 			pol = frappe.get_doc("POL",d.pol)
 			total_amount = pol.total_amount
 			if hsd:
