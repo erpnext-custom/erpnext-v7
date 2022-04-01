@@ -12,15 +12,11 @@ from erpnext.accounts.doctype.business_activity.business_activity import get_def
 class HSDPayment(Document):
 	def validate(self):
 		check_future_date(self.posting_date)
+		self.validate_pols()
 		self.validate_allocated_amount()
 		self.clearance_date = None
 
-	def validate_allocated_amount(self):
-		if not self.amount > 0:
-			frappe.throw("Amount should be greater than 0")	
-		total = flt(self.amount)
-		to_remove = []
-
+	def validate_pols(self):
 		for d in self.items:
 			hsd = frappe.db.sql("""
 				select sum(b.allocated_amount) as paid_amount from `tabHSD Payment Item` b, `tabHSD Payment` a where b.parent=a.name
@@ -36,7 +32,15 @@ class HSDPayment(Document):
 					d.allocated_amount = flt(total_amount)-flt(hsd[0].paid_amount)
 					pol.db_set("paid_amount",flt(hsd[0].paid_amount))
 					pol.db_set("outstanding_amount",flt(total_amount)-flt(hsd[0].paid_amount))
+		[self.remove(d) for d in to_remove]
 
+	def validate_allocated_amount(self):
+		if not self.amount > 0:
+			frappe.throw("Amount should be greater than 0")	
+		total = flt(self.amount)
+		to_remove = []
+
+		for d in self.items:
 			allocated = 0
 			if total > 0 and total >= d.payable_amount:
 				allocated = d.payable_amount
@@ -137,7 +141,7 @@ class HSDPayment(Document):
 			d.balance_amount = 0
 			row = self.append('items', {})
 			row.update(d)
-		self.validate_allocated_amount()
+		self.validate_pols()
 		for d in entries:
 			total_amount+=flt(d.payable_amount)
 		self.amount = total_amount
