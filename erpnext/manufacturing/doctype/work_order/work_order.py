@@ -548,7 +548,7 @@ def get_job_spec(item):
 		frappe.throw(" Job Specification for Item <b> {0} </b> is not defined".format(item))
 
 @frappe.whitelist()
-def get_item_details(item, project = None):
+def get_item_details(item, branch = None, project = None):
 	res = frappe.db.sql("""
 		select stock_uom, description
 		from `tabItem`
@@ -567,6 +567,8 @@ def get_item_details(item, project = None):
 	if project:
 		filters = {"item": item, "project": project}
 
+	if branch:
+		filters = {"item": item, "branch" : branch}
 	res["bom_no"] = frappe.db.get_value("BOM", filters = filters)
 
 	if not res["bom_no"]:

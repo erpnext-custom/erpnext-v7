@@ -57,7 +57,7 @@ frappe.ui.form.on('Work Order', {
 			if (frm.doc.production_item) {
 				return{
 					query: "erpnext.controllers.queries.bom",
-					filters: {item: cstr(frm.doc.production_item)}
+					filters: {item: cstr(frm.doc.production_item), branch: cstr(frm.doc.branch)}
 				}
 			} else msgprint(__("Please enter Production Item first"));
 		});
@@ -313,6 +313,7 @@ frappe.ui.form.on('Work Order', {
 				method: "erpnext.manufacturing.doctype.work_order.work_order.get_item_details",
 				args: {
 					item: frm.doc.production_item,
+					branch: frm.doc.branch,
 					project: frm.doc.project
 				},
 				freeze: true,
