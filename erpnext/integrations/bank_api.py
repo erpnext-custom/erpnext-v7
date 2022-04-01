@@ -8,7 +8,7 @@ class BankAPI:
     pass
 
 @frappe.whitelist()
-def intra_payment(from_acc, trans_amount, promo_no, to_acc, unique_transaction_no):
+def intra_payment(from_acc, trans_amount, promo_no, to_acc, unique_transaction_no, remark):
     doc = frappe.get_doc("API Detail", "ONE TO ONE - INTRA BANK")
     url = doc.api_link
     user_id = None
@@ -107,13 +107,13 @@ def intra_payment(from_acc, trans_amount, promo_no, to_acc, unique_transaction_n
                     <ban:TrnAmt>{1}</ban:TrnAmt>			
                             
                     <!--Optional:-->			
-                    <ban:StmtNarr>{4}</ban:StmtNarr>			
+                    <ban:StmtNarr>{4} {5}</ban:StmtNarr>			
                             
                     </ban:Data>			
                 </DepAcctFundXferRq>			
             </v1:transferDepositAccountFundSecured>			
         </soapenv:Body>			
-        </soapenv:Envelope>""".format(from_acc, trans_amount, promo_no, to_acc, unique_transaction_no)
+        </soapenv:Envelope>""".format(from_acc, trans_amount, promo_no, to_acc, unique_transaction_no, remark)
     headers = {
     'Authorization': 'Basic %s' % base64.b64encode(str(user_id)+":"+str(password)),
     'Content-Type': 'application/xml'

@@ -799,8 +799,9 @@ def process_one_to_one_payment(doc, publish_progress=True):
 		if i.bank_name == "BOBL":
 			from_acc = doc.bank_account_no
 			trans_amount = i.amount
-			to_acc = i.bank_account_no 
-			result = intra_payment(from_acc, trans_amount, PromoCode, to_acc, PEMSRefNum)
+			to_acc = i.bank_account_no
+			remark = str(i.remarks) if i.remarks else str(doc.remarks)
+			result = intra_payment(from_acc, trans_amount, PromoCode, to_acc, PEMSRefNum, remark)
 		elif i.inr_bank_code:
 			Amt = i.amount
 			AcctNum = doc.bank_account_no
@@ -818,7 +819,7 @@ def process_one_to_one_payment(doc, publish_progress=True):
 			else:
 				bnf_acc_type = frappe.db.get_value("Supplier", i.supplier, "bank_account_type")
 			BnfcryAcctTyp = bnf_acc_type
-			BnfcryRmrk = str(doc.remarks)
+			BnfcryRmrk = str(i.remarks) if i.remarks else str(doc.remarks)
 			RemitterName = doc.company
 			BfscCode = frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Supplier", i.supplier, "bank_branch"), "financial_system_code")
 			RemitterAcctType = frappe.db.get_value("Account", doc.paid_from, "bank_account_type")
@@ -842,7 +843,7 @@ def process_one_to_one_payment(doc, publish_progress=True):
 					bnf_acc_type = frappe.db.get_value("Supplier", i.supplier, "bank_account_type")
 					BfscCode = str(frappe.db.get_value("Financial Institution Branch", frappe.db.get_value("Supplier", i.supplier, "bank_branch"), "financial_system_code"))
 			BnfcryAcctTyp = bnf_acc_type
-			BnfcryRmrk = str(doc.remarks)
+			BnfcryRmrk = str(i.remarks) if i.remarks else str(doc.remarks)
 			RemitterName = doc.company
 			RemitterAcctType = frappe.db.get_value("Account", doc.paid_from, "bank_account_type")
 			result = inter_payment(Amt, PayeeAcctNum, BnfcryAcct, BnfcryName, BnfcryAcctTyp, BnfcryRmrk, RemitterName, BfscCode, RemitterAcctType, PEMSRefNum)
