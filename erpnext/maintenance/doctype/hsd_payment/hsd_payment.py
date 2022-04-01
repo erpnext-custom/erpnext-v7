@@ -32,6 +32,10 @@ class HSDPayment(Document):
 				if flt(hsd[0].paid_amount) == flt(total_amount):
 					to_remove.append(d)
 					pol.db_set("outstanding_amount",0)
+				elif flt(total_amount)-flt(hsd[0].paid_amount) > 0:
+					d.allocated_amount = flt(total_amount)-flt(hsd[0].paid_amount)
+					pol.db_set("paid_amount",flt(hsd[0].paid_amount))
+					pol.db_set("outstanding_amount",flt(total_amount)-flt(hsd[0].paid_amount))
 
 			allocated = 0
 			if total > 0 and total >= d.payable_amount:
