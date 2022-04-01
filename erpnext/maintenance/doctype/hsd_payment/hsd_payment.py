@@ -17,6 +17,7 @@ class HSDPayment(Document):
 		self.clearance_date = None
 
 	def validate_pols(self):
+		to_remove = []
 		for d in self.items:
 			hsd = frappe.db.sql("""
 				select sum(b.allocated_amount) as paid_amount from `tabHSD Payment Item` b, `tabHSD Payment` a where b.parent=a.name
