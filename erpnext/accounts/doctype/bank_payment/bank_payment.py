@@ -27,6 +27,7 @@ class BankPayment(Document):
 		self.check_one_one_or_bulk_payment()
 
 	def before_submit(self):
+		self.validate_timing()
 		self.update_status()
 		self.update_pi_number()
 
@@ -75,6 +76,27 @@ class BankPayment(Document):
 			frappe.throw(_("For transaction more than <b>10 records</b>, Please select Payment Type to <b>Bulk Payment</b>!"), title="Remember")
 		else:
 			pass
+	#added by cety on 15/09/2021 to not allow transaction after office hour.
+	#Modified by Thukten to restrict timing only for Inter Bank Transaction
+	def validate_timing(self):
+		inter_transaction = frappe.db.sql("""select count(*) as transaction
+											from `tabBank Payment` bp, `tabBank Payment Item` bpi 
+											where bp.name=bpi.parent 
+											and bp.name='{}'
+											and bpi.bank_name!='BOBL'""".format(self.name), as_dict=True)
+		if inter_transaction[0].transaction > 0:
+			hms = '%H:%M:%S'
+			now = datetime.now()
+			now_time = now.strftime(hms)
+			now_time = datetime.strptime(now_time, hms)
+			start_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "from_time"))
+			end_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "to_time"))
+			from_time = datetime.strptime(start_time, hms)
+			to_time = datetime.strptime(end_time, hms)
+			if now_time >= from_time and now_time <= to_time:
+				pass
+			else:
+				frappe.throw("<b>Inter Bank Transaction</b> are only allowed between from <b>{}</b> till <b>{} </b>!".format(start_time, end_time), title="Transaction Restricted!")
 
 	def get_bank_available_balance(self):
 		''' get paying bank balance '''
@@ -123,11 +145,12 @@ class BankPayment(Document):
 	def validate_items(self):
 		if not self.get("items"):
 			frappe.throw(_("No transactions found for payment processing"), title="No Data Found")
-
 		# duplicate transaction checks
 		for i in self.get("items"):
 			if i.bank_branch and not i.financial_system_code:
 				i.financial_system_code = frappe.db.get_value("Financial Institution Branch", i.bank_branch, "financial_system_code")
+			if not i.bank_account_type or not i.bank_account_no:
+				frappe.throw("Row#{}: <b>Bank Account Type</b> or <b>Account No</b> are missing ".format(i.idx))
 			for j in frappe.db.sql("""
 					select name, docstatus from `tabBank Payment` bp
 					where bp.name != "{name}"
@@ -172,6 +195,11 @@ class BankPayment(Document):
 				doc.save(ignore_permissions=True)
 			elif self.transaction_type == 'Journal Entry':
 				doc = frappe.get_doc('Journal Entry', i.transaction_id)
+				doc.payment_status = status
+				doc.bank_payment = self.name
+				doc.save(ignore_permissions=True)
+			elif self.transaction_type == 'HSD Payment':
+				doc = frappe.get_doc('HSD Payment', i.transaction_id)
 				doc.payment_status = status
 				doc.bank_payment = self.name
 				doc.save(ignore_permissions=True)
@@ -320,6 +348,8 @@ class BankPayment(Document):
 			data = self.get_mechanical_payment()
 		elif self.transaction_type == "Employee Loan Payment":
 			data = self.get_loan_detail()
+		elif self.transaction_type == "HSD Payment":
+			data = self.get_hsd_payment()
 		return data
 
 	"""
@@ -788,7 +818,37 @@ class BankPayment(Document):
 		""".format(bank_payment = self.name,
 					branch = self.branch,
 					cond = cond), as_dict=True)
-
+	#added by cety on 4-4-2022
+	def get_hsd_payment(self):
+		cond = ""
+		if self.transaction_no:
+			cond = 'and hsd.name = "{}"'.format(self.transaction_no)
+		elif not self.transaction_no and self.from_date and self.to_date:
+			cond = 'and hsd.posting_date between "{}" and "{}"'.format(str(self.from_date), str(self.to_date))
+		return frappe.db.sql("""
+				SELECT
+					'HSD Payment' as transaction_type, hsd.name as transaction_id, hsd.name as transaction_reference, hsd.posting_date as transaction_date, 
+					hsd.supplier as beneficiary_name, 
+					s.bank_name_new as bank_name,
+					s.bank_branch,
+					s.bank_account_type,
+					s.account_number as bank_account_no,
+					hsd.amount
+				FROM `tabHSD Payment` hsd, `tabSupplier` s
+				WHERE hsd.supplier=s.name and hsd.branch = '{branch}'
+				{cond}
+				AND hsd.docstatus = 1
+					AND NOT EXISTS(select 1
+						FROM `tabBank Payment Item` bpi
+						WHERE bpi.transaction_type = 'HSD Payment'
+						AND bpi.transaction_id = hsd.name
+						AND bpi.parent != '{bank_payment}'
+						AND bpi.docstatus != 2
+						AND bpi.status NOT IN ('Cancelled', 'Failed'))
+		""".format(bank_payment = self.name,
+					branch = self.branch,
+					cond = cond), as_dict=True)
+  
 def process_one_to_one_payment(doc, publish_progress=True):
 	stat = 0
 	processing = completed = failed = doc_modified = 0
