@@ -280,7 +280,7 @@ def get_data(filters=None):
 					END as uom, sum(dni.amount), 
 					sum(dni.amount) - dn.discount_or_cost_amount + dn.additional_cost - dn.challan_cost
 				"""
-			group_by = " group by dn.customer"
+			group_by = " group by dn.name"
 			order_by = "order by dn.posting_date"
 		
 		else:
