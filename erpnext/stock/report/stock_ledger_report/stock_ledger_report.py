@@ -130,6 +130,8 @@ def get_group_by(filters):
 	group_by = ''
 	if filters.transaction_type == "Delivery Note":
 		group_by = "group by sle.voucher_no"
+	
+	return group_by
 
 def get_item_details(filters):
 	item_details = {}
