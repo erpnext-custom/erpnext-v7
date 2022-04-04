@@ -56,7 +56,7 @@ def get_stock_ledger_entries(filters):
                                 WHEN sle.voucher_type = 'Production' THEN prod.branch
                                 WHEN sle.voucher_type = 'Purchase Receipt' THEN pr.branch
                                 ELSE 'None' END) as branch, 
-			sle.warehouse, sle.actual_qty, sle.qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
+			sle.warehouse, sum(sle.actual_qty), (sle.qty_after_transaction), sle.incoming_rate, sle.valuation_rate,
 			sle.stock_value,
 			(CASE
                                 WHEN sle.voucher_type = 'Production' AND pmi.name = sle.voucher_detail_no THEN 'Raw Materials'
@@ -129,7 +129,7 @@ def get_stock_ledger_entries(filters):
 def get_group_by(filters):
 	group_by = ''
 	if filters.transaction_type == "Delivery Note":
-		group_by = "group by sle.voucher_no"
+		group_by = "group by sle.voucher_no, sle.item_code"
 	
 	return group_by
 
