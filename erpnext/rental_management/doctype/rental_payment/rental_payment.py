@@ -443,6 +443,8 @@ class RentalPayment(AccountsController):
 			if self.is_nhdcl_employee:
 				condition += " and is_nhdcl_employee = '1'"
 		else:
+			if not self.fiscal_year or not self.month:
+				frappe.throw("Fiscal Year or Month value missing.")
 			if self.tenant:
 				condition += " and tenant = '{0}'".format(self.tenant)
 			if self.fiscal_year:
