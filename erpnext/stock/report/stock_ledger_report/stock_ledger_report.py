@@ -127,10 +127,7 @@ def get_stock_ledger_entries(filters):
 	# 	""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters)),  filters, as_dict=1)
 
 def get_group_by(filters):
-	group_by = ''
-	if filters.transaction_type == "Delivery Note":
-		group_by = "group by sle.voucher_no, sle.item_code"
-	
+	group_by = "group by sle.voucher_no, sle.item_code"
 	return group_by
 
 def get_item_details(filters):
