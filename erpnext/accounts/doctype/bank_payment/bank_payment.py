@@ -80,17 +80,26 @@ class BankPayment(Document):
 		else:
 			pass
 	#added by cety on 15/09/2021 to not allow transaction after office hour.
+	#Modified by Thukten to restrict timing only for Inter Bank Transaction
 	def validate_timing(self):
-		hms = '%H:%M:%S'
-		now = datetime.now()
-		now_time = now.strftime(hms)
-		now_time = datetime.strptime(now_time, hms)	
-		from_time = datetime.strptime(str(frappe.db.get_value("Bank Payment Settings", "BOBL", "from_time")), hms)
-		to_time = datetime.strptime(str(frappe.db.get_value("Bank Payment Settings", "BOBL", "to_time")), hms)
-		if now_time >= from_time and now_time <= to_time:
-			pass
-		else:
-			frappe.throw("We are <b>disallowing transaction</b> after office hours, please try again during office hours(9am-5pm)!", title="Transaction Restricted!")
+		inter_transaction = frappe.db.sql("""select count(*) as transaction
+											from `tabBank Payment` bp, `tabBank Payment Item` bpi 
+											where bp.name=bpi.parent 
+											and bp.name='{}'
+											and bpi.bank_name!='BOBL'""".format(self.name), as_dict=True)
+		if inter_transaction[0].transaction > 0:
+			hms = '%H:%M:%S'
+			now = datetime.now()
+			now_time = now.strftime(hms)
+			now_time = datetime.strptime(now_time, hms)
+			start_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "from_time"))
+			end_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "to_time"))
+			from_time = datetime.strptime(start_time, hms)
+			to_time = datetime.strptime(end_time, hms)
+			if now_time >= from_time and now_time <= to_time:
+				pass
+			else:
+				frappe.throw("<b>Inter Bank Transaction</b> are only allowed between from <b>{}</b> till <b>{} </b>!".format(start_time, end_time), title="Transaction Restricted!")
 		
 	def get_bank_available_balance(self):
 		''' get paying bank balance '''
@@ -143,6 +152,8 @@ class BankPayment(Document):
 		for i in self.get("items"):
 			if i.bank_branch and not i.financial_system_code:
 				i.financial_system_code = frappe.db.get_value("Financial Institution Branch", i.bank_branch, "financial_system_code")
+			if not i.bank_account_type or not i.bank_account_no:
+				frappe.throw("Row#{}: <b>Bank Account Type</b> or <b>Account No</b> are missing ".format(i.idx))
 			for j in frappe.db.sql("""
 					select name, docstatus from `tabBank Payment` bp
 					where bp.name != "{name}"
