@@ -421,7 +421,7 @@ class RentalPayment(AccountsController):
 		condition = ""
 		data = []
 		if not self.individual_payment:
-			condition += " and (receivable_amount - received_amount - discount_amount - tds_amount - adjusted_amount - rent_write_off_amount) > 0"
+			# condition += " and (receivable_amount - received_amount - discount_amount - tds_amount - adjusted_amount - rent_write_off_amount) > 0"
 			if tenant:
 				condition += " and tenant = '{}'".format(tenant)
 			if self.location:
@@ -443,14 +443,8 @@ class RentalPayment(AccountsController):
 			if self.is_nhdcl_employee:
 				condition += " and is_nhdcl_employee = '1'"
 		else:
-			if not self.fiscal_year or not self.month:
-				frappe.throw("Fiscal Year or Month value missing.")
 			if self.tenant:
 				condition += " and tenant = '{0}'".format(self.tenant)
-			if self.fiscal_year:
-				condition += " and fiscal_year = '{0}'".format(self.fiscal_year)
-			if self.month:
-				condition += " and month = '{0}'".format(self.month)
 
 		self.set('item', [])
 		bill_amount = 0.00
@@ -458,7 +452,7 @@ class RentalPayment(AccountsController):
 						(receivable_amount - received_amount - discount_amount - tds_amount - adjusted_amount - rent_write_off_amount) as bill_amount, fiscal_year, month,
 						ministry_agency, department
 						from `tabRental Bill`
-						where docstatus = 1 
+						where docstatus = 1 and (receivable_amount - received_amount - discount_amount - tds_amount - adjusted_amount - rent_write_off_amount) > 0
 						{0} order by tenant_name
 				""".format(condition), as_dict=True):
 			row = self.append('item', {})
