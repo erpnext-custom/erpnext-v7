@@ -57,8 +57,9 @@ class ImprestReceipt(Document):
         def validate_amounts(self):
                 if flt(self.opening_balance) < 0:
                         frappe.throw("Opening balance cannot be a negative value.",title="Invalid Data")
-                elif flt(self.amount) < 0:
-                        frappe.throw("Receipt amount cannot be a negative value.",title="Invalid Data")
+                # Below commented by Jai, 04 April 22. work of Ugyen Thinley
+                # elif flt(self.amount) < 0:
+                #         frappe.throw("Receipt amount cannot be a negative value.",title="Invalid Data")
                 elif not self.amount:
                         frappe.throw("Receipt amount cannot be empty.",title="Invalid Data")
                         
