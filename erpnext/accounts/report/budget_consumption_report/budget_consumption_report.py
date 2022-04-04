@@ -72,7 +72,6 @@ def get_data(query, filters):
 		"available": av
 	}
 	data.append(row)
-
 	return data
 
 def construct_query(filters=None):

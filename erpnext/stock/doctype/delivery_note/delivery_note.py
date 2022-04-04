@@ -132,7 +132,9 @@ class DeliveryNote(SellingController):
 					l.name = '{1}' 
 				AND 
 					tdr.distance = l.distance
-			""".format(self.from_warehouse, self.location),as_dict=True)
+				AND     
+					'{2}' between tr.from_date and tr.to_date
+			""".format(self.from_warehouse, self.location, self.posting_date),as_dict=True)
 		
 		if not rate_and_distance:
 			frappe.throw("There Is No Rate and Distance Defined Between Warehouse {0} and Location {1}".format(self.from_warehouse,self.location))

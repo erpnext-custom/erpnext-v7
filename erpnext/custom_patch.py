@@ -7,6 +7,17 @@ from frappe.utils.data import get_first_day, get_last_day, add_years, getdate, n
 from erpnext.custom_utils import get_branch_cc
 import csv
 
+def delete_ss():
+	count = 0
+	li = []
+	for a in frappe.db.sql(""" select name from `tabSalary Slip` where month = '03' and fiscal_year = '2022' """, as_dict =1):
+		#frappe.db.sql(""" delete from `tabSalary Detail` where parent = '{0}' """.format(a.name))
+		#frappe.db.sql(""" delete from `tabSalary Slip` where name = '{0}' """.format(a.name))
+		sal = frappe.db.sql(""" select name from `tabSalary Detail` where salary_component = 'Salary Tax' and parent = '{0}' having count(*) > 1""", as_dict =1)
+		if sal:
+			li.append(sal.name)
+	print(" {0}".format(li))
+
 def copy_party_to_consolidation():
     for d in frappe.db.sql('''
                            select voucher_no, account, name,consolidation_party

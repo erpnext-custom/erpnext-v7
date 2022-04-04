@@ -274,7 +274,6 @@ class Production(StockController):
 			if self.transfer:
 				to_wh_account = frappe.db.get_value(
 				    "Account", {"account_type": "Stock", "warehouse": self.to_warehouse}, "name")
-				frappe.throw("test " + to_wh_account)
 				gl_entries.append(
 					prepare_gl(self, {"account": to_wh_account,
 							"debit": flt(amount),

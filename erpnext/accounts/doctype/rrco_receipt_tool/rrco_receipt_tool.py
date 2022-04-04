@@ -147,7 +147,7 @@ class RRCOReceiptTool(Document):
 										WHERE b.purchase_invoice = a.name)
 						AND a.tds_amount > 0
 						UNION
-			calcualte_totals			select "EME Payment" as transaction, name, posting_date, total_amount as invoice_amount, tds_amount as tax_amount
+						select "EME Payment" as transaction, name, posting_date, total_amount as invoice_amount, tds_amount as tax_amount
 						FROM `tabEME Payment` AS a 
 						WHERE docstatus = 1 
 						AND posting_date BETWEEN '{0}' AND '{1}'
