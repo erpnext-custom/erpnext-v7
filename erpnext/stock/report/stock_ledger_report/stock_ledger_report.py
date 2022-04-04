@@ -83,7 +83,8 @@ def get_stock_ledger_entries(filters):
 		and sle.posting_date between '{from_date}' and '{to_date}'
 		{sle_conditions}
 		order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
-		""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters), company=filters.get("company"), from_date=filters.get("from_date"), to_date=filters.get("to_date"))
+		{group_by}
+		""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters), company=filters.get("company"), from_date=filters.get("from_date"), to_date=filters.get("to_date"), group_by = get_group_by(filters))
 
 	data = frappe.db.sql(query, as_dict=True)
 	return data
@@ -124,6 +125,11 @@ def get_stock_ledger_entries(filters):
 	# 	{sle_conditions}
 	# 	order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond} 
 	# 	""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters)),  filters, as_dict=1)
+
+def get_group_by(filters):
+	group_by = ''
+	if filters.transaction_type == "Delivery Note":
+		group_by = "group by sle.voucher_no"
 
 def get_item_details(filters):
 	item_details = {}
