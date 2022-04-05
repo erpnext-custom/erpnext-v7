@@ -176,7 +176,7 @@ def get_conditions(filters):
 		condition += " and ppi.challan_no = '{}'".format(filters.challan_no)
 	machine_name_cond = ""
 	if filters.machine_name:
-		machine_name_cond += " and data.machine_name = '{}'".format(filters.machine_name)
+		machine_name_cond += "where data.machine_name = '{}'".format(filters.machine_name)
 
 	return condition, machine_name_cond
 
