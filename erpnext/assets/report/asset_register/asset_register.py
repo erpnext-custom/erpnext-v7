@@ -87,18 +87,18 @@ def get_depreciation_details(filters):
 
 def get_data(filters):
 	query = """
-                SELECT
-                        a.name, a.asset_name, a.asset_category, a.asset_sub_category,
+				SELECT
+						a.name, a.asset_name, a.asset_category, a.asset_sub_category,
 			a.equipment_number, a.serial_number, a.old_asset_code, a.presystem_issue_date,
-                        a.cost_center, 
+						a.cost_center, 
 			IFNULL(a.posting_date, a.purchase_date) purchase_date, 
 			a.status, a.asset_status, 
 			a.disposal_date, a.journal_entry_for_scrap,
-                        a.issued_to, e.employee_name, e.designation,
+						a.issued_to, e.employee_name, e.designation,
 			a.asset_quantity_, a.asset_rate, a.additional_value,
 			a.gross_purchase_amount, a.expected_value_after_useful_life,
-                        a.opening_accumulated_depreciation, a.value_after_depreciation,
-                        a.income_tax_opening_depreciation_amount as iopening,
+						a.opening_accumulated_depreciation, a.value_after_depreciation,
+						a.income_tax_opening_depreciation_amount as iopening,
 			a.residual_value,
 			(
 				(CASE WHEN IFNULL(a.posting_date,a.purchase_date) < '{from_date}' THEN IFNULL(a.asset_rate,0)*IFNULL(a.asset_quantity_,1)
@@ -138,8 +138,10 @@ def get_data(filters):
 				ELSE 0
 			END) AS dep_adjustment,
 			0 AS opening_income,
-			0 AS depreciation_income_tax
-                FROM 
+			0 AS depreciation_income_tax,
+			a.depreciation_method,
+			a.asset_depreciation_percent
+				FROM 
 			`tabAsset` AS a
 			LEFT JOIN `tabEmployee` AS e ON e.name = a.issued_to
 		WHERE a.docstatus = 1 
@@ -150,7 +152,7 @@ def get_data(filters):
 			(a.status in ('Scrapped', 'Sold') AND a.disposal_date >= '{from_date}')
 		)
 		""".format(from_date=filters.from_date, to_date=filters.to_date)
-                
+				
 	if filters.cost_center:
 		query+=" and a.cost_center = \'" + filters.cost_center + "\'"
 
@@ -163,7 +165,7 @@ def get_data(filters):
 	data = []
 
 	if asset_data:
-                total_gross_opening = 0
+		total_gross_opening = 0
 		total_gross_addition = 0
 		total_gross_adjustment = 0
 		total_gross_total = 0
@@ -201,12 +203,12 @@ def get_data(filters):
 
 			'''
 			if flt(a.opening_accumulated_depreciation) + flt(a.expected_value_after_useful_life) + flt(a.residual_value) == flt(a.gross_purchase_amount):
-                                actual_dep = 0
+								actual_dep = 0
 			elif not a.depreciation_amount:
 				actual_dep = 0
-                        else:
+						else:
 				actual_dep = flt(a.depreciation_amount)
-                                
+								
 			net_useful_life = flt(a.gross_purchase_amount) - flt(dep_opening)- flt(actual_dep) - flt(a.dep_adjustment) 
 			net_income_tax = flt(a.gross_purchase_amount) - flt(a.iopening) - flt(a.depreciation_income_tax) - flt(a.opening_income)
 			'''
@@ -256,7 +258,9 @@ def get_data(filters):
 				"equipment_number": a.equipment_number,
 				"asset_status": a.asset_status,
 				"residual_value": a.residual_value,
-				"status": a.status
+				"status": a.status,
+				"depreciation_method": a.depreciation_method,
+				"depreciation_percent": a.asset_depreciation_percent
 			}
 			data.append(row)
 		# total row
@@ -318,17 +322,17 @@ def get_columns():
 			"width": 100
 		},
 		 {
-                        "fieldname": "employee_name",
-                        "label": _("Employee Name"),
-                        "fieldtype": "Data",
-                        "width": 150
-                },
+						"fieldname": "employee_name",
+						"label": _("Employee Name"),
+						"fieldtype": "Data",
+						"width": 150
+				},
 		 {
-                        "fieldname": "designation",
-                        "label": _("Designation"),
-                        "fieldtype": "Data",
-                        "width": 150
-                },
+						"fieldname": "designation",
+						"label": _("Designation"),
+						"fieldtype": "Data",
+						"width": 150
+				},
 		{
 			"fieldname": "cost_center",
 			"label": _("Cost Center"),
@@ -373,6 +377,12 @@ def get_columns():
 			"width": 120
 		},
 		{
+			"fieldname": "depreciation_method",
+			"label": _("Dep. Method"),
+			"fieldtype": "data",
+			"width": 120
+		},
+		{
 			"fieldname": "dep_opening",
 			"label": _("Dep. Opening"),
 			"fieldtype": "Currency",
@@ -407,6 +417,11 @@ def get_columns():
 			"label": _("Income Open. Dep."),
 			"fieldtype": "Currency",
 			"width": 120
+		},{
+			"fieldname": "depreciation_percent",
+			"label": _("Dep. Percent"),
+			"fieldtype": "data",
+			"width": 120
 		},
 		{
 			"fieldname": "dep_income_tax",
@@ -440,23 +455,23 @@ def get_columns():
 			"width": 120
 		},
 		{
-                        "fieldname": "asset_status",
-                        "label": _("Asset Status"),
-                        "fieldtype": "data",
-                        "width": 120
-                },
+			"fieldname": "asset_status",
+			"label": _("Asset Status"),
+			"fieldtype": "data",
+			"width": 120
+		},
 		{
-                        "fieldname": "residual_value",
-                        "label": _("Residual Value"),
-                        "fieldtype": "Currency",
-                        "width": 120
-                },
+			"fieldname": "residual_value",
+			"label": _("Residual Value"),
+			"fieldtype": "Currency",
+			"width": 120
+		},
 		{
-                        "fieldname": "status",
-                        "label": _("Status"),
-                        "fieldtype": "data",
-                        "width": 120
-                },
+			"fieldname": "status",
+			"label": _("Status"),
+			"fieldtype": "data",
+			"width": 120
+		}
 
 	]
 
