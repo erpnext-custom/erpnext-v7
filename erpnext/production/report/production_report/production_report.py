@@ -12,7 +12,7 @@ def execute(filters=None):
 
 def get_data(filters):
 	data = []
-	conditions = get_conditions(filters)
+	conditions, machine_name_cond = get_conditions(filters)
 	group_by = get_group_by(filters)
 	order_by = get_order_by(filters)
 	if filters.get("show_aggregate"):
@@ -46,7 +46,7 @@ def get_data(filters):
 				pp.name as ref_doc, ppi.challan_no, pp.posting_date, 
 				(select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = pp.branch)) as region, 
 				pp.branch, pp.location,
-				(select GROUP_CONCAT('<a href="desk#Form/Equipment/',pmd.machine_name,'">',pmd.machine_name,'</a>') from `tabProduction Machine Details` pmd where pp.name = pmd.parent) as machine_name,
+				(select GROUP_CONCAT('<a href="desk#Form/Equipment/',pmd.machine_name,'">',pmd.machine_name,'</a>') from `tabProduction Machine Details` pmd where pp.name = pmd.parent {3}) as machine_name,
 				ppi.item_code, ppi.item_name, ppi.item_group, ppi.item_sub_group, 
 				(select ts.timber_class from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_class, 
 				(select ts.timber_type from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_type, ppi.timber_species, 
@@ -58,7 +58,7 @@ def get_data(filters):
 				left join `tabProduction Material Item` pmi on pp.name = pmi.parent 
 			where 
 				pp.docstatus = 1 {0} {1} {2}
-			""".format(conditions, group_by, order_by)
+			""".format(conditions, group_by, order_by, machine_name_cond)
 				
 		abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
 		total_qty = 0
@@ -90,7 +90,7 @@ def get_order_by(filters):
 
 def get_conditions(filters):
 	if not filters.cost_center:
-		return ""
+		return "", ""
 
 	# all_ccs = get_child_cost_centers(filters.cost_center)
 	# if not all_ccs:
@@ -174,11 +174,11 @@ def get_conditions(filters):
 	
 	if filters.challan_no:
 		condition += " and ppi.challan_no = '{}'".format(filters.challan_no)
-	
+	machine_name_cond = ""
 	if filters.machine_name:
-		condition += " and pmd.machine_name = '{}'".format(filters.machine_name)
+		machine_name_cond += " and pmd.machine_name = '{}'".format(filters.machine_name)
 
-	return condition
+	return condition, machine_name_cond
 
 def get_columns(filters):
 	if filters.get("show_aggregate"):
