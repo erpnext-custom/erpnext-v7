@@ -42,11 +42,11 @@ def get_data(filters):
 
 	else:
 		query = """
-			select 
+			select * from( select
 				pp.name as ref_doc, ppi.challan_no, pp.posting_date, 
 				(select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = pp.branch)) as region, 
 				pp.branch, pp.location,
-				(select GROUP_CONCAT('<a href="desk#Form/Equipment/',pmd.machine_name,'">',pmd.machine_name,'</a>') from `tabProduction Machine Details` pmd where pp.name = pmd.parent {3}) as machine_name,
+				(select GROUP_CONCAT('<a href="desk#Form/Equipment/',pmd.machine_name,'">',pmd.machine_name,'</a>') from `tabProduction Machine Details` pmd where pp.name = pmd.parent) as machine_name,
 				ppi.item_code, ppi.item_name, ppi.item_group, ppi.item_sub_group, 
 				(select ts.timber_class from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_class, 
 				(select ts.timber_type from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_type, ppi.timber_species, 
@@ -57,7 +57,7 @@ def get_data(filters):
 				left join `tabProduction Product Item` ppi on pp.name = ppi.parent
 				left join `tabProduction Material Item` pmi on pp.name = pmi.parent 
 			where 
-				pp.docstatus = 1 {0} {1} {2}
+				pp.docstatus = 1 {0} {1} {2}) data {3}
 			""".format(conditions, group_by, order_by, machine_name_cond)
 				
 		abbr = " - " + str(frappe.db.get_value("Company", filters.company, "abbr"))
@@ -174,9 +174,9 @@ def get_conditions(filters):
 	
 	if filters.challan_no:
 		condition += " and ppi.challan_no = '{}'".format(filters.challan_no)
-	machine_name_cond = ""
+
 	if filters.machine_name:
-		machine_name_cond += " and pmd.machine_name = '{}'".format(filters.machine_name)
+		machine_name_cond += " and data.machine_name = '{}'".format(filters.machine_name)
 
 	return condition, machine_name_cond
 
