@@ -56,7 +56,7 @@ def get_data(filters):
 				`tabProduction` pp
 				left join `tabProduction Product Item` ppi on pp.name = ppi.parent
 				left join `tabProduction Material Item` pmi on pp.name = pmi.parent
-				left join `tabProduction Machine Details` pmd on pp.name = pmd.parent  
+				right join `tabProduction Machine Details` pmd on pp.name = pmd.parent  
 			where 
 				pp.docstatus = 1 {0} {1} {2}
 			""".format(conditions, group_by, order_by)
@@ -77,7 +77,7 @@ def get_data(filters):
 
 def get_group_by(filters):
 	if filters.show_aggregate:
-		group_by = " group by region, pp.branch, ppi.item_sub_group"
+		group_by = " group by region, pp.branch, ppi.item_sub_group	"
 		# group_by = " group by pe.branch, pe.location, pe.item_sub_group"
 	else:
 		# group_by = " "
