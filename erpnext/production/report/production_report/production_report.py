@@ -46,7 +46,7 @@ def get_data(filters):
 				pp.name as ref_doc, ppi.challan_no, pp.posting_date, 
 				(select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = pp.branch)) as region, 
 				pp.branch, pp.location,
-				'<a href="desk#Form/Equipment/',pmd.machine_name,'">',pmd.machine_name,'</a>' as machine_name,
+				GROUP_CONCAT('<a href="desk#Form/Equipment/',pmd.machine_name,'">',distinct pmd.machine_name,'</a>') as machine_name,
 				ppi.item_code, ppi.item_name, ppi.item_group, ppi.item_sub_group, 
 				(select ts.timber_class from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_class, 
 				(select ts.timber_type from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_type, ppi.timber_species, 
