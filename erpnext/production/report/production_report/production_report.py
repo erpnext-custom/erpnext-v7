@@ -46,7 +46,7 @@ def get_data(filters):
 				pp.name as ref_doc, ppi.challan_no, pp.posting_date, 
 				(select cc.parent_cost_center from `tabCost Center` cc where cc.name = (select b.cost_center from `tabBranch` b where b.name = pp.branch)) as region, 
 				pp.branch, pp.location,
-				GROUP_CONCAT('<a href="desk#Form/Equipment/',pmd.machine_name,'">',pmd.machine_name,'</a>') as machine_name,
+				(select GROUP_CONCAT('<a href="desk#Form/Equipment/',pmd.machine_name,'">',pmd.machine_name,'</a>') from `tabProduction Machine Details` pmd where pp.name = pmd.parent) as machine_name,
 				ppi.item_code, ppi.item_name, ppi.item_group, ppi.item_sub_group, 
 				(select ts.timber_class from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_class, 
 				(select ts.timber_type from `tabTimber Species` ts where ts.name = ppi.timber_species) as timber_type, ppi.timber_species, 
@@ -55,8 +55,7 @@ def get_data(filters):
 			from
 				`tabProduction` pp
 				left join `tabProduction Product Item` ppi on pp.name = ppi.parent
-				left join `tabProduction Material Item` pmi on pp.name = pmi.parent
-				left join `tabProduction Machine Details` pmd on pp.name = pmd.parent  
+				left join `tabProduction Material Item` pmi on pp.name = pmi.parent 
 			where 
 				pp.docstatus = 1 {0} {1} {2}
 			""".format(conditions, group_by, order_by)
