@@ -81,7 +81,7 @@ def get_group_by(filters):
 		# group_by = " group by pe.branch, pe.location, pe.item_sub_group"
 	else:
 		# group_by = " "
-		group_by = " group by pp.name, ppi.item_code, ppi.qty "
+		group_by = " group by pp.name, ppi.item_code, ppi.qty"
 
 	return group_by
 
@@ -391,4 +391,12 @@ def get_location_challan(location, from_date, to_date):
 	from_d = fd[2]+"-"+fd[1]+"-"+fd[0]
 	to_d = td[2]+"-"+td[1]+"-"+td[0]
 	return frappe.db.sql(""" select distinct ppi.challan_no as challan_no from `tabProduction` pr, `tabProduction Product Item` ppi, `tabProduction Entry` pe where pr.name = ppi.parent and ppi.challan_no != \'\' and pe.ref_doc = pr.name and pe.docstatus = 1 and date(pe.posting_date) between '{1}' and '{2}' and pe.location = '{0}'""".format(location,from_d,to_d), as_dict=True)
+
+@frappe.whitelist()
+def get_cost_center_based_equipments(cost_center):
+	# branch = frappe.db.get_value("Branch", {"cost_center":cost_center}, "name")
+	# branch = branch.replace(' - NRDCL','')
+	sql = """ select name from `tabEquipment` e where branch in (select name from `tabBranch` where cost_center in (select name from `tabCost Center` where parent_cost_center = '{}')) """.format(cost_center)
+
+	return frappe.db.sql(sql,as_dict=True)
 		
