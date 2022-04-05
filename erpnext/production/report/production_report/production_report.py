@@ -66,6 +66,7 @@ def get_data(filters):
 			a.region = str(a.region).replace(abbr, "")
 			total_qty += flt(a.qty)
 			data.append(a)
+			frappe.errprint(a)
 
 		data.append({
 			"region": frappe.bold("TOTAL"),
@@ -176,7 +177,7 @@ def get_conditions(filters):
 		condition += " and ppi.challan_no = '{}'".format(filters.challan_no)
 	machine_name_cond = ""
 	if filters.machine_name:
-		machine_name_cond += "where data.machine_name = '{}'".format(filters.machine_name)
+		machine_name_cond += """where data.machine_name in ('<a href="desk#Form/Equipment/{0}">{0}</a>')""".format(filters.machine_name)
 
 	return condition, machine_name_cond
 
