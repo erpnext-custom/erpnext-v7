@@ -169,7 +169,7 @@ frappe.query_reports["Stock Ledger Report"] = {
 				// frappe.msgprint(branch)
 				frappe.call({
 					method:"erpnext.selling.report.timber_sales_report.timber_sales_report.get_item_sub_group",
-					args:{"item_group":item_group},
+					args:{"item_group":timber_prod_group},
 					callback: function(r){
 						// console.log(r.message)
 						// frappe.query_report.filters_by_name.warehouse.set_option(r.message)					
@@ -180,7 +180,7 @@ frappe.query_reports["Stock Ledger Report"] = {
 								options[i]= r.message[i].name
 							}
 							console.log(options)
-							frappe.query_reports["Stock Ledger Report"].filters[11].options = options
+							frappe.query_reports["Stock Ledger Report"].filters[10].options = options
 							frappe.query_report.filters_by_name.tp_sub_group.refresh();
 							frappe.query_report.refresh();
 							// **I have set options dynamically to the below select fieldtype but I need to refresh that field to show that new options.**

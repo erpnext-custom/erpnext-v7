@@ -81,8 +81,7 @@ def get_stock_ledger_entries(filters):
                         left join `tabPurchase Receipt` pr on pr.name = sle.voucher_no 
 		where sle.company = '{company}'
 		and sle.posting_date between '{from_date}' and '{to_date}'
-		{sle_conditions} {group_by}
-		order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
+		{sle_conditions} {group_by} order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
 		
 		""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters), company=filters.get("company"), from_date=filters.get("from_date"), to_date=filters.get("to_date"), group_by = get_group_by(filters))
 
