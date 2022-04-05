@@ -12,11 +12,11 @@ def get_data():
                                 "name": "Production Plan",
                                 "description": _("Generate Material Requests (MRP) and Work Orders."),
                         },
-                        {
-                                "type": "doctype",
-                                "name": "Monthly Indent",
-                                "description": _("Monthly Indent."),
-                        },
+                        #{
+                        #        "type": "doctype",
+                        #        "name": "Monthly Indent",
+                        #        "description": _("Monthly Indent."),
+                        #},
                         {
                                 "type": "doctype",
                                 "name": "Work Order",
@@ -25,12 +25,12 @@ def get_data():
                         {
                                 "type": "doctype",
                                 "name": "Stock Entry",
-                        },
-                        {
-                                "type": "doctype",
-                                "name": "Manufacturing Timesheet",
-                                "description": _("Time Sheet for manufacturing."),
-                        },
+                        }
+                        #{
+                        #        "type": "doctype",
+                        #        "name": "Manufacturing Timesheet",
+                        #        "description": _("Time Sheet for manufacturing."),
+                        #},
 
                 ]
         },
@@ -88,11 +88,11 @@ def get_data():
                                 "name": "Manufacturing Settings",
                                 "description": _("Global settings for all manufacturing processes."),
                         },
-                        {
-                                "type": "doctype",
-                                "name": "Job Specification",
-                                "description": _("Job Specification"),
-                        },
+                        #{
+                        #        "type": "doctype",
+                        #        "name": "Job Specification",
+                        #        "description": _("Job Specification"),
+                        #},
                         # {
                         #         "type": "doctype",
                         #         "name": "Product and Labour Hour",
@@ -100,8 +100,8 @@ def get_data():
                         # },
                         {
                                 "type": "doctype",
-                                "name": "Cost Sheet",
-                                "description": _("Cost Sheet"),
+                                "name": "Costing Component",
+                                "description": _("Costing Component"),
                         }
                 ]
         },
@@ -156,13 +156,13 @@ def get_data():
                                 "is_query_report": True,
                                 "name": "Production plan Report",
                                 "doctype": "Production Plan"
-                        },
-                                {
-                                "type": "report",
-                                "is_query_report": True,
-                                "name": "Monthly Indent",
-                                "doctype": "Monthly Indent"
                         }
+                        #{
+                        #        "type": "report",
+                        #        "is_query_report": True,
+                        #        "name": "Monthly Indent",
+                        #        "doctype": "Monthly Indent"
+                        #}
                 # 	{
                 #                "type": "report",
                 #                "is_query_report": True,
