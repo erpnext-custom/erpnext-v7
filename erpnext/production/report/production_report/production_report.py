@@ -56,7 +56,7 @@ def get_data(filters):
 				`tabProduction` pp
 				left join `tabProduction Product Item` ppi on pp.name = ppi.parent
 				left join `tabProduction Material Item` pmi on pp.name = pmi.parent
-				right join `tabProduction Machine Details` pmd on pp.name = pmd.parent  
+				inner join `tabProduction Machine Details` pmd on pp.name = pmd.parent  
 			where 
 				pp.docstatus = 1 {0} {1} {2}
 			""".format(conditions, group_by, order_by)
