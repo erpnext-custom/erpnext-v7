@@ -401,6 +401,7 @@
    "label": "Approver Name", 
    "length": 0, 
    "no_copy": 0, 
+   "options": "", 
    "permlevel": 0, 
    "precision": "", 
    "print_hide": 0, 
@@ -720,8 +721,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-08-03 10:20:57.183518", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2021-12-07 15:48:10.265756", 
+ "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Overtime Application", 
  "name_case": "", 
@@ -941,6 +942,6 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "title_field": "employee_name", 
- "track_changes": 0, 
+ "track_changes": 1, 
  "track_seen": 0
 }

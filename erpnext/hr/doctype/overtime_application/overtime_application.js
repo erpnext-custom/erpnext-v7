@@ -86,15 +86,17 @@ function set_approver(frm) {
 					user_id: frappe.session.user,
 				},
 				callback: function(r) {
+					/* Commented by Thukten 
 					if (r.message.length == 1){ // edited by cety on 12/8/2021
 						console.log(r.message)
 						cur_frm.set_value("approver", r.message[0][0])
 					}
-					// console.log(r.message)
-					// if(r.message.length == 1 && !frm.doc.approver) {
-					// 	frm.set_value("approver", r.message[0][0]);
-					// 	//frm.save();
-					// }
+					Comment End
+					*/
+					if(r.message.length == 1 && !frm.doc.approver) {
+					 	frm.set_value("approver", r.message[0][0]);
+						frm.save();
+					 }
 				}
 			});
 		}
