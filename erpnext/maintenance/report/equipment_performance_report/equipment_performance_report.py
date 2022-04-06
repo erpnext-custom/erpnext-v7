@@ -375,7 +375,7 @@ def get_data(filters):
 		# 	frappe.msgprint(str(travel_claim)+" "+str(e_amount)+" "+str(gross_pay))
 		#benchmark
 		benchmark  = frappe.db.sql("""
-							   select hi.rate_fuel as rat, hi.perf_bench as bn, 
+							   select hi.rate_fuel as rat, hi.perf_bench as bn, hi.cft_rate_bf as cft_rate_bf, hi.cft_rate_co as cft_rate_co 
 							   hi.from_date as fr, hi.to_date as t
 							   from  `tabHire Charge Item` hi, `tabHire Charge Parameter` hp
 							   where hi.parent = hp.name 
@@ -389,9 +389,12 @@ def get_data(filters):
 		bench = []
 		total_hc = 0
 		benchm = 0
+		cft_rate_bf = 0
+		cft_rate_co = 0
 		for a in benchmark:
 			# if frappe.session.user == "Administrator":
 			# 	frappe.msgprint("here")
+
 			from_date,to_date,no_of_months, from_date1, to_date1, ra  = get_date_conditions(filters)
 			ta = ta1= ta2 =  ta3 = ta4 = 0.0
 			if not a.t:
@@ -556,6 +559,8 @@ def get_data(filters):
 			total_idle_time,
 			total_cft,
 			total_m3,
+			cft_rate_bf,
+			cft_rate_co,
 			list(set(rate)),
 			# list(set(bench)),
 			benchm,
@@ -582,6 +587,8 @@ def get_columns(filters):
 			("Total Idle Hours")+":Data:140",
 			("Total Cft")+":Data:140",
 			("Total M3")+":Data:140",
+			("Rate Per Cft(Broadleaf)"+":Data:140"),
+			("Rate Per Cft(Conifer)"+":Data:140"),
 			("HC Rate/Hour") + ":Currency:120",
 			("Utility(Hours/Quarter)") + ":Float:140",
 			# ("Benchmark Amount") + ":Currency:120",
