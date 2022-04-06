@@ -42,6 +42,26 @@ class BankPayment(Document):
         self.check_for_transactions_in_progress()
         self.update_status()
         self.update_transaction_status(cancel=True)
+
+    def validate_timing(self):
+        inter_transaction = frappe.db.sql("""select count(*) as transaction
+                                            from `tabBank Payment` bp, `tabBank Payment Item` bpi 
+                                            where bp.name=bpi.parent 
+                                            and bp.name='{}'
+                                            and bpi.bank_name!='BOBL'""".format(self.name), as_dict=True)
+        if inter_transaction[0].transaction > 0:
+            hms = '%H:%M:%S'
+            now = datetime.now()
+            now_time = now.strftime(hms)
+            now_time = datetime.strptime(now_time, hms)
+            start_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "from_time"))
+            end_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "to_time"))
+            from_time = datetime.strptime(start_time, hms)
+            to_time = datetime.strptime(end_time, hms)
+            if now_time >= from_time and now_time <= to_time:
+                pass
+            else:
+                frappe.throw("<b>Inter Bank Transaction</b> are only allowed between from <b>{}</b> till <b>{} </b>!".format(start_time, end_time), title="Transaction Restricted!")
     
     #added by cety on 9/08/2021 to not allow transaction for more than 10 records.
     def check_one_one_or_bulk_payment(self):
@@ -84,28 +104,6 @@ class BankPayment(Document):
     def update_item_status(self, status):
         for rec in self.items:
             rec.status = status
-
-	#added by cety on 15/09/2021 to not allow transaction after office hour.
-	#Modified by Thukten to restrict timing only for Inter Bank Transaction
-	def validate_timing(self):
-		inter_transaction = frappe.db.sql("""select count(*) as transaction
-											from `tabBank Payment` bp, `tabBank Payment Item` bpi 
-											where bp.name=bpi.parent 
-											and bp.name='{}'
-											and bpi.bank_name!='BOBL'""".format(self.name), as_dict=True)
-		if inter_transaction[0].transaction > 0:
-			hms = '%H:%M:%S'
-			now = datetime.now()
-			now_time = now.strftime(hms)
-			now_time = datetime.strptime(now_time, hms)
-			start_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "from_time"))
-			end_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "to_time"))
-			from_time = datetime.strptime(start_time, hms)
-			to_time = datetime.strptime(end_time, hms)
-			if now_time >= from_time and now_time <= to_time:
-				pass
-			else:
-				frappe.throw("<b>Inter Bank Transaction</b> are only allowed between from <b>{}</b> till <b>{} </b>!".format(start_time, end_time), title="Transaction Restricted!")
 
     def update_ltc_reference(self):
         frappe.db.sql("update `tabLeave Travel Concession` set bank_payment='{}' where name='{}'".format(self.name, self.transaction_no))
