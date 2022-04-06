@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import cint, flt, now, get_bench_path,get_site_path, touch_file, getdate, get_datetime
+from frappe.utils import cint, flt, now, nowtime, get_bench_path,get_site_path, touch_file, getdate, get_datetime
 from frappe.model.document import Document
 from erpnext.integrations.bps import SftpClient
 from erpnext.integrations.bank_api import intra_payment, inter_payment, inr_remittance, fetch_balance
@@ -86,17 +86,14 @@ class BankPayment(Document):
 											and bpi.bank_name!='BOBL'""".format(self.name), as_dict=True)
 		if inter_transaction[0].transaction > 0:
 			hms = '%H:%M:%S'
-			now = datetime.now()
-			now_time = now.strftime(hms)
-			now_time = datetime.strptime(now_time, hms)
-			start_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "from_time"))
-			end_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "to_time"))
-			from_time = datetime.strptime(start_time, hms)
-			to_time = datetime.strptime(end_time, hms)
+			now_time = nowtime()
+			from_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "from_time"))
+			to_time = str(frappe.db.get_value("Bank Payment Settings", "BOBL", "to_time"))
 			if now_time >= from_time and now_time <= to_time:
 				pass
 			else:
 				frappe.throw("<b>Inter Bank Transaction</b> are only allowed between from <b>{}</b> till <b>{} </b>!".format(start_time, end_time), title="Transaction Restricted!")
+
 
 	def get_bank_available_balance(self):
 		''' get paying bank balance '''
