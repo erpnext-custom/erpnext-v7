@@ -392,6 +392,8 @@ def get_data(filters):
 		cft_rate_bf = 0
 		cft_rate_co = 0
 		for a in benchmark:
+			cft_rate_bf = a.cft_rate_bf
+			cft_rate_co = a.cft_rate_co
 			# if frappe.session.user == "Administrator":
 			# 	frappe.msgprint("here")
 
@@ -611,6 +613,8 @@ def get_columns(filters):
 			("Total Idle Hours")+":Data:140",
 			("Total Cft")+":Data:140",
 			("Total M3")+":Data:140",
+			("Rate Per Cft(Broadleaf)"+":Data:140"),
+			("Rate Per Cft(Conifer)"+":Data:140"),
 			("HC Rate/Hour") + ":Currency:120",
 			("Utility(Hours/Half Year)") + ":Float:140",
 			# ("Benchmark Amount") + ":Currency:120",
@@ -633,6 +637,8 @@ def get_columns(filters):
 			("Total Idle Hours")+":Data:140",
 			("Total Cft")+":Data:140",
 			("Total M3")+":Data:140",
+			("Rate Per Cft(Broadleaf)"+":Data:140"),
+			("Rate Per Cft(Conifer)"+":Data:140"),
 			("HC Rate/Hour") + ":Currency:120",
 			("Utility(Hours/Month)") + ":Float:140",
 			# ("Benchmark Amount") + ":Currency:120",
