@@ -661,6 +661,8 @@ def get_columns(filters):
 			("Total Idle Hours")+":Data:140",
 			("Total Cft")+":Data:140",
 			("Total M3")+":Data:140",
+			("Rate Per Cft(Broadleaf)"+":Data:140"),
+			("Rate Per Cft(Conifer)"+":Data:140"),
 			("HC Rate/Hour") + ":Currency:120",
 			("Utility(Hours/Year)") + ":Float:140",
 			# ("Benchmark Amount") + ":Currency:120",
