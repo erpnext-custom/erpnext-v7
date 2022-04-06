@@ -375,7 +375,7 @@ def get_data(filters):
 		# 	frappe.msgprint(str(travel_claim)+" "+str(e_amount)+" "+str(gross_pay))
 		#benchmark
 		benchmark  = frappe.db.sql("""
-							   select hi.rate_fuel as rat, hi.perf_bench as bn, hi.cft_rate_bf as cft_rate_bf, hi.cft_rate_co as cft_rate_co 
+							   select hi.rate_fuel as rat, hi.perf_bench as bn, hi.cft_rate_bf as cft_rate_bf, hi.cft_rate_co as cft_rate_co,
 							   hi.from_date as fr, hi.to_date as t
 							   from  `tabHire Charge Item` hi, `tabHire Charge Parameter` hp
 							   where hi.parent = hp.name 
