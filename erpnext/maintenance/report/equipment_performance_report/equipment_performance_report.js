@@ -84,7 +84,7 @@ frappe.query_reports["Equipment Performance Report"] = {
 		},
 		{
             "fieldname": "not_cdcl",
-            "label": ("Include Own Equipments Only"),
+            "label": ("Own Equipments"),
             "fieldtype": "Check",
             "default": 1
                 },
