@@ -41,6 +41,13 @@ def construct_query(filters=None):
 		WHERE d.name = di.parent and d.name = rr.purchase_invoice 
 		AND d.posting_date BETWEEN '{0}' AND '{1}'
 		AND di.party = '{2}'
+		UNION 
+		SELECT d.posting_date, d.total_invoice_amount as tds_taxable_amount, d.tds_percentage as tds_rate, d.tds_amount, rr.cheque_number, 
+		rr.cheque_date, rr.receipt_number, rr.receipt_date 
+		FROM `tabHire Charge Invoice` AS d, `tabRRCO Receipt Entries` AS rr 
+		WHERE d.name = rr.purchase_invoice 
+		AND d.posting_date BETWEEN '{0}' AND '{1}'
+		AND d.customer = '{2}'
 		""".format(str(filters.from_date), str(filters.to_date),str(filters.vendor_id))
 	
 	return query;

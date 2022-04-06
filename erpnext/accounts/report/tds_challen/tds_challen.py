@@ -56,6 +56,12 @@ def construct_query(filters=None):
 		AND di.party = ss.name 
 		AND di.tds_amount > 0 AND d.posting_date BETWEEN '{0}' AND '{1}'  
 		AND d.tds_percent = '{2}'
+		UNION
+		SELECT s.vendor_tpn_no, s.name, h.name as bill_no, h.posting_date as bill_date, h.total_invoice_amount as tds_taxable_amount, h.tds_percentage, h.tds_amount, h.cost_center  
+		FROM `tabHire Charge Invoice` as h, `tabSupplier` as s 
+		WHERE h.docstatus = 1 and h.customer = s.name AND h.tds_amount > 0 
+		AND h.posting_date BETWEEN '{0}' AND '{1}'
+		AND h.tds_percentage = '{2}'
 		""".format(str(filters.from_date), str(filters.to_date), filters.tds_rate)
 	return query;
 
