@@ -362,7 +362,7 @@ def get_data(filters):
 			# frappe.msgprint("insurance = "+str(flt(ins.insurance))+" reg_amount = "+str(flt(reg.r_amount))+" goods amount = "+str(flt(jc.goods_amount))+" services amount = "+str(flt(jc.services_amount)))
 		total_op_exp += travel_claim + e_amount + gross_pay
 			# frappe.msgprint("expense maintenance and repair = "+str(total_rm_exp))
-		total_rev	= flt(revn.rev)
+		# total_rev	= flt(revn.rev)
 		total_work_time = vl.total_work_time
 		total_idle_time = vl.total_idle_time
 		total_cft = vli.cft
@@ -437,6 +437,8 @@ def get_data(filters):
 				ta2 += flt(a.rat)*flt(a.bn/12)*8
 				bench_date = date_diff(to_date, from_date) + 1
 				total_hc += cal_date*ta2/bench_date
+			if filters.get("not_cdcl")==0:
+				total_rev = flt(total_work_time) * flt(a.rat) * flt(cft_rate_bf)
 
 		
 			# if a.fr <= from_date and a.t >= to_date:
@@ -561,8 +563,8 @@ def get_data(filters):
 				# total_idle_time,
 				total_cft,
 				total_m3,
-				# cft_rate_bf,
-				# cft_rate_co,
+				cft_rate_bf,
+				cft_rate_co,
 				# list(set(rate)),
 				# list(set(bench)),
 				total_work_time,
@@ -570,6 +572,29 @@ def get_data(filters):
 				# flt(total_hc),
 				round(flt(util_percent),2)
 			))
+		else:
+			data.append((	
+				eq.branch,
+				eq.name,
+				eq.equipment_number,
+				eq.equipment_type,
+				eq.equipment_model,
+				total_pol_exp,
+				total_rm_exp,
+				# total_op_exp,
+				total_exp,
+				# flt(total_rev-total_exp),
+				total_cft,
+				total_m3,
+				cft_rate_bf,
+				cft_rate_co,
+				total_work_time,
+				total_idle_time,
+				list(set(rate)),
+				total_rev
+				# list(set(bench)),
+			))
+
 	return tuple(data)
 
 def get_columns(filters):
@@ -586,7 +611,7 @@ def get_columns(filters):
 				# ("Expense (Operator)") + ":Currency:120",
 				("Total Expense") + ":Currency:120",
 				# ("R-E") + ":Currency:120",
-				("Total Idle Hours")+":Data:140",
+				# ("Total Idle Hours")+":Data:140",
 				("Total Cft")+":Data:140",
 				("Total M3")+":Data:140",
 				# ("Rate Per Cft(Broadleaf)"+":Data:140"),
@@ -669,5 +694,99 @@ def get_columns(filters):
 				# ("Benchmark Amount") + ":Currency:120",
 				("Utility %") + ":Data:120"
 			]
+	else:
+		# if filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
+		cols = [
+			("Branch") + ":Data:120",
+			("ID") + ":Link/Equipment:120",
+			("Registration No") + ":Data:120",
+			("Equipment Type") + ":Data:120",
+			("Equipment Model") + ":Data:120",
+			("Expense(POL)") + ":Currency:120",
+			("Expense (Repair and Maintenance)") + ":Currency:180",
+			# ("Expense (Operator)") + ":Currency:120",
+			("Total Expense") + ":Currency:120",
+			# ("R-E") + ":Currency:120",
+			("Total Cft")+":Data:140",
+			("Total M3")+":Data:140",
+			("Rate Per Cft(Broadleaf)"+":Data:140"),
+			("Rate Per Cft(Conifer)"+":Data:140"),
+			("Total Hours Worked")+":Data:140",
+			("Total Idle Hours")+":Data:140",
+			("HC Rate/Hour") + ":Currency:120",
+			("Total Revenue") + ":Currency:120",
+		]
+		# elif filters.get("period") in ("1st Half Year", "2nd Half Year"):
+		# 	cols = [
+		# 		("Branch") + ":Data:120",
+		# 		("ID") + ":Link/Equipment:120",
+		# 		("Registration No") + ":Data:120",
+		# 		("Equipment Type") + ":Data:120",
+		# 		("Equipment Model") + ":Data:120",
+		# 		("Expense(POL)") + ":Currency:120",
+		# 		("Expense (Repair and Maintenance)") + ":Currency:180",
+		# 		# ("Expense (Operator)") + ":Currency:120",
+		# 		("Total Expense") + ":Currency:120",
+		# 		# ("Total Revenue") + ":Currency:120",
+		# 		# ("R-E") + ":Currency:120",
+		# 		# ("Total Idle Hours")+":Data:140",
+		# 		("Total Cft")+":Data:140",
+		# 		("Total M3")+":Data:140",
+		# 		# ("Rate Per Cft(Broadleaf)"+":Data:140"),
+		# 		# ("Rate Per Cft(Conifer)"+":Data:140"),
+		# 		# ("HC Rate/Hour") + ":Currency:120",
+		# 		("Total Hours Worked")+":Data:140",
+		# 		("Utility(Hours/Half Year)") + ":Float:140",
+		# 		# ("Benchmark Amount") + ":Currency:120",
+		# 		("Utility %") + ":Data:120"
+		# 	]
+		# elif filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
+		# 	cols = [
+		# 		("Branch") + ":Data:120",
+		# 		("ID") + ":Link/Equipment:120",
+		# 		("Registration No") + ":Data:120",
+		# 		("Equipment Type") + ":Data:120",
+		# 		("Equipment Model") + ":Data:120",
+		# 		("Expense(POL)") + ":Currency:120",
+		# 		("Expense (Repair and Maintenance)") + ":Currency:180",
+		# 		# ("Expense (Operator)") + ":Currency:120",
+		# 		("Total Expense") + ":Currency:120",
+		# 		# ("Total Revenue") + ":Currency:120",
+		# 		# ("R-E") + ":Currency:120",
+		# 		# ("Total Idle Hours")+":Data:140",
+		# 		("Total Cft")+":Data:140",
+		# 		("Total M3")+":Data:140",
+		# 		# ("Rate Per Cft(Broadleaf)"+":Data:140"),
+		# 		# ("Rate Per Cft(Conifer)"+":Data:140"),
+		# 		# ("HC Rate/Hour") + ":Currency:120",
+		# 		("Total Hours Worked")+":Data:140",
+		# 		("Utility(Hours/Month)") + ":Float:140",
+		# 		# ("Benchmark Amount") + ":Currency:120",
+		# 		("Utility %") + ":Data:120"
+		# 	]
+		# else:
+		# 	cols = [
+		# 		("Branch") + ":Data:120",
+		# 		("ID") + ":Link/Equipment:120",
+		# 		("Registration No") + ":Data:120",
+		# 		("Equipment Type") + ":Data:120",
+		# 		("Equipment Model") + ":Data:120",
+		# 		("Expense(POL)") + ":Currency:120",
+		# 		("Expense (Repair and Maintenance)") + ":Currency:180",
+		# 		# ("Expense (Operator)") + ":Currency:120",
+		# 		("Total Expense") + ":Currency:120",
+		# 		# ("Total Revenue") + ":Currency:120",
+		# 		# ("R-E") + ":Currency:120",
+		# 		# ("Total Idle Hours")+":Data:140",
+		# 		("Total Cft")+":Data:140",
+		# 		("Total M3")+":Data:140",
+		# 		# ("Rate Per Cft(Broadleaf)"+":Data:140"),
+		# 		# ("Rate Per Cft(Conifer)"+":Data:140"),
+		# 		# ("HC Rate/Hour") + ":Currency:120",
+		# 		("Total Hours Worked")+":Data:140",
+		# 		("Utility(Hours/Year)") + ":Float:140",
+		# 		# ("Benchmark Amount") + ":Currency:120",
+		# 		("Utility %") + ":Data:120"
+		# 	]
 
 	return cols
