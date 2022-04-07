@@ -99,10 +99,9 @@ cur_frm.add_fetch("branch", "cost_center", "cost_center")
 frappe.ui.form.on("Hire Charge Invoice", "refresh", function(frm) {
     cur_frm.set_query("ehf_name", function() {
         return {
+			"method": "erpnext.controllers.queries.get_hiring_form",
             "filters": {
-                "payment_completed": 0,
-		"docstatus": 1,
-		"branch": frm.doc.branch
+				"branch": frm.doc.branch
             }
         };
     });
