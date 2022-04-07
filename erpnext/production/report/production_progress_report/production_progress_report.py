@@ -125,15 +125,15 @@ def get_data(filters):
 			percentage = rounded(100 * (total/target),2) if target != 0 else 0
 			# frappe.throw(str(percentage))
 			if filters.branch:
-				if percentage <= rounded(100,2):
-					row.insert(5, percentage)
-				else:
-					row.insert(5, rounded(100,2))
+				# if percentage <= rounded(100,2):
+				row.insert(5, percentage)
+				# else:
+				# 	row.insert(5, rounded(100,2))
 			else:
-				if percentage <= rounded(100,2):
-					row.insert(5, percentage)
-				else:
-					row.insert(5,rounded(100,2))
+				# if percentage <= rounded(100,2):
+				row.insert(5, percentage)
+				# else:
+				# 	row.insert(5,rounded(100,2))
 
 			if target > 1:
 				overall_target +=  target
@@ -212,19 +212,19 @@ def get_data(filters):
 					# if target == 0:
 					# 	target = 1
 					achieved_percent = rounded(100 * total/target, 2) if target != 0 else 0
-					if achieved_percent > rounded(100,2):
-						row.insert(5, rounded(100,2))
-					else:
-						row.insert(5, achieved_percent)
+					# if achieved_percent > rounded(100,2):
+					# 	row.insert(5, rounded(100,2))
+					# else:
+					row.insert(5, achieved_percent)
 				else:
 					row.insert(4, rounded(total, 2))
 					# if target == 0:
 					# 	target = 1
 					achieved_percent = rounded(100 * total/target, 2) if target != 0 else 0
-					if achieved_percent > rounded(100,2):
-						row.insert(5, rounded(100,2))
-					else:
-						row.insert(5, achieved_percent)		
+					# if achieved_percent > rounded(100,2):
+					# 	row.insert(5, rounded(100,2))
+					# else:
+					row.insert(5, achieved_percent)		
 				rp_from_date = "-" + fdate_split[1] + "-" + fdate_split[2]
 				rp_to_date = "-" + tdate_split[1] + "-" + tdate_split[2]
 				month = frappe.db.get_value("Report Period", {'from_date':rp_from_date, 'to_date':rp_to_date}, 'name')
@@ -242,8 +242,8 @@ def get_data(filters):
 				data.append(row)
 	if overall_target > 0:
 		overall_achieved_percent = rounded((overall_achieved/overall_target)*100, 2)
-		if overall_achieved_percent > flt(100):
-			overall_achieved_percent = flt(100)
+		# if overall_achieved_percent > flt(100):
+		# 	overall_achieved_percent = flt(100)
 	elif overall_target == 0 and overall_achieved > 0:
 		overall_achieved_percent = rounded(100,2)
 	else:
