@@ -151,7 +151,7 @@ def get_propotional_target(from_date, to_date, q1, q2, q3, q4):
 		else:
 			frappe.throw("INVALID DATA RECEIVED")
 	if frappe.session.user == "Administrator":
-		frappe.msgprint(str(rounded(target, 2)))
+		frappe.msgprint(str(rounded(target, 2))+" "+str(rounded(q1, 2))+" "+from_date+" "+to_date)
 	return rounded(target, 2)
 
 
