@@ -69,17 +69,17 @@ def get_data():
                         # },
                 ]
         },
-        {
-                "label": _("Tools"),
-                "icon": "fa fa-wrench",
-                "items": [
-                        {
-                                "type": "doctype",
-                                "name": "BOM Update Tool",
-                                "description": _("Replace BOM and update latest price in all BOMs"),
-                        },
-                ]
-        },
+        #{
+        #        "label": _("Tools"),
+        #        "icon": "fa fa-wrench",
+        #        "items": [
+        #                {
+        #                        "type": "doctype",
+        #                        "name": "BOM Update Tool",
+        #                        "description": _("Replace BOM and update latest price in all BOMs"),
+        #                },
+        #        ]
+        #},
         {
                 "label": _("Setup"),
                 "items": [

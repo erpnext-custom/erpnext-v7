@@ -507,8 +507,8 @@ class BOM(WebsiteGenerator):
 			total_rm_cost += d.amount
 			base_total_rm_cost += d.base_amount
 
-		self.raw_material_cost = total_rm_cost
-		self.base_raw_material_cost = base_total_rm_cost
+		self.raw_material_cost = round(total_rm_cost)
+		self.base_raw_material_cost = round(base_total_rm_cost)
 
 	def calculate_other_cost(self):
 		self.validate_duplicate_admin_cost()
@@ -529,16 +529,16 @@ class BOM(WebsiteGenerator):
 		self.other_overhead_percent = manufacturing_settings.other_overhead
 		self.sales_margin_percent = manufacturing_settings.sales_margin
 
-		self.direct_labor_cost = flt(direct_labor_cost)	
-		self.manufacturing_overhead = flt(manufacturing_overhead)
-		self.manufacturing_cost = self.raw_material_cost + self.direct_labor_cost + self.manufacturing_overhead
-		self.other_overhead = flt(manufacturing_settings.other_overhead) * 0.01 * flt(self.manufacturing_cost)
-		self.cost_of_production = flt(self.manufacturing_cost) + flt(self.other_overhead)
-		self.selling_and_distribution_overhead = flt(self.manufacturing_cost) * 0.01 * flt(manufacturing_settings.sd_overhead)
-		self.cost_for_sell = flt(self.cost_of_production) + flt(self.selling_and_distribution_overhead)
-		self.total_cost = self.cost_for_sell - flt(self.scrap_material_cost) + self.operating_cost
-		self.sales_margin = flt(manufacturing_settings.sales_margin)  * 0.01 * flt(self.cost_for_sell)
-		self.selling_price = self.total_cost + self.sales_margin
+		self.direct_labor_cost = round(flt(direct_labor_cost))	
+		self.manufacturing_overhead = round(flt(manufacturing_overhead))
+		self.manufacturing_cost = round(self.raw_material_cost + self.direct_labor_cost + self.manufacturing_overhead)
+		self.other_overhead = round(flt(manufacturing_settings.other_overhead) * 0.01 * flt(self.manufacturing_cost))
+		self.cost_of_production = round(flt(self.manufacturing_cost) + flt(self.other_overhead))
+		self.selling_and_distribution_overhead = round(flt(self.manufacturing_cost) * 0.01 * flt(manufacturing_settings.sd_overhead))
+		self.cost_for_sell = round(flt(self.cost_of_production) + flt(self.selling_and_distribution_overhead))
+		self.total_cost = round(self.cost_for_sell - flt(self.scrap_material_cost) + self.operating_cost)
+		self.sales_margin = round(flt(manufacturing_settings.sales_margin)  * 0.01 * flt(self.cost_for_sell))
+		self.selling_price = round(self.total_cost + self.sales_margin)
 	
 	def validate_duplicate_admin_cost(self):
                 total = 0.0
