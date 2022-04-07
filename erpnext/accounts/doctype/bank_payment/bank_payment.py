@@ -551,7 +551,7 @@ class BankPayment(Document):
         if self.transaction_no:
             cond = 'AND pe.name = "{}"'.format(self.transaction_no)
         elif not self.transaction_no and self.from_date and self.to_date:
-            cond = 'AND pe.posting_date BETWEEN "{}" AND "{}" AND pe.branch="{}"'.format(str(self.from_date), str(self.to_date), str(self.branch))
+            cond = 'AND pe.posting_date BETWEEN "{}" AND "{}"'.format(str(self.from_date), str(self.to_date))
     
         return frappe.db.sql("""SELECT "Payment Entry" transaction_type, pe.name transaction_id, 
                         pe.name transaction_reference, pe.posting_date transaction_date, 
