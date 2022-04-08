@@ -22,6 +22,7 @@ def update_staff_welfare_ss():
 			ssd.db_set("institution_name","NRDCL")
 			ssd.db_set("reference_type","Staff Welfare Loan")
 			print(str(count)+": "+str(a.employee)+": "+str(a.parent))
+			count += 1
 
 def submit_prd_20220211(debug=1):
 	li = frappe.db.sql("""select 'Production' as doctype, name as docname
