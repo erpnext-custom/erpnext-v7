@@ -18,7 +18,7 @@ def update_staff_welfare_ss():
 	count = 1
 	if sd:
 		for a in sd:
-			ssd = frappe.get_doc("Salary Detail")
+			ssd = frappe.get_doc("Salary Detail", a.name)
 			ssd.db_set("institution_name","NRDCL")
 			ssd.db_set("reference_type","Staff Welfare Loan")
 			print(str(count)+": "+str(a.employee)+": "+str(a.parent))
