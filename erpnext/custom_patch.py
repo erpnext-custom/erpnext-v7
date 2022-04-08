@@ -12,12 +12,16 @@ import csv
 
 def update_staff_welfare_ss():
 	sd = frappe.db.sql("""
-		select a.name, a.parent from `tabSalary Detail` a, `tabSalary Slip` b where a.parent = b.name and a.salary_component = 'Staff Welfare Loan'
+		select a.name, a.parent, b.employee from `tabSalary Detail` a, `tabSalary Slip` b where a.parent = b.name and a.salary_component = 'Staff Welfare Loan'
 		and a.reference_type is NULL and b.docstatus = 1
 	""", as_dict=1)
+	count = 1
 	if sd:
 		for a in sd:
-			print(str(a))
+			ssd = frappe.get_doc("Salary Detail")
+			ssd.db_set("institution_name","NRDCL")
+			ssd.db_set("reference_type","Staff Welfare Loan")
+			print(str(count)+": "+str(a.employee)+": "+str(a.parent))
 
 def submit_prd_20220211(debug=1):
 	li = frappe.db.sql("""select 'Production' as doctype, name as docname
