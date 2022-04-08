@@ -22,4 +22,7 @@ class RentalBill(Document):
 		self.name = make_autoname(bill_code)
 	
 	def on_cancel(self):
+		account_frozen_date = frappe.db.get_single_value("Accounts Settings", "acc_frozen_upto")
+		if getdate(self.posting_date) < getdate(account_frozen_date):
+			frappe.throw("Not permitted to Cancel this Document.")
 		frappe.db.sql("delete from `tabGL Entry` where voucher_no = '{}'".format(self.name))
