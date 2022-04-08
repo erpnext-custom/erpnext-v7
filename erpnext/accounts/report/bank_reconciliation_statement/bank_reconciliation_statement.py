@@ -29,8 +29,8 @@ def execute(filters=None):
 
 	bank_bal = flt(balance_as_per_system) - flt(total_debit) + flt(total_credit) \
 		+ amounts_not_reflected_in_system
-	if frappe.session.user == "Administrator":
-		frappe.msgprint("Bank Balance:\nBalance as per system="+str(balance_as_per_system)+"\nTotal Debit="+str(total_debit)+"\nTotal Credit="+str(total_credit)+"\nAmounts not reflected in System="+str(amounts_not_reflected_in_system)+"\nBalance Cash Book:\nBalance from GLE="+str(balance_as_per_system))
+	# if frappe.session.user == "Administrator":
+	# 	frappe.msgprint("Bank Balance:\nBalance as per system="+str(balance_as_per_system)+"\nTotal Debit="+str(total_debit)+"\nTotal Credit="+str(total_credit)+"\nAmounts not reflected in System="+str(amounts_not_reflected_in_system)+"\nBalance Cash Book:\nBalance from GLE="+str(balance_as_per_system))
 
 	data += [
 		get_balance_row(_("Balance as per Cash Book"), balance_as_per_system, account_currency),
@@ -278,14 +278,11 @@ def get_amounts_not_reflected_in_system(filters):
 
 	pe_amount = flt(pe_amount[0][0]) if pe_amount else 0.0
 
-	pe_t = frappe.db.sql("""
-		select name
-		from `tabPayment Entry`
-		where (paid_from=%(account)s or paid_to=%(account)s) and docstatus=1 
-		and posting_date > %(report_date)s and clearance_date <= %(report_date)s""", filters)
-	if frappe.session.user == "Administrator":
-		frappe.msgprint(str(pe_t))
-		frappe.msgprint(str(je_amount)+" "+str(pe_amount))
+	# pe_t = frappe.db.sql("""
+	# 	select name
+	# 	from `tabPayment Entry`
+	# 	where (paid_from=%(account)s or paid_to=%(account)s) and docstatus=1 
+	# 	and posting_date > %(report_date)s and clearance_date <= %(report_date)s""", filters)
 	
 	return je_amount + pe_amount
 
