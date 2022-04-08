@@ -277,6 +277,9 @@ def get_amounts_not_reflected_in_system(filters):
 		and posting_date > %(report_date)s and clearance_date <= %(report_date)s""", filters)
 
 	pe_amount = flt(pe_amount[0][0]) if pe_amount else 0.0
+
+	if frappe.session.user == "Administrator":
+		frappe.msgprint(str(je_amount)+" "+str(pe_amount))
 	
 	return je_amount + pe_amount
 
