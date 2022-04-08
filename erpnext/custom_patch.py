@@ -13,7 +13,7 @@ import csv
 def update_staff_welfare_ss():
 	sd = frappe.db.sql("""
 		select a.name, a.parent from `tabSalary Detail` a, `tabSalary Slip` b where a.parent = b.name and a.salary_component = 'Staff Welfare Loan'
-		and a.reference_type is NULL
+		and a.reference_type is NULL and b.docstatus = 1
 	""", as_dict=1)
 	if sd:
 		for a in sd:
