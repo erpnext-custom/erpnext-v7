@@ -68,6 +68,18 @@ class TenantInformation(Document):
 		if not self.is_nhdcl_employee:
 			self.nhdcl_employee = ''
 		
+	def on_update_after_submit(self):
+		if self.status == "Under Maintenance":
+			if not self.m_start_date or not self.m_end_date:
+				frappe.throw("Both Maintenance Start Date and Maintenance End Date required.")
+
+			obj = self.append("under_maintenance_details", {
+					"start_date": self.m_start_date,
+					"end_date": self.m_end_date
+				})
+
+			obj.save()
+	
 	def before_rename(self, old, new, merge=False):
 		pass
 
@@ -213,7 +225,6 @@ class TenantInformation(Document):
 			cus.cost_center = "Real Estate Management - NHDCL"
 			cus.branch = self.branch
 			cus.save()
-		
 
 @frappe.whitelist()
 def get_distinct_structure_no():
