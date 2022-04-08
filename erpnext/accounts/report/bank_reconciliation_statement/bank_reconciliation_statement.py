@@ -29,6 +29,8 @@ def execute(filters=None):
 
 	bank_bal = flt(balance_as_per_system) - flt(total_debit) + flt(total_credit) \
 		+ amounts_not_reflected_in_system
+	if frappe.session.user == "Administrator":
+		frappe.msgprint("Bank Balance:\nBalance as per system="+str(balance_as_per_system)+"\nTotal Debit="+str(total_debit)+"\nTotal Credit="+str(total_credit)+"\nAmounts not reflected in System="+str(amounts_not_reflected_in_system)+"\nBalance Cash Book:\nBalance from GLE="+str(balance_as_per_system))
 
 	data += [
 		get_balance_row(_("Balance as per Cash Book"), balance_as_per_system, account_currency),
