@@ -18,6 +18,8 @@ class RentalPayment(AccountsController):
 		self.generate_penalty()
 		self.calculate_discount()
 		self.calculate_totals()
+		if self.is_nhdcl_employee:
+			self.bank_account = ''
 	
 	def on_submit(self):
 		self.update_rental_official()

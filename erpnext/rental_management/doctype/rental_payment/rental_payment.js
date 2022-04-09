@@ -94,6 +94,13 @@ frappe.ui.form.on('Rental Payment', {
 			frm.set_value("rent_write_off_account", "");
 			cur_frm.refresh_field("rent_write_off_account");
 		}
+	},
+	"is_nhdcl_employee": function(frm){
+		if (frm.doc.is_nhdcl_employee == 1){
+			frm.set_value("bank_account", "");
+		} else {
+			frm.set_value("debit_account", "");
+		}
 	}
 });
 
