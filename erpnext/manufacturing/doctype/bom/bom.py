@@ -192,6 +192,7 @@ class BOM(WebsiteGenerator):
 
 		if arg.get('scrap_items'):
 			arg['warehouse'] = self.from_warehouse
+			# frappe.msgprint(str(arg['warehouse']))
 			rate = self.get_valuation_rate(arg)
 		elif arg:
 			if arg.get('bom_no') and self.set_rate_of_sub_assembly_item_based_on_bom:
@@ -288,7 +289,9 @@ class BOM(WebsiteGenerator):
 
 	def get_valuation_rate(self, args):
 		""" Get weighted average of valuation rate from all warehouses """
-		
+		if not args.get('scrap_items'):
+			args['warehouse'] = self.from_warehouse
+
 		total_qty, total_value, valuation_rate = 0.0, 0.0, 0.0
 		for d in frappe.db.sql("""select actual_qty, stock_value from `tabBin`
 			where item_code='{0}' and warehouse= "{1}" """.format(args['item_code'], args['warehouse']), as_dict=1):
