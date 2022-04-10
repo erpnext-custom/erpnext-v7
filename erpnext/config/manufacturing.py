@@ -7,11 +7,11 @@ def get_data():
                 "label": _("Production"),
                 "icon": "fa fa-star",
                 "items": [
-                        {
-                                "type": "doctype",
-                                "name": "Production Plan",
-                                "description": _("Generate Material Requests (MRP) and Work Orders."),
-                        },
+                        # {
+                        #         "type": "doctype",
+                        #         "name": "Production Plan",
+                        #         "description": _("Generate Material Requests (MRP) and Work Orders."),
+                        # },
                         #{
                         #        "type": "doctype",
                         #        "name": "Monthly Indent",
