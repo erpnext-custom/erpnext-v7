@@ -385,12 +385,12 @@ def bom(doctype, txt, searchfield, start, page_len, filters):
 		from tabBOM
 		where tabBOM.docstatus=1
 			and tabBOM.is_active=1
-			and tabBOM.`{key}` like {txt}
+			and tabBOM.`{key}` like '{txt}'
 			{fcond} {mcond}
 		order by
-			if(locate({txta}, name), locate({txta}, name), 99999),
+			if(locate('{txta}', name), locate('{txta}', name), 99999),
 			idx desc, name
-		limit {start}, {page_len} """.format(
+		limit '{start}', '{page_len}' """.format(
 			fcond=get_filters_cond(doctype, filters, conditions),
 			mcond=get_match_cond(doctype),
 			key=frappe.db.escape(searchfield),
