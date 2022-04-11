@@ -264,6 +264,19 @@ def filter_lot_list(doctype, txt, searchfield, start, page_len, filters):
 			})
 
 @frappe.whitelist()
+def get_hiring_form(doctype, txt, searchfield, start, page_len, filters):
+	if not filters.get("branch"):
+		frappe.throw("Select Branch First.")
+	return frappe.db.sql("""select name, request_date, branch from `tabEquipment Hiring Form`
+							where branch = '{0}' 
+							and docstatus = 1 
+							and payment_completed = 0
+							and private != "Own Company"
+					""".format(filters.get("branch")), {
+					'txt': "%%%s%%" % frappe.db.escape(txt)
+			})
+
+@frappe.whitelist()
 def filter_lots(doctype, txt, searchfield, start, page_len, filters):
 	if not filters.get("branch") and not filters.get("item"):
 		frappe.throw("Select Branch and Item First")
@@ -368,7 +381,24 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 
 def bom(doctype, txt, searchfield, start, page_len, filters):
 	conditions = []
-
+	query = """select tabBOM.name, tabBOM.item
+		from tabBOM
+		where tabBOM.docstatus=1
+			and tabBOM.is_active=1
+			and tabBOM.`{key}` like %(txt)s
+			{fcond} {mcond}
+		order by
+			if(locate({txta}, name), locate({txta}, name), 99999),
+			idx desc, name
+		limit {start}, {page_len} """.format(
+			fcond=get_filters_cond(doctype, filters, conditions),
+			mcond=get_match_cond(doctype),
+			key=frappe.db.escape(searchfield),
+			txt= "%%%s%%" % frappe.db.escape(txt),
+			txta= txt.replace("%", ""),
+			start= start,
+			page_len= page_len)
+	frappe.mspgrint(query)
 	return frappe.db.sql("""select tabBOM.name, tabBOM.item
 		from tabBOM
 		where tabBOM.docstatus=1
