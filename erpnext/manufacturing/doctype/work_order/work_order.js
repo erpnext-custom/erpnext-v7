@@ -609,8 +609,8 @@ erpnext.work_order = {
 				callback: function(r) {
 					console.log("Message: "+r.message)
 					frm.reload_doc()
-					//var doclist = frappe.model.sync(r.message);
-					//frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
+					var doclist = frappe.model.sync(r.message);
+					frappe.set_route("Form", doclist[0].doctype, doclist[0].name);
 				}
 			});
 		}, __("Select Quantity"), __("Make"));

@@ -5,7 +5,7 @@ data = {
 		'fieldname': 'work_order',
 		'transactions': [
 			{
-				'items': ['Stock Entry', 'Manufacturing Job Card', 'Material Request']
+				'items': ['Stock Entry']
 			}
 		]
 	}
