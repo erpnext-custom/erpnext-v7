@@ -385,7 +385,7 @@ def bom(doctype, txt, searchfield, start, page_len, filters):
 		from tabBOM
 		where tabBOM.docstatus=1
 			and tabBOM.is_active=1
-			and tabBOM.`{key}` like %(txt)s
+			and tabBOM.`{key}` like {txt}
 			{fcond} {mcond}
 		order by
 			if(locate({txta}, name), locate({txta}, name), 99999),
