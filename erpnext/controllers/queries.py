@@ -398,7 +398,7 @@ def bom(doctype, txt, searchfield, start, page_len, filters):
 			txta= txt.replace("%", ""),
 			start= start,
 			page_len= page_len)
-	frappe.msgprint(query)
+	# frappe.msgprint(query)
 	return frappe.db.sql("""select tabBOM.name, tabBOM.item
 		from tabBOM
 		where tabBOM.docstatus=1
