@@ -274,7 +274,7 @@ function enable_disable(frm){
 
 			frm.set_df_property("items", "read_only", 1);			
 			frm.disable_save();
-		}
+		// }
 	}
 	else if(frm.doc.workflow_state == 'Waiting Recoupment'){
 		if(!in_list(user_roles, "Accounts User")){
