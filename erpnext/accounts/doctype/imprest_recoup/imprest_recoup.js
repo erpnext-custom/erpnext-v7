@@ -171,11 +171,11 @@ frappe.ui.form.on('Imprest Recoup', {
 	},
 	final_settlement: function(frm){
 		enable_disable(frm);
-		if(final_settlement == 1){
-			cur_frm.set_value("revenue_bank_account",null);
-			cur_frm.set_value("pay_to_recd_from",null);
-			cur_frm.refresh_fields();
-		}
+		// if(final_settlement == 1){
+		// 	cur_frm.set_value("revenue_bank_account",null);
+		// 	cur_frm.set_value("pay_to_recd_from",null);
+		// 	cur_frm.refresh_fields();
+		// }
 	},
 	settlement_account: function(frm){
 		enable_disable(frm);
@@ -259,8 +259,8 @@ cur_frm.cscript.custom_before_submit = function(frm){
 */
 
 function enable_disable(frm){
-	// var toggle_fields = ["final_settlement","settlement_account","party_type","party","revenue_bank_account","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
-	var toggle_fields = ["settlement_account","party_type","party","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
+	var toggle_fields = ["final_settlement","settlement_account","party_type","party","revenue_bank_account","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
+	// var toggle_fields = ["final_settlement","settlement_account","party_type","party","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
 	var other_fields  = ["company","title","branch","imprest_type","remarks","notes"];
 	
 	toggle_fields.forEach(function(field_name){
