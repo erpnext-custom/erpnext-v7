@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import getdate, cstr, flt, fmt_money, formatdate, nowdate
+from frappe.utils import getdate, cstr, cint, flt, fmt_money, formatdate, nowdate
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.custom_utils import generate_receipt_no, check_future_date, get_branch_cc
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
