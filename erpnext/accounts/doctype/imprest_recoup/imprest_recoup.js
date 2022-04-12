@@ -184,6 +184,10 @@ frappe.ui.form.on('Imprest Recoup', {
 			cur_frm.set_value("pay_to_recd_from",null);
 			cur_frm.refresh_fields();
 		}
+		else{
+			cur_frm.set_value("settlement_account",null);
+			cur_frm.refresh_fields();
+		}
 	},
 	settlement_account: function(frm){
 		enable_disable(frm);
