@@ -277,12 +277,9 @@ function enable_disable(frm){
 			frm.disable_save();
 		}
 		else{
-			other_fields.forEach(function(field_name){
+			toggle_fields.forEach(function(field_name){
 				frm.set_df_property(field_name,"read_only",0);
 			});
-
-			frm.set_df_property("items", "read_only", 0);			
-			frm.enable_save();
 		}
 	}
 	else if(frm.doc.workflow_state == 'Waiting Recoupment'){
