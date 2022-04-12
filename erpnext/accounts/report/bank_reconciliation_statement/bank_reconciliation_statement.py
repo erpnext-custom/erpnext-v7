@@ -181,11 +181,11 @@ def get_entries(filters):
 			"Imprest Recoup" as payment_document, name as payment_entry,
 			cheque_no as reference_no, cheque_date as ref_date,
 			purchase_amount as credit, 0 as debit,
-			posting_date, branch as against_account, clearance_date, 'BTN' as account_currency
+			cheque_date as posting_date, branch as against_account, clearance_date, 'BTN' as account_currency
 		from `tabImprest Recoup`
 		where revenue_bank_account = %(account)s
 		and docstatus = 1
-		and posting_date <= %(report_date)s 
+		and cheque_date <= %(report_date)s 
 		and ifnull(clearance_date, '4000-01-01') > %(report_date)s
 	""", filters, as_dict=1)
 
