@@ -197,7 +197,7 @@ def get_data(filters=None):
 				END as uom, sum(soi.amount),
 				sum(soi.amount) - so.discount_or_cost_amount + so.additional_cost - so.challan_cost
 			"""
-			group_by = " group by so.customer"
+			group_by = " group by so.name"
 			order_by = "order by so.transaction_date"
 
 		else:
@@ -222,7 +222,7 @@ def get_data(filters=None):
 				so.discount_or_cost_amount, so.additional_cost,
 				sum(soi.amount) - so.discount_or_cost_amount + so.additional_cost - so.challan_cost, so.challan_cost
 			"""
-			group_by = "group by so.name"
+			group_by = "group by soi.item_code"
 			order_by = "order by so.transaction_date"
 
 		
@@ -307,7 +307,7 @@ def get_data(filters=None):
 					dn.transportation_rate, dn.total_distance, dn.transportation_charges,
 					dn.vehicle, dn.drivers_name, dn.contact_no
 				"""
-			group_by = "group by dn.name"
+			group_by = "group by dni.item_code"
 			order_by = "order by dn.posting_date"
 		
 		query = """
