@@ -370,6 +370,21 @@ class MechanicalPayment(AccountsController):
 
 		return data
 
+@frappe.whitelist()
+def get_tds_account(percent):
+	if percent:
+		if cint(percent) == 2:
+			field = "tds_2_account"
+		elif cint(percent) == 3:
+			field = "tds_3_account"
+		elif cint(percent) == 5:
+			field = "tds_5_account"
+		elif cint(percent) == 10:
+			field = "tds_10_account"
+		else:
+			frappe.throw(
+				"Set TDS Accounts in Accounts Settings and try again")
+		return frappe.db.get_single_value("Accounts Settings", field)
 
 
 

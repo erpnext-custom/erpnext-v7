@@ -45,7 +45,15 @@ frappe.ui.form.on('Mechanical Payment', {
 		calculate_totals(frm)
 		frm.toggle_reqd("tds_account", frm.doc.tds_amount)
 	},
-
+	"tds_rate": function(frm) {
+		set_tds_account(frm);
+		calculate_totals(frm);
+		if(frm.doc.tds_rate < 1 || frm.doc.tds_rate == ""){
+			cur_frm.set_value("tds_account", "");
+			cur_frm.set_value("tds_amount", 0.00);
+		}
+		cur_frm.set_df_property("tds_account", "reqd", (frm.doc.tds_rate > 0)? 1:0);
+	},
 	get_series: function(frm) {
 		return frappe.call({
 			method: "get_series",
@@ -127,6 +135,20 @@ frappe.ui.form.on('Mechanical Payment', {
         },
 });
 
+function set_tds_account(frm) {
+	frappe.call({
+		method: "erpnext.accounts.doctype.mechanical_payment.mechanical_payment.get_tds_account",
+		args: {
+			percent: frm.doc.tds_rate
+		},
+		callback: function(r) {
+			if(r.message) {
+				frm.set_value("tds_account", r.message);
+				cur_frm.refresh_field("tds_account");
+			}
+		}
+	})
+}
 
 function get_delivery_notes(frm){
         if (frm.doc.transporter || frm.doc.vehicle){
@@ -186,6 +208,15 @@ cur_frm.fields_dict['items'].grid.get_field('reference_name').get_query = functi
 }
 
 function calculate_totals(frm) {
+		if(frm.doc.tds_rate > 0){
+			if (in_list(["Job Card"], frm.doc.payment_for)) {
+				frm.set_value("tds_amount", parseFloat(frm.doc.tds_rate) * parseFloat(frm.doc.payable_amount) / 100 );
+			}else if(in_list(["Transporter Payment", "Maintenance Payment"], frm.doc.payment_for)){
+				frm.set_value("tds_amount", parseFloat(frm.doc.tds_rate) * parseFloat(frm.doc.total_amount) / 100 );
+			}
+		}else{
+			frm.set_value("tds_amount", 0.00);
+		}
         if(frm.doc.payment_for == "Transporter Payment"){
                 var net_amount = frm.doc.total_amount - (frm.doc.tds_amount + frm.doc.other_deduction);
                 frm.set_value("net_amount", net_amount);
