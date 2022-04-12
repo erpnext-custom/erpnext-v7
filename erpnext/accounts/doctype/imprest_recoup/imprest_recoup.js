@@ -179,7 +179,7 @@ frappe.ui.form.on('Imprest Recoup', {
 	},
 	final_settlement: function(frm){
 		enable_disable(frm);
-		if(final_settlement == 1){
+		if(frm.doc.final_settlement == 1){
 			cur_frm.set_value("revenue_bank_account",null);
 			cur_frm.set_value("pay_to_recd_from",null);
 			cur_frm.refresh_fields();
