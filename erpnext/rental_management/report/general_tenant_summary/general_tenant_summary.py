@@ -65,7 +65,7 @@ def get_official_tenant_data(tenant,from_date,to_date):
 	return frappe.db.sql(""" 
 		select rb.tenant, rb.tenant_name,
 			GROUP_CONCAT(DISTINCT(rb.name) SEPARATOR ', ') rental_bill,
-			(count(rb.name) * rb.rent_amount) rental_income,
+			sum(rb.rent_amount) rental_income,
 			sum(rb.received_amount) received_amount,
 			sum(rb.pre_rent_amount) pre_rent_amount,
 			sum(rb.adjusted_amount) adjusted_amount,
@@ -105,7 +105,7 @@ def get_data(filters):
 	return frappe.db.sql(""" 
 		select rb.tenant, rb.tenant_name,
 			GROUP_CONCAT(DISTINCT(rb.name) SEPARATOR ', ') rental_bill,
-			(count(rb.name) * rb.rent_amount) rental_income,
+			sum(rb.rent_amount) rental_income,
 			sum(rb.received_amount),
 			sum(rb.pre_rent_amount),
 			sum(rb.adjusted_amount),
