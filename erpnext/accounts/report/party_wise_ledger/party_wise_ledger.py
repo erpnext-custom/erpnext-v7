@@ -387,7 +387,7 @@ def get_balances(filters):
                 group_by = "party,''" if filters.get("group_by_party") else "party, cost_center",
 				cond = cond
         )
-	frappe.msgprint("{}".format(sql))
+	# frappe.msgprint("{}".format(sql))
 	gle = frappe.db.sql(sql, as_dict=True)
 	
 	balances = frappe._dict()
