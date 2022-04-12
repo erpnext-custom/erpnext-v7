@@ -286,6 +286,7 @@ function enable_disable(frm){
 		}
 	}
 	else if(frm.doc.workflow_state == 'Waiting Recoupment'){
+		console.log("here")
 		if(!in_list(user_roles, "Accounts User")){
 			other_fields.forEach(function(field_name){
 				frm.set_df_property(field_name,"read_only",1);
