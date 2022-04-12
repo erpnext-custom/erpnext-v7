@@ -66,7 +66,8 @@ def construct_query(filters=None):
 		AND mp.supplier = '{2}'
 		""".format(filters.from_date, filters.to_date, filters.vendor_name)
 	query+=";";
-	
+	if frappe.session.user == "Administrator":
+		frappe.msgprint(query)
 	return query;
 
 def validate_filters(filters):
