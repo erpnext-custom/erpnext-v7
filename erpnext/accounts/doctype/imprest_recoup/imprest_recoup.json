@@ -706,7 +706,7 @@
    "allow_on_submit": 1, 
    "bold": 0, 
    "collapsible": 0, 
-   "depends_on": "eval:doc.final_settlement == 0;", 
+   "depends_on": "eval:doc.final_settlement==0", 
    "fieldname": "pay_to_recd_from", 
    "fieldtype": "Link", 
    "hidden": 0, 
