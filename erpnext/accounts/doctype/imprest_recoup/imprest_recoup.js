@@ -280,6 +280,9 @@ function enable_disable(frm){
 			toggle_fields.forEach(function(field_name){
 				frm.set_df_property(field_name,"read_only",0);
 			});
+			toggle_fields.forEach(function(field_name){
+				frm.set_df_property(field_name,"hidden",0);
+			});
 		}
 	}
 	else if(frm.doc.workflow_state == 'Waiting Recoupment'){
