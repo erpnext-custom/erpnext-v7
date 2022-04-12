@@ -49,42 +49,80 @@ def get_columns():
 	]
 
 def get_stock_ledger_entries(filters):
-	query = """select * from (
-                select sle.posting_date, convert(sle.posting_time,time) as posting_time, sle.item_code,
-			(CASE
-                                WHEN sle.voucher_type = 'Stock Entry' THEN se.branch
-                                WHEN sle.voucher_type = 'Delivery Note' THEN dn.branch
-                                WHEN sle.voucher_type = 'Production' THEN prod.branch
-                                WHEN sle.voucher_type = 'Purchase Receipt' THEN pr.branch
-                                ELSE 'None' END) as branch, 
-			sle.warehouse, sum(sle.actual_qty) as actual_qty, (sle.qty_after_transaction) as qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
-			sle.stock_value,
-			(CASE
-                                WHEN sle.voucher_type = 'Production' AND pmi.name = sle.voucher_detail_no THEN 'Raw Materials'
-                                ELSE sle.voucher_type
-                                END) as voucher_type,
-			sle.voucher_no, sle.batch_no, sle.serial_no, 
-			(CASE 
-                                WHEN sle.voucher_type = 'Stock Entry' THEN se.vehicle_no
-                                WHEN sle.voucher_type = 'Delivery Note' THEN dn.vehicle
-                                END) as vehicle_no, 
-			(CASE 
-                                WHEN sle.voucher_type = 'Stock Entry' THEN se.transporter_name 
-                                WHEN sle.voucher_type = 'Delivery Note' THEN dn.transporter_name1
-                                ELSE 'None' END) as transporter_name,
-                        sle.company
-		from
-                        `tabStock Ledger Entry` sle
-                        left join `tabStock Entry` se on se.name = sle.voucher_no
-                        left join `tabDelivery Note` dn on dn.name = sle.voucher_no
-                        left join `tabProduction` prod on prod.name = sle.voucher_no
-                        left join `tabProduction Material Item` pmi on pmi.parent = prod.name
-                        left join `tabPurchase Receipt` pr on pr.name = sle.voucher_no 
-		where sle.company = '{company}'
-		and sle.posting_date between '{from_date}' and '{to_date}'
-		{sle_conditions} {group_by} order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
-		
-		""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters), company=filters.get("company"), from_date=filters.get("from_date"), to_date=filters.get("to_date"), group_by = get_group_by(filters))
+	if filters.transaction_type != "Delivery Note":
+		query = """select * from (
+    	            select sle.posting_date, convert(sle.posting_time,time) as posting_time, sle.item_code,
+				(CASE
+    	                            WHEN sle.voucher_type = 'Stock Entry' THEN se.branch
+    	                            WHEN sle.voucher_type = 'Delivery Note' THEN dn.branch
+    	                            WHEN sle.voucher_type = 'Production' THEN prod.branch
+    	                            WHEN sle.voucher_type = 'Purchase Receipt' THEN pr.branch
+    	                            ELSE 'None' END) as branch, 
+				sle.warehouse, sum(sle.actual_qty) as actual_qty, (sle.qty_after_transaction) as qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
+				sle.stock_value,
+				(CASE
+    	                            WHEN sle.voucher_type = 'Production' AND pmi.name = sle.voucher_detail_no THEN 'Raw Materials'
+    	                            ELSE sle.voucher_type
+    	                            END) as voucher_type,
+				sle.voucher_no, sle.batch_no, sle.serial_no, 
+				(CASE 
+    	                            WHEN sle.voucher_type = 'Stock Entry' THEN se.vehicle_no
+    	                            WHEN sle.voucher_type = 'Delivery Note' THEN dn.vehicle
+    	                            END) as vehicle_no, 
+				(CASE 
+    	                            WHEN sle.voucher_type = 'Stock Entry' THEN se.transporter_name 
+    	                            WHEN sle.voucher_type = 'Delivery Note' THEN dn.transporter_name1
+    	                            ELSE 'None' END) as transporter_name,
+    	                    sle.company
+			from
+    	                    `tabStock Ledger Entry` sle
+    	                    left join `tabStock Entry` se on se.name = sle.voucher_no
+    	                    left join `tabDelivery Note` dn on dn.name = sle.voucher_no
+    	                    left join `tabProduction` prod on prod.name = sle.voucher_no
+    	                    left join `tabProduction Material Item` pmi on pmi.parent = prod.name
+    	                    left join `tabPurchase Receipt` pr on pr.name = sle.voucher_no 
+			where sle.company = '{company}'
+			and sle.posting_date between '{from_date}' and '{to_date}'
+			{sle_conditions} {group_by} order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
+
+			""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters), company=filters.get("company"), from_date=filters.get("from_date"), to_date=filters.get("to_date"), group_by = get_group_by(filters))
+	else:
+		query = """select * from (
+    	            select dn.posting_date, convert(sle.posting_time,time) as posting_time, sle.item_code,
+				(CASE
+    	                            WHEN sle.voucher_type = 'Stock Entry' THEN se.branch
+    	                            WHEN sle.voucher_type = 'Delivery Note' THEN dn.branch
+    	                            WHEN sle.voucher_type = 'Production' THEN prod.branch
+    	                            WHEN sle.voucher_type = 'Purchase Receipt' THEN pr.branch
+    	                            ELSE 'None' END) as branch, 
+				sle.warehouse, sum(sle.actual_qty) as actual_qty, (sle.qty_after_transaction) as qty_after_transaction, sle.incoming_rate, sle.valuation_rate,
+				sle.stock_value,
+				(CASE
+    	                            WHEN sle.voucher_type = 'Production' AND pmi.name = sle.voucher_detail_no THEN 'Raw Materials'
+    	                            ELSE sle.voucher_type
+    	                            END) as voucher_type,
+				sle.voucher_no, sle.batch_no, sle.serial_no, 
+				(CASE 
+    	                            WHEN sle.voucher_type = 'Stock Entry' THEN se.vehicle_no
+    	                            WHEN sle.voucher_type = 'Delivery Note' THEN dn.vehicle
+    	                            END) as vehicle_no, 
+				(CASE 
+    	                            WHEN sle.voucher_type = 'Stock Entry' THEN se.transporter_name 
+    	                            WHEN sle.voucher_type = 'Delivery Note' THEN dn.transporter_name1
+    	                            ELSE 'None' END) as transporter_name,
+    	                    sle.company
+			from
+    	                    `tabStock Ledger Entry` sle
+    	                    left join `tabStock Entry` se on se.name = sle.voucher_no
+    	                    left join `tabDelivery Note` dn on dn.name = sle.voucher_no
+    	                    left join `tabProduction` prod on prod.name = sle.voucher_no
+    	                    left join `tabProduction Material Item` pmi on pmi.parent = prod.name
+    	                    left join `tabPurchase Receipt` pr on pr.name = sle.voucher_no 
+			where sle.company = '{company}'
+			and sle.posting_date between '{from_date}' and '{to_date}'
+			{sle_conditions} {group_by} order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
+			
+			""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters), company=filters.get("company"), from_date=filters.get("from_date"), to_date=filters.get("to_date"), group_by = get_group_by(filters))
 
 	data = frappe.db.sql(query, as_dict=True)
 	return data
