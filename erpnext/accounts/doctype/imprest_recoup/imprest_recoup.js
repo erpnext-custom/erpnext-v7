@@ -262,9 +262,9 @@ function enable_disable(frm){
 	var toggle_fields = ["final_settlement","settlement_account","party_type","party","revenue_bank_account","pay_to_recd_from", "use_cheque_lot","select_cheque_lot","cheque_no", "cheque_date"];
 	var other_fields  = ["company","title","branch","imprest_type","remarks","notes"];
 	
-	toggle_fields.forEach(function(field_name){
-		frm.set_df_property(field_name,"read_only",1);
-	});
+	// toggle_fields.forEach(function(field_name){
+	// 	frm.set_df_property(field_name,"read_only",1);
+	// });
 	
 	if(frm.doc.workflow_state == 'Waiting Approval'){
 		// if(!in_list(user_roles, "Imprest Manager") && !in_list(user_roles, "Accounts User")){
