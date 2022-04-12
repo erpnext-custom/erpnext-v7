@@ -299,7 +299,7 @@ function enable_disable(frm){
 			toggle_fields.forEach(function(field_name){
 				frm.set_df_property(field_name,"read_only",0);
 			});
-			console.log(cur_frm.doc.final_settlement)
+			console.log("here"+cur_frm.doc.final_settlement)
 			if(frm.doc.final_settlement == 1){
 				frm.toggle_reqd(["settlement_account"], 1);
 				frm.toggle_display(["settlement_account","party_type", "party"], 1);
