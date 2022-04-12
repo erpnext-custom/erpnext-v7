@@ -10,6 +10,7 @@ from erpnext.accounts.utils import get_child_cost_centers
 def execute(filters):
 	columns = get_columns()
 	sl_entries = get_stock_ledger_entries(filters)
+	sl_entries.sort(key = lambda x:x['posting_date'])
 	item_details = get_item_details(filters)
 	# opening_row = get_opening_balance(filters, columns)
 	
