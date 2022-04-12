@@ -80,7 +80,30 @@ class TDSRemittance(AccountsController):
                                         on i.parent = t.name
                                         where i.invoice_no = p.name
                                         and t.docstatus = 1
-                                ) """.format(self.tds_rate, self.from_date, self.to_date, self.branch)
+                                )
+				union all
+				select p.posting_date, p.supplier, p.name,  p.payable_amount as bill_amount, p.tds_amount 
+                                from `tabMechanical Payment` p where tds_rate = '{0}' and docstatus =1 
+                                and posting_date >= '{1}' and posting_date<= '{2}'
+				and not exists (
+                                        select 1 from `tabTDS Remittance Item` i
+                                        inner join `tabTDS Remittance` t
+                                        on i.parent = t.name
+                                        where i.invoice_no = p.name
+                                        and t.docstatus = 1
+                                )
+				union all
+				select p.posting_date, p.party, p.name,  p.paid_amount as bill_amount, -1*pd.amount as tds_amount 
+                                from `tabPayment Entry` p, `tabPayment Entry Deduction` pd where pd.account = '{4}' and pd.parent = p.name and p.docstatus =1 
+                                and posting_date >= '{1}' and posting_date<= '{2}' and p.payment_type = 'Pay'
+				and not exists (
+                                        select 1 from `tabTDS Remittance Item` i
+                                        inner join `tabTDS Remittance` t
+                                        on i.parent = t.name
+                                        where i.invoice_no = p.name
+                                        and t.docstatus = 1
+                                )
+                                """.format(self.tds_rate, self.from_date, self.to_date, self.branch, self.tds_account)
 
 
                 entries = frappe.db.sql(query, as_dict=True)
