@@ -596,7 +596,9 @@ class PaymentEntry(AccountsController):
 							"debit_in_account_currency": self.tds_amount,
 							"debit": self.tds_amount,
 							"business_activity": self.business_activity,
-							"cost_center": self.pl_cost_center
+							"cost_center": self.pl_cost_center,
+							"party": self.party,
+							"party_type": self.party_type
 						})
 					)
 				else:
