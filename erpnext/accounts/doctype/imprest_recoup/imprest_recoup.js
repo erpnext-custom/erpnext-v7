@@ -171,6 +171,11 @@ frappe.ui.form.on('Imprest Recoup', {
 	},
 	final_settlement: function(frm){
 		enable_disable(frm);
+		if(final_settlement == 1){
+			cur_frm.set_value("revenue_bank_account",null);
+			cur_frm.set_value("pay_to_recd_from",null);
+			cur_frm.refresh_fields();
+		}
 	},
 	settlement_account: function(frm){
 		enable_disable(frm);
@@ -262,10 +267,10 @@ function enable_disable(frm){
 	});
 	
 	if(frm.doc.workflow_state == 'Waiting Approval'){
-		if(!in_list(user_roles, "Imprest Manager") && !in_list(user_roles, "Accounts User")){
-			other_fields.forEach(function(field_name){
-				frm.set_df_property(field_name,"read_only",1);
-			});
+		// if(!in_list(user_roles, "Imprest Manager") && !in_list(user_roles, "Accounts User")){
+		// 	other_fields.forEach(function(field_name){
+		// 		frm.set_df_property(field_name,"read_only",1);
+		// 	});
 
 			frm.set_df_property("items", "read_only", 1);			
 			frm.disable_save();
