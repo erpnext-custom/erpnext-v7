@@ -28,44 +28,76 @@ def construct_query(filters=None):
 		filters.vendor_name = ""
 	if not filters.branch:
 		filters.branch = "27492yreuwhroi210e"
-
+	if filters.vendor_name:
 	# query = "SELECT a.posting_date, a.tds_taxable_amount, a.tds_rate, a.tds_amount, b.cheque_number, b.cheque_date, b.receipt_number, b.receipt_date FROM `tabPurchase Invoice` AS a, `tabRRCO Receipt Entries` AS b WHERE a.name = b.purchase_invoice AND a.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND a.supplier = \'" + filters.vendor_name + "\' UNION SELECT d.posting_date, d.amount as tds_taxable_amount, d.tds_percent as tds_rate, d.tds_amount, rr.cheque_number, rr.cheque_date, rr.receipt_number, rr.receipt_date FROM `tabDirect Payment` AS d, `tabRRCO Receipt Entries` AS rr WHERE d.name = rr.purchase_invoice AND d.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\' AND d.party = \'" + filters.vendor_name + "\'"
-	query = """SELECT a.posting_date, a.tds_taxable_amount, a.tds_rate, a.tds_amount, b.cheque_number, b.cheque_date, 
-		b.receipt_number, b.receipt_date, b.branch 
-		FROM `tabPurchase Invoice` AS a, `tabRRCO Receipt Entries` AS b 
-		WHERE a.name = b.purchase_invoice 
-		AND a.posting_date BETWEEN '{0}' AND '{1}'
-		AND a.supplier = '{2}' 
-		UNION 
-		SELECT  
-			d.posting_date,  
-			di.taxable_amount as tds_taxable_amount, d.tds_percent as tds_rate,  
-			di.tds_amount as tds_amount, 
-			rr.cheque_number,  rr.cheque_date, rr.receipt_number, rr.receipt_date, rr.branch 
-		FROM 
-			`tabDirect Payment` AS d
-		INNER JOIN
-			`tabRRCO Receipt Entries` AS rr ON rr.purchase_invoice = d.name 
-		LEFT JOIN 
-			`tabDirect Payment Item` AS di ON di.parent = d.name 
-		WHERE d.posting_date BETWEEN '{0}' AND '{1}'
-		AND (d.party = '{2}'
-			OR
-   			di.party = '{2}')
-		UNION 
-		SELECT  
-			mp.posting_date,  
-			mp.payable_amount as tds_taxable_amount, mp.tds_rate as tds_rate,  
-			mp.tds_amount as tds_amount, 
-			rr.cheque_number,  rr.cheque_date, rr.receipt_number, rr.receipt_date, rr.branch 
-		FROM 
-			`tabMechanical Payment` AS mp
-		INNER JOIN
-			`tabRRCO Receipt Entries` AS rr ON rr.purchase_invoice = mp.name
-		WHERE mp.posting_date BETWEEN '{0}' AND '{1}'
-		AND mp.supplier = '{2}'
-		""".format(filters.from_date, filters.to_date, filters.vendor_name)
-	query+=";";
+		query = """SELECT a.posting_date, a.tds_taxable_amount, a.tds_rate, a.tds_amount, b.cheque_number, b.cheque_date, 
+			b.receipt_number, b.receipt_date, b.branch 
+			FROM `tabPurchase Invoice` AS a, `tabRRCO Receipt Entries` AS b 
+			WHERE a.name = b.purchase_invoice 
+			AND a.posting_date BETWEEN '{0}' AND '{1}'
+			AND a.supplier = '{2}' 
+			UNION 
+			SELECT  
+				d.posting_date,  
+				di.taxable_amount as tds_taxable_amount, d.tds_percent as tds_rate,  
+				di.tds_amount as tds_amount, 
+				rr.cheque_number,  rr.cheque_date, rr.receipt_number, rr.receipt_date, rr.branch 
+			FROM 
+				`tabDirect Payment` AS d
+			INNER JOIN
+				`tabRRCO Receipt Entries` AS rr ON rr.purchase_invoice = d.name 
+			LEFT JOIN 
+				`tabDirect Payment Item` AS di ON di.parent = d.name 
+			WHERE d.posting_date BETWEEN '{0}' AND '{1}'
+			AND (d.party = '{2}'
+				OR
+   				di.party = '{2}')
+			UNION 
+			SELECT  
+				mp.posting_date,  
+				mp.payable_amount as tds_taxable_amount, mp.tds_rate as tds_rate,  
+				mp.tds_amount as tds_amount, 
+				rr.cheque_number,  rr.cheque_date, rr.receipt_number, rr.receipt_date, rr.branch 
+			FROM 
+				`tabMechanical Payment` AS mp
+			INNER JOIN
+				`tabRRCO Receipt Entries` AS rr ON rr.purchase_invoice = mp.name
+			WHERE mp.posting_date BETWEEN '{0}' AND '{1}'
+			AND mp.supplier = '{2}'
+			""".format(filters.from_date, filters.to_date, filters.vendor_name)
+		query+=";";
+	else:
+		query = """SELECT a.posting_date, a.tds_taxable_amount, a.tds_rate, a.tds_amount, b.cheque_number, b.cheque_date, 
+			b.receipt_number, b.receipt_date, b.branch 
+			FROM `tabPurchase Invoice` AS a, `tabRRCO Receipt Entries` AS b 
+			WHERE a.name = b.purchase_invoice 
+			AND a.posting_date BETWEEN '{0}' AND '{1}' AND a.branch = '{2}'
+			UNION 
+			SELECT  
+				d.posting_date,  
+				di.taxable_amount as tds_taxable_amount, d.tds_percent as tds_rate,  
+				di.tds_amount as tds_amount, 
+				rr.cheque_number,  rr.cheque_date, rr.receipt_number, rr.receipt_date, rr.branch 
+			FROM 
+				`tabDirect Payment` AS d
+			INNER JOIN
+				`tabRRCO Receipt Entries` AS rr ON rr.purchase_invoice = d.name 
+			LEFT JOIN 
+				`tabDirect Payment Item` AS di ON di.parent = d.name
+			WHERE d.posting_date BETWEEN '{0}' AND '{1}' AND d.branch = '{2}'
+			UNION 
+			SELECT  
+				mp.posting_date,  
+				mp.payable_amount as tds_taxable_amount, mp.tds_rate as tds_rate,  
+				mp.tds_amount as tds_amount, 
+				rr.cheque_number,  rr.cheque_date, rr.receipt_number, rr.receipt_date, rr.branch 
+			FROM 
+				`tabMechanical Payment` AS mp
+			INNER JOIN
+				`tabRRCO Receipt Entries` AS rr ON rr.purchase_invoice = mp.name
+			WHERE mp.posting_date BETWEEN '{0}' AND '{1}' and mp.branch = '{2}'
+			""".format(filters.from_date, filters.to_date, filters.branch)
+		query+=";";
 	if frappe.session.user == "Administrator":
 		frappe.msgprint(query)
 	return query;
