@@ -270,7 +270,7 @@ function enable_disable(frm){
 		// if(!in_list(user_roles, "Imprest Manager") && !in_list(user_roles, "Accounts User")){
 		// 	other_fields.forEach(function(field_name){
 		// 		frm.set_df_property(field_name,"read_only",1);
-		// 	});
+		// 	});/
 
 			frm.set_df_property("items", "read_only", 1);			
 			frm.disable_save();
