@@ -81,6 +81,14 @@ frappe.ui.form.on('Imprest Recoup', {
 				]
 			}
 		});
+		cur_frm.set_query("settlement_account", function(){
+			return {
+				"filters": [
+					["account_type", "!=", "Bank"],
+					["freeze_account", "=", "No"]
+				]
+			}
+		});
 		
 		cur_frm.set_query("party_type", function(){
 			return {
