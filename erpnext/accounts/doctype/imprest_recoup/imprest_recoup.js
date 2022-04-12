@@ -305,6 +305,7 @@ function enable_disable(frm){
 			if(frm.doc.settlement_account_type && (frm.doc.settlement_account_type === "Payable" || frm.doc.settlement_account_type === "Receivable")){
 				frm.toggle_reqd(["party_type", "party"], 1);
 			}
+			cur_frm.refresh_fields();
 		}
 	}
 	else {
