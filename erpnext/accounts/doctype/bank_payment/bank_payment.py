@@ -795,7 +795,7 @@ class BankPayment(Document):
 		return frappe.db.sql("""
 				SELECT
 					'Mechanical Payment' as transaction_type, mp.name as transaction_id, mp.name as transaction_reference, mp.posting_date as transaction_date, 
-					mp.transporter as beneficiary_name, 
+					(case when mp.payment_for = 'Transporter Payment' then mp.transporter else mp.supplier end) as beneficiary_name, 
 					(case when mp.payment_for = 'Transporter Payment' then (select bank_name from `tabTransporter` where name=mp.transporter) else (select bank_name_new from `tabSupplier` where name=mp.supplier) end) as bank_name,
 					(case when mp.payment_for = 'Transporter Payment' then (select bank_branch from `tabTransporter` where name=mp.transporter) else (select bank_branch from `tabSupplier` where name=mp.supplier) end) as bank_branch,
 					(case when mp.payment_for = 'Transporter Payment' then (select bank_account_type from `tabTransporter` where name=mp.transporter) else (select bank_account_type from `tabSupplier` where name=mp.supplier) end) as bank_account_type,
