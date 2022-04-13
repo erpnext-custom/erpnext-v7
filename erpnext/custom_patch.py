@@ -10,6 +10,23 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 import csv
 
+def update_mechanical_payment_tds_rate():
+	mp = frappe.db.sql("""
+		select name, tds_account from `tabMechanical Payment` where tds_account in ('TDS - 2% - NRDCL','TDS - 3% - NRDCL','TDS - 5% - NRDCL','TDS - 10% - NRDCL');
+	""",as_dict=1)
+	if mp:
+		for a in mp:
+			if a.tds_account == "TDS - 2% - NRDCL":
+				print("2")
+			if a.tds_account == "TDS - 3% - NRDCL":
+				print("3")
+			if a.tds_account == "TDS - 5% - NRDCL":
+				print("5")
+			if a.tds_account == "TDS - 10% - NRDCL":
+				print("10")
+
+
+
 def update_staff_welfare_ss():
 	sd = frappe.db.sql("""
 		select a.name, a.parent, b.employee from `tabSalary Detail` a, `tabSalary Slip` b where a.parent = b.name and a.salary_component = 'Staff Welfare Loan'
