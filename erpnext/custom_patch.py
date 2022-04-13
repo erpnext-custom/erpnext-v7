@@ -16,14 +16,16 @@ def update_mechanical_payment_tds_rate():
 	""",as_dict=1)
 	if mp:
 		for a in mp:
+			mech_pay = frappe.get_doc("Mechanical Payment",a.name)
 			if a.tds_account == "TDS - 2% - NRDCL":
-				print("2")
+				mech_pay.db_set("tds_rate","2")
 			if a.tds_account == "TDS - 3% - NRDCL":
-				print("3")
+				mech_pay.db_set("tds_rate","3")
 			if a.tds_account == "TDS - 5% - NRDCL":
-				print("5")
+				mech_pay.db_set("tds_rate","5")
 			if a.tds_account == "TDS - 10% - NRDCL":
-				print("10")
+				mech_pay.db_set("tds_rate","10")
+			print(str(a.name)+": tds rate set for tds account "+str(a.tds_account))
 
 
 
