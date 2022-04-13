@@ -28,7 +28,6 @@ frappe.ui.form.on("BOM", {
 				}
 			};
 		});
-
 		frm.set_query("source_warehouse", "items", function() {
 			return {
 				filters: {
@@ -36,7 +35,16 @@ frappe.ui.form.on("BOM", {
 				}
 			};
 		});
-
+		frm.set_query("cost_component", "labor_and_overhead_items", function() {
+			return {
+				query: "erpnext.controllers.queries.get_costing_component",
+				filters: {
+					'from_date': frm.doc.from_date,
+					'to_date': frm.doc.to_date,
+					"branch": frm.doc.branch
+				}
+			};
+		});
 		frm.set_query("item", function() {
 			return {
 				query: "erpnext.controllers.queries.item_query"
@@ -77,7 +85,14 @@ frappe.ui.form.on("BOM", {
 	refresh: function(frm) {
 		frm.toggle_enable("item", frm.doc.__islocal);
 		toggle_operations(frm);
-
+		frm.set_query("item", function() {
+			return {
+				filters: {
+					'disabled': 0,
+					'item_group': frm.doc.item_group,
+				}
+			}
+		});
 		frm.set_indicator_formatter('item_code',
 			function(doc) {
 				if (doc.original_item){
@@ -90,6 +105,9 @@ frappe.ui.form.on("BOM", {
 		if (!frm.doc.__islocal && frm.doc.docstatus<2) {
 			frm.add_custom_button(__("Update Cost"), function() {
 				frm.events.update_cost(frm);
+			});
+			frm.add_custom_button(__("Create Work Order"), function() {
+				frm.events.create_work_order(frm);
 			});
 			frm.add_custom_button(__("Browse BOM"), function() {
 				frappe.route_options = {
@@ -158,7 +176,12 @@ frappe.ui.form.on("BOM", {
 			}
 		});
 	},
-
+	create_work_order: function(frm) {
+		frappe.model.open_mapped_doc({
+			method: "erpnext.manufacturing.doctype.bom.bom.create_work_order",
+			frm: cur_frm
+		});
+	},
 	routing: function(frm) {
 		if (frm.doc.routing) {
 			frappe.call({

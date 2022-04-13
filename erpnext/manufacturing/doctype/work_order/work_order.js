@@ -7,7 +7,6 @@ frappe.ui.form.on('Work Order', {
 			'Stock Entry': 'Make Stock Entry',
 		}
 
-
 		//Folowing Code commented to be reviewed later to Set query for warehouses
 		/*frm.set_query("wip_warehouse", function() {
 			return {
@@ -57,7 +56,7 @@ frappe.ui.form.on('Work Order', {
 			if (frm.doc.production_item) {
 				return{
 					query: "erpnext.controllers.queries.bom",
-					filters: {item: cstr(frm.doc.production_item), branch: cstr(frm.doc.branch)}
+					filters: {item: cstr(frm.doc.production_item), branch: cstr(frm.doc.branch), planned_start_date: frm.doc.planned_start_date}
 				}
 			} else msgprint(__("Please enter Production Item first"));
 		});
@@ -114,7 +113,7 @@ frappe.ui.form.on('Work Order', {
 				"actual_start_date": "",
 				"actual_end_date": ""
 			});
-			erpnext.work_order.set_default_warehouse(frm);
+			// erpnext.work_order.set_default_warehouse(frm);
 		}
 	},
 
@@ -122,7 +121,22 @@ frappe.ui.form.on('Work Order', {
 		erpnext.toggle_naming_series();
 		erpnext.work_order.set_custom_buttons(frm);
 		frm.set_intro("");
-
+		frm.set_query("wip_warehouse", function() {
+			return {
+				query: "erpnext.controllers.queries.filter_branch_wh",
+				filters: {
+					'branch':  frm.doc.branch,
+				}
+			}
+		});
+		frm.set_query("fg_warehouse", function() {
+			return {
+				query: "erpnext.controllers.queries.filter_branch_wh",
+				filters: {
+					'branch':  frm.doc.branch,
+				}
+			}
+		});
 		if (frm.doc.docstatus === 0 && !frm.doc.__islocal) {
 			frm.set_intro(__("Submit this Work Order for further processing."));
 		}

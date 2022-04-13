@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe, erpnext
 from frappe.utils import cint, cstr, flt
 from frappe import _
+from frappe.model.mapper import get_mapped_doc
 from erpnext.setup.utils import get_exchange_rate
 from frappe.website.website_generator import WebsiteGenerator
 from erpnext.stock.get_item_details import get_conversion_factor
@@ -216,6 +217,7 @@ class BOM(WebsiteGenerator):
 						"transaction_type": "buying",
 						"company": self.company,
 						"currency": self.currency,
+						"price_list_currency": self.price_list_currency,
 						"conversion_rate": 1, # Passed conversion rate as 1 purposefully, as conversion rate is applied at the end of the function
 						"conversion_factor": arg.get("conversion_factor") or 1,
 						"plc_conversion_rate": 1,
@@ -763,6 +765,64 @@ def validate_bom_no(item, bom_no):
  				rm_item_exists = True
 		if not rm_item_exists:
 			frappe.throw(_("BOM {0} does not belong to Item {1}").format(bom_no, item))
+
+@frappe.whitelist()
+def create_work_order(source_name, target_doc=None):
+	def set_missing_values(source, target):
+		pass
+		# if source.po_no:
+		# 	if target.po_no:
+		# 		target_po_no = target.po_no.split(", ")
+		# 		target_po_no.append(source.po_no)
+		# 		target.po_no = ", ".join(list(set(target_po_no))) if len(target_po_no) > 1 else target_po_no[0]
+		# 	else:
+		# 		target.po_no = source.po_no
+
+		# target.ignore_pricing_rule = 1
+		# target.run_method("set_missing_values")
+		# target.run_method("calculate_taxes_and_totals")
+
+	def update_item(source, target, source_parent):
+		pass
+		# target.base_amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.base_rate)
+		# target.amount = (flt(source.qty) - flt(source.delivered_qty)) * flt(source.rate)
+		# target.qty = flt(source.qty) - flt(source.delivered_qty)
+		# expense_account,is_prod = frappe.db.get_value("Item", source.item_code, ["expense_account", "is_production_item"])
+		# if is_prod:
+		# 	expense_account = get_settings_value("Production Account Settings", source_parent.company, "default_production_account")
+		# 	if not expense_account:
+		# 		frappe.throw("Setup Default Production Account in Production Account Settings")
+		# target.expense_account = expense_account
+
+	target_doc = get_mapped_doc("BOM", source_name, {
+		"BOM": {
+			"doctype": "Work Order",
+			"field_map": {
+				"branch": "branch",
+				"item": "production_item",
+				"item_name" : "item_name",
+				"bom_no": "name",
+			},
+			"validation": {
+				"docstatus": ["=", 1]
+			}
+		},
+		"BOM Item": {
+			"doctype": "Work Order Item",
+			"field_map": {
+				"item_code": "item_code",
+				"item_name": "item_name",
+				"description": "description",
+				"source_warehouse": "source_warehouse",
+				"qty":"required_qty"
+				# "discount_amount":"discount_amount",
+				# "additional_cost":"additional_cost"
+			},
+			"postprocess": update_item,
+		},
+	}, target_doc, set_missing_values)
+
+	return target_doc
 
 @frappe.whitelist()
 def get_children(doctype, parent=None, is_root=False, **filters):

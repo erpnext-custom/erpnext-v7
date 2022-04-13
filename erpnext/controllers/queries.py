@@ -381,11 +381,13 @@ def item_query(doctype, txt, searchfield, start, page_len, filters, as_dict=Fals
 
 def bom(doctype, txt, searchfield, start, page_len, filters):
 	conditions = []
-
+	if not filters.get("planned_start_date"):
+		frappe.throw("Planned Start Date is mandatory in Work Order")
 	return frappe.db.sql("""select tabBOM.name, tabBOM.item
 		from tabBOM
 		where tabBOM.docstatus=1
 			and tabBOM.is_active=1
+			and ('{planned_start_date}' between tabBOM.from_date and tabBOM.to_date)
 			and tabBOM.`{key}` like %(txt)s
 			{fcond} {mcond}
 		order by
@@ -394,7 +396,7 @@ def bom(doctype, txt, searchfield, start, page_len, filters):
 		limit %(start)s, %(page_len)s """.format(
 			fcond=get_filters_cond(doctype, filters, conditions),
 			mcond=get_match_cond(doctype),
-			key=frappe.db.escape(searchfield)),
+			key=frappe.db.escape(searchfield), planned_start_date=filters.get("planned_start_date")),
 		{
 			'txt': "%%%s%%" % frappe.db.escape(txt),
 			'_txt': txt.replace("%", ""),
@@ -525,6 +527,14 @@ def get_income_account(doctype, txt, searchfield, start, page_len, filters):
 				'txt': "%%%s%%" % frappe.db.escape(txt),
 				'company': filters.get("company", "")
 			})
+
+@frappe.whitelist()
+def get_costing_component(doctype, txt, searchfield, start, page_len, filters):
+	if not filters.get("from_date") or not filters.get("to_date"):
+		frappe.throw("From Date and To Date are mandatory")
+	if not filters.get("branch"):
+		frappe.throw("Branch is mandatory.")
+	return frappe.db.sql("select name, particular from `tabCosting Component` where '{0}' >= from_date and '{1}' <= to_date and branch = '{2}'".format(filters.get("from_date"),filters.get("to_date"),filters.get("branch")))	
 
 @frappe.whitelist()
 def get_expense_account(doctype, txt, searchfield, start, page_len, filters):
