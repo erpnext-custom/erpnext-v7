@@ -10,6 +10,15 @@ from frappe import _
 from frappe.utils import flt, cint, nowdate, getdate, formatdate, money_in_words
 
 class Reimbursement(Document):
+	def validate(self):
+		self.calculate_amount()
+
+	def calculate_amount(self):
+		total = 0
+		for d in self.items:
+			total += d.amount
+		self.amount = total
+
 	def before_cancel(self):
 		if self.journal_entry:
 			for t in frappe.get_all("Journal Entry", ["name"], {"name": self.journal_entry, "docstatus": ("<",2)}):
@@ -23,14 +32,29 @@ class Reimbursement(Document):
 		if not self.amount:
 			frappe.throw(_("Amount should be greater than zero"))
 
-		credit_account = self.expense_account
-		advance_account = frappe.db.get_value("Company", self.company, "default_bank_account")
+		debit_account = self.expense_account
+		if not self.credit_account:
+			advance_account = frappe.db.get_value("Company", self.company, "default_bank_account")
+		else:
+			advance_account = self.credit_account
 
-		if not credit_account:
+		if not debit_account:
 			frappe.throw("Expense Account is mandatory")
 		if not advance_account:
 			frappe.throw("Setup Default Bank Account in Company Settings")
 
+		voucher_type = "Journal Entry"
+		voucher_series = "Journal Voucher"
+		party_type = ""
+		party = ""
+		account_type = frappe.db.get_value("Account", advance_account, "account_type")
+		if account_type == "Bank":
+			voucher_type = "Bank Entry"
+			voucher_series = "Bank Payment Voucher"
+		elif account_type == "Payable" or account_type == "Receivable":
+			party_type = self.party_type
+			party = self.party
+		
 		r = []
 		if self.remarks:
 			r.append(_("Note: {0}").format(self.remarks))
@@ -42,8 +66,8 @@ class Reimbursement(Document):
 
 		je.update({
 			"doctype": "Journal Entry",
-			"voucher_type": "Bank Entry",
-			"naming_series": "Bank Payment Voucher",
+			"voucher_type": voucher_type,
+			"naming_series": voucher_series,
 			"title": "Reimbursement - " + self.name,
 			"user_remark": remarkss if remarkss else "Note: " + "Reimbursement - " + self.name,
 			"posting_date": self.posting_date,
@@ -58,12 +82,14 @@ class Reimbursement(Document):
 			"cost_center": self.cost_center,
 			"reference_type": "Reimbursement",
 			"reference_name": self.name,
-			"business_activity": self.business_activity
+			"business_activity": self.business_activity,
+			"party_type": party_type,
+			"party": party
 		})
 
 
 		je.append("accounts",{
-			"account": credit_account,
+			"account": debit_account,
 			"debit_in_account_currency": self.amount,
 			"cost_center": self.cost_center,
 			"business_activity": self.business_activity
