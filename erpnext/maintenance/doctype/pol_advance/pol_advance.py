@@ -70,6 +70,8 @@ class PolAdvance(AccountsController):
                 else:
                     self.adjusted_amount = flt(self.adjusted_amount) - flt(doc.od_amount)
                     self.balance_amount = flt(self.balance_amount) + flt(doc.od_amount)
+                self.od_amount = 0
+                self.od_outstanding_amount = 0
                 doc.od_adjusted_amount = 0 
                 doc.od_outstanding_amount = doc.od_amount
                 doc.save(ignore_permissions=True)
@@ -131,9 +133,14 @@ class PolAdvance(AccountsController):
             frappe.throw("Setup POL Advance Account in Maintenance Accounts Settings")
 
         account_type = frappe.db.get_value("Account", advance_account, "account_type")
+        voucher_type = "Journal Entry"
+		voucher_series = "Journal Voucher"
         party_type = ''
         party = ''
-        if account_type == "Payable":
+        if account_type == "Bank":
+			voucher_type = "Bank Entry"
+			voucher_series = "Bank Receipt Voucher" if self.payment_type == "Receive" else "Bank Payment Voucher"
+        elif account_type == "Payable":
             party_type = self.party_type
             party = self.supplier
 
@@ -153,8 +160,8 @@ class PolAdvance(AccountsController):
 
         je.update({
             "doctype": "Journal Entry",
-            "voucher_type": "Bank Entry",
-            "naming_series": "Bank Receipt Voucher" if self.payment_type == "Receive" else "Bank Payment Voucher",
+            "voucher_type": voucher_type,
+            "naming_series": voucher_series,
             "title": "POL Advance - " + self.equipment,
             "user_remark": remarks if remarks else "Note: " + "POL Advance - " + self.equipment,
             "posting_date": self.posting_date,
