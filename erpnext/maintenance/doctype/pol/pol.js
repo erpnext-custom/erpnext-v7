@@ -96,6 +96,7 @@ function calculate_total(frm) {
 	if (frm.doc.qty && frm.doc.rate) {
 		frm.set_value("total_amount", frm.doc.qty * frm.doc.rate)
 		frm.set_value("outstanding_amount", frm.doc.qty * frm.doc.rate)
+		frm.set_value("amount", frm.doc.qty * frm.doc.rate)
 	}
 
 	if (frm.doc.qty && frm.doc.rate && frm.doc.discount_amount) {

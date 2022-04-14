@@ -26,6 +26,11 @@ class POL(StockController):
 		self.validate_item()
 		self.calculate_km_diff()
 		self.populate_child_table()
+		self.calculate_amount()
+	def calculate_amount(self):
+		if self.qty and self.rate:
+			amount = self.qty*self.rate
+			self.amount = flt(amount)	
 	def calculate_km_diff(self):
 		previous_km_reading = frappe.db.sql("""
 			SELECT 
@@ -602,6 +607,7 @@ class POL(StockController):
 		if not data:
 			frappe.throw("No POL Advance")
 
+		temp_balance = 0
 		for d in data:
 			is_submitted = False
 
@@ -620,13 +626,19 @@ class POL(StockController):
 				row.advance_balance      = d.balance_amount
 				if row.advance_balance >= allocated_amount:
 					row.allocated_amount = allocated_amount
+					row.amount = allocated_amount #jai
 					total_amount_adjusted += flt(row.allocated_amount)
 					allocated_amount = 0
 				elif row.advance_balance < allocated_amount:
 					row.allocated_amount = row.advance_balance
+					row.amount = allocated_amount #jai
 					total_amount_adjusted += flt(row.allocated_amount)
 					allocated_amount = flt(allocated_amount) - flt(row.advance_balance)
-				row.balance = flt(row.advance_balance) - flt(row.allocated_amount)
+					if temp_balance < 0:
+						row.amount = -(temp_balance)
+				# row.balance = flt(row.advance_balance) - flt(row.allocated_amount)
+				row.balance = flt(row.advance_balance) - flt(row.amount) #jai
+				temp_balance = row.balance
 			# row.update
 		if not self.items:
 			frappe.throw("NO POL Advance")
