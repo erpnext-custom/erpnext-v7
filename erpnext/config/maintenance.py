@@ -147,7 +147,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Reimbursement",
-					"label": "Reimbursement",
+					"label": "Reimbursement/Imprest",
 				},
 				# {
 				# 	"type": "doctype",
