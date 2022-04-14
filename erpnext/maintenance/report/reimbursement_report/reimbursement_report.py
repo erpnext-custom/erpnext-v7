@@ -11,6 +11,7 @@ def execute(filters=None):
 
 def get_columns(filters):
 	columns = [
+			 _("Reimbursement") + ":Link/Reimbursement:150", 
 			 _("Branch") + ":Link/Branch:150", 
 			 _("Cost Center") + ":Data:150",
 			 _("Posting Date") + ":Date:100",
@@ -19,6 +20,9 @@ def get_columns(filters):
 			 _("Type") + ":Data:90",
 			 _("Amount") + ":Currency:100",
 			 _("Journal Entry") + ":Link/Journal Entry:120",
+			 _("Credit Account") + ":Link/Account:180",
+			 _("Party Type") + ":Data:120",
+			 _("Party") + ":Link/Employee:120",
 			 _("Remarks") + ":Data:200"
 
 	]
@@ -28,7 +32,8 @@ def get_data(filters):
 	if not filters.from_date or not filters.to_date:
 		return
 	data = frappe.db.sql("""
-			select branch, cost_center, posting_date, purpose, expense_account, type, amount, journal_entry, remarks
+			select name, branch, cost_center, posting_date, purpose, expense_account, type, amount, journal_entry, credit_account,
+				party_type, party, remarks
 			from `tabReimbursement`
 			where posting_date between '{from_date}' and '{to_date}' and docstatus = 1
 			""".format(from_date=filters.from_date, to_date=filters.to_date))
