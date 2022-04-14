@@ -134,12 +134,12 @@ class PolAdvance(AccountsController):
 
         account_type = frappe.db.get_value("Account", advance_account, "account_type")
         voucher_type = "Journal Entry"
-		voucher_series = "Journal Voucher"
+        voucher_series = "Journal Voucher"
         party_type = ''
         party = ''
         if account_type == "Bank":
-			voucher_type = "Bank Entry"
-			voucher_series = "Bank Receipt Voucher" if self.payment_type == "Receive" else "Bank Payment Voucher"
+            voucher_type = "Bank Entry"
+            voucher_series = "Bank Receipt Voucher" if self.payment_type == "Receive" else "Bank Payment Voucher"
         elif account_type == "Payable":
             party_type = self.party_type
             party = self.supplier
