@@ -401,7 +401,42 @@ frappe.query_reports["Production Report"] = {
 			"fieldname": "machine_name",
 			"label": ("Machine Name"),
 			"fieldtype": "Link",
- 			"options": "Equipment"			
+ 			"options": "Equipment",
+			"get_query": function() {
+				var branch = frappe.query_report.filters_by_name.branch.get_value();
+				var cost_center = frappe.query_report.filters_by_name.cost_center.get_value();
+				if(branch != "" && branch != null && branch != undefined){
+					branch = branch.replace(' - NRDCL','')
+					return {"doctype": "Equipment", "filters": {"branch": branch, "is_disabled": 0}}
+				}
+				else if(cost_center != "" && cost_center != null && cost_center != undefined){
+					frappe.call({
+						method:"erpnext.production.report.production_report.production_report.get_cost_center_based_equipments",
+						args:{"cost_center":cost_center},
+						callback: function(r){
+							console.log(r.message)
+							if(r.message)
+							{
+								options = []
+								for (i = 0; i < r.message.length; i++) { 
+									options[i]= r.message[i].name
+								}
+								return {"doctype": "Equipment", "filters": {"name":options}}
+							}
+							// 	console.log(options)
+							// 	frappe.query_reports["Production Report"].filters[13].options = options
+							// 	frappe.query_report.filters_by_name.tp_sub_group.refresh();
+							// 	frappe.query_report.refresh();
+							// 	// **I have set options dynamically to the below select fieldtype but I need to refresh that field to show that new options.**
+							// 	// console.log(frappe.query_reports["Stock Balance Report"].filters[4].options)
+							// }
+						}
+					})
+				}
+				else{
+					return {"doctype": "Equipment", "filters":{"is_disabled":0}}
+				}
+			}		
 		}
 	]
 }

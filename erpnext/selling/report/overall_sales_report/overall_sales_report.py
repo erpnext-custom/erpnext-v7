@@ -165,7 +165,7 @@ def get_data(filters=None):
 				CASE 
 					WHEN soi.conversion_req=1 THEN soi.sales_uom
 					ELSE soi.stock_uom
-				END as uom, sum(soi.amount)
+				END as uom, sum(soi.amount) - so.discount_or_cost_amount + so.additional_cost - so.challan_cost
 			"""
 			group_by = " group by so.branch, so.location, i.item_sub_group"
 			order_by = ""

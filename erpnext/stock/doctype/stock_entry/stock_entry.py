@@ -144,7 +144,7 @@ class StockEntry(StockController):
 			frappe.throw("Stock Entry should have an Item Entry")
 
 	def validate_purpose(self):
-		valid_purposes = ["Material Issue", "Material Receipt", "Material Transfer", "Material Transfer for Manufacture",
+		valid_purposes = ["Material Issue", "Material Receipt", "Material Transfer", "Material Transfer for Manufacture", "Material Consumption for Manufacture",
 			"Manufacture", "Repack", "Subcontract"]
 		if self.purpose not in valid_purposes:
 			frappe.throw(_("Purpose must be one of {0}").format(comma_or(valid_purposes)))
@@ -337,7 +337,7 @@ class StockEntry(StockController):
 
 	def set_actual_qty(self):
 		allow_negative_stock = cint(frappe.db.get_value("Stock Settings", None, "allow_negative_stock"))
-
+		stock_shortage = 0
 		for d in self.get('items'):
 			previous_sle = get_previous_sle({
 				"item_code": d.item_code,
@@ -353,12 +353,14 @@ class StockEntry(StockController):
 			# Following condition modified by SHHIV on 07/12/2017
 			#if d.docstatus==1 and d.s_warehouse and not allow_negative_stock and d.actual_qty < d.transfer_qty:
 			if d.s_warehouse and not allow_negative_stock and flt(d.actual_qty) < flt(d.transfer_qty):
-				frappe.throw(_("Row {0}: Qty not available for {4} in warehouse {1} at posting time of the entry ({2} {3})".format(d.idx,
+				stock_shortage = 1
+				frappe.msgprint(_("Row {0}: Qty not available for {4} in warehouse {1} at posting time of the entry ({2} {3})".format(d.idx,
 					frappe.bold(d.s_warehouse), formatdate(self.posting_date),
 					format_time(self.posting_time), frappe.bold(d.item_code)))
 					+ '<br><br>' + _("Available qty is {0}, you need {1}").format(frappe.bold(d.actual_qty),
-						frappe.bold(d.transfer_qty)),
-					NegativeStockError, title=_('Insufficient Stock'))
+						frappe.bold(d.transfer_qty)))
+			if stock_shortage == 1:
+				frappe.throw("Insuffient Stock",NegativeStockError, title=_('Insufficient Stock'))
 
 	def get_stock_and_rate(self):
 		self.set_transfer_qty()
@@ -540,7 +542,6 @@ class StockEntry(StockController):
 
 		if self.docstatus == 2:
 			sl_entries.reverse()
-
 		self.make_sl_entries(sl_entries, self.amended_from and 'Yes' or 'No')
 
 	def get_gl_entries(self, warehouse_account):
@@ -618,6 +619,9 @@ class StockEntry(StockController):
 			frappe.throw(_("Item {0} is not active or end of life has been reached").format(args.get("item_code")))
 
 		item = item[0]
+		qty = transfer_qty = 0.0
+		if self.purpose == 'Material Transfer for Manufacture':
+			qty = transfer_qty = args.get('qty')
 
 		ret = {
 			'uom'			      	: item.stock_uom,
@@ -628,11 +632,11 @@ class StockEntry(StockController):
 			'item_group' 		  	: item.item_group,
 			'expense_account'		: item.expense_account,
 			'cost_center'			: get_default_cost_center(args, item),
-			'qty'				: 0,
-			'transfer_qty'			: 0,
+			'qty'				: qty,
+			'transfer_qty'			: transfer_qty,
 			'conversion_factor'		: 1,
 			'batch_no'			: '',
-			'actual_qty'			: 0,
+			'actual_qty'			: qty,
 			'basic_rate'			: 0
 		}
 		for d in [["Account", "expense_account", "default_expense_account"],

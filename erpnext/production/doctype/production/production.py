@@ -91,7 +91,7 @@ class Production(StockController):
 		if self.business_activity == 'Timber':
 			sawn = 0
 			for a in self.items:
-				if a.item_sub_group in ('Sawn','Off-Cuts'):
+				if a.item_sub_group in ('Sawn','Off-Cuts','Joinery Products'):
 					sawn += 1
 			if sawn != len(self.items):
 				if sawn > 0:
