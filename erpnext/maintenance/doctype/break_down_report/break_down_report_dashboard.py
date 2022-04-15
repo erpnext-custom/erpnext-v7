@@ -1,11 +1,11 @@
 from frappe import _
 
 data = {
-	'fieldname': 'break_down_report',
+	'fieldname': 'reference_name',
 	'transactions': [
 		{
 			'label': _('Related'),
-			'items': ['Job Card']
+			'items': ['Journal Entry Account']
 		},
 	]
 }

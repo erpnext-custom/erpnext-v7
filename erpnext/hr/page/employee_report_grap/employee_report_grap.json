@@ -1,0 +1,22 @@
+{
+ "content": null, 
+ "creation": "2021-08-12 16:36:46.927682", 
+ "docstatus": 0, 
+ "doctype": "Page", 
+ "idx": 0, 
+ "modified": "2021-08-12 16:36:46.927682", 
+ "modified_by": "Administrator", 
+ "module": "HR", 
+ "name": "employee-report-grap", 
+ "owner": "Administrator", 
+ "page_name": "Employee Report Graph", 
+ "roles": [
+  {
+   "role": "Administrator"
+  }
+ ], 
+ "script": null, 
+ "standard": "Yes", 
+ "style": null, 
+ "title": "Employee Report Graph"
+}

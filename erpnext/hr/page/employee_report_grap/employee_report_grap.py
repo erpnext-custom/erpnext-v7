@@ -1,0 +1,1 @@
+import Chart from "/node_modules/frappe-charts/dist/frappe-charts.min.esm.js";
