@@ -190,7 +190,7 @@ def get_data(filters=None):
 				END as uom, sum(soi.amount), 
 				sum(soi.amount) - so.discount_or_cost_amount + so.additional_cost - so.challan_cost
 			"""
-			group_by = " group by so.customer"
+			group_by = " group by so.name"
 			order_by = "order by so.transaction_date"
 		
 		else:
@@ -269,7 +269,7 @@ def get_data(filters=None):
 				END as uom, sum(dni.amount),	
 				sum(dni.amount) - dn.discount_or_cost_amount + dn.additional_cost - dn.challan_cost
 			"""
-			group_by = "group by dn.customer"
+			group_by = "group by dn.name"
 			order_by = "order by dn.posting_date"
 
 		else:
