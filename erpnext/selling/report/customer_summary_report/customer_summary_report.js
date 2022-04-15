@@ -61,7 +61,7 @@ frappe.query_reports["Customer Summary Report"] = {
 			"fieldname": "market",
 			"label": __("Market"),
 			"fieldtype": "Link",
-			"options": "Territory"
+			"options": "Market"
 		},
 		{
 			"fieldname": "cost_center",

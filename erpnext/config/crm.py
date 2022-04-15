@@ -79,11 +79,11 @@ def get_data():
 			"label": _("Setup"),
 			"icon": "icon-cog",
 			"items": [
-				{
-					"type": "doctype",
-					"name": "Campaign",
-					"description": _("Sales campaigns."),
-				},
+				#{
+				#	"type": "doctype",
+				#	"name": "Campaign",
+				#	"description": _("Sales campaigns."),
+				#},
 				{
 					"type": "doctype",
 					"label": _("Customer Group"),
@@ -92,6 +92,14 @@ def get_data():
 					"link": "Tree/Customer Group",
 					"description": _("Manage Customer Group Tree."),
 				},
+				{
+                                        "type": "doctype",
+                                        "label": _("Market"),
+                                        "name": "Market",
+                                        "icon": "icon-sitemap",
+                                        "link": "Tree/Market",
+                                        "description": _("Manage Market Tree."),
+                                },
 				{
 					"type": "doctype",
 					"label": _("Territory"),

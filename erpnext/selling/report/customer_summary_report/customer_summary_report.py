@@ -22,7 +22,7 @@ def get_data(filters):
 		query += " and si.cost_center = '{0}'".format(filters.cost_center)
 
 	if filters.market:
-		query += " and exists ( select 1 from `tabCustomer` where territory = '{0}') ".format(filters.market)
+		query += " and exists ( select 1 from `tabCustomer` where market = '{0}') ".format(filters.market)
 
 	if filters.item_type:
 		query += " and sii.item_type = '{0}'".format(filters.item_type)
@@ -30,11 +30,11 @@ def get_data(filters):
 	query += " group by si.customer, sii.item_code"
 	dat = frappe.db.sql(query, as_dict = 1)
 	for d in dat:
-		market, territory = get_customer_details(filters, d.customer)
+		territory, market = get_customer_details(filters, d.customer)
 		received_amount = payment_details(filters, d.name)
 		closing_amt =  flt(d.opening) + flt(d.billed_amount) - flt(received_amount)	
 		if flt(d.opening) + flt(d.accepted_qty) + flt(d.billed_amount) + flt(received_amount) + flt(closing_amt) > 0:
-			row = [d.customer, territory, market, d.item_code, d.item_name, d.item_type, d.opening, d.accepted_qty, d.billed_amount, received_amount, closing_amt]
+			row = [d.customer, market, territory, d.item_code, d.item_name, d.item_type, d.opening, d.accepted_qty, d.billed_amount, received_amount, closing_amt]
 			data.append(row)
 	return data
 
