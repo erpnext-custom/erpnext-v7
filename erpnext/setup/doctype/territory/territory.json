@@ -318,7 +318,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2016-08-29 16:11:37.455720", 
+ "modified": "2022-04-05 12:15:44.551580", 
  "modified_by": "Administrator", 
  "module": "Setup", 
  "name": "Territory", 
@@ -451,5 +451,6 @@
  "read_only_onload": 0, 
  "search_fields": "parent_territory,territory_manager", 
  "sort_order": "DESC", 
+ "track_changes": 0, 
  "track_seen": 0
 }

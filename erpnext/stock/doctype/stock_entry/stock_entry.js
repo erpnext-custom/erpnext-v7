@@ -38,8 +38,7 @@ erpnext.stock.StockEntry = erpnext.stock.StockController.extend({
 
 		if(cint(frappe.defaults.get_default("auto_accounting_for_stock"))) {
 			this.frm.add_fetch("company", "stock_adjustment_account", "expense_account");
-			this.frm.fields_dict.items.grid.get_field('expense_account').get_query =
-					function() {
+			this.frm.fields_dict.items.grid.get_field('expense_account').get_query = function() {
 				return {
 					filters: {
 						"company": me.frm.doc.company,

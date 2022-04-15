@@ -26,6 +26,12 @@ frappe.query_reports["Stock Ledger Report"] = {
 			"reqd": 1
 		},
 		{
+                        "fieldname":"cost_center",
+                        "label": __("Cost Center"),
+                        "fieldtype": "Link",
+                        "options": "Cost Center"
+                },
+		{
 			"fieldname":"warehouse",
 			"label": __("Warehouse"),
 			"fieldtype": "Link",
@@ -37,6 +43,12 @@ frappe.query_reports["Stock Ledger Report"] = {
 			"fieldtype": "Link",
 			"options": "Item"
 		},
+		{
+                        "fieldname":"item_group",
+                        "label": __("Material Group"),
+                        "fieldtype": "Link",
+                        "options": "Item Group"
+                },
 		{
 			"fieldname":"item_sub_group",
 			"label": __("Material Sub Group"),

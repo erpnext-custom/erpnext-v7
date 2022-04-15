@@ -36,7 +36,11 @@ class EMEPayment(Document):
 		if not self.from_date or not self.to_date:
 			frappe.throw("From Date and To Date are mandatory")
 
-		query = "select l.name as logbook, l.posting_date, l.equipment_hiring_form, li.expense_head, li.hours as total_hours, l.equipment from tabLogbook l, `tabLogbook Item` li where li.parent = l.name and l.docstatus = 1 and l.paid = 0 and l.supplier = %(supplier)s and l.branch = %(branch)s and l.posting_date between %(from_date)s and %(to_date)s order by l.posting_date, li.expense_head"
+		query = """ SELECT l.name as logbook, l.posting_date, l.equipment_hiring_form, li.expense_head, li.hours as total_hours, 
+				l.equipment FROM tabLogbook l, `tabLogbook Item` li WHERE li.parent = l.name AND l.docstatus = 1 
+			AND l.paid = 0 AND l.supplier = %(supplier)s AND l.branch = %(branch)s AND l.posting_date BETWEEN %(from_date)s 
+			and %(to_date)s ORDER BY l.posting_date, li.expense_head"""
+	
                 entries = frappe.db.sql(query, {"supplier": self.supplier, "from_date": self.from_date, "to_date": self.to_date, "branch": self.branch}, as_dict=True)
                 self.set('items', [])
 
@@ -44,15 +48,35 @@ class EMEPayment(Document):
 			frappe.msgprint("No valid logbooks found!")
 
 		total = 0
+		exist_list = {}
                 for d in entries:
-			d.rate = frappe.db.get_value("Equipment Hiring Form", d.equipment_hiring_form, "rate")
-			d.amount = flt(d.total_hours * d.rate, 2)
-			total += d.amount
-                        row = self.append('items', {})
-                        row.update(d)
+			exist = frappe.db.sql(""" SELECT eme.name FROM `tabEME Payment` eme, `tabEME Payment Item` emi  
+				WHERE emi.parent = eme.name AND emi.logbook = '{0}' """.format(d.logbook))
+			if exist:
+				exist_list.setdefault(exist[0], []).append(d.logbook)
+			else:		
+				#d.rate = frappe.db.get_value("Equipment Hiring Form", d.equipment_hiring_form, "rate")
+				d.rate = self.get_rate(d.equipment_hiring_form, d.posting_date)
+				d.amount = flt(d.total_hours * d.rate, 2)
+				total += d.amount
+				row = self.append('items', {})
+				row.update(d)
+		if exist_list:
+			frappe.msgprint("<b> {0} </b> </br> {1}".format(exist_list.keys(), exist_list.values()), title= "LogBook already pulled in EME Payment")
+		"""
+			AND NOT EXISTS ( SELECT eme.name FROM `tabEME Payment` eme, `tabEME Payment Item` emi                         WHERE emi.parent = eme.name AND emi.logbook = l.name) 
+		"""
 		self.total_amount = total
 		self.calculate_totals()
 
+
+	def get_rate(self, ehf, posting_date):
+		rate = frappe.db.sql(""" select rate from `tabHiring Rate History` where parent = '{0}' and '{1}' between from_date and to_date and docstatus = 1""".format(ehf, posting_date) , as_dict = 1, debug = 1)
+		if rate:
+			frappe.msgprint("ues")
+			return rate[0].rate
+		else:
+			return frappe.db.get_value("Equipment Hiring Form", ehf, "rate")
 	def calculate_totals(self):
 		settings = frappe.get_single("Accounts Settings")
 		total = 0
