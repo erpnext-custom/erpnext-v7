@@ -243,7 +243,7 @@ def get_data(filters=None):
 					WHEN dni.conversion_req=1 THEN dni.sales_uom
 					ELSE dni.stock_uom
 				END as uom, sum(dni.amount),
-				sum(dni.amount) - (dni.discount_or_cost_amount) + sum(dni.additional_cost) - sum(dn.challan_cost)
+				sum(dni.amount) - (dni.discount_amount) + sum(dni.additional_cost) - sum(dn.challan_cost)
 			"""
 			group_by = " group by dn.branch, dn.location, i.item_sub_group"
 			order_by = ""
