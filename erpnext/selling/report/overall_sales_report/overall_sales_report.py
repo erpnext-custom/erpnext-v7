@@ -267,7 +267,7 @@ def get_data(filters=None):
 					WHEN dni.conversion_req=1 THEN dni.sales_uom
 					ELSE dni.stock_uom
 				END as uom, sum(dni.amount),	
-				sum(dni.amount) - dn.discount_or_cost_amount + dn.additional_cost - dn.challan_cost
+				sum(dni.net_amount)+ dn.challan_cost
 			"""
 			group_by = "group by dn.name"
 			order_by = "order by dn.posting_date"
@@ -291,7 +291,7 @@ def get_data(filters=None):
 					WHEN dni.conversion_req=1 THEN dni.sales_uom
 					ELSE dni.stock_uom
 				END as uom, sum(dni.rate), sum(dni.amount),
-				dn.discount_or_cost_amount, dn.additional_cost, sum(dni.net_amount),
+				dn.discount_or_cost_amount, dn.additional_cost, sum(dni.net_amount)+dn.challan_Cost,
 				dn.challan_cost, dn.transportation_rate, dn.total_distance, dn.transportation_charges,
 				dn.vehicle, dn.drivers_name, dn.contact_no
 			"""
