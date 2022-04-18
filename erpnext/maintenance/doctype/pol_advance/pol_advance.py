@@ -132,7 +132,7 @@ class PolAdvance(AccountsController):
         if not advance_account:
             frappe.throw("Setup POL Advance Account in Maintenance Accounts Settings")
 
-        account_type = frappe.db.get_value("Account", advance_account, "account_type")
+        account_type = frappe.db.get_value("Account", credit_account, "account_type")
         voucher_type = "Journal Entry"
         voucher_series = "Journal Voucher"
         party_type = ''
@@ -176,6 +176,8 @@ class PolAdvance(AccountsController):
             "cost_center": self.cost_center,
             "reference_type": "Pol Advance",
             "reference_name": self.name,
+            "party_type": party_type,
+            "party": party,
             "business_activity": ba
         })
 
@@ -185,8 +187,6 @@ class PolAdvance(AccountsController):
             "debit_in_account_currency": self.amount,
             "cost_center": self.cost_center,
             "party_check": 0,
-            "party_type": party_type,
-            "party": party,
             "business_activity": ba
         })
 
