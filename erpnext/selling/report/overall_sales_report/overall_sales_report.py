@@ -395,7 +395,7 @@ def get_data(filters=None):
 					WHEN dni.conversion_req=1 THEN dni.sales_uom
 					ELSE dni.stock_uom
 				END as uom, sum(dni.rate), sum(dni.amount),
-				dn.discount_or_cost_amount, dn.additional_cost, sum(dni.net_amount)-(dn.challan_cost)/count(select a.item_code from `tabDelivery Note Item` a where a.parent = dn.name group by a.item_group) -(dn.loading_cost)/count(dn.name),
+				dn.discount_or_cost_amount, dn.additional_cost, sum(dni.net_amount)-(dn.challan_cost)/(select distinct count(a.item_code) from `tabDelivery Note Item` a where a.parent = dn.name) -(dn.loading_cost)/count(dn.name),
 				dn.challan_cost, dn.transportation_rate, dn.total_distance, dn.transportation_charges,
 				dn.vehicle, dn.drivers_name, dn.contact_no
 			"""
