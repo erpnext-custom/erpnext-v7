@@ -226,7 +226,7 @@ def get_data(filters=None):
 				CASE 
 					WHEN soi.conversion_req=1 THEN soi.sales_uom
 					ELSE soi.stock_uom
-				END as uom, sum(soi.net_amount)-so.loading_cost-so.challan_cost
+				END as uom, sum(soi.net_amount-so.loading_cost-so.challan_cost)
 			"""
 			group_by = " group by so.branch, so.location, i.item_sub_group"
 			order_by = ""
@@ -347,7 +347,7 @@ def get_data(filters=None):
 					WHEN dni.conversion_req=1 THEN dni.sales_uom
 					ELSE dni.stock_uom
 				END as uom, sum(dni.amount),
-				sum(dni.net_amount)-dn.loading_cost-dn.challan_cost
+				sum(dni.net_amount-dn.loading_cost-dn.challan_cost)
 			"""
 			group_by = " group by dn.branch, dn.location, i.item_sub_group"
 			order_by = ""
