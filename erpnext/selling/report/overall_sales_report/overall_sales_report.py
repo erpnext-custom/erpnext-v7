@@ -347,7 +347,7 @@ def get_data(filters=None):
 					WHEN dni.conversion_req=1 THEN dni.sales_uom
 					ELSE dni.stock_uom
 				END as uom, sum(dni.amount),
-				sum(dni.net_amount-dn.challan_cost-dn.loading_cost)
+				sum(dni.net_amount)-(dn.challan_cost)/(select distinct count(a.item_sub_group) from `tabDelivery Note Item` a where a.parent = dn.name) -(dn.loading_cost)/(select distinct count(a.item_group) from `tabDelivery Note Item` a where a.parent = dn.name)
 			"""
 			group_by = " group by dn.branch, dn.location, i.item_sub_group"
 			order_by = ""
