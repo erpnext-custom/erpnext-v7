@@ -226,7 +226,7 @@ def get_data(filters=None):
 				CASE 
 					WHEN soi.conversion_req=1 THEN soi.sales_uom
 					ELSE soi.stock_uom
-				END as uom, sum(soi.amount) - so.discount_or_cost_amount + so.additional_cost - so.challan_cost
+				END as uom, sum(soi.net_amount)
 			"""
 			group_by = " group by so.branch, so.location, i.item_sub_group"
 			order_by = ""
@@ -249,7 +249,7 @@ def get_data(filters=None):
 					WHEN soi.conversion_req=1 THEN soi.sales_uom
 					ELSE soi.stock_uom
 				END as uom, sum(soi.amount), 
-				sum(soi.amount) - so.discount_or_cost_amount + so.additional_cost - so.challan_cost
+				sum(soi.net_amount)
 			"""
 			group_by = " group by so.name"
 			order_by = "order by so.transaction_date"
@@ -273,7 +273,7 @@ def get_data(filters=None):
 					WHEN soi.conversion_req=1 THEN soi.sales_uom
 					ELSE soi.stock_uom
 				END as uom, sum(soi.rate), sum(soi.amount), so.discount_or_cost_amount, so.additional_cost, 
-				sum(soi.amount) - so.discount_or_cost_amount + so.additional_cost - so.challan_cost, so.challan_cost
+				sum(soi.net_amount)
 			"""
 			group_by = "group by so.name, soi.item_code"
 			order_by = "order by so.transaction_date"
