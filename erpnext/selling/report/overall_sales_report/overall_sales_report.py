@@ -432,6 +432,14 @@ def get_conditions(filters=None):
 		else:
 			cond += " and dn.posting_date between'" + str(filters.from_date) + "' and '" + str(filters.to_date) + "'"
 
+	if filters.has_challan_cost:
+		if filters.report_by == "Delivery Note":
+			cond += " and dn.challan_cost > 0"
+
+	if filters.has_challan_cost:
+		if filters.report_by == "Delivery Note":
+			cond += " and dn.loading_cost > 0"
+
 	if filters.cost_center:
 		all_ccs = get_child_cost_centers(filters.cost_center)
 		if filters.report_by == "Sales Order":
