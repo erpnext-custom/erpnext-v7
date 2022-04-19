@@ -366,12 +366,12 @@ def get_data(filters=None):
 					ELSE "None"
 				END as transaction_type,
 				dn.customer, (select mobile_no from `tabCustomer` where name=dn.customer) as customer_number, dn.customer_group, 
-				i.item_sub_group, sum(dni.qty)-dn.loading_cost-dn.challan_cost as qty, 
+				i.item_sub_group, sum(dni.qty) as qty, 
 				CASE 
 					WHEN dni.conversion_req=1 THEN dni.sales_uom
 					ELSE dni.stock_uom
 				END as uom, sum(dni.amount),	
-				sum(dni.net_amount)
+				sum(dni.net_amount)-dn.loading_cost-dn.challan_cost
 			"""
 			group_by = "group by dn.name"
 			order_by = "order by dn.posting_date"
