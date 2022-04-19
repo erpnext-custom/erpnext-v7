@@ -144,7 +144,7 @@ frappe.query_reports["Overall Sales Report"] = {
 			"fieldname": "report_by",
 			"label": "Report Base On",
 			"fieldtype": "Select",
-			"options": ["Sales Order","Delivery Note"],
+			"options": ["Sales Order","Delivery Note","Sales Invoice"],
 			"default": "Sales Order",
 		},
 		{
@@ -189,6 +189,18 @@ frappe.query_reports["Overall Sales Report"] = {
 		{
 			"fieldname": "summary",
 			"label": ("Show Summary"),
+			"fieldtype": "Check",
+			"default": 0
+		},
+		{
+			"fieldname": "has_challan_cost",
+			"label": ("Has Challan Cost"),
+			"fieldtype": "Check",
+			"default": 0
+		},
+		{
+			"fieldname": "has_loading_cost",
+			"label": ("Has Loading Cost"),
 			"fieldtype": "Check",
 			"default": 0
 		},
