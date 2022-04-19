@@ -436,7 +436,7 @@ def get_conditions(filters=None):
 		if filters.report_by == "Delivery Note":
 			cond += " and dn.challan_cost > 0"
 
-	if filters.has_challan_cost:
+	if filters.has_loading_cost:
 		if filters.report_by == "Delivery Note":
 			cond += " and dn.loading_cost > 0"
 
