@@ -55,6 +55,16 @@ frappe.ui.form.on('Sales Order Item', {
 			frappe.model.set_value(cdt, cdn, "amount", flt(i.rate) * flt(i.qty))
 		}
 	},
+	amount: function(frm, cdt, cdn) {
+		var total = 0;
+		frm.doc.items.forEach(function(d) {total += d.amount});
+		frm.set_value("total", total)
+	},
+	items_remove: function (frm, cdt, cdn) {
+		var total = 0;
+		frm.doc.items.forEach(function(d) {total += d.amount});
+		frm.set_value("total", total)
+	}
 });
 
 function get_selling_price(frm, row) {

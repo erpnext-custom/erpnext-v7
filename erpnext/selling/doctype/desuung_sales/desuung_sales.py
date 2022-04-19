@@ -16,6 +16,8 @@ from erpnext.accounts.utils import get_fiscal_year
 class DesuungSales(AccountsController):
 	#code to fetch selling price for items after selecting item_code
 	def get_selling_price(self, item_code = None, branch = None, posting_date = None):
+		if not item_code:
+			return
 		selling_price = ""
 		if not branch or branch == None:
 			frappe.throw("Please select branch first")
