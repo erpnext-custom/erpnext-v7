@@ -248,8 +248,7 @@ def get_data(filters=None):
 				CASE 
 					WHEN soi.conversion_req=1 THEN soi.sales_uom
 					ELSE soi.stock_uom
-				END as uom, sum(soi.amount), 
-				sum(soi.net_amount)
+				END as uom, sum(soi.amount), sum(soi.net_amount)
 			"""
 			group_by = " group by so.name"
 			order_by = "order by so.transaction_date"
@@ -273,7 +272,7 @@ def get_data(filters=None):
 					WHEN soi.conversion_req=1 THEN soi.sales_uom
 					ELSE soi.stock_uom
 				END as uom, sum(soi.rate), sum(soi.amount), so.discount_or_cost_amount, so.additional_cost, 
-				sum(soi.net_amount)
+				sum(soi.net_amount), so.challan_cost
 			"""
 			group_by = "group by so.name, soi.item_code"
 			order_by = "order by so.transaction_date"
@@ -304,7 +303,7 @@ def get_data(filters=None):
 				si.branch,
 				si.customer, (select mobile_no from `tabCustomer` where name=si.customer) as customer_number, si.customer_group, 
 				i.item_sub_group, sum(sii.qty) as qty, sii.stock_uom as uom, sum(sii.amount),	
-				sum(sii.net_amount)+ si.challan_cost
+				sum(sii.net_amount)
 			"""
 			group_by = "group by si.name"
 			order_by = "order by si.posting_date"
