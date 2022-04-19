@@ -442,11 +442,11 @@ def get_conditions(filters=None):
 
 	if filters.transaction_id:
 		if filters.report_by == "Delivery Note":
-			cond += " and dn.name = {}".format(filters.transaction_id)
+			cond += " and dn.name = '{}'".format(filters.transaction_id)
 		if filters.report_by == "Sales Order":
-			cond += " and so.name = {}".format(filters.transaction_id)
+			cond += " and so.name = '{}'".format(filters.transaction_id)
 		if filters.report_by == "Sales Invoice":
-			cond += " and si.name = {}".format(filters.transaction_id)
+			cond += " and si.name = '{}'".format(filters.transaction_id)
 
 	if filters.cost_center:
 		all_ccs = get_child_cost_centers(filters.cost_center)
