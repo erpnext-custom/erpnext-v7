@@ -204,5 +204,14 @@ frappe.query_reports["Overall Sales Report"] = {
 			"fieldtype": "Check",
 			"default": 0
 		},
+		{
+			"fieldname": "transaction_id",
+			"label": ("Transaction ID"),
+			"fieldtype": "Link",
+			"options": function(){
+				var link = frappe.query_report.filters_by_name.report_by.get_value();
+				return link
+			}		
+		},
 	]
 }
