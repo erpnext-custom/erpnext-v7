@@ -43,7 +43,7 @@ def execute(filters=None):
 		row = [ss.employee, ss.employee_name, ss.employment_type, cid, joining_date,
 			ss.bank_name, ss.bank_account_no, 
 			ss.cost_center, ss.branch, ss.department,
-                         ss.division, ss.employee_grade, ss.designation, 
+                         ss.division, ss.section, ss.employee_grade, ss.designation, 
 			 ss.fiscal_year, ss.month, ss.leave_withut_pay, ss.payment_days,
                          status]
 			
@@ -68,7 +68,7 @@ def get_columns(salary_slips):
 		#_("Company") + ":Link/Company:120",
 		_("Cost Center") + ":Link/Cost Center:120",
                 _("Branch") + ":Link/Branch:120", _("Department") + ":Link/Department:120", _("Division") + ":Link/Division:120",
-                _("Grade") + ":Link/Employee Grade:120", _("Designation") + ":Link/Designation:120",
+                _("Section") + ":Link/Section:120", _("Grade") + ":Link/Employee Grade:120", _("Designation") + ":Link/Designation:120",
 		_("Year") + "::80", _("Month") + "::80", _("Leave Without Pay") + ":Float:130", 
 		_("Payment Days") + ":Float:120", _("Status") + "::100"
 	]
