@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt, getdate, cstr
 from frappe import _
-from erpnext.accounts.utils import get_account_currency
+from erpnext.accounts.utils import get_account_currency, get_cost_centers_with_children
 
 def execute(filters=None):
 	account_details = {}
@@ -140,7 +140,9 @@ def get_conditions(filters):
 		conditions.append("voucher_no=%(voucher_no)s")
 
 	if filters.get("cost_center"):
-		conditions.append("cost_center=%(cost_center)s")
+		#conditions.append("cost_center=%(cost_center)s")
+		filters.cost_center = get_cost_centers_with_children(filters.cost_center)
+		conditions.append("cost_center in %(cost_center)s")
 
 	if filters.get("party_type"):
 		conditions.append("party_type=%(party_type)s")
