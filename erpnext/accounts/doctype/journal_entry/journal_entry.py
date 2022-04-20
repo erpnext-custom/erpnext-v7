@@ -102,6 +102,16 @@ class JournalEntry(AccountsController):
 		if not self.title:
 			self.title = self.get_title()
 
+	#added new here
+	def to_advance_amount(self):
+		for item in self.accounts:
+			if item.party_type == "Customer" and item.account == "Advance from Customer - NRDCL":
+				credit = self.total_credit
+				self.advance_amount = credit
+	#added new
+	def before_submit(self):
+		self.to_advance_amount()
+
 	def on_submit(self):
 		self.check_credit_limit()
 		self.make_gl_entries()
@@ -1049,3 +1059,15 @@ def get_average_exchange_rate(account):
 		exchange_rate = bank_balance_in_company_currency / bank_balance_in_account_currency
 
 	return exchange_rate
+
+#added new here
+@frappe.whitelist()
+def get_advance_from_je(branch):
+	return frappe.db.sql("""
+     	SELECT 
+			je.advance_amount, je.name, jea.account , jea.party, jea.party_type, jea.cost_center, jea.business_activity
+		FROM `tabJournal Entry` je, `tabJournal Entry Account` jea 
+		WHERE jea.parent=je.name 
+		AND je.branch='{}' 
+		AND je.advance_amount > 0 and je.docstatus=1
+	""".format(branch))

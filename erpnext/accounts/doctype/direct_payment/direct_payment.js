@@ -166,7 +166,17 @@ frappe.ui.form.on('Direct Payment', {
 	},
 	"party": function(frm) {
 		frm.set_value("pay_to_recd_from", frm.doc.party);
-	}	
+	},
+	"get_series": function(frm) {
+		console.log("here")
+		return frappe.call({
+			method: "get_series",
+			doc: frm.doc,
+			callback: function(r, rt) {
+				frm.reload_doc();
+			}
+		});
+	}
 });
 
 function roundOff(num) {    

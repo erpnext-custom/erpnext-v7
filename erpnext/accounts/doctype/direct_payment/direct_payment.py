@@ -9,7 +9,7 @@ from frappe.utils import flt, cint, getdate, get_datetime, get_url, nowdate, now
 from erpnext.accounts.general_ledger import make_gl_entries
 from frappe import _
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.custom_utils import check_future_date
+from erpnext.custom_utils import check_future_date, generate_receipt_no
 from frappe.model.mapper import get_mapped_doc
 
 class DirectPayment(AccountsController):
@@ -115,6 +115,10 @@ class DirectPayment(AccountsController):
             "delete from `tabCommitted Budget` where po_no = %s", self.name)
         frappe.db.sql(
             "delete from `tabConsumed Budget` where po_no = %s", self.name)
+
+    def get_series(self):
+        fiscal_year = getdate(self.posting_date).year
+        generate_receipt_no(self.doctype, self.name, self.branch, fiscal_year)
         
     def add_bank_gl_entries(self, gl_entries):
         party = party_type = None
