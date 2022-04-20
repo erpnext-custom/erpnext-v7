@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt, getdate, cstr
 from frappe import _
-from erpnext.accounts.utils import get_account_currency, get_cost_centers_with_children
+from erpnext.accounts.utils import get_account_currency, get_child_cost_centers
 
 def execute(filters=None):
 	account_details = {}
@@ -125,7 +125,7 @@ def get_gl_entries(filters):
 		{group_by_condition}
 		order by posting_date, account"""\
 		.format(select_fields=select_fields, conditions=get_conditions(filters),
-			group_by_condition=group_by_condition), filters, as_dict=1)
+			group_by_condition=group_by_condition), filters, as_dict=1, debug =1)
 
 	return gl_entries
 
@@ -141,7 +141,7 @@ def get_conditions(filters):
 
 	if filters.get("cost_center"):
 		#conditions.append("cost_center=%(cost_center)s")
-		filters.cost_center = get_cost_centers_with_children(filters.cost_center)
+		filters.cost_center = get_child_cost_centers(filters.cost_center)
 		conditions.append("cost_center in %(cost_center)s")
 
 	if filters.get("party_type"):
