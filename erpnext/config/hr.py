@@ -481,6 +481,12 @@ def get_data():
 				},
 				{
 					"type": "report",
+					"name": "Employee PMS Report",
+					"is_query_report": True,
+					"doctype": "Employee"
+				},
+				{
+					"type": "report",
 					"name": "DES Employee Report",
 					"doctype": "DES Employee"
 				},
