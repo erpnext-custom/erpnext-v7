@@ -14,7 +14,7 @@ def get_data(filters):
 	(select efd.cid_no from `tabEmployee Family Details` efd where efd.parent = e.name and efd.relationship = 'Self') as cid_no,
 	e.date_of_birth, e.date_of_joining, e.gender,
 	e.branch, e.department, e.division,
-	(select ee.qualification from `tabEmployee Education` ee where ee.parent = e.name order by creation desc limit 1) as course,
+	(select ee.qualification from `tabEmployee Education` ee where ee.parent = e.name and qualification not like '%Training%' order by year_of_passing desc limit 1) as course,
 	(select ee.level from `tabEmployee Education` ee where ee.parent = e.name order by creation desc limit 1) as qualification,
 	(select ee.school_univ from `tabEmployee Education` ee where ee.parent = e.name order by creation desc limit 1) as school_univ,
 	(select ee.country from `tabEmployee Education` ee where ee.parent = e.name order by creation desc limit 1) as country,
