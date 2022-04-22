@@ -106,7 +106,7 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 					source_doctype: "Sales Order",
 					get_query_filters: {
 						docstatus: 1,
-						status: ["!=", "Closed"],
+						status: ["!=", "Closed, Draft"],
 						per_billed: ["<", 99.99],
 						customer: cur_frm.doc.customer || undefined,
 						company: cur_frm.doc.company
@@ -283,7 +283,7 @@ erpnext.accounts.SalesInvoiceController = erpnext.selling.SellingController.exte
 		if(this.frm.doc.rate_per_unit) {
 			var qty = 0
 			this.frm.doc.items.forEach(function(d) {
-				qty += d.delivered_qty	
+				qty += d.qty	
 			})		
 			this.frm.set_value("total_loading_amount", qty * this.frm.doc.rate_per_unit)
 		}
@@ -708,4 +708,38 @@ cur_frm.fields_dict['items'].grid.get_field('cost_center').get_query = function(
                 filters: {'branch': frm.branch}
         }
 }
-
+//added by cety 
+frappe.ui.form.on("Sales Invoice", {
+	get_advance_from_je: function(frm){
+		get_advance(frm);
+	}
+})
+function get_advance(frm){
+	frappe.call({
+		method: "erpnext.accounts.doctype.journal_entry.journal_entry.get_advance_from_je",
+		args: {
+			branch: frm.doc.branch,
+		},
+		callback: function(r) {
+			console.log(r.message)
+			if (r.message){
+				frm.set_value("je_advance_amount", r.message[0][0]);
+				frm.set_value("reference_name", r.message[0][1]);
+				frm.set_value("advance_account", r.message[0][2]);	
+				frm.set_value("party", r.message[1][3]) || frm.set_value("party", r.message[0][3]);
+				frm.set_value("party_type", r.message[1][4]) || frm.set_value("party_type", r.message[0][4]);
+				frm.set_value("advance_cost_center", r.message[1][5]);
+				frm.set_value("advance_business_activity", r.message[1][6]);
+			}
+			else{
+				frm.set_value("je_advance_amount", 0)
+				frm.set_value("reference_name", '')
+				frm.set_value("advance_account", '');	
+				frm.set_value("party", '');
+				frm.set_value("party_type", '');
+				frm.set_value("advance_cost_center", '');
+				frm.set_value("advance_business_activity", '');
+			}
+		}
+	});
+}
