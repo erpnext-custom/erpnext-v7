@@ -36,8 +36,11 @@ def get_data(filters):
 			row.append(a.branch)
 			row.append(a.department)
 			row.append(a.division)
-			for b in frappe.db.sql("""select pms_rating from `tabEmployee PMS Rating` where fiscal_year in ({}) and parent = '{}' order by fiscal_year asc""".format(", ".join(a for a in years), a.name)):
-				row.append(b)
+			year = filters.from_fiscal_year
+			for b in frappe.db.sql("""select pms_rating, fiscal_year from `tabEmployee PMS Rating` where fiscal_year in ({}) and parent = '{}' order by fiscal_year asc""".format(", ".join(a for a in years), a.name), as_dict=1):
+				if str(b.fiscal_year) == str(year):
+					row.append(b.pms_rating)
+				year = int(year)+1
 			data.append(row)
 	return data
 
