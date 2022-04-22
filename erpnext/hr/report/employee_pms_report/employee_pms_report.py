@@ -41,7 +41,7 @@ def get_data(filters):
 				if pms:
 					row.append(pms)
 				else:
-					row.append(0)
+					row.append('')
 			data.append(row)
 	return data
 
