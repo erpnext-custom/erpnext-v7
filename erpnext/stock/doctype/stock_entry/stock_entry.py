@@ -359,8 +359,8 @@ class StockEntry(StockController):
 					format_time(self.posting_time), frappe.bold(d.item_code)))
 					+ '<br><br>' + _("Available qty is {0}, you need {1}").format(frappe.bold(d.actual_qty),
 						frappe.bold(d.transfer_qty)))
-			if stock_shortage == 1:
-				frappe.throw("Insuffient Stock",NegativeStockError, title=_('Insufficient Stock'))
+		if stock_shortage == 1:
+			frappe.throw("Insuffient Stock",NegativeStockError, title=_('Insufficient Stock'))
 
 	def get_stock_and_rate(self):
 		self.set_transfer_qty()
