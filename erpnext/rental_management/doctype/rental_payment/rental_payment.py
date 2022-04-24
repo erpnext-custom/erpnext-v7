@@ -20,6 +20,7 @@ class RentalPayment(AccountsController):
 		self.calculate_totals()
 		if self.is_nhdcl_employee:
 			self.bank_account = ''
+		self.update_item_posting_date()
 	
 	def on_submit(self):
 		self.update_rental_official()
@@ -34,6 +35,10 @@ class RentalPayment(AccountsController):
 		self.post_gl_entry()
 		self.update_rental_bill()
 
+	def update_item_posting_date(self):
+		for d in self.get('item'):
+			d.posting_date = self.posting_date
+	
 	def calculate_discount(self):
 		if self.discount_percent > 0:
 			discount_amount = 0.00
