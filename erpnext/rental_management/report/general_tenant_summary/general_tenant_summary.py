@@ -118,9 +118,10 @@ def get_official_tenant_data(tenant,from_date,to_date):
 				rpi.rent_received rpi_rent_received,
 				rpi.discount_amount rpi_discount_amount
 			from `tabRental Bill` rb 
-			left join `tabRental Payment Item` rpi on rb.name = rpi.rental_bill and rpi.docstatus=1 
+			left join `tabRental Payment Item` rpi on rpi.rental_bill = rb.name and rpi.docstatus=1 and rpi.posting_date between '{0}' and '{1}'
+			left join `tabRental Payment` rp on rpi.parent = rp.name and rp.docstatus=1
 			where rb.posting_date between '{0}' and '{1}' 
-			and rb.docstatus=1 and rb.tenant = '{2}' order by rb.name
+			and rb.docstatus=1 and rb.tenant = '{2}' group by name order by rb.name
 		) as x group by tenant
 		""".format(from_date, to_date, tenant), as_dict=1)
 
@@ -183,9 +184,10 @@ def get_data(filters):
 				rpi.rent_received rpi_rent_received,
 				rpi.discount_amount rpi_discount_amount
 			from `tabRental Bill` rb 
-			left join `tabRental Payment Item` rpi on rb.name = rpi.rental_bill and rpi.docstatus=1
-			where rb.posting_date between '{from_date}' and '{to_date}' 
-			and rb.docstatus=1 order by rb.name
+			left join `tabRental Payment Item` rpi on rb.name = rpi.rental_bill and rpi.docstatus=1 and rpi.posting_date between '{from_date}' and '{to_date}'
+			left join `tabRental Payment` rp on rpi.parent = rp.name and rp.docstatus=1
+			where rb.posting_date between '{from_date}' and '{to_date}'  
+			and rb.docstatus=1 group by name order by rb.name
 		) as x group by tenant
 		""".format(from_date=filters.get("from_date"), to_date=filters.get("to_date")))
 
