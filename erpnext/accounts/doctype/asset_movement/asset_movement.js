@@ -26,18 +26,24 @@ frappe.ui.form.on('Asset Movement', {
 		frm.set_query("target_warehouse", function() {
 			return {
 				filters: [
-                                         ["Warehouse", "company", "in", ["", cstr(frm.doc.company)]],
-                                         ["Warehouse", "is_group", "=", 0]
-                                        ]				
+					["Warehouse", "company", "in", ["", cstr(frm.doc.company)]],
+					["Warehouse", "is_group", "=", 0]
+				]				
 			}
-		})
+		});
+
 		frm.set_query("target_cost_center", function() {
 			return {
 				filters: [
-                                         ["Cost Center", "is_disabled", "!=", 1],
-                                         ["Cost Center", "is_group", "=", 0]
-                                        ]				
+					["Cost Center", "is_disabled", "!=", 1],
+					["Cost Center", "is_group", "=", 0]
+				]				
 			}
-		})
+		});
+
+		if(!frm.doc.asset && cur_frm.is_new()){
+			cur_frm.set_value('source_custodian', null);
+			cur_frm.set_value('target_custodian', null);
+		}
 	}
 });
