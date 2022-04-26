@@ -179,12 +179,12 @@ def get_data():
                                         "Label": _("Rental Payment")
                                 },
 
-				{
-                                        "type": "report",
-                                        "name": "Accounts Receivable",
-                                        "doctype": "Sales Invoice",
-                                        "is_query_report": True
-                                },
+				# {
+                #                         "type": "report",
+                #                         "name": "Accounts Receivable",
+                #                         "doctype": "Sales Invoice",
+                #                         "is_query_report": True
+                #                 },
 				{
                                         "type": "report",
                                         "name": "General Tenant Summary",
