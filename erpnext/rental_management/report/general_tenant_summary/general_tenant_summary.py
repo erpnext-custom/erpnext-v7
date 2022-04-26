@@ -176,13 +176,13 @@ def get_data(filters):
 				rb.rent_write_off_amount rb_rent_write_off_amount,
 				rb.tds_amount rb_tds_amount,
 
-				rpi.pre_rent_amount rpi_pre_rent_amount,
-				rpi.tds_amount rpi_tds_amount,
-				rpi.excess_amount rpi_excess_amount,
-				rpi.penalty rpi_penalty,
-				rpi.rent_write_off_amount rpi_rent_write_off_amount,
-				rpi.rent_received rpi_rent_received,
-				rpi.discount_amount rpi_discount_amount
+				sum(rpi.pre_rent_amount) rpi_pre_rent_amount,
+				sum(rpi.tds_amount) rpi_tds_amount,
+				sum(rpi.excess_amount) rpi_excess_amount,
+				sum(rpi.penalty) rpi_penalty,
+				sum(rpi.rent_write_off_amount) rpi_rent_write_off_amount,
+				sum(rpi.rent_received) rpi_rent_received,
+				sum(rpi.discount_amount) rpi_discount_amount
 			from `tabRental Bill` rb 
 			left join `tabRental Payment Item` rpi on rb.name = rpi.rental_bill and rpi.docstatus=1 and rpi.posting_date between '{from_date}' and '{to_date}'
 			left join `tabRental Payment` rp on rpi.parent = rp.name and rp.docstatus=1
