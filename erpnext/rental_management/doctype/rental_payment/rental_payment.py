@@ -136,9 +136,9 @@ class RentalPayment(AccountsController):
 								total_penalty += a.penalty
 							else:
 								frappe.throw("Penalty Rate and Payment Due Date are missing in Rental Setting")
-					else:
-						if a.penalty > 0:
-							total_penalty += a.penalty
+						else:
+							if a.penalty > 0:
+								total_penalty += a.penalty
 				else:
 					a.penalty = 0.00					
 			self.penalty_amount = round(total_penalty)
