@@ -155,7 +155,7 @@ def get_data(filters):
 		select tenant, tenant_name,
 			GROUP_CONCAT(DISTINCT(name) SEPARATOR ', ') rental_bill,
 			sum(rb_receivable_amount),
-			sum(rb_received_amount),
+			sum(rpi_rent_received),
 			sum(rpi_pre_rent_amount),
 			sum(rb_adjusted_amount),
 			sum(rpi_excess_amount),
@@ -164,7 +164,7 @@ def get_data(filters):
 			sum(rpi_penalty),
 			sum(rpi_discount_amount),
 			(sum(rpi_rent_received) + sum(rpi_pre_rent_amount) + sum(rpi_excess_amount) + sum(rpi_penalty) - sum(rpi_tds_amount) - sum(rpi_discount_amount)) total_rent_received,
-			(sum(rb_receivable_amount) - sum(rb_received_amount) - sum(rb_adjusted_amount) - sum(rb_rent_write_off_amount) - sum(rb_tds_amount)) outstanding_amount,
+			(sum(rb_receivable_amount) - sum(rpi_rent_received) - sum(rb_adjusted_amount) - sum(rpi_rent_write_off_amount) - sum(rpi_tds_amount)) outstanding_amount,
 			(sum(rpi_pre_rent_amount) - sum(rb_adjusted_amount)) pre_rent_balance
 		from (
 			select 
