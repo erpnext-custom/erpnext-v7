@@ -89,7 +89,7 @@ def get_official_tenant_data(tenant,from_date,to_date):
 		select tenant, tenant_name,
 			GROUP_CONCAT(DISTINCT(name) SEPARATOR ', ') rental_bill,
 			sum(rb_receivable_amount) rental_income,
-			sum(rb_received_amount) received_amount,
+			sum(rpi_rent_received) received_amount,
 			sum(rpi_pre_rent_amount) pre_rent_amount,
 			sum(rb_adjusted_amount) adjusted_amount,
 			sum(rpi_excess_amount) excess_amount,
@@ -98,7 +98,7 @@ def get_official_tenant_data(tenant,from_date,to_date):
 			sum(rpi_penalty) penalty,
 			sum(rpi_discount_amount) discount_amount,
 			(sum(rpi_rent_received) + sum(rpi_pre_rent_amount) + sum(rpi_excess_amount) + sum(rpi_penalty) - sum(rpi_tds_amount) - sum(rpi_discount_amount)) total_rent_received,
-			(sum(rb_receivable_amount) - sum(rb_received_amount) - sum(rb_adjusted_amount) - sum(rb_rent_write_off_amount) - sum(rb_tds_amount)) outstanding_bill,
+			(sum(rb_receivable_amount) - sum(rpi_rent_received) - sum(rb_adjusted_amount) - sum(rpi_rent_write_off_amount) - sum(rpi_tds_amount)) outstanding_bill,
 			(sum(rpi_pre_rent_amount) - sum(rb_adjusted_amount)) pre_rent_balance
 		from (
 			select 
@@ -110,13 +110,13 @@ def get_official_tenant_data(tenant,from_date,to_date):
 				rb.rent_write_off_amount rb_rent_write_off_amount,
 				rb.tds_amount rb_tds_amount,
 
-				rpi.pre_rent_amount rpi_pre_rent_amount,
-				rpi.tds_amount rpi_tds_amount,
-				rpi.excess_amount rpi_excess_amount,
-				rpi.penalty rpi_penalty,
-				rpi.rent_write_off_amount rpi_rent_write_off_amount,
-				rpi.rent_received rpi_rent_received,
-				rpi.discount_amount rpi_discount_amount
+				sum(rpi.pre_rent_amount) rpi_pre_rent_amount,
+				sum(rpi.tds_amount) rpi_tds_amount,
+				sum(rpi.excess_amount) rpi_excess_amount,
+				sum(rpi.penalty) rpi_penalty,
+				sum(rpi.rent_write_off_amount) rpi_rent_write_off_amount,
+				sum(rpi.rent_received) rpi_rent_received,
+				sum(rpi.discount_amount) rpi_discount_amount
 			from `tabRental Bill` rb 
 			left join `tabRental Payment Item` rpi on rpi.rental_bill = rb.name and rpi.docstatus=1 and rpi.posting_date between '{0}' and '{1}'
 			left join `tabRental Payment` rp on rpi.parent = rp.name and rp.docstatus=1
