@@ -167,7 +167,7 @@ def conditions(filters):
 	if filters.get("payment_mode"):
 		conds += " and rp.payment_mode = '{0}'".format(filters.get("payment_mode"))
 	if from_date and to_date:
-		conds += " and posting_date between '{0}' and '{1}'".format(from_date, to_date)
+		conds += " and rp.posting_date between '{0}' and '{1}'".format(from_date, to_date)
 	if filters.building_classification:
 		conds += """ and exists( select 1 from `tabTenant Information` ti where ti.name = rpi.tenant 
 					 and ti.building_classification = '{0}')""".format(filters.building_classification)
