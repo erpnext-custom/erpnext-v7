@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 import frappe
+from frappe.utils import getdate
 
 def execute(filters=None):
 	columns = get_columns();
@@ -53,7 +54,12 @@ def get_tenant_list(filters):
 
 	data = []
 	for i in tenant_list:
-		datas = get_official_tenant_data(tenant=i.name,from_date=i.from_date,to_date=i.to_date)
+		toDate = i.to_date
+		if getdate(filters.get("to_date")) < getdate(i.to_date):
+			toDate = filters.get("to_date")
+		# if i.name == 'THI200986':
+		# 	frappe.throw("'{}' and '{}'".format(i.from_date, toDate))
+		datas = get_official_tenant_data(tenant=i.name,from_date=i.from_date,to_date=toDate, flt_from_date=filters.get("from_date"), flt_to_date=filters.get("to_date"))
 		for d in datas:
 			row = [d.tenant,d.tenant_name,d.rental_bill,d.rental_income,d.received_amount,d.pre_rent_amount,d.adjusted_amount,d.excess_amount,
 				d.tds_amount,d.rent_write_off_amount,d.penalty,d.discount_amount,d.total_rent_received,d.outstanding_bill,d.pre_rent_balance]
@@ -61,7 +67,7 @@ def get_tenant_list(filters):
 
 	return data
 
-def get_official_tenant_data(tenant,from_date,to_date):
+def get_official_tenant_data(tenant,from_date,to_date,flt_from_date, flt_to_date):
 	data = frappe.db.sql(""" 
 		select rb.tenant, rb.tenant_name,
 			GROUP_CONCAT(DISTINCT(rb.name) SEPARATOR ', ') rental_bill,
@@ -118,12 +124,12 @@ def get_official_tenant_data(tenant,from_date,to_date):
 				sum(rpi.rent_received) rpi_rent_received,
 				sum(rpi.discount_amount) rpi_discount_amount
 			from `tabRental Bill` rb 
-			left join `tabRental Payment Item` rpi on rpi.rental_bill = rb.name and rpi.docstatus=1 and rpi.posting_date between '{0}' and '{1}'
+			left join `tabRental Payment Item` rpi on rpi.rental_bill = rb.name and rpi.docstatus=1 and rpi.posting_date between '{3}' and '{4}'
 			left join `tabRental Payment` rp on rpi.parent = rp.name and rp.docstatus=1
 			where rb.posting_date between '{0}' and '{1}' 
 			and rb.docstatus=1 and rb.tenant = '{2}' group by name order by rb.name
 		) as x group by tenant
-		""".format(from_date, to_date, tenant), as_dict=1)
+		""".format(from_date, to_date, tenant, flt_from_date, flt_to_date), as_dict=1)
 
 	return query
 
