@@ -193,7 +193,7 @@ def get_data(filters):
 			left join `tabRental Payment Item` rpi on rb.name = rpi.rental_bill and rpi.docstatus=1 and rpi.posting_date between '{from_date}' and '{to_date}'
 			left join `tabRental Payment` rp on rpi.parent = rp.name and rp.docstatus=1
 			where rb.posting_date between '{from_date}' and '{to_date}'  
-			and rb.docstatus=1 group by name order by rb.name
+			and rb.docstatus=1 and rb.gl_entry = 1 group by name order by rb.name
 		) as x group by tenant
 		""".format(from_date=filters.get("from_date"), to_date=filters.get("to_date")))
 
