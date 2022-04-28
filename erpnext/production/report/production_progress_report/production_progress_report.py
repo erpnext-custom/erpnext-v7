@@ -161,11 +161,15 @@ def get_data(filters):
 					if a.location:
 						# branch = str(filters.branch)
 						# branch = branch.replace(' - NRDCL','')
+						if frappe.session.user == "Adminsitrator":
+							frappe.msgprint("here 1 "+str(a.branch))
 						target = get_target_value("Production", a.location, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date, True)
 						row = [a.branch, a.location, target, a.uom]
 						cond = " and location = '{0}'".format(a.location)
 						# cond += " and branch = '{0}'".format(branch)
 					else:
+						if frappe.session.user == "Adminsitrator":
+							frappe.msgprint("here 2 "+str(a.branch))
 						target = get_target_value("Production", a.cost_center, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date, True)
 						row = [a.branch, a.location, target, a.uom]
 						branch_n = str(filters.branch)
