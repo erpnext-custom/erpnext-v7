@@ -15,7 +15,7 @@ class PBVA(Document):
 	def on_submit(self):
 		cc_amount = {}
 		for a in self.items:
-			cc = frappe.db.get_value("Division", frappe.db.get_value("Employee", a.employee, "division"), "cost_center")
+			cc = frappe.db.get_value(frappe.db.get_value("Employee", a.employee, "cost_center")
 			if cc_amount.has_key(cc):
 				cc_amount[cc] = cc_amount[cc] + a.amount
 			else:
@@ -48,8 +48,6 @@ class PBVA(Document):
 		je.posting_date = self.posting_date
 
 		for key in cc_amount.keys():
-			if frappe.session.user == "Administrator":
-				frappe.msgprint(str(key))
 			je.append("accounts", {
 					"account": "Performance Based Variable Pay - SMCL",
 					"reference_type": "PBVA",
