@@ -161,15 +161,11 @@ def get_data(filters):
 					if a.location:
 						# branch = str(filters.branch)
 						# branch = branch.replace(' - NRDCL','')
-						if frappe.session.user == "Adminsitrator":
-							frappe.msgprint("here 1 "+str(a.branch))
 						target = get_target_value("Production", a.location, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date, True)
 						row = [a.branch, a.location, target, a.uom]
 						cond = " and location = '{0}'".format(a.location)
 						# cond += " and branch = '{0}'".format(branch)
 					else:
-						if frappe.session.user == "Adminsitrator":
-							frappe.msgprint("here 2 "+str(a.branch))
 						target = get_target_value("Production", a.cost_center, a.uom, filters.production_group, filters.fiscal_year, start_date, end_date, True)
 						row = [a.branch, a.location, target, a.uom]
 						branch_n = str(filters.branch)
@@ -199,10 +195,10 @@ def get_data(filters):
 				total = 0
 				for b in get_production_groups(filters.production_group):
 					condition = " and DATE(pe.posting_date) between '"+ str(start_date) + "' and '"+ str(end_date) +"'"
-					# query = "select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(condition, str(b), cond)
+					query = "select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(condition, str(b), cond)
 					qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(condition, str(b), cond))
-					# if frappe.session.user == "Administrator":
-					# 	frappe.msgprint(query)
+					if frappe.session.user == "Administrator":
+						frappe.msgprint(query)
 					# frappe.msgprint(str(qty)+" "+str(condition)+" "+str(b)+" "+str(cond))
 					qty = qty and qty[0][0] or 0
 					row.append(rounded(qty, 2))
