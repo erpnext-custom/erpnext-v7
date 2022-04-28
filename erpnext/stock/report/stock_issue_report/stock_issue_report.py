@@ -32,7 +32,7 @@ def get_columns(filters):
 
 	if filters.purpose == "Material Transfer":
 		cols.append(("Source Warehouse")+":data:170")
-		cols.append(("Warehouse")+":data:170")
+		cols.append(("Receiving Warehouse")+":data:170")
 		cols.append(("Stock Entry")+":Link/Stock Entry:170")
 		cols.append(("Issued To") + "::100")
 		cols.append(("Desuup Name") + "::150")
