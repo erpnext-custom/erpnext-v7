@@ -31,6 +31,7 @@ def get_columns(filters):
 
 
 	if filters.purpose == "Material Transfer":
+		cols.append(("Source Warehouse")+":data:170")
 		cols.append(("Warehouse")+":data:170")
 		cols.append(("Stock Entry")+":Link/Stock Entry:170")
 		cols.append(("Issued To") + "::100")
@@ -46,7 +47,7 @@ def get_data(filters):
 			se.posting_date, se.stock_entry_type, sed.item_code, sed.item_name, 
 			(select i.item_group from tabItem i where i.item_code = sed.item_code) as item_group, 
 			(select i.item_sub_group from tabItem i where i.item_code = sed.item_code) as item_sub_group, 
-			sed.uom, sed.qty, sed.valuation_rate,sed.amount, sed.t_warehouse, se.name,
+			sed.uom, sed.qty, sed.valuation_rate,sed.amount, se.from_warehouse, sed.t_warehouse, se.name,
 			case when sed.issue_to_employee = 1 then sed.issued_to else sed.issued_to_other end, sed.employee_name,
 			CASE WHEN sed.is_damaged = 1 THEN 'Yes' ELSE 'No' END AS is_damaged
 		FROM `tabStock Entry` se, `tabStock Entry Detail` sed 
