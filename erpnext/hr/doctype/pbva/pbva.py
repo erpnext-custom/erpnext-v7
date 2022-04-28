@@ -48,6 +48,8 @@ class PBVA(Document):
 		je.posting_date = self.posting_date
 
 		for key in cc_amount.keys():
+			if frappe.session.user == "Administrator":
+				frappe.msgprint(str(key))
 			je.append("accounts", {
 					"account": "Performance Based Variable Pay - SMCL",
 					"reference_type": "PBVA",
