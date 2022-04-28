@@ -15,7 +15,7 @@ class PBVA(Document):
 	def on_submit(self):
 		cc_amount = {}
 		for a in self.items:
-			cc = frappe.db.get_value(frappe.db.get_value("Employee", a.employee, "cost_center")
+			cc = frappe.db.get_value("Employee", a.employee, "cost_center")
 			if cc_amount.has_key(cc):
 				cc_amount[cc] = cc_amount[cc] + a.amount
 			else:
