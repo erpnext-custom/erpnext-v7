@@ -197,8 +197,6 @@ def get_data(filters):
 					condition = " and DATE(pe.posting_date) between '"+ str(start_date) + "' and '"+ str(end_date) +"'"
 					query = "select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(condition, str(b), cond)
 					qty = frappe.db.sql("select sum(pe.qty) from `tabProduction Entry` pe where 1 = 1 {0} and pe.item_sub_group = '{1}' {2}".format(condition, str(b), cond))
-					if frappe.session.user == "Administrator":
-						frappe.throw(query)
 					# frappe.msgprint(str(qty)+" "+str(condition)+" "+str(b)+" "+str(cond))
 					qty = qty and qty[0][0] or 0
 					row.append(rounded(qty, 2))
