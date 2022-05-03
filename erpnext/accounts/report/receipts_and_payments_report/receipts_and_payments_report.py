@@ -83,7 +83,7 @@ def validate_filters(filters):
 
 def get_data(filters):
 	accounts = frappe.db.sql("""select name,  parent_account, account_name, root_type, report_type, lft, rgt
-		from `tabAccount` where company=%s and name not in ("Temporary Accounts - DS", 'Stock-Asset - DS', 'Accumulated Depreciation - DS', 'Other Expenses - DS', 'Stock Expenses - DS', 'Stock Liabilities - DS', 'Other Incomes - DS', 'Inventories - DS', 'BOB-A/C: 202921909 - DS') order by name ASC""", filters.company, as_dict=True)
+		from `tabAccount` where company=%s and name not in ("Temporary Accounts - DS", 'Stock-Asset - DS', 'Accumulated Depreciation - DS', 'Other Expenses - DS', 'Stock Expenses - DS', 'Stock Liabilities - DS', 'Other Incomes - DS', 'Inventories - DS', 'BOB-A/C: 202921909 - DS') and against not in ('Stock-Asset - DS') order by name ASC""", filters.company, as_dict=True)
 
 	if not accounts:
 		return None
