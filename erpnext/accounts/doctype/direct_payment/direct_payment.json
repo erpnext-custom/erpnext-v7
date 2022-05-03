@@ -1236,7 +1236,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2022-04-28 12:02:56.454205", 
+ "modified": "2022-05-03 12:36:53.565769", 
  "modified_by": "Administrator", 
  "module": "Accounts", 
  "name": "Direct Payment", 
@@ -1284,7 +1284,7 @@
    "write": 1
   }
  ], 
- "quick_entry": 1, 
+ "quick_entry": 0, 
  "read_only": 0, 
  "read_only_onload": 0, 
  "sort_field": "modified", 
