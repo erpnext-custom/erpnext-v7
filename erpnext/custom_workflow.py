@@ -366,8 +366,11 @@ def validate_workflow_states(doc):
             if doc.supervisor != frappe.session.user:
                 frappe.throw("Only {0} can submit the Travel Authorization".format(doc.supervisor))
             if doc.place_type == "In-Country":
-                if final_approver[0] != doc.supervisor and employee[0] != final_approver[0]:
+                if final_approver[0] != doc.supervisor and employee[0] != final_approver[0] and doc.travel_type != 'Training':
                     frappe.throw("Only {0} can approve your Travel Authorization".format(frappe.bold(final_approver[0])))
+                else:
+                    if frappe.session.user != doc.supervisor:
+                        frappe.throw("Only {0} can approve your Travel Authorization".format(frappe.bold(doc.supervisor)))
                 doc.status = "Claimed"
             elif doc.place_type == "Out-Country":
                 if doc.supervisor != hr_approver[0]:
