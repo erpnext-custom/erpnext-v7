@@ -29,11 +29,13 @@ def construct_query(filters=None):
 	dp_branch_cond = ""
 	pd_branch_cond = ""
 	mp_branch_cond = ""
+	tds_branch_cond = ""
 	je_posting_date = "AND je.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'"
 	pe_posting_date = "AND pe.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'"
 	dp_posting_date = "dp.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'"
 	pd_posting_date = "pd.entry_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'"
 	mp_posting_date = "mp.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'"
+	tds_posting_date = "tr.posting_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\'"
      
 	if filters.branch != None:
 		je_branch_cond += "AND je.branch = \'"+str(filters.branch)+"\'"
@@ -41,6 +43,7 @@ def construct_query(filters=None):
 		dp_branch_cond += "AND dp.branch = \'"+str(filters.branch)+"\'"
 		pd_branch_cond += "AND pd.branch = \'"+str(filters.branch)+"\'"
 		mp_branch_cond += "AND mp.branch = \'"+str(filters.branch)+"\'"
+		tds_branch_cond += "AND tr.branch = \'"+str(filters.branch)+"\'"
   
 	query = """
 		SELECT 
@@ -118,7 +121,23 @@ def construct_query(filters=None):
 						SELECT name 
 						FROM `tabAccount` 
 						WHERE account_type = 'Bank')
-	""".format(je_posting_date, je_branch_cond, pe_posting_date, pe_branch_cond, dp_posting_date, dp_branch_cond, pd_posting_date, pd_branch_cond, mp_posting_date, mp_branch_cond)
+		UNION ALL
+
+		SELECT 
+			tr.name, tr.posting_date, tr.cheque_no, tr.cheque_date, 
+            CASE tr.docstatus WHEN 2 THEN 0 ELSE tr.total_amount END AS total_amount, 
+			CASE tr.docstatus WHEN 2 THEN tr.total_amount ELSE 0 END AS cancelled_amount, 
+			tr.pay_to_recd_from, 
+			CASE tr.docstatus WHEN 2 THEN 'CANCELLED' ELSE null END AS cheque_status 
+		FROM `tabTDS Remittance` tr  
+		WHERE 
+		{10} {11} AND 
+		NOT EXISTS (SELECT 1 from `tabTDS Remittance` tr1 where tr1.amended_from = tr.name)
+		AND tr.account IN (
+						SELECT name 
+						FROM `tabAccount` 
+						WHERE account_type = 'Bank')
+	""".format(je_posting_date, je_branch_cond, pe_posting_date, pe_branch_cond, dp_posting_date, dp_branch_cond, pd_posting_date, pd_branch_cond, mp_posting_date, mp_branch_cond, tds_posting_date, tds_branch_cond)
 
 	return query
 
