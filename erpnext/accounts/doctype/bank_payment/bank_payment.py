@@ -1167,7 +1167,7 @@ def get_paid_from(doctype, txt, searchfield, start, page_len, filters):
 				from `tabBranch` b 
 				inner join `tabBranch Bank Account` ba 
 				on b.name = ba.parent
-				where b.name = 'Finance & Accounts, CHQ'
+				where b.name = '{}'
 				and ba.account = a.name
 		)
 	""".format(filters.get("branch")))
