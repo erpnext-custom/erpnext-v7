@@ -324,8 +324,10 @@ class BankPayment(Document):
 			data = self.get_mechanical_payments()
 		elif self.transaction_type == "Salary":
 			data = self.get_salary()
-		elif self.transaction_type in ("LTC", "Bonus", "PBVA"):
+		elif self.transaction_type in ("Bonus", "PBVA"):
 			frappe.msgprint(_("Under development"))
+		elif self.transaction_type == "LTC":
+			data = self.get_ltc_payment()
 		elif self.transaction_type == "Payment Entry":
 			data = self.get_payment_entry()
 		elif self.transaction_type == "Direct Payment":
@@ -650,8 +652,9 @@ class BankPayment(Document):
 					AND ifnull(dpi.payment_status,'') IN ('','Failed','Payment Failed')
 					AND NOT EXISTS(select 1
 						FROM `tabBank Payment Item` bpi
-						WHERE bpi.transaction_type = 'Direct Payment'
+						WHERE bpi.transaction_type = 'Direct Payment'      
 						AND bpi.transaction_id = dp.name
+						AND bpi.transaction_reference = dpi.name
 						AND bpi.parent != '{bank_payment}'
 						AND bpi.docstatus != 2
 						AND bpi.status NOT IN ('Cancelled', 'Failed')
@@ -732,6 +735,33 @@ class BankPayment(Document):
 							branch = self.branch,
 							cond = cond
 					), as_dict=True)
+	#ltc payment added by cety on 12/16/2021
+	def get_ltc_payment(self):
+		cond = ""
+		if not self.fiscal_year:
+			frappe.throw(_("Please select Fiscal Year"))
+		if self.transaction_no:
+			cond = "and ltc.name = '{}'".format(self.transaction_no)
+		if self.branch:
+			cond = "and ltc.branch='{}'".format(self.branch)
+		return frappe.db.sql("""SELECT 
+							"Leave Travel Concession" as transaction_type, ltc.name as transaction_id, ltc.name as transaction_reference,
+							ltc.posting_date as transaction_date, ltcd.employee_name as beneficiary_name,
+							ltcd.bank_name, (select bank_branch from `tabEmployee` where name=ltcd.employee) as bank_branch,
+							(select bank_account_type from `tabEmployee` where name=ltcd.employee) as bank_account_type, ltcd.bank_ac_no as bank_account_no, ltcd.amount
+							FROM `tabLeave Travel Concession` ltc, `tabLTC Details` ltcd
+							WHERE ltc.docstatus = 1
+							{cond}
+							AND ltc.name = ltcd.parent
+							AND NOT EXISTS(select 1 
+										FROM `tabBank Payment Item` bpi
+										WHERE bpi.transaction_type = 'Leave Travel Concession'
+										AND bpi.transaction_id = ltc.name
+										AND bpi.parent != '{bank_payment}'
+										AND bpi.docstatus != 2
+										AND bpi.status NOT IN ('Cancelled', 'Failed')
+							)
+							""".format( cond = cond, bank_payment = self.name), as_dict=1)
 	
 	def get_month_id(self, month_abbr):
 		return {"January": "01", "February": "02", "March": "03", "April": "04", "May": "05", "June": "06",
