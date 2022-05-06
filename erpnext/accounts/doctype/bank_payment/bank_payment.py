@@ -740,10 +740,9 @@ class BankPayment(Document):
 		cond = ""
 		if not self.fiscal_year:
 			frappe.throw(_("Please select Fiscal Year"))
-		if self.transaction_no:
-			cond = "and ltc.name = '{}'".format(self.transaction_no)
+		cond = "and ltc.fiscal_year = '{}'".format(self.fiscal_year) 
 		if self.branch:
-			cond = "and ltc.branch='{}'".format(self.branch)
+			cond += "and ltc.branch='{}'".format(self.branch)
 		return frappe.db.sql("""SELECT 
 							"Leave Travel Concession" as transaction_type, ltc.name as transaction_id, ltc.name as transaction_reference,
 							ltc.posting_date as transaction_date, ltcd.employee_name as beneficiary_name,
@@ -751,8 +750,8 @@ class BankPayment(Document):
 							(select bank_account_type from `tabEmployee` where name=ltcd.employee) as bank_account_type, ltcd.bank_ac_no as bank_account_no, ltcd.amount
 							FROM `tabLeave Travel Concession` ltc, `tabLTC Details` ltcd
 							WHERE ltc.docstatus = 1
-							{cond}
 							AND ltc.name = ltcd.parent
+							{cond}
 							AND NOT EXISTS(select 1 
 										FROM `tabBank Payment Item` bpi
 										WHERE bpi.transaction_type = 'Leave Travel Concession'
