@@ -1154,34 +1154,39 @@ def get_inr_bank_file(doc, filename, posting_date):
 
 @frappe.whitelist()
 def get_paid_from(doctype, txt, searchfield, start, page_len, filters):
-    if not filters.get("branch"):
-        frappe.msgprint(_("Please select <b>Paid From Branch</b> first"))
-    data = []
-    data = frappe.db.sql("""select a.name, a.bank_name, a.bank_branch, a.bank_account_type, a.bank_account_no
-        from `tabBranch` b, `tabAccount` a
-        where b.name = "{}"
-        and a.name = b.expense_bank_account
-        and a.bank_name is not null
-        and a.bank_branch is not null
-        and a.bank_account_type is not null
-        and a.bank_account_no is not null
-    """.format(filters.get("branch")))
+	if not filters.get("branch"):
+		frappe.msgprint(_("Please select <b>Paid From Branch</b> first"))
+	data = []
+	data = frappe.db.sql("""select a.name, a.bank_name, a.bank_branch, a.bank_account_type, a.bank_account_no
+		from `tabAccount` a
+		where a.bank_name is not null
+		and a.bank_branch is not null
+		and a.bank_account_type is not null
+		and a.bank_account_no is not null
+		and exists (select 1
+				from `tabBranch` b 
+				inner join `tabBranch Bank Account` ba 
+				on b.name = ba.parent
+				where b.name = 'Finance & Accounts, CHQ'
+				and ba.account = a.name
+		)
+	""".format(filters.get("branch")))
 
-    if filters.get("branch") and not data:
-        expense_bank_account = frappe.db.get_value("Branch", filters.get("branch"), "expense_bank_account")
-        if not expense_bank_account:
-            frappe.msgprint(_("Default <b>Expense Bank Account</b> is not set for this branch"))
-        else:
-            account = frappe.db.get("Account", expense_bank_account)
-            if not account.bank_name:
-                frappe.msgprint(_('<b>Bank Name</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
-            elif not account.bank_branch:
-                frappe.msgprint(_("""<b>Bank Account's Branch</b> is not set for {} """).format(frappe.get_desk_link("Account", expense_bank_account)))
-            elif not account.bank_account_no:
-                frappe.msgprint(_('<b>Bank Account No.</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
-            elif not account.bank_account_type:
-                frappe.msgprint(_('<b>Bank Account Type</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
-    return data
+	if filters.get("branch") and not data:
+		expense_bank_account = frappe.db.get_value("Branch", filters.get("branch"), "expense_bank_account")
+		if not expense_bank_account:
+			frappe.msgprint(_("Default <b>Expense Bank Account</b> is not set for this branch"))
+		else:
+			account = frappe.db.get("Account", expense_bank_account)
+			if not account.bank_name:
+				frappe.msgprint(_('<b>Bank Name</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
+			elif not account.bank_branch:
+				frappe.msgprint(_("""<b>Bank Account's Branch</b> is not set for {} """).format(frappe.get_desk_link("Account", expense_bank_account)))
+			elif not account.bank_account_no:
+				frappe.msgprint(_('<b>Bank Account No.</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
+			elif not account.bank_account_type:
+				frappe.msgprint(_('<b>Bank Account Type</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
+	return data
 
 def get_child_cost_centers(current_cs=None):
     allchilds = allcs = []
