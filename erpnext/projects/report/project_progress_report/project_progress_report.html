@@ -10,34 +10,28 @@
     <thead>
         <tr>
             <th >{%= __("Sr No") %}</th>
-            <th >{%= __("Activity Name") %}</th>
-            <th >{%= __("Start Date") %}</th>
-            <th >{%= __("End Date") %}</th>
-            <th >{%= __("Duration") %}</th>
-            <th >{%= __("Extimated Budget") %}</th>
-            <th >{%= __("Actual Expense") %}</th>
-            <th >{%= __("Project Progress") %}</th>
-            <th >{%= __("Site Progress") %}</th>
-            <th >{%= __("Weightage") %}</th>
-            <th >{%= __("PE/PM Name") %}</th>
-            <th >{%= __("Contact #") %}</th>
+            <th >{%= __("Employee") %}</th>
+            <th >{%= __("Employee Name") %}</th>
+            <th >{%= __("Department") %}</th>
+            <th >{%= __("Branch") %}</th>
+            <th >{%= __("Employment Type") %}</th>
+            <th >{%= __("Leave Taken") %}</th>
+            <th >{%= __("Leave Balance") %}</th>
+           
         </tr>
     </thead>
     <tbody>
         {% for(var i=0, l=data.length; i<l; i++) { %}
             <tr>
-                <td style="text-align: center;">{%= i+1 %}</td>
+                
                 <td>{%= data[i][__("name")] %}</td>
-                <td>{%= dateutil.str_to_user(data[i][__("expected_start_date")]) %}</td>
-                <td>{%= dateutil.str_to_user(data[i][__("expected_end_date")]) %}</td>
-                <td>{%= data[i][__("total_duration")] %}</td>
-                <td>{%= data[i][__("estimated_budget")] %}</td>
+                <td>{%= (data[i][__("employee_name")] %}</td>
+                <td>{%= data[i][__("department")]) %}</td>
+                <td>{%= data[i][__("branch")] %}</td>
+                <td>{%= data[i][__("employment_type")] %}</td>
                 <td>{%= data[i][__("expense_incured")] %}</td>
                 <td>{%= data[i][__("physical_progress")] %}</td>
-                <td>{%= data[i][__("percent_completed")] %}</td>
-                <td>{%= data[i][__("physical_progress_weightage")] %}</td>
-                <td>{%= data[i][__("engineer_name")] %}</td>
-                <td style="text-align: right;">{%= data[i][__("contact")] %}</td>
+                
             </tr>
         {% } %}
     </tbody>

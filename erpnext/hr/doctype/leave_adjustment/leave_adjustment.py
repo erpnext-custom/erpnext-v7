@@ -43,7 +43,7 @@ class LeaveAdjustment(Document):
 				if self.leave_type == 'Casual Leave':
 					las = frappe.db.sql(" select name from `tabLeave Allocation` where employee = %s and leave_type = %s and %s between from_date and to_date", (a.employee, self.leave_type, self.adjustment_date), as_dict = True)
 					if self.employment_type == 'GCE':
-                                        	las = frappe.db.sql("select name from `tabLeave Allocation` where employee = %s and leave_type = %s and to_date <= %s order by to_date desc limit 1", (a.employee, self.leave_type, self.adjustment_date), as_dict=True)
+                                        	las = frappe.db.sql("select name from `tabLeave Allocation` where employee = %s and leave_type = %s and  %s between from_date and to_date order by to_date desc limit 1", (a.employee, self.leave_type, self.adjustment_date), as_dict=True)
 
 				else:
 					las = frappe.db.sql("select name from `tabLeave Allocation` where employee = %s and leave_type = %s and to_date >= %s", (a.employee, self.leave_type, self.adjustment_date), as_dict=True)
@@ -63,7 +63,9 @@ class LeaveAdjustment(Document):
                                                 if flt(balance) > flt(le.encashment_lapse):
                                                         balance = le.encashment_lapse	
 					doc.db_set("carry_forwarded_leaves", carry_forwarded)
+					frappe.db.commit()
 					doc.db_set("total_leaves_allocated", balance)
+					frappe.db.commit()
 
 	def get_employees(self):
 		self.check_mandatory()

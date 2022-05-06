@@ -19,6 +19,7 @@ from erpnext.hr.hr_custom_functions import get_officiating_employee
 def validate_workflow_states(doc):
 	approver_field = {
 			"Travel Authorization": ["supervisor",""],
+                       
                         "Travel Claim": ["supervisor",""],
 			"Leave Encashment": ["approver", "approver_name"],
 			"Salary Advance": ["advance_approver","advance_approver_name","advance_approver_designation"],
@@ -142,9 +143,9 @@ def verify_workflow_tc(doc):
 
 
 	if doc.workflow_state == "Waiting HR Verification":
-                if approver != frappe.session.user:
-                        doc.workflow_state = "Verified By Supervisor"
-                        frappe.throw("Only Mr/Mrs. <b> {0} </b> can Approve this Document".format(frappe.get_doc("User", approver).full_name))
+                # if approver != frappe.session.user:
+                #         doc.workflow_state = "Verified By Supervisor"
+                #         frappe.throw("Only Mr/Mrs.. <b> {0} </b> can Approve this Document".format(frappe.get_doc("User", approver).full_name))
                 doc.workflow_state = "Waiting HR Verification"
                 doc.docstatus = 0
                 doc.approver = approver

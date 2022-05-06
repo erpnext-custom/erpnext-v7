@@ -173,12 +173,12 @@ def get_data():
                                         "doctype": "Project"
                                 }, 
 
-				#{       
-                                #        "type": "report",
-                                #        "is_query_report": True,
-                                #        "name": "Project Register",
-                                #        "doctype": "Project"
-                                #}, 
+				{       
+                                       "type": "report",
+                                       "is_query_report": True,
+                                       "name": "Design Progress Report",
+                                       "doctype": "Design"
+                                }, 
 			]
 		},
 	]

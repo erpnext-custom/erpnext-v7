@@ -288,17 +288,17 @@ class TravelAuthorization(Document):
                         if i.quarantine:
                                 no_days = 0
                         total_days  += no_days
-                if flt(total_days) <= 15:
+                if flt(total_days) <= 30:
                         full_dsa = flt(total_days) - flt(return_day) 
                         half_dsa = 0.0
 
-                elif 15 < flt(total_days) <= 30:
-                        full_dsa = 15
-                        half_dsa = flt(total_days) -15 - flt(return_day)
+                # elif 15 < flt(total_days) <= 30:
+                #         full_dsa = 15
+                #         half_dsa = flt(total_days) -15 - flt(return_day)
 
                 elif flt(total_days) > 30:
-                        full_dsa = 15
-                        half_dsa = 15  - flt(return_day)
+                        full_dsa = 30
+                        half_dsa = (flt(total_days) - 30)  - flt(return_day)
 
                 self.estimated_amount = (flt(full_dsa) * flt(dsa_rate)) + (flt(half_dsa) * 0.5 * flt(dsa_rate)) + flt(return_day) * (flt(return_dsa)/100)* flt(dsa_rate)
 

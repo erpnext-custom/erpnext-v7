@@ -73,7 +73,7 @@ class TDSRemittance(AccountsController):
                                 union all 
                                 select p.posting_date, p.supplier, p.name,  p.tds_taxable_amount as bill_amount, p.tds_amount 
                                 from `tabPurchase Invoice` p where tds_rate = '{0}' and docstatus =1 
-                                and branch in ("{3}", 'Kote - 7 (GA-J)')
+                                and branch = "{3}"
                                 and not exists (
                                         select 1 from `tabTDS Remittance Item` i
                                         inner join `tabTDS Remittance` t

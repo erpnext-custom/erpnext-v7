@@ -91,7 +91,7 @@ def update_aa():
 		print a.name
 
 def update_impp():
-	for a in frappe.db.sql(""" select name from `tabImprest Recoup` where name = 'IMPP2021000300'""", as_dict =1):
+	for a in frappe.db.sql(""" select name from `tabImprest Recoup` where name = 'IMPP2022000072'""", as_dict =1):
 		doc = frappe.get_doc("Imprest Recoup", a.name)
 		#doc.post_receipt_entry()
 		#update_dependencies(doc.branch, doc.imprest_type, doc.entry_date)
@@ -99,7 +99,14 @@ def update_impp():
                 #doc.consume_budget()
 		doc.make_gl_entry()
 		frappe.db.commit()
-		print "Document is submitted"
+		print a.name
+
+def update_tc():
+	for a in frappe.db.sql(""" select name from `tabTravel Claim` where name = 'TC201100055'""", as_dict =1):
+		doc = frappe.get_doc("Travel Claim", a.name)
+		doc.post_journal_entry()
+		frappe.db.commit()
+		print "Journal  is submitted"
 
 def update_iip():
 	for a in frappe.db.sql(""" select name, equipment from `tabPOL` where equipment = 'EQUIP210016'""", as_dict =1):
@@ -325,8 +332,14 @@ def update_asset_details():
 		print a.name, count
 
 def ipol():
-	doc = frappe.get_doc("Issue POL", 'IPOL210100148')
+	doc = frappe.get_doc("Issue POL", 'IPOL220400161')
 	doc.submit()
+	print doc.name
+
+def submit_imprest():
+	doc = frappe.get_doc("Imprest Recoup", 'IMPP2022000051')
+	doc.submit()
+	print doc.name
 
 def ipol1():
 	import csv
@@ -340,29 +353,36 @@ def ipol1():
 			print doc.name
 
 def rpol():
-	pol = ["POL220100025"]
+	pol = ["POL220400006"]
 	for a in pol:
 		doc = frappe.get_doc("POL", a)
-		doc.submit()
+		doc.cancel()
+		print (a)
+
+def ss():
+	ss = ["GYAL22111/SSL/202203/00019"]
+	for a in ss:
+		doc = frappe.get_doc("Salary Slip", a)
+		doc.save()
 		print (a)
 
 def submit_se():
-	doc = frappe.get_doc("Stock Entry", "SEMI21121642")
+	doc = frappe.get_doc("Stock Entry", "SEMI22010955")
 	doc.submit()
 	print doc.name
 
 def submit_je():
-	doc = frappe.get_doc("Journal Entry", "JEJV220100005")
+	doc = frappe.get_doc("Journal Entry", "JEJV220300076")
 	doc.submit()
 	print doc.name
 
 def submit_pr():
-	doc = frappe.get_doc("Purchase Receipt", "PRCO22010083")
+	doc = frappe.get_doc("Purchase Receipt", "PRCO22040209")
 	doc.submit()
 	print doc.name
 
 def email_test():
-	recipients = 'tashidorji@gyalsunginfra.bt' "PRCO22010034""PRCO22010003"
+	recipients = 'jigme@gyalsunginfra.bt'
 	subject = "testing"
 	doc = frappe.get_doc("Material Request", 'MRMR20120018')
 	message = """Dear Sir/Madam, <br>  {0} has requested you to verify the Material Request <b> {1}. Check ERP System for More Info. </b> <br> Thank You""".format(frappe.get_doc("User", doc.owner).full_name, str(frappe.get_desk_link("Material Request", doc.name)))

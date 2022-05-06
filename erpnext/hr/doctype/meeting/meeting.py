@@ -8,14 +8,14 @@ from frappe.model.document import Document
 
 class Meeting(Document):
 	def on_submit(self):
-		if not self.dispatch_number:
-			frappe.throw("Please mention a dispatch number for information and future references. Thank You.")
+		# if not self.dispatch_number:
+		# 	frappe.throw("Please mention a dispatch number for information and future references. Thank You.")
 		self.send_mom()
 		
 	#notify members about the meeting
 	def notify_members(self):
 		subject = 'Meeting on ' + self.topic
-		message = "The draft Minutes of Meeting on '{0}' is avaliable for your kind perusal. Please provide your inputs/changes if any. The meeting ID is '{1}'. ".format(self.topic, self.name)
+		message = "The Meeting on '{0}' is created in the system for your kind perusal. Please provide your agendas or inputs/changes if any. The meeting ID is '{1}'. ".format(self.topic, self.name)
 		sender = frappe.session.user
 		
 		for a in self.get('table_10'):

@@ -92,6 +92,7 @@ class Employee(Document):
 		self.validate_date()
 		self.validate_email()
 		self.validate_status()
+		#self.post_casual_leave()
 		# Following method introduced by SHIV on 04/10/2018
 		self.validate_employment()
 		self.validate_employee_leave_approver()
@@ -398,8 +399,8 @@ class Employee(Document):
                                 new_leaves_allocated = new_leaves_allocated if new_leaves_allocated <= flt(credits_per_year) else flt(credits_per_year)
 
 				if self.employment_type == 'GCE':
-                                       to_date = self.contract_end_date
-                                       new_leaves_allocated = cint(5)
+                        		to_date = self.contract_end_date
+                        		new_leaves_allocated = cint(5)
 
 				if flt(new_leaves_allocated):
                                         la = frappe.new_doc("Leave Allocation")
@@ -412,6 +413,7 @@ class Employee(Document):
                                         la.new_leaves_allocated = flt(new_leaves_allocated)
                                         la.submit()
                                         self.db_set("casual_leave_allocated", 1)
+					frappe.db.commit()
 			                
                 '''
 		if not self.casual_leave_allocated:

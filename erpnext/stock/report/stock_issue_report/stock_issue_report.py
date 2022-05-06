@@ -49,10 +49,15 @@ def get_data(filters):
 	if filters.get("item_code"):
 		data += " and sed.item_code = \'" + str(filters.item_code) + "\'"
 	if filters.get("cost_center"):
-		data += " and sed.cost_center = \'" + str(filters.cost_center) + "\'"
+		cc = filters.get("cost_center")
+		
+		formated_cc = cc.replace("'","\\'")
+		
+		data += " and sed.cost_center = '{}'".format(formated_cc)
 
 	if filters.get("from_date") and filters.get("to_date"):
 		data += " and se.posting_date between \'" + str(filters.from_date) + "\' and \'"+ str(filters.to_date) + "\'"
 
-	#data += " group by sed.item_code, sed.s_warehouse, sed.cost_center"	
+	#data += " group by sed.item_code, sed.s_warehouse, sed.cost_center"
+	
 	return frappe.db.sql(data)
