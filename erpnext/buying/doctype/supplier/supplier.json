@@ -1,7 +1,7 @@
 {
  "allow_copy": 0, 
  "allow_import": 1, 
- "allow_rename": 0, 
+ "allow_rename": 1, 
  "autoname": "field:[supplier_name]", 
  "beta": 0, 
  "creation": "2013-01-10 16:34:11", 
@@ -714,7 +714,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2021-06-30 15:47:48.514176", 
+ "modified": "2022-05-06 14:23:03.783476", 
  "modified_by": "Administrator", 
  "module": "Buying", 
  "name": "Supplier", 
