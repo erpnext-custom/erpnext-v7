@@ -162,8 +162,8 @@ class MechanicalPayment(AccountsController):
 			party = self.supplier if self.payment_for == "Maintenance Payment" else ""
 			gl_entries.append(
 				self.get_gl_dict({"account": debit_account,
-						 "debit": flt(self.total_amount) - flt(self.other_deduction),
-						 "debit_in_account_currency": flt(self.total_amount) - flt(self.other_deduction),
+						 "debit": flt(self.total_amount),
+						 "debit_in_account_currency": flt(self.total_amount),
 						 "cost_center": self.cost_center,
 						 "party_check": 1,
 						 "reference_type": self.doctype,
@@ -171,6 +171,23 @@ class MechanicalPayment(AccountsController):
 						 "business_activity": default_ba,
 						 "remarks": self.remarks
 						})
+					)
+			if self.other_deduction:
+				if not self.other_deduction_account:
+					frappe.throw("Required value for Other Deduction Account")
+				gl_entries.append(
+					self.get_gl_dict({"account": self.other_deduction_account,
+							"credit": flt(self.other_deduction),
+							"credit_in_account_currency": flt(self.other_deduction),
+							"cost_center": self.cost_center,
+							"party_check": 1,
+						 	"party_type": party_type,
+						 	"party": party,
+							"reference_type": self.doctype,
+							"reference_name": self.name,
+							"business_activity": default_ba,
+							"remarks": self.remarks
+							})
 					)
 			if self.tds_amount:
 				gl_entries.append(
