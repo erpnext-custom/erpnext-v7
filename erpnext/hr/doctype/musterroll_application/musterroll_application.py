@@ -54,7 +54,7 @@ class MusterRollApplication(Document):
 		if not self.from_project:
 			frappe.throw("Select From Project Before Clicking the button")
 
-		query = "select name as existing_cid, person_name, rate_per_day, rate_per_hour, gender, mr_type from `tabMuster Roll Employee` where project = %s and status = 'Active'"
+		query = "select name as existing_cid, person_name, rate_per_day, rate_per_hour from `tabMuster Roll Employee` where project = %s and status = 'Active'"
 
 		#query = "select name as account, account_code from tabAccount where account_type in (\'Expense Account\',\'Fixed Asset\') and is_group = 0 and company = \'" + str(self.company) + "\' and (freeze_account is null or freeze_account != 'Yes')"
 		entries = frappe.db.sql(query, self.from_project, as_dict=True)
@@ -127,7 +127,9 @@ class MusterRollApplication(Document):
 				doc.designation = a.designation
                                 doc.bank = a.bank
                                 doc.account_no = a.account_no
-                                doc.qualification = a.qualification				
+                                doc.qualification = a.qualification
+                                doc.gender = a.gender
+                                doc.mr_type = a.mr_type				
 
                                 if self.project:
                                         doc.project = self.project
