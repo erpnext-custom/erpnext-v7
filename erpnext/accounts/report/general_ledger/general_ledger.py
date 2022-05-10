@@ -184,8 +184,7 @@ def get_data_with_opening_closing(filters, account_details, gl_entries):
 
 				# Totals and closing for individual ledger, if grouped by account
 				account_closing = acc_dict.opening + acc_dict.total_debit - acc_dict.total_credit
-				if frappe.session.user == "Administrator":
-					frappe.msgprint(str(account_closing))
+
 				account_closing_in_account_currency = acc_dict.opening_in_account_currency \
 					+ acc_dict.total_debit_in_account_currency - acc_dict.total_credit_in_account_currency
 
@@ -216,7 +215,8 @@ def get_data_with_opening_closing(filters, account_details, gl_entries):
 		closing = opening + total_debit - total_credit
 		closing_in_account_currency = opening_in_account_currency + \
 			total_debit_in_account_currency - total_credit_in_account_currency
-
+		if frappe.session.user == "Administrator":
+			frappe.msgprint(str(closing))
 		data.append(get_balance_row(_("Closing (Opening + Totals)"),
 			closing, closing_in_account_currency))
 
