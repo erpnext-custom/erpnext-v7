@@ -216,7 +216,7 @@ def get_data_with_opening_closing(filters, account_details, gl_entries):
 		closing_in_account_currency = opening_in_account_currency + \
 			total_debit_in_account_currency - total_credit_in_account_currency
 		if frappe.session.user == "Administrator":
-			frappe.msgprint(str(closing))
+			frappe.msgprint(str(opening)+"+"+str(total_debit)+"-"+str(total_credit))
 		data.append(get_balance_row(_("Closing (Opening + Totals)"),
 			closing, closing_in_account_currency))
 
