@@ -5,7 +5,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
-from frappe.utils import cint, flt, nowdate, money_in_words
+from frappe.utils import cint, flt, nowdate, money_in_words, getdate
 from erpnext.accounts.doctype.business_activity.business_activity import get_default_ba
 from erpnext.accounts.general_ledger import make_gl_entries
 from frappe.utils.data import get_first_day, get_last_day, add_days
@@ -103,7 +103,7 @@ class ProcessRentalBilling(AccountsController):
 					#customer_code = frappe.db.get_value("Customer", {"customer_id":name}, "customer_code")
 					#bill_code = "NHDCL/" + customer_code + "/" + self.fiscal_year + self.month
 					yearmonth = str(self.fiscal_year) + str(self.month)
-					previous_bill_date = prev_fiscal_year+"-"+prev_month+"-"+"01"
+					previous_bill_date = str(prev_fiscal_year)+"-"+str(prev_month)+"-"+"01"
 					
 					query = """
 							select cid, tenant_name, customer_code, block_no, business_activity, flat_no, 
