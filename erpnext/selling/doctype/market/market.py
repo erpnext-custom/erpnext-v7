@@ -5,6 +5,13 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.utils import flt
+from frappe import _
+from frappe.utils.nestedset import NestedSet
 
-class Market(Document):
-	pass
+class Market(NestedSet):
+        nsm_parent_field = 'parent_market'
+
+        def on_update(self):
+                super(Market, self).on_update()
+                self.validate_one_root()
