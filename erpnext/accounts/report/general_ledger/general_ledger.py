@@ -117,7 +117,7 @@ def get_gl_entries(filters):
 	gl_entries = frappe.db.sql("""
 		select
 			posting_date, account, party_type, party,
-			sum(debit) as debit, sum(credit) as credit,
+			round(sum(debit),2) as debit, round(sum(credit),2) as credit,
 			voucher_type, voucher_no, cost_center, business_activity,
 			remarks, against, is_opening {select_fields}
 		from `tabGL Entry`
