@@ -36,10 +36,16 @@ class EMEPayment(Document):
 		if not self.from_date or not self.to_date:
 			frappe.throw("From Date and To Date are mandatory")
 
-		query = """ SELECT l.name as logbook, l.posting_date, l.equipment_hiring_form, li.expense_head, li.hours as total_hours, 
-				l.equipment FROM tabLogbook l, `tabLogbook Item` li WHERE li.parent = l.name AND l.docstatus = 1 
-			AND l.paid = 0 AND l.supplier = %(supplier)s AND l.branch = %(branch)s AND l.posting_date BETWEEN %(from_date)s 
-			and %(to_date)s ORDER BY l.posting_date, li.expense_head"""
+		query = """ SELECT l.name as logbook, l.posting_date, l.equipment_hiring_form, li.expense_head, li.hours as total_hours, l.equipment 
+					FROM tabLogbook l, `tabLogbook Item` li 
+					WHERE li.parent = l.name 
+					AND l.docstatus = 1 
+					AND l.paid = 0 
+					AND l.supplier = %(supplier)s 
+					AND l.branch = %(branch)s 
+					AND l.posting_date BETWEEN %(from_date)s and %(to_date)s 
+					ORDER BY l.posting_date, li.expense_head
+				"""
 	
                 entries = frappe.db.sql(query, {"supplier": self.supplier, "from_date": self.from_date, "to_date": self.to_date, "branch": self.branch}, as_dict=True)
                 self.set('items', [])
@@ -71,18 +77,21 @@ class EMEPayment(Document):
 
 
 	def get_rate(self, ehf, posting_date):
-		rate = frappe.db.sql(""" select rate from `tabHiring Rate History` where parent = '{0}' and '{1}' between from_date and to_date and docstatus = 1""".format(ehf, posting_date) , as_dict = 1, debug = 1)
+		rate = frappe.db.sql("""select hiring_rate as rate from `tabEHF Rate` where parent = '{0}' and '{1}' between from_date and to_date and docstatus = 1""".format(ehf, posting_date) , as_dict = 1, debug = 1)
 		if rate:
-			frappe.msgprint("ues")
 			return rate[0].rate
 		else:
+			frappe.throw("No rates defined in Equipment Hiring Form <b>{}</b> for data <b>{}</b>".format(ehf, posting_date))
+		'''
+		else:
 			return frappe.db.get_value("Equipment Hiring Form", ehf, "rate")
+		'''
 	def calculate_totals(self):
 		settings = frappe.get_single("Accounts Settings")
 		total = 0
 		
 		for a in self.items:
-			total += a.amount
+			total += flt(a.amount)
 			doc = frappe.get_doc("Equipment", a.equipment)
 			a.equipment_no = doc.equipment_number
 			a.equipment_type = doc.equipment_type

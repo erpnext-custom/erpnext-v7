@@ -16,7 +16,6 @@ frappe.ui.form.on('Equipment Hiring Form', {
 				frappe.set_route("List", "Journal Entry");
 			}, __("View"));
 		}*/
-
 		cur_frm.add_custom_button(__('Logbooks'), function() {
 			frappe.route_options = {
 				"Logbook.equipment_hiring_form": me.frm.doc.name,
