@@ -76,7 +76,23 @@ def get_data():
 					"type": "doctype",
 					"name": "Loss Tolerance",
 					"description": _("Loss Tolerance Setting"),
-				}
+				},
+				{
+					"type": "doctype",
+					"label": _("Market"),
+					"name": "Market",
+					"icon": "icon-sitemap",
+					"link": "Tree/Market",
+					"description": _("Manage Market Tree."),
+				},
+				{
+					"type": "doctype",
+					"label": _("Territory"),
+					"name": "Territory",
+					"icon": "icon-sitemap",
+					"link": "Tree/Territory",
+					"description": _("Manage Territory Tree."),
+				},
 			]
 		},
 		{
