@@ -91,7 +91,7 @@ def get_stock_ledger_entries(filters):
 
 			""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters), company=filters.get("company"), from_date=filters.get("from_date"), to_date=filters.get("to_date"), group_by = get_group_by(filters))
 		if frappe.session.user == "Administrator":
-			frappe.mspgrint(query)
+			frappe.msgprint(query)
 	else:
 		query = """select * from (
     	            select dn.posting_date, convert(sle.posting_time,time) as posting_time, sle.item_code,
