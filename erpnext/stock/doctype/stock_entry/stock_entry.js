@@ -500,7 +500,7 @@ cur_frm.fields_dict['items'].grid.get_field('batch_no').get_query = function(doc
 cur_frm.cscript.lot_list = function(doc, cdt, cdn) {
 	var child = locals[cdt][cdn];
 	if(child.item_code && child.lot_list){
-		frappe.model.get_value("Lot List Detail", {"parent": child.lot_list, "item":child.item_code}, "total_volume",
+		frappe.model.get_value("Lot List Details", {"parent": child.lot_list, "item":child.item_code}, "total_volume",
 			function(d){
 				console.log("Lot qty : " + d.total_volume);
 				frappe.model.set_value(cdt, cdn, "qty", d.total_volume);
