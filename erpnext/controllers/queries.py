@@ -254,7 +254,7 @@ def filter_lot_list(doctype, txt, searchfield, start, page_len, filters):
 	return frappe.db.sql("""select lot_no, lld.item_sub_group, branch, lld.item_name from `tabLot List` ll, `tabLot List Details` lld
 							where branch = '{0}'
 							and ll.name = lld.parent
-							and docstatus = 1 
+							and ll.docstatus = 1 
 							and lld.item = '{1}' 
 							and (sales_order is NULL or sales_order is NULL)
 							and (ll.stock_entry is NULL or ll.stock_entry is NULL)
