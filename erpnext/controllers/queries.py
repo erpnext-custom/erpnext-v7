@@ -255,9 +255,9 @@ def filter_lot_list(doctype, txt, searchfield, start, page_len, filters):
 							where branch = '{0}' 
 							and docstatus = 1 
 							and item = '{1}' 
-							and (sales_order is NULL or sales_order = "")
-							and (ll.stock_entry is NULL or ll.stock_entry = "")
-							and (ll.production is NULL or ll.production = "")
+							and (sales_order is NULL or sales_order is NULL)
+							and (ll.stock_entry is NULL or ll.stock_entry is NULL)
+							and (ll.production is NULL or ll.production is NULL)
 					""".format(filters.get("branch"), filters.get("item"), key=frappe.db.escape(searchfield),
 						match_condition=get_match_cond(doctype)), {
 					'txt': "%%%s%%" % frappe.db.escape(txt)
@@ -601,6 +601,12 @@ def filter_branch_cost_center(doctype, txt, searchfield, start, page_len, filter
 	if not filters.get("branch"):
 		frappe.throw("Select Branch First")
 	return frappe.db.sql("select cost_center from `tabBranch` where name = %s", filters.get("branch"))
+
+@frappe.whitelist()
+def filter_cost_center_branch(doctype, txt, searchfield, start, page_len, filters):
+	if not filters.get("cost_center"):
+		frappe.throw("Select Branch First")
+	return frappe.db.sql("select name, title, branch from `tabSales Order` where branch = (select name from `tabBranch` where cost_center = %s) and docstatus = 1", filters.get("cost_center"))
 
 @frappe.whitelist()
 def get_cop_list(doctype, txt, searchfield, start, page_len, filters):
