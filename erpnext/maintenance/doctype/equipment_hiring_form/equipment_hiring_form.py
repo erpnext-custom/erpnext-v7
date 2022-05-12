@@ -13,7 +13,7 @@ from erpnext.custom_utils import check_uncancelled_linked_doc, check_future_date
 class EquipmentHiringForm(Document):
 	def validate(self):
 		self.validate_date()
-		self.validate_amount()
+		#self.validate_amount()
 		self.validate_supplier()
 		self.validate_data()
 	
@@ -58,10 +58,11 @@ class EquipmentHiringForm(Document):
 	def validate_date(self):
 		if self.start_date > self.end_date:
 			frappe.throw("Start Date cannot be greater than End Date")
-
+	'''
 	def validate_amount(self):
 		if not self.rate > 0:
 			frappe.throw("Hiring Rate should be greater than zero")
+	'''
 	
 	def validate_supplier(self):
 		if not self.supplier:

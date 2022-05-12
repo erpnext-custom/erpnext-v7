@@ -9,6 +9,14 @@ frappe.ui.form.on('EME Payment', {
         },
         refresh: function (frm) {
                 if (frm.doc.docstatus === 1) {
+                        frm.add_custom_button("Pay Arrear", function() {
+                                frappe.model.open_mapped_doc({
+                                        method: "erpnext.maintenance.doctype.eme_payment.eme_payment.make_arrear_payment",
+                                        frm: cur_frm
+                                });
+                        }).addClass("btn-success");
+                }
+                if (frm.doc.docstatus === 1) {
                         frm.add_custom_button(__('Accounting Ledger'), function () {
                                 frappe.route_options = {
                                         voucher_no: frm.doc.name,

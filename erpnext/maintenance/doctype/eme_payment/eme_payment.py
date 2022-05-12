@@ -8,18 +8,30 @@ from frappe.model.document import Document
 from frappe.utils import flt
 from erpnext.accounts.utils import get_tds_account
 from erpnext.custom_utils import check_uncancelled_linked_doc, prepare_gl, check_future_date, check_budget_available
+from frappe.model.mapper import get_mapped_doc
 
 class EMEPayment(Document):
 	def validate(self):
 		self.validate_data()
 		check_future_date(self.posting_date)
-		self.check_remarks()
+		if not self.arrear_eme_payment:
+			self.check_remarks()
+		else:
+			self.update_rate_amount()
 		self.calculate_totals()
 
 	def validate_data(self):
 		is_disabled = frappe.db.get_value("Branch", self.branch, "is_disabled")
 		if is_disabled:
 			frappe.throw("Cannot use a disabled branch in transaction")
+	
+	def update_rate_amount(self):
+		for a in self.get("items"):
+			ehf = frappe.db.get_value("Logbook", a.logbook, "equipment_hiring_form")
+			rate = frappe.db.sql("""select hiring_rate as rate from `tabEHF Rate` where parent = '{0}' and '{1}' between from_date and to_date and docstatus = 1""".format(ehf, a.posting_date) , as_dict = 1, debug = 1)
+			if rate:
+				a.new_rate = flt(rate[0].rate)
+				a.rate   = flt(a.new_rate) - flt(a.prev_rate)
 
 	def check_remarks(self):
 		if not self.remarks:
@@ -77,11 +89,13 @@ class EMEPayment(Document):
 
 
 	def get_rate(self, ehf, posting_date):
-		rate = frappe.db.sql("""select hiring_rate as rate from `tabEHF Rate` where parent = '{0}' and '{1}' between from_date and to_date and docstatus = 1""".format(ehf, posting_date) , as_dict = 1, debug = 1)
-		if rate:
-			return rate[0].rate
-		else:
-			frappe.throw("No rates defined in Equipment Hiring Form <b>{}</b> for data <b>{}</b>".format(ehf, posting_date))
+		arrear_eme_payment = None
+		if not arrear_eme_payment:
+			rate = frappe.db.sql("""select hiring_rate as rate from `tabEHF Rate` where parent = '{0}' and '{1}' between from_date and to_date and docstatus = 1""".format(ehf, posting_date) , as_dict = 1, debug = 1)
+			if rate:
+				return rate[0].rate
+			else:
+				frappe.throw("No rates defined in Equipment Hiring Form <b>{}</b> for data <b>{}</b>".format(ehf, posting_date))
 		'''
 		else:
 			return frappe.db.get_value("Equipment Hiring Form", ehf, "rate")
@@ -319,3 +333,35 @@ class EMEPayment(Document):
                         "date": frappe.utils.nowdate()})
                 consume.flags.ignore_permissions=1
                 consume.submit()
+
+def set_missing_values(source, target):
+	target.run_method("set_missing_values")
+	
+@frappe.whitelist()
+def make_arrear_payment(source_name, target_doc=None):
+	def postprocess(source, target_doc):
+		set_missing_values(source, target_doc)
+
+	def update_item(obj, target, source_parent):
+		target.rate = 0.00
+
+	doclist = get_mapped_doc("EME Payment", source_name, 	{
+		"EME Payment": {
+			"doctype": "EME Payment",
+			"field_map": {
+				"naming_series": "naming_series",
+			},
+			"validation": {
+				"docstatus": ["=", 1],
+			}
+		},
+		"EME Payment Item": {
+			"doctype": "EME Payment Item",
+			"field_map": {
+					"rate": "prev_rate"
+				},
+			"postprocess": update_item
+		}
+	}, target_doc, postprocess)
+
+	return doclist
