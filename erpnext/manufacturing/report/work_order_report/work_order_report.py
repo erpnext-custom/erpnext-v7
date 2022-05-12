@@ -92,8 +92,9 @@ def get_completed_data(filters=None):
 		FROM `tabWork Order` wo
 			left join `tabBOM` as bom on bom.name = wo.bom_no
 			join `tabItem` i on i.name=wo.production_item
-		WHERE wo.docstatus = 1 AND wo.status='Completed' AND wo.produced_qty=wo.qty 	
-	""")
+		WHERE wo.docstatus = 1 AND wo.status='Completed' AND wo.produced_qty=wo.qty
+			AND wo.planned_start_date >= '{0}' AND wo.planned_start_date <= '{1}'
+	""".format(filters.from_date, filters.to_date))
 	
 	return data
 # join `tabItem` i on i.name=wo.production_item
