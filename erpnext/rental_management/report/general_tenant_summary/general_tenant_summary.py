@@ -103,7 +103,7 @@ def get_official_tenant_data(tenant,from_date,to_date,flt_from_date, flt_to_date
 			sum(rpi_rent_write_off_amount) rent_write_off_amount,
 			sum(rpi_penalty) penalty,
 			sum(rpi_discount_amount) discount_amount,
-			(sum(rpi_rent_received) + sum(rpi_pre_rent_amount) + sum(rpi_excess_amount) + sum(rpi_penalty) - sum(rpi_tds_amount) - sum(rpi_discount_amount)) total_rent_received,
+			(sum(rpi_rent_received) + sum(rpi_pre_rent_amount) + sum(rpi_excess_amount) + sum(rpi_penalty) - sum(rpi_discount_amount)) total_rent_received,
 			(sum(rb_receivable_amount) - sum(rpi_rent_received) - sum(rb_adjusted_amount) - sum(rpi_rent_write_off_amount) - sum(rpi_tds_amount)) outstanding_bill,
 			(sum(rpi_pre_rent_amount) - sum(rb_adjusted_amount)) pre_rent_balance
 		from (
@@ -169,7 +169,7 @@ def get_data(filters):
 			sum(rpi_rent_write_off_amount),
 			sum(rpi_penalty),
 			sum(rpi_discount_amount),
-			(sum(rpi_rent_received) + sum(rpi_pre_rent_amount) + sum(rpi_excess_amount) + sum(rpi_penalty) - sum(rpi_tds_amount) - sum(rpi_discount_amount)) total_rent_received,
+			(sum(rpi_rent_received) + sum(rpi_pre_rent_amount) + sum(rpi_excess_amount) + sum(rpi_penalty) - sum(rpi_discount_amount)) total_rent_received,
 			(sum(rb_receivable_amount) - sum(rpi_rent_received) - sum(rb_adjusted_amount) - sum(rpi_rent_write_off_amount) - sum(rpi_tds_amount)) outstanding_amount,
 			(sum(rpi_pre_rent_amount) - sum(rb_adjusted_amount)) pre_rent_balance
 		from (
