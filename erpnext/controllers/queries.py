@@ -251,6 +251,18 @@ def filter_lot_list(doctype, txt, searchfield, start, page_len, filters):
 	if not filters.get("branch") and not filters.get("item"):
 		frappe.throw("Select Branch and Item First")
 	from erpnext.controllers.queries import get_match_cond
+	if frappe.session.user=="Administrator":
+		frappe.throw(frappe.db.sql("""select lot_no, item_sub_group, branch, item_name from `tabLot List` ll
+							where branch = '{0}' 
+							and docstatus = 1 
+							and item = '{1}' 
+							and (sales_order is NULL or sales_order is NULL)
+							and (ll.stock_entry is NULL or ll.stock_entry is NULL)
+							and (ll.production is NULL or ll.production is NULL)
+					""".format(filters.get("branch"), filters.get("item"), key=frappe.db.escape(searchfield),
+						match_condition=get_match_cond(doctype)), {
+					'txt': "%%%s%%" % frappe.db.escape(txt)
+			}))
 	return frappe.db.sql("""select lot_no, item_sub_group, branch, item_name from `tabLot List` ll
 							where branch = '{0}' 
 							and docstatus = 1 
