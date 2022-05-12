@@ -24,7 +24,9 @@ def execute(filters):
 		if sle.voucher_type == "POL":
 			sle.voucher_type = "Receive POL"
 		if filters.timber_class:
-			if item_detail.timber_class == filters.timber_class: 
+			if item_detail.timber_class == filters.timber_class:
+				if frappe.session.user == "Administrator":
+					frappe.msgprint(str(sle.actual_qty))
 				data.append([sle.item_code, sle.posting_date, sle.posting_time, item_detail.item_name, item_detail.timber_class, item_detail.item_group, item_detail.item_sub_group, sle.branch,
 				sle.warehouse,
 				item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
@@ -32,6 +34,8 @@ def execute(filters):
 				sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
 				sle.vehicle_no, sle.transporter_name, sle.company])
 		else:
+			if frappe.session.user == "Administrator":
+				frappe.msgprint(str(sle.actual_qty))
 			data.append([sle.item_code, sle.posting_date, sle.posting_time, item_detail.item_name, item_detail.timber_class, item_detail.item_group, item_detail.item_sub_group, sle.branch,
 			sle.warehouse,
 			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
