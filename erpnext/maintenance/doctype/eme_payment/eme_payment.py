@@ -32,6 +32,7 @@ class EMEPayment(Document):
 			if rate:
 				a.new_rate = flt(rate[0].rate)
 				a.rate   = flt(a.new_rate) - flt(a.prev_rate)
+				a.amount = flt(a.rate)  * flt(a.total_hours)
 
 	def check_remarks(self):
 		if not self.remarks:
