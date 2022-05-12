@@ -116,9 +116,9 @@ def get_balance_on(account=None, date=None, party_type=None, party=None, company
 
 	if account or (party_type and party):
 		if in_account_currency:
-			select_field = "round(sum(debit_in_account_currency),2) - round(sum(credit_in_account_currency),2)"
+			select_field = "sum(debit_in_account_currency) - sum(credit_in_account_currency)"
 		else:
-			select_field = "round(sum(debit),2) - roujnd(sum(credit),2)"
+			select_field = "sum(debit) - sum(credit)"
 		bal = frappe.db.sql("""
 			SELECT {0}
 			FROM `tabGL Entry` gle
