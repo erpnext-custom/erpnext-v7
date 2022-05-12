@@ -251,7 +251,7 @@ def filter_lot_list(doctype, txt, searchfield, start, page_len, filters):
 	if not filters.get("branch") and not filters.get("item"):
 		frappe.throw("Select Branch and Item First")
 	from erpnext.controllers.queries import get_match_cond
-	return frappe.db.sql("""select lot_no, item_sub_group, branch, item_name from `tabLot List` ll, `tabLot List Details` lld
+	return frappe.db.sql("""select lot_no, lld.item_sub_group, branch, lld.item_name from `tabLot List` ll, `tabLot List Details` lld
 							where branch = '{0}'
 							and ll.name = lld.parent
 							and docstatus = 1 
