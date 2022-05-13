@@ -24,7 +24,7 @@ class EMEPayment(Document):
 		is_disabled = frappe.db.get_value("Branch", self.branch, "is_disabled")
 		if is_disabled:
 			frappe.throw("Cannot use a disabled branch in transaction")
-	
+	#Function to pay arrear base on change in rate
 	def update_rate_amount(self):
 		for a in self.get("items"):
 			ehf = frappe.db.get_value("Logbook", a.logbook, "equipment_hiring_form")
