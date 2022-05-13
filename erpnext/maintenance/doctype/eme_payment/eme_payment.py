@@ -162,7 +162,7 @@ class EMEPayment(Document):
 	def validate_logbook(self):
 		for a in self.items:
 			paid = frappe.db.get_value("Logbook", a.logbook, "paid")
-			if paid == 1:
+			if paid == 1 and not self.arrear_eme_payment:
 				frappe.throw("{0} has already been paid. Please get logbooks again".format(frappe.bold(frappe.get_desk_link("Logbook", a.logbook))))
 			
 	def update_general_ledger(self):
