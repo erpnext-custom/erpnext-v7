@@ -25,8 +25,6 @@ def execute(filters):
 			sle.voucher_type = "Receive POL"
 		if filters.timber_class:
 			if item_detail.timber_class == filters.timber_class:
-				if frappe.session.user == "Administrator":
-					frappe.msgprint(str(sle.actual_qty))
 				data.append([sle.item_code, sle.posting_date, sle.posting_time, item_detail.item_name, item_detail.timber_class, item_detail.item_group, item_detail.item_sub_group, sle.branch,
 				sle.warehouse,
 				item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
@@ -34,8 +32,6 @@ def execute(filters):
 				sle.valuation_rate, sle.stock_value, sle.voucher_type, sle.voucher_no,
 				sle.vehicle_no, sle.transporter_name, sle.company])
 		else:
-			if frappe.session.user == "Administrator":
-				frappe.msgprint(str(sle.actual_qty))
 			data.append([sle.item_code, sle.posting_date, sle.posting_time, item_detail.item_name, item_detail.timber_class, item_detail.item_group, item_detail.item_sub_group, sle.branch,
 			sle.warehouse,
 			item_detail.stock_uom, sle.actual_qty, sle.qty_after_transaction,
@@ -90,8 +86,6 @@ def get_stock_ledger_entries(filters):
 			{sle_conditions} {group_by} order by sle.posting_date asc, sle.posting_time asc, sle.name asc) as data {branch_cond}
 
 			""".format(sle_conditions=get_sle_conditions(filters), branch_cond=get_branch_conditions(filters), company=filters.get("company"), from_date=filters.get("from_date"), to_date=filters.get("to_date"), group_by = get_group_by(filters))
-		if frappe.session.user == "Administrator":
-			frappe.msgprint(query)
 	else:
 		query = """select * from (
     	            select dn.posting_date, convert(sle.posting_time,time) as posting_time, sle.item_code,
