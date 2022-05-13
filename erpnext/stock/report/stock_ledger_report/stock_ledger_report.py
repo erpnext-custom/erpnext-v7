@@ -172,7 +172,7 @@ def get_stock_ledger_entries(filters):
 
 def get_group_by(filters):
 	if filters.get("transaction_type") != "Production":
-		group_by = "group by sle.voucher_no, sle.item_code"
+		group_by = "group by sle.voucher_no, sle.item_code, sle.warehouse"
 	else:
 		group_by = "group by sle.voucher_detail_no, sle.voucher_no, sle.item_code"
 	return group_by
