@@ -26,8 +26,8 @@ def get_data(query, filters):
 			committed = frappe.db.sql("select SUM(amount) from `tabCommitted Budget` where account = %s and po_date BETWEEN %s and %s", (d.account, filters.from_date, filters.to_date))[0][0]
 			consumed = frappe.db.sql("select SUM(amount) from `tabConsumed Budget` where account = %s and po_date BETWEEN %s and %s", (d.account, filters.from_date, filters.to_date))[0][0]
 		else:
-			committed = frappe.db.sql("select SUM(amount) from `tabCommitted Budget` where cost_center = %s and account = %s and po_date BETWEEN %s and %s", (d.cost_center, d.account, filters.from_date, filters.to_date))[0][0]
-			consumed = frappe.db.sql("select SUM(amount) from `tabConsumed Budget` where cost_center = %s and account = %s and po_date BETWEEN %s and %s", (d.cost_center, d.account, filters.from_date, filters.to_date))[0][0]
+			committed = frappe.db.sql("select SUM(amount) from `tabCommitted Budget` where account = %s and cost_center = %s and po_date BETWEEN %s and %s", (d.account, d.cost_center, filters.from_date, filters.to_date))[0][0]
+			consumed = frappe.db.sql("select SUM(amount) from `tabConsumed Budget` where account = %s and cost_center = %s and po_date BETWEEN %s and %s", (d.account, d.cost_center, filters.from_date, filters.to_date))[0][0]
 		if not committed:
 			committed = 0
 		if not consumed:
@@ -78,14 +78,24 @@ def construct_query(filters=None):
 	if filters.group_by_account:
 		filters.cost_center = None
 	#query = "select b.cost_center, ba.account, ba.budget_amount, ba.initial_budget, ba.budget_received as added, ba.budget_sent as deducted, ba.supplementary_budget as supplement, (select SUM(amount) from `tabCommitted Budget` cb where cb.cost_center = b.cost_center and cb.account = ba.account and cb.po_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as committed, (select SUM(amount) from `tabConsumed Budget` conb where conb.cost_center = b.cost_center and conb.account = ba.account and conb.po_date BETWEEN \'" + str(filters.from_date) + "\' AND \'" + str(filters.to_date) + "\') as consumed from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and b.name = ba.parent and b.fiscal_year = " + str(filters.fiscal_year)
-	query = "select b.cost_center, ba.account, SUM(ba.budget_amount) as budget_amount, SUM(ba.initial_budget) as initial_budget, SUM(ba.budget_received) as added, SUM(ba.budget_sent) as deducted, SUM(ba.supplementary_budget) as supplement from `tabBudget` b, `tabBudget Account` ba where b.docstatus = 1 and b.name = ba.parent and b.fiscal_year = " + str(filters.fiscal_year)
+	query = """select b.cost_center, ba.account, 
+				SUM(ba.budget_amount) as budget_amount, 
+				SUM(ba.initial_budget) as initial_budget, 
+				SUM(ba.budget_received) as added, 
+				SUM(ba.budget_sent) as deducted, 
+				SUM(ba.supplementary_budget) as supplement 
+			from `tabBudget` b, `tabBudget Account` ba 
+			where b.fiscal_year = "{}" 
+			and b.docstatus = 1 
+			and b.name = ba.parent 
+			""".format(str(filters.fiscal_year))
 	if filters.cost_center:
 		query += " and b.cost_center = \'" + str(filters.cost_center) + "\' "
 	if filters.group_by_account:
 		query += " group by ba.account"
 	else:
 		query += " group by ba.account, b.cost_center"
-	return query;
+	return query
 
 def validate_filters(filters):
 
