@@ -395,7 +395,7 @@ def get_stock_ledger_entries(previous_sle, operator=None, order="desc", limit=No
 		and warehouse = %%(warehouse)s
 		and ifnull(is_cancelled, 'No')='No'
 		and %(conditions)s
-		order by timestamp(posting_date, posting_time) %(order)s, name %(order)s
+		order by timestamp(posting_date, posting_time) %(order)s, creation %(order)s
 		%(limit)s %(for_update)s""" % {
 			"conditions": conditions,
 			"limit": limit or "",
