@@ -74,7 +74,7 @@ class Bin(Document):
 
 		self.set_projected_qty()
 		self.save()
-		update_item_projected_qty(self.item_code)
+		#update_item_projected_qty(self.item_code)
 
 	def set_projected_qty(self):
 		self.projected_qty = (flt(self.actual_qty) + flt(self.ordered_qty)
