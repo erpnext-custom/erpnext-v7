@@ -24,6 +24,11 @@ frappe.ui.form.on("Journal Entry", {
 			{fieldname: 'credit_in_account_currency', columns: 2}
 		];
 	},
+	onload: function(frm) {
+		/* ePyment Begins */
+		create_custom_buttons(frm);
+		/* ePayment Ends */
+	},
 
 	refresh: function(frm) {
 		//erpnext.toggle_naming_series();
@@ -655,3 +660,17 @@ frappe.ui.form.on("Journal Entry", "select_cheque_lot", function(frm) {
 
      }
 })
+
+/* ePayment Begins */
+var create_custom_buttons = function(frm){
+	if(frm.doc.docstatus == 1 && (frm.doc.voucher_type == "Bank Entry" || frm.doc.voucher_type == "Contra Entry")){
+		if(!frm.doc.bank_payment || frm.doc.payment_status == 'Failed' || frm.doc.payment_status == 'Payment Failed'){
+			frm.page.set_primary_action(__('Process Payment'), () => {
+				frappe.model.open_mapped_doc({
+					method: "erpnext.accounts.doctype.journal_entry.journal_entry.make_bank_payment",
+					frm: cur_frm
+				});
+			});
+		}
+	}
+}

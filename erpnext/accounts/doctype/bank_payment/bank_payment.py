@@ -610,6 +610,7 @@ class BankPayment(Document):
 						FROM `tabBank Payment Item` bpi
 						WHERE bpi.transaction_type = 'Direct Payment'
 						AND bpi.transaction_id = dp.name
+						AND bpi.transaction_reference = dpi.name
 						AND bpi.parent != '{bank_payment}'
 						AND bpi.docstatus != 2
 						AND bpi.status NOT IN ('Cancelled', 'Failed')

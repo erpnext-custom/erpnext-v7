@@ -12,7 +12,7 @@ Version          Author          CreatedOn          ModifiedOn          Remarks
 
 from __future__ import unicode_literals
 import frappe, json
-from frappe.utils import cstr, flt, fmt_money, formatdate, getdate
+from frappe.utils import cstr, flt, fmt_money, formatdate, getdate, get_datetime
 from frappe import msgprint, _, scrub
 from erpnext.controllers.accounts_controller import AccountsController
 from erpnext.accounts.utils import get_balance_on, get_account_currency
@@ -22,6 +22,7 @@ from erpnext.custom_utils import generate_receipt_no, check_future_date
 # Ver 1.0 by SSK on 09/08/2016, Following datetime, make_autoname imports are included
 import datetime
 from frappe.model.naming import make_autoname
+from frappe.model.mapper import get_mapped_doc
 
 class JournalEntry(AccountsController):
 	def __init__(self, arg1, arg2=None):
@@ -1071,3 +1072,25 @@ def get_advance_from_je(branch):
 		AND je.branch='{}' 
 		AND je.advance_amount > 0 and je.docstatus=1
 	""".format(branch))
+
+# ePayment Begins
+@frappe.whitelist()
+def make_bank_payment(source_name, target_doc=None):
+    def set_missing_values(obj, target, source_parent):
+        target.payment_type = "One-One Payment"
+        target.transaction_type = "Journal Entry"
+        target.posting_date = get_datetime()
+        target.from_date = None
+        target.to_date = None
+
+    doc = get_mapped_doc("Journal Entry", source_name, {
+            "Journal Entry": {
+                "doctype": "Bank Payment",
+                "field_map": {
+                    "name": "transaction_no",
+                },
+                "postprocess": set_missing_values,
+            },
+    }, target_doc, ignore_permissions=True)
+    return doc
+# ePayment Ends
