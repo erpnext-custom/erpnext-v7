@@ -486,46 +486,46 @@ class TransporterPayment(AccountsController):
 
 		cc = get_branch_cc(self.branch)
 		trans_amount = flt(self.transportation_amount) - flt(self.pol_amount)
-		if (flt(self.transfer_charges) +  flt(self.delivery_charges)) > 0:
+		if (flt(self.transfer_charges) +  flt(self.delivery_charges) + flt(doc.transportation_amount)) > 0:
 			items = self.get_expense_gl()
 
 			for k,v in items.iteritems():
 				check_budget_available(cc, k, self.posting_date, v)
 				self.consume_budget(cc, k, v)
 	
-        def consume_budget(self, cc, account, amount):
-                bud_obj = frappe.get_doc({
-                        "doctype": "Committed Budget",
-                        "account": account,
-                        "cost_center": cc,
-                        "po_no": self.name,
-                        "po_date": self.posting_date,
-                        "amount": amount,
-                        "item_code": None,
-                        "poi_name": self.name,
-                        "date": frappe.utils.nowdate(),
-			"consumed" : 1
-                        })
-                bud_obj.flags.ignore_permissions = 1
-                bud_obj.submit()
+	def consume_budget(self, cc, account, amount):
+		bud_obj = frappe.get_doc({
+				"doctype": "Committed Budget",
+				"account": account,
+				"cost_center": cc,
+				"po_no": self.name,
+				"po_date": self.posting_date,
+				"amount": amount,
+				"item_code": None,
+				"poi_name": self.name,
+				"date": frappe.utils.nowdate(),
+				"consumed" : 1
+				})
+		bud_obj.flags.ignore_permissions = 1
+		bud_obj.submit()
 
-                consume = frappe.get_doc({
-                        "doctype": "Consumed Budget",
-                        "account": account,
-                        "cost_center": cc,
-                        "po_no": self.name,
-                        "po_date": self.posting_date,
-                        "amount": amount,
-                        "pii_name": self.name,
-                        "item_code": None,
-                        "com_ref": bud_obj.name,
-                        "date": frappe.utils.nowdate()})
-                consume.flags.ignore_permissions=1
-                consume.submit()
+		consume = frappe.get_doc({
+				"doctype": "Consumed Budget",
+				"account": account,
+				"cost_center": cc,
+				"po_no": self.name,
+				"po_date": self.posting_date,
+				"amount": amount,
+				"pii_name": self.name,
+				"item_code": None,
+				"com_ref": bud_obj.name,
+				"date": frappe.utils.nowdate()})
+		consume.flags.ignore_permissions=1
+		consume.submit()
 
-        def get_expense_gl(self):
-                items = {}
-                total_transportation_amount = 0
+	def get_expense_gl(self):
+		items = {}
+		total_transportation_amount = 0
 		for i in self.get("items"): 
 			if str(i.expense_account) in items:
 				items[str(i.expense_account)] = flt(items[str(i.expense_account)]) + flt(i.transportation_amount)
@@ -533,23 +533,23 @@ class TransporterPayment(AccountsController):
 				items.setdefault(str(i.expense_account),flt(i.transportation_amount))
 			total_transportation_amount += flt(i.transportation_amount)
 
-                # pro-rate POL expenses against each expense GL
-                if flt(total_transportation_amount) and flt(self.pol_amount):
-                        deduct_pct  = 0
-                        deduct_amt  = 0
-                        balance_amt = flt(self.pol_amount)
-                        counter     = 0
-                        for k,v in sorted(items.items(), key=operator.itemgetter(1)):
-                                counter += 1
-                                if counter == len(items):
-                                        deduct_amt = balance_amt
-                                else:
-                                        deduct_pct = math.floor((flt(v)/flt(total_transportation_amount))*0.01)
-                                        deduct_amt = math.floor(flt(self.pol_amount)*deduct_pct*0.01)
-                                        balance_amt= balance_amt - deduct_amt
+		# pro-rate POL expenses against each expense GL
+		if flt(total_transportation_amount) and flt(self.pol_amount):
+				deduct_pct  = 0
+				deduct_amt  = 0
+				balance_amt = flt(self.pol_amount)
+				counter     = 0
+				for k,v in sorted(items.items(), key=operator.itemgetter(1)):
+					counter += 1
+					if counter == len(items):
+						deduct_amt = balance_amt
+					else:
+						deduct_pct = math.floor((flt(v)/flt(total_transportation_amount))*0.01)
+						deduct_amt = math.floor(flt(self.pol_amount)*deduct_pct*0.01)
+						balance_amt= balance_amt - deduct_amt
 
-                                items[k] -= flt(deduct_amt)
-                return items
+					items[k] -= flt(deduct_amt)
+		return items
 
 	def make_gl_entry(self):
 		from erpnext.accounts.general_ledger import make_gl_entries
