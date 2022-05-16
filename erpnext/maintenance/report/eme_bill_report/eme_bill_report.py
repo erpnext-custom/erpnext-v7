@@ -29,12 +29,17 @@ def get_data(filters):
 			(SELECT count(DISTINCT equipment_no) 
 				FROM `tabEME Payment Item` 
 				WHERE parent = ep.name and equipment_type = ep.equipment_type) AS no,
-			(SELECT rate 
+			(SELECT 
+				CASE
+					WHEN new_rate IS NULL THEN rate
+					ELSE (new_rate - prev_rate)
+				END
 				FROM `tabEME Payment Item` 
-				WHERE parent = ep.name and equipment_type = ep.equipment_type limit 1) AS rate,
+				WHERE rate > 0 and parent = ep.name and equipment_type = ep.equipment_type limit 1) AS rate,
 			(SELECT SUM(total_hours) 
 				FROM `tabEME Payment Item` 
-				WHERE parent = ep.name and equipment_type = ep.equipment_type) AS total_hours   
+				WHERE parent = ep.name and equipment_type = ep.equipment_type 
+				and rate > 0) AS total_hours   
 			FROM (SELECT DISTINCT(epi.equipment_type),          
          	 	ep.branch,
 				ep.posting_date, 
@@ -49,7 +54,7 @@ def get_data(filters):
 				ep.payable_amount,
 				ep.remarks 
           	FROM `tabEME Payment` ep, `tabEME Payment Item` epi  
-          	WHERE epi.parent = ep.name and  ep.name = '{}') ep;
+          	WHERE epi.parent = ep.name and  ep.name = '{}' and epi.rate > 0) ep;
 			""".format(filters.name),as_dict=True)
 
 def get_columns():
