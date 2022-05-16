@@ -138,10 +138,10 @@ class CustomerOrder(Document):
 		if limits:
 			# frappe.errprint("limits"+str(limits))
 			self.site_item_name = limits.site_item_name
-			self.total_available_quantity = flt(limits.total_available_quantity) if flt(limits.total_available_quantity) >= 0 else flt(self.total_quantity)
-		if flt(self.total_quantity) > flt(self.total_available_quantity):
+			self.total_available_quantity = flt(limits.total_available_quantity,2) if flt(limits.total_available_quantity,2) >= 0 else flt(self.total_quantity,2)
+		if flt(self.total_quantity,2) > flt(self.total_available_quantity,2):
 			frappe.throw(_("You have crossed your overall quota by quantity {0} {1}")\
-				.format(flt(self.total_quantity)-flt(self.total_available_quantity), self.uom),title="Insufficient Balance")
+				.format(flt(self.total_quantity,2)-flt(self.total_available_quantity,2), self.uom),title="Insufficient Balance")
 		if 'has_limit' in limits:
 			limits 		= limits.has_limit
 			self.order_limit_type = limits.limit_type
@@ -155,34 +155,34 @@ class CustomerOrder(Document):
 				self.monthly_available_quantity	= 0
 				self.yearly_quantity_limit 	= 0
 				self.yearly_available_quantity	= 0
-				if flt(limits.daily_quantity_limit):
-					balance = flt(limits.daily_quantity_limit)-flt(limits.daily_ordered_quantity)
-					self.daily_quantity_limit 	= flt(limits.daily_quantity_limit)
-					self.daily_available_quantity 	= flt(balance)
-					if flt(balance) < flt(self.total_quantity):
+				if flt(limits.daily_quantity_limit,2):
+					balance = flt(limits.daily_quantity_limit,2)-flt(limits.daily_ordered_quantity,2)
+					self.daily_quantity_limit 	= flt(limits.daily_quantity_limit,2)
+					self.daily_available_quantity 	= flt(balance,2)
+					if flt(balance,2) < flt(self.total_quantity,2):
 						frappe.throw(_("You have crossed your daily quota by quantity {0} {1}")\
-							.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
-				if flt(limits.weekly_quantity_limit):
-					balance = flt(limits.weekly_quantity_limit)-flt(limits.weekly_ordered_quantity)
-					self.weekly_quantity_limit 	= flt(limits.weekly_quantity_limit)
-					self.weekly_available_quantity 	= flt(balance)
-					if flt(balance) < flt(self.total_quantity):
+							.format(flt(self.total_quantity,2)-flt(balance,2), self.uom),title="Insufficient Balance")
+				if flt(limits.weekly_quantity_limit,2):
+					balance = flt(limits.weekly_quantity_limit,2)-flt(limits.weekly_ordered_quantity,2)
+					self.weekly_quantity_limit 	= flt(limits.weekly_quantity_limit,2)
+					self.weekly_available_quantity 	= flt(balance,2)
+					if flt(balance,2) < flt(self.total_quantity,2):
 						frappe.throw(_("You have crossed your weekly quota by quantity {0} {1}")\
-							.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
-				if flt(limits.monthly_quantity_limit):
-					balance = flt(limits.monthly_quantity_limit)-flt(limits.monthly_ordered_quantity)
-					self.monthly_quantity_limit 	= flt(limits.monthly_quantity_limit)
-					self.monthly_available_quantity = flt(balance)
-					if flt(balance) < flt(self.total_quantity):
+							.format(flt(self.total_quantity,2)-flt(balance,2), self.uom),title="Insufficient Balance")
+				if flt(limits.monthly_quantity_limit,2):
+					balance = flt(limits.monthly_quantity_limit,2)-flt(limits.monthly_ordered_quantity,2)
+					self.monthly_quantity_limit 	= flt(limits.monthly_quantity_limit,2)
+					self.monthly_available_quantity = flt(balance,2)
+					if flt(balance,2) < flt(self.total_quantity,2):
 						frappe.throw(_("You have crossed your monthly quota by quantity {0} {1}")\
-							.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
-				if flt(limits.yearly_quantity_limit):
-					balance = flt(limits.yearly_quantity_limit)-flt(limits.yearly_ordered_quantity)
-					self.yearly_quantity_limit 	= flt(limits.yearly_quantity_limit)
-					self.yearly_available_quantity 	= flt(balance)
-					if flt(balance) < flt(self.total_quantity):
+							.format(flt(self.total_quantity,2)-flt(balance,2), self.uom),title="Insufficient Balance")
+				if flt(limits.yearly_quantity_limit,2):
+					balance = flt(limits.yearly_quantity_limit,2)-flt(limits.yearly_ordered_quantity,2)
+					self.yearly_quantity_limit 	= flt(limits.yearly_quantity_limit,2)
+					self.yearly_available_quantity 	= flt(balance,2)
+					if flt(balance,2) < flt(self.total_quantity,2):
 						frappe.throw(_("You have crossed your yearly quota by quantity {0} {1}")\
-							.format(flt(self.total_quantity)-flt(balance), self.uom),title="Insufficient Balance")
+							.format(flt(self.total_quantity,2)-flt(balance,2), self.uom),title="Insufficient Balance")
 			elif limits.limit_type == "Truck Loads":
 				balance 			= 0
 				self.daily_quantity_limit_count 	= 0
@@ -193,34 +193,34 @@ class CustomerOrder(Document):
 				self.monthly_available_quantity_count	= 0
 				self.yearly_quantity_limit_count 	= 0
 				self.yearly_available_quantity_count	= 0
-				if flt(limits.daily_quantity_limit_count):
-					balance = flt(limits.daily_quantity_limit_count)-flt(limits.daily_ordered_quantity_count)
-					self.daily_quantity_limit_count 	= flt(limits.daily_quantity_limit_count)
-					self.daily_available_quantity_count 	= flt(balance)
-					if flt(balance) < flt(self.noof_truck_load):
+				if flt(limits.daily_quantity_limit_count,2):
+					balance = flt(limits.daily_quantity_limit_count,2)-flt(limits.daily_ordered_quantity_count,2)
+					self.daily_quantity_limit_count 	= flt(limits.daily_quantity_limit_count,2)
+					self.daily_available_quantity_count 	= flt(balance,2)
+					if flt(balance,2) < flt(self.noof_truck_load,2):
 						frappe.throw(_("You have crossed your daily quota by {0} truck load(s)")\
-							.format(flt(self.noof_truck_load)-flt(balance)),title="Insufficient Balance")
-				if flt(limits.weekly_quantity_limit_count):
-					balance = flt(limits.weekly_quantity_limit_count)-flt(limits.weekly_ordered_quantity_count)
-					self.weekly_quantity_limit_count 	= flt(limits.weekly_quantity_limit_count)
-					self.weekly_available_quantity_count 	= flt(balance)
-					if flt(balance) < flt(self.noof_truck_load):
+							.format(flt(self.noof_truck_load,2)-flt(balance,2)),title="Insufficient Balance")
+				if flt(limits.weekly_quantity_limit_count,2):
+					balance = flt(limits.weekly_quantity_limit_count,2)-flt(limits.weekly_ordered_quantity_count,2)
+					self.weekly_quantity_limit_count 	= flt(limits.weekly_quantity_limit_count,2)
+					self.weekly_available_quantity_count 	= flt(balance,2)
+					if flt(balance,2) < flt(self.noof_truck_load,2):
 						frappe.throw(_("You have crossed your weekly quota by {0} truck load(s)")\
-							.format(flt(self.noof_truck_load)-flt(balance)),title="Insufficient Balance")
-				if flt(limits.monthly_quantity_limit_count):
-					balance = flt(limits.monthly_quantity_limit_count)-flt(limits.monthly_ordered_quantity_count)
-					self.monthly_quantity_limit_count 	= flt(limits.monthly_quantity_limit_count)
-					self.monthly_available_quantity_count   = flt(balance)
-					if flt(balance) < flt(self.noof_truck_load):
+							.format(flt(self.noof_truck_load,2)-flt(balance,2)),title="Insufficient Balance")
+				if flt(limits.monthly_quantity_limit_count,2):
+					balance = flt(limits.monthly_quantity_limit_count,2)-flt(limits.monthly_ordered_quantity_count,2)
+					self.monthly_quantity_limit_count 	= flt(limits.monthly_quantity_limit_count,2)
+					self.monthly_available_quantity_count   = flt(balance,2)
+					if flt(balance,2) < flt(self.noof_truck_load,2):
 						frappe.throw(_("You have crossed your monthly quota by {0} truck load(s)")\
-							.format(flt(self.noof_truck_load)-flt(balance)),title="Insufficient Balance")
-				if flt(limits.yearly_quantity_limit_count):
-					balance = flt(limits.yearly_quantity_limit_count)-flt(limits.yearly_ordered_quantity_count)
-					self.yearly_quantity_limit_count 	= flt(limits.yearly_quantity_limit_count)
-					self.yearly_available_quantity_count 	= flt(balance)
-					if flt(balance) < flt(self.noof_truck_load):
+							.format(flt(self.noof_truck_load,2)-flt(balance,2)),title="Insufficient Balance")
+				if flt(limits.yearly_quantity_limit_count,2):
+					balance = flt(limits.yearly_quantity_limit_count,2)-flt(limits.yearly_ordered_quantity_count,2)
+					self.yearly_quantity_limit_count 	= flt(limits.yearly_quantity_limit_count,2)
+					self.yearly_available_quantity_count 	= flt(balance,2)
+					if flt(balance,2) < flt(self.noof_truck_load,2):
 						frappe.throw(_("You have crossed your yearly quota by {0} truck load(s)")\
-							.format(flt(self.noof_truck_load)-flt(balance)),title="Insufficient Balance")
+							.format(flt(self.noof_truck_load,2)-flt(balance,2)),title="Insufficient Balance")
 
 	def get_item_details(self):
 		if not self.item:
