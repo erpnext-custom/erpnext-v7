@@ -31,7 +31,7 @@ def get_data(filters):
 				WHERE parent = ep.name and equipment_type = ep.equipment_type) AS no,
 			(SELECT 
 				CASE
-					WHEN new_rate IS NULL THEN rate
+					WHEN (new_rate IS NULL or new_rate = "") THEN rate
 					ELSE (new_rate - prev_rate)
 				END
 				FROM `tabEME Payment Item` 
