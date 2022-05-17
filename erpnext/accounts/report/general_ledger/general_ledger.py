@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt, getdate, cstr
 from frappe import _
-from erpnext.accounts.utils import get_account_currency
+from erpnext.accounts.utils import get_account_currency, get_cost_centers_with_children
 
 def execute(filters=None):
 	account_details = {}
@@ -224,8 +224,11 @@ def get_conditions(filters):
 		conditions.append("gl.posting_date >=%(from_date)s")
 	# cost center filter added by Birendra-13/03/2021
 	if filters.cost_center:
-		conditions.append("gl.cost_center = '{}' ".format(filters.cost_center))
-	
+		#conditions.append("gl.cost_center = '{}' ".format(filters.cost_center))
+
+		filters.cost_center = get_cost_centers_with_children(filters.cost_center)
+                conditions.append("gl.cost_center in %(cost_center)s")	
+
 	#if filters.branch:
 	#	conditions.append("cost_center in (select cost_center from `tabCost Center` where branch = '{0}'".format(filters.branch))
  	
