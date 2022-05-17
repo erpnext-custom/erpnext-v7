@@ -486,7 +486,7 @@ class TransporterPayment(AccountsController):
 
 		cc = get_branch_cc(self.branch)
 		trans_amount = flt(self.transportation_amount) - flt(self.pol_amount)
-		if (flt(self.transfer_charges) +  flt(self.delivery_charges) + flt(doc.transportation_amount)) > 0:
+		if (flt(self.transfer_charges) +  flt(self.delivery_charges) + flt(self.transportation_amount)) > 0:
 			items = self.get_expense_gl()
 
 			for k,v in items.iteritems():
