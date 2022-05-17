@@ -610,6 +610,22 @@ def get_child_cost_centers(current_cs=None):
 		return allchilds
 
 
+### Return CC based on lft and rtg
+def get_cost_centers_with_children(cost_centers=None):
+        if not isinstance(cost_centers, list):
+                cost_centers = [d.strip() for d in cost_centers.strip().split(',') if d]
+
+        all_cost_centers = []
+        for d in cost_centers:
+                if frappe.db.exists("Cost Center", d):
+                        lft, rgt = frappe.db.get_value("Cost Center", d, ["lft", "rgt"])
+                        children = frappe.get_all("Cost Center", filters={"lft": [">=", lft], "rgt": ["<=", rgt]})   
+                        all_cost_centers += [c.name for c in children]
+                else:
+                        frappe.throw(_("Cost Center: {0} does not exist".format(d)))
+
+        return list(set(all_cost_centers))
+
 ###
 # Return From/To Date from Report Period
 ###
