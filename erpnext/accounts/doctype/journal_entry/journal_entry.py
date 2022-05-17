@@ -1063,15 +1063,16 @@ def get_average_exchange_rate(account):
 
 #added new here
 @frappe.whitelist()
-def get_advance_from_je(branch):
+def get_advance_from_je(branch, party):
 	return frappe.db.sql("""
      	SELECT 
 			je.advance_amount, je.name, jea.account , jea.party, jea.party_type, jea.cost_center, jea.business_activity
 		FROM `tabJournal Entry` je, `tabJournal Entry Account` jea 
 		WHERE jea.parent=je.name 
 		AND je.branch='{}' 
+		AND jea.party = '{}'
 		AND je.advance_amount > 0 and je.docstatus=1
-	""".format(branch))
+	""".format(branch, party))
 
 # ePayment Begins
 @frappe.whitelist()

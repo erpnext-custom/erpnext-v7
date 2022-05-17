@@ -718,7 +718,8 @@ function get_advance(frm){
 	frappe.call({
 		method: "erpnext.accounts.doctype.journal_entry.journal_entry.get_advance_from_je",
 		args: {
-			branch: frm.doc.branch,
+			"branch": frm.doc.branch,
+			"party": frm.doc.customer,
 		},
 		callback: function(r) {
 			console.log(r.message)
@@ -726,11 +727,20 @@ function get_advance(frm){
 				frm.set_value("je_advance_amount", r.message[0][0]);
 				frm.set_value("reference_name", r.message[0][1]);
 				frm.set_value("advance_account", r.message[0][2]);	
-				frm.set_value("party", r.message[1][3]);
-				frm.set_value("party_type", r.message[1][4]);
-				frm.set_value("advance_cost_center", r.message[1][5]);
-				frm.set_value("advance_business_activity", r.message[1][6]);
+				frm.set_value("party", r.message[0][3]);
+				frm.set_value("party_type", r.message[0][4]);
+				frm.set_value("advance_cost_center", r.message[0][5]);
+				frm.set_value("advance_business_activity", r.message[0][6]);
 			}
+			// if (r.message){
+			// 	frm.set_value("je_advance_amount", r.message[0][0]);
+			// 	frm.set_value("reference_name", r.message[0][1]);
+			// 	frm.set_value("advance_account", r.message[0][2]);	
+			// 	frm.set_value("party", r.message[1][3]) || frm.set_value("party", r.message[0][4]);
+			// 	frm.set_value("party_type", r.message[1][4]);
+			// 	frm.set_value("advance_cost_center", r.message[1][5]);
+			// 	frm.set_value("advance_business_activity", r.message[1][6]);
+			// }
 			else{
 				frm.set_value("je_advance_amount", 0)
 				frm.set_value("reference_name", '')
