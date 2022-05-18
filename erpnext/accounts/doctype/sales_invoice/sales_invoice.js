@@ -732,15 +732,6 @@ function get_advance(frm){
 				frm.set_value("advance_cost_center", r.message[0][5]);
 				frm.set_value("advance_business_activity", r.message[0][6]);
 			}
-			// if (r.message){
-			// 	frm.set_value("je_advance_amount", r.message[0][0]);
-			// 	frm.set_value("reference_name", r.message[0][1]);
-			// 	frm.set_value("advance_account", r.message[0][2]);	
-			// 	frm.set_value("party", r.message[1][3]) || frm.set_value("party", r.message[0][4]);
-			// 	frm.set_value("party_type", r.message[1][4]);
-			// 	frm.set_value("advance_cost_center", r.message[1][5]);
-			// 	frm.set_value("advance_business_activity", r.message[1][6]);
-			// }
 			else{
 				frm.set_value("je_advance_amount", 0)
 				frm.set_value("reference_name", '')
