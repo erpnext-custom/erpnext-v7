@@ -286,6 +286,8 @@ class RoyaltyPayment(Document):
 		self.update_reference()
 
 	def update_reference(self):
+		if not self.journal_entry:
+			return
 		journal_entry_accounts = frappe.db.sql("""
 			select name from `tabJournal Entry Account` where reference_name = '{0}'
 		""".format(self.name), as_dict=1)
