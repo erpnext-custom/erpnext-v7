@@ -536,6 +536,7 @@ class BankPayment(Document):
 				if party and party_type:
 					employee = supplier = ""
 					debit_amt += flt(b.debit_amount)
+					query = ""
 					if party_type == "Supplier":
 						query = """select s.bank_name_new as bank_name, s.bank_branch, s.bank_account_type, 
 										s.account_number as bank_account_no, s.supplier_name as beneficiary_name,
