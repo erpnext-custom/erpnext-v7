@@ -24,7 +24,16 @@ frappe.ui.form.on("Customer", {
 		grid.set_column_disp("allocated_amount", false);
 		grid.set_column_disp("incentives", false);
 		apply_customer_group_validations(frm);
+		/* ePayment Begins, copied from supplier.py by Kinley on 2022/05/09 */
+		enable_disable(frm);
+		/* ePayment Ends*/
 	},
+	/* ePayment Begins, copied from supplier.py by Kinley on 2022/05/09 */
+	bank_name: function(frm){
+		enable_disable(frm);
+		cur_frm.set_value('bank_branch', null);
+	},
+	/* ePayment Ends*/
 	validate: function(frm) {
 		if(frm.doc.lead_name) frappe.model.clear_doc("Lead", frm.doc.lead_name);
 	},
@@ -133,3 +142,23 @@ cur_frm.fields_dict['accounts'].grid.get_field('account').get_query = function(d
 		filters: filters
 	}
 }
+
+/* ePayment Begins */
+cur_frm.fields_dict['bank_branch'].get_query = function(doc, dt, dn) {
+	return {
+		filters:{
+		 	"financial_institution": doc.bank_name
+	 	}
+	}
+}
+
+var enable_disable = function(frm){
+	if(frm.doc.bank_name){
+		cur_frm.toggle_display(["bank_branch", "bank_account_type"], frm.doc.bank_name != "INR");
+		cur_frm.toggle_reqd(["bank_branch", "bank_account_type"], frm.doc.bank_name != "INR");
+
+		cur_frm.toggle_display(["inr_bank_code", "inr_purpose_code"], frm.doc.bank_name == "INR");
+		cur_frm.toggle_reqd(["inr_bank_code", "inr_purpose_code"], frm.doc.bank_name == "INR");
+	}
+}
+/* ePayment Ends */
