@@ -348,8 +348,11 @@ class AccountsController(TransactionBase):
 			advance_entries_against_si = [d.reference_name for d in self.get("advances")]
 			for d in advance_entries:
 				if not advance_entries_against_si or d.reference_name not in advance_entries_against_si:
-					frappe.throw(_("Payment Entry {0} is linked against Order {1}, check if it should be pulled as advance in this invoice.")
-						.format(d.reference_name, d.against_order))
+					if self.doctype != "Sales Invoice":
+						if frappe.session.user == "Administrator":
+							frappe.throw(str(self.doctype))
+						frappe.throw(_("Payment Entry {0} is linked against Order {1}, check if it should be pulled as advance in this invoice.")
+							.format(d.reference_name, d.against_order))
 
 	def update_against_document_in_jv(self):
 		"""
