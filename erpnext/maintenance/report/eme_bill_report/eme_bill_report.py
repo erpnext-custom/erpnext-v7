@@ -12,50 +12,84 @@ def execute(filters=None):
 def get_data(filters):
 	# frappe.throw(format(filters.name))
 	# SELECT DISTINCT(epi.equipment_type), ep.branch,ep.posting_date FROM `tabEME Payment` ep, `tabEME Payment Item` epi WHERE epi.parent = ep.name and  ep.name = 'EP210400007';
+	#Written by Thukten to display multiple rate per payment
 	return frappe.db.sql("""
-		SELECT equipment_type,
-				branch,
-				posting_date,
-				ep.from_date,
-				ep.to_date, 
-				ep.supplier,
-				ep.name as ref,
-				ep.tds_percent,
-				ep.tds_amount,
-				ep.total_amount,
-				ep.deduction_amount,
-				ep.payable_amount,
-				ep.remarks,
-			(SELECT count(DISTINCT equipment_no) 
-				FROM `tabEME Payment Item` 
-				WHERE parent = ep.name and equipment_type = ep.equipment_type) AS no,
-			(SELECT 
-				CASE
-					WHEN (new_rate IS NULL or new_rate = "") THEN rate
-					ELSE (new_rate - prev_rate)
-				END
-				FROM `tabEME Payment Item` 
-				WHERE rate > 0 and parent = ep.name and equipment_type = ep.equipment_type limit 1) AS rate,
-			(SELECT SUM(total_hours) 
-				FROM `tabEME Payment Item` 
-				WHERE parent = ep.name and equipment_type = ep.equipment_type 
-				and rate > 0) AS total_hours   
-			FROM (SELECT DISTINCT(epi.equipment_type),          
-         	 	ep.branch,
-				ep.posting_date, 
-				ep.name,
-				ep.from_date,
-				ep.to_date,
-				ep.supplier,
-				ep.tds_percent,
-				ep.tds_amount,
-				ep.total_amount,
-				ep.deduction_amount,
-				ep.payable_amount,
-				ep.remarks 
-          	FROM `tabEME Payment` ep, `tabEME Payment Item` epi  
-          	WHERE epi.parent = ep.name and  ep.name = '{}' and epi.rate > 0) ep;
-			""".format(filters.name),as_dict=True)
+					SELECT 
+						ep.branch,
+						epi.posting_date,
+						ep.from_date,
+						ep.to_date, 
+						ep.supplier,
+						ep.name as ref,
+						ep.tds_percent,
+						ep.tds_amount,
+						ep.total_amount,
+						ep.deduction_amount,
+						ep.payable_amount,
+						epi.rate,
+						epi.equipment_type,
+						ep.remarks,
+						(SELECT count(DISTINCT equipment_no) 
+								FROM `tabEME Payment Item` 
+								WHERE parent = '{name}' 
+								and rate = epi.rate   
+								and equipment_type = epi.equipment_type) AS no,
+						(SELECT SUM(total_hours) 
+								FROM `tabEME Payment Item` 
+								WHERE parent = '{name}'
+								and rate = epi.rate 
+								and equipment_type = epi.equipment_type) AS total_hours 
+					FROM `tabEME Payment` ep, `tabEME Payment Item` epi
+					WHERE ep.name = epi.parent
+					and ep.name = "{name}"
+					group by epi.rate
+			""".format(name=filters.name), as_dict=True)
+
+	#Commentted by Thukten as it was not able to take care during multiple rates
+	# return frappe.db.sql("""
+	# 	SELECT equipment_type,
+	# 			branch,
+	# 			posting_date,
+	# 			ep.from_date,
+	# 			ep.to_date, 
+	# 			ep.supplier,
+	# 			ep.name as ref,
+	# 			ep.tds_percent,
+	# 			ep.tds_amount,
+	# 			ep.total_amount,
+	# 			ep.deduction_amount,
+	# 			ep.payable_amount,
+	# 			ep.remarks,
+	# 		(SELECT count(DISTINCT equipment_no) 
+	# 			FROM `tabEME Payment Item` 
+	# 			WHERE parent = ep.name and equipment_type = ep.equipment_type) AS no,
+	# 		(SELECT 
+	# 			CASE
+	# 				WHEN (new_rate IS NULL or new_rate = "") THEN rate
+	# 				ELSE (new_rate - prev_rate)
+	# 			END
+	# 			FROM `tabEME Payment Item` 
+	# 			WHERE rate > 0 and parent = ep.name and equipment_type = ep.equipment_type limit 1) AS rate,
+	# 		(SELECT SUM(total_hours) 
+	# 			FROM `tabEME Payment Item` 
+	# 			WHERE parent = ep.name and equipment_type = ep.equipment_type 
+	# 			and rate > 0) AS total_hours   
+	# 		FROM (SELECT DISTINCT(epi.equipment_type),          
+    #      	 	ep.branch,
+	# 			ep.posting_date, 
+	# 			ep.name,
+	# 			ep.from_date,
+	# 			ep.to_date,
+	# 			ep.supplier,
+	# 			ep.tds_percent,
+	# 			ep.tds_amount,
+	# 			ep.total_amount,
+	# 			ep.deduction_amount,
+	# 			ep.payable_amount,
+	# 			ep.remarks 
+    #       	FROM `tabEME Payment` ep, `tabEME Payment Item` epi  
+    #       	WHERE epi.parent = ep.name and  ep.name = '{}' and epi.rate > 0) ep;
+	# 		""".format(filters.name),as_dict=True)
 
 def get_columns():
 	return [
