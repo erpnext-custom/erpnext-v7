@@ -410,7 +410,7 @@ def get_data(filters):
 				if filters.not_cdcl == 1:
 					if frappe.session.user == "Administrator":
 						if eq.name == 'EQUIP180030':
-							frappe.msgprint(str(a.rat))
+							frappe.throw(str(a.rat))
 					total_rev += flt(a.rat)*flt(total_work_time)
 			elif filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
 				rate.append(a.rat)
