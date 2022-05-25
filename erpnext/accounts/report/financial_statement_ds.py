@@ -292,6 +292,7 @@ def set_gl_entries_by_account(cost_center, business_activity, company, from_date
 		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, case when voucher_type = 'Journal Entry' then (select voucher_type from `tabJournal Entry` je where je.name = voucher_no) else '' end as entry_type, is_opening from `tabGL Entry`
 			where company=%(company)s
 			and case when voucher_type = 'Stock Entry' then voucher_no not in (select name from `tabStock Entry` b where voucher_no = b.name and b.purpose in ('Material Transfer','Material Receipt') and b.docstatus = 1) else 1 = 1 end
+			and case when voucher_type = 'Journal Entry' then voucher_no not in (select name from `tabJournal Entry` j where voucher_no = j.name and EXISTS(select 1 from `tabJournal Entry Account` je where je.parent = j.name and je.reference_type = 'Asset') and j.docstatus = 1) else 1 = 1 end
 			{additional_conditions}
 			and account in (select name from `tabAccount`
 				where lft >= %(lft)s and rgt <= %(rgt)s)
@@ -330,6 +331,7 @@ def set_gl_entries_by_account(cost_center, business_activity, company, from_date
 		gl_entries = frappe.db.sql("""select posting_date, account, debit, credit, case when voucher_type = 'Journal Entry' then (select voucher_type from `tabJournal Entry` je where je.name = voucher_no) else '' end as entry_type, is_opening from `tabGL Entry`
 			where company=%(company)s
 			and case when voucher_type = 'Stock Entry' then voucher_no not in (select name from `tabStock Entry` b where voucher_no = b.name and b.purpose in ('Material Transfer','Material Receipt') and b.docstatus = 1) else 1 = 1 end
+			and case when voucher_type = 'Journal Entry' then voucher_no not in (select name from `tabJournal Entry` j where voucher_no = j.name and EXISTS(select 1 from `tabJournal Entry Account` je where je.parent = j.name and je.reference_type = 'Asset') and j.docstatus = 1) else 1 = 1 end
 			{additional_conditions}
 			and account in (select name from `tabAccount`
 				where lft >= %(lft)s and rgt <= %(rgt)s)
