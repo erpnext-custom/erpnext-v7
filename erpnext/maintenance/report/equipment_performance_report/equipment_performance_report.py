@@ -407,6 +407,8 @@ def get_data(filters):
 				bench.append(flt(a.bn))
 				benchm = a.bn
 				total_hc   += flt(a.rat)*flt(a.bn)*no_of_months
+				if filters.not_cdcl == 1: 
+					total_rev += flt(a.rat)*flt(total_work_time)
 			elif filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
 				rate.append(a.rat)
 				bench.append(a.bn/12)
@@ -417,6 +419,8 @@ def get_data(filters):
 				ta2 += flt(a.rat)*flt(a.bn/12)*8
 				bench_date = date_diff(to_date, from_date) + 1
 				total_hc += cal_date*ta2/bench_date
+				if filters.not_cdcl == 1: 
+					total_rev += flt(a.rat)*flt(total_work_time)
 			elif filters.get("period") in ("1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter"):
 				rate.append(a.rat)
 				bench.append(a.bn/3)
@@ -427,6 +431,8 @@ def get_data(filters):
 				ta2 += flt(a.rat)*flt(a.bn/12)*8
 				bench_date = date_diff(to_date, from_date) + 1
 				total_hc += cal_date*ta2/bench_date
+				if filters.not_cdcl == 1: 
+					total_rev += flt(a.rat)*flt(total_work_time)
 			elif filters.get("period") in ("1st Half Year", "2nd Half Year"):
 				rate.append(a.rat)
 				bench.append(a.bn/2)
@@ -437,6 +443,8 @@ def get_data(filters):
 				ta2 += flt(a.rat)*flt(a.bn/12)*8
 				bench_date = date_diff(to_date, from_date) + 1
 				total_hc += cal_date*ta2/bench_date
+				if filters.not_cdcl == 1: 
+					total_rev += flt(a.rat)*flt(total_work_time)
 			if filters.get("not_cdcl")==0:
 				total_rev = flt(total_work_time) * flt(a.rat) * flt(cft_rate_bf)
 
@@ -558,7 +566,7 @@ def get_data(filters):
 				total_rm_exp,
 				total_op_exp,
 				total_exp,
-				# total_rev,
+				total_rev,
 				# flt(total_rev-total_exp),
 				# total_idle_time,
 				total_cft,
@@ -610,6 +618,7 @@ def get_columns(filters):
 				("Expense (Repair and Maintenance)") + ":Currency:180",
 				("Expense (Operator)") + ":Currency:120",
 				("Total Expense") + ":Currency:120",
+				("Total Revenue") + ":Currency:120",
 				# ("R-E") + ":Currency:120",
 				# ("Total Idle Hours")+":Data:140",
 				("Total Cft")+":Data:140",
@@ -633,7 +642,7 @@ def get_columns(filters):
 				("Expense (Repair and Maintenance)") + ":Currency:180",
 				("Expense (Operator)") + ":Currency:120",
 				("Total Expense") + ":Currency:120",
-				# ("Total Revenue") + ":Currency:120",
+				("Total Revenue") + ":Currency:120",
 				# ("R-E") + ":Currency:120",
 				# ("Total Idle Hours")+":Data:140",
 				("Total Cft")+":Data:140",
@@ -657,7 +666,7 @@ def get_columns(filters):
 				("Expense (Repair and Maintenance)") + ":Currency:180",
 				("Expense (Operator)") + ":Currency:120",
 				("Total Expense") + ":Currency:120",
-				# ("Total Revenue") + ":Currency:120",
+				("Total Revenue") + ":Currency:120",
 				# ("R-E") + ":Currency:120",
 				# ("Total Idle Hours")+":Data:140",
 				("Total Cft")+":Data:140",
@@ -681,7 +690,7 @@ def get_columns(filters):
 				("Expense (Repair and Maintenance)") + ":Currency:180",
 				("Expense (Operator)") + ":Currency:120",
 				("Total Expense") + ":Currency:120",
-				# ("Total Revenue") + ":Currency:120",
+				("Total Revenue") + ":Currency:120",
 				# ("R-E") + ":Currency:120",
 				# ("Total Idle Hours")+":Data:140",
 				("Total Cft")+":Data:140",
