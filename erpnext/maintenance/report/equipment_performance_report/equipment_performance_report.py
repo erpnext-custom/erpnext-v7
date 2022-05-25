@@ -409,7 +409,8 @@ def get_data(filters):
 				total_hc   += flt(a.rat)*flt(a.bn)*no_of_months
 				if filters.not_cdcl == 1:
 					if frappe.session.user == "Administrator":
-						frappe.msgprint(str(a.rate))
+						if bench.equipment_model == 'Excavator(KomatsuPC200-7)':
+							frappe.msgprint(str(a.rate))
 					total_rev += flt(a.rat)*flt(total_work_time)
 			elif filters.get("period") in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"):
 				rate.append(a.rat)
