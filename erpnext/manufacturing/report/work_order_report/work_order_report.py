@@ -66,6 +66,7 @@ def get_progress_data(filters):
 def get_completed_columns(filters=None):
 	columns=[
 		_("Work Order") + ":Link/Work Order:200",
+        _("Branch") + ":Link/Branch:120",
 		_("Date") + ":Date:120",
 		_("Item") + ":Link/Item:150",
 		_("Item Name") + ":Link/Item:150",
@@ -78,9 +79,10 @@ def get_completed_columns(filters=None):
 	return columns
 
 def get_completed_data(filters=None):
-	data = frappe.db.sql("""
+	query = """
 		SELECT 
 			wo.name,
+			wo.branch,
 			wo.planned_start_date,
 			wo.production_item,
 			wo.item_name,
@@ -94,9 +96,13 @@ def get_completed_data(filters=None):
 			join `tabItem` i on i.name=wo.production_item
 		WHERE wo.docstatus = 1 AND wo.status='Completed' AND wo.produced_qty=wo.qty
 			AND wo.planned_start_date >= '{0}' AND wo.planned_start_date <= '{1}'
-	""".format(filters.from_date, filters.to_date))
-	
-	return data
+	""".format(filters.from_date, filters.to_date)
+	if filters.get("cost_center"):
+		if filters.get("branch"):
+			query += " AND wo.branch = \'" + str(filters.branch).replace(' - NRDCL','') + "\'"
+		else:
+			query += " AND wo.branch in (select name from `tabBranch` where cost_center in (select name from `tabCost Center` where parent_cost_center = \'" + filters.cost_center + "\'))"
+	return frappe.db.sql(query)
 # join `tabItem` i on i.name=wo.production_item
 # 	SELECT
 #   `tabWork Order`.name as "Work Order:Link/Work Order:200",
