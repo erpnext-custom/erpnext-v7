@@ -381,11 +381,10 @@ def get_data(filters):
 							   where hi.parent = hp.name 
 							   and hp.equipment_type = '{0}'
 				   and hp.equipment_model = '{1}'
-				   and ('{2}' between hi.from_date and hi.to_date) and ('{3}' between hi.from_date and hi.to_date)
+				   and ('{2}' >= hi.from_date and  '{2}' <= hi.to_date) and ('{3}' >= hi.from_date and '{3}' <= hi.to_date)
 			""".format(eq.equipment_type, eq.equipment_model, from_date, to_date), as_dict=1)
-		if frappe.session.user == "Administrator":
-			# frappe.msgprint(str(benchmark))
-			frappe.msgprint(str(from_date)+" "+str(to_date))
+		# if frappe.session.user == "Administrator":
+		# 	frappe.msgprint(str(benchmark))
 		rate = []
 		bench = []
 		total_hc = 0
