@@ -408,6 +408,7 @@ def get_data(filters):
 				benchm = a.bn
 				total_hc   += flt(a.rat)*flt(a.bn)*no_of_months
 				if filters.not_cdcl == 1:
+					frappe.msgprint("here")
 					if frappe.session.user == "Administrator":
 						if eq.name == 'EQUIP180030':
 							frappe.throw(str(a.rat))
