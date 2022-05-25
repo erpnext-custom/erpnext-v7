@@ -381,7 +381,7 @@ def get_data(filters):
 							   where hi.parent = hp.name 
 							   and hp.equipment_type = '{0}'
 				   and hp.equipment_model = '{1}'
-				   and hi.from_date between '{2}' and '{3}' and hi.to_date between '{2}' and '{3}'
+				   and '{2}' between hi.from_date and hi.to_date and '{3}' between hi.from_date and hi.to_date
 			""".format(eq.equipment_type, eq.equipment_model, from_date, to_date), as_dict=1)
 			# frappe.msgprint(str(eq.equipment_type)+" "+str(eq.equipment_model)+" "+str(from_date)+" "+str(to_date))
 		rate = []
