@@ -385,7 +385,7 @@ def get_data(filters):
 			""".format(eq.equipment_type, eq.equipment_model, from_date, to_date), as_dict=1)
 		if frappe.session.user == "Administrator":
 			frappe.msgprint(str(benchmark))
-			frappe.msgprint(str(from_date)+" "+str(to_date))
+			frappe.msgprint(str(eq.equipment_type+" "+str(eq.equipment_model)+" "+str(from_date)+" "+str(to_date))
 		rate = []
 		bench = []
 		total_hc = 0
