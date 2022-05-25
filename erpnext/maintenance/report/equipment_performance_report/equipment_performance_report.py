@@ -383,8 +383,8 @@ def get_data(filters):
 				   and hp.equipment_model = '{1}'
 				   and ('{2}' between hi.from_date and hi.to_date) and ('{3}' between hi.from_date and hi.to_date)
 			""".format(eq.equipment_type, eq.equipment_model, from_date, to_date), as_dict=1)
-		if frappe.session.user == "Administrator":
-			frappe.msgprint(str(benchmark))
+		# if frappe.session.user == "Administrator":
+		# 	frappe.msgprint(str(benchmark))
 		rate = []
 		bench = []
 		total_hc = 0
@@ -556,7 +556,7 @@ def get_data(filters):
 				eq.equipment_model,
 				total_pol_exp,
 				total_rm_exp,
-				# total_op_exp,
+				total_op_exp,
 				total_exp,
 				# total_rev,
 				# flt(total_rev-total_exp),
@@ -581,7 +581,7 @@ def get_data(filters):
 				eq.equipment_model,
 				total_pol_exp,
 				total_rm_exp,
-				# total_op_exp,
+				total_op_exp,
 				total_exp,
 				# flt(total_rev-total_exp),
 				total_cft,
@@ -608,7 +608,7 @@ def get_columns(filters):
 				("Equipment Model") + ":Data:120",
 				("Expense(POL)") + ":Currency:120",
 				("Expense (Repair and Maintenance)") + ":Currency:180",
-				# ("Expense (Operator)") + ":Currency:120",
+				("Expense (Operator)") + ":Currency:120",
 				("Total Expense") + ":Currency:120",
 				# ("R-E") + ":Currency:120",
 				# ("Total Idle Hours")+":Data:140",
@@ -631,7 +631,7 @@ def get_columns(filters):
 				("Equipment Model") + ":Data:120",
 				("Expense(POL)") + ":Currency:120",
 				("Expense (Repair and Maintenance)") + ":Currency:180",
-				# ("Expense (Operator)") + ":Currency:120",
+				("Expense (Operator)") + ":Currency:120",
 				("Total Expense") + ":Currency:120",
 				# ("Total Revenue") + ":Currency:120",
 				# ("R-E") + ":Currency:120",
@@ -655,7 +655,7 @@ def get_columns(filters):
 				("Equipment Model") + ":Data:120",
 				("Expense(POL)") + ":Currency:120",
 				("Expense (Repair and Maintenance)") + ":Currency:180",
-				# ("Expense (Operator)") + ":Currency:120",
+				("Expense (Operator)") + ":Currency:120",
 				("Total Expense") + ":Currency:120",
 				# ("Total Revenue") + ":Currency:120",
 				# ("R-E") + ":Currency:120",
@@ -679,7 +679,7 @@ def get_columns(filters):
 				("Equipment Model") + ":Data:120",
 				("Expense(POL)") + ":Currency:120",
 				("Expense (Repair and Maintenance)") + ":Currency:180",
-				# ("Expense (Operator)") + ":Currency:120",
+				("Expense (Operator)") + ":Currency:120",
 				("Total Expense") + ":Currency:120",
 				# ("Total Revenue") + ":Currency:120",
 				# ("R-E") + ":Currency:120",
@@ -704,7 +704,7 @@ def get_columns(filters):
 			("Equipment Model") + ":Data:120",
 			("Expense(POL)") + ":Currency:120",
 			("Expense (Repair and Maintenance)") + ":Currency:180",
-			# ("Expense (Operator)") + ":Currency:120",
+			("Expense (Operator)") + ":Currency:120",
 			("Total Expense") + ":Currency:120",
 			# ("R-E") + ":Currency:120",
 			("Total Cft")+":Data:140",
