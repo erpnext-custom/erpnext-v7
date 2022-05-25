@@ -402,13 +402,13 @@ def get_data(filters):
 			if not a.t:
 				a.t = getdate(filters.to_date)
 				#from_date,to_date,no_of_months, from_date1, to_date1, no_of_months1, ra = get_date_conditions(filters)
+			frappe.msgprint("here")
 			if filters.get("period") not in ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "1st Quarter", "2nd Quarter", "3rd Quarter", "4th Quarter", "1st Half Year", "2nd Half Year"):
 				rate.append(a.rat) 
 				bench.append(flt(a.bn))
 				benchm = a.bn
 				total_hc   += flt(a.rat)*flt(a.bn)*no_of_months
 				if filters.not_cdcl == 1:
-					frappe.msgprint("here")
 					if frappe.session.user == "Administrator":
 						if eq.name == 'EQUIP180030':
 							frappe.throw(str(a.rat))
