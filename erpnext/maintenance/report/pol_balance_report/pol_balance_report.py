@@ -15,7 +15,8 @@ def execute(filters=None):
 def get_data(filters=None):
 	data = []
 	cond = "('{0}' between eh.from_date and ifnull(eh.to_date, now()))".format(filters.get("to_date"))
-	query = "select e.name, eh.branch, e.equipment_number from tabEquipment e, `tabEquipment Type` et, `tabEquipment History` eh  where e.equipment_type = et.name and et.is_container = 1 and e.name = eh.parent and {0}".format(cond)
+	# query = "select e.name, eh.branch, e.equipment_number from tabEquipment e, `tabEquipment Type` et, `tabEquipment History` eh  where e.equipment_type = et.name and et.is_container = 1 and e.name = eh.parent and {0}".format(cond)
+	query = "select e.name, eh.branch, e.equipment_number from tabEquipment e, `tabEquipment Type` et, `tabEquipment History` eh  where e.equipment_type = et.name and e.name = eh.parent and {0}".format(cond)
 	if filters.branch:
 		query += " and eh.branch = \'" + str(filters.branch) + "\'"
 		
@@ -81,7 +82,7 @@ def get_columns():
                 },
 		{
                         "fieldname": "issued",
-                        "label": _("Issued"),
+                        "label": _("Consumed"),
                         "fieldtype": "Float",
                         "width": 100
                 },
