@@ -157,7 +157,7 @@ class MechanicalPayment(AccountsController):
 
 		gl_entries = []
 		if self.payment_for in ["Transporter Payment","Maintenance Payment"]:
-			debit_account = self.transportation_account if self.payment_for == "Transporter Payment" else self.maintenance_account
+			debit_account = self.transportation_account if self.payment_for == "Transporter Payment" else creditor_account #self.maintenance_account
 			party_type = "Supplier" if self.payment_for == "Maintenance Payment" else ""
 			party = self.supplier if self.payment_for == "Maintenance Payment" else ""
 			gl_entries.append(
