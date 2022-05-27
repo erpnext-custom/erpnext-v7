@@ -22,7 +22,7 @@ def get_data(filters=None):
 	items = frappe.db.sql("select item_code, item_name, stock_uom from tabItem where is_hsd_item = 1 and disabled = 0", as_dict=True)
 
 	query += " order by eh.branch"
-	frappe.msgprint("{0}".format(query))
+	# frappe.msgprint("{0}".format(query))
 	for eq in frappe.db.sql(query, as_dict=True):
 		for item in items:
 			received = get_pol_till("Receive", eq.name, filters.to_date, item.item_code)
