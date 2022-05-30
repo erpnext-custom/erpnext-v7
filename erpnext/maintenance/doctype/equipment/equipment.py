@@ -42,12 +42,10 @@ class Equipment(Document):
         self.validate_equipment()
 
     def validate_equipment(self):
-        equipment = frappe.db.get_value("Equipment", {
-            "equipment_type": self.equipment_type, "equipment_number": self.equipment_number, "is_disabled": 0, "name": ("!=", self.name)}, "name")
-
-        if equipment != self.name:
-            frappe.throw("The equipment with this registration number: {}  and equipment type {} already exits.".format(
-                self.equipment_number, self.equipment_type))
+        for d in frappe.db.get_all("Equipment", {
+            "equipment_type": self.equipment_type, "equipment_number": self.equipment_number, "is_disabled": 0, "name": ("!=", self.name)}):
+            frappe.throw("There is another {} with this registration number: {}  and equipment type {}.".format( 
+                frappe.get_desk_link("Equipment", d.name), self.equipment_number, self.equipment_type))
 
     def validate_branch(self):
         if frappe.db.get_value("Branch", self.branch, "is_disabled"):
