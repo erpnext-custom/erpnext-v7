@@ -27,6 +27,14 @@ frappe.ui.form.on('Equipment', {
 				}
 			}
 		});
+
+		frm.set_query("asset_code", function(){
+			return {
+				"filters": {
+					"docstatus": [ '=', 1]
+				}
+			}
+		});
 	},
 	setup: function(frm){
 		frm.get_field('model_items').grid.editable_fields = [
