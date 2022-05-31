@@ -158,6 +158,8 @@ def get_rootwise_opening_balances(filters, report_type, month_start, year_start_
 	else:
 		cost_centers = filters.cost_center 
 	# frappe.msgprint(str(additional_conditions))
+	# below cond. added by Jai 31 May 2022, also in financial_statement_ds.py same added
+	# and case when voucher_type = 'Journal Entry' then voucher_no not in (select name from `tabJournal Entry` j where voucher_no = j.name and EXISTS(select 1 from `tabJournal Entry Account` je where je.parent = j.name and je.reference_type = 'Asset') and j.docstatus = 1) else 1 = 1 end
 	gle = frappe.db.sql("""
 		select
 			account, sum(debit) as opening_debit, sum(credit) as opening_credit
@@ -167,6 +169,7 @@ def get_rootwise_opening_balances(filters, report_type, month_start, year_start_
 			{additional_conditions}
 			and (posting_date < %(month_start)s or ifnull(is_opening, 'No') = 'Yes')
 			and account in (select name from `tabAccount` where report_type=%(report_type)s)
+			and case when voucher_type = 'Journal Entry' then voucher_no not in (select name from `tabJournal Entry` j where voucher_no = j.name and EXISTS(select 1 from `tabJournal Entry Account` je where je.parent = j.name and je.reference_type = 'Asset') and j.docstatus = 1) else 1 = 1 end
 			group by account
 		""".format(additional_conditions=additional_conditions),
 		{
