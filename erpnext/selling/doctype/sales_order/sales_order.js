@@ -39,7 +39,9 @@ frappe.ui.form.on("Sales Order", {
 		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost)-flt(frm.doc.challan_cost))
 		cur_frm.refresh_field("discount_amount")
 	},
-
+	"is_credit": function(frm){
+		frm.toggle_reqd("supply_order_reference",frm.doc.is_credit==1);
+	},
 	"transportation_charges": function(frm) {
 		cur_frm.set_value("discount_amount", flt(frm.doc.discount_or_cost_amount) - flt(frm.doc.transportation_charges) - flt(frm.doc.additional_cost) - flt(frm.doc.loading_cost)-flt(frm.doc.challan_cost))
 		cur_frm.refresh_field("discount_amount")

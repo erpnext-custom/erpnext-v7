@@ -661,6 +661,14 @@ def make_delivery_note(source_name, target_doc=None):
 				target.po_no = ", ".join(list(set(target_po_no))) if len(target_po_no) > 1 else target_po_no[0]
 			else:
 				target.po_no = source.po_no
+		#To check delivery notes for current sales order to calculate remaining discount amount
+		dn = frappe.db.sql("""
+			select distinct a.name, a.discount_amount from `tabDelivery Note` a, `tabDelivery Note Item` b where
+			b.parent = a.name and b.against_sales_order = '{}'
+			and a.docstatus = 1
+		""".format(source.name),as_dict=1)
+		if dn:
+			target.discount_amount = flt(source.discount_amount) - flt(dn[0].discount_amount)
 
 		target.ignore_pricing_rule = 1
 		target.run_method("set_missing_values")
