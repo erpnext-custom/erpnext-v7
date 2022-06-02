@@ -159,7 +159,7 @@ class BankPayment(Document):
             if i.bank_branch and not i.financial_system_code:
                 i.financial_system_code = frappe.db.get_value("Financial Institution Branch", i.bank_branch, "financial_system_code")
             if not i.bank_account_type or not i.bank_account_no:
-				frappe.throw("Row#{}: <b>Bank Account Type</b> or <b>Account No</b> are missing ".format(i.idx))
+                frappe.throw("Row#{}: <b>Bank Account Type</b> or <b>Account No</b> are missing ".format(i.idx))
             for j in frappe.db.sql("""
                     select name, docstatus from `tabBank Payment` bp
                     where bp.name != "{name}"
@@ -470,13 +470,10 @@ class BankPayment(Document):
                             elif party_type == "Equipment":
                                 query = """
                                 SELECT
-                                     e.bank_name, e.bank_branch, e.bank_account_type, e.account_number as bank_account_no, e.owner_name as beneficiary_name, je.total_credit as amount
-                                    
-                                FROM `tabJournal Entry` as je
-                                JOIN `tabJournal Entry Account` as pa ON je.name=pa.parent
-                                JOIN `tabEquipment` as e ON pa.party=e.name
-                                WHERE je.name = '{}'""".format(self.transaction_no)
-                         
+                                     e.bank_name, e.bank_branch, e.bank_account_type, e.account_number as bank_account_no, 
+                                     e.owner_name as beneficiary_name, NULL inr_bank_code, NULL inr_purpose_code
+                                FROM `tabEquipment` e
+                                WHERE e.name = '{party}'""".format(party=party)
                             for c in frappe.db.sql(query, as_dict=True):					
                                 data.append(frappe._dict({
                                     'transaction_type': 'Journal Entry',
@@ -494,12 +491,8 @@ class BankPayment(Document):
                                     'inr_purpose_code': c.inr_purpose_code,
                                     'status': "Draft"
                                 }))
-                '''
-                if flt(credit_amt) != flt(actual_debit_amount):
-                    frappe.throw("Debit {} is not equal to credit {}".format(debit_amt, credit_amt))
-                '''
         return data
-
+       
     def get_direct_payment(self):
         cond = ""
         if self.transaction_no:
@@ -1154,39 +1147,39 @@ def get_inr_bank_file(doc, filename, posting_date):
 
 @frappe.whitelist()
 def get_paid_from(doctype, txt, searchfield, start, page_len, filters):
-	if not filters.get("branch"):
-		frappe.msgprint(_("Please select <b>Paid From Branch</b> first"))
-	data = []
-	data = frappe.db.sql("""select a.name, a.bank_name, a.bank_branch, a.bank_account_type, a.bank_account_no
-		from `tabAccount` a
-		where a.bank_name is not null
-		and a.bank_branch is not null
-		and a.bank_account_type is not null
-		and a.bank_account_no is not null
-		and exists (select 1
-				from `tabBranch` b 
-				inner join `tabBranch Bank Account` ba 
-				on b.name = ba.parent
-				where b.name = '{}'
-				and ba.account = a.name
-		)
-	""".format(filters.get("branch")))
+    if not filters.get("branch"):
+        frappe.msgprint(_("Please select <b>Paid From Branch</b> first"))
+    data = []
+    data = frappe.db.sql("""select a.name, a.bank_name, a.bank_branch, a.bank_account_type, a.bank_account_no
+        from `tabAccount` a
+        where a.bank_name is not null
+        and a.bank_branch is not null
+        and a.bank_account_type is not null
+        and a.bank_account_no is not null
+        and exists (select 1
+                from `tabBranch` b 
+                inner join `tabBranch Bank Account` ba 
+                on b.name = ba.parent
+                where b.name = '{}'
+                and ba.account = a.name
+        )
+    """.format(filters.get("branch")))
 
-	if filters.get("branch") and not data:
-		expense_bank_account = frappe.db.get_value("Branch", filters.get("branch"), "expense_bank_account")
-		if not expense_bank_account:
-			frappe.msgprint(_("Default <b>Expense Bank Account</b> is not set for this branch"))
-		else:
-			account = frappe.db.get("Account", expense_bank_account)
-			if not account.bank_name:
-				frappe.msgprint(_('<b>Bank Name</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
-			elif not account.bank_branch:
-				frappe.msgprint(_("""<b>Bank Account's Branch</b> is not set for {} """).format(frappe.get_desk_link("Account", expense_bank_account)))
-			elif not account.bank_account_no:
-				frappe.msgprint(_('<b>Bank Account No.</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
-			elif not account.bank_account_type:
-				frappe.msgprint(_('<b>Bank Account Type</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
-	return data
+    if filters.get("branch") and not data:
+        expense_bank_account = frappe.db.get_value("Branch", filters.get("branch"), "expense_bank_account")
+        if not expense_bank_account:
+            frappe.msgprint(_("Default <b>Expense Bank Account</b> is not set for this branch"))
+        else:
+            account = frappe.db.get("Account", expense_bank_account)
+            if not account.bank_name:
+                frappe.msgprint(_('<b>Bank Name</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
+            elif not account.bank_branch:
+                frappe.msgprint(_("""<b>Bank Account's Branch</b> is not set for {} """).format(frappe.get_desk_link("Account", expense_bank_account)))
+            elif not account.bank_account_no:
+                frappe.msgprint(_('<b>Bank Account No.</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
+            elif not account.bank_account_type:
+                frappe.msgprint(_('<b>Bank Account Type</b> is not set for {}').format(frappe.get_desk_link("Account", expense_bank_account)))
+    return data
 
 def get_child_cost_centers(current_cs=None):
     allchilds = allcs = []
