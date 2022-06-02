@@ -34,6 +34,25 @@ frappe.ui.form.on('Consolidated Invoice', {
 			frm.set_value("from_date", "")
 		}
 	},
+	branch: function(frm){
+		if(frm.doc.branch != null && frm.doc.branch != undefined && frm.doc.branch != ""){
+			frappe.call({
+				method: "frappe.client.get_value",
+				args: {
+					doctype: "Branch", 
+					fieldname:"cost_center",
+					filters: {
+						name: frm.doc.branch
+					}
+				},
+				callback: function(r) {
+					if(r.message.cost_center) {
+						cur_frm.set_value("cost_center", r.message.cost_center)
+					}
+				}
+			})
+		}	
+	},
 	sales_order: function(frm) {
 		if(frm.doc.cost_center){
 		frm.fields_dict['sales_order'].get_query = function(doc) {
