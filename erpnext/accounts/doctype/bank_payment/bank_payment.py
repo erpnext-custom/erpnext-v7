@@ -474,6 +474,7 @@ class BankPayment(Document):
                                      e.owner_name as beneficiary_name, NULL inr_bank_code, NULL inr_purpose_code
                                 FROM `tabEquipment` e
                                 WHERE e.name = '{party}'""".format(party=party)
+                         
                             for c in frappe.db.sql(query, as_dict=True):					
                                 data.append(frappe._dict({
                                     'transaction_type': 'Journal Entry',
@@ -491,8 +492,12 @@ class BankPayment(Document):
                                     'inr_purpose_code': c.inr_purpose_code,
                                     'status': "Draft"
                                 }))
+                '''
+                if flt(credit_amt) != flt(actual_debit_amount):
+                    frappe.throw("Debit {} is not equal to credit {}".format(debit_amt, credit_amt))
+                '''
         return data
-       
+
     def get_direct_payment(self):
         cond = ""
         if self.transaction_no:
