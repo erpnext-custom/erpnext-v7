@@ -8,7 +8,28 @@ frappe.ui.form.on('SWS Application', {
 		if(!frm.doc.posting_date) {
 			frm.set_value("posting_date", get_today())
 		}
-	}
+	},
+        employee: function(frm){
+                if(frm.doc.employee){
+                        frappe.call({
+				method:"frappe.client.get_value",
+				args: {
+				doctype:"Employee",
+				filters: {
+				name: cur_frm.doc.employee
+				},
+				fieldname:["branch"]
+				},
+				callback: function(r) {
+					if(r.message.branch != null)
+					{
+						frm.set_value("branch",r.message.branch)
+					}
+					frm.refresh_fields();
+				}
+			})
+                }
+        }
 });
 frappe.ui.form.on('SWS Application Item', {
 	sws_event: function(frm, cdt, cdn) {
