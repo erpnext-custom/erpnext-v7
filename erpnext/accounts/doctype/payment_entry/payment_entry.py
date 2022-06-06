@@ -452,7 +452,8 @@ class PaymentEntry(AccountsController):
 					dr_or_cr + "_in_account_currency": d.allocated_amount,
 					dr_or_cr: allocated_amount_in_company_currency
 				})
-				
+				if frappe.session.user == "Administrator":
+					frappe.throw(str(gle))
 				gl_entries.append(gle)
 				
 			if self.unallocated_amount:
