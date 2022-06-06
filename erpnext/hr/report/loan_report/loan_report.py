@@ -12,6 +12,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe.utils import flt, cstr
 from frappe import msgprint, _
+from erpnext.accounts.utils import get_child_cost_centers
 
 def execute(filters=None):
 	if not filters: filters = {}
@@ -75,7 +76,13 @@ def get_conditions(filters):
 	if filters.get("company"): conditions += " and t1.company = %(company)s"
 	if filters.get("employee"): conditions += " and t1.employee = %(employee)s"
 	if filters.get("bank"): conditions += "and t2.institution_name = '{0}'".format(filters.bank)
-	if filters.get("cost_center"): conditions += " and exists(select 1 from `tabCost Center` cc where t1.cost_center = cc.name and (cc.parent_cost_center = '{0}' or cc.name = '{0}'))".format(filters.cost_center)
+	if filters.parent_cost_center:
+		if not filters.branch:
+			all_ccs = get_child_cost_centers(filters.parent_cost_center)
+			conditions += " and t1.cost_center in {0}".format(tuple(all_ccs))
+		else:
+			conditions += " and t1.cost_center = {0}".format(filters.cost_center)
+	# if filters.get("cost_center"): conditions += " and exists(select 1 from `tabCost Center` cc where t1.cost_center = cc.name and (cc.parent_cost_center = '{0}' or cc.name = '{0}'))".format(filters.cost_center)
 
 	return conditions, filters
 	
