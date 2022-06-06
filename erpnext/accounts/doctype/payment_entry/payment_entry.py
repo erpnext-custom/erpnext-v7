@@ -403,8 +403,6 @@ class PaymentEntry(AccountsController):
 		self.add_bank_gl_entries(gl_entries)
 		self.add_tds_gl_entries(gl_entries)
 		self.add_deductions_gl_entries(gl_entries)
-		if frappe.session.user == "Administrator":
-			frappe.throw(str(gl_entries))
 		make_gl_entries(gl_entries, cancel=cancel, adv_adj=adv_adj)
 
 	def add_party_gl_entries(self, gl_entries):
