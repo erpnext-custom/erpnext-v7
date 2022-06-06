@@ -81,6 +81,9 @@ class PaymentEntry(AccountsController):
 			frappe.throw(_("Difference Amount must be zero"))
 		self.make_gl_entries()
 		self.update_advance_paid()
+		if self.consolidated_invoice_id:
+			ci = frappe.get_doc("Consolidated Invoice",self.consolidated_invoice_id)
+			ci.db_set("payment_entry",self.name)
 		
 	def on_cancel(self):
 		if self.clearance_date:
@@ -722,7 +725,7 @@ def get_party_details(company, party_type, party, date):
 	}
 
 
-@frappe.whitelist()	
+@frappe.whitelist()
 def get_account_details(account, date):
 	''' Ver.3.0.191222 Begins, NRDCLCRM, CRMNRDCL, NRDCL CRM, CRM NRDCL '''
 	# following line commented by SHIV on 2019/12/22
