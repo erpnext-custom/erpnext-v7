@@ -452,8 +452,6 @@ class PaymentEntry(AccountsController):
 					dr_or_cr + "_in_account_currency": d.allocated_amount,
 					dr_or_cr: allocated_amount_in_company_currency
 				})
-				if frappe.session.user == "Administrator":
-					frappe.throw(str(gle))
 				gl_entries.append(gle)
 				
 			if self.unallocated_amount:
@@ -536,6 +534,8 @@ class PaymentEntry(AccountsController):
 						"cost_center": self.pl_cost_center
 					})
 				)
+			if frappe.session.user == "Administrator":
+				frappe.throw(str(gl_entries))
 			
 	def add_deductions_gl_entries(self, gl_entries):
 		for d in self.get("deductions"):
