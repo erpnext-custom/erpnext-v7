@@ -403,16 +403,16 @@ class Employee(Document):
                         		new_leaves_allocated = cint(5)
 
 				if flt(new_leaves_allocated):
-                                        la = frappe.new_doc("Leave Allocation")
-                                        la.employee = self.employee
-                                        la.employee_name = self.employee_name
-                                        la.leave_type = "Casual Leave"
-                                        la.from_date = str(from_date)
-                                        la.to_date = str(to_date)
-                                        la.carry_forward = cint(0)
-                                        la.new_leaves_allocated = flt(new_leaves_allocated)
-                                        la.submit()
-                                        self.db_set("casual_leave_allocated", 1)
+        	                	la = frappe.new_doc("Leave Allocation")
+                	        	la.employee = self.employee
+                        	 	la.employee_name = self.employee_name
+                           		la.leave_type = "Casual Leave"
+                              	 	la.from_date = str(from_date)
+                             		la.to_date = str(to_date)
+       		                       	la.carry_forward = cint(0)
+                	            	la.new_leaves_allocated = flt(new_leaves_allocated)
+                        	     	la.submit()
+                             		self.db_set("casual_leave_allocated", 1)
 					frappe.db.commit()
 			                
                 '''

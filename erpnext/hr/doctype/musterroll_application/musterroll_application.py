@@ -117,6 +117,7 @@ class MusterRollApplication(Document):
                                 doc.company       = self.company
                                 doc.id_card       = cid
 				doc.designation = a.designation
+                                doc.gender = a.gender
                                 doc.bank = a.bank
                                 doc.account_no = a.account_no
                                 doc.qualification = a.qualification				

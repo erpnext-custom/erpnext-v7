@@ -7,7 +7,7 @@
  "doctype": "Report", 
  "idx": 0, 
  "is_standard": "Yes", 
- "modified": "2021-11-29 14:26:49.176611", 
+ "modified": "2022-05-26 12:06:20.867241", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "Design Progress Report", 
@@ -30,6 +30,12 @@
   }, 
   {
    "role": "Projects User"
+  }, 
+  {
+   "role": "Technical Committee Member"
+  }, 
+  {
+   "role": "Projects Readonly"
   }
  ]
 }

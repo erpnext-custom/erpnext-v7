@@ -605,7 +605,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2018-12-14 09:45:52.737935", 
+ "modified": "2022-05-25 17:51:11.656233", 
  "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "MB Entry", 
@@ -749,12 +749,12 @@
    "print": 1, 
    "read": 1, 
    "report": 1, 
-   "role": "Projects GM", 
+   "role": "Projects CTM", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 0, 
    "user_permission_doctypes": "[\"Branch\"]", 
-   "write": 1
+   "write": 0
   }, 
   {
    "amend": 1, 

@@ -66,22 +66,31 @@ def get_data():
 			"label": _("Project(Physical Progress)"),
 			"icon": "icon-list",
 			"items": [
-                                #{
-				#	"type": "report",
-				#	"is_query_report": True,
-				#	"name": "Project Register",
-				#	"doctype": "Project"
-				#},
+                 {
+                                        "type": "page",
+                                        "name": "design-management",
+                                        "label": "Design Management"
+                                },
 				{
                                         "type": "page",
                                         "name": "project-management",
                                         "label": "Project Management"
                                 },
-				{
+				# {
+                #                         "type": "page",
+                #                         "name": "design-management",
+                #                         "label": "Design Management"
+                #                 },
+								{
                                         "type": "page",
-                                        "name": "design-management",
-                                        "label": "Design Management"
+                                        "name": "dessung-project",
+                                        "label": "Priority Progress"
                                 },
+								# 	{
+                                #         "type": "page",
+                                #         "name": "target",
+                                #         "label": "target test"
+                                # },
 			]
 		},
 		{

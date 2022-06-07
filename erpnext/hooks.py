@@ -190,7 +190,8 @@ scheduler_events = {
 		#"erpnext.hr.hr_custom_functions.post_earned_leaves",
 		#"erpnext.hr.hr_custom_functions.post_casual_leaves",
 		"erpnext.hr.hr_custom_functions.post_leave_credits",
-		"erpnext.custom_functions.check_pending_approvers"
+		"erpnext.custom_functions.check_pending_approvers",
+		"erpnext.projects.doctype.priority_project.priority_project.update_priority"
 	],
 }
 

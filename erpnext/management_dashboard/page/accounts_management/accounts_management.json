@@ -4,7 +4,7 @@
  "docstatus": 0, 
  "doctype": "Page", 
  "idx": 0, 
- "modified": "2021-09-27 12:45:12.202224", 
+ "modified": "2022-05-23 16:56:42.562309", 
  "modified_by": "Administrator", 
  "module": "Management Dashboard", 
  "name": "accounts-management", 
@@ -19,6 +19,9 @@
   }, 
   {
    "role": "Accounts Manager"
+  }, 
+  {
+   "role": "Purchase Manager"
   }
  ], 
  "script": null, 

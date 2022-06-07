@@ -4,7 +4,7 @@
  "docstatus": 0, 
  "doctype": "Page", 
  "idx": 0, 
- "modified": "2021-09-27 12:44:23.136635", 
+ "modified": "2022-05-23 11:43:28.469960", 
  "modified_by": "Administrator", 
  "module": "Management Dashboard", 
  "name": "human-resource", 
@@ -19,6 +19,9 @@
   }, 
   {
    "role": "HR Manager"
+  }, 
+  {
+   "role": "Employee"
   }
  ], 
  "script": null, 

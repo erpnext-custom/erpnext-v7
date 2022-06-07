@@ -40,7 +40,13 @@ def get_data():
 					"name": "Meeting",
 					"label": _("Meeting Management"),
 					"description": _("Meeting Management."),
-				},                  
+				},   
+				{
+					"type": "doctype",
+					"name": "Unfreeze OAP",
+					"label": _("Unfreeze OAP"),
+					"description": _("Unfreeze OAP."),
+				},                
 			]
 		},
 				

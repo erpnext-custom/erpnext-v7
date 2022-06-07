@@ -1,4 +1,5 @@
 {
+ "_seen": "[\"Administrator\"]", 
  "allow_copy": 0, 
  "allow_import": 0, 
  "allow_rename": 0, 
@@ -711,7 +712,7 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2020-12-18 21:30:38.565041", 
+ "modified": "2022-05-13 12:30:57.596756", 
  "modified_by": "Administrator", 
  "module": "HR", 
  "name": "Leave Encashment", 
@@ -723,7 +724,7 @@
    "apply_user_permissions": 0, 
    "cancel": 0, 
    "create": 1, 
-   "delete": 1, 
+   "delete": 0, 
    "email": 1, 
    "export": 1, 
    "if_owner": 0, 
@@ -890,5 +891,5 @@
  "sort_field": "modified", 
  "sort_order": "DESC", 
  "track_changes": 1, 
- "track_seen": 1
+ "track_seen": 0
 }

@@ -4,7 +4,7 @@
  "docstatus": 0, 
  "doctype": "Page", 
  "idx": 0, 
- "modified": "2021-12-15 15:01:51.384719", 
+ "modified": "2022-05-26 12:07:58.789506", 
  "modified_by": "Administrator", 
  "module": "Management Dashboard", 
  "name": "design-management", 
@@ -19,6 +19,15 @@
   }, 
   {
    "role": "Projects User"
+  }, 
+  {
+   "role": "Employee"
+  }, 
+  {
+   "role": "Projects CTM"
+  }, 
+  {
+   "role": "Projects Readonly"
   }
  ], 
  "script": null, 

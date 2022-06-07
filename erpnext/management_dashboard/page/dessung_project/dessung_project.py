@@ -6,7 +6,7 @@ def dash_test():
         METABASE_SECRET_KEY = "8e8db02d3fdc1c5ae4252b4b9cdc036c9050f7c86659fce6ba043f7bcfe833d4"
 
         payload = {
-          "resource": {"dashboard": 9},
+          "resource": {"dashboard": 11},
           "params": {
 
           }

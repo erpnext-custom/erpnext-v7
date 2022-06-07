@@ -552,8 +552,8 @@
  "issingle": 0, 
  "istable": 0, 
  "max_attachments": 0, 
- "modified": "2019-02-02 11:56:05.710260", 
- "modified_by": "kinzang.namgyal@cdcl.bt", 
+ "modified": "2022-05-25 17:50:23.030894", 
+ "modified_by": "Administrator", 
  "module": "Projects", 
  "name": "BOQ", 
  "name_case": "", 
@@ -686,8 +686,8 @@
   {
    "amend": 1, 
    "apply_user_permissions": 1, 
-   "cancel": 1, 
-   "create": 1, 
+   "cancel": 0, 
+   "create": 0, 
    "delete": 0, 
    "email": 1, 
    "export": 1, 
@@ -697,7 +697,7 @@
    "print": 1, 
    "read": 1, 
    "report": 1, 
-   "role": "Projects GM", 
+   "role": "Projects CTM", 
    "set_user_permissions": 0, 
    "share": 1, 
    "submit": 1, 
@@ -733,5 +733,5 @@
  "sort_order": "DESC", 
  "title_field": "cost_center", 
  "track_changes": 1, 
- "track_seen": 1
+ "track_seen": 0
 }

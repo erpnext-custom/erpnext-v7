@@ -90,7 +90,7 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Project Overtime Tool",
-					"label": "Overtime Tool for GEP & MR",
+					"label": "Overtime Tool for MR",
 					"description": _("Overtime Tool"),
 				},
 				{

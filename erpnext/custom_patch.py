@@ -74,7 +74,7 @@ def dash_test():
 	METABASE_SECRET_KEY = "8e8db02d3fdc1c5ae4252b4b9cdc036c9050f7c86659fce6ba043f7bcfe833d4"
 
 	payload = {
-	  "resource": {"dashboard": 3},
+	  "resource": {"question": 88},
 	  "params": {
 	    
 	  }
@@ -353,10 +353,10 @@ def ipol1():
 			print doc.name
 
 def rpol():
-	pol = ["POL220400006"]
+	pol = ["POL220600001"]
 	for a in pol:
 		doc = frappe.get_doc("POL", a)
-		doc.cancel()
+		doc.submit()
 		print (a)
 
 def ss():
@@ -377,8 +377,8 @@ def submit_je():
 	print doc.name
 
 def submit_pr():
-	doc = frappe.get_doc("Purchase Receipt", "PRCO22040209")
-	doc.submit()
+	doc = frappe.get_doc("Purchase Receipt", "PRCO22040019")
+	doc.cancel()
 	print doc.name
 
 def email_test():
@@ -493,14 +493,14 @@ def update_cid_ss():
 
 def update_emp():
 	count = 0
-	for emp in frappe.db.sql(" select name from `tabEmployee` where name = 'GYAL20083'", as_dict = True):
+	for emp in frappe.db.sql(" select name from `tabEmployee` where employment_type = 'GCE' and status = 'Active'", as_dict = True):
 		sal_doc = frappe.get_doc("Salary Structure", {'employee': emp.name})
-		emp_doc = frappe.get_doc("Employee", emp.name)
-		emp_doc.save()
+		# emp_doc = frappe.get_doc("Employee", emp.name)
+		# emp_doc.save()
 		#frappe.db.sql(" update `tabSalary Structure` set employee = '{0}' where employee = '{0}'".format(emp_doc.name, emp.name))
-		#sal_doc.save()
+		sal_doc.save()
 		count += 1
-		print count, emp.name, emp_doc.name, sal_doc.name
+		print count, sal_doc.name
 
 def save_ss():
 	count = 0
@@ -522,9 +522,10 @@ def update_oap():
 
 
 def update_mr():
-	doc = frappe.get_doc("Process MR Payment", 'MRP200200016')
+	doc = frappe.get_doc("Process MR Payment", 'MRP220600007')
+	doc.submit()
 	print doc.name
-	doc.save(ignore_permissions = True)
+	
 
 
 
