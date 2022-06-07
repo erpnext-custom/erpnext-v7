@@ -1161,13 +1161,18 @@ def get_paid_from(doctype, txt, searchfield, start, page_len, filters):
         and a.bank_branch is not null
         and a.bank_account_type is not null
         and a.bank_account_no is not null
-        and exists (select 1
-                from `tabBranch` b 
-                inner join `tabBranch Bank Account` ba 
-                on b.name = ba.parent
-                where b.name = '{}'
-                and ba.account = a.name
-        )
+        	and ( exists (select 1
+			from `tabBranch` b 
+			inner join `tabBranch Bank Account` ba 
+			on b.name = ba.parent
+			where b.name = '{}'
+			and ba.account = a.name)
+		or 
+		exists (select 1
+			from `tabBranch` 
+			where name = "{}"
+			and expense_bank_account = a.name)
+	)
     """.format(filters.get("branch")))
 
     if filters.get("branch") and not data:
