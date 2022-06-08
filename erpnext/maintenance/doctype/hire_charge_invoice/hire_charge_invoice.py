@@ -312,7 +312,7 @@ class HireChargeInvoice(AccountsController):
 					}, self.currency)
 				)
 				if frappe.session.user == "Administrator":
-					frappe.throw(gl_entries)
+					frappe.throw(str(gl_entries))
                         make_gl_entries(gl_entries, cancel=(self.docstatus == 2),update_outstanding="No", merge_entries=False)
 
 	def refund_of_excess_advance(self):
