@@ -153,6 +153,9 @@ def guess_territory():
 			get_root_of("Territory")
 
 def decorate_quotation_doc(doc):
+	if not doc:
+		return
+
 	for d in doc.get("items", []):
 		d.update(frappe.db.get_value("Item", d.item_code,
 			["thumbnail", "website_image", "description", "route"], as_dict=True))
@@ -162,6 +165,9 @@ def decorate_quotation_doc(doc):
 def _get_cart_quotation(party=None):
 	if not party:
 		party = get_party()
+
+	if not party:
+		return
 
 	quotation = frappe.get_all("Quotation", fields=["name"], filters=
 		{party.doctype.lower(): party.name, "order_type": "Shopping Cart", "docstatus": 0},
@@ -432,6 +438,9 @@ def get_applicable_shipping_rules(party=None, quotation=None):
 def get_shipping_rules(quotation=None, cart_settings=None):
 	if not quotation:
 		quotation = _get_cart_quotation()
+
+	if not quotation:
+		return
 
 	shipping_rules = []
 	if quotation.shipping_address_name:
