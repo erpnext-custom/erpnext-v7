@@ -9,6 +9,11 @@ from frappe import _
 def get_context(context):
 	context.no_cache = 1
 	context.show_sidebar = True
+
+	if not (frappe.form_dict.doctype and frappe.form_dict.name):
+		frappe.throw(_("Not Permitted"), frappe.PermissionError)
+		return
+
 	context.doc = frappe.get_doc(frappe.form_dict.doctype, frappe.form_dict.name)
 	if hasattr(context.doc, "set_indicator"):
 		context.doc.set_indicator()
@@ -19,5 +24,5 @@ def get_context(context):
 	
 	context.enabled_checkout = frappe.get_doc("Shopping Cart Settings").enable_checkout
 			
-	if not context.doc.has_website_permission("read"):
+	if context.doc and not context.doc.has_website_permission("read"):
 		frappe.throw(_("Not Permitted"), frappe.PermissionError)
