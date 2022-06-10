@@ -42,7 +42,7 @@ def get_tenant_list(filters):
 			emp = frappe.db.sql("select name from tabEmployee where employee_name = '{}'".format(filters.get("rental_official")), as_dict=True)
 			official = emp[0].name
 	tenant_list = frappe.db.sql("""
-		Select ti.name, tro.from_date,
+		Select ti.name, tro.from_date, ti.customer_code,
 				Case
 					When (select idx from `tabTenant Rental Officials` where parent=ti.name and from_date > tro.from_date limit 1)
 						Then (select from_date as to_date from `tabTenant Rental Officials` where parent=ti.name and idx=tro.idx + 1)
@@ -50,16 +50,19 @@ def get_tenant_list(filters):
 				End as to_date
 		From `tabTenant Information` ti
 		Inner Join `tabTenant Rental Officials` tro On ti.name = tro.parent 
-		Where tro.rental_official = '{rental_official}'""".format(rental_official=official, end_date=filters.get("to_date")), as_dict=1)
+		Where tro.rental_official = '{rental_official}' Group By customer_code""".format(rental_official=official, end_date=filters.get("to_date")), as_dict=1)
 
 	data = []
 	for i in tenant_list:
 		toDate = i.to_date
+		fromDate = i.from_date
 		if getdate(filters.get("to_date")) < getdate(i.to_date):
 			toDate = filters.get("to_date")
+		if getdate(i.from_date) < getdate(filters.get("from_date")):
+			fromDate = filters.get("from_date")
 		# if i.name == 'THI200986':
 		# 	frappe.throw("'{}' and '{}'".format(i.from_date, toDate))
-		datas = get_official_tenant_data(tenant=i.name,from_date=i.from_date,to_date=toDate, flt_from_date=filters.get("from_date"), flt_to_date=filters.get("to_date"))
+		datas = get_official_tenant_data(customer=i.customer_code,from_date=fromDate,to_date=toDate, flt_from_date=filters.get("from_date"), flt_to_date=filters.get("to_date"))
 		for d in datas:
 			row = [d.tenant,d.tenant_name,d.rental_bill,d.rental_income,d.received_amount,d.pre_rent_amount,d.adjusted_amount,d.excess_amount,
 				d.tds_amount,d.rent_write_off_amount,d.penalty,d.discount_amount,d.total_rent_received,d.outstanding_bill,d.pre_rent_balance]
@@ -67,32 +70,34 @@ def get_tenant_list(filters):
 
 	return data
 
-def get_official_tenant_data(tenant,from_date,to_date,flt_from_date, flt_to_date):
-	data = frappe.db.sql(""" 
-		select rb.tenant, rb.tenant_name,
-			GROUP_CONCAT(DISTINCT(rb.name) SEPARATOR ', ') rental_bill,
-			sum(rb.rent_amount) rental_income,
-			sum(rb.received_amount) received_amount,
-			sum(rb.pre_rent_amount) pre_rent_amount,
-			sum(rb.adjusted_amount) adjusted_amount,
-			(select sum(ifnull(rpi.excess_amount,0)) from `tabRental Payment Item` as rpi where rpi.rental_bill = rb.name and rpi.docstatus = 1) excess_amount,
-			sum(rb.tds_amount) tds_amount,
-			sum(rb.rent_write_off_amount) rent_write_off_amount,
-			sum(rb.penalty) penalty,
-			sum(rb.discount_amount) discount_amount,
+def get_official_tenant_data(customer,from_date,to_date,flt_from_date, flt_to_date):
+	# data = frappe.db.sql(""" 
+	# 	select rb.tenant, rb.tenant_name,
+	# 		GROUP_CONCAT(DISTINCT(rb.name) SEPARATOR ', ') rental_bill,
+	# 		sum(rb.rent_amount) rental_income,
+	# 		sum(rb.received_amount) received_amount,
+	# 		sum(rb.pre_rent_amount) pre_rent_amount,
+	# 		sum(rb.adjusted_amount) adjusted_amount,
+	# 		(select sum(ifnull(rpi.excess_amount,0)) from `tabRental Payment Item` as rpi where rpi.rental_bill = rb.name and rpi.docstatus = 1) excess_amount,
+	# 		sum(rb.tds_amount) tds_amount,
+	# 		sum(rb.rent_write_off_amount) rent_write_off_amount,
+	# 		sum(rb.penalty) penalty,
+	# 		sum(rb.discount_amount) discount_amount,
 
-			(sum(rb.received_amount) + sum(rb.pre_rent_amount) + sum(rb.penalty) + (select sum(ifnull(rpi.excess_amount,0)) from `tabRental Payment Item` as rpi where rpi.rental_bill = rb.name and rpi.docstatus = 1) - sum(rb.tds_amount) - sum(rb.discount_amount)) total_rent_received,
+	# 		(sum(rb.received_amount) + sum(rb.pre_rent_amount) + sum(rb.penalty) + (select sum(ifnull(rpi.excess_amount,0)) from `tabRental Payment Item` as rpi where rpi.rental_bill = rb.name and rpi.docstatus = 1) - sum(rb.tds_amount) - sum(rb.discount_amount)) total_rent_received,
 			
-			(sum(rb.receivable_amount) - sum(rb.received_amount) - sum(rb.adjusted_amount) - sum(rb.rent_write_off_amount) - sum(rb.tds_amount)) outstanding_bill,
-			(sum(rb.pre_rent_amount) - sum(rb.adjusted_amount)) pre_rent_balance
-		from `tabRental Bill` rb
+	# 		(sum(rb.receivable_amount) - sum(rb.received_amount) - sum(rb.adjusted_amount) - sum(rb.rent_write_off_amount) - sum(rb.tds_amount)) outstanding_bill,
+	# 		(sum(rb.pre_rent_amount) - sum(rb.adjusted_amount)) pre_rent_balance
+	# 	from `tabRental Bill` rb
 		
-		where rb.docstatus=1 and rb.posting_date between '{0}' and '{1}' and rb.tenant='{2}'
-		group by rb.tenant
-	""".format(from_date, to_date, tenant), as_dict=1)
+	# 	where rb.docstatus=1 and rb.posting_date between '{0}' and '{1}' and rb.tenant='{2}'
+	# 	group by rb.tenant
+	# """.format(from_date, to_date, tenant), as_dict=1)
 
 	query = frappe.db.sql("""
-		select tenant, tenant_name,
+		select 
+			GROUP_CONCAT(DISTINCT(tenant) SEPARATOR ', ') tenant, 
+			tenant_name,
 			GROUP_CONCAT(DISTINCT(name) SEPARATOR ', ') rental_bill,
 			sum(rb_receivable_amount) rental_income,
 			sum(rpi_rent_received) received_amount,
@@ -108,6 +113,7 @@ def get_official_tenant_data(tenant,from_date,to_date,flt_from_date, flt_to_date
 			(sum(rpi_pre_rent_amount) - sum(rb_adjusted_amount)) pre_rent_balance
 		from (
 			select 
+				rb.customer_code,
 				rb.tenant, rb.tenant_name,
 				rb.name,
 				rb.receivable_amount rb_receivable_amount,
@@ -127,38 +133,40 @@ def get_official_tenant_data(tenant,from_date,to_date,flt_from_date, flt_to_date
 			left join `tabRental Payment Item` rpi on rpi.rental_bill = rb.name and rpi.docstatus=1 and rpi.posting_date between '{3}' and '{4}'
 			left join `tabRental Payment` rp on rpi.parent = rp.name and rp.docstatus=1
 			where rb.posting_date between '{0}' and '{1}' 
-			and rb.docstatus=1 and rb.tenant = '{2}' group by name order by rb.name
-		) as x group by tenant
-		""".format(from_date, to_date, tenant, flt_from_date, flt_to_date), as_dict=1)
+			and rb.docstatus=1 and rb.customer_code = '{2}' group by name order by rb.name
+		) as x group by customer_code
+		""".format(from_date, to_date, customer, flt_from_date, flt_to_date), as_dict=1)
 
 	return query
 
 def get_data(filters):
-	data = frappe.db.sql(""" 
-		select rb.tenant, rb.tenant_name,
-			GROUP_CONCAT(DISTINCT(rb.name) SEPARATOR ', ') rental_bill,
-			sum(rb.rent_amount) rental_income,
-			sum(rb.received_amount),
-			sum(rb.pre_rent_amount),
-			sum(rb.adjusted_amount),
-			(select sum(ifnull(rpi.excess_amount,0)) from `tabRental Payment Item` as rpi where rpi.rental_bill = rb.name and rpi.docstatus = 1),
-			sum(rb.tds_amount),
-			sum(rb.rent_write_off_amount),
-			sum(rb.penalty),
-			sum(rb.discount_amount),
+	# data = frappe.db.sql(""" 
+	# 	select rb.tenant, rb.tenant_name,
+	# 		GROUP_CONCAT(DISTINCT(rb.name) SEPARATOR ', ') rental_bill,
+	# 		sum(rb.rent_amount) rental_income,
+	# 		sum(rb.received_amount),
+	# 		sum(rb.pre_rent_amount),
+	# 		sum(rb.adjusted_amount),
+	# 		(select sum(ifnull(rpi.excess_amount,0)) from `tabRental Payment Item` as rpi where rpi.rental_bill = rb.name and rpi.docstatus = 1),
+	# 		sum(rb.tds_amount),
+	# 		sum(rb.rent_write_off_amount),
+	# 		sum(rb.penalty),
+	# 		sum(rb.discount_amount),
 
-			(sum(rb.received_amount) + sum(rb.pre_rent_amount) + sum(rb.penalty) + (select sum(ifnull(rpi.excess_amount,0)) from `tabRental Payment Item` as rpi where rpi.rental_bill = rb.name and rpi.docstatus = 1) - sum(rb.tds_amount) - sum(rb.discount_amount)) total_rent_received,
+	# 		(sum(rb.received_amount) + sum(rb.pre_rent_amount) + sum(rb.penalty) + (select sum(ifnull(rpi.excess_amount,0)) from `tabRental Payment Item` as rpi where rpi.rental_bill = rb.name and rpi.docstatus = 1) - sum(rb.tds_amount) - sum(rb.discount_amount)) total_rent_received,
 			
-			(sum(rb.receivable_amount) - sum(rb.received_amount) - sum(rb.adjusted_amount) - sum(rb.rent_write_off_amount) - sum(rb.tds_amount)) outstanding_bill,
-			(sum(rb.pre_rent_amount) - sum(rb.adjusted_amount)) pre_rent_balance
-		from `tabRental Bill` rb
+	# 		(sum(rb.receivable_amount) - sum(rb.received_amount) - sum(rb.adjusted_amount) - sum(rb.rent_write_off_amount) - sum(rb.tds_amount)) outstanding_bill,
+	# 		(sum(rb.pre_rent_amount) - sum(rb.adjusted_amount)) pre_rent_balance
+	# 	from `tabRental Bill` rb
 		
-		where rb.docstatus=1 and rb.posting_date between '{from_date}' and '{to_date}'
-		group by rb.tenant
-	""".format(from_date=filters.get("from_date"), to_date=filters.get("to_date")))
+	# 	where rb.docstatus=1 and rb.posting_date between '{from_date}' and '{to_date}'
+	# 	group by rb.tenant
+	# """.format(from_date=filters.get("from_date"), to_date=filters.get("to_date")))
 
 	query = frappe.db.sql("""
-		select tenant, tenant_name,
+		select 
+			GROUP_CONCAT(DISTINCT(tenant) SEPARATOR ', ') tenant, 
+			tenant_name,
 			GROUP_CONCAT(DISTINCT(name) SEPARATOR ', ') rental_bill,
 			sum(rb_receivable_amount),
 			sum(rpi_rent_received),
@@ -174,6 +182,7 @@ def get_data(filters):
 			(sum(rpi_pre_rent_amount) - sum(rb_adjusted_amount)) pre_rent_balance
 		from (
 			select 
+				rb.customer_code,
 				rb.tenant, rb.tenant_name,
 				rb.name,
 				rb.receivable_amount rb_receivable_amount,
@@ -194,7 +203,7 @@ def get_data(filters):
 			left join `tabRental Payment` rp on rpi.parent = rp.name and rp.docstatus=1
 			where rb.posting_date between '{from_date}' and '{to_date}'  
 			and rb.docstatus=1 and rb.gl_entry = 1 group by name order by rb.name
-		) as x group by tenant
+		) as x group by customer_code
 		""".format(from_date=filters.get("from_date"), to_date=filters.get("to_date")))
 
 	return query
