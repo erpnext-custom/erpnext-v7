@@ -295,7 +295,8 @@ class RoyaltyPayment(Document):
 			for a in journal_entry_accounts:
 				frappe.db.set_value("Journal Entry Account",a.name,"reference_name",None)
 		je = frappe.get_doc("Journal Entry",self.journal_entry)
-		je.cancel()
+		if je.docstatus != 2:
+			je.cancel()
 
 	def update_production(self):
 		if self.production_type == "Planned":
