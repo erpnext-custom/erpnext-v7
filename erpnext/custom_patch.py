@@ -10,6 +10,21 @@ from datetime import timedelta, date
 from erpnext.custom_utils import get_branch_cc, get_branch_warehouse
 import csv
 
+def delete_cancelled_sws_members():
+	smem = frappe.db.sql("""
+		select name from `tabSWS Membership Item` where docstatus = 2
+	""", as_dict=1)
+	if smem:
+		for a in smem:
+			frappe.db.sql("""
+				delete from `tabSWS Membership Item` where name = '{}'
+			""".format(a.name))
+			frappe.db.sql("""
+				delete from `tabEmployee Family Details` where name = '{}'
+			""".format(a.name))
+			print(a.name)
+
+
 def update_mechanical_payment_tds_rate():
 	mp = frappe.db.sql("""
 		select name, tds_account from `tabMechanical Payment` where tds_account in ('TDS - 2% - NRDCL','TDS - 3% - NRDCL','TDS - 5% - NRDCL','TDS - 10% - NRDCL');
