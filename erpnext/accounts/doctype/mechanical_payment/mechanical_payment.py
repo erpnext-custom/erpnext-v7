@@ -166,6 +166,8 @@ class MechanicalPayment(AccountsController):
 						 "debit_in_account_currency": flt(self.total_amount),
 						 "cost_center": self.cost_center,
 						 "party_check": 1,
+						"party_type": party_type,
+						"party": party,
 						 "reference_type": self.doctype,
 						 "reference_name": self.name,
 						 "business_activity": default_ba,
