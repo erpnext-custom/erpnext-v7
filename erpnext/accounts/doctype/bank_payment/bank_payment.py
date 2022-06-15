@@ -376,6 +376,7 @@ class BankPayment(Document):
 						AND t1.month = '{salary_month}'
 						AND t1.docstatus = 1
 						AND t2.institution_name = '{institution}'
+						AND t1.branch = '{branch}'
 						{cond}
 						AND NOT EXISTS(select 1
 							FROM `tabBank Payment Item` bpi
@@ -389,7 +390,7 @@ class BankPayment(Document):
 					""".format(salary_year=self.fiscal_year, 
 						salary_month=self.get_month_id(self.month),
 						month=self.month, institution=self.institution_name,
-						bank_payment = self.name,
+						bank_payment = self.name, branch=self.branch,
 						cond = cond), as_dict=True)
 		else:
 			return frappe.db.sql("""SELECT "Salary Slip" transaction_type, t1.name transaction_id, 
