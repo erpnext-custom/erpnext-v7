@@ -28,11 +28,11 @@ class HireChargeInvoice(AccountsController):
 		advance_amount = 0
 		balance_amount = 0
 		for a in self.advances:
-			a.balance_advance_amount = flt(a.actual_advance_amount) - flt(a.allocated_amount)
-			if flt(a.balance_advance_amount) < 0:
+			a.balance_advance_amount = flt(a.actual_advance_amount, 2) - flt(a.allocated_amount, 2)
+			if flt(a.balance_advance_amount, 2) < 0:
 				frappe.throw("Allocated Amount should be smaller than Advance Available")
-			advance_amount = flt(advance_amount) + flt(a.allocated_amount)
-			balance_amount = flt(balance_amount) + flt(a.balance_advance_amount)
+			advance_amount = flt(advance_amount, 2) + flt(a.allocated_amount, 2)
+			balance_amount = flt(balance_amount, 2) + flt(a.balance_advance_amount, 2)
 		self.advance_amount = advance_amount
 		self.balance_advance_amount = balance_amount
 
@@ -40,15 +40,15 @@ class HireChargeInvoice(AccountsController):
 		discount_amount = 0
 		total_amount = 0
 		for a in self.items:
-			if flt(a.discount_amount) < 0 or flt(a.discount_amount) > flt(a.total_amount):
+			if flt(a.discount_amount, 2) < 0 or flt(a.discount_amount, 2) > flt(a.total_amount, 2):
 				frappe.throw("Discount Amount should be smaller than Total Aamount")
-			discount_amount = flt(discount_amount) + flt(a.discount_amount)
-			total_amount = flt(total_amount) + flt(a.total_amount)
+			discount_amount = flt(discount_amount, 2) + flt(a.discount_amount, 2)
+			total_amount = flt(total_amount, 2) + flt(a.total_amount, 2)
 		self.discount_amount = discount_amount
 		self.total_invoice_amount = total_amount
 
 	def set_amount(self):
-		self.balance_amount = flt(self.total_invoice_amount) - flt(self.advance_amount) - flt(self.discount_amount)
+		self.balance_amount = flt(self.total_invoice_amount, 2) - flt(self.advance_amount, 2) - flt(self.discount_amount, 2)
 		self.outstanding_amount = self.balance_amount
 
 	def on_submit(self):
@@ -98,7 +98,7 @@ class HireChargeInvoice(AccountsController):
 	def update_advance_amount(self):
 		lst = []
 		for d in self.get('advances'):
-			if flt(d.allocated_amount) > 0:
+			if flt(d.allocated_amount, 2) > 0:
 				args = frappe._dict({
 					'voucher_type': 'Journal Entry',
 					'voucher_no' : d.jv_name,
@@ -110,8 +110,8 @@ class HireChargeInvoice(AccountsController):
 					'party': self.customer,
 					'is_advance' : 'Yes',
 					'dr_or_cr' : "credit_in_account_currency",
-					'unadjusted_amount' : flt(d.actual_advance_amount),
-					'allocated_amount' : flt(d.allocated_amount),
+					'unadjusted_amount' : flt(d.actual_advance_amount, 2),
+					'allocated_amount' : flt(d.allocated_amount, 2),
 					'exchange_rate': 1,
 					'business_activity': get_default_ba()
 				})
@@ -176,8 +176,8 @@ class HireChargeInvoice(AccountsController):
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
 						"cost_center": customer_cost_center,
-						"debit_in_account_currency": flt(a.total_amount),
-						"debit": flt(a.total_amount),
+						"debit_in_account_currency": flt(a.total_amount, 2),
+						"debit": flt(a.total_amount, 2),
 						"business_activity": equip_ba
 					})
 				je.append("accounts", {
@@ -185,8 +185,8 @@ class HireChargeInvoice(AccountsController):
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
 						"cost_center": self.cost_center,
-						"credit_in_account_currency": flt(a.total_amount),
-						"credit": flt(a.total_amount),
+						"credit_in_account_currency": flt(a.total_amount, 2),
+						"credit": flt(a.total_amount, 2),
 						"business_activity": equip_ba
 					})
 			
@@ -200,8 +200,8 @@ class HireChargeInvoice(AccountsController):
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
 						"cost_center": customer_cost_center,
-						"credit_in_account_currency": flt(self.total_invoice_amount),
-						"credit": flt(self.total_invoice_amount),
+						"credit_in_account_currency": flt(self.total_invoice_amount, 2),
+						"credit": flt(self.total_invoice_amount, 2),
 						"business_activity": default_ba
 					})
 				je.append("accounts", {
@@ -209,8 +209,8 @@ class HireChargeInvoice(AccountsController):
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
 						"cost_center": self.cost_center,
-						"debit_in_account_currency": flt(self.total_invoice_amount),
-						"debit": flt(self.total_invoice_amount),
+						"debit_in_account_currency": flt(self.total_invoice_amount, 2),
+						"debit": flt(self.total_invoice_amount, 2),
 						"business_activity": default_ba
 					})
 
@@ -332,8 +332,8 @@ class HireChargeInvoice(AccountsController):
 		total_amount = 0
 
 		for a in self.advances:
-			if flt(a.actual_advance_amount) > flt(a.allocated_amount):
-				amount = flt(a.actual_advance_amount) - flt(a.allocated_amount)
+			if flt(a.actual_advance_amount, 2) > flt(a.allocated_amount, 2):
+				amount = flt(a.actual_advance_amount, 2) - flt(a.allocated_amount, 2)
 				total_amount = total_amount + amount
 				je.append("accounts", {
 						"account": a.advance_account,
@@ -342,16 +342,16 @@ class HireChargeInvoice(AccountsController):
 						"reference_type": "Hire Charge Invoice",
 						"reference_name": self.name,
 						"cost_center": a.advance_cost_center,
-						"debit_in_account_currency": flt(amount),
-						"debit": flt(amount),
+						"debit_in_account_currency": flt(amount, 2),
+						"debit": flt(amount, 2),
 					})
 
 		if total_amount > 0:
 			je.append("accounts", {
 					"account": revenue_bank_account,
 					"cost_center": self.cost_center,
-					"credit_in_account_currency": flt(total_amount),
-					"credit": flt(total_amount),
+					"credit_in_account_currency": flt(total_amount, 2),
+					"credit": flt(total_amount, 2),
 				})
 
 			je.insert()

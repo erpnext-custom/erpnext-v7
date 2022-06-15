@@ -83,7 +83,7 @@ function calculate_balance(frm) {
 	if (frm.doc.total_invoice_amount) {
 		if(!frm.doc.advance_amount) {frm.doc.advance_amount = 0}
 		if(!frm.doc.discount_amount) {frm.doc.discount_amount = 0}
-		frm.set_value("balance_amount", frm.doc.total_invoice_amount - frm.doc.advance_amount - frm.doc.discount_amount)
+		frm.set_value("balance_amount", flt(frm.doc.total_invoice_amount, 2) - flt(frm.doc.advance_amount, 2) - flt(frm.doc.discount_amount, 2))
 		frm.refresh_field("balance_amount")
 		frm.set_value("outstanding_amount", frm.doc.balance_amount)
 		frm.refresh_field("outstanding_amount")
