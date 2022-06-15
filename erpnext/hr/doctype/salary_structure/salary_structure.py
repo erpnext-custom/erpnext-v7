@@ -62,6 +62,7 @@ class SalaryStructure(Document):
 		self.validate_joining_date()
 		set_employee_name(self)
 		self.check_multiple_active()
+		self.remove_other_recoveries()
 		self.update_salary_structure()
 		
 	def on_update(self):
@@ -104,6 +105,14 @@ class SalaryStructure(Document):
 		ret = {'bank_name': basic_info and basic_info[0][0] or '',
 			'bank_ac_no': basic_info and basic_info[0][1] or ''}
 		return ret
+	
+
+	#Remove Components with zero outstanding Amount vis salary advance, recoveries
+        def remove_other_recoveries(self):
+                for a in self.get('deductions'):
+                        if a.reference_number:
+                                if  flt(a.total_deductible_amount)  - flt(a.total_deducted_amount) == 0.0:
+                                        frappe.db.sql(""" delete from `tabSalary Detail` where name = '{0}'""".format(a.name))
 
 	def make_table(self, doct_name, tab_fname, tab_name):
                 # Ver 1.0 by SSK on 08/08/2016, Following line is commented and the subsequent if condition is added
@@ -423,7 +432,9 @@ def make_salary_slip(source_name, target_doc=None, calc_days={}):
                                         'total_days_in_month'      : flt(days_in_month),
                                         'working_days'             : flt(working_days),
                                         'leave_without_pay'        : flt(lwp),
-                                        'payment_days'             : flt(payment_days)
+                                        'payment_days'             : flt(payment_days),
+                                        'bank_account_type'        : d.bank_account_type,
+                                        'bank_branch'              : d.bank_branch,
                                 })
 
                 for e in calc_map['earnings']:
