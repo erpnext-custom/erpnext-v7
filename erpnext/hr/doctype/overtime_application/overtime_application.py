@@ -12,12 +12,12 @@ from erpnext.custom_utils import check_budget_available, get_branch_cc
 class OvertimeApplication(Document):
 	def validate(self):
 		self.validate_dates()
+  		self.validate_submitter()
+  		self.set_approver()
 		self.calculate_totals()
 
 	def on_submit(self):
-		#self.check_status()
-		self.validate_submitter()
-         	#self.check_budget()
+        #self.check_budget()
 		self.post_journal_entry()
 
 	def on_cancel(self):
@@ -25,26 +25,35 @@ class OvertimeApplication(Document):
 	
 	def check_budget(self):
 		cc = get_branch_cc(self.branch)
-                account = frappe.db.get_single_value ("HR Accounts Settings", "overtime_account")
-
-                check_budget_available(cc, account, self.posting_date, self.total_amount, throw_error=True)		
+		account = frappe.db.get_single_value ("HR Accounts Settings", "overtime_account")
+		check_budget_available(cc, account, self.posting_date, self.total_amount, throw_error=True)
+  
+	def set_approver(self):
+		if self.workflow_state ==  "Verified By Supervisor":
+			if self.approver:
+				employee = frappe.get_value("Employee", {"user_id": self.approver}, "name")
+				approver = frappe.get_value("Employee", employee, "reports_to")
+				approver_id, approver_name = frappe.get_value("Employee", approver, ["user_id","employee_name"])
+				self.approver = approver_id
+				self.approver_name = approver_name
+		elif self.workflow_state in ("Draft","Waiting Approval","Rejected"):			
+			if self.employee:
+				approver = frappe.get_value("Employee", self.employee, "reports_to")
+				approver_id, approver_name = frappe.get_value("Employee", approver, ["user_id","employee_name"])
+				self.approver = approver_id
+				self.approver_name = approver_name
+			
 
 	def calculate_totals(self):
-                total_hours  = 0
-                for i in self.items:
-                        total_hours += flt(i.number_of_hours)
+		total_hours  = 0
+		for i in self.items:
+				total_hours += flt(i.number_of_hours)
 
-                self.total_hours  = flt(total_hours)
-                self.total_amount = flt(total_hours)*flt(self.rate)
+		self.total_hours  = flt(total_hours)
+		self.total_amount = flt(total_hours)*flt(self.rate)
 
-                if flt(self.total_hours) <= 0:
-                        frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")
-
-                
-	def check_status(self):
-		if self.status != "Approved":
-			frappe.throw("Only Approved documents can be submitted")
-	
+		if flt(self.total_hours) <= 0:
+				frappe.throw(_("Total number of hours cannot be nil."),title="Incomlete information")
 	##
 	# Dont allow duplicate dates
 	##
@@ -70,9 +79,8 @@ class OvertimeApplication(Document):
 	# Allow only the approver to submit the document
 	##
 	def validate_submitter(self):
-		if self.approver != frappe.session.user:
-			frappe.throw("Only the selected Approver can submit this document")
-
+		if self.approver != frappe.session.user and self.workflow_state not in ("Draft","Waiting Approval"):
+			frappe.throw("Only <b>{}, ({})</b> can Verify or Approve this document".format(self.approver_name, self.approver))
 
 	##
 	# Post journal entry
