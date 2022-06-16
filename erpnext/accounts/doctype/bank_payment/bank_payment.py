@@ -599,7 +599,7 @@ class BankPayment(Document):
                             "Transporter Payment" as transaction_type, tp.name as transaction_id, tp.name transaction_reference,
                             tp.posting_date as transaction_date, e.supplier, e.owner_name as beneficiary_name,
                             e.bank_name, e.bank_branch, e.bank_account_type, e.account_number, 
-                            e.bank_account_type, e.account_number as bank_account_no, tp.amount_payable as amount,
+                            e.bank_account_type, e.account_number as bank_account_no, round(tp.amount_payable,2) as amount,
                             tp.branch, (select financial_system_code from `tabFinancial Institution Branch` where name = e.bank_branch ) as financial_system_code
                             FROM `tabTransporter Payment` tp, `tabEquipment` e
                             WHERE tp.docstatus = 1 
